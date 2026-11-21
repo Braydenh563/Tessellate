@@ -752,7 +752,9 @@ def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noq
     if not composer_open.reads_note(req.question, mine[0]):
         return None
     dialogue = composer.Dialogue.from_history(req.history)
-    return composer.open_note_answer(req.question, mine[0], today=today, salt=dialogue.salt)
+    stored = deps.get_config().get_preference("composer_voice", "natural")  # Settings voice; it was ignored here
+    voice = {"professional": "professional", "plain": "professional"}.get(stored, "natural")
+    return composer.open_note_answer(req.question, mine[0], today=today, salt=dialogue.salt, voice=voice)
 
 
 #: What an answer says when it could not answer: its own "missing" lines and the

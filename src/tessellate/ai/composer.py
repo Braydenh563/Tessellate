@@ -903,7 +903,7 @@ def brief(
 act_registry.help_sentence = help_line
 
 
-def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") -> dict | None:
+def open_note_answer(question: str, note: dict, *, today: date, salt: str = "", voice: str = "") -> dict | None:
     """The open note's answer to `question` as a composer result, or None
     when the question is not one of this module's kinds."""
     ask = composer_open.kind(question)
@@ -912,6 +912,6 @@ def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") 
     view = read_note(note, 0)
     if view is None:
         return None
-    out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
+    out = _fresh_answer([view], today, None, "", "", voice or composer_open.composer_voice(), question)
     {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who, "done": composer_open._done}[ask](out, view, question, salt)
     return _answer_dict(out, "open_" + ask, question, [], [view], [])

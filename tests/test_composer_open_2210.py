@@ -175,3 +175,17 @@ def test_main_point_of_the_open_note_is_a_summary_with_its_name(ai_client, sessi
     text = _ask(ai_client, "What's the main point?", open_note_id=a, notes_only=True, answer_from="notes")
     assert "untitled" not in text.lower()
     assert "harbor launch plan" in text.lower()
+
+
+def test_open_note_answer_takes_the_voice_it_is_given(monkeypatch):
+    """The Settings voice reaches the open-note answer (it was always the default)."""
+    from datetime import date
+
+    from tessellate.ai import composer
+
+    seen = []
+    real = composer._fresh_answer
+    monkeypatch.setattr(composer, "_fresh_answer", lambda *a, **k: (seen.append(a[5]), real(*a, **k))[1])
+    note = {"id": 1, "title": "Trip", "content": "- [ ] book flights\n- [x] pack", "tags": [], "category": "", "created_at": "2026-11-01T00:00:00"}
+    composer.open_note_answer("what is left", note, today=date(2026, 11, 21), voice="professional")
+    assert seen == ["professional"]
