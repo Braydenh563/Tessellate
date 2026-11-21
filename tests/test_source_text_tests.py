@@ -29,6 +29,7 @@ def test_runs_behaviour():
 
 
 def test_a_test_reading_text_directly_or_through_a_name_is_counted():
+    """Runs the scanner on a sample; the sample, not this test, reads text."""
     total, reading, bare = source_text_tests.scan_file("test_x.py", SAMPLE)
     assert (total, reading) == (3, 2)
     assert bare == ["test_x.py::test_reads_through_a_constant"]
