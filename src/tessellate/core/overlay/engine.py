@@ -1403,7 +1403,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Spe
         if act == "hang" and self._dest_repeats("hang"):
             return True
         if act == "spell":
-            return (up and not self._perch_spell_ok()) or self._no_spell()
+            return self._spell_blocked(up)
         return act == "stroll" and up
 
     def _no_spell(self) -> bool:

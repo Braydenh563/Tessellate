@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion landings (L145): thrown while it holds a cup, rod, journal, can, bowl, wand, dumbbell or book, the companion drops it and it lies tipped over at its feet for 2.4 s once it is up, then is put away; on the desktop and in the app (both measured: the prop rests on the feet line within 3 px).
 - Companion presence (L152): a walking desk companion on a window top does a tea, book, journal, fishing, stars or knitting spell at an edge spot 14 px in from the end and keeps the perch for it; Atlas in the app keeps the desk's spell hours, lengths and moods (tea gone by noon, the blanket nap only from 21 to 6; measured over 600 picks an hour); the desk log ends with how many far moves went by each way.
 - Chat acts: an Undo's drop steps take only a link or a childless map node, never from a private board, and a node's links go with it; a binned note's card is not offered by name; `/spelling/check` caps each word at 64 characters (PR 230 review).
 - CI fixes: the composer lint mirror re-places on window resize (no new ResizeObserver), the no-model line names reminders again, the composer imports cold in 0.075 s (help_chat loads on first help question; was 0.113 s), one assert-with-request rewritten (cap 226 held).

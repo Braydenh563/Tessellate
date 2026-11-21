@@ -642,6 +642,15 @@
           nmb.thrown.arrive = s.fate?.arrive || "";
           const spot = spotNow();
           nameMarkBuddyThrowLand(buddy, s, tab, spot);
+          //: L145: what it was holding when grabbed lies tipped over beside it for `NMB_THROW.tip` (`nmb-tip-<act>`, atlas-lazy.css: the
+          //: prop's slot on its side at the feet). Only a grab within 15 s counts, and not with motion off.
+          const tipAct = Date.now() - (nmb.tipAt || 0) < 15000 ? nmb.tipAct : "";
+          nmb.tipAct = "";
+          if (tipAct && !nameMarkBuddyStill()) {
+            clearTimeout(nmb.tipTimer);
+            buddy.classList.add(`nmb-tip-${tipAct}`);
+            nmb.tipTimer = setTimeout(() => buddy.classList.remove(`nmb-tip-${tipAct}`), NMB_THROW.tip);
+          }
           companionThrowSettleSoon(buddy, s, spot, rand);
         };
         if (COMPANION_THROW_PULLS.includes(s.fate?.kind) && spotNow().y < s.y) companionThrowClimb(buddy, flight, land, s.fate);

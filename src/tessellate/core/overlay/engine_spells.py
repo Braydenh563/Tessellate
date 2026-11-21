@@ -23,6 +23,10 @@ class SpellsMixin:
         """A walker on a window top that may stay: not a floater, not still (reduced motion shows no props)."""
         return self.perch is not None and self.gait == "walk" and not self.reduced
 
+    def _spell_blocked(self, up: bool) -> bool:
+        """A spell cannot start: up on a window it must be a walker's perch spell, and never without presence."""
+        return (up and not self._perch_spell_ok()) or self._no_spell()
+
     def _perch_spell(self, now: float) -> bool:
         """`_begin_spell` on a window top: pick a spell that can be done up there, walk to the edge spot of the top and start it.
         False (the floor's spell instead) when it is not on a top or no spell suits the hour."""
