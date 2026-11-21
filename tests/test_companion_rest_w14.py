@@ -77,7 +77,8 @@ def test_the_drawn_loops_ask_whether_it_rests() -> None:
 
 def test_input_wakes_in_the_next_frame_and_typing_in_a_field_is_not_input() -> None:
     wake = _block(LIFE, 'for (const type of typeof document.addEventListener', "//: On the function, not the shared scope")
-    assert "setTimeout(() => r.wake.forEach" in wake, "the wake is not the input handler's cost"
+    # Intent unchanged, text moved (L184): the deferred wake calls the shared `stir` (input or the desk window leaving its rest).
+    assert "setTimeout(atlasTailCalm.rest.stir, 0)" in wake, "the wake is not the input handler's cost"
     assert 'type === "keydown" && event.key !== "Enter"' in wake and "input, textarea, select, [contenteditable]" in wake
 
 

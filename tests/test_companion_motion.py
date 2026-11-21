@@ -900,7 +900,7 @@ def test_the_larger_faces_have_a_life_of_their_own() -> None:
     assert "NM_IDLE_MIN" in tick and "if (!big.length) return;" in tick
     assert "nameMarkIdleQuiet()" in tick and "nameMarkIdleQuiet()" in _fn("nameMarkIdleAct")
     quiet = _fn("nameMarkIdleQuiet")
-    assert 'root.dataset.avatarMotion === "off"' in quiet and 'nameMarkBuddyActions() === "off"' in quiet
+    assert 'root.dataset.avatarMotion === "off"' in _fn("nameMarkMotionStill") and "nameMarkMotionStill()" in quiet and 'nameMarkBuddyActions() === "off"' in quiet
     viewer = _fn("openNameMarkViewer")
     assert '"Its own face, read from its name"' in viewer and '"A face of its own"' not in viewer
     assert "nameMarkIdleWake();" in viewer
@@ -1569,7 +1569,8 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     keyframe, since a lone keyframe is the end), off the pacer, and not
     under reduced motion; the companion's expressions cross over 0.6s."""
     blend = _fn("nameMarkBuddyBlend")
-    assert "nameMarkIdleQuiet()" in blend and "{ ...moved, offset: 0 }" in blend
+    # L184: "not under reduced motion" is asked of motion alone (`nameMarkMotionStill`), not of actions off.
+    assert "nameMarkMotionStill()" in blend and "{ ...moved, offset: 0 }" in blend
     assert 'id: "nmb-blend"' in blend
     # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
     # (INBOX 1634: the leave is written inside the enter's change, one hand-over for both.)

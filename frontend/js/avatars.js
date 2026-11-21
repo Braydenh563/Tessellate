@@ -2852,11 +2852,14 @@
   function nameMarkIdleWake() {
     if (!nameMarkIdleTimer) nameMarkIdleTimer = setTimeout(nameMarkIdleTick, 3000 + Math.random() * 3000);
   }
-  function nameMarkIdleQuiet() {
+  //: Motion still: what stops the loops. A hand-over asks only this (L184: with "What it does" off the giggle
+  //: still runs, and its end went in one frame, 3.21 px).
+  function nameMarkMotionStill() {
     const root = document.documentElement;
-    return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced"
-      || reducedMotionWanted()
-      || nameMarkBuddyActions() === "off";
+    return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced" || reducedMotionWanted();
+  }
+  function nameMarkIdleQuiet() {
+    return nameMarkMotionStill() || nameMarkBuddyActions() === "off";
   }
   function nameMarkIdleTick() {
     nameMarkIdleTimer = 0;
@@ -10021,7 +10024,7 @@
   const NMB_BLEND_PARTS = ".nm-buddy-char, .nm-buddy-head, .nm-figure, .nmb-leg-l, .nmb-leg-r, :is(.nmb-arm-l, .nmb-arm-r):not(.atl-rigged, .atl-arm-probe)";
   function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     const roots = (Array.isArray(buddy) ? buddy : [buddy]).filter((el) => el && typeof el.getAnimations === "function");
-    if (!roots.length || nameMarkIdleQuiet() || nmb.written()) {
+    if (!roots.length || nameMarkMotionStill() || nmb.written()) {
       change();
       return;
     }
