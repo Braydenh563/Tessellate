@@ -85,3 +85,12 @@ def test_sizing_uses_the_observers_heights_and_no_frame_hop() -> None:
     sizing = _fn("sizeDashWidgets")
     assert "known.get(card) ?? card.getBoundingClientRect().height" in sizing
     assert "sizeDashWidgets.heights = new WeakMap();" in DASH
+
+
+def test_user_marks_are_drawn_one_holder_per_task() -> None:
+    """L-world-class-354: every holder's face was drawn in one timer task (65 ms median at 4x, 5 runs)."""
+    src = (ROOT / "frontend" / "js" / "chat-agent.js").read_text(encoding="utf-8")
+    body = src.split("function paintUserMarks(", 1)[1].split("\n}\n", 1)[0]
+    flat = " ".join(body.split())
+    assert "for (const holder of holders)" not in flat, "all holders in one task"
+    assert "setTimeout(() => drawHolder(i + 1))" in flat or "setTimeout(() => drawFrom(i + 1))" in flat
