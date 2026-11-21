@@ -52,6 +52,7 @@ def test_worker_urls_resolve():
     for name, pattern in (
         ("documents-prose.js", r'DOC_GRAMMAR_WORKER_URL = "(/[^"]+)"'),
         ("graph-canvas.js", r"new Worker\(`(/[^?`$]+)"),
+        ("shell-reminders.js", r"new Worker\(`(/[^?`$]+)"),
     ):
         text = (JS_DIR / name).read_text(encoding="utf-8")
         match = re.search(pattern, text)
