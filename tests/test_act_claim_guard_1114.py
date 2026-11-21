@@ -90,3 +90,23 @@ def test_a_question_that_is_no_act_gets_no_card(ai_client, fake_ollama):
     fake_ollama.librarian_reply = "Boards are canvases for cards."
     events = _events(ai_client, "What is a board?")
     assert not [e for e in events if e["type"] == "act"]
+
+
+#: L-chat-274: a model that DID call a write, but the wrong one for an act sentence the registry reads exactly
+#: ("Make a board called Launch" -> add_board_shape, a frame), parks the registry's card, not its own.
+def test_a_wrong_write_call_for_an_exactly_read_act_parks_the_registrys_card(ai_client, fake_ollama, session):
+    fake_ollama.tool_script = [[{"name": "add_board_shape", "arguments": {"kind": "frame", "text": "Launch"}}], []]
+    events = _events(ai_client, "Make a board called Launch")
+    assert not [e for e in events if e["type"] == "confirm" and e["name"] == "add_board_shape"], "the model's own card is not parked"
+    cards = [e for e in events if e["type"] == "act" and not e.get("cancel") and not e.get("settle")]
+    assert cards and [s["name"] for s in cards[0]["steps"]] == ["create_mindmap"]
+    session.expire_all()
+    assert not list(session.scalars(select(Entry))), "nothing ran before Confirm"
+
+
+def test_a_right_write_call_keeps_its_own_card(ai_client, fake_ollama):
+    call = {"name": "create_mindmap", "arguments": {"title": "Launch", "kind": "board"}}
+    fake_ollama.tool_script = [[call], []]
+    events = _events(ai_client, "Make a board called Launch")
+    assert [e["name"] for e in events if e["type"] == "confirm"] == ["create_mindmap"]
+    assert not [e for e in events if e["type"] == "act" and not e.get("cancel") and not e.get("settle")]

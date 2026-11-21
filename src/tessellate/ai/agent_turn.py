@@ -789,6 +789,9 @@ class _TurnState:
     #: delete names (worked out at the first delete; {} when there is none).
     asked: str = ""
     whole_card: dict | None = None
+    #: L-chat-274: the registry's card for the sentence when it reads it exactly (worked out at the
+    #: first write call; {} when it does not), and whether it has been parked.
+    act_card: dict | None = None
 
     def count_failure(self, tool_name: str) -> int:
         self.tool_failures[tool_name] = self.tool_failures.get(tool_name, 0) + 1
@@ -1163,6 +1166,31 @@ def unrun_act_events(session: Session, state: _TurnState, called_any: bool, answ
     if unsupported_claims(answer, state.ran_writes | state.implied) or claims_a_write(answer):
         return [{"type": "answer_final", "text": CLAIMED_ACT_LINE}, card]
     return [card]
+
+
+def exact_act_instead(session: Session, state: _TurnState, name: str, now) -> tuple[dict, list[dict]] | None:  # noqa: ANN001
+    """**A wrong write call for an act sentence the registry reads exactly parks the registry's
+    card** (L-chat-274, 1.5B: "Make a board called Launch" called add_board_shape, a frame, and its own
+    card was parked; the registry reads create_mindmap kind board). A call whose tool is a step of that
+    card keeps its own card; any other write call waits on the registry's, once. `now` is the plan clock."""
+    from tessellate.ai import act_registry
+
+    if not state.asked or act_registry.proposer is None:
+        return None
+    if state.act_card is None:
+        card = {}
+        if act_registry.typed_reader(state.asked, now()):
+            card = (act_registry.propose(session, state.asked, now()) or {}).get("card") or {}
+        state.act_card = {"card": card, "names": {s.get("name") for s in card.get("steps") or ()}, "sent": False} if card else {}
+    act = state.act_card
+    if not act or name in act["names"]:
+        return None
+    state.did_write = True
+    state.ran_writes.add(name)
+    if act["sent"]:
+        return AWAITING_CONFIRMATION, []
+    act["sent"] = True
+    return AWAITING_CONFIRMATION, [act["card"]]
 
 
 def all_it_names(session: Session, state: _TurnState, name: str, arguments: dict, now) -> tuple[dict, list[dict]] | None:  # noqa: ANN001

@@ -66,6 +66,7 @@ from tessellate.ai.agent_turn import (
     unrun_act_events,
     AWAITING_CONFIRMATION,
     all_it_names,
+    exact_act_instead,
     from_outside as _from_outside,
     _cleared_page,
     _copies_what_was_read,
@@ -463,7 +464,7 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     outside = c.state.tainted and parks_when_tainted(c.name) and not _cleared_page(c.state, c.name, c.arguments)
     if not (tools.needs_confirm(c.name, c.arguments, c.state.approved) or outside):
         return None
-    if (whole := all_it_names(c.session, c.state, c.name, c.arguments, plan_now)) is not None:
+    if (whole := all_it_names(c.session, c.state, c.name, c.arguments, plan_now) or exact_act_instead(c.session, c.state, c.name, plan_now)) is not None:
         return whole
     waiting = c.state.parked.get(c.name, 0)
     if waiting >= MAX_PARKED_CONFIRMS:
