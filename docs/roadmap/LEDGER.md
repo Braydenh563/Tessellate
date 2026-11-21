@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 33 | 2 | 0 | 4 | 35 |
-| all | 502 | 567 | 129 | 2 | 183 | 1198 |
+| general | 0 | 32 | 2 | 0 | 4 | 34 |
+| all | 502 | 566 | 129 | 2 | 183 | 1197 |
 
 ## graph
 
@@ -738,7 +738,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
-- [ ] **L-general-36** `general` open, S: Extracted-and-committed notes and notes from the extract flow record no origin, so they get no provenance chip (needs a source field set at commit). From L-general-13 build.
 
 ## Owner calls
 
