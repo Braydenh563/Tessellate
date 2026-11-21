@@ -8049,7 +8049,7 @@ HELP_ACCORDIONS = (
 #: Topics whose own title does not bring the Guide's chat to them (the Guide ranks by
 #: keywords, and these titles are phrased for a reader of the list, not an asker).
 #: May only fall: LEDGER L-world-class-420 gives each its keywords.
-GUIDE_MISSES_BY_TITLE = 51
+GUIDE_MISSES_BY_TITLE = 0
 
 
 def test_the_help_accordion_is_thirteen_named_groups_drawn_by_one_builder() -> None:

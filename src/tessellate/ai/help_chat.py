@@ -51,7 +51,7 @@ from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, guide_lead, help_words, presets
+from tessellate.ai import act_registry, guide_lead, help_title_keywords, help_words, presets
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai.help_leads import TOPIC_LEADS
@@ -292,7 +292,8 @@ _KEYWORDS_REMOVE_GUIDE: dict[str, tuple[str, ...]] = {
 for _topic in HELP_TOPICS:
     _drop = set(_KEYWORDS_REMOVE_GUIDE.get(_topic["id"], ()))
     _topic["keywords"] = tuple(k for k in _topic["keywords"] if k not in _drop) + tuple(
-        k for k in _KEYWORDS_ADD_GUIDE.get(_topic["id"], ()) if k not in _topic["keywords"]
+        k for k in (*_KEYWORDS_ADD_GUIDE.get(_topic["id"], ()), *help_title_keywords.BY_TITLE.get(_topic["id"], ()))
+        if k not in _topic["keywords"]
     )
 
 
