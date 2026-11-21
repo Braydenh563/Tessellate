@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tour: a step rings its control only once its entrance fade ends, toasts step aside for the lit control, and the tour sweeps drive the tour through `openTour.inspect()` again; all three pass, 520 of 520 steps in tour.js (L-general-14).
+- Top bar: from 820 to 1199 the header holds the centred 44px tab strip, which had run 2px past its top and bottom (measured at 1184; now 4 to 52 in a 56px header).
+- Phone: chat's Conversations button is back (its toolbar is built on first open, after the openers were mounted), and the board tour's Notes card points at View, which opens the sidebar below 600.
+- Frontend comments that still called built features unbuilt or deferred are corrected (L-general-17).
 - Reminders: ticking off a reminder that came from a note asks for a one-line outcome (Skip adds nothing) and appends it to that note, with Undo (L-general-10).
 - Reminders: the Overdue group has a Triage sheet to keep, drop (to the bin) or reschedule each late reminder, with Reschedule all and Drop all as one Undo (L-general-12).
 - Notes: one provenance chip on every note that came from outside, from the server's new `source_kind` and `source_label` (clipped from a site, imported from a file or app, extracted from a document, transcribed from audio); a note typed by hand has none (L-general-13).
