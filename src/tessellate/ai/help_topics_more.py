@@ -1173,7 +1173,7 @@ MORE_TOPICS: list[dict] = [
             "pages you signed in to see. No browser extension is needed. A clipped "
             "note opens with properties (source, site, author, published and the day "
             "you clipped it, whichever the page names), so you can find and sort "
-            "clips by them. Atlas treats its text as someone else's words "
+            "clips by them. A clipped or imported note wears a chip naming its source; its tooltip says Clipped from URL or Imported from file. Atlas treats its text as someone else's words "
             "and never follows instructions in it, and clipping the same page again "
             "points you to the note it made the first time."
         ),
