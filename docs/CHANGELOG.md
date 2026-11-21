@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
+- Tests: 14 fixed-clock tests that read the real date (past 2026-11-21) now pin it: the digest window and its structure note count back from `user_now` (`routes_insights._week_ago`), and three fixtures patch `config.user_now` too and write their notes on the pinned day.
 - Companion: the desk frames are re-rendered pose-arranged (decision 7): each bakes its pose's first lower row, the capture pins the pacer so two takes agree on 126 of 126 frames, held hangs from the grip (1.4 degrees, was 6), the curl sleeps at 3.2, and the follow-through stays within 3.77 to 3.95 degrees in all (L-ui-modernisation-57, 150, 151, 152, 170).
 - Desktop: the tray falls back to a plain menu refresh if pystray moves its private win32 helper, and the desktop extra pins pystray 0.19; filing's inline Tidy run is documented and tested as off the request path (PR 224 review).
 - Boards: a board opened while another was still settling no longer draws the first board's prefetched answer; the prefetch is used only for the board it was asked for (PR 224 review).

@@ -12,6 +12,7 @@ import pytest
 
 from tessellate.ai import follow_items
 from tessellate.ai import recognise_questions
+from tessellate.core import config
 from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests._consent import confirmed
@@ -23,7 +24,8 @@ FACT = [{"question": "when is the dentist check-up", "answer": "Check-up 21 Nove
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
+    # `config` too: the reminder tools and `manager.record_dates` import `user_now` at call time.
+    for module in (config, routes_chat, chat_said, chat_turn):
         monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 

@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pytest
 
+from tessellate.core import config
 from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
@@ -53,7 +54,8 @@ def _judge(kind: str, text: str) -> str | None:
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
+    # `config` too: composer_ask.user_today reads config.loaded_user_now.
+    for module in (config, routes_chat, chat_said, chat_turn):
         monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 

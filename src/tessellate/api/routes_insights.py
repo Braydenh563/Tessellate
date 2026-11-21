@@ -783,8 +783,14 @@ def digest_question(session: Session) -> str:
     return DIGEST_QUESTION.format(today=_long_date(today)) + digest_structure_note(session) + review_digest.reminder_note(session, today)
 
 
+def _week_ago() -> datetime:
+    """Seven days before now on the app's one user clock (`user_now`), in UTC:
+    the digest's window must move with the clock a test pins, not the real one."""
+    return (user_now(deps.get_config()) - timedelta(days=7)).astimezone(timezone.utc)
+
+
 def _digest_notes(session: Session) -> list[dict]:
-    cutoff = utcnow() - timedelta(days=7)
+    cutoff = _week_ago()
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't
@@ -837,7 +843,7 @@ def digest_structure_note(session: Session) -> str:
     background job on a utility model, and §11a's budget applies here as much
     as anywhere.
     """
-    cutoff = utcnow() - timedelta(days=7)
+    cutoff = _week_ago()
     fresh = list(
         session.scalars(
             select(Entry).where(
