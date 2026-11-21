@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8553, frontend ids 2807, CSS sections 524, backend routes 724, backend modules 11405, test files 3010, tests 23356, plan headings 695, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8553, frontend ids 2807, CSS sections 524, backend routes 724, backend modules 11407, test files 3011, tests 23365, plan headings 695, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8553)
 
@@ -14046,7 +14046,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:264 |
 | `/summary` | GET | `summary` | src/tessellate/api/routes_questions.py:53 |
 | `/summary` | POST | `summary` | src/tessellate/api/routes_usage.py:35 |
-| `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2308 |
+| `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2309 |
 | `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:272 |
 | `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:278 |
 | `/sync/file` | GET | `sync_file` | src/tessellate/api/routes_sync.py:76 |
@@ -14247,7 +14247,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11405)
+## Backend modules (11407)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14657,18 +14657,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_agent_pass` | src/tessellate/ai/autonomous.py:598 |
+| `_agent_pass` | src/tessellate/ai/autonomous.py:600 |
 | `_agent_persona` | src/tessellate/ai/autonomous.py:497 |
 | `_drive_agent` | src/tessellate/ai/autonomous.py:544 |
 | `_enabled_tasks` | src/tessellate/ai/autonomous.py:255 |
-| `_enqueue_pass` | src/tessellate/ai/autonomous.py:962 |
+| `_enqueue_pass` | src/tessellate/ai/autonomous.py:964 |
 | `_event_stops_pass` | src/tessellate/ai/autonomous.py:519 |
-| `_loop` | src/tessellate/ai/autonomous.py:846 |
-| `_optimization_pass` | src/tessellate/ai/autonomous.py:630 |
-| `_remember_pass` | src/tessellate/ai/autonomous.py:708 |
+| `_loop` | src/tessellate/ai/autonomous.py:848 |
+| `_optimization_pass` | src/tessellate/ai/autonomous.py:632 |
+| `_remember_pass` | src/tessellate/ai/autonomous.py:710 |
 | `_run_optimization` | src/tessellate/ai/autonomous.py:266 |
 | `_say_tool_event` | src/tessellate/ai/autonomous.py:536 |
-| `_settled_detail` | src/tessellate/ai/autonomous.py:697 |
+| `_settled_detail` | src/tessellate/ai/autonomous.py:699 |
 | `_stage_capture` | src/tessellate/ai/autonomous.py:353 |
 | `_stage_entities` | src/tessellate/ai/autonomous.py:301 |
 | `_stage_learned_audit` | src/tessellate/ai/autonomous.py:475 |
@@ -14677,27 +14677,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_stage_stale` | src/tessellate/ai/autonomous.py:376 |
 | `_stage_words_review` | src/tessellate/ai/autonomous.py:408 |
 | `_stopped_before` | src/tessellate/ai/autonomous.py:488 |
-| `_vacuum` | src/tessellate/ai/autonomous.py:739 |
+| `_vacuum` | src/tessellate/ai/autonomous.py:741 |
 | `cancelled` | src/tessellate/ai/autonomous.py:164 |
-| `clean_orphaned_board_cards` | src/tessellate/ai/autonomous.py:813 |
+| `clean_orphaned_board_cards` | src/tessellate/ai/autonomous.py:815 |
 | `clear_snooze` | src/tessellate/ai/autonomous.py:226 |
-| `forget_last_pass` | src/tessellate/ai/autonomous.py:733 |
+| `forget_last_pass` | src/tessellate/ai/autonomous.py:735 |
 | `freeze_hold` | src/tessellate/ai/autonomous.py:196 |
 | `is_running` | src/tessellate/ai/autonomous.py:154 |
-| `last_pass` | src/tessellate/ai/autonomous.py:723 |
-| `purge_old_conversations` | src/tessellate/ai/autonomous.py:759 |
+| `last_pass` | src/tessellate/ai/autonomous.py:725 |
+| `purge_old_conversations` | src/tessellate/ai/autonomous.py:761 |
 | `request_stop` | src/tessellate/ai/autonomous.py:173 |
 | `reset_state` | src/tessellate/ai/autonomous.py:233 |
-| `run_pass` | src/tessellate/ai/autonomous.py:970 |
+| `run_pass` | src/tessellate/ai/autonomous.py:972 |
 | `scheduler_alive` | src/tessellate/ai/autonomous.py:249 |
 | `snoozed_for` | src/tessellate/ai/autonomous.py:214 |
-| `start` | src/tessellate/ai/autonomous.py:903 |
-| `stop` | src/tessellate/ai/autonomous.py:917 |
-| `stop_for_quit` | src/tessellate/ai/autonomous.py:1020 |
-| `stop_pass` | src/tessellate/ai/autonomous.py:1000 |
+| `start` | src/tessellate/ai/autonomous.py:905 |
+| `stop` | src/tessellate/ai/autonomous.py:919 |
+| `stop_for_quit` | src/tessellate/ai/autonomous.py:1022 |
+| `stop_pass` | src/tessellate/ai/autonomous.py:1002 |
 | `thaw_hold` | src/tessellate/ai/autonomous.py:206 |
-| `trigger_now` | src/tessellate/ai/autonomous.py:945 |
-| `wake` | src/tessellate/ai/autonomous.py:933 |
+| `trigger_now` | src/tessellate/ai/autonomous.py:947 |
+| `wake` | src/tessellate/ai/autonomous.py:935 |
 
 ### src/tessellate/ai/backend_hint.py (2)
 
@@ -24046,7 +24046,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_feed_item` | src/tessellate/api/routes_settings.py:2057 |
 | `_import_skip_reason` | src/tessellate/api/routes_settings.py:1428 |
 | `_merged_list` | src/tessellate/api/routes_settings.py:1385 |
-| `_models_status_snapshot` | src/tessellate/api/routes_settings.py:2382 |
+| `_models_status_snapshot` | src/tessellate/api/routes_settings.py:2383 |
 | `_not_private_events` | src/tessellate/api/routes_settings.py:1975 |
 | `_preference_detail` | src/tessellate/api/routes_settings.py:1083 |
 | `_preference_out` | src/tessellate/api/routes_settings.py:1741 |
@@ -24089,7 +24089,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `restart_app` | src/tessellate/api/routes_settings.py:1549 |
 | `set_console_mode` | src/tessellate/api/routes_settings.py:1480 |
 | `suggest_persona_thinking_words` | src/tessellate/api/routes_settings.py:189 |
-| `support_bundle` | src/tessellate/api/routes_settings.py:2309 |
+| `support_bundle` | src/tessellate/api/routes_settings.py:2310 |
 | `undo_actor` | src/tessellate/api/routes_settings.py:2100 |
 | `update_memory` | src/tessellate/api/routes_settings.py:1880 |
 | `update_preferences` | src/tessellate/api/routes_settings.py:1333 |
@@ -25997,25 +25997,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `LazyPattern` | src/tessellate/core/lazyre.py:22 |
 | `lazy_compile` | src/tessellate/core/lazyre.py:44 |
 
-### src/tessellate/core/logbuffer.py (15)
+### src/tessellate/core/logbuffer.py (17)
 
 | Name | File:line |
 |---|---|
 | `BufferHandler` | src/tessellate/core/logbuffer.py:112 |
 | `NoiseFilter` | src/tessellate/core/logbuffer.py:60 |
-| `QueryScrubFilter` | src/tessellate/core/logbuffer.py:225 |
+| `QueryScrubFilter` | src/tessellate/core/logbuffer.py:244 |
 | `TokenScrubFilter` | src/tessellate/core/logbuffer.py:154 |
 | `_assign_seq` | src/tessellate/core/logbuffer.py:45 |
 | `_scrub_query_string` | src/tessellate/core/logbuffer.py:204 |
-| `clear` | src/tessellate/core/logbuffer.py:332 |
-| `install` | src/tessellate/core/logbuffer.py:251 |
-| `latest_seq` | src/tessellate/core/logbuffer.py:302 |
-| `recent` | src/tessellate/core/logbuffer.py:281 |
+| `clear` | src/tessellate/core/logbuffer.py:351 |
+| `for_bundle` | src/tessellate/core/logbuffer.py:239 |
+| `install` | src/tessellate/core/logbuffer.py:270 |
+| `latest_seq` | src/tessellate/core/logbuffer.py:321 |
+| `recent` | src/tessellate/core/logbuffer.py:300 |
 | `safe_value` | src/tessellate/core/logbuffer.py:94 |
 | `sanitise` | src/tessellate/core/logbuffer.py:82 |
 | `scrub_query_strings` | src/tessellate/core/logbuffer.py:214 |
-| `since` | src/tessellate/core/logbuffer.py:288 |
-| `stats` | src/tessellate/core/logbuffer.py:312 |
+| `since` | src/tessellate/core/logbuffer.py:307 |
+| `stats` | src/tessellate/core/logbuffer.py:331 |
+| `withhold_quoted` | src/tessellate/core/logbuffer.py:230 |
 
 ### src/tessellate/core/lookahead.py (1)
 
@@ -28911,7 +28913,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23356)
+## Tests (23365)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30370,6 +30372,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_wordlist_vc15.py | 4 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |
+| tests/test_harness_l565.py | 9 |
 | tests/test_harness_plan_card.py | 9 |
 | tests/test_harness_robustness.py | 31 |
 | tests/test_harness_tiers.py | 29 |
