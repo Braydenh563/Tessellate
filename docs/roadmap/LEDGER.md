@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 89 | 15 | 0 | 0 | 104 |
+| world-class | 0 | 89 | 14 | 0 | 0 | 103 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 479 | 86 | 2 | 111 | 937 |
+| all | 372 | 479 | 85 | 2 | 111 | 936 |
 
 ## graph
 
@@ -494,7 +494,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
-- [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
 - [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms). Measured 2026-11-21, fresh notebook, load 5 on 4 cores, median of 5: first open 400 ms (range 307 to 557), pane switches 24 to 112 ms (appearance 112, personas 98, general 78, rest under 60); CPU profile of the open is native parse/style/layout, no script function over 6 ms, surfaceBuild 10 ms, an idle prefetch of settings-controls.js (243 KB) changed nothing (444 vs 422 ms, reverted). Lever left: split the body into one surface per pane and wire the 110 listeners (settings-controls.js, `$(id)?.addEventListener` at load, each of which builds the whole body through `surfaceFind`) per pane with `onSurface`; the body is 4,042 elements of the 5,557 after open.
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.

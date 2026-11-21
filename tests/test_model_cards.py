@@ -334,6 +334,18 @@ def test_every_unsloth_download_names_an_open_licence_and_links_its_card():
         assert row["licence_url"] == f"https://huggingface.co/{repo}"
 
 
+def test_every_hub_suggestion_names_its_licence_and_links_it():
+    """INBOX 1852: GLM-OCR, PaddleOCR-VL, DeepSeek-OCR and LFM had none. Read off the Hub
+    2026-11-21: MIT, Apache-2.0, MIT (base model; the ggml-org GGUF repo declares none) and
+    the LFM Open License v1.0 (a commercial-use threshold, so it links its terms)."""
+    rows = [m for models in SUGGESTED_MODELS.values() for m in models if m["name"].startswith("hf.co/")]
+    assert len(rows) >= 7
+    for row in rows:
+        assert row.get("licence") and row.get("licence_url", "").startswith("https://huggingface.co/"), row["name"]
+    lfm = next(r for r in rows if "LFM2.5" in r["name"])
+    assert lfm["licence"] == "LFM Open License v1.0" and lfm["terms_url"].endswith("/LICENSE")
+
+
 def test_a_suggested_licence_that_is_not_open_carries_the_terms_link():
     # None is under non-open terms today; one added later must say so and link the terms
     # the way core/embedmodels.py's EmbeddingGemma does.
