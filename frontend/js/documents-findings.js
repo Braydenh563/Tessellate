@@ -715,7 +715,7 @@
   }
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docTableTab, docFindingAtOffset, docOffsetOf, docRectUsable, docFindingAnchor, docFindingOfMark, docPointerMenuOpen, docFindingAtPoint, docOpenSuggestFor, docOpenSuggestAtCaret, docOpenSuggestAtPoint, docEditorMenuAtPoint, docTableMenuAtPoint, docClipboardMenuItems, DOC_HOVER_SUGGEST_MS, docHoverSuggest, docFindingKeyBox, docFindingStep, docGoToFinding, DOC_PROSE_NARROW, docProseDockSide, applyDocProseDock, toggleDocProseDock });
+  Object.assign(window, { docTableTab, docFindingAtOffset, docOffsetOf, docRectUsable, docFindingAnchor, docPointerMenuOpen, docFindingAtPoint, docOpenSuggestFor, docOpenSuggestAtCaret, docClipboardMenuItems, docFindingKeyBox, docFindingStep, docGoToFinding, DOC_PROSE_NARROW, docProseDockSide, applyDocProseDock, toggleDocProseDock });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

@@ -1,6 +1,116 @@
 // documents-surface.js: the editing surface behind one adapter (textarea or CodeMirror), opening a document, the list, and remembering where you were.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: element -> view. Weak, because the edit form's textarea is thrown away and
+  //: rebuilt on every edit and a strong map would hold every one of them.
+  const noteSurfaceViews = new WeakMap();
+
+  //: The surface for a note editor, given its textarea or any node inside its
+  //: view. Null for anything that has not mounted, which is what keeps
+  //: `asSurface` falling back to the textarea adapter.
+  function noteSurfaceFor(box) {
+    if (!box) return null;
+    if (box instanceof HTMLTextAreaElement) {
+      const view = noteSurfaceViews.get(box);
+      return view ? cmSurface(view, noteSurfaceMeta(box)) : null;
+    }
+    if (box instanceof Node && box.nodeType === 1 && box.closest) {
+      const wrap = box.closest(".note-surface");
+      if (wrap && wrap.noteSurfaceHost) return noteSurfaceFor(wrap.noteSurfaceHost);
+    }
+    return null;
+  }
+
+  //: Built once per host and kept on the element, so `cmSurface`'s own cache
+  //: (keyed by the view) never sees two different identities for one view.
+  function noteSurfaceMeta(host) {
+    if (!host.noteSurfaceMeta) {
+      host.noteSurfaceMeta = { id: host.id, changeHandlers: [] };
+    }
+    return host.noteSurfaceMeta;
+  }
+
+  // The two modes that put #doc-preview on screen. Kept as one predicate because
+  // every "is the rendered pane showing?" decision below has to agree with every
+  // other one: the split/rendered pair is exactly the shape that goes wrong when
+  // each site spells the check out for itself.
+  function docPreviewShowing(mode = docView) {
+    return mode === "split" || mode === "rendered";
+  }
+
+  //: The one surface each instrument acts on: whichever box the caret is in.
+  //: There is one editor now, in every view, so this is almost always the
+  //: document's own surface; the check survives because the fallback textarea
+  //: is still a real box when the engine is unavailable.
+  function docActiveBox() {
+    const active = document.activeElement;
+    if (active instanceof HTMLTextAreaElement && active.id === "doc-content") {
+      return textareaSurface(active);
+    }
+    //: CodeMirror's editable is a `div`, not a textarea, so the check above
+    //: cannot see it. `asSurface` maps any node inside the view onto the
+    //: document's surface, which is what makes the caret-following instruments
+    //: (the status bar, the completion popup, the findings menu) keep working
+    //: once the engine is under them.
+    return asSurface(active) || docSurface();
+  }
+
+  //: **Where the caret is, in pixels.** The standard mirror technique: a hidden
+  //: div that copies every property that affects text layout, holds the text up
+  //: to the caret, and reports where a marker span lands. There is no API for
+  //: this: `selectionStart` is an index, and a popup has to go somewhere on
+  //: screen.
+  //:
+  //: The property list is the part that has to be right: miss `font-family` or
+  //: `padding` and the popup drifts further from the caret the further down the
+  //: document you are, which reads as a positioning bug rather than a missing
+  //: line of CSS.
+  const DOC_MIRROR_PROPS = [
+    "boxSizing", "width", "borderLeftWidth", "borderRightWidth", "borderTopWidth",
+    "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
+    "fontFamily", "fontSize", "fontWeight", "fontStyle", "letterSpacing",
+    "lineHeight", "textTransform", "textIndent", "whiteSpace", "wordSpacing",
+    "tabSize",
+  ];
+
+  let docMirror = null;
+
+  //: The mirror itself, over a real textarea and an offset in its value. Split
+  //: out of `docCaretPoint` because it is the *textarea's* answer to the
+  //: question: CodeMirror has `coordsAtPos` and needs none of this, so the
+  //: adapter routes each surface to whichever one is right for it.
+  function docMirrorPoint(el, pos) {
+    if (!docMirror) {
+      docMirror = document.createElement("div");
+      docMirror.className = "doc-caret-mirror";
+      document.body.appendChild(docMirror);
+    }
+    const style = getComputedStyle(el);
+    for (const prop of DOC_MIRROR_PROPS) docMirror.style[prop] = style[prop];
+    //: `pre-wrap`, always: a textarea wraps and preserves whitespace, and a
+    //: mirror that collapsed spaces would put the caret a word early on every
+    //: line that has two of them.
+    docMirror.style.whiteSpace = "pre-wrap";
+    docMirror.style.overflowWrap = "break-word";
+    docMirror.textContent = el.value.slice(0, pos);
+    const marker = document.createElement("span");
+    //: A zero-width space rather than nothing: an empty span has no box, so it
+    //: reports the wrong position at the end of a line.
+    marker.textContent = "​";
+    docMirror.appendChild(marker);
+    const boxRect = el.getBoundingClientRect();
+    const markRect = marker.getBoundingClientRect();
+    const mirrorRect = docMirror.getBoundingClientRect();
+    const lineHeight = Number.parseFloat(style.lineHeight) || 18;
+    const top = boxRect.top + (markRect.top - mirrorRect.top) - el.scrollTop;
+    return {
+      left: boxRect.left + (markRect.left - mirrorRect.left) - el.scrollLeft,
+      top,
+      bottom: top + lineHeight,
+      lineHeight,
+    };
+  }
+
   //: State that moved here from documents.js (L-documents-118).
   let docs = [];
   let currentDoc = null;   // {id, title, content, ...}
@@ -1014,7 +1124,7 @@
   }
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docBoxEl, docSetPlaceholder, docPlaceholderFor, textareaSurface, cmSurface, docSurfaceChanged, docSurface, docStr, docText, docSurfaceById, docEventFromCm, docListen, asSurface, setDocView, loadDocuments, renderDocList, showNoDocument, openDocument, docRememberPositionNow, docRememberPosition, keepDocEditLocally, forgetDocEditLocally });
+  Object.assign(window, { docPreviewShowing, noteSurfaceMeta, noteSurfaceViews, noteSurfaceFor, docActiveBox, docBoxEl, docSetPlaceholder, docPlaceholderFor, textareaSurface, cmSurface, docSurfaceChanged, docSurface, docStr, docText, docSurfaceById, docEventFromCm, docListen, asSurface, setDocView, loadDocuments, renderDocList, showNoDocument, openDocument, docRememberPositionNow, docRememberPosition, keepDocEditLocally, forgetDocEditLocally });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

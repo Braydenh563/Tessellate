@@ -439,35 +439,7 @@
     "wb-card-editor": { size: "inline", live: true },
   };
 
-  //: element -> view. Weak, because the edit form's textarea is thrown away and
-  //: rebuilt on every edit and a strong map would hold every one of them.
-  const noteSurfaceViews = new WeakMap();
   let noteSurfaceMirroring = false;
-
-  //: The surface for a note editor, given its textarea or any node inside its
-  //: view. Null for anything that has not mounted, which is what keeps
-  //: `asSurface` falling back to the textarea adapter.
-  function noteSurfaceFor(box) {
-    if (!box) return null;
-    if (box instanceof HTMLTextAreaElement) {
-      const view = noteSurfaceViews.get(box);
-      return view ? cmSurface(view, noteSurfaceMeta(box)) : null;
-    }
-    if (box instanceof Node && box.nodeType === 1 && box.closest) {
-      const wrap = box.closest(".note-surface");
-      if (wrap && wrap.noteSurfaceHost) return noteSurfaceFor(wrap.noteSurfaceHost);
-    }
-    return null;
-  }
-
-  //: Built once per host and kept on the element, so `cmSurface`'s own cache
-  //: (keyed by the view) never sees two different identities for one view.
-  function noteSurfaceMeta(host) {
-    if (!host.noteSurfaceMeta) {
-      host.noteSurfaceMeta = { id: host.id, changeHandlers: [] };
-    }
-    return host.noteSurfaceMeta;
-  }
 
   //: What the engine gives a note box. Deliberately smaller than the document's
   //: set: no gutter, no folding, no find panel, no autosave, no typewriter.
@@ -977,7 +949,7 @@
   // NOTE-SURFACE-END
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docCodeSideFrom, docSurfaceInput, MD_RUN, MD_RUN_FONTS, mdRunParse, mdRunFormat, mdRunNode, wireMarkdownToolbar, wireMdFormatShortcuts, NOTE_SURFACES, noteSurfaceViews, noteSurfaceFor, setNoteSurfaceSource, mountNoteSurface });
+  Object.assign(window, { docCodeSideFrom, docSurfaceInput, MD_RUN, MD_RUN_FONTS, mdRunParse, mdRunFormat, mdRunNode, wireMarkdownToolbar, wireMdFormatShortcuts, NOTE_SURFACES, setNoteSurfaceSource, mountNoteSurface });
 
   $("doc-code-snippets-open")?.addEventListener("click", () => docCodeSideFrom("snippets"));
 

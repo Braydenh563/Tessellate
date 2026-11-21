@@ -454,7 +454,7 @@
   }
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docExportName, docIsCodeFile, exportDocumentBundle, openDocReplace, exportDocumentDocx, exportDocumentMarkdown, DOC_EXPORT_STRIP, docExportClean, exportDocumentHtml, exportDocumentPdf, deleteDocumentWithUndo, renameDocumentWithUndo, archiveDocumentWithUndo, offerCreateUndo, offerCreatedDocsUndo, unlinkDocNoteWithUndo, docBookmarkWithUndo, docShowSaved, restoreDocVersionWithUndo, deleteCurrentDocument });
+  Object.assign(window, { docExportName, docIsCodeFile, openDocReplace, DOC_EXPORT_STRIP, docExportClean, deleteDocumentWithUndo, renameDocumentWithUndo, archiveDocumentWithUndo, offerCreateUndo, offerCreatedDocsUndo, unlinkDocNoteWithUndo, docBookmarkWithUndo, docShowSaved, restoreDocVersionWithUndo });
 
   $("doc-connections").addEventListener("click", () => {
     if (!currentDoc) return;

@@ -669,7 +669,7 @@
   }
 
   //: The file's surface: what other files call.
-  Object.assign(window, { docToolbarMode, applyDocToolbarMode, docGutterPref, docGutterWanted, applyDocGutter, docToolbarCollapsed, applyDocToolbarCollapsed, setDocToolbarCollapsed, docSyncFormatShow, toggleDocToolbar, mountDocToolbarControlsFor, applyDocToolbarLayoutButtons });
+  Object.assign(window, { docGutterPref, docGutterWanted, applyDocGutter, docToolbarCollapsed, applyDocToolbarCollapsed, setDocToolbarCollapsed, docSyncFormatShow, toggleDocToolbar, mountDocToolbarControlsFor, applyDocToolbarLayoutButtons });
 
   //: Applied on load as well as on click: the toolbar exists before a document
   //: is opened, and a remembered mode that only took effect after the next

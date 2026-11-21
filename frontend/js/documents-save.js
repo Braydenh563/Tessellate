@@ -199,7 +199,7 @@
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { markDocDirty, docSaveQueue, saveDocument, docFillBlankTitle });
+  Object.assign(window, { markDocDirty, docSaveQueue, saveDocument });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

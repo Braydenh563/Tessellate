@@ -24,6 +24,88 @@ let docCmView = null;
 //: viewport. Created with the first view, because it needs `CM.state`.
 let docFindingsEffect = null;
 
+// --- which of the four views is showing ----------------------------------------
+//
+// "source" (the plain textarea), "live" (render-as-you-write), "split" (source
+// beside a rendered pane) or "rendered" (the finished document alone, no
+// editor). Per-device workspace state rather than a preference on the document:
+// which way you like to look at your writing does not belong in a backup, and
+// is the same kind of thing as `graph-layout`.
+//
+// "rendered" is deliberately a peer of "split" rather than a sub-state of it.
+// Asked for as a "full toggle switch between editor mode and rendered mode *or*
+// the split view", i.e. reading the finished page at full width is its own
+// thing, not split-with-one-pane-collapsed.
+const DOC_VIEW_KEY = "doc-view-mode";
+//: `plain` is the owner's ask of 2026-09-09: "I want to be able to use the
+//: documents tab as a plain text editor like before as a view option (not the
+//: defaul though)". It is Source with the language compartment empty, so it
+//: has no grammar and therefore no highlighting; see `docCmViewLanguage`.
+const DOC_VIEWS = ["source", "live", "split", "rendered", "plain"];
+//: The two ways of editing that need no rendered form, so the two a `.py`
+//: file may be in. Named once, because three separate places used to spell it
+//: out as `!== "source"` and Plain would have been refused by all three.
+const DOC_VIEWS_UNRENDERED = ["source", "plain"];
+//: True while Source is on screen only because the open file is code (INBOX
+//: 904 B21/B22: a code file's forced Source was written to the stored view,
+//: so every markdown document after it opened in Source, and a document
+//: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
+//: remembered as the last editing view; the file type coming back to a
+//: markdown one restores the view the person actually chose.
+//: `allows(type, mode)`: a markdown document may be in any view, a code file in the two that
+//: need no rendered form, and a diagram (the `mmd` type, 1546 D5) also in Blocks (the Read
+//: button's mode) and Split, where the block pane is the preview. `type` is the last file type
+//: synced, so a diagram opens in Blocks.
+const docViewState = {
+  held: false,
+  //: A diagram's rendered view has two layouts, Canvas (the default) and Blocks (R7, 1621 D6).
+  layout: "canvas",
+  tableGrips: null,
+  blockHandle: null,
+  type: "md",
+  allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && ["split", "rendered", "canvas", "blocks"].includes(mode)),
+};
+
+//: **The filter row and the formula letters** (DOCUMENTS_PLAN gap row 12). A
+//: filter is a view of the table, never an edit: it lives in `docViewState`
+//: under the header's text (a table has no id in markdown, and the header is
+//: what a person calls it), hides body rows in Live only, and is gone with the
+//: page. `docViewState.tableFilter.set` repaints by re-sending the selection, which the
+//: table decoration always rebuilds on.
+docViewState.tableFilter = {
+  key: (table) => table.rows[0].cells.map((cell) => cell.trim()).join("|"),
+  of(table) {
+    const filter = docViewState.tableFilters && docViewState.tableFilters[this.key(table)];
+    return filter && filter.needle ? filter : null;
+  },
+  set(view, table, filter) {
+    docViewState.tableFilters = docViewState.tableFilters || {};
+    const key = this.key(table);
+    if (filter && filter.needle) docViewState.tableFilters[key] = filter;
+    else delete docViewState.tableFilters[key];
+    if (view) view.dispatch({ selection: view.state.selection });
+  },
+  letters(col) {
+    let letters = "";
+    for (let n = col + 1; n > 0; n = Math.floor((n - 1) / 26)) letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
+    return letters;
+  },
+  async ask(context) {
+    const column = (context.table.rows[0].cells[context.cell.col] || "").trim() || `column ${this.letters(context.cell.col)}`;
+    const was = this.of(context.table);
+    const needle = await promptDialog(`Show rows where ${column} contains`, was ? was.needle : "", { confirmLabel: "Filter" });
+    if (needle !== null && needle !== undefined) {
+      this.set(context.surface.view, context.table, { col: context.cell.col, needle: needle.trim() });
+    }
+    context.surface.focus();
+  },
+};
+
+//: One-time reset (owner, 2026-10-25: Live should be the default, but their
+//: browser held "source" from before). A view stored before this version key
+//: existed is dropped once, so Live shows; every choice made afterwards is
+//: kept, because the key is written in the same breath.
+
 function docRedoChord(CM) {
   const listKinds = { Digit7: "ol", Digit8: "ul", Digit9: "task" };
   return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({

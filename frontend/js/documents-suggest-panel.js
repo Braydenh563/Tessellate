@@ -600,7 +600,7 @@
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { renderDocTools, DOC_VARIANT_LABEL, docSpellingVariant, docVariantLookup, docDictionary, docDictionaryWrite, docDictionaryAdd, docProseIgnored, docProseKey, closeDocSuggest, DOC_SUGGEST_MAX, docMatchCase, docSuggestAlternatives, docFindingLine, docFindingIsPassage, docFindingAnswerRows, docSuggestAnswers, openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docLiftToViewport, docReturnFromViewport, docPlaceFixed, placeDocSuggest, docSuggestFollowAnchor, docScheduleSuggestFollow });
+  Object.assign(window, { renderDocTools, DOC_VARIANT_LABEL, docSpellingVariant, docVariantLookup, docDictionary, docDictionaryWrite, docDictionaryAdd, docProseIgnored, docProseKey, closeDocSuggest, DOC_SUGGEST_MAX, docMatchCase, docSuggestAlternatives, docFindingLine, docFindingIsPassage, docFindingAnswerRows, docSuggestAnswers, openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docLiftToViewport, docReturnFromViewport, docPlaceFixed, placeDocSuggest, docScheduleSuggestFollow });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

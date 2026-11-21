@@ -189,7 +189,7 @@ console.log(JSON.stringify({ listeners: registered.length, types: registered.map
 def test_the_editor_only_listeners_go_through_docListen():
     #: documents-callouts.js (audit row 22) took the preview's mouseover with it,
     #: inside its closure, so both files are read and an indented call counts.
-    source = "".join((JS / name).read_text(encoding="utf-8") for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-callouts.js"))
+    source = "".join((JS / name).read_text(encoding="utf-8") for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-callouts.js", "documents-findings.js"))
     raw = re.findall(r'^\s*document\.addEventListener\(\s*"(input|selectionchange|focusout|dblclick|mouseover)"', source, re.M)
     assert not raw, f"{raw}: register editor-only handlers with docListen (D21)"
     assert len(re.findall(r"^\s*docListen\(", source, re.M)) >= 10

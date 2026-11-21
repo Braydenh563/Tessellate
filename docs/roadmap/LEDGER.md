@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 6 | 2 | 0 | 0 | 8 |
+| documents | 0 | 5 | 2 | 0 | 0 | 7 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 522 | 126 | 2 | 152 | 1050 |
+| all | 402 | 521 | 126 | 2 | 152 | 1049 |
 
 ## graph
 
@@ -292,7 +292,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-104** `documents` partly, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile; documents side built behind boardInstance stub, 2349346a1; waits on #223's instance API Left for the wiring step: a card that CodeMirror removes is noticed only on the next doc-shown, doc-saved or board-edited (no MutationObserver, test_frontend_wake_sources), so the embed widget's destroy hook should end its instance; help and manual parity move then.
 - [ ] **L-documents-106** `documents` open, M: L-documents-83 remainder: 1440 cold open still about 1,145 ms median; the warm file overlaps the fetches, what is left is the bundle's script run (documents.js, library.js 50 to 70 ms each) and CodeMirror's 140 ms evaluate; next: one served concatenation of the bundle, and a quiet box to measure. From agent cold83-1410. Evidence: frontend/js/documents-warm.js; waterfall after: bundle arrives about 330 ms, its 35 scripts run until about 600 ms (main thread, load 4 to 12), editor then mounts about 1,100 ms Measured 2026-11-14 (cold106, docscold47.js 1440, 7 runs, load 8 to 9 on a box shared with three agents, base and branch alternated): median 1,408 and 1,252 ms before, 947 and 1,087 ms after the served concatenation `/js/library-bundle.js` (35 requests became 1; `tests/test_library_bundle_served.py`). Still over 800: what remains is the bundle's script run (documents.js, library.js 50 to 70 ms each; concatenation does not shorten evaluation), CodeMirror's 140 ms evaluate, then the document open and editor mount; needs a quiet box to see how much of the rest is load. Next: split documents.js's load-time wiring so it runs after first paint, or bundle `boards` the same way.
 - [ ] **L-documents-112** `documents` open, S: Remeasure adding a block to a 40-block flowchart on a quiet box; under 50 ms per task or split the work. From L893 sweep 2026-11-14. Evidence: dgm40.js at 390: adding a block to a 40-block flowchart gave long tasks of 114 and 115 ms and a 483 ms repaint, on a box running four agents; 12 blocks gave 50 and 73 ms Remeasured 2026-11-14 (dgm102, load 6 to 8, 4 adds each, dgm40 variant in agent scratch): at 1440 one task of 56 ms then none over 50; at 390 tasks of 171, 120, 122, 106 ms (first of each add) and 54 to 87 ms after. Cause: mermaid.render alone is 196 to 281 ms in the frame (parse 26 to 51, svg sizing 5), one monolithic layout inside mermaid.min.js (profile self time: 597 ms in 4 adds), which has no yield point we can reach; frame already yields between parse, render and sizing. Splitting needs incremental layout or dropping the redundant mermaid.parse (about 26 ms). Open.
-- [ ] **L-documents-118** `documents` open, M: Take the last documents.js lets behind getters, then move its load-time wiring into the pieces. From L-documents-117. Evidence: documents.js is 1,698 lines: the load-time wiring statements (about 480 lines, they run after the pieces and stay), the lets other files assign (docAiController, docTabEscapes, docPrintComments, docCmView and kin: need getters first), the dictionary and engine remnants (lets only)
 
 ## mindmap
 

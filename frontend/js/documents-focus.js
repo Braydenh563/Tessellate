@@ -49,8 +49,6 @@
   //: and from `setDocView`, neither of which knows anything about printing.
 
 
-  //: State the Phase 2 pieces share: the pending Mermaid pictures and its Live field (documents-mermaid.js), the image refocus and the print sheet.
-  const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
 
 
 
@@ -705,7 +703,7 @@
 
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docPhase2State, initMarkdownToolbars, DOC_WIDTH_KEY, applyDocWidth, toggleDocWidth, DOC_DIM_KEY, DOC_TYPEWRITER_KEY, DOC_SERIF_KEY, docReadingModes, docReadingPlugin, docTypewriterExtension, applyDocDim, applyDocTypewriter, applyDocSerif, docRememberReading, docRestoreReading, DOC_TEXT_SIZES, applyDocTypography, docTypographyNow, docStepTypography, docRestoreTypography, DOC_FOCUS_KEY, docFocusOn, setDocFocusTools, DOC_FOCUS_NARROW, setDocFocusSidebar, toggleDocFocus, docFocusSyncFullscreen, docFocusToggleFullscreen, mountDocToolbarControls });
+  Object.assign(window, { docReadingModes, docReadingPlugin, docTypewriterExtension, docFocusOn, DOC_FOCUS_NARROW, setDocFocusSidebar, toggleDocFocus });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

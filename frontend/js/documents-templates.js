@@ -437,7 +437,7 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { DOC_TEMPLATES, docTemplateFill, docNextName, docDropIfUntouched, startBlankDocument, createDocument, chooseDocTemplate, useDocTemplate, docsMadeThisSession, ensureDocumentExists, openDocTemplateDialog });
+  Object.assign(window, { DOC_TEMPLATES, docTemplateFill, docNextName, docDropIfUntouched, startBlankDocument, createDocument, docsMadeThisSession, ensureDocumentExists, openDocTemplateDialog });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

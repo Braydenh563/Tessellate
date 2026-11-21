@@ -140,7 +140,7 @@ def test_the_grid_is_wired_lazily_with_one_undo_step_and_help():
     assert 'docCsvGrid: ["/css/doc-csv-grid-lazy.css", "/js/documents-csvgrid.js"]' in lazy
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="doc-csv-grid"' in html and 'data-click-proxy="doc-csv-grid"' in html
-    documents = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    documents = (ROOT / "frontend" / "js" / "documents-wiring.js").read_text(encoding="utf-8")
     assert 'ensureModule("docCsvGrid")' in documents
     #: One transaction per edit, never a second copy of the file.
     assert "docCmView.dispatch({ changes" in JS and "docViewState.csvGrid =" in JS

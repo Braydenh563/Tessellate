@@ -504,7 +504,7 @@
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { docRedo, warmDocumentEngine, loadCodeMirror, docCmParts, docCmLanguageFor, docTableGridRules, docListGuides, docCmSearchCount, docCmHighlight, docHistories, docResetDocument, docHistoryPersist, docCmViewShown, docWatchLock });
+  Object.assign(window, { docRedo, warmDocumentEngine, loadCodeMirror, docCmParts, docCmLanguageFor, docTableGridRules, docListGuides, docCmSearchCount, docCmHighlight, docHistories, docResetDocument, docHistoryPersist, docCmViewShown });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [

@@ -182,7 +182,7 @@
   }
 
   //: The file's surface: what other files call.
-  Object.assign(window, { docAiLazy, closeDocAiPanel, openDocExtractPreview, openDocAiHistory, showDocSidebarSection, initDocSidebarTabs });
+  Object.assign(window, { closeDocAiPanel, showDocSidebarSection, initDocSidebarTabs });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [
