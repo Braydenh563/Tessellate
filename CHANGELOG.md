@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
+- CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
+- CLAUDE.md and WORKING.md give the measured test count, 52,983.
 - Backlog: the 116 W34 verify rows that never got a ledger row are in BACKLOG section 22 with their checks (L-general-15).
 - Release: the two WiX steps run only when the repository variable TESSELLATE_MSI is on (off when unset), so the workflow lint passes; the notes test passes the version through env as the step now does.
 - Diagrams: Start from a template lists the templates you use most first (counted per browser), ties in their usual order.
