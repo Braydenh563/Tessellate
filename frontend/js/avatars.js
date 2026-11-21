@@ -8953,13 +8953,19 @@
     if (!buddy.classList.contains("nmb-walking") && nmb.act !== "turn") delete buddy.dataset.turn;
   }
 
+  //: **An act in flight keeps its own end** (L-general-46): `nmb.timer` is then the act's end, and a re-sync (choosing
+  //: the companion in Settings while its greeting wave played) cleared it, so the wave held for the 20 to 60 s to the
+  //: next tick and the pacer ran every loop in the drawing at full rate meanwhile (Atlas +564ms/s of main thread idle).
   function nameMarkBuddySchedule() {
-    clearTimeout(nmb.timer);
-    nmb.timer = 0;
+    const acting = !!nmb.act && !!nmb.timer;
+    if (!acting) {
+      clearTimeout(nmb.timer);
+      nmb.timer = 0;
+    }
     nmb.cat.load();
     const buddy = document.getElementById("nm-buddy");
     nameMarkBuddyState(buddy);
-    if (!buddy || document.hidden || (nameMarkBuddyStill() && !nmb.fadeComes()) || (buddy.classList.contains("nmb-sleep") && !nmb.absent)) return;
+    if (acting || !buddy || document.hidden || (nameMarkBuddyStill() && !nmb.fadeComes()) || (buddy.classList.contains("nmb-sleep") && !nmb.absent)) return;
     //: Calm (the owner: "fewer, longer, calmer behaviours at rest"):
     //: something every 20 to 60 seconds; between them it breathes and blinks
     //: on the compositor and nothing runs here. **In its large view, every 2.5

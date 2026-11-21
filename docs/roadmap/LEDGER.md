@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 12 | 0 | 0 | 4 | 12 |
-| all | 502 | 544 | 127 | 2 | 183 | 1173 |
+| general | 0 | 13 | 0 | 0 | 4 | 13 |
+| all | 502 | 545 | 127 | 2 | 183 | 1174 |
 
 ## graph
 
@@ -713,6 +713,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-44** `general` open, M: perchall sweep: intermittent first row FAIL, the companion sits on the status bar at 1044,791 over #status-agent and #status-guide (3 of 6 full runs, 0 of 4 single-row runs); suspect nmb.covers is not cleared by status-bar changes (the views observer watches .tab-page only), so a perch is chosen from boxes that miss the chips; reproduce with perchall.js on a data dir, then add a test first. From sweep two-run 2026-11-21.
 - [ ] **L-general-45** `general` open, S: Sweeps flaky only at load average 8 and over: companionperf (Atlas idle budget fails even for the off buddy at load 12), companionmenu and companionpin (a right-click lands beside the face after a dodge, no menu). Re-run on an idle machine before reading anything into them; measured 3 of 3 companionmenu passes at load 5 to 7. From sweep two-run 2026-11-21.
 - [ ] **L-general-46** `general` open, M: Atlas idle costs +564ms/s of main thread (budget 120): its idle draw lays out and restyles every frame. From companionperf two-pass 2026-11-21. Evidence: fresh dirs at load 4 to 6, both passes FAIL: atlas +564ms/s main thread idle over off (budget 120), 63 layouts/s, 229ms/s style; top atlasRigLower.morph.draw atlas-life.js:1311 55.6ms in 4s; me +0.209ms/frame idle (budget 0.2)
+- [ ] **L-general-47** `general` open, L: Atlas idle still costs +422ms/s of main thread on mains: its full-rate loops restyle and lay out every frame. From L-general-46 follow-up, companionperf 2026-11-21. Evidence: fresh dir after 240225a22: atlas +422 and +563ms/s idle over off in two fresh passes (budget 120), 69 layouts/s, style 160ms/s; in-page pausing every CSS loop in #nm-buddy takes style 117 to 66ms/s, pausing every animation leaves task about 265ms/s; the layer svg CSS loops (atl-layer) are the largest share, the torso breath (WAAPI scale on g.nmb-torso) gives the per-frame layout; atlasRigLower.morph atlas-life.js:1311 draws 10/s (INBOX 1709); alive on mains is owner decision 55
 
 ## Owner calls
 
