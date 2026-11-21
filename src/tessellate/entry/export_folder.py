@@ -56,7 +56,7 @@ ENTRY_LEFT_OUT = {
     "content": "carried as readable text",
     "category_id": "carried as the category's name",
     "tags": "carried as a list",
-    "workspace_id": "a note lands in the space open when it is imported",
+    "workspace_id": "carried as `space` (its name and icon); a default-space note lands in the space open",
     "access_count": "how often this install opened it",
     "last_opened_at": "when this install last opened it",
     "entities_extracted_at": "a pass's bookmark; the pass reads the note again",
@@ -181,6 +181,8 @@ class _Related:
     reminders: dict = field(default_factory=dict)
     doc_reminders: dict = field(default_factory=dict)
     doc_links: dict = field(default_factory=dict)
+    #: space id to {name, icon, is_private}; the default space is not listed.
+    spaces: dict = field(default_factory=dict)
 
 
 def _grouped(rows: list, key: str) -> dict:
@@ -193,7 +195,7 @@ def _grouped(rows: list, key: str) -> dict:
 def _related(session) -> _Related:  # noqa: ANN001
     from sqlalchemy import select
 
-    from tessellate.core.database import Attachment, Category, DocumentLink, EntryLink, Reminder
+    from tessellate.core.database import Attachment, Category, DocumentLink, EntryLink, Reminder, Space
 
     reminders = list(session.scalars(select(Reminder).order_by(Reminder.id)))
     return _Related(
@@ -203,6 +205,8 @@ def _related(session) -> _Related:  # noqa: ANN001
         reminders=_grouped([r for r in reminders if r.entry_id is not None], "entry_id"),
         doc_reminders=_grouped([r for r in reminders if r.document_id is not None], "document_id"),
         doc_links=_grouped(list(session.scalars(select(DocumentLink).order_by(DocumentLink.id))), "document_id"),
+        spaces={sp.id: {"name": sp.name, "icon": sp.icon, "is_private": bool(sp.is_private)}
+                for sp in session.scalars(select(Space)) if sp.id != "default"},
     )
 
 
@@ -215,7 +219,8 @@ def note_record(entry, related: _Related, uploads_dir: Path) -> dict:  # noqa: A
     attachments = [] if manager.note_is_sealed(entry.is_private) else related.attachments.get(entry.id, [])
     record = {"id": entry.id, "content": text, "sealed": sealed,
               "category": related.category.get(entry.category_id, manager.UNCATEGORISED),
-              "tags": manager.entry_tags(entry)}
+              "tags": manager.entry_tags(entry),
+              "space": related.spaces.get(entry.workspace_id)}
     record.update(_row(entry, ENTRY_LEFT_OUT))
     record["attachments"] = [
         _attachment_record(a, name, uploads_dir) for a, name in zip(attachments, _attachment_names(attachments))
@@ -660,7 +665,43 @@ def _existing_notes(session, notes: list) -> dict:  # noqa: ANN001
 _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 
 
-def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
+def _space_for(session, space: object, made: dict) -> str | None:  # noqa: ANN001
+    """The id of the space a note was exported from: a space of that name
+    already here, else one made now (L979). None keeps the note in the space
+    open. A private space is only made private with the vault open; locked,
+    its note stays in the open space, sealed as it came."""
+    from tessellate.core import vault
+    from tessellate.core.database import Space
+    from tessellate.entry.cleantext import clean_name, name_key
+
+    if not isinstance(space, dict) or not clean_name(space.get("name")):
+        return None
+    name = clean_name(space["name"])[:60]
+    key = name_key(name)
+    if key not in made:
+        found = next((sp for sp in session.query(Space) if name_key(sp.name) == key), None)
+        private = bool(space.get("is_private"))
+        if found is None and private and vault.key() is None:
+            made[key] = None
+        elif found is None and key in {"all", "all spaces", "everything"}:
+            made[key] = None
+        else:
+            if found is None:
+                taken = {sp.id for sp in session.query(Space)} | {"all", "default"}
+                base, n = paths.slug(name, 49, ascii_only=True, fallback="space"), 2
+                candidate = base
+                while candidate in taken:
+                    suffix = f"-{n}"
+                    candidate, n = f"{base[: 49 - len(suffix)]}{suffix}", n + 1
+                icon = space.get("icon") if isinstance(space.get("icon"), str) and re.fullmatch(r"ph-[a-z0-9-]{1,40}", space["icon"]) else "ph-circles-four"
+                found = Space(id=candidate, name=name, icon=icon, is_private=private)
+                session.add(found)
+                session.flush()
+            made[key] = found.id
+    return made[key]
+
+
+def _make_entry(session, record: dict, said: list[str], spaces: dict | None = None):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
     from tessellate.entry import manager_private
@@ -669,6 +710,9 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
                                  dates=not record.get("created_at"))
     _restore(entry, record, _ENTRY_SKIP)
+    where = _space_for(session, record.get("space"), spaces if spaces is not None else {})
+    if where is not None:
+        entry.workspace_id = where
     _fresh_bin_period(entry)
     if record.get("sealed"):
         entry.is_private = True
@@ -917,6 +961,7 @@ def write(session, result, uploads_dir: Path, progress: Progress | None = None) 
     said: list[str] = []
     merged = 0
     stopped = False
+    spaces: dict = {}
     for done, note in enumerate(result.notes, 1):
         if progress.stopped is not None and progress.stopped():
             stopped = True
@@ -927,7 +972,7 @@ def write(session, result, uploads_dir: Path, progress: Progress | None = None) 
             idmap[old] = found
             merged += 1
         else:
-            entry = _make_entry(session, note.record, said)
+            entry = _make_entry(session, note.record, said, spaces)
             idmap[old] = entry.id
             _write_attachments(session, entry, note, uploads_dir)
             made.append((entry, note.record))

@@ -275,3 +275,34 @@ def test_an_import_commits_in_batches_not_per_note(exported, monkeypatch):
     session.close()
     assert written["imported"] == 503
     assert len(commits) < 60, f"{len(commits)} commits for 503 notes"
+
+
+def test_notes_come_back_in_the_spaces_they_were_exported_from(client, tmp_path):
+    """L979: the folder export dropped `workspace_id`, so three spaces became
+    one and every note landed in the open space. The sidecar names the space
+    and the import finds or makes it by name; a note from the default space
+    stays in the open one."""
+    from tessellate.core.database import Entry, Space
+    from tessellate.entry import manager
+
+    session = deps.get_db().session()
+    session.add_all([Space(id="garden", name="Garden", icon="ph-plant"), Space(id="trips", name="Trips", icon="ph-airplane")])
+    session.commit()
+    for text, space in [("plain one", "default"), ("garden one", "garden"), ("garden two", "garden"), ("trip one", "trips")]:
+        manager.create_entry(session, text).workspace_id = space
+    session.commit()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        export_folder.export(session, deps.get_config().uploads_dir, archive)
+    session.close()
+    deps.reset_app_state()
+    deps.init_app_state(data_dir=tmp_path / "empty")
+
+    session, result, written = _import(buffer.getvalue())
+    where = {e.content: e.workspace_id for e in session.query(Entry)}
+    names = {s.id: (s.name, s.icon) for s in session.query(Space)}
+    session.close()
+    assert written["imported"] == 4 and result.skipped == []
+    assert names[where["garden one"]] == ("Garden", "ph-plant") == names[where["garden two"]]
+    assert names[where["trip one"]] == ("Trips", "ph-airplane")
+    assert where["plain one"] == "default"

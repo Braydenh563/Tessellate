@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11149, test files 2890, tests 22856, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2890, tests 22857, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8538)
 
@@ -14237,7 +14237,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11149)
+## Backend modules (11150)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26945,69 +26945,70 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `normalise` | src/tessellate/entry/duplicates.py:43 |
 | `similarity` | src/tessellate/entry/duplicates.py:73 |
 
-### src/tessellate/entry/export_folder.py (59)
+### src/tessellate/entry/export_folder.py (60)
 
 | Name | File:line |
 |---|---|
-| `ExportResult` | src/tessellate/entry/export_folder.py:395 |
-| `Progress` | src/tessellate/entry/export_folder.py:901 |
-| `_Parts` | src/tessellate/entry/export_folder.py:502 |
+| `ExportResult` | src/tessellate/entry/export_folder.py:400 |
+| `Progress` | src/tessellate/entry/export_folder.py:945 |
+| `_Parts` | src/tessellate/entry/export_folder.py:507 |
 | `_Related` | src/tessellate/entry/export_folder.py:175 |
 | `_attachment_names` | src/tessellate/entry/export_folder.py:146 |
 | `_attachment_record` | src/tessellate/entry/export_folder.py:159 |
-| `_categories` | src/tessellate/entry/export_folder.py:401 |
-| `_categories_in` | src/tessellate/entry/export_folder.py:889 |
-| `_decoded` | src/tessellate/entry/export_folder.py:467 |
-| `_documents_in` | src/tessellate/entry/export_folder.py:601 |
-| `_existing_documents` | src/tessellate/entry/export_folder.py:851 |
-| `_existing_notes` | src/tessellate/entry/export_folder.py:643 |
-| `_fingerprint` | src/tessellate/entry/export_folder.py:638 |
-| `_fix_object_links` | src/tessellate/entry/export_folder.py:778 |
-| `_fresh_bin_period` | src/tessellate/entry/export_folder.py:683 |
-| `_from_markdown` | src/tessellate/entry/export_folder.py:547 |
-| `_front_matter` | src/tessellate/entry/export_folder.py:323 |
-| `_group` | src/tessellate/entry/export_folder.py:527 |
-| `_grouped` | src/tessellate/entry/export_folder.py:186 |
-| `_hang_canvas` | src/tessellate/entry/export_folder.py:736 |
-| `_hang_cards` | src/tessellate/entry/export_folder.py:752 |
-| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:798 |
-| `_hang_links` | src/tessellate/entry/export_folder.py:719 |
-| `_hang_rows` | src/tessellate/entry/export_folder.py:767 |
-| `_imported` | src/tessellate/entry/export_folder.py:581 |
+| `_categories` | src/tessellate/entry/export_folder.py:406 |
+| `_categories_in` | src/tessellate/entry/export_folder.py:933 |
+| `_decoded` | src/tessellate/entry/export_folder.py:472 |
+| `_documents_in` | src/tessellate/entry/export_folder.py:606 |
+| `_existing_documents` | src/tessellate/entry/export_folder.py:895 |
+| `_existing_notes` | src/tessellate/entry/export_folder.py:648 |
+| `_fingerprint` | src/tessellate/entry/export_folder.py:643 |
+| `_fix_object_links` | src/tessellate/entry/export_folder.py:822 |
+| `_fresh_bin_period` | src/tessellate/entry/export_folder.py:727 |
+| `_from_markdown` | src/tessellate/entry/export_folder.py:552 |
+| `_front_matter` | src/tessellate/entry/export_folder.py:328 |
+| `_group` | src/tessellate/entry/export_folder.py:532 |
+| `_grouped` | src/tessellate/entry/export_folder.py:188 |
+| `_hang_canvas` | src/tessellate/entry/export_folder.py:780 |
+| `_hang_cards` | src/tessellate/entry/export_folder.py:796 |
+| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:842 |
+| `_hang_links` | src/tessellate/entry/export_folder.py:763 |
+| `_hang_rows` | src/tessellate/entry/export_folder.py:811 |
+| `_imported` | src/tessellate/entry/export_folder.py:586 |
 | `_iso` | src/tessellate/entry/export_folder.py:72 |
-| `_json` | src/tessellate/entry/export_folder.py:474 |
-| `_json_dict` | src/tessellate/entry/export_folder.py:818 |
-| `_keep_updated` | src/tessellate/entry/export_folder.py:826 |
-| `_link_ends` | src/tessellate/entry/export_folder.py:277 |
+| `_json` | src/tessellate/entry/export_folder.py:479 |
+| `_json_dict` | src/tessellate/entry/export_folder.py:862 |
+| `_keep_updated` | src/tessellate/entry/export_folder.py:870 |
+| `_link_ends` | src/tessellate/entry/export_folder.py:282 |
 | `_link_record` | src/tessellate/entry/export_folder.py:166 |
-| `_make_entry` | src/tessellate/entry/export_folder.py:663 |
-| `_note_base` | src/tessellate/entry/export_folder.py:352 |
-| `_note_record` | src/tessellate/entry/export_folder.py:558 |
+| `_make_entry` | src/tessellate/entry/export_folder.py:704 |
+| `_note_base` | src/tessellate/entry/export_folder.py:357 |
+| `_note_record` | src/tessellate/entry/export_folder.py:563 |
 | `_parsed` | src/tessellate/entry/export_folder.py:85 |
-| `_place` | src/tessellate/entry/export_folder.py:510 |
-| `_prefix` | src/tessellate/entry/export_folder.py:483 |
+| `_place` | src/tessellate/entry/export_folder.py:515 |
+| `_prefix` | src/tessellate/entry/export_folder.py:488 |
 | `_readable` | src/tessellate/entry/export_folder.py:133 |
-| `_related` | src/tessellate/entry/export_folder.py:193 |
+| `_related` | src/tessellate/entry/export_folder.py:195 |
 | `_reminder_record` | src/tessellate/entry/export_folder.py:170 |
 | `_restore` | src/tessellate/entry/export_folder.py:95 |
 | `_row` | src/tessellate/entry/export_folder.py:76 |
 | `_safe_name` | src/tessellate/entry/export_folder.py:108 |
-| `_second_pass` | src/tessellate/entry/export_folder.py:839 |
+| `_second_pass` | src/tessellate/entry/export_folder.py:883 |
 | `_sha1_file` | src/tessellate/entry/export_folder.py:114 |
-| `_stored_names` | src/tessellate/entry/export_folder.py:385 |
-| `_strip_attachments` | src/tessellate/entry/export_folder.py:496 |
-| `_write_attachments` | src/tessellate/entry/export_folder.py:702 |
-| `_write_documents` | src/tessellate/entry/export_folder.py:410 |
-| `_write_documents_in` | src/tessellate/entry/export_folder.py:862 |
-| `_write_note` | src/tessellate/entry/export_folder.py:358 |
-| `board_canvas` | src/tessellate/entry/export_folder.py:235 |
-| `document_record` | src/tessellate/entry/export_folder.py:228 |
-| `export` | src/tessellate/entry/export_folder.py:424 |
-| `note_markdown` | src/tessellate/entry/export_folder.py:343 |
-| `note_record` | src/tessellate/entry/export_folder.py:209 |
-| `read` | src/tessellate/entry/export_folder.py:613 |
-| `snapshot` | src/tessellate/entry/export_folder.py:299 |
-| `write` | src/tessellate/entry/export_folder.py:909 |
+| `_space_for` | src/tessellate/entry/export_folder.py:668 |
+| `_stored_names` | src/tessellate/entry/export_folder.py:390 |
+| `_strip_attachments` | src/tessellate/entry/export_folder.py:501 |
+| `_write_attachments` | src/tessellate/entry/export_folder.py:746 |
+| `_write_documents` | src/tessellate/entry/export_folder.py:415 |
+| `_write_documents_in` | src/tessellate/entry/export_folder.py:906 |
+| `_write_note` | src/tessellate/entry/export_folder.py:363 |
+| `board_canvas` | src/tessellate/entry/export_folder.py:240 |
+| `document_record` | src/tessellate/entry/export_folder.py:233 |
+| `export` | src/tessellate/entry/export_folder.py:429 |
+| `note_markdown` | src/tessellate/entry/export_folder.py:348 |
+| `note_record` | src/tessellate/entry/export_folder.py:213 |
+| `read` | src/tessellate/entry/export_folder.py:618 |
+| `snapshot` | src/tessellate/entry/export_folder.py:304 |
+| `write` | src/tessellate/entry/export_folder.py:953 |
 
 ### src/tessellate/entry/folder_sync.py (29)
 
@@ -28500,7 +28501,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22856)
+## Tests (22857)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29694,7 +29695,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_flow_pose_1683b.py | 7 |
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
-| tests/test_folder_roundtrip.py | 8 |
+| tests/test_folder_roundtrip.py | 9 |
 | tests/test_folder_sync_q34.py | 39 |
 | tests/test_folder_sync_routes_q34.py | 3 |
 | tests/test_follow_items_1110.py | 15 |
