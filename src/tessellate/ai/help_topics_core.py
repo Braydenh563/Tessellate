@@ -547,7 +547,7 @@ HELP_TOPICS: list[dict] = [
             "document, Ctrl+D today's note, Ctrl+Shift+V paste what you copied as a "
             "new note, Ctrl+Shift+R record a meeting, Alt+L the other devices panel, "
             "Ctrl+Shift+K the quick sketch pad, Ctrl+Shift+B the whiteboard. "
-            "Writing: Ctrl+S save, Ctrl+/ the blocks and commands menu (in a "
+            "Writing: Ctrl+S save (it says so when a tab has nothing to save), Ctrl+/ the blocks and commands menu (in a "
             "document it comments the line instead), Ctrl+J Atlas writes at the "
             "cursor, Ctrl+Shift+E actions for the selected text (a right-click on the selection brings its popup back). AI: "
             "Ctrl+Shift+A the popup agent, Ctrl+Shift+H ask Atlas about the app, "
@@ -779,7 +779,7 @@ HELP_TOPICS: list[dict] = [
             "on purpose: Delete for good and Empty bin, which ask first; sending a "
             "chat message (the chat keeps its own history); asking the model "
             "something (it changes nothing until you accept); and sign-in, lock and "
-            "background work. Inside a text box Ctrl+Z undoes your typing."
+            "background work. Inside a text box, in a dialog too, Ctrl+Z undoes your typing, and Escape puts an Undo notice away (Ctrl+Z still undoes it)."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

@@ -58,13 +58,48 @@
     return error instanceof TypeError;
   }
 
-  //: Hold a note for later. Answers whether it is held.
-  function noteOutboxAdd(body) {
-    const list = noteOutbox();
-    list.push({ ...body, client_key: body.client_key || newNoteClientKey(), queued_at: Date.now() });
-    const held = writeNoteOutbox(list);
-    scheduleNoteOutboxFlush();
-    return held;
+  //: **Staged pictures and files are held in IndexedDB** (L-world-class-115), keyed by the item's
+  //: `client_key` (localStorage cannot hold bytes). Answers `{value}`, or null when the browser refuses.
+  function noteFilesRun(act) {
+    return new Promise((resolve) => {
+      try {
+        const open = indexedDB.open("noteOutboxFiles", 1);
+        open.onupgradeneeded = () => open.result.createObjectStore("held");
+        open.onerror = () => resolve(null);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction("held", "readwrite");
+          const request = act(tx.objectStore("held"));
+          tx.oncomplete = () => { db.close(); resolve({ value: request.result }); };
+          tx.onerror = tx.onabort = () => resolve(null);
+        };
+      } catch { resolve(null); }
+    });
+  }
+
+  const noteFilesPut = (key, held) => noteFilesRun((store) => store.put({ images: held.images, files: held.files }, key));
+  const noteFilesGet = (key) => noteFilesRun((store) => store.get(key));
+  const noteFilesDrop = (key) => noteFilesRun((store) => store.delete(key));
+  const noteFileForm = (file) => { const form = new FormData(); form.append("file", file); return form; };
+  //: A staged picture is `![name](staged:key)`; with its bytes gone it is only its name.
+  const stripStagedUrls = (text) => String(text || "").replace(/!\[([^\]]*)\]\(staged:[^)]*\)/g, "[$1]");
+
+  //: Hold a note for later. Answers whether it is held; with `held` ({images, files}) a promise of that.
+  function noteOutboxAdd(body, held) {
+    const key = body.client_key || newNoteClientKey();
+    const push = (extra) => {
+      const list = noteOutbox();
+      list.push({ ...body, ...extra, client_key: key, queued_at: Date.now() });
+      const written = writeNoteOutbox(list);
+      scheduleNoteOutboxFlush();
+      return written;
+    };
+    if (!held || !(held.images.length || held.files.length)) return push({});
+    return noteFilesPut(key, held).then((stored) => {
+      if (stored && push({ blobs: true })) return true;
+      stored && noteFilesDrop(key);
+      return false;
+    });
   }
 
   //: **An edit is held like a new note** (audit 1031 N47): the same list, the
@@ -116,7 +151,8 @@
     noteOutboxFlushing = (async () => {
       let sent = 0;
       for (const item of noteOutbox()) {
-        const { queued_at: _queuedAt, edit_id: editId, held_reminder: heldReminder, ...payload } = item;
+        const { queued_at: _queuedAt, edit_id: editId, held_reminder: heldReminder, blobs: hasFiles, ...payload } = item;
+        let files = [];
         try {
           if (editId) {
             const { client_key: _key, ...edit } = payload;
@@ -126,8 +162,18 @@
             refreshEntries([editId]).catch(() => {});
             continue;
           }
+          if (hasFiles) {
+            //: Pictures first, for their real urls; the files attach once the note has an id.
+            const bytes = (await noteFilesGet(item.client_key))?.value || {};
+            files = bytes.files || [];
+            const urls = {};
+            for (const image of bytes.images || []) urls[image.key] = (await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body: noteFileForm(image.file), silent: true })).url;
+            payload.content = stripStagedUrls(rewriteStagedUrls(payload.content, urls));
+          }
           const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload), silent: true });
           writeNoteOutbox(noteOutbox().filter((held) => held.client_key !== item.client_key));
+          hasFiles && (await noteFilesDrop(item.client_key));
+          for (const file of files) await api.upload(`/entries/${saved.id}/files`, noteFileForm(file)).catch((error) => toast(`${file.name}: ${error.message}`, true));
           sent += 1;
           pushEntryCreateUndo(saved, "Saved a note kept on this device");
           if (heldReminder) {
@@ -141,7 +187,8 @@
           //: would be refused forever, so the words go back where they can be
           //: fixed, Capture's box, after anything already in it.
           writeNoteOutbox(noteOutbox().filter((held) => held.client_key !== item.client_key));
-          returnNoteToCapture(payload.content, error.message);
+          hasFiles && noteFilesDrop(item.client_key);
+          returnNoteToCapture(stripStagedUrls(payload.content), error.message);
         }
       }
       if (sent) {
@@ -209,13 +256,14 @@
       }
       const content = document.createElement("p");
       content.className = "entry-content";
-      renderNoteText(content, body, []);
+      renderNoteText(content, stripStagedUrls(body), []);
       li.appendChild(content);
       const meta = document.createElement("div");
       meta.className = "entry-meta note-meta";
       const waiting = chip("ph:cloud-slash Waiting to save", "item-label");
       waiting.title = "Kept on this device until the server answers. It is sent on its own.";
       meta.appendChild(waiting);
+      if (item.blobs) meta.appendChild(chip("ph:paperclip Files kept with it", "item-label"));
       for (const tag of item.tags || []) meta.appendChild(chip(tag, "tag hashtag"));
       li.appendChild(meta);
       rows.appendChild(li);

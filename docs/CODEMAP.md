@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8512, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2878, tests 22759, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8518, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2881, tests 22766, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8512)
+## Frontend functions (8518)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -360,47 +360,47 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announce` | frontend/js/capture-ask.js:843 |
+| `announce` | frontend/js/capture-ask.js:846 |
 | `captureNeedsWords` | frontend/js/capture-ask.js:604 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1128 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1131 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:544 |
-| `copyAnswer` | frontend/js/capture-ask.js:1297 |
+| `copyAnswer` | frontend/js/capture-ask.js:1300 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:298 |
-| `evidenceSpan` | frontend/js/capture-ask.js:1075 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1094 |
+| `evidenceSpan` | frontend/js/capture-ask.js:1078 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1097 |
 | `filedByText` | frontend/js/capture-ask.js:230 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:185 |
-| `flashCategory` | frontend/js/capture-ask.js:1024 |
-| `flashEntry` | frontend/js/capture-ask.js:901 |
-| `flashReminder` | frontend/js/capture-ask.js:998 |
+| `flashCategory` | frontend/js/capture-ask.js:1027 |
+| `flashEntry` | frontend/js/capture-ask.js:904 |
+| `flashReminder` | frontend/js/capture-ask.js:1001 |
 | `focusCaptureBox` | frontend/js/capture-ask.js:506 |
-| `heldOffline` | frontend/js/capture-ask.js:620 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:1111 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1207 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1333 |
+| `heldOffline` | frontend/js/capture-ask.js:621 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:1114 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1210 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1336 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:286 |
-| `loadSuggestions` | frontend/js/capture-ask.js:1303 |
-| `loadTemplates` | frontend/js/capture-ask.js:1390 |
-| `newChat` | frontend/js/capture-ask.js:1278 |
+| `loadSuggestions` | frontend/js/capture-ask.js:1306 |
+| `loadTemplates` | frontend/js/capture-ask.js:1393 |
+| `newChat` | frontend/js/capture-ask.js:1281 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:471 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:453 |
 | `noteTemplateText` | frontend/js/capture-ask.js:442 |
 | `offerJumpToNewNote` | frontend/js/capture-ask.js:12 |
 | `openDocumentFromNote` | frontend/js/capture-ask.js:475 |
-| `openNoteAtPassage` | frontend/js/capture-ask.js:993 |
-| `pictureItems` | frontend/js/capture-ask.js:1086 |
+| `openNoteAtPassage` | frontend/js/capture-ask.js:996 |
+| `pictureItems` | frontend/js/capture-ask.js:1089 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:361 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:323 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:555 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:513 |
-| `retryAnswer` | frontend/js/capture-ask.js:1293 |
-| `saveEntry` | frontend/js/capture-ask.js:634 |
-| `saveEntryAsDraft` | frontend/js/capture-ask.js:750 |
+| `retryAnswer` | frontend/js/capture-ask.js:1296 |
+| `saveEntry` | frontend/js/capture-ask.js:637 |
+| `saveEntryAsDraft` | frontend/js/capture-ask.js:753 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:581 |
-| `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:876 |
+| `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:879 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
 | `stampDate` | frontend/js/capture-ask.js:440 |
-| `stopAnswer` | frontend/js/capture-ask.js:1274 |
+| `stopAnswer` | frontend/js/capture-ask.js:1277 |
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:491 |
 
@@ -1173,52 +1173,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:977 |
-| `captureCountText` | frontend/js/settings-wiring.js:1759 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1481 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2162 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1276 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1511 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1312 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2147 |
-| `fileDropBox` | frontend/js/settings-wiring.js:2010 |
+| `activeOverlay` | frontend/js/settings-wiring.js:902 |
+| `captureCountText` | frontend/js/settings-wiring.js:1684 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1406 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2087 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1201 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1436 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1237 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2072 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1935 |
 | `flashSaved` | frontend/js/settings-wiring.js:527 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2194 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1294 |
-| `inEditable` | frontend/js/settings-wiring.js:975 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1609 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1146 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1189 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2119 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1219 |
+| `inEditable` | frontend/js/settings-wiring.js:900 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1534 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1071 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1114 |
 | `lockFail` | frontend/js/settings-wiring.js:286 |
 | `lockFailed` | frontend/js/settings-wiring.js:298 |
 | `lockOpened` | frontend/js/settings-wiring.js:354 |
 | `lockRequest` | frontend/js/settings-wiring.js:398 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:972 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1330 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:998 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:897 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1255 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:923 |
 | `notebookLocked` | frontend/js/settings-wiring.js:512 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1724 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1691 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1932 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1649 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1616 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1857 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1448 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1199 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2135 |
-| `runShortcut` | frontend/js/settings-wiring.js:1339 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1373 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1124 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2060 |
+| `runShortcut` | frontend/js/settings-wiring.js:1264 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1300 |
-| `saveWhatIsInFront` | frontend/js/settings-wiring.js:590 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1225 |
+| `saveWhatIsInFront` | frontend/js/settings-wiring.js:576 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1465 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1472 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2321 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2112 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1175 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1390 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1397 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2246 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2037 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1100 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1749 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2171 |
-| `wordCount` | frontend/js/settings-wiring.js:1744 |
+| `textCounts` | frontend/js/settings-wiring.js:1674 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2096 |
+| `wordCount` | frontend/js/settings-wiring.js:1669 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -7058,39 +7058,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `quickAccessTile` | frontend/js/quick-access.js:36 |
 | `saveQuickTint` | frontend/js/quick-access.js:472 |
 
-### frontend/js/quick-note.js (30)
+### frontend/js/quick-note.js (36)
 
 | Name | File:line |
 |---|---|
-| `announceSavedNote` | frontend/js/quick-note.js:326 |
-| `chatKeep` | frontend/js/quick-note.js:614 |
-| `chatProposalBar` | frontend/js/quick-note.js:634 |
-| `clearQuickNote` | frontend/js/quick-note.js:314 |
-| `clipPastedLink` | frontend/js/quick-note.js:443 |
-| `createNoteSafely` | frontend/js/quick-note.js:90 |
-| `flashSavedRow` | frontend/js/quick-note.js:344 |
-| `flushNoteOutbox` | frontend/js/quick-note.js:113 |
-| `focusOpener` | frontend/js/quick-note.js:358 |
-| `keepQuickNoteDraft` | frontend/js/quick-note.js:304 |
+| `announceSavedNote` | frontend/js/quick-note.js:374 |
+| `chatKeep` | frontend/js/quick-note.js:662 |
+| `chatProposalBar` | frontend/js/quick-note.js:682 |
+| `clearQuickNote` | frontend/js/quick-note.js:362 |
+| `clipPastedLink` | frontend/js/quick-note.js:491 |
+| `createNoteSafely` | frontend/js/quick-note.js:125 |
+| `flashSavedRow` | frontend/js/quick-note.js:392 |
+| `flushNoteOutbox` | frontend/js/quick-note.js:148 |
+| `focusOpener` | frontend/js/quick-note.js:406 |
+| `keepQuickNoteDraft` | frontend/js/quick-note.js:352 |
 | `newNoteClientKey` | frontend/js/quick-note.js:52 |
-| `noteEditOutboxAdd` | frontend/js/quick-note.js:74 |
+| `noteEditOutboxAdd` | frontend/js/quick-note.js:109 |
+| `noteFileForm` | frontend/js/quick-note.js:83 |
+| `noteFilesDrop` | frontend/js/quick-note.js:82 |
+| `noteFilesGet` | frontend/js/quick-note.js:81 |
+| `noteFilesPut` | frontend/js/quick-note.js:80 |
+| `noteFilesRun` | frontend/js/quick-note.js:63 |
 | `noteOutbox` | frontend/js/quick-note.js:31 |
-| `noteOutboxAdd` | frontend/js/quick-note.js:62 |
+| `noteOutboxAdd` | frontend/js/quick-note.js:88 |
 | `noteServerGone` | frontend/js/quick-note.js:57 |
-| `openQuickNote` | frontend/js/quick-note.js:272 |
-| `pasteClipboardAsNote` | frontend/js/quick-note.js:543 |
-| `quickNoteBox` | frontend/js/quick-note.js:262 |
-| `quickNoteReminder` | frontend/js/quick-note.js:404 |
-| `quickNoteStatus` | frontend/js/quick-note.js:266 |
-| `quickNoteToCapture` | frontend/js/quick-note.js:421 |
-| `reminderFromChatAnswer` | frontend/js/quick-note.js:705 |
-| `renderNoteOutbox` | frontend/js/quick-note.js:169 |
-| `renderPendingNoteRows` | frontend/js/quick-note.js:188 |
-| `returnNoteToCapture` | frontend/js/quick-note.js:159 |
-| `saveChatAnswerAsNote` | frontend/js/quick-note.js:677 |
-| `saveChatAsDocument` | frontend/js/quick-note.js:588 |
-| `saveQuickNote` | frontend/js/quick-note.js:367 |
-| `scheduleNoteOutboxFlush` | frontend/js/quick-note.js:105 |
+| `openQuickNote` | frontend/js/quick-note.js:320 |
+| `pasteClipboardAsNote` | frontend/js/quick-note.js:591 |
+| `quickNoteBox` | frontend/js/quick-note.js:310 |
+| `quickNoteReminder` | frontend/js/quick-note.js:452 |
+| `quickNoteStatus` | frontend/js/quick-note.js:314 |
+| `quickNoteToCapture` | frontend/js/quick-note.js:469 |
+| `reminderFromChatAnswer` | frontend/js/quick-note.js:753 |
+| `renderNoteOutbox` | frontend/js/quick-note.js:216 |
+| `renderPendingNoteRows` | frontend/js/quick-note.js:235 |
+| `returnNoteToCapture` | frontend/js/quick-note.js:206 |
+| `saveChatAnswerAsNote` | frontend/js/quick-note.js:725 |
+| `saveChatAsDocument` | frontend/js/quick-note.js:636 |
+| `saveQuickNote` | frontend/js/quick-note.js:415 |
+| `scheduleNoteOutboxFlush` | frontend/js/quick-note.js:140 |
+| `stripStagedUrls` | frontend/js/quick-note.js:85 |
 | `writeNoteOutbox` | frontend/js/quick-note.js:43 |
 
 ### frontend/js/quickadd.js (44)
@@ -28388,7 +28394,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22759)
+## Tests (22766)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28663,6 +28669,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_capture_clears_a30s.py | 3 |
 | tests/test_capture_crash_after_commit_116.py | 1 |
 | tests/test_capture_draft_blank.py | 3 |
+| tests/test_capture_offline_files_l115.py | 3 |
 | tests/test_capture_private_early.py | 1 |
 | tests/test_capture_stage_files.py | 11 |
 | tests/test_capture_strip_first_paint.py | 5 |
@@ -29144,6 +29151,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_css_wrapzoom_map_dash.py | 9 |
 | tests/test_csv_query_as_sql_l317.py | 3 |
 | tests/test_ctrl_s_edit_forms.py | 2 |
+| tests/test_ctrl_z_dialogs_ctrl_s_words_l202.py | 2 |
 | tests/test_currency_rates_editor_l519.py | 3 |
 | tests/test_daily_journal.py | 13 |
 | tests/test_daily_strip.py | 10 |
@@ -31000,6 +31008,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_undo_contract.py | 3 |
 | tests/test_undo_coverage.py | 10 |
 | tests/test_undo_fresh_read_restores_model_l517.py | 3 |
+| tests/test_undo_line_escape_l200.py | 2 |
 | tests/test_undo_store.py | 5 |
 | tests/test_undo_store_lazy.py | 2 |
 | tests/test_uninstall_frees.py | 2 |
@@ -31688,14 +31697,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:626 |
+| Needs hardware | docs/roadmap/LEDGER.md:623 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:619 |
+| Owner calls | docs/roadmap/LEDGER.md:616 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31875,7 +31884,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:756 |
+| Plan session briefs | docs/roadmap/LEDGER.md:753 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31929,25 +31938,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:772 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:856 |
+| chat | docs/roadmap/LEDGER.md:769 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:853 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:796 |
-| general | docs/roadmap/LEDGER.md:579 |
+| documents | docs/roadmap/LEDGER.md:793 |
+| general | docs/roadmap/LEDGER.md:576 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:760 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:868 |
+| graph | docs/roadmap/LEDGER.md:757 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:865 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:808 |
+| mindmap | docs/roadmap/LEDGER.md:805 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:832 |
+| timeline | docs/roadmap/LEDGER.md:829 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:820 |
+| ui-modernisation | docs/roadmap/LEDGER.md:817 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:784 |
+| whiteboard | docs/roadmap/LEDGER.md:781 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:844 |
+| world-class | docs/roadmap/LEDGER.md:841 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |
