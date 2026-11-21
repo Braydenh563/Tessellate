@@ -301,4 +301,22 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// Main-thread CPU in ms, read from the kernel's per-thread on-CPU time for the renderers'
+// main threads (/proc/<pid>/task/<tid>/schedstat, first field, ns). Unlike
+// Performance.getMetrics TaskDuration (wall time inside tasks) it does not count the time a
+// busy shared machine keeps the thread off a core, so a budget set on it holds on a loaded
+// runner. Pass the browser from `boot`; take a before and an after and subtract.
+async function mainCpuMs(browser) {
+  const fs = require('fs');
+  const s = await browser.newBrowserCDPSession();
+  const { processInfo } = await s.send('SystemInfo.getProcessInfo');
+  await s.detach();
+  let ns = 0;
+  // A renderer's main thread is the one whose tid is the process id.
+  for (const p of processInfo.filter((x) => x.type === 'renderer')) {
+    try { ns += Number(fs.readFileSync(`/proc/${p.id}/task/${p.id}/schedstat`, 'utf8').split(' ')[0]); } catch (e) { /* process ended */ }
+  }
+  return ns / 1e6;
+}
+
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, mainCpuMs};

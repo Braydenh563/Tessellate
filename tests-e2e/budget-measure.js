@@ -137,4 +137,61 @@ async function documentOpen(page, documentId, runs = 5) {
   return p50(times);
 }
 
-module.exports = { p50, boot, listPaint, search, boardOpen, documentOpen };
+// L-ui-modernisation-54, in CPU time. Wall-clock input delay and frame length
+// double on a busy runner and say nothing about the code; the CPU a task burns
+// (`tdur` in the trace, thread time) does not. Per repeat visit to `tab`: the
+// longest main-thread task, in CPU ms, in the 300 ms after the click (later
+// tasks are the companion's own idle). p50 over `runs`.
+async function tabTaskCpu(page, tab, runs = 5) {
+  const cdp = await page.context().newCDPSession(page);
+  const times = [];
+  try {
+    for (let i = 0; i < runs; i++) {
+      // Leave the tab first: a click on the open tab does nothing, and the
+      // budget is the visit that comes back to it.
+      await page.click(`#tab-bar [data-tab="${tab === "reminders" ? "timeline" : "reminders"}"]`);
+      await page.waitForTimeout(900);
+      const events = [];
+      const onData = (d) => events.push(...d.value);
+      cdp.on("Tracing.dataCollected", onData);
+      const done = new Promise((resolve) => cdp.once("Tracing.tracingComplete", resolve));
+      await cdp.send("Tracing.start", { categories: "devtools.timeline,disabled-by-default-devtools.timeline", transferMode: "ReportEvents" });
+      await page.click(`#tab-bar [data-tab="${tab}"]`);
+      await page.waitForTimeout(700);
+      await cdp.send("Tracing.end");
+      await done;
+      cdp.off("Tracing.dataCollected", onData);
+      const main = events.find((e) => e.name === "thread_name" && e.args.name === "CrRendererMain" && events.some((x) => x.tid === e.tid && x.name === "RunTask"));
+      const own = events.filter((e) => main && e.pid === main.pid && e.tid === main.tid && e.ph === "X");
+      const click = own.find((e) => e.name === "EventDispatch" && e.args && e.args.data && e.args.data.type === "click");
+      const t0 = click ? click.ts : Infinity;
+      const tasks = own.filter((e) => e.name === "RunTask" && e.ts >= t0 - 1000 && e.ts < t0 + 300000);
+      times.push(Math.round(Math.max(0, ...tasks.map((x) => (x.tdur || x.dur) / 1000))));
+    }
+  } finally { await cdp.detach(); }
+  return p50(times);
+}
+
+// L-ui-modernisation-95, in CPU time: the on-CPU ms the renderers' main
+// threads have burned, from /proc (Linux, where CI runs). The thread whose id
+// is the process id is the main thread.
+async function mainCpuMs(browser) {
+  const fs = require("fs");
+  const session = await browser.newBrowserCDPSession();
+  const { processInfo } = await session.send("SystemInfo.getProcessInfo");
+  await session.detach();
+  let ns = 0;
+  for (const proc of processInfo.filter((x) => x.type === "renderer")) {
+    try { ns += Number(fs.readFileSync(`/proc/${proc.id}/task/${proc.id}/schedstat`, "utf8").split(" ")[0]); } catch (e) { /* ended */ }
+  }
+  return ns / 1e6;
+}
+
+// Main-thread CPU ms per second over `ms` of idle on `page`.
+async function idleCpuPerSecond(browser, page, ms = 4000) {
+  const before = await mainCpuMs(browser);
+  await page.waitForTimeout(ms);
+  return (await mainCpuMs(browser) - before) / (ms / 1000);
+}
+
+module.exports = { p50, boot, listPaint, search, boardOpen, documentOpen, tabTaskCpu, mainCpuMs, idleCpuPerSecond };
