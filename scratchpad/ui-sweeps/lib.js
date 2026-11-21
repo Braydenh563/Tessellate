@@ -212,6 +212,15 @@ async function boot(opts={}) {
       return true;
     }, !!process.env.RECOVERY_ASK, {timeout: process.env.RECOVERY_ASK ? 4000 : 15000, polling: 200}).catch(() => {});
   }
+  //: **Search by meaning asks once too** (semantic-notice.js): the first save
+  //: that wants the missing package raises a sticky toast, which sat over the
+  //: bottom controls of whatever a sweep measured (touch: nine "covered"
+  //: findings, landing mid-run, so it cannot be dismissed at boot). Answered
+  //: "No thanks" up front, with the same preference write the toast makes, so
+  //: it is never asked; SEMANTIC_ASK=1 leaves it for a sweep that measures it.
+  if (!process.env.SEMANTIC_ASK) {
+    await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => null));
+  }
   //: A fresh data dir shows the recovery-key dialog after the first password;
   //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
   if (!process.env.RECOVERY_ASK) {

@@ -22,8 +22,7 @@
 //
 // Prints one line per surface and a non-zero exit if anything fails, so it can
 // gate a commit. No screenshots.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
-const PW = 'testpassword123';
+const { boot } = require('./lib.js');
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const WIDTH = Number(process.env.WIDTH || 390);
 const HEIGHT = Number(process.env.HEIGHT || 844);
@@ -103,41 +102,11 @@ const SURFACES = [
 ];
 
 (async () => {
-  const browser = await chromium.launch();
-  const ctx = await browser.newContext({
-    viewport: { width: WIDTH, height: HEIGHT },
-    deviceScaleFactor: 1,
-    hasTouch: true,
-    isMobile: true,
-  });
-  // The companion's one-time nudge is a toast that lands over the bottom of
-  // whatever is open (it read as "covered" on six Settings controls); lib.js
-  // marks it seen for every other sweep, and so does this one.
-  await ctx.addInitScript(() => {
-    try {
-      localStorage.setItem('theme', 'light');
-      localStorage.setItem('onboardingDone', '1');
-      localStorage.setItem('tourDone', '1');
-      localStorage.setItem('nm-buddy-hint', 'done');
-    } catch (e) {}
-  });
-  const page = await ctx.newPage();
+  // lib.js `boot` owns sign-in and the first-run questions (the recovery key
+  // and the update card both sit over a sweep's first click on a fresh data dir).
+  const { browser, page } = await boot({ viewport: { width: WIDTH, height: HEIGHT }, hasTouch: true, isMobile: true });
   const errors = [];
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-
-  await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#lock-password', { state: 'visible', timeout: 20000 });
-  await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(2500);
-  //: The opening curtain (lib.js, INBOX 577): the lock stays up, "Opening…",
-  //: while the first tab draws; read as a failed unlock, the field was
-  //: filled again as it faded and the fill timed out (qa-1005, light 390).
-  await page.waitForFunction(() => !document.documentElement.classList.contains('shell-curtain')
-    && !document.querySelector('#lock-overlay.lock-leaving'), null, { timeout: 15000, polling: 100 }).catch(() => {});
-  if (await page.$('#lock-password') && await page.isVisible('#lock-password')) {
-    await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(2500);
-  }
-  await page.evaluate(() => { const o = document.getElementById('onboarding-overlay'); if (o) o.classList.add('hidden'); });
-  await page.waitForTimeout(800);
 
   const media = await page.evaluate(() => ({
     hoverNone: matchMedia('(hover: none)').matches,
@@ -178,7 +147,7 @@ const SURFACES = [
     // loaded machine against the 600ms above, which read "did not open" for
     // the Graph and Library rows in dark, then light, at random (uxfix3 item 3).
     await page.waitForSelector(surface.sel, { state: 'visible', timeout: 6000 }).catch(() => {});
-    const result = await page.evaluate(({ sel, MIN, extra }) => {
+    const result = await page.evaluate(async ({ sel, MIN, extra }) => {
       const root = document.querySelector(sel);
       if (!root) return { missing: true };
       const visible = (e) => e.checkVisibility
@@ -225,6 +194,10 @@ const SURFACES = [
       // between controls a screen apart.
       const boxes = controls.map((control) => target(control).getBoundingClientRect());
 
+      // A sideways row's end arrows follow its scroll on the next frames (they
+      // hide at the end they have scrolled to), so a control scrolled to the
+      // end is asked about only once they have settled, never the same tick.
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const seen = new Map();
       controls.forEach((control, index) => {
         const box = boxes[index];
@@ -249,6 +222,7 @@ const SURFACES = [
         if (box.top < 0 || box.left < 0
             || box.bottom > innerHeight || box.right > innerWidth) {
           control.scrollIntoView({ block: 'center', inline: 'center' });
+          await frame();
           box = control.getBoundingClientRect();
         }
         const x = Math.round(box.left + box.width / 2);
@@ -271,6 +245,7 @@ const SURFACES = [
           // the person could actually choose is the honest question; a
           // control that is covered at every position still fails here.
           control.scrollIntoView({ block: 'start', inline: 'center' });
+          await frame();
           const again = control.getBoundingClientRect();
           const ax = Math.round(again.left + again.width / 2);
           const ay = Math.round(again.top + again.height / 2);
@@ -287,6 +262,7 @@ const SURFACES = [
           // person's own scroll leaves it, clear of a header at the top and
           // the bottom bar alike; a control covered here too is covered for real.
           control.scrollIntoView({ block: 'center', inline: 'center' });
+          await frame();
           const mid = control.getBoundingClientRect();
           const mx = Math.round(mid.left + mid.width / 2);
           const my = Math.round(mid.top + mid.height / 2);
@@ -295,6 +271,9 @@ const SURFACES = [
             reached = hit && (control.contains(hit) || hit.contains(control));
           }
         }
+        // The app itself hid it while the row scrolled (an end arrow at the end it
+        // has reached): a control that is no longer there has nothing over it.
+        if (!reached && !control.getClientRects().length) continue;
         if (!reached) {
           covered.push(`${name(control)} at ${x},${y} hits ${firstHit}, then ${hit ? name(hit) : 'nothing'} then centred (on top: ${(hit && (hit.closest('.toast, [role=status], dialog, .modal-overlay, nav, .dock') || hit).textContent || '').trim().replace(/\s+/g, ' ').slice(0, 50)})`);
         }
