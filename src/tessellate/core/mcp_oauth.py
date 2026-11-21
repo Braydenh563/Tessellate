@@ -33,6 +33,7 @@ import time
 from urllib.parse import urlsplit
 
 from tessellate.core import deps, mcp_clients
+from tessellate.core.security import LOOPBACK_HOSTS
 
 PREF = "mcp_oauth_clients"
 SCOPES = ("notes:read", "notes:write")
@@ -41,7 +42,6 @@ MAX_PENDING = 20
 REQUEST_SECONDS = 600.0
 CODE_SECONDS = 300.0
 REFRESH_PREFIX = "tsl_mcr_"
-LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
 _lock = threading.Lock()
 #: Sign-ins waiting for the person, by request id, and issued codes, by hash.

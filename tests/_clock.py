@@ -43,6 +43,7 @@ HOLDERS: tuple[tuple[str, str], ...] = (
     ("tessellate.api.chat_turn", "user_now"),
     ("tessellate.api.routes_board_library", "utcnow"),
     ("tessellate.api.routes_chat", "user_now"),
+    ("tessellate.api.routes_chat_meta", "user_now"),
     ("tessellate.api.routes_code_snippets", "utcnow"),
     ("tessellate.api.routes_conversations", "utcnow"),
     ("tessellate.api.routes_documents", "user_now"),

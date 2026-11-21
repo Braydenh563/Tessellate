@@ -5160,19 +5160,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dismiss` | frontend/js/extra-notice.js:56 |
-| `dismissed` | frontend/js/extra-notice.js:55 |
-| `dismissedList` | frontend/js/extra-notice.js:50 |
-| `extraNoticeCheck` | frontend/js/extra-notice.js:142 |
-| `extraNoticeInstall` | frontend/js/extra-notice.js:101 |
-| `extraNoticeMount` | frontend/js/extra-notice.js:219 |
-| `extraNoticeState` | frontend/js/extra-notice.js:70 |
-| `extraNoticeUndo` | frontend/js/extra-notice.js:122 |
-| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:91 |
-| `extraRows` | frontend/js/extra-notice.js:62 |
-| `forget` | frontend/js/extra-notice.js:57 |
-| `saveDismissed` | frontend/js/extra-notice.js:54 |
-| `sleep` | frontend/js/extra-notice.js:88 |
+| `dismiss` | frontend/js/extra-notice.js:61 |
+| `dismissed` | frontend/js/extra-notice.js:60 |
+| `dismissedList` | frontend/js/extra-notice.js:55 |
+| `extraNoticeCheck` | frontend/js/extra-notice.js:147 |
+| `extraNoticeInstall` | frontend/js/extra-notice.js:106 |
+| `extraNoticeMount` | frontend/js/extra-notice.js:224 |
+| `extraNoticeState` | frontend/js/extra-notice.js:75 |
+| `extraNoticeUndo` | frontend/js/extra-notice.js:127 |
+| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:96 |
+| `extraRows` | frontend/js/extra-notice.js:67 |
+| `forget` | frontend/js/extra-notice.js:62 |
+| `saveDismissed` | frontend/js/extra-notice.js:59 |
+| `sleep` | frontend/js/extra-notice.js:93 |
 
 ### frontend/js/extract-preview.js (2)
 
@@ -12940,17 +12940,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1083 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2328 |
 | A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4545 |
-| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:7170 |
+| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:7178 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4576 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:5540 |
 | A diff of two versions of the same text (DOCUMENTS_PLAN Phase 5 items 2, 3) | frontend/css/09-editor.css:600 |
 | A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:6292 |
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:6492 |
-| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:7016 |
+| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:7024 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:4914 |
 | A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3530 |
-| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:7244 |
-| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:7154 |
+| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:7252 |
+| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:7162 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2866 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:3144 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1751 |
@@ -12992,8 +12992,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3265 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:966 |
 | On this day | frontend/css/03-dashboard-widgets.css:4322 |
-| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:7123 |
-| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:7204 |
+| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:7131 |
+| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:7212 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:6918 |
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3192 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:215 |
@@ -13024,7 +13024,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | RESPONSIVE, CONTINUED, AND THE LIQUID GLASS ADOPTIONS | frontend/css/10-responsive.css:1 |
 | Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:1453 |
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/08-consistency.css:4378 |
-| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:6716 |
+| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:6724 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3495 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1456 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:701 |
@@ -13050,12 +13050,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Templates (INBOX 715) | frontend/css/library-lazy.css:4551 |
 | Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4014 |
 | The Activity popup (the Tasks popup) | frontend/css/popup-anatomy-lazy.css:113 |
-| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:6570 |
+| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:6578 |
 | The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:5388 |
 | The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:4890 |
 | The bordered card | frontend/css/popup-anatomy-lazy.css:59 |
 | The chat header stays one line (INBOX 91) | frontend/css/08-consistency.css:2196 |
-| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:6932 |
+| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:6940 |
 | The connection pill's menu button, concentric with the pill | frontend/css/08-consistency.css:4888 |
 | The documents editor: layout around the engine (DOCUMENTS_PLAN Phase 2) | frontend/css/09-editor.css:1 |
 | The five whiteboard menus (Insert, Edit, Arrange, View, Board) | frontend/css/08-consistency.css:1223 |
@@ -13071,7 +13071,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:159 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4054 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2331 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:7477 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:7485 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:804 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1427 |
 | The two rows that still wrapped at 1024 | frontend/css/08-consistency.css:1297 |
@@ -13442,7 +13442,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | top bar polish | frontend/css/05-sidebars-themes.css:4295 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1635 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:8914 |
-| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:7298 |
+| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:7306 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1949 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:963 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3648 |
@@ -13467,7 +13467,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/05-sidebars-themes.css | 6245 |
 | frontend/css/06-timeline-dialogs.css | 3804 |
 | frontend/css/07-whiteboard-misc.css | 10798 |
-| frontend/css/08-consistency.css | 7503 |
+| frontend/css/08-consistency.css | 7511 |
 | frontend/css/09-editor.css | 1143 |
 | frontend/css/10-responsive.css | 3141 |
 | frontend/css/agent-runs-lazy.css | 223 |
@@ -13532,7 +13532,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/sidebar-folds-lazy.css | 28 |
 | frontend/css/sketch-pad.css | 791 |
 | frontend/css/tidy-lazy.css | 331 |
-| frontend/css/timeline-calendar-lazy.css | 325 |
+| frontend/css/timeline-calendar-lazy.css | 324 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/triage-lazy.css | 3 |
 | frontend/css/ui-reveal-lazy.css | 91 |

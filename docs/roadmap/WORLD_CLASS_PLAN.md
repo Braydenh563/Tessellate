@@ -1982,7 +1982,7 @@ mobile first, as the owner's web design class teaches. Measured with
 ### 22.1 Large gaps (what every professional app has)
 
 1. ~~**No URLs.**~~ **Built:** `router.js` gives every view a hash (`#/notes/12`, `#/chat/45`, `#/docs/7`, `#/library/images`, `#/settings/appearance`), the in-app Back and Forward run on `popstate`, a reload restores the view and the window title names it (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
-2. ~~**The laptop screen is mostly chrome.**~~ Built 2026-11-21 for what fits: card-view links share the details line (141 to 111px a linked card; laptopfold 2 whole, 3 in part). The four-card gate, the sub-tab merge (421px against 52px of slack) and the status bar fold are an owner call in BACKLOG ("L-world-class-95 rest"). L-world-class-95.
+2. ~~**The laptop screen is mostly chrome.**~~ Built 2026-11-21 for what fits: card-view links share the details line (141 to 111px a linked card; laptopfold 2 whole, 3 in part). The four-card gate, the sub-tab merge (421px against 52px of slack) and the status bar fold wait on the owner in BACKLOG ("L-world-class-95 rest"). L-world-class-95.
 3. ~~**Tabs lose their names on a laptop.**~~ Built 2026-11-14: the captions hold from 820px up (measured at 1024, 1100 and 1280: every label 34 to 83px wide), and every tab's tooltip names its chord (`t then n`, from `TAB_JUMP_KEYS`; `tests/test_tab_tooltips_96.py`).
 4. **Leaving with unsaved work.** Built 2026-09-27 for the note edit form,
    the Capture box and a document mid-autosave, the three surfaces with a

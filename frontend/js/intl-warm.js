@@ -6,8 +6,9 @@
 // process, so a worker that makes the same calls first leaves the page's own
 // first call at 0.2 to 1.5 ms in the app (measured in a bare page, 6 runs each, 2026-11-21).
 // shell-reminders.js starts this and paints its clocks when it answers.
-//: `toLocaleString` covers the time patterns too; no clock reads this, so the 12 or 24 hour setting does not apply.
-new Date().toLocaleString();
+//: The date and time pattern `toLocaleString` uses, built directly: nothing
+//: here is shown, so the 12 or 24 hour setting and whenText do not apply.
+new Intl.DateTimeFormat([], { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric" }).format(Date.now());
 new Date().toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
 new Intl.NumberFormat().format(1234.5);
 self.postMessage(1);

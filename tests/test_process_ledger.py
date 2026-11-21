@@ -13,6 +13,7 @@ import json
 
 import pytest
 
+from tests._clock import pin_clock
 from tessellate.core import activity, jobruns, taskhistory
 from tessellate.core import jobs as pool
 
@@ -357,7 +358,6 @@ def test_history_is_not_cut_to_half_an_hour(client):
 
 from datetime import datetime, timedelta  # noqa: E402
 
-from tessellate.core import config as _config  # noqa: E402
 from tessellate.core.database import JobRunLog  # noqa: E402
 from tessellate.core.database_manager import DatabaseManager  # noqa: E402
 
@@ -370,7 +370,7 @@ def stored(tmp_path, monkeypatch):
     db = DatabaseManager(tmp_path / "log.db")
     clock = {"now": _NOW}
     monkeypatch.setattr(jobruns, "_peek_db", lambda: db)
-    monkeypatch.setattr(_config, "user_now", lambda _c: clock["now"])
+    pin_clock(monkeypatch, lambda: clock["now"])
     return db, clock
 
 

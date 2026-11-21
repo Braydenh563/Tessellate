@@ -6529,9 +6529,17 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   flex-flow: row wrap;
   align-items: center;
   column-gap: var(--space-4);
+  --card-part: 0 0 100%;
 }
-#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) > * {
-  flex: 0 0 100%;
+/* The parts read what the anchor set, so no `:has` rule ends in `*`
+   (tests/test_tab_entry_cost.py). Without links a part keeps the
+   `0 0 auto` it had (measured: every card's height unchanged); `min-width: 0` is the cross axis of the column, so it changes
+   nothing there. The token is paid for by inlining `--cal-hours-min`. */
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel) {
+  --card-part: 0 0 auto;
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel) > * {
+  flex: var(--card-part);
   min-width: 0;
 }
 #entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)) > .entry-links {

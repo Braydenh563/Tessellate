@@ -2628,6 +2628,7 @@ def _capture() -> int:
 
 
 def main() -> None:
+    _ensure_std_streams()
     # A packaged build has no `-m`: `core/parse_sandbox.py` starts this same
     # exe with `--parse-child` to read an untrusted file, and it must reach the
     # child's loop before any launcher work (no window, no instance lock).
@@ -2636,7 +2637,6 @@ def main() -> None:
 
         parse_child.main()
         return
-    _ensure_std_streams()
     parser = argparse.ArgumentParser(prog="tessellate", description="Tessellate")
     parser.add_argument(
         "--desktop",

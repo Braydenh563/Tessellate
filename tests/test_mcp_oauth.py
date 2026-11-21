@@ -53,7 +53,8 @@ def _signed_in(client, scope=None, writes=False):
     client_id = _register(client).json()["client_id"]
     wait = _waiting_page(client, client_id)
     (row,) = client.get("/mcp-oauth/requests").json()["requests"]
-    approved = client.post(f"/mcp-oauth/requests/{row['id']}/approve", json={"writes": writes, "scope": scope or {}})
+    rid = row["id"]
+    approved = client.post(f"/mcp-oauth/requests/{rid}/approve", json={"writes": writes, "scope": scope or {}})
     assert approved.status_code == 200, approved.text
     back = client.get(wait, follow_redirects=False)
     assert back.status_code == 303
@@ -140,7 +141,8 @@ def test_a_code_is_single_use_and_needs_its_verifier(client):
     client_id = _register(client).json()["client_id"]
     wait = _waiting_page(client, client_id)
     (row,) = client.get("/mcp-oauth/requests").json()["requests"]
-    client.post(f"/mcp-oauth/requests/{row['id']}/approve", json={})
+    rid = row["id"]
+    client.post(f"/mcp-oauth/requests/{rid}/approve", json={})
     code = parse_qs(urlsplit(client.get(wait, follow_redirects=False).headers["location"]).query)["code"][0]
     form = {"grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT, "client_id": client_id}
     wrong = client.post("/oauth/token", data={**form, "code_verifier": "x" * 50})
@@ -153,7 +155,8 @@ def test_deny_sends_access_denied_back_and_a_refresh_rotates(client):
     client_id = _register(client).json()["client_id"]
     wait = _waiting_page(client, client_id)
     (row,) = client.get("/mcp-oauth/requests").json()["requests"]
-    denied = client.post(f"/mcp-oauth/requests/{row['id']}/deny")
+    rid = row["id"]
+    denied = client.post(f"/mcp-oauth/requests/{rid}/deny")
     assert denied.status_code == 200
     back = parse_qs(urlsplit(client.get(wait, follow_redirects=False).headers["location"]).query)
     assert back == {"error": ["access_denied"], "state": ["s1"]}
@@ -191,7 +194,8 @@ def test_approval_is_on_this_computer_only_and_behind_the_lock(client):
     (row,) = client.get("/mcp-oauth/requests").json()["requests"]
     deps.get_config().set_preference(netbind.LAN_PREF, True)
     away = TestClient(create_app(), client=("192.168.1.40", 51000))
-    approved = away.post(f"/mcp-oauth/requests/{row['id']}/approve", json={})
+    rid = row["id"]
+    approved = away.post(f"/mcp-oauth/requests/{rid}/approve", json={})
     assert approved.status_code in (401, 403)
     deps.get_config().set_preference(netbind.LAN_PREF, False)
     meta = away.get("/.well-known/oauth-authorization-server")
@@ -205,7 +209,8 @@ def test_the_grant_count_is_shared_with_the_tokens(client, monkeypatch):
     client_id = _register(client).json()["client_id"]
     _waiting_page(client, client_id)
     (row,) = client.get("/mcp-oauth/requests").json()["requests"]
-    approved = client.post(f"/mcp-oauth/requests/{row['id']}/approve", json={})
+    rid = row["id"]
+    approved = client.post(f"/mcp-oauth/requests/{rid}/approve", json={})
     assert approved.status_code == 409
     still = client.get("/mcp-oauth/requests").json()["requests"]
     assert still, "a refused approval leaves the sign-in waiting"

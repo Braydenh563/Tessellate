@@ -9,7 +9,7 @@ one page, as a tab does), so the right first move is the one tool the request
 names in plain words. A parked call (the confirm card) counts as the choice:
 the model picked it, the guard asked.
 
-    scratchpad/llama-dev.sh serve   # prints the two exports
+    # export TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL, as for test_harness_evals.py
     pytest -m evals tests/test_browser_tools_evals.py -s
 """
 

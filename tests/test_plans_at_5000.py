@@ -17,13 +17,15 @@ from datetime import timedelta
 from sqlalchemy import event
 
 from tessellate.core import deps
-from tessellate.core.database import Entry, utcnow
+from tessellate.core.database import Entry
+from tests._clock import SUITE_NOW, pin_clock
 
 
-def test_todays_line_counts_its_two_days_from_the_created_at_index(client):
+def test_todays_line_counts_its_two_days_from_the_created_at_index(client, monkeypatch):
+    pin_clock(monkeypatch, SUITE_NOW)
     session = deps.get_db().session()
     try:
-        now = utcnow()
+        now = SUITE_NOW.replace(tzinfo=None)
         session.add_all([Entry(content=f"Note {i}", created_at=now - timedelta(days=i)) for i in range(6)])
         session.commit()
     finally:
