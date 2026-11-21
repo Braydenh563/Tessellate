@@ -496,7 +496,8 @@ function tabFromTop() {
 }
 
 new MutationObserver((_, seen) => {
-  if ($("boot-splash")) return;
+  //: Not while the page still parses: tabFromTop calls afterFrames (dashboard.js, later in index.html order).
+  if ($("boot-splash") || document.readyState === "loading") return;
   seen.disconnect();
   tabFromTop();
 }).observe(document.body, { childList: true });
