@@ -91,7 +91,7 @@ def test_e41_the_models_pane_speaks_plainly():
     panel = (JS_DIR / "activity-panel.js").read_text(encoding="utf-8")
     assert "loads when you ask" in panel and "not in memory" not in panel
     # The spec list: no "declared", no "in use".
-    chat = (JS_DIR / "chat.js").read_text(encoding="utf-8")
+    chat = (JS_DIR / "model-spec.js").read_text(encoding="utf-8")
     spec = chat[chat.index('["Size", spec.parameters]') :][:1500]
     assert "Thinking mode declared" not in spec and '"Thinking switch"' in spec
     assert "in use`" not in spec and '"Reads at once"' in spec

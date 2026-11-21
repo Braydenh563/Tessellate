@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8585, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11510, test files 3025, tests 23447, plan headings 696, app scripts 29, boot scripts 38, script files 313.
+Counts: frontend functions 8587, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11510, test files 3025, tests 23447, plan headings 696, app scripts 32, boot scripts 41, script files 317.
 
-## Frontend functions (8585)
+## Frontend functions (8587)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -402,66 +402,79 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:491 |
 
-### frontend/js/chat.js (56)
+### frontend/js/chat.js (20)
 
 | Name | File:line |
 |---|---|
-| `CLIP_LIMITS` | frontend/js/chat.js:55 |
-| `aiWritingTrace` | frontend/js/chat.js:1315 |
-| `applyCompression` | frontend/js/chat.js:1198 |
-| `atlasSuggestion` | frontend/js/chat.js:202 |
-| `batteryModeOn` | frontend/js/chat.js:1240 |
-| `bodyTextWithCitations` | frontend/js/chat.js:87 |
-| `chatEmptySettle` | frontend/js/chat.js:223 |
-| `chatTranscriptText` | frontend/js/chat.js:1129 |
-| `citeWebPage` | frontend/js/chat.js:666 |
-| `clearChatEmptyState` | frontend/js/chat.js:352 |
-| `clearWebSearchHistory` | frontend/js/chat.js:621 |
-| `clipFor` | frontend/js/chat.js:61 |
-| `closeWebReader` | frontend/js/chat.js:422 |
-| `compactTokens` | frontend/js/chat.js:101 |
-| `compressChatContext` | frontend/js/chat.js:1158 |
-| `compressSizeText` | frontend/js/chat.js:1179 |
-| `copyToClipboard` | frontend/js/chat.js:152 |
-| `copyViaTextarea` | frontend/js/chat.js:112 |
-| `fillPersonaMark` | frontend/js/chat.js:932 |
-| `flashCopied` | frontend/js/chat.js:134 |
-| `loadResponseModes` | frontend/js/chat.js:881 |
-| `loadWebSearchHistory` | frontend/js/chat.js:610 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1073 |
-| `openWebReader` | frontend/js/chat.js:626 |
-| `personaOptions` | frontend/js/chat.js:949 |
-| `progressMotionWanted` | frontend/js/chat.js:1267 |
-| `progressPhaseText` | frontend/js/chat.js:1511 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:567 |
-| `regenerateFromBubble` | frontend/js/chat.js:190 |
-| `regenerateLastAnswer` | frontend/js/chat.js:195 |
-| `renderChatContextMeter` | frontend/js/chat.js:1027 |
-| `renderChatEmptyState` | frontend/js/chat.js:233 |
-| `renderChatTurnCount` | frontend/js/chat.js:1053 |
-| `renderChatUsage` | frontend/js/chat.js:1010 |
-| `renderCompressionState` | frontend/js/chat.js:1211 |
-| `renderModelContextBox` | frontend/js/chat.js:739 |
-| `renderModelHealthNote` | frontend/js/chat.js:843 |
-| `renderModelSpec` | frontend/js/chat.js:771 |
-| `renderWebPageAttachment` | frontend/js/chat.js:693 |
-| `renderWebPanelMenu` | frontend/js/chat.js:510 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1429 |
-| `setResponseMode` | frontend/js/chat.js:910 |
-| `setWebEngineDot` | frontend/js/chat.js:496 |
-| `showCompressReview` | frontend/js/chat.js:1186 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1457 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1479 |
-| `stopWebRequest` | frontend/js/chat.js:407 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1002 |
-| `toggleWebPanel` | frontend/js/chat.js:435 |
-| `typingDots` | frontend/js/chat.js:1533 |
-| `webPageMarkdown` | frontend/js/chat.js:633 |
-| `webReaderIsOpen` | frontend/js/chat.js:418 |
-| `webRequestEnd` | frontend/js/chat.js:397 |
-| `webRequestStart` | frontend/js/chat.js:388 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1364 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1397 |
+| `CLIP_LIMITS` | frontend/js/chat.js:51 |
+| `applyCompression` | frontend/js/chat.js:502 |
+| `atlasSuggestion` | frontend/js/chat.js:198 |
+| `bodyTextWithCitations` | frontend/js/chat.js:83 |
+| `chatEmptySettle` | frontend/js/chat.js:219 |
+| `chatTranscriptText` | frontend/js/chat.js:433 |
+| `clearChatEmptyState` | frontend/js/chat.js:348 |
+| `clipFor` | frontend/js/chat.js:57 |
+| `compactTokens` | frontend/js/chat.js:97 |
+| `compressChatContext` | frontend/js/chat.js:462 |
+| `compressSizeText` | frontend/js/chat.js:483 |
+| `copyToClipboard` | frontend/js/chat.js:148 |
+| `copyViaTextarea` | frontend/js/chat.js:108 |
+| `flashCopied` | frontend/js/chat.js:130 |
+| `mountChatActionsMenu` | frontend/js/chat.js:377 |
+| `regenerateFromBubble` | frontend/js/chat.js:186 |
+| `regenerateLastAnswer` | frontend/js/chat.js:191 |
+| `renderChatEmptyState` | frontend/js/chat.js:229 |
+| `renderCompressionState` | frontend/js/chat.js:515 |
+| `showCompressReview` | frontend/js/chat.js:490 |
+
+### frontend/js/chat-web.js (15)
+
+| Name | File:line |
+|---|---|
+| `citeWebPage` | frontend/js/chat-web.js:302 |
+| `clearWebSearchHistory` | frontend/js/chat-web.js:257 |
+| `closeWebReader` | frontend/js/chat-web.js:58 |
+| `loadWebSearchHistory` | frontend/js/chat-web.js:246 |
+| `openWebReader` | frontend/js/chat-web.js:262 |
+| `refreshWebSearxngStrip` | frontend/js/chat-web.js:203 |
+| `renderWebPageAttachment` | frontend/js/chat-web.js:329 |
+| `renderWebPanelMenu` | frontend/js/chat-web.js:146 |
+| `setWebEngineDot` | frontend/js/chat-web.js:132 |
+| `stopWebRequest` | frontend/js/chat-web.js:43 |
+| `toggleWebPanel` | frontend/js/chat-web.js:71 |
+| `webPageMarkdown` | frontend/js/chat-web.js:269 |
+| `webReaderIsOpen` | frontend/js/chat-web.js:54 |
+| `webRequestEnd` | frontend/js/chat-web.js:33 |
+| `webRequestStart` | frontend/js/chat-web.js:24 |
+
+### frontend/js/chat-model-panel.js (9)
+
+| Name | File:line |
+|---|---|
+| `fillPersonaMark` | frontend/js/chat-model-panel.js:93 |
+| `loadResponseModes` | frontend/js/chat-model-panel.js:42 |
+| `personaOptions` | frontend/js/chat-model-panel.js:110 |
+| `renderChatContextMeter` | frontend/js/chat-model-panel.js:188 |
+| `renderChatTurnCount` | frontend/js/chat-model-panel.js:214 |
+| `renderChatUsage` | frontend/js/chat-model-panel.js:171 |
+| `renderModelSpec` | frontend/js/chat-model-panel.js:28 |
+| `setResponseMode` | frontend/js/chat-model-panel.js:71 |
+| `togglePersonaPrompt` | frontend/js/chat-model-panel.js:163 |
+
+### frontend/js/chat-progress.js (10)
+
+| Name | File:line |
+|---|---|
+| `aiWritingTrace` | frontend/js/chat-progress.js:98 |
+| `batteryModeOn` | frontend/js/chat-progress.js:23 |
+| `progressMotionWanted` | frontend/js/chat-progress.js:50 |
+| `progressPhaseText` | frontend/js/chat-progress.js:294 |
+| `scheduleThinkingWordTick` | frontend/js/chat-progress.js:212 |
+| `startThinkingWordRotation` | frontend/js/chat-progress.js:240 |
+| `stopThinkingWordRotation` | frontend/js/chat-progress.js:262 |
+| `typingDots` | frontend/js/chat-progress.js:316 |
+| `wheelScrollsHorizontally` | frontend/js/chat-progress.js:147 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat-progress.js:180 |
 
 ### frontend/js/chat-agent.js (40)
 
@@ -6662,6 +6675,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `modelMenuStops` | frontend/js/model-menu.js:199 |
 | `modelMenuWalk` | frontend/js/model-menu.js:204 |
 | `modelSource` | frontend/js/model-menu.js:38 |
+
+### frontend/js/model-spec.js (4)
+
+| Name | File:line |
+|---|---|
+| `canDo` | frontend/js/model-spec.js:58 |
+| `renderModelContextBox` | frontend/js/model-spec.js:5 |
+| `renderModelHealthNote` | frontend/js/model-spec.js:109 |
+| `windows` | frontend/js/model-spec.js:10 |
 
 ### frontend/js/nav-history.js (11)
 
