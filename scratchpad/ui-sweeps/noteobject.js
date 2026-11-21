@@ -21,6 +21,12 @@ const PHONE = process.env.PHONE === '1';
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 140)));
   await page.waitForTimeout(2500);
+  // The card's preview is now a thumbnail picture (`img.board-embed-picture`, from /media/board-thumb),
+  // not an inline svg: drawn means the picture has loaded, or an svg is there.
+  await page.evaluate(() => {
+    window.previewDrawn = (el) => Boolean(el.querySelector('svg'))
+      || [...el.querySelectorAll('img.board-embed-picture')].some((i) => i.complete && i.naturalWidth > 0);
+  });
 
   // Unique names per run: this sweep runs against whatever notebook the gate
   // has (its own earlier runs included), and two boards called "House jobs"
@@ -61,7 +67,7 @@ const PHONE = process.env.PHONE === '1';
   // "loading" (a sweep measuring the load, not the app).
   await page.waitForFunction((id) => {
     const cards = [...document.querySelectorAll(`#entry-list li[data-id="${id}"] .board-embed`)];
-    return cards.length > 0 && cards.every((c) => c.querySelector('svg') || c.classList.contains('board-embed-gone'));
+    return cards.length > 0 && cards.every((c) => previewDrawn(c) || c.classList.contains('board-embed-gone'));
   }, ids.note, { timeout: 20000 }).catch(() => {});
 
   const card = await page.evaluate((id) => {
@@ -73,7 +79,7 @@ const PHONE = process.env.PHONE === '1';
         text: el.textContent.trim().slice(0, 80),
         h: Math.round(r.height),
         w: Math.round(r.width),
-        svg: !!el.querySelector('svg'),
+        svg: previewDrawn(el),
         gone: el.classList.contains('board-embed-gone'),
         ref: el.dataset.boardRef || '',
       };
@@ -201,6 +207,12 @@ const PHONE = process.env.PHONE === '1';
   await page.waitForTimeout(2500);
   await page.click('button[aria-controls="wb-board-menu"]').catch(() => {});
   await page.waitForTimeout(600);
+  // "Add to a note…" sits in the Board menu's "Share and save" submenu (INBOX 1627), so open that group first.
+  await page.evaluate(() => {
+    const group = [...document.querySelectorAll('#wb-board-menu button')].find((b) => /Share and save/.test(b.textContent));
+    if (group) group.click();
+  });
+  await page.waitForTimeout(400);
   const boardSide = await page.evaluate(() => {
     const el = document.getElementById('wb-add-to-note');
     if (!el) return null;
@@ -269,7 +281,7 @@ const PHONE = process.env.PHONE === '1';
       const el = document.querySelector('#doc-preview .board-embed');
       if (!el) return null;
       const r = el.getBoundingClientRect();
-      return { h: Math.round(r.height), svg: !!el.querySelector('svg'), gone: el.classList.contains('board-embed-gone') };
+      return { h: Math.round(r.height), svg: previewDrawn(el), gone: el.classList.contains('board-embed-gone') };
     });
     console.log('inDocument', JSON.stringify(drawn));
     if (!drawn) findingsDoc.push('the board object did not render in a document');
@@ -290,7 +302,7 @@ const PHONE = process.env.PHONE === '1';
     const room = body.getBoundingClientRect();
     const e = embed && embed.getBoundingClientRect();
     return {
-      embed: e && { w: Math.round(e.width), h: Math.round(e.height), svg: !!embed.querySelector('svg'), fits: e.left >= room.left - 1 && e.right <= room.right + 1 },
+      embed: e && { w: Math.round(e.width), h: Math.round(e.height), svg: previewDrawn(embed), fits: e.left >= room.left - 1 && e.right <= room.right + 1 },
       docOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       bodyW: Math.round(room.width),
     };

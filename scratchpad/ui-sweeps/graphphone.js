@@ -142,8 +142,19 @@ async function touch(cdp, type, points) {
         const x = b.left + b.width * fx;
         const y = b.top + b.height * fy;
         if (document.elementFromPoint(x, y) !== canvas) continue;
-        const [wx, wy] = gcWorldPoint({ clientX: x, clientY: y });
-        const node = gcNodeAtWorld(wx, wy);
+        // gcWorldPoint and gcNodeAtWorld are private to graph-canvas.js's closure; gcTab is on
+        // window, so the same hit test is done here: nearest node within its radius plus the
+        // touch slop (GC_SLOP_PX, 20 on a coarse pointer) in world units.
+        const t = gcTab.transform || d3.zoomIdentity;
+        const [wx, wy] = t.invert([x - b.left, y - b.top]);
+        const slop = (matchMedia('(pointer: coarse)').matches ? 20 : 6) / (t.k || 1);
+        let node = null;
+        let best = Infinity;
+        for (const n of gcTab.nodes) {
+          if (!Number.isFinite(n.x) || !Number.isFinite(n.y)) continue;
+          const d = Math.hypot(n.x - wx, n.y - wy);
+          if (d <= (n.r || 4) + slop && d < best) { best = d; node = n; }
+        }
         if (node && !node.isGroup && !onNode) onNode = [Math.round(x), Math.round(y), node.id];
         if (!node && !empty) empty = [Math.round(x), Math.round(y)];
       }
@@ -207,8 +218,11 @@ async function touch(cdp, type, points) {
   // --- 2. lasso: hold on empty map, then drag -------------------------------
   if (points.empty) {
     await page.evaluate(() => {
+      // gcSelectionChanged is private to graph-canvas.js's closure; an empty selection
+      // is what it would draw: the dock hidden, the count at zero.
       gcTab.selected.clear();
-      gcSelectionChanged(gcTab);
+      document.getElementById('graph-selection-dock')?.classList.add('hidden');
+      gcRequestDraw(gcTab);
     });
     const [ex, ey] = points.empty;
     await hold(ex, ey);
@@ -256,8 +270,11 @@ async function touch(cdp, type, points) {
     check(lassoed.selected > 0, `the lasso caught ${lassoed.selected} notes`);
     check(lassoed.dock, 'the selection dock stayed hidden after a lasso');
     await page.evaluate(() => {
+      // gcSelectionChanged is private to graph-canvas.js's closure; an empty selection
+      // is what it would draw: the dock hidden, the count at zero.
       gcTab.selected.clear();
-      gcSelectionChanged(gcTab);
+      document.getElementById('graph-selection-dock')?.classList.add('hidden');
+      gcRequestDraw(gcTab);
     });
   }
 
