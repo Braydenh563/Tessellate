@@ -243,6 +243,9 @@ class LinkOut(BaseModel):
     link_type: str | None = None
     link_label: str | None = None
     props: dict | None = None
+    #: The other end's space when it differs from this note's (a move keeps
+    #: the link), for the chip; null when they share one.
+    space_name: str | None = None
 
 
 class AttachmentOut(BaseModel):

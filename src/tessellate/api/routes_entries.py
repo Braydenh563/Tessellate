@@ -61,6 +61,7 @@ from tessellate.core.database import (
     EmbeddingRecord,
     Entry,
     MediaUpload,
+    Space,
     WhiteboardNode,
     like_escape,
     utcnow,
@@ -212,6 +213,7 @@ def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: 
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             props=link.props,
+            space_name=_other_space_name(session, entry, other),
         )
         for link, other in links
     ]
@@ -2735,6 +2737,15 @@ def _connection_cue(session: Session, other: Entry) -> dict:
     }
 
 
+def _other_space_name(session: Session, entry: Entry, other: Entry) -> str | None:
+    """The name of the space the other end of a link lives in, when it is not this note's own."""
+    here, there = entry.workspace_id or "default", other.workspace_id or "default"
+    if here == there:
+        return None
+    space = session.get(Space, there)
+    return space.name if space is not None else there
+
+
 def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], list[dict]]:
     """`(outgoing, incoming)` from the stored links, direction kept."""
     outgoing: list[dict] = []
@@ -2761,6 +2772,9 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             "props": link.props,
+            #: The other end's space when it is not this note's (a move keeps
+            #: the link; the chip says where the note lives), else null.
+            "space_name": _other_space_name(session, entry, other),
         }
         (outgoing if link.source_entry_id == entry.id else incoming).append(row)
     return outgoing, incoming
