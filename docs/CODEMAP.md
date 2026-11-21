@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11164, test files 2891, tests 22877, plan headings 685, app scripts 29, boot scripts 38, script files 311.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11164, test files 2891, tests 22877, plan headings 685, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8538)
 
@@ -106,18 +106,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:236 |
-| `charactersLost` | frontend/js/lazy-entries.js:245 |
-| `emblemHead` | frontend/js/lazy-entries.js:253 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:282 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:315 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:276 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:303 |
-| `onDomReady` | frontend/js/lazy-entries.js:326 |
-| `plainHead` | frontend/js/lazy-entries.js:259 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:267 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:338 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:362 |
+| `afterCharacters` | frontend/js/lazy-entries.js:239 |
+| `charactersLost` | frontend/js/lazy-entries.js:248 |
+| `emblemHead` | frontend/js/lazy-entries.js:256 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:285 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:318 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:279 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:306 |
+| `onDomReady` | frontend/js/lazy-entries.js:329 |
+| `plainHead` | frontend/js/lazy-entries.js:262 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:270 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:341 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:365 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -882,7 +882,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `speakText` | frontend/js/media.js:291 |
 | `startMicLevelMeter` | frontend/js/media.js:206 |
 
-### frontend/js/status.js (128)
+### frontend/js/status.js (126)
 
 | Name | File:line |
 |---|---|
@@ -925,7 +925,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1347 |
 | `noteServerDown` | frontend/js/status.js:1406 |
 | `noteServerUp` | frontend/js/status.js:1415 |
-| `noticeTaskTransitions` | frontend/js/status.js:3238 |
 | `notificationsMuted` | frontend/js/status.js:722 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:477 |
@@ -934,7 +933,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLanPanel` | frontend/js/status.js:673 |
 | `openModelGate` | frontend/js/status.js:2157 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:3339 |
+| `paintPrivacyChip` | frontend/js/status.js:3209 |
 | `paintReminderList` | frontend/js/status.js:569 |
 | `paintStatusItem` | frontend/js/status.js:2643 |
 | `paintTitle` | frontend/js/status.js:510 |
@@ -953,7 +952,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `recordNotification` | frontend/js/status.js:97 |
 | `refreshBackgroundTasks` | frontend/js/status.js:3152 |
 | `refreshModelStatus` | frontend/js/status.js:1999 |
-| `refreshPrivacyChip` | frontend/js/status.js:3353 |
+| `refreshPrivacyChip` | frontend/js/status.js:3223 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
@@ -982,7 +981,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settleUndoFromToast` | frontend/js/status.js:1590 |
 | `showAgentNoModelHint` | frontend/js/status.js:2930 |
 | `showServerDownBanner` | frontend/js/status.js:1387 |
-| `startPrivacyChip` | frontend/js/status.js:3363 |
+| `startPrivacyChip` | frontend/js/status.js:3233 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1644 |
@@ -990,7 +989,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2183 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3213 |
 | `toast` | frontend/js/status.js:1175 |
 | `toastAction` | frontend/js/status.js:1319 |
 | `toastActionButton` | frontend/js/status.js:1299 |
@@ -7974,6 +7972,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `popoverHead` | frontend/js/status-panels.js:218 |
 | `renderBackendPicker` | frontend/js/status-panels.js:147 |
 | `renderSearchEngineHealth` | frontend/js/status-panels.js:86 |
+
+### frontend/js/status-tasks.js (2)
+
+| Name | File:line |
+|---|---|
+| `noticeTaskTransitions` | frontend/js/status-tasks.js:50 |
+| `taskKey` | frontend/js/status-tasks.js:38 |
 
 ### frontend/js/studio.js (4)
 

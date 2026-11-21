@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-STATUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js"
+STATUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "status-tasks.js"
 
 
 def _run(script: str) -> dict:
