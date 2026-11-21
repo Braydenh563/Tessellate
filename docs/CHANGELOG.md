@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Maps: the grammar repaint indexes the board's objects once per pass instead of a scan per drawn topic, so a 500-topic map reads its objects 501 times a pass, from 125,751 (L-mindmap-19).
 - Notes: a clipped or imported note's source chip now says its kind in its tooltip and label (Clipped from URL, Imported from file); extracted-from-document and transcribed-from-audio are not recorded on the note, so they have no chip (L-general-13).
 - Reminders: ticking one that points at a note asks for a one-line outcome (skippable) added to that note, and Overdue has a Triage sheet (Still matters, Drop, Reschedule, each or all at once, one Undo) (L-general-10, L-general-12).
 - Maps: a dragged branch moves as one layer (its topics in one element, its inside lines and links translated, the edge pan reads the gesture's own canvas box), so a 200-topic branch drag costs about 9ms a step, from 95 (L-mindmap-17).

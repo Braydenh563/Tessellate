@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
-| mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
+| mindmap | 0 | 1 | 0 | 0 | 0 | 1 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 11 | 0 | 0 | 4 | 11 |
-| all | 502 | 542 | 127 | 2 | 183 | 1171 |
+| all | 502 | 541 | 127 | 2 | 183 | 1170 |
 
 ## graph
 
@@ -342,7 +342,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 - [ ] **L-mindmap-18** `mindmap` open, M: Map branch pick-up: the first step of a 500-topic branch drag costs 400 to 770ms of CPU; cut the layer open and origin capture. From L-mindmap-17 (agent F). Evidence: mapperf.js twice on fresh data dirs (39/39): drag worst 416 and 571ms at 500 topics, branch worst 556 to 771ms; every other step of those drags is 7 to 15ms. The pick-up step is wbMapBranchDragOrigin plus wbMapDragLayer.open (edge and link sort, moving every member element); not gated by mapperf.
-- [ ] **L-mindmap-19** `mindmap` open, S: Map grammar repaint is quadratic: index the objects by id once per pass. From L-mindmap-17 (agent F). Evidence: wbGrammarRepaint (whiteboard-map-more.js:745) does a find over wbState.objects per drawn topic, 500 x 500 at 500 topics, 20 to 43ms of self time in each pass after a board opens; profiled with a CDP sampling profile.
 
 ## ui-modernisation
 
