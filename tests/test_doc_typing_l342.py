@@ -452,3 +452,48 @@ process.exit(0);
     assert 'if (!this.mark.classList.contains("hidden")) this.mark.classList.add("hidden");' in grip
     assert 'if (this.el.classList.contains("is-dragging")) this.el.classList.remove("is-dragging");' in grip
 
+
+@needs_node
+def test_a_harper_answer_for_text_typed_past_skips_the_languagetool_merge():
+    """The merge splits and walks the whole text on the key the answer lands; for text already
+    typed past the pause asks again, so it is skipped, and that text is not taken as answered."""
+    script = (
+        """
+let docGrammarCache = { text: null, findings: [] };
+const docGrammarWire = { asking: null };
+const docProse = { typedAt: 0 };
+let merged = 0, harper;
+const docGrammarEnabled = () => true, docCheckLinkText = () => "", docGrammarFindings = (l) => l;
+const renderDocProse = () => {};
+const docSpellingVariant = () => "us", docProseDismissed = () => [], prefsCache = null, DOC_GRAMMAR_SKIP_KINDS = [];
+const docGrammarSend = () => new Promise((r) => { harper = r; });
+const docSpell = { languageTool: async (lints) => { merged += 1; return lints.concat([{ lt: 1 }]); } };
+"""
+        + _function(PROSE, "function docGrammarAsk(")
+        + _function(PROSE, "function docGrammarRequest(")
+        + """
+(async () => {
+  const out = {};
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  docGrammarRequest("one two");
+  docProse.typedAt = performance.now() + 1;
+  harper([{ start: 0 }]);
+  await tick(); await tick();
+  out.typed = { merged, n: docGrammarCache.findings.length, partial: docGrammarCache.partial };
+  docProse.typedAt = 0;
+  docGrammarRequest("one two");
+  out.askedAgain = docGrammarWire.asking === "one two";
+  harper([{ start: 0 }]);
+  await tick(); await tick();
+  out.paused = { merged, n: docGrammarCache.findings.length, partial: docGrammarCache.partial };
+  docGrammarRequest("one two");
+  out.answered = docGrammarWire.asking === null;
+  console.log(JSON.stringify(out));
+})();
+"""
+    )
+    got = _node(script)
+    assert got["typed"] == {"merged": 0, "n": 1, "partial": True}, got
+    assert got["askedAgain"], got
+    assert got["paused"] == {"merged": 1, "n": 2, "partial": False}, got
+    assert got["answered"], got
