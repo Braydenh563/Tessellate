@@ -224,8 +224,11 @@ class RoamMixin:
         return p.top + (TITLE_BAR * self._scale() if p.kind == "top" else 0.0)
 
     def _lift(self) -> float:
-        """How far the frame's top is above the hands that hold an edge."""
-        return self.hang_top * self.size[1]
+        """How far the frame's top is above the hands that hold an edge: the hang's drawn top row at this size where the
+        boxes are known (the share rounds the other way at a half: the feminine hang's 27.5 put its hands 1 px over the
+        screen's top, L-ui-modernisation-152), else its share of the height."""
+        tops = [self.metrics[k][1] for k in (("hang", False), ("hang", True)) if k in self.metrics]
+        return float(min(tops)) if tops else self.hang_top * self.size[1]
 
     def _hold_of(self, p: Perch) -> Perch | None:
         """The window `p` as the runner last read it, when its title bar is still where it
