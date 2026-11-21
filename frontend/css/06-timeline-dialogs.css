@@ -1631,15 +1631,6 @@
   font-weight: 600;
 }
 
-/* The card's own "Built-in" marker is the same fact the persona list states,
-   so it says it the same way. `--accent-soft` is this app's *selected* tone
-   (DESIGN.md), and nothing about a built-in skill is selected. */
-.skill-card .chip.skill-builtin,
-.skill-card-header .chip:not(.skill-fact) {
-  background: var(--chip-bg);
-  color: var(--muted);
-  font-weight: 500;
-}
 /* Chips sit on one optical line. Padding alone does not do it, a chip with a
    descender and one without were a pixel out, which is the kind of thing that
    reads as "nothing quite lines up" without ever being noticeable on its own. */
@@ -2745,10 +2736,6 @@
   flex-wrap: wrap;
   width: 100%;
 }
-.wb-export-card .wb-export-note {
-  margin: 0;
-  color: var(--muted);
-}
 .wb-snap-label {
   display: inline-flex;
   align-items: center;
@@ -3203,34 +3190,6 @@
   min-height: 0;
   /* Fix flex overflow */
 }
-.wb-library-item {
-  padding: var(--space-3) var(--space-4);
-  background: var(--inner);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  cursor: grab;
-  font-size: var(--text-md);
-  user-select: none;
-  /* The note's name over one quiet line, each ellipsised at the row's edge
-     (the owner, 2026-10-10: "text gets cut off on the note sidebar"); never
-     squeezed by the list's column. A line clamp on this padded row painted
-     a third line, sliced, into its bottom padding. */
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-/* A row you can pick up says so under the pointer (INBOX 463: "no hover
-   state"), the same lift every other list row in the app gives. */
-.wb-library-item:hover,
-.wb-library-item:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg-hover);
-  border-color: var(--border);
-}
-.wb-library-item:active {
-  cursor: grabbing;
-}
 .wb-card {
   position: absolute;
   width: 250px;
@@ -3274,11 +3233,6 @@
   flex-direction: column;
   gap: 0.5rem;
   /* Disable pointer events on children so drag events fire on the card itself */
-}
-.wb-card:active {
-  cursor: grabbing;
-  z-index: 100;
-  box-shadow: var(--shadow-lg);
 }
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id

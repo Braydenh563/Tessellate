@@ -16,57 +16,6 @@
 /* A picture fills its box and keeps its aspect (K16/K19): without this it drew
    at its natural size, so a pasted image shrunk to the view overflowed a
    smaller selection box and a resize changed the box but not the picture. */
-/* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
-   between, so the shapes on the drawing layer below the card layer show
-   through it. Its inside lets the pointer through to the board, so a press
-   inside a frame selects or draws as it would on bare board; the title and
-   a selected frame's handles take the pointer. */
-.wb-object-frame {
-  /* `--border` is a 10% hairline, drawn for a box that has a fill to stand
-     on; a frame is nothing but its edge, so the edge takes the muted ink. */
-  border: 1.5px solid color-mix(in srgb, var(--muted) 80%, transparent);
-  background: transparent;
-  pointer-events: none;
-}
-.wb-object-frame .wb-frame-title,
-.wb-object-frame .wb-resize-handle {
-  pointer-events: auto;
-}
-.wb-object-frame .wb-frame-title {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  max-width: 100%;
-  padding-bottom: var(--space-1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  cursor: grab;
-  user-select: none;
-  touch-action: none;
-}
-/* **The title's hit area never shrinks below a target** (harness-wb-1004
-   item 1). The title is board text, so at a phone's fitted zoom (k 0.24) it
-   was 7px tall and a press aimed at it landed on the board. Its box grows
-   upward from the frame's edge to `--target-min` on screen, the words kept
-   at its foot: a transparent top border makes up the difference (a border
-   is hit like the box; a pseudo-element is clipped by the title's own
-   overflow, and a flex box loses the ellipsis). At k 1 it is a few pixels. */
-.wb-object-frame .wb-frame-title {
-  min-width: min(100%, calc(var(--target-min) * var(--wb-inv-zoom)));
-  border-top: max(0px, calc(var(--target-min) * var(--wb-inv-zoom) - var(--text-sm) * 1.4 - var(--space-1))) solid transparent;
-}
-.wb-object-frame.wb-text-editing .wb-frame-title {
-  color: var(--text);
-  cursor: text;
-  user-select: text;
-  text-overflow: clip;
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
 /* Presenting the frames (WHITEBOARD_PLAN decision 16): every control but
    the presentation's own bar steps aside, and the board is a view. A
    board's History (decision 33) is this mode with its own `.wb-present-bar`. */
@@ -111,12 +60,6 @@
   display: block;
   width: 100%;
 }
-/* A study question the cell would cut takes a line above the buttons. */
-.wb-present-count.wb-present-pick-slot.is-wide {
-  flex: 1 0 100%;
-  order: -1;
-  width: auto;
-}
 
 /* The thread, in the help popover's shell: the comments, then a quiet "New
    comment" that opens the box with its Post and Cancel (INBOX 570). */
@@ -126,61 +69,11 @@
   gap: var(--space-2);
   padding: var(--space-3);
 }
-.wb-object-text .wb-text-content {
-  width: 100%;
-  height: 100%;
-  outline: none;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  /* **A box you are not editing is a box, not a text field.** Reported:
-     text boxes were "basically unmovable", the editable body filled the
-     whole box and took every pointerdown, so only the grip could move it.
-     The JS half is in `wbBeginTextEdit`; this is the half that has to match
-     it, because an I-beam over something you can only drag is a promise the
-     box does not keep, and a live text selection would fight the drag for
-     the same gesture. Both come back under `.wb-text-editing` below. */
-  cursor: inherit;
-  user-select: none;
-}
-/* `outline: none` above had no replacement, a keyboard/screen-reader user
-   tabbing into a whiteboard text box got no visible confirmation it was
-   focused (Web Interface Guidelines pass). The box itself already has a
-   defined border/background (see the comment above), so an inset ring on
-   the editable area reads as an ordinary text-field focus state rather than
-   a stray rectangle on the canvas. */
-.wb-object-text .wb-text-content:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
 /* A guaranteed drag target for a text box, see the matching comment in
    app.js's `objectEnter.each` for why `.wb-text-content` alone left only a
    ~0.5rem padding strip to grab. Same glyph and cursor as `.wb-panel-grip`,
    always visible (not hover-gated) since the whole point is not having to
    go hunting for it. */
-/* Centred on the box's top edge, a tab on the border rather than a chip in
-   the text: at `top: -4px` its opaque ground covered the top 3px of the
-   first line (measured: 28 to 36 square px of the first glyph's box, the
-   ascender of "h" cut off; INBOX 445). */
-.wb-object-grip {
-  position: absolute;
-  top: 0;
-  transform: translateY(-50%);
-  left: 6px;
-  padding: 0 var(--space-1);
-  border-radius: var(--radius-sm);
-  /* Opaque in every look: `--card-bg` is a 55% glass in most, and on a
-     sticky's yellow the muted glyph over it measured 1.68:1 (Classic, dark)
-     (`wbgripink.js`). */
-  background: var(--modal-bg-opaque);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  cursor: grab;
-  z-index: 6;
-  touch-action: none;
-  user-select: none;
-}
 .wb-resize-handle {
   position: absolute;
   width: 10px;
@@ -212,28 +105,6 @@
   transition:
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
-}
-/* Interactive (and visible) only in the Select tool, `:hover` alone fires
-   for *any* tool the instant the cursor crosses the card, so without this
-   gate a link/pan drag started near a corner still lost to the handle
-   underneath even after the pointer-events fix above. `data-current-tool`
-   is kept in sync with `window.currentTool` by `updateWbCursor()`, the one
-   place a tool switch happens. */
-#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-resize-handle,
-#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-resize-handle,
-#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-resize-handle,
-#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-resize-handle,
-#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-rotate-handle,
-#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-rotate-handle,
-#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-rotate-handle,
-#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-rotate-handle,
-#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
-#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
-#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle,
-#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle {
-  display: block;
-  opacity: 1;
-  pointer-events: auto;
 }
 /* `:not(.wb-in-group)` above because the reveal now sets `display`, and at
    this specificity it would beat the group rule that hides a member's own
@@ -548,14 +419,6 @@ aside[data-resizable].sidebar-collapsed {
   .library-chip:is(:focus-visible, :has(:focus-visible)) {
     will-change: transform, box-shadow;
   }
-}
-/* **A dragged card must track the cursor, not ease after it.** The transition
-   above is for the hover lift; while a card is actually being dragged its
-   transform is being set every pointer move, so a 0.2s ease means the card
-   trails the pointer by exactly that much. `.dragging` was already used to
-   suppress the hover lift and never to suppress this. */
-.wb-card.dragging {
-  transition: none;
 }
 /* The three layers a pan transforms. Promoted together so they are composited
    the same way and land in the same frame, see the desync note above.
@@ -4245,13 +4108,6 @@ input[type="url"]:hover:not(:focus) {
   color: var(--warn);
 }
 
-.library-file-rows .library-image-tile .chip.library-read-badge {
-  background: transparent;
-  border: 0;
-  padding: 0;
-  min-height: 0;
-  font-weight: 400;
-}
 /* --- nothing interactive is bare text ------------------------------------
    "MAKE SURE ALL BUTTONS AND ELEMENTS HAVE THE AFFORDANCES SO THEY DON'T
    JUST LOOK LIKE TEXT IN A BOX OR SHAPE."
@@ -5255,20 +5111,6 @@ img.board-minimap {
   object-fit: cover;
   border-radius: var(--radius-sm);
   background: var(--chip-bg);
-}
-/* Rows mode. The minimap is `width: 100%` of a card that is now the full
-   width of the panel, and `aspect-ratio` turned that into a 448px-tall
-   "row" (measured). A row's job is to fit forty boards on a screen, so the
-   map becomes a fixed thumbnail at the head of the row, the same size and
-   position `.library-list .library-card-thumb` gives every other kind, so
-   the Library's rows keep one left edge. */
-.library-list .board-minimap {
-  order: -2;
-  flex: 0 0 auto;
-  width: 4.5rem;
-  height: 2.5rem;
-  aspect-ratio: auto;
-  margin: 0;
 }
 
 /* The picture is an `<svg>` or, once the board has a stored thumbnail, an
@@ -6396,12 +6238,6 @@ button.connection-row:is(:hover, :focus-visible) {
   border-color: var(--accent);
 }
 
-/* A row the filter kept, marked so the eye lands on it, not a colour change,
-   which would collide with `.is-active`'s own meaning (this is the region you
-   clicked), but a rule down the edge. */
-.ocr-region.is-found {
-  border-left: 3px solid var(--accent);
-}
 .ocr-head h2 {
   margin: 0;
 }
@@ -6497,22 +6333,6 @@ button.connection-row:is(:hover, :focus-visible) {
   touch-action: none;
   user-select: none;
 }
-/* A button, not a div: a region is clickable, and the thing that reads out
-   "region 3: Invoice total" to a screen reader has to be focusable. No
-   ground of its own, an opaque box over a scan hides the very thing it is
-   pointing at. */
-.ocr-box {
-  position: absolute;
-  /* Put back what `.ocr-boxes` gives up: the layer is transparent to the
-     pointer so a region drag can reach the layer beneath it, and the boxes are
-     the part that still has to be clickable. */
-  pointer-events: auto;
-  padding: 0;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  cursor: pointer;
-}
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
@@ -6533,9 +6353,6 @@ button.connection-row:is(:hover, :focus-visible) {
   }
 }
 
-.ocr-region:hover {
-  border-color: var(--accent);
-}
 /* A disabled control has to read as disabled, the `<input>` greys itself, and
    without this the words beside it stayed at full strength and the pair looked
    like a live control that had stopped responding. */
@@ -7426,17 +7243,6 @@ button.connection-row:is(:hover, :focus-visible) {
      standing in no bar. */
   border-radius: var(--radius-strip);
   background: var(--inner);
-}
-/* The usage row was written as a *section* of the image card: a rule above
-   it, an inset, and rhythm on both sides. On one line beside the meta strip
-   that rule becomes a 333px hairline hanging in the middle of the row, and
-   the rhythm becomes 18px of air the row is paying for twice (measured: the
-   line stood 51px tall around a 33px tallest child). It keeps all of that on
-   the Images cards, where it still separates two stacked sections. */
-.library-file-facts > .library-image-usage {
-  margin: 0;
-  padding: 0;
-  border-top: 0;
 }
 /* One line of facts, at one rank: the Files rows' own (kind, size, pages,
    added) and, sharing the rule rather than copying it, the picture cards'
@@ -8531,12 +8337,6 @@ button.connection-row:is(:hover, :focus-visible) {
   }
 }
 
-/* The caret says which way it will go, by turning, never by colour alone. */
-.skill-card .skill-fact-toggle > .ph-trail {
-  margin-inline-start: 0;
-  transition: rotate var(--ui-base) var(--ease-out);
-}
-
 .entry-meta.note-meta > .chip {
   background: transparent;
   border: 0;
@@ -9243,80 +9043,6 @@ input[type="file"] {
   font-size: var(--text-md);
   line-height: 1.35;
 }
-/* **The four shapes a topic can be drawn in** (MINDMAP_PLAN.md §12.1 item 3,
-   decided in §12.0). Four, not the plan's eight: parallelogram, trapezoid,
-   cloud and diamond need a clip-path that cuts into the box the label sits
-   in, and at node size that clips the label, which is the one thing a map
-   node may never do. These four are a border-radius and a surface, they hold
-   any label, and "plain" is Coggle's own default look, the text sitting on
-   the line with no card at all.
-   Plain keeps the box it had and only stops painting it: `border-color:
-   transparent` rather than `border: none`, because the layout, the edge
-   anchors and the ring's own centring all measure this element, and taking
-   5.5px of border away would move the node under everything already drawn
-   against it. */
-.wb-map-node[data-shape="pill"] {
-  border-radius: var(--radius-pill);
-}
-.wb-map-node[data-shape="rect"] {
-  border-radius: 0;
-}
-/* The fourth, and the one the core node brought with it (MINDMAP_PLAN.md item
-   177 names "rounded rectangle, pill, ellipse" as a core idea's shape set).
-   A radius, like the three above it, so it still holds any label: what an
-   ellipse needs beyond that is room at its own narrow ends, which is what the
-   wider inline padding buys. Centred text for the same reason: a label ranged
-   left inside an ellipse sits against the curve rather than inside it. */
-.wb-map-node[data-shape="ellipse"] {
-  border-radius: 50%;
-  padding-inline: var(--space-7);
-  text-align: center;
-}
-/* **A filled topic** (the owner: "the option to fill an individual node or
-   have it cascade to its children as well"; `wbMapFills` decides which). A
-   tint of the branch colour, not the colour itself, so the label keeps the
-   ordinary `--ink` and needs no per-colour ink the way a core node does:
-   `--wb-fill-strength` (24% light, 32% dark) of any colour at all over
-   `--modal-bg-opaque` stays within a third of the way from the theme's own
-   surface, and the worst case, pure white tinted onto the dark surface, still
-   reads over 5:1 against dark-theme ink. Mixed
-   toward the opaque surface for the reason `.wb-map-node` gives: `--card`
-   falls to transparent at zero glass. Above the core rule on purpose: equal
-   specificity, so a core node's full-colour ground wins by source order. */
-.wb-map-node.wb-map-filled {
-  background: color-mix(in srgb, var(--wb-branch) var(--wb-fill-strength), var(--modal-bg-opaque));
-}
-/* **A core idea, told apart three ways at once** (INBOX 201: "I want more and
-   better ways to differentiate core idea nodes in the mindmap"; the decision is
-   MINDMAP_PLAN §12.5).
-   The first answer to item 177 was weight alone: a heavier outline, a wider
-   spine and a bolder label. That is one signal in three places, and on a map of
-   twenty coloured branches it is the signal that loses. So a core node now
-   differs in **shape** (the ellipse the strip offers it), in **weight** (a
-   filled ground in its own branch colour, with the ink that reads on it) and in
-   **size** (one step of type larger), with a star before the label.
-   The fill overrides this file's own earlier reasoning, which was that "a whole
-   node filled with the branch colour makes the text fight its own background at
-   every palette entry". That is true of a fill with an inherited text colour,
-   which is what it would have been; it is not true of one whose ink is chosen
-   per colour. `--wb-core-ink` is computed in `wbPaintMapNode` by WCAG
-   luminance and is black or white, so the label clears 4.5:1 on every palette
-   entry and on anything the colour picker is pointed at, in both themes. The
-   fallback is `--ink` for the one frame before a paint has run.
-   `1.15em`, not a token: it has to compose with the strip's own four sizes and
-   with the text-size grip, so "one step larger" means one step larger than
-   whatever this node was already set to, not a fixed number that would undo a
-   size someone chose.
-   Placed above `.wb-map-bold` on purpose: the two set the same property on
-   the same element at the same specificity, so source order decides, and a
-   node someone explicitly made bold should be bold rather than merely core. */
-.wb-map-node.wb-map-core {
-  background: var(--wb-branch);
-  color: var(--wb-core-ink);
-  border-width: 2px;
-  border-left-width: 6px;
-  box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in srgb, var(--wb-branch-edge) 45%, transparent);
-}
 /* --- the spine on the other edge (MINDMAP_PLAN.md §13e) ---------------------
    A topic whose parent is to its *right* carries the branch bar on its right
    edge, for the same reason a downward map carries it on the top: a bar on
@@ -9361,23 +9087,6 @@ input[type="file"] {
   padding: 0 var(--space-1);
   font-size: 0.92em;
 }
-/* The node's two "grow the map here" buttons: `+` (a topic) and the library
-   one (a node pointing at a real note/document/file/link). They are an
-   affordance, not furniture: they appear on the node you are pointing at or
-   have selected, which is the only time "add a child *here*" means anything.
-   Keyboard users have Tab and never need them visible.
-   A flex row placed once, rather than two buttons each hand-positioned off the
-   same corner: the second of those is how two controls come to overlap by a
-   few pixels that a screenshot does not show, twice already in this file, see
-   `.wb-map-count`. The row is anchored by its right edge so a third button
-   would grow leftwards into empty canvas rather than over the node. */
-.wb-map-node:hover .wb-map-actions,
-.wb-map-node.wb-selected .wb-map-actions,
-.wb-map-actions:focus-within,
-.wb-map-node:focus-visible .wb-map-actions {
-  opacity: 1;
-  pointer-events: auto;
-}
 /* **The topic's resize grip, on its own bottom right corner** (INBOX 610:
    "resizing the mindmap nodes, resizing the text" was "unintuitive"). It was
    a row of two 16px glyphs floating outside the top left, "Aa" and an arrow,
@@ -9404,12 +9113,6 @@ input[type="file"] {
   z-index: 5;
   transform: scale(var(--wb-inv-zoom));
   display: none;
-}
-/* The focus ring is the app's own (every button has it). */
-#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:hover, .wb-selected):not(.wb-in-group) .wb-map-resize-grip,
-.wb-map-resize-grip:focus-visible,
-#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:focus-visible, .wb-selected):not(.wb-in-group) .wb-map-resize-grip {
-  display: block;
 }
 /* --- the node edit strip (MINDMAP_PLAN.md §12.1 item 2) ---------------------
    The bar that stands in the board selection bar's place on a map node. Same
@@ -11037,22 +10740,6 @@ header#top-bar {
   display: none;
 }
 
-/* "is there a way to better design all instances of these menu bar elements
-   in popups": the board export's Format row is seven choices in a track
-   built for two to four, so it wrapped, FreeMind alone on a second line of a
-   well. More than four exclusive choices in a dialog are option tiles: a
-   grid of equal buttons with a hairline each, the chosen one ringed in the
-   accent, the way a print or export dialog offers its formats. Its "How
-   much" row wears the same tiles so the two questions read as one form. */
-.wb-export-overlay .seg.wb-export-seg {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(6.25rem, 1fr));
-  gap: var(--space-2);
-  padding: 0;
-  background: none;
-  box-shadow: none;
-}
-
 /* A dock's controls folded into its ⋯ below 1100 ("Sort and view"): the
    label and the zone above, and a lone folded control here, on the same
    column (menus.js at 1024 and 390: 4.6 to 5.2px left of the rows). */
@@ -12566,11 +12253,6 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
 .setting-check:has(+ .setting-check) {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-}
-
-.skill-card .skill-card-facts > button.skill-fact-toggle:is(:hover, :focus-visible, [aria-expanded="true"]) {
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
 }
 
 .dock .menu-wrap > button.ghost:hover,
@@ -14927,10 +14609,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   gap: var(--row-gap);
 }
 
-.wb-layer-row:hover {
-  background: var(--hover-veil);
-}
-
 .chat-toolbar .chat-headline > :first-child {
   flex: 0 1 auto;
   min-width: 4rem;
@@ -15438,9 +15116,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   display: flex;
   flex-direction: column;
   gap: var(--row-gap);
-}
-.wb-lock-pin.hidden {
-  display: none;
 }
 
 /* ============================================================================

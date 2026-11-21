@@ -24,6 +24,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._css_unwrap import split_top
+
 ROOT = Path(__file__).resolve().parents[1]
 WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 
@@ -112,7 +114,7 @@ def test_the_inverse_zoom_is_written_onto_the_grips_that_read_it() -> None:
     readers: set[str] = set()
     for selectors, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css_text):
         if "var(--wb-inv-zoom)" in body:
-            readers.update(s.strip() for s in selectors.split(","))
+            readers.update(split_top(selectors))
     listed = re.search(r"const WB_INV_ZOOM_GRIPS = \[(.*?)\];", WB_JS, re.S)
     assert listed
     grips = set(re.findall(r'"([^"]+)"', listed.group(1)))

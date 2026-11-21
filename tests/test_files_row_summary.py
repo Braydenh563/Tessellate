@@ -21,16 +21,18 @@ Chromium, pinned here so it cannot quietly regress.
 from __future__ import annotations
 
 import io
+import re
 from pathlib import Path
 
 from tessellate.core import deps
 from tessellate.core.database import PageRead
 from tests._app_js import app_js_text
+from tests._css_unwrap import unwrap_all
 
 LIBRARY = Path("frontend/js/library.js").read_text(encoding="utf-8")
 APP = app_js_text()
 #: library-lazy.css too: the rule moved there with the Library-only boot rules (L-ui-modernisation-47).
-CSS = "\n".join(Path(f"frontend/css/{n}").read_text(encoding="utf-8") for n in ("07-whiteboard-misc.css", "library-lazy.css"))
+CSS = unwrap_all("\n".join(Path(f"frontend/css/{n}").read_text(encoding="utf-8") for n in ("07-whiteboard-misc.css", "library-lazy.css")))
 
 
 def _upload_pdf(client) -> int:
@@ -192,8 +194,12 @@ def test_the_rows_facts_are_one_line_rather_than_three_blocks():
     # The usage row is a *section* of the Images card: a rule above it and
     # rhythm on both sides. On one line that rule is a hairline hanging in
     # the middle of the row.
-    neutralised = CSS.split(".library-file-facts > .library-image-usage {")[1].split("}")[0]
-    assert "border-top: 0" in neutralised and "margin: 0" in neutralised
+    # The rule moved to library-lazy.css (L-ui-modernisation-51) in guarded pieces with its shorthands
+    # written as longhands: the same declarations, read across every piece.
+    neutralised = "".join(re.findall(r"\.library-file-facts > \.library-image-usage \{([^}]*)\}", CSS))
+    assert ("border-top: 0" in neutralised or "border-top-width: 0" in neutralised) and (
+        "margin: 0" in neutralised or all(f"margin-{side}: 0" in neutralised for side in ("top", "right", "bottom", "left"))
+    )
 
 
 def test_a_file_row_can_hand_over_the_file():

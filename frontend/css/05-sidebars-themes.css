@@ -1646,14 +1646,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 math :is(msqrt > *, mroot > :first-child) {
   padding: 0.18em 0.12em 0;
 }
-/* `\boxed` and `\cancel` (a31m leftovers): a frame and a strike on the argument's row, from the renderer's classes. */
-math .math-boxed {
-  border: 1px solid currentColor;
-  padding: 0.1em 0.2em;
-}
-math .math-cancel {
-  background: linear-gradient(to top right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px));
-}
 math .math-bcancel {
   background: linear-gradient(to bottom right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px));
 }
@@ -2968,39 +2960,6 @@ body.resizing-sidebar {
 #doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:focus-visible {
   color: var(--accent-text);
   text-decoration: underline;
-}
-.outline-link {
-  background: none;
-  border: none;
-  box-shadow: none;
-  color: var(--muted);
-  font: inherit;
-  font-size: var(--text-md);
-  text-align: left;
-  /* The indent guide below is drawn against this box. */
-  position: relative;
-  /* **`text-align` is the wrong property here, and that is why the outline
-     read as centred.** Reported with a screenshot: "the outline entries are
-     centre-aligned". Measured with a document open, every entry came back
-     `text-align: left` *and* `justify-content: center`, and the second one is
-     the one that decides: the bare `button` element rule in
-     01-forms-settings.css sets `display: inline-flex` with
-     `justify-content: center` so that a lone glyph sits in the middle of its
-     box, and against a flex container `text-align` governs nothing. So the
-     rule above looked correct at the line that set it and did nothing at the
-     line that used it, which is the shape CLAUDE.md's own traps list names.
-     Both are kept: the flex property for the flex box, `text-align` for the
-     text that wraps inside it. */
-  justify-content: flex-start;
-  /* Depth is carried by the row (`.outline-row`, library-lazy.css), so the
-     chevron steps in with its heading; the link's own inset never changes. */
-  padding: 0.15rem 0.25rem;
-  width: 100%;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .outline-twist {
   flex: none;
@@ -4663,36 +4622,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   max-height: min(24vh, 15rem);
 }
 
-/* The row is the jump. A finding you have to hunt for after reading about it
-   is a finding that cost you more than it saved. */
-.doc-prose-jump {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: baseline;
-  /* **The rows were centred, and `text-align: left` below could not say
-     otherwise.** This is a `<button>`, and the app's global button rule
-     centres its contents; on a flex container `text-align` has nothing to
-     align, because the children are flex items and it is `justify-content`
-     that places them. Measured: a row starting at x=326 whose first word
-     began at x=751.7, so every finding in the panel sat 425px in from the
-     edge of the list it belonged to, in a ragged column down the middle. The
-     same trap `.doc-dock-menu-item` already carries an override for. */
-  justify-content: flex-start;
-  gap: var(--space-2);
-  min-height: var(--target-min);
-  padding: var(--space-1) var(--space-2);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: none;
-  box-shadow: none;
-  color: var(--ink);
-  font: inherit;
-  font-size: var(--text-sm);
-  text-align: left;
-  cursor: pointer;
-}
-
 /* Accept and Ignore: quiet squares of one size, the ink arriving with the
    pointer. */
 .doc-prose-rowhead .doc-prose-act.ghost.small {
@@ -4704,11 +4633,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   background: transparent;
   box-shadow: none;
   color: var(--muted);
-}
-.doc-prose-rowhead .doc-prose-act.ghost.small:hover,
-.doc-prose-rowhead .doc-prose-act.ghost.small:focus-visible {
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
 }
 
 /* A narrow panel (the right dock, focus mode, a phone) stacks the row the
@@ -4924,11 +4848,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-bottom: 1px solid var(--divider);
 }
 
-.doc-dictionary-row:hover .doc-dictionary-remove,
-.doc-dictionary-row:focus-within .doc-dictionary-remove {
-  opacity: 1;
-}
-
 .doc-dictionary-section {
   margin: var(--space-5) 0 var(--space-2);
   color: var(--muted);
@@ -4971,24 +4890,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-dictionary-dialog .setting-check small {
   display: block;
 }
-/* **The suggestions panel's head** (INBOX 549, the panel-head recipe): the
-   name at 16px with its count as quiet text, then one group of quiet icon
-   buttons of one size, the X last. It was a 14.7px count, three tonal worded
-   buttons at 32px and two bordered icons at 28, wrapping to two rows in the
-   right dock and at 390 (INBOX 552, the owner's screenshot: "Suggestions 5"
-   over its icons on a second line). **One row at every width the panel
-   takes**, down to the 240px dock: the buttons never wrap and never shrink,
-   and the name is what gives way (an ellipsis, its whole text on a title),
-   which at 240 it does not need to. */
-.doc-prose-head {
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--divider);
-}
 
 .doc-prose-count {
   flex: none;
@@ -4996,16 +4897,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-sm);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small {
-  flex: none;
-  height: var(--dialog-head-btn-size);
-  min-height: 0;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink);
-  white-space: nowrap;
 }
 
 /* 14. "Removing the badges background has made some areas look pretty plain
@@ -5024,11 +4915,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   .library-image-tile .chip-interactive.library-image-usage-chip
 ) {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
-}
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:hover,
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small[aria-pressed="true"],
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
 }
 /* A narrow panel: Fix N gives up its words too (the `.toolbar-word` way,
    clipped, not dropped: its title and label say the number). */
@@ -5095,10 +4981,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    `align-items: center` keeps them level. */
 #raw-results :is(.chip.link, .result-reason-why) .ph-text {
   line-height: 1.4;
-}
-
-.doc-prose-ai-line.error {
-  color: var(--error);
 }
 
 /* The squiggle's rules lived here, shared by the Live view's `<mark>`s and
@@ -5555,30 +5437,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   color: var(--muted);
   opacity: 0.7;
   padding: 0 0.15rem;
-}
-.doc-crumb {
-  color: var(--muted);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  padding: 0.15rem 0.25rem;
-  border-radius: var(--radius-sm);
-  /* A heading can be a sentence. The trail keeps its shape and the full text
-     stays available in the button's own `title`. */
-  max-width: 14rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  /* A block, started at its own left edge. As the app's buttons are, it was
-     an inline flex box centring its text, and an ellipsis never applies to
-     a flex container's text: measured with a 39-character title, the crumb
-     cut 6px off each end, "A document ... title" drawn as "document ...
-     titl" with no ellipsis at all (INBOX 425 i). */
-  display: block;
-  text-align: start;
-  /* 22.8px high before (audit 1028 U35, WCAG 2.5.8). The line box carries the
-     height, so the ellipsis above still applies. */
-  min-height: var(--target-min);
-  line-height: calc(var(--target-min) - 0.3rem);
 }
 /* --- an embedded document, drawn as a card (INBOX 421 b) ---------------------
    One button: the document's tile, its title over one facts line and its

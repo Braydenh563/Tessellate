@@ -12,11 +12,12 @@ the core and filled rules' `background` shorthand, which resets the clip.
 
 import re
 from pathlib import Path
+from tests._css_unwrap import unwrap_all
 
-CSS = "".join(  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
+CSS = unwrap_all("".join(  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
     (Path(__file__).resolve().parent.parent / "frontend" / "css" / n).read_text(encoding="utf-8")
     for n in ("07-whiteboard-misc.css", "library-lazy.css")
-)
+))
 
 
 def _specificity(selector: str) -> tuple[int, int]:

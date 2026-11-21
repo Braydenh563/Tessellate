@@ -3988,51 +3988,6 @@ span > .chip {
   overflow-y: auto;
 }
 
-.doc-item-button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
-  width: 100%;
-  text-align: left;
-  /* No column held back for the kebab (INBOX 722): it overlays the row's
-     right end on hover and the words fade under it (07-whiteboard-misc.css), so
-     the title runs to the row's own padding at rest. */
-  padding: 0.4rem 0.6rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  /* **Every row draws the same shape, not only the one you are in.**
-     Measured at 1440x900 with eight documents: the selected row drew a fill
-     and an accent edge and the other seven drew nothing at all, so the list
-     read as one card and seven loose blocks of text with invisible hit
-     targets. A row is a row: DESIGN.md's surface tiers group them by tone
-     (`--surface-2`), hover goes one step deeper, and the selected one is a
-     fill, which is also the rule the accent border below was breaking ("a
-     selected row is a fill, never a fill plus an accent edge"). The
-     transparent 1px border stays so the geometry does not move and
-     `[data-contrast="on"]` can colour an edge back in. */
-  background: var(--surface-2);
-  color: inherit;
-  cursor: pointer;
-}
-
-/* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
-   beside every title in a tight sidebar list would compete with the titles
-   themselves. */
-.menu-wrap.doc-item-menu {
-  position: absolute;
-  top: 0.3rem;
-  right: 0.3rem;
-  opacity: 0;
-  transition: opacity var(--ui-fast) var(--ease-out);
-}
-
-.doc-item:hover .doc-item-menu,
-.doc-item-button:focus-visible ~ .doc-item-menu,
-.doc-item:focus-within .doc-item-menu {
-  opacity: 1;
-}
-
 /* The Library's own Documents sub-tab (#library-docs-list): a *different*
    list from the editor's sidebar above, sharing only the .doc-list layout
    class. It had no styling of its own at all beyond that, so every row fell
@@ -4072,24 +4027,6 @@ span > .chip {
 .doc-list-item:focus-visible {
   border-color: var(--accent);
   background: var(--accent-soft);
-}
-
-/* Same hover/focus reveal as `.menu-wrap.library-card-menu`
-   (00-tokens-shell.css) - a permanent ⋯ on every row in a long list is a
-   column of dots competing with the titles beside them. `hover: none`
-   keeps it visible on touch, where there is nothing to hover with. */
-.menu-wrap.doc-list-menu {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  opacity: 0;
-  transition: opacity var(--ui-fast) var(--ease-out);
-}
-
-.doc-list-item:hover .doc-list-menu,
-.doc-list-item:focus-visible .doc-list-menu,
-.doc-list-item:focus-within .doc-list-menu {
-  opacity: 1;
 }
 
 .doc-list-title {

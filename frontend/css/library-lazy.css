@@ -176,6 +176,52 @@
   font-size: var(--text-sm);
 }
 
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+/* The bookmark row's in-place edit form (library.js). Replaces a chain of
+   two modal prompts - see that handler's comment for why sequencing the
+   fields was the problem rather than the code behind them. Laid out as a
+   column so all three fields and their labels are readable at once at any
+   width, which a row of three inputs is not. */
+.bookmark-edit-form {
+  /* The row is a grid, so the form it opens inside would otherwise be placed
+     in the next cell of that grid, one column wide and beside the tick. It
+     takes the whole row instead. */
+  grid-column: 1 / -1;
+  flex-direction: column;
+  column-gap: var(--space-3);
+  width: 100%;
+  padding-right: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--inner);
+}
+
+.bookmark-edit-form:where(:not(.field)) {
+  display: flex;
+}
+
+.bookmark-edit-form:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-3);
+}
+
+.bookmark-edit-form:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+@media (max-width: 819.98px) {
+.bookmark-edit-form:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: var(--space-3);
+}
+}
+
+@media (min-width: 820px) {
+.bookmark-edit-form {
+  padding-left: var(--space-3);
+}
+}
+
 .bookmark-edit-field {
   flex-direction: column;
   column-gap: var(--space-1);
@@ -195,6 +241,57 @@
    varies, and at 0.92rem full weight the title was also the largest thing in
    the sidebar, competing with the card's own headings. `--text-md` is the
    scale's own size for a list row; the full title is on the row's tooltip. */
+/* from 04-chat-dock-appearance.css (L-ui-modernisation-51) */
+.doc-item-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  column-gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  padding-right: 0.6rem;
+  padding-left: 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  /* **Every row draws the same shape, not only the one you are in.**
+     Measured at 1440x900 with eight documents: the selected row drew a fill
+     and an accent edge and the other seven drew nothing at all, so the list
+     read as one card and seven loose blocks of text with invisible hit
+     targets. A row is a row: DESIGN.md's surface tiers group them by tone
+     (`--surface-2`), hover goes one step deeper, and the selected one is a
+     fill, which is also the rule the accent border below was breaking ("a
+     selected row is a fill, never a fill plus an accent edge"). The
+     transparent 1px border stays so the geometry does not move and
+     `[data-contrast="on"]` can colour an edge back in. */
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.doc-item-button:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: 0.1rem;
+}
+
+.doc-item-button:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  /* No column held back for the kebab (INBOX 722): it overlays the row's
+     right end on hover and the words fade under it (07-whiteboard-misc.css), so
+     the title runs to the row's own padding at rest. */
+  
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+@media (forced-colors: active) {
+.doc-item-button:where(:not(:disabled)) {
+  color: inherit;
+}
+}
+
+@media (forced-colors: none) {
+.doc-item-button {
+  color: inherit;
+}
+}
+
 .doc-item-title {
   width: 100%;
   overflow: hidden;
@@ -377,6 +474,19 @@
   overflow: hidden;
 }
 
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+@media (max-width: 599.98px) {
+.wb-lock-pin.hidden:where(:not(.activity-running .entry-list, .activity-running .pop-card-body, .answer-foot-part[hidden], .answer-grounding-chip > .ph-lead, .capture-card-bell .menu-wrap, .capture-card-colours:empty, .capture-card-items[hidden], .capture-card-thumbs[hidden], .capture-card[hidden], .chat-context-pop.help-popover, .chat-dock-more-toggles > .chat-tool-group, .csv-grid-bar .toolbar-word, .csv-grid.hidden, .desk-overlay .desk-pet, .desk-status:empty, .dgm .dgm-picture, .dgm-addlist :is(.dgm-palette, .dgm-lib-hint), .dgm-drop-word.hidden, .dgm-end.hidden, .dgm-find.hidden, .dgm-gap-plus.hidden, .dgm-ghosts.hidden, .dgm-handle.hidden, .dgm-head-all.hidden, .dgm-minimap.hidden, .dgm-pan-note.hidden, .dgm-rubber.hidden, .dgm-selectbar.hidden, .dgm-sideways.hidden, .dgm-template-figure .md-mermaid-img, .dgm-versions-named .dgm-versions-head, .dgm-zoom .dock-group, .doc-margin.hidden, .ev-foot:has(> .answer-foot-part), .graph-bare .graph-legend-row, .graph-bare .graph-zoom, .graph-hovercard[hidden], .library-chip.is-empty, .lightbox-doc.hidden, .lightbox-doc.lightbox-doc-split, .lightbox-pdf-pages.hidden, .notice.hidden, .obj-tray.hidden, .sp-foot :is(.sp-download, .sp-save), .sp-help.hidden, .sp-menu.hidden, .sp-ring.hidden, .tidy-history-list[hidden], .tidy-review[hidden], .timeline-calendar:has(.timeline-cal-weekwrap), .wb-board-menu .wb-menu-item, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  display: none;
+}
+}
+
+@media (min-width: 600px) {
+.wb-lock-pin.hidden:where(:not(.activity-running .entry-list, .activity-running .pop-card-body, .answer-foot-part[hidden], .answer-grounding-chip > .ph-lead, .calc-pane.is-sci, .capture-card-bell .menu-wrap, .capture-card-colours:empty, .capture-card-items[hidden], .capture-card-thumbs[hidden], .capture-card[hidden], .chat-context-pop.help-popover, .chat-dock-more-toggles > .chat-tool-group, .csv-grid.hidden, .desk-overlay .desk-pet, .desk-status:empty, .dgm .dgm-picture, .dgm-addlist :is(.dgm-palette, .dgm-lib-hint), .dgm-drop-word.hidden, .dgm-end.hidden, .dgm-find.hidden, .dgm-gap-plus.hidden, .dgm-ghosts.hidden, .dgm-handle.hidden, .dgm-head-all.hidden, .dgm-minimap.hidden, .dgm-pan-note.hidden, .dgm-rubber.hidden, .dgm-selectbar.hidden, .dgm-sideways.hidden, .dgm-template-figure .md-mermaid-img, .dgm-versions-named .dgm-versions-head, .dgm-zoom .dock-group, .doc-margin.hidden, .ev-foot:has(> .answer-foot-part), .graph-bare .graph-legend-row, .graph-bare .graph-zoom, .graph-hovercard[hidden], .library-chip.is-empty, .lightbox-doc.hidden, .lightbox-doc.lightbox-doc-split, .lightbox-pdf-pages.hidden, .notice.hidden, .obj-tray.hidden, .sp-foot :is(.sp-download, .sp-save), .sp-help.hidden, .sp-menu.hidden, .sp-ring.hidden, .tidy-history-list[hidden], .tidy-review[hidden], .timeline-calendar:has(.timeline-cal-weekwrap), .wb-board-menu .wb-menu-item, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  display: none;
+}
+}
+
 .library-image-vision-ocr.library-image-vision-ocr-clamped:where(:not(.library-image-vision-ocr.hidden, .notice.hidden, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.linklike, .link-button):has(> .ph))) {
   display: -webkit-box;
 }
@@ -386,12 +496,123 @@
   margin-top: var(--space-2);
 }
 
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+/* The mark: a 2rem square, the picture or the kind's glyph centred in it. */
+.contents-thumb {
+  width: 2rem;
+  height: var(--control-h-lg);
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 819.98px) {
+.contents-thumb:where(:not(.library-filters > *)) {
+  flex: 0 0 auto;
+}
+}
+
+@media (min-width: 820px) {
+.contents-thumb {
+  flex: 0 0 auto;
+}
+}
+
+.contents-row > .contents-icon {
+  flex: 0 0 auto;
+}
+
+.contents-row > .contents-icon:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  width: 2rem;
+  height: var(--control-h-lg);
+  border-radius: var(--radius-sm);
+}
+
 .contents-heading > .contents-icon {
   flex: 0 0 auto;
 }
 
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+.contents-row > .contents-icon {
+  justify-items: center;
+}
+
+.contents-row > .contents-icon:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.linklike, .link-button):has(> .ph))) {
+  display: inline-grid;
+}
+
+.contents-row > .contents-icon:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  align-items: center;
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: var(--text-body);
+}
+
 .contents-heading > .contents-icon:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
   color: var(--muted);
+}
+
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+/* A row: the `.timeline-row` shape, a transparent border so the hover moves
+   nothing, the ground arriving with the pointer. The left gutter is where a
+   document's caret sits, so every title starts at one edge whether or not
+   its row folds. */
+.contents-row,
+.contents-heading-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-3);
+  padding-right: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.contents-row:where(:not(:is(.persona-row, .skill-row))),
+.contents-heading-row:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-3);
+}
+
+@media (max-width: 819.98px) {
+.contents-row:where(:not(.library-filters > *)),
+.contents-heading-row:where(:not(.library-filters > *)) {
+  min-width: 0;
+}
+}
+
+@media (min-width: 820px) {
+.contents-row,
+.contents-heading-row {
+  min-width: 0;
+}
+}
+
+.contents-row:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))),
+.contents-heading-row:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+}
+
+@media (max-width: 819.98px) {
+.contents-row:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))),
+.contents-heading-row:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: calc(var(--space-6) + var(--space-3));
+}
+}
+
+@media (min-width: 820px) {
+.contents-row,
+.contents-heading-row {
+  padding-left: calc(var(--space-6) + var(--space-3));
+}
+}
+
+.contents-row:where(:not(:is(.doc-list-title, .bookmark-title), :root)),
+.contents-heading-row:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-md);
 }
 
 .contents-heading-row {
@@ -480,6 +701,18 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
    rule it has to beat, because the element carries both classes: a bare
    `.wb-export-warning` is one class against that rule's two, so the muted
    grey won and the line was measured rendering at rgb(76, 85, 99). */
+/* from 06-timeline-dialogs.css (L-ui-modernisation-51) */
+.wb-export-card .wb-export-note:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+}
+
+.wb-export-card .wb-export-note:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  color: var(--muted);
+}
+
 .wb-export-card .wb-export-warning:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
   color: var(--warn);
 }
@@ -499,6 +732,39 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
 
 .wb-crop-grip[data-grip="e"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))),
 .wb-crop-grip[data-grip="w"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) { cursor: ew-resize;
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+.wb-object-text .wb-text-content {
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: none;
+}
+
+.wb-object-text .wb-text-content:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  width: 100%;
+  height: 100%;
+  /* **A box you are not editing is a box, not a text field.** Reported:
+     text boxes were "basically unmovable", the editable body filled the
+     whole box and took every pointerdown, so only the grip could move it.
+     The JS half is in `wbBeginTextEdit`; this is the half that has to match
+     it, because an I-beam over something you can only drag is a promise the
+     box does not keep, and a live text selection would fight the drag for
+     the same gesture. Both come back under `.wb-text-editing` below. */
+  cursor: inherit;
+}
+
+@media (forced-colors: active) {
+.wb-object-text .wb-text-content:where(:not(.wb-map-text:focus-visible, :is(.search-field, .chat-composer):focus-within)) {
+  outline: none;
+}
+}
+
+@media (forced-colors: none) {
+.wb-object-text .wb-text-content:where(:not(.wb-map-text:focus-visible)) {
+  outline: none;
+}
 }
 
 .wb-object-grip:active:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
@@ -629,9 +895,27 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
   background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* A row the filter kept, marked so the eye lands on it, not a colour change,
+   which would collide with `.is-active`'s own meaning (this is the region you
+   clicked), but a rule down the edge. */
+.ocr-region.is-found:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
+.ocr-region.is-found:where(:not(.ocr-region:hover, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-left-color: var(--accent);
+}
+
 .ocr-box.is-active:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
   border-width: 2.5px;
   background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+.ocr-region:hover:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-color: var(--accent);
 }
 
 .ocr-region.is-active:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
@@ -681,6 +965,40 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
 /* A map that grows downward reads top-to-bottom, so the spine belongs on the
    top edge: a left bar on a node whose parent is directly above it points at
    nothing. */
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* **A core idea, told apart three ways at once** (INBOX 201: "I want more and
+   better ways to differentiate core idea nodes in the mindmap"; the decision is
+   MINDMAP_PLAN §12.5).
+   The first answer to item 177 was weight alone: a heavier outline, a wider
+   spine and a bolder label. That is one signal in three places, and on a map of
+   twenty coloured branches it is the signal that loses. So a core node now
+   differs in **shape** (the ellipse the strip offers it), in **weight** (a
+   filled ground in its own branch colour, with the ink that reads on it) and in
+   **size** (one step of type larger), with a star before the label.
+   The fill overrides this file's own earlier reasoning, which was that "a whole
+   node filled with the branch colour makes the text fight its own background at
+   every palette entry". That is true of a fill with an inherited text colour,
+   which is what it would have been; it is not true of one whose ink is chosen
+   per colour. `--wb-core-ink` is computed in `wbPaintMapNode` by WCAG
+   luminance and is black or white, so the label clears 4.5:1 on every palette
+   entry and on anything the colour picker is pointed at, in both themes. The
+   fallback is `--ink` for the one frame before a paint has run.
+   `1.15em`, not a token: it has to compose with the strip's own four sizes and
+   with the text-size grip, so "one step larger" means one step larger than
+   whatever this node was already set to, not a fixed number that would undo a
+   size someone chose.
+   Placed above `.wb-map-bold` on purpose: the two set the same property on
+   the same element at the same specificity, so source order decides, and a
+   node someone explicitly made bold should be bold rather than merely core. */
+.wb-map-node.wb-map-core:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  background: var(--wb-branch);
+  color: var(--wb-core-ink);
+  border-width: 2px;
+  border-left-width: 6px;
+  box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in srgb, var(--wb-branch-edge) 45%, transparent);
+}
+
 .wb-map-down .wb-map-node:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
   border-left-width: 1.5px;
   border-top: 4px solid var(--wb-branch);
@@ -1392,6 +1710,45 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
    the ring's own circle. While the ring is open it is the one place those two
    actions are offered, rather than a second pair of small round buttons under
    it (INBOX 114, "fix the look of the mindmap item radial"). */
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* The node's two "grow the map here" buttons: `+` (a topic) and the library
+   one (a node pointing at a real note/document/file/link). They are an
+   affordance, not furniture: they appear on the node you are pointing at or
+   have selected, which is the only time "add a child *here*" means anything.
+   Keyboard users have Tab and never need them visible.
+   A flex row placed once, rather than two buttons each hand-positioned off the
+   same corner: the second of those is how two controls come to overlap by a
+   few pixels that a screenshot does not show, twice already in this file, see
+   `.wb-map-count`. The row is anchored by its right edge so a third button
+   would grow leftwards into empty canvas rather than over the node. */
+.wb-map-actions:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wb-map-node:hover .wb-map-actions,
+.wb-map-node.wb-selected .wb-map-actions,
+.wb-map-node:focus-visible .wb-map-actions {
+  pointer-events: auto;
+}
+
+@media (hover: hover) {
+.wb-map-node:hover .wb-map-actions:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.wb-map-node.wb-selected .wb-map-actions:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.wb-map-node:focus-visible .wb-map-actions:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.wb-map-node:hover .wb-map-actions,
+.wb-map-node.wb-selected .wb-map-actions,
+.wb-map-node:focus-visible .wb-map-actions {
+  opacity: 1;
+}
+}
+
 .wb-map-node.wb-radial-open .wb-map-actions {
   pointer-events: none;
 }
@@ -1520,6 +1877,28 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
    card's outside: a rule above the usage chips, an inset on the byline. In
    here the fold's own padding and gap already separate them, and a hairline
    across a disclosure body reads as a second panel. */
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* The usage row was written as a *section* of the image card: a rule above
+   it, an inset, and rhythm on both sides. On one line beside the meta strip
+   that rule becomes a 333px hairline hanging in the middle of the row, and
+   the rhythm becomes 18px of air the row is paying for twice (measured: the
+   line stood 51px tall around a 33px tallest child). It keeps all of that on
+   the Images cards, where it still separates two stacked sections. */
+.library-file-facts > .library-image-usage:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+  padding-top: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+}
+
+.library-file-facts > .library-image-usage:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-top: 0;
+}
+
 .library-image-reading-body > .library-image-usage:where(:not(.library-file-facts > .library-image-usage, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
   margin-top: 0;
   margin-right: 0;
@@ -1698,6 +2077,66 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
 /* A link's own two endpoints, round, not the square resize handles above,
    so the two read as a different kind of control (reattach/detach an end,
    not resize a shape). */
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* Centred on the box's top edge, a tab on the border rather than a chip in
+   the text: at `top: -4px` its opaque ground covered the top 3px of the
+   first line (measured: 28 to 36 square px of the first glyph's box, the
+   ascender of "h" cut off; INBOX 445). */
+.wb-object-grip {
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  user-select: none;
+}
+
+.wb-object-grip:where(:not(.wb-html-layer, .wb-map-resize-grip, .wb-resize-handle, .wb-rotate-handle)) {
+  position: absolute;
+}
+
+.wb-object-grip:where(:not(.wb-html-layer, .wb-map-resize-grip, .wb-rotate-handle)) {
+  top: 0;
+  left: 6px;
+}
+
+.wb-object-grip:where(:not(.wb-map-resize-grip)) {
+  transform: translateY(-50%);
+  padding-right: var(--space-1);
+  padding-left: var(--space-1);
+  touch-action: none;
+}
+
+.wb-object-grip:where(:not(.wb-map-resize-grip, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.wb-object-grip:where(:not(.wb-resize-handle, .wb-rotate-handle)) {
+  border-radius: var(--radius-sm);
+}
+
+.wb-object-grip:where(:not(.wb-map-resize-grip, .wb-resize-handle, .wb-rotate-handle)) {
+  /* Opaque in every look: `--card-bg` is a 55% glass in most, and on a
+     sticky's yellow the muted glyph over it measured 1.68:1 (Classic, dark)
+     (`wbgripink.js`). */
+  background: var(--modal-bg-opaque);
+  z-index: 6;
+}
+
+@media (forced-colors: active) {
+.wb-object-grip:where(:not(:disabled)) {
+  color: var(--muted);
+}
+}
+
+@media (forced-colors: none) {
+.wb-object-grip {
+  color: var(--muted);
+}
+}
+
+.wb-object-grip:where(:not(.wb-map-resize-grip, .wb-rotate-handle)) {
+  cursor: grab;
+}
+
 .wb-link-endpoint-handle {
   fill: var(--card);
   stroke: var(--accent);
@@ -1830,6 +2269,1057 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
 .doc-prop-btn {
   color: var(--muted);
 }
+}
+
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+/* **The picture and its name are one object** (INBOX 56). The name under the
+   thumbnail was the second of six blocks stacked at one weight; on the
+   picture it is a caption, which is what it has always been. The frame is
+   the positioning context, and it is the only child of the tile that reaches
+   the tile's own top corners. */
+.library-image-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.library-image-frame:where(:not(.card)) {
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+}
+
+/* from 04-chat-dock-appearance.css (L-ui-modernisation-51) */
+/* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
+   beside every title in a tight sidebar list would compete with the titles
+   themselves. */
+.menu-wrap.doc-item-menu {
+  transition-behavior: normal;
+}
+
+.menu-wrap.doc-item-menu:where(:not(.action-menu-card > .action-menu, .dgm .dgm-picture)) {
+  position: absolute;
+}
+
+.menu-wrap.doc-item-menu:where(:not(.action-menu-card > .action-menu)) {
+  top: 0.3rem;
+  right: 0.3rem;
+}
+
+.menu-wrap.doc-item-menu:where(:not(.action-menu.hidden, .help-popover.hidden, :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  opacity: 0;
+}
+
+@media (hover: hover) {
+.menu-wrap.doc-item-menu:where(:not(.action-menu.hidden, .help-popover.hidden, :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-property: opacity;
+  transition-duration: var(--ui-fast);
+  transition-timing-function: var(--ease-out);
+}
+}
+
+@media (hover: none) {
+.menu-wrap.doc-item-menu:where(:not(.action-menu.hidden, .help-popover.hidden, :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-property: opacity;
+  transition-duration: var(--ui-fast);
+  transition-timing-function: var(--ease-out);
+}
+}
+
+@media (hover: hover) {
+.menu-wrap.doc-item-menu:where(:not(.action-menu.hidden, .help-popover.hidden, .ui-settle > :nth-child(2), .ui-settle > :nth-child(3), .ui-settle > :nth-child(4), .ui-settle > :nth-child(5), .ui-settle > :nth-child(6), .ui-settle > :nth-child(7), .ui-settle > :nth-child(n + 8), :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-delay: 0s;
+}
+}
+
+@media (hover: none) {
+.menu-wrap.doc-item-menu:where(:not(.action-menu.hidden, .help-popover.hidden, .ui-settle > :nth-child(2), .ui-settle > :nth-child(3), .ui-settle > :nth-child(4), .ui-settle > :nth-child(5), .ui-settle > :nth-child(6), .ui-settle > :nth-child(7), .ui-settle > :nth-child(n + 8), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-delay: 0s;
+}
+}
+
+/* Same hover/focus reveal as `.menu-wrap.library-card-menu`
+   (00-tokens-shell.css) - a permanent ⋯ on every row in a long list is a
+   column of dots competing with the titles beside them. `hover: none`
+   keeps it visible on touch, where there is nothing to hover with. */
+.menu-wrap.doc-list-menu {
+  transition-behavior: normal;
+}
+
+.menu-wrap.doc-list-menu:where(:not(.action-menu-card > .action-menu, .dgm .dgm-picture)) {
+  position: absolute;
+}
+
+.menu-wrap.doc-list-menu:where(:not(.action-menu-card > .action-menu)) {
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
+.menu-wrap.doc-list-menu:where(:not(.action-menu.hidden, .help-popover.hidden, :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  opacity: 0;
+}
+
+@media (hover: hover) {
+.menu-wrap.doc-list-menu:where(:not(.action-menu.hidden, .help-popover.hidden, :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-property: opacity;
+  transition-duration: var(--ui-fast);
+  transition-timing-function: var(--ease-out);
+}
+}
+
+@media (hover: none) {
+.menu-wrap.doc-list-menu:where(:not(.action-menu.hidden, .help-popover.hidden, :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-property: opacity;
+  transition-duration: var(--ui-fast);
+  transition-timing-function: var(--ease-out);
+}
+}
+
+@media (hover: hover) {
+.menu-wrap.doc-list-menu:where(:not(.action-menu.hidden, .help-popover.hidden, .ui-settle > :nth-child(2), .ui-settle > :nth-child(3), .ui-settle > :nth-child(4), .ui-settle > :nth-child(5), .ui-settle > :nth-child(6), .ui-settle > :nth-child(7), .ui-settle > :nth-child(n + 8), :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-delay: 0s;
+}
+}
+
+@media (hover: none) {
+.menu-wrap.doc-list-menu:where(:not(.action-menu.hidden, .help-popover.hidden, .ui-settle > :nth-child(2), .ui-settle > :nth-child(3), .ui-settle > :nth-child(4), .ui-settle > :nth-child(5), .ui-settle > :nth-child(6), .ui-settle > :nth-child(7), .ui-settle > :nth-child(n + 8), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-delay: 0s;
+}
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small {
+  height: var(--dialog-head-btn-size);
+  min-height: 0;
+  border-color: transparent;
+  white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(.card > .row.space-between.dialog-head > .row)) {
+  flex: none;
+}
+}
+
+@media (max-width: 599.98px) and (pointer: fine) {
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(.card > .row.space-between.dialog-head > .row)) {
+  flex: none;
+}
+}
+
+@media (min-width: 600px) and (pointer: fine) {
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(.card > .row.space-between.dialog-head > .row, .command-palette-card.panel-movable-on[style*="height"] > :is(.command-palette-results, .command-palette-intro):not(.hidden))) {
+  flex: none;
+}
+}
+
+@media (pointer: none) {
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(.card > .row.space-between.dialog-head > .row)) {
+  flex: none;
+}
+}
+
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(.doc-dock .doc-dock-identity > .doc-back.ghost:hover, .doc-dock .doc-dock-identity > .doc-back.ghost:is(:focus-visible, :has(:focus-visible)), .timeline-days .timeline-day.ghost.small:hover, .timeline-days .timeline-day.ghost.small:is(:focus-visible, :has(:focus-visible)), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]))) {
+  background: transparent;
+}
+
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is( .skill-card-facts > .skill-fact, .library-image-tile .chip-interactive.library-image-usage-chip ))) {
+  box-shadow: none;
+}
+
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:where(:not(.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):hover, .wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):is(:focus-visible, :has(:focus-visible)), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]))) {
+  color: var(--ink);
+}
+
+.doc-prose-ai-line.error:where(:not(.chip.confidence, .sp-foot :is(.sp-download, .sp-save), .unlink:hover, .unlink:is(:focus-visible, :has(:focus-visible)), :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  color: var(--error);
+}
+
+/* from 06-timeline-dialogs.css (L-ui-modernisation-51) */
+/* The card's own "Built-in" marker is the same fact the persona list states,
+   so it says it the same way. `--accent-soft` is this app's *selected* tone
+   (DESIGN.md), and nothing about a built-in skill is selected. */
+.skill-card .chip.skill-builtin:where(:not(.appearance-panel.peeking > .dialog-head, .chip > .unlink:last-child, .dash-glance .quick-link:hover, .dash-glance .quick-link:is(:focus-visible, :has(:focus-visible)), .dialog-head .dialog-head-btn.ghost, .dialog-head-actions > .dialog-head-btn.ghost, .entry-links > .chip.link, .entry-meta > .chip.item-fact, .entry-meta > .chip.item-title, .entry-meta > .chip.suggested-tag, .entry-meta.note-meta > .chip, .finder-filters .library-chip:not(.active), .graph-fullscreen .dock[data-dock-name="graph"], .palette-head > .dialog-head-btn.ghost, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):focus-visible, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):hover, :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label)),
+.skill-card-header .chip:not(.skill-fact):where(:not(.appearance-panel.peeking > .dialog-head, .chip > .unlink:last-child, .dash-glance .quick-link:hover, .dash-glance .quick-link:is(:focus-visible, :has(:focus-visible)), .dialog-head .dialog-head-btn.ghost, .dialog-head-actions > .dialog-head-btn.ghost, .entry-links > .chip.link, .entry-meta > .chip.item-fact, .entry-meta > .chip.item-title, .entry-meta > .chip.suggested-tag, .entry-meta.note-meta > .chip, .finder-filters .library-chip:not(.active), .graph-fullscreen .dock[data-dock-name="graph"], .palette-head > .dialog-head-btn.ghost, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):focus-visible, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):hover, :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label)) {
+  background: var(--chip-bg);
+}
+
+.skill-card .chip.skill-builtin:where(:not(.dialog-head .dialog-head-btn.ghost, .dialog-head-actions > .dialog-head-btn.ghost, .entry-links > .chip.link, .entry-meta > .chip.item-fact, .entry-meta > .chip.item-title, .entry-meta > .chip.item-writes, .entry-meta > .chip.suggested-tag, .entry-meta.note-meta > .chip, .finder-filters .library-chip:not(.active), .palette-head > .dialog-head-btn.ghost, .timeline-cal-item.is-done .ph-text, .timeline-row-meta > .chip.category, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):focus-visible, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):hover, :is(.answer-head, .draft-column-head, .help-chat-msg.is-assistant) .msg-role, :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label)),
+.skill-card-header .chip:not(.skill-fact):where(:not(.dialog-head .dialog-head-btn.ghost, .dialog-head-actions > .dialog-head-btn.ghost, .entry-links > .chip.link, .entry-meta > .chip.item-fact, .entry-meta > .chip.item-title, .entry-meta > .chip.item-writes, .entry-meta > .chip.suggested-tag, .entry-meta.note-meta > .chip, .finder-filters .library-chip:not(.active), .palette-head > .dialog-head-btn.ghost, .timeline-cal-item.is-done .ph-text, .timeline-row-meta > .chip.category, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):focus-visible, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):hover, :is(.answer-head, .draft-column-head, .help-chat-msg.is-assistant) .msg-role, :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label)) {
+  color: var(--muted);
+}
+
+.skill-card .chip.skill-builtin:where(:not(.chip > .unlink:last-child, .entry-links > .chip.link, .entry-meta > .chip.item-fact, .entry-meta > .chip.item-title, .entry-meta.note-meta > .chip, :is(.answer-head, .draft-column-head, .help-chat-msg.is-assistant) .msg-role, :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label)),
+.skill-card-header .chip:not(.skill-fact):where(:not(.chip > .unlink:last-child, .entry-links > .chip.link, .entry-meta > .chip.item-fact, .entry-meta > .chip.item-title, .entry-meta.note-meta > .chip, :is(.answer-head, .draft-column-head, .help-chat-msg.is-assistant) .msg-role, :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label)) {
+  font-weight: 500;
+}
+
+.wb-card:active {
+  z-index: 100;
+}
+
+.wb-card:active:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+.library-file-rows .library-image-tile .chip.library-read-badge {
+  border-width: 0;
+  border-style: none;
+  border-image: initial;
+}
+
+.library-file-rows .library-image-tile .chip.library-read-badge:where(:not(.dialog-head .dialog-head-btn.ghost:hover, .dialog-head .dialog-head-btn.ghost[aria-expanded="true"], .dialog-head-actions > .dialog-head-btn.ghost:hover, .dialog-head-actions > .dialog-head-btn.ghost[aria-expanded="true"], .finder-filters .library-chip:not(.active):hover, .finder-filters .library-chip:not(.active):is(:focus-visible, :has(:focus-visible)), .palette-head > .dialog-head-btn.ghost:hover, :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chip.active)) {
+  background: transparent;
+}
+
+.library-file-rows .library-image-tile .chip.library-read-badge:where(:not(.timeline-cal-cell .ghost.small.timeline-cal-item, .timeline-cal-cell .ghost.small.timeline-cal-more, :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chip.active)) {
+  border-color: currentcolor;
+}
+
+.library-file-rows .library-image-tile .chip.library-read-badge:where(:not(.timeline-cal-cell .ghost.small.timeline-cal-item, .timeline-cal-cell .ghost.small.timeline-cal-more)) {
+  padding: 0;
+  min-height: 0;
+  font-weight: 400;
+}
+
+/* **The four shapes a topic can be drawn in** (MINDMAP_PLAN.md §12.1 item 3,
+   decided in §12.0). Four, not the plan's eight: parallelogram, trapezoid,
+   cloud and diamond need a clip-path that cuts into the box the label sits
+   in, and at node size that clips the label, which is the one thing a map
+   node may never do. These four are a border-radius and a surface, they hold
+   any label, and "plain" is Coggle's own default look, the text sitting on
+   the line with no card at all.
+   Plain keeps the box it had and only stops painting it: `border-color:
+   transparent` rather than `border: none`, because the layout, the edge
+   anchors and the ring's own centring all measure this element, and taking
+   5.5px of border away would move the node under everything already drawn
+   against it. */
+.wb-map-node[data-shape="pill"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-radius: var(--radius-pill);
+}
+
+.wb-map-node[data-shape="rect"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-radius: 0;
+}
+
+/* The fourth, and the one the core node brought with it (MINDMAP_PLAN.md item
+   177 names "rounded rectangle, pill, ellipse" as a core idea's shape set).
+   A radius, like the three above it, so it still holds any label: what an
+   ellipse needs beyond that is room at its own narrow ends, which is what the
+   wider inline padding buys. Centred text for the same reason: a label ranged
+   left inside an ellipse sits against the curve rather than inside it. */
+.wb-map-node[data-shape="ellipse"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-radius: 50%;
+  text-align: center;
+}
+
+.wb-map-node[data-shape="ellipse"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is( .doc-sidebar-section, .doc-sidebar .doc-outline-wrap, .library-view-section, .doc-list, .wb-side-section ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  padding-inline: var(--space-7);
+}
+
+/* "is there a way to better design all instances of these menu bar elements
+   in popups": the board export's Format row is seven choices in a track
+   built for two to four, so it wrapped, FreeMind alone on a second line of a
+   well. More than four exclusive choices in a dialog are option tiles: a
+   grid of equal buttons with a hairline each, the chosen one ringed in the
+   accent, the way a print or export dialog offers its formats. Its "How
+   much" row wears the same tiles so the two questions read as one form. */
+.wb-export-overlay .seg.wb-export-seg {
+  gap: var(--space-2);
+}
+
+@media (max-width: 599.98px) {
+.wb-export-overlay .seg.wb-export-seg:where(:not(.dgm-dialog:has(.dgm-plain) :is(.dgm-kindbtn, .dgm-kindlabel), .dgm-dialog[data-view="source"] .dgm-wrapbtn, .dgm-dialog[data-view="source"] :is(.dgm-kindbtn, .dgm-kindlabel, .dgm-sideways), .dgm-dialog[data-view="source"] :is(.dgm-pane, .dgm-listcol), .doc-dock .doc-actions .toolbar-word, .dock[data-dock-name="library-skills"] > .dock-arrange, .mic-controls .setting-row:has(> .select-shell), .nm-atlas.atl-head :is(.atl-fx-sparkle, .atl-fx-hearts, .atl-fx-zz, .atl-fx-dots, .atl-fx-q, .atl-fx-bang, .atl-fx-sweat, .atl-fx-tear))) {
+  display: grid;
+}
+}
+
+@media (min-width: 600px) and (max-width: 1099.98px) {
+.wb-export-overlay .seg.wb-export-seg:where(:not(.dgm-body.dgm-fold-left > :is(.dgm-listcol, .dgm-split-handle), .dgm-body.dgm-fold-right > :is(.dgm-stage, .dgm-split-handle), .dgm-dialog:has(.dgm-plain) :is(.dgm-kindbtn, .dgm-kindlabel), .dgm-dialog[data-view="source"] .dgm-wrapbtn, .dgm-dialog[data-view="source"] :is(.dgm-pane, .dgm-listcol), .doc-dock .doc-actions .toolbar-word, .mic-controls .setting-row:has(> .select-shell), .nm-atlas.atl-head :is(.atl-fx-sparkle, .atl-fx-hearts, .atl-fx-zz, .atl-fx-dots, .atl-fx-q, .atl-fx-bang, .atl-fx-sweat, .atl-fx-tear))) {
+  display: grid;
+}
+}
+
+@media (min-width: 1100px) {
+.wb-export-overlay .seg.wb-export-seg:where(:not(.dgm-body.dgm-fold-left > :is(.dgm-listcol, .dgm-split-handle), .dgm-body.dgm-fold-right > :is(.dgm-stage, .dgm-split-handle), .dgm-dialog:has(.dgm-plain) :is(.dgm-kindbtn, .dgm-kindlabel), .dgm-dialog[data-view="source"] .dgm-wrapbtn, .dgm-dialog[data-view="source"] :is(.dgm-pane, .dgm-listcol), .mic-controls .setting-row:has(> .select-shell), .nm-atlas.atl-head :is(.atl-fx-sparkle, .atl-fx-hearts, .atl-fx-zz, .atl-fx-dots, .atl-fx-q, .atl-fx-bang, .atl-fx-sweat, .atl-fx-tear))) {
+  display: grid;
+}
+}
+
+.wb-export-overlay .seg.wb-export-seg:where(:not(.mic-controls .setting-row:has(> .select-shell))) {
+  grid-template-columns: repeat(auto-fill, minmax(6.25rem, 1fr));
+}
+
+.wb-export-overlay .seg.wb-export-seg:where(:not(.lock-overlay:has(.lock-forgot-card:not(.hidden)))) {
+  padding-top: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+}
+
+.wb-export-overlay .seg.wb-export-seg:where(:not(.appearance-panel.peeking > .dialog-head, .capture-bar-row .capture-bar-input:focus-visible, .capture-bar-row .capture-bar-input:hover, .entry-links > .chip.link, .finder-filters .library-chip:not(.active))) {
+  background: none;
+}
+
+.wb-export-overlay .seg.wb-export-seg:where(:not(.finder-filters .library-chip.active)) {
+  box-shadow: none;
+}
+
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+/* One column, under a guide line that starts below the heading's caret, so
+   the eye runs down the titles the way it runs down a book's index. */
+.contents-list {
+  list-style: none;
+  margin: 0 0 0 calc(var(--space-3) + 0.5em);
+  padding-right: 0;
+  border-left: 1px solid var(--divider);
+  display: flex;
+  flex-direction: column;
+  column-gap: var(--row-gap);
+}
+
+.contents-list:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+  padding-bottom: 0;
+}
+
+@media (max-width: 819.98px) {
+.contents-list:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: var(--space-2);
+}
+}
+
+@media (min-width: 820px) {
+.contents-list {
+  padding-left: var(--space-2);
+}
+}
+
+.contents-list:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--row-gap);
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+/* `\boxed` and `\cancel` (a31m leftovers): a frame and a strike on the argument's row, from the renderer's classes. */
+math .math-boxed:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) kbd)) {
+  border: 1px solid currentColor;
+}
+
+math .math-boxed:where(:not(.code-block pre, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) kbd)) {
+  padding: 0.1em 0.2em;
+}
+
+math .math-cancel:where(:not(.code-block pre, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) kbd, html:has(> .desk-page))) {
+  background: linear-gradient(to top right, transparent calc(50% - 0.6px), currentColor calc(50% - 0.6px) calc(50% + 0.6px), transparent calc(50% + 0.6px));
+}
+
+/* **The suggestions panel's head** (INBOX 549, the panel-head recipe): the
+   name at 16px with its count as quiet text, then one group of quiet icon
+   buttons of one size, the X last. It was a 14.7px count, three tonal worded
+   buttons at 32px and two bordered icons at 28, wrapping to two rows in the
+   right dock and at 390 (INBOX 552, the owner's screenshot: "Suggestions 5"
+   over its icons on a second line). **One row at every width the panel
+   takes**, down to the 240px dock: the buttons never wrap and never shrink,
+   and the name is what gives way (an ellipsis, its whole text on a title),
+   which at 240 it does not need to. */
+.doc-prose-head {
+  justify-content: space-between;
+}
+
+.doc-prose-head:where(:not(.dock)) {
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--divider);
+}
+
+.doc-prose-head:where(:not(.dock, :is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.doc-prose-head:where(:not(.dock)) {
+  column-gap: var(--space-2);
+}
+
+.doc-prose-head:where(:not(.dock, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-bottom: var(--space-2);
+}
+
+.doc-crumb {
+  text-decoration: none;
+  font-size: var(--text-sm);
+  padding-right: 0.25rem;
+  padding-left: 0.25rem;
+  border-radius: var(--radius-sm);
+  /* A heading can be a sentence. The trail keeps its shape and the full text
+     stays available in the button's own `title`. */
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* A block, started at its own left edge. As the app's buttons are, it was
+     an inline flex box centring its text, and an ellipsis never applies to
+     a flex container's text: measured with a 39-character title, the crumb
+     cut 6px off each end, "A document ... title" drawn as "document ...
+     titl" with no ellipsis at all (INBOX 425 i). */
+  display: block;
+  text-align: start;
+  /* 22.8px high before (audit 1028 U35, WCAG 2.5.8). The line box carries the
+     height, so the ellipsis above still applies. */
+  min-height: var(--target-min);
+  line-height: calc(var(--target-min) - 0.3rem);
+}
+
+@media (forced-colors: active) {
+.doc-crumb:where(:not(:disabled)) {
+  color: var(--muted);
+}
+}
+
+@media (forced-colors: none) {
+.doc-crumb {
+  color: var(--muted);
+}
+}
+
+.doc-crumb:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+/* from 06-timeline-dialogs.css (L-ui-modernisation-51) */
+.wb-library-item {
+  padding-right: var(--space-4);
+  padding-left: var(--space-4);
+  background: var(--inner);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  font-size: var(--text-md);
+  user-select: none;
+  /* The note's name over one quiet line, each ellipsised at the row's edge
+     (the owner, 2026-10-10: "text gets cut off on the note sidebar"); never
+     squeezed by the list's column. A line clamp on this padded row painted
+     a third line, sliced, into its bottom padding. */
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  column-gap: var(--space-1);
+  min-width: 0;
+}
+
+.wb-library-item:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.wb-library-item:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+/* A row you can pick up says so under the pointer (INBOX 463: "no hover
+   state"), the same lift every other list row in the app gives. */
+.wb-library-item:hover:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))),
+.wb-library-item:is(:focus-visible, :has(:focus-visible)):where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  background: var(--ghost-btn-bg-hover);
+  border-color: var(--border);
+}
+
+.wb-library-item:active:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  cursor: grabbing;
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
+   between, so the shapes on the drawing layer below the card layer show
+   through it. Its inside lets the pointer through to the board, so a press
+   inside a frame selects or draws as it would on bare board; the title and
+   a selected frame's handles take the pointer. */
+.wb-object-frame:where(:not(.wb-resize-handle)) {
+  /* `--border` is a 10% hairline, drawn for a box that has a fill to stand
+     on; a frame is nothing but its edge, so the edge takes the muted ink. */
+  border: 1.5px solid color-mix(in srgb, var(--muted) 80%, transparent);
+  background: transparent;
+  pointer-events: none;
+}
+
+.wb-object-frame .wb-resize-handle {
+  pointer-events: auto;
+}
+
+.wb-object-frame .wb-frame-title:where(:not(:is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  pointer-events: auto;
+}
+
+.wb-object-frame .wb-frame-title {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+  touch-action: none;
+}
+
+.wb-object-frame .wb-frame-title:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  padding-bottom: var(--space-1);
+}
+
+.wb-object-frame .wb-frame-title:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  cursor: grab;
+}
+
+/* **The title's hit area never shrinks below a target** (harness-wb-1004
+   item 1). The title is board text, so at a phone's fitted zoom (k 0.24) it
+   was 7px tall and a press aimed at it landed on the board. Its box grows
+   upward from the frame's edge to `--target-min` on screen, the words kept
+   at its foot: a transparent top border makes up the difference (a border
+   is hit like the box; a pseudo-element is clipped by the title's own
+   overflow, and a flex box loses the ellipsis). At k 1 it is a few pixels. */
+.wb-object-frame .wb-frame-title {
+  min-width: min(100%, calc(var(--target-min) * var(--wb-inv-zoom)));
+}
+
+.wb-object-frame .wb-frame-title:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-top: max(0px, calc(var(--target-min) * var(--wb-inv-zoom) - var(--text-sm) * 1.4 - var(--space-1))) solid transparent;
+}
+
+.wb-object-frame.wb-text-editing .wb-frame-title {
+  cursor: text;
+  user-select: text;
+  text-overflow: clip;
+}
+
+.wb-object-frame.wb-text-editing .wb-frame-title:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):focus-visible, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ):hover)) {
+  color: var(--text);
+}
+
+.wb-object-frame.wb-text-editing .wb-frame-title:where(:not(:is(.chat-dock-controls .ghost, .menu-item, .timeline-sort):focus-visible)) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* A study question the cell would cut takes a line above the buttons. */
+.wb-present-count.wb-present-pick-slot.is-wide {
+  order: -1;
+}
+
+.wb-present-count.wb-present-pick-slot.is-wide:where(:not(.chat-toolbar .chat-headline > :first-child)) {
+  flex: 1 0 100%;
+}
+
+.wb-present-count.wb-present-pick-slot.is-wide:where(:not(.dock [class*="help"][class*="icon-only"])) {
+  width: auto;
+}
+
+/* **A dragged card must track the cursor, not ease after it.** The transition
+   above is for the hover lift; while a card is actually being dragged its
+   transform is being set every pointer move, so a 0.2s ease means the card
+   trails the pointer by exactly that much. `.dragging` was already used to
+   suppress the hover lift and never to suppress this. */
+.wb-card.dragging {
+  transition-behavior: normal;
+}
+
+@media (hover: hover) {
+.wb-card.dragging:where(:not(:is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-property: none;
+  transition-duration: 0s;
+  transition-timing-function: initial;
+}
+}
+
+@media (hover: none) {
+.wb-card.dragging:where(:not(:is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-property: none;
+  transition-duration: 0s;
+  transition-timing-function: initial;
+}
+}
+
+@media (hover: hover) {
+.wb-card.dragging:where(:not(.ui-settle > :nth-child(2), .ui-settle > :nth-child(3), .ui-settle > :nth-child(4), .ui-settle > :nth-child(5), .ui-settle > :nth-child(6), .ui-settle > :nth-child(7), .ui-settle > :nth-child(n + 8), :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-delay: 0s;
+}
+}
+
+@media (hover: none) {
+.wb-card.dragging:where(:not(.ui-settle > :nth-child(2), .ui-settle > :nth-child(3), .ui-settle > :nth-child(4), .ui-settle > :nth-child(5), .ui-settle > :nth-child(6), .ui-settle > :nth-child(7), .ui-settle > :nth-child(n + 8), :is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  transition-delay: 0s;
+}
+}
+
+/* A button, not a div: a region is clickable, and the thing that reads out
+   "region 3: Invoice total" to a screen reader has to be focusable. No
+   ground of its own, an opaque box over a scan hides the very thing it is
+   pointing at. */
+.ocr-box {
+  position: absolute;
+  /* Put back what `.ocr-boxes` gives up: the layer is transparent to the
+     pointer so a region drag can reach the layer beneath it, and the boxes are
+     the part that still has to be clickable. */
+  pointer-events: auto;
+  padding-right: 0;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  cursor: pointer;
+}
+
+.ocr-box:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+@media (max-width: 819.98px) {
+.ocr-box:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.ocr-box {
+  padding-left: 0;
+}
+}
+
+/* **A filled topic** (the owner: "the option to fill an individual node or
+   have it cascade to its children as well"; `wbMapFills` decides which). A
+   tint of the branch colour, not the colour itself, so the label keeps the
+   ordinary `--ink` and needs no per-colour ink the way a core node does:
+   `--wb-fill-strength` (24% light, 32% dark) of any colour at all over
+   `--modal-bg-opaque` stays within a third of the way from the theme's own
+   surface, and the worst case, pure white tinted onto the dark surface, still
+   reads over 5:1 against dark-theme ink. Mixed
+   toward the opaque surface for the reason `.wb-map-node` gives: `--card`
+   falls to transparent at zero glass. Above the core rule on purpose: equal
+   specificity, so a core node's full-colour ground wins by source order. */
+.wb-map-node.wb-map-filled:where(:not(.wb-map-core)):where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  background: color-mix(in srgb, var(--wb-branch) var(--wb-fill-strength), var(--modal-bg-opaque));
+}
+
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+/* **Visible before you hover it.** Reported: "there is no elipse button on
+   files in the files library subtab", there is, on every tile, and it was at
+   `opacity: 0` until the pointer happened to land on the tile. A control
+   nobody can see is a control nobody has: the whole point of a kebab is that
+   it *says* there is more here. Faded rather than full strength so a wall of
+   thumbnails is still thumbnails, and full on hover/focus as before.
+   (`:has(...[open])` went with the `<details>` menu it was written for, the
+   gallery uses the app's own `kebabMenu` now, whose open state lives on a
+   `.action-menu` sibling, and the row no longer fades at all.) The 0.6 is
+   set in the row's main rule above. */
+.library-image-actions:focus-within {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+.library-image-tile:hover .library-image-actions:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.library-image-tile:focus-within .library-image-actions:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.library-image-tile:hover .library-image-actions,
+.library-image-tile:focus-within .library-image-actions {
+  opacity: 1;
+}
+}
+
+/* from 04-chat-dock-appearance.css (L-ui-modernisation-51) */
+@media (hover: hover) {
+.doc-item:hover .doc-item-menu:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.doc-item-button:focus-visible ~ .doc-item-menu:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.doc-item:focus-within .doc-item-menu:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.doc-item:hover .doc-item-menu,
+.doc-item-button:focus-visible ~ .doc-item-menu,
+.doc-item:focus-within .doc-item-menu {
+  opacity: 1;
+}
+}
+
+@media (hover: hover) {
+.doc-list-item:hover .doc-list-menu:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.doc-list-item:focus-visible .doc-list-menu:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.doc-list-item:focus-within .doc-list-menu:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.doc-list-item:hover .doc-list-menu,
+.doc-list-item:focus-visible .doc-list-menu,
+.doc-list-item:focus-within .doc-list-menu {
+  opacity: 1;
+}
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+@media (hover: hover) {
+.doc-dictionary-row:hover .doc-dictionary-remove:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))),
+.doc-dictionary-row:focus-within .doc-dictionary-remove:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.doc-dictionary-row:hover .doc-dictionary-remove,
+.doc-dictionary-row:focus-within .doc-dictionary-remove {
+  opacity: 1;
+}
+}
+
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:hover:where(:not(:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .setting-hint-toggle:not(:hover):not(:focus-visible):not([aria-expanded="true"]))),
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small[aria-pressed="true"]:where(:not(:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .setting-hint-toggle:not(:hover):not(:focus-visible):not([aria-expanded="true"]))),
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:is(:focus-visible, :has(:focus-visible)):where(:not(:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .setting-hint-toggle:not(:hover):not(:focus-visible):not([aria-expanded="true"]))) {
+  background: var(--ghost-btn-bg);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* `outline: none` above had no replacement, a keyboard/screen-reader user
+   tabbing into a whiteboard text box got no visible confirmation it was
+   focused (Web Interface Guidelines pass). The box itself already has a
+   defined border/background (see the comment above), so an inset ring on
+   the editable area reads as an ordinary text-field focus state rather than
+   a stray rectangle on the canvas. */
+.wb-object-text .wb-text-content:focus-visible:where(:not(:is(.chat-dock-controls .ghost, .menu-item, .timeline-sort):focus-visible)) {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Interactive (and visible) only in the Select tool, `:hover` alone fires
+   for *any* tool the instant the cursor crosses the card, so without this
+   gate a link/pan drag started near a corner still lost to the handle
+   underneath even after the pointer-events fix above. `data-current-tool`
+   is kept in sync with `window.currentTool` by `updateWbCursor()`, the one
+   place a tool switch happens. */
+#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The focus ring is the app's own (every button has it). */
+#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:hover, .wb-selected):not(.wb-in-group) .wb-map-resize-grip,
+#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:focus-visible, .wb-selected):not(.wb-in-group) .wb-map-resize-grip {
+  display: block;
+}
+
+.wb-map-resize-grip:focus-visible:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  display: block;
+}
+
+.skill-card .skill-card-facts > button.skill-fact-toggle:is(:hover, :focus-visible, [aria-expanded="true"]):where(:not(.dock .menu-wrap > button.ghost:focus-visible, .dock .menu-wrap > button.ghost:hover, .library-image-actions > .menu-wrap > button.ghost:focus-visible, .library-image-actions > .menu-wrap > button.ghost:hover, :is(.capture-tools-row, .capture-filing-row) button.ghost:not(.menu-item):disabled, :is(.capture-tools-row, .capture-filing-row) button.ghost:not(.menu-item):is(:hover, :focus-visible, [aria-expanded="true"]))) {
+  background: var(--ghost-btn-bg);
+}
+
+.skill-card .skill-card-facts > button.skill-fact-toggle:is(:hover, :focus-visible, [aria-expanded="true"]):where(:not(:is(.capture-tools-row, .capture-filing-row) button.ghost:not(.menu-item):is(:hover, :focus-visible, [aria-expanded="true"]))) {
+  color: var(--ink);
+}
+
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+/* The caption becomes the rename field in place, so the field has to occupy
+   exactly the caption's box: a full-width input that changed the tile's
+   height would make the whole grid reflow while you type in one cell of it. */
+.library-image-rename-input:where(:not(.library-image-caption-input)) {
+  width: 100%;
+  padding-right: 0;
+  border: 0;
+  border-bottom: 1px solid var(--accent);
+  border-radius: 0;
+  background: none;
+  font-style: inherit;
+  font-variant: inherit;
+  font-stretch: inherit;
+  line-height: inherit;
+  font-family: inherit;
+}
+
+@media (max-width: 819.98px) {
+.library-image-rename-input:where(:not(.layout>*, .library-filters > *, .library-image-caption-input)) {
+  min-width: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-rename-input:where(:not(.layout>*, .library-image-caption-input)) {
+  min-width: 0;
+}
+}
+
+.library-image-rename-input:where(:not(.library-image-caption-input, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+@media (max-width: 819.98px) {
+.library-image-rename-input:where(:not(.library-image-caption-input, .sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-rename-input:where(:not(.library-image-caption-input)) {
+  padding-left: 0;
+}
+}
+
+.library-image-rename-input:where(:not(.library-image-caption-input, :is(.doc-list-title, .bookmark-title))) {
+  font-weight: inherit;
+}
+
+.library-image-rename-input:where(:not(.library-image-caption-input, :is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: inherit;
+}
+
+@media (forced-colors: active) {
+.library-image-rename-input:where(:not(.library-image-caption-input, :disabled)) {
+  color: var(--ink);
+}
+}
+
+@media (forced-colors: none) {
+.library-image-rename-input:where(:not(.library-image-caption-input)) {
+  color: var(--ink);
+}
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+.outline-link {
+  background: none;
+  border: none;
+  box-shadow: none;
+  font-style: inherit;
+  font-variant: inherit;
+  font-stretch: inherit;
+  line-height: inherit;
+  font-family: inherit;
+  text-align: left;
+  /* The indent guide below is drawn against this box. */
+  position: relative;
+  /* **`text-align` is the wrong property here, and that is why the outline
+     read as centred.** Reported with a screenshot: "the outline entries are
+     centre-aligned". Measured with a document open, every entry came back
+     `text-align: left` *and* `justify-content: center`, and the second one is
+     the one that decides: the bare `button` element rule in
+     01-forms-settings.css sets `display: inline-flex` with
+     `justify-content: center` so that a lone glyph sits in the middle of its
+     box, and against a flex container `text-align` governs nothing. So the
+     rule above looked correct at the line that set it and did nothing at the
+     line that used it, which is the shape CLAUDE.md's own traps list names.
+     Both are kept: the flex property for the flex box, `text-align` for the
+     text that wraps inside it. */
+  justify-content: flex-start;
+  padding-right: 0.25rem;
+  padding-left: 0.25rem;
+  width: 100%;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+.outline-link:where(:not(.chip, :disabled)) {
+  color: var(--muted);
+}
+}
+
+@media (forced-colors: none) {
+.outline-link:where(:not(.chip)) {
+  color: var(--muted);
+}
+}
+
+.outline-link:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-weight: inherit;
+  font-size: inherit;
+  font-size: var(--text-md);
+}
+
+.outline-link:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  /* Depth is carried by the row (`.outline-row`, library-lazy.css), so the
+     chevron steps in with its heading; the link's own inset never changes. */
+  
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+/* The row is the jump. A finding you have to hunt for after reading about it
+   is a finding that cost you more than it saved. */
+.doc-prose-jump {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: baseline;
+  /* **The rows were centred, and `text-align: left` below could not say
+     otherwise.** This is a `<button>`, and the app's global button rule
+     centres its contents; on a flex container `text-align` has nothing to
+     align, because the children are flex items and it is `justify-content`
+     that places them. Measured: a row starting at x=326 whose first word
+     began at x=751.7, so every finding in the panel sat 425px in from the
+     edge of the list it belonged to, in a ragged column down the middle. The
+     same trap `.doc-dock-menu-item` already carries an override for. */
+  justify-content: flex-start;
+  column-gap: var(--space-2);
+  min-height: var(--target-min);
+  padding-right: var(--space-2);
+  padding-left: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  box-shadow: none;
+  font-style: inherit;
+  font-variant: inherit;
+  font-stretch: inherit;
+  line-height: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.doc-prose-jump:where(:not(.doc-sidebar *)) {
+  min-width: 0;
+}
+
+.doc-prose-jump:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.doc-prose-jump:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+}
+
+@media (forced-colors: active) {
+.doc-prose-jump:where(:not(:disabled)) {
+  color: var(--ink);
+}
+}
+
+@media (forced-colors: none) {
+.doc-prose-jump {
+  color: var(--ink);
+}
+}
+
+.doc-prose-jump:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-weight: inherit;
+  font-size: inherit;
+  font-size: var(--text-sm);
+}
+
+.doc-prose-rowhead .doc-prose-act.ghost.small:hover:where(:not(.doc-dock .doc-dock-identity > .doc-back.ghost:hover, .doc-dock .doc-dock-identity > .doc-back.ghost:is(:focus-visible, :has(:focus-visible)), .timeline-days .timeline-day.ghost.small:hover, .timeline-days .timeline-day.ghost.small:is(:focus-visible, :has(:focus-visible)), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]))),
+.doc-prose-rowhead .doc-prose-act.ghost.small:focus-visible:where(:not(.doc-dock .doc-dock-identity > .doc-back.ghost:hover, .doc-dock .doc-dock-identity > .doc-back.ghost:is(:focus-visible, :has(:focus-visible)), .timeline-days .timeline-day.ghost.small:hover, .timeline-days .timeline-day.ghost.small:is(:focus-visible, :has(:focus-visible)), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]))) {
+  background: var(--ghost-btn-bg);
+}
+
+.doc-prose-rowhead .doc-prose-act.ghost.small:hover:where(:not(.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):hover, .wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):is(:focus-visible, :has(:focus-visible)), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]))),
+.doc-prose-rowhead .doc-prose-act.ghost.small:focus-visible:where(:not(.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):hover, .wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):is(:focus-visible, :has(:focus-visible)), :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .graph-help-toggle:not(:hover):not([aria-expanded="true"]))) {
+  color: var(--ink);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+.wb-layer-row:hover:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  background: var(--hover-veil);
+}
+
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+.library-card-thumb {
+  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) 0;
+  max-height: 240px;
+  border-bottom: 1px solid var(--border);
+  display: block;
+}
+
+/* The image a file actually is. Fixed height so a shelf of photos keeps its
+   rows level: a grid whose rows are different heights is the thing that reads
+   as unconsidered, and it is worse here than anywhere because these cards are
+   deliberately uniform. */
+.library-card-thumb {
+  width: 100%;
+  height: 6.5rem;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+}
+
+/* An audit-log entry's own preview can run to the full 400-char budget
+   (routes_library.py's ACTIVITY_DETAIL_CHARS) and, unlike every other kind
+   here, has nowhere else to read the rest, the grid view already shows it
+   in full (.library-activity .library-card-preview above); list view's
+   generic one-line clamp just above was clipping every activity row down
+   to a fragment with no way to see more, reported directly. A few lines,
+   not unclamped: list view's row-alignment is still worth keeping for
+   every *other* kind sharing this list, so this stays a real (generous)
+   cap rather than "as tall as the text wants to be". */
+.library-list .library-card-thumb {
+  flex: 0 0 auto;
+}
+
+.library-list .library-card-thumb:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  width: 3rem;
+  height: 2.2rem;
+}
+
+.library-list .library-card-thumb:where(:not(:is(.persona-row, .skill-row) > :is(.persona-preview, .skill-blurb))) {
+  order: 1;
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* Rows mode. The minimap is `width: 100%` of a card that is now the full
+   width of the panel, and `aspect-ratio` turned that into a 448px-tall
+   "row" (measured). A row's job is to fit forty boards on a screen, so the
+   map becomes a fixed thumbnail at the head of the row, the same size and
+   position `.library-list .library-card-thumb` gives every other kind, so
+   the Library's rows keep one left edge. */
+.library-list .board-minimap {
+  order: -2;
+  flex: 0 0 auto;
+  aspect-ratio: auto;
+}
+
+.library-list .board-minimap:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  width: 4.5rem;
+  height: var(--control-h-touch);
+}
+
+.library-list .board-minimap:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+}
+
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* The caret says which way it will go, by turning, never by colour alone. */
+.skill-card .skill-fact-toggle > .ph-trail {
+  margin-inline-start: 0;
+  transition: rotate var(--ui-base) var(--ease-out);
 }
 
 /* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
@@ -3551,7 +5041,7 @@ mark.text-highlight-yellow { background: var(--warn-soft); }
    line is a full-width strip with a reading badge and a button in it, and has
    its own height already. */
 .library-image-meta {
-  min-height: 2rem;
+  min-height: var(--control-h-lg);
 }
 
 /* **The fold opens downwards, not sideways.** Closed, the disclosure is a chip
@@ -6795,7 +8285,7 @@ body.printing-doc #doc-preview p,
 }
 
 .wb-map-theme-check {
-  min-height: 2rem;
+  min-height: var(--control-h-lg);
 }
 
 /* The rows the scope select swaps in are their own column: without its own
@@ -9152,7 +10642,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-template-choice-art.wb-lib-thumb {
   width: 3.5rem;
-  height: 2.25rem;
+  height: var(--control-h-body);
   color: var(--ink);
 }
 
