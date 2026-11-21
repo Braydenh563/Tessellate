@@ -1,8 +1,6 @@
 """A what-question that names a part of the app (L-chat-182), kept out of `help_chat` (line cap)."""
 import re
 
-from tessellate.ai import help_chat
-
 #: "what is the graph tab", "what does the whiteboard do", "what's the bin for": a question about a part of the app, not
 #: a how-to, so it is not the "how do I" frame (L-chat-182: it was answered "that's general knowledge").
 _FILLER = {"the", "for", "and", "you", "can", "how", "what", "does", "this", "that", "with", "tell", "about", "work", "tabs", "page"}
@@ -13,6 +11,9 @@ def surface_word(question: str) -> str:
     """The word of a what-question that names the app's own part ("the graph tab" is Graph;
     "a sourdough starter" shares a keyword with Templates but not its name), or ""."""
     framed = _WHAT_FRAME.match(question)
+    #: Lazy: help_chat builds its keyword tables on import (46 ms of the composer's cold import, tests/test_engine_budgets.py).
+    from tessellate.ai import help_chat
+
     topics = help_chat._matching_topics(question) if framed else []
     if not topics:
         return ""

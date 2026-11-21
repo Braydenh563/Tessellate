@@ -34,7 +34,8 @@ def test_the_switch_is_on_by_default_and_the_surfaces_speak_about_the_notes(clie
 
 def test_off_the_greeting_today_line_and_remarks_say_nothing_about_the_notes(client, monkeypatch):
     _seed(monkeypatch)
-    assert client.put("/preferences", json={"personal_wording": False}).status_code == 200
+    saved = client.put("/preferences", json={"personal_wording": False})
+    assert saved.status_code == 200
     assert client.get("/preferences").json()["personal_wording"] is False
     greet = client.get("/insights/greeting?block=morning").json()
     assert greet["source"] == "plain"

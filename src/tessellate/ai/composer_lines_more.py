@@ -149,7 +149,7 @@ MORE: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("That request requires a model. Offline I can search, count, list and set reminders.", "f", ""), ("This is beyond what I can do with no model, which is searching, counting, listing and reminders.", "f", ""),
         ("Beyond me without a model. Searching, counting, listing and reminders are not.", "p", ""), ("That takes a model, and I am flying solo. Search, count, list and remind, though.", "p", ""),
         ("Not possible with no model; searching, counting, listing and reminders are.", "t", ""), ("I would need a model for that, so I will stick to searching, counting, listing and reminders.", "f", ""),
-        ("I cannot do that here with no model. Searching, counting, listing and reminders I can.", "w", ""), ("A model would be needed. Without one I can search, count, list and remind.", "w", ""),
+        ("I cannot do that here with no model. Searching, counting, listing and reminders I can.", "w", ""), ("A model would be needed. Without one I can search, count, list and set reminders.", "w", ""),
         ("That one needs a model. I can still search, count, list and set reminders.", "", ""), ("Without a model that is out of reach, but searching, counting, listing and reminders are not.", "", ""),
     ),
 }

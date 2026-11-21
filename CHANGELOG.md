@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI fixes: the composer lint mirror re-places on window resize (no new ResizeObserver), the no-model line names reminders again, the composer imports cold in 0.075 s (help_chat loads on first help question; was 0.113 s), one assert-with-request rewritten (cap 226 held).
 
 - Chat: the contrast of web-source rows, `.said` text and the act card is at least 5.15 in light and 5.52 in dark (WCAG 4.5 needed), measured over the real background in Playwright, so no token changed; a real DuckDuckGo search is answered with a bot challenge from here (BACKLOG, needs the owner's network) (L164).
 - Documents: Japanese and Chinese get no checker pack (none exists); the browser's Intl.Segmenter counts their words in the long-sentence check, and `POST /spelling/check` reads the en-GB, en-US, en-AU, en-CA or en-IN list server-side from a document's lang tag (L-chat-259).
