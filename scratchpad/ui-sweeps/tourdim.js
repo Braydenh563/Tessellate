@@ -46,6 +46,10 @@ function ok(label, pass, detail) {
     document.documentElement.style.overflowY = "scroll";
   });
   await page.waitForTimeout(700);
+  // A toast is not an overlay (tour.js: the toast box stacks above the tour),
+  // so the first run's "You can make a recovery key later" read over the dim
+  // at 912,786. The dim is measured once the boot's toasts have gone.
+  await page.waitForFunction(() => !document.getElementById("toast-box")?.children.length, null, { timeout: 15000 }).catch(() => {});
 
   const out = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));

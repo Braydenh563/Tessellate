@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
-| mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
+| mindmap | 0 | 3 | 0 | 0 | 0 | 3 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
 | general | 0 | 7 | 0 | 0 | 5 | 7 |
-| all | 502 | 543 | 127 | 2 | 184 | 1172 |
+| all | 502 | 544 | 127 | 2 | 184 | 1173 |
 
 ## graph
 
@@ -342,6 +342,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 - [ ] **L-mindmap-20** `mindmap` open, M: Map branch drop: the release of a large branch drag redraws every inside line and link from scratch; draw them as a translation of what is on screen, or spread the redraw. From L-mindmap-18 (agent). Evidence: mapperf.js fresh runs: branch drag worst frame is the drop (dragWorstAt 1), 487 to 704ms at 500 topics; profile of a 200-topic drop: wbMapDragLayer.close 96 to 108ms, of it wbMapRibbonD 65ms over every inside line and wbMapCrossLinkLook 44ms over 300 inside links. The links-ratio check (links do not double the worst frame) now sits close at 50 and 200 because the plain drop got cheaper: failed in three of seven fresh runs (50: 37 vs 97 before the size fix; 200: 91.6 vs 193.3 after it), passed in the last two.
 - [ ] **L-mindmap-21** `mindmap` open, S: Map branch pick-up for a branch about half the board: still lifts every member; measure a mid-size branch in mapperf and pick the cheaper side by element count. From L-mindmap-18 (agent). Evidence: wbMapDragLayer.open stays only when the branch has 32 topics or more and is more than half the board layer; a branch of about half a 500-topic board still lifts every member (about 50us an element of style recalc, so about 12ms per 250 topics), unmeasured by mapperf, whose branches are the whole map.
+- [ ] **L-mindmap-22** `mindmap` open, M: mapperf is flaky on a 4-core runner: make its timing checks steady (more samples or a median) and put it back on stable.txt. From L-general-20 sweep stabilising, 2026-11-21. Evidence: mapperf on a fresh data dir, 4-core box, two passes failed different checks: pan 98.9ms at 500 topics; link drag 78.7 vs 39.3ms; open 1181ms; branch pickup 626ms
 
 ## ui-modernisation
 

@@ -30,13 +30,27 @@ function ok(label, pass, detail) {
     for (const sec of sections) {
       const res = await page.evaluate(async (sec) => {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        const table = openTour.inspect().sections;
+        const mine = new Set(table.find((t) => t.id === sec).steps.map((st) => st.title));
+        const others = new Set(table.flatMap((t) => t.steps.map((st) => st.title)));
         openTour(sec);
         await wait(700);
         const out = [];
         for (let i = 0; i < 40; i += 1) {
           const spot = document.getElementById("tour-spot");
           const card = document.getElementById("tour-card");
+          //: A card that is busy (a tab still loading) is not a step yet: it
+          //: shows Next's spinner and no ring (tourBusy). Measured once it
+          //: settles, the section's first card too (Graph's tab took longer
+          //: than the 700ms after openTour, so "Highlight notes" read unlit).
+          for (let t = 0; t < 40 && card.getAttribute("aria-busy") === "true"; t += 1) await wait(200);
           if (card.classList.contains("hidden")) break;
+          // The last card of a section hands over to the next one by name, so
+          // Next would walk every later section again from here (the run took
+          // longer than five minutes that way): a card that belongs to another
+          // section is that section's own turn, walked there.
+          const here = document.getElementById("tour-title").textContent;
+          if (!mine.has(here) && others.has(here)) break;
           const s = spot.getBoundingClientRect();
           const c = card.getBoundingClientRect();
           const w = window.innerWidth;
@@ -90,12 +104,13 @@ function ok(label, pass, detail) {
           if (!next) break;
           next.click();
           await wait(650);
-          //: A card that is busy (a tab still loading) is not a step yet: it
-          //: shows Next's spinner and no ring (tourBusy). Measured once it settles.
-          for (let t = 0; t < 40 && document.getElementById("tour-card").getAttribute("aria-busy") === "true"; t += 1) await wait(200);
         }
         return out;
       }, sec);
+      // Every card the count names is walked: a step dropped mid-section, or
+      // a handover that ended a section early, is a fault, not a shorter run.
+      const of = res.length ? Number((res[0].n.match(/of (\d+)/) || [])[1]) : 0;
+      if (res.length && of && res.length !== of) faults.push(`${vp.width} ${sec}: ${res.length} cards walked of ${of} (${res.map((r) => r.n).join(", ")})`);
       for (const r of res) {
         steps += 1;
         const tag = `${vp.width} ${sec} "${r.title}" ${r.n}`;
