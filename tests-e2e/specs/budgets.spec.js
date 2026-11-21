@@ -131,6 +131,8 @@ const ATLAS_IDLE_CPU_CAP_MS = 120;
 test("companion_idle_cpu: Atlas idle costs at most 120 ms/s of main-thread CPU over off", async ({ page, browser }) => {
   test.fail(true, "L-ui-modernisation-95: Atlas idle is about 480 ms/s over off in CPU time");
   await openApp(page);
+  // The full figure on every runner (L-ui-modernisation-201): a slow one would otherwise switch to the lite set.
+  await measure.pinFullFigure(page);
   const idle = async (kind) => {
     await page.evaluate(async (k) => { localStorage.removeItem("nm-buddy-spots"); prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy(); }, kind);
     await page.evaluate(() => revealTab("dashboard"));

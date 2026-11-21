@@ -4,17 +4,26 @@
 // while scrolling, from /proc schedstat (lib.js mainCpuMs); medians over RUNS, kinds
 // interleaved so a drifting machine hits all three alike. No frame counter, trace or
 // profiler: each would be a dirty frame of its own.
-//   node scratchpad/ui-sweeps/companioncpu.js     (RUNS=5 MS=4000 TAB=dashboard)
+//   node scratchpad/ui-sweeps/companioncpu.js     (RUNS=5 MS=4000 TAB=dashboard THROTTLE=1)
+// Pinned to the full figure (L-ui-modernisation-201): the frame budget's lite set
+// (`data-atlas-lite`) engages on a slow or loaded box and halves the figure, so a
+// guard that let it would read a different figure on each machine. THROTTLE is the
+// CDP CPU throttle rate, 1 (none) by default: at 4 the throttler holds the main thread on a
+// core 60 per cent of the time whatever runs (off 605, Atlas 630 ms/s), so the difference
+// measures the throttler, not the figure.
 // Budgets (never widened): scroll +1 ms per step, atlas idle +120 ms/s over off.
-const { boot, mainCpuMs } = require('./lib.js');
+const { boot, mainCpuMs, pinFullFigure } = require('./lib.js');
 const RUNS = Number(process.env.RUNS || 3);
 const MS = Number(process.env.MS || 4000);
 const TAB = process.env.TAB || 'dashboard';
 const KINDS = (process.env.KINDS || 'off,me,atlas').split(',');
+const THROTTLE = Number(process.env.THROTTLE || 1);
 const med = (a) => a.slice().sort((x, y) => x - y)[a.length >> 1];
 
 async function one(kind) {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
+  await pinFullFigure(page);
+  if (THROTTLE > 1) await (await page.context().newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
   await page.evaluate(async (k) => { localStorage.removeItem('nm-buddy-spots'); prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, kind);
   await page.evaluate((t) => revealTab(t), TAB);
   await page.waitForTimeout(6000);

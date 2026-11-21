@@ -194,4 +194,16 @@ async function idleCpuPerSecond(browser, page, ms = 4000) {
   return (await mainCpuMs(browser) - before) / (ms / 1000);
 }
 
-module.exports = { p50, boot, listPaint, search, boardOpen, documentOpen, tabTaskCpu, mainCpuMs, idleCpuPerSecond };
+// The full figure, on every machine (L-ui-modernisation-201): the frame budget's lite set
+// (`data-atlas-lite`, atlas-life.js) engages when frames run slow, so a loaded runner would
+// measure half a figure and a quiet one the whole. Refusing the attribute pins the measure to
+// the figure the owner sees on a mains-powered desktop.
+async function pinFullFigure(page) {
+  await page.evaluate(() => {
+    const root = document.documentElement, set = root.setAttribute.bind(root);
+    root.removeAttribute("data-atlas-lite");
+    root.setAttribute = (k, v) => (k === "data-atlas-lite" ? undefined : set(k, v));
+  });
+}
+
+module.exports = { p50, boot, listPaint, search, boardOpen, documentOpen, tabTaskCpu, mainCpuMs, idleCpuPerSecond, pinFullFigure };

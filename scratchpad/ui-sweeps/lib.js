@@ -319,4 +319,16 @@ async function mainCpuMs(browser) {
   return ns / 1e6;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, mainCpuMs};
+// The full figure, on every machine (L-ui-modernisation-201): the frame budget's lite set
+// (`data-atlas-lite`, atlas-life.js) engages when frames run slow, so a loaded runner would
+// measure half a figure and a quiet one the whole. Refusing the attribute pins the measure to
+// the figure the owner sees on a mains-powered desktop.
+async function pinFullFigure(page) {
+  await page.evaluate(() => {
+    const root = document.documentElement, set = root.setAttribute.bind(root);
+    root.removeAttribute("data-atlas-lite");
+    root.setAttribute = (k, v) => (k === "data-atlas-lite" ? undefined : set(k, v));
+  });
+}
+
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, mainCpuMs, pinFullFigure};
