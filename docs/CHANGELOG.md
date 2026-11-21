@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Night shift pass 2 acts on what it reads by rule (L-world-class-27): accepting a date on the While you were away card makes a reminder at 9 that day, accepting a repeated note runs Tidy's merge into the earlier one (`POST /learned/{id}/accept`, `ai/facts_accept.py`, `tidy.merge_pair`); Undo reverses either; tests/test_fact_accept.py.
 Filing corrections no longer lower accuracy (L-world-class-87): 43/47 to 43/47 on the 20-correction eval (was 40/47); a single refile from nowhere no longer votes outright, and a taught topic joins a profile only when the note says it, capped at the category's own strongest topic; +10 stays a real-model gate (BACKLOG L-world-class-28).
 Boot long tasks measured and attributed (L-world-class-364, L-world-class-354): 4x trace, UpdateLayoutTree 945 ms total over five runs, 1x longest task under 50 ms in 4 of 5 runs, the style-only tasks traced to the first stylesheet build and the dashboard's first full draw; the owner-browser check is a BACKLOG row.
 Split notes-list.js and status.js into lazy pieces (L-world-class-631): `notes-wire.js` (the list's keyboard walk, shift-click range, connections rail listeners, wiki-rename offer) and `status-settings.js` (`renderSettings`), reached by stand-ins in lazy-entries.js with no boot tag; notes-list.js 3,787 to 3,622 lines, status.js 3,246 to 3,086, caps lowered to match.
