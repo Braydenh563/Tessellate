@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Handler lag: re-measured at 1x and 4x CPU, five runs each; tab presses (13 to 69 ms at 4x), chat hover (2 to 8 ms) and every 1x item are under 100 ms; Settings pane switches at 4x are the one open item (L-world-class-355).
 - Memory: a ten-minute browser loop over notes, a document, a board, the graph, chat and the library (scratchpad/ui-sweeps/memory10.js) holds the heap after GC within 17% (22.9 to 26.8 MB) and DOM nodes flat to falling (L-world-class-24).
 - Lock: nothing is sent to the server after Lock until you sign in again; six dashboard and chat loaders used to fire and fail behind the lock screen (L529).
 - Command palette: "new" lists the create commands first (a row is ranked on its name without its icon token), and the Notes tab's category list is drawn when the tab is opened after notes loaded behind another tab (L499).
