@@ -101,7 +101,7 @@ def test_a_narrow_panels_head_buttons_are_one_icon_group() -> None:
     tools are icon squares at every width (the Dictionary and the side in
     the ⋯); below 26rem Fix N's words are visually hidden too (never
     dropped: its title and label say the number), so the row stays one."""
-    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     block = css[css.index("@container doc-prose (max-width: 26rem)"):]
     block = block[: block.index("\n}\n")]

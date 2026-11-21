@@ -2961,25 +2961,6 @@ body.resizing-sidebar {
   color: var(--accent-text);
   text-decoration: underline;
 }
-.outline-twist {
-  flex: none;
-  width: 1rem;
-  height: 1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-  color: var(--muted);
-  font-size: var(--text-base);
-  line-height: 1;
-  /* A span in the same slot on a row with nothing under it: no pointer, no
-     ink, exactly the same box. */
-  cursor: default;
-}
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
    rather than a gap because `.doc-outline-wrap` is a flex column whose other
@@ -3000,17 +2981,6 @@ body.resizing-sidebar {
   font: inherit;
   font-size: var(--text-md);
   padding: 0 var(--space-3);
-}
-/* `.select-shell` as well as the select itself: `enhanceSelect` in sheets-selects.js
-   rebuilds every `<select>` inside one on a MutationObserver, so for the frame
-   before that runs the select is the row's own child and afterwards it is a
-   grandchild. Naming both means the row never has a frame at the wrong width,
-   and the rule does not quietly stop applying the day that observer changes. */
-.doc-outline-row > .outline-link,
-.doc-attach-row > .bookmark-attach-picker,
-.doc-attach-row > .select-shell {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 /* The line that says what fills an empty outline. One sentence, the muted
    ink, and the same left edge as the entries that will replace it, so the
@@ -4389,29 +4359,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .note-toolbar[data-toolbar-mode="row"] {
   padding-block: var(--space-1);
 }
-/* A non-image upload's tile in the Library gallery. Same footprint as an
-   image tile so the grid stays a grid, a PDF among photos must not make
-   the row it is in a different height. See library.js's own comment for why
-   these tiles used to delete themselves instead of rendering. */
-.library-file-thumb {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  /* Matched to `.library-image-tile img`'s own 9rem, not chosen: a tile
-     that is taller than the photos beside it makes its whole grid row
-     taller and the gallery stops reading as a grid. */
-  height: 9rem;
-  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-  background: var(--chip-bg);
-  color: var(--accent-text);
-  font-size: var(--text-display);
-  cursor: pointer;
-}
 /* Direction on a link chip. Colour is deliberately *not* the only signal, 
    the arrow glyph carries it, and DESIGN.md's contrast rule (and WCAG's
    "don't convey information by colour alone") both say so. The tint is a
@@ -4624,16 +4571,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 
 /* Accept and Ignore: quiet squares of one size, the ink arriving with the
    pointer. */
-.doc-prose-rowhead .doc-prose-act.ghost.small {
-  width: var(--control-h-lg);
-  height: var(--control-h-lg);
-  min-height: 0;
-  padding: 0;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--muted);
-}
 
 /* A narrow panel (the right dock, focus mode, a phone) stacks the row the
    same way, the words over the reason, rather than ellipsising both. */
@@ -4918,30 +4855,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 }
 /* A narrow panel: Fix N gives up its words too (the `.toolbar-word` way,
    clipped, not dropped: its title and label say the number). */
-@container doc-prose (max-width: 26rem) {
-  .doc-prose-tools > .doc-prose-fix-all .ph-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-  /* Its words are hidden here, so its icon is alone: centred in its
-     control rather than moved onto words (INBOX 592). */
-  .doc-prose-tools > .doc-prose-fix-all .ph-lead:has(~ .ph-text) {
-    translate: none;
-  }
-  .doc-prose-panel .doc-prose-tools > .doc-prose-fix-all.ghost.small {
-    width: var(--dialog-head-btn-size);
-    padding: 0;
-    justify-content: center;
-  }
-  .doc-prose-tools > .doc-prose-fix-all > .ph-lead {
-    margin-inline-end: 0;
-  }
-}
 
 .entry-meta.note-meta > .chip > .ph-text {
   min-width: 0;

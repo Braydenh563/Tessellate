@@ -61,51 +61,6 @@
   width: 100%;
 }
 
-/* The thread, in the help popover's shell: the comments, then a quiet "New
-   comment" that opens the box with its Post and Cancel (INBOX 570). */
-.help-popover.wb-comments {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-}
-/* A guaranteed drag target for a text box, see the matching comment in
-   app.js's `objectEnter.each` for why `.wb-text-content` alone left only a
-   ~0.5rem padding strip to grab. Same glyph and cursor as `.wb-panel-grip`,
-   always visible (not hover-gated) since the whole point is not having to
-   go hunting for it. */
-.wb-resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: var(--accent);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-sm);
-  z-index: 5;
-  opacity: 0;
-  /* **Absent at rest, not merely invisible** (INBOX 424 (a)). Every card and
-     text box carries nine of these, and each is scaled by `--wb-inv-zoom`
-     (below), which is a transform the compositor cannot fold into the layer
-     around it: at `opacity: 0` they were still nine paint chunks per card,
-     and they split the board into one layer per card. On a 250-object board
-     that was 256 layers and 1,680ms of `Layerize` in a 40-move pan at 4x;
-     with the grips out of the tree at rest, 138 layers and 388ms
-     (`scratchpad/ui-sweeps/wbpanlayers.js`). The reveal below puts them back,
-     and `@starting-style` keeps the fade in. */
-  display: none;
-  /* Real bug, found while testing link anchors (ROADMAP item 11): opacity 0
-     is not pointer-events: none: an invisible handle still wins the
-     hit-test over the card/object beneath it at every corner and edge,
-     for *any* tool, not only while selected. A drag meant to move the item
-     (or, for the whiteboard's link tool, start a link from that corner)
-     silently turned into a no-op resize attempt instead, very likely the
-     whole of "objects are difficult and annoying to move", since a small
-     object's clickable area is mostly covered by its own 8 handles. */
-  pointer-events: none;
-  transition:
-    opacity var(--motion-fast) var(--ease-out),
-    display var(--motion-fast) linear allow-discrete;
-}
 /* `:not(.wb-in-group)` above because the reveal now sets `display`, and at
    this specificity it would beat the group rule that hides a member's own
    grips (`.node-card.wb-in-group .wb-resize-handle`, INBOX 278), which only
@@ -128,37 +83,6 @@
   #whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle {
     opacity: 0;
   }
-}
-/* One handle above top-centre, asked for directly ("rotations"). A round
-   handle (vs. the square resize ones) so the two are never confused at a
-   glance, connected to the box with a thin stem the same way every other
-   drawing app's own rotate handle reads. */
-.wb-rotate-handle {
-  position: absolute;
-  top: -28px;
-  left: calc(50% - 6px);
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  border: 1px solid var(--card);
-  /* A curved-arrow rotate cursor, not a plain grab hand, asked for
-     directly ("cursor changing to the rotate icon when hovering over or
-     using the rotate nodes"). Same inline-SVG-as-cursor technique
-     `wbCursorUrl` uses for the drawing tools in app.js, just written as
-     static CSS here since this is a plain `:hover` pseudo-class on one
-     fixed element, not a per-tool cursor computed in JS. `grab`/`grabbing`
-     stay as the fallback for browsers that reject the custom cursor. */
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M17 6a7 7 0 1 0 1.6 7.3' fill='none' stroke='%23000' stroke-opacity='.6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M14 3l3.6 2-1 4' fill='none' stroke='%23000' stroke-opacity='.6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 11 11, grab;
-  z-index: 5;
-  opacity: 0;
-  /* Absent at rest, for the reason on `.wb-resize-handle` above. */
-  display: none;
-  pointer-events: none;
-  /* see .wb-resize-handle's own comment above */
-  transition:
-    opacity var(--motion-fast) var(--ease-out),
-    display var(--motion-fast) linear allow-discrete;
 }
 
 /* ======================= SIDEBAR COLLAPSE & PEEK ======================= */
@@ -5046,9 +4970,6 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   }
 }
 
-.wb-map-theme .setting-subhead:first-of-type {
-  margin-top: 0;
-}
 /* A board's actual layout, in miniature. The dots are cards drawn at their
    real relative positions, so two boards look different from each other in
    the way the boards themselves do. */
@@ -5696,10 +5617,6 @@ body.library-media-selecting
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.library-image-usage-chip > .ph-lead {
-  flex: 0 0 auto;
-}
-
 .timeline-row-meta > .chip {
   background: transparent;
   border: 0;
@@ -8974,75 +8891,6 @@ input[type="file"] {
    impossible here: the renderer only ever *removes* the property (it calls
    `removeProperty`, never writes `undefined`), so an uncoloured node falls
    back to this line rather than to an invalid value. */
-.wb-map-node {
-  /* The stated default when a node has no branch of its own: the root, and
-     any node on a map whose palette has not been reached yet. */
-  --wb-branch: var(--accent);
-  /* **The ink a core node writes on its own fill**, declared here so the rules
-     below can use it plainly (a `var(--x, fallback)` on a token this
-     stylesheet never declares is what `tests/test_style_scale.py` refuses, and
-     rightly: the fallback would be what renders). `wbPaintMapNode` overwrites
-     it per node, as an inline custom property computed from that node's branch
-     colour by WCAG luminance; this value is what the one frame before the
-     first paint uses, and what a node with no branch colour keeps. */
-  --wb-core-ink: var(--ink);
-  /* **The branch colour, made readable as a line.** `wbMapColors` assigns
-     `d3.schemeTableau10`, which is a palette designed for *fills*, an area
-     of colour large enough to identify. Drawn as a 4px spine on a near-white
-     board its lighter entries stop being a boundary: measured in light theme,
-     `#f28e2c` came out at 2.18:1 against the canvas, under the 3:1 WCAG 1.4.11
-     asks of a non-text UI boundary (`#4e79a7` managed 4.09:1, so it is the
-     palette's spread that is the problem, not the idea).
-     Mixed toward `--ink` rather than toward black or white, which is what
-     makes one declaration correct in both themes: `--ink` is the text colour,
-     so it contrasts with whatever the surface is *by definition*, dark in
-     light mode, near-white in dark mode. So this always moves the branch
-     colour away from its own background. 30% keeps every palette entry
-     plainly distinguishable from its neighbours, which is the whole job of a
-     branch colour; measured after, the same orange reads 3.6:1. */
-  --wb-branch-edge: color-mix(in srgb, var(--wb-branch) 70%, var(--ink));
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  /* Height is deliberately absent, the renderer sets `height: auto` for map
-     kinds, so a node is exactly as tall as its own text and a long topic can
-     never be sliced by `overflow: hidden`. `min-height` keeps a one-word node
-     from collapsing to a strip. */
-  min-height: 2.75rem;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  /* **A node keeps a surface even with glass turned off.**
-     `--card` is a `color-mix()` scaled by the user's glass-opacity setting, so
-     a plain `var(--card)` falls to *fully transparent* at the bottom of that
-     slider: measured, at GLASS=0: `background-color` computed to
-     `rgba(0, 0, 0, 0)` and a node's label sat straight on the canvas. The
-     board's own colour is picked freely (`#wb-bg-color-picker`), so nothing
-     here can assume it contrasts with the text the way an ordinary panel can.
-     Mixed toward `--modal-bg-opaque`, the app's own theme-aware *solid*
-     surface: rather than toward `transparent`, and that difference is the
-     whole fix. `.wb-object-text` a few hundred lines up uses
-     `max(var(--glass-opacity), 0.55)` against `transparent` and its comment
-     says that keeps it legible "even with glass opacity turned all the way
-     down"; it does not, and measuring is what showed it. `--card` is
-     *already* zero-alpha by then, and mixing more of nothing with transparent
-     is still nothing. Mixing with an opaque colour is what puts alpha back:
-     at full glass this is the same 0.55 pane it always was, and at zero it
-     becomes the solid surface instead of disappearing. */
-  background: color-mix(in srgb, var(--card) calc(var(--glass-opacity) * 100%), var(--modal-bg-opaque));
-  border: 1.5px solid color-mix(in srgb, var(--wb-branch-edge) 55%, transparent);
-  /* The branch's colour as a spine down the leading edge. A whole node filled
-     with the branch colour makes the text fight its own background at every
-     palette entry; a bar states the same grouping and leaves the label alone.
-     The spine is the node's real boundary against the canvas, the 1.5px
-     border above is a soft edge at 55% alpha and cannot carry that on its own
-     - so it takes the readable form of the branch colour (see
-     `--wb-branch-edge`) rather than the raw palette entry. */
-  border-left: 4px solid var(--wb-branch-edge);
-  box-shadow: var(--glass-shadow);
-  color: var(--text);
-  font-size: var(--text-md);
-  line-height: 1.35;
-}
 /* --- the spine on the other edge (MINDMAP_PLAN.md §13e) ---------------------
    A topic whose parent is to its *right* carries the branch bar on its right
    edge, for the same reason a downward map carries it on the top: a bar on
@@ -9086,33 +8934,6 @@ input[type="file"] {
   border-radius: var(--radius-sm);
   padding: 0 var(--space-1);
   font-size: 0.92em;
-}
-/* **The topic's resize grip, on its own bottom right corner** (INBOX 610:
-   "resizing the mindmap nodes, resizing the text" was "unintuitive"). It was
-   a row of two 16px glyphs floating outside the top left, "Aa" and an arrow,
-   neither on the corner it resized from. Now the board's grip recipe
-   (DESIGN.md, "a grip you drag on a canvas", `.wb-resize-handle`): a small
-   square filled in the branch's colour and stroked in the card colour, kept
-   one size to the hand at every zoom, revealed by selecting the topic or
-   pointing at it, in the Select tool only, and absent otherwise so it never
-   takes a press meant for the topic.
-   The bottom right because nothing else reaches it: `.wb-map-actions` hangs
-   off the bottom left, the chevron and its count sit on the middle of an
-   edge. The visible square is 10px; the button is 24px, so the hand gets a
-   target the eye does not have to see. */
-.wb-map-resize-grip {
-  position: absolute;
-  inset: auto -12px -12px auto;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: nwse-resize;
-  touch-action: none;
-  z-index: 5;
-  transform: scale(var(--wb-inv-zoom));
-  display: none;
 }
 /* --- the node edit strip (MINDMAP_PLAN.md §12.1 item 2) ---------------------
    The bar that stands in the board selection bar's place on a map node. Same
@@ -9614,14 +9435,6 @@ input[type="file"] {
 }
 .wb-map-radial-caption:empty {
   display: none;
-}
-/* The note itself, in the help popover's shell (`.help-popover`): one plain
-   text box the width of the popover, and one quiet line under it. */
-.help-popover.wb-map-note-peek {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
 }
 
 /* The arrowhead takes the branch's own colour: `context-stroke` is what
