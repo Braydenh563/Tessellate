@@ -370,7 +370,7 @@ def test_the_page_opens_the_app_before_it_hides_the_panel():
 
 def test_the_launcher_wires_the_attach_and_the_tray_item():
     assert "_attach_desk_companion(webview, window, tray_icon)" in MAIN.split("def _run_desktop")[1].split("\ndef ")[0]
-    tray = MAIN.split("def _start_tray")[1].split("\ndef ")[0]
+    tray = MAIN.split("def _tray_menu_items")[1].split("\ndef ")[0]
     assert "desk_companion.tray_menu_item(pystray)" in tray
 
 

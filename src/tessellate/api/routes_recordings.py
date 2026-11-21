@@ -12,6 +12,7 @@ the list is read, marked recovered so the app says so once.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from collections.abc import Callable
@@ -19,13 +20,14 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, Response, UploadFile
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.orm import Session
 
 from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, sealed_aware, sealed_http
 from tessellate.core import activity, deps, jobs, recordings, sealed_files, spacelock, transcript, vault
+from tessellate.core import recording_trim as trim_audio
 from tessellate.core.database import Entry, Recording, SealedWriteRefused, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
@@ -58,6 +60,17 @@ class RecordingFinish(BaseModel):
     duration_ms: int = Field(default=0, ge=0, le=24 * 3600 * 1000)
     peaks: list[float] = Field(default_factory=list, max_length=recordings.PEAKS_MAX)
     markers: list[float | dict] = Field(default_factory=list, max_length=recordings.MARKERS_MAX)
+
+
+class RecordingTrim(BaseModel):
+    start_ms: int = Field(ge=0, le=24 * 3600 * 1000)
+    end_ms: int = Field(gt=0, le=24 * 3600 * 1000)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> RecordingTrim:
+        if self.end_ms <= self.start_ms:
+            raise ValueError("The end must come after the start.")
+        return self
 
 
 class RecordingPatch(BaseModel):
@@ -212,6 +225,56 @@ def finish_recording(
     row.updated_at = utcnow()
     session.commit()
     return recordings.as_dict(row)
+
+
+@router.post("/recordings/{recording_id}/trim", status_code=201)
+def trim_recording(recording_id: int, body: RecordingTrim, session: Session = Depends(get_session)) -> dict:
+    """The part from `start_ms` to `end_ms` as a new wav recording that points
+    at its original (L632). The cut is made here, packet by packet, so the page
+    never decodes the whole take; the original is kept, and its waveform and
+    marks are carried over for the span."""
+    row = _writable(session, recording_id)
+    path = recordings.path_of(row)
+    if row.state != "saved" or not path.is_file():
+        raise HTTPException(status_code=404, detail="That recording's audio is missing.")
+    end = min(body.end_ms, row.duration_ms) if row.duration_ms else body.end_ms
+    if end <= body.start_ms:
+        raise HTTPException(status_code=422, detail="The end must come after the start.")
+    try:
+        with sealed_files.readable(path) as audio:
+            wav = trim_audio.cut(Path(audio), body.start_ms, end)
+    except sealed_files.SealedError as exc:
+        raise sealed_http(exc) from exc
+    except trim_audio.TrimError as exc:
+        raise HTTPException(status_code=503, detail=exc.sentence) from exc
+    span = row.duration_ms or end
+    bars = json.loads(row.peaks or "[]")
+    kept_marks = [
+        ({"at": m["at"] - body.start_ms, "note": m["note"]} if m.get("note") else m["at"] - body.start_ms)
+        for m in transcript.marks_of(row)
+        if body.start_ms <= m["at"] <= end
+    ]
+    made = Recording(
+        title=f"{row.title or 'Recording'} (trimmed)"[:200],
+        mime="audio/wav",
+        filename=recordings.new_filename("audio/wav"),
+        entry_id=row.entry_id,
+        source_id=row.id,
+        derived="trim",
+        state="saved",
+        size_bytes=len(wav),
+        duration_ms=end - body.start_ms,
+        peaks=recordings.clean_peaks(bars[int(body.start_ms / span * len(bars)) : -(-end * len(bars) // span)]),
+    )
+    made.markers = recordings.clean_markers(kept_marks, made.duration_ms)
+    try:
+        sealed_files.append(recordings.path_of(made), wav, sealed=sealed_files.wanted(session, row.workspace_id))
+    except sealed_files.LooksSealed as exc:
+        raise HTTPException(status_code=415, detail=sealed_files.LOOKS_SEALED_DETAIL) from exc
+    recordings_repo.add(session, made)
+    log_action(session, "created", "recording", made.id, detail="trim")
+    session.commit()
+    return recordings.as_dict(made)
 
 
 @router.get("/recordings/{recording_id}")

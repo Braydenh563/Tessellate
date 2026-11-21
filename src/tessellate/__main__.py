@@ -2276,62 +2276,16 @@ def _tray_new_note(window) -> None:
     )
 
 
-def _start_tray(
-    window,
-    icon_path: Path,
-    console_hwnd: int | None,
-    console_hidden: bool,
-    console_targets: dict[int, str] | None = None,
-):
-    """The system tray icon: Open / View Logs / Restart / Quit.
-
-    Returns None: and the caller falls back to an ordinary window that
-    really closes on the X button, when pystray or Pillow aren't installed.
-    Both are optional for the same reason pywebview itself is (core/extras.py):
-    a source checkout that never asked for the desktop window shouldn't need
-    them, and the packaged Windows installer bundles both so this path is
-    always taken there.
-
-    Runs pystray's own event loop in a daemon thread: `webview.start()` below
-    blocks the main thread until the window is really destroyed, and pystray's
-    `run()` blocks too: two things that both want to block forever can't
-    share one thread. Windows' pystray backend (the only platform this ships
-    on) tolerates running off the main thread; that would not be true on
-    macOS, which is one reason the desktop build doesn't target it.
-    """
-    try:
-        import pystray
-        from PIL import Image
-    except ImportError:
-        logger.info(
-            "no system tray: install pystray + Pillow for one "
-            "(pip install pystray Pillow), or use the Windows installer, "
-            "which bundles both"
-        )
-        return None
-    except Exception as exc:
-        # Not just ImportError: pystray picks a backend at import time (Xorg,
-        # AppKit, win32...) and that backend's own init can raise anything, 
-        # found in this sandbox as Xlib.error.DisplayNameError on a headless
-        # Linux box with no X server. A missing tray icon is cosmetic; the
-        # window is not, so this must degrade the same way a genuinely
-        # missing package does rather than take the whole launcher down.
-        logger.warning("system tray unavailable, continuing without one: %s", exc, exc_info=True)
-        return None
-
+def _tray_menu_items(pystray, window, console_hwnd, console_hidden, console_targets=None) -> list:  # noqa: ANN001
+    """The tray's menu, in order, built from `pystray` (a parameter so a test
+    can pass a stand-in; the real module only imports on Windows desktops).
+    A separate step from `_start_tray` (L965) so the menu is testable without
+    a tray, a thread or a window."""
     from tessellate.core import desk_companion
 
-    image = _tray_image(Image, icon_path)
-
-    # Running from start.bat/start-desktop.bat rather than the packaged
-    # installer (whose PyInstaller build sets console=False, so there is no
-    # window to find) leaves a cmd.exe console sitting behind the app. This
-    # menu item is the *live* control for it; `console_hwnd` and its initial
-    # `console_hidden` state come from the caller, which already applied the
-    # show_console_on_startup preference before the window opened.
     console_state = {"hidden": console_hidden}
 
-    def _console_hidden(item) -> bool:
+    def _console_hidden(item) -> bool:  # noqa: ANN001
         return console_state["hidden"]
 
     # Everything a tray icon is for: capture something, ask something, check
@@ -2395,6 +2349,62 @@ def _start_tray(
         pystray.MenuItem("Restart", lambda icon, item: _tray_restart(window, icon)),
         pystray.MenuItem("Quit", lambda icon, item: _tray_quit(window, icon)),
     ]
+    return menu_items
+
+
+def _start_tray(
+    window,
+    icon_path: Path,
+    console_hwnd: int | None,
+    console_hidden: bool,
+    console_targets: dict[int, str] | None = None,
+):
+    """The system tray icon: Open / View Logs / Restart / Quit.
+
+    Returns None: and the caller falls back to an ordinary window that
+    really closes on the X button, when pystray or Pillow aren't installed.
+    Both are optional for the same reason pywebview itself is (core/extras.py):
+    a source checkout that never asked for the desktop window shouldn't need
+    them, and the packaged Windows installer bundles both so this path is
+    always taken there.
+
+    Runs pystray's own event loop in a daemon thread: `webview.start()` below
+    blocks the main thread until the window is really destroyed, and pystray's
+    `run()` blocks too: two things that both want to block forever can't
+    share one thread. Windows' pystray backend (the only platform this ships
+    on) tolerates running off the main thread; that would not be true on
+    macOS, which is one reason the desktop build doesn't target it.
+    """
+    try:
+        import pystray
+        from PIL import Image
+    except ImportError:
+        logger.info(
+            "no system tray: install pystray + Pillow for one "
+            "(pip install pystray Pillow), or use the Windows installer, "
+            "which bundles both"
+        )
+        return None
+    except Exception as exc:
+        # Not just ImportError: pystray picks a backend at import time (Xorg,
+        # AppKit, win32...) and that backend's own init can raise anything, 
+        # found in this sandbox as Xlib.error.DisplayNameError on a headless
+        # Linux box with no X server. A missing tray icon is cosmetic; the
+        # window is not, so this must degrade the same way a genuinely
+        # missing package does rather than take the whole launcher down.
+        logger.warning("system tray unavailable, continuing without one: %s", exc, exc_info=True)
+        return None
+
+    image = _tray_image(Image, icon_path)
+
+    # Running from start.bat/start-desktop.bat rather than the packaged
+    # installer (whose PyInstaller build sets console=False, so there is no
+    # window to find) leaves a cmd.exe console sitting behind the app. The
+    # "Hide console window" item is the *live* control for it; `console_hwnd`
+    # and its initial `console_hidden` state come from the caller, which
+    # already applied the show_console_on_startup preference before the
+    # window opened.
+    menu_items = _tray_menu_items(pystray, window, console_hwnd, console_hidden, console_targets)
     icon = pystray.Icon(
         "memorymap",
         image,

@@ -32,6 +32,7 @@ THROUGH = {
     "api/chat_attach.py::_attachment_readings",
     "api/chat_request.py::_caption_of",
     "api/chat_request.py::_resolve_chat_images",
+    "api/routes_recordings.py::trim_recording",
     "api/routes_files.py::analyse_attachment",
     "api/routes_files.py::attached_file_html_preview",
     "api/routes_files.py::attached_file_pdf_info",
