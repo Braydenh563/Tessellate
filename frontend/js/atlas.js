@@ -4205,7 +4205,9 @@ else atlasDressMarks();
 //: chat heads' dressing, 60ms of the 65 at 6x CPU). The task only opens the queue; the first job is the
 //: next task, so the arrival's own timer holds the page for a few lines only.
 function charactersArrived() {
-  setTimeout(function charactersArrivedTask() {
+  //: The bundle's sheet (characters-lazy.css, L-world-class-364) is in before the first face is drawn: a figure built a frame ahead of its rules shows every layer at once.
+  const sheet = typeof lazyFileLoads === "object" ? lazyFileLoads.get("/css/characters-lazy.css") : null;
+  (sheet || Promise.resolve()).then(() => setTimeout(function charactersArrivedTask() {
     charactersLoaded = true;
     const jobs = [...characterWaiters].map((fn) => [fn, []]);
     for (const [name, args] of characterBacklog) jobs.push([name, args]);
@@ -4221,7 +4223,7 @@ function charactersArrived() {
       setTimeout(step, 0);
     };
     setTimeout(step, 0);
-  }, 0);
+  }, 0));
 }
 
 //: **Older replies wear their face at rest** (D9, s58left3-1110). A chat

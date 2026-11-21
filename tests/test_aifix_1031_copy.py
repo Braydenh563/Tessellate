@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 from tests._app_js import with_pieces
 from tests._js_scope import unwrapped
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -104,7 +105,7 @@ def test_ai3_a_faded_companion_is_not_a_tab_stop():
     # A visit (the enlarged preview) takes the dodge off, so it takes the inert off too.
     assert 'buddy.removeAttribute("inert");' in _text("companion-menu.js")
     # The tab-away state hides it outright, which also leaves the tab order.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert re.search(r"#nm-buddy\.nmb-away \{[^}]*visibility: hidden", css)
 
 

@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 from tests._js_scope import unwrapped
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 MOTION = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
@@ -151,7 +152,7 @@ console.log(JSON.stringify(counts));
     assert min(json.loads(out.stdout)) > 60
 
 
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = css08_text()
 
 
 def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:

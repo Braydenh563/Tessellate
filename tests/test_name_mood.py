@@ -26,6 +26,7 @@ from pathlib import Path
 import pytest
 from tests._app_js import app_js_text, with_pieces
 from tests._js_scope import unwrapped
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
@@ -397,7 +398,7 @@ def test_atlas_has_a_face_of_its_own() -> None:
     assert 'endState === "done" ? "happy"' in app
     moods = ("calm", "happy", "delighted", "laughing", "thinking", "curious", "surprised",
              "confused", "sleepy", "sad", "proud", "shy", "determined", "love", "worried")
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     for mood in moods:
         assert f"  {mood}: {{ words:" in atlas, mood
         if mood != "calm":
