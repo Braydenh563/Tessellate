@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Atlas: the companion's hidden lid layers no longer animate between blinks (a blink waits out the face's move), the morph prints its points from a table, and the idle CPU guard measures the full figure on every machine; idle cost is +192 ms/s against a 120 cap, still open (L-ui-modernisation-201).
+- Atlas: the companion's four infinite svg loops (shimmer, skirt idle, two nebula drifts) now run on HTML root boxes the compositor takes (CDP: ActiveTransform/OpacityAnimation), same keyframes, timing and origin; pixels 0 to 1 level in 7 poses at 5 clocks; idle +164 to +151 ms/s over companion-off, scroll +13.21 to +9.75 ms a step (L-ui-modernisation-201, 202).
 - Atlas: on the companion the chest breath is held and stepped with the dress's 100 ms tick, so the other frames no longer lay out and repaint the body (traced with the script frozen: 9.5 to 4.7 ms a frame); idle 211 to 188 ms/s median at load 5 (L-ui-modernisation-201).
 - Tour: a step rings its control only once its entrance fade ends, toasts step aside for the lit control, and the tour sweeps drive the tour through `openTour.inspect()` again; all three pass, 520 of 520 steps in tour.js (L-general-14).
 - Top bar: from 820 to 1199 the header holds the centred 44px tab strip, which had run 2px past its top and bottom (measured at 1184; now 4 to 52 in a 56px header).

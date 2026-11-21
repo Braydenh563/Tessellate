@@ -1910,7 +1910,8 @@ def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None
     # rest); the intent, the same loops held after the same 20 s, is unchanged.
     rule = css[css.index(".atl-figure-box.is-calm") :]
     rule = rule[: rule.index("{")]
-    assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
+    # The nebula's drift runs on its root's box since L-ui-modernisation-201.
+    assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-lw-root" in rule
     assert "animation-play-state: paused" in css[css.index(".atl-figure-box.is-calm") :]
     assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV
     assert 'querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on)' in AV

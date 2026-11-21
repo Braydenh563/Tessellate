@@ -5715,7 +5715,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 
 .nm-atlas:not(.atl-layer) .atl-pose { rotate: calc(var(--atl-lean-dir) * 3.5deg); transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 
-.nm-atlas:is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(var(--atl-lean-dir) * -1.6deg); transition: rotate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast); }
+.atl-lw-root:is(.atl-lw-root-neb, .atl-lw-root-neb-front) { rotate: calc(var(--atl-lean-dir) * -1.6deg); transition: rotate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast); }
 
 .nm-atlas.atl-layer-tail { translate: calc(var(--atl-lean-dir) * -1.4px) 0; transition: translate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast); }
 
@@ -5728,7 +5728,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 
 .nm-atlas.atl-layer-tail { transform-origin: 34px 60px; will-change: transform; }
 
-.nm-atlas.atl-layer-front { will-change: opacity; }
+.atl-lw-root-front { will-change: opacity; }
 
 .nm-atlas.atl-layer-lids { transform-origin: 31px 37px; opacity: 0; will-change: opacity; transform: translate(calc(var(--atl-lean-dir) * 0.9px), var(--atl-head-y)) rotate(calc(var(--atl-tilt) + var(--atl-lean-dir) * 4deg)) scale(calc(var(--atl-tune-head) * var(--atl-head-k))); scale: var(--atl-open); transition: rotate var(--motion-slow) var(--ease-out); }
 
@@ -5744,7 +5744,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .nm-atlas.atl-layer-lidf-2.atl-blinking-slow { animation: atl-blink-slow-f2 1420ms linear; }
 
 /* Off screen or on a hidden tab, every loop stops. */
-.atl-figure-box.atl-off :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe), .atl-figure-box.atl-off, :root[data-atlas-hidden] :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe), :root[data-atlas-hidden] .atl-figure-box { animation-play-state: paused !important; }
+.atl-figure-box.atl-off :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-lw-root), .atl-figure-box.atl-off, :root[data-atlas-hidden] :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-lw-root), :root[data-atlas-hidden] .atl-figure-box { animation-play-state: paused !important; }
 
 /* Thinking: a hand at the chin, as the reference sheet draws it. The
    forearm is drawn in the head's layer (atlas.js), over the face, and the

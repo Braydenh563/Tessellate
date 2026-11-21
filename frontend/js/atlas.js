@@ -3120,6 +3120,21 @@ function atlasDrawFigure(mood) {
   //: compositor, no layout and no paint (`.atl-layer-neb`, the CSS).
   //: `neb-front` (round 9) is the orbit's near half, over the rings, on
   //: the same drift so the two halves move as one ribbon.
+  //: **A root's own loop runs on a box round it** (L-ui-modernisation-201):
+  //: the front's shimmer, the skirt's idle drift and the nebula's drift ran
+  //: on the `<svg>` roots, and Chromium composites no animation on an SVG
+  //: element, the outer `<svg>` included, so each restyled the figure every
+  //: frame. The box (`.atl-lw-root`, the same 64 by 92 at the same place)
+  //: runs the same keyframes on the compositor; the nebula's lean and pose
+  //: turn move to it with its drift, so they compose in the order they did.
+  const loopBox = (name, svg) => {
+    if (!["front", "lower", "neb", "neb-front"].includes(name)) return svg;
+    const box = document.createElement("span");
+    box.className = `atl-lw-root atl-lw-root-${name}`;
+    box.dataset.atlasLook = look;
+    box.appendChild(svg);
+    return box;
+  };
   const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "body", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
   for (const name of names) {
     const legSide = name.startsWith("leg-") ? name.slice(4) : "";
@@ -3213,9 +3228,9 @@ function atlasDrawFigure(mood) {
           into = drift;
         }
       }
-      into.appendChild(svg);
+      into.appendChild(loopBox(name, svg));
       frag.appendChild(box);
-    } else frag.appendChild(svg);
+    } else frag.appendChild(loopBox(name, svg));
   }
   //: **The lower body moves with the torso** (INBOX 615, the owner: "the
   //: atlas masculine main body and lower body are slightly misaligned").
@@ -3251,7 +3266,7 @@ function atlasDrawFigure(mood) {
   //: the way down (`atlasBlink`).
   atlasLids(layers["lidf-1"].rig, look, 0.38);
   atlasLids(layers["lidf-2"].rig, look, 0.72);
-  layers.front.svg.after(atlasRings(look, true));
+  layers.front.svg.parentElement.after(atlasRings(look, true));
   atlasBand(layers["neb-front"].rig, id, "front", look);
   //: The head drew its extras in the body layer; the two that rise (the
   //: Zs, the hearts) move to their roots, each pair under the wrappers the

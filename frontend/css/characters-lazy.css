@@ -634,7 +634,7 @@
    round (head to the right), for variety. Held transforms at rest. */
 #nm-buddy .nm-figure { translate: var(--nmb-lie-shift); transition: transform var(--motion-slow) var(--ease-out), rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out), translate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 
-#nm-buddy :is(.atl-layer-neb, .atl-layer-neb-front) {
+#nm-buddy :is(.atl-lw-root-neb, .atl-lw-root-neb-front) {
   transition: rotate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast), scale calc(var(--motion-slow) * 4) var(--ease-in-out), translate calc(var(--motion-slow) * 4) var(--ease-in-out);
 }
 
@@ -646,11 +646,11 @@
 
 #nm-buddy[data-pose="lie"] .nm-figure { --nmb-lean-pose: calc(-84deg + 168deg * var(--atl-v1)); --nmb-lie-shift: calc(58px - 116px * var(--atl-v1)) -9px; }
 
-#nm-buddy[data-pose="lie-1"] :is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(20deg - 40deg * var(--atl-v1)); scale: 0.95 0.8; }
+#nm-buddy[data-pose="lie-1"] :is(.atl-lw-root-neb, .atl-lw-root-neb-front) { rotate: calc(20deg - 40deg * var(--atl-v1)); scale: 0.95 0.8; }
 
-#nm-buddy[data-pose="lie-2"] :is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(52deg - 104deg * var(--atl-v1)); scale: 1.1 0.6; }
+#nm-buddy[data-pose="lie-2"] :is(.atl-lw-root-neb, .atl-lw-root-neb-front) { rotate: calc(52deg - 104deg * var(--atl-v1)); scale: 1.1 0.6; }
 
-#nm-buddy[data-pose="lie"] :is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); scale: 1.12 0.6; }
+#nm-buddy[data-pose="lie"] :is(.atl-lw-root-neb, .atl-lw-root-neb-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); scale: 1.12 0.6; }
 
 #nm-buddy[data-pose="lie"] :is(.atl-layer-fx-1, .atl-layer-fx-2) { rotate: calc(84deg - 168deg * var(--atl-v1)); }
 
@@ -711,7 +711,7 @@
 #nm-buddy[data-atlas-figure][data-pose="lie"]::before { top: calc(var(--nmb-edge) + 6px); }
 
 /* The near half of the stream lies under the body as its bed, not over it. */
-#nm-buddy[data-pose="lie"] .atl-layer-neb-front { opacity: 0.35; }
+#nm-buddy[data-pose="lie"] .atl-lw-root-neb-front { opacity: 0.35; }
 
 /* Settling: sitting back with the legs out. */
 #nm-buddy:is([data-pose="lie-1"], [data-pose="lie-2"]) .nmb-leg-l { transform: rotate(10deg) scaleY(0.9); }
@@ -738,9 +738,9 @@
 
 #nm-buddy:is([data-pose="curl-1"], [data-pose="curl"]) .nmb-leg-r { transform: rotate(-34deg) scaleY(0.6); }
 
-#nm-buddy[data-pose="curl-1"] :is(.atl-layer-neb, .atl-layer-neb-front) { scale: 0.9; }
+#nm-buddy[data-pose="curl-1"] :is(.atl-lw-root-neb, .atl-lw-root-neb-front) { scale: 0.9; }
 
-#nm-buddy[data-pose="curl"] :is(.atl-layer-neb, .atl-layer-neb-front) { scale: 0.78 0.7; }
+#nm-buddy[data-pose="curl"] :is(.atl-lw-root-neb, .atl-lw-root-neb-front) { scale: 0.78 0.7; }
 
 /* A three-quarter turn (`data-turn`, while it walks, glances or turns):
    the face slides towards that side and the body narrows a touch, which
@@ -1187,20 +1187,22 @@
    `:where()` keeps the host's own specificity at its attribute, so the
    nearer of two hosts still wins (a drawing over its figure box over
    `#nm-buddy`). */
-:where(#nm-buddy)[data-lean="l"] :where(.nm-figure, .atl-figure-box, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: -1; }
+:where(#nm-buddy)[data-lean="l"] :where(.nm-figure, .atl-figure-box, .atl-lw-root-neb, .atl-lw-root-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: -1; }
 
-:where(#nm-buddy)[data-lean="r"] :where(.nm-figure, .atl-figure-box, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: 1; }
+:where(#nm-buddy)[data-lean="r"] :where(.nm-figure, .atl-figure-box, .atl-lw-root-neb, .atl-lw-root-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: 1; }
 
-.atl-figure-box[data-lean="l"], .atl-figure-box[data-lean="l"] :where(.atl-layer-neb, .atl-layer-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: -1; }
+.atl-figure-box[data-lean="l"], .atl-figure-box[data-lean="l"] :where(.atl-lw-root-neb, .atl-lw-root-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: -1; }
 
-.atl-figure-box[data-lean="r"], .atl-figure-box[data-lean="r"] :where(.atl-layer-neb, .atl-layer-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: 1; }
+.atl-figure-box[data-lean="r"], .atl-figure-box[data-lean="r"] :where(.atl-lw-root-neb, .atl-lw-root-neb-front, .atl-layer-tail, .atl-layer-lids, .atl-head, .atl-pupil, .nm-atlas:not(.atl-layer) .atl-pose) { --atl-lean-dir: 1; }
 
 .nm-atlas[data-lean="l"], .nm-atlas[data-lean="l"] :where(.atl-head, .atl-pupil, .atl-pose) { --atl-lean-dir: -1; }
 
 .nm-atlas[data-lean="r"], .nm-atlas[data-lean="r"] :where(.atl-head, .atl-pupil, .atl-pose) { --atl-lean-dir: 1; }
 
-/* The second idle loops' boxes: the same 64 by 92 and the same pivots. */
-.atl-figure-box > .atl-lw { position: absolute; left: 0; top: 0; width: 64px; height: 92px; }
+/* The second idle loops' boxes: the same 64 by 92 and the same pivots. A
+   root's own loop box (atlas.js, `.atl-lw-root`) is the root's box exactly,
+   so its pivots are the root's. */
+.atl-figure-box > .atl-lw, .atl-lw-root { position: absolute; left: 0; top: 0; width: 64px; height: 92px; }
 
 .atl-lw-body { transform-origin: 31px 90px; will-change: rotate; }
 
@@ -1422,13 +1424,13 @@
 .atl-figure-box[data-atlas-variant="1"] :where(.nmb-arm-l, .nmb-arm-r, .atl-chin-hand),
 .nm-atlas[data-atlas-variant="1"] :where(.nmb-arm-l, .nmb-arm-r, .atl-chin-hand),
 :where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="1"]::before, :where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="1"]::after,
-:where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="1"] :where(.nm-figure, .atl-orbits, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-fx-1, .atl-layer-fx-2, .atl-layer-back, .atl-layer-front) { --atl-v1: 1; --atl-v2: 0; }
+:where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="1"] :where(.nm-figure, .atl-orbits, .atl-lw-root-neb, .atl-lw-root-neb-front, .atl-layer-fx-1, .atl-layer-fx-2, .atl-layer-back, .atl-layer-front) { --atl-v1: 1; --atl-v2: 0; }
 
 :where(#nm-buddy)[data-atlas-variant="2"] :where(.nmb-arm-l, .nmb-arm-r, .atl-chin-hand),
 .atl-figure-box[data-atlas-variant="2"] :where(.nmb-arm-l, .nmb-arm-r, .atl-chin-hand),
 .nm-atlas[data-atlas-variant="2"] :where(.nmb-arm-l, .nmb-arm-r, .atl-chin-hand),
 :where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="2"]::before, :where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="2"]::after,
-:where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="2"] :where(.nm-figure, .atl-orbits, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-fx-1, .atl-layer-fx-2, .atl-layer-back, .atl-layer-front) { --atl-v1: 0; --atl-v2: 1; }
+:where(#nm-buddy)[data-pose^="lie"][data-atlas-variant="2"] :where(.nm-figure, .atl-orbits, .atl-lw-root-neb, .atl-lw-root-neb-front, .atl-layer-fx-1, .atl-layer-fx-2, .atl-layer-back, .atl-layer-front) { --atl-v1: 0; --atl-v2: 1; }
 
 .nm-atlas {
   --atl-ar0: 0deg;
@@ -1928,7 +1930,7 @@
 
 /* The drift, on the nebula's own layer in the companion: a slow turn
    about the chest and a breath of opacity, compositor only. */
-.nm-atlas:is(.atl-layer-neb, .atl-layer-neb-front) { transform-origin: 31px 52px; will-change: transform, opacity; }
+.atl-lw-root:is(.atl-lw-root-neb, .atl-lw-root-neb-front) { transform-origin: 31px 52px; will-change: transform, opacity; }
 
 @keyframes atl-neb-drift {
   from { transform: rotate(-4deg) translate(-2px, 1px) scale(0.97); opacity: 0.84; }
@@ -2172,7 +2174,7 @@
    with the glide, the feminine look's walk, since it has no legs to step
    with; carried, kicked or dangling they flick. Still under Off and
    Reduce motion. */
-.nm-atlas.atl-layer-lower { transform-origin: 31px 55.5px; will-change: transform; }
+.atl-lw-root-lower { transform-origin: 31px 55.5px; will-change: transform; }
 
 @keyframes nmb-arm-swing {
   from { rotate: -10deg; }
@@ -2220,8 +2222,8 @@
    and it is what says the companion answered: so the loops are named (a
    walk, a carry, the float), not "anything but an act". `!important`
    because the loops' motion gates out-rank this selector. */
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower,
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .atl-lw-root-lower,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy.nmb-walking .nm-live .atl-lw-root-lower[data-atlas-look="masculine"],
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy[data-atlas-figure]:is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
 
 /* A slow turn and lift about her middle, the compositor's (a box). */
@@ -2719,18 +2721,8 @@
     /* The layered figure: the same loops on the layer roots, and none of
        them inside (each would lay the drawing out every frame). */
     &.atl-layer-tail { animation: atl-swish 5.4s ease-in-out var(--nm-delay) infinite; }
-    &.atl-layer-front { animation: atl-shimmer 5.6s ease-in-out infinite; }
-    /* Round 6: the feminine skirt's slow drift and the nebula's, wherever
-       the layered figure is drawn (the companion and the large view); the
-       companion's walk, carry and kick out-rank the skirt's with their own
-       rules (they name #nm-buddy). */
-    &.atl-layer-lower { animation: atl-skirt-idle 5.6s ease-in-out infinite alternate; }
-    &:is(.atl-layer-neb, .atl-layer-neb-front) { animation: atl-neb-drift 13s ease-in-out infinite alternate; }
-    /* INBOX 577: the stream's drift starts at its middle (the rest pose),
-       the near half a beat behind the far one. */
-    &:is(.atl-layer-neb, .atl-layer-neb-front) { animation-delay: -6.5s; }
-    &.atl-layer-neb-front { animation-delay: -5.4s; }
-    &.atl-layer-lower { animation-delay: -2.8s; }
+    /* The front's shimmer, the skirt's drift and the nebula's run on the
+       roots' boxes (`.atl-lw-root`, below with the second idle loops). */
     &[data-atlas-mood="happy"].atl-layer-tail, &[data-atlas-mood="delighted"].atl-layer-tail, &[data-atlas-mood="love"].atl-layer-tail, &[data-atlas-mood="laughing"].atl-layer-tail { animation: atl-wag 0.8s ease-in-out infinite alternate; }
     &.atl-layer :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > :is(.atl-lashes,.atl-liner:not(.atl-liner-low)), .atl-sway, .atl-mane, .atl-tail-swish, .atl-ring-drift, .atl-ring-glint, .atl-aura, .atl-core-glow, .atl-mood, .atl-float) { animation: none; }
     &[data-atlas-mood="love"].atl-layer-fx-1 { animation: atl-rise 2.6s ease-out infinite; }
@@ -2833,6 +2825,17 @@
     /* The wave: the tip half sways on the root's clock a quarter behind
        (2.1s of 8.3s), and wider, so each sway runs down to the tip. */
     & .atl-lw-tip { animation: atl-tail-wave 8.3s ease-in-out -2.05s infinite alternate; }
+    /* The roots' own loops on their boxes (atlas.js, L-ui-modernisation-201:
+       on the `<svg>` roots none was composited), the same clocks. Round 6:
+       the feminine skirt's slow drift and the nebula's, wherever the layered
+       figure is drawn (the companion and the large view); the companion's
+       walk, carry and kick out-rank the skirt's with their own rules (they
+       name #nm-buddy). INBOX 577: the stream's drift starts at its middle
+       (the rest pose), the near half a beat behind the far one. */
+    & .atl-lw-root-front { animation: atl-shimmer 5.6s ease-in-out infinite; }
+    & .atl-lw-root-lower { animation: atl-skirt-idle 5.6s ease-in-out -2.8s infinite alternate; }
+    & .atl-lw-root-neb { animation: atl-neb-drift 13s ease-in-out -6.5s infinite alternate; }
+    & .atl-lw-root-neb-front { animation: atl-neb-drift 13s ease-in-out -5.4s infinite alternate; }
     & .atl-lw-neb, & .atl-lw-neb-front { animation: atl-neb-flow 7.7s ease-in-out infinite alternate; }
     /* The stream's near half follows its far half a beat behind, so each
        drift runs along the ribbon (the owner, INBOX 575: "the nebular
@@ -2908,16 +2911,16 @@
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas:is(.atl-layer-glint-a, .atl-layer-glint-b) { animation: none !important; }
 
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="feminine"],
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="masculine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="masculine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-root { animation: none !important; }
 
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live {
   &.atl-figure-box[data-atlas-look="feminine"]:not([data-atlas-mood="delighted"], [data-atlas-mood="laughing"], [data-atlas-mood="sleepy"], [data-atlas-mood="love"], [data-atlas-mood="confused"]) { animation: none !important; }
 }
 
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas {
-  &.atl-layer-tail, &.atl-layer-lids, &.atl-layer-front, &[data-atlas-mood="laughing"].atl-layer-tail { animation: none !important; }
-  &.atl-layer-lower { animation: none !important; }
-  &:is(.atl-layer-neb, .atl-layer-neb-front), & .atl-mane, & .atl-zf, &[data-atlas-mood="sleepy"].atl-layer-fx-1, &[data-atlas-mood="sleepy"].atl-layer-fx-2 { animation: none !important; }
+  &.atl-layer-tail, &.atl-layer-lids, &[data-atlas-mood="laughing"].atl-layer-tail { animation: none !important; }
+  & .atl-mane, & .atl-zf, &[data-atlas-mood="sleepy"].atl-layer-fx-1, &[data-atlas-mood="sleepy"].atl-layer-fx-2 { animation: none !important; }
   &[data-atlas-mood="love"].atl-layer-fx-1, &[data-atlas-mood="love"].atl-layer-fx-2 { animation: none !important; }
 }
 

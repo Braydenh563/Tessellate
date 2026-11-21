@@ -16935,6 +16935,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .atl-lw > svg,
 .atl-lw-pose > svg,
 .atl-lw-drift > svg,
+.atl-lw-root > svg,
 .atl-lw-breathe > svg {
   position: absolute;
   left: 0;
@@ -16973,7 +16974,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 /* UX3: after 20 s without input (`nmbClock.setCalm`, avatars.js, on each figure) the endless loops hold: the rings, hair, tail,
    hem, nebula and lower wisps; by part, so an act started while calm still plays. */
 .atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits *,
-.atl-figure-box.is-calm :is(.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg) { animation-play-state: paused !important; }
+.atl-figure-box.is-calm :is(.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-lw-root, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg) { animation-play-state: paused !important; }
 
 /* And no loop is made under the entrance fade (atlas.js, `atlasWhenShown` adds atl-lit): the
    compositor refuses for good an animation created while #nm-buddy is opacity 0. One rule, one !important. */
@@ -17155,15 +17156,15 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
        out-ranked every one of these (1,5,0) rules, so the skirt never swung
        in a walk, a carry or a kick (atlasdepth2.js atlasgait: the lower layer ran
        atl-skirt-idle while walking). */
-    &.nmb-walking .nm-live .nm-atlas.atl-layer-lower { animation: atl-lower-sway 0.68s ease-in-out infinite alternate; }
-    &.nm-buddy-dragging .nm-live .nm-atlas.atl-layer-lower { animation: atl-lower-flick 0.42s ease-in-out infinite alternate; }
-    &.nmb-act-kick .nm-live .nm-atlas.atl-layer-lower { animation: atl-lower-flick 0.6s ease-in-out 4 alternate; }
-    &:is(.nmb-act-swing, [data-pose="hang"].nmb-act-cheer) .nm-live .nm-atlas.atl-layer-lower { animation: atl-lower-flick 0.65s ease-in-out 4 alternate; }
-    &.nmb-act-dangle .nm-live .nm-atlas.atl-layer-lower { animation: atl-lower-sway 1.5s ease-in-out 4 alternate; }
+    &.nmb-walking .nm-live .atl-lw-root-lower { animation: atl-lower-sway 0.68s ease-in-out infinite alternate; }
+    &.nm-buddy-dragging .nm-live .atl-lw-root-lower { animation: atl-lower-flick 0.42s ease-in-out infinite alternate; }
+    &.nmb-act-kick .nm-live .atl-lw-root-lower { animation: atl-lower-flick 0.6s ease-in-out 4 alternate; }
+    &:is(.nmb-act-swing, [data-pose="hang"].nmb-act-cheer) .nm-live .atl-lw-root-lower { animation: atl-lower-flick 0.65s ease-in-out 4 alternate; }
+    &.nmb-act-dangle .nm-live .atl-lw-root-lower { animation: atl-lower-sway 1.5s ease-in-out 4 alternate; }
     /* His streams are heavier: a smaller swing at about half the pace
        (atlas.js, the masculine `lowers`). */
-    &.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"] { animation: atl-lower-trail 1.25s ease-in-out infinite alternate; }
-    &.nmb-act-dangle .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"] { animation: atl-lower-sway-heavy 2.4s ease-in-out 3 alternate; }
+    &.nmb-walking .nm-live .atl-lw-root-lower[data-atlas-look="masculine"] { animation: atl-lower-trail 1.25s ease-in-out infinite alternate; }
+    &.nmb-act-dangle .nm-live .atl-lw-root-lower[data-atlas-look="masculine"] { animation: atl-lower-sway-heavy 2.4s ease-in-out 3 alternate; }
     /* **Atlas glides; it has no legs to step with** (the wrap-up ledger:
        idle, walk, float and wave per look). The companion's walk is a hop
        per step (`nmb-bob`, 0.3 to 0.4s), which on a legless figure read as

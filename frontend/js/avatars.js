@@ -6734,7 +6734,7 @@
   //: the first and the skirt's root is written to directly.
   function nameMarkBuddyWay(buddy, way) {
     buddy.style.setProperty("--nmb-lean", way);
-    for (const el of buddy.querySelectorAll(".atl-layer-lower")) el.style.setProperty("--nmb-lean", way);
+    for (const el of buddy.querySelectorAll(".atl-lw-root-lower")) el.style.setProperty("--nmb-lean", way);
   }
 
   //: **A body hanging by its hands has no stride** (INBOX 1698, the owner: it "flew across the top of my screen but
