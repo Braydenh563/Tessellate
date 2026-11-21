@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 7 | 0 | 0 | 5 | 7 |
-| all | 502 | 543 | 127 | 2 | 184 | 1172 |
+| general | 0 | 6 | 0 | 0 | 5 | 6 |
+| all | 502 | 542 | 127 | 2 | 184 | 1171 |
 
 ## graph
 
@@ -705,7 +705,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-42** `general` open, M: Record and chip two more note sources: extracted from document, transcribed from audio. From L-general-13. Evidence: entry has no column for extracted-from-document or transcribed-from-audio (routes_entries.py:2938 extract_commit, routes_meetings.py:52 create_meeting record none); provenance chip covers source_url and source_path only
 - [ ] **L-general-45** `general` open, S: Sweeps flaky only at load average 8 and over: companionperf (Atlas idle budget fails even for the off buddy at load 12), companionmenu and companionpin (a right-click lands beside the face after a dodge, no menu). Re-run on an idle machine before reading anything into them; measured 3 of 3 companionmenu passes at load 5 to 7. From sweep two-run 2026-11-21.
 - [ ] **L-general-46** `general` open, M: Atlas idle costs +564ms/s of main thread (budget 120): its idle draw lays out and restyles every frame. From companionperf two-pass 2026-11-21. Evidence: fresh dirs at load 4 to 6, both passes FAIL: atlas +564ms/s main thread idle over off (budget 120), 63 layouts/s, 229ms/s style; top atlasRigLower.morph.draw atlas-life.js:1311 55.6ms in 4s; me +0.209ms/frame idle (budget 0.2)
