@@ -603,6 +603,7 @@ function settingsSectionText(section) {
           if (rec.type === "attributes");
           else if (pane) settingsTextCache.delete(pane);
           else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();
+          if (pane) window.settingRowsScan?.partial.delete(pane);
           if (pane && window.settingRowsScan?.panes.delete(pane)) window.settingRowsScan?.warmSoon?.();
         }
       });
