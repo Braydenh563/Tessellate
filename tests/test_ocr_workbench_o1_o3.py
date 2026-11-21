@@ -35,12 +35,12 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.core import pdfpages
+from tessellate.core import parse_sandbox, pdfpages
 from tests.test_pdfpages import ONE_PAGE_PDF
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-PDFPAGES_SRC = (ROOT / "src" / "tessellate" / "core" / "pdfpages.py").read_text(encoding="utf-8")
+PARSE_JOBS_SRC = (ROOT / "src" / "tessellate" / "core" / "parse_jobs.py").read_text(encoding="utf-8")
 ROUTES = (ROOT / "src" / "tessellate" / "api" / "routes_files.py").read_text(encoding="utf-8")
 
 needs_pdfium = pytest.mark.skipif(
@@ -102,13 +102,15 @@ def test_the_page_cache_evicts_the_oldest_when_it_is_over_its_budget(monkeypatch
 def test_a_page_drawn_twice_is_rendered_once(one_page, monkeypatch):
     pdfpages._cache_clear()
     calls: list[int] = []
-    real = pdfpages._render_one
+    # `_draw` is the child call since PDFium moved out of the server
+    # (L-world-class-321); it was `_render_one`, the in-process render.
+    real = pdfpages._draw
 
     def counting(*args, **kwargs):
         calls.append(1)
         return real(*args, **kwargs)
 
-    monkeypatch.setattr(pdfpages, "_render_one", counting)
+    monkeypatch.setattr(pdfpages, "_draw", counting)
     first = pdfpages.render_page(one_page, 0)
     second = pdfpages.render_page(one_page, 0)
     assert first == second and first
@@ -138,8 +140,9 @@ def test_a_thumbnail_is_a_quarter_of_the_width(one_page):
 
 def test_pages_are_not_recompressed():
     """`optimize=True` cost 340 ms of a 456 ms page for 3% fewer bytes, held
-    under the one PDF lock that every other page waits for."""
-    saves = re.findall(r"image\.save\(buffer[^)]*\)", PDFPAGES_SRC)
+    in the one PDF child that every other page waits for (the save moved to
+    `core/parse_jobs.py` with PDFium, L-world-class-321)."""
+    saves = re.findall(r"image\.save\(buffer[^)]*\)", PARSE_JOBS_SRC)
     assert saves and all("optimize" not in save for save in saves)
 
 
@@ -159,7 +162,8 @@ def test_a_whole_document_batch_lets_the_lock_go_between_pages(tmp_path, monkeyp
     class Clock:
         @staticmethod
         def sleep(_seconds):
-            held_between.append(pdfpages._pdfium_lock.locked())
+            # The child's lock is what the PDF lock became (L-world-class-321).
+            held_between.append(parse_sandbox.default()._lock.locked())
 
     monkeypatch.setattr(pdfpages, "time", Clock)
     assert len(pdfpages.render_pages(path)) == 3

@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8548, frontend ids 2804, CSS sections 527, backend routes 730, backend modules 11178, test files 2905, tests 22924, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8548, frontend ids 2804, CSS sections 527, backend routes 730, backend modules 11200, test files 2906, tests 22937, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8548)
 
@@ -13708,7 +13708,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:206 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:52 |
-| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:783 |
+| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:787 |
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:169 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:76 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:204 |
@@ -14250,7 +14250,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11178)
+## Backend modules (11200)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14310,7 +14310,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_run_desktop` | src/tessellate/__main__.py:1775 |
 | `_run_mcp` | src/tessellate/__main__.py:2424 |
 | `_run_server` | src/tessellate/__main__.py:209 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2738 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2746 |
 | `_run_tray_loop` | src/tessellate/__main__.py:2410 |
 | `_serve_with_lan` | src/tessellate/__main__.py:291 |
 | `_serves_this_notebook` | src/tessellate/__main__.py:666 |
@@ -23613,7 +23613,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `ImportDirectoryRequest` | src/tessellate/api/routes_settings_transfer.py:303 |
 | `_already_imported` | src/tessellate/api/routes_settings_transfer.py:402 |
-| `_create_document_notes` | src/tessellate/api/routes_settings_transfer.py:758 |
+| `_create_document_notes` | src/tessellate/api/routes_settings_transfer.py:762 |
 | `_directory_import_detail` | src/tessellate/api/routes_settings_transfer.py:422 |
 | `_export_rows` | src/tessellate/api/routes_settings_transfer.py:41 |
 | `_exported_created` | src/tessellate/api/routes_settings_transfer.py:236 |
@@ -23632,7 +23632,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_validated_import_directory` | src/tessellate/api/routes_settings_transfer.py:306 |
 | `build_markdown_export` | src/tessellate/api/routes_settings_transfer.py:146 |
 | `export_backup` | src/tessellate/api/routes_settings_transfer.py:53 |
-| `export_csv` | src/tessellate/api/routes_settings_transfer.py:784 |
+| `export_csv` | src/tessellate/api/routes_settings_transfer.py:788 |
 | `export_json` | src/tessellate/api/routes_settings_transfer.py:78 |
 | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:205 |
 | `import_directory` | src/tessellate/api/routes_settings_transfer.py:561 |
@@ -26306,6 +26306,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `libraries_present` | src/tessellate/core/overlay/xlib.py:166 |
 | `shape_key` | src/tessellate/core/overlay/xlib.py:161 |
 
+### src/tessellate/core/parse_child.py (12)
+
+| Name | File:line |
+|---|---|
+| `_claim_pipes` | src/tessellate/core/parse_child.py:158 |
+| `_length` | src/tessellate/core/parse_child.py:72 |
+| `_limit_cpu` | src/tessellate/core/parse_child.py:126 |
+| `_limit_memory` | src/tessellate/core/parse_child.py:114 |
+| `_pack` | src/tessellate/core/parse_child.py:39 |
+| `_unpack` | src/tessellate/core/parse_child.py:50 |
+| `decode` | src/tessellate/core/parse_child.py:79 |
+| `decode_frame` | src/tessellate/core/parse_child.py:107 |
+| `encode` | src/tessellate/core/parse_child.py:63 |
+| `handle` | src/tessellate/core/parse_child.py:141 |
+| `main` | src/tessellate/core/parse_child.py:172 |
+| `reader` | src/tessellate/core/parse_child.py:91 |
+
+### src/tessellate/core/parse_jobs.py (3)
+
+| Name | File:line |
+|---|---|
+| `markdown` | src/tessellate/core/parse_jobs.py:60 |
+| `pdf_page` | src/tessellate/core/parse_jobs.py:26 |
+| `pdf_page_count` | src/tessellate/core/parse_jobs.py:16 |
+
+### src/tessellate/core/parse_sandbox.py (7)
+
+| Name | File:line |
+|---|---|
+| `ParseRefused` | src/tessellate/core/parse_sandbox.py:65 |
+| `Sandbox` | src/tessellate/core/parse_sandbox.py:153 |
+| `_Child` | src/tessellate/core/parse_sandbox.py:95 |
+| `_command` | src/tessellate/core/parse_sandbox.py:79 |
+| `_env` | src/tessellate/core/parse_sandbox.py:85 |
+| `call` | src/tessellate/core/parse_sandbox.py:222 |
+| `default` | src/tessellate/core/parse_sandbox.py:214 |
+
 ### src/tessellate/core/passes.py (21)
 
 | Name | File:line |
@@ -26352,14 +26389,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_cache_clear` | src/tessellate/core/pdfpages.py:252 |
-| `_cache_get` | src/tessellate/core/pdfpages.py:229 |
-| `_cache_put` | src/tessellate/core/pdfpages.py:237 |
-| `_render_one` | src/tessellate/core/pdfpages.py:121 |
-| `available` | src/tessellate/core/pdfpages.py:82 |
-| `page_count` | src/tessellate/core/pdfpages.py:96 |
-| `render_page` | src/tessellate/core/pdfpages.py:264 |
-| `render_pages` | src/tessellate/core/pdfpages.py:157 |
+| `_cache_clear` | src/tessellate/core/pdfpages.py:191 |
+| `_cache_get` | src/tessellate/core/pdfpages.py:168 |
+| `_cache_put` | src/tessellate/core/pdfpages.py:176 |
+| `_draw` | src/tessellate/core/pdfpages.py:109 |
+| `available` | src/tessellate/core/pdfpages.py:84 |
+| `page_count` | src/tessellate/core/pdfpages.py:93 |
+| `render_page` | src/tessellate/core/pdfpages.py:203 |
+| `render_pages` | src/tessellate/core/pdfpages.py:122 |
 
 ### src/tessellate/core/pinstore.py (19)
 
@@ -27121,9 +27158,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `convert_to_markdown` | src/tessellate/entry/importer.py:31 |
+| `convert_to_markdown` | src/tessellate/entry/importer.py:36 |
 | `markitdown_available` | src/tessellate/entry/importer.py:27 |
-| `split_into_sections` | src/tessellate/entry/importer.py:42 |
+| `split_into_sections` | src/tessellate/entry/importer.py:54 |
 
 ### src/tessellate/entry/link_facts.py (7)
 
@@ -28557,7 +28594,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22924)
+## Tests (22937)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30602,6 +30639,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_parity_1110.py | 36 |
 | tests/test_parity_acts_1110.py | 22 |
+| tests/test_parse_sandbox.py | 13 |
 | tests/test_passes.py | 7 |
 | tests/test_passes_stop.py | 3 |
 | tests/test_passive_capture.py | 9 |

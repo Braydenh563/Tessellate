@@ -23,7 +23,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate import __version__
-from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
+from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, parse_sandbox, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
@@ -724,6 +724,10 @@ def import_document(file: UploadFile, session: Session = Depends(get_session)) -
             logging.getLogger("tessellate.import").warning(
                 "couldn't convert %s", logbuffer.safe_value(file.filename, 80), exc_info=True
             )
+            #: A file stopped at the reader's time or memory limit says so;
+            #: anything else keeps the plain "may be damaged" sentence.
+            if isinstance(exc, parse_sandbox.ParseRefused) and exc.kind != "failed":
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
             raise HTTPException(
                 status_code=422,
                 detail="Couldn't read that file. It may be damaged or in a format that can't be converted.",
