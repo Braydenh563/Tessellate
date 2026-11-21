@@ -38,7 +38,8 @@ async function exportSelection(page, file) {
     const buf = new Uint8Array(await blob.arrayBuffer());
     let bin = "";
     for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-    const b = wbSelectionBounds();
+    // The bounds the export itself uses: the selection plus 24 (whiteboard-export.js, wbBuildExportSvg).
+    const b = wbSelectionBounds(24);
     return { b64: btoa(bin), minX: b.minX, minY: b.minY };
   });
   fs.writeFileSync(file, Buffer.from(res.b64, "base64"));
@@ -100,7 +101,8 @@ async function openNew(page, name, kind) {
   });
   const exp = await exportSelection(page, png);
   await page.evaluate(() => { wbMultiSelection.clear(); wbApplySelectionHighlight(); });
-  await page.waitForTimeout(300);
+  // Past the selection ring's fade, or the screen pixel is part shade (1 run in 4 at 300ms).
+  await page.waitForTimeout(800);
   await page.screenshot({ path: shot });
   for (const p of probes) {
     const onScreen = pixel(shot, p.sx, p.sy);

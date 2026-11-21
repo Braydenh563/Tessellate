@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: a mind map exported as a picture wraps each topic's words at the size they are drawn, so a large central title is no longer cut off, and a topic shows its branch bar only where the board does.
 - Board: on a phone, the shape kind menu in the Tools sheet opens below its button and is no longer cut off by the sheet.
 - Sweeps: the 135 unrun browser sweeps were run (L554): 77 pass; the 58 that fail are LEDGER rows L-world-class-412 (39 out of date), 413 (17 to reproduce) and 414 (2 need the Pyodide extra or a model); companion sweeps load Settings' listeners first
 - Menus: menus.js at 1440 ends with 0 findings. Escape closes a list opened inside a dock menu first (Logs More), focus back on its opener; ArrowDown walks past a flyout row (dashboard Customise, a document's More) and a nested ⋯ (board View); the board's two-column View menu walks its switches and closes on Escape; the zoom list parts Fit from its values and is as wide as them; the Ask box's Answer length list is filled without opening Chat; board group rows keep the icon column

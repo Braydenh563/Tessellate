@@ -410,6 +410,16 @@
           face: /^(diamond|hexagon|chevron)$/.test(el?.dataset.shape || "") ? wbExportColour(getComputedStyle(el, "::after").backgroundColor) : null,
           rim: /^(diamond|hexagon|chevron)$/.test(el?.dataset.shape || "") ? wbExportColour(getComputedStyle(el, "::before").backgroundColor) : null,
           pictureBox,
+          //: **Its spine as drawn** (L-world-class-413, exportcolours): the bar is
+          //: the border wider than the rim, on the left, or on top in a map that
+          //: grows down; none on a root or a "None" spine. Every topic used to
+          //: export a 4px left bar, so a pill-shaped root came out with a stray
+          //: stripe across its rounded end. An undrawn topic keeps the old bar.
+          spine: el ? (({ borderLeftWidth: l, borderTopWidth: t, borderLeftStyle: ls, borderTopStyle: ts }) => {
+            const left = parseFloat(l) || 0, top = parseFloat(t) || 0;
+            if (Math.abs(left - top) < 1) return null;
+            return left > top ? { side: "left", width: left, dashed: ls === "dashed" } : { side: "top", width: top, dashed: ts === "dashed" };
+          })(getComputedStyle(el)) : { side: "left", width: 4, dashed: false },
           glyph: wbExportTopicGlyph(el),
           ...topicExtras(el, size),
         };
@@ -625,9 +635,13 @@
               `stroke="${edge}" stroke-width="1.5"${fx} />`
           );
         }
-        parts.push(
-          `<rect width="4" height="${size.h}" rx="2" fill="${wbSvgEscape(colour)}" />`
-        );
+        const spine = topic.spine;
+        if (spine) {
+          const sw2 = Math.round(spine.width * 10) / 10, half = sw2 / 2;
+          const [x1, y1, x2, y2] = spine.side === "left" ? [half, 0, half, size.h] : [0, half, size.w, half];
+          parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${wbSvgEscape(colour)}" stroke-width="${sw2}"` +
+            `${spine.dashed ? ` stroke-dasharray="${sw2 * 1.5} ${sw2}"` : ` stroke-linecap="round"`} />`);
+        }
         //: **A topic that is a picture exports as the picture** (§12.1 item 2's
         //: fourth). Without this a map of photographs came out as a page of
         //: empty boxes with captions, which is the same "stored, served and not
@@ -685,7 +699,6 @@
         if (glyph) {
           parts.push(`<image href="${glyph}" x="14" y="${labelTop - 13}" width="16" height="16" />`);
         }
-        const lines = wbSvgWrapLines(box + (place ? `${place} ` : "") + icon + wbMapLabel(obj), size.w - 28 - (textLeft - 14), 4, 7.5);
         //: In the map's own face when it has one (§13e's remainder): the file is
         //: the second place a map's text is drawn, and a serif map exported in
         //: sans-serif is two pictures of one map.
@@ -694,6 +707,10 @@
         //: export drew every topic at 14px regular. Line height follows.
         const textStyle = topic.type;
         const level = textStyle ? Math.min(40, Math.max(9, parseFloat(textStyle.fontSize) || 14)) : 14;
+        //: **Wrapped at the label's own size** (L-world-class-413): a fixed 7.5px
+        //: a letter fitted 14px words, so a 22px root title ran on one line past
+        //: its box and was cut ("Export colours lig"). 0.55em a letter, as a text box.
+        const lines = wbSvgWrapLines(box + (place ? `${place} ` : "") + icon + wbMapLabel(obj), size.w - 28 - (textLeft - 14), 4, level * 0.55);
         parts.push(wbSvgText(lines, textLeft, labelTop, {
           fontSize: level, fill: topicPaint?.ink || "#1f2430", lineHeight: Math.round(level * 1.2),
           fontFamily: wbMapFontStack() || "sans-serif",

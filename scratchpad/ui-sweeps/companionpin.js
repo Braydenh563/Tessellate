@@ -33,7 +33,8 @@ const { boot, PW } = require('./lib.js');
   if (setup.error) { console.log(setup.error); await browser.close(); process.exitCode = 1; return; }
   const face = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
   await page.mouse.click(face[0], face[1], { button: 'right' });
-  await page.waitForTimeout(250);
+  // The menu is lazy (companion-menu.js): it is there once its file has come.
+  await page.waitForFunction(() => nmb.menu && [...nmb.menu.querySelectorAll('button')].some((b) => /Stay here/.test(b.textContent)), null, { timeout: 15000 });
   await page.evaluate(() => [...nmb.menu.querySelectorAll('button')].find((b) => /Stay here/.test(b.textContent)).click());
   await page.waitForTimeout(300);
   const where = () => page.evaluate(() => {
@@ -134,11 +135,19 @@ const { boot, PW } = require('./lib.js');
     const f = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
     const drawn = await page.evaluate(() => { const r = document.getElementById('nm-buddy').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top)]; });
     await page.mouse.click(f[0], f[1], { button: 'right' });
+    // The menu is lazy (companion-menu.js): it is there once its file has come.
+    await page.waitForFunction(() => nmb.menu && [...nmb.menu.querySelectorAll('button')].some((b) => /Stay here/.test(b.textContent)), null, { timeout: 15000 });
     await page.evaluate(() => [...nmb.menu.querySelectorAll('button')].find((b) => /Stay here/.test(b.textContent)).click());
     await page.waitForTimeout(200);
     return { drawn, pinned: await where() };
   };
-  const corner = (await pinAt(1440 - 100, 900 - 150, false)).pinned;
+  await pinAt(1440 - 100, 900 - 150, false);
+  // A place pinned in open air is dropped onto the perch under it the next time
+  // it is placed (INBOX 1640, the owner: it always ends on a perch), so the
+  // corner it keeps is that perch's: one refit at this size first.
+  await page.evaluate(() => dispatchEvent(new Event('resize')));
+  await page.waitForTimeout(1500);
+  const corner = await where();
   await page.setViewportSize({ width: 1100, height: 760 });
   await page.waitForTimeout(1500);
   const cornerSmall = await where();

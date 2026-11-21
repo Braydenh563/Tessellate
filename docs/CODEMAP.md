@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 10972, test files 2841, tests 22829, plan headings 694, app scripts 29, boot scripts 38, script files 348.
+Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 10972, test files 2843, tests 22833, plan headings 694, app scripts 29, boot scripts 38, script files 348.
 
 ## Frontend functions (8844)
 
@@ -8755,43 +8755,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `uploadToLibrary` | frontend/js/whiteboard-export.js:1188 |
-| `wbBase64` | frontend/js/whiteboard-export.js:1022 |
-| `wbBoardTitleForExport` | frontend/js/whiteboard-export.js:1131 |
-| `wbBuildExportSvg` | frontend/js/whiteboard-export.js:435 |
-| `wbClippedCardCount` | frontend/js/whiteboard-export.js:1544 |
-| `wbCopyAsImage` | frontend/js/whiteboard-export.js:1319 |
-| `wbCopyAsSvg` | frontend/js/whiteboard-export.js:1331 |
-| `wbExportBoard` | frontend/js/whiteboard-export.js:1569 |
+| `uploadToLibrary` | frontend/js/whiteboard-export.js:1205 |
+| `wbBase64` | frontend/js/whiteboard-export.js:1039 |
+| `wbBoardTitleForExport` | frontend/js/whiteboard-export.js:1148 |
+| `wbBuildExportSvg` | frontend/js/whiteboard-export.js:445 |
+| `wbClippedCardCount` | frontend/js/whiteboard-export.js:1561 |
+| `wbCopyAsImage` | frontend/js/whiteboard-export.js:1336 |
+| `wbCopyAsSvg` | frontend/js/whiteboard-export.js:1348 |
+| `wbExportBoard` | frontend/js/whiteboard-export.js:1586 |
 | `wbExportColour` | frontend/js/whiteboard-export.js:135 |
-| `wbExportCopyImage` | frontend/js/whiteboard-export.js:1301 |
-| `wbExportDescription` | frontend/js/whiteboard-export.js:1175 |
-| `wbExportFileName` | frontend/js/whiteboard-export.js:1140 |
-| `wbExportFrame` | frontend/js/whiteboard-export.js:1560 |
+| `wbExportCopyImage` | frontend/js/whiteboard-export.js:1318 |
+| `wbExportDescription` | frontend/js/whiteboard-export.js:1192 |
+| `wbExportFileName` | frontend/js/whiteboard-export.js:1157 |
+| `wbExportFrame` | frontend/js/whiteboard-export.js:1577 |
 | `wbExportLook` | frontend/js/whiteboard-export.js:235 |
-| `wbExportMapText` | frontend/js/whiteboard-export.js:824 |
+| `wbExportMapText` | frontend/js/whiteboard-export.js:841 |
 | `wbExportPaint` | frontend/js/whiteboard-export.js:176 |
-| `wbExportPdf` | frontend/js/whiteboard-export.js:1343 |
-| `wbExportPicture` | frontend/js/whiteboard-export.js:1285 |
-| `wbExportPng` | frontend/js/whiteboard-export.js:1233 |
-| `wbExportPngPrefs` | frontend/js/whiteboard-export.js:1150 |
-| `wbExportSegment` | frontend/js/whiteboard-export.js:1506 |
-| `wbExportSvg` | frontend/js/whiteboard-export.js:1098 |
+| `wbExportPdf` | frontend/js/whiteboard-export.js:1360 |
+| `wbExportPicture` | frontend/js/whiteboard-export.js:1302 |
+| `wbExportPng` | frontend/js/whiteboard-export.js:1250 |
+| `wbExportPngPrefs` | frontend/js/whiteboard-export.js:1167 |
+| `wbExportSegment` | frontend/js/whiteboard-export.js:1523 |
+| `wbExportSvg` | frontend/js/whiteboard-export.js:1115 |
 | `wbExportTopicEffect` | frontend/js/whiteboard-export.js:190 |
 | `wbExportTopicGlyph` | frontend/js/whiteboard-export.js:207 |
-| `wbGenerateMapFromNotes` | frontend/js/whiteboard-export.js:876 |
-| `wbImportOutlineFile` | frontend/js/whiteboard-export.js:1029 |
-| `wbInlineSvgImages` | frontend/js/whiteboard-export.js:756 |
+| `wbGenerateMapFromNotes` | frontend/js/whiteboard-export.js:893 |
+| `wbImportOutlineFile` | frontend/js/whiteboard-export.js:1046 |
+| `wbInlineSvgImages` | frontend/js/whiteboard-export.js:773 |
 | `wbPaperPaint` | frontend/js/whiteboard-export.js:169 |
-| `wbRasterizeSvg` | frontend/js/whiteboard-export.js:780 |
-| `wbReviewMapProposal` | frontend/js/whiteboard-export.js:924 |
-| `wbSaveToLibrary` | frontend/js/whiteboard-export.js:1269 |
-| `wbSetExportPngPrefs` | frontend/js/whiteboard-export.js:1167 |
+| `wbRasterizeSvg` | frontend/js/whiteboard-export.js:797 |
+| `wbReviewMapProposal` | frontend/js/whiteboard-export.js:941 |
+| `wbSaveToLibrary` | frontend/js/whiteboard-export.js:1286 |
+| `wbSetExportPngPrefs` | frontend/js/whiteboard-export.js:1184 |
 | `wbSvgEscape` | frontend/js/whiteboard-export.js:17 |
 | `wbSvgRunLines` | frontend/js/whiteboard-export.js:65 |
 | `wbSvgText` | frontend/js/whiteboard-export.js:48 |
 | `wbSvgWrapLines` | frontend/js/whiteboard-export.js:29 |
-| `wbSyncExportSeg` | frontend/js/whiteboard-export.js:1523 |
+| `wbSyncExportSeg` | frontend/js/whiteboard-export.js:1540 |
 
 ### frontend/js/whiteboard-format.js (95)
 
@@ -13439,7 +13439,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:10130 |
 | A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10627 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:8518 |
-| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3476 |
+| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3483 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10855 |
 | A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10765 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2866 |
@@ -13574,7 +13574,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Timeline: the table view (TIMELINE_PLAN.md Phase 2) | frontend/css/06-timeline-dialogs.css:392 |
 | Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:2157 |
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/08-consistency.css:4852 |
-| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3269 |
+| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3276 |
 | WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2392 |
 | Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:404 |
 | Wave E: graph view | frontend/css/02-chat-graph.css:925 |
@@ -13953,7 +13953,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/03-dashboard-widgets.css | 4948 |
 | frontend/css/04-chat-dock-appearance.css | 6639 |
 | frontend/css/05-sidebars-themes.css | 6217 |
-| frontend/css/06-timeline-dialogs.css | 3750 |
+| frontend/css/06-timeline-dialogs.css | 3757 |
 | frontend/css/07-whiteboard-misc.css | 12060 |
 | frontend/css/08-consistency.css | 11114 |
 | frontend/css/09-editor.css | 1143 |
@@ -28785,7 +28785,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22829)
+## Tests (22833)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31442,6 +31442,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_export_inline_images.py | 3 |
 | tests/test_wb_export_pdf.py | 10 |
 | tests/test_wb_export_png.py | 4 |
+| tests/test_wb_export_topic_type_413.py | 3 |
 | tests/test_wb_fill_styles.py | 6 |
 | tests/test_wb_find_cells.py | 3 |
 | tests/test_wb_find_options.py | 11 |
@@ -31533,6 +31534,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_route_more.py | 9 |
 | tests/test_wb_router.py | 8 |
 | tests/test_wb_runs_1027.py | 13 |
+| tests/test_wb_shape_menu_sheet_412.py | 1 |
 | tests/test_wb_shape_more.py | 13 |
 | tests/test_wb_shape_table.py | 9 |
 | tests/test_wb_shapes_js.py | 5 |
@@ -32054,14 +32056,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3116 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4473 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:699 |
+| Needs hardware | docs/roadmap/LEDGER.md:700 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:692 |
+| Owner calls | docs/roadmap/LEDGER.md:693 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32242,7 +32244,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4177 |
-| Plan session briefs | docs/roadmap/LEDGER.md:877 |
+| Plan session briefs | docs/roadmap/LEDGER.md:878 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32298,25 +32300,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:893 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:977 |
+| chat | docs/roadmap/LEDGER.md:894 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:978 |
 | documents | docs/roadmap/LEDGER.md:284 |
-| documents | docs/roadmap/LEDGER.md:917 |
-| general | docs/roadmap/LEDGER.md:663 |
+| documents | docs/roadmap/LEDGER.md:918 |
+| general | docs/roadmap/LEDGER.md:664 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:881 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:989 |
+| graph | docs/roadmap/LEDGER.md:882 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:990 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
 | mindmap | docs/roadmap/LEDGER.md:300 |
-| mindmap | docs/roadmap/LEDGER.md:929 |
+| mindmap | docs/roadmap/LEDGER.md:930 |
 | timeline | docs/roadmap/LEDGER.md:420 |
-| timeline | docs/roadmap/LEDGER.md:953 |
+| timeline | docs/roadmap/LEDGER.md:954 |
 | ui-modernisation | docs/roadmap/LEDGER.md:303 |
-| ui-modernisation | docs/roadmap/LEDGER.md:941 |
+| ui-modernisation | docs/roadmap/LEDGER.md:942 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:905 |
+| whiteboard | docs/roadmap/LEDGER.md:906 |
 | world-class | docs/roadmap/LEDGER.md:422 |
-| world-class | docs/roadmap/LEDGER.md:965 |
+| world-class | docs/roadmap/LEDGER.md:966 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
