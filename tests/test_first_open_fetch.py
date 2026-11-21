@@ -3,20 +3,25 @@
 from tests._app_js import frontend_text
 
 
-def test_the_first_press_prefetches_the_library_bundle_and_the_editor_without_running_them():
-    warm = frontend_text("lazy-entries.js")
-    warm = warm[warm.index("function warmLibraryAfterInput() {") : warm.index("warmLibraryAfterInput();")]
-    # The library files are in `files` (graph's and library's scripts); the editor bundle is added by path.
-    assert "...LAZY_MODULES.library" in warm
-    fetch = warm[warm.index("calmAt || (setTimeout(warmNext), idle(") :]
-    fetch = fetch[: fetch.index(";")]
-    assert "files.map((f) => f + lazyAssetStamp(f))" in fetch
-    assert '"/vendor/codemirror/codemirror.min.js"' in fetch
-    assert 'priority: "low"' in fetch
-    assert "lazyScript" not in fetch  # fetched into the cache, never evaluated here
-    # Same gate as the paced evaluation: no data saving, four cores.
-    assert warm.index("saveData") < warm.index("calmAt || (setTimeout(warmNext)")
+def _tail():
+    js = frontend_text("library.js")
+    return js[js.index("//: **The first document open's bytes come before the open**") :]
 
 
-def test_the_prefetched_editor_path_is_the_one_the_documents_file_loads():
+def test_the_librarys_first_arrival_fetches_the_rest_of_the_bundle_and_the_editor_in_idle():
+    tail = _tail()
+    assert "...LAZY_MODULES.library" in tail
+    assert '"/vendor/codemirror/codemirror.min.js"' in tail
+    assert "lazyAssetStamp(file)" in tail  # the cache key lazyScript will ask for
+    assert 'priority: "low"' in tail
+    assert "requestIdleCallback" in tail
+    assert "lazyScript" not in tail.split("if (!navigator", 1)[1]  # fetched, never run here
+
+
+def test_it_keeps_the_paced_warms_gate():
+    tail = _tail()
+    assert "!navigator.connection?.saveData" in tail and "hardwareConcurrency" in tail and ">= 4" in tail
+
+
+def test_the_fetched_editor_path_is_the_one_the_documents_file_loads():
     assert 'const DOC_CM_BUNDLE = "/vendor/codemirror/codemirror.min.js";' in frontend_text("documents.js")

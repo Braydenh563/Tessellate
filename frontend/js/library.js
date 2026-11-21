@@ -13404,3 +13404,17 @@ function noteAnyImage(entry) {
   const attached = (entry?.attachments || []).find((file) => file.is_image);
   return attached ? { alt: attached.filename || "", url: `/files/${attached.id}` } : null;
 }
+
+//: **The first document open's bytes come before the open** (L-world-class-40). This file is the Library's first
+//: arrival, so it asks for the rest of the bundle and the editor now, at low priority and in idle, into the HTTP
+//: cache, running nothing: at 2,000 notes a document clicked from the Library right after boot waited on 26 scripts and
+//: the 850 KB editor (response end 630 ms, now 270). The scripts carry the stamp `lazyScript` gives them (the cache
+//: key); `loadCodeMirror` loads the editor unstamped (documents.js `DOC_CM_BUNDLE`), so it is fetched unstamped.
+//: The paced warm's gate: four cores or more, no data saving.
+if (!navigator.connection?.saveData && (navigator.hardwareConcurrency || 2) >= 4) {
+  (window.requestIdleCallback || setTimeout)(() => {
+    for (const file of [...LAZY_MODULES.library, "/vendor/codemirror/codemirror.min.js"]) {
+      if (!file.endsWith(".css")) fetch(file + (file.startsWith("/js/") ? lazyAssetStamp(file) : ""), { priority: "low" }).catch(() => 0);
+    }
+  });
+}
