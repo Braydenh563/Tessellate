@@ -45,7 +45,8 @@ CALLED_FLOOR = {
     #: 24 since VC6: import_words, clear_words, ignore_lints, clear_ignored_lints and the dialects.
     "harper": 24,
     "phosphor": 260,
-    "wordlist": 2,
+    #: 3 since VC8: search_manager._one_edit_words asks `variants.is_english` (search typo tolerance).
+    "wordlist": 3,
     #: INBOX 1731: check, suggest, both dictionaries, frequency ranking, own words.
     "spelling": 6,
     #: Completions after `module.` and the hover card (documents-code.js).

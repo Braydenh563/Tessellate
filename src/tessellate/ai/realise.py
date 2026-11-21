@@ -381,6 +381,22 @@ _STOP_AFTER_STOP = lazy_compile(r"([?!])\.(?!\.)")
 _COMMA_AFTER_STOP = lazy_compile(r"([?!]),(\s+)(\w)")
 
 
+_DAY_FIRST = re.compile(r"\b(\d{1,2}) (" + "|".join(_MONTHS) + r")(?: (\d{4}))?\b")
+
+
+def month_first_days(text: str) -> str:
+    """"3 April 2025" said the way a month-first locale reads it: "April 3, 2025"
+    (CHAT_PLAN decision 43). Only a day the app measured goes through here; a
+    note's own words are never reordered."""
+    return _DAY_FIRST.sub(lambda m: f"{m.group(2)} {m.group(1)}" + (f", {m.group(3)}" if m.group(3) else ""), text)
+
+
+def parts_text(parts: list[tuple], month_first: bool) -> str:
+    """The join of an answer's tagged parts; a measured day (never a quote or a
+    title) is said month first where the person's date order reads that way."""
+    return "".join(month_first_days(part[1]) if month_first and part[0] == "measure" else part[1] for part in parts)
+
+
 def mend_stops(text: str) -> str:
     """`text` without the stop a frame adds after a quote that ends a
     question or an exclamation: "theme?." is "theme?", and "next?, from your

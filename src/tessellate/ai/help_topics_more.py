@@ -499,7 +499,7 @@ MORE_TOPICS: list[dict] = [
             "Settings, General sets how the calendar and dates read: First day of the week, and Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
-            "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "and Dates like 3/4 mean (day first or month first; automatic follows your region; answers say a day the same way round), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
             "The welcome's last card offers the same three choices once, and Skip passes them by. "
