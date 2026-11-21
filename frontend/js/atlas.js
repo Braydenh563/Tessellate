@@ -2541,6 +2541,7 @@ function atlasBody(parent, id, props, look, route = null) {
         const g = atlasGroup(host, "atl-ribbon");
         atlasMake("path", { class: "atl-ribbon-veil", d: part.fill }, g);
         atlasMake("path", { class: "atl-overlay atl-ribbon-galaxy", d: part.fill }, g);
+        atlasMake("path", { class: "atl-lower-stipple", d: part.fill, fill: `url(#${id}-stipple)` }, g);
         if (part.stream) atlasMake("path", { class: "atl-ribbon-stream", d: part.stream }, g);
         if (part.edge) atlasMake("path", { class: "atl-ribbon-edge", d: part.edge }, g);
         atlasSpecks(g, part.specks);
@@ -2568,6 +2569,7 @@ function atlasBody(parent, id, props, look, route = null) {
         tail.setAttribute("mask", `url(#${id}-hemfade)`);
         atlasMake("path", { class: "atl-sower-fill", d: spec.sower.fill }, tail);
         atlasMake("path", { class: "atl-overlay atl-dress-neb", d: spec.sower.fill }, tail);
+        atlasMake("path", { class: "atl-lower-stipple", d: spec.sower.fill, fill: `url(#${id}-stipple)` }, tail);
         atlasMake("path", { class: "atl-dress-sheen", d: spec.sower.sheen }, tail);
         atlasMake("path", { class: "atl-dress-rim", d: spec.sower.rim }, tail);
         atlasSpecks(tail, spec.sower.dust, "atl-speck atl-dress-star");
@@ -2933,6 +2935,11 @@ function atlasBuildDefs(svg, id) {
   const sower = id.endsWith("feminine") || !!lookSpec.cloak;
   fade("waist", sower ? 52 : 54, sower ? 58 : 63);
   fade("lowerin", sower ? 53 : 60, sower ? 50 : 52);
+  //: **The lower body's stipple of stars** (L742, the owner 2026-11-12: "the lower body gets texture"): a tile of uneven
+  //: specks that her dress and his trail take over their nebula, so the wisps under `.atl-lw-lower` read as starry cloth in
+  //: both looks. A pattern, not more specks: one tile of seven dots, and it moves with the lower body's own morph.
+  const stipple = atlasMake("pattern", { id: `${id}-stipple`, patternUnits: "userSpaceOnUse", width: 9, height: 11 }, defs);
+  for (const [x, y, r] of [[1.2, 1.6, 0.34], [5.8, 0.8, 0.2], [3.6, 4.6, 0.26], [7.6, 5.8, 0.38], [0.8, 7.4, 0.22], [4.8, 9.2, 0.3], [8.2, 9.8, 0.18]]) atlasMake("circle", { class: "atl-stipple-dot", cx: x, cy: y, r }, stipple);
   //: The dress's last third dissolves into light (INBOX 559): a soft
   //: round fade about its end, gone at the end and whole 22 units off.
   //: The cloak's too, about its hem's end.

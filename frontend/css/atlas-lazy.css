@@ -1228,6 +1228,10 @@
   & #nm-buddy.nmb-act-knit .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
 }
 
+/* The lower body's stipple of stars (L742; the tile is `${id}-stipple` in atlas.js): pale dots over the nebula, faint
+   enough that the dress's own star dust and glints still lead. */
+.atl-stipple-dot { fill: var(--atl-hi); }
+.nm-atlas .atl-lower-stipple { opacity: 0.5; pointer-events: none; }
 /* **A desk prop reads against the body** (L-chat-246; the rule `08-consistency.css` gives the worn props).
    atlasprops.js read these at 1.4 to 2.5 to 1 against the pale blue body in both looks (the sheet is the
    same in both): a dark keyline under each fill, the line-art strokes in navy, and the three small glyphs at
