@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Agent loop: the per-call guard chain (the checks a tool call passes before it runs) moved out of ai/agent.py whole to ai/agent_guards.py, so agent.py falls from 1313 to 1101 lines and its line cap from 1228 to 1101; behaviour unchanged.
 - OCR: RapidOCR reads small text enlarged to the size it reads best, and nothing else is done to the picture; over nine rendered pages the mean similarity went 0.853 to 0.876 (7px text 0.816 to 0.936, a dark ground 0.942 to 1.000), where Tesseract's full preparation read worse at 0.805 (L703).
 - Dashboard boot at 4x CPU on 5,000 notes: board miniatures draw in 12ms slices (map-preview load task 92 to 48ms median), and Continue and recent notes stop parsing dates inside a sort (dashContinueNote 97 to 10ms); scripts with a median long task over 50ms 10 to 3 (L-world-class-354).
 - Dashboard: card heights for the grid's spans come from its ResizeObserver, so sizing reads no layout or style after the widgets fill (45 to 119ms of forced style at 4x on 5,000 notes before, 0 after; spans within 1px at 700, 1093 and 1440) (L-world-class-620).

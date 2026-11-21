@@ -14472,67 +14472,72 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_set` | src/tessellate/ai/address.py:89 |
 | `run_step` | src/tessellate/ai/address.py:117 |
 
-### src/tessellate/ai/agent.py (57)
+### src/tessellate/ai/agent.py (45)
 
 | Name | File:line |
 |---|---|
-| `Step` | src/tessellate/ai/agent.py:1209 |
-| `_Call` | src/tessellate/ai/agent.py:357 |
-| `_Loop` | src/tessellate/ai/agent.py:685 |
-| `_Streamed` | src/tessellate/ai/agent.py:712 |
-| `_Turn` | src/tessellate/ai/agent.py:1227 |
-| `_barred` | src/tessellate/ai/agent.py:393 |
-| `_blocked_for_turn` | src/tessellate/ai/agent.py:1104 |
-| `_budget_events` | src/tessellate/ai/agent.py:720 |
-| `_change_diff` | src/tessellate/ai/agent.py:138 |
-| `_claim_notice` | src/tessellate/ai/agent.py:945 |
-| `_confirm_gate` | src/tessellate/ai/agent.py:450 |
-| `_count_call` | src/tessellate/ai/agent.py:147 |
-| `_dispatch_call` | src/tessellate/ai/agent.py:601 |
-| `_dispatch_round` | src/tessellate/ai/agent.py:1048 |
-| `_exhausted_events` | src/tessellate/ai/agent.py:1068 |
+| `Step` | src/tessellate/ai/agent.py:997 |
+| `_Loop` | src/tessellate/ai/agent.py:473 |
+| `_Streamed` | src/tessellate/ai/agent.py:500 |
+| `_Turn` | src/tessellate/ai/agent.py:1015 |
+| `_blocked_for_turn` | src/tessellate/ai/agent.py:892 |
+| `_budget_events` | src/tessellate/ai/agent.py:508 |
+| `_change_diff` | src/tessellate/ai/agent.py:129 |
+| `_claim_notice` | src/tessellate/ai/agent.py:733 |
+| `_count_call` | src/tessellate/ai/agent.py:138 |
+| `_dispatch_call` | src/tessellate/ai/agent.py:389 |
+| `_dispatch_round` | src/tessellate/ai/agent.py:836 |
+| `_exhausted_events` | src/tessellate/ai/agent.py:856 |
 | `_finish_handover` | src/tessellate/ai/agent.py:95 |
-| `_first_verdict` | src/tessellate/ai/agent.py:575 |
-| `_hand_over` | src/tessellate/ai/agent.py:431 |
-| `_handoff_refused` | src/tessellate/ai/agent.py:329 |
-| `_hold_result` | src/tessellate/ai/agent.py:579 |
-| `_model_died_events` | src/tessellate/ai/agent.py:794 |
-| `_not_permitted` | src/tessellate/ai/agent.py:404 |
-| `_note_copy` | src/tessellate/ai/agent.py:522 |
-| `_nudge` | src/tessellate/ai/agent.py:862 |
-| `_nudge_claim` | src/tessellate/ai/agent.py:920 |
-| `_nudge_empty` | src/tessellate/ai/agent.py:871 |
-| `_nudge_intent` | src/tessellate/ai/agent.py:909 |
-| `_nudge_prose` | src/tessellate/ai/agent.py:888 |
-| `_one_option_ask` | src/tessellate/ai/agent.py:315 |
+| `_hand_over` | src/tessellate/ai/agent.py:347 |
+| `_handoff_refused` | src/tessellate/ai/agent.py:320 |
+| `_hold_result` | src/tessellate/ai/agent.py:367 |
+| `_model_died_events` | src/tessellate/ai/agent.py:582 |
+| `_nudge` | src/tessellate/ai/agent.py:650 |
+| `_nudge_claim` | src/tessellate/ai/agent.py:708 |
+| `_nudge_empty` | src/tessellate/ai/agent.py:659 |
+| `_nudge_intent` | src/tessellate/ai/agent.py:697 |
+| `_nudge_prose` | src/tessellate/ai/agent.py:676 |
+| `_one_option_ask` | src/tessellate/ai/agent.py:306 |
 | `_plan_writes` | src/tessellate/ai/agent.py:115 |
-| `_plans` | src/tessellate/ai/agent.py:131 |
-| `_query_said` | src/tessellate/ai/agent.py:154 |
-| `_record_call` | src/tessellate/ai/agent.py:175 |
-| `_relay_stream` | src/tessellate/ai/agent.py:757 |
-| `_repeated_failure` | src/tessellate/ai/agent.py:504 |
-| `_repeated_read` | src/tessellate/ai/agent.py:546 |
-| `_repeated_write` | src/tessellate/ai/agent.py:533 |
-| `_replay_message` | src/tessellate/ai/agent.py:1010 |
-| `_round_stats` | src/tessellate/ai/agent.py:847 |
-| `_round_tools` | src/tessellate/ai/agent.py:739 |
-| `_run_and_record` | src/tessellate/ai/agent.py:243 |
-| `_settle_answer` | src/tessellate/ai/agent.py:979 |
-| `_step_dispatch` | src/tessellate/ai/agent.py:1280 |
-| `_step_exhaust` | src/tessellate/ai/agent.py:1299 |
-| `_step_round` | src/tessellate/ai/agent.py:1246 |
-| `_step_settle` | src/tessellate/ai/agent.py:1274 |
-| `_step_stream` | src/tessellate/ai/agent.py:1263 |
-| `_stream_round` | src/tessellate/ai/agent.py:817 |
-| `_tidied_arguments` | src/tessellate/ai/agent.py:285 |
-| `_tool_spent` | src/tessellate/ai/agent.py:488 |
-| `_unreadable_arguments` | src/tessellate/ai/agent.py:415 |
-| `_unsupported_events` | src/tessellate/ai/agent.py:780 |
-| `_widen_focus` | src/tessellate/ai/agent.py:1031 |
-| `_with_advice` | src/tessellate/ai/agent.py:225 |
-| `_wrap_up_round` | src/tessellate/ai/agent.py:645 |
-| `plan_now` | src/tessellate/ai/agent.py:122 |
-| `run_agent` | src/tessellate/ai/agent.py:1115 |
+| `_plans` | src/tessellate/ai/agent.py:122 |
+| `_query_said` | src/tessellate/ai/agent.py:145 |
+| `_record_call` | src/tessellate/ai/agent.py:166 |
+| `_relay_stream` | src/tessellate/ai/agent.py:545 |
+| `_replay_message` | src/tessellate/ai/agent.py:798 |
+| `_round_stats` | src/tessellate/ai/agent.py:635 |
+| `_round_tools` | src/tessellate/ai/agent.py:527 |
+| `_run_and_record` | src/tessellate/ai/agent.py:234 |
+| `_settle_answer` | src/tessellate/ai/agent.py:767 |
+| `_step_dispatch` | src/tessellate/ai/agent.py:1068 |
+| `_step_exhaust` | src/tessellate/ai/agent.py:1087 |
+| `_step_round` | src/tessellate/ai/agent.py:1034 |
+| `_step_settle` | src/tessellate/ai/agent.py:1062 |
+| `_step_stream` | src/tessellate/ai/agent.py:1051 |
+| `_stream_round` | src/tessellate/ai/agent.py:605 |
+| `_tidied_arguments` | src/tessellate/ai/agent.py:276 |
+| `_unsupported_events` | src/tessellate/ai/agent.py:568 |
+| `_widen_focus` | src/tessellate/ai/agent.py:819 |
+| `_with_advice` | src/tessellate/ai/agent.py:216 |
+| `_wrap_up_round` | src/tessellate/ai/agent.py:433 |
+| `run_agent` | src/tessellate/ai/agent.py:903 |
+
+### src/tessellate/ai/agent_guards.py (12)
+
+| Name | File:line |
+|---|---|
+| `_Call` | src/tessellate/ai/agent_guards.py:51 |
+| `_barred` | src/tessellate/ai/agent_guards.py:87 |
+| `_confirm_gate` | src/tessellate/ai/agent_guards.py:126 |
+| `_first_verdict` | src/tessellate/ai/agent_guards.py:251 |
+| `_not_permitted` | src/tessellate/ai/agent_guards.py:98 |
+| `_note_copy` | src/tessellate/ai/agent_guards.py:198 |
+| `_repeated_failure` | src/tessellate/ai/agent_guards.py:180 |
+| `_repeated_read` | src/tessellate/ai/agent_guards.py:222 |
+| `_repeated_write` | src/tessellate/ai/agent_guards.py:209 |
+| `_tool_spent` | src/tessellate/ai/agent_guards.py:164 |
+| `_unreadable_arguments` | src/tessellate/ai/agent_guards.py:109 |
+| `plan_now` | src/tessellate/ai/agent_guards.py:41 |
 
 ### src/tessellate/ai/agent_policy.py (30)
 
