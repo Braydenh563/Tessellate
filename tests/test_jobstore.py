@@ -19,7 +19,7 @@ import sys
 import textwrap
 import threading
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -28,6 +28,13 @@ from sqlalchemy import select
 from tessellate.core import deps, jobs, jobstore
 from tessellate.core.database import DurableJob
 from tessellate.core.database_manager import DatabaseManager
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -135,12 +142,14 @@ def test_no_database_records_nothing_and_still_runs(kinds):
         pool.shutdown(deadline=2)
 
 
-def test_a_lease_is_taken_once_and_renewed_by_its_owner(db, kinds):
+def test_a_lease_is_taken_once_and_renewed_by_its_owner(db, kinds, monkeypatch):
+    moment = [SUITE_NOW]
+    pin_clock(monkeypatch, lambda: moment[0])
     job_id = jobstore.record("test-remember", (1, Path("/z")), {}, db=db)
     assert jobstore.lease(job_id, db=db) is True
     assert jobstore.lease(job_id, db=db) is False  # already running
     first = _rows(db)[0].lease_until
-    time.sleep(0.01)
+    moment[0] += timedelta(seconds=1)
     assert jobstore.renew([job_id], db=db) == 1
     assert _rows(db)[0].lease_until > first
     jobstore.finish(job_id, db=db)
@@ -173,7 +182,7 @@ def _set(db, job_id, **values):
 
 
 def test_resume_queues_the_left_work_and_leaves_live_leases(db, kinds):
-    now = datetime.now(timezone.utc)
+    now = SUITE_NOW
     queued = jobstore.record("test-remember", (1, Path("/a")), {}, dedupe_key=("k", 1), db=db)
     lapsed = jobstore.record("test-remember", (2, Path("/b")), {}, db=db)
     _set(db, lapsed, state="running", owner="gone-1", attempts=1, lease_until=now - timedelta(seconds=5))

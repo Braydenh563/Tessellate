@@ -9,6 +9,14 @@ entry timestamps and the agent's prompt.)
 """
 
 from __future__ import annotations
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def test_entry_timestamps_are_marked_as_utc_too(client):

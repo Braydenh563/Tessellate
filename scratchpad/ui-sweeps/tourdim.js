@@ -82,6 +82,7 @@ function ok(label, pass, detail) {
       cardHidden: document.getElementById("tour-card").classList.contains("hidden"),
       //: The contract itself, read off the running source, because a browser
       //: with overlay scrollbars cannot demonstrate it by measurement.
+      sizedFromWindow: /innerWidth/.test(openTour.inspect().blockPanels.toString()),
     };
   });
 

@@ -26,19 +26,9 @@ function ok(label, pass, detail) {
     const { page, browser } = await boot({ viewport: vp, isMobile: vp.width < 500 });
     // tour.js is a lazy bundle now; load it before reading its table.
     await page.evaluate(() => (typeof ensureModule === "function" ? ensureModule("tour") : null));
-    // tour.js is one closure, so its table is read from the file (a literal of
-    // plain strings): each section's id and, per card title, the target
-    // selectors the tour resolves (`tourResolve`: `target`, else `or`).
-    const tourSrc = require("fs").readFileSync(require("path").join(__dirname, "..", "..", "frontend", "js", "tour.js"), "utf8");
-    const from = tourSrc.indexOf("const TOUR_SECTIONS = [");
-    const table = new Function("return " + tourSrc.slice(tourSrc.indexOf("[", from), tourSrc.indexOf("\n  ];", from) + 4).trim().replace(/;$/, ""))();
-    const sections = table.map((s) => s.id);
-    // Two cards can share a title and differ by `media` (Your conversations: a
-    // sidebar on a desktop, its opener on a phone), so each key lists them all.
-    const targets = {};
-    for (const s of table) for (const st of s.steps) (targets[`${s.id}|${st.title}`] ||= []).push({ target: st.target, or: st.or, media: st.media || null });
+    const sections = await page.evaluate(async () => { await lazyScript("/js/tour.js"); return openTour.inspect().sections.map((s) => s.id); });
     for (const sec of sections) {
-      const res = await page.evaluate(async ({ sec, targets }) => {
+      const res = await page.evaluate(async (sec) => {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
         openTour(sec);
         await wait(700);
@@ -47,25 +37,6 @@ function ok(label, pass, detail) {
           const spot = document.getElementById("tour-spot");
           const card = document.getElementById("tour-card");
           if (card.classList.contains("hidden")) break;
-          // Measured once the cut-out and the card have stopped moving (the
-          // same box on three reads, 100ms apart), not after a fixed pause:
-          // while it travels to the next control it is over something else.
-          const boxKey = () => ["tour-spot", "tour-card"].map((id) => {
-            const b = document.getElementById(id).getBoundingClientRect();
-            return [b.left, b.top, b.width, b.height].map(Math.round).join(",");
-          }).join("|");
-          for (let steady = 0, last = "", n = 0; steady < 3 && n < 30; n += 1) {
-            await wait(100);
-            const now = boxKey();
-            steady = now === last ? steady + 1 : 0;
-            last = now;
-          }
-          // The last card of a section hands over to the next one by name, so
-          // Next would walk every later section again from here (the run took
-          // longer than five minutes that way): a card that belongs to another
-          // section is that section's own turn, walked there.
-          const here = document.getElementById("tour-title").textContent;
-          if (!targets[`${sec}|${here}`] && Object.keys(targets).some((k) => k.endsWith(`|${here}`))) break;
           const s = spot.getBoundingClientRect();
           const c = card.getBoundingClientRect();
           const w = window.innerWidth;
@@ -104,43 +75,27 @@ function ok(label, pass, detail) {
             // control has to be the thing at its own centre (nothing drawn
             // over it), or the ring frames an empty square.
             target: (() => {
-              // `tourRun` is closure-private, and the title lags the target by a
-              // frame or two while one section hands over to the next, so the lit
-              // control is found by where the cut-out is: the element, among every
-              // step's `target` and `or`, whose box is nearest the spotlight's.
-              const shown = (e) => { const b = e && e.getBoundingClientRect(); return !!b && b.width > 0 && b.height > 0; };
-              const lift = (e) => (e ? e.closest(".select-shell") || e : e);
-              let el = null;
-              let best = Infinity;
-              for (const list of Object.values(targets)) {
-                for (const st of list) {
-                  if (st.media && !matchMedia(st.media).matches) continue;
-                  for (const sel of [st.target, st.or]) {
-                    const cand = sel ? lift(document.querySelector(sel)) : null;
-                    if (!shown(cand)) continue;
-                    const b = cand.getBoundingClientRect();
-                    const d = Math.abs(b.left - s.left) + Math.abs(b.top - s.top) + Math.abs(b.width - s.width) + Math.abs(b.height - s.height);
-                    if (d < best) { best = d; el = cand; }
-                  }
-                }
-              }
-              // The cut-out pads its control by a few pixels: farther than that
-              // and the spotlight is on something this table does not name.
-              if (!el || best > 60) return null;
+              const el = openTour.inspect().run && openTour.inspect().run.el;
+              if (!el) return null;
               let o = 1;
               for (let n = el; n && n !== document.documentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity || "1");
               const r = el.getBoundingClientRect();
               const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-              return { o: Math.round(o * 100) / 100, hit: Boolean(hit && (el.contains(hit) || hit.contains(el))), w: Math.round(r.width), h: Math.round(r.height) };
+              //: What is in front, named, so a miss says what covered it.
+              const by = hit ? (hit.closest("[id]")?.id || hit.className || hit.tagName) : "nothing";
+              return { o: Math.round(o * 100) / 100, hit: Boolean(hit && (el.contains(hit) || hit.contains(el))), by, w: Math.round(r.width), h: Math.round(r.height) };
             })(),
           });
           const next = document.getElementById("tour-next");
           if (!next) break;
           next.click();
           await wait(650);
+          //: A card that is busy (a tab still loading) is not a step yet: it
+          //: shows Next's spinner and no ring (tourBusy). Measured once it settles.
+          for (let t = 0; t < 40 && document.getElementById("tour-card").getAttribute("aria-busy") === "true"; t += 1) await wait(200);
         }
         return out;
-      }, { sec, targets });
+      }, sec);
       for (const r of res) {
         steps += 1;
         const tag = `${vp.width} ${sec} "${r.title}" ${r.n}`;
@@ -151,7 +106,7 @@ function ok(label, pass, detail) {
         if (!r.lit) faults.push(`${tag}: nothing lit`);
         if (r.scrolls) faults.push(`${tag}: card scrolls, the text does not fit`);
         if (r.target && r.target.o < 0.5) faults.push(`${tag}: target faded (opacity ${r.target.o})`);
-        if (r.target && !r.target.hit) faults.push(`${tag}: target is not what is drawn at its centre`);
+        if (r.target && !r.target.hit) faults.push(`${tag}: target is not what is drawn at its centre (${r.target.by} is)`);
         if (r.target && (r.target.w < 4 || r.target.h < 4)) faults.push(`${tag}: target is empty (${r.target.w}x${r.target.h})`);
       }
     }

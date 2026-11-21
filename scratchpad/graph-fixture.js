@@ -60,9 +60,9 @@ const WANT_LINKS = Number(process.argv[3] || 4000);
         }
       };
 
-      const todo = Math.max(0, wantNotes - have);
+      const missing = Math.max(0, wantNotes - have);
       await batched(
-        Array.from({ length: todo }, (_, i) => i),
+        Array.from({ length: missing }, (_, i) => i),
         async (i) => {
           const category = CATEGORIES[i % CATEGORIES.length];
           const body = {

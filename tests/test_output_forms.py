@@ -8,7 +8,6 @@ callout, and the Ask box's chart (`drawAskChart`). Rows:
 from __future__ import annotations
 
 import json
-from datetime import date
 from pathlib import Path
 
 import pytest
@@ -17,6 +16,13 @@ from tessellate.ai import realise, tools
 from tests._app_js import app_js_text
 from tests._app_js import with_pieces
 from tests import _js_scope
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = json.loads((Path(__file__).parent / "fixtures" / "composer" / "forms_1010.json").read_text(encoding="utf-8"))
@@ -56,7 +62,7 @@ def _seed(session):
 
 def test_each_no_model_read_says_one_line_and_draws_its_form(session):
     _seed(session)
-    today = date.today()
+    today = SUITE_LOCAL.date()
     forms = {}
     for tool in ("list_tags", "list_categories", "count_notes", "notebook_overview", "notebook_structure",
                  "list_reminders", "list_notes", "list_skills"):

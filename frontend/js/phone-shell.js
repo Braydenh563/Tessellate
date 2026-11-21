@@ -895,6 +895,11 @@ function mountPhoneSidebarOpeners() {
   }
 }
 
+//: Each opener's dock lives in a surface built on first open, not at boot
+//: (chat's toolbar was not in the page, so a phone's chat had no way to its
+//: conversations and the tour dropped that card: 4 planned, 3 shown at
+//: 390x844). The mount skips a dock that has its opener, so it runs again for
+//: every surface that holds one.
 mountPhoneSidebarOpeners();
 //: Each dock lives in a lazy surface, built on first use: a mount that ran only
 //: at load found no Notes or Chat dock and never came back, leaving a phone with

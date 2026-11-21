@@ -4888,6 +4888,23 @@ button.answer-figure-open {
   fill: var(--accent);
 }
 
+/* A pie's slices (L-world-class-179): the accent, or a category's own colour
+   set on the mark; a card-coloured edge parts neighbours of one shade, and
+   "Other" is the muted ink so it never reads as a real category. */
+.ask-chart-slice {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 2;
+}
+
+.ask-chart-slice.is-other {
+  fill: var(--muted);
+}
+
+.ask-chart-legend {
+  fill: var(--ink);
+}
+
 .ask-chart-line {
   fill: none;
   stroke: var(--accent);

@@ -7,10 +7,9 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 #: Wednesday 11 November 2026; the week (Monday start) began on the 9th.
 NOW = datetime(2026, 11, 11, 15, 0)
@@ -18,8 +17,7 @@ NOW = datetime(2026, 11, 11, 15, 0)
 
 @pytest.fixture()
 def clock(monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _note(session, when: datetime, text: str) -> None:

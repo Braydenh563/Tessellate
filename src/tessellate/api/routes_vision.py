@@ -34,6 +34,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.core import deps
 from tessellate.core.database import AuditLog, Category, Entry, EntryOpen, utcnow
 from tessellate.core.deps import get_session
@@ -303,7 +304,7 @@ def parse_chart_question(question: str, today: date | None = None) -> dict | Non
     text = " ".join(question.lower().split())
     if not _COUNTING.search(text) or not _ABOUT_NOTES.search(text):
         return None
-    today = today or datetime.now(timezone.utc).date()
+    today = today or clock.utc().date()
     since, until, words = _period(text, today)
     if re.search(r"\bcategor", text):
         by = "category"

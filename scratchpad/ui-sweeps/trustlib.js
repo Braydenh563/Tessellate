@@ -93,7 +93,7 @@ const SURFACES = [
   { name: 'timeline', root: '#tab-timeline', open: async (p) => { await tab(p, 'timeline'); await p.waitForTimeout(800); } },
   { name: 'library', root: '#tab-library', open: async (p) => {
     await tab(p, 'library');
-    // The Library reopens on the last sub-tab, and a board left open is still
+    // The Library reopens on the last sub-tab, and a board kept open is still
     // on screen: back to the list first so "library" is the Library.
     await p.click('#wb-back-to-boards', { timeout: 800 }).catch(() => {});
     await sub(p, '#library-subtabs [data-target="library-view-documents"]'); } },

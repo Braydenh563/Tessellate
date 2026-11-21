@@ -60,6 +60,9 @@
   // waiting knows it was superseded and must not mount its canvas, see the
   // comment in startArt for the stacking bug this fixes (§35G).
   let artRun = 0;
+  //: A new sketch starts at the last one's width (300 the first time); `resync` corrects it after layout.
+  //: `setup` read `clientWidth`: a forced layout of 5 to 26ms at 4x in each flip to the dashboard (L705).
+  let artLastWidth = 0;
   // Where the constellation is drawn, kept so a theme change can rebuild it.
   //
   // The sketch reads light-or-dark ONCE, when it is built, and paints its wash
@@ -607,7 +610,7 @@
       p.artStars = () => particles;
 
       p.setup = () => {
-        width = holder.clientWidth || 300;
+        width = artLastWidth || 300;
         p.createCanvas(width, height);
         p.colorMode(p.HSL, 360, 100, 100, 1);
         p.randomSeed(artSeed(categories) + artNonce * 997);
@@ -689,7 +692,7 @@
         // Guarded the same reason `holder.clientWidth || 300` is in setup: a
         // transient 0 mid-reflow must not shrink the canvas to nothing.
         if (!next || next === width) return;
-        width = next;
+        width = artLastWidth = next;
         p.resizeCanvas(width, height);
         glide = null;
         particles = buildArtParticles(p, categories, total, width, height);

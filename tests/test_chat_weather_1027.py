@@ -1,4 +1,4 @@
-"""The weather with a model up or Web on (the owner, 2026-10-27, a follow-up
+"""The weather with a model up or Web on (the owner, 2026-10-27, a second ask
 "What's the weather like today?" answered by the composer's "not something
 this app knows" while a model ran and Web was on), and the web query a local
 question is searched with."""
@@ -12,6 +12,7 @@ import pytest
 
 from tessellate.ai import composer_digest, utilities
 from tessellate.api import routes_chat
+from tests._clock import pin_clock
 
 
 @pytest.mark.parametrize(
@@ -52,7 +53,7 @@ def test_with_neither_the_composer_says_it_cannot(monkeypatch) -> None:
     monkeypatch.setattr(utilities, "web_on", lambda: False)
     #: A fixed clock and no config: the composer needs only the day.
     monkeypatch.setattr(routes_chat.deps, "get_config", lambda: None)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config: datetime(2026, 10, 27, 9, 30))
+    pin_clock(monkeypatch, datetime(2026, 10, 27, 9, 30))
     utilities._kind_of_cached.cache_clear()
     detected, stats = routes_chat._worked_out("What's the weather like today?")
     assert detected == routes_chat.intent.UTILITY

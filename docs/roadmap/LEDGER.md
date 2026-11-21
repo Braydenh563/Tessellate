@@ -9,15 +9,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 195 | 60 | 2 | 59 | 431 |
+| chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 12 | 0 | 0 | 4 | 12 |
-| all | 502 | 544 | 127 | 2 | 183 | 1173 |
+| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
+| general | 0 | 7 | 0 | 0 | 5 | 7 |
+| all | 502 | 543 | 127 | 2 | 184 | 1172 |
 
 ## graph
 
@@ -277,7 +277,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 
@@ -698,21 +697,21 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-21** `world-class` open, S: Add a partial index on live entries. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3934. Evidence: Open line in the plan's prose a session could miss. Index work open alongside audit_log.entity_id.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
 - [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
+- [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
+- [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
+- [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
+- [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
+- [ ] **L-world-class-394** `world-class` open, S: On a 360x740 phone, opening Settings with no meaning-search model shows the 'Search by meaning needs a one-time download of about 130 MB' toast at 341x173px (top 503, bottom 676), still up after 10 s, over the lower quarter of every section until dismissed. From L-world-class-177, 2026-11-14. Evidence: scratchpad/ui-sweeps/settings-phone-177.js before its toast removal line; 0 bad with the toast gone
 
 ## general
 
-- [ ] **L702** `general` open, M: Cut math-editor.js onload forced layout (calculator panel). From agent-remaining/lag-1103.md. Evidence: `math-editor.js` onload 224ms (forced layout 187ms) and the mathlive keydown 530ms: the calculator panel belongs to the
-- [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
-- [ ] **L705** `general` open, M: Remove remaining forced layouts inside the tab flip (timelineScrollToToday, startArt, renderNotesRail). From agent-remaining/lag-1029.md. Evidence: Still forced inside the flip: `timelineScrollToToday` (timeline.js:2431, 43 ms at 4x), `startArt` > `currentAccentHex` (
-- [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
-- [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
-- [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-42** `general` open, M: Record and chip two more note sources: extracted from document, transcribed from audio. From L-general-13. Evidence: entry has no column for extracted-from-document or transcribed-from-audio (routes_entries.py:2938 extract_commit, routes_meetings.py:52 create_meeting record none); provenance chip covers source_url and source_path only
 - [ ] **L-general-45** `general` open, S: Sweeps flaky only at load average 8 and over: companionperf (Atlas idle budget fails even for the off buddy at load 12), companionmenu and companionpin (a right-click lands beside the face after a dodge, no menu). Re-run on an idle machine before reading anything into them; measured 3 of 3 companionmenu passes at load 5 to 7. From sweep two-run 2026-11-21.
 - [ ] **L-general-46** `general` open, M: Atlas idle costs +564ms/s of main thread (budget 120): its idle draw lays out and restyles every frame. From companionperf two-pass 2026-11-21. Evidence: fresh dirs at load 4 to 6, both passes FAIL: atlas +564ms/s main thread idle over off (budget 120), 63 layouts/s, 229ms/s style; top atlasRigLower.morph.draw atlas-life.js:1311 55.6ms in 4s; me +0.209ms/frame idle (budget 0.2)
 - [ ] **L-general-47** `general` open, L: Atlas idle still costs +422ms/s of main thread on mains: its full-rate loops restyle and lay out every frame. From L-general-46 follow-up, companionperf 2026-11-21. Evidence: fresh dir after 240225a22: atlas +422 and +563ms/s idle over off in two fresh passes (budget 120), 69 layouts/s, style 160ms/s; in-page pausing every CSS loop in #nm-buddy takes style 117 to 66ms/s, pausing every animation leaves task about 265ms/s; the layer svg CSS loops (atl-layer) are the largest share, the torso breath (WAAPI scale on g.nmb-torso) gives the per-frame layout; atlasRigLower.morph atlas-life.js:1311 draws 10/s (INBOX 1709); alive on mains is owner decision 55. Note 2026-11-21: Motion at rest now defaults to still (866cd846d, the swap look 8c5aea9bf); one fresh companionperf PASS, atlas +37, persona +66, me +30, custom +41 ms/s; closes with L-general-46 after PR 224 lands and a two-pass on the merged result
 - [ ] **L-general-48** `general` open, S: companionmenu fails 2: the companion does not ride a dashboard panel at the hard sizes. From companionmenu sweep, 2026-11-21. Evidence: scratchpad/ui-sweeps/companionmenu.js:155 ride(): 1440x900@1.25 and 1280x800@1.5 both report not riding a panel on base 5234ece4a and on this branch, fresh dir
+- [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
 
@@ -908,6 +907,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
+- [ ] **L-general-38** `general` blocked-hardware, S: Measure ocrScheduleFitDock's forced layout with the real Tesseract engine. From L708, 2026-11-21. Evidence: ocrScheduleFitDock (library.js:7682) fits the dock by measuring (one frame, halving, memoised key already built); its forced layout with a real Tesseract page open cannot be traced without the engine and a scanned page. Check: open the OCR dialog on a scan at 390 px, CPU 4, stack-category trace, forced layouts under ocrFitDock.
 
 ## Plan session briefs
 

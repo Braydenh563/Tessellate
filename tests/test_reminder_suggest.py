@@ -10,11 +10,18 @@ chat already acts on ("remind me to ...") get nothing.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 
 from tessellate.ai import reminder_suggest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 #: A Monday, 09:00; fixed so "Friday" is the 30th and no test reads the real clock.
 NOW = datetime(2026, 10, 26, 9, 0)
@@ -68,7 +75,7 @@ def test_the_sentence_with_the_intention_is_the_one_read():
 
 
 def test_the_route_returns_words_and_a_time(client):
-    tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
+    tomorrow = SUITE_NOW + timedelta(days=1)
     response = client.post(
         "/reminders/suggest",
         json={"text": "I need to call the dentist tomorrow at 9am", "tz_offset_minutes": 0},
