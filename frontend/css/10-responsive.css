@@ -1925,6 +1925,14 @@ sheet-host[hidden] {
   width: 100%;
   min-height: var(--target-min);
 }
+/* A sheet has the height a popover does not: a long row wraps instead of ending in an ellipsis (the board's "More
+   board commands" had ten rows cut at 304px of a 356px sheet; menus.js, L-general-71). */
+.action-menu-card .action-menu .menu-item .ph-text {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 /* Reminders below 1100: the list is the page, and the add form is the sheet
    "New reminder" opens (`openReminderCompose`, app.js; the floating + below
    600, the dock's filled button above). While the form is on the page it is

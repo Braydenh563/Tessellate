@@ -71,6 +71,7 @@
 ) :is(
   .menu-item,
   .doc-dock-menu-item,
+  .dock-menu-check,
   .nav-history-item,
   .library-image-menu-item,
   .action-menu-item,
@@ -127,6 +128,7 @@
   ) :is(
     .menu-item,
     .doc-dock-menu-item,
+    .dock-menu-check,
     .nav-history-item,
     .library-image-menu-item,
     .action-menu-item,
@@ -151,6 +153,7 @@
 ) :is(
   .menu-item,
   .doc-dock-menu-item,
+  .dock-menu-check,
   .nav-history-item,
   .library-image-menu-item,
   .action-menu-item,
@@ -167,6 +170,7 @@
 ) :is(
   .menu-item,
   .doc-dock-menu-item,
+  .dock-menu-check,
   .nav-history-item,
   .library-image-menu-item,
   .action-menu-item,
@@ -1693,6 +1697,28 @@ summary > .ph-lead,
 [data-doc-dock-submenu] .doc-dock-menu-check > span {
   flex: 1 1 auto;
   min-width: 0;
+}
+/* **A switch row in a dock menu is a menu row** (menus.js on the 5k showcase: the Timeline's and the Logs' ticks stood
+   on two x and two heights, 34.5px against the 32px of the buttons beside them). The row's height is the
+   row's own recipe (a button's), and the icon leads: the switch is drawn last, at the far end, as in the
+   documents' menu, whatever order the markup wrote them in. The words are the row's anonymous flex item. */
+.doc-dock-menu-list .dock-menu-check {
+  min-height: var(--control-h-lg);
+}
+/* Settings sets its buttons to its own control height, so its switch rows stand on it too. */
+#settings-modal .settings-section .doc-dock-menu-list .dock-menu-check {
+  min-height: var(--settings-control-h);
+  padding-block: 0;
+}
+.doc-dock-menu-list .dock-menu-check > .ph-lead {
+  display: inline-block;
+  flex: none;
+  width: 1.25em;
+  text-align: center;
+}
+.doc-dock-menu-list .dock-menu-check > input {
+  order: 1;
+  margin-inline-start: auto;
 }
 /* INBOX 18: the pinned group at the end of a formatting strip had square
    corners and was opaque only on the note form. It is not pinned any more
@@ -5236,7 +5262,7 @@ body .chip.item-label,
 }
 :is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
   :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
-:is(.action-menu, .doc-dock-menu-list)
+:is(.action-menu, .doc-dock-menu-list, .wb-board-menu)
   .menu-item > span:first-child > .ph:first-child {
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
