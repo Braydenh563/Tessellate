@@ -38,6 +38,7 @@ run.
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import contextvars
 import itertools
 import logging
@@ -348,6 +349,11 @@ def history(limit: int = KEEP_ROWS, db=None) -> list[dict]:  # noqa: ANN001
 #: a restart ends the runs, and `mark_interrupted` settles their rows.
 _live: list["Run"] = []
 _live_lock = threading.Lock()
+#: The run whose start last wrote each kind's row. A run that finishes after
+#: a newer one of its kind started leaves the row alone; the start times can
+#: tie (two starts in one clock tick, a coarse clock, a pinned test clock),
+#: so the owner decides, not the times.
+_owners: dict[str, "Run"] = {}
 
 #: The scheduled passes someone pressed Stop on (`core/passes.py` adds and
 #: clears; a pass's own loop reads it between steps). Here, below both, so
@@ -418,7 +424,7 @@ class Run:
         #: run (a pool job's): `/tasks` then adds its lines, not a second row.
         self.listed = False
         self.result = ""
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = clock.utc()
         self._t0 = time.monotonic()
         self._db = db
         self._status = "ok"
@@ -527,6 +533,8 @@ class Run:
         with _live_lock:
             if self not in _live:
                 _live.append(self)
+            if self._db is not None:
+                _owners[self.kind] = self
         _bump()
         #: In the app log under its run id, so Settings, Logs can show this
         #: run's lines (the Logs button filters on "[run-12]").
@@ -586,11 +594,7 @@ class Run:
                 if row is None:
                     row = JobRun(kind=self.kind, started_at=self.started_at)
                     session.add(row)
-                elif (
-                    row.status == "running"
-                    and row.started_at is not None
-                    and row.started_at > self.started_at
-                ):
+                elif row.status == "running" and self._superseded():
                     return  # a newer run is still going and owns the row
                 self._write_ending(row)
                 session.commit()
@@ -598,9 +602,15 @@ class Run:
             logger.debug("could not record the end of %r", self.kind, exc_info=True)
 
 
+    def _superseded(self) -> bool:
+        """True when a newer run of this kind started and has not ended."""
+        with _live_lock:
+            owner = _owners.get(self.kind)
+            return owner is not None and owner is not self and not owner.ended
+
     def _undo_skipped(self, session, row) -> None:  # noqa: ANN001
         """A skipped run was never a run: put the row back as it was."""
-        if row is not None and row.started_at == self.started_at:
+        if row is not None and row.started_at == self.started_at and not self._superseded():
             if self._before is None:
                 session.delete(row)
             else:
@@ -610,7 +620,7 @@ class Run:
 
     def _write_ending(self, row) -> None:  # noqa: ANN001
         row.started_at = self.started_at
-        row.finished_at = datetime.now(timezone.utc)
+        row.finished_at = clock.utc()
         row.status = self._status
         row.result = _clip(self.result) if self._status != "failed" else ""
         row.error = self._error
@@ -738,7 +748,7 @@ def note_finished(
     """
     run = Run(kind, _database(db), ledger=False)
     if isinstance(duration_ms, (int, float)) and duration_ms >= 0:
-        run.started_at = datetime.now(timezone.utc) - timedelta(milliseconds=duration_ms)
+        run.started_at = clock.utc() - timedelta(milliseconds=duration_ms)
         run._t0 = time.monotonic() - duration_ms / 1000
     if outcome == "failed":
         run.fail(detail or "Failed.")
@@ -875,141 +885,3 @@ def for_request(scope: dict):  # noqa: ANN201
         yield
     finally:
         _request_scope.reset(token)
-
-
-def _purpose() -> str:
-    """What the request is for, in words, from its endpoint's name."""
-    scope = _request_scope.get()
-    if not scope:
-        return ""
-    name = getattr(scope.get("endpoint"), "__name__", "") or ""
-    if name:
-        return name.replace("_", " ").strip().capitalize()
-    path = str(scope.get("path") or "")
-    return f"AI request for {path}" if path else ""
-
-
-def _seconds(t0: float) -> str:
-    took = time.monotonic() - t0
-    if took < 1:
-        return f"{max(1, round(took * 1000))} ms"
-    return f"{took:.1f} s" if took < 60 else f"{int(took // 60)} min {int(took % 60)} s"
-
-
-@contextmanager
-def _calling():  # noqa: ANN202
-    before = getattr(_bound, "calling", False)
-    _bound.calling = True
-    try:
-        yield
-    finally:
-        _bound.calling = before
-
-
-def _named(provider, model: str) -> str:  # noqa: ANN001
-    """What a call is logged under. Needle ignores the configured chat model
-    (it picks tools in process), so the ledger said "Asked <that model> with
-    tools" for a call it never made (INBOX 1345 b)."""
-    return "needle" if getattr(provider, "name", "") == "needle" else model
-
-
-def _open_call(model: str, tools: bool) -> tuple["Run", "Run | None", str]:
-    name = _clip(model) or "the model"
-    parent = active()
-    own = None
-    if parent is None:
-        scope = _request_scope.get()
-        own = Run("ai-call", None, title=_purpose() or f"AI request to {name}", origin="you" if scope else "app", why="Your request needed the model." if scope else "")
-        own.start()
-    run = parent or own
-    run.say(f"Asked {name}{' with tools' if tools else ''}.")
-    return run, own, name
-
-
-def model_call(method):  # noqa: ANN001, ANN201
-    """Wrap a provider's `chat` or `chat_tools`: every model call is in the
-    ledger. Inside a run (a pool job, a chat answer) it adds two timed lines
-    to that run; outside one it is a run of its own, named for the request
-    that made it, so no AI work happens unseen."""
-    tools = "tools" in method.__name__
-
-    def call(self, model, *args, **kwargs):  # noqa: ANN001, ANN202
-        if getattr(_bound, "calling", False):
-            return method(self, model, *args, **kwargs)
-        run, own, name = _open_call(_named(self, model), tools)
-        t0 = time.monotonic()
-        try:
-            with _calling(), bound(own or run):
-                reply = method(self, model, *args, **kwargs)
-        except BaseException as exc:
-            run.say(f"{name} did not answer ({_seconds(t0)}).")
-            if own is not None:
-                own.fail(failure_reason(exc))
-            raise
-        else:
-            run.say(f"{name} answered in {_seconds(t0)}.")
-            if own is not None:
-                own.result = f"answered in {_seconds(t0)}"
-        finally:
-            if own is not None:
-                own.finish()
-        return reply
-
-    call.__name__ = method.__name__
-    call.__qualname__ = getattr(method, "__qualname__", method.__name__)
-    call.__doc__ = method.__doc__
-    call.__wrapped__ = method
-    call.ledgered = True
-    return call
-
-
-def model_stream(method):  # noqa: ANN001, ANN201
-    """`model_call` for a streamed reply: the run opens at the first chunk
-    and ends however the stream does (finished, closed by the reader, or
-    raised), so nothing stays "running"."""
-    tools = "tools" in method.__name__
-
-    def stream(self, model, *args, **kwargs):  # noqa: ANN001, ANN202
-        if getattr(_bound, "calling", False):
-            yield from method(self, model, *args, **kwargs)
-            return
-        run, own, name = _open_call(_named(self, model), tools)
-        t0 = time.monotonic()
-        source = None
-        try:
-            with _calling():
-                source = iter(method(self, model, *args, **kwargs))
-            while True:
-                with _calling(), bound(own or run):
-                    try:
-                        chunk = next(source)
-                    except StopIteration:
-                        break
-                yield chunk
-        except GeneratorExit:
-            run.say(f"Stopped reading {name} after {_seconds(t0)}.")
-            if own is not None:
-                own.cancel("closed before it finished")
-            raise
-        except BaseException as exc:
-            run.say(f"{name} did not answer ({_seconds(t0)}).")
-            if own is not None:
-                own.fail(failure_reason(exc))
-            raise
-        else:
-            run.say(f"{name} answered in {_seconds(t0)}.")
-            if own is not None:
-                own.result = f"answered in {_seconds(t0)}"
-        finally:
-            close = getattr(source, "close", None)
-            if close is not None:
-                close()
-            if own is not None:
-                own.finish()
-
-    stream.__name__ = method.__name__
-    stream.__qualname__ = getattr(method, "__qualname__", method.__name__)
-    stream.__doc__ = method.__doc__
-    stream.__wrapped__ = method
-    stream.ledgered = True
-    return stream

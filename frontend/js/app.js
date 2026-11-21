@@ -65,7 +65,7 @@ for (const level of ["log", "info", "warn", "error"]) {
   };
 }
 //: "ResizeObserver loop completed with undelivered notifications" is the
-//: browser saying it deferred a resize callback one frame, not an
+//: browser saying it delayed a resize callback one frame, not an
 //: exception (no `e.error`, nothing thrown): logged as ERROR it filled the
 //: owner's console from the Library's Files view (release, 2026-09-27).
 //: The observer behind it is in the carry-over list; this only stops the
@@ -358,6 +358,12 @@ function activeSpaceId() {
 async function api(path, options = {}) {
   // `silent`: a background poll (model status, reminders): a 401 must not yank the user to the lock screen mid-session (Wave O fix for a long-standing intermittent re-lock). Only an explicit user action shows the lock screen on 401. `timeoutMs`: opt-in abort so a call can't hang the UI forever (used by the startup probe). Off by default, so long-running requests, model pulls, blocking chat: are unaffected. `ownsAuthErrors`: this call treats 401 as part of its own result rather than as an expired session. Change-password answers 401 for "that isn't your current password", a typo there must show a message beside the field, not throw the user out to the lock screen. `readOnly`: a POST that writes nothing (the code checker in documents.js sends a file's text in a body because a query string cannot carry it). Without it every pause in typing a .py file would empty the read cache for the whole app, which is a write's job, not a read's.
   const { silent, timeoutMs, ownsAuthErrors, readOnly, ...fetchOptions } = options;
+  //: Locked by hand and no key: a loader that wakes after Lock (the
+  //: dashboard's and chat's idle fetches) is refused here rather than sent,
+  //: since each answered 401 and logged an error behind the lock (L529).
+  if (lockedByHand && !authToken() && !ownsAuthErrors && !path.startsWith("/auth/") && !path.startsWith("/health")) {
+    throw Object.assign(new Error("Locked"), { isLockout: true });
+  }
   refuseStagedUrls(fetchOptions.body);
   // Any write invalidates the read cache above, see clearApiCache().
   if (!readOnly && fetchOptions.method && fetchOptions.method !== "GET") clearApiCache();
@@ -1379,7 +1385,7 @@ function confirmDialog(message, options = {}) {
 // Resolves to the trimmed text, or "" for cancel/empty. "" rather than null so
 // every caller's guard is the same shape as the confirm one.
 //: `segment`, when given, adds **one** segmented control under the field: `{label, options: [{value, label, title}], value}`. The dialog then resolves `{text, choice}` instead of a bare string.  One extra control in the dialog that already exists, rather than a second dialog after this one. CLAUDE.md records why in as many words: bookmark URL editing was reported broken five times while working end-to-end every time, and the fault was never the handler, "a second modal that only appears *after* you commit the first is a bad way to expose a second field". Naming a new board and saying what kind of board it is are one decision.
-function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null } = {}) {
+function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null, cancelLabel = "Cancel" } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay confirm-overlay";
@@ -1477,7 +1483,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     const row = document.createElement("div");
     row.className = "row confirm-actions";
     row.append(
-      smallButton("Cancel", "Cancel", () => close("")),
+      smallButton(cancelLabel, cancelLabel, () => close("")),
       smallButton(confirmLabel, confirmLabel, () => input.reportValidity() && close(input.value.trim()), false)
     );
     card.append(head, input);
@@ -1859,7 +1865,7 @@ const LAZY_ENTRY_POINTS = {
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
   batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace"],
   notifications: ["openNotifications"],
-  webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng"],
+  webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng", "renderWebPanelMenu", "toggleWebPanel", "closeWebReader", "stopWebRequest", "refreshWebSearxngStrip", "clearWebSearchHistory", "askAboutPage", "openWebReader", "citeWebPage"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],
@@ -1883,7 +1889,7 @@ const LAZY_ENTRY_POINTS = {
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder", "noteRecording"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
-  tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
+  tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],

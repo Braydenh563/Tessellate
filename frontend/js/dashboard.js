@@ -81,6 +81,7 @@ const DASH_WIDGETS = {
   heatmap: { title: "ph:calendar-check Activity heatmap", description: "A calendar-style heatmap of note activity over the past months.", render: renderHeatmapWidget },
   "tag-cloud": { title: "ph:cloud Tag cloud", description: "All your tags sized by how often they're used.", render: renderTagCloudWidget },
   categories: { title: "ph:folders Categories", description: "Every category with its note count, click to filter.", render: renderCategoriesWidget },
+  mix: { title: "ph:chart-pie Category mix", description: "What share of your notes each category holds, as a pie; a slice opens its notes.", render: (body) => renderCategoriesWidget(body, true) },
   //: The key stays `random`, it is a stored widget id and renaming it would
   //: drop the widget off every dashboard that has it turned on. What it does
   //: changed (WORLD_CLASS_PLAN 15, I4): over ten notes it shows the three
@@ -502,8 +503,25 @@ const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
+  //: "Client work: 12 notes, 2 documents, 1 board" for the open space, from
+  //: `GET /spaces/{id}/summary`.
+  const dashSpaceLine = async (id) => {
+    if (!spacesCache.length) await loadSpaces().catch(() => {});
+    const name = spacesCache.find((s) => s.id === id)?.name;
+    if (!name) return null;
+    const counts = await apiJson(`/spaces/${encodeURIComponent(id)}/summary`, { silent: true });
+    const part = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+    const held = [part(counts.notes || 0, "note"), part(counts.documents || 0, "document")];
+    if (counts.boards) held.push(part(counts.boards, "board"));
+    return `${name}: ${held.join(", ")}`;
+  };
   dashLine.bucket = dashLineDraw();
-  const [stats, reminders, patterns, composed] = await Promise.all([
+  //: A space's own line (L-world-class-22): its name and what it holds, one
+  //: fact in this line (no new box, so the first widget stays where it was).
+  //: Not in "All spaces", which is no one space.
+  const spaceId = activeSpaceId();
+  const spaceLine = spaceId === SPACE_ALL ? Promise.resolve(null) : dashSpaceLine(spaceId).catch(() => null);
+  const [stats, reminders, patterns, composed, space] = await Promise.all([
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
@@ -514,10 +532,12 @@ async function renderDashSubmessage() {
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
     dashTodayLine(dashLine.bucket).catch(() => ""),
+    spaceLine,
   ]);
   const bits = [];
+  if (space) bits.push(["space", space]);
   if (composed) bits.push(["notes", composed]);
-  else if (stats) {
+  else if (stats && !space) {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }
@@ -820,7 +840,6 @@ function renderNameNudge(greetingEl) {
 // inside a row instead of being stretched to match the tallest one.
 
 let dashResizeObserver = null;
-
 //: **Three passes, not one per card** (INBOX 400). Written per card, the
 //: loop set a card's span, read its height and set it again, so every card
 //: after the first read a layout the previous card had just dirtied: one
@@ -855,17 +874,34 @@ function sizeDashWidgets() {
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
   //: reads go before any write.
-  const heights = cards.map((card) => card.getBoundingClientRect().height);
+  //: **The observer's sizes first** (L-world-class-620): a card's border box as `watchDashWidgets`'s
+  //: ResizeObserver last delivered it, measured by the frame's own layout, so the call reads no layout of
+  //: its own; the rect read after the fills had dirtied it was 49 to 307ms at 4x. A card the observer has
+  //: not reported yet (or reported hidden, 0px) is read. One the fills change after it is reported fires
+  //: the observer again, which sizes it again a frame on, while the grid is still fading in from 0.
+  const heights = cards.map((card) => sizeDashWidgets.heights.get(card) || card.getBoundingClientRect().height);
   if (!heights.some(Boolean)) return;
-  const styles = getComputedStyle(grid);
-  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
-  const rowGap = Number.parseFloat(styles.rowGap) || 0;
-  const cardGap = Number.parseFloat(styles.columnGap) || 16;
+  //: The grid's unit and gaps as the observer last read them, where style was clean; read here
+  //: after the fills, `getComputedStyle` was the forced style pass (45 to 119ms at 4x, 5,000 notes).
+  const { rowUnit, rowGap, cardGap } = sizeDashWidgets.metrics || sizeDashWidgets.read(grid);
   cards.forEach((card, i) => {
     card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
 }
+
+//: State on the function, not three more shared names (the global-scope ratchet): each card's border box as
+//: the observer last delivered it, and the grid's unit and gaps as read where style was clean.
+sizeDashWidgets.heights = new WeakMap();
+sizeDashWidgets.metrics = null;
+sizeDashWidgets.read = (grid) => {
+  const styles = getComputedStyle(grid);
+  return {
+    rowUnit: Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1,
+    rowGap: Number.parseFloat(styles.rowGap) || 0,
+    cardGap: Number.parseFloat(styles.columnGap) || 16,
+  };
+};
 
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
 // size rather than only once at render time.
@@ -877,7 +913,11 @@ function watchDashWidgets() {
   }
   dashResizeObserver?.disconnect();
   let queued = false;
-  dashResizeObserver = new ResizeObserver(() => {
+  dashResizeObserver = new ResizeObserver((entries) => {
+    //: First, before anything here writes: in an observer callback style and layout are clean, so this
+    //: read is free. A resize or a density change resizes the cards, so it is read again then.
+    sizeDashWidgets.metrics = sizeDashWidgets.read(grid);
+    for (const entry of entries) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.target.getBoundingClientRect().height);
     dashResizeObserver.follow?.();
     if (queued) return;
     queued = true;
@@ -1442,7 +1482,16 @@ function dashContinueNote(entries) {
       .filter((value) => Number.isFinite(value));
     return Math.max(0, ...times);
   };
-  return [...entries].filter((entry) => entry && !entry.is_draft).sort((a, b) => touched(b) - touched(a))[0] || null;
+  //: One pass for the latest, not a sort (L-world-class-354): the comparator parsed six dates per compare, 86ms
+  //: at 4x CPU at dashboard boot on 5,000 notes (CPU profile). The first of equal times wins, as the stable sort did.
+  let best = null;
+  let bestTime = -1;
+  for (const entry of entries) {
+    if (!entry || entry.is_draft) continue;
+    const time = touched(entry);
+    if (time > bestTime) (best = entry), (bestTime = time);
+  }
+  return best;
 }
 
 const DASH_VIEW_LABELS = { full: "Full", compact: "Compact", focused: "Focused" };
@@ -2102,7 +2151,10 @@ function dashFillingSkeletonDone(outline) {
     dashResizeObserver.above = [];
   }
   outline.style.opacity = "0";
-  setTimeout(() => outline.remove(), 260);
+  //: Hidden, not removed: the outline is a child of `body`, and taking a child of `body` out
+  //: restyled the whole page through its sibling rules (L603: 6,267 elements, 106ms at 1x,
+  //: just after the first Notes press). The next fill removes it, when it shows another.
+  setTimeout(() => { outline.style.display = "none"; }, 260);
 }
 
 // --- widget picker modal ------------------------------------------------------------
@@ -2250,7 +2302,7 @@ function dashWidgetRow(name, layout, position = null) {
 const DASH_WIDGET_GROUPS = {
   stats: "overview", streak: "overview", heatmap: "overview", pace: "overview", week: "overview",
   digest: "overview", art: "overview",
-  pinned: "notes", random: "notes", categories: "notes", "on-this-day": "notes",
+  pinned: "notes", random: "notes", categories: "notes", mix: "notes", "on-this-day": "notes",
   unfinished: "notes", orphans: "notes", tensions: "notes", boards: "notes",
   documents: "notes",
   capture: "doing", reminders: "doing", focus: "doing", questions: "doing",
@@ -2559,7 +2611,8 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
     // the preview, the same shape the timeline card uses. It is what a person
     // calls the note, and without it every row in a widget starts with the
     // same three words of body text.
-    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "").trim();
+    //: A task's box goes with its bullet (L-world-class-178: "- [ ] email Sam" read "[ ] email Sam").
+    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+)/gm, "").trim();
     const split = flat.indexOf("\n");
     const heading = (split === -1 ? flat : flat.slice(0, split)).trim();
     const rest = split === -1 ? "" : flat.slice(split + 1).replace(/\s+/g, " ").trim();
@@ -2678,9 +2731,11 @@ async function renderMostLinkedWidget(body) {
 async function renderRecentNotesWidget(body) {
   //: Not a map's topics (UX-06): a map of forty listed forty one-word rows.
   const entries = (await dashEntries()).filter((e) => !e.map_topic);
-  const newest = [...entries].sort(
-    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-  );
+  //: Each date parsed once, not twice per compare (L-world-class-354: 33ms at 4x on 5,000 notes, CPU profile).
+  const newest = entries
+    .map((entry) => [new Date(entry.created_at).getTime(), entry])
+    .sort((a, b) => b[0] - a[0])
+    .map(([, entry]) => entry);
   miniEntryList(body, newest.slice(0, 6), "Your newest notes will appear here.", { label: "ph:plus New note", run: "capture" });
 }
 
@@ -2724,7 +2779,7 @@ async function renderQuestionsWidget(body) {
   body.appendChild(box);
 }
 
-// Weekly digest caching (Wave J follow-up). The AI digest is expensive,
+// Weekly digest caching (Wave J, second pass). The AI digest is expensive,
 // so once it's generated it STAYS until you regenerate, and it resets
 // itself each day. Generation is a module-level promise, so switching
 // away from the dashboard never cancels it, whenever it finishes, the
@@ -2949,7 +3004,9 @@ async function renderRemindersWidget(body) {
     //: the time read as part of the sentence.
     const what = document.createElement("span");
     what.className = "dash-reminder-text";
-    what.textContent = reminder.text;
+    //: Its words as inline Markdown, as the note rows above draw theirs (L-world-class-178:
+    //: a reminder made from a note showed "**Sam**" and "[the venue](https://...)" raw).
+    renderInlineMarkdown(what, reminder.text, [], true);
     const at = document.createElement("span");
     at.className = "dash-reminder-when muted";
     at.textContent = when;
@@ -3080,11 +3137,31 @@ async function renderHeatmapWidget(body) {
 
 // --- category breakdown ------------------------------------------------------
 
-async function renderCategoriesWidget(body) {
+//: `asPie` is the Category mix widget (L-world-class-179): the same counts drawn
+//: by the chart recipe (`drawAskChart`, kind "pie", ask-chart.js), never a
+//: second chart; each slice wears its category's dot colour and a click shows
+//: that category's notes, as a bar here does.
+async function renderCategoriesWidget(body, asPie = false) {
   const stats = await fetchDashStats().catch(() => null);
-  const categories = (stats && stats.categories) || [];
+  const categories = ((stats && stats.categories) || []).filter((row) => !asPie || row.count > 0);
   if (!categories.length) {
-    dashEmpty(body, "Save a few notes and your categories appear here.", { label: "ph:plus New note", run: "capture" });
+    dashEmpty(body, asPie ? "Save a few notes and the share each category holds appears here." : "Save a few notes and your categories appear here.", { label: "ph:plus New note", run: "capture" });
+    return;
+  }
+  if (asPie) {
+    const host = document.createElement("div");
+    host.className = "ask-chart dash-mix";
+    body.replaceChildren(host);
+    await ensureModule("askHistory");
+    const rows = categories.map(({ name, count }) => ({ label: name, value: count, colour: categoryDotColour(name) }));
+    drawAskChart(host, {
+      kind: "pie",
+      by: "category",
+      title: "Notes by category",
+      rows,
+      total: rows.reduce((sum, row) => sum + row.value, 0),
+      onPick: (row) => (row.other ? switchTab("notes") : showCategoryNotes(row.label)),
+    });
     return;
   }
   const max = categories[0].count || 1;

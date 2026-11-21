@@ -44,7 +44,7 @@ import re
 from collections.abc import Callable
 from urllib.parse import urlparse
 
-from tessellate.core import jobruns
+from tessellate.core import jobruns_calls
 
 
 #: Returns the user's stored sampling overrides, installed by the app's own
@@ -392,10 +392,10 @@ class Provider:
         new backend or a new caller cannot make a model call nobody sees."""
         super().__init_subclass__(**kwargs)
         for attr, wrap in (
-            ("chat", jobruns.model_call),
-            ("chat_tools", jobruns.model_call),
-            ("chat_stream", jobruns.model_stream),
-            ("chat_tools_stream", jobruns.model_stream),
+            ("chat", jobruns_calls.model_call),
+            ("chat_tools", jobruns_calls.model_call),
+            ("chat_stream", jobruns_calls.model_stream),
+            ("chat_tools_stream", jobruns_calls.model_stream),
         ):
             method = cls.__dict__.get(attr)
             if callable(method) and not getattr(method, "ledgered", False):
@@ -1385,7 +1385,15 @@ def _tagged_calls(content: str, tool_names: set[str]) -> _Recovered:
         # call inside one pair of tags (`<tool_call>[{...}, {...}]</tool_call>`,
         # or just two objects back to back) still means every call, not only
         # the first it wrote.
-        for _start, _end, blob in _balanced_json_objects(tag_match.group(1)):
+        inside = tag_match.group(1)
+        #: **A doubled opening brace** (L-world-class-630): Qwen2.5-1.5B on
+        #: its own chat template writes `{{"name": ..., "arguments": {...}}`,
+        #: the template's escaped brace copied literally, one `{` more than it
+        #: closes. Nothing balanced, so the call was dropped and the tag shown
+        #: as the answer. One brace off the front when the count says so.
+        if inside.startswith("{{") and inside.count("{") == inside.count("}") + 1:
+            inside = inside[1:]
+        for _start, _end, blob in _balanced_json_objects(inside):
             found = _calls_in_blob(blob, tool_names)
             if found:
                 calls.extend(found)

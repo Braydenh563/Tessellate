@@ -41,13 +41,13 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from sqlalchemy import select, text
 
 from tessellate.ai.lazy import LazyModule
 from tessellate.core import deps, events, jobruns
-from tessellate.core.database import Conversation
+from tessellate.core.database import Conversation, utcnow
 
 logger = logging.getLogger("tessellate.autonomous")
 
@@ -719,7 +719,7 @@ def _remember_pass(outcome: str, changes: list[dict]) -> None:
     since deliberately redone.
     """
     with _lock:
-        _last_pass["finished_at"] = datetime.now(timezone.utc).isoformat()
+        _last_pass["finished_at"] = utcnow().isoformat()
         _last_pass["outcome"] = outcome
         _last_pass["changes"] = list(changes)
 
@@ -790,7 +790,7 @@ def purge_old_conversations() -> int:
     if days <= 0:
         return 0
 
-    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
+    cutoff = utcnow().replace(tzinfo=None) - timedelta(days=days)
     db = deps.get_db()
     with db.session() as session:
         # `workspace_id="all"`: this is maintenance over the whole database,

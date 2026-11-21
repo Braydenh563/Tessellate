@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 
+from tessellate.core import clock
 from tessellate.core import paths
 
 KEEP = 20
@@ -40,7 +40,7 @@ def build(*, source: str, label: str, files: int, read, written: dict, seconds: 
     return {
         "source": source,
         "label": label,
-        "finished_at": datetime.now(timezone.utc).isoformat(),
+        "finished_at": clock.utc().isoformat(),
         "seconds": round(seconds, 2),
         "stopped": stopped,
         "counts": {
@@ -60,7 +60,7 @@ def save(data_dir: Path, report: dict) -> str:
     """Write it and drop the oldest past `KEEP`. Returns its id."""
     where = folder(data_dir)
     where.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S%f")
+    stamp = clock.utc().strftime("%Y%m%d-%H%M%S%f")
     report_id = f"{stamp}-{re.sub('[^a-z]', '', report['source'])[:12] or 'import'}"
     report["id"] = report_id
     _inside(where, report_id).write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")

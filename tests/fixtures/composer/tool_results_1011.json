@@ -2377,6 +2377,118 @@
      "message": "Checked 3, retired 0 and flagged 0."
     }
    }
+  ],
+  "browser_open": [
+   {
+    "args": {
+     "url": "https://travel.example.org/lisbon-october"
+    },
+    "fake": true,
+    "result": {
+     "url": "https://travel.example.org/lisbon-october",
+     "title": "Lisbon in October",
+     "domain": "travel.example.org",
+     "links": [
+      {
+       "n": 1,
+       "text": "Weather",
+       "url": "https://travel.example.org/weather"
+      }
+     ],
+     "text": "Lisbon in October has mild days around 22 degrees and cool evenings. Rain is rare in the first half of the month.",
+     "truncated": false,
+     "panel_url": "https://travel.example.org/lisbon-october",
+     "label": "ph:browser Opened travel.example.org"
+    }
+   }
+  ],
+  "browser_read": [
+   {
+    "args": {},
+    "fake": true,
+    "result": {
+     "url": "https://travel.example.org/lisbon-october",
+     "title": "Lisbon in October",
+     "domain": "travel.example.org",
+     "links": [
+      {
+       "n": 1,
+       "text": "Weather",
+       "url": "https://travel.example.org/weather"
+      }
+     ],
+     "text": "Lisbon in October has mild days around 22 degrees and cool evenings. Rain is rare in the first half of the month.",
+     "truncated": false,
+     "panel_url": "https://travel.example.org/lisbon-october",
+     "label": "ph:browser Opened travel.example.org"
+    }
+   }
+  ],
+  "browser_follow": [
+   {
+    "args": {
+     "link": 1
+    },
+    "fake": true,
+    "result": {
+     "url": "https://travel.example.org/lisbon-october",
+     "title": "Lisbon in October",
+     "domain": "travel.example.org",
+     "links": [
+      {
+       "n": 1,
+       "text": "Weather",
+       "url": "https://travel.example.org/weather"
+      }
+     ],
+     "text": "Lisbon in October has mild days around 22 degrees and cool evenings. Rain is rare in the first half of the month.",
+     "truncated": false,
+     "panel_url": "https://travel.example.org/lisbon-october",
+     "label": "ph:browser Opened travel.example.org"
+    }
+   }
+  ],
+  "browser_back": [
+   {
+    "args": {},
+    "fake": true,
+    "result": {
+     "url": "https://travel.example.org/lisbon-october",
+     "title": "Lisbon in October",
+     "domain": "travel.example.org",
+     "links": [
+      {
+       "n": 1,
+       "text": "Weather",
+       "url": "https://travel.example.org/weather"
+      }
+     ],
+     "text": "Lisbon in October has mild days around 22 degrees and cool evenings. Rain is rare in the first half of the month.",
+     "truncated": false,
+     "panel_url": "https://travel.example.org/lisbon-october",
+     "label": "ph:browser Opened travel.example.org"
+    }
+   }
+  ],
+  "browser_find": [
+   {
+    "args": {
+     "text": "rain"
+    },
+    "fake": true,
+    "result": {
+     "url": "https://travel.example.org/lisbon-october",
+     "query": "rain",
+     "count": 1,
+     "matches": [
+      {
+       "at": 70,
+       "text": "cool evenings. Rain is rare in the first half of the month."
+      }
+     ],
+     "label": "ph:magnifying-glass Found rain 1 time on travel.example.org"
+    }
+   }
   ]
  }
 }

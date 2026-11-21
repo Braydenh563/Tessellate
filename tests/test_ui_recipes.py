@@ -4168,7 +4168,8 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     assert "paintAssistantAvatar(holder, 20)" in chat[chat.index("function paintAssistantHeads") :][:200]
     #: `assistantHeadRow` moved to help-chat.js (lazy) with its only callers (Brief 101a).
     assert "paintAssistantAvatar(avatar, 20)" in js["help-chat.js"][js["help-chat.js"].index("function assistantHeadRow") :][:600]
-    assert "paintAssistantHeads()" in js["navigation.js"], "a section change fills the static heads"
+    #: The section just shown, not every section (L603): a hidden one fills its own when shown.
+    assert "paintAssistantHeads($(wanted) || document)" in js["navigation.js"], "a section change fills the static heads"
     guide = js["help-chat.js"]
     assert guide.count("assistantHeadRow(GUIDE_NAME)") == 4, "a guide row, its pending row, the streamed one and the revealed one each open with the head"
     #: The setting: a default, a control, a live repaint and a reset.
@@ -6846,8 +6847,10 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
     responsive = css["10-responsive.css"]
     assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
-    assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
-    delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
+    # No `:not(.hidden)` on the menu (2026-11-21): it made every `hidden` toggle restyle a
+    # whole subtree (test_css_invalidation), and a shown menu starts its rows' animations anyway.
+    assert ".action-menu > :nth-child(-n + 8)" in responsive
+    delays = re.findall(r"\.action-menu > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
     assert [int(n) for n, _ in delays] == list(range(2, 9)), "rows 2 to 8 each have a step of delay, and nothing past 8"
     assert all("var(--ui-step)" in d for _, d in delays)
     for frames in ("ui-grow", "ui-row"):
@@ -8149,3 +8152,29 @@ def test_the_sheet_host_has_its_geometry_and_no_native_dialog_rules_left_for_it(
     every = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
     assert ".dash-widgets-dialog[open]" not in every, "a closed host is `hidden`, not a native [open] dialog"
     assert "#doc-history-dialog {" not in every, "a host's width is its class, so the phone rule can win"
+
+
+def test_a_note_s_provenance_is_one_chip_built_in_the_note_card() -> None:
+    """L-general-13: the origin chip is drawn once, in entry-card.js, from the server's `source_kind`;
+    no second place builds a `source-path` chip, and nothing reads `source_url` to draw its own."""
+    card = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8")
+    assert card.count('"source-path"') == 1
+    assert "entry.source_kind && entry.source_label" in card
+    assert "Imported from ${entry.source_path}" not in card
+    others = [
+        p.name
+        for p in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js")
+        if p.name != "entry-card.js" and '"source-path"' in p.read_text(encoding="utf-8")
+    ]
+    assert others == []
+
+
+def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
+    """L-general-12: Triage opens `openSheet`, never a hand-built overlay, and each act (and the bulk
+    one) joins the undo stack once."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-triage.js").read_text(encoding="utf-8")
+    assert "openSheet({" in js
+    assert 'createElement("dialog")' not in js and "modal-overlay" not in js
+    #: Clear done lives in reminder-edit.js (the merge with L-world-class-81 kept that copy), so two here.
+    assert js.count("pushUndo(") == 2  # the outcome append, the one triage act (a row or all rows)
+    assert ".style." not in js and "style=" not in js

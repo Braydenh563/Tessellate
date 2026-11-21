@@ -10,6 +10,14 @@ import json
 
 from tessellate.ai import tools
 from tessellate.core.database import Reminder
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _save(client, content, **extra):
@@ -31,7 +39,7 @@ def _stream_events(client, question, **body):
 
 # Tools that reach the internet. They stay hidden until the user opts in
 # (Wave F), so the registry is always larger than what's offered.
-ONLINE_TOOLS = {"web_search", "read_url"}
+ONLINE_TOOLS = set(tools.ONLINE_TOOLS)
 
 
 def test_registry_shapes_are_valid_for_ollama(app_state):
@@ -531,12 +539,12 @@ def test_listing_reminders_hands_the_model_a_page_not_the_table(session):
     filtering a page after limiting it is how "show me ten" quietly returns
     two.
     """
-    from datetime import datetime, timedelta, timezone
+    from datetime import timedelta
 
     from tessellate.ai import tools
     from tessellate.core.database import Reminder
 
-    now = datetime.now(timezone.utc)
+    now = SUITE_NOW
     for i in range(60):
         session.add(
             Reminder(text=f"reminder {i}", due_at=now + timedelta(hours=i), done=i % 2 == 0)

@@ -28,7 +28,9 @@ def test_a_custom_property_on_a_page_is_written_only_when_it_changes():
     two changes a tab visit. The box decides, and an equal value is not written."""
     body = _body(frontend_text("phone-shell.js"), "function initNotesSubtabHeightToken(")
     assert "if (!(box > 0)) return;" in body
-    assert 'getPropertyValue("--notes-sticky-top") !== h' in body
+    #: L603: the value goes into a rule on the bars that read it, and the last
+    #: one written decides whether to write again.
+    assert "if (initNotesSubtabHeightToken.h !== h)" in body
     assert "if (h > 0)" not in body
 
 
@@ -40,7 +42,7 @@ def test_an_empty_row_shell_is_not_matched_by_the_row_rules_that_use_has():
     `content-visibility: auto` on a shell rebuilt its layout object (977 layout
     additions for 488 shells). `:where(:not(.row-shell))` keeps the specificity."""
     cv = _css("07-whiteboard-misc.css")
-    assert "#entry-list > li:not(.row-shell, .list-window-sentinel, :focus-within)" in cv
+    assert "#entry-list > li:not(.row-shell, .list-window-sentinel, :focus-within)" not in cv, "L-general-34: the Notes rows no longer lock"
     assert "#entry-list li:where(:not(.row-shell)):is(:focus-visible, :has(:focus-visible))" in _css("03-dashboard-widgets.css")
     consistency = _css("08-consistency.css")
     assert ".entry-list > li:has(> :is(.skill-row, .persona-row))" not in consistency

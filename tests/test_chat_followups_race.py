@@ -1,7 +1,7 @@
 """INBOX 1300 C42: a composer reply's text was lost after a restart.
 
 A "yo <name>" call answers with text plus an "ask" offer, and the offer saved
-its follow-up chips while the reply was still streaming, racing the turn's own
+its next-step chips while the reply was still streaming, racing the turn's own
 save: the chips write read the checkpoint row (empty answer) and wrote it back
 over the finished turn. The offer now only draws the chips; `offerFollowups`
 saves them after the turn is saved (the `c42` Playwright sweep (kept out of the repo, which is at its scratchpad file cap) measures it

@@ -197,13 +197,11 @@
            is where they persist once that moment has passed. The count is a
            state worth having at a glance, which is the test §36D sets for
            anything that earns a permanent place in the chrome. -->
-      <!-- **Two clusters, not five loose squares** (the owner: "is there a
-           better way to modernise and improve the ui for these buttons in
-           the top bar"). Each cluster is one tinted shell with hairline
-           dividers, the same grammar the chat dock's segments and the table
-           block's bar use; the everyday toggles are one group and the two
-           that end a session are another, which is the split the old
-           `.header-divider` drew with a line. -->
+      <!-- **Two clusters** (the owner: "is there a better way to modernise
+           and improve the ui for these buttons in the top bar"): the everyday
+           toggles are one group and the two that end a session another, split
+           by a hairline seam. The buttons are plain ghost icons with no shell;
+           why is in 06-timeline-dialogs.css above `.header-cluster`. -->
       <span class="header-cluster">
       <!-- **The offline promise, in sight** (row 1641, WORLD_CLASS 22.1 item
            9): Settings, Privacy's verdict for this launch, as a word, one
@@ -806,6 +804,7 @@
        rather than one of a fixed set you must choose between. -->
   <div id="finder-overlay" class="lock-overlay finder-overlay hidden"
     role="dialog" aria-modal="true" aria-label="Find anything">
+  <script type="text/x-surface" data-surface="finder">
     <div class="card glass finder-card">
       <div class="row space-between finder-head dialog-head">
         <div class="row help-head">
@@ -889,6 +888,7 @@
       <div id="finder-results" class="finder-results" role="group"
         aria-label="Results"></div>
     </div>
+  </script>
   </div>
   <!-- Agent Activity: a list of runs, not a log (AGENT_SKILLS_REFORM.md,
        Phase C). Reported as "they just spawn in and its a bunch of text dump
@@ -901,6 +901,7 @@
        log, with exactly the same content, that is the "it should still be
        accessible though" half of the same report. -->
   <aside id="agent-monitor" class="card glass agent-monitor hidden">
+  <script type="text/x-surface" data-surface="agentMonitor">
     <!-- The head is the `h3.panel-head` recipe (DESIGN.md): identity, then
          one all-icon group. It was two worded buttons beside an icon X, three
          widths and two baselines in one row, which is what the owner called
@@ -981,6 +982,7 @@
         </div>
       </section>
     </div>
+  </script>
   </aside>
 
 
@@ -1029,6 +1031,7 @@
     <input type="hidden" id="space-edit-icon">
     <p id="space-edit-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
+      <button type="button" class="ghost small" id="space-edit-export" title="Download this space's notes, documents and boards as a zip"><i class="ph ph-export ph-lead" aria-hidden="true"></i>Export this space</button>
       <button type="button" class="ghost small" data-close-dialog="space-edit-dialog">Cancel</button>
       <button type="submit" form="space-edit-form" class="accent small" id="space-edit-submit">Save</button>
     </div>
@@ -2411,7 +2414,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <span id="ask-answer-more" class="hidden"></span>
                 </span>
               </h3>
-              <!-- The questions a follow-up chain came from (INBOX 490,
+              <!-- The earlier questions a chain of next questions came from (INBOX 490,
                    `renderAskTrail`). -->
               <div id="ask-trail" class="hidden"></div>
               <!-- The app's one Thinking fold goes in here, built by
@@ -2436,7 +2439,7 @@ Link to another note with [[its first few words]]."></textarea>
                    renderer opens with `replaceChildren()`, so the related row
                    was built and deleted again on every answer that had both.
                    The components themselves are the Chat tab's
-                   (`renderRelatedElsewhere`, `chatSourcesPanel`, the follow-up
+                   (`renderRelatedElsewhere`, `chatSourcesPanel`, the next-question
                    strip), called with the same object. -->
               <div id="ask-answer-foot" class="answer-foot hidden">
                 <div id="ask-answer-related" class="hidden"></div>
@@ -2657,7 +2660,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span id="batch-category-host"></span>
               <button id="batch-tag" class="ghost small" title="Add tags to, or remove tags from, the selected notes"><i class="ph ph-tag ph-lead" aria-hidden="true"></i> Tags</button>
               <button id="batch-delete" class="ghost small"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Delete</button>
-              <!-- Favourite, Publish drafts, Archive (fillBatchMore). -->
+              <!-- Favourite, Publish drafts, Archive, Set a property (fillBatchMore). -->
               <span id="batch-more-host"></span>
               <button id="batch-cancel" class="ghost small">Done</button>
             </span>
@@ -4347,7 +4350,7 @@ Link to another note with [[its first few words]]."></textarea>
                  actions (Trace, Legend, Suggest links, Reset). -->
             <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span></summary>
             <div class="help-body hidden" id="graph-physics-help" role="dialog" aria-label="What the Physics controls do">
-              <p>These shape the Force layout; under Tree, Radial, Arc, Map of meaning, Treemap and Tessellation they are dimmed.</p>
+              <p>These shape the Force layout. Gravity and Spread also shape Tree and Radial, and Spread the Arc; under Map of meaning, Treemap and Tessellation they are dimmed.</p>
               <ul>
                 <li>Gravity: how hard every note is drawn toward the middle, so the map packs tighter or spreads wider.</li>
                 <li>Spread: how far apart linked notes sit.</li>
@@ -6153,7 +6156,7 @@ Link to another note with [[its first few words]]."></textarea>
             data-help-for="reminders-help" aria-controls="reminders-help" aria-expanded="false"
             title="About reminders" aria-label="About reminders"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="reminders-help" role="dialog" aria-label="About reminders">
-            <p>Reminders are grouped as overdue, today and upcoming. Write one in plain words: the day, time, repeat and early alert it was read as show as chips under the box (press one to leave it as words), and Enter adds it; with no time it asks for one. A repeat can be every weekday, every 2 weeks or the last Friday of the month, and "1 day before" adds an alert ahead of the due time. Or use Quick set. The date and time fields open a month and the day's times, and read a typed day such as next friday. Notifications fire while a tab is open, even in the background, with Done and Snooze on them; the desktop app notifies with its window closed. Calendar opens the Timeline's calendar with only reminders, where one drags to another day. A reminder's menu also opens Google Calendar or Outlook with it filled in, only when you press it. More adds every open reminder to your calendar app, or imports a calendar file as reminders. Tell the chat "I need to call the dentist on Friday" and a Make this a reminder chip appears under the reply.</p>
+            <p>Reminders are grouped as overdue, today and upcoming. Triage on the Overdue heading goes through the late ones: Still matters, Drop (to the bin) or Reschedule to a day, or all of them at once, and Undo puts them back. Ticking off a reminder that came from a note asks how it went and adds the line to that note. Write one in plain words: the day, time, repeat and early alert it was read as show as chips under the box (press one to leave it as words), and Enter adds it; with no time it asks for one. A repeat can be every weekday, every 2 weeks or the last Friday of the month, and "1 day before" adds an alert ahead of the due time. Or use Quick set. The date and time fields open a month and the day's times, and read a typed day such as next friday. Notifications fire while a tab is open, even in the background, with Done and Snooze on them; the desktop app notifies with its window closed. Calendar opens the Timeline's calendar with only reminders, where one drags to another day. A reminder's menu also opens Google Calendar or Outlook with it filled in, only when you press it. More adds every open reminder to your calendar app, or imports a calendar file as reminders. Tell the chat "I need to call the dentist on Friday" and a Make this a reminder chip appears under the reply.</p>
           </div>
           <details class="doc-dock-menu dock-menu dock-more" id="reminders-more-menu">
             <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -6371,6 +6374,7 @@ Link to another note with [[its first few words]]."></textarea>
           <span class="library-contextbar-end">
             <button id="library-bulk-open" class="ghost small" type="button"><i class="ph ph-arrow-square-out ph-lead" aria-hidden="true"></i> Open</button>
             <button id="library-bulk-restore" class="ghost small hidden" type="button"><i class="ph ph-arrow-counter-clockwise ph-lead" aria-hidden="true"></i> Restore</button>
+            <span id="library-batch-more-host"></span>
             <button id="library-bulk-delete" class="ghost small" type="button"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Delete</button>
             <button id="library-clear-selection" class="ghost small" type="button">Done</button>
           </span>
@@ -10225,6 +10229,9 @@ Link to another note with [[its first few words]]."></textarea>
   <!-- ======================= SETTINGS MODAL ================================ -->
   <div id="settings-modal" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Settings">
+  <!-- The window's head and nav are a surface too (L-world-class-530), built on the first open; its
+       body, after it, is moved into the slot in `.modal-content` when it is (a script cannot hold a script). -->
+  <script type="text/x-surface" data-surface="settingsShell">
     <div class="card modal-card">
       <!-- The dialog head every popup wears (DESIGN.md, "A dialog's head";
            INBOX 479): its utilities were 28px beside a 32px Close. -->
@@ -10366,16 +10373,21 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </nav>
         <div class="modal-content" tabindex="-1">
-          <!-- The folder sheet's passphrase field lives here, outside the lazy Settings body (the palette
-               opens the sheet before Settings is built): every password field is declared in this file
+          <template data-surface-slot="settings"></template>
+        </div>
+      </div>
+    </div>
+  </script>
+          <!-- The folder sheet's passphrase field lives here, outside the lazy Settings shell and body (the
+               palette opens the sheet before Settings is built): every password field is declared in this file
                (tests/test_lock_boundary.py). -->
           <template id="sync-folder-passphrase">
             <input type="password" autocomplete="off" placeholder="The same on every computer" aria-label="Sync passphrase">
           </template>
-          <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
+          <!-- Built on the first open, or the first lookup of one of its ids (`surfaceBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
           <script type="text/x-surface" id="settings-body-template" data-surface="settings"
-            data-nests="settings-models settings-searchindex settings-personas settings-skills settings-templates settings-memory settings-learned settings-tools settings-appearance settings-extras settings-shortcuts settings-preferences settings-general settings-websearch settings-tasks settings-data settings-account settings-privacy settings-logs settings-help settings-about">
+            data-nests="settings-models settings-searchindex settings-personas settings-skills settings-templates settings-memory settings-learned settings-tools settings-appearance settings-extras settings-shortcuts settings-preferences settings-general settings-websearch settings-tasks settings-data settings-account settings-privacy settings-logs settings-help settings-about" data-in="settingsShell">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -10625,7 +10637,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
 
-            <!-- **Outside #models-config** (WORLD_CLASS_PLAN 20, "Still open"):
+            <!-- **Outside #models-config** (WORLD_CLASS_PLAN 20, built):
                  with no model server answering, #models-config is hidden whole,
                  and an override set earlier could be neither seen nor cleared.
                  The list and its reset need only the saved settings. -->
@@ -11892,6 +11904,22 @@ Link to another note with [[its first few words]]."></textarea>
                   the box, and stops at once when you press Revoke. Each row
                   says when that app last used it.
                 </p>
+                <p>
+                  Categories and Tags limit a link to notes filed in those
+                  categories or carrying those tags: the app cannot search,
+                  list, read, follow a connection to or change any other note,
+                  and a note it adds must be filed inside. Leave both empty for
+                  the whole notebook.
+                </p>
+                <p>
+                  An app such as claude.ai can sign in with OAuth instead of a
+                  pasted token: give it the address /mcp on this app and it
+                  opens a page that waits. The sign-in appears below under
+                  Waiting to sign in with a short code; check the code matches
+                  and press Approve on this computer. The notes and changes
+                  ticked above apply to it, and it is listed and revoked like
+                  any other link. Nothing is sent anywhere else.
+                </p>
               </div>
               <label class="check-row">
                 <input type="checkbox" id="pref-mcp-writes">
@@ -11911,6 +11939,16 @@ Link to another note with [[its first few words]]."></textarea>
                 <input id="mcp-client-name" type="text" maxlength="60" placeholder="Claude Desktop">
                 <button type="button" id="mcp-client-create" class="ghost small"><i class="ph ph-link ph-lead" aria-hidden="true"></i> Make a link</button>
               </div>
+              <!-- L-world-class-560: a link reaches only these notes (core/mcp_scope.py). -->
+              <p class="muted">Only these notes, or leave both empty for the whole notebook.</p>
+              <div class="row field-row">
+                <label for="mcp-client-cats" class="muted">Categories</label>
+                <input id="mcp-client-cats" type="text" maxlength="400" placeholder="Work, Reading">
+              </div>
+              <div class="row field-row">
+                <label for="mcp-client-tags" class="muted">Tags</label>
+                <input id="mcp-client-tags" type="text" maxlength="400" placeholder="travel">
+              </div>
               <label class="check-row">
                 <input type="checkbox" id="mcp-client-writes">
                 <span>This app can add and change notes
@@ -11924,6 +11962,9 @@ Link to another note with [[its first few words]]."></textarea>
                 </div>
               </div>
               <ul id="mcp-client-list" class="entry-list" aria-label="Apps with a link"></ul>
+              <!-- OAuth sign-ins waiting for this computer's approval (routes_mcp_oauth.py). -->
+              <p id="mcp-oauth-head" class="muted hidden">Waiting to sign in. Approve gives the app the notes and changes chosen above.</p>
+              <ul id="mcp-oauth-list" class="entry-list" aria-label="Waiting to sign in"></ul>
             </div>
           </template>
           </section>
@@ -15975,9 +16016,6 @@ Link to another note with [[its first few words]]."></textarea>
           </section>
 
           </script>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- **Find, everywhere.** Asked for directly: "add a ctrl+f or equivalent
@@ -16192,9 +16230,9 @@ Link to another note with [[its first few words]]."></textarea>
         <li><span class="shortcut-keys"><kbd>Tab</kbd></span><span>Move focus; cycles inside an open dialog</span></li>
         <li><span class="shortcut-keys"><kbd>Alt</kbd> <kbd>↑</kbd> <kbd>↓</kbd></span><span>Move the focused card one place up or down in its list</span></li>
         <li><span class="shortcut-keys"><kbd>Ctrl</kbd> <kbd>C</kbd></span><span>Copy the focused card; Ctrl+V then attaches it in the chat box or places it on a board</span></li>
-        <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>d</kbd>/<kbd>n</kbd>/<kbd>c</kbd>/<kbd>g</kbd>/<kbd>l</kbd>/<kbd>i</kbd>/<kbd>r</kbd></span><span>Jump to Dashboard / Notes / Chat / Graph / Library / Timeline / Reminders</span></li>
-        <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>s</kbd>/<kbd>q</kbd>/<kbd>v</kbd></span><span>Open settings / a quick sketch / record a meeting</span></li>
       </ul>
+      <!-- The "t then" rows, drawn from the chord's own tables (`renderChordShortcutRows`; L-world-class-120). -->
+      <ul class="shortcut-list" id="shortcut-list-chord"></ul>
       <h3>Tools</h3>
       <p class="muted">Small panels that open over what you are doing. Ctrl+K finds each by name.</p>
       <!-- Built from `POPUP_TOOLS` (settings-panes.js) by `renderToolShortcutList`:
@@ -16313,8 +16351,8 @@ Link to another note with [[its first few words]]."></textarea>
     <div class="card glass" id="sketch-card"></div>
   </div>
 
-  <!-- Meeting notes (§17, the backlog's own "highest-value single addition
-       still unbuilt"): a longer recording than the quick dictation button
+  <!-- Meeting notes (§17, what the backlog called its "highest-value single
+       addition", built here): a longer recording than the quick dictation button
        in the composer is built for, transcribed locally, then handed back
        for review before it becomes a note, the same "capture, then look at
        what came out" shape the sketch pad's caption step already uses.

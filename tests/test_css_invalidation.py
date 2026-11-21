@@ -188,29 +188,21 @@ def test_root_custom_properties_written_from_script_are_known():
     assert "--keyboard-inset" in found and "--header-h" in found
 
 
-def test_long_lists_skip_rows_that_are_off_screen():
-    """The Notes list and the Timeline feed style only what is near the window.
+def test_the_windowed_notes_list_does_not_lock_its_rows():
+    """L-general-34: `windowRows` keeps only rows near the window, so `content-visibility` on them only cost.
 
-    Traced at 500 notes: 1,206 of the 1,382 elements in the Notes list were
-    more than a window below the fold, and entering the tab restyled every one
-    (61ms). With `content-visibility: auto` on the rows, 31ms; the Timeline's
-    layout on entry went from 48ms to 7ms.
+    Scrolling 500 notes at 4x CPU (`scrolltrace.js` SCENE=notes, five runs):
+    layout 478 to 575ms with the rule, 216 to 262ms without; raster 1.1 to
+    1.6s against 0.8 to 1.0s; entering the tab 977ms of layout and style with
+    it, 818ms without. The intent of the test it replaces (the rule is there,
+    for the 61 to 31ms entry saving) moved with that measurement.
     """
     css = "\n".join(
         _strip_comments(p.read_text(encoding="utf-8"))
         for p in sorted((FRONTEND_DIR / "css").glob("*.css"))
     )
-    for row in ("#entry-list > li",):
-        bodies = [
-            m.group(1)
-            for m in re.finditer(re.escape(row) + r"[^{};]*\{([^}]*)\}", css)
-            if "content-visibility: auto" in m.group(1)
-        ]
-        assert bodies, row
-        assert "contain-intrinsic-size: auto" in bodies[0], (
-            f"{row}: `auto` in the intrinsic size remembers the height a row "
-            "last drew at, so the scrollbar does not jump once it has been seen"
-        )
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*#entry-list[^{}]*)\{([^}]*)\}", css):
+        assert "content-visibility" not in m.group(2), m.group(1).strip()
 
 
 def test_the_windowed_timeline_feed_does_not_lock_its_rows():
@@ -337,3 +329,96 @@ def test_the_loop_detector_knows_the_shape():
 def test_the_dashboard_measures_its_widgets_in_one_pass():
     body = _function_body(_js("dashboard.js"), "function sizeDashWidgets()")
     assert "getBoundingClientRect" in body and ".map(" in body
+
+
+# --- `.hidden` before a featureless subject (2026-11-21) ----------------------
+#
+# The same whole-subtree cost from the commonest class in the app. Blink files
+# a rule under the classes in each of its compounds; for `.hidden > *` or
+# `.menu:not(.hidden) > :nth-child(2)` the subject names nothing it can look
+# for, so a `hidden` toggle on ANY element restyles all of that element's
+# descendants. Ten such rules (the action menu's row delays and the overlay
+# card's sink) made every Settings pane switch restyle the whole pane: 775
+# elements on Tools, 1,791 on Help, 72 to 94 ms at 4x CPU in the first frame;
+# with them rewritten, a `hidden` toggle on a pane restyles 10 ms of it.
+# A subject with a class, id, attribute or tag is fine: the browser looks for
+# those few elements instead.
+
+
+def _nested_selectors(text: str):
+    """Yield (line, selector) with CSS nesting resolved (`&`, or a descendant)."""
+    text = _strip_comments(text)
+    stack, start = [], 0
+    for i, ch in enumerate(text):
+        if ch == "{":
+            prelude = text[start:i].strip()
+            parent = next((s for s in reversed(stack) if s is not None), None)
+            if prelude and not prelude.startswith("@"):
+                sels = [s.strip() for s in _split_top(prelude, ",")]
+                if parent:
+                    sels = [s.replace("&", f":is({p})") if "&" in s else f"{p} {s}" for p in parent for s in sels]
+                stack.append(sels)
+                for s in sels:
+                    yield text.count("\n", 0, i) + 1, s
+            else:
+                stack.append(None)
+            start = i + 1
+        elif ch in "};":
+            if ch == "}" and stack:
+                stack.pop()
+            start = i + 1
+
+
+_HIDDEN = re.compile(r"\.hidden(?![\w-])")
+
+
+def _featureless(compound: str) -> bool:
+    """True when a compound names no class, id, attribute or tag for the browser to look for."""
+    rest = compound
+    while True:
+        cut = re.sub(r":(?:not|nth-[a-z-]+)\([^()]*\)", "", rest)
+        if cut == rest:
+            break
+        rest = cut
+    rest = re.sub(r"::?[a-z-]+(?!\()", "", rest).replace("*", "")
+    return not re.search(r"[.#\[]|^[a-z]|\(", rest)
+
+
+def _hidden_before_featureless(selector: str) -> bool:
+    norm = re.sub(r"\s*([>+~])\s*", r" \1 ", selector.strip())
+    tokens = [t for t in _split_top(norm, " ") if t]
+    compounds = []
+    for tok in tokens:
+        if tok in (">", "+", "~"):
+            if compounds:
+                compounds[-1] = (compounds[-1][0], tok)
+            continue
+        compounds.append((tok, " "))
+    if len(compounds) < 2 or not _featureless(compounds[-1][0]):
+        return False
+    return any(comb in (" ", ">") and _HIDDEN.search(c) for c, comb in compounds[:-1])
+
+
+def test_the_hidden_detector_knows_the_shape():
+    assert _hidden_before_featureless(".action-menu:not(.hidden) > :nth-child(2)")
+    assert _hidden_before_featureless(":where(.modal-overlay, #palette-overlay).hidden > *")
+    assert _hidden_before_featureless(".x.hidden ::before")
+    assert not _hidden_before_featureless("#tab-chat:not(.hidden) > .layout")
+    assert not _hidden_before_featureless(".a:has(> .b:not(.hidden)) > :is(.c, .d)")
+    assert not _hidden_before_featureless(".a.hidden + *")
+    assert not _hidden_before_featureless(".panel:not(.hidden)")
+    flat = list(_nested_selectors(".o.hidden { opacity: 0; & > * { scale: 1; } }"))
+    assert [s for _, s in flat] == [".o.hidden", ":is(.o.hidden) > *"]
+
+
+def test_no_hidden_class_before_a_featureless_subject():
+    offenders = []
+    for path in sorted((FRONTEND_DIR / "css").glob("*.css")):
+        for line, selector in _nested_selectors(path.read_text(encoding="utf-8")):
+            if _hidden_before_featureless(selector):
+                offenders.append(f"{path.name}:{line}: {selector}")
+    assert not offenders, (
+        "`.hidden` in an ancestor compound, with a subject that names no class, id, attribute or tag, "
+        "makes every `hidden` toggle in the app restyle a whole subtree (see above). Name the subject's "
+        "class, or have the hidden element set a custom property its children read:\n" + "\n".join(offenders)
+    )

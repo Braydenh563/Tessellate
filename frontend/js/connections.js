@@ -208,7 +208,7 @@ function buildConnectionGroups(list, kind, data, beforeOpen = () => {}) {
     const kindName = link.link_label && link.link_type !== "related" ? link.link_label : "";
     //: The subline: the link's kind, then what tells this note apart (the
     //: category, or the day and time when two titles collide).
-    const sub = [kindName, cue || link.category || ""].filter(Boolean).join(" · ");
+    const sub = [kindName, link.space_name ? `In ${link.space_name}` : "", cue || link.category || ""].filter(Boolean).join(" · ");
     return row(label, `Open this note${cue ? ` (${cue})` : ""}${kindName ? `\nKind: ${kindName}` : ""}${why}`, () => flashEntry(link.id), sub);
   }
   function withContext(item, context) {

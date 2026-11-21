@@ -1849,6 +1849,8 @@ const ROW_WINDOW_MARGIN = "1200px 0px";
 const ROW_WINDOW_BATCH = 6;
 const ROW_WINDOW_FAR = 3000;
 const ROW_WINDOW_CARRY = ["rail-subject", "flash"];
+const ROW_WINDOW_FIRST_SHELLS = 240;
+const ROW_WINDOW_CHUNK = 500;
 
 function windowRows(root, o) {
   const info = new WeakMap(); // row -> { items, i }
@@ -1936,28 +1938,68 @@ function windowRows(root, o) {
     clearTimeout(timer);
     timer = setTimeout(settle, 300);
   }, { root, rootMargin: ROW_WINDOW_MARGIN });
+  //: **Shells past the first screens land when the app is idle** (L603). Five
+  //: thousand shells and their observers cost 140 to 210ms on the Notes press
+  //: that shows twelve rows; the rest join the list in idle chunks, in order.
+  //: A row asked to be built (`now`) is always in the first pass, and `flush`
+  //: lands the rest at once for a caller that walks every row.
+  const pending = []; // [list, items, from, to, now]
+  let idle = 0;
+  //: Safari has no idle callback: a short timer stands in, with no deadline.
+  //: Safari and the node test harness have no idle callback: a short timer.
+  const idleOk = !!globalThis.requestIdleCallback;
+  const later = (fn) => (idleOk ? requestIdleCallback(fn, { timeout: 400 }) : setTimeout(fn, 60));
+  const cancel = (id) => (idleOk ? cancelIdleCallback(id) : clearTimeout(id));
+  function append(list, items, from, to, now) {
+    const fragment = document.createDocumentFragment();
+    for (let i = from; i < to; i++) {
+      if (now(items[i], i)) { fragment.appendChild(make(items, i)); continue; }
+      const shell = shellFor(items, i);
+      observer.observe(shell);
+      fragment.appendChild(shell);
+    }
+    list.appendChild(fragment);
+  }
+  function drain(deadline, all = false) {
+    idle = 0;
+    while (pending.length && !off) {
+      const job = pending[0];
+      const to = Math.min(job[3], job[2] + ROW_WINDOW_CHUNK);
+      append(job[0], job[1], job[2], to, job[4]);
+      job[2] = to;
+      if (to >= job[3]) pending.shift();
+      if (!all && !(deadline?.timeRemaining?.() >= 4)) break;
+    }
+    if (pending.length && !off) idle = later(drain);
+  }
+  function flush() {
+    if (idle) cancel(idle);
+    idle = 0;
+    drain(null, true);
+  }
   //: `now(item, i)` says which rows are built as they land; the rest are shells.
   function add(list, more, now = () => false) {
     const items = lists.get(list) || [];
     lists.set(list, items);
     const from = items.length;
     for (const item of more) items.push(item);
-    const fragment = document.createDocumentFragment();
-    more.forEach((item, k) => {
-      const i = from + k;
-      if (now(item, i)) return fragment.appendChild(make(items, i));
-      const shell = shellFor(items, i);
-      observer.observe(shell);
-      fragment.appendChild(shell);
-    });
-    list.appendChild(fragment);
+    let first = Math.min(items.length, from + ROW_WINDOW_FIRST_SHELLS);
+    if (pending.length) first = from;
+    else for (let i = items.length - 1; i >= first; i--) if (now(items[i], i)) { first = i + 1; break; }
+    append(list, items, from, first, now);
+    if (first < items.length) {
+      pending.push([list, items, first, items.length, now]);
+      if (!idle) idle = later(drain);
+    }
   }
   function stop() {
     off = true;
     observer.disconnect();
     clearTimeout(timer);
+    if (idle) cancel(idle);
+    pending.length = 0;
   }
-  return { add, fill, stop };
+  return { add, fill, flush, stop };
 }
 
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
@@ -1967,6 +2009,11 @@ const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", 
 //: at 4x, INBOX 1534). A resize forgets it, as the one place the scroller moves.
 function notesScroller(list) {
   if (notesScroller.kept?.contains(list)) return notesScroller.kept;
+  //: The Notes column is the scroller by its own rule (04-chat-dock-appearance.css,
+  //: `#tab-notes .layout>.tab-main`), so it is found by selector: the walk's first
+  //: computed-style read still cost 93ms of style at 4x on the first Notes press (L705).
+  const column = list.closest("#tab-notes .layout > .tab-main");
+  if (column) return (notesScroller.kept = column);
   for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
     if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return (notesScroller.kept = el);
   }
@@ -2139,6 +2186,7 @@ function applyNotesViewMode() {
 //: between them, and a second implementation of "which notes are on screen"
 //: is a second thing to keep in step, the DOM already holds the answer.
 function listedNoteIds() {
+  noteWindow.win?.flush();
   return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) =>
     Number(li.dataset.id)
   );
@@ -2320,6 +2368,7 @@ let rowEnterTimer = 0;
 function noteListGrownBy(list, ordered) {
   const was = noteWindow.items;
   if (!was?.length || !noteWindow.win || noteWindow.list !== list || noteWindow.mode !== notesViewMode) return null;
+  noteWindow.win.flush();
   if (ordered.length <= was.length || list.childElementCount !== was.length) return null;
   if (list.lastElementChild.dataset.id !== String(was[was.length - 1][0].id)) return null;
   for (let i = 0; i < was.length; i++) if (was[i][0] !== ordered[i][0] || was[i][1] !== ordered[i][1]) return null;
@@ -2366,7 +2415,7 @@ function rememberNoteFilter(words) {
 
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
-  if (!$("tab-notes").classList.contains("hidden") && $("entry-list").dataset.stale) renderSidebar();
+  if (!$("tab-notes").classList.contains("hidden") && ($("entry-list").dataset.stale || window.notesSidebarOwed)) renderSidebar();
   //: A card is drawn by `entryItem` (entry-card.js: lazy, for the boot gzip ratchet), fetched
   //: when the app goes idle. A draw asked before it is in waits for it and happens once, whole,
   //: and the promise this returns settles after it (false when the file never came): a caller that
@@ -2467,7 +2516,7 @@ function renderEntries(appendOnly = false) {
     list,
     ordered,
     ([entry, depth]) => {
-      const li = entryItem(entry, { actions: true });
+      const li = entryItem(entry, { actions: true, linksShown: notesViewMode === "cards" ? 2 : 0 });
       if (depth > 0) {
         li.classList.add("thread-child");
         li.style.marginLeft = `${Math.min(depth, 4) * 1.4}rem`;
@@ -2505,6 +2554,7 @@ const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[d
 
 //: A shift-click range over every row between the two, built or not.
 function selectNoteRange(list, fromId, toId, on) {
+  noteWindow.win?.flush();
   const rows = entryListItems(list);
   const a = rows.findIndex((li) => li.dataset.id === fromId);
   const b = rows.findIndex((li) => li.dataset.id === toId);
@@ -2549,6 +2599,7 @@ function initEntryListKeyboardNav() {
     //: deepflows sweep: click into the editor, press End, type). Checkboxes
     //: and buttons are not fields, so the row's arrows still work from them.
     if (event.target.closest('textarea, select, [contenteditable], .cm-editor, input:not([type="checkbox"]):not([type="radio"]):not([type="button"])')) return;
+    noteWindow.win?.flush();
     const items = entryListItems(list);
     const current = event.target.closest("li");
     const index = current ? items.indexOf(current) : -1;
@@ -2655,11 +2706,16 @@ function renderSidebar() {
   //: on the dashboard: the first page of notes drew the Notes tab's category list, 11 and 29ms in its two
   //: calls at 6x CPU, behind the page on screen). It is owed instead, with the list's own debt
   //: (`data-stale`), and drawn when the tab is shown (`renderEntries` pays it).
+  //: Its own debt, apart from the list's: a page of notes arriving behind
+  //: another tab draws the list and clears `data-stale`, and the category
+  //: list it skipped stayed empty when the tab was opened (L499, 2026-11-21).
   if ($("tab-notes").classList.contains("hidden")) {
     const list = document.getElementById("entry-list");
     if (list) list.dataset.stale = "1";
+    window.notesSidebarOwed = true;
     return;
   }
+  window.notesSidebarOwed = false;
   // Categories + counts are derived from the loaded entries, the
   // simplest thing that works; no extra endpoint needed yet.
   // Drafts only belong in the Drafts row (user-reported: they were still
@@ -3641,21 +3697,11 @@ async function renderNotesRail() {
     return;
   }
   rail.hidden = false;
-  //: **The reading column comes first.** The rail's width is set against the
-  //: default sidebar; a sidebar dragged to its widest (24% of the window,
-  //: `applySidebarWidth`) left the list 573px at 1280 with the rail beside
-  //: it (`notesrail.js` with SIDEBAR=wide). So the rail measures the list
-  //: once it is in, in the same task and so before anything is painted, and
-  //: gives way to the note's Connections sheet when the list would be
-  //: narrower than NOTES_RAIL_MIN_READING, exactly as it does below 1280.
-  const list = $("entry-list");
-  if (list && list.getBoundingClientRect().width < NOTES_RAIL_MIN_READING) {
-    rail.hidden = true;
-    rail.dataset.cramped = "1";
-    mark(null);
-    return;
-  }
+  //: The reading column comes first: a list under NOTES_RAIL_MIN_READING (a sidebar dragged wide) takes the rail's
+  //: place for the Connections sheet (the observer in `onSurface("notes")` decides, after layout).
   delete rail.dataset.cramped;
+  //: Observing delivers the list's size at once (and again whenever the rail's width or a sidebar drag moves it).
+  renderNotesRail.ro?.observe($("entry-list"));
   const subject = $("notes-rail-subject");
   subject.textContent = entry.is_private ? "Private note" : entry.title || notePreviewText(entry.content);
   subject.title = subject.textContent;
@@ -3745,18 +3791,23 @@ onSurface("notes", () => {
       next?.focus();
     });
     notesRailWide.addEventListener("change", renderNotesRail);
-    //: A sidebar dragged wider or narrower, or collapsed, changes the room the
-    //: list has, which is what decides whether the rail fits. Observed on the
-    //: sidebar itself rather than on the window, because the window does not
-    //: change when the sidebar is dragged.
+    //: A sidebar dragged or collapsed changes the list's room, which decides whether the rail fits; the window
+    //: does not change then, so the sidebar is observed (and the list, for the rail's own width check).
     if (typeof ResizeObserver === "function" && $("sidebar")) {
       let last = 0;
-      new ResizeObserver((entries) => {
-        const w = Math.round(entries[0].contentRect.width);
-        if (w === last) return;
-        last = w;
-        scheduleNotesRail();
-      }).observe($("sidebar"));
+      renderNotesRail.ro = new ResizeObserver((entries) => {
+        for (const { target, contentRect } of entries) {
+          //: L705: read after layout.
+          if (target.id === "entry-list") {
+            if (target.getBoundingClientRect().width >= NOTES_RAIL_MIN_READING) continue;
+            const rail = $("notes-rail");
+            rail.hidden = true;
+            rail.dataset.cramped = "1";
+            window.notesRailMark?.();
+          } else if (last !== (last = Math.round(contentRect.width))) scheduleNotesRail();
+        }
+      });
+      renderNotesRail.ro.observe($("sidebar"));
     }
     syncNotesRailToggle();
 });

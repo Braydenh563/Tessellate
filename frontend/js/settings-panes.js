@@ -198,9 +198,11 @@ function autoGrowInputs(el) {
 //: already the height `autoGrow` would give it. So every check is read first,
 //: in one pass (one layout for all of them), and only the boxes that were
 //: measured while hidden or whose inputs changed are grown, after it.
-function autoGrowVisible() {
+//: `root` narrows the walk to what was just shown: each box's `offsetParent` forces a layout,
+//: 5 to 11ms of the first Notes press at 5,000 notes for boxes in sections that stayed hidden (L603).
+function autoGrowVisible(root = document) {
   const due = [];
-  for (const box of document.querySelectorAll("textarea.autogrow")) {
+  for (const box of root.querySelectorAll("textarea.autogrow")) {
     if (box.classList.contains("note-surface-mirror") || box.offsetParent === null) continue;
     if (
       box.dataset.autogrowPending ||
@@ -413,7 +415,7 @@ function initComposerResize() {
   // the drag set it again, the observer fired again (reported: "it just
   // spasms and fails"). While the pointer is down on the grabber nothing
   // fights the drag; the final height is recorded once on release. The
-  // deferred frame stays: a synchronous autoGrow inside the callback is
+  // delayed frame stays: a synchronous autoGrow inside the callback is
   // the "ResizeObserver loop" console error.
   //: `pressed` is a pointer down on the box. Only a pointer resizes a textarea
   //: by hand, so a size change without one (the app's Ctrl +/- zoom, the

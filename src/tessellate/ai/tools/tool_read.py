@@ -11,7 +11,7 @@ from tessellate.core.database import Category, Entry, LIKE_ESCAPE, like_escape
 from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_, select
-from tessellate.core import deps
+from tessellate.core import deps, mcp_scope
 from tessellate.entry import link_wording, manager, manager_links, paths
 from tessellate.ai import note_rank
 from tessellate.search import search_manager
@@ -45,11 +45,13 @@ def _search_notes(session: Session, args: dict) -> dict:
     default = min(max(5, earned), MAX_LIST_LIMIT)
     limit = _limit_arg(args, default=default)
     found = search_manager.retrieve_detailed(
-        session, str(args["query"]), deps.get_embeddings(), limit=limit
+        # A scoped token over-fetches so that the notes left after the scope still fill the page.
+        session, str(args["query"]), deps.get_embeddings(), limit=limit if mcp_scope.current.get() is None else MAX_LIST_LIMIT
     )
     notes = []
     #: The same order Ask lists in (audit 1029 C20), unless the search gave the newest.
     entries = found.entries if found.mode == "recent" else note_rank.lead(found.entries, str(args["query"]))
+    entries = [entry for entry in entries if mcp_scope.in_scope(entry.id)][:limit]  # a token's scope (core/mcp_scope.py)
     for entry in entries:
         summary = _note_summary(session, entry)
         if entry.id in found.connected_ids:
@@ -61,7 +63,7 @@ def _search_notes(session: Session, args: dict) -> dict:
             summary["why"] = "not a match: connected to one of the matches above"
         notes.append(summary)
     result = {
-        "found": len(found.entries),
+        "found": len(entries),
         "search_mode": found.mode,
         "notes": notes,
         "how_to_read_more": _READ_MORE,
@@ -85,7 +87,7 @@ def _get_note_tool(session: Session, args: dict) -> dict:
     entry = _require_note(session, args)
     result = _note_summary(session, entry, chars=FULL_NOTE_CHARS)
     result["links"] = [
-        other.id for _link, other in manager_links.links_for_entry(session, entry)
+        other.id for _link, other in manager_links.links_for_entry(session, entry) if mcp_scope.in_scope(other.id)
     ]
     result["label"] = f"ph:file-text Read {_named(entry)} in full"
     return result
@@ -166,7 +168,7 @@ def _graph_neighbours(session: Session, entry: Entry) -> list[tuple[Entry, str]]
     def add(other: Entry, how: str) -> None:
         # First reason wins, and the order below is strongest-first, so a note
         # that is both linked and tagged reports the link.
-        if other.id == entry.id or other.id in seen or other.is_deleted:
+        if other.id == entry.id or other.id in seen or other.is_deleted or not mcp_scope.in_scope(other.id):
             return
         seen[other.id] = how
         out.append((other, how))
@@ -274,7 +276,7 @@ def _suggested_neighbours(session: Session, entry: Entry, exclude: set[int]) -> 
     # just cheap-check-before-expensive-fetch.
     scored = []
     for other_id, blob in stored.items():
-        if other_id == entry.id or other_id in exclude:
+        if other_id == entry.id or other_id in exclude or not mcp_scope.in_scope(other_id):
             continue
         score = cosine_similarity(vector, bytes_to_vector(blob))
         if score >= SUGGESTED_LINK_THRESHOLD:

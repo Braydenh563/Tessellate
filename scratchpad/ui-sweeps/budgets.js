@@ -24,7 +24,8 @@ const INIT = () => { try { localStorage.setItem('theme', 'light'); localStorage.
   const dismiss = async () => page.evaluate(() => { for (const id of ['onboarding-overlay']) { const o = document.getElementById(id); if (o) o.classList.add('hidden'); } const d = document.querySelector('#recovery-key-dialog[open]'); if (d) d.close(); });
   await page.waitForTimeout(6000); await dismiss();
   const dontCheck = page.locator('.confirm-overlay button', { hasText: "Don't check" });
-  if (await dontCheck.isVisible().catch(() => false)) await dontCheck.click();
+  //: The update-check question can arrive after the six-second settle; wait for it rather than glance once.
+  await dontCheck.waitFor({ state: 'visible', timeout: 12000 }).then(() => dontCheck.click()).catch(() => {});
   await page.waitForTimeout(1000);
   const state = await ctx.storageState();
   const out = { runs: RUNS, boot: [] };

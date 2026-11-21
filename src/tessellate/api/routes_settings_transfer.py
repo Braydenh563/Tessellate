@@ -15,15 +15,16 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse
 
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate import __version__
-from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
+from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, parse_sandbox, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
@@ -218,6 +219,66 @@ def export_markdown(
     )
 
 
+#: A board's picture as uploads, not JSON (review 5907752577): a board with
+#: its pictures inlined passes the 16 MB JSON cap (`security.JSON_BODY_BYTES`)
+#: and met a 413; an upload keeps the large cap, and the PNG goes as bytes.
+BOARD_SVG_MAX = 64 * 1024 * 1024
+BOARD_PNG_MAX = 96 * 1024 * 1024
+
+
+def _read_capped(upload: UploadFile, limit: int, what: str) -> bytes:
+    data = upload.file.read(limit + 1)
+    if len(data) > limit:
+        raise HTTPException(status_code=413, detail=f"The {what} is too large to export.")
+    return data
+
+
+@router.post("/export/board-folder")
+def export_board_folder(
+    svg: UploadFile,
+    png: UploadFile | None = None,
+    name: str = Form(default="", max_length=200),
+    ids: str = Form(default="", max_length=60_000),
+    session: Session = Depends(get_session),
+) -> Response:
+    """A board or map as a folder (WORLD_CLASS_PLAN decision 66): its picture
+    as SVG and PNG, and every note it links as Markdown, the same files the
+    selection's Export writes, under `notes/`. One zip, one folder inside.
+    `ids` is the note ids, comma separated; a browser that could not draw a
+    PNG sends none and still exports."""
+    try:
+        note_ids = sorted({int(part) for part in ids.split(",") if part.strip()})
+    except ValueError:
+        raise HTTPException(status_code=422, detail="The note list could not be read.") from None
+    if len(note_ids) > 5000:
+        raise HTTPException(status_code=422, detail="That is too many notes for one export.")
+    try:
+        svg_text = _read_capped(svg, BOARD_SVG_MAX, "picture").decode("utf-8")
+    except UnicodeDecodeError:
+        svg_text = ""
+    if not svg_text.lstrip().startswith(("<svg", "<?xml")):
+        raise HTTPException(status_code=422, detail="That is not an SVG picture.")
+    png_bytes = _read_capped(png, BOARD_PNG_MAX, "PNG") if png is not None else None
+    if png_bytes is not None and not png_bytes.startswith(b"\x89PNG"):
+        raise HTTPException(status_code=422, detail="The PNG could not be read.")
+    #: The ASCII form: it names the download in a header, which is Latin-1.
+    slug = paths.slug(name, 60, ascii_only=True, fallback="board")
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(f"{slug}/{slug}.svg", svg_text)
+        if png_bytes is not None:
+            archive.writestr(f"{slug}/{slug}.png", png_bytes)
+        if note_ids:
+            notes = zipfile.ZipFile(io.BytesIO(build_markdown_export(session, note_ids)))
+            for name in notes.namelist():
+                archive.writestr(f"{slug}/notes/{name}", notes.read(name))
+    return Response(
+        content=buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{slug}.zip"'},
+    )
+
+
 MAX_IMPORT_BYTES = 1024 * 1024  # a single markdown note, not a novel
 #: `import_markdown` below had a per-file size cap but no cap on how many
 #: files one request could carry, each one does its own `create_entry` +
@@ -247,7 +308,7 @@ def _exported_created(values: list[str] | None):
         return None
     if parsed.tzinfo is not None:
         parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
-    return parsed if parsed <= datetime.now(timezone.utc).replace(tzinfo=None) else None
+    return parsed if parsed <= clock.utc().replace(tzinfo=None) else None
 
 
 def _keep_exported_state(session: Session, entry, meta: dict) -> None:
@@ -724,6 +785,10 @@ def import_document(file: UploadFile, session: Session = Depends(get_session)) -
             logging.getLogger("tessellate.import").warning(
                 "couldn't convert %s", logbuffer.safe_value(file.filename, 80), exc_info=True
             )
+            #: A file stopped at the reader's time or memory limit says so;
+            #: anything else keeps the plain "may be damaged" sentence.
+            if isinstance(exc, parse_sandbox.ParseRefused) and exc.kind != "failed":
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
             raise HTTPException(
                 status_code=422,
                 detail="Couldn't read that file. It may be damaged or in a format that can't be converted.",

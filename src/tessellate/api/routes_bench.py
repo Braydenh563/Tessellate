@@ -14,13 +14,13 @@ import json
 import logging
 import threading
 import time
-from datetime import datetime, timezone
 from typing import Callable, NamedTuple
 
 import requests
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from tessellate.core import clock
 from tessellate.api.this_computer import this_computer_only
 from tessellate.ai import bench, facts
 from tessellate.core import deps, jobruns, jobs
@@ -53,16 +53,19 @@ class Budget(NamedTuple):
     server_cap_ms: int = 0
 
 
-#: Measured 2026-10-11 (README "Performance"), machine load 7 to 11. A
-#: measurement is the slowest p50 of four browser runs (three or four server
-#: rounds), so a loaded machine sets the figure rather than a lucky minute.
+#: Browser figures measured idle 2026-11-21 (load under 2 on four cores,
+#: L540): the slowest p50 of four runs. CI runs the browser budgets alone on
+#: the runner (it measured first paint 204, first interaction 1447 the same
+#: day), so idle is the condition they are held in. The server shares stay as
+#: measured 2026-10-11 at load 7 to 11, because CI times them inside the full
+#: suite on a busy runner; idle they ran 50, 27, 21, 41 and 22 ms.
 BUDGETS: tuple[Budget, ...] = (
-    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 713, 1070, "/", 76, 120),
-    Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 4639, 6960),
-    Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 139, 210, "/entries?limit=60", 40, 60),
-    Budget("search", "Search", "One search request, p50 over three queries", 30, 50, "/search?q=harbour&limit=20", 40, 60),
+    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 302, 460, "/", 76, 120),
+    Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 2035, 3060),
+    Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 71, 110, "/entries?limit=60", 40, 60),
+    Budget("search", "Search", "One search request, p50 over three queries", 23, 40, "/search?q=harbour&limit=20", 40, 60),
     Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 108, 170, "/whiteboard/?board_id={board}", 75, 120),
-    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 359, 540, "/documents/{document}", 32, 50),
+    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 116, 180, "/documents/{document}", 32, 50),
 )
 SHARE_RUNS = 5
 
@@ -182,7 +185,7 @@ def _run(models: list[str], size: int, budget_seconds: float) -> None:
                 session, deps.get_ollama(), models, size=size, budget_seconds=budget_seconds,
                 stop=_stop, on_progress=lambda p: _state.__setitem__("progress", p),
             )
-            report["finished_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            report["finished_at"] = clock.utc().isoformat(timespec="seconds")
             atomic_write_text(_report_path(), json.dumps(report, indent=1))
             best = report.get("recommended")
             job.result = (

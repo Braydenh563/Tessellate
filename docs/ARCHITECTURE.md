@@ -333,6 +333,9 @@ Tessellate/
 │   │   ├── atomic_io.py     # temp-file + fsync + rename for preferences.json
 │   │   ├── logbuffer.py     # in-memory log capture + safe_value()
 │   │   ├── subproc.py       # spawn a child process without a console
+│   │   ├── parse_sandbox.py · parse_child.py · parse_jobs.py # untrusted
+│   │   │                    #   PDFs and Office files parsed in one reused
+│   │   │                    #   child with a deadline and rlimits (T19)
 │   │   ├── quit_hook.py · window_hook.py # how the launcher quits the app and
 │   │   │                    #   toggles full screen for the desktop window
 │   │   ├── launch_status.py # the launcher's status file, parsed
@@ -674,7 +677,7 @@ job is not a task, and a screen that accumulates them is the Logs screen.
 `ai/tools/` (a package now: `__init__.py` plus `categories.py`,
 `documents.py`, `files.py`, `whiteboard.py`, `_common.py`, split out once the
 registry outgrew one file) defines a registry the chat model can call:
-**73 tools**. Read-only tools run inline; the **destructive** ones (marked
+**78 tools**. Read-only tools run inline; the **destructive** ones (marked
 ⚠️ below) emit a confirmation event to the UI instead of executing. The
 registry's `destructive` flag is the one list: a change after a turn has read
 text from outside (a web page, a clipped or imported note) waits for the same
@@ -1001,7 +1004,7 @@ SQLite via SQLAlchemy 2.0 (`core/database.py`). Main tables:
   hands off), timestamps, and soft-delete (`is_deleted` / `deleted_at`).
   Also on an entry: `suggested_tags` and `discarded_tags` (JSON lists):
   the tags filing offered, shown on the card as "+ tag", and the ones a
-  person refused so no pass after it offers them again on that note (`_keep_suggestions`
+  person refused so no filing pass after it offers them again on that note (`_keep_suggestions`
   in `routes_entries.py` fills the first at filing: the model's tag pass when
   the model filed the note, otherwise `ai/lexical_filing.suggest_tags`, which
   only ever offers tags the person already uses); and `edited_at`, which moves only when a person changes the
@@ -1598,7 +1601,7 @@ there moves out on the next start (`core/secrets_store.py`).
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 22,000+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 23,000+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,
@@ -1752,9 +1755,13 @@ not an import string, and uvicorn cannot fork that); running `uvicorn` against
 the factory directly can, and is the case the check exists for.
 
 More workers is also not the lever for speed here. The slow paths are Ollama
-and embedding. A background filing (`defer_filing`) runs both off the request
+and embedding. Filing put off until after the save (`defer_filing`) runs both off the request
 thread; a plain save and an edit still embed on the request (corrected
 2026-10-05, audit ARCH-02: this line said both were always off it).
+
+A child that holds none of §3's singletons is not a second worker: the
+captions helper and the parse sandbox's child (`core/parse_sandbox.py`,
+SECURITY.md T19) are handed a file path or audio and give back plain data.
 
 ## 14. Where to look when you want to…
 

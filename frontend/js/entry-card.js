@@ -37,12 +37,12 @@ tagAddChipKind.carrying = (tag) => {
 //: **A meeting card shows what the meeting settled, not its raw headings**
 //: (libr-1011 row 1238: `## Agenda` and `## Notes` printed as text). The four
 //: sections of `entry/meetings.py` read for one line each: the first agenda
-//: item, the decisions, and the action items still open. Null for anything
+//: item, the decisions, and the action items not yet ticked. Null for anything
 //: that is not a meeting, so every other card is unchanged.
 const MEETING_GLANCE_SECTIONS = {
   agenda: "agenda", notes: "notes", discussion: "notes", transcript: "notes",
   decisions: "decisions", decided: "decisions",
-  "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", todo: "actions", "next steps": "actions",
+  "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", "todo": "actions", "next steps": "actions",
 };
 
 const MEETING_EMPTY_ITEM = /^[ \t]*(?:(?:[-*+]|\d{1,3}[.)])[ \t]*)?(?:\[[ xX]\][ \t]*)?$/;
@@ -560,7 +560,7 @@ function entryItem(entry, options = {}) {
   //: note card: `.entry-meta` alone is also the chip row of the skills, the
   //: personas and the extras in Settings, which that styling flattened.
   meta.className = "entry-meta note-meta";
-  // A note saved with filing deferred is in its holding category, not its
+  // A note saved with filing put off is in its holding category, not its
   // real one, and saying "Uncategorised" for the second or two before the
   // background pass lands reads as the AI having failed. Say what is
   // actually happening instead.
@@ -871,19 +871,6 @@ function entryItem(entry, options = {}) {
     meta.appendChild(mark);
   }
 
-  // Where a web-reader clipping came from (BACKLOG §65's "source as
-  // metadata"). Opens the real page, the note's own body already has the
-  // same link inline, this is the at-a-glance version.
-  if (entry.source_url) {
-    const sourceChip = chip(
-      `ph:globe ${entry.source_title || entry.source_url}`,
-      "tag",
-      () => window.open(safeHref(entry.source_url), "_blank", "noopener,noreferrer")
-    );
-    sourceChip.title = `Open the source: ${entry.source_url}`;
-    meta.appendChild(sourceChip);
-  }
-
   // What this note's own "tomorrow" meant on the day it was written (§10A).
   // A chip rather than a mark inside the text: `renderNoteText` already
   // layers wiki links, inline markdown and filter highlighting through each
@@ -1061,12 +1048,17 @@ function entryItem(entry, options = {}) {
       "This is a draft, click to publish it as a proper note. It stays where it is either way; only the Drafts filter changes.";
     meta.insertBefore(draftChip, meta.firstChild);
   }
-  //: **Where an imported note came from**: the file name its `[[links]]`
-  //: use. A chip, because the importer must not rewrite the file.
-  if (entry.source_path) {
-    const fileChip = chip(`ph:file-md ${entry.source_path.split("/").pop()}`, "source-path");
-    fileChip.title = `Imported from ${entry.source_path}`;
-    meta.insertBefore(fileChip, date);
+  //: **Where the note came from, one chip, built here** (L-general-13): the server's
+  //: `source_kind` (a clipped page, an imported file, a section of a document,
+  //: a transcribed recording) and its words; a note typed by hand has none.
+  //: A clipped page's chip still opens the page (BACKLOG §65).
+  if (entry.source_kind && entry.source_label) {
+    const icon = { url: "globe", document: "file-text", file: "file-arrow-down", audio: "waveform" }[entry.source_kind] || "file";
+    const open = entry.source_kind === "url" && entry.source_url ? () => window.open(safeHref(entry.source_url), "_blank", "noopener,noreferrer") : null;
+    const provenance = chip(`ph:${icon} ${entry.source_label}`, "source-path", open);
+    provenance.dataset.sourceKind = entry.source_kind;
+    provenance.title = open ? `Open the source: ${entry.source_url}` : entry.source_path || entry.source_label;
+    meta.insertBefore(provenance, date);
   }
   li.appendChild(meta);
   noteMetaFit.observe(meta);
@@ -1184,6 +1176,14 @@ function entryItem(entry, options = {}) {
       //: KG3: a kind of link is named on the chip from this end ("Has part"
       //: on the whole, "Part of" on the piece); "Related" says nothing.
       const kindName = link.link_label && link.link_type !== "related" ? link.link_label : "";
+      //: A move keeps every link, so the other note may live in another space;
+      //: its chip says which (L-world-class-22).
+      if (link.space_name) {
+        const where = document.createElement("span");
+        where.className = "link-kind";
+        where.textContent = link.space_name;
+        linkChip.insertBefore(where, linkPreview);
+      }
       if (kindName) {
         const kind = document.createElement("span");
         kind.className = "link-kind";
@@ -1192,7 +1192,7 @@ function entryItem(entry, options = {}) {
       }
       linkChip.title = (reasonNote
         ? `${wayRound}: ${label}\nReason: ${reasonNote}`
-        : `${wayRound}: ${label}`) + (kindName ? `\nKind: ${kindName}` : "");
+        : `${wayRound}: ${label}`) + (kindName ? `\nKind: ${kindName}` : "") + (link.space_name ? `\nIn the space ${link.space_name}` : "");
       //: **One chip and one menu per connection** (INBOX 319, the owner: "the
       //: buttons in these connections in notes need a redesign and look").
       //: Edit reason, clear reason and unlink were three round buttons of one
@@ -1266,10 +1266,14 @@ function entryItem(entry, options = {}) {
     //: every connection as a chip, measured at 109 controls on the Notes tab
     //: with 19 under 24px, and the chips outweighed the note. The first
     //: three show; the rest wait behind "+N more links", which opens them
-    //: in place (and stays open for this render).
-    const LINKS_SHOWN = 3;
+    //: in place (and stays open for this render). The Notes list's card
+    //: view asks for two (`options.linksShown`, L-world-class-95): there the
+    //: row shares the details line, which two pills and the count fit and
+    //: three mostly did not (2 of 9 showcase cards at 1093x614), and the
+    //: count always replaces the rest, never a lone hidden pill's worth.
+    const LINKS_SHOWN = options.linksShown || 3;
     const connections = [...linkRow.children];
-    if (connections.length > LINKS_SHOWN + 1) {
+    if (connections.length > LINKS_SHOWN + (options.linksShown ? 0 : 1)) {
       for (const extra of connections.slice(LINKS_SHOWN)) extra.classList.add("entry-link-extra");
       const more = document.createElement("button");
       more.type = "button";

@@ -11,6 +11,7 @@ import pytest
 from tessellate.ai import stats_ask
 from tessellate.core import deps
 from tessellate.core.database import Entry, Reminder
+from tests._clock import pin_clock
 
 #: A Wednesday in the middle of October.
 NOW = datetime(2026, 10, 14, 15, 0, tzinfo=timezone.utc)
@@ -162,9 +163,8 @@ def test_overdue_and_done_reminders_are_counted_as_asked_not_as_the_open_total(s
     # Audit 1031 Z8: "how many reminders are overdue" was answered "You have 14 open reminders."
     from datetime import timedelta
 
-    from tessellate.ai import notebook_stats
 
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, due in (("late one", NOW - timedelta(days=2)), ("today", NOW + timedelta(hours=3)), ("later", NOW + timedelta(days=30))):
         seeded.add(Reminder(text=text, due_at=due, done=False))
     seeded.commit()
@@ -177,9 +177,8 @@ def test_overdue_and_done_reminders_are_counted_as_asked_not_as_the_open_total(s
 
 
 def test_no_overdue_reminders_is_said_so(seeded, monkeypatch):
-    from tessellate.ai import notebook_stats
 
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
+    pin_clock(monkeypatch, NOW)
     assert _ask(seeded, "how many reminders are overdue").text == "You have no overdue reminders."
 
 
@@ -187,7 +186,7 @@ def test_a_count_over_a_past_window_is_in_the_past_tense(seeded, monkeypatch):
     # Audit 1031 Z8: "You have written no notes last week." A window still running keeps "have written".
     from tessellate.ai import notebook_stats
 
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
+    pin_clock(monkeypatch, NOW)
     assert notebook_stats.answer("how many notes did I write last week", seeded).text.startswith("You wrote ")
     assert notebook_stats.answer("how many notes did I write today", seeded).text.startswith("You have written ")
 

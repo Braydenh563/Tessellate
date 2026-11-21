@@ -37,6 +37,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai import facts
 from tessellate.ai.fence import FENCE_RULE, fence
 from tessellate.core.database import DerivedFact, Entry
@@ -296,7 +297,7 @@ def read(
         if (card := _candidate_card(entry_id_, row, paragraph))
     ]
     cards.extend(_answer_cards(session, skip, paragraph))
-    dated = _date_card(paragraph, now or datetime.now())
+    dated = _date_card(paragraph, now or clock.wall())
     if dated:
         cards.append(dated)
 

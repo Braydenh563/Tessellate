@@ -204,30 +204,36 @@ function setGraphPhysicsEnabled(layoutKind) {
   const applies = layoutKind === "force";
   const box = $("graph-physics");
   if (!box) return;
-  const why = applies
-    ? ""
-    : "Only applies to the Force (web) layout: the other layouts' positions come from the filing hierarchy, not physics.";
-  box.classList.toggle("is-disabled", !applies);
+  //: Gravity and Spread shape Tree and Radial too, Spread the Arc
+  //: (L-world-class-175, `layoutHierarchy`); Link force and the other
+  //: layouts' sliders stay dimmed with the reason.
+  const live = {
+    force: ["graph-gravity", "graph-spread", "graph-link-force"],
+    tree: ["graph-gravity", "graph-spread"],
+    radial: ["graph-gravity", "graph-spread"],
+    arc: ["graph-spread"],
+  }[layoutKind] || [];
+  const why = "Only applies to the Force (web) layout here: this layout's positions come from the filing hierarchy, not physics.";
+  box.classList.toggle("is-disabled", !live.length);
+  box.classList.toggle("is-partial", Boolean(live.length) && !applies);
   for (const id of ["graph-gravity", "graph-spread", "graph-link-force"]) {
     const slider = $(id);
     if (!slider) continue;
-    slider.disabled = !applies;
+    const on = live.includes(id);
+    slider.disabled = !on;
     // Restore the slider's own description when it applies again, rather than
     // leaving the explanation of why it did not.
-    if (applies) {
-      slider.title = {
-        "graph-gravity": "How strongly notes pull together",
-        "graph-spread": "How far apart linked notes sit",
-        "graph-link-force": "How hard each link pulls its two notes together",
-      }[id];
-    } else {
-      slider.title = why;
-    }
-  }
-  // The labels are separate elements, so they need the attribute too or the
-  // hover explanation is missing on exactly the words being greyed out.
-  for (const label of box.querySelectorAll("label[for]")) {
-    label.title = why;
+    slider.title = on
+      ? {
+          "graph-gravity": "How strongly notes pull together",
+          "graph-spread": "How far apart linked notes sit",
+          "graph-link-force": "How hard each link pulls its two notes together",
+        }[id]
+      : why;
+    // The labels are separate elements, so they need the attribute too or the
+    // hover explanation is missing on exactly the words being greyed out.
+    const label = box.querySelector(`label[for="${id}"]`);
+    if (label) label.title = on ? "" : why;
   }
   //: The View section's Shape is the Force layout's too (the owner,
   //: 2026-10-10: "the graph shape options shouldnt be enabled when on a view
@@ -405,7 +411,20 @@ function layoutTreemap(nodes, width, height, info) {
   return done;
 }
 
-function layoutHierarchy(nodes, kind, width, height, info) {
+function layoutHierarchy(nodes, kind, width, height, info, physics) {
+  //: **Gravity and Spread shape these layouts too** (L-world-class-175, IDEAS.md
+  //: "Gravity and spread have no effect on the graph's other layouts"). Spread
+  //: is the room between neighbouring notes (a tree's rows, the radial's notes
+  //: ring, the arc's step); Gravity is how close a note sits to what it is
+  //: filed under (a tree's columns, the radial's category ring). 50 is the
+  //: layout as it was; 0 is three quarters of it, 100 twice, the floor kept
+  //: where a row would get shorter than a label is tall.
+  const scale = (value) => {
+    const v = Math.min(100, Math.max(0, Number(value ?? 50)));
+    return v <= 50 ? 1 - (0.25 * (50 - v)) / 50 : 1 + (v - 50) / 50;
+  };
+  const spreadBy = scale(physics?.spread);
+  const nearBy = scale(100 - Number(physics?.gravity ?? 50));
   if (kind === "map") return graphLate.layoutMap(nodes, width, height);
   if (kind === "treemap") return layoutTreemap(nodes, width, height, info);
   if (kind === "tessellation") return gcTess.layout(nodes, width, height, info, prefs.get("graph-tess-look", null));
@@ -453,8 +472,8 @@ function layoutHierarchy(nodes, kind, width, height, info) {
     // layouts a different way.
     let slot = 0;
     laid.eachBefore((point) => {
-      point.x = vertical ? 0 : slot * ARC_STEP;
-      point.y = vertical ? slot * ARC_STEP : 0;
+      point.x = vertical ? 0 : slot * ARC_STEP * spreadBy;
+      point.y = vertical ? slot * ARC_STEP * spreadBy : 0;
       slot += 1;
     });
   } else if (radial) {
@@ -482,6 +501,12 @@ function layoutHierarchy(nodes, kind, width, height, info) {
       width,
       height
     );
+    //: Spread opens the notes ring (never below the circumference its notes
+    //: need); Gravity moves the category ring out toward its notes or back in.
+    const around = (((laid.leaves().length || 1) + groups.size) * RADIAL_ARC) / (2 * Math.PI);
+    rings.notes = Math.max(around, rings.inner + RADIAL_GAP, rings.notes * spreadBy);
+    rings.outer = rings.notes + (rings.outer - rings.notes) * nearBy;
+    rings.inner = Math.max(24, rings.notes - (rings.notes - rings.inner) * nearBy);
     const deep = Math.max((laid.height || 1) - 2, 1);
     laid.each((point) => {
       if (!point.depth) point.y = 0;
@@ -491,7 +516,7 @@ function layoutHierarchy(nodes, kind, width, height, info) {
       }
     });
   } else {
-    d3.tree().nodeSize([TREE_ROW, TREE_COL])(laid);
+    d3.tree().nodeSize([Math.max(24, TREE_ROW * spreadBy), TREE_COL * nearBy])(laid);
   }
 
   const placed = [];
@@ -2247,7 +2272,9 @@ let graphHighlightIds = null;
 //: (`GET /read/filter`, ai/filters.py; this file reads no words itself). The
 //: words left over still match the preview. A box with no filter in it
 //: (`ids` null) is the plain search it always was.
-const graphPhrase = { q: "", ids: null, rest: "", waiting: false, timer: 0 };
+//: `words`: the notes holding the words on the meaning layer (L628: request
+//: words dropped, a slip folded), lit beside the literal match.
+const graphPhrase = { q: "", ids: null, rest: "", words: null, waiting: false, timer: 0 };
 
 //: The server is asked after a pause, not per key: the plain words are matched
 //: in the page at once, and a phrase that is a filter replaces them when the
@@ -2257,6 +2284,7 @@ function graphReadPhrase(query) {
   if (graphPhrase.q === query) return;
   graphPhrase.q = query;
   graphPhrase.ids = null;
+  graphPhrase.words = null;
   clearTimeout(graphPhrase.timer);
   graphPhrase.waiting = Boolean(query);
   if (!query) return;
@@ -2269,6 +2297,7 @@ function graphReadPhrase(query) {
           graphPhrase.ids = new Set(got.ids);
           graphPhrase.rest = (got.rest || "").toLowerCase();
         }
+        if (got.word_ids) graphPhrase.words = new Set(got.word_ids);
         applyGraphHighlight(true);
       })
       .catch(() => {
@@ -2282,7 +2311,7 @@ function graphReadPhrase(query) {
 //: one match?": several times a note, and once per line end, every frame. Now
 //: it asks a set. The key is the node array, the query and what the server
 //: said about a phrase, so a hover or a pan reuses the last answer untouched.
-const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", ids: null, list: [], at: -1, current: null };
+const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", words: null, ids: null, list: [], at: -1, current: null };
 
 //: A note's lowercase name, kept on the node and made again only when the
 //: preview itself changed (an edit, a rename): the label index.
@@ -2295,10 +2324,11 @@ function graphPreviewLower(node) {
 }
 
 function graphNodeMatches(node, query) {
+  const held = graphPhrase.q === query && Boolean(graphPhrase.words?.has(node.id));
   if (graphPhrase.ids && graphPhrase.q === query) {
-    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || graphPreviewLower(node).includes(graphPhrase.rest));
+    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || held || graphPreviewLower(node).includes(graphPhrase.rest));
   }
-  return !query || graphPreviewLower(node).includes(query);
+  return !query || held || graphPreviewLower(node).includes(query);
 }
 
 //: The notes `query` lights: `list` newest first (the order Enter walks them
@@ -2307,8 +2337,9 @@ function graphNodeMatches(node, query) {
 function graphSearchFor(nodes, query) {
   const g = graphSearch;
   const phrase = graphPhrase.q === query ? graphPhrase.ids : null;
-  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest) return g;
-  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, at: -1, current: null });
+  const words = graphPhrase.q === query ? graphPhrase.words : null;
+  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest && g.words === words) return g;
+  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, words, at: -1, current: null });
   g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query)) : [];
   g.list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")) || a.id - b.id);
   g.ids = query ? new Set(g.list.map((n) => n.id)) : null;

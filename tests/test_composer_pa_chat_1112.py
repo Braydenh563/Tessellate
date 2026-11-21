@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 import tests._seed_1031c as seed_c
+from tessellate.ai import composer_chat
 
 
 @pytest.fixture
@@ -39,11 +40,16 @@ def test_f4_what_did_i_just_add_is_the_newest_note(go, typed):
     assert "Weekly review" in said, said
 
 
+#: The lead each reaction picks rotates with the chat's seed (salt, day, Ask
+#: again count), so the test holds every line of the reaction's own pool.
+_SURE = [line.split("{names}")[0] for line in composer_chat._SURE_LINES]
+
+
 @pytest.mark.parametrize(
-    "typed,expect",
-    [("say that again", "Once more"), ("really?", "only say what your notes"), ("are you sure", "word for word"), ("yep", "")],
+    "typed,leads",
+    [("say that again", composer_chat._AGAIN_LEADS), ("really?", _SURE), ("are you sure", _SURE), ("yep", [""])],
 )
-def test_f4_the_bare_reactions_lean_on_the_answer_before(go, typed, expect):
+def test_f4_the_bare_reactions_lean_on_the_answer_before(go, typed, leads):
     said = say(go, "what's on my todo", typed)
-    assert expect in said, said
+    assert any(said.startswith(lead) for lead in leads), said
     assert "mention" not in said.lower()

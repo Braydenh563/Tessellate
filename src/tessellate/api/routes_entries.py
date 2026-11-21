@@ -61,6 +61,7 @@ from tessellate.core.database import (
     EmbeddingRecord,
     Entry,
     MediaUpload,
+    Space,
     WhiteboardNode,
     like_escape,
     utcnow,
@@ -75,6 +76,7 @@ from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
+from tessellate.entry import provenance
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
 from tessellate.repo import content as content_repo
@@ -113,6 +115,7 @@ def _to_out(
     documents: list | None = None,
     links: list | None = None,
     attachments: list | None = None,
+    transcribed: bool | None = None,
 ) -> EntryOut:
     # Decrypted here if private and the vault is open, every read of a
     # note's text goes through this one helper.
@@ -131,6 +134,12 @@ def _to_out(
     resolved_links = manager_links.links_for_entry(session, entry) if links is None else links
     resolved_attachments = (
         manager_purge.attachments_for(session, entry) if attachments is None else attachments
+    )
+    #: Where the note came from (`entry/provenance.py`); the audio check is one query unless a list pre-fetched it.
+    source_kind, source_label = provenance.source_kind(
+        getattr(entry, "source_url", None),
+        getattr(entry, "source_path", None),
+        bool(provenance.transcribed_ids(session, [entry.id])) if transcribed is None and entry.id else bool(transcribed),
     )
     return EntryOut(
         id=entry.id,
@@ -165,6 +174,8 @@ def _to_out(
         source_url=getattr(entry, "source_url", None),
         source_title=getattr(entry, "source_title", None),
         source_path=getattr(entry, "source_path", "") or "",
+        source_kind=source_kind,
+        source_label=source_label,
         is_board=bool(getattr(entry, "is_board", False)),
         board_kind=getattr(entry, "board_kind", None),
         map_topic=bool(getattr(entry, "map_topic", False)),
@@ -212,6 +223,7 @@ def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: 
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             props=link.props,
+            space_name=_other_space_name(session, entry, other),
         )
         for link, other in links
     ]
@@ -389,6 +401,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
     documents_by_id = manager.documents_for_entries_bulk(session, ids)
     links_by_id = manager.links_for_entries_bulk(session, ids)
     attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
+    heard = provenance.transcribed_ids(session, ids)
     return [
         _to_out(
             session,
@@ -398,6 +411,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
             documents=documents_by_id.get(e.id, []),
             links=links_by_id.get(e.id, []),
             attachments=attachments_by_id.get(e.id, []),
+            transcribed=e.id in heard,
         )
         for e in entries
     ]
@@ -2735,6 +2749,15 @@ def _connection_cue(session: Session, other: Entry) -> dict:
     }
 
 
+def _other_space_name(session: Session, entry: Entry, other: Entry) -> str | None:
+    """The name of the space the other end of a link lives in, when it is not this note's own."""
+    here, there = entry.workspace_id or "default", other.workspace_id or "default"
+    if here == there:
+        return None
+    space = session.get(Space, there)
+    return space.name if space is not None else there
+
+
 def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], list[dict]]:
     """`(outgoing, incoming)` from the stored links, direction kept."""
     outgoing: list[dict] = []
@@ -2761,6 +2784,9 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             "props": link.props,
+            #: The other end's space when it is not this note's (a move keeps
+            #: the link; the chip says where the note lives), else null.
+            "space_name": _other_space_name(session, entry, other),
         }
         (outgoing if link.source_entry_id == entry.id else incoming).append(row)
     return outgoing, incoming

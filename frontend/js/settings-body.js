@@ -34,7 +34,9 @@ const SURFACES = Object.assign(new Map(), {
   register(root, parent) {
     for (const tpl of root.querySelectorAll?.("script[data-surface], template[data-surface]") ?? []) {
       const name = tpl.dataset.surface;
-      const entry = SURFACES.get(name) ?? { after: [], parent, done: false };
+      //: `data-in`: a surface kept outside its parent's text (a script cannot hold a script) and moved
+      //: into the parent's `<template data-surface-slot>` when the parent is built (Settings' body).
+      const entry = SURFACES.get(name) ?? { after: [], parent: parent ?? tpl.dataset.in, done: false };
       entry.tpl = tpl;
       SURFACES.set(name, entry);
       for (const nested of (tpl.dataset.nests ?? "").split(" ")) {
@@ -103,7 +105,9 @@ const SURFACES = Object.assign(new Map(), {
   //: only moves the ready fragment in. A surface opened before its turn simply parses then, as before.
   warm() {
     const waiting = [...SURFACES].filter(([, entry]) => entry.tpl && !entry.frag && !entry.done && !entry.tpl.content);
-    const next = waiting.find(([name]) => name === "settings") ?? waiting[0];
+    //: Notes before Settings (L603): the Notes press is the first interaction, and parsing
+    //: its surface inside the press was 41 to 105ms of a 55 to 124ms click at 5,000 notes.
+    const next = waiting.find(([name]) => name === "notes") ?? waiting.find(([name]) => name === "settings") ?? waiting[0];
     if (!next) return;
     //: A split surface is parsed a few ms at a time with the next slot soon; a whole one in this slot.
     if (SURFACES.splitMark(next[1]) && !SURFACES.parseNext(next[1], 8)) return SURFACES.warmLater(30);
@@ -169,6 +173,7 @@ function surfaceBuild(name) {
   entry.tpl = entry.frag = null;
   const host = tpl.parentNode;
   tpl.replaceWith(frag);
+  for (const slot of host.querySelectorAll?.("template[data-surface-slot]") ?? []) slot.replaceWith(SURFACES.get(slot.dataset.surfaceSlot).tpl);
   // The sweeps the page ran over every element at boot, now over the ones that
   // just arrived: help popovers, closed dock-menu lists, tooltip chords.
   window.initHelpToggles?.(host);

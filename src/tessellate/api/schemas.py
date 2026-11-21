@@ -243,6 +243,9 @@ class LinkOut(BaseModel):
     link_type: str | None = None
     link_label: str | None = None
     props: dict | None = None
+    #: The other end's space when it differs from this note's (a move keeps
+    #: the link), for the chip; null when they share one.
+    space_name: str | None = None
 
 
 class AttachmentOut(BaseModel):
@@ -361,6 +364,10 @@ class EntryOut(BaseModel):
     #: "" for one written here. The Contents index groups on it, and the
     #: wiki-link resolver matches its filename, see `Entry.source_path`.
     source_path: str = ""
+    #: "url", "document", "file" or "audio" for a note that came from outside,
+    #: "" for one typed by hand, and its words (`entry/provenance.py`).
+    source_kind: str = ""
+    source_label: str = ""
     #: Which space this note is filed in. Added for INBOX 1a/38: notes
     #: carried this on the row (`Entry.workspace_id`) all along, but nothing
     #: sent it to the frontend, so a note card had no way to say which space

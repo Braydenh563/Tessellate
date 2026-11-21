@@ -62,7 +62,7 @@ EXPECTED = {
     'chat-turn.js': [
         '"The model returned nothing that time. Try again."',
     ],
-    'chat.js': [
+    'web-results.js': [
         '"Turn on Web search first, reading a page needs it."',
     ],
     'documents-code.js': [

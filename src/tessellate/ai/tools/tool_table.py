@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 
-from tessellate.ai.tools._common import DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT, ToolError, ToolSpec, _clip
+from tessellate.ai.tools._common import DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT, ONLINE_TOOLS, ToolError, ToolSpec, _clip
 from tessellate.core.database import LINK_TYPES
 from tessellate.ai.tools.whiteboard import MAX_DIAGRAM_NODES, _add_map_node, _add_whiteboard_card, _add_whiteboard_link, _create_mindmap, _generate_diagram, _link_map_nodes, _map_from_note, _read_mindmap, _read_whiteboard, _search_whiteboard
 from sqlalchemy.orm import Session
@@ -27,11 +27,12 @@ from tessellate.ai.tools.tool_path import _path_between
 from tessellate.ai.tools.tool_read import _calculate, _check_answer, _count_notes, _find_similar_notes, _get_current_time, _get_note_tool, _list_categories, _list_notes, _list_tags, _notebook_overview, _notebook_structure, _propose_act, _read_text, _related_notes, _search_help, _search_notes, _summarize_notes
 from tessellate.ai.tools.tool_write import _complete_reminder, _create_note, _delete_note, _delete_tag, _edit_note, _link_notes, _list_reminders, _pin_note, _rename_tag, _restore_note, _set_reminder, _tag_note, _unlink_notes, link_type_description
 from tessellate.ai.tools.tool_skills import _delete_skill, _search_chat_history, _verify_block
+from tessellate.ai.tools.tool_browser import BROWSER_SPECS
 from tessellate.ai.tools.tool_web import _read_url, _web_search
 
 def _tool_group(name: str) -> str:
     """What a tool does to the notebook, as Settings, Tools groups it."""
-    if name in ("web_search", "read_url"):
+    if name in ONLINE_TOOLS:
         return "online"
     spec = TOOLS[name]
     #: Every write asks first now (the owner, 2026-11-10), so no tool is in a "write" group.
@@ -1272,7 +1273,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "complete_reminder",
-            "Mark a reminder done (or not done).",
+            "Mark a reminder done, or open again.",
             {
                 "type": "object",
                 "properties": {
@@ -1385,6 +1386,7 @@ TOOLS: dict[str, ToolSpec] = {
             },
             _read_url,
         ),
+        *BROWSER_SPECS,
         ToolSpec(
             "delete_tag",
             "Remove a tag from every note. The app asks the user to confirm "

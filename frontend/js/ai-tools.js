@@ -746,7 +746,7 @@ let uiStateSaveTimer = null;
 //: yet, which is both a wasted PUT (A2) and, on a browser that had lost
 //: `localStorage`, the one write that could make the loss permanent.
 //:
-//: Dropped rather than deferred, the same as the `authToken()` guard below and
+//: Dropped rather than put off, the same as the `authToken()` guard below and
 //: for the same reason: `watchMirroredUiKeys` sees every later write, so the
 //: next real change saves, and nothing here is the only copy of anything.
 let uiStateSeeded = false;

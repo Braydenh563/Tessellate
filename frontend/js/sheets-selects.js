@@ -1201,6 +1201,9 @@ function watchForSelects() {
     for (const record of records) {
       for (const node of record.addedNodes) {
         if (node.nodeType !== 1) continue;
+        //: The shell `enhanceSelect` itself puts in, and the option rows it fills: nothing in them to enhance, yet each was four
+        //: more queries here (69 of the 231 ms of Appearance's first visit at 4x CPU, L-world-class-621).
+        if (node.classList.contains("select-shell") || node.closest(".select-shell")) continue;
         if (node.tagName === "SELECT") enhanceSelect(node);
         else enhanceAllSelects(node);
         //: A date or time field drawn after boot (the document properties
@@ -2300,7 +2303,7 @@ async function loadChatSuggestions() {
   // Re-check after the await in case a message was sent while we waited
   if ($("chat-messages").querySelector(".msg")) return;
 
-  // batch-a.md's "left open" item: `#chat-suggest` is on loan to `.chat-empty`
+  // batch-a.md's last item: `#chat-suggest` is on loan to `.chat-empty`
   // (see the long comment on `openConversation` below) and `newChatConversation`
   // used to wipe `#chat-messages` with a bare `replaceChildren()` without
   // sending it home first, so a "+ New" click while this call was still

@@ -103,6 +103,24 @@ SURFACES = {
         ("openMeetingRecorder",),
         ("meeting-card", "meeting-close", "meeting-title", "meeting-transcript", "meeting-done"),
     ),
+    "finder": (
+        "finder-overlay",
+        ("search.js", "search-suggest.js", "wiring.js", "settings-wiring.js", "reveal-targets.js", "router-overlays.js", "vault-unlock.js"),
+        ("openFinder",),
+        ("finder-input", "finder-results", "finder-summary", "finder-filters", "finder-sort", "finder-save", "finder-close", "finder-help"),
+    ),
+    "agentMonitor": (
+        "agent-monitor",
+        ("agent-activity.js", "activity-panel.js", "app-features.js"),
+        ("setAgentMonitorVisible",),
+        ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-more", "activity-list"),
+    ),
+    "settingsShell": (
+        "settings-modal",
+        ("<boot>",),
+        ("openSettingsModal",),
+        ("settings-close", "settings-search", "settings-nav", "settings-results", "settings-nav-back", "settings-peek", "settings-guide-btn"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -158,7 +176,7 @@ def test_the_surface_sits_in_one_template_inside_its_live_root(name):
     before, body = _template(name)
     # The root stays live (checks of "is it open" never build it); the template
     # is its first child, comments aside.
-    opening = re.search(rf'<(?:div|dialog|sheet-host)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
+    opening = re.search(rf'<(?:div|dialog|sheet-host|aside)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
     assert opening, f"the {name} template is not the first child of #{root}"
     ids = _ids(body)
     assert root not in ids
@@ -238,7 +256,7 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
     """A load-time block (and the top-level functions it calls) may not name an id, or select a class,
     that exists only in the surface's template: the selector finds nothing and the wiring is silently
     dropped (row 21 review: the board's More menu and colour wells)."""
-    _, globs, _, _ = SURFACES[name]
+    _, globs, openers, _ = SURFACES[name]
     _, body = _template(name)
     ids = _ids(body)
     classes = _template_only_classes(name)
@@ -251,7 +269,10 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
                 continue
             if (path.name, name) in INSIDE_FUNCTIONS:
                 continue
-            reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
+            # An opener builds the surface before it reads it (held by the test above), so a handler
+            # that calls one does not reach the unbuilt template through it.
+            called = set(re.findall(r"\b(\w+)\(", block)) - set(openers)
+            reached = block + "".join(functions.get(f, "") for f in called)
             if head.startswith("onSurface("):
                 # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
                 # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.

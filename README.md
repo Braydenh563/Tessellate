@@ -163,7 +163,7 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 73 tools to search, link, organise and act on
+- In Agent mode the assistant has 78 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
@@ -435,6 +435,7 @@ later; until then search uses keywords. To avoid the download, pull
 | Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
 | Speaker labels, models (pyannote and WeSpeaker) | The two small models it reads, a pinned 34 MB download kept in the data folder; works offline |
 | Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
+| Translate offline, French, German, Italian, Portuguese (Bergamot) | One package per language, 26 to 52 MB each, added to the translator's picker; the More translation languages bundle installs them all |
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
 | Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
@@ -477,29 +478,29 @@ vulnerability, see [SECURITY.md](SECURITY.md).
 Each interaction has a time budget, held by a test that fails when it is
 exceeded (`tests/test_budgets.py` for the server, `tests-e2e/specs/budgets.spec.js`
 in a real browser; the table is `BUDGETS` in `src/tessellate/api/routes_bench.py`).
-Measured in headless Chromium on a four-core machine under load, on a 500-note
+Measured in headless Chromium on an idle four-core machine, on a 500-note
 notebook with a board of 500 objects and a document of 50,000 words. Each
 measured figure is the slowest of four runs' medians; the budget is 1.5 times it.
 
 | Interaction | Measured (ms) | Budget (ms) |
 | --- | --- | --- |
-| Boot to first paint | 713 | 1070 |
-| First interaction | 4639 | 6960 |
-| List paint | 139 | 210 |
-| Search | 30 | 50 |
+| Boot to first paint | 302 | 460 |
+| First interaction | 2035 | 3060 |
+| List paint | 71 | 110 |
+| Search | 23 | 40 |
 | Board open | 108 | 170 |
-| Document open | 359 | 540 |
+| Document open | 116 | 180 |
 
 The same figures as bars, slowest first (first interaction left out, as it would
 dwarf the rest):
 
 | Interaction | Measured | |
 | --- | --- | --- |
-| Boot to first paint | 713 ms | ██████████████ |
-| Document open | 359 ms | ███████ |
-| List paint | 139 ms | ███ |
+| Boot to first paint | 302 ms | ██████ |
+| Document open | 116 ms | ██ |
 | Board open | 108 ms | ██ |
-| Search | 30 ms | █ |
+| List paint | 71 ms | █ |
+| Search | 23 ms | █ |
 
 The first interaction is the first click the app answers after a cold start,
 with the session kept. `GET /models/bench/budgets?live=true` times the server's
@@ -511,6 +512,7 @@ share of each against your own notebook.
 | --- | --- |
 | [INSTALL](docs/INSTALL.md) | The Windows installer, the launcher, manual setup, updating and uninstalling |
 | [DOCKER](docs/DOCKER.md) | Running Tessellate in Docker: compose, volumes, ports, a model server on the host |
+| [VS Code extension](editors/vscode/README.md) | Save a selection, search notes and open one read only from VS Code |
 | [MCP](docs/MCP.md) | The MCP server: tools, resources, client config, security |
 | [MODELS](docs/MODELS.md) | Which model suits your machine, and using a server other than Ollama |
 | [PRIVACY](docs/PRIVACY.md) | What touches the network, private-note encryption, sessions |
@@ -533,7 +535,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 22,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 23,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

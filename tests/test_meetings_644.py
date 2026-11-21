@@ -13,6 +13,14 @@ from datetime import datetime, timedelta
 
 from tessellate.ai import meeting_summary
 from tessellate.entry import meetings, properties
+import pytest
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 NOTE = (
     "---\ntype: Meeting\ndate: 2026-10-07 14:00\nattendees: [Sam, Priya]\n---\n"
@@ -211,7 +219,7 @@ def test_summarise_without_a_model_reads_by_rules_and_says_so(client) -> None:
 
 
 def test_a_meeting_sits_on_the_timeline_at_its_date(client) -> None:
-    when = (datetime.now() + timedelta(days=3)).replace(hour=14, minute=0, second=0, microsecond=0)
+    when = (SUITE_LOCAL + timedelta(days=3)).replace(hour=14, minute=0, second=0, microsecond=0)
     made = client.post(
         "/meetings", json={"title": "Planning", "when": when.strftime("%Y-%m-%dT%H:%M"), "category": "Work"}
     ).json()

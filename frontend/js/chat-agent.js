@@ -391,8 +391,10 @@ function repaintAssistantAvatars(emblemsOnly = false) {
   }
 }
 
-function paintAssistantHeads() {
-  for (const holder of document.querySelectorAll("[data-assistant-head]")) {
+//: `root` is the section just shown: the others paint theirs when they are shown (L603,
+//: 12ms of the first Notes press for heads in Ask and the draft, both hidden then).
+function paintAssistantHeads(root = document) {
+  for (const holder of root.querySelectorAll("[data-assistant-head]")) {
     if (!holder.firstChild) paintAssistantAvatar(holder, 20);
   }
 }

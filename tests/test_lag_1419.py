@@ -30,8 +30,11 @@ def test_the_notes_strip_token_has_no_read_of_its_own_before_the_observer():
 
 def test_the_dashboard_outline_follows_the_grid_after_a_paint():
     body = _body(frontend_text("dashboard.js"), "function dashFillingSkeleton(")
-    assert "afterFrames(() => setTimeout(" in body
+    #: L701 moved the follow from a timer after a paint to the grid's ResizeObserver, whose callback runs after the
+    #: frame's layout: the same intent (no forced read while the widgets fill), a later mechanism.
+    assert "ro.follow = () =>" in body
     assert "grid.offsetTop - top0" in body
+    assert "setTimeout(" not in body
 
 
 def test_the_brand_logo_waits_for_the_page_to_load_before_it_reads_layout():

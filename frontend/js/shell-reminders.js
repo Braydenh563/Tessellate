@@ -94,13 +94,23 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-//: **The first paint is a task of its own** (L-world-class-354): it is the
-//: page's first Intl call, about 50 ms of ICU set-up at 4x CPU that no
-//: formatter choice avoids, and inside this file's eval it made one 94 ms
-//: task of the two. `startClockTicker` paints as it starts.
+//: **The first paint waits for ICU, set up in a worker** (L-world-class-354, 624): the page's first Intl call
+//: is 73 to 281 ms of ICU set-up at 4x CPU, whichever formatter comes first, and its caches are the process's,
+//: so intl-warm.js makes that call off the main thread and the clocks paint when it answers (the first
+//: `toLocaleTimeString` here is then 0 to 3 ms). The timer is the paint for a page with no worker, or one that
+//: never answers; `startClockTicker` paints once whichever comes first.
+try {
+  const warm = new Worker(`/js/intl-warm.js${lazyAssetStamp("/js/intl-warm.js")}`);
+  warm.onmessage = warm.onerror = () => {
+    warm.terminate();
+    startClockTicker();
+  };
+} catch {
+  // No worker (CSP or an old engine): the timer below paints.
+}
 setTimeout(function firstClockPaint() {
   startClockTicker();
-}, 0);
+}, 2000);
 
 window.addEventListener("resize", () => {
   //: Guarded with `typeof` (88bfe5341 removed it, 87139afcf put it back, and
@@ -660,7 +670,10 @@ document.addEventListener("scroll", onScrollEdge, { capture: true, passive: true
 let pageScrollingTimer = 0;
 document.addEventListener(
   "scroll",
-  () => {
+  (event) => {
+    //: Settings holds none of those rows, and the attribute restyles every `li` in the page (`#entry-list > li`
+    //: names the tag): a pane switch scrolls its pane to the top, a 38 to 73 ms frame at 4x CPU (2026-11-21).
+    if (event.target.closest?.("#settings-modal")) return;
     if (pageScrollingTimer) clearTimeout(pageScrollingTimer);
     else document.documentElement.setAttribute("data-scrolling", "");
     pageScrollingTimer = setTimeout(() => {
@@ -1006,6 +1019,12 @@ async function loadReminders() {
     //: Done counts the server's total, not the page on screen.
     count.textContent = label === "Done" ? donePage.total : items.length;
     heading.append(text, count);
+    if (label === "Overdue") {
+      const triage = smallButton("ph:funnel Triage", "Keep, drop or reschedule each", () =>
+        loadReminders.act("triage", items)
+      );
+      heading.appendChild(triage);
+    }
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
@@ -1086,6 +1105,9 @@ function updateReminderBadge(reminders) {
 
 let editingReminderId = null;
 
+//: Lazy acts (reminder-triage.js) arrive as events, so the file adds no global names.
+loadReminders.act = (name, detail) => lazyScript("/js/reminder-triage.js").then(() => document.dispatchEvent(new CustomEvent(`reminders:${name}`, { detail })));
+
 function reminderItem(reminder, label) {
   const li = document.createElement("li");
   li.dataset.id = reminder.id; // flashReminder's own hook, same shape as #entry-list's data-id
@@ -1127,11 +1149,15 @@ function reminderItem(reminder, label) {
       pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
       loadReminders();
       toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+      reminder.entry_id && loadReminders.act("outcome", reminder);
       return;
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
-    if (checkbox.checked) atlasOn("done");
+    if (checkbox.checked) {
+      atlasOn("done");
+      reminder.entry_id && loadReminders.act("outcome", reminder);
+    }
   });
   row.appendChild(checkbox);
 

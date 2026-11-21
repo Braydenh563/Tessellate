@@ -9,6 +9,14 @@ from __future__ import annotations
 
 from tessellate.ai.entities import extract_entities_pass, suggest_entities
 from tessellate.core.database import Entity, EntityMention, Entry
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 class _FakeModelManager:

@@ -8,7 +8,7 @@ The code is `src/tessellate/mcp_server.py`.
 
 Three things, all over standard input and output:
 
-- **Tools:** the app's own tool registry, minus any tool that is destructive (the `delete_*` tools and `merge_categories`), interactive (`ask_user`, `make_plan`, `run_skill`, `compress_chat`), or chat-only (`get_app_navigation`, `search_chat_history`). A tool you switched off in Settings, Tools is hidden too, and `web_search` and `read_url` appear only if you enabled them.
+- **Tools:** the app's own tool registry, minus any tool that is destructive (the `delete_*` tools and `merge_categories`), interactive (`ask_user`, `make_plan`, `run_skill`, `compress_chat`), or chat-only (`get_app_navigation`, `search_chat_history`). A tool you switched off in Settings, Tools is hidden too, and `web_search`, `read_url` and the browser tools (`browser_open`, `browser_read`, `browser_follow`, `browser_find`, `browser_back`) appear only if you enabled web search.
 - **Resources:** each note as `memorymap://note/<id>` (markdown). Private notes are never served.
 - **Prompts:** your saved skills, filled in the way a skill run fills them. A prompt is text for the client's model; it runs nothing.
 
@@ -132,13 +132,32 @@ Packaged app (the in-app snippet fills in the real executable path):
 - **Claude Code:** `claude mcp add tessellate -e TESSELLATE_DATA_DIR=/path/to/your/data -e TESSELLATE_MCP_TOKEN=<token> -- /path/to/python -m tessellate.mcp_server`, or put the same entry in a project `.mcp.json`.
 - **Other clients:** any client that can launch a stdio server takes the same command, arguments and environment. The server speaks MCP protocol versions 2025-06-18, 2025-03-26 and 2024-11-05.
 
+## Over HTTP
+
+The running app also answers MCP at `/mcp` on its own port (streamable HTTP, JSON replies, `GET` is 405). Each app gets its own token; nothing reaches it without one.
+
+- **Make a link** (Settings, Tools it can use): name the app, choose its notes, and copy the snippet once. Only the token's SHA-256 is kept; Revoke ends it at once, and Undo brings the same token back within the hour.
+- **Only these notes.** Categories and Tags limit a link to notes filed in one of those categories or carrying one of those tags. Search, list, count, get, related notes, path between, similar notes and the note resources all leave every other note out, and an id outside reads exactly like a missing one. A note the app adds must be filed inside, and an edit or retag may not move a note out. A scoped link is offered only the tools that can hold a scope: no documents, boards, reminders, whole-notebook summaries, renames or web. Both fields empty is the whole notebook.
+- **OAuth sign-in** (the MCP authorization spec, for a client such as claude.ai that cannot take a pasted header). Everything is on the app's own port and nothing is called out to:
+
+| Endpoint | What it is |
+| --- | --- |
+| `GET /.well-known/oauth-protected-resource` (and `/mcp` after it) | RFC 9728 metadata; a `401` from `/mcp` names it in `WWW-Authenticate` |
+| `GET /.well-known/oauth-authorization-server` | RFC 8414 metadata |
+| `POST /oauth/register` | RFC 7591 dynamic registration, public clients only, `https` redirects (or `http` on this computer) |
+| `GET /oauth/authorize` | The code flow; PKCE with `S256` is required. The browser goes to a page that waits, reloading itself |
+| `POST /oauth/token` | A code with its verifier, or a refresh token (rotated on every use) |
+
+  The sign-in shows in Settings under Waiting to sign in with a short code the waiting page also shows. Approve, on this computer only, gives the app the notes and changes chosen in the fields above; the grant is then listed and revoked like any link. Scopes are `notes:read` and `notes:write`; writing needs both the app asking for it and the box ticked. A code is single use and good for five minutes; a sign-in not approved in ten minutes ends.
+- **This computer only**, unless LAN mode is on: another device is refused with 403 even with a good token. In Docker, see [DOCKER.md](DOCKER.md#use-it-from-claude-or-another-ai-mcp). A reverse proxy or tunnel on this computer makes its requests look local: the token, PKCE and an approval behind the app's password still hold, but the "this computer" check does not.
+
 ## Security model
 
-- **Local only.** There is no network listener and no port. The client starts the process, and the process talks over the pipe the client holds. Nothing else can connect.
+- **Local only, over stdio.** The stdio server has no network listener and no port: the client starts the process and talks over the pipe it holds. The HTTP route is described above.
 - **A token, not the password.** The server refuses every request (except `ping`) from a process that does not pass this notebook's token as `TESSELLATE_MCP_TOKEN`, so being able to start a program as you is no longer enough to read notes through it. The server does not ask for the app password. The trust boundary is still your operating system account, since anyone who can run a process as you can open the notebook's database file, so do not add the snippet to a client you do not trust.
-- **Not through Docker or the LAN.** The server is not part of the web app, so LAN mode and a container's published port do not expose it. A client in another place cannot reach it unless you run the command there (for example over SSH, which is your own choice).
+- **The stdio server is not part of the web app**, so LAN mode and a container's published port do not expose it; the HTTP route above has its own per-app tokens.
 - **What a client can do:** read and search notes, documents, files, boards and reminders. Only after you tick **Let that app add and change notes** can it make the non-destructive writes in the table above (create and edit notes, tags, links, reminders, boards, skills); with it off a client cannot change anything, even if a note's text tells its model to. Writes are recorded in Library, Activity under the client's own name (for example "Claude Desktop").
-- **What it cannot do:** delete anything (no `delete_*` tool, no `merge_categories`), read private notes, run a skill, or reach the internet unless you switched `web_search` or `read_url` on. A tool you disable in Settings, Tools disappears from the client on its next start.
+- **What it cannot do:** delete anything (no `delete_*` tool, no `merge_categories`), read private notes, run a skill, or reach the internet unless you switched web search on, which also offers `web_search`, `read_url` and the browser tools. A tool you disable in Settings, Tools disappears from the client on its next start.
 - **Notes are data.** A note's text goes to the client's model. If the client is a hosted service, that is the one place your notes leave the machine, and it is your choice of client, not Tessellate's. See [PRIVACY.md](PRIVACY.md).
 
 ## Troubleshooting

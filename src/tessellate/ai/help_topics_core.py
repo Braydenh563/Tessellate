@@ -95,7 +95,7 @@ HELP_TOPICS: list[dict] = [
             "model, Chat also acts (remind me to..., pin or delete the X note), with Undo. "
             "An answer can end with an offer as a link, or a chart (see Offers and charts in an answer). "
             "A note's "
-            "... menu, under AI actions, has Explain this note: read aloud, then what it links to "
+            "... menu, under Atlas, has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
             "(a toggle in Chat) lets the assistant use its tools to search, link, "
             "tag, organise and create; changing or removing asks first, "
@@ -155,7 +155,7 @@ HELP_TOPICS: list[dict] = [
             "The Graph's search box reads filters as well as words: "
             '"connected to Harbor", "untouched since June", "tagged work", '
             '"pinned", "with pictures", "edited last week"; any other '
-            "words still have to match. The box says how many notes match; Enter jumps to the next "
+            "words still have to match, though a slip of one still finds it. The box says how many notes match; Enter jumps to the next "
             "match and pans to it, Shift and Enter to the one before, and Esc clears the search. "
             "Click a note for its panel: Open, Focus, "
             "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
@@ -175,10 +175,11 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
             "Done. To add, make or set a reminder, go to the top of the Reminders tab: type it in plain words on the "
-            'Magic add line and press the sparkle (hedges such as "probably '
-            'around 7pm" are read as the time, and a place like "when I get '
-            'home" is left out of the title), or fill in Remind me to, the '
-            "date and the time, then Add. Set a priority, snooze, edit inline, or make one recurring: "
+            'Magic add line and press the sparkle (a hedge such as "around 7pm" '
+            "is read as the time), or fill in Remind me to, the "
+            "date and the time, then Add. Overdue has Triage: keep, drop or reschedule each, or all at once "
+            "(Undo restores). Ticking off a reminder from a note asks how it went and adds that line to the note "
+            "(Skip adds nothing). Set a priority, snooze, edit inline, or make one recurring: "
             '"every weekday", "every 2 weeks", "the last Friday of the month", '
             'with an early alert such as "1 day before". '
             "The date and time fields open a month and the day's times, and "
@@ -257,7 +258,7 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking", and a slipped word still finds its notes. Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."
@@ -330,7 +331,7 @@ HELP_TOPICS: list[dict] = [
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Share and save, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
-            "after the board, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
+            "after the board, a zip with its notes, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
             "In the command palette over a board, say what to do with the "
             'selection (or the whole board): "arrange as a grid of 3", '
@@ -397,7 +398,7 @@ HELP_TOPICS: list[dict] = [
             "the strip under the bar opens or starts one, and its head steps to the day before and after; "
             "after two days running with a daily note, the strip's head says how many days in a row. "
             "A week or more with nothing written shows a line between the dates; its What happened here? "
-            "starts a page for the first empty day."
+            "starts a page for the first empty day. A follow-on note branches off the line."
         ),
         "badge": {"label": "Timeline", "tab": "timeline"},
     },
@@ -428,7 +429,11 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
-            "A space can be private: Private in New space or Edit space seals everything in it."
+            "A space can be private: Private in New space or Edit space seals everything in it. "
+            "In a space the dashboard line under the greeting names it and counts its notes, documents and boards "
+            "(not in All spaces). Export this space, in Edit space, downloads that space's notes, documents and boards "
+            "as a zip with nothing from another space; a locked private space asks to unlock first. "
+            "Moving notes to another space keeps every link: the link's chip names the other space, and both notes list it."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
@@ -536,7 +541,7 @@ HELP_TOPICS: list[dict] = [
             "Cmd works in place of Ctrl. A button with a "
             "shortcut shows it in its tooltip, in your own binding. Everywhere: Ctrl+K "
             "the command palette, Ctrl+P find anything, Ctrl+F find on this "
-            "page, / jump to search (the chat box on Chat), Ctrl+Z undo, "
+            "page (inside a note you are editing, in that note), / jump to search (the chat box on Chat), Ctrl+Z undo, "
             "Ctrl+Shift+Z redo (on a phone, More then Commands opens the "
             "palette), Alt+Left and Alt+Right back and forward, a double-click "
             "on Notes or Library in the top bar back to its first sub-tab, Ctrl+, "
@@ -554,8 +559,7 @@ HELP_TOPICS: list[dict] = [
             "Ctrl+Shift+O a new chat, Ctrl+Shift+G agent mode on or off, Ctrl+. "
             "stop the answer, Ctrl+Shift+P clip a note to your next question. "
             "Press t then a letter to jump to a tab (m works too); the panel that appears lists "
-            "Go to and Do with each letter beside its name, marks the tab you are "
-            "on, and takes a click as well."
+            "each letter beside its name and takes a click."
         ),
         "badge": {"label": "Keyboard shortcuts", "section": "shortcuts"},
     },
@@ -1693,7 +1697,8 @@ HELP_TOPICS.extend(
                 "beside Draft. The local model keeps every fact, name, number and "
                 "the markdown, and leaves code and links alone. It needs a model "
                 "connected. With no model, Translate this in the command palette "
-                "turns a selected passage from English into Spanish on this "
+                "turns a selected passage between English and Spanish, French, German, "
+                "Italian or Portuguese on this "
                 "computer once Translate offline is installed in Settings, Packages."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
@@ -1975,7 +1980,7 @@ HELP_TOPICS.extend(
             "body": (
                 "Mind maps live in the Library, under Boards & maps; New's arrow, then Mind "
                 "map, opens Untitled map N with its central topic ready to type over "
-                "(what you type names the map too). A note's ⋮ menu, under AI actions, Make a mind map, "
+                "(what you type names the map too). A note's ⋮ menu, under Atlas, Make a mind map, "
                 "builds one from that note: its title in the centre, its headings and "
                 "lists as branches. In Chat, an answer's Mind map this and the chat menu's "
                 "Make a mind map of this chat do the same for the answer or the whole "

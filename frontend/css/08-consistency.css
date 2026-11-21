@@ -6348,14 +6348,19 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    hidden simply goes. `:where()` so the recipe is zero-weight: a dialog with
    motion of its own (Settings' peek) keeps it. The lock screen is not in
    it: it is the boot's curtain, which fades out (below) rather than in. */
+/* **The cards, by class, not `& > *`** (2026-11-21): with `.hidden` before a
+   subject that names nothing, every `hidden` toggle in the app restyled the
+   toggled element's whole subtree (a Settings pane: 775 to 1,791 elements).
+   Every overlay's child is one of these three; `:where` keeps the weight.
+   tests/test_css_invalidation.py holds the shape. */
 :where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {
   transition: opacity var(--ui-base) var(--ease-out);
-  & > * {
+  & > :where(.card, .modal-card, .sheet-card) {
     transition: translate var(--ui-slow) var(--ease-out), scale var(--ui-slow) var(--ease-out);
   }
   @starting-style {
     opacity: 0;
-    & > * {
+    & > :where(.card, .modal-card, .sheet-card) {
       translate: 0 var(--space-2);
       scale: 0.985;
     }
@@ -6369,7 +6374,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) allow-discrete;
-  & > * {
+  & > :where(.card, .modal-card, .sheet-card) {
     translate: 0 var(--space-2);
     scale: 0.985;
     transition: translate var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out);
@@ -6505,6 +6510,33 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 }
 #entry-list:not(.is-rows) > li:not(.list-window-sentinel) > :not(.entry-meta, .entry-title) {
   margin-bottom: 0;
+}
+/* **The link row shares the details line when both fit** (L-world-class-95,
+   the owner's "4 note cards above the fold" at 1093x614). A card with links
+   was 141px there: title, preview, a 26px row of link pills, then the
+   details line under it. The card wraps as rows instead of a column, every
+   part a full row of its own but these two: the links first, then the
+   details at their own max-content width, so when the pair is wider than
+   the card the details drop to the next row, as before, and nothing is
+   hidden or clipped. An open editor keeps the column. */
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) {
+  flex-flow: row wrap;
+  align-items: center;
+  column-gap: var(--space-4);
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) > * {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)) > .entry-links {
+  flex: 0 1 auto;
+  order: 1;
+  margin-top: var(--space-3);
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) > .entry-meta {
+  flex: 1 0 auto;
+  width: auto;
+  order: 2;
 }
 /* Phase 12 decision 7: chips only for state, so the category is its dot and
    its word, as the Timeline's rows already draw it; the pointer inks it. */

@@ -164,6 +164,7 @@ def test_big_text_is_not_enlarged():
 
 
 def test_a_box_border_is_not_measured_as_a_line_of_text():
+    pytest.importorskip("PIL")
     from PIL import Image, ImageDraw
 
     image = Image.new("L", (200, 100), 255)
@@ -172,6 +173,7 @@ def test_a_box_border_is_not_measured_as_a_line_of_text():
 
 
 def test_a_transparent_ground_is_flattened_onto_white_not_black():
+    pytest.importorskip("PIL")
     from PIL import Image
 
     transparent = Image.new("RGBA", (40, 40), (0, 0, 0, 0))

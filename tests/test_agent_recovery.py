@@ -234,7 +234,7 @@ def test_a_destructive_tool_cannot_paper_the_turn_with_confirm_cards(monkeypatch
     def _merge_cat(n: str) -> dict:
         return {"name": "merge_categories", "arguments": {"from": n, "into": "Hobbies"}}
 
-    names = [f"Cat{n}" for n in range(agent.MAX_PARKED_CONFIRMS + 1)]  # one past what a turn may park
+    names = [f"Cat{n}" for n in range(agent_policy.MAX_PARKED_CONFIRMS + 1)]  # one past what a turn may park
     fake = _FakeOllama([[_merge_cat(n) for n in names], []])
     monkeypatch.setattr(agent.tools, "ollama_tools", lambda allowed=None: [])
     monkeypatch.setattr(
@@ -243,6 +243,6 @@ def test_a_destructive_tool_cannot_paper_the_turn_with_confirm_cards(monkeypatch
     events = list(agent.run_agent(_Session(), "tidy my categories", [], _FakeModels(), fake))
 
     confirms = [e for e in events if e.get("type") == "confirm"]
-    assert len(confirms) == agent.MAX_PARKED_CONFIRMS
+    assert len(confirms) == agent_policy.MAX_PARKED_CONFIRMS
     payloads = [json.loads(m["content"]) for m in fake.sent if m.get("role") == "tool"]
     assert "Nothing more can be queued" in payloads[-1]["error"]

@@ -610,7 +610,12 @@ function initNotesSubtabHeightToken() {
     //: observer's report, it restyled the page again in this frame and the
     //: next reader (`fitDock`) paid for it (47 to 99ms of a Notes press at 4x,
     //: INBOX 1534).
-    if (page.style.getPropertyValue("--notes-sticky-top") !== h) setTimeout(() => page.style.setProperty("--notes-sticky-top", h));
+    //: Into a rule on the four bars that read it, not onto the page (L603): the token is
+    //: inherited, so a write on `#tab-notes` restyled every row of a 5,000-note list on the
+    //: first Notes press (3,467 elements, 83 to 117ms at 1x on a loaded host).
+    const sheet = (initNotesSubtabHeightToken.sheet ||= new CSSStyleSheet());
+    if (!document.adoptedStyleSheets.includes(sheet)) document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    if (initNotesSubtabHeightToken.h !== h) setTimeout(() => sheet.replaceSync(`#tab-notes :is(.dock, .doc-toolbar, .question-group, .selectbar) { --notes-sticky-top: ${(initNotesSubtabHeightToken.h = h)} }`));
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).
@@ -895,8 +900,13 @@ function mountPhoneSidebarOpeners() {
   }
 }
 
+//: Each opener's dock lives in a surface built on first open, not at boot
+//: (chat's toolbar was not in the page, so a phone's chat had no way to its
+//: conversations and the tour dropped that card: 4 planned, 3 shown at
+//: 390x844). The mount skips a dock that has its opener, so it runs again for
+//: every surface that holds one.
 mountPhoneSidebarOpeners();
-onSurface("documents", mountPhoneSidebarOpeners);
+for (const surface of ["notes", "chat", "documents", "library"]) onSurface(surface, mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
@@ -1895,7 +1905,8 @@ function buildSettingsJumpList() {
   (count || search || nav.firstElementChild)?.after(select);
 }
 
-buildSettingsJumpList();
+//: Settings' nav is built on the window's first open (settings.js): the list goes in then.
+onSurface("settingsShell", buildSettingsJumpList);
 
 // --- the floating primary action ----------------------------------------------
 // UI_MODERNISATION_PLAN.md Phase 9, band 4.

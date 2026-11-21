@@ -197,9 +197,24 @@
     $("space-edit-private").disabled = id === "default";
     $("space-edit-dialog").dataset.was = JSON.stringify({ name, icon, isPrivate: Boolean(isPrivate) });
     $("space-edit-error").textContent = "";
+    $("space-edit-export").onclick = () => exportSpace(id);
     spaceIconPicker($("space-edit-icon-picker"), $("space-edit-icon"));
     $("space-edit-dialog").showModal();
     $("space-edit-name").focus();
+  }
+
+  //: One space as a zip: its notes, documents and boards and nothing from
+  //: another space (L-world-class-22). A locked private space asks to unlock first.
+  async function exportSpace(id) {
+    const send = () => api(`/spaces/${encodeURIComponent(id)}/export`, { silent: true });
+    let got = await send();
+    if (got.status === 423 && (await unlock())) got = await send();
+    if (!got.ok) {
+      toast("That space could not be exported.");
+      return;
+    }
+    const name = spacesCache.find((space) => space.id === id)?.name || "space";
+    await saveFile(`tessellate-${name.replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "") || "space"}.zip`, await got.blob());
   }
 
   //: Always on close: the window going away locks them, whatever the idle clock says.

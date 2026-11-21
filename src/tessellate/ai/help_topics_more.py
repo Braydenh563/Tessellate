@@ -333,15 +333,10 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
-            "mcp link", "connect claude", "revoke a token",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop; "
-            "it can also read your notes (never "
-            "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. Make a link gives an "
-            "app its own token, shown once, to revoke. "
+            "Use these tools from another app, at the end of this section, is "
+            "its own topic. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
@@ -437,7 +432,7 @@ MORE_TOPICS: list[dict] = [
             "opens a map you type into (Tab adds a child, Enter a sibling), and its "
             "templates, Trip plan among them, start you with branches in place. "
             "Insert, Diagram, Mermaid diagram on a board takes a few lines of text and draws a "
-            "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under AI actions, "
+            "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under Atlas, "
             "Make a mind map, builds a map from that note's headings and lists. "
             "The Writing room's diagram needs a model for anything beyond a rule-made "
             "flowchart, timeline or mind map. "
@@ -660,14 +655,16 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "health", "is my notebook ok", "integrity", "integrity check", "corrupt",
             "corruption", "last backup", "last error", "data folder size", "how big",
-            "is it healthy", "check the database",
+            "is it healthy", "check the database", "speed", "slow", "how fast", "speed budget",
         ),
         "body": (
             "Settings, About, Health says how the notebook is, each line dated: "
             "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), what "
             "is running now, the last error in the log, and Integrity, whose "
             "Check now has the database check itself and counts the search index "
-            "beside your notes. The palette's Health goes straight there. The "
+            "beside your notes. Speed's Check now times this notebook's searches, "
+            "lists, boards and documents against the limits the app is held to, "
+            "with this page's first paint. The palette's Health goes straight there. The "
             "app also gives the notebook file a quick check each time it starts, "
             "and if that fails it says so and points to the newest backup in "
             "Settings, Import & export."
@@ -1185,11 +1182,34 @@ MORE_TOPICS: list[dict] = [
             "pages you signed in to see. No browser extension is needed. A clipped "
             "note opens with properties (source, site, author, published and the day "
             "you clipped it, whichever the page names), so you can find and sort "
-            "clips by them. Atlas treats its text as someone else's words "
+            "clips by them. Every note that came from outside wears a small chip saying where: "
+            "Clipped from a site, Imported from a file or app, Extracted from a document, or "
+            "Transcribed from audio; a note you typed has none. Atlas treats its text as someone else's words "
             "and never follows instructions in it, and clipping the same page again "
             "points you to the note it made the first time."
         ),
         "badge": {"label": "Web clipper", "section": "data", "target": "web-clip-box"},
+    },
+    {
+        "id": "assistant-browser",
+        "keywords": (
+            "browse the web", "browse a page", "open a page for me", "browser tools", "follow a link",
+            "find text on a page", "go back a page", "assistant browser", "browser mcp", "read a page for me",
+        ),
+        "body": (
+            "In Agent mode, with web search on (Settings, Web search), the assistant can "
+            "browse beside searching: it opens a page in the Web panel, reads it as text, "
+            "follows one of its links, finds words on it and goes back. The page it reads "
+            "is the page you see in the panel. Opening and following send a request, "
+            "so they use the same switch, the same address checks and the same "
+            "confirm as a web search: once a page has been read in a turn, "
+            "each further open or follow waits for you on a card. Reading, finding and "
+            "going back use the page already held and send nothing. A page is someone "
+            "else's words: Atlas reads it as data and never follows instructions in it. "
+            "An MCP client you connected sees the same tools while web search is on. "
+            "By hand, the reader has the page's links, Find in this page and Results."
+        ),
+        "badge": {"label": "Web search", "section": "websearch"},
     },
     {
         "id": "import-apps",
@@ -1599,11 +1619,14 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Select a passage in a note, a document or a reading and run "
             "Translate this from the command palette (Ctrl+K): it turns "
-            "English into Spanish on this computer, with no model, in about a "
+            "English and five other languages on this computer, with no model, in about a "
             "second, and Copy or Replace the selection puts it to use. With "
             "nothing selected it takes the whole editor you were in. It needs "
             "Translate offline, a 27 MB download in Settings, Packages "
-            "(Languages); until then the row says so and opens that page. "
+            "(Languages) that carries English to Spanish; until then the row "
+            "says so and opens that page. French, German, Italian, Portuguese "
+            "and Spanish to English are a package each, or all at once with "
+            "the More translation languages bundle. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "
             "With more than one language pair installed the sheet shows a "
@@ -1779,6 +1802,7 @@ TOPIC_META: dict[str, dict] = {
     "running-copies": {"title": "Running copies", "path": "Settings, About, Running copies", "target": "running-copies-group"},
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
+    "assistant-browser": {"title": "Browse the web with the assistant", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
     "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after (the app's Undo lasts for the session)"},
     "autonomous": {"title": "Autonomous background AI", "path": "Settings, Background tasks"},
@@ -2005,7 +2029,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch", "assistant-browser",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
@@ -2625,6 +2649,23 @@ MORE_TOPICS.append({
     ),
 })
 TOPIC_META["find-a-place"] = {"title": "Finding where something is", "path": "Notes tab, Ask your notebook"}
+#: Moved out of tools-setting whole when the scope and OAuth rows came (L-world-class-560): that topic sat at the reply budget.
+MORE_TOPICS.append({
+    "id": "mcp-links",
+    "title": "Use your notes from another app",
+    "keywords": ("mcp", "mcp link", "connect claude", "claude desktop", "claude.ai", "revoke a token", "oauth", "another app", "tool server", "docker"),
+    "badge": {"label": "Tools it can use", "section": "tools"},
+    "body": (
+        "Settings, Tools it can use, Use these tools from another app: a snippet to paste into an MCP client such as "
+        "Claude Desktop, which can then read your notes (never a private one) and use your skills as prompts. It reads "
+        "only until you tick Let that app add and change notes; deleting is never offered. Make a link gives an app an "
+        "address and its own token, shown once, to revoke; Categories and Tags limit it to those notes only, so it cannot "
+        "search, read or change any other. An app such as claude.ai can sign in with OAuth instead: its page waits, the "
+        "sign-in shows under Waiting to sign in with a short code, and you press Approve on this computer. The link works "
+        "only on this computer unless LAN mode is on, and nothing is sent anywhere else."
+    ),
+})
+TOPIC_META["mcp-links"] = {"title": "Use your notes from another app", "path": "Settings, Tools it can use, Use these tools from another app", "target": "mcp-config-group"}
 MORE_TOPICS.append({
     "id": "nicknames",
     "title": "Calling Atlas by any name",

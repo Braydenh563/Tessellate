@@ -49,7 +49,7 @@ function wireLongPress(target, handler, { selector = null } = {}) {
         //: about: measured on the graph at 390, holding a node opened its menu
         //: and lifting the finger opened that node's panel underneath it, so
         //: the gesture did two things and the second one took the focus the
-        //: menu had just been given (the menu was still open, and Escape
+        //: menu had just been given (the menu was still showing, and Escape
         //: closed the panel instead of it). Captured, so it never reaches the
         //: surface, and `once` so only that one click is taken; the timer is
         //: the belt for a press that ends in a `pointercancel` and therefore
@@ -710,7 +710,7 @@ function renderMarkdown(container, text, depth = 0) {
       }
       const li = document.createElement("li");
       let itemText = entry.text;
-      // GFM task list: "- [ ] todo" / "- [x] done" → a real checkbox.
+      // GFM task list: "- [ ] item" / "- [x] done" → a real checkbox.
       const task = itemText.match(/^\[([ xX])\]\s+(.*)$/);
       if (task) {
         li.className = "md-task";
@@ -842,7 +842,7 @@ function revealTab(name) {
   // and restored when that was reversed, the real fix for "documents feel
   // inaccessible" was giving them their own section in the Library instead of
   // leaving them inside a catch-all view called "Documents" that showed
-  // everything. Worth the note so the next session does not re-derive it.
+  // everything. Worth the note so nobody has to re-derive it.
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -861,7 +861,10 @@ function revealTab(name) {
   }
   scheduleUndoBar();
   if (name === "notes") window.initNotesSubtabHeightToken?.();
+  //: An empty `data-stale` is a draw the Notes press put after the paint (phone-shell.js): drawing
+  //: it here too built 4,998 rows inside the press and again two frames on (L603, 210 and 63ms).
   if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  else if (name === "notes" && window.notesSidebarOwed) renderSidebar();
   //: The companion finds its perch on the tab it is now on (avatars.js).
   window.nameMarkBuddyTabChanged?.();
   // When the strip is narrow enough to scroll, the tab you just chose is the
@@ -887,7 +890,7 @@ function revealTab(name) {
   //: At the frame, before it paints (INBOX 1530 c): its reads came straight
   //: after the class flips above and laid the new page out inside the click
   //: (14 to 47 ms of `openDoc`), which `openDocument` then dirtied again.
-  requestAnimationFrame(autoGrowVisible);
+  requestAnimationFrame(() => autoGrowVisible());
 }
 
 // --- back / forward through the pages you have visited ----------------------
@@ -988,8 +991,8 @@ function paintTabHistory() {
   // The settings modal's own copy of these two buttons, see their markup
   // comment for why a second copy exists instead of just raising the status
   // bar's z-index above every modal in the app.
-  const modalBack = $("settings-nav-back");
-  const modalForward = $("settings-nav-forward");
+  const modalBack = document.getElementById("settings-nav-back");
+  const modalForward = document.getElementById("settings-nav-forward");
   if (modalBack && modalForward) {
     modalBack.disabled = back.disabled;
     modalForward.disabled = forward.disabled;
@@ -1173,7 +1176,7 @@ async function openHistoryEntry(entry, { from = null } = {}) {
   // ever called recordTabVisit for it. Restoring a settings entry opens the
   // modal (or moves it to a different section) instead of going through
   // switchTab at all; restoring anything else closes it first if it was
-  // left open, the same way clicking Close would.
+  // kept open, the same way clicking Close would.
   if (entry.tab === "settings") {
     await openSettingsModal(entry.section || "models");
     paintTabHistory();
@@ -1550,7 +1553,7 @@ document.addEventListener(
   true
 );
 
-//: **The arrow keys, in every menu that is not built by `kebabMenu`.**
+//: **The arrow keys, in every menu `kebabMenu` does not make.**
 //: `wireMenuKeyboard` gives a built menu ↑, ↓, Home and End once the focus is
 //: inside it, and nothing gave any of that to the two other shapes: a
 //: `details` dock menu (twenty-odd of them, every ⋯ and Options in every dock)
@@ -2358,15 +2361,15 @@ function showNotesSection(name, { focus = false } = {}) {
   }
   prefs.set(NOTES_SECTION_STORE, wanted);
   //: Ask's answer and the draft carry static assistant heads (INBOX 471).
-  paintAssistantHeads();
+  paintAssistantHeads($(wanted) || document);
   //: The connections rail belongs to the list (notes-list.js): it leaves with
   //: Browse and comes back with it.
   scheduleNotesRail();
   // A textarea measured while its section is display:none reports
   // scrollHeight 0, so autoGrow collapsed the capture box to its minimum and
   // it only sprang open once clicked (user-reported). Re-measure now that the
-  // section is actually visible.
-  autoGrowVisible();
+  // section is actually visible. Only the section just shown changed.
+  autoGrowVisible($(wanted) || document);
 }
 
 function initNotesSubtabs() {

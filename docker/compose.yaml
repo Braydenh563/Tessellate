@@ -20,6 +20,10 @@ services:
       # Behind a reverse proxy, the public name it forwards (comma-separated);
       # without it the app answers 421 to a Host that is not this container.
       TESSELLATE_ALLOWED_HOSTS: ${TESSELLATE_ALLOWED_HOSTS:-}
+      # The port is published on the host's loopback only (above), so the tool
+      # server at /mcp and its OAuth sign-in take the bridge address as this
+      # computer. Remove it if you change the mapping (docs/DOCKER.md).
+      TESSELLATE_PUBLISHED_ON_LOOPBACK: "1"
     extra_hosts:
       - "host.docker.internal:host-gateway"   # Linux needs this line
     restart: unless-stopped
