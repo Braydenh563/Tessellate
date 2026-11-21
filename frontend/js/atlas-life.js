@@ -1508,6 +1508,7 @@
       if (!live) {
         if (m.moved) M.rest(low);
         atlasBreathFrame.pace(box, false);
+        if (buddy) atlasBlink.saccade.pace(false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
         return;
@@ -1516,6 +1517,7 @@
       //: At rest the paths keep the shape they have; the first input starts them again (`atlasTailCalm.rest`).
       if (atlasTailCalm.rest.sync(box, low.state)) {
         atlasBreathFrame.pace(box, false);
+        if (buddy) atlasBlink.saccade.pace(false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
         return;
@@ -1538,6 +1540,8 @@
       M.pass(m, M.px / M.scale(box, m, now));
       //: The companion's chest on this tick (`atlasBreathFrame.pace`); the large view, the one thing on screen, runs it free.
       atlasBreathFrame.pace(box, !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure"));
+      //: And the irises' step (`atlasBlink.saccade.pace`), the companion's only.
+      if (buddy) atlasBlink.saccade.pace(!box.closest(".nm-viewer-figure"));
       m.moved = true;
       m.timer = setTimeout(step, M.tick);
     };

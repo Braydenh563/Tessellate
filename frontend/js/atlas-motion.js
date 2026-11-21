@@ -123,11 +123,52 @@ atlasBlink.saccade.step = (r = [Math.random(), Math.random()]) => {
   if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging")) return true;
   const ex = (nmb.ex || 0) + (r[0] - 0.5) * 0.5;
   const ey = (nmb.ey || 0) + (r[1] - 0.5) * 0.36;
-  for (const iris of buddy.querySelectorAll(".nm-atlas .atl-iris")) {
+  const irises = buddy.querySelectorAll(".nm-atlas .atl-iris");
+  for (const iris of irises) {
     iris.style.setProperty("--nmb-ex", ex.toFixed(2));
     iris.style.setProperty("--nmb-ey", ey.toFixed(2));
   }
+  atlasBlink.saccade.hold(irises);
   return true;
+};
+//: **On the companion the step is eased with the dress's tick** (L-ui-modernisation-201): the iris is an SVG group, so
+//: its 180 ms `translate` transition ran on the main thread at 60 fps, about 11 frames a second of a held gaze (traced).
+//: While the morph ticks (`atlasRigLower.morph.run`, 100 ms, a frame of its own anyway: `pace(true)`) the step's
+//: transition is held as it starts and set to its own time on each tick, so it lands on time and adds one frame, not
+//: eleven; when the morph stops (`pace(false)`) a held one runs on from its own start. The step is under a pixel on screen.
+atlasBlink.saccade.held = [];
+atlasBlink.saccade.paced = false;
+atlasBlink.saccade.hold = (irises) => {
+  const s = atlasBlink.saccade;
+  if (!s.paced) return;
+  const t0 = document.timeline.currentTime;
+  for (const iris of irises) {
+    for (const a of iris.getAnimations()) {
+      if (a.transitionProperty !== "translate" || a.playState !== "running") continue;
+      a.pause();
+      s.held.push([a, t0]);
+    }
+  }
+};
+atlasBlink.saccade.pace = (on) => {
+  const s = atlasBlink.saccade;
+  s.paced = on;
+  if (!s.held.length) return;
+  const now = document.timeline.currentTime;
+  //: One replaced by a newer look is idle and dropped; a finished one has ended (its `transitionend` fires).
+  s.held = s.held.filter(([a, t0]) => {
+    if (a.playState !== "paused") return false;
+    if (!on) {
+      a.startTime = t0;
+      return false;
+    }
+    if (now - t0 >= a.effect.getComputedTiming().endTime) {
+      a.finish();
+      return false;
+    }
+    a.currentTime = now - t0;
+    return true;
+  });
 };
 function atlasBlinkStart() {
   if (!atlasState.blinkTimer) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 1800);
