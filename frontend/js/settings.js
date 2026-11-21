@@ -641,7 +641,8 @@ function filterSettings(term) {
   //: Every pane is searched, so a query builds the ones not yet visited (L675).
   for (const name of SETTINGS_SECTIONS) surfaceBuild(`settings-${name}`);
   //: The topics are findable settings too: draw them on the first query, then ask again.
-  if ($("help-topics") && !$("help-topics").firstElementChild) {
+  const topics = document.getElementById("help-topics");
+  if (topics && (!topics.firstElementChild || topics.dataset.dropping)) {
     window.renderHelpTopics?.()?.then(() => {
       if ($("settings-search").value.trim().toLowerCase() === query) filterSettings(query);
     });

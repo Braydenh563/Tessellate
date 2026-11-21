@@ -123,7 +123,8 @@
   function settingRowsWarm() {
     //: The topics are drawn here, in an idle slot, and not by the first query: that draw changed the Help pane
     //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
-    if ($("help-topics") && !$("help-topics").firstElementChild) renderHelpTopics();
+    const topics = document.getElementById("help-topics");
+    if (topics && (!topics.firstElementChild || topics.dataset.dropping)) renderHelpTopics();
     //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
     const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !settingRowsScan.panes.has(p));
     if (!pane) return;
@@ -649,11 +650,13 @@
   function settingsIndexWatchSection(name) {
     //: Leaving Help drops its 1,770 topic nodes; the next Help view or search draws them again (L676). Not while
     //: a search is typed: its results point at those rows.
-    const help = $("help-topics");
+    //: `getElementById`, not `$`: an unbuilt Help has no topics to drop, and `$` built the pane at every first open (L675).
+    const help = document.getElementById("help-topics");
     if (name !== "help" && helpTopicsLoad && help && !$("settings-search").value) {
       helpTopicsLoad = null;
-      //: Empty is the "not drawn" mark (renderHelpTopics fills it); the static aria-busy is only for the first load.
-      help.replaceChildren();
+      //: Empty, or still emptying (`data-dropping`), is the "not drawn" mark; renderHelpTopics fills it. Not a
+      //: hand-set aria-busy (test_spinner_recipe): the static one is only for the first load.
+      helpTopicsDrop(help);
     }
     //: Each row's changed marker and reset (WORLD_CLASS_PLAN 25f), a file of its own.
     lazyScript("/js/settings-rows.js").then((ok) => ok && settingRowsWatch(name));
@@ -690,6 +693,25 @@
   // load; a failed fetch is tried again on the next open.
 
   let helpTopicsLoad = null;
+
+  //: Leaving Help empties its topics a slice of rows per timer: all 1,770 nodes in one `replaceChildren` were a
+  //: 220 to 350 ms task at 4x CPU, landing on the next pane's switch (L675). Rows, then their groups; a visit
+  //: back first draws a fresh set, and the old nodes are already off the page or on their way.
+  const HELP_DROP_SLICE = 60;
+  function helpTopicsDrop(box) {
+    box.dataset.dropping = "1";
+    const groups = [...box.children];
+    const rows = groups.flatMap((group) => [...group.children]);
+    const step = () => {
+      for (const row of rows.splice(0, HELP_DROP_SLICE)) row.remove();
+      if (rows.length) setTimeout(step);
+      else {
+        groups.forEach((group) => group.remove());
+        if (!helpTopicsLoad) delete box.dataset.dropping;
+      }
+    };
+    setTimeout(step);
+  }
 
   function helpTopicLink(link) {
     const button = document.createElement("button");
@@ -999,6 +1021,7 @@
         }
         box.replaceChildren(...parts);
         box.removeAttribute("aria-busy");
+        delete box.dataset.dropping;
         //: One capture listener for the hundred folds: `toggle` does not bubble.
         box.addEventListener("toggle", (event) => {
           const topic = event.target;

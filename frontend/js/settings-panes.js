@@ -788,10 +788,9 @@ function markPrefsDirty() {
 
 function markPrefsSaved() {
   prefsDirty = false;
-  const button = $("prefs-save");
-  if (button) button.classList.remove("primary");
-  const note = $("prefs-unsaved");
-  if (note) note.classList.add("hidden");
+  //: `getElementById`, not `$`: an unbuilt pane already looks saved, and `$` would build it (L675).
+  document.getElementById("prefs-save")?.classList.remove("primary");
+  document.getElementById("prefs-unsaved")?.classList.add("hidden");
 }
 
 // Downloads need the auth header, so plain <a href> won't do: fetch the

@@ -8,10 +8,41 @@
 // `prefsCache`, `savePrefs`, `markPrefsDirty` and `markPrefsSaved` stay in
 // settings-panes.js because the status bar and the palette also use them.
 
+//: What a pane's control shows of the saved preferences: [id, property, value]. A value of undefined leaves it alone.
+//: Each is filled by `SURFACES.fill`, so reading the preferences for one pane builds none of the others (L675).
+const PREFS_FILLS = [
+  ["pref-display-name", "value", () => prefsCache.display_name || ""],
+  ["pref-semantic-auto-install", "checked", () => prefsCache.semantic_auto_install ?? false],
+  ["pref-bin-days", "value", () => prefsCache.recycle_bin_days],
+  ["pref-chat-retention", "value", () => prefsCache.conversation_retention_days ?? 0],
+  ["pref-search-min-sim", "value", () => prefsCache.search_min_similarity],
+  ["pref-search-z-margin", "value", () => prefsCache.search_relative_z_margin],
+  ["pref-style", "value", () => prefsCache.communication_style],
+  ["pref-voice", "value", () => prefsCache.composer_voice],
+  ["pref-week-start", "value", () => prefsCache.week_start || "auto"],
+  ["pref-season-hemisphere", "value", () => prefsCache.season_hemisphere || "auto"],
+  ["pref-birthday", "value", () => prefsCache.birthday || ""],
+  ["pref-date-order", "value", () => prefsCache.date_order || "auto"],
+  ["pref-time-format", "value", () => prefsCache.time_format || "auto"],
+  ["pref-before-includes-day", "checked", () => prefsCache.before_includes_day === true],
+  ["pref-insight", "value", () => prefsCache.insight_level || "one"],
+  ["pref-profile", "value", () => prefsCache.user_profile],
+  ["pref-profile-enabled", "checked", () => prefsCache.profile_enabled],
+  ["account-idle-ttl", "value", () => prefsCache.session_idle_ttl_minutes || undefined],
+  ["account-private-idle", "value", () => prefsCache.private_space_idle_minutes],
+  ["pref-new-notes-private", "checked", (p) => Boolean(p.new_notes_private)],
+  ["pref-notif-mute-except-reminders", "checked", (p) => Boolean(p.notifications_muted_except_reminders)],
+  ["pref-smart-punctuation", "checked", () => prefsCache.smart_punctuation === true],
+  ["pref-autocorrect", "checked", () => prefsCache.autocorrect !== false],
+  ["pref-link-offers", "checked", () => prefsCache.link_offers !== false],
+  ["pref-check-link-text", "checked", () => prefsCache.check_link_text === true],
+  ["prefs-status", "textContent", () => ""],
+];
+
 async function renderPrefs() {
   //: The optional-package notices for what this pane's switches use (extra-notice.js).
-  extraNoticeMount($("xn-documents"), "documents", { fresh: true });
-  extraNoticeMount($("xn-semantic"), "semantic");
+  SURFACES.fill("xn-documents", (el) => extraNoticeMount(el, "documents", { fresh: true }));
+  SURFACES.fill("xn-semantic", (el) => extraNoticeMount(el, "semantic"));
   //: **A change still waiting for its quiet save is written first.** Profile
   //: and General save 700 ms after the last change (`markPrefsDirty`); opening
   //: either, or Search and index or Personas, lands here, and the GET below
@@ -21,44 +52,18 @@ async function renderPrefs() {
   if (prefsDirty) await savePrefs({ quiet: true });
   if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
   prefsCache = await apiJson("/preferences");
-  $("pref-display-name").value = prefsCache.display_name || "";
-  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
+  for (const [id, prop, read] of PREFS_FILLS) {
+    SURFACES.fill(id, (el) => {
+      const value = read();
+      if (value !== undefined) el[prop] = value;
+      if (id === "pref-profile") updateProfileCount();
+    });
+  }
   //: The saved look, and its controls (avatars.js, once it is in).
   const savedLook = prefsCache.avatar_style || {};
-  afterCharacters(() => {
-    setOwnNameMarkStyle(savedLook);
-    mountProfileLook();
-  });
-  $("pref-bin-days").value = prefsCache.recycle_bin_days;
-  $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
-  $("pref-search-min-sim").value = prefsCache.search_min_similarity;
-  $("pref-search-z-margin").value = prefsCache.search_relative_z_margin;
-  $("pref-style").value = prefsCache.communication_style;
-  $("pref-voice").value = prefsCache.composer_voice;
-  $("pref-week-start").value = prefsCache.week_start || "auto";
-  $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
-  $("pref-birthday").value = prefsCache.birthday || "";
-  $("pref-date-order").value = prefsCache.date_order || "auto";
-  $("pref-time-format").value = prefsCache.time_format || "auto";
-  $("pref-before-includes-day").checked = prefsCache.before_includes_day === true;
-  $("pref-insight").value = prefsCache.insight_level || "one";
-  $("pref-profile").value = prefsCache.user_profile;
-  $("pref-profile-enabled").checked = prefsCache.profile_enabled;
+  afterCharacters(() => setOwnNameMarkStyle(savedLook));
+  SURFACES.fill("profile-look-parts", () => afterCharacters(mountProfileLook));
   paintUserMarks();
-  updateProfileCount();
-  if (prefsCache.session_idle_ttl_minutes) {
-    $("account-idle-ttl").value = prefsCache.session_idle_ttl_minutes;
-  }
-  $("account-private-idle").value = prefsCache.private_space_idle_minutes;
-  $("pref-new-notes-private").checked = Boolean(prefsCache.new_notes_private);
-  $("pref-notif-mute-except-reminders").checked = Boolean(
-    prefsCache.notifications_muted_except_reminders
-  );
-  $("pref-smart-punctuation").checked = prefsCache.smart_punctuation === true;
-  $("pref-autocorrect").checked = prefsCache.autocorrect !== false;
-  $("pref-link-offers").checked = prefsCache.link_offers !== false;
-  $("pref-check-link-text").checked = prefsCache.check_link_text === true;
-  $("prefs-status").textContent = "";
   //: The fields now hold what the server holds, so nothing is unsaved: this
   //: also covers the reopen, since `showSettingsSection` re-renders.
   markPrefsSaved();
