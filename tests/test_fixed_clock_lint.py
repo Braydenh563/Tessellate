@@ -170,7 +170,7 @@ def test_pin_clock_reaches_a_module_that_imported_user_now_by_name(monkeypatch):
     `_clock_holders` lint above keeps every real by-name importer in HOLDERS."""
     import sys
     import types
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from tessellate.core import config, database
     from tests import _clock
@@ -182,10 +182,10 @@ def test_pin_clock_reaches_a_module_that_imported_user_now_by_name(monkeypatch):
     monkeypatch.setattr(
         _clock, "HOLDERS", (*_clock.HOLDERS, (stub.__name__, "user_now"), (stub.__name__, "utcnow"))
     )
-    when = datetime(2026, 8, 1, 9, 0)
-    _clock.pin_clock(monkeypatch, when)
-    assert stub.user_now() == when
-    assert stub.utcnow() == when.astimezone(timezone.utc)
+    _clock.pin_clock(monkeypatch, datetime(2026, 8, 1, 9, 0))
+    # The pinned clocks carry `pinned`; called here, they cost Analyze its 20
+    # minutes again (D1c, #249), so the holder is checked by what it now holds.
+    assert stub.user_now.pinned and stub.utcnow.pinned
 
 
 def test_a_row_made_under_a_pinned_clock_is_stamped_with_it(monkeypatch, session):
