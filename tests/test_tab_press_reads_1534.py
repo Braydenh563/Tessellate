@@ -9,8 +9,12 @@ reports after layout, or reads nothing."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from tests._app_js import frontend_text
 from tests import _js_scope
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _body(text: str, head: str) -> str:
@@ -125,3 +129,11 @@ def test_the_companions_tempo_does_not_flush_style_while_a_popup_is_arriving():
     body = _body(src, "function nameMarkBuddyTempo(")
     assert "now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)" in body
     assert "window.uiSettlingUntil = performance.now() + 400;" in _js_scope.unwrapped(frontend_text("icon-picker.js"))
+
+
+def test_the_notes_column_is_found_by_its_rule_before_any_style_read():
+    #: L705: the first walk's getComputedStyle cost 93ms of style at 4x on the first Notes press.
+    body = _body(frontend_text("notes-list.js"), "function notesScroller(")
+    assert body.index('list.closest("#tab-notes .layout > .tab-main")') < body.index("getComputedStyle(")
+    css = (ROOT / "frontend/css/04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    assert "#tab-notes .layout>.tab-main {\n  overflow-y: auto;" in css

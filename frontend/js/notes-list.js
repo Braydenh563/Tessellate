@@ -1967,6 +1967,11 @@ const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", 
 //: at 4x, INBOX 1534). A resize forgets it, as the one place the scroller moves.
 function notesScroller(list) {
   if (notesScroller.kept?.contains(list)) return notesScroller.kept;
+  //: The Notes column is the scroller by its own rule (04-chat-dock-appearance.css,
+  //: `#tab-notes .layout>.tab-main`), so it is found by selector: the walk's first
+  //: computed-style read still cost 93ms of style at 4x on the first Notes press (L705).
+  const column = list.closest("#tab-notes .layout > .tab-main");
+  if (column) return (notesScroller.kept = column);
   for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
     if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return (notesScroller.kept = el);
   }

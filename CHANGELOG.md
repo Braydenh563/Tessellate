@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: the first press on Notes no longer forces a style pass to find its scrolling column (93ms of style at 4x before; the largest forced pass in a tab press is now fitNoteMetas at 12 to 41ms) (L705).
 - Notes: in card view a linked note shows two link pills before "+N more links", and they share the details line when both fit (111px instead of 141px a card at 1093x614) (L-world-class-95; the four-card laptop fold is an owner call in BACKLOG).
 - Agent: the chat turn and each skill step run as small named stages that can be tested one at a time; behaviour is unchanged (L-world-class-124).
 - Duplicates: the review on 5,000 alike notes takes 4.8 s instead of 70 s and 613 MB instead of 2.1 GB (L-world-class-410).

@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11168, test files 2895, tests 22881, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11168, test files 2895, tests 22882, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8539)
 
@@ -234,127 +234,127 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:3092 |
+| `_loadEntries` | frontend/js/notes-list.js:3097 |
 | `appendInline` | frontend/js/notes-list.js:1212 |
 | `appendInlineRun` | frontend/js/notes-list.js:964 |
 | `appendPictureBox` | frontend/js/notes-list.js:894 |
 | `appendPlainText` | frontend/js/notes-list.js:1689 |
-| `applyEntryListTabOrder` | frontend/js/notes-list.js:2522 |
-| `applyNotesViewMode` | frontend/js/notes-list.js:2122 |
+| `applyEntryListTabOrder` | frontend/js/notes-list.js:2527 |
+| `applyNotesViewMode` | frontend/js/notes-list.js:2127 |
 | `attachmentCard` | frontend/js/notes-list.js:632 |
 | `attachmentFacts` | frontend/js/notes-list.js:601 |
 | `attachmentKind` | frontend/js/notes-list.js:592 |
 | `boardEmbedRef` | frontend/js/notes-list.js:1292 |
 | `boardEmbedTarget` | frontend/js/notes-list.js:1312 |
 | `bodyWithoutTitleLine` | frontend/js/notes-list.js:1229 |
-| `captureBar` | frontend/js/notes-list.js:2225 |
-| `categoryAutoDot` | frontend/js/notes-list.js:2617 |
-| `categoryColour` | frontend/js/notes-list.js:2612 |
-| `categoryColoursChanged` | frontend/js/notes-list.js:2629 |
-| `categoryDotColour` | frontend/js/notes-list.js:2622 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2909 |
-| `clearSkeletons` | frontend/js/notes-list.js:3010 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2847 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3687 |
+| `captureBar` | frontend/js/notes-list.js:2230 |
+| `categoryAutoDot` | frontend/js/notes-list.js:2622 |
+| `categoryColour` | frontend/js/notes-list.js:2617 |
+| `categoryColoursChanged` | frontend/js/notes-list.js:2634 |
+| `categoryDotColour` | frontend/js/notes-list.js:2627 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2914 |
+| `clearSkeletons` | frontend/js/notes-list.js:3015 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2852 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3692 |
 | `engineQueryIds` | frontend/js/notes-list.js:250 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3489 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3535 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3493 |
-| `entryListItems` | frontend/js/notes-list.js:2504 |
-| `entryListOrder` | frontend/js/notes-list.js:3193 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3494 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3540 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3498 |
+| `entryListItems` | frontend/js/notes-list.js:2509 |
+| `entryListOrder` | frontend/js/notes-list.js:3198 |
 | `entryNeedsReview` | frontend/js/notes-list.js:273 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:840 |
 | `fileCard` | frontend/js/notes-list.js:706 |
 | `fillCategoryOptions` | frontend/js/notes-list.js:137 |
-| `filterNotesBy` | frontend/js/notes-list.js:2274 |
-| `filterNotesByTag` | frontend/js/notes-list.js:2261 |
+| `filterNotesBy` | frontend/js/notes-list.js:2279 |
+| `filterNotesByTag` | frontend/js/notes-list.js:2266 |
 | `focusNoteRow` | frontend/js/notes-list.js:63 |
 | `foldNoteToolbarForFirstPaint` | frontend/js/notes-list.js:17 |
-| `followNoteChanges` | frontend/js/notes-list.js:3263 |
+| `followNoteChanges` | frontend/js/notes-list.js:3268 |
 | `heldNoteControl` | frontend/js/notes-list.js:95 |
 | `highlightIconsInto` | frontend/js/notes-list.js:1710 |
 | `highlightInto` | frontend/js/notes-list.js:1737 |
-| `initEntryListKeyboardNav` | frontend/js/notes-list.js:2532 |
+| `initEntryListKeyboardNav` | frontend/js/notes-list.js:2537 |
 | `isRemoteImage` | frontend/js/notes-list.js:900 |
 | `isRenderableUrl` | frontend/js/notes-list.js:552 |
-| `libraryVisibleRows` | frontend/js/notes-list.js:2288 |
+| `libraryVisibleRows` | frontend/js/notes-list.js:2293 |
 | `linkAppAddresses` | frontend/js/notes-list.js:854 |
-| `listedNoteIds` | frontend/js/notes-list.js:2141 |
+| `listedNoteIds` | frontend/js/notes-list.js:2146 |
 | `liveQueryIds` | frontend/js/notes-list.js:201 |
-| `loadCategories` | frontend/js/notes-list.js:2638 |
+| `loadCategories` | frontend/js/notes-list.js:2643 |
 | `loadEmbedDocuments` | frontend/js/notes-list.js:1425 |
-| `loadEntries` | frontend/js/notes-list.js:3081 |
-| `markSidebarRowCurrent` | frontend/js/notes-list.js:2851 |
+| `loadEntries` | frontend/js/notes-list.js:3086 |
+| `markSidebarRowCurrent` | frontend/js/notes-list.js:2856 |
 | `matchesSearch` | frontend/js/notes-list.js:434 |
 | `matchesTagCount` | frontend/js/notes-list.js:413 |
 | `meaningEngineMissing` | frontend/js/notes-list.js:297 |
-| `noteCountExcludingDrafts` | frontend/js/notes-list.js:2251 |
+| `noteCountExcludingDrafts` | frontend/js/notes-list.js:2256 |
 | `noteEditedTime` | frontend/js/notes-list.js:1792 |
 | `noteFormMayClose` | frontend/js/notes-list.js:57 |
-| `noteListGrownBy` | frontend/js/notes-list.js:2320 |
-| `noteListed` | frontend/js/notes-list.js:2247 |
+| `noteListGrownBy` | frontend/js/notes-list.js:2325 |
+| `noteListed` | frontend/js/notes-list.js:2252 |
 | `noteQueryIsEmpty` | frontend/js/notes-list.js:396 |
-| `noteRowStays` | frontend/js/notes-list.js:1978 |
+| `noteRowStays` | frontend/js/notes-list.js:1983 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:430 |
 | `noteSortName` | frontend/js/notes-list.js:1796 |
-| `noteTopicChip` | frontend/js/notes-list.js:3416 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3680 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3587 |
-| `notesRailSync` | frontend/js/notes-list.js:3598 |
-| `notesRailWanted` | frontend/js/notes-list.js:3615 |
+| `noteTopicChip` | frontend/js/notes-list.js:3421 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3685 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3592 |
+| `notesRailSync` | frontend/js/notes-list.js:3603 |
+| `notesRailWanted` | frontend/js/notes-list.js:3620 |
 | `notesScroller` | frontend/js/notes-list.js:1968 |
-| `offerWikiRename` | frontend/js/notes-list.js:3771 |
+| `offerWikiRename` | frontend/js/notes-list.js:3776 |
 | `openNoteEditor` | frontend/js/notes-list.js:113 |
-| `orderedNotesForCurrentView` | frontend/js/notes-list.js:2064 |
-| `paginateNotesForDisplay` | frontend/js/notes-list.js:2030 |
-| `paintCategoryDot` | frontend/js/notes-list.js:2625 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:3046 |
+| `orderedNotesForCurrentView` | frontend/js/notes-list.js:2069 |
+| `paginateNotesForDisplay` | frontend/js/notes-list.js:2035 |
+| `paintCategoryDot` | frontend/js/notes-list.js:2630 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:3051 |
 | `parseNoteQuery` | frontend/js/notes-list.js:307 |
-| `propQuery` | frontend/js/notes-list.js:2268 |
+| `propQuery` | frontend/js/notes-list.js:2273 |
 | `readableUrl` | frontend/js/notes-list.js:870 |
-| `referenceCountChip` | frontend/js/notes-list.js:3345 |
-| `referenceCountText` | frontend/js/notes-list.js:3333 |
-| `refreshEntries` | frontend/js/notes-list.js:3201 |
-| `rememberNoteFilter` | frontend/js/notes-list.js:2356 |
-| `reminderCountChip` | frontend/js/notes-list.js:3388 |
+| `referenceCountChip` | frontend/js/notes-list.js:3350 |
+| `referenceCountText` | frontend/js/notes-list.js:3338 |
+| `refreshEntries` | frontend/js/notes-list.js:3206 |
+| `rememberNoteFilter` | frontend/js/notes-list.js:2361 |
+| `reminderCountChip` | frontend/js/notes-list.js:3393 |
 | `remoteImageNote` | frontend/js/notes-list.js:904 |
-| `renderEntries` | frontend/js/notes-list.js:2368 |
-| `renderEntriesWhenShown` | frontend/js/notes-list.js:3059 |
+| `renderEntries` | frontend/js/notes-list.js:2373 |
+| `renderEntriesWhenShown` | frontend/js/notes-list.js:3064 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:920 |
 | `renderNoteInline` | frontend/js/notes-list.js:1601 |
 | `renderNoteText` | frontend/js/notes-list.js:1440 |
-| `renderNotesRail` | frontend/js/notes-list.js:3634 |
-| `renderSidebar` | frontend/js/notes-list.js:2653 |
-| `renderWindowed` | frontend/js/notes-list.js:1981 |
-| `resetNoteList` | frontend/js/notes-list.js:2330 |
+| `renderNotesRail` | frontend/js/notes-list.js:3639 |
+| `renderSidebar` | frontend/js/notes-list.js:2658 |
+| `renderWindowed` | frontend/js/notes-list.js:1986 |
+| `resetNoteList` | frontend/js/notes-list.js:2335 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:165 |
-| `resolveNotePage` | frontend/js/notes-list.js:2095 |
+| `resolveNotePage` | frontend/js/notes-list.js:2100 |
 | `resolveWikiTarget` | frontend/js/notes-list.js:1320 |
 | `restoreFocusTo` | frontend/js/notes-list.js:79 |
 | `restoreNoteControl` | frontend/js/notes-list.js:101 |
 | `safeHref` | frontend/js/notes-list.js:815 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:3074 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3610 |
-| `selectNoteRange` | frontend/js/notes-list.js:2507 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3693 |
-| `setNotesViewMode` | frontend/js/notes-list.js:2178 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2946 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:3079 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3615 |
+| `selectNoteRange` | frontend/js/notes-list.js:2512 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3698 |
+| `setNotesViewMode` | frontend/js/notes-list.js:2183 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2951 |
 | `showNotesFilter` | frontend/js/notes-list.js:284 |
-| `showSkeletons` | frontend/js/notes-list.js:2967 |
-| `sidebarRovingRows` | frontend/js/notes-list.js:2831 |
-| `skeletonRemember` | frontend/js/notes-list.js:2989 |
+| `showSkeletons` | frontend/js/notes-list.js:2972 |
+| `sidebarRovingRows` | frontend/js/notes-list.js:2836 |
+| `skeletonRemember` | frontend/js/notes-list.js:2994 |
 | `sortEntries` | frontend/js/notes-list.js:1800 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3623 |
-| `toggleExpandAllRows` | frontend/js/notes-list.js:2167 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3410 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3628 |
+| `toggleExpandAllRows` | frontend/js/notes-list.js:2172 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3415 |
 | `unlatex` | frontend/js/notes-list.js:750 |
-| `updateExpandAllButton` | frontend/js/notes-list.js:2147 |
+| `updateExpandAllButton` | frontend/js/notes-list.js:2152 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1777 |
 | `wikiForms` | frontend/js/notes-list.js:1258 |
 | `wikiStem` | frontend/js/notes-list.js:1276 |
 | `windowRows` | frontend/js/notes-list.js:1853 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2928 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2860 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2933 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2865 |
 
 ### frontend/js/capture-ask.js (43)
 
@@ -28525,7 +28525,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22881)
+## Tests (22882)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31019,7 +31019,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tab_entry_cost.py | 9 |
 | tests/test_tab_label_width.py | 2 |
 | tests/test_tab_press_focus_1534.py | 2 |
-| tests/test_tab_press_reads_1534.py | 14 |
+| tests/test_tab_press_reads_1534.py | 15 |
 | tests/test_tab_strip_measure.py | 1 |
 | tests/test_tab_tooltips_96.py | 2 |
 | tests/test_table_menu_widget.py | 4 |
@@ -31842,14 +31842,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4389 |
-| Needs hardware | docs/roadmap/LEDGER.md:590 |
+| Needs hardware | docs/roadmap/LEDGER.md:589 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:583 |
+| Owner calls | docs/roadmap/LEDGER.md:582 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4262 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32029,7 +32029,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3154 |
-| Plan session briefs | docs/roadmap/LEDGER.md:719 |
+| Plan session briefs | docs/roadmap/LEDGER.md:718 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2638 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32083,25 +32083,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:735 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:819 |
+| chat | docs/roadmap/LEDGER.md:734 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:818 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:759 |
+| documents | docs/roadmap/LEDGER.md:758 |
 | general | docs/roadmap/LEDGER.md:542 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:723 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:831 |
+| graph | docs/roadmap/LEDGER.md:722 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:830 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4398 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:771 |
+| mindmap | docs/roadmap/LEDGER.md:770 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:795 |
+| timeline | docs/roadmap/LEDGER.md:794 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:783 |
+| ui-modernisation | docs/roadmap/LEDGER.md:782 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:747 |
+| whiteboard | docs/roadmap/LEDGER.md:746 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:807 |
+| world-class | docs/roadmap/LEDGER.md:806 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2808 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2859 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2966 |
