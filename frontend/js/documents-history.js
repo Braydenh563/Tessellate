@@ -583,26 +583,8 @@
     return kebabMenu(items, "More for this version", { vertical: true });
   }
 
-  //: **A prompt asked from inside the history dialog.** `promptDialog` mounts
-  //: its overlay on `<body>`, and a `showModal()` dialog makes everything
-  //: outside it inert, so the prompt opened beneath the history unreachable
-  //: (measured: the click at its centre landed on the history). Moved into the
-  //: open modal as soon as it is made (the executor runs synchronously), the
-  //: same escape `wireHelpPopover` makes for a "?". Done here rather than in
-  //: app.js, whose gzipped size is held by `test_static_compression.py`.
-  function docPromptInModal(message, initial) {
-    const asked = promptDialog(message, initial);
-    const overlay = document.body.lastElementChild;
-    const modal = document.querySelector("dialog:modal");
-    if (modal && overlay?.classList.contains("confirm-overlay")) {
-      modal.appendChild(overlay);
-      overlay.querySelector("input")?.select();
-    }
-    return asked;
-  }
-
   async function docNameVersion(entry) {
-    const next = await docPromptInModal(entry.name ? "Rename this version" : "Name this version", entry.name || "");
+    const next = await promptDialog(entry.name ? "Rename this version" : "Name this version", entry.name || "");
     if (next === null || next === undefined) return;
     await docSetVersionName(entry, next);
   }
@@ -627,7 +609,7 @@
   //: the name holds what is on screen.
   async function docNameCurrentVersion() {
     if (!currentDoc) return;
-    const name = await docPromptInModal("Name this version", "");
+    const name = await promptDialog("Name this version", "");
     if (!name || !name.trim()) return;
     if (docDirty) await saveDocument({ silent: true });
     const docId = currentDoc.id;

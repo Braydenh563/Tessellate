@@ -5882,7 +5882,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 /* Room for the pair: the history is wider than the AI log it shares a class
    with, and a row lets its diff wrap onto a line of its own. */
-#doc-history-dialog {
+sheet-host.doc-history-dialog {
   width: min(56rem, calc(100vw - var(--space-8)));
 }
 

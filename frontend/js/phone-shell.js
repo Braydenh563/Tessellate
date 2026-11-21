@@ -1400,7 +1400,7 @@ onSurface("chat", initPhoneChatRow);
 //: is a class rather than a second recipe so everything else about a sheet,
 //: the scrim, the tier, the head with its X, Escape and the backdrop press,
 //: stays the one thing it already is.
-function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null, hasWork = null }) {
+function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null, hasWork = null, headless = false }) {
   const overlay = document.createElement("div");
   overlay.className = `modal-overlay sheet-overlay${variant ? ` sheet-${variant}` : ""}`;
   overlay.dataset.sheet = name || "";
@@ -1453,12 +1453,10 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   closeButton.className = "icon-only ghost small dialog-head-btn sheet-close";
   closeButton.setAttribute("aria-label", "Close");
   closeButton.title = "Close (Escape)";
-  const closeIcon = document.createElement("i");
-  closeIcon.className = "ph ph-x";
-  closeIcon.setAttribute("aria-hidden", "true");
-  closeButton.appendChild(closeIcon);
+  setLabel(closeButton, "ph:x");
   head.append(title, closeButton);
-  card.appendChild(head);
+  //: A `<sheet-host>` brings its own `.dialog-head`, so its sheet draws none.
+  if (!headless) card.appendChild(head);
   //: One line of state under the title (the model picker's "Its own model:
   //: granite4.1:3b"): part of the head, in the recipe, so a sheet that needs
   //: it does not hand-build a paragraph with its own margins.
@@ -1625,6 +1623,43 @@ function sheetRow(iconClass, label, run) {
   row.addEventListener("click", run);
   return row;
 }
+
+//: A form, picker or setting popup is a sheet (WORLD_CLASS_PLAN 27.2; L-world-class-131): its
+//: markup stays a `<sheet-host>` in the page, and `showModal()` lifts it into `openSheet`, so the
+//: scrim, Escape and the fade are the recipe's. It keeps the dialog's `open`, `showModal`, `close`
+//: and `close` event, so no caller changed; `data-sheet-kind="panel"` is a history.
+customElements.define("sheet-host", class extends HTMLElement {
+  get open() {
+    return !!this._close;
+  }
+  showModal() {
+    if (this._close) return;
+    const panel = this.dataset.sheetKind === "panel";
+    this._home ??= this.parentNode;
+    this._close = openSheet({
+      label: this.querySelector(".dialog-head-title")?.textContent.trim() || "Dialog",
+      name: this.id,
+      headless: true,
+      variant: panel ? "panel" : "hosted",
+      modal: !panel,
+      build: (card) => {
+        this.hidden = false;
+        card.appendChild(this);
+      },
+      onClose: () => {
+        this._close = null;
+        this.dispatchEvent(new Event("close"));
+      },
+      onGone: () => {
+        this.hidden = true;
+        this._home.append(this);
+      },
+    });
+  }
+  close() {
+    this._close?.();
+  }
+});
 
 // --- More: the three tabs the phone's five-item bar does not show -------------
 // UI_MODERNISATION_PLAN.md Phase 11, item 1; INBOX 1314 for which three. The
@@ -2304,48 +2339,6 @@ async function clearAppCache() {
 async function forceReloadApp() {
   await clearAppCache();
   location.reload();
-}
-
-//: **The exports folder, as a list in Settings** (INBOX 159: "an area
-//: somewhere maybe in settings to open the exports folder location and access
-//: exported or downloaded files and images"). Fed by `GET /files/exports`,
-//: newest first; each row downloads its file through `GET
-//: /files/exports/{name}`, fetched with the app's own auth header and handed
-//: to the browser as a download, since a bare link cannot carry the token.
-async function renderExportsList() {
-  const list = $("exports-list");
-  const empty = $("exports-empty");
-  if (!list || !empty) return;
-  const body = await apiJson("/files/exports", { silent: true }).catch(() => null);
-  const files = (body && body.files) || [];
-  list.replaceChildren();
-  empty.classList.toggle("hidden", files.length > 0);
-  empty.textContent = body
-    ? `Nothing saved here yet. Saved files land in ${body.path}.`
-    : "The exports folder could not be read.";
-  for (const file of files) {
-    const row = document.createElement("li");
-    row.className = "row exports-row";
-    const name = document.createElement("span");
-    name.className = "exports-name";
-    name.textContent = file.filename;
-    name.title = file.filename;
-    const facts = document.createElement("span");
-    facts.className = "muted text-sm exports-facts";
-    const size = formatFileSize(file.bytes);
-    facts.textContent = `${size} · ${relativeTime(file.modified_at)}`;
-    const get = smallButton("ph:download-simple Download", `Download ${file.filename}`, async () => {
-      try {
-        const response = await api(`/files/exports/${encodeURIComponent(file.filename)}`);
-        downloadBlob(await response.blob(), file.filename);
-      } catch (error) {
-        toast(error.message || voiceLine("failed", { what: `fetch ${file.filename}` }), true);
-      }
-    });
-    get.classList.add("ghost");
-    row.append(name, facts, get);
-    list.appendChild(row);
-  }
 }
 
 function toggleAutonomousPanel() {

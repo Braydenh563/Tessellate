@@ -21,7 +21,7 @@ CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend"
 
 
 def _dialog() -> str:
-    match = re.search(r'<dialog id="doc-dictionary-dialog".*?</dialog>', HTML, re.S)
+    match = re.search(r'<sheet-host id="doc-dictionary-dialog".*?</sheet-host>', HTML, re.S)
     assert match, "the dictionary dialog is missing"
     return match.group(0)
 

@@ -21,8 +21,8 @@ LAZY = (JS / "private-spaces.js").read_text(encoding="utf-8")
 
 
 def _dialog(dialog_id: str) -> str:
-    start = INDEX.index(f'<dialog id="{dialog_id}"')
-    return INDEX[start : INDEX.index("</dialog>", start)]
+    start = INDEX.index(f'<sheet-host id="{dialog_id}"')
+    return INDEX[start : INDEX.index("</sheet-host>", start)]
 
 
 def test_new_space_and_edit_space_carry_a_private_switch_with_help():
