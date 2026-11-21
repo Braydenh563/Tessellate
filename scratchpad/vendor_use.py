@@ -779,7 +779,7 @@ WORDLIST_CAPABILITIES = (
     ("spell check in the documents editor", ("frontend/js/documents.js", "frontend/js/documents-instruments.js"), r"wordlist/en\.txt"),
     (
         "ranked suggestions in the documents editor",
-        ("frontend/js/documents.js",),
+        ("frontend/js/documents.js", "frontend/js/documents-instruments.js", "frontend/js/documents-suggest-panel.js"),
         r"docSpellGuesses",
     ),
     (
