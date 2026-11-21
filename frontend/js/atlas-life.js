@@ -645,24 +645,28 @@
   //: pointer, key, wheel or touch; the first input after a rest calls every waker, so a stopped loop starts within a frame.
   atlasTailCalm.rest = { at: performance.now(), wake: new Set(), after: 2000 };
   //: **Whether the rest may hold now** (the owner, 2026-11-10, decision 55: a setting, the full animation on mains power only): Settings, Appearance,
-  //: "Motion at rest" (`avatar-buddy-rest`): "always" never rests, "mains" (the default) rests on battery, "still" always rests. Read once a second;
-  //: a machine that cannot say (`getBattery`) is on mains.
+  //: "Motion at rest" (`avatar-buddy-rest`): "still" (the default, L-general-47: alive at rest was +340 to +563 ms/s of main thread, resting
+  //: +24) always rests, "mains" (opt-in) rests on battery, "always" never rests. Read once a second; a machine that cannot say (`getBattery`)
+  //: is on mains. Unplugging rests it at once: `chargingchange` runs the wakers, whose `sync` pauses the loops in that event.
   atlasTailCalm.rest.holds = () => {
     const r = atlasTailCalm.rest;
     const t = performance.now();
     if (t - (r.modeAt || -1e9) > 1000) {
       r.modeAt = t;
       try {
-        r.mode = (typeof prefs === "object" && prefs.get("avatar-buddy-rest", null)) || "mains";
+        r.mode = (typeof prefs === "object" && prefs.get("avatar-buddy-rest", null)) || "still";
       } catch (e) {
-        r.mode = "mains";
+        r.mode = "still";
       }
       if (r.mode === "mains" && !r.asked && globalThis.navigator?.getBattery) {
         r.asked = true;
         navigator.getBattery().then((b) => {
           const read = () => (r.battery = !b.charging);
           read();
-          b.addEventListener("chargingchange", read);
+          b.addEventListener("chargingchange", () => {
+            read();
+            r.wake.forEach((fn) => fn());
+          });
         }, () => {});
       }
     }

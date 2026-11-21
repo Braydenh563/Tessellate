@@ -2912,7 +2912,7 @@ function renderAppearance() {
   } catch (e) {
     $("avatar-buddy-motion").value = "follow";
   }
-  $("avatar-buddy-rest").value = prefs.get("avatar-buddy-rest", null) || "mains";
+  $("avatar-buddy-rest").value = prefs.get("avatar-buddy-rest", null) || "still";
   nameMarkBuddyMotionApply();
   nameMarkBuddySizeSelect();
   $("atlas-style").value = appearancePref("atlas-style");

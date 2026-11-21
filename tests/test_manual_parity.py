@@ -755,3 +755,20 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+
+
+def test_motion_at_rest_says_still_by_default_in_the_setting_its_help_and_the_guide() -> None:
+    """L-general-47 under decision 55: the companion rests by default, alive on mains power is the
+    opt-in and stills it on unplug. The select, its popover and the Guide topic say the same."""
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    row = html.split('id="avatar-buddy-rest-row"', 1)[1].split('id="avatar-buddy-showy-row"', 1)[0]
+    assert 'data-help-for="avatar-buddy-rest-help"' in row
+    popover = " ".join(row.split('id="avatar-buddy-rest-help"', 1)[1].split("</div>", 1)[0].split())
+    for words in ("Still when idle is the default", "Alive on mains power only", "the moment you unplug", "Always alive"):
+        assert words in popover, words
+    from tessellate.ai import help_chat
+
+    named = [" ".join(t["body"].split()) for t in help_chat.HELP_TOPICS if "Motion at rest" in t["body"]]
+    assert named, "no Guide topic names Motion at rest"
+    for body in named:
+        assert "is still when idle (the default), alive on mains power only (still the moment you unplug), or always alive" in body
