@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Skills: a skill step whose contract is a tool call (`tool_called`, `notes_changed`) asks a small model for that call on its first round (`run_agent(must_call=)`), because Qwen2.5-1.5B wrote "I ran audit_link_reasons" in prose three attempts running and the step stalled (L250); the typo and slang set grows from 85 to 119 questions with `btwn`, `betw` and `b/w` read as between (L160); the real-model evals print their numbers (L827 to L829, L837, L-chat-23).
 - Chat acts: an Undo's drop steps take only a link or a childless map node, never from a private board, and a node's links go with it; a binned note's card is not offered by name; `/spelling/check` caps each word at 64 characters (PR 230 review).
 - CI fixes: the composer lint mirror re-places on window resize (no new ResizeObserver), the no-model line names reminders again, the composer imports cold in 0.075 s (help_chat loads on first help question; was 0.113 s), one assert-with-request rewritten (cap 226 held).
 

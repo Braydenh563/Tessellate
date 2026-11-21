@@ -704,6 +704,8 @@ class _Loop:
     #: read its page and then stops is finished, and the runner reads that
     #: silence (`skill_runner`'s paging and postconditions depend on it).
     called_any: bool = False
+    #: A skill step whose contract is a tool call asks for it on round one (L250: a 1.5B wrote "I ran it" instead).
+    must_call: bool = False
 
 
 @dataclass
@@ -737,11 +739,8 @@ def _budget_events(spend, state: _TurnState, loop: _Loop) -> list[dict]:  # noqa
 def _round_tools(
     question: str, plan: "_TurnPlan", state: _TurnState, loop: _Loop, session: Session
 ) -> tuple[bool, list[dict]]:
-    required = (
-        (loop.round_number == 0 or loop.retry_forced)
-        and plan.tier.force_first_call
-        and _requires_a_call(question, plan)
-    )
+    first_or_retry = loop.round_number == 0 or loop.retry_forced
+    required = first_or_retry and plan.tier.force_first_call and (loop.must_call or _requires_a_call(question, plan))
     first = loop.round_number == 0 or (loop.retry_forced and required)
     tools = (
         _first_round_tools(question, plan, state.offered, required, session)
@@ -1132,6 +1131,7 @@ def run_agent(
     image_context: str | None = None,
     show_plan: bool = True,
     approved: bool = False,
+    must_call: bool = False,
 ) -> Iterator[dict]:
     """Yields event dicts:
     {"type": "unsupported", "model": ..., "message": ...}, model can't do
@@ -1180,7 +1180,7 @@ def run_agent(
         asked=question or "",
     )
     state.outside = _from_outside(notes)
-    loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling)
+    loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling, must_call=must_call)
     #: **The run this turn belongs to, if it belongs to one** (Brief 13).
     #: None for an ordinary chat turn: that is bounded per turn already, by
     #: `loop.allowance`, and has no notion of a run to belong to. See

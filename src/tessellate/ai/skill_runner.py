@@ -988,6 +988,9 @@ def _open_turn(setup: _RunSetup, run: _RunState, st: _StepState):
         run.step_history,
         f"I couldn't finish step {st.index + 1}: I used every round it had without reaching an answer.",
         st.offered,
+        # A step that has to call a tool asks a small model for the call up
+        # front (the model otherwise writes that it did, and the step retries).
+        must_call=bool(st.offered) and st.spec.get("expects") in ("tool_called", "notes_changed"),
     )
     first = next(events, None)
     if first is not None and first.get("type") == "unsupported":
@@ -1500,6 +1503,7 @@ def _turn_for(
         turn_history: list[dict],
         note: str | None,
         offered: list[str] | None = allowed,
+        must_call: bool = False,
     ) -> Iterator[dict]:
         return agent.run_agent(
             session,
@@ -1524,6 +1528,7 @@ def _turn_for(
             # The run draws its own card; a step's rounds are not a second one.
             show_plan=False,
             approved=True,
+            must_call=must_call,
         )
 
     return turn
