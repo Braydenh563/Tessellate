@@ -68,7 +68,9 @@ const { boot } = require('./lib.js');
   f = await faceMid();
   await page.mouse.move(f[0], f[1]);
   await page.mouse.down();
-  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(f[0] + i * 30, f[1] - i * 6); await page.waitForTimeout(12); }
+  // The let-go is read from the pointer's last 80ms and is null when it had stopped 100ms before: no wait after the last
+  // move, or a loaded machine's round trip (the app saw 100ms+ on a four-core box running other sweeps) read as a slow drop.
+  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(f[0] + i * 30, f[1] - i * 6); if (i < 6) await page.waitForTimeout(12); }
   await page.mouse.up();
   await page.waitForTimeout(150);
   const flying = await page.evaluate(() => ({ thrown: nmb.thrown || null, running: !!nmb.flight }));
