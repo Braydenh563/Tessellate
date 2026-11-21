@@ -1,4 +1,4 @@
-"""W8B (2026-11-11): the four composer date rows W8 did not close (docs/roadmap/agent-remaining/w8-1110.md, "Found, not fixed").
+"""W8B (2026-11-11): the four composer date rows W8 left unfixed (docs/roadmap/agent-remaining/w8-1110.md, "Found, not fixed").
 Each is fixed as a class and has sibling phrasings. Clocks fixed: the bt seed is Monday 9 November 2026, the r5 seed
 Saturday 7 November 2026, the calls notebook Thursday 29 October 2026."""
 
@@ -12,11 +12,10 @@ import pytest
 import tests._seed_bt_1109 as bt
 from tessellate.ai import composer_ahead, recognise, recognise_windows
 from tessellate.ai import recognise_questions
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests._r5_1108 import driver
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 
 @pytest.fixture
@@ -132,11 +131,12 @@ def test_a_single_day_prints_the_day_once(btask, question):
 
 
 @pytest.mark.parametrize(("question", "head"), [
-    ("what's on Thursday", "For Thursday 12 November you have one dated item:"),
-    ("what is on Friday", "For Friday 13 November you have one dated item:"),
-    ("what's on tomorrow", "For tomorrow, Tuesday 10 November you have one dated item:"),
+    ("what's on Thursday", "One dated item for Thursday 12 November:"),
+    ("what is on Friday", "One dated item for Friday 13 November:"),
+    ("what's on tomorrow", "One dated item for tomorrow, Tuesday 10 November:"),
 ])
 def test_a_single_day_is_a_head_then_its_items(btask, question, head):
+    # The head's wording comes from the reply seed, which holds the (pinned) day.
     lines = btask(question).split("\n")
     assert lines[0] == head and lines[1] == "" and lines[2].startswith("- "), lines
 
@@ -153,8 +153,7 @@ NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 
 @pytest.fixture
 def calls(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
     def build(verb: str):
         for text, when in ((f"# Calls\n\n{verb} mum on 26 October. Long chat about the garden.", dt.datetime(2026, 10, 26, 9)),

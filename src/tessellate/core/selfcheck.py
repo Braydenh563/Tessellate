@@ -29,11 +29,12 @@ file folder, never a walk; measured in `tests/test_data_dir_selfcheck.py`.
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import logging
 import os
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger("tessellate.selfcheck")
@@ -56,7 +57,7 @@ _offers: dict[str, dict | None] = {}
 
 def _now() -> datetime:
     """The clock, one seam for the tests' fixed one."""
-    return datetime.now(timezone.utc)
+    return clock.utc()
 
 
 def note(line: str) -> None:

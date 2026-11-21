@@ -37,6 +37,13 @@ from tessellate.core.database import (
     Reminder,
     utcnow,
 )
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 #: route -> the ORDER BY each of its list statements must be served from.
 SORTED_LISTS = {

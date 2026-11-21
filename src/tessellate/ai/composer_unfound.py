@@ -188,6 +188,12 @@ def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quot
     return not out.question or term.lower() in out.question.lower()
 
 
+def topic_word(term: str) -> bool:
+    """A word that could name what is asked about, not how it is asked ("more", "schedule", "sobre").
+    Not read from the question's shape: "accrued" in "how many days have I accrued" is its topic."""
+    return len(term) >= _MISSING_MIN and term.lower() not in _SMALL_WORDS | _FOREIGN and _stem(term) not in _INSTRUCTION_STEMS | _FRAME_WORDS
+
+
 def _unfound_terms(out: _Answer, terms: list[str], views: list[NoteView]) -> list[str]:
     found: set[str] = set()
     for view in views:

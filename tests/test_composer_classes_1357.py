@@ -19,11 +19,10 @@ import re
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.core.database import Document, Reminder, WhiteboardObject
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 21, 10, 0, 0)
 
@@ -59,8 +58,7 @@ _DUMP = os.environ.get("COMPOSER_1357_DUMP")
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, category, when, extra in NOTES:
         entry = manager.create_entry(session, text, category)
         entry.created_at = entry.updated_at = when
@@ -82,7 +80,7 @@ def ask(client, session, monkeypatch):
     def go(question: str, history: list | None = None) -> str:
         out = _ask(client, question, notes_only=True, answer_from="notes", history=history or [])
         text = out["text"]
-        #: The next step is the follow-on chips now (INBOX 1466), not a last line.
+        #: The next step is the next-step chips now (INBOX 1466), not a last line.
         go.chips = "\n".join((out.get("grounding") or [{}])[0].get("next") or [])
         if _DUMP:
             with open(_DUMP, "a", encoding="utf-8") as fh:
@@ -290,6 +288,7 @@ L_NAMES = [
 ]
 
 
+#: INBOX 1357 baseline: 35 of 77 passing before any fix; every case passes now.
 def _p(cls: str, turns: tuple, must, never, ident: str):  # noqa: ANN001, ANN202
     return pytest.param(cls, turns, must, never, id=ident)
 

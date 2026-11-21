@@ -14,8 +14,8 @@ import pytest
 
 import tests._seed_1031c as seed_c
 from tessellate.ai import composer_remark
-from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 # --- the register of a hello ------------------------------------------------------
 
@@ -162,11 +162,8 @@ def seeded(session):
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    from tessellate.core import config
 
-    monkeypatch.setattr(config, "user_now", lambda _c: seed_c.NOW)
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: seed_c.NOW)
+    pin_clock(monkeypatch, seed_c.NOW)
 
 
 def _stream(client, question: str) -> dict:

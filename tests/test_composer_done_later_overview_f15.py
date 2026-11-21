@@ -1,5 +1,5 @@
 """Fable eye F15, left half: a checklist line a later note records as done is not
-outstanding in the note's overview either. One item has one state: the open list,
+listed as pending in the note's overview either. One item has one state: the open list,
 the yes or no, the reminder offer and now the gist all ask `recorded_later`."""
 
 from __future__ import annotations
@@ -9,9 +9,8 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 NOTES = [
@@ -22,8 +21,7 @@ NOTES = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for content, when in NOTES:
         entry = manager.create_entry(session, content)
         entry.created_at = entry.updated_at = when

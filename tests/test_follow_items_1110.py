@@ -14,11 +14,10 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import composer_talk, follow_items
-from tessellate.api import chat_said, chat_turn, routes_chat
-from tessellate.core import config
 from tessellate.core.database import Entry, Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 LIST = "Your note **Shopping** has none of its three checklist items done:\n\n- [ ] Milk\n- [ ] Eggs\n- [ ] Bread"
@@ -32,8 +31,7 @@ SET = "Got it, I will remind you tomorrow at 5pm: call anna."
 def _fixed_now(monkeypatch):
     #: `config` too: commands.py imports `user_now` from there at call time, so the act
     #: parsers read the real clock otherwise (this failed once the real date passed 10 November).
-    for module in (routes_chat, chat_said, chat_turn, config):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _shopping(session):

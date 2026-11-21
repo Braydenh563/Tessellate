@@ -15,7 +15,14 @@ from __future__ import annotations
 from tessellate.api.routes_chat import _related_elsewhere
 from tessellate.core.database import Conversation, Document, Reminder
 from tessellate.core import deps
-from datetime import datetime, timezone
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _session():
@@ -50,7 +57,7 @@ def test_chats_and_reminders_are_searched_as_well(ai_client):
     try:
         session.add(Conversation(title="Assessment 2 planning", messages="[]"))
         session.add(
-            Reminder(text="submit assessment 2", due_at=datetime.now(timezone.utc))
+            Reminder(text="submit assessment 2", due_at=SUITE_NOW)
         )
         session.commit()
         found = _related_elsewhere(session, "assessment")

@@ -44,6 +44,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import func as sqlfunc
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.core.deps import get_session
@@ -346,7 +347,6 @@ def list_snapshots(
 @router.post("/history/snapshots", status_code=201)
 def save_snapshot(body: SnapshotBody, db: Session = Depends(get_session)) -> dict:
     """Name the board as it is now (its newest event)."""
-    from datetime import datetime
 
     entry = _snapshot_board(db, body.board_id)
     current = _current_rows(db, body.board_id)
@@ -356,7 +356,7 @@ def save_snapshot(body: SnapshotBody, db: Session = Depends(get_session)) -> dic
         raise HTTPException(status_code=409, detail="This board has nothing on it yet, so there is nothing to keep.")
     settings = _board_settings(entry)
     snaps = [s for s in settings.get("snapshots") or [] if isinstance(s, dict)]
-    now = datetime.now()
+    now = clock.wall()
     snap = {
         "id": max((int(s.get("id", 0)) for s in snaps), default=0) + 1,
         "name": (body.name or "").strip() or f"Snapshot {now:%H:%M}",

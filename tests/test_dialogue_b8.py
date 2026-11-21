@@ -17,8 +17,15 @@ import pytest
 
 from tessellate.core.database import Entry
 from tessellate.entry import manager
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
 
-TODAY = datetime.now().replace(hour=10, minute=0, second=0, microsecond=0)
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
+
+TODAY = SUITE_LOCAL.replace(hour=10, minute=0, second=0, microsecond=0)
 
 
 def _days_ago(n: int) -> datetime:

@@ -26,6 +26,14 @@ from datetime import date, timedelta
 from tessellate.ai import composer, composer_voice
 from tessellate.ai import composer_answer
 from tests import _composer_eval
+import pytest
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 EM_DASH = chr(0x2014)
 
@@ -122,7 +130,7 @@ def trace(remark: dict, notes: list[dict], on: date, *, answer_phrases: bool = F
         elif kind in ("asked", "reading"):
             pass  # the question's own words, or how it was read; held by the find eval's caller
         elif kind == "shifted":
-            problem = _composer_eval.shifted_failure(part, by_id[part[2]]["content"], date.today())
+            problem = _composer_eval.shifted_failure(part, by_id[part[2]]["content"], SUITE_LOCAL.date())
             if problem:
                 failures.append(problem)
         else:

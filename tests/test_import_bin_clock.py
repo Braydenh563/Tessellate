@@ -17,6 +17,14 @@ from tessellate.core import deps
 from tessellate.core.database import Entry, utcnow
 from tessellate.entry import app_import, export_folder, manager
 from tessellate.entry import manager_purge
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _zip_of(session) -> bytes:

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+from tests._clock import pin_clock
 
 
 def _note(client, text, **extra):
@@ -56,7 +57,6 @@ def test_the_stamp_overlaps_so_a_late_commit_is_asked_about_again(client, monkey
     same `updated_at` in `stamps`, which the client drops as already seen."""
     from datetime import datetime, timedelta
 
-    from tessellate.api import routes_entries
 
     stamp = client.get("/entries/changes").json()["since"]
     note = _note(client, "late")
@@ -64,7 +64,7 @@ def test_the_stamp_overlaps_so_a_late_commit_is_asked_about_again(client, monkey
     # A fixed clock half a second after the write: on the real one a CI runner
     # slower than the two-second overlap between these calls lost the id.
     written = datetime.fromisoformat(first["stamps"][str(note["id"])])
-    monkeypatch.setattr(routes_entries, "utcnow", lambda: written + timedelta(seconds=0.5))
+    pin_clock(monkeypatch, lambda: written + timedelta(seconds=0.5))
     first = client.get("/entries/changes", params={"since": stamp}).json()
     second = client.get("/entries/changes", params={"since": first["since"]}).json()
     assert note["id"] in second["ids"]

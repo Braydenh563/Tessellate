@@ -2,7 +2,7 @@
 
 Same notebook and fixed clock as `test_composer_classes_1357.py` (Wednesday
 21 October 2026, 10:00); each class has several phrasings the owner did not
-report. No model runs."""
+report. Every class passes. No model runs."""
 
 from __future__ import annotations
 
@@ -12,14 +12,14 @@ import datetime as dt
 
 import pytest
 
-from tessellate.ai import notebook_stats
 from tests.test_composer_classes_1357 import NOT_FOUND, NOW, ask  # noqa: F401
+from tests._clock import pin_clock
 
 
 @pytest.fixture(autouse=True)
 def _stats_clock(monkeypatch):
     """The counts read their windows from the same fixed day."""
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW.replace(tzinfo=dt.timezone.utc))
+    pin_clock(monkeypatch, NOW.replace(tzinfo=dt.timezone.utc))
 
 _KIND_MAP = r"(map|Cloud computing)"
 
@@ -104,6 +104,8 @@ R_WINDOWS = [
     ("what have I been up to lately", r"(?=.*Lecture 5)(?=.*Errands)(?=.*7 to 21 October)", r"Bubble tea"),
     ("what did I do this weekend", r"Essay draft", r"Gym routine|Lecture 5"),
 ]
+
+
 
 def _cases():
     for q, must in M_SOURCES:
