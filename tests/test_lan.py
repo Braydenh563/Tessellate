@@ -1444,12 +1444,16 @@ def test_silent_connections_do_not_hold_up_the_page(lan):
     try:
         time.sleep(0.2)
         context = ssl.create_default_context(cadata=lancert.authority_pem(data_dir).decode())
-        started = time.monotonic()
         conn = http.client.HTTPSConnection("127.0.0.1", port, context=context, timeout=5)
         conn.request("GET", "/hello")
         assert conn.getresponse().status == 200
         conn.close()
-        assert time.monotonic() - started < 2
+        # Not timed (L-general-70): the silent connections are all still open,
+        # so the request was served beside them, not after they were given up on.
+        for s in silent:
+            s.setblocking(False)
+            with pytest.raises(BlockingIOError):
+                s.recv(1, socket.MSG_PEEK)
     finally:
         for s in silent:
             s.close()
