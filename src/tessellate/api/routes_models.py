@@ -150,6 +150,9 @@ class _ListFlight:
 
 _installed_lock = threading.Lock()
 _installed_known: dict[tuple[str, str], list[dict] | None] = {}
+#: When the request behind each `_installed_known` list was sent (monotonic): a download is only reported
+#: finished alongside a list asked after it finished (`_installed_after_pulls`).
+_installed_known_asked: dict[tuple[str, str], float] = {}
 _installed_flights: dict[tuple[str, str], _ListFlight] = {}
 #: Runners whose first, cold poll already waited `INSTALLED_COLD_BUDGET` and
 #: heard nothing: the polls after it do not wait again (INBOX 1492: a runner
@@ -247,6 +250,7 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
         with _installed_lock:
             if flight.error is None:
                 _installed_known[key] = flight.result
+                _installed_known_asked[key] = flight.started
                 _installed_cold_paid.discard(key)
             _installed_flights.pop(key, None)
         flight.done.set()
@@ -278,6 +282,14 @@ def _recent_pulls(pulls: dict[str, dict], now: float) -> tuple[list[str], list[s
 
 
 def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+    """The installed list to serve beside `pulls`, which it may change: a download the list does not show yet
+    is reported still running until a list asked after it finished has come back.
+
+    The wait below only shortens that: on a busy machine (CI on PR 222, 3.12) the list took longer than the
+    budget, and the poll said "success" beside the models from before the download, so the model the person
+    just downloaded read as missing. Holding the status for a poll costs a second of a full bar; a model the
+    runner never lists (a renamed tag) is released by the first fresh list, or by `PULL_LIST_RETRY_SECONDS`.
+    """
     now = time.monotonic()
     new, recent, since = _recent_pulls(pulls, now)
     fresh = [n for n in recent if not _name_matches(n, installed)]
@@ -295,6 +307,11 @@ def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]
             break
         if flight.started >= since:  # asked after the download finished: its answer, or what was known
             return flight.result if flight.error is None and flight.result is not None else installed
+    with _installed_lock:
+        answered = _installed_known_asked.get(key, float("-inf")) >= since
+    if not answered:
+        for name in fresh:
+            pulls[name] = {**pulls[name], "status": "running"}
     return installed
 
 

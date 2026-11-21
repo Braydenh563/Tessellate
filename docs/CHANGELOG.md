@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Models: a finished download reads as still running until a model list asked after it finished comes back, so "success" never arrives beside the list from before it (CI on PR 222, 3.12: the runner listed slower than the poll waits).
 - Tests: no test bounds wall time. Every asserted span reads CPU time (`time.process_time`), counts waits or calls, or holds a fake on an event and asserts the call returned while it was held; budgets are unchanged. `tests/test_fixed_clock_lint.py` fails any asserted `perf_counter`, `monotonic` or `time.time` difference compared with a number, and lists no file.
 - Idle CPU re-measured after the emblem's CSS rotation: 0.48% of one core over 180 s (tab 0.14%, server 0.33%), under the 1 percent target (L-general-18).
 - Clock: the app reads the time only through `config.user_now`, `database.utcnow` and `clock.today` (`clock.utc()` and `clock.wall()` look up `config.user_now` by name in `sys.modules` each call, so no import cycle and no wired hook); 34 modules that called `datetime.now()` for themselves read `clock.utc()` or `clock.wall()`, the zone rule is `config.on_users_clock`, and `tests/test_fixed_clock_lint.py` fails a real clock read outside those three. Five composer phrasing tests had expected the wording the real day's reply seed gave; they now hold the pinned day's. Chat: "where did you get that" after a "really?" names the answer's source note, not none.

@@ -894,3 +894,20 @@ def test_a_finished_download_is_in_the_installed_list_of_the_poll_that_reports_i
     assert started.status_code == 200
     body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success")
     assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"]), body["installed_models"]
+
+
+def test_a_download_is_not_reported_finished_beside_a_list_from_before_it(ai_client, fake_ollama, monkeypatch):
+    """A runner slower to list than any poll waits (a busy machine, CI on PR 222): the download reads as still
+    running until a list asked after it finished comes back, never "success" beside the old list."""
+    real = fake_ollama.list_models
+
+    def slow_list():
+        answer = real()  # as of when it was asked
+        time.sleep(0.6)  # past INSTALLED_COLD_BUDGET, so no poll can wait it out
+        return answer
+
+    _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
+    monkeypatch.setattr(fake_ollama, "list_models", slow_list)
+    assert ai_client.post("/models/pull", json={"name": "nomic-embed-text"}).status_code == 200
+    body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success", timeout=8.0)
+    assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"]), body["installed_models"]
