@@ -36,7 +36,7 @@
     const view = document.createElement("div");
     view.className = "tool-consent-diff";
     //: `kept` is the text the press saves, built here where documents-history.js is known loaded.
-    const suggestion = { ops, skipped, hunks, onChange: () => {}, kept: () => docDiffApply(ops, hunks, skipped) };
+    const suggestion = { before: current.content || "", ops, skipped, hunks, onChange: () => {}, kept: () => docDiffApply(ops, hunks, skipped), redraw: () => draw() };
     const draw = () => {
       const kept = hunks.length - skipped.size;
       head.textContent = hunks.length === 1 ? "One change. Skip it to leave the text as it is." : `${kept} of ${nounCount(hunks.length, "change")} kept. Skip any you don't want.`;
@@ -53,6 +53,17 @@
     host.replaceChildren(head, view);
     draw();
     return suggestion;
+  }
+
+  //: The same edit marked in the editor when its document is the one open (L-documents-41,
+  //: doc-agent-review.js): its Accept and Reject share this card's `skipped`, and its last
+  //: decision presses this card's Allow or Decline, so the save is still the card's press.
+  async function toolConsentInEditor(event, suggestion, answers) {
+    const id = Number(event.arguments?.document_id) || 0;
+    if (event.name !== "edit_document" || typeof currentDoc === "undefined" || currentDoc?.id !== id) return null;
+    const loaded = await Promise.all([lazyScript("/js/doc-agent-review.js"), lazyScript("/css/doc-agent-review-lazy.css")]);
+    if (!loaded.every(Boolean)) return null;
+    return drawToolConsent.inEditor({ documentId: id, before: suggestion.before, ops: suggestion.ops, hunks: suggestion.hunks, skipped: suggestion.skipped, onDecide: suggestion.redraw, ...answers });
   }
 
   //: Decline is a turn too: it says nothing ran, then asks what Atlas should do instead.
@@ -104,7 +115,9 @@
       return;
     }
     let suggestion = null;
+    let inEditor = null;
     const allow = async (always) => {
+      inEditor?.end();
       if (always) toolConsentAlways.add(toolConsentKey(event.name));
       const skip = suggestion ? [...suggestion.skipped] : [];
       for (const button of row.querySelectorAll("button")) button.disabled = true;
@@ -119,7 +132,8 @@
         card.replaceWith(toolChip(`${said}${String(result.label || event.label || event.name).replace(/^ph:[\w-]+ /, "")}`));
         //: On the undo stack, its redo the call as it ran: the kept changes only, never the skipped ones.
         const ran = suggestion ? { ...event.arguments, content: suggestion.kept() } : event.arguments;
-        pushAgentChangeUndo({ undo: result.undo, label: result.label, tool: event.name }, { name: event.name, arguments: ran });
+        if (inEditor) inEditor.saved(result, ran);
+        else pushAgentChangeUndo({ undo: result.undo, label: result.label, tool: event.name }, { name: event.name, arguments: ran });
         refreshAfterToolChanges();
       } catch (error) {
         for (const button of row.querySelectorAll("button")) button.disabled = false;
@@ -130,12 +144,12 @@
     row.appendChild(allowButton);
     //: Never for a removal: "always" there is how a chat bins twenty notes on one press.
     if (!event.removes) row.appendChild(smallButton("Allow always for this chat", "Do this, and changes like it in this chat, without asking", () => allow(true)));
-    row.appendChild(
-      smallButton("Decline", "Don't do this, and say what to do instead", () => {
-        chatHistoryToSend.settle(card, event, "cancelled");
-        toolConsentInstead(card, event);
-      })
-    );
+    const decline = () => {
+      inEditor?.end();
+      chatHistoryToSend.settle(card, event, "cancelled");
+      toolConsentInstead(card, event);
+    };
+    row.appendChild(smallButton("Decline", "Don't do this, and say what to do instead", decline));
     if (!event.removes && toolConsentAlways.has(toolConsentKey(event.name))) return allow(true);
     suggestion = await toolConsentSuggestion(event, contentArea).catch(() => null);
     if (suggestion) {
@@ -143,8 +157,11 @@
         const none = suggestion.skipped.size >= suggestion.hunks.length && suggestion.hunks.length > 0;
         allowButton.disabled = none;
         allowButton.title = none ? "Every change is skipped: decline it instead" : "Save the kept changes";
+        inEditor?.refresh();
       };
       suggestion.onChange();
+      inEditor = await toolConsentInEditor(event, suggestion, { onAccept: () => allow(false), onReject: decline }).catch(() => null);
+      if (inEditor) contentArea.prepend(Object.assign(document.createElement("p"), { className: "muted tool-consent-head", textContent: "Also marked in the open document, to accept or reject there." }));
     }
     chatScrollToEnd();
   }

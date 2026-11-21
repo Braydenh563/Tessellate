@@ -1178,6 +1178,28 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "documents-agent-edit",
+            "keywords": (
+                "atlas edits my document",
+                "agent changed my document",
+                "accept atlas's change",
+                "reject atlas's change",
+                "suggested edit in the document",
+                "review atlas's edit",
+            ),
+            "body": (
+                "When Atlas wants to change the document you have open, the change is "
+                "marked in the editor as well as on its card in the chat: the lines it "
+                "would remove struck through, the lines it would add underlined under "
+                "them, with Accept and Reject on each change and Accept all and Reject "
+                "all in the bar over the page. The editor waits while you decide. The "
+                "last decision saves the changes you accepted, as Allow on the card "
+                "does; rejecting every change declines it and nothing is saved. Undo "
+                "puts the text back."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "documents-features",
             "keywords": (
                 "history of a document",

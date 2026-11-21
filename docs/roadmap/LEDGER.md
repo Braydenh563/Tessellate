@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 7 | 1 | 0 | 3 | 8 |
+| chat | 0 | 6 | 1 | 0 | 3 | 7 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 57 | 0 | 69 | 359 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 364 | 69 | 0 | 125 | 759 |
+| all | 326 | 363 | 69 | 0 | 125 | 758 |
 
 ## graph
 
@@ -33,7 +33,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L915** `chat` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
 - [ ] **L627** `chat` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
-- [ ] **L-documents-41** `chat` open, M: Agent document edit as insert/delete marks inside the open document editor, accept or reject per hunk there. From L-world-class-181 follow-up. Evidence: the chat card's suggestion (tool-consent.js) covers an agent edit; an open document editor shows no marks
 
 
 ## whiteboard
