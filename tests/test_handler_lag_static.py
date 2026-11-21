@@ -66,7 +66,7 @@ def test_atlas_looks_build_on_first_read():
     src = read("atlas.js")
     build = src.split("function atlasBuild() {", 1)[1].split("\n}\n", 1)[0]
     assert "Object.values(ATLAS_LOOKS)" not in build
-    assert "function atlasBuildLook(spec)" in src
+    assert "function* atlasBuildLook(spec)" in src
     assert "Object.defineProperty(ATLAS_LOOKS, name" in src
     assert "function atlasWarmLook()" in src
 
@@ -200,3 +200,16 @@ def test_handler_lag_sweep_holds_the_settings_pane_budget():
     sweep = (JS.parent.parent / "scratchpad" / "ui-sweeps" / "handlerlag.js").read_text(encoding="utf-8")
     assert "SETTINGS_BAR || 250" in sweep
     assert "note('settings keys', sec, ev, loaf, SETTINGS_BAR)" in sweep
+
+
+def test_atlas_look_warms_in_slices():
+    # atlasWarmLook built a whole look in one task: 55 to 66 ms at 4x CPU (L-world-class-622 follow-on).
+    # The build is a generator that yields between its parts; the warm task runs one part per timeout and the
+    # getter finishes whatever is left, so a drawing that reads a look early still gets the whole of it.
+    src = read("atlas.js")
+    build = src.split("function* atlasBuildLook(spec) {", 1)[1].split("\n}\n", 1)[0]
+    assert build.count("yield;") >= 5
+    warm = src.split("setTimeout(function atlasWarmLook()", 1)[1].split("\n  }, 0);", 1)[0]
+    assert "atlasBuild.drain(spec, true)" in warm and "setTimeout(" in warm
+    assert "atlasBuild.drain(spec)" in src.split("Object.defineProperty(ATLAS_LOOKS, name", 1)[1].split("setTimeout(function atlasWarmLook", 1)[0]
+    assert "atlasBuild.gens.clear()" in src.split("function atlasBuild() {", 1)[1].split("\n}\n", 1)[0]
