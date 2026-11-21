@@ -938,6 +938,8 @@ block, trimming harder below an 8k-token window; see the retired analysis doc's
 size/risk call (M, take the idea, measure it on a small model before
 trusting it).
 
+- **L-world-class-230 (moved from LEDGER 2026-11-21, parked for an owner call):** App import, the route build. Lazy router host: register route modules at their first request, not at import. Profiled under cProfile on create_app (wc-slice, 2026-11-21): 728 route decorators make 1,732 FastAPI ModelFields, each building a pydantic TypeAdapter; that is 1.2 s of the 2.4 s profiled route build (create_model_field, fastapi/utils.py:58), about 825 ms of the 2.06 s import unprofiled (L-world-class-150). Two ways, both the owner's call: (1) a lazy router host that imports a router module on its first request, which changes what /openapi.json and route listings show before first use and touches the auth gates, the route-listing tests and CODEMAP routes; (2) patching FastAPI internals to defer or share the ModelField builds, which every FastAPI upgrade can break. Neither is taken without the owner.
+
 ---
 
 ## 12. Does the AI know it is an agent?
