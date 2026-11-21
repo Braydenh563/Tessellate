@@ -311,6 +311,8 @@
     if (!list) return 0;
     list.replaceChildren();
     const found = query.trim().length >= 2 ? findSettings(query) : [];
+    //: filterSettings opens the first one's pane from this list rather than searching again.
+    renderSettingResults.found = found;
     for (const row of found) list.appendChild(settingResultItem(row));
     list.classList.toggle("hidden", !found.length);
     settingNearAdd(query, found);

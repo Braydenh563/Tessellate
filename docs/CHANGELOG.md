@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings search keys (L-world-class-359): a key no longer throws away the cached text of all 22 panes (the results list and count it rewrites are outside every pane, so only a changed pane is read again), and the first match is opened from the list already drawn rather than a second search, which also keeps a setting ahead of a Help topic; handlerlag ONLY=settings, five runs at 4x: worst search key median 110 to 68 ms.
 - Dashboard boot (L-world-class-363): the widget loop yields every 12 ms of cards, and a render that wakes after a newer one has emptied the grid stops there, so no cards are doubled; bootlongtasks RATES=4 RUNS=5: the post-yield piece from median 85 ms to under 30 (worst 36).
 - One "is the AI off" verdict (L643): `/models/status` sends `ai_off` (the runner down, or no model ready and no Needle engine), and `aiIsOff` reads only that field, so every gated control follows the same server answer.
 - Long tasks: the Settings search warms rows, vocab and Help topics in idle slots, the Settings body parses in 22 pieces, the first generated face is drawn and cut up in two tasks, the four dashboard menus get a task each, and a scroll no longer builds the Chat surface inside a Settings key (L-world-class-360 to 362 and 365 closed, 365 on the ICU profile; 359 and 363 built but reopened on their sweep bars).

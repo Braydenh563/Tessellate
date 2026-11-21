@@ -157,3 +157,14 @@ def test_dashboard_grid_yields_between_widgets_and_a_newer_render_wins():
     # The check comes before anything is appended, so a stale render adds no card to the newer grid.
     assert flat.index("await dashYield();") < flat.index("document.createElement")
 
+
+def test_a_search_key_drops_no_pane_text():
+    # The results list and the count sit outside every pane, but any childList change in the modal threw
+    # away all 22 panes' text, so each key read them all again (L-world-class-359).
+    src = read("settings.js")
+    obs = src.split("settingsTextObserver = new MutationObserver((records) => {", 1)[1].split("settingsTextObserver.observe(", 1)[0]
+    assert "settingsTextCacheStale = true" not in src
+    assert "else if (pane) settingsTextCache.delete(pane);" in obs
+    flat = " ".join(obs.split())
+    # A change above the panes (a pane added or swapped by the idle parse) still empties the cache.
+    assert 'else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();' in flat
