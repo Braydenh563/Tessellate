@@ -189,9 +189,9 @@ def captured_root() -> Path:
 
 def frames_dir() -> Path:
     """`frontend/img/desk`, in a checkout or a bundled build."""
-    from tessellate.api.app import FRONTEND_DIR
+    from tessellate.core import paths
 
-    return Path(FRONTEND_DIR) / "img" / "desk"
+    return paths.bundle_root() / "frontend" / "img" / "desk"
 
 
 def look_for(name: Any) -> str:

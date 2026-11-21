@@ -8,7 +8,6 @@ import csv
 import io
 import json
 import logging
-import importlib
 import os
 import platform
 import re
@@ -29,7 +28,7 @@ from tessellate import __version__
 from tessellate.ai import budget as run_budget
 from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, deps, events, events_redo, logbuffer, security
+from tessellate.core import backup, deps, desktop_entry, events, events_redo, logbuffer, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -1475,11 +1474,8 @@ def set_console_mode(
         and os.getenv("TESSELLATE_DESKTOP") == "1"
         and sys.platform == "win32"
     ):
-        # `importlib`, not an `import` statement: `tessellate.__main__` imports
-        # `api.app`, which imports this module, so a statement here closes a
-        # CodeQL py/cyclic-import loop: and deferring it into the function
-        # body does not clear that, only dropping the statement does. The
-        # desktop entry point is the caller here, not a dependency.
+        # The desktop entry point is the caller here, not a dependency: it
+        # registers itself in `core/desktop_entry.py`.
         restart_in_console_mode = _desktop_entry().restart_in_console_mode
 
         restarting = True
@@ -1488,21 +1484,9 @@ def set_console_mode(
 
 
 def _desktop_entry():
-    """The desktop entry module, the one actually running.
-
-    `sys.modules["__main__"]` first: a packaged build runs `__main__.py` as
-    `__main__`, and PyInstaller bundles no second copy under the name
-    `tessellate.__main__` (nothing imports it by that name, so its analysis
-    never sees it), so `import_module` alone raised there and Settings'
-    Restart answered 500. From source, `python -m tessellate` is the same
-    module under the same key, and reusing it avoids importing a second copy
-    of the launcher. The import is the fallback for everything else (tests,
-    `uvicorn --factory`), where the running `__main__` is not ours.
-    """
-    running = sys.modules.get("__main__")
-    if running is not None and hasattr(running, "restart_in_console_mode"):
-        return running
-    return importlib.import_module("tessellate.__main__")
+    """The launcher module (`core/desktop_entry.py`): it registers itself, so
+    this module never imports it."""
+    return desktop_entry.current()
 
 
 @router.post("/system/restart", dependencies=[Depends(this_computer_only)])
@@ -1523,7 +1507,7 @@ def restart_app(background_tasks: BackgroundTasks) -> dict:
     #: `uvicorn --factory` or the tests have no launcher to start a new copy.
     if os.getenv("TESSELLATE_LAUNCHED") != "1" and os.getenv("TESSELLATE_DESKTOP") != "1":
         return {"restarting": False}
-    background_tasks.add_task(_desktop_entry().restart_app)  # same cycle break
+    background_tasks.add_task(_desktop_entry().restart_app)  
     return {"restarting": True}
 
 
