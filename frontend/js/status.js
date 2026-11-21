@@ -2966,4 +2966,3 @@ function startPrivacyChip() {
   chip.dataset.wired = "1";
   chip.addEventListener("click", () => openSettingsModal("privacy"));
 }
-

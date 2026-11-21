@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 742, backend modules 11341, test files 2933, tests 23102, plan headings 688, app scripts 29, boot scripts 38, script files 320.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 742, backend modules 11341, test files 2933, tests 23102, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -107,18 +107,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:254 |
-| `charactersLost` | frontend/js/lazy-entries.js:263 |
-| `emblemHead` | frontend/js/lazy-entries.js:271 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:300 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:333 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:294 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:321 |
-| `onDomReady` | frontend/js/lazy-entries.js:344 |
-| `plainHead` | frontend/js/lazy-entries.js:277 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:285 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:356 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:380 |
+| `afterCharacters` | frontend/js/lazy-entries.js:259 |
+| `charactersLost` | frontend/js/lazy-entries.js:268 |
+| `emblemHead` | frontend/js/lazy-entries.js:276 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:305 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:338 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:299 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:326 |
+| `onDomReady` | frontend/js/lazy-entries.js:349 |
+| `plainHead` | frontend/js/lazy-entries.js:282 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:290 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:361 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:385 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -231,7 +231,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSelectionPopup` | frontend/js/selection.js:749 |
 | `wrapFieldSelection` | frontend/js/selection.js:484 |
 
-### frontend/js/notes-list.js (118)
+### frontend/js/notes-list.js (117)
 
 | Name | File:line |
 |---|---|
@@ -256,11 +256,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryMenuItems` | frontend/js/notes-list.js:2839 |
 | `clearSkeletons` | frontend/js/notes-list.js:2940 |
 | `compareCategoryNames` | frontend/js/notes-list.js:2777 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3607 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3563 |
 | `engineQueryIds` | frontend/js/notes-list.js:250 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3419 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3465 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3423 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3375 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3421 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3379 |
 | `entryListItems` | frontend/js/notes-list.js:2511 |
 | `entryListOrder` | frontend/js/notes-list.js:3123 |
 | `entryNeedsReview` | frontend/js/notes-list.js:273 |
@@ -271,7 +271,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `filterNotesByTag` | frontend/js/notes-list.js:2268 |
 | `focusNoteRow` | frontend/js/notes-list.js:63 |
 | `foldNoteToolbarForFirstPaint` | frontend/js/notes-list.js:17 |
-| `followNoteChanges` | frontend/js/notes-list.js:3193 |
 | `heldNoteControl` | frontend/js/notes-list.js:95 |
 | `highlightIconsInto` | frontend/js/notes-list.js:1717 |
 | `highlightInto` | frontend/js/notes-list.js:1744 |
@@ -297,11 +296,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowStays` | frontend/js/notes-list.js:1985 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:436 |
 | `noteSortName` | frontend/js/notes-list.js:1803 |
-| `noteTopicChip` | frontend/js/notes-list.js:3346 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3600 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3517 |
-| `notesRailSync` | frontend/js/notes-list.js:3528 |
-| `notesRailWanted` | frontend/js/notes-list.js:3545 |
+| `noteTopicChip` | frontend/js/notes-list.js:3302 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3556 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3473 |
+| `notesRailSync` | frontend/js/notes-list.js:3484 |
+| `notesRailWanted` | frontend/js/notes-list.js:3501 |
 | `notesScroller` | frontend/js/notes-list.js:1975 |
 | `openNoteEditor` | frontend/js/notes-list.js:113 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2071 |
@@ -311,18 +310,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `parseNoteQuery` | frontend/js/notes-list.js:307 |
 | `propQuery` | frontend/js/notes-list.js:2275 |
 | `readableUrl` | frontend/js/notes-list.js:877 |
-| `referenceCountChip` | frontend/js/notes-list.js:3275 |
-| `referenceCountText` | frontend/js/notes-list.js:3263 |
+| `referenceCountChip` | frontend/js/notes-list.js:3231 |
+| `referenceCountText` | frontend/js/notes-list.js:3219 |
 | `refreshEntries` | frontend/js/notes-list.js:3131 |
 | `rememberNoteFilter` | frontend/js/notes-list.js:2363 |
-| `reminderCountChip` | frontend/js/notes-list.js:3318 |
+| `reminderCountChip` | frontend/js/notes-list.js:3274 |
 | `remoteImageNote` | frontend/js/notes-list.js:911 |
 | `renderEntries` | frontend/js/notes-list.js:2375 |
 | `renderEntriesWhenShown` | frontend/js/notes-list.js:2989 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:927 |
 | `renderNoteInline` | frontend/js/notes-list.js:1608 |
 | `renderNoteText` | frontend/js/notes-list.js:1447 |
-| `renderNotesRail` | frontend/js/notes-list.js:3564 |
+| `renderNotesRail` | frontend/js/notes-list.js:3520 |
 | `renderSidebar` | frontend/js/notes-list.js:2583 |
 | `renderWindowed` | frontend/js/notes-list.js:1988 |
 | `resetNoteList` | frontend/js/notes-list.js:2337 |
@@ -333,8 +332,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreNoteControl` | frontend/js/notes-list.js:101 |
 | `safeHref` | frontend/js/notes-list.js:822 |
 | `scheduleEntriesProgress` | frontend/js/notes-list.js:3004 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3540 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3613 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3496 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3569 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2185 |
 | `showEntrySkeletons` | frontend/js/notes-list.js:2876 |
 | `showNotesFilter` | frontend/js/notes-list.js:284 |
@@ -342,9 +341,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarRovingRows` | frontend/js/notes-list.js:2761 |
 | `skeletonRemember` | frontend/js/notes-list.js:2919 |
 | `sortEntries` | frontend/js/notes-list.js:1807 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3553 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3509 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2174 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3340 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3296 |
 | `unlatex` | frontend/js/notes-list.js:757 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2154 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1784 |
@@ -1040,12 +1039,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:487 |
 | `wireReindexButton` | frontend/js/ai-tools.js:546 |
 
-### frontend/js/phone-shell.js (61)
+### frontend/js/phone-shell.js (57)
 
 | Name | File:line |
 |---|---|
 | `buildSettingsJumpList` | frontend/js/phone-shell.js:1851 |
-| `clearAppCache` | frontend/js/phone-shell.js:2326 |
 | `closeNotePageIfGone` | frontend/js/phone-shell.js:1123 |
 | `dockArrangeLabel` | frontend/js/phone-shell.js:2011 |
 | `dockArrangeSlot` | frontend/js/phone-shell.js:2000 |
@@ -1068,7 +1066,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `foldDockArrange` | frontend/js/phone-shell.js:2108 |
 | `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2055 |
 | `foldZoneIntoMenu` | frontend/js/phone-shell.js:2023 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2341 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:678 |
 | `initDockFolding` | frontend/js/phone-shell.js:2230 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
@@ -1089,7 +1086,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `phoneMoreDueCount` | frontend/js/phone-shell.js:1716 |
 | `phoneMoreRunCount` | frontend/js/phone-shell.js:1681 |
 | `phoneSheetDialogs` | frontend/js/phone-shell.js:1234 |
-| `quitApp` | frontend/js/phone-shell.js:2293 |
 | `refreshNotePage` | frontend/js/phone-shell.js:1109 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:168 |
 | `releaseEmblem` | frontend/js/phone-shell.js:151 |
@@ -1102,7 +1098,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1690 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2346 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:790 |
 
@@ -1941,6 +1936,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderPalette` | frontend/js/app-palette.js:768 |
 | `scrollPaletteToActive` | frontend/js/app-palette.js:859 |
 | `utilityPaletteRows` | frontend/js/app-palette.js:318 |
+
+### frontend/js/app-reset.js (4)
+
+| Name | File:line |
+|---|---|
+| `clearAppCache` | frontend/js/app-reset.js:37 |
+| `forceReloadApp` | frontend/js/app-reset.js:52 |
+| `quitApp` | frontend/js/app-reset.js:9 |
+| `toggleAutonomousPanel` | frontend/js/app-reset.js:57 |
 
 ### frontend/js/appearance-panel.js (16)
 
@@ -6729,6 +6733,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notesSpyActive` | frontend/js/notes-rail-spy.js:33 |
 | `notesSpyPick` | frontend/js/notes-rail-spy.js:45 |
 | `notesSpySchedule` | frontend/js/notes-rail-spy.js:83 |
+
+### frontend/js/notes-sync.js (1)
+
+| Name | File:line |
+|---|---|
+| `followNoteChanges` | frontend/js/notes-sync.js:19 |
 
 ### frontend/js/notes-wire.js (3)
 

@@ -5,7 +5,7 @@ update??").
 A save on the phone did not reach the computer's open list until a reload.
 The client now asks, every few seconds while visible and whenever the tab
 comes back, which notes changed since its last answer, and hands those ids to
-`refreshEntries` (notes-list.js `followNoteChanges`). These hold the server
+`refreshEntries` (notes-sync.js `followNoteChanges`). These hold the server
 half: the ids moved since the stamp, a stamp to ask from next, boards left
 out (the notes list does not hold them), and a cap with `more` so a bulk
 change tells the client to re-read the list rather than a long id list.
@@ -111,7 +111,7 @@ def test_the_client_follows_changes_while_visible():
     """The client half, read from its source: polled while visible, at once
     when the tab comes back, and never over the note being edited (its save
     keeps the `base_hash` conflict prompt)."""
-    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-list.js").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-sync.js").read_text(encoding="utf-8")
     start = source.index("function followNoteChanges")
     body = source[start:start + 2500]
     assert "/entries/changes" in body
@@ -122,7 +122,7 @@ def test_the_client_follows_changes_while_visible():
 def test_the_client_slows_down_after_four_empty_answers_and_stops_hidden():
     """Battery (INBOX 1351): the ask is 15 s, 30 s after four empty answers,
     restored by a change or by the tab coming back, and not made while hidden."""
-    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-list.js").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-sync.js").read_text(encoding="utf-8")
     body = source[source.index("async function followNoteChanges") :][:3000]
     assert "if (document.hidden) return;" in body
     assert "noteChanges.quiet >= 4 ? 2 : 1" in body and "noteChanges.quiet = body.ids.length ? 0" in body
