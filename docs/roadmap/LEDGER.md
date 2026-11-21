@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 89 | 13 | 0 | 0 | 102 |
+| world-class | 0 | 89 | 12 | 0 | 0 | 101 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 479 | 84 | 2 | 111 | 935 |
+| all | 372 | 479 | 83 | 2 | 111 | 934 |
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -492,7 +492,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
-- [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
@@ -523,7 +522,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
-- [ ] **L-world-class-530** `world-class` open, M: Build the hidden dialogs from templates on first open: lock 93 elements, Find anything 63, the agent monitor 47 and the Settings shell 91 are in the page at boot (1,515 at first paint after L675). Needs a DESIGN.md recipe and lint first (order 11: none covers a dialog built on open), then `document.getElementById` reads in search.js (about 20) and router-overlays.js through `$` or `surfaceBuild("finder")`; the lock overlay stays, it is the first thing a locked boot shows. From L676. Evidence: `grep -c 'finder-' frontend/js/search.js`; counts from the L676 brief, paint from `setperf.js`.
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
@@ -549,6 +547,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
+- [ ] **L-world-class-630** `world-class` open, S: The Settings shell (its head and `#settings-nav`, about 91 elements) stays in the page at boot while its body is already a surface; moving it needs the recorded decision in tests/test_settings_body_1501.py ("the nav ... is part of the shell and is never lazy: it is what a deep link lands in before the body exists") remade first, and test_help_settings_paths and test_settings_ia parse `<nav id="settings-nav">` from the live page. From L-world-class-530. Evidence: `grep -n 'never lazy' tests/test_settings_body_1501.py`; the other dialogs that row named are surfaces (index.html 1,009 to 749 live elements).
 
 ## general
 
