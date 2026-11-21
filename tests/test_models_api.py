@@ -908,6 +908,7 @@ def test_a_download_is_not_reported_finished_beside_a_list_from_before_it(ai_cli
 
     _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
     monkeypatch.setattr(fake_ollama, "list_models", slow_list)
-    assert ai_client.post("/models/pull", json={"name": "nomic-embed-text"}).status_code == 200
+    started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert started.status_code == 200
     body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success", timeout=8.0)
     assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"]), body["installed_models"]
