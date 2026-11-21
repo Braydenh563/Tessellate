@@ -25,7 +25,7 @@ function check(label, ok, detail) {
   console.log(`${ok ? "PASS" : "FAIL"}  ${label}${detail ? "  " + detail : ""}`);
 }
 function pixel(file, x, y) {
-  const out = execFileSync(PY, [path.join("scratchpad", "pngpixel.py"), file, String(Math.round(x)), String(Math.round(y))], { encoding: "utf8" });
+  const out = execFileSync(PY, [path.join(__dirname, "..", "pngpixel.py"), file, String(Math.round(x)), String(Math.round(y))], { encoding: "utf8" });
   const m = out.match(/\((\d+), (\d+), (\d+)/);
   return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
 }
