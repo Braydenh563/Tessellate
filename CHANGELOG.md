@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Phone and lazy surfaces: the Library reader fills the screen again (its desktop size no longer beats the phone page); the slash hint, the sidebar openers, the sidebar toggles and the floating New note and New document buttons are set up when Notes, Chat, Documents and the Library are first built; the document status strip keeps the file type picker on screen in the mono font at 390px.
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
 - CLAUDE.md and WORKING.md give the measured test count, 52,983.
