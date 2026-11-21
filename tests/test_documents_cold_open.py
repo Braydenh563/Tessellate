@@ -67,6 +67,6 @@ SWEEP = (Path(__file__).resolve().parent.parent / "scratchpad" / "ui-sweeps" / "
 def test_the_cold_sweep_reads_main_thread_cpu_and_pins_the_budget():
     assert "const BUDGET_MS = 800;" in SWEEP
     assert "Performance.getMetrics" in SWEEP
-    for metric in ("TaskDuration", "ScriptDuration", "RecalcStyleDuration", "LayoutDuration"):
+    for metric in ("ThreadTime", "TaskDuration", "ScriptDuration", "RecalcStyleDuration", "LayoutDuration"):
         assert metric in SWEEP, metric
-    assert "c.task < BUDGET_MS" in SWEEP  # the verdict is on CPU; wall time is printed beside it
+    assert "c.cpu < BUDGET_MS" in SWEEP  # the verdict is on CPU; wall time is printed beside it

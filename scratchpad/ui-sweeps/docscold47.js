@@ -5,6 +5,9 @@
 // L-documents-83: wall time moves with the box's load, so each run also reads the main thread's CPU
 // from CDP (Performance.getMetrics deltas: Task, Script, RecalcStyle, Layout durations) between the
 // tab press and the mount; the budget is judged on that median CPU (BUDGET_MS), wall beside it.
+// ThreadTime is the thread's CPU time; TaskDuration is wall time inside tasks and also counts the
+// 100 to 200 ms the main thread sits blocked on the compositor in a loaded headless box, so the
+// verdict is on ThreadTime and TaskDuration is printed as the wall-in-task figure.
 const BUDGET_MS = 800;
 const { boot } = require('./lib.js');
 const widths = (process.env.WIDTHS || '1440,390').split(',').map(Number);
@@ -46,14 +49,14 @@ const runs = Number(process.env.RUNS || 5);
       }, id);
       const m1 = await snap();
       const d = (k) => Math.round(m1[k] - m0[k]);
-      cpu.push({ task: d('TaskDuration'), script: d('ScriptDuration'), style: d('RecalcStyleDuration'), layout: d('LayoutDuration') });
+      cpu.push({ cpu: d('ThreadTime'), task: d('TaskDuration'), script: d('ScriptDuration'), style: d('RecalcStyleDuration'), layout: d('LayoutDuration') });
       times.push(Math.round(ms));
       await browser.close();
     }
     const s = [...times].sort((a, b) => a - b);
     const med = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
-    const c = Object.fromEntries(['task', 'script', 'style', 'layout'].map((k) => [k, med(cpu.map((r) => r[k]))]));
-    console.log(`width ${w} cpu: task runs ${cpu.map((r) => r.task).join(', ')} ms, median ${c.task} ms (script ${c.script}, style ${c.style}, layout ${c.layout}); budget ${BUDGET_MS} ms ${c.task < BUDGET_MS ? 'met' : 'over'}`);
+    const c = Object.fromEntries(['cpu', 'task', 'script', 'style', 'layout'].map((k) => [k, med(cpu.map((r) => r[k]))]));
+    console.log(`width ${w} cpu: thread runs ${cpu.map((r) => r.cpu).join(', ')} ms, median ${c.cpu} ms (task wall ${c.task}, script ${c.script}, style ${c.style}, layout ${c.layout}); budget ${BUDGET_MS} ms ${c.cpu < BUDGET_MS ? 'met' : 'over'}`);
     console.log(`width ${w}: runs ${times.join(', ')} ms, median ${s[Math.floor(s.length / 2)]} ms`);
   }
 })();
