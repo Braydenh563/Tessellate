@@ -188,29 +188,21 @@ def test_root_custom_properties_written_from_script_are_known():
     assert "--keyboard-inset" in found and "--header-h" in found
 
 
-def test_long_lists_skip_rows_that_are_off_screen():
-    """The Notes list and the Timeline feed style only what is near the window.
+def test_the_windowed_notes_list_does_not_lock_its_rows():
+    """L-general-34: `windowRows` keeps only rows near the window, so `content-visibility` on them only cost.
 
-    Traced at 500 notes: 1,206 of the 1,382 elements in the Notes list were
-    more than a window below the fold, and entering the tab restyled every one
-    (61ms). With `content-visibility: auto` on the rows, 31ms; the Timeline's
-    layout on entry went from 48ms to 7ms.
+    Scrolling 500 notes at 4x CPU (`scrolltrace.js` SCENE=notes, five runs):
+    layout 478 to 575ms with the rule, 216 to 262ms without; raster 1.1 to
+    1.6s against 0.8 to 1.0s; entering the tab 977ms of layout and style with
+    it, 818ms without. The intent of the test it replaces (the rule is there,
+    for the 61 to 31ms entry saving) moved with that measurement.
     """
     css = "\n".join(
         _strip_comments(p.read_text(encoding="utf-8"))
         for p in sorted((FRONTEND_DIR / "css").glob("*.css"))
     )
-    for row in ("#entry-list > li",):
-        bodies = [
-            m.group(1)
-            for m in re.finditer(re.escape(row) + r"[^{};]*\{([^}]*)\}", css)
-            if "content-visibility: auto" in m.group(1)
-        ]
-        assert bodies, row
-        assert "contain-intrinsic-size: auto" in bodies[0], (
-            f"{row}: `auto` in the intrinsic size remembers the height a row "
-            "last drew at, so the scrollbar does not jump once it has been seen"
-        )
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*#entry-list[^{}]*)\{([^}]*)\}", css):
+        assert "content-visibility" not in m.group(2), m.group(1).strip()
 
 
 def test_the_windowed_timeline_feed_does_not_lock_its_rows():

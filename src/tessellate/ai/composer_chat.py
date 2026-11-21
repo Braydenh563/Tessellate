@@ -313,12 +313,24 @@ _DETAIL_LINES = ["That is everything I have on it here. The note itself has the 
 _DETAIL_NONE = ["That is all I have on it. Ask about a particular part and I will look.", "There is no more to add from my side. Name a detail and I will look for it."]
 
 
+def _reaction_pattern(lines: list[str]) -> re.Pattern:
+    parts = (re.escape(line).replace(re.escape("{names}"), ".+?").replace(re.escape("{note}"), "notes?").replace(re.escape("{links}"), ".+?") for line in lines)
+    return re.compile("^(?:" + "|".join(parts) + ")$", re.S)
+
+
 def _sources(history: list[dict] | None) -> list[str]:
     """The notes the last answer rests on, named as it names them: links, bold
-    citations, "from your X note"."""
-    said = _last_answer(history)
+    citations, "from your X note". A reply to "really?" is about the answer
+    before it, so the answer looked at is the one before any such reply: "It
+    is what your Dentist note says" named no source in the cited shape, and
+    the "where did you get that" after it said there was none."""
+    said = next((a for a in (str(t.get("answer") or "").strip() for t in reversed(history or [])) if a and not _REACTIONS.match(a)), "")
     names = [m.group(1) for m in _LINK.finditer(said)] + [m.group("t") or m.group("b") for m in _CITED.finditer(said)]
-    return list(dict.fromkeys(n.strip() for n in names if n and n.strip()))
+    return list(dict.fromkeys(n.strip().strip("“”\"").strip() for n in names if n and n.strip("“”\" ")))
+
+
+#: This module's own replies about an answer, which name no new source.
+_REACTIONS = _reaction_pattern(_SURE_LINES + _SURE_NONE + _SOURCE_LINES + _SOURCE_NONE + _DETAIL_LINES + _DETAIL_NONE + _MUSE_LINES + _NOTHING_YET)
 
 
 def _named(names: list[str]) -> tuple[str, str]:

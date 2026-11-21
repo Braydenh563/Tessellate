@@ -11250,7 +11250,7 @@ function renderDocCaret() {
 }
 
 //: **Which formatting buttons are on for the caret** (DOCUMENTS_PLAN Phase 2,
-//: the third of the three things the engine phase left deliberately unbuilt:
+//: the third of the three things the engine phase did not do:
 //: "which buttons are 'on' for the caret's position is not driven from the
 //: syntax tree, which the tree now makes cheap").
 //:

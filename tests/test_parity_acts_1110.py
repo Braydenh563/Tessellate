@@ -12,20 +12,17 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import commands, tools
-from tessellate.api import chat_said, chat_turn, routes_chat, routes_insights
 from tessellate.core.database import Category, Entry, Reminder
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    from tessellate.core import config
 
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    for module in (routes_chat, chat_said, chat_turn, routes_insights):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 @pytest.fixture

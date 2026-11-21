@@ -1843,9 +1843,7 @@ them are close to being built:
   (`src/tessellate/mcp_server.py`, a stdio server over the tool registry,
   checked 2026-10-04); consuming external servers is still open **(needs
   owner)**: it needs the trust model decided first.
-- **A VS Code extension.** **Next:** nothing is buildable until the owner states a purpose; the HTTP tool API (`GET /chat/tools`, `POST /chat/tools/execute`, WORLD_CLASS_PLAN B8) is the surface an extension would call. No stated purpose yet beyond the idea itself,
-  worth asking what it would let someone do that the app's own web UI, PWA
-  and desktop window don't, before scoping anything. **(needs owner)**
+- **A VS Code extension.** Built (L-world-class-627, `editors/vscode`); the old entry is in HISTORY, "Moved from the plans, 2026-11-21 (Docker image, VS Code extension)".
 - ~~**A browser clipper.**~~ **Built 2026-10-05** (WORLD_CLASS_PLAN row 24, D9): `POST /links/clip-page` (`routes_webclip.py`), the "Clip to MemoryMap" bookmarklet and `frontend/clip.html` / `clip.js`, `tests/test_webclip_page.py`. A packaged browser extension is not built; the bookmarklet is the capture path (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: BACKLOG)").
 - (Odysseus, fourth read 2026-10-10) 
 
@@ -4055,36 +4053,7 @@ Each row is a recommendation taken (standing order 3); the evidence is in
 the retired analysis doc "Parity matrix, 2026-10-10" and "Repositories and
 libraries read, 2026-10-10".
 
-- **A Docker image.** Recommendation: build it, in two flavours from one
-  Dockerfile. Draft at `docker/Dockerfile` and `compose.yaml`
-  (not built: the sandbox has no Docker daemon). Measured from a venv of the
-  core requirements without `sentence-transformers`: 213 MB of site-packages
-  (numpy 70 with its libs, sqlalchemy 28, cryptography 16, uvloop 16), plus
-  the app's `src` 28 MB and `frontend` 35 MB (Harper's WASM is 16 of them),
-  plus the slim Python base (about 125 MB): about 400 MB on disk, roughly 150
-  MB pulled. With `sentence-transformers` and CPU torch (769 MB for torch
-  alone in this repository's own venv, 1.5 GB for the whole venv): about 1.6
-  GB. Volume layout: `/data` (`TESSELLATE_DATA_DIR`: database, files, the LAN
-  certificate, backups) and `/models` (`HF_HOME` and
-  `SENTENCE_TRANSFORMERS_HOME`: the embedder, Whisper, RapidOCR, the Pyodide
-  and needle downloads), so a notebook reset never re-downloads a model.
-  Ollama stays on the host (`OLLAMA_URL=http://host.docker.internal:11434`).
-  **Blocker found, three small changes first** (a brief, not a session):
-  `__main__.py:32` binds `127.0.0.1` as a constant, and `netbind.bind_host`
-  widens it only when the LAN preference is on and a password exists; a
-  browser reaching the container through Docker's bridge is "the network",
-  and an app with no password answers every network request 403 (SEC-01).
-  So the image needs `TESSELLATE_BIND` (default unchanged), a first-password
-  environment variable or `--set-password` (today only `--reset-password`
-  exists), and a decision on TLS (a reverse proxy in front, with plain http
-  inside the compose network). **What the Windows launcher does that a
-  container cannot:** the desktop window (pywebview) and tray, the Start menu
-  and the Repair shortcut, native file dialogs (`core/desktop_dialog.py`),
-  watching a folder on the host, the capture hotkey (`--capture`), OS
-  reminders and notifications, the firewall prompt and port search, and
-  launching Ollama and detecting a GPU. Everything else (the venv, the
-  update check, the health check) a container replaces. Keep for the owner's
-  NAS and server users; drop as a desktop install path.
+- **A Docker image.** Built and run (L924, `docs/DOCKER.md`); the plan is in HISTORY, "Moved from the plans, 2026-11-21 (Docker image, VS Code extension)".
 - **Reuse the system Python's packages.** Recommendation: offer it, never
   default it. `start.sh` line 1070 and `start.bat` line 602 run
   `python -m venv .venv`; the choice is `--system-site-packages` on that
@@ -4498,3 +4467,19 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
 - **L667, a real SearXNG install through the package notice.** The notice, the failure toast and the notice coming back were verified live on :9020 (Install, 503 "Couldn't download SearXNG", notice restored in under 1 s), but the from-source install could not finish here: github.com's archive host answers 403 through the sandbox proxy and the Docker daemon is not running. Check on a machine with github.com: in a fresh data folder press Install on the web search notice, wait for Settings, Web search to say running, ask a web question, then press Undo and see it stop.
 - **L660, first-run checks that need a real Windows installer and real Ollama (2026-11-21): Setup's optional-package pick installs on first launch with progress and Stop; the janitor warms only an installed model.** Built and tested on fake transports (`packaging/windows/installer.iss:391` writes `pending-extras.txt`, `api/app.py:680` `_install_pending_extras`, `ai/janitor.py:832` `warm_filing_model`; `tests/test_extras.py`, `tests/test_janitor_warm.py`). Check on real hardware: run the built Windows Setup with two packages ticked, open the app, and see the bell task show bytes and percent with a working Stop; then, on a fresh Ollama holding only a non-default chat model, check the log says the filing model warmed and never "llama3.2 failed".
+
+## Placed from IDEAS.md, 2026-11-14
+
+- **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
+- **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
+
+
+## From the general plan's frontend rows, 2026-11-21
+
+- **Provenance for extracted notes** (L-general-37, found building L-general-13). A note saved by `/extract/commit` (routes_entries.py `extract_commit`) records nothing about where its text came from, so it gets no provenance chip. **Why it waits:** no column can say "extracted from document X" without a migration. `source_path` would mark the note as outside text for the agent's injection guard (`manager.came_from_outside`), which is wrong for the person's own document. **Next:** a nullable `origin_document_id` on entries (migration, full suite), set by `extract_commit` when `source_document_id` is given, read by `entry/provenance.py` as kind `document` with "Extracted from <title>". **Check:** `tests/test_note_provenance.py` gains a case where a note committed with `source_document_id` returns `source_kind == "document"`, and a hand-typed note still returns none.
+
+## Lag rows measured and not removable, 2026-11-21
+
+- **L704, the companion's Tempo look flushes the style other code dirtied.** `nameMarkBuddyTempo`'s `getAnimations` still shows 3 to 11 forced style flushes per tab-flip run (median 17 ms, max 46 ms at 4x). Measured with invalidation tracking: the dirt is the tab's own (timeline rows' class and rule changes, 168 elements in the 21 ms one) plus running animations, not the companion's writes. Three variants changed nothing (look taken inside the idle callback: median 25.7 ms; looks every 4 s when the last found nothing: 30.5 ms; idle callback held while `nmb.pageAt` is under 300 ms old: 38.1 ms, all against 17.4 ms before, n=6 each), so none was kept. **The check:** `scratchpad/w`-style trace (CPU 4, `disabled-by-default-devtools.timeline.stack`), five tab clicks, `UpdateLayoutTree` events whose top frame is `nameMarkBuddyTempo`; the fix must come from the pages that dirty (batch the timeline rows' class writes) or from listing the figure's animations without `getAnimations`.
+- **L707, the companion adds layouts to a tab switch that no listener of its own causes.** With the Atlas companion on, a tab click to chat counts a median 102 Layout events against 25 with it off, reminders 136 against 7 (4x CPU, six fresh loads each). A traced chat switch (four loads) splits 355 Layouts into 266 unforced, the figure's own frame-stepped drawing and walk, and 89 forced, the largest being `atlasRigRead` 10, `check@:7321` 8, the composer's `autoGrow` 20, `nameMarkBuddySupported` 5. Swallowing `transitionrun`, `transitionend`, `transitioncancel`, `animationstart` and `animationend` before the keep-up sees them gave 387 Layouts (305 unforced), so the keep-up is not the cause and no change to it was made. **The check:** `scratchpad/ui-sweeps/companionperf.js`-style trace (CPU 4, stack category), tab clicks with `prefs.set('avatar-buddy','atlas')` against `'off'`, count `Layout`; the fix must come from stepping the figure's layers on the compositor or from the forced readers above (`atlasRigRead`, `nameMarkBuddyBlend`, `rect@avatars.js:5484`).
+- **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).

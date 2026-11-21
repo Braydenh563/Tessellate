@@ -8152,3 +8152,29 @@ def test_the_sheet_host_has_its_geometry_and_no_native_dialog_rules_left_for_it(
     every = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
     assert ".dash-widgets-dialog[open]" not in every, "a closed host is `hidden`, not a native [open] dialog"
     assert "#doc-history-dialog {" not in every, "a host's width is its class, so the phone rule can win"
+
+
+def test_a_note_s_provenance_is_one_chip_built_in_the_note_card() -> None:
+    """L-general-13: the origin chip is drawn once, in entry-card.js, from the server's `source_kind`;
+    no second place builds a `source-path` chip, and nothing reads `source_url` to draw its own."""
+    card = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8")
+    assert card.count('"source-path"') == 1
+    assert "entry.source_kind && entry.source_label" in card
+    assert "Imported from ${entry.source_path}" not in card
+    others = [
+        p.name
+        for p in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js")
+        if p.name != "entry-card.js" and '"source-path"' in p.read_text(encoding="utf-8")
+    ]
+    assert others == []
+
+
+def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
+    """L-general-12: Triage opens `openSheet`, never a hand-built overlay, and each act (and the bulk
+    one) joins the undo stack once."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-triage.js").read_text(encoding="utf-8")
+    assert "openSheet({" in js
+    assert 'createElement("dialog")' not in js and "modal-overlay" not in js
+    #: Clear done lives in reminder-edit.js (the merge with L-world-class-81 kept that copy), so two here.
+    assert js.count("pushUndo(") == 2  # the outcome append, the one triage act (a row or all rows)
+    assert ".style." not in js and "style=" not in js

@@ -9,8 +9,8 @@ import datetime as dt
 import pytest
 
 from tessellate.ai import acts
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 28, 10, 0, 0)
 
@@ -24,7 +24,7 @@ def _two(session):
 
 @pytest.mark.parametrize("ask", ["pin note {a}", "pin the note {a}", "pin entry {a}", "pin note #{a}"])
 def test_pin_takes_a_note_by_number(session, monkeypatch, ask):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     a, _b = _two(session)
     parsed = acts.parse(ask.format(a=a.id), NOW)
     assert parsed is not None and parsed["note_id"] == a.id, parsed
@@ -35,7 +35,7 @@ def test_pin_takes_a_note_by_number(session, monkeypatch, ask):
 
 
 def test_delete_and_rename_take_a_number(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     a, b = _two(session)
     gone = acts.preview(session, acts.parse(f"delete note {b.id}", NOW))
     assert gone["card"]["steps"][0]["arguments"]["note_id"] == b.id
@@ -44,7 +44,7 @@ def test_delete_and_rename_take_a_number(session, monkeypatch):
 
 
 def test_link_and_tag_take_numbers(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     a, b = _two(session)
     linked = acts.preview(session, acts.parse(f"link note {a.id} to note {b.id}", NOW))
     args = linked["card"]["steps"][0]["arguments"]
@@ -54,14 +54,14 @@ def test_link_and_tag_take_numbers(session, monkeypatch):
 
 
 def test_a_missing_number_is_said_not_searched(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     _two(session)
     planned = acts.preview(session, acts.parse("pin note 9999", NOW))
     assert "card" not in planned and "9999" in planned["line"], planned
 
 
 def test_a_title_with_a_number_still_searches(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     manager.create_entry(session, "# Route 66 trip\n\nMaps.")
     session.commit()
     planned = acts.preview(session, acts.parse("pin my route 66 trip note", NOW))

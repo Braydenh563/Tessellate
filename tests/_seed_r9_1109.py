@@ -6,9 +6,8 @@ from __future__ import annotations
 import json
 from datetime import datetime, date
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 TODAY = date(2026, 11, 9)
 NOW = datetime(2026, 11, 9, 12, 0)
@@ -91,8 +90,7 @@ def asker(client, monkeypatch, *, chat=False):
 
 
 def fix_clock(monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def ask(client, question, history=None, notes_only=False, use_tools=None):

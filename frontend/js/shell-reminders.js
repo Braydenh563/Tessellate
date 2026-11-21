@@ -1019,6 +1019,12 @@ async function loadReminders() {
     //: Done counts the server's total, not the page on screen.
     count.textContent = label === "Done" ? donePage.total : items.length;
     heading.append(text, count);
+    if (label === "Overdue") {
+      const triage = smallButton("ph:funnel Triage", "Keep, drop or reschedule each", () =>
+        loadReminders.act("triage", items)
+      );
+      heading.appendChild(triage);
+    }
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
@@ -1099,6 +1105,9 @@ function updateReminderBadge(reminders) {
 
 let editingReminderId = null;
 
+//: Lazy acts (reminder-triage.js) arrive as events, so the file adds no global names.
+loadReminders.act = (name, detail) => lazyScript("/js/reminder-triage.js").then(() => document.dispatchEvent(new CustomEvent(`reminders:${name}`, { detail })));
+
 function reminderItem(reminder, label) {
   const li = document.createElement("li");
   li.dataset.id = reminder.id; // flashReminder's own hook, same shape as #entry-list's data-id
@@ -1140,11 +1149,15 @@ function reminderItem(reminder, label) {
       pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
       loadReminders();
       toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+      reminder.entry_id && loadReminders.act("outcome", reminder);
       return;
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
-    if (checkbox.checked) atlasOn("done");
+    if (checkbox.checked) {
+      atlasOn("done");
+      reminder.entry_id && loadReminders.act("outcome", reminder);
+    }
   });
   row.appendChild(checkbox);
 

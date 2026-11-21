@@ -142,8 +142,17 @@
   #tab-bar .tab-label {
     font-size: var(--text-xs);
   }
+  /* The header holds the 44px strip in every mode. Centred, the strip is
+     absolutely placed and adds no height, so the header stayed at its 44px
+     row and the 48px strip ran 2px past its top and bottom (measured at 1184:
+     strip -2 to 46 in a 44px header; the tour's ring on it left the window).
+     This is the height the strip gives the header when it is in the flow
+     (56px at 1000), so the two modes are one height. */
+  header#top-bar {
+    min-height: calc(max(2.75rem, 44px) + 4px + 2 * var(--header-pad-y) + 1px);
+  }
 }
-/* --- the one row, kept again at 820 to 879 (L-world-class-106) ----------
+/* --- the one row, kept again from 820 (L-world-class-106) ---------------
    The Local chip (row 1641) took 42px more of the header after the fit above
    was measured, and the strip wrapped again: the top bar was 100px, two rows,
    from 820 to 875 (`scratchpad/ui-sweeps/shell-devibe-106.js`). Measured at
@@ -152,8 +161,9 @@
    the header's three gaps and the switcher's caret (the circles icon is the
    button; its menu still opens on it and `aria-haspopup` still says so)
    frees 50px: 56px, one row, with no target under 36px and the tabs still at
-   their 44px floor. */
-@media (min-width: 820px) and (max-width: 879.98px) {
+   their 44px floor. The band is Phase 9's 820 to 1099.98 (no new width
+   query): the tighter gaps cost nothing wider, where the row has room. */
+@media (min-width: 820px) and (max-width: 1099.98px) {
   header#top-bar {
     column-gap: var(--space-2);
   }

@@ -13,22 +13,21 @@ import pytest
 from sqlalchemy import func, select
 
 from tessellate.ai import consent, tools
-from tessellate.api import chat_said, chat_turn, routes_chat
-from tessellate.core import clock, config
+from tessellate.core import clock
 from tessellate.core.database import Entry, Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     #: The run route's summary read the real clock through config and clock, so
     #: between 00:00 and 09:00 UTC "tomorrow at 9" was said back as "today at 9".
-    monkeypatch.setattr(config, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
 
 
@@ -167,11 +166,9 @@ def test_note_about_suica_finds_the_note(client, session):
 
 def _aware_clock(monkeypatch):
     """The real clock is aware (the person's zone); the snooze compared it with a naive stored time."""
-    from tessellate.core import config
 
     aware = NOW.replace(tzinfo=timezone.utc)
-    for module in (routes_chat, chat_said, chat_turn, config):
-        monkeypatch.setattr(module, "user_now", lambda _config: aware)
+    pin_clock(monkeypatch, lambda: aware)
 
 
 def test_a_create_with_a_topic_and_no_words_asks_what_it_says(client, session):

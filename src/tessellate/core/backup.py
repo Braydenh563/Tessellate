@@ -19,6 +19,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
+from tessellate.core import clock
 from tessellate.core import paths
 from tessellate.core.logbuffer import safe_value
 
@@ -282,7 +283,7 @@ def backup_now(  # noqa: ANN001
     aside = copy_dir(data_dir)
     run.plan(["Copy the database", "Check the copy"] + (["Copy to your folder"] if aside else []) + ["Remove old backups"])
     run.say("Copying the database.")
-    destination = _free_destination(backups_dir(data_dir), datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S"))
+    destination = _free_destination(backups_dir(data_dir), clock.utc().strftime("%Y%m%d-%H%M%S"))
     #: **The backup gets its name only once it is a whole backup.** Copying
     #: straight into `destination` means a copy that fails part-way (a full
     #: disk is the measured case) leaves a file named like a backup holding
@@ -462,7 +463,7 @@ def check_at_boot(db_path: Path) -> dict:
             "ok": ok,
             "result": "ok" if ok else "; ".join(rows)[:500],
             "ms": round((time.perf_counter() - started) * 1000, 1),
-            "at": datetime.now(timezone.utc).isoformat(),
+            "at": clock.utc().isoformat(),
         }
         if not ok:
             logger.error("the notebook file failed its check at start: %s", safe_value(answer["result"]))
@@ -523,7 +524,7 @@ _PARTIAL_GRACE_SECONDS = 3600
 
 
 def _sweep_partials(data_dir: Path) -> None:
-    now = datetime.now(timezone.utc).timestamp()
+    now = clock.utc().timestamp()
     for path in _snapshots(backups_dir(data_dir), ".db.partial"):
         try:
             if now - path.stat().st_mtime > _PARTIAL_GRACE_SECONDS:
@@ -543,7 +544,7 @@ def backup_is_due(db_path: Path, data_dir: Path) -> bool:
     newest = next(iter(backup_files(data_dir)), None)
     if newest is not None:
         age_hours = (
-            datetime.now(timezone.utc)
+            clock.utc()
             - datetime.fromtimestamp(newest.stat().st_mtime, tz=timezone.utc)
         ).total_seconds() / 3600
         if age_hours < BACKUP_EVERY_HOURS:

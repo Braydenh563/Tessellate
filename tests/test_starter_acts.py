@@ -8,13 +8,19 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
 from pathlib import Path
 
 import pytest
 
 from tessellate.ai import starter_acts
 from tessellate.ai import composer_phrases
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "tests" / "fixtures" / "composer" / "agent_starters_1010.json").read_text("utf-8"))
@@ -41,7 +47,7 @@ def notebook(client):
         body = {"content": f"# {topic.title()} {i}\n\nNotes on the {topic}. Met Sam about the {topic} and the next step.",
                 "tags": [topic.split()[0]] if i < 10 else []}
         ids.append(client.post("/entries", json=body).json()["id"])
-    client.post("/reminders", json={"text": "Follow up the harbor survey", "due_at": datetime.now().isoformat()})
+    client.post("/reminders", json={"text": "Follow up the harbor survey", "due_at": SUITE_LOCAL.isoformat()})
     return ids
 
 
@@ -122,5 +128,5 @@ def test_every_note_is_read_as_many_notes():
     "every note" was not a head the grammar knew."""
     from tessellate.ai import commands
 
-    read = commands.read("tag every note about the harbor survey with harbor", datetime.now())
+    read = commands.read("tag every note about the harbor survey with harbor", SUITE_LOCAL)
     assert read == {"intent": "tag", "about": "harbor survey", "single": False, "tags": ["harbor"]}

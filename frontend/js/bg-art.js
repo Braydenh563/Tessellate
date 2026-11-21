@@ -2831,14 +2831,17 @@
     bgArtApplyPause();
   });
 
-  // Unfocused for thirty seconds (another app in front, the window left on a
-  // second screen): stop; focus again: go on.
+  // Unfocused for five seconds (another app in front, the window left on a
+  // second screen): stop; focus again: go on. Five, not thirty (L-world-class-111,
+  // WORLD_CLASS 25 (o) "pause on blur only after 30s"): nobody is looking at
+  // it, and a quick switch away and back still does not stop it.
+  const BG_ART_BLUR_MS = 5000;
   window.addEventListener("blur", () => {
     clearTimeout(bgArtBlurTimer);
     bgArtBlurTimer = setTimeout(() => {
       bgArtPaused.blurred = true;
       bgArtApplyPause();
-    }, 30000);
+    }, BG_ART_BLUR_MS);
   });
   window.addEventListener("focus", () => {
     clearTimeout(bgArtBlurTimer);

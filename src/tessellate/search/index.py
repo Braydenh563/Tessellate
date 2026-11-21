@@ -59,6 +59,7 @@ from sqlalchemy import event, select, text
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import Session, object_session
 
+from tessellate.core import clock
 from tessellate.entry.properties import strip as strip_properties
 
 logger = logging.getLogger("tessellate.search.index")
@@ -569,7 +570,7 @@ def rebuild(session: Session, only: str | None = None) -> dict[str, int]:
             _write(connection, source, ref_id, row)
             written[source.kind] += 1
     if not only:
-        _last_rebuild = {"at": datetime.now().astimezone().isoformat(timespec="seconds"), "rows": dict(written)}
+        _last_rebuild = {"at": clock.utc().astimezone().isoformat(timespec="seconds"), "rows": dict(written)}
     return written
 
 

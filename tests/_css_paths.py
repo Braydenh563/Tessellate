@@ -74,6 +74,8 @@ CSS_FILES = [
     CSS_DIR / "answer-foot-lazy.css",
     #: The chat context pill's popover (usage-ledger.js loads it).
     CSS_DIR / "usage-lazy.css",
+    #: The overdue triage sheet (reminder-triage.js loads it).
+    CSS_DIR / "triage-lazy.css",
     #: The Guide's streamed bubble (help-chat.js loads it).
     CSS_DIR / "help-chat-lazy.css",
     #: The chips under a quick-add field (quickadd.js, CHAT_PLAN decision 50).

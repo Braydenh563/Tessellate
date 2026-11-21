@@ -526,7 +526,14 @@ const TIMELINE_FIRST = 100;
 //: the render a page is being fetched for (0: none); a page in flight for a
 //: superseded range must not stop the new range asking for its own. `total`:
 //: how many rows the whole range holds (the first page's `total`), null until it lands.
-const timelineRenders = { n: 0, pagingFor: 0, total: null };
+//: `streak`: the strip's streak ask, kept per today (review 5907787263): walking the
+//: strip asked for 366 days on every step. Asked again on a new day or a timeline
+//: load (`fresh`), or after a note is saved (`tessellate:note-saved`).
+const timelineRenders = { n: 0, pagingFor: 0, total: null, streak: null };
+//: A note saved (today's daily note among them) asks the streak again on the next strip step.
+document.addEventListener("tessellate:note-saved", () => {
+  timelineRenders.streak = null;
+});
 // Counts per day for the whole range (not just the loaded pages), which is
 // what the scrubber draws.
 let timelineDensity = {};
@@ -622,7 +629,7 @@ async function renderTimeline() {
     setTimeout(() => {
       //: The strip, the recall row and the row gap's 0.3s ease all move Today.
       drawTimelineScrubber();
-      renderTimelineDayStrip();
+      renderTimelineDayStrip({ fresh: true });
       setTimeout(timelineScrollToToday, 700);
       //: **The two reads nobody is waiting for come after the first screen**
       //: (perf 1031 row 53: seven requests on open, the second page of rows and
@@ -1293,18 +1300,22 @@ function timelineDayLabel(key, has) {
   return { long, label: `${long}, ${has ? "has a page" : "no page yet"}` };
 }
 
-async function renderTimelineDayStrip() {
+async function renderTimelineDayStrip({ fresh = false } = {}) {
   const host = $("timeline-daystrip-days");
   if (!host) return;
   const today = timelineBucketKey(new Date(), "day");
   if (!timelineStripEnd || timelineStripEnd > today) timelineStripEnd = today;
   const end = timelineStripEnd;
   const first = timelineDayShift(end, 1 - TIMELINE_STRIP_DAYS);
+  if (fresh || timelineRenders.streak?.today !== today) {
+    const asked = apiJson(`/entries/daily?through=${today}&days=366`, { silent: true }).catch(() => null);
+    timelineRenders.streak = { today, asked };
+  }
   //: The streak is asked through today over the endpoint's whole window, so a
   //: run longer than the strip's seven days is not cut to seven.
   const [hasPage, journal] = await Promise.all([
     timelineDayPages(first, end),
-    apiJson(`/entries/daily?through=${today}&days=366`, { silent: true }).catch(() => null),
+    timelineRenders.streak.asked,
   ]);
   //: Stale answer: the person walked on while this was in flight.
   if (end !== timelineStripEnd) return;
@@ -1634,20 +1645,20 @@ function timelineRowElement(row, density) {
 
   // A row that continues another says so and goes there (decision 5's one
   // surviving thread affordance). Only where there is room to say it.
-  if (density === "full" && row.parentId) {
-    const parent = timelineById.get(row.parentId);
-    if (parent) {
-      const link = document.createElement("button");
-      link.type = "button";
-      link.className = "ghost small timeline-row-thread";
-      setLabel(link, `ph:arrow-bend-up-left ${parent.title}`);
-      link.title = `Continues “${parent.title}”`;
-      link.addEventListener("click", (event) => {
-        event.stopPropagation();
-        focusTimelineRow(parent.key);
-      });
-      main.appendChild(link);
-    }
+  //: A continuing row branches off the spine (L-world-class-176); the map is keyed "note:5".
+  const parent = row.parentId ? timelineById.get(`note:${row.parentId}`) : null;
+  if (parent) li.dataset.branch = "1";
+  if (density === "full" && parent) {
+    const link = document.createElement("button");
+    link.type = "button";
+    link.className = "ghost small timeline-row-thread";
+    setLabel(link, `ph:arrow-bend-up-left ${parent.title}`);
+    link.title = `Continues “${parent.title}”`;
+    link.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusTimelineRow(parent.key);
+    });
+    main.appendChild(link);
   }
 
   li.addEventListener("click", (event) => {
@@ -2451,17 +2462,18 @@ function timelineScrollToToday() {
   const today = timelineBucketKey(new Date(), feed.dataset.scale || "day");
   const section = feed.querySelector(`.timeline-bucket[data-bucket="${today}"]`) || feed.firstElementChild;
   const box = $("timeline-scroll");
-  //: **Today is the top row on open; the days ahead are above it, reached by
-  //: scrolling up** (INBOX 1300 C39). A feed shorter than its window cannot
-  //: scroll that far (measured: Today 316px down with scrollTop stuck at
-  //: 105), so the missing distance is added as space under the feed. Rows
-  //: below Today change height as they are scrolled past, hence the loop.
+  //: Today is the top row on open, the days ahead above it (INBOX 1300 C39). A feed shorter than its window
+  //: cannot scroll that far, so the missing distance is space under the feed; rows below Today change height
+  //: as they are scrolled past, hence the second read.
   const gap = () => section.getBoundingClientRect().top - box.getBoundingClientRect().top;
   if (section) {
-    feed.style.paddingBottom = "0px";
+    //: One layout, not two (L705): room for Today to reach the top goes under the feed first (`innerHeight`
+    //: needs no layout), so the one read after it is the only layout; a scroll invalidates none.
+    const room = window.innerHeight;
+    feed.style.paddingBottom = `${room}px`;
     box.scrollTop += gap();
-    feed.style.paddingBottom = `${Math.max(0, gap())}px`;
     box.scrollTop += gap();
+    feed.style.paddingBottom = `${Math.max(0, Math.min(room, box.scrollTop + box.clientHeight - (box.scrollHeight - room)))}px`;
   }
   return section;
 }

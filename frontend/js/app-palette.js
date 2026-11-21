@@ -400,6 +400,7 @@
     "extra-row": "ocr tesseract rapidocr",
     "widget-focus": "timer pomodoro countdown stopwatch",
     "widget-pace": "statistics stats",
+    "widget-mix": "pie chart categories share statistics",
     "widget-heatmap": "statistics stats",
     "widget-streak": "statistics stats",
     "doc-word-goal": "word count reading time",
