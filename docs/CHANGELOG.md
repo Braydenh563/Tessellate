@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: an embed opened with a `historyKey` keeps its undo history under its own store key (`board:<id>:embed:<key>`) and reads it back on mount, so it survives a reload without touching the page board's (L-whiteboard-70).
+- Boards: alignment guides are a class in the active board's own overlay layer, not the document id `wb-align-guides`, so an embed's guides and the page board's are separate groups (L-whiteboard-73).
 - Boards: the rulers and the map rings are the page board's only: an embed's pan no longer moves the page's rulers, and in an embed a topic's right-click opens the plain menu instead of a ring placed in the hidden board view (L-whiteboard-60).
 - Boards: right-clicking or holding a map line in an embed opens the topic's plain menu instead of nothing (L-whiteboard-68).
 - Boards: the unit the fields and rulers show and the page view's frames are kept per board, so an embed's units no longer change the page board's (L-whiteboard-67).

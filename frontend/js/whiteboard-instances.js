@@ -297,6 +297,8 @@
     const inst = mountInstance(box, boardId, editable);
     box.setAttribute("data-wb-embed", String(inst.key));
     inst.destroyed = false;
+    //: `opts.historyKey` names this embed to its host, so its undo history is kept under its own key (L-whiteboard-70).
+    if (opts.historyKey != null) wbEmbedHistoryRestore(inst, opts.historyKey);
 
     async function reloadEmbed() {
       const url = boardId ? `/whiteboard/?board_id=${boardId}` : "/whiteboard/";
