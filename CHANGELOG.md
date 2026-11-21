@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: Tools now reads the saved "Let that app add and change notes" switch on open, and Packages fills the dictation options (skip silence, language, words) whether or not faster-whisper is installed; both showed their HTML default (off) over a saved on. deepflows.js follows the moved UI (App menu, bin switch, More sheet, aria-label suffixes) and passes 68/68 (L-general-20).
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
 - CLAUDE.md and WORKING.md give the measured test count, 52,983.
