@@ -4454,6 +4454,8 @@ Each row is the one step that needs the owner's own machine, a device or a real 
   - L-whiteboard-11: Check the real model's wording of "What changed" in the board history bar. Built with a fake transport (tests/test_board_narrate.py); with scratchpad/llama-dev.sh serve, narrate a board with 3 cards added and one moved, and confirm the sentence names nothing that is not in the composer text.
   - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
 
+- **L-world-class-414, two sweeps that need what this sandbox lacks (moved from LEDGER 2026-11-21, the L554 run):** `scratchpad/ui-sweeps/pywarm.js` needs the Pyodide extra installed ("the Pyodide extra is not installed here"); `scratchpad/ui-sweeps/personamarks.js` needs a model server (`scratchpad/llama-dev.sh serve`; "the model server isn't running").
+
 ## Whiteboard, parked 2026-11-14
 
 - **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
