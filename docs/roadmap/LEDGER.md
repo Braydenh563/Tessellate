@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 74 | 10 | 0 | 0 | 84 |
+| world-class | 0 | 71 | 10 | 0 | 0 | 81 |
 | general | 0 | 30 | 2 | 0 | 5 | 32 |
-| all | 372 | 459 | 81 | 2 | 112 | 912 |
+| all | 372 | 456 | 81 | 2 | 112 | 909 |
 
 ## graph
 
@@ -534,9 +534,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-571** `world-class` open, L: Free about 4 KB gzipped from boot (lazy web panel) before splitting status.js, notes-list.js, chat.js. From L698; frontend/js/chat.js, status.js, notes-list.js. Evidence: Measured 2026-11-21: boot gzip total 249,722 of cap 250,450 (headroom 728 B); one tail split of chat.js (chat-progress.js, 506 lines) cost +1,087 B gzipped (29,195 to 30,282) and tripped tests/test_static_compression.py at 250,809; each split costs about 1 KB, so status.js, notes-list.js and chat.js cannot be split as boot scripts without moving about 4 KB gzipped out of boot first. Lazy seams checked: chat.js 367-765 web panel (callers wiring.js, web-results.js, chat-turn.js; state read at runtime by boot files), status.js 3181-3371 background-task notices. index.html now 16,747 (other agent). Per-file lists to update with a split: tests/_app_js.py MOVED_OUT, tests/wake_sources_seed.json, tests/test_undo_coverage.py EXEMPT key, tests/test_spinner_recipe.py:340
-- [ ] **L-world-class-622** `world-class` open, M: Settings pane switch: style and layout of the shown pane is 4x-CPU 130-380 ms; needs a keep-style hide that visibility checks understand. From L-world-class-621 close, 2026-11-21. Evidence: frontend/js/settings.js:150 showSettingsSection; 4x trace: shown pane style 130-380 ms, layout 45-184 ms (tools), script 13-62 ms; content-visibility:hidden on inactive panes cut data 144 to 74 ms and tools 214 to 130 ms (min, A/B) but breaks offsetParent and getClientRects visibility checks (settings-wiring.js:579, settings-find.js:271)
-- [ ] **L-world-class-623** `world-class` open, S: Microbes step still boxes doubles in some runs; frame still about 1.8 ms at 4x. From L-world-class-391. Evidence: frontend/js/bg-art.js microbes step (:1363) still 88 to 103 KB/s in 3 of 5 runs at 4x, 14 to 22 in the others; drawImage is 26 ms/s of the 2 ms frame (glow and body copies per organism)
-- [ ] **L-world-class-624** `world-class` open, M: Boot long tasks still over 50ms at 4x on 5,000 notes: first clock paint, an api json continuation, atlas step. From L-world-class-354. Evidence: bootlongtasks.js 2026-11-21, 4x CPU, 5,000 notes, median of 3: shell-reminders.js firstClockPaint 81ms (the first Intl.DateTimeFormat, measured as the floor 57ms on 2026-11-14), app.js Response.json.then 62ms (41 to 93; the continuation of whichever api() caller lands, needs per-caller attribution), atlas.js step 55ms (cold nameMark). dashFillingSkeleton's 61ms getComputedStyle is in a frame callback, the style that frame does anyway.
 
 ## general
 
