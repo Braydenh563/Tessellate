@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 79 | 10 | 0 | 0 | 89 |
+| world-class | 0 | 80 | 10 | 0 | 0 | 90 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 372 | 470 | 81 | 2 | 111 | 923 |
+| all | 372 | 471 | 81 | 2 | 111 | 924 |
 
 ## graph
 
@@ -540,6 +540,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-571** `world-class` open, L: Free about 4 KB gzipped from boot (lazy web panel) before splitting status.js, notes-list.js, chat.js. From L698; frontend/js/chat.js, status.js, notes-list.js. Evidence: Measured 2026-11-21: boot gzip total 249,722 of cap 250,450 (headroom 728 B); one tail split of chat.js (chat-progress.js, 506 lines) cost +1,087 B gzipped (29,195 to 30,282) and tripped tests/test_static_compression.py at 250,809; each split costs about 1 KB, so status.js, notes-list.js and chat.js cannot be split as boot scripts without moving about 4 KB gzipped out of boot first. Lazy seams checked: chat.js 367-765 web panel (callers wiring.js, web-results.js, chat-turn.js; state read at runtime by boot files), status.js 3181-3371 background-task notices. index.html now 16,747 (other agent). Per-file lists to update with a split: tests/_app_js.py MOVED_OUT, tests/wake_sources_seed.json, tests/test_undo_coverage.py EXEMPT key, tests/test_spinner_recipe.py:340
 - [ ] **L-world-class-620** `world-class` open, M: Grid-sizing callbacks over 50 ms: read card heights from ResizeObserver entries instead of getBoundingClientRect after the fills dirty layout. From frontend/js/dashboard.js watchDashWidgets rAF and settle afterFrames callbacks. Evidence: sizeDashWidgets 49-307 ms at 4x, 500 notes (forced layout of the filled grid; LoAF user-callback)
 - [ ] **L-world-class-621** `world-class` open, M: Settings pane switch by arrow key over 100 ms at 4x CPU (data pane worst). From L-world-class-355 re-measure 2026-11-21. Evidence: scratchpad/ui-sweeps/handlerlag.js RATE=4, 5 runs: Settings nav keydown pane switch (settings.js showSettingsSection, forced style/layout) 100-290 ms; data pane 236-294 ms, preferences 116-262; tabs 13-69 ms, chat hover 2-8 ms pass
+- [ ] **L-world-class-622** `world-class` open, M: Settings pane switch: style and layout of the shown pane is 4x-CPU 130-380 ms; needs a keep-style hide that visibility checks understand. From L-world-class-621 close, 2026-11-21. Evidence: frontend/js/settings.js:150 showSettingsSection; 4x trace: shown pane style 130-380 ms, layout 45-184 ms (tools), script 13-62 ms; content-visibility:hidden on inactive panes cut data 144 to 74 ms and tools 214 to 130 ms (min, A/B) but breaks offsetParent and getClientRects visibility checks (settings-wiring.js:579, settings-find.js:271)
 
 ## general
 

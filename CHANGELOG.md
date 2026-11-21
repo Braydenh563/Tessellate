@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: a pane switch costs less. The search index reads a pane in 6 ms slices instead of one 118 ms read after a first visit (Appearance), and the select wrapper skips the option rows it just made; across the 21 panes the mean median is 225 to 196 ms at 4x CPU and 51 to 44 ms at 1x, the worst run 204 to 83 ms at 1x (five runs each, scratchpad/ui-sweeps/handlerlag.js; its Settings budget is 250 ms). What is left is the browser's style and layout of the shown pane, which a trace puts at 130 to 380 ms at 4x (L-world-class-621).
 - Agent: the chat turn and each skill step run as small named stages that can be tested one at a time; behaviour is unchanged (L-world-class-124).
 - Duplicates: the review on 5,000 alike notes takes 4.8 s instead of 70 s and 613 MB instead of 2.1 GB (L-world-class-410).
 - Handler lag: re-measured at 1x and 4x CPU, five runs each; tab presses (13 to 69 ms at 4x), chat hover (2 to 8 ms) and every 1x item are under 100 ms; Settings pane switches at 4x are the one open item (L-world-class-355).

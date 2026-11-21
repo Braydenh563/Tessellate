@@ -168,3 +168,35 @@ def test_a_search_key_drops_no_pane_text():
     flat = " ".join(obs.split())
     # A change above the panes (a pane added or swapped by the idle parse) still empties the cache.
     assert 'else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();' in flat
+
+
+def test_settings_row_warm_reads_a_pane_in_slices():
+    # Appearance (1,260 elements) read whole was 118 ms at 4x, landing on the arrow key after its first visit
+    # (L-world-class-621): the read stops at a deadline, the vocabulary is the next slice, and a changed pane starts over.
+    find = read("settings-find.js")
+    assert "settingRowsScan.pane = function (pane, until = 0)" in find
+    assert "if (until && performance.now() > until) return null;" in find
+    assert "settingRowsScan.pane(pane, performance.now() + 6)" in find
+    assert "settingRowsWarm.words" in find
+    assert "settingRowsScan?.partial.delete(pane)" in read("settings.js")
+
+
+def test_select_observer_skips_the_shell_it_made():
+    # Each wrapped select added a shell and its option rows; the document observer re-queried every one (L-world-class-621).
+    body = read("sheets-selects.js").split("function watchForSelects()", 1)[1][:1600]
+    assert 'node.closest(".select-shell")' in body
+
+
+def test_settings_panes_are_built_lazily_and_only_the_shown_one_is_visible():
+    # The pane-switch budget (scratchpad/ui-sweeps/handlerlag.js, SETTINGS_BAR) rests on these: a pane is built on its
+    # first visit (surfaceBuild), and a switch only flips `hidden` on the panes, so no pane but the shown one is styled.
+    body = read("settings.js").split("function showSettingsSection(name)", 1)[1].split("\n}\n", 1)[0]
+    assert "surfaceBuild(`settings-${name}`)" in body
+    assert '$(`settings-${section}`).classList.toggle("hidden", section !== name)' in body
+    assert 'for (const name of SETTINGS_SECTIONS) surfaceBuild' not in body
+
+
+def test_handler_lag_sweep_holds_the_settings_pane_budget():
+    sweep = (JS.parent.parent / "scratchpad" / "ui-sweeps" / "handlerlag.js").read_text(encoding="utf-8")
+    assert "SETTINGS_BAR || 250" in sweep
+    assert "note('settings keys', sec, ev, loaf, SETTINGS_BAR)" in sweep
