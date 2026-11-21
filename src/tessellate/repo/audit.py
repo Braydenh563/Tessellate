@@ -70,3 +70,14 @@ def feed(
 
 def clear_type(session: Session, entity_type: str) -> int:
     return session.query(AuditLog).filter(AuditLog.entity_type == entity_type).delete()
+
+
+def delete_fact_corrections(session: Session) -> list[AuditLog]:
+    """The corrections logged when a learned fact was deleted, newest first."""
+    return list(
+        session.scalars(
+            select(AuditLog)
+            .where(AuditLog.action == "correction", AuditLog.detail.like("delete_fact:%"))
+            .order_by(AuditLog.id.desc())
+        ).all()
+    )

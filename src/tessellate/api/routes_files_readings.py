@@ -11,7 +11,6 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, vision_ocr
@@ -26,6 +25,7 @@ from tessellate.core import (
     reading_bin,
 )
 from tessellate.core.deps import get_session
+from tessellate.repo import uploads as uploads_repo
 
 logger = logging.getLogger(__name__)
 
@@ -502,10 +502,7 @@ def file_readings(
         rf._existing_upload(session, id)
     else:
         raise HTTPException(status_code=422, detail="The source must be attachment or upload.")
-    rows = session.execute(
-        text("SELECT kind, page, text, model, ts FROM readings WHERE source = :s AND source_id = :i ORDER BY page, kind"),
-        {"s": source, "i": id},
-    ).all()
+    rows = uploads_repo.readings(session, source, id)
     return [FileReadingOut(kind=r[0], page=r[1] or 0, text=r[2], model=r[3] or "", ts=str(r[4]) if r[4] else None) for r in rows]
 
 

@@ -96,3 +96,14 @@ def band_tops(session: Session, board_id: int | None, skip_sketches: set, skip_o
         select(WhiteboardObject).where(here(WhiteboardObject.board_id), WhiteboardObject.id.not_in(skip_objects))
     ).all()
     return sketch_top, note_top, others
+
+
+def snippets(session: Session, snippet_kind: str) -> list[BoardLibraryItem]:
+    """The person's live code snippets, newest first."""
+    return list(
+        session.scalars(
+            select(BoardLibraryItem)
+            .where(BoardLibraryItem.kind == snippet_kind, BoardLibraryItem.deleted_at.is_(None))
+            .order_by(BoardLibraryItem.updated_at.desc(), BoardLibraryItem.id.desc())
+        ).all()
+    )

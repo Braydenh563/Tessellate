@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import janitor, librarian
@@ -19,12 +18,12 @@ from tessellate.api.routes_entries import (
 )
 from tessellate.api.entry_out import to_out
 from tessellate.core import deps, jobruns
-from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tessellate.entry import manager_text, tag_reasons, tag_suggestions
 from tessellate.search import search_manager
+from tessellate.repo import notes as notes_repo
 
 logger = logging.getLogger("tessellate.api.entries")
 
@@ -41,9 +40,7 @@ def _linked_entry_ids(session: Session, entry) -> set[int]:  # noqa: ANN001
     # ORM-hydrating every non-deleted note in the notebook (decrypting private
     # ones) just to find the handful whose parent_id matches. This entry has
     # at most a few children; the notebook can have thousands of notes.
-    child_ids = session.scalars(
-        select(Entry.id).where(Entry.parent_id == entry.id, Entry.is_deleted == False)  # noqa: E712
-    )
+    child_ids = notes_repo.child_ids(session, entry.id)
     linked.update(child_ids)
     return linked
 

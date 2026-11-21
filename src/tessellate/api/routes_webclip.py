@@ -20,16 +20,15 @@ from urllib.parse import urlparse, urlunparse
 
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api import entry_out, routes_entries, routes_files
 from tessellate.api.schemas import EntryCreate, EntryOut
 from tessellate.core import deps, webclip, webimage
 from tessellate.core.config import user_now
-from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, properties as note_properties
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(prefix="/links", tags=["links"])
 
@@ -147,9 +146,7 @@ def _plain_title(raw: str, url: str) -> str:
 @router.post("/clip-page", response_model=ClipPageOut, status_code=201)
 def clip_page(body: ClipPageIn, response: Response, session: Session = Depends(get_session)) -> ClipPageOut:
     url = _page_address(body.url)
-    already = session.scalar(
-        select(Entry).where(Entry.source_url == url, Entry.is_deleted.is_(False)).order_by(Entry.id).limit(1)
-    )
+    already = notes_repo.by_source_url(session, url)
     if already is not None:
         response.status_code = 200
         return ClipPageOut(entry=entry_out.to_out(session, already), existing=True)

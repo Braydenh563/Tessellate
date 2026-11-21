@@ -24,17 +24,17 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_documents, routes_entries
 from tessellate.api.schemas import EntryUpdate
-from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape
+from tessellate.core.database import Entry, like_escape
 from tessellate.core.deps import get_session
 from tessellate.repo import documents as documents_repo, relations as relations_repo
 from tessellate.entry import manager
 from tessellate.entry import manager_wiki
 from tessellate.entry.manager_text import WIKI_LINK, plain_label
+from tessellate.repo import notes as notes_repo
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,
@@ -106,16 +106,8 @@ def _backlinks(session: Session, entry: Entry) -> dict:
     #: The notes whose stored wiki link lands here, whatever they typed (a
     #: prefix of the name resolves too), and the notes whose text holds a name.
     linked_ids = set(relations_repo.wiki_sources(session, entry.id))
-    note_rows = session.scalars(
-        select(Entry)
-        .where(
-            Entry.id != entry.id,
-            Entry.is_deleted.is_(False),
-            Entry.is_private.is_(False),
-            or_(Entry.id.in_(linked_ids), *[Entry.content.ilike(like, escape=LIKE_ESCAPE) for like in likes]),
-        )
-        .order_by(Entry.id.desc())
-        .limit(BACKLINK_SOURCES_MAX)
+    note_rows = notes_repo.mentioning(
+        session, likes, BACKLINK_SOURCES_MAX, linked_ids=linked_ids, except_id=entry.id
     )
     sources.extend(
         ("note", row.id, plain_label(row.content, 60) or "Untitled note", row.content or "")

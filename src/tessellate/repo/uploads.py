@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Attachment, Entry, MediaUpload
@@ -78,3 +78,13 @@ def attachment_gallery_page(session: Session, limit: int, offset: int) -> tuple[
         visible.order_by(Attachment.created_at.desc(), Attachment.id.desc()).limit(limit).offset(offset)
     ).all()
     return total, [(a, e) for a, e in rows]
+
+
+def readings(session: Session, source: str, source_id: int) -> list[tuple]:
+    """(kind, page, text, model, ts) of each stored reading of one file, by page then kind."""
+    return list(
+        session.execute(
+            text("SELECT kind, page, text, model, ts FROM readings WHERE source = :s AND source_id = :i ORDER BY page, kind"),
+            {"s": source, "i": source_id},
+        ).all()
+    )

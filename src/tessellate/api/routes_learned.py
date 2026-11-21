@@ -29,6 +29,7 @@ from tessellate.core import deps, undo_bin
 from tessellate.core.database import utcnow
 from tessellate.core.deps import get_session
 from tessellate.repo import visible_notes
+from tessellate.repo import audit as audit_repo
 
 router = APIRouter(prefix="/learned", tags=["learned"])
 
@@ -364,15 +365,9 @@ def _unlearn_deletion(session: Session, row) -> None:  # noqa: ANN001
     Restoring a fact says the deletion was a slip; leaving the lesson behind
     would have the notebook learn from a mistake the person took back.
     """
-    from sqlalchemy import select
 
-    from tessellate.core.database import AuditLog
 
-    rows = session.scalars(
-        select(AuditLog)
-        .where(AuditLog.action == "correction", AuditLog.detail.like("delete_fact:%"))
-        .order_by(AuditLog.id.desc())
-    ).all()
+    rows = audit_repo.delete_fact_corrections(session)
     for item in rows:
         subject = (item.payload or {}).get("subject") or {}
         if subject.get("fact_id") == row.id:
