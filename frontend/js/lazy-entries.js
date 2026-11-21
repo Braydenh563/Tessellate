@@ -7,6 +7,8 @@ Object.assign(LAZY_MODULES, {
   statusTasks: ["/js/status-tasks.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
   webPanel: ["/js/web-panel.js"],
+  //: Tags, category and a property for the documents and files a Library selection holds (library-bulk.js).
+  libraryBulk: ["/js/library-bulk.js"],
   //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
   //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
   boards: [
@@ -149,6 +151,7 @@ window.toggleWebPanel = function toggleWebPanelStandIn(show, ...rest) {
 };
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
+  libraryBulk: ["libraryMeta"],
   //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
   statusTasks: ["noticeTaskTransitions"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
