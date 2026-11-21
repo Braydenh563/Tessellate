@@ -681,43 +681,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1545 |
+| `addReminder` | frontend/js/shell-reminders.js:1544 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1078 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:1077 |
 | `clipText` | frontend/js/shell-reminders.js:842 |
-| `curtainShell` | frontend/js/shell-reminders.js:1687 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1596 |
+| `curtainShell` | frontend/js/shell-reminders.js:1686 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1595 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:443 |
 | `glideStrip` | frontend/js/shell-reminders.js:310 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1710 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1709 |
 | `loadReminders` | frontend/js/shell-reminders.js:928 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:514 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:589 |
 | `notePreviewText` | frontend/js/shell-reminders.js:877 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1491 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1490 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:621 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1324 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:1029 |
-| `presetDate` | frontend/js/shell-reminders.js:1380 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1323 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:1028 |
+| `presetDate` | frontend/js/shell-reminders.js:1379 |
 | `previewBlocks` | frontend/js/shell-reminders.js:869 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1651 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1512 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1360 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1500 |
-| `reminderItem` | frontend/js/shell-reminders.js:1119 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1536 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1524 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1341 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1650 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1511 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1359 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1499 |
+| `reminderItem` | frontend/js/shell-reminders.js:1118 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1535 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1523 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1340 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:270 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:756 |
-| `setDue` | frontend/js/shell-reminders.js:1429 |
+| `setDue` | frontend/js/shell-reminders.js:1428 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:852 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1443 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1442 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:414 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1435 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1434 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:669 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:233 |
 | `tabBarMode` | frontend/js/shell-reminders.js:227 |
@@ -725,9 +725,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:204 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:139 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1373 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1455 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1048 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1372 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1454 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1047 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:803 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:829 |
 | `wikiLinkTarget` | frontend/js/shell-reminders.js:820 |
@@ -5111,16 +5111,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `entryItem` | frontend/js/entry-card.js:198 |
-| `entryOverflowMenu` | frontend/js/entry-card.js:1394 |
-| `favouriteButton` | frontend/js/entry-card.js:1298 |
+| `entryOverflowMenu` | frontend/js/entry-card.js:1391 |
+| `favouriteButton` | frontend/js/entry-card.js:1295 |
 | `meetingGlance` | frontend/js/entry-card.js:34 |
-| `noteMetaMore` | frontend/js/entry-card.js:1360 |
-| `noteReviewActions` | frontend/js/entry-card.js:1264 |
-| `notesSpanSpaces` | frontend/js/entry-card.js:1378 |
-| `publishDraft` | frontend/js/entry-card.js:1448 |
-| `renderAttachmentCards` | frontend/js/entry-card.js:1334 |
+| `noteMetaMore` | frontend/js/entry-card.js:1357 |
+| `noteReviewActions` | frontend/js/entry-card.js:1261 |
+| `notesSpanSpaces` | frontend/js/entry-card.js:1375 |
+| `publishDraft` | frontend/js/entry-card.js:1445 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1331 |
 | `renderInlineAction` | frontend/js/entry-card.js:82 |
-| `searchHighlightTerms` | frontend/js/entry-card.js:1387 |
+| `searchHighlightTerms` | frontend/js/entry-card.js:1384 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
 ### frontend/js/entry-menu.js (6)
@@ -7124,11 +7124,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askReminderOutcome` | frontend/js/reminder-edit.js:139 |
+| `askReminderOutcome` | frontend/js/reminder-edit.js:136 |
 | `buildSelect` | frontend/js/reminder-edit.js:9 |
-| `openOverdueTriage` | frontend/js/reminder-edit.js:167 |
+| `openOverdueTriage` | frontend/js/reminder-edit.js:164 |
 | `reminderEditForm` | frontend/js/reminder-edit.js:22 |
-| `snoozeReminderTo` | frontend/js/reminder-edit.js:236 |
+| `snoozeReminderTo` | frontend/js/reminder-edit.js:233 |
 
 ### frontend/js/reminder-notify.js (4)
 

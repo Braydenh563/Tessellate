@@ -1003,9 +1003,8 @@ async function loadReminders() {
     count.className = "group-count";
     count.textContent = items.length;
     heading.append(text, count);
-    //: L-general-12: the Overdue group's own triage sheet (reminder-edit.js).
     if (label === "Overdue") {
-      heading.appendChild(smallButton("ph:funnel Triage", "Decide each overdue reminder, or all at once", () =>
+      heading.appendChild(smallButton("ph:funnel Triage", "Decide each overdue reminder", () =>
         lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo.triage(items))));
     }
     groupsBox.appendChild(heading);
@@ -1164,7 +1163,7 @@ function reminderItem(reminder, label) {
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
     if (checkbox.checked) {
       atlasOn("done");
-      lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo.askOutcome(reminder)); //: L-general-10
+      lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo.askOutcome(reminder));
     }
   });
   row.appendChild(checkbox);

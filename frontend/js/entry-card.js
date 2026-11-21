@@ -826,11 +826,8 @@ function entryItem(entry, options = {}) {
     meta.appendChild(mark);
   }
 
-  //: L-general-13: where the note came from, in words, when the note records
-  //: it: `source_url` (clipped from a URL) and `source_path` (imported from a
-  //: file). "Extracted from a document" and "transcribed from audio" are not
-  //: recorded on the note, so they get no chip. Nested, not global: the
-  //: shared-scope cap has no room for a name.
+  //: Where the note came from, when it records it (L-general-13; L-general-42
+  //: holds the two sources not recorded yet).
   function provenanceChip(entry, kind) {
     if (kind === "url" ? !entry.source_url : !entry.source_path) return null;
     const url = kind === "url";

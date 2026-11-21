@@ -131,11 +131,8 @@
     return wrap;
   }
 
-  //: L-general-10: ticking a reminder that points at a note asks for one line
-  //: on how it went and appends it to that note. Optional: Cancel, Escape or
-  //: an empty line leaves the note alone. The append goes through the entry
-  //: update route with the hash it read, so an edit made meanwhile is a 409
-  //: and not a lost line.
+  //: Ticking a reminder asks how it went and appends that to its note
+  //: (L-general-10), with the hash it read, so a meanwhile edit is a 409.
   async function askReminderOutcome(reminder) {
     if (!reminder.entry_id || (reminder.target_kind || "note") !== "note") return;
     const said = await promptDialog("How did it go? One line, or skip", "", { confirmLabel: "Add to note" });

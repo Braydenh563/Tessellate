@@ -1284,7 +1284,7 @@ function wireMenuKeyboard(menu, opener) {
         //: at all and left the focus where it was, which is the one thing a
         //: person who has just opened a menu will try.
         ':scope > [role="group"] > [role="menuitem"], ' +
-        //: The View menu is two columns: a `.wb-menu-col` wrapper (role none) holds each column's groups.
+        //: The View menu's two `.wb-menu-col` columns.
         ':scope > .wb-menu-col > [role="group"] > [role="menuitem"]'
       ),
     ]
@@ -1382,7 +1382,7 @@ function buildMenuGroupButton(label, subItems) {
   let openedByHoverAt = 0;
   const groupWrap = document.createElement("div");
   groupWrap.className = "menu-group";
-  //: A wrapper is not a menu child ARIA allows; `none` leaves its trigger a menuitem of the menu.
+  //: ARIA allows no wrapper in a menu.
   groupWrap.setAttribute("role", "none");
 
   const trigger = document.createElement("button");
