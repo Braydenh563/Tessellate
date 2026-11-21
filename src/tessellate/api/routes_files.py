@@ -23,7 +23,6 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, docreader, vision_ocr
@@ -338,28 +337,15 @@ def list_attachment_gallery(
     workspace-scoped read in this app.
     """
     offset = paging.start(cursor, offset)
-    visible = (
-        select(Attachment, Entry)
-        .join(Entry, Attachment.entry_id == Entry.id)
-        .where(
-            Entry.is_deleted == False,  # noqa: E712
-            Entry.is_private == False,  # noqa: E712
-        )
-    )
     # Paged for the reason `GET /media` beside it is (WORLD_CLASS_PLAN F2):
     # this used to be the whole table, and the table is one row per attached
     # file for the life of the notebook. `X-Total-Count` is the real size
     # whatever the page, and the id breaks a tie on `created_at` so two files
     # attached in the same second cannot swap places between pages and hide a
     # row.
-    total = session.scalar(select(func.count()).select_from(visible.subquery())) or 0
+    total, rows = uploads_repo.attachment_gallery_page(session, limit, offset)
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
-    rows = session.execute(
-        visible.order_by(Attachment.created_at.desc(), Attachment.id.desc())
-        .limit(limit)
-        .offset(offset)
-    ).all()
     ids = [attachment.id for attachment, _ in rows]
     page_text = _page_read_text_map("attachment", ids)
     pages_read = _page_read_count_map("attachment", ids)
@@ -1692,7 +1678,7 @@ def media_meta(filename: str, session: Session = Depends(get_session)) -> MediaU
     list. Keyed on filename rather than id precisely because a url is what
     those callers have.
     """
-    upload = session.query(MediaUpload).filter(MediaUpload.filename == filename).first()
+    upload = uploads_repo.by_filename(session, filename)
     if not upload:
         # A url can outlive its row: deleting an upload deliberately leaves
         # any note still pointing at it alone (see delete_media below), so a
@@ -1757,7 +1743,7 @@ def media_text(filename: str, session: Session = Depends(get_session)) -> Attach
     the extraction, not a missing feature. Editing here would mean writing
     text back into a format it was never in.
     """
-    upload = session.query(MediaUpload).filter(MediaUpload.filename == filename).first()
+    upload = uploads_repo.by_filename(session, filename)
     if not upload:
         raise HTTPException(status_code=404, detail="No upload by that name.")
     path = deps.get_config().data_dir / "media" / upload.filename
@@ -1784,7 +1770,7 @@ def media_text(filename: str, session: Session = Depends(get_session)) -> Attach
 
 
 def _media_upload_path(session: Session, filename: str) -> tuple[MediaUpload, Path]:
-    upload = session.query(MediaUpload).filter(MediaUpload.filename == filename).first()
+    upload = uploads_repo.by_filename(session, filename)
     if not upload:
         raise HTTPException(status_code=404, detail="No upload by that name.")
     path = _within(deps.get_config().data_dir / "media", upload.filename)
@@ -1888,13 +1874,7 @@ def _strip_embeds(session: Session, url: str, changed: dict | None = None) -> li
     #: regex above decides. A private note is encrypted at rest and its
     #: content is not readable here, which is also why one cannot embed a
     #: Library image into one in the first place.
-    rows = session.scalars(
-        select(Entry).where(
-            Entry.is_deleted.is_(False),
-            Entry.is_private.is_(False),
-            Entry.content.contains(url),
-        )
-    ).all()
+    rows = uploads_repo.notes_embedding(session, url)
     for entry in rows:
         cleaned = pattern.sub("", entry.content or "")
         if cleaned == entry.content:
@@ -2264,7 +2244,7 @@ def get_media(
     # embeds images with <img>, which ignores Content-Disposition.
     # L-world-class-52: sealed bytes are a private space's, served only while
     # its row is in this request's reads (the space is open).
-    if sealed_files.is_sealed(path) and session.scalar(select(MediaUpload.id).where(MediaUpload.filename == name)) is None:
+    if sealed_files.is_sealed(path) and not uploads_repo.is_listed(session, name):
         raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
     return sealed_aware(
         path,
