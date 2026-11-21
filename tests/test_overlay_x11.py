@@ -223,15 +223,15 @@ def test_an_expose_redraws_the_last_frame() -> None:
     h.stop()
 
 
-def test_a_wake_comes_back_as_one_tick_after_the_time_asked_and_never_sooner_than_10_ms(monkeypatch) -> None:
+def test_a_wake_comes_back_as_one_tick_after_the_time_asked_and_never_sooner_than_10_ms() -> None:
     h, _w, sink = host()
     # The delay is the host's own deadline on a held clock (L-general-70): a
     # wake asked for 1 ms is set 10 ms out, and the loop ticks only once its
     # clock reaches the deadline.
-    monkeypatch.setattr(x11, "time", type("Clock", (), {"monotonic": staticmethod(lambda: 100.0)}))
-    h._set_timer(1)  # noqa: SLF001
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(x11, "time", type("Clock", (), {"monotonic": staticmethod(lambda: 100.0)}))
+        h._set_timer(1)  # noqa: SLF001
     assert h._deadline == pytest.approx(100.01)  # noqa: SLF001
-    monkeypatch.undo()
     h._deadline = None  # noqa: SLF001
     h.start()
     h.wake(1)
