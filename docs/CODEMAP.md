@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2890, tests 22857, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2891, tests 22860, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8538)
 
@@ -7528,19 +7528,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `backupNow` | frontend/js/settings-data.js:500 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
-| `clearPreviews` | frontend/js/settings-data.js:740 |
-| `dismissedWords` | frontend/js/settings-data.js:876 |
-| `guideTurns` | frontend/js/settings-data.js:746 |
+| `clearPreviews` | frontend/js/settings-data.js:754 |
+| `dismissedWords` | frontend/js/settings-data.js:890 |
+| `guideTurns` | frontend/js/settings-data.js:760 |
 | `humanBytes` | frontend/js/settings-data.js:434 |
 | `importDirectory` | frontend/js/settings-data.js:511 |
-| `importDocument` | frontend/js/settings-data.js:660 |
-| `importMarkdown` | frontend/js/settings-data.js:601 |
+| `importDocument` | frontend/js/settings-data.js:674 |
+| `importMarkdown` | frontend/js/settings-data.js:603 |
 | `importSummary` | frontend/js/settings-data.js:536 |
 | `markdownPreview` | frontend/js/settings-data.js:581 |
-| `noteSettingChange` | frontend/js/settings-data.js:1054 |
-| `paintClearRow` | frontend/js/settings-data.js:751 |
-| `previewCaches` | frontend/js/settings-data.js:726 |
-| `previewCount` | frontend/js/settings-data.js:735 |
+| `noteSettingChange` | frontend/js/settings-data.js:1068 |
+| `paintClearRow` | frontend/js/settings-data.js:765 |
+| `previewCaches` | frontend/js/settings-data.js:740 |
+| `previewCount` | frontend/js/settings-data.js:749 |
 | `privacyAddressLine` | frontend/js/settings-data.js:39 |
 | `privacyDestinationRow` | frontend/js/settings-data.js:47 |
 | `privacyGroups` | frontend/js/settings-data.js:23 |
@@ -7549,35 +7549,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderBackupRetention` | frontend/js/settings-data.js:486 |
 | `renderBackupSchedule` | frontend/js/settings-data.js:275 |
 | `renderBackups` | frontend/js/settings-data.js:319 |
-| `renderExportsList` | frontend/js/settings-data.js:1356 |
+| `renderExportsList` | frontend/js/settings-data.js:1370 |
 | `renderIntegrityNotice` | frontend/js/settings-data.js:474 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
-| `renderSettingsClear` | frontend/js/settings-data.js:758 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1336 |
+| `renderSettingsClear` | frontend/js/settings-data.js:772 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1350 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:938 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:952 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:1098 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:1110 |
-| `searchRecentRestore` | frontend/js/settings-data.js:1116 |
-| `settingChangeWords` | frontend/js/settings-data.js:1019 |
-| `settingListWords` | frontend/js/settings-data.js:1002 |
-| `settingName` | frontend/js/settings-data.js:995 |
-| `settingShown` | frontend/js/settings-data.js:984 |
-| `settingsClearCount` | frontend/js/settings-data.js:720 |
-| `settingsClearDone` | frontend/js/settings-data.js:890 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:1157 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1176 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:1138 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:1168 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:1127 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1288 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1302 |
-| `settingsHistorySave` | frontend/js/settings-data.js:1131 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1271 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:1033 |
+| `searchRecentAll` | frontend/js/settings-data.js:1112 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:1124 |
+| `searchRecentRestore` | frontend/js/settings-data.js:1130 |
+| `settingChangeWords` | frontend/js/settings-data.js:1033 |
+| `settingListWords` | frontend/js/settings-data.js:1016 |
+| `settingName` | frontend/js/settings-data.js:1009 |
+| `settingShown` | frontend/js/settings-data.js:998 |
+| `settingsClearCount` | frontend/js/settings-data.js:734 |
+| `settingsClearDone` | frontend/js/settings-data.js:904 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:1171 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1190 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:1152 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1182 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:1141 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1302 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1316 |
+| `settingsHistorySave` | frontend/js/settings-data.js:1145 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1285 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:1047 |
 | `undoImport` | frontend/js/settings-data.js:546 |
 
 ### frontend/js/settings-find.js (39)
@@ -28501,7 +28501,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22857)
+## Tests (22860)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29910,6 +29910,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_commit_batches.py | 3 |
 | tests/test_import_dates.py | 4 |
 | tests/test_import_directory_roots.py | 7 |
+| tests/test_import_folder_batches.py | 3 |
 | tests/test_import_idempotent.py | 5 |
 | tests/test_import_job.py | 3 |
 | tests/test_import_lazy_agent.py | 1 |
