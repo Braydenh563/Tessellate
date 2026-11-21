@@ -108,6 +108,10 @@ def framed(question: str, result: dict, notes: list[dict]) -> dict:
         parts = [("template", PHRASES["ood_act"]), *closest, *parts] if shown else [("template", PHRASES["ood_act"])]
     elif shown:
         parts = [("template", PHRASES["ood_world"]), *closest, *parts]
+    elif len(parts) == 1 and "?" in str(parts[0][1]):
+        #: A seeded "nothing" line may say no plainly ("I looked, but nothing answers
+        #: that"): a world question leads with the plain no and keeps the ask back.
+        parts = [("template", PHRASES["ood_world"]), ("template", " "), ("template", str(parts[0][1]).rsplit(". ", 1)[-1])]
     line = [("template", "\n\n" if shown else " "), ("template", PHRASES["ood_capability"])]
     #: A no-answer still ends on its question back ("Could it be under another name?").
     asks_back = not shown and found == "world" and len(parts) > 1 and str(parts[-1][1]).rstrip().endswith("?")

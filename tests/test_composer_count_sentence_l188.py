@@ -38,7 +38,8 @@ def _cited(said, events) -> set[int]:
 def test_the_count_is_the_number_of_notes_the_answer_cites(big, question):
     said, events = big(question)
     first = said.split("\n", 1)[0]
-    counted = re.search(r"\b(?:You have |Your notes on \w+: )?(\w+) notes?\b", first)
+    #: Intent unchanged: "your 3 matching notes" (the summary lead since #222) counts as "3 notes" does.
+    counted = re.search(r"\b(?:You have |Your notes on \w+: )?(\w+) (?:matching )?notes?\b", first)
     assert counted, first
     word = counted.group(1).lower()
     n = _NUMBERS.get(word, int(word) if word.isdigit() else None)

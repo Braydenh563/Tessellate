@@ -29,7 +29,7 @@ import re
 from tessellate.core import clock
 from tessellate.core.lazyre import lazy_compile
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import NamedTuple
 
 from tessellate.ai import arithmetic, recognise, recognise_units
@@ -839,13 +839,13 @@ def _clock(text: str, now: datetime) -> list[tuple]:
         place = match.group("place").strip()
         several = SEVERAL_ZONES.get(" ".join(place.replace(".", "").lower().split()))
         if several:
-            base = now if now.tzinfo else clock.utc()
+            base = now.astimezone(timezone.utc)
             times = ", ".join(f"{_hm(base.astimezone(ZoneInfo(z)), twelve)} in {city}" for city, z in several)
             return [("computed", f"{_place_said(place)} has several time zones. It is {times}."),
                     ("computed", "\nRead from this computer's clock; name a state or city for one of them.")]
         place = place_name_for(place) or place
         zone = zone_for(place)
-        there = (now if now.tzinfo else clock.utc()).astimezone(ZoneInfo(zone))
+        there = now.astimezone(ZoneInfo(zone))
         return [("computed", f"It's {_hm(there, twelve)}{_other_day(there, now)} in {_where(place, zone)} ({_zone_said(there)})."),
                 ("computed", f"\nRead as {zone}, from this computer's clock.")]
     if _CLOCK.match(text):

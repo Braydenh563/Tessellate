@@ -131,10 +131,11 @@ MORE: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("Leave it with me, I will {what}.", "p", ""), ("On it, I will {what}.", "p", ""),
     ),
     "next_due": (
-        ("Next up is {what}, on {when}.", "w", ""), ("Your next one is {what}, due {when}.", "w", ""),
-        ("Next: {what}, {when}.", "t", ""), ("{what}, {when}.", "t", ""),
-        ("The next item is {what}, on {when}.", "f", ""), ("The next reminder falls on {when}: {what}.", "f", ""),
-        ("Coming up: {what}, on {when}.", "p", ""), ("{what} is next in line, on {when}.", "p", ""),
+        #: "({when})" as in `composer_lines.FRAMES`: `composer_plan._nothing_due` drops it when the item names its day.
+        ("Next up is {what} ({when}).", "w", ""), ("Your next one is {what} ({when}).", "w", ""),
+        ("Up next: {what} ({when}).", "t", ""), ("{what} ({when}).", "t", ""),
+        ("The next item is {what} ({when}).", "f", ""), ("The next reminder is {what} ({when}).", "f", ""),
+        ("Coming up: {what} ({when}).", "p", ""), ("{what} is next in line ({when}).", "p", ""),
     ),
     "act_baddate": (
         ("I could not make a date of “{said}”. Try “Friday at 3pm”.", "w", ""), ("“{said}” is not a date I can read. A day and a time will do.", "w", ""),
