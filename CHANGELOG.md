@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- First run asks less before the dashboard: only the welcome and the recovery-key offer; the console, second-backup-folder and update questions wait for the next start and are asked once as before (fresh desktop profile, 3 questions before, 0 after; the sample notebook was already built and is offered from the first steps; L-world-class-118).
+
 - Settings, Preferences: the two switches "New notes are private" and "Mute all but reminders" now fill from the saved preferences; their readers took an argument `renderPrefs` never passed, so every opening threw and skipped the fills after them (L-world-class, found by a sweep).
 - Settings on a phone: the search-by-meaning question no longer stands 341x173px over the lower quarter of every section at 360x740 (it waits, still open, until Settings closes), and all 21 Settings pages are reachable at 360x740 and 320x568 (657 controls, 0 off-screen or covered; L-world-class-394, L-world-class-177).
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.

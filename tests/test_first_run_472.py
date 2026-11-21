@@ -222,3 +222,16 @@ def test_the_welcome_atlas_keeps_its_painted_parts_inside_its_box():
     reaches 4 px past its svg at 390, so its holder pads it by a token."""
     js = frontend_text("onboarding.js")
     assert 'face.style.padding = "var(--space-1)"' in js
+
+
+def test_a_first_run_asks_only_the_welcome_and_the_recovery_offer():
+    """L-world-class-118: the first run queued five surfaces (welcome, recovery
+    key, console, second backup folder, update question) before the dashboard.
+    The three desktop and update questions wait for the next start, where each
+    is asked once as before (their answers are unstored until then)."""
+    onboarding = frontend_text("onboarding.js")
+    assert 'fresh: !prefs.get("onboardingDone", null)' in onboarding
+    console_intro = onboarding.split("async function maybeShowConsoleViewIntro()")[1].split("\n}\n")[0]
+    assert "firstRun.fresh" in console_intro.split("firstRunTurn(")[0]
+    update = frontend_text("update-dialogs.js").split("async function askUpdateChoiceOnce()")[1].split("\n}\n")[0]
+    assert "firstRun.fresh" in update.split('firstRunTurn(ask, "updates")')[0]

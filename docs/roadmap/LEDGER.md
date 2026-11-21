@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 91 | 8 | 0 | 0 | 99 |
+| world-class | 0 | 90 | 8 | 0 | 0 | 98 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 469 | 79 | 2 | 112 | 920 |
+| all | 372 | 468 | 79 | 2 | 112 | 919 |
 
 ## graph
 
@@ -517,7 +517,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
 - [ ] **L-world-class-108** `world-class` open, S: Verify 391's agent items: mind maps in Find anything, digest filler, activity panel alignment, image filter, a closed panel's finished answer. From WORLD_CLASS_PLAN.md:2415. Evidence: WORLD_CLASS_PLAN.md:2415 lists them as 'agents running', with no result recorded
-- [ ] **L-world-class-118** `world-class` open, S: First run: fewer questions before the dashboard, and a sample notebook. From WORLD_CLASS_PLAN.md:3598. Evidence: WORLD_CLASS_PLAN.md:3598 'still asks three questions before the dashboard'; :3601 'no sample notebook'
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
