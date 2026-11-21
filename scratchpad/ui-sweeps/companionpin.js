@@ -146,6 +146,10 @@ const { boot, PW } = require('./lib.js');
     const f = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
     const drawn = await page.evaluate(() => { const r = document.getElementById('nm-buddy').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top)]; });
     await page.mouse.click(f[0], f[1], { button: 'right' });
+    // After step 6's reload the menu's module is lazy again (app.js installStandIns): the right-click lands on the
+    // face and the menu opens about 37ms on, once companion-menu.js has run, unless a beat loaded it first. Read at
+    // once it was null in 1 of 2 idle passes (L-general-45).
+    await page.waitForFunction(() => nmb.menu && nmb.menu.isConnected, null, { timeout: 1500 });
     await page.evaluate(() => [...nmb.menu.querySelectorAll('button')].find((b) => /Stay here/.test(b.textContent)).click());
     await page.waitForTimeout(200);
     return { drawn, pinned: await where() };
