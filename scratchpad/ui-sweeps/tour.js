@@ -306,7 +306,9 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     page.on("pageerror", (e) => errors.push(e.message));
 
     // --- every door is live --------------------------------------------------
-    const doors = await page.evaluate(() => {
+    //: tour.js is a lazy bundle: load it before reading what it defines.
+    const doors = await page.evaluate(async () => {
+      await ensureModule("tour");
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
       const about = document.getElementById("about-take-tour");
