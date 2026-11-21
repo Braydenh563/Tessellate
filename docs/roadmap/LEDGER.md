@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 94 | 26 | 0 | 0 | 120 |
+| world-class | 0 | 94 | 25 | 0 | 0 | 119 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 484 | 97 | 2 | 111 | 953 |
+| all | 372 | 484 | 96 | 2 | 111 | 952 |
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -504,7 +504,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
-- [ ] **L686** `world-class` partly, M: Finish INBOX 1748: one optional-package notice recipe for every package (dismissable, back after an uninstall), Q10, Q11 (30 s cache reset on the model coming up), Q25 first-run calibration step, row 22 drafts pick-up. From INBOX 1748. Evidence: Verify each part in code first; built parts move to HISTORY
 - [ ] **L687** `world-class` partly, L: MCP: add HTTP transport and restricted token/URL setup, drop embedder load at startup, decide trust model. From OPEN.md:723; OPEN.md:1007; INBOX.md:904 B52. Evidence: Resources and prompts built (mcp_server.py:28-30,173); embedder load and stdio-only not confirmed changed
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
