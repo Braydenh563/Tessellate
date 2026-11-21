@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ledger (L342, L-documents-26): the typing gate's numbers after three cuts, what was found (the getMetrics floor, the emblem ticking on the main thread in headless Chromium, where CodeMirror's extra time goes) and the Next.
 - Documents (L342): moving the outline's mark writes only the row that loses it and the row that gains it, where it cleared every row (1,176 in a 20,000 word document, a style invalidation each on the pause after typing); the mark is the same.
 - Documents (L342): a grammar answer that lands while keys keep coming works out its findings when the pause first reads them, not on arrival (a whole-document pass of 4.3 ms at 4x CPU off a key); what is drawn at the pause is the same.
 - Documents (L342): a LanguageTool check maps each paragraph once by a set and finds a match's paragraph by halving, where a search per paragraph and a scan per match were quadratic (7 ms at 4x CPU on a first check of 1,176 paragraphs); the merged findings are the same.
