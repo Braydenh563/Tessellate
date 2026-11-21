@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 55 | 8 | 0 | 0 | 63 |
+| world-class | 0 | 54 | 8 | 0 | 0 | 62 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 444 | 80 | 2 | 112 | 896 |
+| all | 372 | 443 | 80 | 2 | 112 | 895 |
 
 ## graph
 
@@ -661,7 +661,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L916** `world-class` open, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model Reopened 2026-11-14 (hardware audit): the no-model chat state and the page reader run headless here; neither shot needs a model.
 - [ ] **L917** `world-class` open, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed) Reopened 2026-11-14 (hardware audit): tesseract installs from the apt mirror (package registries are allowed).
 - [ ] **L967** `world-class` open, S: Check the real log stream under load (live pill and filters). From OPEN.md:3422. Evidence: Needs a real busy server and human look; no load test exists for the log stream. Reopened 2026-11-14 (hardware audit): a scripted load run plus headless Chromium on the log page measures this; same work as L607.
-- [ ] **L972** `world-class` open, S: Load-dependent X11 test race (1683s/U16). From OPEN.md:4342. Evidence: Needs X11 desktop/loaded box to reproduce; ledger open. Reopened 2026-11-14 (hardware audit): Xvfb and xvfb-run are installed here.
 - [ ] **L974** `chat` open, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model Reopened 2026-11-14 (hardware audit): scratchpad/llama-dev.sh fetch reaches the GGUF (HTTP 302 from huggingface.co) and cmake and g++ build llama-server.
 - [ ] **L975** `chat` open, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine Reopened 2026-11-14 (hardware audit): scratchpad/llama-dev.sh fetch reaches the GGUF (HTTP 302) and llama.cpp builds here with cmake and g++.
 - [ ] **L979** `world-class` open, S: Verify private notes, several spaces, browser upload of 5,000 files. From OPEN.md:2685. Evidence: Needs real browser upload run Reopened 2026-11-14 (hardware audit): Playwright setInputFiles drives a 5,000-file upload headless.
