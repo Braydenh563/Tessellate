@@ -89,7 +89,7 @@ def test_a_muted_note_offers_nothing_and_unmuting_brings_them_back(client) -> No
 
 
 def test_a_muted_note_is_not_given_new_suggestions_when_filed(client, session) -> None:
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_suggestions
     from tessellate.core.database import Entry
 
     for text in ("Biology lecture: mitosis", "Biology: the Krebs cycle"):
@@ -99,7 +99,7 @@ def test_a_muted_note_is_not_given_new_suggestions_when_filed(client, session) -
     entry = session.get(Entry, entry_id)
     session.refresh(entry)
     entry.suggested_tags = "[]"
-    routes_entries._keep_suggestions(session, entry, None)
+    tag_suggestions.keep_suggestions(session, entry, None)
     assert entry.suggested_tags == "[]"
 
 

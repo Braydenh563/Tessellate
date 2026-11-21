@@ -17,7 +17,7 @@ import re
 import time
 from pathlib import Path
 
-from tessellate.api import routes_entries
+from tessellate.entry import filing_background
 from tests._app_js import with_pieces
 from tests import _js_scope
 
@@ -48,7 +48,7 @@ def _wait_settled(client, entry_id, timeout=10.0):
 
 
 def test_a_note_nothing_could_file_says_so(client, monkeypatch):
-    monkeypatch.setattr(routes_entries, "_file_entry_now", lambda *a, **k: ("Uncategorised", 0, "none"))
+    monkeypatch.setattr(filing_background, "_file_entry_now", lambda *a, **k: ("Uncategorised", 0, "none"))
     created = client.post("/entries", json={"content": "buy milk", "defer_filing": True}).json()
     status = _wait_settled(client, created["id"])
     assert status["filed_by"] == "none"
@@ -56,7 +56,7 @@ def test_a_note_nothing_could_file_says_so(client, monkeypatch):
 
 
 def test_a_note_the_model_filed_says_ai(client, monkeypatch):
-    monkeypatch.setattr(routes_entries, "_file_entry_now", lambda *a, **k: ("Groceries", 82, "llm"))
+    monkeypatch.setattr(filing_background, "_file_entry_now", lambda *a, **k: ("Groceries", 82, "llm"))
     created = client.post("/entries", json={"content": "buy milk", "defer_filing": True}).json()
     status = _wait_settled(client, created["id"])
     assert status["filed_by"] == "ai"

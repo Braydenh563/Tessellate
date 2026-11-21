@@ -1,7 +1,7 @@
 """Re-evaluate a note: the route and the two helpers that suggest other categories and tags.
 
 Split out of routes_entries.py (K24); mounted in app.py beside that module's router. The helpers the
-route reads (`_existing_entry`, `_to_out`, `_engine_tags`, ...) stay in routes_entries.
+route reads (`_existing_entry`, `_to_out`, ...) stay in routes_entries; the tag engine is `entry/tag_suggestions`.
 """
 
 from __future__ import annotations
@@ -15,11 +15,9 @@ from sqlalchemy.orm import Session
 from tessellate.ai import janitor, librarian
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.routes_entries import (
-    _engine_tags,
     _existing_entry,
     _preview,
     _tag_reasons,
-    _tag_vocabulary,
     _to_out,
 )
 from tessellate.core import deps, jobruns
@@ -27,7 +25,7 @@ from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import manager_links
-from tessellate.entry import manager_text
+from tessellate.entry import manager_text, tag_suggestions
 from tessellate.search import search_manager
 
 logger = logging.getLogger("tessellate.api.entries")
@@ -183,12 +181,12 @@ def _reevaluate_tags(session: Session, entry) -> list[str]:  # noqa: ANN001
     """The model's tags when one answers, then the notebook's own: with no
     model, Tag and file with Atlas offered no tag at all (INBOX 781). Not
     from a private note's text: nothing derives a suggestion from it
-    (`_keep_suggestions`)."""
+    (`tag_suggestions.keep_suggestions`)."""
     have = manager.entry_tags(entry)
     model: list[str] = []
     try:
         model = librarian.suggest_tags(
-            entry.content, have, deps.get_model_manager(), deps.get_ollama(), vocabulary=_tag_vocabulary(session),
+            entry.content, have, deps.get_model_manager(), deps.get_ollama(), vocabulary=tag_suggestions.tag_vocabulary(session),
         )
     except Exception as exc:
         logger.info(
@@ -198,7 +196,7 @@ def _reevaluate_tags(session: Session, entry) -> list[str]:  # noqa: ANN001
     if getattr(entry, "is_private", False):
         return model
     try:
-        return _engine_tags(session, entry.content or "", have, model, entry.id)
+        return tag_suggestions.engine_tags(session, entry.content or "", have, model, entry.id)
     except Exception:
         logger.warning("re-evaluation's tag step failed", exc_info=True)
         return []

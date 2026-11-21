@@ -29,7 +29,6 @@ from tessellate.ai import (
     extractor,
     filing_certainty,
     janitor,
-    lexical_filing,
     librarian,
 )
 from tessellate.ai.ollama_client import OllamaError
@@ -54,7 +53,7 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import cjk, companion_events, deps, events, jobruns, jobs, vault
+from tessellate.core import cjk, companion_events, deps, events, vault
 from tessellate.core.database import (
     EmbeddingRecord,
     Entry,
@@ -64,7 +63,7 @@ from tessellate.core.deps import get_session
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.entry import manager, private_space
-from tessellate.entry import manager_wiki
+from tessellate.entry import filing_background, manager_wiki, tag_suggestions
 from tessellate.entry import manager_links
 from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
@@ -78,7 +77,6 @@ from tessellate.repo import memberships
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relation_types
-from tessellate.repo import tags as tags_repo
 from tessellate.repo.content import NOTES
 from tessellate.search import search_manager
 
@@ -165,7 +163,7 @@ def _to_out(
         suggested_tag_reasons=_tag_reasons(content, offered),
         #: Never a private note's: derived from its text, as its suggestions
         #: are (tests/test_private_suggested_tags.py).
-        discarded_tags=[] if getattr(entry, "is_private", False) else _json_tags(getattr(entry, "discarded_tags", "[]")),
+        discarded_tags=[] if getattr(entry, "is_private", False) else tag_suggestions.json_tags(getattr(entry, "discarded_tags", "[]")),
         access_count=entry.access_count,
         last_opened_at=getattr(entry, "last_opened_at", None),
         edited_at=getattr(entry, "edited_at", None),
@@ -245,12 +243,6 @@ def _attachment_outs(attachments: list) -> list[AttachmentOut]:
     ]
 
 
-def _json_tags(raw: str | None) -> list[str]:
-    try:
-        value = json.loads(raw or "[]")
-    except (TypeError, ValueError):
-        return []
-    return [str(tag) for tag in value if tag] if isinstance(value, list) else []
 
 
 def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
@@ -262,9 +254,9 @@ def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
     if getattr(entry, "tag_suggest_off", False) or manager.note_is_sealed(getattr(entry, "is_private", False)):
         return []
     have = {tag.casefold() for tag in manager.entry_tags(entry)}
-    gone = {tag.casefold() for tag in _json_tags(getattr(entry, "discarded_tags", "[]"))}
+    gone = {tag.casefold() for tag in tag_suggestions.json_tags(getattr(entry, "discarded_tags", "[]"))}
     return [
-        tag for tag in _json_tags(getattr(entry, "suggested_tags", "[]"))
+        tag for tag in tag_suggestions.json_tags(getattr(entry, "suggested_tags", "[]"))
         if tag.casefold() not in have and tag.casefold() not in gone
     ]
 
@@ -349,50 +341,8 @@ class _ReasonsCache:
 _cached_reasons = _ReasonsCache(REASONS_CACHE_ROWS)
 
 
-def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  # noqa: ANN001
-    """Make the note's tag suggestions at filing and keep them on it (INBOX
-    440). The model's when it is the one that filed (it is up and answering);
-    otherwise the notebook's own: the tags its nearest notes carry, and the
-    vocabulary tags the note names. Best effort, never fails the filing.
-
-    **A private note gets none made.** Its tags are the person's own (nothing
-    derives them from its text), and a suggestion is derived from the text, so
-    one made here would put a summary of a private note into a plain column,
-    from ciphertext or the locked placeholder when the vault is shut. What it
-    already holds (a note made private after filing) is handled like its
-    tags: kept, shown where they are, nowhere else."""
-    if getattr(entry, "is_private", False) or getattr(entry, "tag_suggest_off", False):
-        return
-    have = manager.entry_tags(entry)
-    discarded = {tag.casefold() for tag in _json_tags(getattr(entry, "discarded_tags", "[]"))}
-    suggested: list[str] = []
-    if filed_by == "llm":
-        try:
-            suggested = librarian.suggest_tags(
-                entry.content, have, deps.get_model_manager(), deps.get_ollama(),
-                vocabulary=_tag_vocabulary(session),
-            )
-        except Exception:
-            logger.info("tag suggestions from the model failed; using the notebook's own", exc_info=True)
-    content = manager_text.readable_content(entry)
-    keep = [tag for tag in _engine_tags(session, content, have, suggested, entry.id) if tag.casefold() not in discarded]
-    from tessellate.ai import tagging
-
-    entry.suggested_tags = json.dumps(keep[: tagging.TAG_LIMIT])
 
 
-def _engine_tags(session: Session, content: str, have: list[str], model: list[str], entry_id: int | None) -> list[str]:
-    """One engine on every path (INBOX 781): a model's tags kept only where
-    the note has a word for them (WORLD_CLASS 23, decision 5: its reply to
-    "prefer one of those" was the first two, whatever the note said, the
-    Study bug), then the notebook's own (`ai/tagging.suggest`) filling the
-    rest, so a model that offers one tag no longer hides two good ones. Room
-    still left goes to a subject the note names that the notebook has never
-    tagged (`tagging.filled`, B80)."""
-    from tessellate.ai import tagging
-
-    own = tagging.suggest(session, content, have=have, exclude_entry_id=entry_id)
-    return tagging.filled(session, content, tagging.merged(tagging.grounded(content, model), own, have), have)
 
 
 def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
@@ -423,21 +373,13 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
 
 
 def _find_near_duplicate(session: Session, entry) -> SimilarOut | None:  # noqa: ANN001
-    """Warn about a saved note that says almost the same thing.
-    Purely informational: the save has already happened."""
-    try:
-        results = search_manager.semantic_search(
-            session, entry.content, deps.get_embeddings(), limit=3
-        )
-    except Exception:
-        logger.warning("the near-duplicate check failed; the note is saved", exc_info=True)
+    """Warn about a saved note that says almost the same thing (the search is
+    `filing_background.near_duplicate`, shared with background filing)."""
+    found = filing_background.near_duplicate(session, entry)
+    if found is None:
         return None
-    for other, score in results or []:
-        if other.id != entry.id and score >= 0.9:
-            return SimilarOut(
-                id=other.id, preview=_preview(other.content), similarity=round(score, 2)
-            )
-    return None
+    other, score = found
+    return SimilarOut(id=other.id, preview=_preview(other.content), similarity=round(score, 2))
 
 
 def _existing_entry(session: Session, entry_id: int):  # noqa: ANN202
@@ -460,422 +402,38 @@ def _process_committed_media(session: Session, plaintext_content: str) -> None:
     )
 
 
-def _file_entry_now(
-    session: Session,
-    content: str,
-    on_late_llm=None,  # noqa: ANN001
-    model_deadline: float | None = None,
-    release_session: bool = False,
-) -> tuple[str, int, str]:
-    """Ask the janitor where a note belongs. Whatever goes wrong in AI land,
-    the note still gets saved (plan §4)."""
-    try:
-        return janitor.categorise(
-            session,
-            content,
-            deps.get_embeddings(),
-            deps.get_model_manager(),
-            deps.get_ollama(),
-            on_late_llm=on_late_llm,
-            model_deadline=model_deadline,
-            release_session=release_session,
-        )
-    except Exception:
-        # `categorise` handles a model that is down on its own (a keyword
-        # fallback), so this is a fault in it: logged, or every note filed
-        # "Uncategorised" is the only sign.
-        logger.warning("filing failed; the note is saved uncategorised", exc_info=True)
-        return manager.UNCATEGORISED, 0, "none"
 
 
-class _LateFiling:
-    """**The model's answer wins, even when it is slow.** Filing gives the
-    model `janitor.FILING_MODEL_DEADLINE_SECONDS` so a note never looks stuck;
-    past that the note is filed by meaning (a stand-in) and the model keeps
-    going on its own thread. When its answer lands it replaces the stand-in,
-    unless the note was moved by hand or deleted in the meantime: the owner's
-    words, "there's no point in having the app if the notes arent filed
-    accurately". Either order is handled: an answer that lands before the
-    stand-in is decided is taken instead of it."""
-
-    def __init__(self, entry_id: int, workspace_id: str, content: str = "") -> None:
-        self.entry_id = entry_id
-        self.workspace_id = workspace_id
-        self._content = content
-        self._lock = threading.Lock()
-        self._stand_in: str | None = None
-        self._early: tuple[str, int] | None = None
-        #: Set by the janitor when the model misses the wait: the note is
-        #: then saved as a stand-in (`manager.STAND_IN`) for its answer.
-        self.is_waiting = False
-
-    def waiting(self) -> None:
-        self.is_waiting = True
-
-    def stand_in(self, category: str, confidence: int, filed_by: str) -> tuple[str, int, str]:
-        with self._lock:
-            if self._early is not None:
-                return self._early[0], self._early[1], "llm"
-            self._stand_in = category
-            return category, confidence, filed_by
-
-    def _calibrated(self, category: str, raw: int) -> int:
-        """The model's late number, calibrated as `janitor._ask_llm` does for
-        an answer inside the wait (`filing_certainty`). On this thread's own
-        session: the late answer has none of the request's."""
-        from tessellate.ai import filing_certainty
-        from tessellate.core.database import impersonate_workspace
-
-        try:
-            with deps.get_db().session() as session:
-                with impersonate_workspace(session, self.workspace_id):
-                    entry = session.get(Entry, self.entry_id)
-                    if entry is not None:
-                        return filing_certainty.calibrated(
-                            session, manager_text.readable_content(entry), category, raw, "llm",
-                            exclude_entry_id=entry.id,
-                        )
-        except Exception:
-            logger.debug("couldn't calibrate the late answer for entry %s", self.entry_id, exc_info=True)
-        return filing_certainty.calibrate(
-            raw, "llm", support=None, category_notes=filing_certainty.ESTABLISHED_NOTES
-        )
-
-    def arrived(self, category: str, confidence: int) -> None:
-        from tessellate.ai import lexical_filing
-
-        if lexical_filing.holds_sensitive(self._content, category):
-            return  # decision 6: the model's late answer is held like an early one
-        confidence = self._calibrated(category, confidence)
-        if lexical_filing.is_unsure(confidence):
-            return  # ask when unsure: a late pick under the line waits like an early one
-        with self._lock:
-            if self._stand_in is None:
-                self._early = (category, confidence)
-                return
-            stand_in = self._stand_in
-        self.apply(category, confidence, stand_in)
-
-    def apply(self, category: str, confidence: int, stand_in: str) -> None:
-        from tessellate.core.database import impersonate_workspace
-
-        try:
-            with deps.get_db().session() as session:
-                with impersonate_workspace(session, self.workspace_id):
-                    entry = session.get(Entry, self.entry_id)
-                    if entry is None or getattr(entry, "is_deleted", False):
-                        return
-                    if getattr(entry, "user_filed", False):
-                        return
-                    # Stopped by hand, or already settled: nothing to replace.
-                    if (getattr(entry, "filing_state", "") or "") != manager.STAND_IN:
-                        return
-                    if manager.category_name_for(session, entry) != stand_in:
-                        return  # moved by hand: the person's choice stands
-                    manager.record_filing(
-                        session,
-                        entry,
-                        category,
-                        by=janitor.filed_by_label("llm", confidence, deps.get_model_manager()),
-                    )
-                    entry.ai_confidence = confidence
-                    entry.filing_state = manager.AUTO_FILED
-                    session.commit()
-                    logger.info("janitor: late model answer refiled entry %s", self.entry_id)
-        except Exception:
-            logger.warning("couldn't apply the late filing for entry %s", self.entry_id, exc_info=True)
 
 
-def _settle_filed_entry(session, entry, entry_id: int, late, category, confidence, filed_by):
-    """Write the decided category and the settled `filing_state`; returns the
-    active run (or None) so the later steps can add their lines to it."""
-    manager.record_filing(
-        session,
-        entry,
-        category,
-        by=janitor.filed_by_label(
-            filed_by, confidence, deps.get_model_manager(), deps.get_embeddings()
-        ),
-    )
-    entry.ai_confidence = confidence
-    # `auto` rather than `done` when the AI is the one that
-    # chose (Brief 13): it is the flag that makes a later move by
-    # hand legible as a correction, and it is terminal for every
-    # reader, the composer's poller stops on anything but
-    # `pending`.
-    entry.filing_state = janitor.settled_state(filed_by)
-    # A model answer is still coming: the note is a stand-in
-    # until it lands, and is retried next launch if it never does.
-    if late.is_waiting and filed_by != "llm":
-        entry.filing_state = manager.STAND_IN
-    #: The run's lines and its result (INBOX 805, B77: "how long it
-    #: took to file"); the run itself carries the duration.
-    run = jobruns.active()
-    if run is not None:
-        how = "by Atlas" if filed_by == "llm" else "by meaning" if filed_by != "none" else "with no model"
-        run.say(f"Filed in {category or 'no category'} {how}.")
-        run.result = f"note {entry_id} filed in {category or 'no category'} {how}"
-    return run
 
 
-def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
-    """Embed the settled note, look for a near duplicate, keep tag
-    suggestions and run Tidy's automatic reviews."""
-    deps.store_quietly(session, entry)
-    duplicate = _find_near_duplicate(session, entry)
-    if duplicate is not None:
-        entry.filing_similar_id = duplicate.id
-    session.commit()
-    if run is not None:
-        run.say("Saved its search vector and checked for a near duplicate.")
-    try:
-        _keep_suggestions(session, entry, filed_by)
-        session.commit()
-    except Exception:
-        logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
-        session.rollback()
-    # Tidy's reviews a person switched on (INBOX 691, off by
-    # default): after filing, as `system:tidy`, each run undoable
-    # from Tidy's history. Never raises.
-    from tessellate.entry import tidy
-
-    tidy.run_automatic(session)
 
 
-def _mark_filing_failed(entry_id: int) -> None:
-    """The last resort: a note whose filing raised is `failed`, never left pending."""
-    try:
-        with deps.get_db().session() as session:
-            entry = session.get(Entry, entry_id)
-            if entry is not None:
-                entry.filing_state = "failed"
-                session.commit()
-    except Exception:
-        logger.warning("couldn't mark entry %s as failed", entry_id, exc_info=True)
 
 
-def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
-    """Decide the category of a note filed in the background after its POST has already returned.
-
-    Runs on its own daemon thread with its own session, the same shape
-    `core/ocr.py`'s `extract_in_background` uses and for the same reason:
-    the request this belongs to is finished, and the user is already typing
-    the next note.
-
-    Two things here are load-bearing and easy to get wrong:
-
-    **The workspace has to be re-established by hand.** A fresh session from
-    `deps.get_db()` carries no `workspace_id` in `session.info`, so the
-    scoping hooks in `core/database.py` sit out entirely: which means the
-    janitor would otherwise weigh *every space's* categories when deciding
-    where a note from one space belongs, and could file it into a category
-    that space cannot even see. `impersonate_workspace` puts the session
-    back in the note's own space for the duration.
-
-    **The note is never left saying "pending" forever.** Every exit path, 
-    success, a janitor that raised, an entry deleted while the thread was
-    still running: settles `filing_state`, because the composer's status
-    chip and the poller in `app.js` both read it as "still working" and a
-    stuck value would show a note filing itself for eternity.
-
-    **Filing is not the only slow thing in a save**, and deferring it alone
-    left the request at ~1s measured locally with no model running at all.
-    Embedding the note and the near-duplicate search (itself a full semantic
-    search, run only to *maybe* show an advisory toast) were the rest of it,
-    and neither is anything the composer needs before the user can start
-    typing again. They move here too. The duplicate warning comes back
-    through `GET /entries/{id}/filing` instead of the create response, so a
-    note that triggers one still gets its "you already wrote something like
-    this", a moment later, in the same notification that says where it was
-    filed.
-    """
-    from tessellate.core.database import impersonate_workspace
-
-    try:
-        with deps.get_db().session() as session:
-            with impersonate_workspace(session, workspace_id):
-                entry = session.get(Entry, entry_id)
-                if entry is None:
-                    return  # deleted before filing finished, nothing to settle
-                # Queued again by `filing_status` for a note a closed app left
-                # pending, and that retry can race a first pass that has just
-                # finished: a settled note is never filed twice.
-                if (getattr(entry, "filing_state", "") or "") != "pending":
-                    return
-                late = _LateFiling(entry_id, workspace_id, manager_text.readable_content(entry))
-                category, confidence, filed_by = _file_entry_now(
-                    session,
-                    manager_text.readable_content(entry),
-                    on_late_llm=late,
-                    model_deadline=janitor.filing_deadline(),
-                )
-                # The model answered after the deadline but before the
-                # stand-in was decided: its answer is used instead.
-                category, confidence, filed_by = late.stand_in(category, confidence, filed_by)
-                # Stopped by hand while this ran (`stop_filing`): the
-                # person's choice stands, this pass writes nothing.
-                session.refresh(entry)
-                if (getattr(entry, "filing_state", "") or "") != "pending":
-                    return
-                run = _settle_filed_entry(session, entry, entry_id, late, category, confidence, filed_by)
-                # **Settled first, embedded after.** The vector and the
-                # near-duplicate search used to land before `filing_state`
-                # did, so the card said "Filing…" for as long as the
-                # embedding model took to load, minutes on a first launch,
-                # after the category was already known (owner, 0.3.31). The
-                # vector still has to exist before the duplicate search has
-                # anything to compare against; a duplicate found after the
-                # poller has stopped is simply not toasted.
-                session.commit()
-                _embed_and_tidy(session, entry, entry_id, filed_by, run)
-    except Exception:
-        logger.warning("background filing failed for entry %s", entry_id, exc_info=True)
-        _mark_filing_failed(entry_id)
 
 
-def stand_ins_waiting() -> int:
-    """How many notes are stand-ins (the model's answer was still coming when
-    the app last closed). A count only: the launch asks it before queueing
-    the retry, so a notebook with none shows no "Filing a note" row."""
-    with deps.get_db().session() as session:
-        return session.query(Entry).filter(Entry.filing_state == manager.STAND_IN).count()
 
 
-def retry_stand_ins() -> int:
-    """Ask the model again for every note left as a stand-in: its answer was
-    still coming when the app closed. Runs once per launch on the model lane
-    (`app.py`). A note moved by hand or stopped in the meantime keeps its
-    place (`_LateFiling.apply`). Returns how many were asked about."""
-    from tessellate.core.database import impersonate_workspace
-
-    with deps.get_db().session() as session:
-        waiting = [
-            (row.id, getattr(row, "workspace_id", "default") or "default")
-            for row in session.query(Entry).filter(Entry.filing_state == manager.STAND_IN).all()
-        ]
-    for entry_id, workspace_id in waiting:
-        try:
-            with deps.get_db().session() as session:
-                with impersonate_workspace(session, workspace_id):
-                    entry = session.get(Entry, entry_id)
-                    if entry is None or entry.filing_state != manager.STAND_IN:
-                        continue
-                    stand_in = manager.category_name_for(session, entry)
-                    content = manager_text.readable_content(entry)
-                    category, confidence, method = janitor._ask_llm(
-                        session,
-                        content,
-                        deps.get_model_manager(),
-                        deps.get_ollama(),
-                    )
-            if method == "llm" and not lexical_filing.holds_sensitive(content, category):
-                _LateFiling(entry_id, workspace_id, content).apply(category, confidence, stand_in)
-        except Exception:
-            logger.warning("couldn't retry the filing of entry %s", entry_id, exc_info=True)
-    return len(waiting)
 
 
-def _embed_entry_in_background(entry_id: int, workspace_id: str) -> None:
-    """Embed an edited note's new text after its PUT has returned.
-
-    Its own session in the note's own space, as `_file_entry_in_background`.
-    A note deleted before this runs is left alone. An edit that lands while
-    this one embeds is folded into it (the queue's dedupe returns the running
-    job), so the text is read again after storing and embedded again if it
-    moved: the vector left behind is always the newest text's.
-    """
-    from tessellate.core.database import impersonate_workspace
-
-    try:
-        with deps.get_db().session() as session:
-            with impersonate_workspace(session, workspace_id):
-                for _ in range(3):
-                    entry = session.get(Entry, entry_id)
-                    if entry is None or entry.is_deleted:
-                        return
-                    seen = entry.content
-                    deps.store_quietly(session, entry)
-                    session.expire_all()
-                    again = session.get(Entry, entry_id)
-                    if again is None or again.content == seen:
-                        return
-    except Exception:
-        logger.warning("couldn't embed edited entry %s", entry_id, exc_info=True)
 
 
-def _queue_embedding(entry) -> None:
-    """One embedding job per note in flight, on the model lane: a burst of
-    autosaves while the first job waits is one embed of the newest text."""
-    jobs.enqueue(
-        "embed-entry",
-        _embed_entry_in_background,
-        entry.id,
-        getattr(entry, "workspace_id", "default") or "default",
-        dedupe_key=("embed-entry", entry.id),
-    )
 
 
-#: The search model still loading is what the first note waits on
-#: (L-world-class-6), so its activity row says so rather than "Filing a note".
-SEARCH_MODEL_LOADING = "Loading the search model"
 
 
-def _filing_label_now() -> str | None:
-    try:
-        return None if deps.get_embeddings().is_ready() else SEARCH_MODEL_LOADING
-    except Exception:  # noqa: BLE001 - a label must never break the panel
-        logger.debug("filing label: embeddings unreadable", exc_info=True)
-        return None
 
 
-jobs.LIVE_LABELS["file-entry"] = _filing_label_now
 
 
-def _queue_filing(entry) -> None:
-    """One filing job per note in flight: the key makes a second call while
-    the first is queued or running a no-op, so `filing_status` can ask again
-    on every poll."""
-    jobs.enqueue(
-        "file-entry",
-        _file_entry_in_background,
-        entry.id,
-        getattr(entry, "workspace_id", "default") or "default",
-        dedupe_key=("file-entry", entry.id),
-    )
 
 
-#: client_key -> (workspace, entry id) for the notes the offline queue has
-#: delivered, newest last. In memory and bounded: the window it covers is one
-#: resend of a save whose answer was lost, seconds to minutes, and a
-#: process that restarted in between is the one case it cannot see (said in
-#: INBOX 434's report, not hidden).
-_DELIVERED: OrderedDict[str, tuple[str, int]] = OrderedDict()
-_DELIVERED_MAX = 512
 
 
-def _already_delivered(session: Session, key: str | None):
-    """The note an earlier save with this `client_key` made, or None.
-
-    The column, not only the dict: the dict is the fast path inside one
-    process, the column is what a restart keeps (ARCH-23). The space hook
-    narrows the read, so a key from another space is not this space's note.
-    """
-    if not key:
-        return None
-    if key in _DELIVERED:
-        workspace, entry_id = _DELIVERED[key]
-        entry = session.get(Entry, entry_id)
-        if entry is not None and (getattr(entry, "workspace_id", "default") or "default") == workspace:
-            return entry
-    return session.scalars(select(Entry).where(Entry.client_key == key)).first()
 
 
-def _remember_delivery(key: str | None, entry) -> None:
-    if not key:
-        return
-    _DELIVERED[key] = (getattr(entry, "workspace_id", "default") or "default", entry.id)
-    while len(_DELIVERED) > _DELIVERED_MAX:
-        _DELIVERED.popitem(last=False)
 
 
 def _mark_new_entry(entry, body: EntryCreate, filed_by: str | None) -> None:  # noqa: ANN001
@@ -929,7 +487,7 @@ def _decide_filing(session: Session, body: EntryCreate, parent) -> tuple[str, in
         #: The wait is bounded like the background pass's (INBOX 1313): this
         #: request holds a database connection while the model thinks, and the
         #: unbounded wait it had (three minutes) let twenty at once fill the pool.
-        category, confidence, filed_by = _file_entry_now(
+        category, confidence, filed_by = filing_background._file_entry_now(
             session, body.content, model_deadline=janitor.filing_deadline(), release_session=True
         )
     return category, confidence, filed_by, defer
@@ -958,7 +516,7 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
         #: own tags (no second model call on the request; a note filed in the background
         #: gets the model's in the background pass).
         try:
-            _keep_suggestions(session, entry, None)
+            tag_suggestions.keep_suggestions(session, entry, None)
             session.commit()
         except Exception:
             logger.warning("couldn't keep tag suggestions for a new note", exc_info=True)
@@ -1026,7 +584,7 @@ def _cheer_note_count(session: Session, entry: Entry) -> None:
 
 @router.post("", response_model=EntryOut, status_code=201)
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
-    earlier = _already_delivered(session, body.client_key)
+    earlier = filing_background._already_delivered(session, body.client_key)
     if earlier is not None:
         return _to_out(session, earlier, filed_by=None, similar=None)
     parent = _existing_entry(session, body.parent_id) if body.parent_id is not None else None
@@ -1050,7 +608,7 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         # Two resends of one save at once: the other one won the unique
         # index on `client_key`, so its note is this save's answer.
         session.rollback()
-        earlier = _already_delivered(session, body.client_key) if body.client_key else None
+        earlier = filing_background._already_delivered(session, body.client_key) if body.client_key else None
         if earlier is None:
             raise
         return _to_out(session, earlier, filed_by=None, similar=None)
@@ -1080,8 +638,8 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     # request, so the thread can never race the commit that makes this note
     # visible to its own session.
     if defer:
-        _queue_filing(entry)
-    _remember_delivery(body.client_key, entry)
+        filing_background._queue_filing(entry)
+    filing_background._remember_delivery(body.client_key, entry)
 
     return out
 
@@ -1221,20 +779,10 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
     # like it is endlessly filing"). Asking here re-queues it; the dedupe
     # key makes that a no-op while a job for it is already queued or running.
     if (getattr(entry, "filing_state", "") or "") == "pending":
-        _queue_filing(entry)
+        filing_background._queue_filing(entry)
     return entry_service.filing_status(session, entry)
 
 
-def _tag_vocabulary(session: Session) -> list[str]:
-    """The notebook's own tags, most used first.
-
-    Both tag suggesters read this, so a note filed before saving and a note
-    refiled afterwards are offered the same vocabulary and cannot drift
-    apart. `tags_repo.counts` is cached by notebook fingerprint, so this is
-    a dictionary lookup rather than a scan on the common path.
-    """
-    counts = tags_repo.counts(session)
-    return [tag for tag, _count in sorted(counts.items(), key=lambda row: (-row[1], row[0]))]
 
 
 class SuggestTagsBody(BaseModel):
@@ -1277,7 +825,7 @@ def suggest_tags_for_draft(
     if model_manager.utility_model() and ollama.is_running():
         try:
             suggested = librarian.suggest_tags(
-                content, body.tags, model_manager, ollama, vocabulary=_tag_vocabulary(session)
+                content, body.tags, model_manager, ollama, vocabulary=tag_suggestions.tag_vocabulary(session)
             )
         except Exception:
             logger.info("tag suggestions from the model failed; using the notebook's own", exc_info=True)
@@ -1285,7 +833,7 @@ def suggest_tags_for_draft(
         if "no-model-tags" not in _SAID_ONCE:
             _SAID_ONCE.add("no-model-tags")
             logger.info("no model running: tag suggestions come from the notebook's own tags")
-    offered = _engine_tags(session, content, body.tags, suggested, None)
+    offered = tag_suggestions.engine_tags(session, content, body.tags, suggested, None)
     return {"suggested_tags": offered, "suggested_tag_reasons": _tag_reasons(content, offered)}
 
 
@@ -1303,7 +851,7 @@ class SuggestedTagsBody(BaseModel):
 def _discard_tags(entry, body) -> dict[str, str]:  # noqa: ANN001
     """Remember the tags turned down on this note (the last 200), and return the
     ones taken back, keyed by their folded form."""
-    gone = _json_tags(entry.discarded_tags)
+    gone = tag_suggestions.json_tags(entry.discarded_tags)
     gone_folded = {tag.casefold() for tag in gone}
     gone += [tag.strip() for tag in body.discard if tag.strip() and tag.strip().casefold() not in gone_folded]
     restored = {tag.strip().casefold(): tag.strip() for tag in body.restore if tag.strip()}
@@ -1322,7 +870,7 @@ def answer_suggested_tags(
     entry = NOTES.writable(session, entry_id)
     if body.mute is not None:
         entry.tag_suggest_off = body.mute
-    offered = {tag.casefold(): tag for tag in _json_tags(entry.suggested_tags)}
+    offered = {tag.casefold(): tag for tag in tag_suggestions.json_tags(entry.suggested_tags)}
     take = [offered.get(tag.casefold(), tag.strip()) for tag in body.take if tag.strip()]
     if take:
         have = manager.entry_tags(entry)
@@ -1330,7 +878,7 @@ def answer_suggested_tags(
         manager.update_entry(session, entry, tags=have + [tag for tag in take if tag.casefold() not in folded])
     restored = _discard_tags(entry, body)
     answered = {tag.casefold() for tag in [*take, *body.discard]}
-    kept = [tag for tag in _json_tags(entry.suggested_tags) if tag.casefold() not in answered]
+    kept = [tag for tag in tag_suggestions.json_tags(entry.suggested_tags) if tag.casefold() not in answered]
     kept_folded = {tag.casefold() for tag in kept}
     entry.suggested_tags = json.dumps(kept + [tag for key, tag in restored.items() if key not in kept_folded])
     session.commit()
@@ -2010,7 +1558,7 @@ def _after_content_edit(session: Session, entry, body: EntryUpdate) -> None:  # 
         #: embedder before the editor's save returned. The stale vector
         #: is already gone, so until the job runs the note is found by
         #: its words, as a note saved with the embedder off is.
-        _queue_embedding(entry)
+        filing_background._queue_embedding(entry)
     # Editing a note can introduce new [[links]]; resolve those too.
     try:
         manager_wiki.sync_wiki_links(session, entry)

@@ -488,3 +488,28 @@ def test_the_panels_stop_reaches_a_running_job_and_offers_the_button(client, kin
         pool.shutdown(deadline=2)
     assert answer["stopped"] is True and "next safe step" in answer["detail"]
     assert STEPS == [0, 1, 2]
+
+
+def test_a_filing_row_saved_before_the_move_resumes_on_the_new_handler(db):
+    """L-world-class-633: `file-entry` moved from the route module to
+    `entry/filing_background`. A row written by the old build (kind plus
+    payload, no handler name) is resumed on the new function, and a handler
+    named by the old dotted string still maps to it."""
+    from tessellate.entry import filing_background
+
+    row_id = jobstore.record("file-entry", (7, "default"), {}, db=db)
+    submitted = []
+    jobstore.resume(db=db, enqueue=lambda *call: submitted.append(call))
+    jobstore.stop()
+    assert [(c[1], c[2], c[6]) for c in submitted] == [(filing_background._file_entry_in_background, (7, "default"), row_id)]
+
+    old = "tessellate.api.routes_entries:_file_entry_in_background"
+    assert jobstore.RENAMED_TARGETS[old] == jobstore.HANDLERS["file-entry"]
+    saved = dict(jobstore.HANDLERS)
+    try:
+        jobstore.register("file-entry", old)
+        assert jobstore.resolve("file-entry") is filing_background._file_entry_in_background
+        assert jobstore.durable_kind("file-entry", filing_background._file_entry_in_background)
+    finally:
+        jobstore.HANDLERS.clear()
+        jobstore.HANDLERS.update(saved)

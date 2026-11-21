@@ -11,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tessellate.api import routes_entries
+from tessellate.entry import filing_background
 
 
 def _crashing_client(monkeypatch):
@@ -41,7 +42,7 @@ def test_the_note_is_kept_once_and_the_retry_does_not_duplicate_it(client, monke
     assert failed.status_code >= 500
     assert _count(client) == 1  # the commit happened, the answer did not
     if restart:
-        routes_entries._DELIVERED.clear()  # what a restart forgets
+        filing_background._DELIVERED.clear()  # what a restart forgets
     retry = crashing.post("/entries", json=body)
     assert retry.status_code in (200, 201), retry.text
     assert _count(client) == 1
