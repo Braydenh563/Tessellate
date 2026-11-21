@@ -8,7 +8,10 @@ refile corrections (the person putting each in its labelled category, with the n
 excerpt); accuracy is read before and after on the 47 notes that were not taught, so a correction
 can only help by generalising, never by remembering its own note.
 
-Measured 2026-11-21, fixed clock not needed (no dates): held-out accuracy 43 of 47 (91%) before,
+After L-world-class-650 (a taught topic weighs by how specific it is to the category, among the
+corrections and every note's own words): 40 of 47 (85%) after, minus 6 points. Only 4 held-out
+notes were missed before, so plus 10 (5 notes) is out of reach on this set whatever the loop does.
+Measured first, 2026-11-21, fixed clock not needed (no dates): held-out accuracy 43 of 47 (91%) before,
 37 of 47 (79%) after: minus 12 points. The corrections teach the lexicon that topics shared by
 several categories belong to the category taught most ("Ideas"), which takes notes from "Uni"
 out of the confident band. The gate's bar is plus 10, so the gate test below is a strict xfail:
