@@ -190,7 +190,7 @@ TOOLS: dict[str, ToolSpec] = {
     for spec in [
         ToolSpec(
             "find_contradictions",
-            "Finds places where the user's own notes disagree with each other, a decision reversed, a date that moved, a view they changed. Reports them; does not link anything.",
+            "Finds where the user's notes disagree: a decision reversed, a date that moved. Reports them; links nothing.",
             {
                 "type": "object",
                 "properties": {
@@ -202,8 +202,8 @@ TOOLS: dict[str, ToolSpec] = {
 
         ToolSpec(
             "check_learned",
-            "Re-check what was learned about the user against the notes as they are now: retire "
-            "what no longer holds, flag what needs a look (two notes disagree, a date passed).",
+            "Re-check what was learned about the user against the notes now: retire "
+            "what no longer holds, flag what needs a look.",
             {"type": "object", "properties": {}},
             _check_learned,
         ),
@@ -243,7 +243,7 @@ TOOLS: dict[str, ToolSpec] = {
             # up) are worth their space; nothing else here is.
             "Ask which of 2-6 options the user meant, when the request is "
             "ambiguous. Your turn ENDS; their reply comes next. Don't ask "
-            "permission, and don't ask what search_notes could tell you.",
+            "permission or what search_notes could tell you.",
             {
                 "type": "object",
                 "properties": {
@@ -276,19 +276,19 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "related_notes",
             "A note's connections: what it links to, what replies to it, what shares its "
-            "tags, each with HOW and how far. include_suggestions adds notes that READ alike "
-            "but were never linked: guesses, not connections.",
+            "tags, each with HOW and how far. include_suggestions adds notes that READ alike, "
+            "never linked: guesses.",
             {
                 "type": "object",
                 "properties": {
                     "note_id": _NOTE_ID,
                     "depth": {
                         "type": "integer",
-                        "description": "1 = direct connections, 2 = their connections too",
+                        "description": "1 = direct, 2 = theirs too",
                     },
                     "include_suggestions": {
                         "type": "boolean",
-                        "description": "Also list notes that READ alike but were never linked",
+                        "description": "Also notes that READ alike, never linked",
                     },
                 },
                 "required": ["note_id"],
@@ -316,8 +316,8 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "notebook_structure",
             "The notebook's SHAPE, not its filing: which notes cluster, the best-connected "
-            "hubs, and notes connected to nothing. Use it before reorganising or when asked "
-            "what to link; list_categories describes filing.",
+            "hubs, and notes connected to nothing. Use it before reorganising or linking; "
+            "list_categories describes filing.",
             {"type": "object", "properties": {}},
             _notebook_structure,
         ),
@@ -360,7 +360,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "offset": {
                         "type": "integer",
-                        "description": "Use next_offset from the previous call",
+                        "description": "next_offset from the last call",
                     },
                 },
             },
@@ -369,27 +369,25 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "count_notes",
             "Count the user's notes: in total, per category, or for one "
-            "category, tag, age or untagged. Numbers only: the cheap way to "
-            "answer 'how many…'.",
+            "category, tag, age or untagged. Numbers only: the cheap 'how many…'.",
             {
                 "type": "object",
                 "properties": {
                     "category": {
                         "type": "string",
-                        "description": "Only count this category (optional)",
+                        "description": "Only this category",
                     },
                     "tag": {
                         "type": "string",
-                        "description": "Only count notes with this tag (optional)",
+                        "description": "Only notes with this tag",
                     },
                     "untagged": {
                         "type": "boolean",
-                        "description": "Only count notes with no tags at all "
-                        "(optional)",
+                        "description": "Only notes with no tags",
                     },
                     "since": {
                         "type": "string",
-                        "description": "Optional window: 'this week', 'since Friday', 'last month', or a number of days",
+                        "description": "A window: 'this week', 'since Friday', or a number of days",
                     },
                 },
             },
@@ -413,14 +411,13 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_documents",
             "The user's long-form documents, newest first, optionally by a word in the title "
-            "or body. Documents are never searched with notes: use this for anything they "
-            "wrote up properly.",
+            "or body. Documents are not searched with notes.",
             {
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "Only documents containing this text (optional)",
+                        "description": "Only documents containing this text",
                     },
                     "limit": {"type": "integer", "description": "Per page"},
                     "offset": {"type": "integer", "description": "Skip this many"},
@@ -431,8 +428,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "search_files",
             "Search the user's uploaded files (photos, scans, PDFs, attachments) by name, "
-            "caption or the text read from them. Use it for anything about a picture or file:"
-            " notes never hold a file's contents.",
+            "caption or the text read from them. Use it for anything about a picture or file.",
             {
                 "type": "object",
                 "properties": {
@@ -470,8 +466,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "create_document",
             "Write a new long-form document (an essay, a report, a write-up) "
-            "and save it. For short captured thoughts use create_note "
-            "instead: a document is something sat down and written.",
+            "and save it. For short thoughts use create_note.",
             {
                 "type": "object",
                 "properties": {
@@ -557,8 +552,8 @@ TOOLS: dict[str, ToolSpec] = {
                         "type": "integer",
                         "description": "Board note id; omit for the default",
                     },
-                    "x": {"type": "number", "description": "Board x position (optional)"},
-                    "y": {"type": "number", "description": "Board y position (optional)"},
+                    "x": {"type": "number", "description": "Board x position"},
+                    "y": {"type": "number", "description": "Board y position"},
                 },
                 "required": ["note_id"],
             },
@@ -583,7 +578,7 @@ TOOLS: dict[str, ToolSpec] = {
             "generate_diagram",
             "Place a tree of notes on a board in one call. A node is a new note ('title') "
             "or an existing one ('note_id') with a 'ref'; children name it as "
-            "'parent_ref'. The root has none, or card:<id>. Never invent x/y. "
+            "'parent_ref'; the root has none, or card:<id>. No x/y. "
             f"Up to {MAX_DIAGRAM_NODES} nodes.",
             {
                 "type": "object",
@@ -625,8 +620,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "read_mindmap",
             "Read a mindmap as an indented outline: each node's id, kind and the note or "
-            "document it stands for. Use it before adding. Needs board_id; search_whiteboard "
-            "finds it.",
+            "document it stands for. Use it before adding. Needs board_id (search_whiteboard).",
             {
                 "type": "object",
                 "properties": {
@@ -661,7 +655,7 @@ TOOLS: dict[str, ToolSpec] = {
             "map_from_note",
             "A mind map from one note in one call ('turn this note into a map'): title the "
             "centre, headings and lists the branches. Use it, not create_mindmap plus "
-            "add_map_node, for one note's outline.",
+            "add_map_node.",
             {
                 "type": "object",
                 "properties": {
@@ -675,7 +669,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "add_map_node",
             "Add ONE node to a mindmap, under a parent or as a new root. "
-            "Call read_mindmap first for the ids. Never invent x/y. Kind "
+            "read_mindmap first for the ids. No x/y. Kind "
             "'topic' is plain text; 'note' with note_id puts a note on the map.",
             {
                 "type": "object",
@@ -711,7 +705,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "board_id": {"type": "integer", "description": "The map's own note id."},
                     "from_id": {"type": "integer", "description": "The node the link starts at"},
                     "to_id": {"type": "integer", "description": "The node it points at"},
-                    "label": {"type": "string", "description": "What the link means (optional)"},
+                    "label": {"type": "string", "description": "What the link means"},
                 },
                 "required": ["from_id", "to_id"],
             },
@@ -722,14 +716,14 @@ TOOLS: dict[str, ToolSpec] = {
         #: that changes their own work; each returns an undo.
         ToolSpec(
             "move_board_item",
-            "Move one item on a board so its top-left corner is at x, y (board "
-            "units). kind is 'card', 'object' (text box, sticky or frame) or "
-            "'shape'; read_whiteboard gives each item's kind, id and corner.",
+            "Move one board item to x, y, its top-left corner. kind is 'card', "
+            "'object' (text box, sticky or frame) or 'shape'; read_whiteboard gives "
+            "kind, id and corner.",
             {
                 "type": "object",
                 "properties": {
                     "kind": {"type": "string", "description": "'card', 'object' or 'shape'"},
-                    "item_id": {"type": "integer", "description": "The item's id from read_whiteboard"},
+                    "item_id": {"type": "integer", "description": "Its id from read_whiteboard"},
                     "x": {"type": "number", "description": "New left edge"},
                     "y": {"type": "number", "description": "New top edge"},
                 },
@@ -741,17 +735,16 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "edit_board_item",
             "Change a text box's, sticky's, frame's or shape's words, line "
-            "colour or fill, e.g. 'make the risks red'. A card shows its note: "
-            "edit the note instead.",
+            "colour or fill ('make the risks red'). For a card, edit its note.",
             {
                 "type": "object",
                 "properties": {
                     "kind": {"type": "string", "description": "'object' or 'shape'"},
-                    "item_id": {"type": "integer", "description": "The item's id from read_whiteboard"},
-                    "text": {"type": "string", "description": "New words (optional)"},
-                    "color": {"type": "string", "description": "Line or text colour, like #cc3333 (optional)"},
-                    "fill": {"type": "string", "description": "Fill colour, like #ffee99 (optional)"},
-                    "fold": {"type": "boolean", "description": "A sticky's folded corner on or off (optional)"},
+                    "item_id": {"type": "integer", "description": "Its id from read_whiteboard"},
+                    "text": {"type": "string", "description": "New words"},
+                    "color": {"type": "string", "description": "Line or text colour, e.g. #cc3333"},
+                    "fill": {"type": "string", "description": "Fill colour, e.g. #ffee99"},
+                    "fold": {"type": "boolean", "description": "A sticky's folded corner"},
                 },
                 "required": ["kind", "item_id"],
             },
@@ -760,13 +753,13 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "delete_board_item",
-            "Take one item off a board (its connectors go with it). A card's "
-            "note stays in the notebook. The app asks the person first.",
+            "Take one item off a board, connectors too. A card's note stays. "
+            "The app asks the person first.",
             {
                 "type": "object",
                 "properties": {
                     "kind": {"type": "string", "description": "'card', 'object' or 'shape'"},
-                    "item_id": {"type": "integer", "description": "The item's id from read_whiteboard"},
+                    "item_id": {"type": "integer", "description": "Its id from read_whiteboard"},
                 },
                 "required": ["kind", "item_id"],
             },
@@ -775,8 +768,8 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "restore_board_item",
-            "Put back a board item delete_board_item took off: pass the item "
-            "text its undo gave. Only for undoing a delete.",
+            "Put back an item delete_board_item took off: pass the item "
+            "text its undo gave.",
             {
                 "type": "object",
                 "properties": {"item": {"type": "string", "description": "The undo's item text"}},
@@ -870,8 +863,7 @@ TOOLS: dict[str, ToolSpec] = {
             # thing: are worth their characters; nothing else here is.
             "Start one of the user's saved skills, by name from list_skills. "
             "Your turn ENDS and the run takes over, step by step. Use it for "
-            "a job a skill already describes, not for a one-off you can just "
-            "do.",
+            "a job a skill describes, not a one-off.",
             {
                 "type": "object",
                 "properties": {
@@ -898,7 +890,7 @@ TOOLS: dict[str, ToolSpec] = {
             # which only cost characters when the model gets it wrong.
             "Plan a job that has several parts, as 2-6 short steps. Your turn "
             "ENDS and the steps then run one at a time, so nothing gets "
-            "half-done. Use it when one instruction covers many notes.",
+            "half-done. Use it for one instruction over many notes.",
             {
                 "type": "object",
                 "properties": {
@@ -923,7 +915,7 @@ TOOLS: dict[str, ToolSpec] = {
             # stop growing", this only needs to be on the wire for the rare
             # turn that's actually about the chat getting long).
             "Summarise the older part of this chat to free context. Your turn ENDS: the user "
-            "edits the summary first. Only when asked to shorten the chat, not to summarise notes.",
+            "edits the summary first. Only when asked to shorten the chat.",
             {"type": "object", "properties": {}},
             _compress_chat,
             ends_turn=True,
@@ -1026,8 +1018,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "read_text",
             "The dates, times, durations, amounts and units in a text exactly as the app "
-            "reads them, each with how it was read. Use it rather than working out a date "
-            "yourself.",
+            "reads them, each with how it was read. Use it, not your own date arithmetic.",
             {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]},
             _read_text,
         ),
@@ -1044,7 +1035,7 @@ TOOLS: dict[str, ToolSpec] = {
             "propose_act",
             "Propose one change in the user's words (\"remind me to call Sam on "
             "Friday at 9\", \"pin the dentist note\"): the app shows a card and "
-            "the user confirms. Use it when unsure a change is wanted; then stop.",
+            "the user confirms. Use it when unsure; then stop.",
             {"type": "object", "properties": {"sentence": {"type": "string"}}, "required": ["sentence"]},
             _propose_act,
             ends_turn=True,
@@ -1058,11 +1049,11 @@ TOOLS: dict[str, ToolSpec] = {
                 "properties": {
                     "days": {
                         "type": "integer",
-                        "description": "Only include notes from the last N days (optional)",
+                        "description": "Only include notes from the last N days",
                     },
                     "category": {
                         "type": "string",
-                        "description": "Only include this category (optional)",
+                        "description": "Only include this category",
                     },
                 },
             },
@@ -1082,7 +1073,7 @@ TOOLS: dict[str, ToolSpec] = {
                 "type": "object",
                 "properties": {
                     "content": {"type": "string", "description": "The note text"},
-                    "category": {"type": "string", "description": "Category (optional)"},
+                    "category": {"type": "string", "description": "Category"},
                     "tags": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": ["content"],
@@ -1096,12 +1087,12 @@ TOOLS: dict[str, ToolSpec] = {
                 "type": "object",
                 "properties": {
                     "note_id": _NOTE_ID,
-                    "content": {"type": "string", "description": "New text (optional)"},
-                    "category": {"type": "string", "description": "New category (optional)"},
+                    "content": {"type": "string", "description": "New text"},
+                    "category": {"type": "string", "description": "New category"},
                     "tags": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Replacement tag list (optional)",
+                        "description": "Replacement tag list",
                     },
                 },
                 "required": ["note_id"],
@@ -1136,7 +1127,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "note_ids": {
                         "type": "array",
                         "items": {"type": "integer"},
-                        "description": "IDs of multiple notes to tag (optional)",
+                        "description": "IDs of multiple notes to tag",
                     },
                     "add": {"type": "array", "items": {"type": "string"}, "description": "Tags to add"},
                     "remove": {"type": "array", "items": {"type": "string"}},
@@ -1181,9 +1172,7 @@ TOOLS: dict[str, ToolSpec] = {
                     },
                     "reason": {
                         "type": "string",
-                        "description": (
-                            "Optional: why, in a few words ('both about scheduling')"
-                        ),
+                        "description": "Why, in a few words",
                     },
                     "link_type": {
                         "type": "string",
@@ -1246,8 +1235,8 @@ TOOLS: dict[str, ToolSpec] = {
             #: reminder Atlas makes while reading a note is exactly the case
             #: the link is for, and "optionally attached to a note" does not
             #: tell a small model that.
-            "Create a reminder; put when in the user's own words. If it comes out of a note you "
-            "have just read, pass that note's id so the two stay joined.",
+            "Create a reminder; put when in the user's own words. If it comes from a note you "
+            "just read, pass that note's id so the two stay joined.",
             {
                 "type": "object",
                 "properties": {
@@ -1256,8 +1245,8 @@ TOOLS: dict[str, ToolSpec] = {
                         "type": "string",
                         "description": "The user's words, e.g. 'tomorrow 9am'",
                     },
-                    "due_at": {"type": "string", "description": "An exact ISO date-time, if you have one"},
-                    "note_id": {"type": "integer", "description": "The note it came out of, if any"},
+                    "due_at": {"type": "string", "description": "An exact ISO date-time"},
+                    "note_id": {"type": "integer", "description": "The note it came out of"},
                     "priority": {"type": "string", "enum": ["low", "normal", "high"], "description": "Defaults to normal"},
                     "recurring": {"type": "string", "enum": ["none", "daily", "weekly", "monthly"]},
                 },

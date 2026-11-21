@@ -21383,13 +21383,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_describe_tool` | src/tessellate/ai/tools/tool_table.py:61 |
-| `_example_value` | src/tessellate/ai/tools/tool_table.py:1481 |
-| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1461 |
+| `_example_value` | src/tessellate/ai/tools/tool_table.py:1470 |
+| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1450 |
 | `_list_skills` | src/tessellate/ai/tools/tool_table.py:74 |
 | `_list_tools` | src/tessellate/ai/tools/tool_table.py:44 |
 | `_save_skill` | src/tessellate/ai/tools/tool_table.py:123 |
 | `_tool_group` | src/tessellate/ai/tools/tool_table.py:35 |
-| `call_example` | src/tessellate/ai/tools/tool_table.py:1429 |
+| `call_example` | src/tessellate/ai/tools/tool_table.py:1418 |
 
 ### src/tessellate/ai/tools/tool_turn.py (13)
 
