@@ -6348,14 +6348,19 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    hidden simply goes. `:where()` so the recipe is zero-weight: a dialog with
    motion of its own (Settings' peek) keeps it. The lock screen is not in
    it: it is the boot's curtain, which fades out (below) rather than in. */
+/* **The cards, by class, not `& > *`** (2026-11-21): with `.hidden` before a
+   subject that names nothing, every `hidden` toggle in the app restyled the
+   toggled element's whole subtree (a Settings pane: 775 to 1,791 elements).
+   Every overlay's child is one of these three; `:where` keeps the weight.
+   tests/test_css_invalidation.py holds the shape. */
 :where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {
   transition: opacity var(--ui-base) var(--ease-out);
-  & > * {
+  & > :where(.card, .modal-card, .sheet-card) {
     transition: translate var(--ui-slow) var(--ease-out), scale var(--ui-slow) var(--ease-out);
   }
   @starting-style {
     opacity: 0;
-    & > * {
+    & > :where(.card, .modal-card, .sheet-card) {
       translate: 0 var(--space-2);
       scale: 0.985;
     }
@@ -6369,7 +6374,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) allow-discrete;
-  & > * {
+  & > :where(.card, .modal-card, .sheet-card) {
     translate: 0 var(--space-2);
     scale: 0.985;
     transition: translate var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out);

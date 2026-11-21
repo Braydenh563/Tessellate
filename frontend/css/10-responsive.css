@@ -280,7 +280,10 @@ header#top-bar[data-scrolled="1"],
    step (`--ui-step`) apart, each sliding in a space-1 from the left. Half, not
    a whole one (the owner 2026-11-03, "that dropdown looks quite tall and
    empty"): at a full step the box had grown to its height with rows five to
-   eight still clear for up to 390ms; now the last row is in by 285ms. */
+   eight still clear for up to 390ms; now the last row is in by 285ms. No
+   `:not(.hidden)` on the menu: a shown menu starts its rows' animations
+   anyway, and `.hidden` before a `>` made every `hidden` toggle restyle the
+   toggled element's whole subtree (tests/test_hidden_invalidation.py). */
 @keyframes ui-row {
   from {
     opacity: 0;
@@ -314,16 +317,16 @@ header#top-bar[data-scrolled="1"],
 .help-popover {
   --menu-origin-x: var(--help-caret-x);
 }
-.action-menu:not(.hidden) > :nth-child(-n + 8) {
+.action-menu > :nth-child(-n + 8) {
   animation: ui-row var(--ui-base) var(--ease-out) backwards;
 }
-.action-menu:not(.hidden) > :nth-child(2){animation-delay:calc(var(--ui-step)*0.5)}
-.action-menu:not(.hidden) > :nth-child(3){animation-delay:calc(var(--ui-step)*1)}
-.action-menu:not(.hidden) > :nth-child(4){animation-delay:calc(var(--ui-step)*1.5)}
-.action-menu:not(.hidden) > :nth-child(5){animation-delay:calc(var(--ui-step)*2)}
-.action-menu:not(.hidden) > :nth-child(6){animation-delay:calc(var(--ui-step)*2.5)}
-.action-menu:not(.hidden) > :nth-child(7){animation-delay:calc(var(--ui-step)*3)}
-.action-menu:not(.hidden) > :nth-child(8){animation-delay:calc(var(--ui-step)*3.5)}
+.action-menu > :nth-child(2){animation-delay:calc(var(--ui-step)*0.5)}
+.action-menu > :nth-child(3){animation-delay:calc(var(--ui-step)*1)}
+.action-menu > :nth-child(4){animation-delay:calc(var(--ui-step)*1.5)}
+.action-menu > :nth-child(5){animation-delay:calc(var(--ui-step)*2)}
+.action-menu > :nth-child(6){animation-delay:calc(var(--ui-step)*2.5)}
+.action-menu > :nth-child(7){animation-delay:calc(var(--ui-step)*3)}
+.action-menu > :nth-child(8){animation-delay:calc(var(--ui-step)*3.5)}
 /* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
    Panels that hang off an opener and show by `.hidden` took no part in the
    fade and grow (audit: `animation: none`), so they take the same two rules.
