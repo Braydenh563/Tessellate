@@ -8,6 +8,9 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Notes: a clipped or imported note's source chip now says its kind in its tooltip and label (Clipped from URL, Imported from file); extracted-from-document and transcribed-from-audio are not recorded on the note, so they have no chip (L-general-13).
 - Reminders: ticking one that points at a note asks for a one-line outcome (skippable) added to that note, and Overdue has a Triage sheet (Still matters, Drop, Reschedule, each or all at once, one Undo) (L-general-10, L-general-12).
+- Maps: a dragged branch moves as one layer (its topics in one element, its inside lines and links translated, the edge pan reads the gesture's own canvas box), so a 200-topic branch drag costs about 9ms a step, from 95 (L-mindmap-17).
+- Maps and boards: a zoom is a transform while it moves; the grips' true size and the full cull wait until it settles, and a scaling step culls only when it leaves what was drawn (L-mindmap-17).
+- Zoom dock: the zoom number holds one width, so the dock no longer resizes between "85%" and "100%" (that resize restyled the whole board, 250 to 400ms at 500 topics) (L-mindmap-17).
 - CI: a UI sweeps job runs the 32 sweeps that pass twice on a fresh notebook (scripts/ci_sweeps.sh, L-general-20).
 - mapperf.js measures main-thread CPU per input step (CDP ThreadTime) instead of the gap between frames, and fails on a deliberate 80ms slowdown (pan worst 27 to 95ms); the app is over its drag and zoom budgets by that measure (L-mindmap-17).
 - Map look dialog: the four groups run in two columns on a wide screen, 1002px to 676px tall, so it no longer scrolls at 1440x900 (L-general-20).

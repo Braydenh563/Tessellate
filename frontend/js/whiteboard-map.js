@@ -3005,8 +3005,105 @@ function wbMapBranchDragOrigin(d, alone) {
   const keys = wbMapSubtree(index, d.id)
     .filter((o) => o.id !== d.id)
     .map((o) => wbMultiKey("object", o.id));
-  return keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+  const origin = keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+  if (origin) origin.branchOf = d.id;
+  return origin;
 }
+
+//: **A dragged branch is one layer** (L-mindmap-17). Every topic of it moved
+//: by its own transform and every line inside it was rebuilt each step
+//: (`wbMapRibbonD`, 27ms a step at 200 topics), though the whole branch moves
+//: by one delta: measured by mapperf.js, 92ms of main-thread CPU a step at 200
+//: topics against a 17ms budget. So the topics go into one element and the
+//: lines with both ends in the branch into one SVG group, each carrying the
+//: drag's translate, and a link with both ends inside is translated too. What
+//: is still drawn per step is what crosses the branch's edge: the grabbed
+//: topic's line up to its parent, and links to topics outside.
+//:
+//: The layer is undone by `wbMapDragLayer.close` at the drop and before any
+//: render, so nothing else ever sees a topic outside `#wb-html-layer`'s own
+//: children for longer than a gesture.
+//: One shared name for the three steps (the global-scope ratchet).
+const wbMapDragLayer = {
+  live: null,
+
+  open(origin, d, grabbedEl) {
+    const html = document.getElementById("wb-html-layer");
+    const edgeGroup = document.querySelector("#wb-zoom-group .wb-map-edges");
+    if (!origin || origin.layer || !html || !edgeGroup || !grabbedEl) return null;
+    const ids = new Set([d.id]);
+    for (const entry of origin.values()) if (entry.kind === "object") ids.add(entry.id);
+    const inside = (edge) => ids.has(edge.parent.id) && ids.has(edge.child.id);
+    const ends = (parsed) => (parsed.sourceKind === "object" && ids.has(parsed.sourceId)) && (parsed.targetKind === "object" && ids.has(parsed.targetId));
+    //: The members in the order the layer holds them, so they go back in it.
+    const itemOf = new Map([[grabbedEl, d]]);
+    for (const entry of origin.values()) if (entry.el) itemOf.set(entry.el, entry.item);
+    const els = [...html.children].filter((el) => itemOf.has(el));
+    const el = document.createElement("div");
+    el.setAttribute("class", "wb-map-drag-layer");
+    const edges = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    edges.setAttribute("class", "wb-map-drag-edges");
+    const home = els.map((member) => [member, member.nextSibling, itemOf.get(member)]);
+    //: Above every topic it passes, as the one grabbed topic was by its raise:
+    //: the ranks are inline (`stackRank`), so this reads no layout.
+    el.style.zIndex = String(Math.max(0, ...[...html.children].map((child) => Number(child.style.zIndex) || 0)) + 1);
+    for (const member of els) el.appendChild(member);
+    html.appendChild(el);
+    edgeGroup.appendChild(edges);
+    //: Each line and link once, however many members listed it.
+    const innerEdges = new Map();
+    const innerLinks = new Map();
+    const sort = (list, keep) => list.filter((item) => {
+      if (item.parent ? !inside(item) : !ends(item.parsed)) return true;
+      if (item.parent) innerEdges.set(item.el, item);
+      else innerLinks.set(item.sketch.id, item);
+      return keep;
+    });
+    d._mapEdges = sort(d._mapEdges || [], false);
+    d._linkedSketches = sort(d._linkedSketches || [], false);
+    for (const entry of origin.values()) {
+      if (entry.mapEdges) entry.mapEdges = sort(entry.mapEdges, false);
+      if (entry.linked) entry.linked = sort(entry.linked, false);
+    }
+    for (const edge of innerEdges.values()) if (edge.el.parentNode) edges.appendChild(edge.el.parentNode);
+    //: A link's group, found once (the same lookup `wbUpdateLinkedSketches` keeps).
+    const links = [...innerLinks.values()];
+    for (const pair of links) pair.el = pair.el?.isConnected ? pair.el : document.querySelector(`.sketch-group[data-id="${pair.sketch.id}"]`);
+    origin.layer = { el, edges, home, innerEdges: [...innerEdges.values()], links, grabbed: d };
+    wbMapDragLayer.live = origin;
+    return origin.layer;
+  },
+
+  //: One step of the drag: three kinds of write, whatever the branch's size.
+  move(layer, dx, dy) {
+    layer.el.style.transform = `translate(${dx}px, ${dy}px)`;
+    layer.edges.setAttribute("transform", `translate(${dx} ${dy})`);
+    for (const pair of layer.links) pair.el?.setAttribute("transform", `translate(${dx} ${dy})`);
+  },
+
+  //: Let go (or a render is about to run): every topic back where it was in
+  //: the layer, carrying its own transform at its new place, and every inside
+  //: line and link drawn once there, untranslated.
+  close(origin = wbMapDragLayer.live) {
+    const layer = origin?.layer;
+    if (wbMapDragLayer.live === origin) wbMapDragLayer.live = null;
+    if (!layer) return;
+    origin.layer = null;
+    const html = layer.el.parentNode;
+    for (let i = layer.home.length - 1; i >= 0; i -= 1) {
+      const [member, next, item] = layer.home[i];
+      member.style.transform = wbItemTransform(item);
+      if (html) html.insertBefore(member, next && next.parentNode === html ? next : null);
+    }
+    layer.el.remove();
+    const edgeGroup = layer.edges.parentNode;
+    for (const wrap of [...layer.edges.children]) edgeGroup?.appendChild(wrap);
+    layer.edges.remove();
+    if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges);
+    for (const pair of layer.links) pair.el?.removeAttribute("transform");
+    if (layer.links.length) wbUpdateLinkedSketches(layer.grabbed.id, layer.links);
+  },
+};
 
 //: The topic under the pointer that this branch could be dropped on, or null.
 //:

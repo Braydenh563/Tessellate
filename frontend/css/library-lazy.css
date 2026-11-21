@@ -99,7 +99,8 @@ button.outline-twist {
   pointer-events: auto;
 }
 
-#wb-html-layer > .wb-culled {
+#wb-html-layer > .wb-culled,
+.wb-map-drag-layer > .wb-culled {
   content-visibility: hidden;
 }
 
@@ -1334,7 +1335,8 @@ body.printing-doc #doc-preview p,
   pointer-events: none;
 }
 
-.wb-map-edges > .wb-culled {
+.wb-map-edges > .wb-culled,
+.wb-map-drag-edges > .wb-culled {
   display: none;
 }
 
@@ -7810,6 +7812,13 @@ input[type="color"].wb-mixed {
   align-items: center;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+}
+/* The field inside it sizes to its text (`field-sizing: content`), so "85%"
+   to "100%" resized the dock, and the dock's width is published on the board's
+   section (`--wb-w-zoom`): every element under it restyled, 250 to 400ms at
+   500 topics, on the zoom step that crossed it (L-mindmap-17). */
+.whiteboard-floating-panel .wb-zoom-level .value-field-input {
+  min-width: 5ch;
 }
 
 /* Reading progress: in the Read view a hairline along the top edge of the
