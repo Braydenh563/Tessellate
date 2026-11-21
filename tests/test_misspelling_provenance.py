@@ -11,6 +11,7 @@ DATA = ROOT / "src" / "tessellate" / "ai" / "data" / "common_misspellings.json"
 
 
 def test_the_wikipedia_pairs_name_their_source_and_licence():
+    """Provenance is text in the data file and the credits; there is no behaviour to run."""
     table = json.loads(DATA.read_text(encoding="utf-8"))
     assert "Lists_of_common_misspellings" in table["source"]
     assert table["licence"].startswith("CC BY-SA 4.0")
@@ -20,6 +21,7 @@ def test_the_wikipedia_pairs_name_their_source_and_licence():
 
 
 def test_the_pairs_still_repair_and_ship_in_the_wheel():
+    """The lookups are behaviour; the wheel's file list is only in pyproject's text."""
     assert question_noise.SLANG["abandonned"] == "abandoned"
     assert question_noise.SLANG["broski"] == "brother"
     assert "data/common_misspellings.json" in (ROOT / "pyproject.toml").read_text(encoding="utf-8")

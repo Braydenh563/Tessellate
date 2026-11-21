@@ -343,6 +343,11 @@ changed_tests() {
 # with every thread's stack, instead of running into the shell's timeout and
 # naming nothing. Five minutes is far past any one test's run here.
 TIMEOUT=(); "$PY" -c "import pytest_timeout" 2>/dev/null && TIMEOUT=(--timeout=300)
+# Source-text tests (L-general-9): the counts on every run, and under
+# --changed a refusal of any test added since the base that reads file text
+# without a docstring saying why behaviour cannot be asserted instead.
+"$PY" scripts/source_text_tests.py
+if [ "$CHANGED" = 1 ]; then step source-text "$PY" scripts/source_text_tests.py --new "$(changed_base 2>/dev/null)"; fi
 if [ "$CHANGED" = 1 ]; then
   mapfile -t TARGETED < <(changed_tests)
   # A selection this large is not a targeted run any more, and pretending

@@ -64,6 +64,7 @@ def test_the_ignore_file_is_the_one_buildkit_reads_for_this_dockerfile():
 
 
 def test_the_dockerfile_is_linted_in_ci():
+    """hadolint runs in CI only; here, that the workflow runs it on the Dockerfile."""
     lint = (ROOT / ".github" / "workflows" / "workflow-lint.yml").read_text(encoding="utf-8")
     assert re.search(r"hadolint-bin==\d", lint) and "hadolint --failure-threshold error docker/Dockerfile" in lint
     assert '"docker/**"' in lint

@@ -14,6 +14,7 @@ MANIFEST = json.loads((VENDOR / "PROVENANCE.json").read_text(encoding="utf-8"))
 
 
 def test_every_hash_and_size_matches_the_file_on_disk():
+    """The check is of bytes on disk against the manifest, so it reads both."""
     for entry in MANIFEST:
         data = (ROOT / entry["path"]).read_bytes()
         assert hashlib.sha256(data).hexdigest() == entry["sha256"], f"{entry['path']} changed: rerun scripts/vendor_provenance.py"
@@ -21,6 +22,7 @@ def test_every_hash_and_size_matches_the_file_on_disk():
 
 
 def test_every_vendored_file_is_listed_once_with_its_licence_and_notice():
+    """Coverage of the manifest is a property of the files, read as files."""
     on_disk = {
         f"frontend/vendor/{p.relative_to(VENDOR).as_posix()}"
         for p in VENDOR.rglob("*")

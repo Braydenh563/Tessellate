@@ -11,6 +11,7 @@ WORKFLOWS = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
 
 
 def test_every_action_is_pinned_to_a_commit_with_its_tag_beside_it():
+    """A workflow is not code the suite can run; the pin is the line itself."""
     loose = [
         f"{p.name}: {line.strip()}"
         for p in WORKFLOWS
@@ -21,6 +22,7 @@ def test_every_action_is_pinned_to_a_commit_with_its_tag_beside_it():
 
 
 def test_every_checkout_drops_its_credentials():
+    """Only the workflow text says whether a checkout keeps its token."""
     for p in WORKFLOWS:
         lines = p.read_text(encoding="utf-8").splitlines()
         for i, line in enumerate(lines):
@@ -34,6 +36,7 @@ def test_every_checkout_drops_its_credentials():
 
 
 def test_the_workflows_are_linted_by_a_pinned_actionlint_and_zizmor():
+    """The linters run in CI only; here, that the workflow names them pinned."""
     text = (ROOT / ".github" / "workflows" / "workflow-lint.yml").read_text(encoding="utf-8")
     assert re.search(r"actionlint-py==\d", text) and re.search(r"zizmor==\d", text)
     assert "run: actionlint" in text and "run: zizmor" in text

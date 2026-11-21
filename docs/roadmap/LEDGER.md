@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 27 | 2 | 0 | 4 | 29 |
-| all | 502 | 556 | 129 | 2 | 183 | 1187 |
+| general | 0 | 26 | 2 | 0 | 4 | 28 |
+| all | 502 | 555 | 129 | 2 | 183 | 1186 |
 
 ## graph
 
@@ -707,7 +707,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
 - [ ] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule
 - [ ] **L-general-8** `general` open, S: Add `python -m tessellate tool NAME --json` over mcp_server.offered_tools() and a SKILL.md intent-router snippet on Settings' MCP row. From ANALYSIS.md:4353. Evidence: __main__.py argparse has no `tool` subcommand; renderMcpSnippet in settings-controls.js has no SKILL.md
-- [ ] **L-general-9** `general` open, S: Make new source-text tests carry a docstring saying why behaviour cannot be asserted, and have gate.sh print the source-text test count. From ANALYSIS.md:4355. Evidence: grep read_text scripts/gate.sh returns nothing; 54% of test files read file text per the review
 - [ ] **L-general-10** `general` open, S: Completing a reminder prompts for a one-line outcome appended to the source note. From ANALYSIS.md:1216. Evidence: shell-reminders.js has no outcome prompt on complete; not in any plan
 - [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
