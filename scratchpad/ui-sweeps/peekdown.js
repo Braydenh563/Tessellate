@@ -56,5 +56,7 @@ const KIND = process.env.KIND || 'atlas';
   });
   console.log(JSON.stringify({ kind: KIND, vw: VW, ...out }));
   await browser.close();
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((out.peekShown > out.full / 2 || out.peekShown < 8 || out.maxFrameJump > 12) ? 'FAIL peekdown: a measure above is out of bounds' : 'PASS peekdown');
   process.exit(out.peekShown > out.full / 2 || out.peekShown < 8 || out.maxFrameJump > 12 ? 1 : 0);
 })();

@@ -72,5 +72,7 @@ const KIND = process.env.KIND || 'atlas';
   // Within reach it looks the pointer's way; at 400px it has let go and
   // drifted back to looking ahead.
   const wrong = rows.filter((r) => (Math.abs(r.d) >= 60 && Math.abs(r.d) < 400 && Math.sign(r.ex) !== Math.sign(r.d)) || (Math.abs(r.d) === 400 && r.attend));
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((wrong.length || changes < 5 || woke.asleep) ? 'FAIL companiongaze: a measure above is out of bounds' : 'PASS companiongaze');
   process.exit(wrong.length || changes < 5 || woke.asleep ? 1 : 0);
 })();

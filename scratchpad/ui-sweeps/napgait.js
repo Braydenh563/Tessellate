@@ -82,5 +82,7 @@ const { boot } = require('./lib.js');
   await browser.close();
   const ok = out.atlas.masculine.ms > out.atlas.feminine.ms && out.you.masculine.bob === 'nmb-bob-heavy' && out.you.feminine.bob === 'nmb-bob-light'
     && out.you.masculine.ms > out.you.feminine.ms && out.nap.inTheOpen === 'lie' && out.nap.lyingTransform && out.nap.unwinding && out.nap.squeezed === 'nap';
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log(!ok ? 'FAIL napgait: a measure above is out of bounds' : 'PASS napgait');
   process.exit(ok ? 0 : 1);
 })();
