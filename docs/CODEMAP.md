@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-15 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8513, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11094, test files 2878, tests 22745, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8513, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11095, test files 2878, tests 22746, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8513)
 
@@ -14191,7 +14191,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11094)
+## Backend modules (11095)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25159,7 +25159,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `started_by` | src/tessellate/core/jobruns.py:206 |
 | `version` | src/tessellate/core/jobruns.py:196 |
 
-### src/tessellate/core/jobs.py (29)
+### src/tessellate/core/jobs.py (30)
 
 | Name | File:line |
 |---|---|
@@ -25167,31 +25167,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `JobStopped` | src/tessellate/core/jobs.py:251 |
 | `Pool` | src/tessellate/core/jobs.py:376 |
 | `_cpu_width` | src/tessellate/core/jobs.py:69 |
-| `_resolve` | src/tessellate/core/jobs.py:966 |
-| `_seat` | src/tessellate/core/jobs.py:798 |
-| `_seated` | src/tessellate/core/jobs.py:808 |
+| `_resolve` | src/tessellate/core/jobs.py:970 |
+| `_seat` | src/tessellate/core/jobs.py:802 |
+| `_seated` | src/tessellate/core/jobs.py:812 |
 | `_start_heartbeat` | src/tessellate/core/jobs.py:197 |
-| `_unseat` | src/tessellate/core/jobs.py:803 |
-| `cancel_kind` | src/tessellate/core/jobs.py:971 |
+| `_unseat` | src/tessellate/core/jobs.py:807 |
+| `cancel_kind` | src/tessellate/core/jobs.py:975 |
 | `check_stop` | src/tessellate/core/jobs.py:263 |
-| `enqueue` | src/tessellate/core/jobs.py:1023 |
-| `forget` | src/tessellate/core/jobs.py:1042 |
-| `future` | src/tessellate/core/jobs.py:873 |
-| `join_threads` | src/tessellate/core/jobs.py:913 |
+| `enqueue` | src/tessellate/core/jobs.py:1027 |
+| `forget` | src/tessellate/core/jobs.py:1054 |
+| `future` | src/tessellate/core/jobs.py:877 |
+| `in_flight` | src/tessellate/core/jobs.py:1042 |
+| `join_threads` | src/tessellate/core/jobs.py:917 |
 | `label_for` | src/tessellate/core/jobs.py:237 |
-| `pending` | src/tessellate/core/jobs.py:1034 |
-| `pool` | src/tessellate/core/jobs.py:1009 |
-| `reading` | src/tessellate/core/jobs.py:814 |
-| `readings` | src/tessellate/core/jobs.py:827 |
-| `resubmit` | src/tessellate/core/jobs.py:1038 |
-| `resume` | src/tessellate/core/jobs.py:1050 |
-| `shutdown` | src/tessellate/core/jobs.py:1073 |
-| `stop_all` | src/tessellate/core/jobs.py:987 |
+| `pending` | src/tessellate/core/jobs.py:1038 |
+| `pool` | src/tessellate/core/jobs.py:1013 |
+| `reading` | src/tessellate/core/jobs.py:818 |
+| `readings` | src/tessellate/core/jobs.py:831 |
+| `resubmit` | src/tessellate/core/jobs.py:1050 |
+| `resume` | src/tessellate/core/jobs.py:1062 |
+| `shutdown` | src/tessellate/core/jobs.py:1085 |
+| `stop_all` | src/tessellate/core/jobs.py:991 |
 | `stop_requested` | src/tessellate/core/jobs.py:256 |
-| `stop_running` | src/tessellate/core/jobs.py:1062 |
-| `stop_threads` | src/tessellate/core/jobs.py:899 |
-| `thread` | src/tessellate/core/jobs.py:857 |
-| `threads` | src/tessellate/core/jobs.py:889 |
+| `stop_running` | src/tessellate/core/jobs.py:1074 |
+| `stop_threads` | src/tessellate/core/jobs.py:903 |
+| `thread` | src/tessellate/core/jobs.py:861 |
+| `threads` | src/tessellate/core/jobs.py:893 |
 
 ### src/tessellate/core/jobstore.py (36)
 
@@ -28384,7 +28385,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22745)
+## Tests (22746)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29843,7 +29844,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_k3_no_model_1026.py | 22 |
 | tests/test_keep_answer_b12.py | 3 |
 | tests/test_kept_edit_restore_1102.py | 3 |
-| tests/test_kept_suggestions.py | 7 |
+| tests/test_kept_suggestions.py | 8 |
 | tests/test_keydown_without_key.py | 1 |
 | tests/test_keys_sheet_context_l302.py | 3 |
 | tests/test_keyword_context.py | 8 |

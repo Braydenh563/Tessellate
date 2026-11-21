@@ -669,6 +669,10 @@ class Pool:
         with self._lock:
             return len(self._running)
 
+    def in_flight(self, dedupe_key: object) -> bool:
+        with self._lock:
+            return any(job.dedupe_key == dedupe_key for job in (*self._running.values(), *self._queued.values()))
+
     def pending(self) -> list[dict]:
         """Queued and running jobs as `/tasks` rows, oldest first.
 
@@ -1033,6 +1037,14 @@ def enqueue(
 
 def pending() -> list[dict]:
     return pool().pending()
+
+
+def in_flight(dedupe_key: object) -> bool:
+    """Whether a job with this `dedupe_key` is queued or running. A reader
+    that needs a job's last step, not only the state it settles first (a
+    filing commits `filing_state` before it keeps tag suggestions), waits on
+    this."""
+    return pool().in_flight(dedupe_key)
 
 
 def resubmit(kind, func, args, kwargs, name, dedupe_key, durable_id, durable_db=None) -> int:  # noqa: ANN001
