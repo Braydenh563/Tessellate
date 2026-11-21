@@ -38,7 +38,7 @@ const entryListItems = (l) => l.querySelectorAll();
 // The windowed list builds the row it moves to (`noteWindow.fill`); these rows are built.
 const noteWindow = { fill: (li) => li };
 const allEntries = [];
-let editingId = null;
+let editingId = null; const appState = { get: () => editingId }; const setEditingNote = (id) => { editingId = id; };
 function openNoteEditor() { calls.push('edit'); }
 function binNoteWithUndo() { calls.push('bin'); return Promise.resolve(); }
 // The roving stop (UX-10, note-cards.js), its tab-index half: the controls

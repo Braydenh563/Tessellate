@@ -455,6 +455,7 @@ def _tools_engine() -> str | None:
     try:
         return "needle" if extras.download_ready("needle") is not None else None
     except Exception:  # noqa: BLE001  # an unreadable extras folder is "not installed"
+        logging.getLogger(__name__).debug("_tools_engine: an unreadable extras folder is 'not installed'", exc_info=True)
         return None
 
 

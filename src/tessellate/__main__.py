@@ -428,6 +428,7 @@ def _bootloader_splash():
     try:
         import pyi_splash  # type: ignore[import-not-found]
     except Exception:  # noqa: BLE001  # ImportError, or the module's own failure
+        logger.debug("_bootloader_splash: ImportError, or the module's own failure", exc_info=True)
         return None
     return pyi_splash
 
@@ -1292,6 +1293,7 @@ def _window_class_name(hwnd: int) -> str:
         ctypes.windll.user32.GetClassNameW(hwnd, buf, 256)
         return buf.value or "?"
     except Exception:  # noqa: BLE001  # a diagnostic label for a log line; "?" is the answer
+        logger.debug("_window_class_name: a diagnostic label for a log line; '?' is the answer", exc_info=True)
         return "?"
 
 
@@ -2494,6 +2496,7 @@ def _password_exists(db) -> bool:  # noqa: ANN001  # a DatabaseManager
         with db.session() as session:
             return session.scalar(select(User.id).limit(1)) is not None
     except Exception:  # noqa: BLE001  # an unreadable DB: the safe answer is "no"
+        logger.debug("_password_exists: an unreadable DB: the safe answer is 'no'", exc_info=True)
         return False
 
 

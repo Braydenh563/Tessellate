@@ -103,3 +103,31 @@ def test_the_folder_walk_ends_between_files_once_stop_is_pressed():
     finally:
         pool.shutdown(deadline=2)
     assert seen == ["a", "b"]
+
+
+def test_a_stop_with_no_name_refuses_to_pick_one_of_two_running():
+    """Two running jobs of one kind and no name: neither is stopped (stopping
+    the first would stop one nobody pointed at); a name picks exactly one."""
+    import threading
+
+    started, release = threading.Barrier(3), threading.Event()
+    stopped = []
+
+    def work(label):  # noqa: ANN001, ANN202
+        started.wait(5)
+        release.wait(5)
+        stopped.append(label)
+
+    pool = jobs.Pool(widths={"batch": 2})
+    try:
+        pool.enqueue("import", lambda: work("one"), name="one")
+        pool.enqueue("import", lambda: work("two"), name="two")
+        started.wait(5)
+        ok, detail = pool.stop_running("import")
+        assert not ok and "More than one" in detail
+        ok, _detail = pool.stop_running("import", "two")
+        assert ok
+    finally:
+        release.set()
+        _idle(pool)
+        pool.shutdown(deadline=2)

@@ -28,7 +28,7 @@ from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.ai.provider import Provider
 from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
-from tessellate.core import board_thumbs
+from tessellate.core import board_thumbs, sealed_files
 from tessellate.core.database import Entry
 from tessellate.core.database_manager import DatabaseManager
 
@@ -333,6 +333,7 @@ def get_config() -> ConfigManager:
 
 spacelock.config_source = get_config
 board_thumbs.data_dir_source = lambda: get_config().data_dir
+sealed_files.data_dir_source = lambda: get_config().data_dir
 
 
 def get_db() -> DatabaseManager:

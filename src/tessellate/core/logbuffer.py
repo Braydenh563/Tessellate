@@ -63,7 +63,7 @@ class NoiseFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         try:
             text = record.getMessage()
-        except Exception:  # noqa: BLE001  # a bad format string isn't noise
+        except (TypeError, ValueError, KeyError, IndexError):  # a bad format string isn't noise
             return True
         return not any(marker in text for marker in _NOISE_MARKERS)
 

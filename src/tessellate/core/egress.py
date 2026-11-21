@@ -39,6 +39,7 @@ from __future__ import annotations
 import functools
 import ipaddress
 import json
+import logging
 import socket
 import sys
 import threading
@@ -343,6 +344,7 @@ def _hook(event: str, args: tuple) -> None:
     except Exception:  # noqa: BLE001 - a hook that raises aborts the caller's connect (module docstring)
         # Exception, not BaseException: a Ctrl-C or SystemExit arriving here
         # must still stop the process; only a bug in the recorder is swallowed.
+        logging.getLogger(__name__).debug("_hook: a hook that raises aborts the caller's connect (module docstring)", exc_info=True)
         return
 
 

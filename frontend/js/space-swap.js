@@ -34,7 +34,7 @@
       activeCategory = null;
       draftsOnly = false;
       favouritesOnly = false;
-      editingId = null;
+      setEditingNote(null);
       inlineAction = null;
       linkSource = null;
       noteSearch = "";

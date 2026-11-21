@@ -10,6 +10,7 @@ layer list in `routes_chat.py`'s docstring, never back to `routes_chat`.
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import timezone
 from pathlib import Path
@@ -591,6 +592,7 @@ def _attachment_readings(session: Session, entry_id: int) -> str:
             with sealed_files.readable(path) as plain:
                 viewed = docview.extract(plain)
         except Exception:  # noqa: BLE001  # a bad file must not cost the answer
+            logging.getLogger(__name__).debug("_attachment_readings: a bad file must not cost the answer", exc_info=True)
             continue
         text = viewed.text.strip()
         if not text:

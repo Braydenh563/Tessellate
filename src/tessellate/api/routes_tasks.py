@@ -446,8 +446,9 @@ def _mark_cancellable(tasks: list[dict]) -> None:
             or task["kind"] in FILING_KINDS
             # A job the `jobs` table holds: cancelling its row stops a queued
             # one, and asks a running one to stop at its next safe step
-            # (`jobstore.cancel`); a one-step kind is not offered.
-            or bool(task.get("job_id") and task["kind"] != "job-file-entry")
+            # (`jobstore.cancel`); a one-step kind is not offered, and a
+            # running pass is offered only by its step rule above.
+            or bool(task.get("job_id") and task["kind"] != "job-file-entry" and (task["kind"] != "job-pass" or task.get("queued")))
         )
 
 

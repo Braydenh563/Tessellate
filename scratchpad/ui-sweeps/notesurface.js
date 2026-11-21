@@ -206,14 +206,14 @@ const ok = (name, condition, detail) => {
     // the function the cards' buttons call, and an id from the list the app
     // already holds. Guessing an endpoint here cost one run (POST /notes
     // answered 405).
-    // `allEntries` is the list the app already holds and `editingId` plus a
+    // `allEntries` is the list the app already holds and the note slice plus a
     // re-render is how every card in it opens its edit form (app.js).
     const list = typeof allEntries !== "undefined" && Array.isArray(allEntries) ? allEntries : [];
     const note = list.find((entry) => !entry.is_board);
     if (!note) return "no note to edit";
-    editingId = note.id;
+    setEditingNote(note.id);
     renderEntries();
-    return "editingId";
+    return "the note slice";
   });
   await page.waitForTimeout(900);
   const editBox = await page.$("#entry-edit-content");
