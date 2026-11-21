@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11393, test files 2936, tests 23113, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11399, test files 2936, tests 23113, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -13711,7 +13711,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1787 |
 | `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1822 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:510 |
-| `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:410 |
+| `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:386 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1075 |
 | `/check` | GET | `check_for_update` | src/tessellate/api/routes_update.py:602 |
 | `/check-syntax` | POST | `check_syntax` | src/tessellate/api/routes_documents.py:341 |
@@ -13989,7 +13989,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat_meta.py:132 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:523 |
-| `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:115 |
+| `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:114 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:158 |
 | `/near/{entry_id}` | GET | `near` | src/tessellate/api/routes_resurface.py:155 |
 | `/nodes` | POST | `create_node` | src/tessellate/api/wb_items.py:36 |
@@ -14083,8 +14083,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/restore` | POST | `restore_ask_turns` | src/tessellate/api/routes_ask_history.py:241 |
 | `/restore` | POST | `restore_conversation` | src/tessellate/api/routes_conversations.py:1232 |
 | `/restore` | POST | `restore_tags` | src/tessellate/api/routes_tags.py:114 |
-| `/review-queue` | GET | `review_queue` | src/tessellate/api/routes_vision.py:86 |
-| `/review-queue/{entry_id}/accept` | POST | `accept_filing` | src/tessellate/api/routes_vision.py:97 |
+| `/review-queue` | GET | `review_queue` | src/tessellate/api/routes_vision.py:87 |
+| `/review-queue/{entry_id}/accept` | POST | `accept_filing` | src/tessellate/api/routes_vision.py:96 |
 | `/rotate-vault-key` | POST | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1960 |
 | `/run` | POST | `run_check` | src/tessellate/api/routes_learned_audit.py:23 |
 | `/run` | POST | `run_now` | src/tessellate/api/routes_night.py:50 |
@@ -14174,9 +14174,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tensions/dismiss` | POST | `dismiss_tension` | src/tessellate/api/routes_entries_relations.py:455 |
 | `/tensions/known` | GET | `known_tensions` | src/tessellate/api/routes_entries_relations.py:375 |
 | `/tensions/reopen` | POST | `reopen_tension` | src/tessellate/api/routes_entries_relations.py:482 |
-| `/tidy-proposals` | GET | `tidy_proposals` | src/tessellate/api/routes_vision.py:199 |
-| `/tidy-proposals/dismiss` | POST | `dismiss_tidy` | src/tessellate/api/routes_vision.py:253 |
-| `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:265 |
+| `/tidy-proposals` | GET | `tidy_proposals` | src/tessellate/api/routes_vision.py:181 |
+| `/tidy-proposals/dismiss` | POST | `dismiss_tidy` | src/tessellate/api/routes_vision.py:229 |
+| `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:241 |
 | `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:245 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:492 |
 | `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat_meta.py:153 |
@@ -14346,7 +14346,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11393)
+## Backend modules (11399)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24018,29 +24018,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ChartQuestion` | src/tessellate/api/routes_vision.py:385 |
-| `DismissBody` | src/tessellate/api/routes_vision.py:248 |
-| `_bucket` | src/tessellate/api/routes_vision.py:330 |
-| `_buckets` | src/tessellate/api/routes_vision.py:341 |
-| `_live_notes` | src/tessellate/api/routes_vision.py:58 |
-| `_meaning_alike` | src/tessellate/api/routes_vision.py:171 |
-| `_norm` | src/tessellate/api/routes_vision.py:148 |
-| `_pair_key` | src/tessellate/api/routes_vision.py:154 |
-| `_period` | src/tessellate/api/routes_vision.py:281 |
-| `_renamed_by_person` | src/tessellate/api/routes_vision.py:158 |
-| `_time_counts` | src/tessellate/api/routes_vision.py:357 |
-| `_top_twenty` | src/tessellate/api/routes_vision.py:352 |
-| `accept_filing` | src/tessellate/api/routes_vision.py:98 |
-| `chart_for_question` | src/tessellate/api/routes_vision.py:411 |
-| `count_notes` | src/tessellate/api/routes_vision.py:369 |
-| `dismiss_tidy` | src/tessellate/api/routes_vision.py:254 |
-| `most_opened` | src/tessellate/api/routes_vision.py:116 |
-| `parse_chart_question` | src/tessellate/api/routes_vision.py:303 |
-| `question_chart` | src/tessellate/api/routes_vision.py:392 |
-| `review_filter` | src/tessellate/api/routes_vision.py:70 |
-| `review_queue` | src/tessellate/api/routes_vision.py:87 |
-| `tidy_proposals` | src/tessellate/api/routes_vision.py:200 |
-| `undismiss_tidy` | src/tessellate/api/routes_vision.py:266 |
+| `ChartQuestion` | src/tessellate/api/routes_vision.py:361 |
+| `DismissBody` | src/tessellate/api/routes_vision.py:224 |
+| `_bucket` | src/tessellate/api/routes_vision.py:306 |
+| `_buckets` | src/tessellate/api/routes_vision.py:317 |
+| `_live_notes` | src/tessellate/api/routes_vision.py:59 |
+| `_meaning_alike` | src/tessellate/api/routes_vision.py:153 |
+| `_norm` | src/tessellate/api/routes_vision.py:138 |
+| `_pair_key` | src/tessellate/api/routes_vision.py:144 |
+| `_period` | src/tessellate/api/routes_vision.py:257 |
+| `_renamed_by_person` | src/tessellate/api/routes_vision.py:148 |
+| `_time_counts` | src/tessellate/api/routes_vision.py:333 |
+| `_top_twenty` | src/tessellate/api/routes_vision.py:328 |
+| `accept_filing` | src/tessellate/api/routes_vision.py:97 |
+| `chart_for_question` | src/tessellate/api/routes_vision.py:387 |
+| `count_notes` | src/tessellate/api/routes_vision.py:345 |
+| `dismiss_tidy` | src/tessellate/api/routes_vision.py:230 |
+| `most_opened` | src/tessellate/api/routes_vision.py:115 |
+| `parse_chart_question` | src/tessellate/api/routes_vision.py:279 |
+| `question_chart` | src/tessellate/api/routes_vision.py:368 |
+| `review_filter` | src/tessellate/api/routes_vision.py:71 |
+| `review_queue` | src/tessellate/api/routes_vision.py:88 |
+| `tidy_proposals` | src/tessellate/api/routes_vision.py:182 |
+| `undismiss_tidy` | src/tessellate/api/routes_vision.py:242 |
 
 ### src/tessellate/api/routes_voice.py (6)
 
@@ -28566,6 +28566,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `by_ids` | src/tessellate/repo/visible_notes.py:34 |
 | `holding` | src/tessellate/repo/visible_notes.py:23 |
 | `recent` | src/tessellate/repo/visible_notes.py:39 |
+
+### src/tessellate/repo/vision.py (6)
+
+| Name | File:line |
+|---|---|
+| `counts_by_category` | src/tessellate/repo/vision.py:54 |
+| `entries_by_ids` | src/tessellate/repo/vision.py:37 |
+| `most_opened` | src/tessellate/repo/vision.py:23 |
+| `notes_where` | src/tessellate/repo/vision.py:64 |
+| `renamed_by_person` | src/tessellate/repo/vision.py:41 |
+| `review_page` | src/tessellate/repo/vision.py:15 |
 
 ### src/tessellate/repo/voice.py (3)
 
