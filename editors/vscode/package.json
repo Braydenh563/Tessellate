@@ -25,6 +25,7 @@
     },
     "commands": [
       { "command": "tessellate.signIn", "title": "Tessellate: Sign in" },
+      { "command": "tessellate.signInWithToken", "title": "Tessellate: Sign in with a token" },
       { "command": "tessellate.signOut", "title": "Tessellate: Sign out" },
       { "command": "tessellate.captureSelection", "title": "Tessellate: Save selection as a note" },
       { "command": "tessellate.captureNote", "title": "Tessellate: Save a typed note" },

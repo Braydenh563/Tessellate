@@ -32,6 +32,7 @@ def test_every_route_the_client_calls_exists(client) -> None:
         "unlock": "POST",
         "entries": "POST",
         "search": "GET",
+        "tools": "POST",
     }
     assert set(_client_routes()) == set(wanted)
     for name, path in _client_routes().items():
@@ -54,3 +55,27 @@ def test_package_is_agpl_and_local_only() -> None:
 def test_client_node_tests_pass() -> None:
     done = subprocess.run(["node", "--test", "test/client.test.js"], cwd=EXT, capture_output=True, text=True)
     assert done.returncode == 0, done.stdout[-1500:]
+
+
+def test_the_tools_a_tool_token_calls_take_what_the_client_sends(client) -> None:
+    """L-world-class-627: with a tool server token the client calls three tools
+    and reads `notes[].id`, `notes[].content`, `id` and `content` from their
+    answers. A renamed argument or key fails here, not in someone's editor."""
+    made = client.post("/mcp-clients", json={"name": "VS Code", "writes": True}).json()
+    headers = {"Authorization": f"Bearer {made['token']}", "Accept": "application/json, text/event-stream"}
+
+    def call(method, **params):
+        reply = client.post("/mcp", json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params}, headers=headers)
+        assert reply.status_code == 200, reply.text
+        return reply.json()["result"]
+
+    schemas = {tool["name"]: tool["inputSchema"]["properties"] for tool in call("tools/list")["tools"]}
+    js = (EXT / "lib/client.js").read_text()
+    assert {"query", "limit"} <= set(schemas["search_notes"]) and 'tool("search_notes", { query: q, limit:' in js
+    assert "note_id" in schemas["get_note"] and 'tool("get_note", { note_id:' in js
+    assert {"content", "tags"} <= set(schemas["create_note"]) and 'tool("create_note", { content, tags })' in js
+    made_note = json.loads(call("tools/call", name="create_note", arguments={"content": "# Harbour\nboats", "tags": ["x"]})["content"][0]["text"])
+    found = json.loads(call("tools/call", name="search_notes", arguments={"query": "harbour", "limit": 10})["content"][0]["text"])
+    assert [n["id"] for n in found["notes"]] == [made_note["id"]] and "content" in found["notes"][0]
+    read = json.loads(call("tools/call", name="get_note", arguments={"note_id": made_note["id"]})["content"][0]["text"])
+    assert read["content"] == "# Harbour\nboats"

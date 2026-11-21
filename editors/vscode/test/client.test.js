@@ -2,7 +2,7 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const http = require("node:http");
-const { Client, ApiError, noteTitle, normaliseBase } = require("../lib/client");
+const { Client, ApiError, TOOL_TOKEN_PREFIX, noteTitle, normaliseBase } = require("../lib/client");
 
 // A fake Tessellate: records each request, answers the routes the client uses.
 function fake(handler) {
@@ -11,7 +11,7 @@ function fake(handler) {
     let raw = "";
     req.on("data", (c) => (raw += c));
     req.on("end", () => {
-      seen.push({ method: req.method, url: req.url, token: req.headers["x-auth-token"], body: raw ? JSON.parse(raw) : null });
+      seen.push({ method: req.method, url: req.url, token: req.headers["x-auth-token"], ...(req.headers.authorization ? { bearer: req.headers.authorization } : {}), body: raw ? JSON.parse(raw) : null });
       const [status, body] = handler(req, seen[seen.length - 1]);
       res.writeHead(status, { "Content-Type": "application/json" });
       res.end(JSON.stringify(body));
@@ -64,4 +64,48 @@ test("helpers", () => {
   assert.throws(() => normaliseBase(" "));
   assert.strictEqual(noteTitle("\n## Heading\nbody"), "Heading");
   assert.strictEqual(noteTitle("", "x"), "x");
+});
+
+// L-world-class-627: a tool server token, which does not idle out and keeps
+// to the categories and tags it was made for, goes through /mcp's tools.
+const TOOL = TOOL_TOKEN_PREFIX + "abc";
+const answer = (result) => [200, { jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text: JSON.stringify(result) }], isError: false } }];
+
+test("a pasted tool token is checked once and then sent as a bearer", async () => {
+  const { server, seen, address } = await fake(() => [200, { jsonrpc: "2.0", id: 1, result: { tools: [] } }]);
+  const client = new Client(address);
+  await assert.rejects(client.useToken("abc"), /not a Tessellate tool server token/);
+  assert.strictEqual(seen.length, 0);
+  assert.strictEqual(await client.useToken(` ${TOOL}\n`), TOOL);
+  assert.deepStrictEqual(seen[0], { method: "POST", url: "/mcp", token: undefined, bearer: `Bearer ${TOOL}`, body: { jsonrpc: "2.0", id: 1, method: "tools/list", params: {} } });
+  server.close();
+});
+
+test("with a tool token, search, read and capture are tool calls", async () => {
+  const { server, seen, address } = await fake((req, got) => {
+    const name = got.body.params.name;
+    if (name === "search_notes") return answer({ found: 1, notes: [{ id: 4, content: "# Harbour\nboats" }] });
+    if (name === "get_note") return answer({ id: 4, content: "# Harbour\nboats in full" });
+    return answer({ id: 9, content: "a thought" });
+  });
+  const client = new Client(address, TOOL);
+  const hits = await client.search("harbour", 20);
+  assert.deepStrictEqual(hits, [{ kind: "note", ref_id: 4, title: "Harbour", snippet: "# Harbour\nboats" }]);
+  assert.deepStrictEqual(seen[0].body.params, { name: "search_notes", arguments: { query: "harbour", limit: 10 } });
+  assert.strictEqual((await client.getNote("4")).content, "# Harbour\nboats in full");
+  assert.deepStrictEqual(seen[1].body.params, { name: "get_note", arguments: { note_id: 4 } });
+  assert.strictEqual((await client.capture("a thought", ["x"])).id, 9);
+  assert.deepStrictEqual(seen[2].body.params, { name: "create_note", arguments: { content: "a thought", tags: ["x"] } });
+  assert.ok(seen.every((r) => r.url === "/mcp" && r.bearer === `Bearer ${TOOL}` && r.token === undefined));
+  server.close();
+});
+
+test("a refused tool call and a revoked token say what to do", async () => {
+  const { server, address } = await fake((req, got) => (got.body.params.name === "create_note"
+    ? [200, { jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text: "This token can only read notes." }], isError: true } }]
+    : [401, {}]));
+  const client = new Client(address, TOOL);
+  await assert.rejects(client.capture("x"), /can only read notes/);
+  await assert.rejects(client.getNote(1), (e) => e.status === 401 && /Make a new one in Settings, Tools it can use/.test(e.message));
+  server.close();
 });

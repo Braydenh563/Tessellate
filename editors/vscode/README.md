@@ -6,6 +6,7 @@ Save a selection or a typed note to your own Tessellate notebook, search your no
 
 1. Start Tessellate. Set `tessellate.address` in settings if it is not on `http://127.0.0.1:8000`.
 2. Run **Tessellate: Sign in** and type your Tessellate password. The session token is kept in VS Code's secret storage, never in settings. Run **Tessellate: Sign out** to forget it.
+3. Or, to stay signed in, make a token in Tessellate's Settings, Tools it can use, and run **Tessellate: Sign in with a token**. A token does not idle out, can be limited to some categories or tags, reads only unless you let it add and change notes, and is revoked there. Search answers at most ten notes with a token.
 
 ## Commands
 

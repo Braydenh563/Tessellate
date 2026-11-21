@@ -1,7 +1,8 @@
 "use strict";
 // Tessellate for VS Code. Talks to the local Tessellate server only: no
 // telemetry, no other host. The address is a setting; the session token is
-// kept in VS Code's secret storage after Tessellate: Sign in.
+// kept in VS Code's secret storage after Tessellate: Sign in, or a tool server
+// token after Tessellate: Sign in with a token.
 const vscode = require("vscode");
 const { Client, noteTitle } = require("./lib/client");
 
@@ -42,6 +43,18 @@ function activate(context) {
     const api = await client();
     await context.secrets.store(TOKEN_KEY, await api.signIn(password));
     vscode.window.showInformationMessage("Signed in to Tessellate.");
+  });
+
+  //: A tool server token (Settings, Tools it can use) does not idle out, can be
+  //: limited to some categories or tags, and is revoked there (L-world-class-627).
+  command("tessellate.signInWithToken", async () => {
+    const token = await vscode.window.showInputBox({
+      prompt: "Tool server token from Tessellate, Settings, Tools it can use", password: true, ignoreFocusOut: true,
+    });
+    if (!token) return;
+    const api = await client();
+    await context.secrets.store(TOKEN_KEY, await api.useToken(token));
+    vscode.window.showInformationMessage("Signed in to Tessellate with a token.");
   });
 
   command("tessellate.signOut", async () => {

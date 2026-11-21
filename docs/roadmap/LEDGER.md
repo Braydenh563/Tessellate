@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 61 | 10 | 0 | 0 | 71 |
+| world-class | 0 | 60 | 10 | 0 | 0 | 70 |
 | general | 0 | 32 | 2 | 0 | 5 | 34 |
-| all | 372 | 448 | 81 | 2 | 112 | 901 |
+| all | 372 | 447 | 81 | 2 | 112 | 900 |
 
 ## graph
 
@@ -525,7 +525,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-421** `world-class` open, S: Rule the Replace and Statistics dialogs into 27.2's table (sheet or dialog) and empty UNRULED_DIALOGS. From L-world-class-131. Evidence: doc-replace-dialog and doc-stats-dialog are native dialogs the 27.2 table does not rule (UNRULED_DIALOGS in tests/test_ui_recipes.py)
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 - [ ] **L-world-class-625** `world-class` open, M: Run Pillow and the OCR readers (core/ocr.py, core/ocr_prep.py) in the parse sandbox child. From L-world-class-321. Evidence: core/ocr.py:479,504,741,812,888 Image.open and _rapidocr_lines run in the server; the runner core/parse_sandbox.py is built (reused child, 0.3-0.5 ms a call warm, 117 ms a cold child with pypdfium2); RapidOCR loads onnxruntime, so it needs the reused child and a memory limit measured with its model loaded
-- [ ] **L-world-class-627** `world-class` open, S: VS Code extension: sign in by pasting a device token, and say when the computer must approve the device. From L-world-class-183. Evidence: editors/vscode/lib/client.js signs in by password only; a new device may wait for approval on the computer with no prompt in VS Code
 
 ## general
 

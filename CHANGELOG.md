@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- VS Code extension: sign in with a tool server token, which does not idle out and keeps to the categories and tags it was made for (L-world-class-627).
 - Translate offline: English to Spanish installs no longer download again; French, German, Italian, Portuguese and Spanish to English are a package each (L-world-class-628).
 - Graph: concurrent requests for the same version of the graph cache now share one build instead of each running community detection (eight clients, one build).
 - MCP over HTTP: a link can be scoped to categories or tags (reads, search, graph tools and writes stay inside), a remote client such as claude.ai can sign in with OAuth 2.1 (PKCE, dynamic registration, metadata, approval in Settings on this computer), and the Docker compose file lets the host's own port count as this computer (L-world-class-560).
