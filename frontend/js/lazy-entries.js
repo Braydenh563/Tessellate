@@ -5,6 +5,8 @@
 Object.assign(LAZY_MODULES, {
   //: A background job starting and finishing, said out loud (status-tasks.js, out of status.js; L698). Nobody reads a return value.
   statusTasks: ["/js/status-tasks.js"],
+  //: The Settings pane's model-status draw (status-settings.js, out of status.js; L-world-class-631). Nobody reads a return value.
+  statusSettings: ["/js/status-settings.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
   webPanel: ["/js/web-panel.js"],
   //: Tags, category and a property for the documents and files a Library selection holds (library-bulk.js).
@@ -113,6 +115,8 @@ Object.assign(LAZY_MODULES, {
   boardEmbed: ["/js/board-embed.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
+  //: The list's keyboard walk, a shift-click range, the connections rail's listeners and the wiki-rename offer (notes-wire.js; L-world-class-631).
+  notesWire: ["/js/notes-wire.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
@@ -154,6 +158,8 @@ installStandIns({
   libraryBulk: ["libraryMeta"],
   //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
   statusTasks: ["noticeTaskTransitions"],
+  statusSettings: ["renderSettings"],
+  notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).
   //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)

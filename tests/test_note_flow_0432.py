@@ -205,7 +205,7 @@ def test_the_rail_follows_the_note_being_read():
     owner: "what constitutes opening a note if I can see a whole note in the
     notes section") replaced that: a card chosen by hand is the subject, and
     otherwise the card in view as the list scrolls (notes-rail-spy.js)."""
-    notes = _read("notes-list.js")
+    notes = _read("notes-list.js") + _read("notes-wire.js")
     focus = notes[notes.index('list.addEventListener("focusin", (event) =>'):]
     focus = focus[: focus.index("\n  });\n")]
     assert "if (notesRailId == null) return;" not in focus
@@ -238,7 +238,7 @@ def test_archive_and_duplicate_behave():
 
 
 def test_recently_edited_sort_copy_link_and_list_keys():
-    notes = _read("notes-list.js")
+    notes = _read("notes-list.js") + _read("notes-wire.js")
     assert "edited: (a, b) => noteEditedTime(b) - noteEditedTime(a)" in _function(notes, "sortEntries")
     assert '<option value="edited">Recently edited</option>' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     keys = _function(notes, "initEntryListKeyboardNav")
