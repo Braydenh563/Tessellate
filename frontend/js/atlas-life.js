@@ -1326,11 +1326,21 @@
       t.w = Float32Array.from(at((x, y) => Math.pow(Math.min(1, Math.max(0, (y - g.y0) / Math.max(1, g.y1 - g.y0))), 1.5)));
     }
   };
+  //: **A point's text from a table** (L-ui-modernisation-201): a full draw prints about 6,000 numbers (69 paths), 3 of its
+  //: 8 ms of script. The strings of every hundredth from -50 to 150, made once, are `String(atlasFix(v))` to the digit,
+  //: so the drawn paths are the same; a point outside them is printed as before.
+  atlasRigLower.morph.num = (v) => {
+    const M = atlasRigLower.morph;
+    if (!M.texts) M.texts = Array.from({ length: 20001 }, (_, i) => String((i - 5000) / 100));
+    const n = Math.round(v * 100);
+    return n >= -5000 && n <= 15000 ? M.texts[n + 5000] : String(n / 100);
+  };
   atlasRigLower.morph.draw = (t, clock, gain, ang) => {
     const M = atlasRigLower.morph;
     const p = t.pts;
     const o = t.out;
     const f = atlasFix;
+    const num = M.num;
     const A = (phase, k) => M.angles(clock, phase, ang[k]);
     if (t.kind === "cloud") {
       t.cloud.setAttribute("cx", f(t.cx + M.stream * gain * M.at(A(t.phase, 0), t.ks[0], 0)));
@@ -1358,8 +1368,8 @@
         dx = w * (M.sway * gain * M.at(a0, t.ks[0], n) + (x - g.cx) * M.breath * gain * M.at(a1, t.ks[1], n));
         dy = w * 0.3 * gain * M.at(a2, t.ks[2], n);
       }
-      o[i] = f(x + dx);
-      o[i + 1] = f(y + dy);
+      o[i] = num(x + dx);
+      o[i + 1] = num(y + dy);
     }
     let d = "";
     for (let i = 0, n = 0; i < o.length; i += 2, n += 1) d += `${t.lead[n] || " "}${t.pre[n]}${o[i]} ${o[i + 1]}`;

@@ -177,6 +177,33 @@ process.stdout.write(JSON.stringify(out));
     assert _node(src) == {"none": 0, "head": 156, "shared": 0, "loop": 0}
 
 
+LIFE = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
+
+
+@needs_node
+def test_the_morph_prints_each_point_from_a_table_to_the_same_digit() -> None:
+    """The morph's tick printed 6,000 numbers a full draw (69 paths, 8 ms of
+    script, 3 of it number to string). A table of the strings for every
+    hundredth from -50 to 150 gives the same text (`String(atlasFix(v))`), so
+    the paths drawn are the same to the digit; outside it, the old way."""
+    start = LIFE.index("atlasRigLower.morph.num = (")
+    src = (
+        "const atlasFix = (v) => Math.round(v * 100) / 100;\nconst atlasRigLower = { morph: {} };\n"
+        + LIFE[start : LIFE.index("\n};\n", start) + 4]
+        + r"""
+const bad = [];
+let n = 0;
+for (let v = -60; v < 160; v += 0.0037) { n += 1; if (atlasRigLower.morph.num(v) !== String(atlasFix(v))) bad.push(v); }
+for (const v of [-0, -0.004, 0.005, -50, 150, 150.004, 1e6, -1e6, 12.345, -12.345]) { n += 1; if (atlasRigLower.morph.num(v) !== String(atlasFix(v))) bad.push(v); }
+process.stdout.write(JSON.stringify({ n, bad: bad.slice(0, 5) }));
+"""
+    )
+    got = _node(src)
+    assert got["bad"] == [] and got["n"] > 50000
+    draw = LIFE[LIFE.index("atlasRigLower.morph.draw = (") : LIFE.index("atlasRigLower.morph.rest = (")]
+    assert "o[i] = num(x + dx);" in draw and "o[i + 1] = num(y + dy);" in draw
+
+
 def test_a_held_blink_tries_again_no_more_than_three_times() -> None:
     fn = _block(MOTION, "function atlasBlink(")
     assert "const wait = waited < 3 ? atlasBlink.settling(box) : 0;" in fn
