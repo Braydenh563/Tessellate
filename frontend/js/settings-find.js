@@ -633,6 +633,14 @@
   //: Called when a section opens: build now, again once its async content has
   //: arrived, and keep it current while the pane changes.
   function settingsIndexWatchSection(name) {
+    //: Leaving Help drops its 1,770 topic nodes; the next Help view or search draws them again (L676). Not while
+    //: a search is typed: its results point at those rows.
+    const help = $("help-topics");
+    if (name !== "help" && helpTopicsLoad && help && !$("settings-search").value) {
+      helpTopicsLoad = null;
+      help.replaceChildren();
+      help.setAttribute("aria-busy", "true");
+    }
     //: Each row's changed marker and reset (WORLD_CLASS_PLAN 25f), a file of its own.
     lazyScript("/js/settings-rows.js").then((ok) => ok && settingRowsWatch(name));
     settingsIndexWatch?.disconnect();

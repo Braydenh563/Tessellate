@@ -1439,10 +1439,12 @@ function closeShortcuts() {
   // just set appears dead, and so does everything else.
   capturingShortcut = null;
   const overlay = $("shortcuts-overlay");
-  const wasOpen = !overlay.classList.contains("hidden");
-  overlay.classList.add("hidden");
-  if (wasOpen) focusBackTo(overlay.returnFocus, "#tab-bar [aria-selected='true']");
+  if (!overlay.classList.contains("hidden")) {
+    overlay.classList.add("hidden");
+    focusBackTo(overlay.returnFocus, "#tab-bar [aria-selected='true']");
+  }
   overlay.returnFocus = null;
+  document.dispatchEvent(new Event("sheet-closed"));
 }
 
 //: The sheet is built when it first opens (row 21).
@@ -1450,7 +1452,7 @@ onSurface("shortcuts", () => {
   $("shortcuts-close").addEventListener("click", closeShortcuts);
   $("shortcuts-reset").addEventListener("click", resetShortcuts);
 });
-wireBackdropClose($("shortcuts-overlay"), () => closeShortcuts());
+wireBackdropClose($("shortcuts-overlay"), closeShortcuts);
 
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Tab") return;

@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8518, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2883, tests 22773, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8518, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2883, tests 22774, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8518)
 
@@ -1174,19 +1174,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activeOverlay` | frontend/js/settings-wiring.js:902 |
-| `captureCountText` | frontend/js/settings-wiring.js:1684 |
+| `captureCountText` | frontend/js/settings-wiring.js:1686 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1406 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2087 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2089 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1201 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1436 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1237 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2072 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1935 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2074 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1937 |
 | `flashSaved` | frontend/js/settings-wiring.js:527 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2119 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2121 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1219 |
 | `inEditable` | frontend/js/settings-wiring.js:900 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1534 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1536 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1071 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1114 |
 | `lockFail` | frontend/js/settings-wiring.js:286 |
@@ -1198,13 +1198,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:923 |
 | `notebookLocked` | frontend/js/settings-wiring.js:512 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1649 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1616 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1857 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1651 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1618 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1859 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1373 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1124 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2060 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2062 |
 | `runShortcut` | frontend/js/settings-wiring.js:1264 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1225 |
@@ -1212,13 +1212,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1390 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1397 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2246 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2037 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2248 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2039 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1100 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1674 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2096 |
-| `wordCount` | frontend/js/settings-wiring.js:1669 |
+| `textCounts` | frontend/js/settings-wiring.js:1676 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2098 |
+| `wordCount` | frontend/js/settings-wiring.js:1671 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -7218,7 +7218,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `buildShortcutList` | frontend/js/reveal-targets.js:724 |
-| `flashRevealed` | frontend/js/reveal-targets.js:828 |
+| `flashRevealed` | frontend/js/reveal-targets.js:835 |
 | `foldedText` | frontend/js/reveal-targets.js:640 |
 | `markNotePassage` | frontend/js/reveal-targets.js:669 |
 | `notePassageFor` | frontend/js/reveal-targets.js:626 |
@@ -7567,20 +7567,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:179 |
-| `helpAlternation` | frontend/js/settings-find.js:705 |
-| `helpApplySearch` | frontend/js/settings-find.js:834 |
-| `helpEmphasis` | frontend/js/settings-find.js:711 |
-| `helpFill` | frontend/js/settings-find.js:732 |
-| `helpMarks` | frontend/js/settings-find.js:745 |
-| `helpMatches` | frontend/js/settings-find.js:818 |
-| `helpQueryTerms` | frontend/js/settings-find.js:810 |
-| `helpSearchBind` | frontend/js/settings-find.js:891 |
-| `helpTopicLink` | frontend/js/settings-find.js:672 |
-| `helpTopicPaint` | frontend/js/settings-find.js:759 |
-| `helpTopicRow` | frontend/js/settings-find.js:776 |
+| `helpAlternation` | frontend/js/settings-find.js:713 |
+| `helpApplySearch` | frontend/js/settings-find.js:842 |
+| `helpEmphasis` | frontend/js/settings-find.js:719 |
+| `helpFill` | frontend/js/settings-find.js:740 |
+| `helpMarks` | frontend/js/settings-find.js:753 |
+| `helpMatches` | frontend/js/settings-find.js:826 |
+| `helpQueryTerms` | frontend/js/settings-find.js:818 |
+| `helpSearchBind` | frontend/js/settings-find.js:899 |
+| `helpTopicLink` | frontend/js/settings-find.js:680 |
+| `helpTopicPaint` | frontend/js/settings-find.js:767 |
+| `helpTopicRow` | frontend/js/settings-find.js:784 |
 | `openSettingRow` | frontend/js/settings-find.js:250 |
-| `renderCredits` | frontend/js/settings-find.js:914 |
-| `renderHelpTopics` | frontend/js/settings-find.js:962 |
+| `renderCredits` | frontend/js/settings-find.js:922 |
+| `renderHelpTopics` | frontend/js/settings-find.js:970 |
 | `renderSettingResults` | frontend/js/settings-find.js:297 |
 | `settingNearAdd` | frontend/js/settings-find.js:312 |
 | `settingQueryAlts` | frontend/js/settings-find.js:160 |
@@ -28394,7 +28394,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22773)
+## Tests (22774)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30728,7 +30728,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_fills_its_own_controls_l523.py | 1 |
 | tests/test_settings_group_heads.py | 2 |
 | tests/test_settings_heading_indent.py | 4 |
-| tests/test_settings_help_lazy_1029.py | 3 |
+| tests/test_settings_help_lazy_1029.py | 4 |
 | tests/test_settings_ia.py | 7 |
 | tests/test_settings_index_layout_free.py | 2 |
 | tests/test_settings_lag_1696.py | 5 |
