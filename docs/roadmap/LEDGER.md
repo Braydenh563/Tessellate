@@ -13,10 +13,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
-| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
+| ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 10 | 0 | 0 | 4 | 10 |
+| general | 0 | 9 | 0 | 0 | 4 | 9 |
 | all | 502 | 541 | 127 | 2 | 183 | 1170 |
 
 ## graph
@@ -460,6 +460,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
 - [ ] **L-ui-modernisation-24** `ui-modernisation` open, S: Move stale UI plan pointers and empty headings to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:778. Evidence: Open line in the plan's prose a session could miss. Stale 'Open' pointers will mislead the session into rebuilding: - 5b is built (HISTORY, TIMELINE Brief 55). - The selection ticks (line 684) were built 2026-09-23. - 1695 (line 1285) is fully built. - Decision 6's countjs 'future pass' (line 213) is done. - Empty headings sit at lines 781, 1251, 1253 and 1270.
+- [ ] **L-ui-modernisation-25** `ui-modernisation` open, S: Tab strip is 48px tall in the 44px header at 820 to 1199 wide, so its top 2.5px overhangs the window; make the header fit the strip, then drop the tab-bar allowance in tour.js judge(). From tour.js sweep, L-general-14. Evidence: 1184x760: #tab-bar box [340,-2.5,504,48] in a 44px top-bar; tab buttons 44px from the 820-1199.98 band (frontend/css/10-responsive.css:101) and the strip's 2px padding make 48; 2.5px sits above the window
 
 ## timeline
 
@@ -706,7 +707,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
 - [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
-- [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-42** `general` open, M: Record and chip two more note sources: extracted from document, transcribed from audio. From L-general-13. Evidence: entry has no column for extracted-from-document or transcribed-from-audio (routes_entries.py:2938 extract_commit, routes_meetings.py:52 create_meeting record none); provenance chip covers source_url and source_path only

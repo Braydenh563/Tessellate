@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8500, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10904, test files 2788, tests 22370, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8500, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10904, test files 2788, tests 22372, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8500)
 
@@ -8171,53 +8171,53 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openTour` | frontend/js/tour.js:1750 |
-| `renderTourReplay` | frontend/js/tour.js:1948 |
-| `tourActiveTab` | frontend/js/tour.js:1246 |
-| `tourAnchorFor` | frontend/js/tour.js:630 |
-| `tourBack` | frontend/js/tour.js:1842 |
-| `tourBlockPanels` | frontend/js/tour.js:933 |
-| `tourBringIntoView` | frontend/js/tour.js:1042 |
-| `tourCandidates` | frontend/js/tour.js:846 |
-| `tourChoose` | frontend/js/tour.js:901 |
-| `tourClamp` | frontend/js/tour.js:828 |
-| `tourClearSpotlight` | frontend/js/tour.js:989 |
-| `tourClearTheWay` | frontend/js/tour.js:1337 |
-| `tourClose` | frontend/js/tour.js:1799 |
-| `tourContext` | frontend/js/tour.js:1471 |
-| `tourCovered` | frontend/js/tour.js:678 |
-| `tourDisable` | frontend/js/tour.js:1990 |
-| `tourFrame` | frontend/js/tour.js:1228 |
-| `tourLibraryView` | frontend/js/tour.js:1405 |
-| `tourNavigate` | frontend/js/tour.js:1377 |
-| `tourNext` | frontend/js/tour.js:1831 |
-| `tourOnScreen` | frontend/js/tour.js:646 |
-| `tourOpenFoldsAround` | frontend/js/tour.js:1438 |
-| `tourOpenSettings` | frontend/js/tour.js:1453 |
-| `tourOrigin` | frontend/js/tour.js:812 |
-| `tourOverlap` | frontend/js/tour.js:835 |
-| `tourPinShell` | frontend/js/tour.js:1563 |
-| `tourPlaceFixed` | frontend/js/tour.js:729 |
-| `tourPosition` | frontend/js/tour.js:1081 |
-| `tourPrepareSection` | frontend/js/tour.js:1497 |
-| `tourReflow` | frontend/js/tour.js:1916 |
-| `tourRender` | frontend/js/tour.js:1164 |
-| `tourResolve` | frontend/js/tour.js:705 |
-| `tourReveal` | frontend/js/tour.js:1625 |
-| `tourSectionPlace` | frontend/js/tour.js:1215 |
-| `tourSheetPlace` | frontend/js/tour.js:1146 |
-| `tourShow` | frontend/js/tour.js:1630 |
-| `tourSpotlight` | frontend/js/tour.js:1015 |
-| `tourStep` | frontend/js/tour.js:1530 |
-| `tourStepsFor` | frontend/js/tour.js:1729 |
-| `tourStrand` | frontend/js/tour.js:1546 |
-| `tourUsable` | frontend/js/tour.js:715 |
-| `tourVerifyCard` | frontend/js/tour.js:1576 |
-| `tourVisible` | frontend/js/tour.js:604 |
-| `tourWaitForTarget` | frontend/js/tour.js:1296 |
-| `tourWatch` | frontend/js/tour.js:779 |
-| `tourWatchFrame` | frontend/js/tour.js:784 |
-| `tourWhiteboard` | frontend/js/tour.js:1417 |
+| `openTour` | frontend/js/tour.js:1759 |
+| `renderTourReplay` | frontend/js/tour.js:1957 |
+| `tourActiveTab` | frontend/js/tour.js:1255 |
+| `tourAnchorFor` | frontend/js/tour.js:639 |
+| `tourBack` | frontend/js/tour.js:1851 |
+| `tourBlockPanels` | frontend/js/tour.js:942 |
+| `tourBringIntoView` | frontend/js/tour.js:1051 |
+| `tourCandidates` | frontend/js/tour.js:855 |
+| `tourChoose` | frontend/js/tour.js:910 |
+| `tourClamp` | frontend/js/tour.js:837 |
+| `tourClearSpotlight` | frontend/js/tour.js:998 |
+| `tourClearTheWay` | frontend/js/tour.js:1346 |
+| `tourClose` | frontend/js/tour.js:1808 |
+| `tourContext` | frontend/js/tour.js:1480 |
+| `tourCovered` | frontend/js/tour.js:687 |
+| `tourDisable` | frontend/js/tour.js:1999 |
+| `tourFrame` | frontend/js/tour.js:1237 |
+| `tourLibraryView` | frontend/js/tour.js:1414 |
+| `tourNavigate` | frontend/js/tour.js:1386 |
+| `tourNext` | frontend/js/tour.js:1840 |
+| `tourOnScreen` | frontend/js/tour.js:655 |
+| `tourOpenFoldsAround` | frontend/js/tour.js:1447 |
+| `tourOpenSettings` | frontend/js/tour.js:1462 |
+| `tourOrigin` | frontend/js/tour.js:821 |
+| `tourOverlap` | frontend/js/tour.js:844 |
+| `tourPinShell` | frontend/js/tour.js:1572 |
+| `tourPlaceFixed` | frontend/js/tour.js:738 |
+| `tourPosition` | frontend/js/tour.js:1090 |
+| `tourPrepareSection` | frontend/js/tour.js:1506 |
+| `tourReflow` | frontend/js/tour.js:1925 |
+| `tourRender` | frontend/js/tour.js:1173 |
+| `tourResolve` | frontend/js/tour.js:714 |
+| `tourReveal` | frontend/js/tour.js:1634 |
+| `tourSectionPlace` | frontend/js/tour.js:1224 |
+| `tourSheetPlace` | frontend/js/tour.js:1155 |
+| `tourShow` | frontend/js/tour.js:1639 |
+| `tourSpotlight` | frontend/js/tour.js:1024 |
+| `tourStep` | frontend/js/tour.js:1539 |
+| `tourStepsFor` | frontend/js/tour.js:1738 |
+| `tourStrand` | frontend/js/tour.js:1555 |
+| `tourUsable` | frontend/js/tour.js:724 |
+| `tourVerifyCard` | frontend/js/tour.js:1585 |
+| `tourVisible` | frontend/js/tour.js:613 |
+| `tourWaitForTarget` | frontend/js/tour.js:1305 |
+| `tourWatch` | frontend/js/tour.js:788 |
+| `tourWatchFrame` | frontend/js/tour.js:793 |
+| `tourWhiteboard` | frontend/js/tour.js:1426 |
 
 ### frontend/js/translate-worker.js (5)
 
@@ -28083,7 +28083,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22370)
+## Tests (22372)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30590,7 +30590,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_topic_summary_kg6.py | 7 |
 | tests/test_topics_kg6.py | 8 |
 | tests/test_touched_notes.py | 15 |
-| tests/test_tour_follow.py | 7 |
+| tests/test_tour_follow.py | 9 |
 | tests/test_tour_targets.py | 2 |
 | tests/test_transcript_81.py | 6 |
 | tests/test_transcript_copy.py | 2 |
@@ -31542,20 +31542,20 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1009 |
 | documents | docs/roadmap/LEDGER.md:327 |
 | documents | docs/roadmap/LEDGER.md:949 |
-| general | docs/roadmap/LEDGER.md:701 |
+| general | docs/roadmap/LEDGER.md:702 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:913 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1021 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4419 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
 | mindmap | docs/roadmap/LEDGER.md:961 |
-| timeline | docs/roadmap/LEDGER.md:464 |
+| timeline | docs/roadmap/LEDGER.md:465 |
 | timeline | docs/roadmap/LEDGER.md:985 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
 | ui-modernisation | docs/roadmap/LEDGER.md:973 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
 | whiteboard | docs/roadmap/LEDGER.md:937 |
-| world-class | docs/roadmap/LEDGER.md:466 |
+| world-class | docs/roadmap/LEDGER.md:467 |
 | world-class | docs/roadmap/LEDGER.md:997 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2829 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2880 |
