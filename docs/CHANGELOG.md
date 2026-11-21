@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Server memory: glibc per-thread malloc arenas are capped at two (mallopt at import), so eight parallel clients no longer take resident memory from 393 MB to 1.2 GB; 4,500 notes, 8 min of load stayed at 400 to 444 MB (L609).
+- Logs: the list and terminal views reuse the rows they already built, so a draw under 36 requests a second falls from 45 ms to 17.5 ms and long tasks from 8.8% to 1.2% of the main thread; scratchpad/ui-sweeps/logload.js is the sustained-load check (L607, L967).
 - Boot: the web panel's drawing (open and close, the head's menu, engine dot, recents, Ask about page, Cite in chat) moved from chat.js to the lazy web-results.js, so boot falls by about 3.4 KB gzipped (chat.js 29,124 to 25,677; the script ratchet was 144 B over, now about 3.2 KB under), the panel fetches its code on the first open, and app.js keeps stand-ins for the nine entry points (L-world-class-571).
 - Docs: three measured perf leftovers (Settings pane style and layout, microbes garbage, boot tasks still over 50ms at 4x) moved from LEDGER to BACKLOG §11 with their numbers (L-world-class-622, 623, 624).
 - Model-call tracing moved from jobruns.py (1015 lines) to jobruns_calls.py (149), so jobruns.py is 877 lines, under its 973 cap (L624).
