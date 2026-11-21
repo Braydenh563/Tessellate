@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8526, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11113, test files 2887, tests 22807, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8527, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11113, test files 2887, tests 22811, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8526)
+## Frontend functions (8527)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:177 |
-| `surfaceBuild` | frontend/js/settings-body.js:141 |
-| `surfaceFind` | frontend/js/settings-body.js:165 |
+| `onSurface` | frontend/js/settings-body.js:197 |
+| `surfaceBuild` | frontend/js/settings-body.js:161 |
+| `surfaceFind` | frontend/js/settings-body.js:185 |
 
 ### frontend/js/app.js (45)
 
@@ -858,28 +858,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:924 |
+| `catalogueRun` | frontend/js/settings-panes.js:923 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:351 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:332 |
 | `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:625 |
-| `currentZoom` | frontend/js/settings-panes.js:825 |
-| `downloadExport` | frontend/js/settings-panes.js:799 |
+| `currentZoom` | frontend/js/settings-panes.js:824 |
+| `downloadExport` | frontend/js/settings-panes.js:798 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:871 |
+| `hud` | frontend/js/settings-panes.js:870 |
 | `initAutoGrow` | frontend/js/settings-panes.js:453 |
 | `initComposerResize` | frontend/js/settings-panes.js:367 |
 | `loadPreferences` | frontend/js/settings-panes.js:600 |
 | `markPrefsDirty` | frontend/js/settings-panes.js:773 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:789 |
-| `nudgeZoom` | frontend/js/settings-panes.js:892 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:990 |
-| `paletteKeys` | frontend/js/settings-panes.js:999 |
+| `nudgeZoom` | frontend/js/settings-panes.js:891 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:989 |
+| `paletteKeys` | frontend/js/settings-panes.js:998 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `reportTimezone` | frontend/js/settings-panes.js:544 |
 | `savePrefs` | frontend/js/settings-panes.js:666 |
 | `setPreference` | frontend/js/settings-panes.js:648 |
-| `setZoom` | frontend/js/settings-panes.js:829 |
+| `setZoom` | frontend/js/settings-panes.js:828 |
 | `watchOverlays` | frontend/js/settings-panes.js:465 |
 
 ### frontend/js/media.js (9)
@@ -7569,25 +7569,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsPrefsSeen` | frontend/js/settings-data.js:1033 |
 | `undoImport` | frontend/js/settings-data.js:546 |
 
-### frontend/js/settings-find.js (38)
+### frontend/js/settings-find.js (39)
 
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:191 |
-| `helpAlternation` | frontend/js/settings-find.js:727 |
-| `helpApplySearch` | frontend/js/settings-find.js:856 |
-| `helpEmphasis` | frontend/js/settings-find.js:733 |
-| `helpFill` | frontend/js/settings-find.js:754 |
-| `helpMarks` | frontend/js/settings-find.js:767 |
-| `helpMatches` | frontend/js/settings-find.js:840 |
-| `helpQueryTerms` | frontend/js/settings-find.js:832 |
-| `helpSearchBind` | frontend/js/settings-find.js:913 |
-| `helpTopicLink` | frontend/js/settings-find.js:694 |
-| `helpTopicPaint` | frontend/js/settings-find.js:781 |
-| `helpTopicRow` | frontend/js/settings-find.js:798 |
+| `helpAlternation` | frontend/js/settings-find.js:743 |
+| `helpApplySearch` | frontend/js/settings-find.js:872 |
+| `helpEmphasis` | frontend/js/settings-find.js:749 |
+| `helpFill` | frontend/js/settings-find.js:770 |
+| `helpMarks` | frontend/js/settings-find.js:783 |
+| `helpMatches` | frontend/js/settings-find.js:856 |
+| `helpQueryTerms` | frontend/js/settings-find.js:848 |
+| `helpSearchBind` | frontend/js/settings-find.js:929 |
+| `helpTopicLink` | frontend/js/settings-find.js:710 |
+| `helpTopicPaint` | frontend/js/settings-find.js:797 |
+| `helpTopicRow` | frontend/js/settings-find.js:814 |
+| `helpTopicsDrop` | frontend/js/settings-find.js:699 |
 | `openSettingRow` | frontend/js/settings-find.js:262 |
-| `renderCredits` | frontend/js/settings-find.js:936 |
-| `renderHelpTopics` | frontend/js/settings-find.js:984 |
+| `renderCredits` | frontend/js/settings-find.js:952 |
+| `renderHelpTopics` | frontend/js/settings-find.js:1000 |
 | `renderSettingResults` | frontend/js/settings-find.js:309 |
 | `settingNearAdd` | frontend/js/settings-find.js:326 |
 | `settingQueryAlts` | frontend/js/settings-find.js:172 |
@@ -7687,13 +7688,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderAutonomousSettings` | frontend/js/settings-prefs.js:90 |
-| `renderPrefs` | frontend/js/settings-prefs.js:11 |
-| `renderWebSearch` | frontend/js/settings-prefs.js:115 |
-| `saveSearchProvider` | frontend/js/settings-prefs.js:156 |
-| `syncEmbeddingPickerState` | frontend/js/settings-prefs.js:213 |
-| `updateProfileCount` | frontend/js/settings-prefs.js:258 |
-| `wirePrefsDirtyMarks` | frontend/js/settings-prefs.js:182 |
+| `renderAutonomousSettings` | frontend/js/settings-prefs.js:95 |
+| `renderPrefs` | frontend/js/settings-prefs.js:42 |
+| `renderWebSearch` | frontend/js/settings-prefs.js:120 |
+| `saveSearchProvider` | frontend/js/settings-prefs.js:161 |
+| `syncEmbeddingPickerState` | frontend/js/settings-prefs.js:218 |
+| `updateProfileCount` | frontend/js/settings-prefs.js:263 |
+| `wirePrefsDirtyMarks` | frontend/js/settings-prefs.js:187 |
 
 ### frontend/js/settings-rows.js (42)
 
@@ -28422,7 +28423,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22807)
+## Tests (22811)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30767,7 +30768,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_open_weight_1108.py | 5 |
 | tests/test_settings_pane_actions.py | 3 |
 | tests/test_settings_pane_intro.py | 2 |
-| tests/test_settings_panes_675.py | 6 |
+| tests/test_settings_panes_675.py | 10 |
 | tests/test_settings_panes_indexed_1111.py | 1 |
 | tests/test_settings_path_wording.py | 1 |
 | tests/test_settings_prefs_split.py | 3 |
@@ -31731,14 +31732,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:607 |
+| Needs hardware | docs/roadmap/LEDGER.md:606 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:600 |
+| Owner calls | docs/roadmap/LEDGER.md:599 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31918,7 +31919,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:737 |
+| Plan session briefs | docs/roadmap/LEDGER.md:736 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31972,25 +31973,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:753 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:837 |
+| chat | docs/roadmap/LEDGER.md:752 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:836 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:777 |
-| general | docs/roadmap/LEDGER.md:560 |
+| documents | docs/roadmap/LEDGER.md:776 |
+| general | docs/roadmap/LEDGER.md:559 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:741 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:849 |
+| graph | docs/roadmap/LEDGER.md:740 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:848 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:789 |
+| mindmap | docs/roadmap/LEDGER.md:788 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:813 |
+| timeline | docs/roadmap/LEDGER.md:812 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:801 |
+| ui-modernisation | docs/roadmap/LEDGER.md:800 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:765 |
+| whiteboard | docs/roadmap/LEDGER.md:764 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:825 |
+| world-class | docs/roadmap/LEDGER.md:824 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |

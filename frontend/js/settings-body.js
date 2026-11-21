@@ -114,9 +114,29 @@ const SURFACES = Object.assign(new Map(), {
   //: now (L675: each `$` in settings-controls.js built all of Settings). Nested surfaces are asked first.
   wire(id, ...args) {
     const live = document.getElementById(id);
-    const hit = !live && [...SURFACES].sort(([, a]) => (a.parent ? -1 : 0)).find(([name, entry]) => !entry.done && entry.tpl && SURFACES.holds(name, entry, id));
-    if (hit) onSurface(hit[0], () => SURFACES.wire(id, ...args));
+    const hit = !live && SURFACES.owner(id);
+    if (hit) onSurface(hit, () => SURFACES.wire(id, ...args));
     else live?.addEventListener(...args);
+  },
+  //: The unbuilt surface holding the id, nested ones first (their parent's text holds the same ids), or undefined.
+  owner(id) {
+    return [...SURFACES].sort(([, a]) => (a.parent ? -1 : 0)).find(([name, entry]) => !entry.done && entry.tpl && SURFACES.holds(name, entry, id))?.[0];
+  },
+  //: `apply(element)` now when the control is in the page, else the moment its surface is built, with the last
+  //: `apply` asked for that id. A read of /preferences fills the controls of four panes; each used to build
+  //: the others (visiting Personas built five more panes, 5 to 20 ms each at 4x CPU, L675).
+  fill(id, apply) {
+    const live = document.getElementById(id);
+    if (live) return apply(live);
+    const name = SURFACES.owner(id);
+    if (!name) return;
+    const entry = SURFACES.get(name);
+    (entry.fills ||= new Map()).set(id, apply);
+    entry.flush ||= () => {
+      entry.fills.forEach((run, key) => run(document.getElementById(key)));
+      entry.fills.clear();
+    };
+    onSurface(name, entry.flush);
   },
   //: A built surface's nodes moved into a fragment, listeners and typed state with them, for the next
   //: build to move back (L676: a closed Settings kept up to 12,000 elements in the page).

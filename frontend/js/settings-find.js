@@ -649,10 +649,11 @@
   function settingsIndexWatchSection(name) {
     //: Leaving Help drops its 1,770 topic nodes; the next Help view or search draws them again (L676). Not while
     //: a search is typed: its results point at those rows.
-    const help = $("help-topics");
+    //: `getElementById`, not `$`: an unbuilt Help has no topics to drop, and `$` built the pane at every first open (L675).
+    const help = document.getElementById("help-topics");
     if (name !== "help" && helpTopicsLoad && help && !$("settings-search").value) {
       helpTopicsLoad = null;
-      help.replaceChildren();
+      helpTopicsDrop(help);
       help.setAttribute("aria-busy", "true");
     }
     //: Each row's changed marker and reset (WORLD_CLASS_PLAN 25f), a file of its own.
@@ -690,6 +691,21 @@
   // load; a failed fetch is tried again on the next open.
 
   let helpTopicsLoad = null;
+
+  //: Leaving Help empties its topics a slice of rows per timer: all 1,770 nodes in one `replaceChildren` were a
+  //: 220 to 350 ms task at 4x CPU, landing on the next pane's switch (L675). Rows, then their groups; a visit
+  //: back first draws a fresh set, and the old nodes are already off the page or on their way.
+  const HELP_DROP_SLICE = 60;
+  function helpTopicsDrop(box) {
+    const groups = [...box.children];
+    const rows = groups.flatMap((group) => [...group.children]);
+    const step = () => {
+      for (const row of rows.splice(0, HELP_DROP_SLICE)) row.remove();
+      if (rows.length) setTimeout(step);
+      else groups.forEach((group) => group.remove());
+    };
+    setTimeout(step);
+  }
 
   function helpTopicLink(link) {
     const button = document.createElement("button");

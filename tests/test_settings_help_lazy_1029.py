@@ -53,7 +53,7 @@ def test_leaving_help_and_closing_the_sheet_release_their_nodes() -> None:
         'name !== "help" && helpTopicsLoad',
         '!$("settings-search").value',
         "helpTopicsLoad = null;",
-        "help.replaceChildren();",
+        "helpTopicsDrop(help);",
         'help.setAttribute("aria-busy", "true");',
     ):
         assert needle in watch
