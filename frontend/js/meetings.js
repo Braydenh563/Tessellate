@@ -2398,12 +2398,8 @@
     }
   }
 
-  //: The page's memory for a trim, measured on a decoded hour (about 700 MB).
-  const RECORDING_TRIM_MB_PER_MINUTE = 12;
-  const RECORDING_TRIM_HEAVY_MINUTES = 20;
-
   //: **Trim**: a sheet with the waveform and the two ends; Save writes the
-  //: part kept as a new recording.
+  //: part kept as a new recording, cut on the server.
   function openRecordingTrim(rec) {
     openSheet({
       label: "Trim the recording",
@@ -2417,18 +2413,6 @@
         const kept = document.createElement("p");
         kept.className = "status";
         kept.setAttribute("role", "status");
-        //: **Said before it is spent** (libr-1011 row 1219): a trim decodes the
-        //: whole take in this tab (about 12 MB a minute), so a long one says so
-        //: here, and a short one stays quiet. The cut itself cannot be made on
-        //: the server until the app ships a container writer.
-        const minutes = Math.round(total / 60000);
-        const heavy = [];
-        if (minutes >= RECORDING_TRIM_HEAVY_MINUTES) {
-          const note = document.createElement("p");
-          note.className = "muted recording-trim-weight";
-          note.textContent = `Trimming opens the whole recording in this tab: about ${minutes * RECORDING_TRIM_MB_PER_MINUTE} MB of memory for ${nounCount(minutes, "minute")}.`;
-          heavy.push(note);
-        }
         const sync = () => {
           const a = Number(start.input.value);
           const b = Number(end.input.value);
@@ -2455,7 +2439,7 @@
         save.id = "recording-trim-save";
         for (const field of [start, end]) field.input.addEventListener("input", sync);
         bar.append(cancel, save);
-        card.append(start.row, end.row, kept, ...heavy, bar);
+        card.append(start.row, end.row, kept, bar);
         sync();
       },
     });
@@ -2481,24 +2465,11 @@
     return { row, input };
   }
 
+  //: The cut is made on the server (L632): the page sends the two ends and
+  //: never decodes the take, so a two-hour recording costs it no memory.
   async function trimRecording(rec, startMs, endMs) {
-    const buffer = await (await api(`/media/recordings/${rec.id}`)).arrayBuffer();
-    const context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 44100);
-    const decoded = await context.decodeAudioData(buffer);
-    const wav = recordingWav(decoded, startMs / 1000, endMs / 1000);
-    const made = await apiJson("/recordings", {
-      method: "POST",
-      body: JSON.stringify({ title: `${rec.title || "Recording"} (trimmed)`, mime: "audio/wav", source_id: rec.id, entry_id: rec.entry_id, derived: "trim" }),
-    });
-    const form = new FormData();
-    form.append("file", wav, "trim.wav");
-    form.append("duration_ms", String(endMs - startMs));
-    await api.upload(`/recordings/${made.id}/chunk`, form);
-    const span = rec.duration_ms || 1;
-    const peaks = rec.peaks.slice(Math.floor((startMs / span) * rec.peaks.length), Math.ceil((endMs / span) * rec.peaks.length));
-    const markers = (rec.marks || []).filter((m) => m.at >= startMs && m.at <= endMs).map((m) => (m.note ? { at: m.at - startMs, note: m.note } : m.at - startMs));
-    const done = await apiJson(`/recordings/${made.id}/finish`, { method: "POST", body: JSON.stringify({ duration_ms: endMs - startMs, peaks, markers }) });
-    const binned = { undo: () => apiJson(`/recordings/${made.id}`, { method: "DELETE" }).then(renderRecordings), redo: () => apiJson(`/recordings/${made.id}/restore`, { method: "POST" }).then(renderRecordings) };
+    const done = await apiJson(`/recordings/${rec.id}/trim`, { method: "POST", body: JSON.stringify({ start_ms: startMs, end_ms: endMs }) });
+    const binned = { undo: () => apiJson(`/recordings/${done.id}`, { method: "DELETE" }).then(renderRecordings), redo: () => apiJson(`/recordings/${done.id}/restore`, { method: "POST" }).then(renderRecordings) };
     pushUndo("Trimmed a recording", binned.undo, binned.redo);
     return done;
   }
