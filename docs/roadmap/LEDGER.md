@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 89 | 12 | 0 | 0 | 101 |
+| world-class | 0 | 89 | 12 | 0 | 1 | 101 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 479 | 83 | 2 | 111 | 934 |
+| all | 372 | 479 | 83 | 2 | 112 | 934 |
 
 ## graph
 
@@ -728,6 +728,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
 - [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
+- [ ] **L-world-class-571** `world-class` blocked-hardware, L: Free about 4 KB gzipped from boot (lazy web panel) before splitting status.js, notes-list.js, chat.js. From L698; frontend/js/chat.js, status.js, notes-list.js. Evidence: Measured 2026-11-21: boot gzip total 249,722 of cap 250,450 (headroom 728 B); one tail split of chat.js (chat-progress.js, 506 lines) cost +1,087 B gzipped (29,195 to 30,282) and tripped tests/test_static_compression.py at 250,809; each split costs about 1 KB, so status.js, notes-list.js and chat.js cannot be split as boot scripts without moving about 4 KB gzipped out of boot first. Lazy seams checked: chat.js 367-765 web panel (callers wiring.js, web-results.js, chat-turn.js; state read at runtime by boot files), status.js 3181-3371 background-task notices. index.html now 16,747 (other agent). Per-file lists to update with a split: tests/_app_js.py MOVED_OUT, tests/wake_sources_seed.json, tests/test_undo_coverage.py EXEMPT key, tests/test_spinner_recipe.py:340
 
 ## Plan session briefs
 
