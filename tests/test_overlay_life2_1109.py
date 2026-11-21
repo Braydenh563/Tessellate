@@ -194,7 +194,7 @@ def test_the_stand_drift_is_small_and_moves_within_the_minute() -> None:
     while t < 120.0:
         t += 1 / 30
         o = e.update(t)
-        if o.frame.startswith("idle"):
+        if o.frame.startswith("idle") and e.state == "stand":  # L178 moved seed 3 into a drift at 118 s: a trip's lean, not the stand's
             leans.append((t, o.pose[2] if o.pose else 0.0))
     assert max(abs(v) for _t, v in leans) <= 0.05  # under 3 degrees
     last, still = leans[0], 0.0

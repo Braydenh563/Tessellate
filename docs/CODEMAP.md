@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8541, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11388, test files 2986, tests 23252, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8542, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11395, test files 2991, tests 23275, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
-## Frontend functions (8541)
+## Frontend functions (8542)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2105,24 +2105,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:904 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:915 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:816 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:844 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1462 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1437 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:827 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:855 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1474 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1449 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:621 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:742 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:630 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:753 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:145 |
 | `atlasTailFrame` | frontend/js/atlas-life.js:520 |
 | `atlasTailKit` | frontend/js/atlas-life.js:256 |
 | `atlasTailPick` | frontend/js/atlas-life.js:457 |
-| `atlasTailRest` | frontend/js/atlas-life.js:705 |
+| `atlasTailRest` | frontend/js/atlas-life.js:716 |
 | `atlasTailShape` | frontend/js/atlas-life.js:223 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:720 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:731 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -2165,40 +2165,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `atlasAlmond` | frontend/js/atlas.js:1588 |
-| `atlasApply` | frontend/js/atlas.js:3648 |
+| `atlasApply` | frontend/js/atlas.js:3693 |
 | `atlasArmHand` | frontend/js/atlas.js:1029 |
 | `atlasArmPath` | frontend/js/atlas.js:1024 |
 | `atlasArmSegs` | frontend/js/atlas.js:1015 |
-| `atlasAuraAt` | frontend/js/atlas.js:3087 |
-| `atlasAvatar` | frontend/js/atlas.js:3529 |
+| `atlasAuraAt` | frontend/js/atlas.js:3132 |
+| `atlasAvatar` | frontend/js/atlas.js:3574 |
 | `atlasBand` | frontend/js/atlas.js:1935 |
 | `atlasBandPaths` | frontend/js/atlas.js:1512 |
 | `atlasBandSplit` | frontend/js/atlas.js:1534 |
-| `atlasBody` | frontend/js/atlas.js:2476 |
+| `atlasBody` | frontend/js/atlas.js:2513 |
 | `atlasBookProp` | frontend/js/atlas.js:1993 |
 | `atlasBuild` | frontend/js/atlas.js:1112 |
-| `atlasBuildDefs` | frontend/js/atlas.js:2822 |
-| `atlasClassicFigure` | frontend/js/atlas.js:3805 |
-| `atlasClassicMark` | frontend/js/atlas.js:3684 |
+| `atlasBuildDefs` | frontend/js/atlas.js:2862 |
+| `atlasClassicFigure` | frontend/js/atlas.js:3850 |
+| `atlasClassicMark` | frontend/js/atlas.js:3729 |
 | `atlasCoilProp` | frontend/js/atlas.js:2026 |
-| `atlasCue` | frontend/js/atlas.js:2339 |
-| `atlasDefs` | frontend/js/atlas.js:2805 |
-| `atlasDraw` | frontend/js/atlas.js:3470 |
-| `atlasDrawFigure` | frontend/js/atlas.js:3110 |
-| `atlasDressMarks` | frontend/js/atlas.js:3533 |
-| `atlasDrift` | frontend/js/atlas.js:4059 |
+| `atlasCue` | frontend/js/atlas.js:2376 |
+| `atlasDefs` | frontend/js/atlas.js:2845 |
+| `atlasDraw` | frontend/js/atlas.js:3515 |
+| `atlasDrawFigure` | frontend/js/atlas.js:3155 |
+| `atlasDressMarks` | frontend/js/atlas.js:3578 |
+| `atlasDrift` | frontend/js/atlas.js:4104 |
 | `atlasDrop` | frontend/js/atlas.js:1578 |
 | `atlasEars` | frontend/js/atlas.js:1849 |
 | `atlasExtras` | frontend/js/atlas.js:1690 |
 | `atlasEye` | frontend/js/atlas.js:1604 |
-| `atlasFigure` | frontend/js/atlas.js:3579 |
+| `atlasFigure` | frontend/js/atlas.js:3624 |
 | `atlasFix` | frontend/js/atlas.js:214 |
 | `atlasFoot` | frontend/js/atlas.js:394 |
 | `atlasGroup` | frontend/js/atlas.js:172 |
 | `atlasHairCap` | frontend/js/atlas.js:1786 |
 | `atlasHand` | frontend/js/atlas.js:393 |
 | `atlasHandProps` | frontend/js/atlas.js:2093 |
-| `atlasHead` | frontend/js/atlas.js:2354 |
+| `atlasHead` | frontend/js/atlas.js:2391 |
 | `atlasHeadProps` | frontend/js/atlas.js:1965 |
 | `atlasHeart` | frontend/js/atlas.js:1571 |
 | `atlasHelixAt` | frontend/js/atlas.js:1452 |
@@ -2206,9 +2206,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasHelixSpan` | frontend/js/atlas.js:1501 |
 | `atlasHelixWidth` | frontend/js/atlas.js:1491 |
 | `atlasHemTip` | frontend/js/atlas.js:1040 |
-| `atlasHiddenSync` | frontend/js/atlas.js:3627 |
-| `atlasLevelFor` | frontend/js/atlas.js:3063 |
-| `atlasLids` | frontend/js/atlas.js:3438 |
+| `atlasHiddenSync` | frontend/js/atlas.js:3672 |
+| `atlasLevelFor` | frontend/js/atlas.js:3108 |
+| `atlasLids` | frontend/js/atlas.js:3483 |
 | `atlasLimbShaped` | frontend/js/atlas.js:402 |
 | `atlasLimbTo` | frontend/js/atlas.js:397 |
 | `atlasLimbWidth` | frontend/js/atlas.js:935 |
@@ -2222,21 +2222,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:911 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
 | `atlasNightcap` | frontend/js/atlas.js:1679 |
-| `atlasOn` | frontend/js/atlas.js:4003 |
-| `atlasOrbits` | frontend/js/atlas.js:3304 |
+| `atlasOn` | frontend/js/atlas.js:4048 |
+| `atlasOrbits` | frontend/js/atlas.js:3349 |
 | `atlasPaw` | frontend/js/atlas.js:924 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
-| `atlasPlay` | frontend/js/atlas.js:3986 |
-| `atlasRepaint` | frontend/js/atlas.js:3830 |
-| `atlasRestingMood` | frontend/js/atlas.js:3882 |
+| `atlasPlay` | frontend/js/atlas.js:4031 |
+| `atlasRepaint` | frontend/js/atlas.js:3875 |
+| `atlasRestingMood` | frontend/js/atlas.js:3927 |
 | `atlasRetune` | frontend/js/atlas.js:1408 |
-| `atlasRing` | frontend/js/atlas.js:2425 |
-| `atlasRings` | frontend/js/atlas.js:3376 |
+| `atlasRing` | frontend/js/atlas.js:2462 |
+| `atlasRings` | frontend/js/atlas.js:3421 |
 | `atlasScalePath` | frontend/js/atlas.js:491 |
 | `atlasScalePathX` | frontend/js/atlas.js:1401 |
 | `atlasSegsAt` | frontend/js/atlas.js:219 |
 | `atlasSegsCut` | frontend/js/atlas.js:231 |
-| `atlasSheet` | frontend/js/atlas.js:2348 |
+| `atlasSheet` | frontend/js/atlas.js:2385 |
 | `atlasSmooth` | frontend/js/atlas.js:265 |
 | `atlasSpark` | frontend/js/atlas.js:1564 |
 | `atlasSpecks` | frontend/js/atlas.js:414 |
@@ -2244,23 +2244,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4082 |
-| `atlasStyle` | frontend/js/atlas.js:3680 |
+| `atlasStreak` | frontend/js/atlas.js:4127 |
+| `atlasStyle` | frontend/js/atlas.js:3725 |
 | `atlasTail` | frontend/js/atlas.js:1897 |
-| `atlasTailMasks` | frontend/js/atlas.js:2771 |
-| `atlasTailWake` | frontend/js/atlas.js:3543 |
+| `atlasTailMasks` | frontend/js/atlas.js:2811 |
+| `atlasTailWake` | frontend/js/atlas.js:3588 |
 | `atlasTaper` | frontend/js/atlas.js:424 |
 | `atlasTipShape` | frontend/js/atlas.js:327 |
 | `atlasTorsoEdge` | frontend/js/atlas.js:987 |
 | `atlasTune` | frontend/js/atlas.js:1080 |
 | `atlasTuneSegs` | frontend/js/atlas.js:1095 |
-| `atlasTuneStyle` | frontend/js/atlas.js:3071 |
+| `atlasTuneStyle` | frontend/js/atlas.js:3116 |
 | `atlasTurnAbout` | frontend/js/atlas.js:1010 |
-| `atlasWake` | frontend/js/atlas.js:4115 |
-| `atlasWatchFigure` | frontend/js/atlas.js:3614 |
-| `atlasWhenShown` | frontend/js/atlas.js:3559 |
-| `charactersArrived` | frontend/js/atlas.js:4212 |
-| `setAtlasMood` | frontend/js/atlas.js:3904 |
+| `atlasWake` | frontend/js/atlas.js:4160 |
+| `atlasWatchFigure` | frontend/js/atlas.js:3659 |
+| `atlasWhenShown` | frontend/js/atlas.js:3604 |
+| `charactersArrived` | frontend/js/atlas.js:4257 |
+| `setAtlasMood` | frontend/js/atlas.js:3949 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -2315,7 +2315,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autocorrectSurface` | frontend/js/autocorrect.js:329 |
 | `autocorrectUndo` | frontend/js/autocorrect.js:162 |
 
-### frontend/js/avatars.js (265)
+### frontend/js/avatars.js (266)
 
 | Name | File:line |
 |---|---|
@@ -2323,248 +2323,249 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `characterFor` | frontend/js/avatars.js:1262 |
 | `characterRendererFor` | frontend/js/avatars.js:1245 |
 | `drawCharacter` | frontend/js/avatars.js:1738 |
-| `dropAnimations` | frontend/js/avatars.js:10850 |
+| `dropAnimations` | frontend/js/avatars.js:10874 |
 | `isAtlasSeed` | frontend/js/avatars.js:1256 |
-| `nameCharacterFigure` | frontend/js/avatars.js:3974 |
+| `nameCharacterFigure` | frontend/js/avatars.js:3988 |
 | `nameCharacterHeld` | frontend/js/avatars.js:2624 |
 | `nameMark` | frontend/js/avatars.js:1467 |
-| `nameMarkBuddyAct` | frontend/js/avatars.js:8566 |
-| `nameMarkBuddyActOff` | frontend/js/avatars.js:3407 |
-| `nameMarkBuddyActions` | frontend/js/avatars.js:3431 |
-| `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3400 |
-| `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:6302 |
-| `nameMarkBuddyAfterWarm` | frontend/js/avatars.js:4173 |
-| `nameMarkBuddyAim` | frontend/js/avatars.js:8831 |
-| `nameMarkBuddyAloft` | frontend/js/avatars.js:6541 |
-| `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5934 |
-| `nameMarkBuddyAppear` | frontend/js/avatars.js:8058 |
-| `nameMarkBuddyAsleep` | frontend/js/avatars.js:10028 |
-| `nameMarkBuddyAttention` | frontend/js/avatars.js:4136 |
-| `nameMarkBuddyAwake` | frontend/js/avatars.js:9937 |
-| `nameMarkBuddyBand` | frontend/js/avatars.js:5515 |
-| `nameMarkBuddyBeat` | frontend/js/avatars.js:7836 |
-| `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7593 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10499 |
-| `nameMarkBuddyBlend` | frontend/js/avatars.js:10058 |
-| `nameMarkBuddyBody` | frontend/js/avatars.js:3935 |
-| `nameMarkBuddyBoredom` | frontend/js/avatars.js:10181 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10901 |
-| `nameMarkBuddyBurst` | frontend/js/avatars.js:7436 |
-| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:10015 |
-| `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6365 |
-| `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:6384 |
-| `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6388 |
-| `nameMarkBuddyCaret` | frontend/js/avatars.js:4147 |
-| `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5793 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10509 |
-| `nameMarkBuddyCheck` | frontend/js/avatars.js:7674 |
-| `nameMarkBuddyChoose` | frontend/js/avatars.js:4922 |
-| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:10001 |
-| `nameMarkBuddyColours` | frontend/js/avatars.js:3920 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:10629 |
-| `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:4087 |
-| `nameMarkBuddyControlsIn` | frontend/js/avatars.js:4102 |
-| `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7576 |
-| `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:4532 |
-| `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:7596 |
-| `nameMarkBuddyCovers` | frontend/js/avatars.js:4492 |
-| `nameMarkBuddyCrossfade` | frontend/js/avatars.js:6624 |
-| `nameMarkBuddyCue` | frontend/js/avatars.js:9726 |
-| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:8947 |
-| `nameMarkBuddyCurtained` | frontend/js/avatars.js:8045 |
+| `nameMarkBuddyAct` | frontend/js/avatars.js:8580 |
+| `nameMarkBuddyActOff` | frontend/js/avatars.js:3421 |
+| `nameMarkBuddyActions` | frontend/js/avatars.js:3445 |
+| `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3414 |
+| `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:6316 |
+| `nameMarkBuddyAfterWarm` | frontend/js/avatars.js:4187 |
+| `nameMarkBuddyAim` | frontend/js/avatars.js:8845 |
+| `nameMarkBuddyAloft` | frontend/js/avatars.js:6555 |
+| `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5948 |
+| `nameMarkBuddyAppear` | frontend/js/avatars.js:8072 |
+| `nameMarkBuddyAsleep` | frontend/js/avatars.js:10042 |
+| `nameMarkBuddyAttention` | frontend/js/avatars.js:4150 |
+| `nameMarkBuddyAwake` | frontend/js/avatars.js:9951 |
+| `nameMarkBuddyBand` | frontend/js/avatars.js:5529 |
+| `nameMarkBuddyBeat` | frontend/js/avatars.js:7850 |
+| `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7607 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10513 |
+| `nameMarkBuddyBlend` | frontend/js/avatars.js:10072 |
+| `nameMarkBuddyBody` | frontend/js/avatars.js:3949 |
+| `nameMarkBuddyBoredom` | frontend/js/avatars.js:10195 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10925 |
+| `nameMarkBuddyBurst` | frontend/js/avatars.js:7450 |
+| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:10029 |
+| `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6379 |
+| `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:6398 |
+| `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6402 |
+| `nameMarkBuddyCaret` | frontend/js/avatars.js:4161 |
+| `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5807 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10523 |
+| `nameMarkBuddyCheck` | frontend/js/avatars.js:7688 |
+| `nameMarkBuddyChoose` | frontend/js/avatars.js:4936 |
+| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:10015 |
+| `nameMarkBuddyColours` | frontend/js/avatars.js:3934 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:10653 |
+| `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:4101 |
+| `nameMarkBuddyControlsIn` | frontend/js/avatars.js:4116 |
+| `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7590 |
+| `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:4546 |
+| `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:7610 |
+| `nameMarkBuddyCovers` | frontend/js/avatars.js:4506 |
+| `nameMarkBuddyCrossfade` | frontend/js/avatars.js:6638 |
+| `nameMarkBuddyCue` | frontend/js/avatars.js:9740 |
+| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:8961 |
+| `nameMarkBuddyCurtained` | frontend/js/avatars.js:8059 |
 | `nameMarkBuddyCustom` | frontend/js/avatars.js:377 |
 | `nameMarkBuddyCustomReset` | frontend/js/avatars.js:374 |
-| `nameMarkBuddyDecide` | frontend/js/avatars.js:9143 |
-| `nameMarkBuddyDodge` | frontend/js/avatars.js:4269 |
-| `nameMarkBuddyDodgeTyping` | frontend/js/avatars.js:4340 |
-| `nameMarkBuddyDrift` | frontend/js/avatars.js:9457 |
-| `nameMarkBuddyDrop` | frontend/js/avatars.js:5212 |
-| `nameMarkBuddyDue` | frontend/js/avatars.js:6038 |
-| `nameMarkBuddyEase` | frontend/js/avatars.js:10152 |
-| `nameMarkBuddyEdges` | frontend/js/avatars.js:4673 |
-| `nameMarkBuddyEmote` | frontend/js/avatars.js:3417 |
-| `nameMarkBuddyEnter` | frontend/js/avatars.js:8267 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:10481 |
-| `nameMarkBuddyExpress` | frontend/js/avatars.js:9367 |
-| `nameMarkBuddyFeel` | frontend/js/avatars.js:9972 |
-| `nameMarkBuddyFlies` | frontend/js/avatars.js:6607 |
-| `nameMarkBuddyFlip` | frontend/js/avatars.js:7360 |
-| `nameMarkBuddyFloaters` | frontend/js/avatars.js:4115 |
-| `nameMarkBuddyFollow` | frontend/js/avatars.js:5655 |
-| `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5864 |
-| `nameMarkBuddyFrames` | frontend/js/avatars.js:8919 |
-| `nameMarkBuddyGait` | frontend/js/avatars.js:6597 |
-| `nameMarkBuddyGetUp` | frontend/js/avatars.js:8951 |
-| `nameMarkBuddyGlanceAtPage` | frontend/js/avatars.js:9133 |
-| `nameMarkBuddyGlue` | frontend/js/avatars.js:5594 |
-| `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5643 |
-| `nameMarkBuddyGo` | frontend/js/avatars.js:6778 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:10858 |
-| `nameMarkBuddyHalt` | frontend/js/avatars.js:8967 |
-| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8916 |
-| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10326 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11594 |
-| `nameMarkBuddyHits` | frontend/js/avatars.js:4474 |
-| `nameMarkBuddyHold` | frontend/js/avatars.js:9452 |
-| `nameMarkBuddyHover` | frontend/js/avatars.js:7127 |
-| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:10173 |
-| `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4589 |
-| `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4598 |
-| `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4786 |
-| `nameMarkBuddyJoy` | frontend/js/avatars.js:9417 |
-| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:8958 |
-| `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:5071 |
-| `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5816 |
-| `nameMarkBuddyLandNear` | frontend/js/avatars.js:7101 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:10436 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10431 |
-| `nameMarkBuddyLedges` | frontend/js/avatars.js:4033 |
-| `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6397 |
-| `nameMarkBuddyLieDown` | frontend/js/avatars.js:8937 |
-| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:8717 |
-| `nameMarkBuddyLimbs` | frontend/js/avatars.js:6719 |
-| `nameMarkBuddyLockSync` | frontend/js/avatars.js:7568 |
-| `nameMarkBuddyLoud` | frontend/js/avatars.js:10020 |
-| `nameMarkBuddyMade` | frontend/js/avatars.js:3037 |
-| `nameMarkBuddyMeasureOnce` | frontend/js/avatars.js:4187 |
-| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:7832 |
-| `nameMarkBuddyMind` | frontend/js/avatars.js:8113 |
-| `nameMarkBuddyMotion` | frontend/js/avatars.js:3853 |
-| `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3887 |
-| `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6402 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10597 |
-| `nameMarkBuddyNapMs` | frontend/js/avatars.js:5858 |
-| `nameMarkBuddyNear` | frontend/js/avatars.js:4074 |
-| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:8021 |
-| `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3906 |
-| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9654 |
-| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9647 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:10357 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11475 |
-| `nameMarkBuddyObstacles` | frontend/js/avatars.js:4043 |
-| `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6381 |
-| `nameMarkBuddyOrigin` | frontend/js/avatars.js:4430 |
-| `nameMarkBuddyOverCanvas` | frontend/js/avatars.js:4775 |
-| `nameMarkBuddyOverhang` | frontend/js/avatars.js:5470 |
-| `nameMarkBuddyPainted` | frontend/js/avatars.js:4667 |
-| `nameMarkBuddyPanelMoving` | frontend/js/avatars.js:5952 |
-| `nameMarkBuddyPerchGone` | frontend/js/avatars.js:7769 |
-| `nameMarkBuddyPerchShown` | frontend/js/avatars.js:4025 |
-| `nameMarkBuddyPerches` | frontend/js/avatars.js:4862 |
-| `nameMarkBuddyPet` | frontend/js/avatars.js:7149 |
-| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8737 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:10681 |
-| `nameMarkBuddyPoof` | frontend/js/avatars.js:7384 |
-| `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4254 |
-| `nameMarkBuddyPopups` | frontend/js/avatars.js:4240 |
-| `nameMarkBuddyPout` | frontend/js/avatars.js:10163 |
-| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9439 |
-| `nameMarkBuddyPropGaps` | frontend/js/avatars.js:6027 |
-| `nameMarkBuddyPut` | frontend/js/avatars.js:5292 |
-| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:7821 |
-| `nameMarkBuddyQuietEnter` | frontend/js/avatars.js:8482 |
-| `nameMarkBuddyQuietWay` | frontend/js/avatars.js:8478 |
-| `nameMarkBuddyReact` | frontend/js/avatars.js:9530 |
-| `nameMarkBuddyRefit` | frontend/js/avatars.js:8521 |
-| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:8556 |
-| `nameMarkBuddyRelease` | frontend/js/avatars.js:8996 |
-| `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:7059 |
-| `nameMarkBuddyResetSize` | frontend/js/avatars.js:4400 |
-| `nameMarkBuddyRestore` | frontend/js/avatars.js:5118 |
-| `nameMarkBuddyRide` | frontend/js/avatars.js:5327 |
-| `nameMarkBuddyRideBox` | frontend/js/avatars.js:5411 |
-| `nameMarkBuddyRideClip` | frontend/js/avatars.js:5398 |
-| `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5384 |
-| `nameMarkBuddyRoom` | frontend/js/avatars.js:10709 |
-| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10699 |
-| `nameMarkBuddyRoute` | frontend/js/avatars.js:6659 |
-| `nameMarkBuddyRubbed` | frontend/js/avatars.js:7194 |
-| `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4371 |
-| `nameMarkBuddyScaled` | frontend/js/avatars.js:4434 |
-| `nameMarkBuddyScene` | frontend/js/avatars.js:8788 |
-| `nameMarkBuddySchedule` | frontend/js/avatars.js:9014 |
-| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:10024 |
-| `nameMarkBuddyScroller` | frontend/js/avatars.js:5502 |
-| `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:5631 |
-| `nameMarkBuddySeed` | frontend/js/avatars.js:2990 |
-| `nameMarkBuddySeen` | frontend/js/avatars.js:5490 |
-| `nameMarkBuddySelector` | frontend/js/avatars.js:5081 |
-| `nameMarkBuddySenses` | frontend/js/avatars.js:9678 |
-| `nameMarkBuddySetSize` | frontend/js/avatars.js:4380 |
-| `nameMarkBuddySettle` | frontend/js/avatars.js:8198 |
-| `nameMarkBuddySettleIn` | frontend/js/avatars.js:9118 |
-| `nameMarkBuddySettleKind` | frontend/js/avatars.js:9112 |
-| `nameMarkBuddyShape` | frontend/js/avatars.js:4441 |
-| `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4444 |
-| `nameMarkBuddyShown` | frontend/js/avatars.js:4011 |
-| `nameMarkBuddyShowy` | frontend/js/avatars.js:8471 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:10738 |
-| `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4409 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:10607 |
-| `nameMarkBuddySpellFactor` | frontend/js/avatars.js:3321 |
-| `nameMarkBuddySpellMs` | frontend/js/avatars.js:3329 |
-| `nameMarkBuddySpotFor` | frontend/js/avatars.js:5103 |
-| `nameMarkBuddySpots` | frontend/js/avatars.js:5062 |
-| `nameMarkBuddySquash` | frontend/js/avatars.js:7020 |
-| `nameMarkBuddyStances` | frontend/js/avatars.js:4844 |
-| `nameMarkBuddyState` | frontend/js/avatars.js:9068 |
-| `nameMarkBuddyStateOf` | frontend/js/avatars.js:9061 |
-| `nameMarkBuddyStepAside` | frontend/js/avatars.js:5166 |
-| `nameMarkBuddyStill` | frontend/js/avatars.js:3903 |
-| `nameMarkBuddyStillGood` | frontend/js/avatars.js:7661 |
-| `nameMarkBuddyStir` | frontend/js/avatars.js:10296 |
-| `nameMarkBuddyStreak` | frontend/js/avatars.js:9612 |
-| `nameMarkBuddyStride` | frontend/js/avatars.js:7006 |
-| `nameMarkBuddyStrokes` | frontend/js/avatars.js:7167 |
-| `nameMarkBuddySupportSoon` | frontend/js/avatars.js:7528 |
-| `nameMarkBuddySupported` | frontend/js/avatars.js:7478 |
-| `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:4611 |
-| `nameMarkBuddySway` | frontend/js/avatars.js:5307 |
-| `nameMarkBuddyTab` | frontend/js/avatars.js:4003 |
-| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:7949 |
-| `nameMarkBuddyTabSide` | frontend/js/avatars.js:8011 |
-| `nameMarkBuddyTakeSurfaces` | frontend/js/avatars.js:4206 |
-| `nameMarkBuddyTempo` | frontend/js/avatars.js:6057 |
-| `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:4553 |
-| `nameMarkBuddyTick` | frontend/js/avatars.js:9238 |
-| `nameMarkBuddyTilt` | frontend/js/avatars.js:8895 |
-| `nameMarkBuddyToggles` | frontend/js/avatars.js:3411 |
-| `nameMarkBuddyTraits` | frontend/js/avatars.js:9045 |
-| `nameMarkBuddyTravel` | frontend/js/avatars.js:6768 |
-| `nameMarkBuddyTypingFar` | frontend/js/avatars.js:4334 |
-| `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4330 |
-| `nameMarkBuddyVary` | frontend/js/avatars.js:8758 |
-| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7907 |
-| `nameMarkBuddyWake` | frontend/js/avatars.js:10256 |
-| `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:8097 |
-| `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8499 |
-| `nameMarkBuddyWander` | frontend/js/avatars.js:10194 |
-| `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4166 |
-| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9968 |
-| `nameMarkBuddyWatch` | frontend/js/avatars.js:6232 |
-| `nameMarkBuddyWay` | frontend/js/avatars.js:6756 |
-| `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4809 |
-| `nameMarkBuddyWork` | frontend/js/avatars.js:9819 |
-| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:9815 |
-| `nameMarkBuddyWorld` | frontend/js/avatars.js:7078 |
-| `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:5202 |
+| `nameMarkBuddyDecide` | frontend/js/avatars.js:9157 |
+| `nameMarkBuddyDodge` | frontend/js/avatars.js:4283 |
+| `nameMarkBuddyDodgeTyping` | frontend/js/avatars.js:4354 |
+| `nameMarkBuddyDrift` | frontend/js/avatars.js:9471 |
+| `nameMarkBuddyDrop` | frontend/js/avatars.js:5226 |
+| `nameMarkBuddyDue` | frontend/js/avatars.js:6052 |
+| `nameMarkBuddyEase` | frontend/js/avatars.js:10166 |
+| `nameMarkBuddyEdges` | frontend/js/avatars.js:4687 |
+| `nameMarkBuddyEmote` | frontend/js/avatars.js:3431 |
+| `nameMarkBuddyEnter` | frontend/js/avatars.js:8281 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:10495 |
+| `nameMarkBuddyExpress` | frontend/js/avatars.js:9381 |
+| `nameMarkBuddyFeel` | frontend/js/avatars.js:9986 |
+| `nameMarkBuddyFlies` | frontend/js/avatars.js:6621 |
+| `nameMarkBuddyFlip` | frontend/js/avatars.js:7374 |
+| `nameMarkBuddyFloaters` | frontend/js/avatars.js:4129 |
+| `nameMarkBuddyFollow` | frontend/js/avatars.js:5669 |
+| `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5878 |
+| `nameMarkBuddyFrames` | frontend/js/avatars.js:8933 |
+| `nameMarkBuddyGait` | frontend/js/avatars.js:6611 |
+| `nameMarkBuddyGetUp` | frontend/js/avatars.js:8965 |
+| `nameMarkBuddyGlanceAtPage` | frontend/js/avatars.js:9147 |
+| `nameMarkBuddyGlue` | frontend/js/avatars.js:5608 |
+| `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5657 |
+| `nameMarkBuddyGo` | frontend/js/avatars.js:6792 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:10882 |
+| `nameMarkBuddyHalt` | frontend/js/avatars.js:8981 |
+| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8930 |
+| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10340 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11618 |
+| `nameMarkBuddyHits` | frontend/js/avatars.js:4488 |
+| `nameMarkBuddyHold` | frontend/js/avatars.js:9466 |
+| `nameMarkBuddyHover` | frontend/js/avatars.js:7141 |
+| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:10187 |
+| `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4603 |
+| `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4612 |
+| `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4800 |
+| `nameMarkBuddyJoy` | frontend/js/avatars.js:9431 |
+| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:8972 |
+| `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:5085 |
+| `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5830 |
+| `nameMarkBuddyLandNear` | frontend/js/avatars.js:7115 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:10450 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10445 |
+| `nameMarkBuddyLedges` | frontend/js/avatars.js:4047 |
+| `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6411 |
+| `nameMarkBuddyLieDown` | frontend/js/avatars.js:8951 |
+| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:8731 |
+| `nameMarkBuddyLimbs` | frontend/js/avatars.js:6733 |
+| `nameMarkBuddyLockSync` | frontend/js/avatars.js:7582 |
+| `nameMarkBuddyLoud` | frontend/js/avatars.js:10034 |
+| `nameMarkBuddyMade` | frontend/js/avatars.js:3040 |
+| `nameMarkBuddyMeasureOnce` | frontend/js/avatars.js:4201 |
+| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:7846 |
+| `nameMarkBuddyMind` | frontend/js/avatars.js:8127 |
+| `nameMarkBuddyMotion` | frontend/js/avatars.js:3867 |
+| `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3901 |
+| `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6416 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10621 |
+| `nameMarkBuddyNapMs` | frontend/js/avatars.js:5872 |
+| `nameMarkBuddyNear` | frontend/js/avatars.js:4088 |
+| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:8035 |
+| `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3920 |
+| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9668 |
+| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9661 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:10371 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11499 |
+| `nameMarkBuddyObstacles` | frontend/js/avatars.js:4057 |
+| `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6395 |
+| `nameMarkBuddyOrigin` | frontend/js/avatars.js:4444 |
+| `nameMarkBuddyOverCanvas` | frontend/js/avatars.js:4789 |
+| `nameMarkBuddyOverhang` | frontend/js/avatars.js:5484 |
+| `nameMarkBuddyPainted` | frontend/js/avatars.js:4681 |
+| `nameMarkBuddyPanelMoving` | frontend/js/avatars.js:5966 |
+| `nameMarkBuddyPerchGone` | frontend/js/avatars.js:7783 |
+| `nameMarkBuddyPerchShown` | frontend/js/avatars.js:4039 |
+| `nameMarkBuddyPerches` | frontend/js/avatars.js:4876 |
+| `nameMarkBuddyPet` | frontend/js/avatars.js:7163 |
+| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8751 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:10705 |
+| `nameMarkBuddyPoof` | frontend/js/avatars.js:7398 |
+| `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4268 |
+| `nameMarkBuddyPopups` | frontend/js/avatars.js:4254 |
+| `nameMarkBuddyPout` | frontend/js/avatars.js:10177 |
+| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9453 |
+| `nameMarkBuddyPropGaps` | frontend/js/avatars.js:6041 |
+| `nameMarkBuddyPut` | frontend/js/avatars.js:5306 |
+| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:7835 |
+| `nameMarkBuddyQuietEnter` | frontend/js/avatars.js:8496 |
+| `nameMarkBuddyQuietWay` | frontend/js/avatars.js:8492 |
+| `nameMarkBuddyReact` | frontend/js/avatars.js:9544 |
+| `nameMarkBuddyRefit` | frontend/js/avatars.js:8535 |
+| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:8570 |
+| `nameMarkBuddyRelease` | frontend/js/avatars.js:9010 |
+| `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:7073 |
+| `nameMarkBuddyResetSize` | frontend/js/avatars.js:4414 |
+| `nameMarkBuddyRestore` | frontend/js/avatars.js:5132 |
+| `nameMarkBuddyRide` | frontend/js/avatars.js:5341 |
+| `nameMarkBuddyRideBox` | frontend/js/avatars.js:5425 |
+| `nameMarkBuddyRideClip` | frontend/js/avatars.js:5412 |
+| `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5398 |
+| `nameMarkBuddyRoom` | frontend/js/avatars.js:10733 |
+| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10723 |
+| `nameMarkBuddyRoute` | frontend/js/avatars.js:6673 |
+| `nameMarkBuddyRubbed` | frontend/js/avatars.js:7208 |
+| `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4385 |
+| `nameMarkBuddyScaled` | frontend/js/avatars.js:4448 |
+| `nameMarkBuddyScene` | frontend/js/avatars.js:8802 |
+| `nameMarkBuddySchedule` | frontend/js/avatars.js:9028 |
+| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:10038 |
+| `nameMarkBuddyScroller` | frontend/js/avatars.js:5516 |
+| `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:5645 |
+| `nameMarkBuddySeed` | frontend/js/avatars.js:2993 |
+| `nameMarkBuddySeen` | frontend/js/avatars.js:5504 |
+| `nameMarkBuddySelector` | frontend/js/avatars.js:5095 |
+| `nameMarkBuddySenses` | frontend/js/avatars.js:9692 |
+| `nameMarkBuddySetSize` | frontend/js/avatars.js:4394 |
+| `nameMarkBuddySettle` | frontend/js/avatars.js:8212 |
+| `nameMarkBuddySettleIn` | frontend/js/avatars.js:9132 |
+| `nameMarkBuddySettleKind` | frontend/js/avatars.js:9126 |
+| `nameMarkBuddyShape` | frontend/js/avatars.js:4455 |
+| `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4458 |
+| `nameMarkBuddyShown` | frontend/js/avatars.js:4025 |
+| `nameMarkBuddyShowy` | frontend/js/avatars.js:8485 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:10762 |
+| `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4423 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:10631 |
+| `nameMarkBuddySpellFactor` | frontend/js/avatars.js:3335 |
+| `nameMarkBuddySpellMs` | frontend/js/avatars.js:3343 |
+| `nameMarkBuddySpotFor` | frontend/js/avatars.js:5117 |
+| `nameMarkBuddySpots` | frontend/js/avatars.js:5076 |
+| `nameMarkBuddySquash` | frontend/js/avatars.js:7034 |
+| `nameMarkBuddyStances` | frontend/js/avatars.js:4858 |
+| `nameMarkBuddyState` | frontend/js/avatars.js:9082 |
+| `nameMarkBuddyStateOf` | frontend/js/avatars.js:9075 |
+| `nameMarkBuddyStepAside` | frontend/js/avatars.js:5180 |
+| `nameMarkBuddyStill` | frontend/js/avatars.js:3917 |
+| `nameMarkBuddyStillGood` | frontend/js/avatars.js:7675 |
+| `nameMarkBuddyStir` | frontend/js/avatars.js:10310 |
+| `nameMarkBuddyStreak` | frontend/js/avatars.js:9626 |
+| `nameMarkBuddyStride` | frontend/js/avatars.js:7020 |
+| `nameMarkBuddyStrokes` | frontend/js/avatars.js:7181 |
+| `nameMarkBuddySupportSoon` | frontend/js/avatars.js:7542 |
+| `nameMarkBuddySupported` | frontend/js/avatars.js:7492 |
+| `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:4625 |
+| `nameMarkBuddySway` | frontend/js/avatars.js:5321 |
+| `nameMarkBuddyTab` | frontend/js/avatars.js:4017 |
+| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:7963 |
+| `nameMarkBuddyTabSide` | frontend/js/avatars.js:8025 |
+| `nameMarkBuddyTakeSurfaces` | frontend/js/avatars.js:4220 |
+| `nameMarkBuddyTempo` | frontend/js/avatars.js:6071 |
+| `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:4567 |
+| `nameMarkBuddyTick` | frontend/js/avatars.js:9252 |
+| `nameMarkBuddyTilt` | frontend/js/avatars.js:8909 |
+| `nameMarkBuddyToggles` | frontend/js/avatars.js:3425 |
+| `nameMarkBuddyTraits` | frontend/js/avatars.js:9059 |
+| `nameMarkBuddyTravel` | frontend/js/avatars.js:6782 |
+| `nameMarkBuddyTypingFar` | frontend/js/avatars.js:4348 |
+| `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4344 |
+| `nameMarkBuddyVary` | frontend/js/avatars.js:8772 |
+| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7921 |
+| `nameMarkBuddyWake` | frontend/js/avatars.js:10270 |
+| `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:8111 |
+| `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8513 |
+| `nameMarkBuddyWander` | frontend/js/avatars.js:10208 |
+| `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4180 |
+| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9982 |
+| `nameMarkBuddyWatch` | frontend/js/avatars.js:6246 |
+| `nameMarkBuddyWay` | frontend/js/avatars.js:6770 |
+| `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4823 |
+| `nameMarkBuddyWork` | frontend/js/avatars.js:9833 |
+| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:9829 |
+| `nameMarkBuddyWorld` | frontend/js/avatars.js:7092 |
+| `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:5216 |
 | `nameMarkCompose` | frontend/js/avatars.js:1316 |
-| `nameMarkFigure` | frontend/js/avatars.js:3990 |
-| `nameMarkIdleAct` | frontend/js/avatars.js:2876 |
-| `nameMarkIdleQuiet` | frontend/js/avatars.js:2855 |
-| `nameMarkIdleTick` | frontend/js/avatars.js:2861 |
+| `nameMarkFigure` | frontend/js/avatars.js:4004 |
+| `nameMarkIdleAct` | frontend/js/avatars.js:2879 |
+| `nameMarkIdleQuiet` | frontend/js/avatars.js:2861 |
+| `nameMarkIdleTick` | frontend/js/avatars.js:2864 |
 | `nameMarkIdleWake` | frontend/js/avatars.js:2852 |
 | `nameMarkKeyboard` | frontend/js/avatars.js:1159 |
 | `nameMarkLean` | frontend/js/avatars.js:949 |
 | `nameMarkLine` | frontend/js/avatars.js:2778 |
 | `nameMarkLive` | frontend/js/avatars.js:2791 |
 | `nameMarkLookLean` | frontend/js/avatars.js:392 |
+| `nameMarkMotionStill` | frontend/js/avatars.js:2857 |
 | `nameMarkNextSerial` | frontend/js/avatars.js:1110 |
 | `nameMarkOwnFor` | frontend/js/avatars.js:352 |
 | `nameMarkRasterise` | frontend/js/avatars.js:1335 |
 | `nameMarkReact` | frontend/js/avatars.js:2799 |
 | `nameMarkSay` | frontend/js/avatars.js:2812 |
-| `nameMarkShade` | frontend/js/avatars.js:3910 |
+| `nameMarkShade` | frontend/js/avatars.js:3924 |
 | `nameMarkSlot` | frontend/js/avatars.js:308 |
 | `nameMarkStyleClean` | frontend/js/avatars.js:326 |
 | `nameMarkSushi` | frontend/js/avatars.js:2615 |
@@ -2574,15 +2575,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nmLineFor` | frontend/js/avatars.js:1727 |
 | `nmLuma` | frontend/js/avatars.js:1731 |
 | `nmMix` | frontend/js/avatars.js:1718 |
-| `nmbArmKeys` | frontend/js/avatars.js:6703 |
-| `nmbTick` | frontend/js/avatars.js:7644 |
-| `nmbTickArm` | frontend/js/avatars.js:7623 |
+| `nmbArmKeys` | frontend/js/avatars.js:6717 |
+| `nmbTick` | frontend/js/avatars.js:7658 |
+| `nmbTickArm` | frontend/js/avatars.js:7637 |
 | `ownNameMarkStyle` | frontend/js/avatars.js:348 |
-| `placeNameMarkBuddy` | frontend/js/avatars.js:7457 |
-| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7791 |
+| `placeNameMarkBuddy` | frontend/js/avatars.js:7471 |
+| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7805 |
 | `registerCharacter` | frontend/js/avatars.js:1239 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:315 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11486 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11510 |
 | `watchNameMark` | frontend/js/avatars.js:1126 |
 
 ### frontend/js/batch-space.js (7)
@@ -3154,40 +3155,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
-| `announceSaved` | frontend/js/desk-companion.js:411 |
+| `announceSaved` | frontend/js/desk-companion.js:413 |
 | `ask` | frontend/js/desk-companion.js:58 |
 | `call` | frontend/js/desk-companion.js:48 |
-| `cardHeight` | frontend/js/desk-companion.js:164 |
-| `companionRows` | frontend/js/desk-companion.js:225 |
-| `createNote` | frontend/js/desk-companion.js:401 |
-| `deskApiJson` | frontend/js/desk-companion.js:391 |
-| `deskClip` | frontend/js/desk-companion.js:430 |
+| `cardHeight` | frontend/js/desk-companion.js:166 |
+| `companionRows` | frontend/js/desk-companion.js:227 |
+| `createNote` | frontend/js/desk-companion.js:403 |
+| `deskApiJson` | frontend/js/desk-companion.js:393 |
+| `deskClip` | frontend/js/desk-companion.js:432 |
 | `draw` | frontend/js/desk-companion.js:76 |
-| `figure` | frontend/js/desk-companion.js:206 |
-| `fit` | frontend/js/desk-companion.js:124 |
-| `groups` | frontend/js/desk-companion.js:222 |
-| `hideRow` | frontend/js/desk-companion.js:242 |
-| `hitRow` | frontend/js/desk-companion.js:446 |
+| `figure` | frontend/js/desk-companion.js:208 |
+| `fit` | frontend/js/desk-companion.js:126 |
+| `groups` | frontend/js/desk-companion.js:224 |
+| `hideRow` | frontend/js/desk-companion.js:244 |
+| `hitRow` | frontend/js/desk-companion.js:448 |
 | `host` | frontend/js/desk-companion.js:57 |
-| `item` | frontend/js/desk-companion.js:179 |
-| `keepOpen` | frontend/js/desk-companion.js:333 |
-| `leave` | frontend/js/desk-companion.js:347 |
-| `note` | frontend/js/desk-companion.js:199 |
-| `noteStatus` | frontend/js/desk-companion.js:374 |
-| `openCompanion` | frontend/js/desk-companion.js:307 |
-| `openMenu` | frontend/js/desk-companion.js:246 |
-| `openNoteCard` | frontend/js/desk-companion.js:379 |
-| `openPanel` | frontend/js/desk-companion.js:356 |
-| `panelHeight` | frontend/js/desk-companion.js:143 |
-| `plain` | frontend/js/desk-companion.js:439 |
+| `item` | frontend/js/desk-companion.js:181 |
+| `keepOpen` | frontend/js/desk-companion.js:335 |
+| `leave` | frontend/js/desk-companion.js:349 |
+| `note` | frontend/js/desk-companion.js:201 |
+| `noteStatus` | frontend/js/desk-companion.js:376 |
+| `openCompanion` | frontend/js/desk-companion.js:309 |
+| `openMenu` | frontend/js/desk-companion.js:248 |
+| `openNoteCard` | frontend/js/desk-companion.js:381 |
+| `openPanel` | frontend/js/desk-companion.js:358 |
+| `panelHeight` | frontend/js/desk-companion.js:145 |
+| `plain` | frontend/js/desk-companion.js:441 |
 | `probe` | frontend/js/desk-companion.js:89 |
-| `rest` | frontend/js/desk-companion.js:363 |
-| `runSearch` | frontend/js/desk-companion.js:485 |
-| `searchEmpty` | frontend/js/desk-companion.js:473 |
+| `rest` | frontend/js/desk-companion.js:365 |
+| `runSearch` | frontend/js/desk-companion.js:487 |
+| `searchEmpty` | frontend/js/desk-companion.js:475 |
 | `seed` | frontend/js/desk-companion.js:68 |
-| `separator` | frontend/js/desk-companion.js:193 |
+| `separator` | frontend/js/desk-companion.js:195 |
 | `show` | frontend/js/desk-companion.js:106 |
-| `toggle` | frontend/js/desk-companion.js:215 |
+| `toggle` | frontend/js/desk-companion.js:217 |
 | `token` | frontend/js/desk-companion.js:45 |
 
 ### frontend/js/desk-frames.js (12)
@@ -13431,7 +13432,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 333 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 375 |
-| frontend/css/atlas-lazy.css | 1269 |
+| frontend/css/atlas-lazy.css | 1436 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |
@@ -14226,7 +14227,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11388)
+## Backend modules (11395)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18509,9 +18510,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_boards_topic` | src/tessellate/ai/help_topics_more.py:2656 |
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2650 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2814 |
+| `_act_boards_topic` | src/tessellate/ai/help_topics_more.py:2659 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2653 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2817 |
 
 ### src/tessellate/ai/help_words.py (6)
 
@@ -26447,38 +26448,45 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick_spell` | src/tessellate/core/overlay/presence.py:51 |
 | `spells_for` | src/tessellate/core/overlay/presence.py:46 |
 
-### src/tessellate/core/overlay/props.py (28)
+### src/tessellate/core/overlay/props.py (35)
 
 | Name | File:line |
 |---|---|
 | `Spec` | src/tessellate/core/overlay/props.py:38 |
 | `_act` | src/tessellate/core/overlay/props.py:49 |
-| `_add` | src/tessellate/core/overlay/props.py:183 |
-| `_beanbag` | src/tessellate/core/overlay/props.py:291 |
-| `_blanket` | src/tessellate/core/overlay/props.py:369 |
-| `_book` | src/tessellate/core/overlay/props.py:277 |
-| `_bowl` | src/tessellate/core/overlay/props.py:395 |
+| `_add` | src/tessellate/core/overlay/props.py:232 |
+| `_baton` | src/tessellate/core/overlay/props.py:559 |
+| `_beanbag` | src/tessellate/core/overlay/props.py:340 |
+| `_blanket` | src/tessellate/core/overlay/props.py:418 |
+| `_book` | src/tessellate/core/overlay/props.py:326 |
+| `_bowl` | src/tessellate/core/overlay/props.py:444 |
 | `_breath` | src/tessellate/core/overlay/props.py:53 |
-| `_cup` | src/tessellate/core/overlay/props.py:342 |
-| `_dumbbell` | src/tessellate/core/overlay/props.py:335 |
-| `_eddy` | src/tessellate/core/overlay/props.py:474 |
-| `_fetch` | src/tessellate/core/overlay/props.py:196 |
-| `_gust` | src/tessellate/core/overlay/props.py:449 |
-| `_journal` | src/tessellate/core/overlay/props.py:351 |
-| `_knit` | src/tessellate/core/overlay/props.py:432 |
-| `_lantern` | src/tessellate/core/overlay/props.py:326 |
-| `_map` | src/tessellate/core/overlay/props.py:315 |
-| `_mat` | src/tessellate/core/overlay/props.py:309 |
-| `_plant` | src/tessellate/core/overlay/props.py:379 |
-| `_rod` | src/tessellate/core/overlay/props.py:298 |
-| `_spiral` | src/tessellate/core/overlay/props.py:461 |
-| `_stars` | src/tessellate/core/overlay/props.py:359 |
-| `_wand` | src/tessellate/core/overlay/props.py:412 |
-| `draw` | src/tessellate/core/overlay/props.py:235 |
-| `next_step` | src/tessellate/core/overlay/props.py:212 |
-| `register` | src/tessellate/core/overlay/props.py:167 |
-| `spec_of` | src/tessellate/core/overlay/props.py:190 |
-| `view` | src/tessellate/core/overlay/props.py:200 |
+| `_chair` | src/tessellate/core/overlay/props.py:608 |
+| `_cloud` | src/tessellate/core/overlay/props.py:535 |
+| `_cup` | src/tessellate/core/overlay/props.py:391 |
+| `_dumbbell` | src/tessellate/core/overlay/props.py:384 |
+| `_eddy` | src/tessellate/core/overlay/props.py:523 |
+| `_fetch` | src/tessellate/core/overlay/props.py:245 |
+| `_gust` | src/tessellate/core/overlay/props.py:498 |
+| `_journal` | src/tessellate/core/overlay/props.py:400 |
+| `_knit` | src/tessellate/core/overlay/props.py:481 |
+| `_lantern` | src/tessellate/core/overlay/props.py:375 |
+| `_ledge` | src/tessellate/core/overlay/props.py:599 |
+| `_map` | src/tessellate/core/overlay/props.py:364 |
+| `_mat` | src/tessellate/core/overlay/props.py:358 |
+| `_plane` | src/tessellate/core/overlay/props.py:545 |
+| `_plant` | src/tessellate/core/overlay/props.py:428 |
+| `_rod` | src/tessellate/core/overlay/props.py:347 |
+| `_sketch` | src/tessellate/core/overlay/props.py:570 |
+| `_speck` | src/tessellate/core/overlay/props.py:586 |
+| `_spiral` | src/tessellate/core/overlay/props.py:510 |
+| `_stars` | src/tessellate/core/overlay/props.py:408 |
+| `_wand` | src/tessellate/core/overlay/props.py:461 |
+| `draw` | src/tessellate/core/overlay/props.py:284 |
+| `next_step` | src/tessellate/core/overlay/props.py:261 |
+| `register` | src/tessellate/core/overlay/props.py:216 |
+| `spec_of` | src/tessellate/core/overlay/props.py:239 |
+| `view` | src/tessellate/core/overlay/props.py:249 |
 
 ### src/tessellate/core/overlay/runner.py (4)
 
@@ -28868,7 +28876,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23252)
+## Tests (23275)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28997,6 +29005,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_frame_reads.py | 10 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
 | tests/test_atlas_idle_writes_1114.py | 2 |
+| tests/test_atlas_laugh_end_l184.py | 2 |
 | tests/test_atlas_lids_1301.py | 7 |
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_main_thread_loops_1114.py | 3 |
@@ -29005,6 +29014,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |
+| tests/test_atlas_rest_beat_l184.py | 3 |
 | tests/test_atlas_rest_faces.py | 6 |
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_rig_undefined_0_1111.py | 3 |
@@ -29012,6 +29022,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_shape.py | 51 |
 | tests/test_atlas_sleep_z.py | 2 |
 | tests/test_atlas_stars.py | 7 |
+| tests/test_atlas_stipple_l742.py | 3 |
 | tests/test_atlas_suggest_shape.py | 2 |
 | tests/test_atlas_tail_lower_c_1108.py | 10 |
 | tests/test_atlas_vitals_1719.py | 4 |
@@ -29300,6 +29311,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_cold_window_guard_1108.py | 3 |
 | tests/test_command_row_shape.py | 3 |
 | tests/test_commands_own_words.py | 4 |
+| tests/test_companion_acts_l178.py | 12 |
 | tests/test_companion_aloft_bars_1111.py | 4 |
 | tests/test_companion_band_html_1726.py | 3 |
 | tests/test_companion_bar_stand_1027.py | 2 |
@@ -29329,6 +29341,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_inappdive_1107.py | 9 |
 | tests/test_companion_land_1402.py | 8 |
 | tests/test_companion_landing_1683k.py | 4 |
+| tests/test_companion_life_l181.py | 3 |
 | tests/test_companion_live_1114.py | 6 |
 | tests/test_companion_lively_1107.py | 6 |
 | tests/test_companion_menu_bars_1111.py | 6 |
@@ -31894,32 +31907,32 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 10. Outline, navigation and view | docs/roadmap/WHITEBOARD_PLAN.md:1080 |
 | 10. The spelling check: decided 2026-09-12 | docs/roadmap/DOCUMENTS_PLAN.md:453 |
 | 10. Timeline tab, and time-aware notes | docs/roadmap/BACKLOG.md:654 |
-| 109.1 Fixed, and how each was actually proven | docs/roadmap/BACKLOG.md:3444 |
-| 109.2 Text highlighting: built | docs/roadmap/BACKLOG.md:3448 |
-| 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3452 |
-| 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3491 |
+| 109.1 Fixed, and how each was actually proven | docs/roadmap/BACKLOG.md:3446 |
+| 109.2 Text highlighting: built | docs/roadmap/BACKLOG.md:3450 |
+| 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3454 |
+| 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3493 |
 | 11. Built: the previews, Phase 4 and Phase 5 | docs/roadmap/MINDMAP_PLAN.md:219 |
 | 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71) | docs/roadmap/TIMELINE_PLAN.md:348 |
 | 11. Keyboard shortcuts | docs/roadmap/WHITEBOARD_PLAN.md:1094 |
 | 11. Performance, accuracy and AI efficiency | docs/roadmap/BACKLOG.md:711 |
 | 11. Phase 4 decisions, made 2026-09-12 | docs/roadmap/DOCUMENTS_PLAN.md:521 |
 | 11. The week, session by session (Opus/Sonnet), and the quarter | docs/roadmap/WORLD_CLASS_PLAN.md:901 |
-| 110.1 Built | docs/roadmap/BACKLOG.md:3524 |
-| 110.2 The five bugs, and the measurement that found each | docs/roadmap/BACKLOG.md:3528 |
-| 110.3 Still open | docs/roadmap/BACKLOG.md:3565 |
-| 111.1 Inefficiencies, measured or read rather than guessed | docs/roadmap/BACKLOG.md:3583 |
-| 111.2 Features worth building, ranked by value per unit of work | docs/roadmap/BACKLOG.md:3606 |
-| 111.3 Directions, not features | docs/roadmap/BACKLOG.md:3634 |
-| 112.1 The one thing this app has that the others structurally cannot | docs/roadmap/BACKLOG.md:3664 |
-| 112.2 Missing features, ranked by "would someone pay for this" | docs/roadmap/BACKLOG.md:3696 |
-| 112.3 Scaling and optimisation, in the order it will actually bite | docs/roadmap/BACKLOG.md:3733 |
-| 112.4 What "professionalise" actually means here | docs/roadmap/BACKLOG.md:3754 |
-| 112.5 Deliberately not doing | docs/roadmap/BACKLOG.md:3779 |
-| 115. After PR 144: professional use (the owner's stated next block, 2026-09-14) | docs/roadmap/BACKLOG.md:3824 |
-| 116.1 Dropped or half-done, and therefore first | docs/roadmap/BACKLOG.md:3801 |
-| 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3808 |
-| 116.3 the retired plan doc rows not started (by track) | docs/roadmap/BACKLOG.md:3812 |
-| 116.4 Tooling | docs/roadmap/BACKLOG.md:3819 |
+| 110.1 Built | docs/roadmap/BACKLOG.md:3526 |
+| 110.2 The five bugs, and the measurement that found each | docs/roadmap/BACKLOG.md:3530 |
+| 110.3 Still open | docs/roadmap/BACKLOG.md:3567 |
+| 111.1 Inefficiencies, measured or read rather than guessed | docs/roadmap/BACKLOG.md:3585 |
+| 111.2 Features worth building, ranked by value per unit of work | docs/roadmap/BACKLOG.md:3608 |
+| 111.3 Directions, not features | docs/roadmap/BACKLOG.md:3636 |
+| 112.1 The one thing this app has that the others structurally cannot | docs/roadmap/BACKLOG.md:3666 |
+| 112.2 Missing features, ranked by "would someone pay for this" | docs/roadmap/BACKLOG.md:3698 |
+| 112.3 Scaling and optimisation, in the order it will actually bite | docs/roadmap/BACKLOG.md:3735 |
+| 112.4 What "professionalise" actually means here | docs/roadmap/BACKLOG.md:3756 |
+| 112.5 Deliberately not doing | docs/roadmap/BACKLOG.md:3781 |
+| 115. After PR 144: professional use (the owner's stated next block, 2026-09-14) | docs/roadmap/BACKLOG.md:3826 |
+| 116.1 Dropped or half-done, and therefore first | docs/roadmap/BACKLOG.md:3803 |
+| 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3810 |
+| 116.3 the retired plan doc rows not started (by track) | docs/roadmap/BACKLOG.md:3814 |
+| 116.4 Tooling | docs/roadmap/BACKLOG.md:3821 |
 | 12. Deepened 2026-10-10: the calendar (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:389 |
 | 12. Does the AI know it is an agent? | docs/roadmap/BACKLOG.md:962 |
 | 12. Security review (read, not penetration-tested; each item names the file) | docs/roadmap/WORLD_CLASS_PLAN.md:910 |
@@ -31962,19 +31975,19 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 15. Inventions: eight things no notebook does, specified for Opus and Sonnet | docs/roadmap/WORLD_CLASS_PLAN.md:1055 |
 | 15. The code block's own bar, and where it belongs: measured 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:698 |
 | 16. Layouts | docs/roadmap/WHITEBOARD_PLAN.md:1203 |
-| 16. Sweeping UI quality-of-life | docs/roadmap/BACKLOG.md:1147 |
+| 16. Sweeping UI quality-of-life | docs/roadmap/BACKLOG.md:1149 |
 | 16. The backend, read for structure, silent failure and lag (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:1389 |
 | 16. The engine's three omissions, and the table menu: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:737 |
 | 17. The Format panel with nothing selected, and diagram options | docs/roadmap/WHITEBOARD_PLAN.md:1211 |
 | 17. The live view for professional use: measured 2026-09-21, phases open | docs/roadmap/DOCUMENTS_PLAN.md:778 |
 | 17. The original vision, audited (2026-09-09) | docs/roadmap/WORLD_CLASS_PLAN.md:1631 |
-| 17. Use cases the app can't serve yet | docs/roadmap/BACKLOG.md:1195 |
-| 18. Agent quality | docs/roadmap/BACKLOG.md:1229 |
+| 17. Use cases the app can't serve yet | docs/roadmap/BACKLOG.md:1197 |
+| 18. Agent quality | docs/roadmap/BACKLOG.md:1231 |
 | 18. Out of scope, with the reason | docs/roadmap/WHITEBOARD_PLAN.md:1221 |
 | 18. The next horizon, written 2026-09-14 at the close of PR 144 | docs/roadmap/WORLD_CLASS_PLAN.md:1725 |
 | 18. The slash menus as one system: built 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:980 |
 | 19. A board or a map as an object in a note, and a note's reminders: built 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:1205 |
-| 19. Accessibility audit | docs/roadmap/BACKLOG.md:1267 |
+| 19. Accessibility audit | docs/roadmap/BACKLOG.md:1269 |
 | 19. The architecture and framework review (2026-09-20, INBOX 266) | docs/roadmap/WORLD_CLASS_PLAN.md:1902 |
 | 19.1 The one number that matters: 776 MB resident, idle | docs/roadmap/WORLD_CLASS_PLAN.md:1915 |
 | 19.2 The frontend is 5.9 MB decoded, and that is mostly fine | docs/roadmap/WORLD_CLASS_PLAN.md:1955 |
@@ -31993,12 +32006,12 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 2. Why it disappoints (measured, 48 notes across six months, 1358px) | docs/roadmap/TIMELINE_PLAN.md:24 |
 | 2. Why it disappoints: measured and read | docs/roadmap/GRAPH_PLAN.md:27 |
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2211 |
-| 20. Backend | docs/roadmap/BACKLOG.md:1295 |
+| 20. Backend | docs/roadmap/BACKLOG.md:1297 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:848 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2281 |
-| 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1431 |
+| 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1433 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:274 |
-| 22. Reported in use, not yet done | docs/roadmap/BACKLOG.md:1506 |
+| 22. Reported in use, not yet done | docs/roadmap/BACKLOG.md:1508 |
 | 22. The diagram builder redesign: design note, 2026-11-04 (INBOX 1613 to 1615, 1621) | docs/roadmap/DOCUMENTS_PLAN.md:1317 |
 | 22. The professional baseline and the devibecode programme (2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2294 |
 | 22.0 Verified present at HEAD (do not rebuild) | docs/roadmap/DOCUMENTS_PLAN.md:1321 |
@@ -32014,10 +32027,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2414 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1458 |
 | 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08) | docs/roadmap/DOCUMENTS_PLAN.md:1451 |
-| 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1600 |
+| 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1602 |
 | 23. The code editor as an IDE: run, preview, test and debug (INBOX 748) | docs/roadmap/DOCUMENTS_PLAN.md:992 |
 | 24. Codebase census, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3205 |
-| 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1632 |
+| 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1634 |
 | 24. Deepened 2026-10-10: the documents editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1101 |
 | 24.1 Size and complexity | docs/roadmap/WORLD_CLASS_PLAN.md:3209 |
 | 24.2 Duplicated blocks | docs/roadmap/WORLD_CLASS_PLAN.md:3329 |
@@ -32026,7 +32039,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 24.5 Counts | docs/roadmap/WORLD_CLASS_PLAN.md:3509 |
 | 24.6 Console errors per surface | docs/roadmap/WORLD_CLASS_PLAN.md:3615 |
 | 24.6b Interaction timings, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3628 |
-| 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1664 |
+| 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1666 |
 | 25. Deepened 2026-10-10: the code editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1142 |
 | 25. The whole app against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3705 |
 | 25.1 The bar | docs/roadmap/WORLD_CLASS_PLAN.md:3724 |
@@ -32034,7 +32047,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 25.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3779 |
 | 25.4 Phases with gates (each a brief; measure first) | docs/roadmap/WORLD_CLASS_PLAN.md:3819 |
 | 25.5 Not verified | docs/roadmap/WORLD_CLASS_PLAN.md:3835 |
-| 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1730 |
+| 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1732 |
 | 26. Synced blocks, decision 82 (row 5, F1 run 2, 2026-11-11) | docs/roadmap/DOCUMENTS_PLAN.md:1469 |
 | 26. The backend against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3843 |
 | 26.1 Judgement, by layer | docs/roadmap/WORLD_CLASS_PLAN.md:3865 |
@@ -32043,11 +32056,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 26.4 Measured, 2026-10-10 (Brief 60, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3921 |
 | 26.5 Complexity, cycles, hot routes and frames, 2026-10-10 (decision 63, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3942 |
 | 27. Every feature, its utility and its popups, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3957 |
-| 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1807 |
+| 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1809 |
 | 27.1 Feature by feature: what it offers, what a professional expects, the gap | docs/roadmap/WORLD_CLASS_PLAN.md:3971 |
 | 27.2 The popups, one by one | docs/roadmap/WORLD_CLASS_PLAN.md:3999 |
 | 27.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4020 |
-| 28. In-app help: an AI that knows the docs, built | docs/roadmap/BACKLOG.md:1837 |
+| 28. In-app help: an AI that knows the docs, built | docs/roadmap/BACKLOG.md:1839 |
 | 28. The trust contract, 2026-10-10 (INBOX 750) | docs/roadmap/WORLD_CLASS_PLAN.md:4034 |
 | 28.1 The rules, each with its measure | docs/roadmap/WORLD_CLASS_PLAN.md:4043 |
 | 28.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4062 |
@@ -32055,11 +32068,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 28.4 Deepened 2026-10-10: the OCR workspace (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4093 |
 | 28.5 Deepened 2026-10-10: the audio set (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4127 |
 | 28.6 T0 numbers, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:4167 |
-| 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1843 |
-| 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:2025 |
-| 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1870 |
-| 29d. Whiteboard: scoped and next, not brainstormed | docs/roadmap/BACKLOG.md:1891 |
-| 29e. Whiteboard master spec (uploaded, MS Whiteboard/OneNote/draw.io/ | docs/roadmap/BACKLOG.md:1948 |
+| 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1845 |
+| 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:2027 |
+| 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1872 |
+| 29d. Whiteboard: scoped and next, not brainstormed | docs/roadmap/BACKLOG.md:1893 |
+| 29e. Whiteboard master spec (uploaded, MS Whiteboard/OneNote/draw.io/ | docs/roadmap/BACKLOG.md:1950 |
 | 3. Chat page: Chat / Agent / Browse sub-tabs | docs/roadmap/BACKLOG.md:92 |
 | 3. Edit style, Edit data, placeholders, tooltips | docs/roadmap/WHITEBOARD_PLAN.md:939 |
 | 3. Frontend dossiers (one per surface, each a hand-off brief) | docs/roadmap/WORLD_CLASS_PLAN.md:295 |
@@ -32111,10 +32124,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 6. Measuring "professional" without telemetry | docs/roadmap/WORLD_CLASS_PLAN.md:704 |
 | 6. Not verified | docs/roadmap/CHAT_PLAN.md:1597 |
 | 6. OpenAI-compatible backends: **done** | docs/roadmap/BACKLOG.md:383 |
-| 62. Extract notes: from the Writing Room, Documents, and Graph selections | docs/roadmap/BACKLOG.md:2063 |
-| 63. Ship a starter skills library, DONE, this claim was stale | docs/roadmap/BACKLOG.md:2077 |
-| 64. Documents editor: built, moved to HISTORY.md | docs/roadmap/BACKLOG.md:2081 |
-| 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2086 |
+| 62. Extract notes: from the Writing Room, Documents, and Graph selections | docs/roadmap/BACKLOG.md:2065 |
+| 63. Ship a starter skills library, DONE, this claim was stale | docs/roadmap/BACKLOG.md:2079 |
+| 64. Documents editor: built, moved to HISTORY.md | docs/roadmap/BACKLOG.md:2083 |
+| 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2088 |
 | 7. Acceptance | docs/roadmap/MINDMAP_PLAN.md:175 |
 | 7. Deepened 2026-10-10: the deterministic features (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1601 |
 | 7. Desktop packaging | docs/roadmap/BACKLOG.md:387 |
@@ -32125,12 +32138,12 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 7. Not verified until built | docs/roadmap/WHITEBOARD_PLAN.md:529 |
 | 7. Shape libraries and the stencil format | docs/roadmap/WHITEBOARD_PLAN.md:986 |
 | 7. The small things (a checklist that sessions keep reopening) | docs/roadmap/WORLD_CLASS_PLAN.md:731 |
-| 75. Voice memos: capture, storage, playback, and a dedicated library page | docs/roadmap/BACKLOG.md:2113 |
-| 76. Keyword-only note filing while the AI is unavailable, flagged for later AI review | docs/roadmap/BACKLOG.md:2136 |
-| 77. Notes-tab pagination and page-aware note links | docs/roadmap/BACKLOG.md:2143 |
-| 78. Whether the backend needs more concurrency than it already has | docs/roadmap/BACKLOG.md:2224 |
-| 79. Linux release packaging: done; macOS still open | docs/roadmap/BACKLOG.md:2233 |
-| 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2264 |
+| 75. Voice memos: capture, storage, playback, and a dedicated library page | docs/roadmap/BACKLOG.md:2115 |
+| 76. Keyword-only note filing while the AI is unavailable, flagged for later AI review | docs/roadmap/BACKLOG.md:2138 |
+| 77. Notes-tab pagination and page-aware note links | docs/roadmap/BACKLOG.md:2145 |
+| 78. Whether the backend needs more concurrency than it already has | docs/roadmap/BACKLOG.md:2226 |
+| 79. Linux release packaging: done; macOS still open | docs/roadmap/BACKLOG.md:2235 |
+| 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2266 |
 | 8. Acceptance for the whole plan | docs/roadmap/DOCUMENTS_PLAN.md:246 |
 | 8. Deepened 2026-10-10: chat access to information (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1633 |
 | 8. Execution order for the coming week (Opus/Sonnet sessions) | docs/roadmap/WORLD_CLASS_PLAN.md:782 |
@@ -32148,13 +32161,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 9. Phase 5: the calendar as the third view (Fable, 2026-10-10; WORLD_CLASS_PLAN 25, decision 47; Brief 55) | docs/roadmap/TIMELINE_PLAN.md:209 |
 | 9. Risks | docs/roadmap/DOCUMENTS_PLAN.md:258 |
 | 9. The graph: make it a tool, and give it a look | docs/roadmap/BACKLOG.md:568 |
-| A. Model and backend | docs/roadmap/BACKLOG.md:2367 |
+| A. Model and backend | docs/roadmap/BACKLOG.md:2369 |
 | After KG1 to KG9 | docs/roadmap/GRAPH_PLAN.md:500 |
 | After the bugs: the parity programme (the owner, 2026-10-10) | docs/ROADMAP.md:132 |
 | Asked for this session, not yet built | docs/roadmap/BACKLOG.md:304 |
 | Audio in the notebook: the architecture decided 2026-09-21, the build deferred | docs/roadmap/WORLD_CLASS_PLAN.md:2126 |
 | Audit, 2026-09-13 night (INBOX 209: "poke holes in this application") | docs/roadmap/WORLD_CLASS_PLAN.md:774 |
-| B. Retrieval and context: where the real quality ceiling is | docs/roadmap/BACKLOG.md:2392 |
+| B. Retrieval and context: where the real quality ceiling is | docs/roadmap/BACKLOG.md:2394 |
 | B1 The event log: every change is a fact, the tables are views | docs/roadmap/WORLD_CLASS_PLAN.md:484 |
 | B2 The job runtime: durable, resumable, observable | docs/roadmap/WORLD_CLASS_PLAN.md:541 |
 | B3 The retrieval engine: one index, three signals, explained | docs/roadmap/WORLD_CLASS_PLAN.md:547 |
@@ -32182,12 +32195,12 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Built: Phase 1 (the canvas renderer and physical drag) | docs/roadmap/GRAPH_PLAN.md:162 |
 | Built: Phase 9 | docs/roadmap/UI_MODERNISATION_PLAN.md:507 |
 | Built: items 1, 3, 4 and 5 | docs/roadmap/UI_MODERNISATION_PLAN.md:233 |
-| C. Capture: the half the app is named for | docs/roadmap/BACKLOG.md:2416 |
+| C. Capture: the half the app is named for | docs/roadmap/BACKLOG.md:2418 |
 | Cactus whistle and mirage: measured, not adopted (2026-11-14) | docs/roadmap/BACKLOG.md:713 |
 | Composer decisions, taken with the owner, 2026-10-06 | docs/roadmap/CHAT_PLAN.md:741 |
-| Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon") | docs/roadmap/BACKLOG.md:4395 |
+| Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon") | docs/roadmap/BACKLOG.md:4397 |
 | Counts | docs/roadmap/LEDGER.md:7 |
-| D. Trust and safety | docs/roadmap/BACKLOG.md:2436 |
+| D. Trust and safety | docs/roadmap/BACKLOG.md:2438 |
 | D1 Dashboard (M, Sonnet after a Fable/Opus design pass) | docs/roadmap/WORLD_CLASS_PLAN.md:301 |
 | D10 Documents and PDFs (L, see DOCUMENTS_PLAN.md; add PDF annotation as | docs/roadmap/WORLD_CLASS_PLAN.md:418 |
 | D11 Whiteboard and mind maps (M, in progress; then MINDMAP_PLAN Phases | docs/roadmap/WORLD_CLASS_PLAN.md:423 |
@@ -32240,22 +32253,22 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Deepened 2026-10-10: statistics (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1104 |
 | Deepened 2026-10-10: the command palette and Find anything (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1161 |
 | Deepened 2026-10-10: utilities (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1135 |
-| Deliberately not on this list | docs/roadmap/BACKLOG.md:2492 |
+| Deliberately not on this list | docs/roadmap/BACKLOG.md:2494 |
 | Design requests | docs/roadmap/CHAT_PLAN.md:820 |
 | Design requests | docs/roadmap/DOCUMENTS_PLAN.md:1244 |
 | Design requests | docs/roadmap/UI_MODERNISATION_PLAN.md:922 |
 | Design requests | docs/roadmap/WORLD_CLASS_PLAN.md:3090 |
-| Device and owner checks from the chat plan (2026-11-14) | docs/roadmap/BACKLOG.md:4449 |
-| Device and owner checks from the mindmap plan (2026-11-12) | docs/roadmap/BACKLOG.md:4429 |
-| Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2547 |
+| Device and owner checks from the chat plan (2026-11-14) | docs/roadmap/BACKLOG.md:4451 |
+| Device and owner checks from the mindmap plan (2026-11-12) | docs/roadmap/BACKLOG.md:4431 |
+| Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2549 |
 | Direction, 2026-10-10 (Fable orchestrating): the thesis, the policies, the tracks | docs/ROADMAP.md:26 |
-| E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2455 |
-| Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4164 |
+| E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2457 |
+| Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4166 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:580 |
 | Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1783 |
 | Gap audit against draw.io, 2026-10-25 (wb2) | docs/roadmap/WHITEBOARD_PLAN.md:1521 |
 | Gates | docs/roadmap/TIMELINE_PLAN.md:288 |
-| Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2509 |
+| Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2511 |
 | H1 The night shift, finished (I1 second pass; L, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1749 |
 | H2 Evidence cards and open questions (I6 then I3; L, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1765 |
 | H3 The model bench (I8; M, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1780 |
@@ -32277,20 +32290,20 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | I7 The corrections loop: every "no" makes the notebook better | docs/roadmap/WORLD_CLASS_PLAN.md:1209 |
 | I8 The model bench: which local model is best on *your* notebook | docs/roadmap/WORLD_CLASS_PLAN.md:1261 |
 | I9 What the notebook learned: one place to see, edit, delete and switch it all off | docs/roadmap/WORLD_CLASS_PLAN.md:1265 |
-| Ideas | docs/roadmap/BACKLOG.md:4061 |
+| Ideas | docs/roadmap/BACKLOG.md:4063 |
 | Ideas | docs/roadmap/CHAT_PLAN.md:864 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
-| Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:503 |
+| Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4408 |
+| Needs hardware | docs/roadmap/LEDGER.md:501 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:499 |
-| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
+| Owner calls | docs/roadmap/LEDGER.md:497 |
+| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4281 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
 | Phase 11: the phone, done properly (1 to 2 sessions, next session or later) | docs/roadmap/UI_MODERNISATION_PLAN.md:527 |
@@ -32325,7 +32338,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1234 |
 | Placed (last 20, newest first) | docs/roadmap/INBOX.md:145 |
-| Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4070 |
+| Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4072 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3125 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1697 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1269 |
@@ -32333,7 +32346,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1734 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1405 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:205 |
-| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4294 |
+| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4296 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:578 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:170 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1371 |
@@ -32360,11 +32373,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-09-27 | docs/roadmap/WHITEBOARD_PLAN.md:757 |
 | Placed from INBOX, 2026-09-27 (399) | docs/roadmap/WORLD_CLASS_PLAN.md:2432 |
 | Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1406 |
-| Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3870 |
-| Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:3914 |
-| Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3850 |
+| Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3872 |
+| Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:3916 |
+| Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3852 |
 | Placed from INBOX, 2026-10-03 (INBOX 391, 392) | docs/roadmap/WORLD_CLASS_PLAN.md:2490 |
-| Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:4027 |
+| Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:4029 |
 | Placed from INBOX, 2026-10-03 (INBOX 403, the standing bar) | docs/roadmap/WORLD_CLASS_PLAN.md:2469 |
 | Placed from INBOX, 2026-10-03 (INBOX 409: the AI assistant bar is what stays open) | docs/roadmap/DOCUMENTS_PLAN.md:1223 |
 | Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413) | docs/roadmap/CHAT_PLAN.md:614 |
@@ -32400,7 +32413,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1701 |
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1755 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1225 |
-| Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4190 |
+| Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4192 |
 | Placed from INBOX, 2026-10-19 | docs/roadmap/DOCUMENTS_PLAN.md:1304 |
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1503 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1281 |
@@ -32418,7 +32431,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-27 | docs/roadmap/DOCUMENTS_PLAN.md:1310 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/UI_MODERNISATION_PLAN.md:1253 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/WHITEBOARD_PLAN.md:1551 |
-| Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4318 |
+| Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4320 |
 | Placed from INBOX, 2026-10-27 (speed and smoothness, 1415) | docs/roadmap/UI_MODERNISATION_PLAN.md:1255 |
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1260 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1557 |
@@ -32428,9 +32441,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101) | docs/roadmap/WHITEBOARD_PLAN.md:1565 |
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:314 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1270 |
-| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4327 |
-| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4337 |
-| Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4381 |
+| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4329 |
+| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4339 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4383 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/DOCUMENTS_PLAN.md:1447 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1793 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1581 |
@@ -32456,9 +32469,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from W34, 2026-11-11 (gap5: open perf and tooling rows, sized) | docs/roadmap/UI_MODERNISATION_PLAN.md:1293 |
 | Placed from W34, 2026-11-11 (gap5: the diagram builder's open cost) | docs/roadmap/DOCUMENTS_PLAN.md:1465 |
 | Placed from W34, 2026-11-11 (gap5: the open graph rows, sized) | docs/roadmap/GRAPH_PLAN.md:626 |
-| Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4303 |
-| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4309 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4057 |
+| Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4305 |
+| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4311 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4059 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:765 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1236 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:564 |
@@ -32470,19 +32483,19 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1850 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:653 |
+| Plan session briefs | docs/roadmap/LEDGER.md:651 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
-| Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
+| Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2657 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
 | Section 8's two cheap additions: **built 2026-10-05**, see | docs/roadmap/TIMELINE_PLAN.md:135 |
 | Settings information architecture (INBOX 444) | docs/roadmap/UI_MODERNISATION_PLAN.md:783 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:200 |
-| Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4204 |
+| Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4206 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:767 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1530 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2258 |
-| Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2776 |
-| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4247 |
+| Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2778 |
+| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4249 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:898 |
 | The asymmetry these exploit | docs/roadmap/WORLD_CLASS_PLAN.md:1065 |
 | The deterministic foundation, 2026-10-10 (INBOX 746) | docs/roadmap/CHAT_PLAN.md:1508 |
@@ -32499,9 +32512,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The thesis | docs/ROADMAP.md:39 |
 | The tracks, in order (each a brief; the agent model in brackets) | docs/ROADMAP.md:113 |
 | The two bars that are not docks (added by direct instruction) | docs/roadmap/UI_MODERNISATION_PLAN.md:448 |
-| Timeline, parked 2026-11-12 | docs/roadmap/BACKLOG.md:4440 |
+| Timeline, parked 2026-11-12 | docs/roadmap/BACKLOG.md:4442 |
 | Traps that have each cost real time | docs/ROADMAP.md:380 |
-| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4391 |
+| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4393 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1681 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1259 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:571 |
@@ -32517,45 +32530,45 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | What is actually open, 2026-09-14 | docs/roadmap/INBOX.md:25 |
 | What is already good | docs/roadmap/WORLD_CLASS_PLAN.md:1004 |
 | What is left, 2026-09-24 (INBOX 399: "what is left in the world class plan??") | docs/roadmap/WORLD_CLASS_PLAN.md:784 |
-| What was built | docs/roadmap/BACKLOG.md:2772 |
+| What was built | docs/roadmap/BACKLOG.md:2774 |
 | What was deliberately left out | docs/roadmap/WORLD_CLASS_PLAN.md:1381 |
 | What was wrong, and is fixed this session | docs/roadmap/WORLD_CLASS_PLAN.md:1014 |
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:669 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:753 |
-| documents | docs/roadmap/LEDGER.md:85 |
-| documents | docs/roadmap/LEDGER.md:693 |
-| general | docs/roadmap/LEDGER.md:458 |
+| chat | docs/roadmap/LEDGER.md:667 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:751 |
+| documents | docs/roadmap/LEDGER.md:83 |
+| documents | docs/roadmap/LEDGER.md:691 |
+| general | docs/roadmap/LEDGER.md:456 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:657 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:765 |
-| llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:101 |
-| mindmap | docs/roadmap/LEDGER.md:705 |
-| timeline | docs/roadmap/LEDGER.md:221 |
-| timeline | docs/roadmap/LEDGER.md:729 |
-| ui-modernisation | docs/roadmap/LEDGER.md:104 |
-| ui-modernisation | docs/roadmap/LEDGER.md:717 |
-| whiteboard | docs/roadmap/LEDGER.md:39 |
-| whiteboard | docs/roadmap/LEDGER.md:681 |
-| world-class | docs/roadmap/LEDGER.md:223 |
-| world-class | docs/roadmap/LEDGER.md:741 |
-| §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
-| §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
-| §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |
-| §105: Library "All" tab: the create button now follows the filter chip, the rest is scoped not built | docs/roadmap/BACKLOG.md:3068 |
-| §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped | docs/roadmap/BACKLOG.md:3117 |
-| §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built | docs/roadmap/BACKLOG.md:3260 |
-| §108: a fast bug-fix round: three real front-end bugs and a batch of small polish | docs/roadmap/BACKLOG.md:3355 |
-| §109: the measured bug round, the competitor gap list triaged, and what is genuinely still open | docs/roadmap/BACKLOG.md:3437 |
-| §110: the toolbar round: formatting in Notes, and five more measured bugs | docs/roadmap/BACKLOG.md:3522 |
-| §111: where this app should go next, grounded in what the code actually does | docs/roadmap/BACKLOG.md:3577 |
-| §112: the strategic pass: what would make this app hard to compete with | docs/roadmap/BACKLOG.md:3651 |
-| §116: capability gaps identified in the Fable session | docs/roadmap/BACKLOG.md:3793 |
-| §95: the forward list | docs/roadmap/BACKLOG.md:2356 |
-| §96: Guides, and diagrams the whiteboard can take | docs/roadmap/BACKLOG.md:2504 |
-| §98: reported live during the §90.2 small-screen pass, logged not built | docs/roadmap/BACKLOG.md:2666 |
-| §99: the lightbox as a showcase, and uploads split by file type | docs/roadmap/BACKLOG.md:2766 |
+| graph | docs/roadmap/LEDGER.md:655 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:763 |
+| llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4417 |
+| mindmap | docs/roadmap/LEDGER.md:99 |
+| mindmap | docs/roadmap/LEDGER.md:703 |
+| timeline | docs/roadmap/LEDGER.md:219 |
+| timeline | docs/roadmap/LEDGER.md:727 |
+| ui-modernisation | docs/roadmap/LEDGER.md:102 |
+| ui-modernisation | docs/roadmap/LEDGER.md:715 |
+| whiteboard | docs/roadmap/LEDGER.md:37 |
+| whiteboard | docs/roadmap/LEDGER.md:679 |
+| world-class | docs/roadmap/LEDGER.md:221 |
+| world-class | docs/roadmap/LEDGER.md:739 |
+| §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2827 |
+| §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2878 |
+| §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2985 |
+| §105: Library "All" tab: the create button now follows the filter chip, the rest is scoped not built | docs/roadmap/BACKLOG.md:3070 |
+| §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped | docs/roadmap/BACKLOG.md:3119 |
+| §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built | docs/roadmap/BACKLOG.md:3262 |
+| §108: a fast bug-fix round: three real front-end bugs and a batch of small polish | docs/roadmap/BACKLOG.md:3357 |
+| §109: the measured bug round, the competitor gap list triaged, and what is genuinely still open | docs/roadmap/BACKLOG.md:3439 |
+| §110: the toolbar round: formatting in Notes, and five more measured bugs | docs/roadmap/BACKLOG.md:3524 |
+| §111: where this app should go next, grounded in what the code actually does | docs/roadmap/BACKLOG.md:3579 |
+| §112: the strategic pass: what would make this app hard to compete with | docs/roadmap/BACKLOG.md:3653 |
+| §116: capability gaps identified in the Fable session | docs/roadmap/BACKLOG.md:3795 |
+| §95: the forward list | docs/roadmap/BACKLOG.md:2358 |
+| §96: Guides, and diagrams the whiteboard can take | docs/roadmap/BACKLOG.md:2506 |
+| §98: reported live during the §90.2 small-screen pass, logged not built | docs/roadmap/BACKLOG.md:2668 |
+| §99: the lightbox as a showcase, and uploads split by file type | docs/roadmap/BACKLOG.md:2768 |

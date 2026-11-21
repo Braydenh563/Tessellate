@@ -329,7 +329,9 @@ def test_reduced_motion_still_clicks_and_carries_and_a_drop_lands_on_the_floor_a
 
 def test_roam_off_never_walks() -> None:
     e, _ = make(roam=False)
-    assert {o.frame for o in run(e, 120.0, step=0.5)} <= {"stand", "blink", "look", "sit"}
+    # The set is the in-place frames, not the walk's. "wave" joins it (L178): the arm-up frame juggle, the lantern and the
+    # weights already stand in, and the L178 acts (a paper plane, conducting, a balance) moved this seed's two minutes onto one.
+    assert {o.frame for o in run(e, 120.0, step=0.5)} <= {"stand", "blink", "look", "sit", "wave"}
     assert len({o.x for o in run(e, 30.0, t0=120.0, step=0.5)}) == 1
 
 

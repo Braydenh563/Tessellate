@@ -2852,11 +2852,14 @@
   function nameMarkIdleWake() {
     if (!nameMarkIdleTimer) nameMarkIdleTimer = setTimeout(nameMarkIdleTick, 3000 + Math.random() * 3000);
   }
-  function nameMarkIdleQuiet() {
+  //: Motion still: what stops the loops. A hand-over asks only this (L184: with "What it does" off the giggle
+  //: still runs, and its end went in one frame, 3.21 px).
+  function nameMarkMotionStill() {
     const root = document.documentElement;
-    return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced"
-      || reducedMotionWanted()
-      || nameMarkBuddyActions() === "off";
+    return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced" || reducedMotionWanted();
+  }
+  function nameMarkIdleQuiet() {
+    return nameMarkMotionStill() || nameMarkBuddyActions() === "off";
   }
   function nameMarkIdleTick() {
     nameMarkIdleTimer = 0;
@@ -3295,6 +3298,17 @@
     dinner: { ms: 25000, w: 3, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
     bubbles: { ms: 9500, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
     knit: { ms: 45000, w: 1, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
+    //: L178: the catalogue's idle acts neither companion had (`act.cloud_pillow` and the rest); the hour weights are its `day`.
+    cloudpillow: { ms: 30000, w: 1.2, cool: 360000, poses: ["stand", "sit"], atlas: true, desk: true },
+    plane: { ms: 5000, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+    conduct: { ms: 6000, w: 1, cool: 200000, poses: ["stand"], atlas: true, desk: true },
+    sketch: { ms: 30000, w: 1, cool: 360000, poses: ["stand", "sit"], atlas: true, desk: true },
+    kneel: { ms: 5000, w: 1, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+    leanedge: { ms: 16000, w: 1.5, cool: 240000, poses: ["stand"], atlas: true, desk: true },
+    tailchase: { ms: 3200, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+    tailstretch: { ms: 3000, w: 1.5, cool: 150000, poses: ["stand"], atlas: true, desk: true },
+    balance: { ms: 6000, w: 1, cool: 240000, poses: ["stand"], atlas: true, desk: true },
+    skyfloat: { ms: 24000, w: 1, cool: 360000, poses: ["stand"], atlas: true, desk: true },
     //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
     //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
     daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
@@ -3378,7 +3392,7 @@
     ["poses", "Settle into other poses (crouch, lounge, rest, drift)", ["crouch", "lounge", "rest", "drift"]],
     ["glide", "Glide through the air and climb while hanging", ["glide", "climb"]],
     ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
-    ["desk", "Atlas does the desk companion's routines: workouts, tea, dinner, fishing, a journal, knitting, bubbles, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
+    ["desk", "Atlas does the desk companion's routines: workouts, tea, dinner, fishing, a journal, knitting, bubbles, a paper plane, a sketch, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
     ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
     ["lie", "Lie down for a nap", ["lie"]],
     ["read", "Read a book", ["read"]],
@@ -10057,7 +10071,7 @@
   const NMB_BLEND_PARTS = ".nm-buddy-char, .nm-buddy-head, .nm-figure, .nmb-leg-l, .nmb-leg-r, :is(.nmb-arm-l, .nmb-arm-r):not(.atl-rigged, .atl-arm-probe)";
   function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     const roots = (Array.isArray(buddy) ? buddy : [buddy]).filter((el) => el && typeof el.getAnimations === "function");
-    if (!roots.length || nameMarkIdleQuiet() || nmb.written()) {
+    if (!roots.length || nameMarkMotionStill() || nmb.written()) {
       change();
       return;
     }
@@ -10587,6 +10601,16 @@
     ["nmb-act-dinner", "eating dinner from a bowl"],
     ["nmb-act-bubbles", "blowing bubbles from a wand"],
     ["nmb-act-knit", "knitting a strand of starlight"],
+    ["nmb-act-cloudpillow", "resting its chin on a cloud"],
+    ["nmb-act-plane", "throwing a paper plane"],
+    ["nmb-act-conduct", "conducting a tune"],
+    ["nmb-act-sketch", "sketching the view"],
+    ["nmb-act-kneel", "kneeling to look at something small"],
+    ["nmb-act-leanedge", "leaning on the edge"],
+    ["nmb-act-tailchase", "chasing its tail"],
+    ["nmb-act-tailstretch", "stretching its tail"],
+    ["nmb-act-balance", "balancing with its arms out"],
+    ["nmb-act-skyfloat", "floating on its back"],
     ["nmb-act-daydream", "daydreaming"],
     ["nmb-act-pace", "pacing"],
     ["nmb-act-game", "making up a game"],

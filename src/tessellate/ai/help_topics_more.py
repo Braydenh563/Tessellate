@@ -97,6 +97,7 @@ MORE_TOPICS: list[dict] = [
             "companion looks down", "companion daydreams", "companion tinkers", "companion miffed face",
             "companion smirk", "pat the companion", "pet the companion", "companion bonk", "swipe the companion", "companion twirl", "companion cloud", "companion grabs an edge",
             "companion eats dinner", "companion blows bubbles", "companion knits", "companion rides the wind",
+            "companion paper plane", "companion conducts", "companion sketches", "companion chases its tail", "companion leans on the edge",
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
@@ -104,7 +105,9 @@ MORE_TOPICS: list[dict] = [
             "a bowl of dinner, bubbles from a wand and knitting a strand of starlight, each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
-            "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer. A shake or a pout leaves it "
+            "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer, "
+            "a cloud pillow, a paper plane, conducting, sketching, kneeling to a sprout, leaning on the edge, a tail chase and "
+            "stretch, a balance and a back float. A shake or a pout leaves it "
             "miffed for a moment, and a shrug a smirk. "
             "The loud ones (push-ups, dumbbells) wait for a lull. They are one group, \"Atlas does the "
             "desk companion's routines\", under Settings, Appearance, Corner companion, "
@@ -112,8 +115,8 @@ MORE_TOPICS: list[dict] = [
             "it to blinks and looks. Pat its head with slow dabs and it enjoys it (Lean into a rub or a pat), "
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
             "a hard throw into the top bar bonks it before it falls, throw it while it holds something (a cup, a rod, a journal) and the thing lies tipped over beside it for a moment, and a long way across the page is sometimes a ride on a "
-            "cloud or in a bubble. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
-            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) keep to their hours, last a few minutes and come likelier in a mood that suits them, as on the desktop. A long way is sometimes a ride on a gust of motes, as on the desktop. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
+            "cloud, in a bubble or on a gust of motes (a spiral as it sets off, an eddy where it settles; the desktop's floating trips too). The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
+            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) keep to their hours, last a few minutes and come likelier in a mood that suits them, as on the desktop. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
