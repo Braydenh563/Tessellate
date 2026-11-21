@@ -178,6 +178,18 @@ ORIGINS: dict[str, str] = {
     "schedule": "on its schedule",
     "start-up": "at start-up",
     "app": "the app",
+    #: Something that happened (a note saved, an image added) set it going.
+    "event": "after something happened",
+}
+
+#: Why a run started, when its caller did not say more (the History tab's
+#: "why" line; a caller that knows better passes `why=`).
+ORIGIN_WHY: dict[str, str] = {
+    "you": "You asked for it.",
+    "schedule": "It was due on its schedule.",
+    "start-up": "The app does it each time it starts.",
+    "app": "The app started it to do something else you asked for.",
+    "event": "Something changed, so it ran.",
 }
 
 _finished: deque[dict] = deque(maxlen=FINISHED_KEEP)
@@ -202,17 +214,22 @@ def origin_now() -> str:
     return getattr(_origin, "value", "")
 
 
+def why_now() -> str:
+    """The reason `started_by` gave for the work on this thread, or ""."""
+    return getattr(_origin, "why", "")
+
+
 @contextmanager
-def started_by(origin: str):  # noqa: ANN201
-    """Runs opened on this thread inside the block say who started them,
-    without an `origin=` at every call (a pool job runs a pass that opens
-    its own run three calls down)."""
-    before = getattr(_origin, "value", "")
-    _origin.value = origin
+def started_by(origin: str, why: str = ""):  # noqa: ANN201
+    """Runs opened on this thread inside the block say who started them
+    (and, with `why`, for what reason), without an `origin=` at every call
+    (a pool job runs a pass that opens its own run three calls down)."""
+    before = getattr(_origin, "value", ""), getattr(_origin, "why", "")
+    _origin.value, _origin.why = origin, why
     try:
         yield
     finally:
-        _origin.value = before
+        _origin.value, _origin.why = before
 
 
 def finished(limit: int = FINISHED_KEEP) -> list[dict]:
@@ -284,6 +301,7 @@ class Run:
         *,
         title: str = "",
         origin: str = "",
+        why: str = "",
         ledger: bool = True,
     ) -> None:
         self.kind = kind
@@ -292,6 +310,8 @@ class Run:
         #: where the kind's label says only what sort of job it is.
         self.title = _clip(title) or KINDS.get(kind, kind)
         self.origin = origin or origin_now()
+        #: Why it started, in a sentence; the origin's stock line when the caller said none.
+        self.why = _clip(why) or why_now() or ORIGIN_WHY.get(self.origin, "")
         #: False for a run seen only at its end (`note_finished`): its
         #: ending is already in `taskhistory`, and the ledger would list it twice.
         self._ledger = ledger
@@ -376,6 +396,7 @@ class Run:
             "label": KINDS.get(self.kind) or WATCH_ONLY_KINDS.get(self.kind, self.kind),
             "title": self.title,
             "origin": self.origin,
+            "why": self.why,
             "started": self._started_epoch,
             "progress": progress,
             "detail": detail,
@@ -512,6 +533,7 @@ class Run:
             "label": self.title,
             "title": self.title,
             "origin": self.origin,
+            "why": self.why,
             "outcome": outcome,
             "detail": self._error if outcome == "failed" else _clip(self.result),
             "started": self._started_epoch,
@@ -556,7 +578,7 @@ def merged_history(entries: list[dict], limit: int = FINISHED_KEEP) -> list[dict
         )
         if twin is not None:
             ledger.remove(twin)
-            row.update({key: twin[key] for key in ("run_id", "origin", "lines", "started", "count")})
+            row.update({key: twin[key] for key in ("run_id", "origin", "why", "lines", "started", "count")})
         row.setdefault("ended", at)
         out.append(row)
     out.extend(ledger)
@@ -566,17 +588,17 @@ def merged_history(entries: list[dict], limit: int = FINISHED_KEEP) -> list[dict
     return out[:limit]
 
 
-def begin(kind: str, db=None, *, title: str = "", origin: str = "") -> Run:  # noqa: ANN001
+def begin(kind: str, db=None, *, title: str = "", origin: str = "", why: str = "") -> Run:  # noqa: ANN001
     """Start a run you will `finish()` yourself, for a job whose body is too
     long to indent into a `with` (a route that already has three try blocks).
     The caller owns calling `finish()` on every way out."""
-    run = Run(kind, _database(db), title=title, origin=origin)
+    run = Run(kind, _database(db), title=title, origin=origin, why=why)
     run.start()
     return run
 
 
 @contextmanager
-def job_run(kind: str, db=None, *, title: str = "", origin: str = "", persist: bool = True):  # noqa: ANN001, ANN201
+def job_run(kind: str, db=None, *, title: str = "", origin: str = "", why: str = "", persist: bool = True):  # noqa: ANN001, ANN201
     """Record one run of `kind`: started now, finished when the block leaves.
 
     `db` is only for a caller that already holds the `DatabaseManager`
@@ -584,7 +606,7 @@ def job_run(kind: str, db=None, *, title: str = "", origin: str = "", persist: b
     `persist=False` keeps the run in the live list and the ledger only: a
     chat answer is a run worth seeing, not a "last run" row per kind.
     """
-    run = Run(kind, _database(db) if persist else None, title=title, origin=origin)
+    run = Run(kind, _database(db) if persist else None, title=title, origin=origin, why=why)
     run.start()
     try:
         with bound(run):
@@ -796,7 +818,7 @@ def _open_call(model: str, tools: bool) -> tuple["Run", "Run | None", str]:
     own = None
     if parent is None:
         scope = _request_scope.get()
-        own = Run("ai-call", None, title=_purpose() or f"AI request to {name}", origin="you" if scope else "app")
+        own = Run("ai-call", None, title=_purpose() or f"AI request to {name}", origin="you" if scope else "app", why="Your request needed the model." if scope else "")
         own.start()
     run = parent or own
     run.say(f"Asked {name}{' with tools' if tools else ''}.")

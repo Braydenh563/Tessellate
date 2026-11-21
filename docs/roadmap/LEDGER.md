@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 88 | 18 | 0 | 0 | 106 |
+| world-class | 0 | 89 | 17 | 0 | 0 | 106 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 478 | 89 | 2 | 111 | 939 |
+| all | 372 | 479 | 88 | 2 | 111 | 939 |
 
 ## graph
 
@@ -495,7 +495,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
-- [ ] **L669** `world-class` partly, M: Left: one process ledger for every AI and background run. The backups list already says why each backup was made (settings-data.js:334,406 origin_words). From OPEN.md:1786.
 - [ ] **L672** `world-class` partly, M: Dictation model: installed markers, remove, unsloth Gemma variant licence call. From INBOX.md:904 B61. Evidence: Markers/Remove at settings-packages.js:110,:122; model_manager.py:126 lists a unsloth Gemma 4 GGUF; embedding unsloth variant licence call open
 - [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms). Measured 2026-11-21, fresh notebook, load 5 on 4 cores, median of 5: first open 400 ms (range 307 to 557), pane switches 24 to 112 ms (appearance 112, personas 98, general 78, rest under 60); CPU profile of the open is native parse/style/layout, no script function over 6 ms, surfaceBuild 10 ms, an idle prefetch of settings-controls.js (243 KB) changed nothing (444 vs 422 ms, reverted). Lever left: split the body into one surface per pane and wire the 110 listeners (settings-controls.js, `$(id)?.addEventListener` at load, each of which builds the whole body through `surfaceFind`) per pane with `onSurface`; the body is 4,042 elements of the 5,557 after open.
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
@@ -556,6 +555,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-280** `world-class` open, M: First paint sits at 300 to 330 ms against the 300 ms line: find what the first frame waits for (844 KB of HTML with every surface template, 22 stylesheets) and trim it. From WORLD_CLASS_PLAN.md:1823 (L-world-class-90 measured). Evidence: first paint median 301 / 332 ms in two 5-run cold loads at 1440x900 (range 246 to 456; 300 line); html 844 KB decoded (163 KB gz), 22 render-blocking css 1,024 KB decoded (195 KB gz); defer on every boot script gave no gain (7 pairs, 408 to 390 ms median); the lock screen paints after 34 to 53 of 85 resources
 - [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
+- [ ] **L-world-class-570** `world-class` open, M: Keep the process history across restarts: a JobRun-style table (migration plus test_alembic_full_chain) fed from Run._to_ledger, and a why for scheduled passes that today carry no origin. From L669. Evidence: core/jobruns.py FINISHED_KEEP=60 ring in process memory; the History tab empties on restart
 
 ## general
 

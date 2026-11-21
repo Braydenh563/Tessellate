@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Activity has a History tab (L669): every AI and background run since the app started in one list, newest first, each with what started it (you, a schedule, start-up or an event), what it was, when, how long it took, how it ended and why (`GET /activity/history`; runs say why through `why=` or `started_by(origin, why)`, else the origin's stock line). The ring holds 60 runs and forgets on restart: LEDGER L-world-class-570.
 - Two lints caught up with moved code: the small name mark's size rule is read in `nameMarkGenerated`, and the Library's first-document warm (static files into the HTTP cache) is listed with its reason in the bare-fetch lint.
 - Message wording lint: the "file changed while open" detail for a download write-back is checked at its source in core/sealed_files.py (CI de422974).
 - Capture outbox: the staged-picture strip stops at the next bracket (linear on a wall of brackets) and the held reminder is still stripped from the queued note (CI de422974).

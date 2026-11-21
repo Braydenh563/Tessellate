@@ -6704,7 +6704,7 @@ def test_a_pane_tab_row_names_sections_that_exist() -> None:
     controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert "function ensurePaneTabs(box)" in controls and "  ensurePaneTabs(box);" in controls
     activity = html[html.index('id="activity-tabs"') : html.index('id="activity-running"')]
-    assert activity.count("pop-tab-glyph") == 2 and activity.count("pop-count") == 2
+    assert activity.count("pop-tab-glyph") == 3 and activity.count("pop-count") == 3
 
 
 def test_the_theme_tile_is_four_overlapping_dots_over_the_name() -> None:

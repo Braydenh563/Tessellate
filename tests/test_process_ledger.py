@@ -300,3 +300,54 @@ def test_the_running_tab_lists_finished_runs_with_outcome_and_length(client):
     assert row["outcome"] == "completed" and row["duration_ms"] >= 0
     assert row["started"] <= row["finished"] and row["origin"] == "you started it"
     assert row["lines"][0]["text"] == "Read 40 notes."
+
+
+# --- L669: one history for every run, with what started it and why ---------
+
+
+def test_a_run_says_why_it_started_in_its_own_words_or_its_origins():
+    with jobruns.job_run("export", title="Export", origin="you", why="You pressed Export", persist=False):
+        pass
+    with jobruns.job_run("resurface", title="Resurfacing", origin="schedule", persist=False):
+        pass
+    with jobruns.job_run("ocr", title="Reading", origin="event", why="A new image arrived", persist=False):
+        pass
+    by_title = {row["title"]: row for row in jobruns.finished()}
+    assert by_title["Export"]["why"] == "You pressed Export"
+    assert by_title["Resurfacing"]["why"] == jobruns.ORIGIN_WHY["schedule"]
+    assert by_title["Reading"]["why"] == "A new image arrived"
+    assert "event" in jobruns.ORIGINS
+
+
+def test_started_by_carries_the_why_to_runs_opened_below():
+    with jobruns.started_by("event", "A note was saved"):
+        with jobruns.job_run("filing", title="Filing", persist=False):
+            pass
+    row = jobruns.finished()[0]
+    assert row["origin"] == "event" and row["why"] == "A note was saved"
+    assert jobruns.origin_now() == "" and jobruns.why_now() == ""
+
+
+def test_history_lists_running_and_finished_runs_newest_first(client):
+    with jobruns.job_run("export", title="First", origin="you", persist=False) as run:
+        run.result = "wrote 3 notes"
+    #: Fixed times, so the order never rides on the real clock.
+    jobruns._finished[-1].update(started=1000.0, ended=1002.0)
+    with jobruns.job_run("resurface", title="Second", origin="schedule", persist=False):
+        rows = client.get("/activity/history").json()["runs"]
+        assert rows[0]["title"] == "Second" and rows[0]["outcome"] == "running"
+        assert rows[0]["finished"] is None
+    rows = client.get("/activity/history").json()["runs"]
+    assert [r["title"] for r in rows] == ["Second", "First"]
+    first = rows[1]
+    assert first["origin"] == jobruns.ORIGINS["you"] and first["result"] == "wrote 3 notes"
+    assert first["outcome"] == "completed" and first["why"] and first["duration_ms"] >= 0
+    assert first["label"] == "Notebook export" and first["started"] and first["finished"]
+
+
+def test_history_is_not_cut_to_half_an_hour(client):
+    with jobruns.job_run("export", title="Old", origin="you", persist=False):
+        pass
+    jobruns._finished[-1]["ended"] -= 3 * 3600
+    assert client.get("/activity").json()["finished"] == []
+    assert [r["title"] for r in client.get("/activity/history").json()["runs"]] == ["Old"]
