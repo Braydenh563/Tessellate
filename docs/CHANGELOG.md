@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: it puts its reading glasses on when you open a long note with Show more again; the list sends a long note cut short and it took that for a short one.
 - Companion: Atlas's pupils stay inside its eyes while it is thinking; they rested a little too far up and to the left.
 - Companion: lying down on a beanbag or the floor no longer jumps 14 to 20px at the start; its hand-over between poses read a waiting transition as a move.
 - Companion: Atlas's glow in the large view is centred on the masculine look as it is on the feminine one, no longer sitting to one side of the standing figure.
