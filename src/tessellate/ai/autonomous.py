@@ -991,7 +991,15 @@ def run_pass(scheduled: bool = False) -> None:
             return
         _working.set()
     try:
-        _run_optimization()
+        #: Its night shift and learned audit open runs below this one, on
+        #: this thread, and take the same origin and why.
+        if scheduled:
+            why = "The autonomous pass is due every few hours while background AI is switched on."
+            with jobruns.started_by("schedule", why):
+                _run_optimization()
+        else:
+            with jobruns.started_by("you", "You pressed Run now on the autonomous pass."):
+                _run_optimization()
     except Exception:  # noqa: BLE001  # one bad pass is a log line
         logger.error("autonomous pass error", exc_info=True)
         _working.clear()

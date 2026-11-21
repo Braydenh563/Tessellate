@@ -1031,7 +1031,7 @@ def list_activity() -> dict:
 def activity_history() -> dict:
     """Every AI and background run the app remembers, newest first (L669):
     what started it, what it was, when, how long it took, how it ended and
-    why. The runs in flight come first, then the ledger's ring."""
+    why. The runs in flight come first, then the stored history."""
     rows = [
         {
             "run_id": run["id"], "kind": run["kind"], "label": run["label"], "title": run["title"],
@@ -1049,7 +1049,7 @@ def activity_history() -> dict:
             "started": run.get("started"), "finished": run.get("ended"),
             "duration_ms": run.get("duration_ms"), "count": run.get("count", 1),
         }
-        for run in jobruns.finished()
+        for run in jobruns.history()
     )
     for row in rows:
         row["label"] = jobruns.KINDS.get(row["kind"]) or row["label"]

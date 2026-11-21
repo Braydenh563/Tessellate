@@ -229,7 +229,10 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
             logging.getLogger("tessellate.embeddings").info("embedding warm-up stopped after the model load")
             return
         if session_factory is not None and not _warmup["error"]:
-            backfill_missing(service, session_factory)
+            from tessellate.core import jobruns
+
+            with jobruns.started_by("schedule", "Search by meaning came ready, so notes it missed were filled in."):
+                backfill_missing(service, session_factory)
             # ...and build the retrieval engine's vector matrix once, here,
             # on the thread that already waited for the model rather than on
             # whichever request happens to be first (Brief 11). Before the

@@ -192,6 +192,11 @@ ORIGIN_WHY: dict[str, str] = {
     "event": "Something changed, so it ran.",
 }
 
+#: What the History tab keeps across restarts (`JobRunLog`): the newest rows
+#: and nothing older than the days, by the person's own clock.
+KEEP_ROWS = 500
+KEEP_DAYS = 30
+
 _finished: deque[dict] = deque(maxlen=FINISHED_KEEP)
 _ids = itertools.count(1)
 #: Bumped on every start, line and finish, for `/jobs/stream` (the panel's
@@ -242,7 +247,100 @@ def clear_finished() -> None:
     """The history's Clear, and between tests."""
     with _live_lock:
         _finished.clear()
+    _forget_logged()
     _bump()
+
+
+def _logged_now() -> datetime:
+    """Now on the person's own clock, naive: what `JobRunLog.logged_at` holds."""
+    from tessellate.core import config
+
+    return config.loaded_user_now().replace(tzinfo=None)
+
+
+def _persist(entry: dict, replaced: str = "", db=None) -> None:  # noqa: ANN001
+    """Write one finished run to `job_run_log` and prune it. `replaced` is the
+    run id a merged row stands in for. Never raises: the ring still has it."""
+    db = _database(db)
+    if db is None:
+        return
+    try:
+        from sqlalchemy import delete, func, select
+
+        from tessellate.core.database import JobRunLog
+
+        now = _logged_now()
+        with db.session() as session:
+            if replaced:
+                session.execute(delete(JobRunLog).where(JobRunLog.run_id == replaced))
+            session.merge(
+                JobRunLog(
+                    run_id=entry["run_id"], kind=entry["kind"], title=_clip(entry["title"]),
+                    label=_clip(entry["label"]), origin=entry["origin"], why=_clip(entry["why"]),
+                    outcome=entry["outcome"], detail=_clip(entry["detail"]), started=entry["started"],
+                    ended=entry["ended"], duration_ms=entry["duration_ms"], count=entry["count"],
+                    lines=entry["lines"], logged_at=now,
+                )
+            )
+            session.flush()
+            session.execute(delete(JobRunLog).where(JobRunLog.logged_at < now - timedelta(days=KEEP_DAYS)))
+            if session.scalar(select(func.count()).select_from(JobRunLog)) > KEEP_ROWS:
+                keep = select(JobRunLog.run_id).order_by(JobRunLog.ended.desc()).limit(KEEP_ROWS)
+                session.execute(delete(JobRunLog).where(JobRunLog.run_id.not_in(keep)))
+            session.commit()
+    except Exception:  # noqa: BLE001  # the history is a convenience, never a reason to fail a run
+        logger.debug("could not keep the run history", exc_info=True)
+
+
+def _forget_logged(db=None) -> None:  # noqa: ANN001
+    db = _database(db)
+    if db is None:
+        return
+    try:
+        from sqlalchemy import delete
+
+        from tessellate.core.database import JobRunLog
+
+        with db.session() as session:
+            session.execute(delete(JobRunLog))
+            session.commit()
+    except Exception:  # noqa: BLE001
+        logger.debug("could not clear the run history", exc_info=True)
+
+
+def history(limit: int = KEEP_ROWS, db=None) -> list[dict]:  # noqa: ANN001
+    """Finished runs newest first: the stored history (it survives a restart)
+    with the ring's runs over it, the ring being the fresher copy of a run
+    both hold."""
+    ring = finished(FINISHED_KEEP)
+    seen = {run["run_id"] for run in ring}
+    stored: list[dict] = []
+    db = _database(db)
+    if db is not None:
+        try:
+            from sqlalchemy import select
+
+            from tessellate.core.database import JobRunLog
+
+            with db.session() as session:
+                rows = session.scalars(select(JobRunLog).order_by(JobRunLog.ended.desc()).limit(limit))
+                for row in rows:
+                    if row.run_id in seen:
+                        continue
+                    stored.append(
+                        {
+                            "run_id": row.run_id, "kind": row.kind, "name": "", "label": row.label,
+                            "title": row.title, "origin": row.origin, "why": row.why,
+                            "outcome": row.outcome, "detail": row.detail, "started": row.started,
+                            "ended": row.ended, "duration_ms": row.duration_ms,
+                            "lines": list(row.lines or []), "count": row.count,
+                        }
+                    )
+        except Exception:  # noqa: BLE001
+            logger.debug("could not read the run history", exc_info=True)
+    out = ring + stored
+    out.sort(key=lambda run: run.get("ended") or 0.0, reverse=True)
+    return out[:limit]
 
 #: Runs that have started and not finished, for `live()` (INBOX 1006: the
 #: owner asked for "actual progress feedback and a log" on the background
@@ -543,6 +641,7 @@ class Run:
             "lines": self.lines(),
             "count": 1,
         }
+        replaced = ""
         with _live_lock:
             last = _finished[-1] if _finished else None
             if (
@@ -553,8 +652,10 @@ class Run:
                 and entry["ended"] - last["ended"] <= MERGE_WITHIN_S
             ):
                 entry["count"] = last["count"] + 1
+                replaced = last["run_id"]
                 _finished.pop()
             _finished.append(entry)
+        _persist(entry, replaced, self._db)
 
 
 def merged_history(entries: list[dict], limit: int = FINISHED_KEEP) -> list[dict]:

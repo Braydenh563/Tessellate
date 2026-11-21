@@ -351,3 +351,105 @@ def test_history_is_not_cut_to_half_an_hour(client):
     jobruns._finished[-1]["ended"] -= 3 * 3600
     assert client.get("/activity").json()["finished"] == []
     assert [r["title"] for r in client.get("/activity/history").json()["runs"]] == ["Old"]
+
+
+# --- L-world-class-570: the history survives a restart ----------------------
+
+from datetime import datetime, timedelta  # noqa: E402
+
+from tessellate.core import config as _config  # noqa: E402
+from tessellate.core.database import JobRunLog  # noqa: E402
+from tessellate.core.database_manager import DatabaseManager  # noqa: E402
+
+_NOW = datetime(2026, 11, 21, 9, 0, 0)
+
+
+@pytest.fixture
+def stored(tmp_path, monkeypatch):
+    """A database of its own as the app's, on a fixed clock the test can move."""
+    db = DatabaseManager(tmp_path / "log.db")
+    clock = {"now": _NOW}
+    monkeypatch.setattr(jobruns, "_peek_db", lambda: db)
+    monkeypatch.setattr(_config, "user_now", lambda _c: clock["now"])
+    return db, clock
+
+
+def _run(kind: str, title: str, **kw) -> None:
+    with jobruns.job_run(kind, title=title, persist=False, **kw):
+        pass
+
+
+def test_the_history_survives_a_restart(stored):
+    with jobruns.started_by("event", "A note was saved"):
+        with jobruns.job_run("filing", title="Filing", persist=False) as run:
+            run.say("Read the note.")
+            run.result = "filed under Garden"
+    jobruns._finished.clear()  # a restart: the ring is process memory
+    assert jobruns.finished() == []
+    [kept] = jobruns.history()
+    assert kept["title"] == "Filing" and kept["origin"] == "event" and kept["why"] == "A note was saved"
+    assert kept["detail"] == "filed under Garden" and kept["lines"][0]["text"] == "Read the note."
+
+
+def test_history_route_reads_the_stored_runs(stored, client):
+    _run("export", "Old export", origin="you")
+    jobruns._finished.clear()
+    rows = client.get("/activity/history").json()["runs"]
+    assert [r["title"] for r in rows] == ["Old export"] and rows[0]["origin"] == jobruns.ORIGINS["you"]
+
+
+def test_a_run_in_the_ring_and_the_table_is_listed_once(stored):
+    _run("export", "Once", origin="you")
+    assert [r["title"] for r in jobruns.history()] == ["Once"]
+
+
+def test_old_rows_are_pruned_by_the_users_clock(stored):
+    _db, clock = stored
+    _run("export", "Ancient", origin="you")
+    clock["now"] = _NOW + timedelta(days=jobruns.KEEP_DAYS, minutes=1)
+    _run("resurface", "Fresh", origin="schedule")
+    jobruns._finished.clear()
+    assert [r["title"] for r in jobruns.history()] == ["Fresh"]
+
+
+def test_rows_past_the_cap_are_pruned_newest_kept(stored, monkeypatch):
+    db, _clock = stored
+    monkeypatch.setattr(jobruns, "KEEP_ROWS", 3)
+    for n in range(5):
+        _run("export", f"Run {n}", origin="you")
+        run_id = jobruns._finished[-1]["run_id"]
+        #: Fixed order, never the real clock.
+        with db.session() as session:
+            session.get(JobRunLog, run_id).ended = 2000.0 + n
+            session.commit()
+    jobruns._finished.clear()
+    assert [r["title"] for r in jobruns.history()] == ["Run 4", "Run 3", "Run 2"]
+
+
+def test_clear_forgets_the_stored_history_too(stored):
+    _run("export", "Gone", origin="you")
+    jobruns.clear_finished()
+    assert jobruns.history() == []
+
+
+def test_a_scheduled_run_shows_its_origin_and_why(stored, client):
+    with jobruns.started_by("schedule", "The autonomous pass is due every few hours."):
+        with jobruns.job_run("night-shift", title="Night shift", persist=False):
+            pass
+    row = client.get("/activity/history").json()["runs"][0]
+    assert row["origin"] == jobruns.ORIGINS["schedule"]
+    assert row["why"] == "The autonomous pass is due every few hours."
+
+
+def test_the_autonomous_scheduler_marks_its_pass_as_scheduled(monkeypatch):
+    from tessellate.ai import autonomous
+
+    seen: list[tuple[str, str]] = []
+    monkeypatch.setattr(autonomous, "_run_optimization", lambda: seen.append((jobruns.origin_now(), jobruns.why_now())))
+    monkeypatch.setattr(autonomous, "_vacuum", lambda: None)
+    autonomous._working.set()
+    autonomous.run_pass(scheduled=True)
+    autonomous._working.set()
+    autonomous.run_pass(scheduled=False)
+    assert seen[0][0] == "schedule" and seen[0][1]
+    assert seen[1][0] == "you" and seen[1][1]
