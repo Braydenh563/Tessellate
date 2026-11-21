@@ -18,3 +18,13 @@ def test_the_semantic_question_toast_is_small_on_a_phone():
     phone = re.search(r"@media \(max-width: 599\.98px\) \{\s*\.toast\.semantic-install-toast \{([^}]*)\}", css)
     assert phone, "the phone rule for the persistent question toast is gone"
     assert "font-size: var(--text-sm)" in phone.group(1) and "--toast-line: 1.25rem" in phone.group(1)
+
+
+def test_the_semantic_question_steps_aside_while_settings_is_open_on_a_phone():
+    #: L-world-class-394: 341x173px over the lower quarter of every Settings
+    #: section at 360x740; Settings, Search and index holds the same switch.
+    css = (ROOT / "frontend" / "css" / "semantic-notice-lazy.css").read_text(encoding="utf-8")
+    assert re.search(
+        r"@media \(max-width: 599\.98px\) \{[^@]*body:has\(#settings-modal:not\(\.hidden\)\) \.toast\.semantic-install-toast \{\s*display: none;",
+        css,
+    )

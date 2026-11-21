@@ -377,7 +377,11 @@ const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "backup", "updates"];
 //: How long the queue holds the others for a welcome that never arrives (its
 //: module failed to load): a stuck queue would hide the recovery offer for good.
 const FIRST_RUN_WELCOME_WAIT_MS = 15000;
-const firstRun = { waiting: [], running: false, clearSince: 0 };
+//: `fresh`: this page load began before the welcome was done. A first run asks
+//: only the welcome and the recovery offer (L-world-class-118); the console,
+//: second-backup and update questions wait for the next start, where they are
+//: asked once as before (nothing is stored until they are answered).
+const firstRun = { waiting: [], running: false, clearSince: 0, fresh: !prefs.get("onboardingDone", null) };
 
 function firstRunSurfaceOpen() {
   const shown = (id) => {
@@ -550,7 +554,7 @@ $("onboarding-skip").addEventListener("click", () => closeOnboarding(false));
 // taking effect next launch.
 async function maybeShowConsoleViewIntro() {
   if (!(await desktopShell())) return;
-  if (!prefsCache || prefsCache.console_view_intro_seen) return;
+  if (!prefsCache || prefsCache.console_view_intro_seen || firstRun.fresh) return;
   //: A first-run surface, so it takes its turn (`firstRunTurn`, above): it
   //: used to open over the welcome card in the Windows app.
   const wantsDevView = await firstRunTurn(() => confirmDialog(

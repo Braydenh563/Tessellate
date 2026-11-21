@@ -98,6 +98,7 @@ async function askUpdateChoiceOnce() {
     { confirmLabel: "Check automatically", cancelLabel: "Don't check", danger: false }
   );
   await ensureModule("onboarding").catch(() => {});
+  if (typeof firstRun !== "undefined" && firstRun.fresh) return;
   await untilNoDialogOpen();
   const yes = typeof firstRunTurn === "function" ? await firstRunTurn(ask, "updates") : await ask();
   //: Escape or the backdrop answers undefined (not a "no"): nothing stored,

@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8550, frontend ids 2805, CSS sections 528, backend routes 729, backend modules 11187, test files 2912, tests 22967, plan headings 688, app scripts 29, boot scripts 38, script files 313.
+Counts: frontend functions 8550, frontend ids 2805, CSS sections 528, backend routes 729, backend modules 11187, test files 2913, tests 22971, plan headings 688, app scripts 29, boot scripts 38, script files 313.
 
 ## Frontend functions (8550)
 
@@ -6882,22 +6882,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeOnboarding` | frontend/js/onboarding.js:497 |
-| `firstRunPump` | frontend/js/onboarding.js:434 |
-| `firstRunSurfaceOpen` | frontend/js/onboarding.js:382 |
-| `firstRunToastsGone` | frontend/js/onboarding.js:402 |
-| `firstRunTurn` | frontend/js/onboarding.js:419 |
-| `firstRunWelcomeDue` | frontend/js/onboarding.js:426 |
+| `closeOnboarding` | frontend/js/onboarding.js:501 |
+| `firstRunPump` | frontend/js/onboarding.js:438 |
+| `firstRunSurfaceOpen` | frontend/js/onboarding.js:386 |
+| `firstRunToastsGone` | frontend/js/onboarding.js:406 |
+| `firstRunTurn` | frontend/js/onboarding.js:423 |
+| `firstRunWelcomeDue` | frontend/js/onboarding.js:430 |
 | `loadOnboardingDiagnostics` | frontend/js/onboarding.js:76 |
-| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:551 |
-| `onboardingBack` | frontend/js/onboarding.js:533 |
-| `onboardingNext` | frontend/js/onboarding.js:514 |
-| `openOnboarding` | frontend/js/onboarding.js:484 |
+| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:555 |
+| `onboardingBack` | frontend/js/onboarding.js:537 |
+| `onboardingNext` | frontend/js/onboarding.js:518 |
+| `openOnboarding` | frontend/js/onboarding.js:488 |
 | `renderOnboardingActions` | frontend/js/onboarding.js:137 |
 | `renderOnboardingSlide` | frontend/js/onboarding.js:291 |
-| `showOnboarding` | frontend/js/onboarding.js:489 |
-| `showOnboardingTurn` | frontend/js/onboarding.js:467 |
-| `whenFirstRunClear` | frontend/js/onboarding.js:395 |
+| `showOnboarding` | frontend/js/onboarding.js:493 |
+| `showOnboardingTurn` | frontend/js/onboarding.js:471 |
+| `whenFirstRunClear` | frontend/js/onboarding.js:399 |
 
 ### frontend/js/origin-bridge.js (4)
 
@@ -8329,11 +8329,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyUpdateNow` | frontend/js/update-dialogs.js:133 |
+| `applyUpdateNow` | frontend/js/update-dialogs.js:134 |
 | `askUpdateChoiceOnce` | frontend/js/update-dialogs.js:89 |
 | `checkForUpdate` | frontend/js/update-dialogs.js:18 |
-| `showSourceUpdatedDialog` | frontend/js/update-dialogs.js:214 |
-| `showUpdateBar` | frontend/js/update-dialogs.js:159 |
+| `showSourceUpdatedDialog` | frontend/js/update-dialogs.js:215 |
+| `showUpdateBar` | frontend/js/update-dialogs.js:160 |
 | `untilNoDialogOpen` | frontend/js/update-dialogs.js:76 |
 
 ### frontend/js/usage-ledger.js (6)
@@ -13516,7 +13516,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/reply-kit-lazy.css | 906 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
-| frontend/css/semantic-notice-lazy.css | 10 |
+| frontend/css/semantic-notice-lazy.css | 16 |
 | frontend/css/settings-controls-lazy.css | 341 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
@@ -28585,7 +28585,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22967)
+## Tests (22971)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29361,7 +29361,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dashboard_blank_after_unlock_1031.py | 2 |
 | tests/test_dashboard_boot_race.py | 1 |
 | tests/test_dashboard_capture_composer_1592.py | 10 |
-| tests/test_dashboard_default_wide.py | 2 |
+| tests/test_dashboard_default_wide.py | 3 |
 | tests/test_dashboard_empty_actions.py | 5 |
 | tests/test_dashboard_greeting_g6_1110.py | 7 |
 | tests/test_dashboard_layout_cap.py | 3 |
@@ -29777,7 +29777,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_finder_star_790.py | 3 |
 | tests/test_first_note_says_search_model_loading.py | 2 |
 | tests/test_first_open_fetch.py | 5 |
-| tests/test_first_run_472.py | 14 |
+| tests/test_first_run_472.py | 15 |
 | tests/test_first_run_prefs_q25.py | 3 |
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
@@ -30690,6 +30690,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_pr189_security.py | 7 |
 | tests/test_preferences_api.py | 27 |
 | tests/test_preferences_roundtrip.py | 5 |
+| tests/test_prefs_fills_readers.py | 1 |
 | tests/test_prefs_module.py | 6 |
 | tests/test_prefs_pending_save_survives_pane_switch.py | 3 |
 | tests/test_prefs_writes_ratchet.py | 2 |
@@ -30968,7 +30969,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sheet_rows_1661.py | 1 |
 | tests/test_shell_fixes.py | 8 |
 | tests/test_shell_halfwindow.py | 9 |
-| tests/test_shell_ux_1030.py | 1 |
+| tests/test_shell_ux_1030.py | 2 |
 | tests/test_shell_zoom_1111.py | 4 |
 | tests/test_short_tab_caption_1859.py | 3 |
 | tests/test_shortcut_chip_pencil.py | 3 |
@@ -31921,14 +31922,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4493 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:589 |
+| Needs hardware | docs/roadmap/LEDGER.md:585 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:582 |
+| Owner calls | docs/roadmap/LEDGER.md:578 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32109,7 +32110,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:717 |
+| Plan session briefs | docs/roadmap/LEDGER.md:713 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32163,25 +32164,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:733 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:817 |
+| chat | docs/roadmap/LEDGER.md:729 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:813 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:757 |
-| general | docs/roadmap/LEDGER.md:554 |
+| documents | docs/roadmap/LEDGER.md:753 |
+| general | docs/roadmap/LEDGER.md:550 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:721 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:829 |
+| graph | docs/roadmap/LEDGER.md:717 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:825 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:769 |
+| mindmap | docs/roadmap/LEDGER.md:765 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:793 |
+| timeline | docs/roadmap/LEDGER.md:789 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:781 |
+| ui-modernisation | docs/roadmap/LEDGER.md:777 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:745 |
+| whiteboard | docs/roadmap/LEDGER.md:741 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:805 |
+| world-class | docs/roadmap/LEDGER.md:801 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |
