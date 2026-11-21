@@ -659,7 +659,9 @@ def test_pdf_info_on_an_unopenable_pdf_says_so_not_probably_a_scan(ai_client, mo
     from tessellate.core import pdfpages
 
     monkeypatch.setattr(pdfpages, "available", lambda: True)
-    monkeypatch.setattr(pdfpages, "page_count", lambda p: 0)
+    # `details` since L-world-class-133: one open answers the count, the
+    # password and the outline; zero pages and no password is unopenable.
+    monkeypatch.setattr(pdfpages, "details", lambda p: {"pages": 0, "locked": False, "outline": []})
     stored = _upload_pdf(ai_client)
     payload = ai_client.get(f"/media/pdf-info/{stored}").json()
     assert payload["available"] is False

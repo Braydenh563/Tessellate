@@ -3105,7 +3105,7 @@ Acrobat for highlights and comments on a PDF page.
 | 5 | fix | **Built 2026-10-10 (Brief 79; HISTORY "WORLD_CLASS 28.4, Brief 79")**: RapidOCR first with its size, then Tesseract; Read, region Read and Describe `aria-disabled` with the reason | AI controls disabled with a reason 0/1 to 1/1, 0 dead | 12, 4, 13 |
 | 6 | fix | Reading and installs are jobs in the Activity panel with progress per page and Stop (decision 70; LEDGER L-world-class-67) | a 20-page PDF lists and stops | 5 |
 | 7 | redesign | **Built 2026-10-10 (Brief 79; HISTORY "WORLD_CLASS 28.4, Brief 79")**: Live Text, each word of `extract_regions` over the picture | a drag-select copies 3 lines in order (regions answer stubbed) | 6, 12 |
-| 8 | expansion | Highlights and comments on a PDF page stored in the notebook; the encrypted-PDF prompt; the outline panel verified (ANALYSIS, pdfcraft; LEDGER L-world-class-133; highlights are DOCUMENTS_PLAN's) | a highlight survives a reload; a locked PDF asks once | 3, 4 |
+| 8 | expansion | Highlights and comments on a PDF page stored in the notebook; the encrypted-PDF prompt and the outline panel built 2026-11-21 (L-world-class-133, measured: a locked PDF asks once, 8 of 8 checks); highlights are DOCUMENTS_PLAN's | a highlight survives a reload; a locked PDF asks once | 3, 4 |
 | 9 | optimisation | **Built 2026-10-10 (Brief 79; HISTORY "WORLD_CLASS 28.4, Brief 79")**: the dock fitted by halving, once per size | 390 open 398/246/683 to 353/127/387 ms | 13 |
 
 Briefs: 37 (row 1), 42 (row 8's highlights), 73 (row 6), 79 (rows 2 to 5,

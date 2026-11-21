@@ -4398,6 +4398,8 @@ const ocrUi = {
   installing: false,
   //: Which file `ocrWorkspacePages` was counted for (`ocrBuildPageRail`).
   pagesFor: "",
+  //: A PDF's own bookmarks by file (`pdf-info`'s `outline`), the rail's Contents.
+  outlines: new Map(),
 };
 let ocrWorkspaceImages = [], ocrWorkspaceCurrent = null, ocrWorkspaceRegions = [];
 //: Which page of a multi-page document is on the stage, and how many there
@@ -5708,14 +5710,24 @@ const ocrPageCounts = new Map();
 
 async function ocrKnownPages(image, signal) {
   const key = ocrRailKey(image);
-  if (ocrPageCounts.has(key)) return ocrPageCounts.get(key);
+  //: The outline comes with `pdf-info` only, so a count the regions answer
+  //: recorded first does not stand in for it.
+  if (ocrPageCounts.has(key) && ocrUi.outlines.has(key)) return ocrPageCounts.get(key);
   const url = image._isAttachment
     ? `/files/${image.id}/pdf-info`
     : `/media/pdf-info/${encodeURIComponent((image.url || "").split("/").pop())}`;
   try {
-    const info = await apiJson(url, { silent: true, signal });
+    let info = await apiJson(url, { silent: true, signal });
+    if (info?.locked) {
+      info = await askPdfPassword(url.replace("/pdf-info", "/pdf-unlock"));
+      //: The page was asked for before the password (the picture goes first,
+      //: for speed) and failed; asked again now that it opens.
+      const shown = $("ocr-image");
+      if (info?.available && shown && ocrWorkspaceCurrent === image) shown.src = ocrPageImageUrl(image, ocrWorkspacePage);
+    }
     const pages = info?.available ? Number(info.pages) || 0 : 0;
     if (pages > 0) ocrPageCounts.set(key, pages);
+    if (info) ocrUi.outlines.set(key, info.outline || []);
     return pages;
   } catch {
     //: Not knowing yet is not a failure: the regions answer carries the count.
@@ -5725,6 +5737,7 @@ async function ocrKnownPages(image, signal) {
 
 //: The lit item in the rail follows the page at once, before anything is asked.
 function ocrRailActive(image) {
+  if (ocrRailMode === "contents") return ocrRenderRail(image);
   const activeKey = ocrIsPdf(image) ? `page:${ocrWorkspacePage}` : ocrRailKey(image);
   for (const thumb of document.querySelectorAll("#ocr-rail .ocr-rail-item")) {
     const active = thumb.dataset.key === activeKey;
@@ -6055,6 +6068,7 @@ function ocrBuildPageRail(image, pages) {
   //: A one-page document has no Pages list, so the switch has fallen back to
   //: Files or Images: the rail shows that list, this file lit, rather than
   //: staying empty (measured with no page renderer: Files 1, rail 0 items).
+  if (ocrRailMode === "contents") return ocrRenderRail(image);
   if (ocrRailMode !== "pages") {
     if (!rail.children.length) ocrRenderRail(image);
     return;
@@ -6312,6 +6326,10 @@ function ocrRenderRailSwitch(current) {
       title: "The pages of the document you are reading",
     });
   }
+  const outline = viewing ? ocrUi.outlines.get(ocrRailKey(viewing)) || [] : [];
+  if (outline.length && ocrRailMode !== "images") {
+    segments.push({ id: "contents", label: "Contents", count: outline.length, title: "The document's own headings" });
+  }
   host.replaceChildren();
   //: One segment is not a choice. Hidden rather than rendered inert, for the
   //: same reason the box-overlay toggle is disabled when there is nothing to
@@ -6327,7 +6345,7 @@ function ocrRenderRailSwitch(current) {
   //: the rail on Files and its own pages one press away, and `ocrBuildPageRail`
   //: then returned early because the mode was no longer "pages".
   const pending = Boolean(viewing) && ocrIsPdf(viewing) && !ocrPagesKnown;
-  if (ocrRailMode === "pages" && !paged && !pending) {
+  if ((ocrRailMode === "pages" && !paged && !pending) || (ocrRailMode === "contents" && !outline.length)) {
     ocrRailMode = viewing?._isImage ? "images" : "files";
   }
   const usable = segments;
@@ -6364,6 +6382,33 @@ function ocrRenderRail(current) {
   if (!rail) return;
   ocrRenderRailSwitch(current);
   if (ocrRailMode === "pages") return; // the page rail is built elsewhere
+  //: The outline panel (28.4 row 8): the PDF's bookmarks, indented by level,
+  //: each a press to its page; the lit one is the last heading at or before it.
+  const outlineRail = (image) => {
+    const outline = (image && ocrUi.outlines.get(ocrRailKey(image))) || [];
+    rail.dataset.pagesFor = "";
+    rail.replaceChildren();
+    const lit = outline.reduce((at, entry, index) => (entry.page <= ocrWorkspacePage ? index : at), -1);
+    outline.forEach((entry, index) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "ocr-rail-item ocr-outline-item";
+      item.dataset.key = `outline:${index}`;
+      item.dataset.level = String(Math.min(Number(entry.level) || 0, 3));
+      const name = document.createElement("span");
+      name.className = "ocr-rail-name";
+      name.textContent = entry.title;
+      item.append(name);
+      item.title = `${entry.title}, page ${entry.page + 1}`;
+      item.classList.toggle("is-active", index === lit);
+      item.setAttribute("aria-current", index === lit ? "true" : "false");
+      item.addEventListener("click", () => ocrLoadPage(image, entry.page));
+      rail.appendChild(item);
+    });
+    rail.classList.remove("hidden");
+    ocrRoveSync(rail, ".ocr-rail-item");
+  };
+  if (ocrRailMode === "contents") return outlineRail(ocrWorkspaceCurrent || current);
   const siblings = (ocrSiblingCache || []).filter(
     (row) => ocrCanOpen(row) && (ocrRailMode === "images" ? row._isImage : !row._isImage)
   );

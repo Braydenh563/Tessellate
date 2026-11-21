@@ -2680,6 +2680,11 @@ body.printing-doc #doc-preview p,
   background: var(--chip-bg);
 }
 
+/* The outline panel (L-world-class-133): a heading's depth as its indent. */
+.ocr-outline-item[data-level="1"] { padding-inline-start: var(--space-4); }
+.ocr-outline-item[data-level="2"] { padding-inline-start: var(--space-6); }
+.ocr-outline-item[data-level="3"] { padding-inline-start: var(--space-8); }
+
 .ocr-rail-name {
   max-width: 100%;
   font-size: var(--text-sm);

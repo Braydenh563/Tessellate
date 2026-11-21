@@ -846,6 +846,45 @@ class PdfInfoOut(BaseModel):
     #: Why `available` is False, for a caller that wants to say so rather
     #: than just hide the button. "" when `available` is True.
     message: str = ""
+    #: The PDF has a password this run does not have yet (L-world-class-133):
+    #: the viewer asks for it once (`pdf-unlock`).
+    locked: bool = False
+    #: The PDF's own bookmarks: `title`, `page` (from 0) and `level`.
+    outline: list[dict] = []
+
+
+class PdfUnlockIn(BaseModel):
+    password: str = Field(min_length=1, max_length=1024)
+
+
+NEEDS_RASTERISER = "Viewing PDF pages needs a small rasteriser: install “Read scanned PDFs” in Settings, Packages."
+PDF_UNREADABLE = "This PDF couldn't be opened. It may be corrupted, or saved in a way this app's reader doesn't support."
+PDF_LOCKED = "This PDF has a password. Enter it to see the pages."
+PDF_WRONG_PASSWORD = "That password didn't open this PDF."
+
+
+def _pdf_info(path: Path) -> PdfInfoOut:
+    """One answer for both `pdf-info` routes: the pages and the outline, or
+    why not (no rasteriser, a password, a file that will not open)."""
+    if not pdfpages.available():
+        return PdfInfoOut(available=False, pages=0, message=NEEDS_RASTERISER)
+    with unsealed(path) as plain:
+        got = pdfpages.details(plain)
+    if got["locked"]:
+        return PdfInfoOut(available=False, pages=0, locked=True, message=PDF_LOCKED)
+    if not got["pages"]:
+        return PdfInfoOut(available=False, pages=0, message=PDF_UNREADABLE)
+    return PdfInfoOut(available=True, pages=got["pages"], outline=got["outline"])
+
+
+def _pdf_unlock(path: Path, password: str) -> PdfInfoOut:
+    """The password kept in memory for this run if it opens the file (never
+    written: `pdfpages.unlock`), then the same answer as `pdf-info`."""
+    with unsealed(path) as plain:
+        opened = pdfpages.unlock(plain, password)
+    if not opened:
+        raise HTTPException(status_code=422, detail=PDF_WRONG_PASSWORD)
+    return _pdf_info(path)
 
 
 @router.get("/files/{attachment_id}/pdf-info", response_model=PdfInfoOut)
@@ -861,28 +900,19 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    if not pdfpages.available():
-        return PdfInfoOut(
-            available=False,
-            pages=0,
-            message=(
-                "Viewing PDF pages needs a small rasteriser: install "
-                "“Read scanned PDFs” in Settings, Packages."
-            ),
-        )
-    with unsealed(path) as plain:
-        count = pdfpages.page_count(plain)
-    if count == 0:
-        return PdfInfoOut(
-            available=False,
-            pages=0,
-            message=(
-                "This PDF couldn't be opened. It may be corrupted, "
-                "password-protected, or saved in a way this app's reader "
-                "doesn't support."
-            ),
-        )
-    return PdfInfoOut(available=True, pages=count)
+    return _pdf_info(path)
+
+
+@router.post("/files/{attachment_id}/pdf-unlock", response_model=PdfInfoOut)
+def attached_file_pdf_unlock(attachment_id: int, body: PdfUnlockIn, session: Session = Depends(get_session)) -> PdfInfoOut:
+    """A locked attached PDF opened with its password, asked once a run."""
+    attachment = _existing_attachment(session, attachment_id)
+    if Path(attachment.filename).suffix.lower() != ".pdf":
+        raise HTTPException(status_code=422, detail="Not a PDF.")
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="That file is no longer on disk.")
+    return _pdf_unlock(path, body.password)
 
 
 @media_router.get("/files/{attachment_id}/pdf-page/{index}")
@@ -1780,28 +1810,16 @@ def media_pdf_info(filename: str, session: Session = Depends(get_session)) -> Pd
     if Path(filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=422, detail="Not a PDF.")
     _upload, path = _media_upload_path(session, filename)
-    if not pdfpages.available():
-        return PdfInfoOut(
-            available=False,
-            pages=0,
-            message=(
-                "Viewing PDF pages needs a small rasteriser: install "
-                "“Read scanned PDFs” in Settings, Packages."
-            ),
-        )
-    with unsealed(path) as plain:
-        count = pdfpages.page_count(plain)
-    if count == 0:
-        return PdfInfoOut(
-            available=False,
-            pages=0,
-            message=(
-                "This PDF couldn't be opened. It may be corrupted, "
-                "password-protected, or saved in a way this app's reader "
-                "doesn't support."
-            ),
-        )
-    return PdfInfoOut(available=True, pages=count)
+    return _pdf_info(path)
+
+
+@router.post("/media/pdf-unlock/{filename}", response_model=PdfInfoOut)
+def media_pdf_unlock(filename: str, body: PdfUnlockIn, session: Session = Depends(get_session)) -> PdfInfoOut:
+    """A locked library PDF opened with its password, asked once a run."""
+    if Path(filename).suffix.lower() != ".pdf":
+        raise HTTPException(status_code=422, detail="Not a PDF.")
+    _upload, path = _media_upload_path(session, filename)
+    return _pdf_unlock(path, body.password)
 
 
 @media_router.get("/media/pdf-page/{filename}/{index}")

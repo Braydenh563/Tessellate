@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 93 | 8 | 0 | 0 | 101 |
+| world-class | 0 | 92 | 8 | 0 | 0 | 100 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 471 | 79 | 2 | 112 | 922 |
+| all | 372 | 470 | 79 | 2 | 112 | 921 |
 
 ## graph
 
@@ -522,7 +522,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
-- [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
 - [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14

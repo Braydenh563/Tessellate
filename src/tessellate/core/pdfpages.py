@@ -29,6 +29,7 @@ hands them to the model.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import threading
 import time
@@ -79,6 +80,94 @@ RENDER_SCALE = 2.0
 MAX_PIXELS = 40_000_000
 
 
+#: PDFium's "this file needs a password" load error (`FPDF_ERR_PASSWORD`).
+FPDF_ERR_PASSWORD = 4
+#: Passwords that opened a locked PDF this run (L-world-class-133), so a locked
+#: PDF asks once: in memory only, never written, gone at a restart. Keyed by a
+#: fingerprint of the bytes, not the path: a private space's file is opened
+#: through a temp copy whose path changes every time.
+_passwords: dict[str, str] = {}
+MAX_PASSWORDS = 32
+#: How many outline entries are listed; a book's index can hold thousands.
+MAX_OUTLINE = 300
+
+
+def _fingerprint(path: Path) -> str:
+    """The size, the first and the last 64 KB: cheap, and distinct per file."""
+    with open(path, "rb") as fh:
+        head = fh.read(1 << 16)
+        size = fh.seek(0, 2)
+        fh.seek(max(0, size - (1 << 16)))
+        tail = fh.read()
+    return hashlib.sha256(str(size).encode() + head + tail).hexdigest()
+
+
+def _locked_error(exc: Exception) -> bool:
+    return getattr(exc, "err_code", None) == FPDF_ERR_PASSWORD
+
+
+def _open(pdfium, path: Path):  # noqa: ANN001, ANN202  # the module and its document
+    """`PdfDocument`, with the password this run already has for the file.
+    Called under `_pdfium_lock`."""
+    try:
+        return pdfium.PdfDocument(str(path))
+    except pdfium.PdfiumError as exc:
+        known = _passwords.get(_fingerprint(path)) if _locked_error(exc) else None
+        if known is None:
+            raise
+        return pdfium.PdfDocument(str(path), password=known)
+
+
+def _outline(document) -> list[dict]:  # noqa: ANN001
+    found = []
+    for item in document.get_toc():
+        if len(found) >= MAX_OUTLINE:
+            break
+        title = " ".join(str(item.get_title() or "").split())[:200]
+        dest = item.get_dest()
+        page = dest.get_index() if dest is not None else None
+        if title and page is not None:
+            found.append({"title": title, "page": int(page), "level": int(item.level)})
+    return found
+
+
+def details(path: Path) -> dict:
+    """`pages`, whether it is `locked` (it needs a password this run does
+    not have), and its `outline` (the PDF's own bookmarks: title, page and
+    level, at most `MAX_OUTLINE`). Pages 0 and not locked: unreadable."""
+    if not available():
+        return {"pages": 0, "locked": False, "outline": []}
+    try:
+        import pypdfium2 as pdfium
+
+        with _pdfium_lock:
+            document = _open(pdfium, path)
+            try:
+                return {"pages": len(document), "locked": False, "outline": _outline(document)}
+            finally:
+                document.close()
+    except Exception as exc:  # noqa: BLE001  # a viewer must not 500 on a bad file
+        logger.debug("couldn't open %r: %s", path, exc)
+        return {"pages": 0, "locked": _locked_error(exc), "outline": []}
+
+
+def unlock(path: Path, password: str) -> bool:
+    """Whether `password` opens the PDF at `path`; if so, it is kept for this run."""
+    if not available() or not password:
+        return False
+    import pypdfium2 as pdfium
+
+    try:
+        with _pdfium_lock:
+            pdfium.PdfDocument(str(path), password=password).close()
+    except Exception:  # noqa: BLE001  # a wrong password, or a file that will not open at all
+        return False
+    if len(_passwords) >= MAX_PASSWORDS:
+        _passwords.pop(next(iter(_passwords)))
+    _passwords[_fingerprint(path)] = password
+    return True
+
+
 def available() -> bool:
     """Is there a rasteriser in this interpreter?
 
@@ -101,7 +190,7 @@ def page_count(path: Path) -> int:
         import pypdfium2 as pdfium
 
         with _pdfium_lock:
-            document = pdfium.PdfDocument(str(path))
+            document = _open(pdfium, path)
             try:
                 return len(document)
             finally:
@@ -189,7 +278,7 @@ def render_pages(path: Path, limit: int = MAX_PAGES) -> list[bytes]:
                 # Closed inside the lock, for the reason `render_page` gives
                 # below: a close outside it races another thread's open in
                 # pdfium's global state.
-                document = pdfium.PdfDocument(str(path))
+                document = _open(pdfium, path)
                 try:
                     page = document[index]
                     try:
@@ -254,6 +343,7 @@ def _cache_clear() -> None:
     with _page_cache_lock:
         _page_cache.clear()
         _page_cache_bytes = 0
+    _passwords.clear()
 
 
 #: Dropped with the app's singletons, so one test's pages never answer the next
@@ -312,7 +402,7 @@ def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
     # one lock; the PNG bytes are the only thing that leaves it.
     try:
         with _pdfium_lock:
-            document = pdfium.PdfDocument(str(path))
+            document = _open(pdfium, path)
             try:
                 if safe_index >= len(document):
                     return None
