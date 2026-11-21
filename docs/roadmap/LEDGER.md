@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 49 | 5 | 0 | 0 | 54 |
+| world-class | 0 | 48 | 5 | 0 | 0 | 53 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 439 | 77 | 2 | 112 | 888 |
+| all | 372 | 438 | 77 | 2 | 112 | 887 |
 
 ## graph
 
@@ -485,12 +485,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L634** `whiteboard` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
-- [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block The chat.js split is L-world-class-770 (chat, hub 2026-11-21).
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
 - [ ] **L691** `chat` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
-- [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734 not split. From ledger-1112 P8. The chat.js split is L-world-class-770 (chat, hub 2026-11-21).
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
 - [ ] **L787** `world-class` open, S: Decide docs/CHANGELOG, CONTRIBUTING, SECURITY mirrors nothing reads. From OPEN.md:739. Evidence: Mirrors identical to root (diff clean); tests/test_brand_name.py:78 and scripts/gate.sh:153 still use them; keep or retire is a decision Owner decided 2026-11-12: Retire the copies. Build: Delete docs/CHANGELOG.md, docs/CONTRIBUTING.md, docs/SECURITY.md; update tests/test_brand_name.py:78-82, test_docs_site.py mirror check, scripts/gate.sh:153, scripts/rebrand.py:49, scratchpad/changelog_union.py, database.py:193 comment.
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
@@ -521,6 +519,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-821** `world-class` open, M: Break the last import_module cycle group (14 modules) by making core.deps build its AI services through registered factories. From batch CB, L-world-class-791. Evidence: tests/test_import_module_cycles.py MAX_LARGEST_GROUP 14, MAX_GROUPS 1; the 14 run through core.deps (it builds ModelManager, EmbeddingService, OllamaClient, OpenAICompatClient and imports ai.model_manager and ai.voice), entry.manager, search.engine, ai.provider; invert deps to ai with a factory registry that api/app registers
 - [ ] **L-world-class-780** `world-class` open, S: Rule 2 (three clicks): four panel sub-views sit at depth 4, give the Chat activity panel and the Images Running view a palette command or a door at depth 3. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js light run: 4 destinations at depth 4 (Chat > More actions > Activity and past runs > Running, History, More activity actions; Library > Documents > Images > Running); dark adds Notes > Writing room > More ways to save > Keep it in Drafts, Notes > Manage categories > Show the notes > Running, Chat > Guide > More actions > Every help topic, Settings > What it learned > More for this fact > Correct what this says)
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
+- [ ] **L-world-class-810** `world-class` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 
 ## general
 

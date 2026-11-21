@@ -23,7 +23,7 @@ node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not inst
 
 #: (file, text the literal starts at, text it ends at, flags the source uses)
 SCANNERS = {
-    "status picture strip": ("status.js", ".replace(/!\\[", "/g, \"\")", "g"),
+    "status picture strip": ("status-quick.js", ".replace(/!\\[", "/g, \"\")", "g"),
     "document link check": ("documents-prose.js", "const links = /", "/g;", "g"),
     "document wiki grammar": ("documents-prose.js", "const DOC_GRAMMAR_WIKI = /", "/g;", "g"),
     "note pick picture": ("note-pick-preview.js", "const NOTE_PICK_IMAGE = /", "/;", ""),

@@ -7,6 +7,10 @@ Object.assign(LAZY_MODULES, {
   statusTasks: ["/js/status-tasks.js"],
   //: The Settings pane's model-status draw (status-settings.js, out of status.js; L-world-class-631). Nobody reads a return value.
   statusSettings: ["/js/status-settings.js"],
+  //: The Notes view's Ask again chips and most-used list (status-quick.js, out of status.js; L698).
+  statusQuick: ["/js/status-quick.js"],
+  //: The once-per-problem notice for a broken search engine (status-embedding.js, out of status.js; L698).
+  statusEmbedding: ["/js/status-embedding.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
   webPanel: ["/js/web-panel.js"],
   //: Tags, category and a property for the documents and files a Library selection holds (library-bulk.js).
@@ -117,6 +121,10 @@ Object.assign(LAZY_MODULES, {
   notesLazy: ["/js/notes-lazy.js"],
   //: The list's keyboard walk, a shift-click range, the connections rail's listeners and the wiki-rename offer (notes-wire.js; L-world-class-631).
   notesWire: ["/js/notes-wire.js"],
+  //: The poll for a change made on another device (notes-sync.js, out of notes-list.js; L698). Started where notes-list.js loads.
+  notesSync: ["/js/notes-sync.js"],
+  //: Quit, clear the caches, Reload the app (app-reset.js, out of phone-shell.js; L698).
+  appReset: ["/js/app-reset.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
@@ -159,6 +167,9 @@ installStandIns({
   //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
   statusTasks: ["noticeTaskTransitions"],
   statusSettings: ["renderSettings"],
+  statusQuick: ["loadRecentQuestions", "loadMostUsed"],
+  statusEmbedding: ["nudgeEmbeddingProblem"],
+  appReset: ["quitApp", "clearAppCache", "forceReloadApp", "toggleAutonomousPanel"],
   notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).
