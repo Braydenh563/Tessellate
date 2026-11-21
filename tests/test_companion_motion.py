@@ -112,7 +112,7 @@ def test_it_can_always_be_called_back() -> None:
     assert "run: nameMarkBuddyCallBack" in _fn("nameMarkBuddyMenu")
     assert "act: () => nameMarkBuddyCallBack()" in APP
     assert 'id="avatar-buddy-recall"' in HTML
-    assert '$("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());' in SETTINGS
+    assert 'wire("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());' in SETTINGS
 
 
 def test_its_menu_opens_at_it() -> None:

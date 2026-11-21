@@ -715,12 +715,12 @@
     offerUndo("Memory correction", "Memory saved.", () => putModelHardware(before), () => putModelHardware(body));
   }
 
-  $("suggested-hardware-edit")?.addEventListener("click", () => {
+  SURFACES.wire("suggested-hardware-edit", "click", () => {
     openModelHardwareForm($("suggested-hardware-form").classList.contains("hidden"));
   });
-  $("hardware-cancel")?.addEventListener("click", () => openModelHardwareForm(false));
-  $("hardware-reset")?.addEventListener("click", () => saveModelHardware({}));
-  $("suggested-hardware-form")?.addEventListener("submit", (event) => {
+  SURFACES.wire("hardware-cancel", "click", () => openModelHardwareForm(false));
+  SURFACES.wire("hardware-reset", "click", () => saveModelHardware({}));
+  SURFACES.wire("suggested-hardware-form", "submit", (event) => {
     event.preventDefault();
     const ram = parseFloat($("hardware-ram").value);
     const vram = parseFloat($("hardware-vram").value);
@@ -802,14 +802,14 @@
     if (modelLastStatus) renderSuggested(modelLastStatus);
   }
 
-  $("custom-model-check")?.addEventListener("click", checkCustomModel);
-  $("custom-model-name")?.addEventListener("keydown", (event) => {
+  SURFACES.wire("custom-model-check", "click", checkCustomModel);
+  SURFACES.wire("custom-model-name", "keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       checkCustomModel();
     }
   });
-  $("custom-model-name")?.addEventListener("input", () => {
+  SURFACES.wire("custom-model-name", "input", () => {
     //: A new name is a new question: the old answer's card goes.
     if (modelCustom) {
       modelCustom = null;
@@ -817,7 +817,7 @@
       if (modelLastStatus) renderSuggested(modelLastStatus);
     }
   });
-  $("suggested-hide-big")?.addEventListener("change", (event) => {
+  SURFACES.wire("suggested-hide-big", "change", (event) => {
     try {
       prefs.set("hideBigModels", event.target.checked ? "1" : "0");
     } catch (error) {

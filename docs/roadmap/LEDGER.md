@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 94 | 24 | 0 | 0 | 118 |
+| world-class | 0 | 95 | 23 | 0 | 0 | 118 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 484 | 95 | 2 | 111 | 951 |
+| all | 372 | 485 | 94 | 2 | 111 | 951 |
 
 ## graph
 
@@ -499,8 +499,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L670** `world-class` partly, M: Confirm all 14 browser-only appearance settings mirror to a second browser. From OPEN.md:2590. Evidence: Decision made (WORLD_CLASS 25f: mirror all except perf); ui-synced mechanism in ai-tools.js:918; completeness unconfirmed
 - [ ] **L672** `world-class` partly, M: Dictation model: installed markers, remove, unsloth Gemma variant licence call. From INBOX.md:904 B61. Evidence: Markers/Remove at settings-packages.js:110,:122; model_manager.py:126 lists a unsloth Gemma 4 GGUF; embedding unsloth variant licence call open
 - [ ] **L673** `world-class` partly, M: Left: service worker caching (frontend/sw.js) and the phone Settings nav, unverified. First-run onboarding has tests/test_first_run_472.py and test_first_run_prefs_q25.py. From audit-1031-shell.
-- [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms); first open 964 ms and others need quiet-machine trace.
-- [ ] **L676** `world-class` partly, M: Reduce Dashboard DOM node count at boot and after dialogs (X15). From OPEN.md:4383. Evidence: CHANGELOG.md:234-236: 2,348 elements at first paint, Library menus/first chunk fixed; rest is stylesheet recalc, blocked on owner decision; x15-1111.md
+- [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: built 2026-11-21: each pane is its own surface, so the first open builds only Models (5,558 to 2,147 elements) and a closed window parks them; 5 interleaved runs at load average 11.8 on 4 cores: first open median 217 to 140 ms, pane switch median about 50 ms on both, worst switch 162 to 425 ms (base) and 188 to 379 ms (this). Left: the quiet-machine trace of the first open and the slowest switches (personas, general, help), which load blocked.
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
@@ -538,6 +537,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
 - [ ] **L-world-class-500** `world-class` open, S: Write `tests/test_never_lose.py`, the measure WORLD_CLASS_PLAN 28.1 rule 3 names and no file has: one test per path of 25e (a change saved within a second, a draft across a reload, a deletion in the bin for 30 days, the daily backup restoring). From L659's check of the trust rules. Evidence: `ls tests/test_never_lose.py` absent; parts exist in test_backups_api.py:83, test_conversation_retention.py, the bin purge setting; rules 8, 9, 12, 13 are sweep-only (`axe.js`, WebKit run, no-model run, `learn.js`) and were not re-run here
+- [ ] **L-world-class-530** `world-class` open, M: Build the hidden dialogs from templates on first open: lock 93 elements, Find anything 63, the agent monitor 47 and the Settings shell 91 are in the page at boot (1,515 at first paint after L675). Needs a DESIGN.md recipe and lint first (order 11: none covers a dialog built on open), then `document.getElementById` reads in search.js (about 20) and router-overlays.js through `$` or `surfaceBuild("finder")`; the lock overlay stays, it is the first thing a locked boot shows. From L676. Evidence: `grep -c 'finder-' frontend/js/search.js`; counts from the L676 brief, paint from `setperf.js`.
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded

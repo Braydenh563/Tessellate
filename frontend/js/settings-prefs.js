@@ -180,21 +180,17 @@ const PREFS_FIELD_IDS = [
 ];
 
 function wirePrefsDirtyMarks() {
-  for (const id of PREFS_FIELD_IDS) {
-    const el = $(id);
-    if (!el) continue;
-    el.addEventListener("input", markPrefsDirty);
-    el.addEventListener("change", markPrefsDirty);
-  }
+  //: Each field's pane is built on its first visit (L675), so its marks wait for it.
+  for (const id of PREFS_FIELD_IDS) for (const type of ["input", "change"]) SURFACES.wire(id, type, markPrefsDirty);
   //: The profile head previews the name as it is typed; the rest of the app's
   //: marks wait for the save, since that is when the name is real.
-  $("pref-display-name")?.addEventListener("input", (e) => {
+  SURFACES.wire("pref-display-name", "input", (e) => {
     const typed = e.target.value.trim();
     afterCharacters(() => $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56)));
     const head = $("profile-head-name");
     if (head) head.textContent = typed || "Your profile";
   });
-  $("pref-profile")?.addEventListener("input", updateProfileCount);
+  SURFACES.wire("pref-profile", "input", updateProfileCount);
 }
 
 //: Moved from ai-tools.js (boot gzip). Called by settings-models.js's status render and the backend radio

@@ -213,9 +213,11 @@ function renderChatActiveModelBadge() {
 //: `position: fixed` (see the stylesheet's own note on why `absolute` put it
 //: off the bottom of the screen), so nothing positions it but this.
 function placeChatModelPanel() {
-  const panel = $("chat-model-panel");
+  //: Not `$`: this runs on every scroll, and asking for an id of the unbuilt Chat tab built it (L675).
+  const panel = document.getElementById("chat-model-panel");
+  if (!panel || panel.classList.contains("hidden")) return;
   const badge = $("chat-active-model");
-  if (!panel || !badge || panel.classList.contains("hidden")) return;
+  if (!badge) return;
   const margin = 8;
   panel.style.left = "0px";
   panel.style.top = "0px";

@@ -188,7 +188,6 @@ REACHED_AFTER_LOAD = {
     "settings-panes.js:atlasAvatar": "a palette row's optional face: typeof-guarded, and the row's icon is the designed fallback (face null)",
     "settings-panes.js:ownNameMarkStyle": "the save payload: without the bundle the look controls were never mounted, so there is no change to send and undefined omits the field",
     "settings-wiring.js:improveReady": "a click on .improve-mode, which is inside #improve-overlay; that is hidden until openImprove (improve-panel.js:18) shows it",
-    "settings.js:nameMarkBuddyMotion": "inside the afterCharacters callback (settings.js, the About motion line)",
     "settings.js:bgArtSeedText": "bgArtRefreshSeed returns early unless bgArtSeedUsed is defined, and that is declared in bg-art.js",
     "settings.js:bgArtHalt": "halts what bgArtRun mounted, and bgArtRun runs only once bg-art.js is in (startBgArt's typeof gate)",
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
@@ -443,6 +442,7 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "settings-controls.js:nameMarkBuddyMotion": "inside the afterCharacters callback (refreshAboutPane, the About motion line, moved from settings.js with the pane refresh, L675), so avatars.js is in",
     "documents-csvgrid.js:docSurface": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:docCmView": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:currentDoc": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",

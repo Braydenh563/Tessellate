@@ -2547,7 +2547,7 @@
   //: The Recordings shelf's Record and search: the shelf is drawn by this
   //: bundle, so it is in before either can be pressed (and app.js's boot
   //: budget carries no stand-in for them).
-  $("recordings-record")?.addEventListener("click", () => openVoiceNote());
+  SURFACES.wire("recordings-record", "click", () => openVoiceNote());
 
   //: **Live captions from where a person looks for them** (V6): the voice
   //: note's Live captions and the Recordings bar's Captions. The dialog makes
@@ -2568,45 +2568,45 @@
     if (!$("meeting-overlay").classList.contains("hidden")) closeMeetingRecorder();
     ensureModule("captions").then((ok) => ok && startLiveCaptions());
   }
-  $("meeting-captions")?.addEventListener("click", openLiveCaptionsFrom);
-  $("meeting-done-open")?.addEventListener("click", () => {
+  SURFACES.wire("meeting-captions", "click", openLiveCaptionsFrom);
+  SURFACES.wire("meeting-done-open", "click", () => {
     const open = $("meeting-done").openSaved;
     closeMeetingRecorder();
     open?.();
   });
-  $("meeting-done-again")?.addEventListener("click", () => {
+  SURFACES.wire("meeting-done-again", "click", () => {
     resetMeetingUI();
     $("meeting-record").focus();
   });
-  $("recordings-captions")?.addEventListener("click", openLiveCaptionsFrom);
-  $("meeting-copy")?.addEventListener("click", (event) =>
+  SURFACES.wire("recordings-captions", "click", openLiveCaptionsFrom);
+  SURFACES.wire("meeting-copy", "click", (event) =>
     copyToClipboard($("meeting-transcript").value, event.currentTarget)
   );
   $("meeting-transcript").addEventListener("input", () => autoGrow($("meeting-transcript")));
   let recordingsSearchTimer = 0;
-  $("recordings-search")?.addEventListener("input", () => {
+  SURFACES.wire("recordings-search", "input", () => {
     clearTimeout(recordingsSearchTimer);
     recordingsSearchTimer = setTimeout(renderRecordings, 200);
   });
-  $("meeting-save-doc")?.addEventListener("click", saveMeetingDocument);
-  $("meeting-pause")?.addEventListener("click", toggleMeetingPause);
+  SURFACES.wire("meeting-save-doc", "click", saveMeetingDocument);
+  SURFACES.wire("meeting-pause", "click", toggleMeetingPause);
 
   //: Wired when this bundle loads: the Marker button shows only while
   //: recording, which only this bundle starts. M anywhere in the recorder but
   //: its name field is the same; stopped here, because M is also the first key
   //: of the app's chords (m then s), and while recording it is the marker.
-  $("meeting-marker")?.addEventListener("click", addMeetingMarker);
-  $("meeting-discard-take")?.addEventListener("click", discardMeetingTake);
-  $("meeting-stop-transcribe")?.addEventListener("click", stopMeetingTranscription);
+  SURFACES.wire("meeting-marker", "click", addMeetingMarker);
+  SURFACES.wire("meeting-discard-take", "click", discardMeetingTake);
+  SURFACES.wire("meeting-stop-transcribe", "click", stopMeetingTranscription);
   //: The dock (V1) is in the page from boot but shows only once this bundle
   //: has started a recording, so its handlers are this bundle's.
-  $("recording-dock-open")?.addEventListener("click", showMeetingRecorder);
-  $("recording-dock-pause")?.addEventListener("click", () => {
+  SURFACES.wire("recording-dock-open", "click", showMeetingRecorder);
+  SURFACES.wire("recording-dock-pause", "click", () => {
     toggleMeetingPause();
     syncRecordingDock();
   });
-  $("recording-dock-stop")?.addEventListener("click", () => toggleMeetingRecording());
-  $("meeting-overlay")?.addEventListener("keydown", (event) => {
+  SURFACES.wire("recording-dock-stop", "click", () => toggleMeetingRecording());
+  SURFACES.wire("meeting-overlay", "keydown", (event) => {
     if (event.key.toLowerCase() !== "m" || event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target.closest("input, textarea") || $("meeting-marker").classList.contains("hidden")) return;
     event.preventDefault();
@@ -2814,11 +2814,11 @@
     if ($("meeting-mic-name")) $("meeting-mic-name").textContent = `Microphone: ${name}`;
   }
 
-  $("meeting-mic")?.addEventListener("toggle", () => {
+  SURFACES.wire("meeting-mic", "toggle", () => {
     const host = $("meeting-mic-controls");
     if ($("meeting-mic").open && !host.childElementCount) micControlsInto(host);
   });
-  $("meeting-mic")?.addEventListener("change", (event) => {
+  SURFACES.wire("meeting-mic", "change", (event) => {
     if (event.target.matches("select.mic-device")) nameMeetingMic();
   });
 

@@ -148,6 +148,8 @@ onSurface("notes", () => {
 });
 
 function showSettingsSection(name) {
+  //: Each pane is a surface of its own, built on its first visit (L675).
+  surfaceBuild(`settings-${name}`);
   //: The companion's one-time nudge (avatars.js) may show when Appearance
   //: is first opened.
   if (name === "appearance") nameMarkBuddyHint(true);
@@ -362,98 +364,18 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: A frame on: focusing a button in a window just un-hidden lays the whole window out inside
   //: the press (60ms style + 12 layout at 4x), and the reads after it laid out a second time.
   afterFrames(() => $("settings-close").focus(), 1);
-  //: The version alone: "46 entries loaded" was a debugging line (the
-  //: client's cache size, drafts included) sitting beside the Health
-  //: section's own count of the same thing, and the two disagreed.
-  const aboutHealth = await apiJson("/health").catch(() => null);
-  //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
-  const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
-  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
-  //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
-  afterCharacters(() => {
-    const { mode, reason } = nameMarkBuddyMotion();
-    const word = { full: "moves freely", fades: "fades only", still: "stays still" }[mode];
-    $("about-motion").textContent = `Companion motion: ${word}${reason && NMB_MOTION_WHY[reason] ? `. ${NMB_MOTION_WHY[reason]}` : "."}`;
-  });
-  $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
-  $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
-  $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
-  $("pref-update-channel-main").checked = prefsCache?.update_channel === "main";
-  $("pref-update-beta").checked = prefsCache?.update_beta === true;
-  $("update-check-status").textContent = "";
-  $("update-version-select").classList.add("hidden");
-  $("update-install-version").classList.add("hidden");
-  $("update-version-status").textContent = "";
-  const isDesktop = await desktopShell();
-  $("desktop-console-row").classList.toggle("hidden", !isDesktop);
-  $("desktop-console-hint").classList.toggle("hidden", !isDesktop);
-  // Desktop-only for the same reason the console row is: there is no tray in
-  // a browser tab, and a setting whose effect is unreachable reads as broken.
-  $("desktop-tray-row")?.classList.toggle("hidden", !isDesktop);
-  $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
-  $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
-  //: The companion's switch is a stored preference the desktop app reads, so it is set from
-  //: any tab on this computer, not only from the desktop window (the owner, 2026-11-04: "the
-  //: atlas desktop comnpanion toggle is gone??", INBOX 1631). Another device has no say in
-  //: what this computer's desktop shows, so it has no row. Outside the desktop window a line
-  //: says when it takes effect. Built here, not in index.html, so the boot document's
-  //: element count (tests/test_boot_diet3.py) and the shared scope's name count do not grow.
-  const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;
-  $("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);
-  const companionHelp = $("desktop-companion-help");
-  let companionNote = document.getElementById("desktop-companion-note");
-  if (isDesktop || !onThisComputer || !companionHelp) companionNote?.remove();
-  else if (!companionNote) {
-    companionNote = document.createElement("p");
-    companionNote.id = "desktop-companion-note";
-    companionNote.className = "muted";
-    companionNote.textContent = "The companion shows on the desktop while the desktop app runs with its window minimised or in the tray; set it here or there.";
-    companionHelp.after(companionNote);
-  }
-  // Same reasoning as the tray/console rows above: /system/restart can only
-  // ever do something in the packaged desktop app on Windows specifically
-  // (the one platform _spawn_desktop knows how to relaunch), not desktop in
-  // general: but this app's own convention (the console row just above)
-  // is to gate on desktop-ness alone and let the backend's own platform
-  // check be the final word, so a browser tab never even offers the button
-  // while a desktop build on macOS/Linux still can, and finds out only
-  // when it actually tries, rather than a client-side guess going stale
-  // the moment this app ships a real relaunch for those platforms too.
-  $("about-restart-row").classList.toggle("hidden", !isDesktop);
-  $("open-exports-row").classList.toggle("hidden", !isDesktop);
-  $("export-save-dir-row").classList.toggle("hidden", !isDesktop);
-  //: The exports list is for every shell, not only the desktop: on a browser
-  //: tab it is the only way back to a file the app saved (INBOX 159).
-  renderExportsList();
-  if (isDesktop) $("pref-export-dir").value = prefsCache?.export_save_dir || "";
-  if (isDesktop) {
-    $("pref-show-console").checked = Boolean(prefsCache?.show_console_on_startup);
-    // Defaults to on, and `?? true` rather than `Boolean(...)` matters: an
-    // install that has never touched this has no stored value, and Boolean()
-    // of undefined would render the default as off.
-    $("pref-close-to-tray").checked = prefsCache?.close_to_tray ?? true;
-    //: Off unless chosen: a second launch brings the open window forward.
-    $("pref-new-window-on-launch").checked = Boolean(prefsCache?.new_window_on_launch);
-    //: Off unless chosen: the corner companion only shows once it is turned on.
-    $("pref-desktop-companion").checked = Boolean(prefsCache?.desktop_companion);
-  }
-  // Rebuilt each open rather than once at startup: the list reflects saved
-  // preferences, and those can change from another window or a restore.
-  renderStatusBarSettings();
+  //: What a pane shows that can change while the window is closed is read per pane, now for a built pane and
+  //: at its build for the rest (settings-controls.js; L675: reading it here built About, Data and Appearance).
+  openSettingsModal.refresh();
   //: The setting search's results, each long section's index and the model
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
-  if (typeof renderCredits === "function") renderCredits();
+  if (typeof renderCredits === "function") onSurface("settings-help", renderCredits);
   showSettingsSection(section);
-  // Re-read every open, not cached: the panel shows what the *currently
-  // selected* model recommends, and changing the chat model is the most likely
-  // reason to come back here.
-  loadSamplingSettings();
   if (!suggestedCatalog) {
     suggestedCatalog = await apiJson("/models/suggested").catch(() => null);
   }
-  loadChangelog();
   //: The Models pane opens on the page's own "Checking the models…" and
   //: `renderSettings` only ran once the refresh below answered, so a status
   //: already known (the poll has run since boot) is painted at once, and one
@@ -720,6 +642,8 @@ function filterSettings(term) {
     return;
   }
 
+  //: Every pane is searched, so a query builds the ones not yet visited (L675).
+  for (const name of SETTINGS_SECTIONS) surfaceBuild(`settings-${name}`);
   //: The topics are findable settings too: draw them on the first query, then ask again.
   if ($("help-topics")?.hasAttribute("aria-busy")) {
     window.renderHelpTopics?.()?.then(() => {
@@ -1122,7 +1046,9 @@ function renderActiveLogView() {
   else renderLogList();
 }
 function setLogLive(state, detail) {
-  const pill = $("log-live");
+  //: Not built until Logs is visited (L675); its markup starts paused.
+  const pill = document.getElementById("log-live");
+  if (!pill) return;
   setLabel(pill, detail);
   pill.dataset.state = state;
 }
@@ -3471,7 +3397,7 @@ document.addEventListener("motionchange", () => {
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
-$("settings-close").addEventListener("click", closeSettingsModal);
+$("settings-close").addEventListener("click", () => closeSettingsModal());
 $("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 
 
@@ -4043,7 +3969,8 @@ async function refreshJobRuns() {
 // the ones that have never run included, so the absence of a job reads as
 // "not run yet" rather than "this app cannot do that".
 function renderJobOverview() {
-  const list = $("job-runs-list");
+  //: Background tasks is built on its first visit (L675), and showing it fetches these again.
+  const list = document.getElementById("job-runs-list");
   if (!list || !jobRunsList) return;
   const reports = jobRunsList.map((run) => run.report || "").join();
   if (list.children.length === jobRunsList.length && list.dataset.reports === reports) return;

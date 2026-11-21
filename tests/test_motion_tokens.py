@@ -324,7 +324,7 @@ def test_the_switch_is_wired_from_boot_to_settings():
     assert re.search(r'"ui-motion":\s*\{\s*default:\s*"on"', prefs), "prefs.js has no default for ui-motion"
     settings = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
     assert 'root.dataset.uiMotion = appearancePref("ui-motion")' in settings
-    assert '$("ui-motion-toggle").addEventListener("change"' in settings
+    assert 'wire("ui-motion-toggle").addEventListener("change"' in settings
     html = (CSS_DIR.parents[0] / "index.html").read_text(encoding="utf-8")
     assert re.search(r'<input type="checkbox" id="ui-motion-toggle" checked>', html), "the toggle is not on by default"
     assert 'data-help-for="motion-help"' in html, "the switch has no help popover"

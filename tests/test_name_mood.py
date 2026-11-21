@@ -502,7 +502,7 @@ def test_atlas_look_says_when_it_follows_face_looks() -> None:
     assert 'ownNameMarkStyle().look' in look
     assert 'return { look: "masculine", reason: "default" };' in look
     assert "return atlasLookReason().look;" in atlas[atlas.index("function atlasLook()") :][:120]
-    face = settings[settings.index('$("face-look").addEventListener') :]
+    face = settings[settings.index('wire("face-look").addEventListener') :]
     face = face[: face.index("});")]
     assert "atlasRepaint()" in face, "a Face looks change leaves an Auto Atlas in the old look"
 

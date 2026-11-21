@@ -64,7 +64,7 @@ def test_a_surface_body_cannot_end_its_script_early():
 
 def test_nests_name_exactly_the_templates_inside_the_body():
     for m in SCRIPTS:
-        nested = re.findall(r'<template data-surface="(\w+)"', m.group(2))
+        nested = re.findall(r'<template data-surface="([\w-]+)"', m.group(2))
         named = re.search(r'data-nests="([^"]*)"', m.group(1))
         assert (named.group(1).split() if named else []) == nested, m.group(1)
 
