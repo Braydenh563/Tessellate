@@ -182,7 +182,8 @@ def _save_skill(session: Session, args: dict) -> dict:
 
 # --- the registry ---------------------------------------------------------------
 
-_NOTE_ID = {"type": "integer", "description": "The note's id number"}
+#: No description: under `note_id` it only restated the key, 13 times over the schema budget.
+_NOTE_ID = {"type": "integer"}
 
 
 TOOLS: dict[str, ToolSpec] = {
