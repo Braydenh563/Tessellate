@@ -308,6 +308,11 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <p align="center">
+  <img src="docs/screenshots/ocr.png" alt="The OCR workspace: a stand-up page with its text outlined as one region, read by Tesseract at 96 percent, the words beside it ready to copy, ask about or save as a note" width="850">
+  <br><sub><b>OCR workspace</b>: Tesseract reads a page on your computer; correct a region, then copy it, ask about it or save it as a note</sub>
+</p>
+
+<p align="center">
   <img src="docs/screenshots/whiteboard.png" alt="A board: a banner, coloured cards in two columns, and a release flow of shapes with text inside them, joined by connectors labelled yes, no and after a week" width="850">
   <br><sub><b>Boards</b>: cards, shapes that hold text, and connectors that carry a label</sub>
 </p>

@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
+| ui-modernisation | 96 | 110 | 4 | 0 | 16 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 91 | 10 | 0 | 0 | 101 |
+| world-class | 0 | 90 | 10 | 0 | 0 | 100 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 481 | 81 | 2 | 111 | 934 |
+| all | 372 | 480 | 81 | 2 | 110 | 933 |
 
 ## graph
 
@@ -682,7 +682,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L897** `ui-modernisation` blocked-hardware, S: Measure phone toggle first frames (50-80 ms) on a real phone. From OPEN.md:3548. Evidence: Needs a real phone; headless emulation only.
 - [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable
 - [ ] **L899** `ui-modernisation` blocked-hardware, S: Verify phone foot bar touch and scroll-driven animation in webview. From OPEN.md:3860. Evidence: Needs touch device and desktop webview
-- [ ] **L900** `ui-modernisation` blocked-hardware, S: Retake README OCR screenshot with Tesseract in current dark theme. From OPEN.md:2325. Evidence: Needs a Tesseract binary; seed-ocr.js removed 2026-10-12
 - [ ] **L901** `ui-modernisation` blocked-hardware, S: Verify the phone action sheet (openKebabSheet) below 600 with touch and a screen reader, plus Settings jump list. From OPEN.md:623; OPEN.md:3553. Evidence: Needs real phone/touch and screen reader
 - [ ] **L902** `ui-modernisation` blocked-hardware, S: Judge phone first toggle frame timing and animation jump on a real touch device. From OPEN.md:743. Evidence: Headless emulation timing; real touch device needed to judge
 - [ ] **L903** `ui-modernisation` blocked-hardware, S: Check the dark palette on an OLED panel and other gamma, and re-run glassdepth.js. From OPEN.md:1820; OPEN.md:3392. Evidence: Needs a real OLED panel / gamma, a human look
@@ -694,7 +693,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
 - [ ] **L915** `world-class` open, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device Reopened 2026-11-14 (hardware audit): the printed manual (headless print to PDF) and the real-model answers (llama-dev.sh) run here; only the iOS zoom check needs a device and stays as one BACKLOG row.
 - [ ] **L916** `world-class` open, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model Reopened 2026-11-14 (hardware audit): the no-model chat state and the page reader run headless here; neither shot needs a model.
-- [ ] **L917** `world-class` open, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed) Reopened 2026-11-14 (hardware audit): tesseract installs from the apt mirror (package registries are allowed).
 - [ ] **L965** `world-class` open, S: Split _start_tray menu building from start-up and test on Windows. From OPEN.md:363. Evidence: _start_tray still in __main__.py unsplit; needs Windows desktop test Reopened 2026-11-14 (hardware audit): the split itself is code and is testable here; only the Windows look stays as one BACKLOG row.
 - [ ] **L967** `world-class` open, S: Check the real log stream under load (live pill and filters). From OPEN.md:3422. Evidence: Needs a real busy server and human look; no load test exists for the log stream. Reopened 2026-11-14 (hardware audit): a scripted load run plus headless Chromium on the log page measures this; same work as L607.
 - [ ] **L972** `world-class` open, S: Load-dependent X11 test race (1683s/U16). From OPEN.md:4342. Evidence: Needs X11 desktop/loaded box to reproduce; ledger open. Reopened 2026-11-14 (hardware audit): Xvfb and xvfb-run are installed here.
