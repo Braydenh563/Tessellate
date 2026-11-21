@@ -141,13 +141,10 @@ def clip_idle_tails(folder: Path) -> None:
 
 def rest_line_is_one(folder: Path) -> bool:
     """Whether the stand, blink, look and idle pictures end on one row once shrunk to the shipped scale."""
-    set_ = sprites.SpriteSet(folder.name)
-    was = sprites.frames_dir
-    sprites.frames_dir = lambda: folder.parent
-    try:
-        lows = {set_._build(n, 96, False).box[3] for n in ("stand", "blink", "look", *(f"idle{i}" for i in range(sprites.IDLE_COUNT)))}
-    finally:
-        sprites.frames_dir = was
+    # The set is given its folder, never by rebinding `sprites.frames_dir`: a module attribute written from here sent
+    # every reader of it through this script for CodeQL, and Analyze ran past its 20 minutes from this commit (c6e4a314).
+    set_ = sprites.SpriteSet(folder.name, folder.parent)
+    lows = {set_._build(n, 96, False).box[3] for n in ("stand", "blink", "look", *(f"idle{i}" for i in range(sprites.IDLE_COUNT)))}
     return len(lows) == 1
 
 
