@@ -33,3 +33,13 @@ canvasconventions 66s
 libtlscroll 60s
 wbshapetext 24s
 calheadalign 16s
+maplayouts 26s
+maptheme 23s
+mapviewmenu 17s
+maplinkcue 41s
+wbexportimage 42s
+ctrlwheelzoom 41s
+graphphone 10s
+wbtopbar 87s
+noteobject 40s
+docks 44s
