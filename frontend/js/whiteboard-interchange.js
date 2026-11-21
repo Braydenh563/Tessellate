@@ -1018,6 +1018,7 @@ async function wbExportOutline() {
 //: The Import dialog: paste a Mermaid flowchart, or choose a .mmd file or a
 //: board SVG this app exported.
 function wbOpenImportDialog() {
+  surfaceBuild("wbImport");
   const dialog = document.getElementById("wb-import-dialog");
   if (!dialog) return;
   const field = document.getElementById("wb-import-text");
@@ -1189,7 +1190,8 @@ async function wbImportText(text) {
   return rows ? wbImportBoardRows(rows) : wbImportMermaid(text);
 }
 
-onDomReady(() => {
+//: Its controls are wired when the dialog's surface is built (its first open, L-world-class-530).
+onSurface("wbImport", () => {
   const dialog = document.getElementById("wb-import-dialog");
   if (!dialog) return;
   const file = document.getElementById("wb-import-file");

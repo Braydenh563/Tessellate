@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Perf (L-world-class-530): six more dialogs are `data-surface` scripts built by their openers: forgot password (`lockForgot`), the recovery key (`recoveryKey`), replace across documents (`docReplace`), delete space (`spaceDelete`), board templates (`wbTemplate`) and board import (`wbImport`). Elements in index.html's live tree 897 to 749; after sign-in on the dashboard 2,348 to 2,196.
 - Perf (L-world-class-530): Find anything's card and the Activity panel's body are `data-surface` scripts built on first open (`openFinder`, `setAgentMonitorVisible`; a run landing in the panel builds it too, log lines before that are held). Elements in index.html's live tree 1,009 to 897; after sign-in on the dashboard 2,465 to 2,348.
 - MCP links: Revoke and Make a link now carry Undo; a revoked token's row is kept an hour so Undo brings the same token back (L687, no undo exemption).
 - A History row from the fading-scores route says you started it, and a lint keeps every route run named with its origin.

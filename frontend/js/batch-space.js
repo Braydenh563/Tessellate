@@ -97,6 +97,7 @@ function spaceDeleteNeedsName() {
 }
 
 function rmSpace(id) {
+  surfaceBuild("spaceDelete");
   $("space-delete-id").value = id;
   $("space-delete-error").textContent = "";
   //: Delete everything, or move it all to another space first (owner,

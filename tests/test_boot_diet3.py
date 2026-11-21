@@ -117,8 +117,9 @@ class _Count(HTMLParser):
 #: 2026-11-13 (L621): measured 1,054 with the meeting recorder's card a surface too
 #: (`data-surface="meeting"`, 61); the tab panes had gone to surfaces meanwhile.
 #: 2026-11-21 (L-world-class-530): 1,009 on head; Find anything's card (`finder`, 55) and the
-#: Activity panel's body (`agentMonitor`, 56) to 897.
-BOOT_ELEMENTS_CAP = 897
+#: Activity panel's body (`agentMonitor`, 56) to 897; six dialogs (forgot password, recovery key,
+#: replace across documents, delete space, board templates, board import) to 749.
+BOOT_ELEMENTS_CAP = 749
 
 
 def test_the_boot_document_does_not_grow():

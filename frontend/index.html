@@ -402,6 +402,8 @@
          computer; another device is told so before anything is typed
          (`reset_here` from /auth/status). Wired in account-recovery.js. -->
     <div id="lock-forgot-card" class="card lock-forgot-card hidden" role="region" aria-labelledby="lock-forgot-title">
+      <!-- Built when the card first opens (`surfaceBuild("lockForgot")` in openForgotPassword, account-recovery.js). -->
+      <script type="text/x-surface" data-surface="lockForgot">
       <div class="dialog-head">
         <h2 class="dialog-head-title" id="lock-forgot-title"><i class="ph ph-key pop-glyph" aria-hidden="true"></i>Forgot your password?</h2>
         <button type="button" class="icon-only ghost small graph-help-toggle"
@@ -481,6 +483,7 @@
         </div>
       </div>
       <p id="lock-forgot-error" class="status error" role="alert"></p>
+      </script>
     </div>
   </div>
 
@@ -491,6 +494,8 @@
        closes: it is never stored, so this is the only place it ever is.
        Wired in account-recovery.js. -->
   <dialog id="recovery-key-dialog" class="card space-dialog recovery-key-dialog" aria-labelledby="recovery-key-title">
+    <!-- Built when the key is first shown or offered (`surfaceBuild("recoveryKey")` in wireRecoveryDialog, account-recovery.js). -->
+    <script type="text/x-surface" data-surface="recoveryKey">
     <div class="dialog-head">
       <h2 class="dialog-head-title" id="recovery-key-title"><i class="ph ph-shield-check pop-glyph" aria-hidden="true"></i>Your recovery key</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle"
@@ -539,6 +544,7 @@
       </div>
     </div>
     <p id="recovery-key-error" class="status error" role="alert"></p>
+    </script>
   </dialog>
 
   <!-- Global Command Palette -->
@@ -1041,6 +1047,8 @@
   </sheet-host>
 
   <dialog id="space-delete-dialog" class="card space-dialog">
+    <!-- Built when the dialog first opens (`surfaceBuild("spaceDelete")` in rmSpace, batch-space.js). -->
+    <script type="text/x-surface" data-surface="spaceDelete">
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-trash pop-glyph" aria-hidden="true"></i>Delete this space?</h2>
       <span class="dialog-head-actions">
@@ -1064,6 +1072,7 @@
       <button type="button" class="ghost small" data-close-dialog="space-delete-dialog">Cancel</button>
       <button type="button" class="danger small" id="space-delete-submit">Delete space</button>
     </div>
+    </script>
   </dialog>
 
   <!-- "Where are they stored?" was a <details> disclosure that lived in the
@@ -1151,6 +1160,8 @@
        thumbnail the library's tile draws. -->
   <!-- Insert, Diagram, Mermaid, draw.io or board SVG (W5; whiteboard-interchange.js). -->
   <sheet-host id="wb-import-dialog" class="space-dialog wb-import-dialog" aria-labelledby="wb-import-title" hidden>
+    <!-- Built when the dialog first opens (`surfaceBuild("wbImport")` in wbOpenImportDialog, whiteboard-interchange.js). -->
+    <script type="text/x-surface" data-surface="wbImport">
     <div class="dialog-head">
       <h2 id="wb-import-title" class="dialog-head-title"><i class="ph ph-tree-structure pop-glyph" aria-hidden="true"></i>Bring in a diagram</h2>
       <span class="dialog-head-actions">
@@ -1165,10 +1176,13 @@
       <button type="button" class="ghost small" data-close-dialog="wb-import-dialog">Cancel</button>
       <button type="button" class="accent small" id="wb-import-go">Bring in</button>
     </div>
+    </script>
   </sheet-host>
 
   <sheet-host id="wb-template-dialog" class="space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="wb-template-title" hidden>
+    <!-- Built when the gallery first opens (`surfaceBuild("wbTemplate")` in wbOpenTemplateGallery, whiteboard-templates.js). -->
+    <script type="text/x-surface" data-surface="wbTemplate">
     <div class="dialog-head">
       <h2 id="wb-template-title" class="dialog-head-title"><i class="ph ph-chalkboard-teacher pop-glyph" aria-hidden="true"></i>New board</h2>
       <span class="dialog-head-actions">
@@ -1195,6 +1209,7 @@
       <button type="button" class="ghost small" data-close-dialog="wb-template-dialog">Cancel</button>
       <button type="button" class="accent small" id="wb-template-create">Create</button>
     </div>
+    </script>
   </sheet-host>
   <!-- Quick note (quick-note.js, INBOX 434): a note from any tab without
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
@@ -1312,6 +1327,8 @@
   <!-- Replace in every document (DOCUMENTS_PLAN 24 row 9): VS Code's
        replace across files, as one undo step. Rows by `renderDocReplace`. -->
   <dialog id="doc-replace-dialog" class="card space-dialog doc-ai-history-dialog doc-replace-dialog" aria-labelledby="doc-replace-title">
+    <!-- Built when the dialog first opens (`surfaceBuild("docReplace")` in docReplaceOpen, documents-replace.js). -->
+    <script type="text/x-surface" data-surface="docReplace">
     <div class="dialog-head">
       <h2 class="dialog-head-title" id="doc-replace-title"><i class="ph ph-swap pop-glyph" aria-hidden="true"></i>Replace in every document</h2>
       <span class="dialog-head-actions">
@@ -1334,6 +1351,7 @@
       <button type="button" class="ghost small" data-close-dialog="doc-replace-dialog">Cancel</button>
       <button type="button" class="accent small" id="doc-replace-run" disabled>Replace all</button>
     </div>
+    </script>
   </dialog>
 
   <dialog id="doc-stats-dialog" class="card space-dialog">
