@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
+- Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.
 - MCP links: Revoke and Make a link now carry Undo; a revoked token's row is kept an hour so Undo brings the same token back (L687, no undo exemption).
 - A History row from the fading-scores route says you started it, and a lint keeps every route run named with its origin.
 - Two ratchets after the merges: Help topics released on leaving Help are marked by an empty list, not a hand-set aria-busy (the spinner recipe), and the size caps for composer_tables.py and question_noise.py fall to their new sizes.
