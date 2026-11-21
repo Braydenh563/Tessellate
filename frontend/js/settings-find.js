@@ -123,7 +123,7 @@
   function settingRowsWarm() {
     //: The topics are drawn here, in an idle slot, and not by the first query: that draw changed the Help pane
     //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
-    if ($("help-topics")?.hasAttribute("aria-busy")) renderHelpTopics();
+    if ($("help-topics") && !$("help-topics").firstElementChild) renderHelpTopics();
     //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
     const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !settingRowsScan.panes.has(p));
     if (!pane) return;
@@ -652,8 +652,8 @@
     const help = $("help-topics");
     if (name !== "help" && helpTopicsLoad && help && !$("settings-search").value) {
       helpTopicsLoad = null;
+      //: Empty is the "not drawn" mark (renderHelpTopics fills it); the static aria-busy is only for the first load.
       help.replaceChildren();
-      help.setAttribute("aria-busy", "true");
     }
     //: Each row's changed marker and reset (WORLD_CLASS_PLAN 25f), a file of its own.
     lazyScript("/js/settings-rows.js").then((ok) => ok && settingRowsWatch(name));

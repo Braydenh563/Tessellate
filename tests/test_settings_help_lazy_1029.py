@@ -32,9 +32,10 @@ def test_showing_help_draws_them() -> None:
 
 def test_the_first_search_draws_them_and_asks_again() -> None:
     find = _body("filterSettings")
-    warm = find.index('$("help-topics")?.hasAttribute("aria-busy")')
-    # Before the matching, and only until they are drawn (the drawing clears aria-busy
-    # on success and on failure, so a failed fetch cannot loop).
+    warm = find.index('!$("help-topics").firstElementChild')
+    # Before the matching, and only until they are drawn: an empty box is the mark (the drawing
+    # fills it on success and writes a line on failure, so a failed fetch cannot loop). Leaving
+    # Help empties it again (L676) instead of setting aria-busy by hand (test_spinner_recipe).
     assert warm < find.index("let matches = 0")
     assert "filterSettings(query)" in find[warm : find.index("let matches = 0")]
 
