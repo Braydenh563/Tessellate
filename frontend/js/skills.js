@@ -1060,10 +1060,10 @@ function batchTag() {
 //: **The rest of what one note's menu does, for many** (INBOX 432: the
 //: selection bar could move, tag and delete, and nothing else). One PUT or
 //: POST per note, one toast, one undo, the shape `batchTag` has.
-async function batchEach(label, ids, forward, backward) {
+async function batchEach(labelFor, ids, forward, backward) {
   //: A note that refuses partway is left out, not the end of the act
   //: (review 5907752577): the notes already changed keep their Undo, and
-  //: the toast says how many did not change. `label` may take the ids done.
+  //: the toast says how many did not change. `labelFor` names the ids done.
   const done = [];
   for (const id of ids) {
     try {
@@ -1077,7 +1077,7 @@ async function batchEach(label, ids, forward, backward) {
   await loadEntries();
   const missed = ids.length - done.length;
   if (!done.length) return toast(`No note changed: ${nounCount(missed, "note")} refused.`, "info");
-  label = typeof label === "function" ? label(done) : label;
+  const label = labelFor(done);
   const each = async (step) => {
     for (const id of done) await step(id).catch((err) => console.warn("batch: a note refused", id, err));
     await loadEntries();
