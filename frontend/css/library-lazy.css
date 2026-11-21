@@ -4370,7 +4370,8 @@ button.ghost.doc-template-choice.wb-template-choice {
 }
 
 .split-button .split-button-caret {
-  width: calc(var(--control-h) - 4px);
+  /* The touch floor where the control is shorter than a finger (iconfloor.js: 36 wide at 1024 touch); a mouse's 28 is the floor already. */
+  width: max(calc(var(--control-h) - 4px), var(--target-min));
   padding-inline: 0;
   border-start-start-radius: 0;
   border-end-start-radius: 0;

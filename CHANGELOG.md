@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Touch: under a coarse pointer or a narrow window, the icon-only header buttons, privacy chip, capture-bar buttons and the board's new-board menu keep a 44px target (desktop sizes unchanged).
 - Companion: a long note whose list row is clipped still makes it put its reading glasses on (it counts the server's words, not the clipped text).
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
