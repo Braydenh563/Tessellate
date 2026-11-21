@@ -963,6 +963,7 @@ async function openFind(env) {
     const find = env.page.locator('[role="menuitem"]:visible', { hasText: /^Find/ }).first();
     await env.page.waitForFunction(() => ![...document.querySelectorAll('[role="menuitem"]')].some((e) => e.offsetParent), null, { timeout: 5000 });
     await env.page.locator('button[aria-label="App menu"]:visible').first().tap();
+    if (process.env.PROBE) { await env.wait(1200); console.log('PROBE-MENU', JSON.stringify(await env.js(() => ({ items: [...document.querySelectorAll('[role=menuitem]')].filter((e) => e.offsetParent).map((e) => e.textContent.trim().slice(0, 24)), sheets: [...document.querySelectorAll('.sheet-overlay, [role=dialog]')].filter((e) => e.offsetParent).map((e) => (e.dataset.sheet || e.id || e.className).slice(0, 40)), tab: document.body.dataset.tab, appmenu: [...document.querySelectorAll('button[aria-label="App menu"]')].map((b) => [b.offsetParent ? 'vis' : 'hid', b.getAttribute('aria-expanded')]) })))); }
     await find.waitFor({ state: 'visible', timeout: 8000 });
     await find.tap();
   } else await env.page.click('#status-find');
