@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 742, backend modules 11347, test files 2933, tests 23102, plan headings 688, app scripts 29, boot scripts 38, script files 318.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 742, backend modules 11359, test files 2933, tests 23102, plan headings 688, app scripts 29, boot scripts 38, script files 318.
 
 ## Frontend functions (8567)
 
@@ -13645,7 +13645,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:113 |
 | `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:250 |
 | `/begin` | POST | `begin` | src/tessellate/api/routes_hello.py:216 |
-| `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:1103 |
+| `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:953 |
 | `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:539 |
 | `/board-library` | POST | `create_library_item` | src/tessellate/api/routes_board_library.py:598 |
 | `/board-library/export` | GET | `export_library` | src/tessellate/api/routes_board_library.py:787 |
@@ -13898,7 +13898,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/lan-watch` | GET | `lan_watch` | src/tessellate/api/routes_auth.py:1605 |
 | `/last` | GET | `last` | src/tessellate/api/routes_learned_audit.py:36 |
 | `/latest` | GET | `latest` | src/tessellate/api/routes_night.py:84 |
-| `/library` | GET | `library` | src/tessellate/api/routes_library.py:1054 |
+| `/library` | GET | `library` | src/tessellate/api/routes_library.py:904 |
 | `/link-offers` | POST | `document_link_offers` | src/tessellate/api/routes_documents.py:364 |
 | `/link-reasons/run` | POST | `tidy_link_reasons_run` | src/tessellate/api/routes_tidy.py:78 |
 | `/link-suggestions` | GET | `link_suggestions` | src/tessellate/api/routes_entries_relations.py:99 |
@@ -14325,7 +14325,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11347)
+## Backend modules (11359)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23117,34 +23117,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_activity` | src/tessellate/api/routes_library.py:894 |
-| `_archive` | src/tessellate/api/routes_library.py:365 |
-| `_bin_row` | src/tessellate/api/routes_library.py:418 |
-| `_chats` | src/tessellate/api/routes_library.py:260 |
-| `_clip` | src/tessellate/api/routes_library.py:134 |
-| `_clip_plain` | src/tessellate/api/routes_library.py:158 |
-| `_documents` | src/tessellate/api/routes_library.py:232 |
-| `_drafts` | src/tessellate/api/routes_library.py:847 |
-| `_entry_kind` | src/tessellate/api/routes_library.py:210 |
-| `_first_image_by_entry` | src/tessellate/api/routes_library.py:475 |
-| `_first_inline_image_url` | src/tessellate/api/routes_library.py:182 |
-| `_highlights` | src/tessellate/api/routes_library.py:727 |
-| `_human_size` | src/tessellate/api/routes_library.py:200 |
-| `_images` | src/tessellate/api/routes_library.py:310 |
-| `_last_at` | src/tessellate/api/routes_library.py:489 |
-| `_like` | src/tessellate/api/routes_library.py:60 |
-| `_note_item` | src/tessellate/api/routes_library.py:616 |
-| `_notes` | src/tessellate/api/routes_library.py:669 |
-| `_other_binned` | src/tessellate/api/routes_library.py:442 |
-| `_overview` | src/tessellate/api/routes_library.py:1007 |
-| `_reading_title` | src/tessellate/api/routes_library.py:437 |
-| `_shelved` | src/tessellate/api/routes_library.py:551 |
-| `_shelved_chats` | src/tessellate/api/routes_library.py:496 |
-| `_shelved_note` | src/tessellate/api/routes_library.py:530 |
-| `_tags` | src/tessellate/api/routes_library.py:969 |
-| `_totals` | src/tessellate/api/routes_library.py:1036 |
-| `library` | src/tessellate/api/routes_library.py:1055 |
-| `restore_from_bin` | src/tessellate/api/routes_library.py:1104 |
+| `_activity` | src/tessellate/api/routes_library.py:784 |
+| `_archive` | src/tessellate/api/routes_library.py:334 |
+| `_bin_row` | src/tessellate/api/routes_library.py:379 |
+| `_chats` | src/tessellate/api/routes_library.py:256 |
+| `_clip` | src/tessellate/api/routes_library.py:130 |
+| `_clip_plain` | src/tessellate/api/routes_library.py:154 |
+| `_documents` | src/tessellate/api/routes_library.py:228 |
+| `_drafts` | src/tessellate/api/routes_library.py:747 |
+| `_entry_kind` | src/tessellate/api/routes_library.py:206 |
+| `_first_image_by_entry` | src/tessellate/api/routes_library.py:436 |
+| `_first_inline_image_url` | src/tessellate/api/routes_library.py:178 |
+| `_highlights` | src/tessellate/api/routes_library.py:637 |
+| `_human_size` | src/tessellate/api/routes_library.py:196 |
+| `_images` | src/tessellate/api/routes_library.py:291 |
+| `_last_at` | src/tessellate/api/routes_library.py:446 |
+| `_like` | src/tessellate/api/routes_library.py:56 |
+| `_note_item` | src/tessellate/api/routes_library.py:550 |
+| `_notes` | src/tessellate/api/routes_library.py:603 |
+| `_other_binned` | src/tessellate/api/routes_library.py:403 |
+| `_overview` | src/tessellate/api/routes_library.py:862 |
+| `_reading_title` | src/tessellate/api/routes_library.py:398 |
+| `_shelved` | src/tessellate/api/routes_library.py:503 |
+| `_shelved_chats` | src/tessellate/api/routes_library.py:453 |
+| `_shelved_note` | src/tessellate/api/routes_library.py:482 |
+| `_tags` | src/tessellate/api/routes_library.py:824 |
+| `_totals` | src/tessellate/api/routes_library.py:891 |
+| `library` | src/tessellate/api/routes_library.py:905 |
+| `restore_from_bin` | src/tessellate/api/routes_library.py:954 |
 
 ### src/tessellate/api/routes_library_meta.py (5)
 
@@ -28269,6 +28269,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `note_types_of` | src/tessellate/repo/graph_layers.py:94 |
 | `vector_note_ids` | src/tessellate/repo/graph_layers.py:22 |
 | `vectors_for` | src/tessellate/repo/graph_layers.py:37 |
+
+### src/tessellate/repo/library.py (12)
+
+| Name | File:line |
+|---|---|
+| `activity` | src/tessellate/repo/library.py:177 |
+| `attached_files` | src/tessellate/repo/library.py:65 |
+| `binned_notes` | src/tessellate/repo/library.py:82 |
+| `chat_count` | src/tessellate/repo/library.py:61 |
+| `chats` | src/tessellate/repo/library.py:33 |
+| `drafts` | src/tessellate/repo/library.py:155 |
+| `first_images` | src/tessellate/repo/library.py:94 |
+| `live_note_count` | src/tessellate/repo/library.py:170 |
+| `notes` | src/tessellate/repo/library.py:116 |
+| `notes_with_marks` | src/tessellate/repo/library.py:140 |
+| `shelved_chats` | src/tessellate/repo/library.py:52 |
+| `shelved_notes` | src/tessellate/repo/library.py:103 |
 
 ### src/tessellate/repo/library_meta.py (12)
 
