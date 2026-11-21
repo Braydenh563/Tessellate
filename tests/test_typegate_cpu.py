@@ -57,7 +57,28 @@ def test_fails_the_run_when_the_gate_is_missed():
     src = _src()
     assert "process.exitCode = 1" in src
     # The verdict uses the budgets, not literals that could drift from them.
-    assert "cpu.thread.p95 < P95_BUDGET_MS" in src and "cpu(e) > LONG_TASK_BUDGET_MS" in src
+    assert "cpu(e) > LONG_TASK_BUDGET_MS" in src
+
+
+def test_net_of_the_gates_own_cost_measured_in_the_same_run():
+    """Hub ruling 2026-11-21: the 50 ms budget is on net page work. The gate's
+    own cost (the two getMetrics calls and the settle frame, at the same 4x
+    throttle) is read from idle windows of the identical shape in the same run
+    and subtracted per key; no hard-coded constant. Raw and net are both logged,
+    and an idle-window cost of 15 ms or more fails the gate, so a probe that
+    grows cannot buy the page budget."""
+    src = _src()
+    assert _const("IDLE_FLOOR_CAP_MS") == 15
+    # The idle windows go through the same keyWindow as the keys, only with no key.
+    assert 'keyWindow(page, cdp, "")' in src
+    assert re.search(r"const floor = stats\(idleThread\)\.p50;", src)
+    assert re.search(r"thread\.map\(\(c\) => c - floor\)", src)
+    # No literal floor: the subtraction reads the run's own idle windows only.
+    assert not re.search(r"- *1[0-9](\.[0-9])? *[;)]", src)
+    assert "cpu.net.p95 < P95_BUDGET_MS" in src
+    assert "cpu.floor < IDLE_FLOOR_CAP_MS" in src
+    for needle in ("threadMsPerKey", "netThreadMsPerKey", "idleFloorMs"):
+        assert needle in src, needle
 
 
 def test_node_parses_the_sweep():

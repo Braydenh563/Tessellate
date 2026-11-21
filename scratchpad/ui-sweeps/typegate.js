@@ -3,8 +3,9 @@
 // Per key: CDP Performance.getMetrics ThreadTime, TaskDuration and ScriptDuration deltas over the key's
 // window (keydown to the frame after it); idle windows of the same shape give the floor (the
 // probe itself and the emblem's breath). Then the same burst under a trace: long tasks (main
-// thread RunTask over 50 ms of thread CPU). Gate: ThreadTime p95 under 50 ms a key and no long task in
-// both views; a miss sets the exit code.
+// thread RunTask over 50 ms of thread CPU). Gate (hub ruling 2026-11-21): net ThreadTime p95
+// under 50 ms a key, net being each key's window less this run's idle-window median, no long
+// task, and the idle window itself under 15 ms, in both views; a miss sets the exit code.
 //
 //   BASE=http://127.0.0.1:8871 node scratchpad/ui-sweeps/typegate.js
 //
@@ -23,6 +24,9 @@ const { chromium } = require("/opt/node22/lib/node_modules/playwright");
 const fs = require("fs");
 const P95_BUDGET_MS = 50;
 const LONG_TASK_BUDGET_MS = 50;
+//: The gate's own cost (two getMetrics calls and a settle frame) is subtracted, so it is capped:
+//: a probe that grew would otherwise buy the page its budget.
+const IDLE_FLOOR_CAP_MS = 15;
 const THROTTLE = 4;
 const WORDS = 20000;
 const PHRASE = " the quick brown fox jumps over the lazy dog";
@@ -57,7 +61,7 @@ async function cpuPerKey(page, cdp) {
   await cdp.send("Performance.enable", { timeDomain: "threadTicks" }).catch(() => cdp.send("Performance.enable"));
   const idle = [];
   const idleThread = [];
-  for (let i = 0; i < 12; i += 1) {
+  for (let i = 0; i < 24; i += 1) {
     const [t, , c] = await keyWindow(page, cdp, "");
     idle.push(t);
     idleThread.push(c);
@@ -72,7 +76,11 @@ async function cpuPerKey(page, cdp) {
     thread.push(c);
   }
   await cdp.send("Performance.disable");
-  return { task: stats(task), script: stats(script), thread: stats(thread), idle: stats(idle), idleThread: stats(idleThread) };
+  //: Net page work: each key's window less the median idle window of this run, same calls,
+  //: same throttle, same page (no constant: the floor moves with the renderer and the box).
+  const floor = stats(idleThread).p50;
+  const net = stats(thread.map((c) => c - floor));
+  return { task: stats(task), script: stats(script), thread: stats(thread), net, floor, idle: stats(idle), idleThread: stats(idleThread) };
 }
 
 function traceSummary(ev) {
@@ -133,10 +141,10 @@ async function burst(page, cdp, label, target) {
   const tr = await traced(page, cdp);
   await page.waitForTimeout(1200);
   const prof = process.env.PROFILE ? await profiled(page, cdp) : null;
-  const pass = cpu.thread.p95 < P95_BUDGET_MS && tr.longTasks === 0;
-  console.log(label, JSON.stringify({ taskMsPerKey: cpu.task, scriptMsPerKey: cpu.script, threadMsPerKey: cpu.thread, idleWindowMs: cpu.idle, idleThreadMs: cpu.idleThread, longTasks: tr.longTasks, longMax: tr.longMax, longWall: tr.longWall, longWallMax: tr.longWallMax, perKey: tr.perKey }));
+  const pass = cpu.net.p95 < P95_BUDGET_MS && tr.longTasks === 0 && cpu.floor < IDLE_FLOOR_CAP_MS;
+  console.log(label, JSON.stringify({ taskMsPerKey: cpu.task, scriptMsPerKey: cpu.script, threadMsPerKey: cpu.thread, netThreadMsPerKey: cpu.net, idleFloorMs: cpu.floor, idleWindowMs: cpu.idle, idleThreadMs: cpu.idleThread, longTasks: tr.longTasks, longMax: tr.longMax, longWall: tr.longWall, longWallMax: tr.longWallMax, perKey: tr.perKey }));
   if (prof) for (const [k, ms] of prof) console.log("  self", ms, k);
-  console.log("GATE", label, pass ? "pass" : "miss", "thread p95", cpu.thread.p95, "<", P95_BUDGET_MS, "(task p95", cpu.task.p95 + ") long tasks by thread CPU over", LONG_TASK_BUDGET_MS, ":", tr.longTasks);
+  console.log("GATE", label, pass ? "pass" : "miss", "net thread p95", cpu.net.p95, "<", P95_BUDGET_MS, "(raw", cpu.thread.p95, "less idle floor", cpu.floor, "<", IDLE_FLOOR_CAP_MS + "; task p95", cpu.task.p95 + ") long tasks by thread CPU over", LONG_TASK_BUDGET_MS, ":", tr.longTasks);
   if (!pass) process.exitCode = 1;
 }
 
