@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Release: the two WiX steps run only when the repository variable TESSELLATE_MSI is on (off when unset), so the workflow lint passes; the notes test passes the version through env as the step now does.
+- Diagrams: Start from a template lists the templates you use most first (counted per browser), ties in their usual order.
+- Backlog: thinking off and the tool contracts on Ollama (W16 B72, B74) are device checks in BACKLOG; the W5, W16 to W18 and W32 outcomes were traced (L-general-16).
 - Reminders: a reminder that names a person or topic the notebook knows (an extracted name or alias, or a tag) brings its three newest notes when it fires, as Last notes rows under its bell row and the newest on the system notice, from `GET /reminders/{id}/brief` (L-general-11).
 - OCR: RapidOCR now reads a prepared picture as Tesseract does (a dark ground inverted, small text enlarged, no two-tone stretch), with its boxes put back on the original and the plain file read when preparation fails or finds nothing (L703).
 - Backlog: the Fable whole-app review (L-general-31) and the ruling on Wikipedia's misspelling pairs are owner-input items in BACKLOG.
