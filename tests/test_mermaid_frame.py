@@ -183,3 +183,13 @@ console.log(JSON.stringify([
         "Entity relationship diagram",
         "Diagram",
     ]
+
+
+def test_an_unknown_diagram_type_fails_before_the_layout() -> None:
+    """`detectType` is one regex over the head: a source naming no diagram Mermaid knows gets its
+    reason line without paying for `render`'s layout (L-documents-112 dropped the second parse)."""
+    frame = FRAME_JS.read_text(encoding="utf-8")
+    body = frame[frame.index("async function mermaidFrameDraw") :]
+    assert "mermaid.detectType(source)" in body
+    assert body.index("mermaid.detectType(source)") < body.index("mermaid.render(")
+    assert body.index("try {") < body.index("mermaid.detectType(source)"), "its throw is the reason line"

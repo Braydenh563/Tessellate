@@ -124,6 +124,9 @@ async function mermaidFrameDraw(request) {
     //: and the page waited on the whole. A turn of the loop between them lets input and paint run.
     //: No separate `mermaid.parse` (L-documents-112): render parses first and throws the same reason line,
     //: so the second parse was 26 to 51 ms of the task for nothing.
+    //: The type first: one regex over the head, so a source that names no diagram Mermaid knows gets
+    //: its reason line without paying for the layout.
+    mermaid.detectType(source);
     await mermaidFrameYield();
     const { svg } = await mermaid.render(domId, source);
     await mermaidFrameYield();

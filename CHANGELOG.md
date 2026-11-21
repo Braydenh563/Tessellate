@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagrams: a source that names no diagram type Mermaid knows gets its reason line before the layout runs (mermaid.detectType ahead of render).
 - Documents: the selection bar no longer throws on a selection made before the document editor has finished loading (asSurface reads the editor view through typeof; L-documents-120).
 - Diagram frame: the separate `mermaid.parse` before each draw is gone (render parses and throws the same reason line, checked on four broken sources); adding a block to a 40-block flowchart at 390, 5 interleaved runs each at load 9 to 11: longest task per add median 126.5 to 112 ms, long-task total 251 to 205.5 ms (L-documents-112, still over 50).
 - Documents typing (L-documents-26): the "/" menu and `[[` picker read the caret's line from the engine instead of joining and slicing the whole text twice a key (docCmUpdate 3.9 to 1.5 ms a key in a 20k-word document at 4x CPU, profiled); `test_doc_key_path_26.py` checks it against the old scan over 9,000 cases.

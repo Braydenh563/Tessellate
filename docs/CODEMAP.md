@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2853, tests 22963, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2853, tests 22964, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
 ## Frontend functions (8980)
 
@@ -29147,7 +29147,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22963)
+## Tests (22964)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30848,7 +30848,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_menu_toggles.py | 4 |
 | tests/test_menu_window_fit.py | 3 |
 | tests/test_menus_close_others.py | 3 |
-| tests/test_mermaid_frame.py | 8 |
+| tests/test_mermaid_frame.py | 9 |
 | tests/test_mic_row_fits_c21.py | 2 |
 | tests/test_middleware_disconnect.py | 3 |
 | tests/test_middleware_table_1031.py | 5 |
