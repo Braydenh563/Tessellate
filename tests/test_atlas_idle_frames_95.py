@@ -1,4 +1,6 @@
-"""L-ui-modernisation-95: the idle Atlas companion's frames, counted.
+"""Source text: which element runs which animation decides whether the compositor takes it, and only a traced browser sees that; the trace is in the sweep, the rule shape is pinned here.
+
+L-ui-modernisation-95: the idle Atlas companion's frames, counted.
 
 A CDP trace of the corner Atlas at idle (1440 by 900, the dashboard) put the
 main thread's cost in its frames, not its script: about 27 frames a second at

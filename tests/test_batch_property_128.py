@@ -1,4 +1,6 @@
-"""L-world-class-128 (WORLD_CLASS_PLAN decision 65): bulk edit is a feature of
+"""Source text: the selection bars' wiring is read from the script text, as the unit suite has no browser to drive; the bars were driven in a sweep.
+
+L-world-class-128 (WORLD_CLASS_PLAN decision 65): bulk edit is a feature of
 selection. The Notes and Timeline selection bars share `fillBatchMore`, which
 now sets or removes one property on every selected note with one Undo, beside
 the move, tags, archive and delete those bars already had."""

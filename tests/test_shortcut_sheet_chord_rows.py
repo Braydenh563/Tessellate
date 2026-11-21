@@ -1,4 +1,6 @@
-"""The shortcuts sheet's "t then" rows are generated from the chord's tables
+"""Source text: the renderer is lifted from the script text and run in node, as the unit suite has no browser to drive.
+
+The shortcuts sheet's "t then" rows are generated from the chord's tables
 (L-world-class-120, WORLD_CLASS_PLAN:3609 "the sheet must be generated from
 the table"). They were typed into index.html and named 10 of the 17 keys
 `TAB_JUMP_KEYS` and `CHORD_ACTIONS` hold; the renderer runs here in node over

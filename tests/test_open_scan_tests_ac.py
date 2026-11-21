@@ -1,4 +1,6 @@
-"""The tests in tests/test_[a-c]* read as open only where a LEDGER row says so
+"""Source text: the rule is about the tests' own words, so their text is the thing under test.
+
+The tests in tests/test_[a-c]* read as open only where a LEDGER row says so
 (L-graph-19, 2026-11-14: 211 open_scan hits swept to 2). A hit left here must
 be a strict xfail whose reason names an open LEDGER row; anything else is a
 comment to reword, a name to change, or work to log first."""

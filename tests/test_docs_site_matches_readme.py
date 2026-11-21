@@ -1,4 +1,6 @@
-"""docs/index.html says what the README says (L-world-class-187, IDEAS.md
+"""Source text: the rule is about two documents' words, so their text is the thing under test.
+
+docs/index.html says what the README says (L-world-class-187, IDEAS.md
 "check docs/index.html's text against the README"). The checked pass found the
 page still saying that with no model notes stay Uncategorised and answers wait
 for a model, while the README (and the words path, CHAT_PLAN decision 75)

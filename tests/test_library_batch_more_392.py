@@ -1,4 +1,6 @@
-"""L-world-class-392 (WORLD_CLASS_PLAN decision 65): the Library's selection
+"""Source text: the Library bar's menu wiring is read from the script text, as the unit suite has no browser to drive; it was driven in a sweep.
+
+L-world-class-392 (WORLD_CLASS_PLAN decision 65): the Library's selection
 bar sets tags, a category or a property on the notes ticked, through the
 dialogs the Notes bar opens. Documents, chats and files carry none of the
 three, so the menu acts on notes only and hides when no note is ticked.
