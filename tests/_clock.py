@@ -133,10 +133,13 @@ def pin_clock(monkeypatch, now: datetime | Callable[[], datetime]) -> None:  # n
     monkeypatch.setattr(clock, "today", lambda: moment().date())
     # Every holder, the tests' own too: a test that imported `utcnow` by name
     # and calls it reads the pinned clock like the app does.
+    # Written through each module's namespace dict, not `setattr` with a
+    # computed name: an attribute write CodeQL cannot name reaches every
+    # object it models, and the Analyze run went past its 20 minutes.
     fakes = {"user_now": user, "utcnow": utc}
     for name, attr in HOLDERS:
         if (module := sys.modules.get(name)) is not None:
-            monkeypatch.setattr(module, attr, fakes[attr])
+            monkeypatch.setitem(vars(module), attr, fakes[attr])
 
 
 def unpin_late_imports() -> None:
@@ -146,6 +149,6 @@ def unpin_late_imports() -> None:
     and so never undoes (`conftest._unpin_clock`)."""
     reals = {"user_now": _REAL_USER_NOW, "utcnow": _REAL_UTCNOW}
     for name, attr in HOLDERS:
-        module = sys.modules.get(name)
-        if module is not None and getattr(getattr(module, attr, None), "pinned", False) is True:
-            setattr(module, attr, reals[attr])
+        namespace = vars(module) if (module := sys.modules.get(name)) is not None else {}
+        if getattr(namespace.get(attr), "pinned", False) is True:
+            namespace[attr] = reals[attr]
