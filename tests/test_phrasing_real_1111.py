@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.api import chat_said, chat_turn, routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 
@@ -53,7 +54,9 @@ def _judge(kind: str, text: str) -> str | None:
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
+    #: `config` too: the composer's own clock (`composer_ask.user_now`) reads it, and on the real
+    #: clock the fixture's dated notes drift into "today" (21 November, CI 2026-11-21).
+    for module in (config, routes_chat, chat_said, chat_turn):
         monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
