@@ -19,6 +19,12 @@ from tests._clock import pin_clock
 NOW = datetime(2026, 10, 10, 12, 0)
 
 
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, NOW)
+
+
 def _seed(session):
     for content in (
         "# Boiler service\n\nDue in March. The engineer said the valve was worn.",
@@ -103,11 +109,8 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         session.add(Reminder(text="Buy milk" if act.intent == "complete" else "Call the dentist", due_at=datetime(2030, 1, 1, 9)))
         session.commit()
     before = _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME)
-    # The store refuses a reminder due in the past by the real clock, so a
-    # fixed NOW turns "on Friday" into a past date once that week is over
-    # (a snooze too: its plan refuses a time already passed on the real clock).
-    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze", "to_reminders") else NOW
-    planned = acts.preview(session, acts.parse(act.example, now))
+    # The app's clock is pinned to NOW, so "on Friday" is the Friday after it.
+    planned = acts.preview(session, acts.parse(act.example, NOW))
     card = planned["card"]
     assert card["steps"], act.intent
     done = acts.run(session, card["steps"], card.get("skipped"))

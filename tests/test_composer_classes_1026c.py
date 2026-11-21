@@ -12,7 +12,6 @@ import re
 
 import pytest
 
-from tessellate.ai import notebook_stats
 from tessellate.core.database import Document, Reminder, WhiteboardObject
 from tessellate.entry import manager
 from tests.test_composer_classes_1357 import DOCUMENTS, NOTES, NOT_FOUND, NOW, OBJECTS
@@ -73,7 +72,6 @@ def _fill(session, work_folder: bool) -> None:
 
 def _asker(client, session, monkeypatch, work_folder: bool):  # noqa: ANN001, ANN202
     pin_clock(monkeypatch, NOW)
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW.replace(tzinfo=dt.timezone.utc))
     _fill(session, work_folder)
     return lambda q: _ask(client, q, notes_only=True, answer_from="notes", history=[])["text"]
 

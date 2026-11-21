@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import re
 
+from tessellate.core import clock
 from tessellate.ai import composer_remark
 
 SMALLTALK = "smalltalk"
@@ -224,14 +225,13 @@ def classify(message: str) -> str:
 
 
 def _is_act(message: str) -> bool:
-    from datetime import datetime
 
     from tessellate.ai import act_registry
 
     # `commands` registers the typed reader when it loads, and the chat route
     # loads it (through the agent) before any question is classified. Naming it
     # here would make intent, agent and commands one import cycle.
-    act = act_registry.typed_reader(message, datetime.now())
+    act = act_registry.typed_reader(message, clock.wall())
     return bool((act and act["intent"] != "summarise") or act_registry.app_verb(message))
 
 

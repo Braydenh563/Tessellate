@@ -19,7 +19,7 @@ import re
 
 import pytest
 
-from tessellate.ai import notebook_stats, recognise as rec
+from tessellate.ai import recognise as rec
 from tessellate.ai import recognise_questions
 from tessellate.core import config
 from tests.test_composer_classes_1026c import _SUMMER, _WINTER, _fill
@@ -141,7 +141,6 @@ _NOT_SOUTH_WINTER = r"Ski trip|Snow day|New year plans|Gym routine|Lecture 5|Spr
 @pytest.fixture
 def ask_from(client, session, monkeypatch):
     pin_clock(monkeypatch, NOW)
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW.replace(tzinfo=dt.timezone.utc))
     _fill(session, False)
     return lambda q, locale: _ask(client, q, notes_only=True, answer_from="notes", history=[], locale=locale)["text"]
 

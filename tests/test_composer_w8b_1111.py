@@ -131,11 +131,12 @@ def test_a_single_day_prints_the_day_once(btask, question):
 
 
 @pytest.mark.parametrize(("question", "head"), [
-    ("what's on Thursday", "For Thursday 12 November you have one dated item:"),
-    ("what is on Friday", "For Friday 13 November you have one dated item:"),
-    ("what's on tomorrow", "For tomorrow, Tuesday 10 November you have one dated item:"),
+    ("what's on Thursday", "One dated item for Thursday 12 November:"),
+    ("what is on Friday", "One dated item for Friday 13 November:"),
+    ("what's on tomorrow", "One dated item for tomorrow, Tuesday 10 November:"),
 ])
 def test_a_single_day_is_a_head_then_its_items(btask, question, head):
+    # The head's wording comes from the reply seed, which holds the (pinned) day.
     lines = btask(question).split("\n")
     assert lines[0] == head and lines[1] == "" and lines[2].startswith("- "), lines
 

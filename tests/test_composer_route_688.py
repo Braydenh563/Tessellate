@@ -19,11 +19,17 @@ from tessellate.ai import personal, question_noise, reading
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_smalltalk
 from tessellate.entry import manager
-from tests._clock import pin_clock
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 #: "the 14th of next month", pinned to the day the note was written (B3).
-_NOW = date.today()
+_NOW = SUITE_LOCAL.date()
 NEXT_14 = f"14 {composer_ask._MONTHS[_NOW.month % 12]}" + (f" {_NOW.year + 1}" if _NOW.month == 12 else "")
 
 

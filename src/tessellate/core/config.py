@@ -12,13 +12,14 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, tzinfo
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Any
 
 from dotenv import load_dotenv
 
+from tessellate.core import clock as _clock
 from tessellate.core import secrets_store
 from tessellate.core.atomic_io import atomic_write_json
 
@@ -583,13 +584,26 @@ def user_now(config: "ConfigManager | None") -> datetime:
     which is right for the ordinary case of app and browser on one machine,
     and when there are no settings yet (a prompt built before the app starts).
     """
+    return on_users_clock(config, datetime.now(timezone.utc))
+
+
+def on_users_clock(config: "ConfigManager | None", instant: datetime, server: tzinfo | None = None) -> datetime:
+    """`instant` (timezone-aware) on the user's own clock: `user_now`'s zone
+    rule for any moment, so a test's pinned instant reads in the zone set.
+    With no zone set it is the server's: this machine's, or `server` (a
+    pinned clock's own zone stands for the machine it pretends to be)."""
     name = str(config.get_preference("timezone", "") or "").strip() if config else ""
     if name:
         try:
-            return datetime.now(ZoneInfo(name))
+            return instant.astimezone(ZoneInfo(name))
         except (ZoneInfoNotFoundError, ValueError):
             # A stale or hand-edited zone name must never break the app.
             logging.getLogger("tessellate.config").warning(
                 "unknown timezone %r in preferences; using the server's", name
             )
-    return datetime.now(timezone.utc).astimezone()
+    return instant.astimezone(server)
+
+
+# `clock.utc()` and `clock.wall()` read the person's clock through this, by
+# name, so a pinned `user_now` answers for them too.
+_clock.wire(lambda: user_now(None))

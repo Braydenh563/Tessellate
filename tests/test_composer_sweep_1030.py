@@ -35,10 +35,7 @@ NOTES = [
 def ask(client, session, monkeypatch):
     pin_clock(monkeypatch, NOW)
     for content in NOTES:
-        # Written on NOW too: the row's own stamp is the real clock, and "the
-        # 17th" in a note written 21 November is a December day.
-        entry = manager.create_entry(session, content)
-        entry.created_at = entry.updated_at = NOW
+        manager.create_entry(session, content)
     session.commit()
 
     def go(question: str) -> str:
