@@ -179,3 +179,10 @@ def test_a_key_rewrites_no_class_on_the_chat_dock_or_its_clear_button() -> None:
     clear = (JS / "field-clear.js").read_text(encoding="utf-8")
     assert 'if (dock?.classList.contains("ring-held")) dock.classList.remove("ring-held");' in panes
     assert 'if (button.classList.contains("hidden") === full) button.classList.toggle("hidden", !full);' in clear
+
+
+def test_a_new_figure_looks_at_once_whether_it_covers_a_control() -> None:
+    # L-general-47: switching the companion kept the old figure's spot, and Atlas's shape over it covered the status
+    # bar's Navigation history until the next idle look 7.7 s on; its walk off was the idle window's +340 ms/s.
+    swap = _block(AVATARS, "if (buddy.dataset.seed !== seed) {", "//: **Never drawn before it has a place**")
+    assert "if (!fresh) queueNameMarkBuddyCheck();" in swap

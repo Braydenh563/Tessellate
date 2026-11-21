@@ -11490,6 +11490,10 @@
       //: A new drawing has new animations: looked for again at once.
       nmbTempo.seen = 0;
       if (!nmbTempo.timer) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
+      //: **A new figure looks at once whether it covers a control** (L-general-47): Atlas's shape over the spot "me" chose
+      //: covered the status bar's Navigation history and was found only at the next idle look, 7.7 s on, its walk off
+      //: (+340 ms/s of main thread) landing in companionperf's idle window in 3 of 4 fresh runs.
+      if (!fresh) queueNameMarkBuddyCheck();
       buddy.querySelector(".nm-buddy-face").setAttribute(
         "aria-label",
         `${seed}, your companion. Click to say hello, double-click to enlarge, drag to move, right-click or Shift+F10 for its menu.`,
