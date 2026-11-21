@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 75 | 10 | 0 | 0 | 85 |
+| world-class | 0 | 74 | 10 | 0 | 0 | 84 |
 | general | 0 | 31 | 2 | 0 | 5 | 33 |
-| all | 372 | 461 | 81 | 2 | 112 | 914 |
+| all | 372 | 460 | 81 | 2 | 112 | 913 |
 
 ## graph
 
@@ -536,6 +536,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-571** `world-class` open, L: Free about 4 KB gzipped from boot (lazy web panel) before splitting status.js, notes-list.js, chat.js. From L698; frontend/js/chat.js, status.js, notes-list.js. Evidence: Measured 2026-11-21: boot gzip total 249,722 of cap 250,450 (headroom 728 B); one tail split of chat.js (chat-progress.js, 506 lines) cost +1,087 B gzipped (29,195 to 30,282) and tripped tests/test_static_compression.py at 250,809; each split costs about 1 KB, so status.js, notes-list.js and chat.js cannot be split as boot scripts without moving about 4 KB gzipped out of boot first. Lazy seams checked: chat.js 367-765 web panel (callers wiring.js, web-results.js, chat-turn.js; state read at runtime by boot files), status.js 3181-3371 background-task notices. index.html now 16,747 (other agent). Per-file lists to update with a split: tests/_app_js.py MOVED_OUT, tests/wake_sources_seed.json, tests/test_undo_coverage.py EXEMPT key, tests/test_spinner_recipe.py:340
 - [ ] **L-world-class-622** `world-class` open, M: Settings pane switch: style and layout of the shown pane is 4x-CPU 130-380 ms; needs a keep-style hide that visibility checks understand. From L-world-class-621 close, 2026-11-21. Evidence: frontend/js/settings.js:150 showSettingsSection; 4x trace: shown pane style 130-380 ms, layout 45-184 ms (tools), script 13-62 ms; content-visibility:hidden on inactive panes cut data 144 to 74 ms and tools 214 to 130 ms (min, A/B) but breaks offsetParent and getClientRects visibility checks (settings-wiring.js:579, settings-find.js:271)
+- [ ] **L-world-class-623** `world-class` open, S: Microbes step still boxes doubles in some runs; frame still about 1.8 ms at 4x. From L-world-class-391. Evidence: frontend/js/bg-art.js microbes step (:1363) still 88 to 103 KB/s in 3 of 5 runs at 4x, 14 to 22 in the others; drawImage is 26 ms/s of the 2 ms frame (glow and body copies per organism)
 
 ## general
 
@@ -705,8 +706,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
-- [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
-- [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 - [ ] **L-general-62** `general` blocked-hardware, S: Measure ocrScheduleFitDock with real Tesseract reading a page. From L708 (INBOX 1716). Evidence: library.js:7787 ocrScheduleFitDock is one rAF per frame already; no Tesseract binary in the cloud box, so the real-reader cost is unmeasured
 

@@ -20,6 +20,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Duplicates: the review on 5,000 alike notes takes 4.8 s instead of 70 s and 613 MB instead of 2.1 GB (L-world-class-410).
 - Handler lag: re-measured at 1x and 4x CPU, five runs each; tab presses (13 to 69 ms at 4x), chat hover (2 to 8 ms) and every 1x item are under 100 ms; Settings pane switches at 4x are the one open item (L-world-class-355).
 - Memory: a ten-minute browser loop over notes, a document, a board, the graph, chat and the library (scratchpad/ui-sweeps/memory10.js) holds the heap after GC within 17% (22.9 to 26.8 MB) and DOM nodes flat to falling (L-world-class-24).
+- Background art makes far less canvas garbage: constellation 47 to 5 KB/s, microbes 367 to 95 KB/s (medians of 5, 4x CPU), by whole-number path points in a quarter-pixel space, a table of opacities, flow values in runs and bodies named by index (L-world-class-391).
+- The companion's calm pause (20 s without input) is held by Web Animations instead of a root class: 250 ms to 31 ms at 4x CPU (median of 5), the rules for off-screen and hidden windows unchanged (L-world-class-390).
 - Lock: nothing is sent to the server after Lock until you sign in again; six dashboard and chat loaders used to fire and fail behind the lock screen (L529).
 - Command palette: "new" lists the create commands first (a row is ranked on its name without its icon token), and the Notes tab's category list is drawn when the tab is opened after notes loaded behind another tab (L499).
 - INBOX 266 (L542): checked, all seven asks were already answered by 2026-10-05; nothing left to assign.

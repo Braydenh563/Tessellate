@@ -7564,9 +7564,32 @@
   const NMB_IDLE_MARK_MS = 120000;
   const nmbClock = { timer: 0, inputAt: Date.now() };
   //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 08-consistency.css).
+  //: Held by Web Animations, not by a class: `is-calm` on the root restyled the figure's 77 loops in one
+  //: task (250 ms at 4x CPU, L-world-class-390); `pause()` is 0 to 1 ms. The CSS `animation-play-state`
+  //: rules (`atl-off`, `data-atlas-hidden`) stay and still apply to a loop whenever their value changes.
+  const NMB_CALM_LOOPS = ".atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*=\"atl-lw-pose-\"], [class*=\"atl-lw-pose-\"] > svg";
+  nmbClock.held = [];
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
-    document.documentElement.classList.toggle("is-calm", on);
+    const root = document.documentElement;
+    if (root.classList.contains("is-calm") !== on) {
+      root.classList.toggle("is-calm", on);
+      if (on) {
+        for (const box of document.querySelectorAll(".atl-figure-box")) {
+          for (const anim of box.getAnimations({ subtree: true })) {
+            if (anim.playState === "running" && anim.effect?.target?.matches?.(NMB_CALM_LOOPS)) {
+              anim.pause();
+              nmbClock.held.push(anim);
+            }
+          }
+        }
+      } else {
+        //: Not one the CSS holds (off screen, hidden window): its value changing starts it then.
+        const away = (anim) => anim.effect.target.closest(".atl-off") || root.hasAttribute("data-atlas-hidden");
+        for (const anim of nmbClock.held) if (anim.playState === "paused" && anim.effect && !away(anim)) anim.play();
+        nmbClock.held = [];
+      }
+    }
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };
   nmbClock.setCalm(false);
