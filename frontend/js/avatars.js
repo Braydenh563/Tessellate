@@ -10031,6 +10031,10 @@
     //: eases are skipped in the second.
     const eases = [];
     const eased = new Map();
+    //: A transform in a transition's delay reads as the identity matrix where it was "none": the same
+    //: pose, so not a move (else a lie-down's 240ms delay was bridged by a 300ms ease to its end pose,
+    //: then snapped back to start, 20px in one frame: companionacts.js).
+    const same = (x, y) => x === y || ((x === "none" || x === "matrix(1, 0, 0, 1, 0, 0)") && (y === "none" || y === "matrix(1, 0, 0, 1, 0, 0)"));
     //: **The read after `change()` cannot be made cheaper** (lag 1111, 4x CPU, Documents with 30k nodes): it pays
     //: the act's own restyle (20ms median, 95 for a cheer or a read, whose custom properties restyle the whole
     //: figure). `document.getAnimations()`, one element's `getAnimations()` and `getComputedStyle` cost the same,
@@ -10044,7 +10048,7 @@
       //: Only what moved (the body's note below says why).
       const style = getComputedStyle(el);
       const done = eased.get(el) || new Set();
-      const moved = Object.fromEntries(Object.keys(from).filter((key) => !done.has(key) && style[key] !== from[key]).map((key) => [key, from[key]]));
+      const moved = Object.fromEntries(Object.keys(from).filter((key) => !done.has(key) && !same(style[key], from[key])).map((key) => [key, from[key]]));
       if (!Object.keys(moved).length) continue;
       for (const key of Object.keys(moved)) done.add(key);
       eased.set(el, done);
@@ -10060,7 +10064,7 @@
       //: Only what moved: a key held at its old value that the next act
       //: animates from the same value (a hang's turn starting at 0) was
       //: pinned there for the whole blend and then jumped (atlas669-blendcheck.js).
-      const moved = Object.fromEntries(BODY.filter((key) => style[key] !== from[key]).filter((key) => !done?.has(key)).map((key) => [key, from[key]]));
+      const moved = Object.fromEntries(BODY.filter((key) => !same(style[key], from[key])).filter((key) => !done?.has(key)).map((key) => [key, from[key]]));
       if (!Object.keys(moved).length) continue;
       eases.push({ el, moved });
     }
