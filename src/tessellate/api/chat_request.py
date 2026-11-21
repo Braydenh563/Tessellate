@@ -953,3 +953,39 @@ class ToolExecuteBody(BaseModel):
     #: Posted as name "batch" it used to answer 404, so such a change had an
     #: Undo button that could never undo.
     steps: list[dict] = Field(default_factory=list, max_length=bounds.BATCH_STEPS_MAX)
+    #: The hunks of a suggested edit the person skipped (L-world-class-181), as
+    #: the card numbered them (`core/linediff`). Only with a `consent_id`, and
+    #: only for the tools in `routes_chat.SUGGESTED_EDITS`.
+    skip_hunks: list[int] = Field(default_factory=list, max_length=500)
+
+
+#: The tools whose Confirm card draws the edit as a suggestion, and the
+#: argument that names what they edit (L-world-class-181).
+SUGGESTED_EDITS = {"edit_document": "document_id", "edit_note": "note_id"}
+
+
+def _with_hunks_skipped(session: Session, body: ToolExecuteBody) -> dict:
+    """The card's arguments with the skipped hunks left as the text was, read
+    before the card is spent, so a press that cannot be narrowed spends nothing."""
+    from tessellate.core import linediff
+    from tessellate.core.database import Document
+
+    if not body.skip_hunks:
+        return body.arguments
+    key = SUGGESTED_EDITS.get(body.name)
+    content = body.arguments.get("content")
+    if not body.consent_id or key is None or not isinstance(content, str):
+        raise HTTPException(status_code=400, detail="Only a suggested edit on its card can skip changes.")
+    model = Document if body.name == "edit_document" else Entry
+    try:
+        target = session.get(model, int(body.arguments.get(key) or 0))
+    except (TypeError, ValueError):
+        target = None
+    if target is None:
+        raise HTTPException(status_code=404, detail="That edit is for something that is no longer there.")
+    narrowed, count = linediff.apply(target.content, content, set(body.skip_hunks))
+    if any(index < 0 or index >= count for index in body.skip_hunks):
+        raise HTTPException(status_code=400, detail="That edit has fewer changes than the press skipped.")
+    if len(set(body.skip_hunks)) == count:
+        raise HTTPException(status_code=400, detail="Every change was skipped, so there is nothing to save: decline it instead.")
+    return {**body.arguments, "content": narrowed}

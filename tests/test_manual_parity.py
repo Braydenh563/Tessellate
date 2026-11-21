@@ -55,6 +55,7 @@ MANUAL = {
     "save_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Save"),
     "delete_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Delete"),
     "create_document": ("documents.js", 'apiJson("/documents", {', "Library, Documents, New"),
+    "edit_document": ("documents.js", 'return apiJson(`/documents/${id}`, { method: "PUT", body: JSON.stringify(fields) });', "open the document and type"),
     "delete_document": ("documents.js", 'apiJson(`/documents/${doc.id}`, { method: "DELETE" });', "a document's menu, Delete"),
     "add_whiteboard_card": ("whiteboard.js", 'apiJson("/whiteboard/nodes", { method: "POST"', "a board, drag a note in from the sidebar's Notes tab"),
     "add_whiteboard_link": ("whiteboard.js", 'apiJson("/whiteboard/objects", { method: "POST"', "a board, draw a link between cards"),

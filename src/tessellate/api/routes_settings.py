@@ -2300,8 +2300,9 @@ What is NOT in it
 
 Worth a glance before you send it
 ---------------------------------
-Log messages can quote things you typed, a chat question, or the title of a
-page you opened. Open logs.json and skim it if that matters to you.
+Anything a log message quotes (a chat question, the title of a page you
+opened) is replaced with [quoted text withheld]. A message can still name
+words that were not quoted: open logs.json and skim it if that matters to you.
 """
 
 
@@ -2359,7 +2360,7 @@ def support_bundle(session: Session = Depends(get_session)) -> Response:
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("README.txt", BUNDLE_README)
         archive.writestr(
-            "logs.json", json.dumps(logbuffer.recent(logbuffer.MAX_RECORDS), indent=2)
+            "logs.json", json.dumps(logbuffer.for_bundle(logbuffer.recent(logbuffer.MAX_RECORDS)), indent=2)
         )
         archive.writestr(
             "preferences.json",

@@ -781,6 +781,13 @@ def _created_document(result: dict, args: dict) -> Said:
     return f"Created the document {link(result.get('title') or 'Untitled', at)}, {count_noun(int(result.get('words') or 0), 'word')}.", "", _chips(("Open it", at))
 
 
+def _edited_document(result: dict, args: dict) -> Said:
+    at = document_at(result.get("id"))
+    if not result.get("changed"):
+        return f"The document {link(result.get('title') or 'Untitled', at)} already said that, so nothing changed.", "", _chips(("Open it", at))
+    return f"Edited the document {link(result.get('title') or 'Untitled', at)}; its history keeps the version before.", "", _chips(("Open it", at))
+
+
 def _deleted_document(result: dict, args: dict) -> Said:
     return f"Moved the document “{result.get('title') or 'Untitled'}” to the bin.", "", _chips(("Open Documents", DOCUMENTS))
 
@@ -926,7 +933,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned, "archive_note": _archived, "find_stale_notes": _stale, "count_month_figures": _month, "get_person_page": _person,
     "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit, "check_learned": _learned_checked,
     "create_category": _category, "rename_category": _category, "merge_categories": _category, "delete_category": _category,
-    "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "delete_document": _deleted_document,
+    "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "edit_document": _edited_document, "delete_document": _deleted_document,
     "create_mindmap": _mindmap_made, "map_from_note": _map_from_note, "move_notes": _moved, "add_map_node": _map_node, "link_map_nodes": _map_link,
     "add_whiteboard_card": _board_card, "add_whiteboard_link": _board_write("Linked the two cards"),
     "add_board_shape": _board_write("Drew the shape"), "edit_board_item": _board_write("Changed it"),

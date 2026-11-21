@@ -18,6 +18,7 @@ from ._common import (
     DOCUMENT_CHARS,
     PREVIEW_CHARS,
     ToolError,
+    ToolSpec,
     _clip,
     _keyword_context,
     _limit_arg,
@@ -235,3 +236,58 @@ def _delete_document(session: Session, args: dict) -> dict:
     manager.log_action(session, "deleted", "document", document.id, title[:80])
     session.commit()
     return {"title": title, "label": f"ph:trash Moved the document “{_clip(title, 40)}” to the recycle bin", "undo": {"tool": "restore_document", "arguments": {"document_id": document.id}}}
+
+
+def _edit_document(session: Session, args: dict) -> dict:
+    """Replace a document's text (L-world-class-181). A change, so it parks for a Confirm card.
+
+    The card draws the edit as a suggestion, one hunk per change, and the press can
+    skip hunks (`ToolExecuteBody.skip_hunks`, narrowed with `core/linediff` before
+    this runs). The old text goes into the document's history first, as a save from
+    the editor does, and the Undo is this same tool with the old text."""
+    from tessellate.core.database import Document, utcnow
+    from tessellate.repo import documents as document_repo
+
+    document = session.get(Document, int(args.get("document_id") or 0))
+    if document is None or document.deleted_at is not None:
+        raise ToolError(f"No document with id {args.get('document_id')}")
+    if document.is_private:
+        raise ToolError(f"Document #{document.id} is private, so it isn't available to the AI")
+    content = str(args.get("content") or "")
+    if not content.strip():
+        raise ToolError("Send the whole new text in `content`; to remove a document use delete_document.")
+    if len(content) > MAX_NEW_DOCUMENT_CHARS:
+        raise ToolError(f"That text is too long to save in one call ({len(content):,} characters, limit {MAX_NEW_DOCUMENT_CHARS:,}).")
+    before = document.content
+    if content == before:
+        return {"id": document.id, "title": document.title, "changed": False, "label": f"ph:file-text “{_clip(document.title, 40)}” already says that"}
+    document_repo.record_revision(session, document, "ai", quiet_seconds=300, keep=40)
+    document.content = content
+    document.updated_at = utcnow()
+    manager.log_action(session, "edited", "document", document.id, document.title[:80])
+    session.commit()
+    return {
+        "id": document.id,
+        "title": document.title,
+        "changed": True,
+        "words": cjk.word_count(content),
+        "label": f"ph:file-text Edited the document “{_clip(document.title, 40)}”",
+        "undo": {"tool": "edit_document", "arguments": {"document_id": document.id, "content": before}},
+    }
+
+
+#: Its schema beside it, the way ARCHIVE_SPEC sits beside archive_note (tool_table.py is capped).
+EDIT_DOCUMENT_SPEC = ToolSpec(
+    "edit_document",
+    "Replace a document's whole text, by id, after get_document. The app shows the "
+    "user each change to accept or skip before it is saved.",
+    {
+        "type": "object",
+        "properties": {
+            "document_id": {"type": "integer", "description": "The document's id"},
+            "content": {"type": "string", "description": "The whole new text, in Markdown"},
+        },
+        "required": ["document_id", "content"],
+    },
+    _edit_document,
+)

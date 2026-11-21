@@ -7917,3 +7917,22 @@ def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
     assert 'createElement("dialog")' not in js and "modal-overlay" not in js
     assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
     assert ".style." not in js and "style=" not in js
+
+
+def test_the_agent_asks_in_one_card_and_a_suggested_edit_is_the_document_diff() -> None:
+    """L-world-class-181: the agent's request is drawn by tool-consent.js alone (what, why, Allow,
+    Allow always, Decline), and a suggested edit is `docRenderDiff` with per-hunk toggles, never a
+    second diff. "Allow always" is never offered for a removal."""
+    js_dir = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    consent = (js_dir / "tool-consent.js").read_text(encoding="utf-8")
+    assert "docRenderDiff(view, ops, { hunks, skipped, onToggleHunk" in consent
+    assert "diff-removed" not in consent and "diff-added" not in consent
+    assert "if (!event.removes) row.appendChild(" in consent
+    assert "skip_hunks: skip" in consent
+    others = [p.name for p in js_dir.glob("*.js") if p.name != "tool-consent.js" and "/chat/tools/execute\", {" in p.read_text(encoding="utf-8") and "Allow always" in p.read_text(encoding="utf-8")]
+    assert others == []
+    kit = (js_dir / "answer-kit.js").read_text(encoding="utf-8")
+    body = kit[kit.index("function renderToolConfirm(") :]
+    body = body[: body.index("\n}\n")]
+    assert 'lazyScript("/js/tool-consent.js")' in body and "smallButton(" not in body
+    assert ".style." not in consent and "style=" not in consent

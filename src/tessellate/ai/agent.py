@@ -480,8 +480,8 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     c.state.ran_writes.add(c.name)
     c.state.implied |= {"tag_note"} if c.name == "create_note" and c.arguments.get("tags") else set()  # the card carries the tags
     c.state.parked[c.name] = waiting + 1
-    label = tools.confirm_label(c.name, c.arguments, c.session)
-    return AWAITING_CONFIRMATION, [{"type": "confirm", "name": c.name, "arguments": c.arguments, "label": label}]
+    asked = next((m.get("content") for m in reversed(c.plan.messages) if m.get("role") == "user"), "")  # "why" is the person's own words (L-world-class-181)
+    return AWAITING_CONFIRMATION, [{"type": "confirm", "name": c.name, "arguments": c.arguments, "label": tools.confirm_label(c.name, c.arguments, c.session), "removes": bool(c.spec and c.spec.destructive), "why": " ".join(str(asked or "").split())[:160]}]
 
 
 def _tool_spent(c: _Call) -> _Verdict | None:
@@ -1144,7 +1144,7 @@ def run_agent(
                                                  (always the first and only event)
     {"type": "thinking", "delta": str}
     {"type": "tool", "label": str, "ok": bool, "error": str|None}
-    {"type": "confirm", "name", "arguments", "label"}
+    {"type": "confirm", "name", "arguments", "label", "removes", "why"}
     {"type": "limit", "reason": "rounds", ...}, ran out of rounds mid-job;
                                                  the answer that follows is a
                                                  stopping notice, not a result
