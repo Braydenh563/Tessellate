@@ -193,16 +193,24 @@ async function boot(opts={}) {
   //: touches the network either way); UPDATE_ASK=1 leaves it for a sweep
   //: that measures the dialog itself.
   if (!process.env.UPDATE_ASK) {
-    await page.waitForFunction(() => {
+    //: The recovery-key dialog is closed inside the same poll: the first-run
+    //: queue holds every question while a `dialog[open]` is up
+    //: (onboarding.js `firstRunSurfaceOpen`), so waiting for the update card
+    //: with it still open ran out the clock and the card then landed over the
+    //: sweep (it ate libreader's Escape). RECOVERY_ASK=1 keeps the dialog.
+    await page.waitForFunction((keepRecovery) => {
+      if (!keepRecovery) { const d = document.getElementById('recovery-key-dialog'); if (d && d.open) d.close(); }
       const card = [...document.querySelectorAll('.confirm-overlay')]
         .find((o) => /Check for updates automatically/.test(o.textContent));
       //: Not `readyState`: the card comes after the page has loaded, and a
       //: guard that stopped at load let it land over a sweep's first click.
-      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made === true);
+      //: `prefsCache` is a `let` in a classic script: not a property of `window`,
+      //: so the old test never saw the answer and always waited the full time.
+      if (!card) return typeof prefsCache !== 'undefined' && prefsCache && prefsCache.update_choice_made === true;
       const no = [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
       if (no) no.click();
       return true;
-    }, null, {timeout: 4000, polling: 200}).catch(() => {});
+    }, !!process.env.RECOVERY_ASK, {timeout: process.env.RECOVERY_ASK ? 4000 : 15000, polling: 200}).catch(() => {});
   }
   //: A fresh data dir shows the recovery-key dialog after the first password;
   //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
