@@ -45,7 +45,7 @@ def test_the_window_reads_the_page_inertly():
 def test_the_try_button_opens_the_window_on_a_sample_and_the_menu_and_palette_reach_it():
     web = _text("frontend", "js", "web-clip.js")
     assert 'getElementById("web-clip-try")' in web or '$("web-clip-try")' in web
-    chat = _text("frontend", "js", "chat.js")
+    chat = _text("frontend", "js", "web-panel.js")
     assert 'openSettingsModal("data", "web-clip-box")' in chat
     assert "Clip a page from your browser" in chat
     assert 'openSettingsModal("data", "web-clip-box")' in _text("frontend", "js", "app-palette.js")
