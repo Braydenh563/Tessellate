@@ -2510,7 +2510,7 @@ MORE_TOPICS.extend([
             "holding one block. Each row's button shows its fix the same way. A mind map, timeline or sequence has Ask too (add Rent under Budget, add event Launch under 2024, add message Pay from Shop to Bank; rename, move and remove work too), and Suggestions: a topic repeated, a period with no events, a participant that never sends. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
             "one to compare it with now, and Restore puts one back; Named only hides the plain saves. "
-            "Suggest, Templates, on a diagram with blocks, offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
+            "Suggest, Templates lists the ones you use most first; on a diagram with blocks it offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

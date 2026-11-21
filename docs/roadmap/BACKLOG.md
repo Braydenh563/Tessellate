@@ -642,6 +642,8 @@ GRAPH_PLAN.md owns the rest of this section.
 
 **Parked from the graph plan, 2026-11-12 (graph-plan session).** Each row names the exact check left.
 
+- **Thinking off on Ollama** (W16 B72, L-general-16). `BACKGROUND_MODE` sends `think: false` on utility calls; measured only on llama.cpp (Qwen3-0.6B, 925 tokens default to 56 with thinking off). Check: on a machine with Ollama and a Qwen3-class model, time 8 utility calls with it on and off and record tokens and seconds.
+- **Tool contracts and the bench gates on Ollama** (W16 B74, WORLD_CLASS_PLAN section 8 rows 5, 6, 19, 21; L-general-16). The bench gave 0.639 twice at temperature 0 on llama.cpp; the tools task scored 0.0 on that handler. Check: Settings, Models, Test my models against an Ollama 3B, twice, and record the tools task score and every invalid call.
 - **3B model entity extraction.** Needs a real 3B model: run `pytest -m evals` with `scratchpad/llama-dev.sh serve` on a 3B (granite4.1:3b) and record `name|kind` recall of 22, junk names and the topic sentence's usability, against the 1.5B's 17 of 22, 4 junk, 4 of 4 (2026-11-11).
 - **The board's 138 compositor layers at rest** (L-graph-6). Chrome's sparsity rule will not merge far-apart cards; a transparent backdrop measured 54 but relies on an internal heuristic. Check: layer count in DevTools on a real GPU before any change.
 - **Tessellation side by side** (L-graph-12). Owner looks at `shots/tess-pair.png` (run `scratchpad/ui-sweeps/tess-pair.js` against their notebook; `LAYOUT=` picks the other view, default their saved one).
