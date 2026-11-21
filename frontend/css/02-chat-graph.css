@@ -4248,7 +4248,8 @@ mark.lightbox-hit {
   background: var(--chip-bg);
   color: var(--ink);
 }
-details[open] > :is(.agent-step-group-summary, .fold-summary) {
+details[open] > .agent-step-group-summary,
+details[open] > .fold-summary {
   color: var(--ink);
 }
 /* **A fold that is a full-width panel open is a full-width row closed**
@@ -4260,7 +4261,8 @@ details[open] > :is(.agent-step-group-summary, .fold-summary) {
    answers), so the row is the flex default (no width of its own) and the affordance, the caret,
    sits at its end (drawn by the one disclosure rule, 08-consistency.css). The steps group and Sources are the same row (the owner: the
    other chat places too), their caret at the end as well. */
-:is(.fold-summary, .agent-step-group-summary)::after,
+.fold-summary::after,
+.agent-step-group-summary::after,
 .chat-sources-summary::before {
   order: 1;
   margin-inline-start: auto;

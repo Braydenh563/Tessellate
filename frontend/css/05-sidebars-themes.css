@@ -1154,7 +1154,8 @@ button.map-chip:focus-visible {
 /* Muted words on the lit row's tint fell to 3.5 to 4.4:1 in most looks (the
    keycap and the one-line description, contrastui.js, INBOX 464): on the
    row that is being chosen they take the ink. */
-.rich-picker-row.active :is(.rich-picker-about, .rich-picker-keys) {
+.rich-picker-row.active .rich-picker-about,
+.rich-picker-row.active .rich-picker-keys {
   color: var(--ink);
 }
 /* A row that is a button (a dialog of choices walked by Tab): the browser's
@@ -1362,32 +1363,74 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
    change still moves every callout with the rest of the page. The Live view's
    line classes (`.cm-md-callout-{kind}`) and label chips read the same ink,
    so a kind is one colour in all three views. */
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-note"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-info"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-todo"] {
+.callout[class*="-note"],
+.cm-md-callout[class*="-note"],
+.cm-md-callout-label[class*="-note"],
+.doc-block-kind[class*="-note"],
+.callout[class*="-info"],
+.cm-md-callout[class*="-info"],
+.cm-md-callout-label[class*="-info"],
+.doc-block-kind[class*="-info"],
+.callout[class*="-todo"],
+.cm-md-callout[class*="-todo"],
+.cm-md-callout-label[class*="-todo"],
+.doc-block-kind[class*="-todo"] {
   --callout-accent: var(--accent);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-abstract"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-tip"] {
+.callout[class*="-abstract"],
+.cm-md-callout[class*="-abstract"],
+.cm-md-callout-label[class*="-abstract"],
+.doc-block-kind[class*="-abstract"],
+.callout[class*="-tip"],
+.cm-md-callout[class*="-tip"],
+.cm-md-callout-label[class*="-tip"],
+.doc-block-kind[class*="-tip"] {
   --callout-accent: color-mix(in oklab, var(--accent) 45%, var(--ok));
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-success"] {
+.callout[class*="-success"],
+.cm-md-callout[class*="-success"],
+.cm-md-callout-label[class*="-success"],
+.doc-block-kind[class*="-success"] {
   --callout-accent: var(--ok);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-question"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-warning"] {
+.callout[class*="-question"],
+.cm-md-callout[class*="-question"],
+.cm-md-callout-label[class*="-question"],
+.doc-block-kind[class*="-question"],
+.callout[class*="-warning"],
+.cm-md-callout[class*="-warning"],
+.cm-md-callout-label[class*="-warning"],
+.doc-block-kind[class*="-warning"] {
   --callout-accent: var(--warn);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-failure"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-danger"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-bug"] {
+.callout[class*="-failure"],
+.cm-md-callout[class*="-failure"],
+.cm-md-callout-label[class*="-failure"],
+.doc-block-kind[class*="-failure"],
+.callout[class*="-danger"],
+.cm-md-callout[class*="-danger"],
+.cm-md-callout-label[class*="-danger"],
+.doc-block-kind[class*="-danger"],
+.callout[class*="-bug"],
+.cm-md-callout[class*="-bug"],
+.cm-md-callout-label[class*="-bug"],
+.doc-block-kind[class*="-bug"] {
   --callout-accent: var(--error);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-example"] {
+.callout[class*="-example"],
+.cm-md-callout[class*="-example"],
+.cm-md-callout-label[class*="-example"],
+.doc-block-kind[class*="-example"] {
   --callout-accent: color-mix(in oklab, var(--accent) 55%, var(--error));
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-quote"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-toggle"] {
+.callout[class*="-quote"],
+.cm-md-callout[class*="-quote"],
+.cm-md-callout-label[class*="-quote"],
+.doc-block-kind[class*="-quote"],
+.callout[class*="-toggle"],
+.cm-md-callout[class*="-toggle"],
+.cm-md-callout-label[class*="-toggle"],
+.doc-block-kind[class*="-toggle"] {
   --callout-accent: var(--muted);
 }
 .callout-toggle > .callout-head {
@@ -2191,7 +2234,9 @@ body.resizing-sidebar {
 /* A note strip's Live/Source switch stays out while the strip is folded
    (INBOX 430): it is how the box reads, not a formatting tool, and folding
    the tools (the default) would otherwise hide the one way to the source. */
-.doc-toolbar.is-collapsed > :is(#entry-preview-toggle, [data-note-preview], #entry-view-seg) {
+.doc-toolbar.is-collapsed > #entry-preview-toggle,
+.doc-toolbar.is-collapsed > :where([data-note-preview]):is([data-note-preview], #entry-preview-toggle),
+.doc-toolbar.is-collapsed > #entry-view-seg {
   order: 2;
   margin-left: var(--space-2);
 }
@@ -2343,7 +2388,8 @@ body.resizing-sidebar {
   margin: 0 var(--space-1);
   background: none;
 }
-.note-toolbar :is(.doc-toolbar-collapse, .doc-toolbar-layout) {
+.note-toolbar .doc-toolbar-collapse,
+.note-toolbar .doc-toolbar-layout {
   display: none;
 }
 /* **One chrome for the whole strip, whatever element a control happens to be.**
@@ -3584,7 +3630,8 @@ button.outline-twist:focus-visible {
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .dash-hero {
   background: var(--card);
 }
-:root[data-palette="paper"] :is(.card, .dash-hero) {
+:root[data-palette="paper"] .card,
+:root[data-palette="paper"] .dash-hero {
   box-shadow: none;
 }
 /* The mono look's one rule beyond colour: numbers and small print in the
@@ -3641,7 +3688,9 @@ button.outline-twist:focus-visible {
   justify-content: flex-start;
 }
 .theme-card > span,
-.theme-card :is(strong, small, p) {
+.theme-card strong,
+.theme-card small,
+.theme-card p {
   min-width: 0;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -5399,7 +5448,9 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.doc-template-page :is(.md-h1, .md-h2, .md-h3) {
+.doc-template-page .md-h1,
+.doc-template-page .md-h2,
+.doc-template-page .md-h3 {
   margin: var(--space-3) 0 var(--space-1);
   line-height: 1.25;
 }
@@ -5412,7 +5463,8 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   margin-top: 0;
   font-size: var(--text-h3);
 }
-.doc-template-page :is(.md-h2, .md-h3) {
+.doc-template-page .md-h2,
+.doc-template-page .md-h3 {
   font-size: var(--text-md);
 }
 /* A task box is a 28px control in a note; in a picture of a page it is a

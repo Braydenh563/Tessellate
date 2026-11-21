@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Styles (L342, L-documents-26): 138 selectors whose last part was a several-item `:is()`/`:where()` are written one selector per item (`:where(.a):is(.a, #b)` where the items' weights differ), so the browser files them by class instead of testing them on every element at each restyle; universal-bucket selectors 513 to 375, proved to match the same elements on Documents, notes, board and settings in both themes; `test_css_rule_buckets.py` holds both counts.
 - Diagrams: a source that names no diagram type Mermaid knows gets its reason line before the layout runs (mermaid.detectType ahead of render).
 - Documents: the selection bar no longer throws on a selection made before the document editor has finished loading (asSurface reads the editor view through typeof; L-documents-120).
 - Diagram frame: the separate `mermaid.parse` before each draw is gone (render parses and throws the same reason line, checked on four broken sources); adding a block to a 40-block flowchart at 390, 5 interleaved runs each at load 9 to 11: longest task per add median 126.5 to 112 ms, long-task total 251 to 205.5 ms (L-documents-112, still over 50).
