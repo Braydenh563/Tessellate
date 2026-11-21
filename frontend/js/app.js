@@ -431,6 +431,8 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
+  //: A write that landed tells the other windows (notes-sync.js hears it, L585).
+  if (response.ok && !readOnly && !/^(GET|HEAD)?$/.test(fetchOptions.method || "")) document.dispatchEvent(new Event("notebook-written"));
   //: **A read that started in the old space is dropped here, for every loader at once.**
   //: Its rows are the old space's: applied after a switch they would sit in the new one's
   //: lists. The error is quiet (`isStale`: no toast, no log line), and a write is never

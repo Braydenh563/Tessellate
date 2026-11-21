@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11368, test files 2936, tests 23113, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11368, test files 2937, tests 23118, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -38,49 +38,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `$` | frontend/js/app.js:160 |
 | `activeSpaceId` | frontend/js/app.js:353 |
 | `api` | frontend/js/app.js:358 |
-| `apiJson` | frontend/js/app.js:566 |
-| `apiPagedList` | frontend/js/app.js:522 |
-| `askPasswordPrompt` | frontend/js/app.js:683 |
-| `askPdfPassword` | frontend/js/app.js:707 |
+| `apiJson` | frontend/js/app.js:568 |
+| `apiPagedList` | frontend/js/app.js:524 |
+| `askPasswordPrompt` | frontend/js/app.js:685 |
+| `askPdfPassword` | frontend/js/app.js:709 |
 | `authToken` | frontend/js/app.js:166 |
-| `chip` | frontend/js/app.js:1215 |
-| `chipWords` | frontend/js/app.js:1210 |
-| `clearApiCache` | frontend/js/app.js:562 |
-| `confirmDialog` | frontend/js/app.js:1298 |
-| `confirmVerb` | frontend/js/app.js:1289 |
-| `ensureModule` | frontend/js/app.js:1767 |
-| `enterWithoutPassword` | frontend/js/app.js:641 |
+| `chip` | frontend/js/app.js:1217 |
+| `chipWords` | frontend/js/app.js:1212 |
+| `clearApiCache` | frontend/js/app.js:564 |
+| `confirmDialog` | frontend/js/app.js:1300 |
+| `confirmVerb` | frontend/js/app.js:1291 |
+| `ensureModule` | frontend/js/app.js:1769 |
+| `enterWithoutPassword` | frontend/js/app.js:643 |
 | `hide` | frontend/js/app.js:162 |
-| `hideBootSplash` | frontend/js/app.js:868 |
-| `initAuth` | frontend/js/app.js:881 |
-| `installStandIns` | frontend/js/app.js:1945 |
-| `lazyAssetStamp` | frontend/js/app.js:1724 |
-| `lazyScript` | frontend/js/app.js:1746 |
-| `lockFieldForPin` | frontend/js/app.js:777 |
-| `lockNow` | frontend/js/app.js:840 |
+| `hideBootSplash` | frontend/js/app.js:870 |
+| `initAuth` | frontend/js/app.js:883 |
+| `installStandIns` | frontend/js/app.js:1947 |
+| `lazyAssetStamp` | frontend/js/app.js:1726 |
+| `lazyScript` | frontend/js/app.js:1748 |
+| `lockFieldForPin` | frontend/js/app.js:779 |
+| `lockNow` | frontend/js/app.js:842 |
 | `mediaSrc` | frontend/js/app.js:233 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1791 |
-| `promptDialog` | frontend/js/app.js:1402 |
-| `purgeLockedContent` | frontend/js/app.js:819 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1793 |
+| `promptDialog` | frontend/js/app.js:1404 |
+| `purgeLockedContent` | frontend/js/app.js:821 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1093 |
+| `refreshActiveTab` | frontend/js/app.js:1095 |
 | `refuseStagedUrls` | frontend/js/app.js:226 |
 | `replaceMissingMedia` | frontend/js/app.js:281 |
-| `resumeWithoutPassword` | frontend/js/app.js:651 |
-| `setBusy` | frontend/js/app.js:1252 |
-| `setLabel` | frontend/js/app.js:1160 |
-| `settingsModalOpen` | frontend/js/app.js:1204 |
-| `settleLockPrompt` | frontend/js/app.js:662 |
+| `resumeWithoutPassword` | frontend/js/app.js:653 |
+| `setBusy` | frontend/js/app.js:1254 |
+| `setLabel` | frontend/js/app.js:1162 |
+| `settingsModalOpen` | frontend/js/app.js:1206 |
+| `settleLockPrompt` | frontend/js/app.js:664 |
 | `show` | frontend/js/app.js:161 |
-| `showLockScreen` | frontend/js/app.js:725 |
-| `smallButton` | frontend/js/app.js:1530 |
-| `spinnerEl` | frontend/js/app.js:1244 |
-| `stagePrimary` | frontend/js/app.js:1238 |
+| `showLockScreen` | frontend/js/app.js:727 |
+| `smallButton` | frontend/js/app.js:1532 |
+| `spinnerEl` | frontend/js/app.js:1246 |
+| `stagePrimary` | frontend/js/app.js:1240 |
 | `stagedImageByUrl` | frontend/js/app.js:194 |
-| `startApp` | frontend/js/app.js:930 |
-| `startWithoutPassword` | frontend/js/app.js:626 |
-| `whenScriptsLoaded` | frontend/js/app.js:1705 |
-| `wireBackdropClose` | frontend/js/app.js:1518 |
+| `startApp` | frontend/js/app.js:932 |
+| `startWithoutPassword` | frontend/js/app.js:628 |
+| `whenScriptsLoaded` | frontend/js/app.js:1707 |
+| `wireBackdropClose` | frontend/js/app.js:1520 |
 
 ### frontend/js/prefs.js (7)
 
@@ -28953,7 +28953,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23113)
+## Tests (23118)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30821,6 +30821,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notes_filter_day_words_p16.py | 2 |
 | tests/test_notes_filter_on_s83.py | 1 |
 | tests/test_notes_last_card_open.py | 2 |
+| tests/test_notes_live_sync_l585.py | 5 |
 | tests/test_notes_menu_1518.py | 4 |
 | tests/test_notes_or_web_1696s.py | 11 |
 | tests/test_notes_rail.py | 7 |
