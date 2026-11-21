@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8986, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2858, tests 22988, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8986, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2858, tests 22989, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
 ## Frontend functions (8986)
 
@@ -4719,28 +4719,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docAppendRendered` | frontend/js/documents-preview.js:511 |
+| `docAppendRendered` | frontend/js/documents-preview.js:515 |
 | `docCaretVisibleLine` | frontend/js/documents-preview.js:47 |
-| `docGutters` | frontend/js/documents-preview.js:639 |
-| `docPropsReadNode` | frontend/js/documents-preview.js:524 |
-| `docRenderBody` | frontend/js/documents-preview.js:401 |
-| `docRenderFlow` | frontend/js/documents-preview.js:482 |
-| `docTaskLines` | frontend/js/documents-preview.js:320 |
+| `docGutters` | frontend/js/documents-preview.js:643 |
+| `docPropsReadNode` | frontend/js/documents-preview.js:528 |
+| `docRenderBody` | frontend/js/documents-preview.js:405 |
+| `docRenderFlow` | frontend/js/documents-preview.js:486 |
+| `docTaskLines` | frontend/js/documents-preview.js:324 |
 | `docWhereLine` | frontend/js/documents-preview.js:79 |
-| `docWireReadTasks` | frontend/js/documents-preview.js:348 |
-| `jumpToDocLine` | frontend/js/documents-preview.js:174 |
+| `docWireReadTasks` | frontend/js/documents-preview.js:352 |
+| `jumpToDocLine` | frontend/js/documents-preview.js:178 |
 | `keepOutlineRowInView` | frontend/js/documents-preview.js:89 |
-| `layerDocWikiLinks` | frontend/js/documents-preview.js:559 |
+| `layerDocWikiLinks` | frontend/js/documents-preview.js:563 |
 | `markDocOutline` | frontend/js/documents-preview.js:105 |
-| `mountGutterFor` | frontend/js/documents-preview.js:782 |
-| `renderDocGutter` | frontend/js/documents-preview.js:746 |
-| `renderDocPreview` | frontend/js/documents-preview.js:219 |
-| `renderDocStorage` | frontend/js/documents-preview.js:188 |
-| `scheduleDocOutlineSpy` | frontend/js/documents-preview.js:156 |
-| `scheduleDocPreview` | frontend/js/documents-preview.js:206 |
-| `syncDocGutterMetrics` | frontend/js/documents-preview.js:686 |
-| `watchDocGutter` | frontend/js/documents-preview.js:725 |
-| `withDocPreviewShown` | frontend/js/documents-preview.js:624 |
+| `mountGutterFor` | frontend/js/documents-preview.js:786 |
+| `renderDocGutter` | frontend/js/documents-preview.js:750 |
+| `renderDocPreview` | frontend/js/documents-preview.js:223 |
+| `renderDocStorage` | frontend/js/documents-preview.js:192 |
+| `scheduleDocOutlineSpy` | frontend/js/documents-preview.js:160 |
+| `scheduleDocPreview` | frontend/js/documents-preview.js:210 |
+| `syncDocGutterMetrics` | frontend/js/documents-preview.js:690 |
+| `watchDocGutter` | frontend/js/documents-preview.js:729 |
+| `withDocPreviewShown` | frontend/js/documents-preview.js:628 |
 
 ### frontend/js/documents-print.js (9)
 
@@ -29153,7 +29153,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22988)
+## Tests (22989)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30141,7 +30141,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_type_fields.py | 2 |
 | tests/test_doc_type_picker.py | 6 |
 | tests/test_doc_typing_dx1.py | 15 |
-| tests/test_doc_typing_l342.py | 2 |
+| tests/test_doc_typing_l342.py | 3 |
 | tests/test_doc_video.py | 7 |
 | tests/test_doc_view_held.py | 6 |
 | tests/test_doc_writing_streak.py | 6 |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents (L342): moving the outline's mark writes only the row that loses it and the row that gains it, where it cleared every row (1,176 in a 20,000 word document, a style invalidation each on the pause after typing); the mark is the same.
 - Documents (L342): a grammar answer that lands while keys keep coming works out its findings when the pause first reads them, not on arrival (a whole-document pass of 4.3 ms at 4x CPU off a key); what is drawn at the pause is the same.
 - Documents (L342): a LanguageTool check maps each paragraph once by a set and finds a match's paragraph by halving, where a search per paragraph and a scan per match were quadratic (7 ms at 4x CPU on a first check of 1,176 paragraphs); the merged findings are the same.
 - Documents (L-documents-83, L-documents-106): the cold-open sweep reads the main thread's CPU from CDP (ThreadTime, with task, script, style and layout between the tab press and the mount) and judges the 800 ms budget on its median, wall beside it; 1440, 7 runs, load 4: CPU median 365 ms (runs 320 to 466; script 207, style 196, layout 45) against wall 1,005 ms, because the main thread sits 100 to 200 ms blocked on the compositor in frames the trace shows at 2 to 4 ms of thread CPU (`tests/test_documents_cold_open.py`).

@@ -93,3 +93,34 @@ def test_a_first_languagetool_check_maps_every_paragraph_once_without_a_quadrati
     """
     got = _node(script, str(JS / "documents-languagetool.js"))
     assert got == {"n": 2, "second": "line 1 bad bad", "a": True, "b": True}
+
+
+PREVIEW = (JS / "documents-preview.js").read_text(encoding="utf-8")
+
+
+@needs_node
+def test_moving_the_outline_mark_writes_only_the_rows_that_change():
+    start = PREVIEW.index("  function markDocOutline(")
+    body = PREVIEW[start : PREVIEW.index("\n  }\n", start) + 4]
+    script = (
+        """
+let writes = 0;
+const button = (on) => { const cls = new Set(on ? ["is-current"] : []), attrs = new Map(on ? [["aria-current", "location"]] : []);
+  return { isConnected: true, classList: { contains: (c) => cls.has(c), add: (c) => { writes++; cls.add(c); }, remove: (c) => { writes++; cls.delete(c); } },
+    hasAttribute: (a) => attrs.has(a), setAttribute: (a, v) => { writes++; attrs.set(a, v); }, removeAttribute: (a) => { writes++; attrs.delete(a); }, cls, attrs }; };
+let docOutlineRows = [], docOutlineMarked = -1;
+for (let i = 0; i < 500; i++) docOutlineRows.push({ line: i * 10, button: button(i === 3), row: { classList: { contains: () => false } } });
+docOutlineMarked = 3;
+const docSurface = () => ({ kind: "codemirror" }), renderDocCrumbs = () => {}, docCaretLine = () => 0;
+const docCaretVisibleLine = () => null, docVisibleTopLine = () => 0, keepOutlineRowInView = () => {}, afterFrames = () => {};
+"""
+        + body
+        + """
+markDocOutline(255);
+const marked = docOutlineRows.filter((r) => r.button.cls.has("is-current")).map((r) => r.line);
+const aria = docOutlineRows.filter((r) => r.button.attrs.has("aria-current")).map((r) => r.line);
+console.log(JSON.stringify({ writes, marked, aria, at: docOutlineMarked }));
+"""
+    )
+    got = _node(script)
+    assert got == {"writes": 4, "marked": [250], "aria": [250], "at": 25}

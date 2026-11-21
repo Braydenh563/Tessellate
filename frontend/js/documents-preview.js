@@ -133,7 +133,11 @@
     while (index > 0 && docOutlineRows[index].row?.classList.contains("hidden")) index -= 1;
     if (docOutlineRows[index].row?.classList.contains("hidden")) index = -1;
     if (index === docOutlineMarked) return;
+    //: Written only where a mark is (L342): a write to all 1,176 rows of a
+    //: 20,000 word document's outline was a style invalidation for each, on
+    //: the pause after typing; reading the class is free.
     for (const row of docOutlineRows) {
+      if (!row.button.classList.contains("is-current") && !row.button.hasAttribute("aria-current")) continue;
       row.button.classList.remove("is-current");
       row.button.removeAttribute("aria-current");
     }
