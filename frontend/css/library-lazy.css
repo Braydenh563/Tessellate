@@ -6768,6 +6768,14 @@ button.ghost.doc-template-choice.wb-template-choice {
    more shapes"): nine tools as a grid of five, so the flyout stays about as
    wide as the four boxes and the two lines above them rather than a row of
    nine. */
+/* In a phone's Tools sheet the kind menu opens below its button: above it,
+   the sheet card's overflow cut it off and a tap on Line fell through to the
+   overlay (toolpop.js at 390: menu top 267, card top 299). A board rule, so
+   it loads with the board, not at boot. */
+.sheet-card .wb-shape-menu {
+  bottom: auto;
+  top: calc(100% + 0.5rem);
+}
 .wb-shape-menu-more {
   display: grid;
   grid-template-columns: repeat(5, auto);
