@@ -2294,9 +2294,8 @@ $("library-refresh").addEventListener("click", loadLibrary);
 // matching button, everything else (Everything, Files, Tags, Drafts,
 // Activity, the bin) falls back to "+ New note", the fastest capture path
 // in the app, and a reasonable default when there's no single obvious
-// answer. A real "choose what to create" picker for the Everything view
-// specifically was asked for too but not built this pass, logged rather
-// than rushed; see BACKLOG.md.
+// answer. The "choose what to create" picker asked for alongside it is
+// built: the Library's Create offers every row below (INBOX 266).
 const LIBRARY_CREATE_BY_KIND = {
   note: {
     label: "ph:plus New note",
