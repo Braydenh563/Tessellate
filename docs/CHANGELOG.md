@@ -28,6 +28,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
 - Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).
