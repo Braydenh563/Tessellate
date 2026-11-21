@@ -563,8 +563,8 @@ def _settle_filed_entry(session, entry, entry_id: int, late, category, confidenc
 
 
 def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
-    """Embed the settled note, look for a near duplicate, keep tag
-    suggestions and run Tidy's automatic reviews."""
+    """Embed the settled note, look for a near duplicate and run Tidy's
+    automatic reviews (its tag suggestions are kept before it settles)."""
     deps.store_quietly(session, entry)
     duplicate = _find_near_duplicate(session, entry)
     if duplicate is not None:
@@ -572,12 +572,6 @@ def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
     session.commit()
     if run is not None:
         run.say("Saved its search vector and checked for a near duplicate.")
-    try:
-        _keep_suggestions(session, entry, filed_by)
-        session.commit()
-    except Exception:
-        logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
-        session.rollback()
     # Tidy's reviews a person switched on (INBOX 691, off by
     # default): after filing, as `system:tidy`, each run undoable
     # from Tidy's history. Never raises.
@@ -599,7 +593,7 @@ def _mark_filing_failed(entry_id: int) -> None:
 
 
 def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
-    """Decide a deferred note's category after its POST has already returned.
+    """Decide a background-filed note's category after its POST has already returned.
 
     Runs on its own daemon thread with its own session, the same shape
     `core/ocr.py`'s `extract_in_background` uses and for the same reason:
@@ -662,6 +656,15 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 if (getattr(entry, "filing_state", "") or "") != "pending":
                     return
                 run = _settle_filed_entry(session, entry, entry_id, late, category, confidence, filed_by)
+                # **Suggestions in the same commit as the settled state.**
+                # Kept after it, a reader polling `/entries/{id}/filing`
+                # saw the note settled and read `suggested_tags` as []
+                # (review of PR 240). They need the notebook's tags, not
+                # this note's vector, so they need not wait for the embed.
+                try:
+                    _keep_suggestions(session, entry, filed_by)
+                except Exception:
+                    logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
                 # **Settled first, embedded after.** The vector and the
                 # near-duplicate search used to land before `filing_state`
                 # did, so the card said "Filing…" for as long as the
@@ -834,7 +837,7 @@ def _apply_flags(session: Session, entry, body) -> None:  # noqa: ANN001
 
 def _decide_filing(session: Session, body: EntryCreate, parent) -> tuple[str, int, str, bool]:  # noqa: ANN001
     """`(category, confidence, filed_by, defer)` for a new note."""
-    # Deferred only when nothing else already decides the category: with an
+    # Filed in the background only when nothing else already decides the category: with an
     # explicit `category` or a `parent_id` there is no model call to wait
     # for, so deferring would add a round trip and buy nothing.
     defer = body.defer_filing and not body.category and parent is None
@@ -883,7 +886,7 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     """Everything after the commit that must never cost someone their note."""
     if not defer:
         #: Filed already: keep its tag suggestions now, from the notebook's
-        #: own tags (no second model call on the request; a deferred note
+        #: own tags (no second model call on the request; a background-filed note
         #: gets the model's in the background pass).
         try:
             _keep_suggestions(session, entry, None)
@@ -897,7 +900,7 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # rather than swallowed, so a backend that has stopped working shows up in
     # Settings, Logs instead of quietly shrinking search.
     #
-    # Skipped when filing is deferred: the same background thread does it,
+    # Skipped when filing runs in the background: the same background thread does it,
     # right before the near-duplicate search that depends on it.
     if not defer:
         deps.store_quietly(session, entry)
@@ -1379,7 +1382,7 @@ def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
 
 @router.get("/{entry_id}/filing")
 def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dict:
-    """Where a deferred note ended up, the one thing the composer polls.
+    """Where a background-filed note ended up, the one thing the composer polls.
 
     Deliberately not `GET /entries/{id}`: that serialises links, documents,
     dates and attachments through four more queries, and a poller running

@@ -11,10 +11,8 @@ from tessellate.ai import tagging
 
 
 def _settled(client, entry_id, timeout=10.0):
-    """Until the whole filing job is done. `filing_state` settles first and
-    the tag suggestions are kept after it (`_embed_and_tidy`), so a wait on
-    the state alone read `suggested_tags` as [] on a busy runner (CI, py3.11
-    leg 1, 2026-11-14)."""
+    """Until the whole filing job is done (embed and Tidy included), so no
+    test tears down under a running job."""
     from tessellate.core import jobs
 
     deadline = time.monotonic() + timeout
@@ -64,9 +62,11 @@ def test_filing_keeps_the_suggestions_on_the_note(client):
     assert "gym" in note["suggested_tags"]
 
 
-def test_the_wait_covers_suggestions_kept_after_the_state_settles(client, monkeypatch):
-    """The CI race, made certain: suggestions kept a moment after
-    `filing_state` settles are still there when the wait returns."""
+def test_the_suggestions_are_on_the_note_when_its_state_settles(client, monkeypatch):
+    """The reader's race (CI py3.11, 2026-11-14; review of PR 240): a poller
+    stops on the first settled `filing_state`, and the suggestions must be
+    there by then. Slow suggestions make it certain; the wait is on the
+    state alone, as the composer's poller waits."""
     from tessellate.api import routes_entries
 
     keep = routes_entries._keep_suggestions
@@ -76,7 +76,22 @@ def test_the_wait_covers_suggestions_kept_after_the_state_settles(client, monkey
         return keep(*args, **kwargs)
 
     monkeypatch.setattr(routes_entries, "_keep_suggestions", slow_keep)
-    test_filing_keeps_the_suggestions_on_the_note(client)
+    _seed(client)
+    note_id = client.post(
+        "/entries", json={"content": "Front squats today, legs wrecked", "defer_filing": True}
+    ).json()["id"]
+    deadline = time.monotonic() + 10
+    while client.get(f"/entries/{note_id}/filing").json()["filing_state"] == "pending":
+        assert time.monotonic() < deadline, "filing never settled"
+        time.sleep(0.05)
+    assert "gym" in client.get(f"/entries/{note_id}").json()["suggested_tags"]
+    _settled(client, note_id)
+
+
+def test_no_key_is_never_in_flight():
+    from tessellate.core import jobs
+
+    assert jobs.in_flight(None) is False
 
 
 def test_taking_and_discarding_a_suggestion(client):
