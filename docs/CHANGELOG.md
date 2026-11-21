@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Idle CPU re-measured after the emblem's CSS rotation: 0.48% of one core over 180 s (tab 0.14%, server 0.33%), under the 1 percent target (L-general-18).
 - Tour: a step rings its control only once its entrance fade ends, toasts step aside for the lit control, and the tour sweeps drive the tour through `openTour.inspect()` again; all three pass, 520 of 520 steps in tour.js (L-general-14).
 - Top bar: from 820 to 1199 the header holds the centred 44px tab strip, which had run 2px past its top and bottom (measured at 1184; now 4 to 52 in a 56px header).
 - Phone: chat's Conversations button is back (its toolbar is built on first open, after the openers were mounted), and the board tour's Notes card points at View, which opens the sidebar below 600.
