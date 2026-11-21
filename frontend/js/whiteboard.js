@@ -654,7 +654,18 @@ function wbZoomFrameWork() {
   if (typeof nameMarkBuddyCanvasZoom === "function") nameMarkBuddyCanvasZoom(t.k);
   //: In the same frame as the transform it answers, so a topic panned into
   //: view is drawn on the frame it arrives in rather than one later.
-  wbCullNow(t, size);
+  //:
+  //: **A zoom step culls only when the window has left what was drawn**
+  //: (L-mindmap-17). The cull draws half a window past every side, and a
+  //: pinch step is about 1.18x, so most steps of a zoom show nothing the last
+  //: cull did not already draw; culling each one anyway hid and showed edges
+  //: at the margin every step (8 to 16ms a step at 500 topics). The full
+  //: cull runs once when the zoom settles (`wbZoomSettle`). A pan culls every
+  //: frame as before: it is what brings new ground into view.
+  const scaling = t.k !== wbZoomSettle.k;
+  wbZoomSettle.k = t.k;
+  wbCullNow(t, size, scaling);
+  if (scaling) wbZoomSettle();
   clearTimeout(wbAddGate.panBarTimer);
   wbAddGate.panBarTimer = 0;
   wbUpdateSelectionBar(true);
@@ -754,7 +765,18 @@ function wbScheduleCull() {
   });
 }
 
-function wbCullNow(transform, size) {
+//: Run once a zoom has had no scale change for `WB_ZOOM_SETTLE_MS`: the
+//: one full redraw a zoom gets (the cull here; the grips' true size in
+//: `wbSyncGridToTransform`, which shares the wait).
+const WB_ZOOM_SETTLE_MS = 250;
+function wbZoomSettle() {
+  clearTimeout(wbZoomSettle.timer);
+  wbZoomSettle.timer = setTimeout(() => wbCullNow(), WB_ZOOM_SETTLE_MS);
+}
+
+//: `unlessDrawn`: nothing to do when the window, at this transform, is inside
+//: the ground the last cull drew (`wbCullNow.drawn`, board units).
+function wbCullNow(transform, size, unlessDrawn = false) {
   if (wbCullHeld) return;
   const container = document.getElementById("whiteboard-container");
   const layer = document.getElementById("wb-html-layer");
@@ -768,12 +790,15 @@ function wbCullNow(transform, size) {
   if (!w || !h) return;
   const t = transform || d3.zoomTransform(container);
   const k = t.k || 1;
+  const drawn = wbCullNow.drawn;
+  if (unlessDrawn && drawn && -t.x / k >= drawn.x0 && (w - t.x) / k <= drawn.x1 && -t.y / k >= drawn.y0 && (h - t.y) / k <= drawn.y1) return;
   const mx = w * WB_CULL_MARGIN;
   const my = h * WB_CULL_MARGIN;
   const x0 = (-mx - t.x) / k;
   const x1 = (w + mx - t.x) / k;
   const y0 = (-my - t.y) / k;
   const y1 = (h + my - t.y) / k;
+  wbCullNow.drawn = { x0, x1, y0, y1 };
   //: A box from what the datum says rather than from the element: reading
   //: a box would flush layout on every pan frame. Padded by half its larger
   //: side, so a rotated item's corners and a card taller than its stored
@@ -833,7 +858,6 @@ const WB_GRID_SPACING = 24;
 //: assumed all along (see the drop handler and `dragStart`'s own comments).
 const WB_CARD_DEFAULT_SIZE = { w: 250, h: 150 };
 
-let wbInvZoomTimer = 0;
 
 function wbSyncGridToTransform(transform) {
   const el = document.getElementById("whiteboard-container");
@@ -863,10 +887,16 @@ function wbSyncGridToTransform(transform) {
   //: writes nothing; a zoom writes once, 120ms after its last step, so the
   //: grips ride the board's scale for the length of the gesture and snap to
   //: their true size when it stops.
+  //:
+  //: **"Stops" is the zoom's settle, not a 120ms gap** (L-mindmap-17). One
+  //: publish re-styles every grip on the board (2,000 at 500 topics, 70 to
+  //: 180ms), and a slow pinch on a big map has steps more than 120ms apart,
+  //: so the publish landed inside the gesture: mapperf's worst zoom step at
+  //: 500 topics, 320ms, was one. It waits for the same quiet as the cull.
   const inv = String(1 / (t.k || 1));
-  clearTimeout(wbInvZoomTimer);
-  if (wbInvZoomValue === inv) return;
-  wbInvZoomTimer = setTimeout(() => wbPublishInvZoom(el, inv), 120);
+  clearTimeout(wbSyncGridToTransform.timer);
+  if ((wbPublishInvZoom.value || "1") === inv) return;
+  wbSyncGridToTransform.timer = setTimeout(() => wbPublishInvZoom(el, inv), WB_ZOOM_SETTLE_MS);
 }
 
 //: **Written onto the grips, not inherited down the whole board** (INBOX
@@ -904,7 +934,6 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-sketch-rotate-handle",
   ".wb-rotate-handle-stem",
 ];
-let wbInvZoomValue = "1";
 
 //: **The board's layers are rasterised again once a zoom has settled**
 //: (INBOX 791, "labels look pixelated"). A layer promoted with `will-change:
@@ -922,7 +951,7 @@ function wbRefreshRaster() {
 }
 
 function wbPublishInvZoom(el, inv) {
-  wbInvZoomValue = inv;
+  wbPublishInvZoom.value = inv;
   wbRefreshRaster();
   //: Below half zoom a topic's link button goes (INBOX 816): `inv` is 1 / zoom.
   el.toggleAttribute("data-wb-zoom-far", Number(inv) > 2);

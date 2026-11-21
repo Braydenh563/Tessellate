@@ -254,3 +254,34 @@ def test_no_layout_read_follows_a_write_on_the_move_path() -> None:
     assert "wbCanvasOriginRect()" in _code(_fn(WB, "function wbEdgePanTick("))
     # The gesture's box, measured at the press, before the first move writes anything.
     assert "wbCanvasOrigin();" in _code(_fn(WB, "function objDragStart("))
+
+
+def test_a_zoom_step_draws_the_transform_and_settles_once() -> None:
+    """L-mindmap-17: a zoom is a transform while it moves and one full redraw when it settles.
+
+    The grips' inverse scale re-styles every grip (70 to 180ms at 500 topics)
+    and fired inside a slow pinch whenever two steps were over 120ms apart;
+    the cull hid and showed margin edges on steps that drew nothing new.
+    """
+    frame = _code(_fn(WB, "function wbZoomFrameWork("))
+    assert "wbCullNow(t, size, scaling);" in frame
+    assert "if (scaling) wbZoomSettle();" in frame
+    settle = _code(_fn(WB, "function wbZoomSettle("))
+    assert "setTimeout(() => wbCullNow(), WB_ZOOM_SETTLE_MS)" in settle
+    sync = _code(_fn(WB, "function wbSyncGridToTransform("))
+    assert "wbPublishInvZoom(el, inv), WB_ZOOM_SETTLE_MS)" in sync
+    cull = _code(_fn(WB, "function wbCullNow("))
+    # The skip comes before any class is toggled, and the ground drawn is kept for the next step.
+    assert cull.index("if (unlessDrawn && drawn") < cull.index("classList.toggle")
+    assert "wbCullNow.drawn = { x0, x1, y0, y1 };" in cull
+
+
+def test_the_zoom_number_does_not_resize_its_dock() -> None:
+    """L-mindmap-17: "85%" to "100%" resized the zoom dock, whose width is published on the
+    board's section (`--wb-w-zoom`), so the zoom step that crossed it restyled the whole board
+    (250 to 400ms at 500 topics). The field holds the width of its widest value.
+    """
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    rule = css.split(".whiteboard-floating-panel .wb-zoom-level .value-field-input {", 1)[1].split("}", 1)[0]
+    assert "min-width: 5ch;" in rule
+    assert "wbPanelMetricsRoot.style.setProperty(`--wb-w-${name}`" in WB

@@ -7812,6 +7812,13 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
+/* The field inside it sizes to its text (`field-sizing: content`), so "85%"
+   to "100%" resized the dock, and the dock's width is published on the board's
+   section (`--wb-w-zoom`): every element under it restyled, 250 to 400ms at
+   500 topics, on the zoom step that crossed it (L-mindmap-17). */
+.whiteboard-floating-panel .wb-zoom-level .value-field-input {
+  min-width: 5ch;
+}
 
 /* Reading progress: in the Read view a hairline along the top edge of the
    reading pane, under the breadcrumb row, fills as the page scrolls. Drawn by
