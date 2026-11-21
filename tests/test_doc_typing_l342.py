@@ -502,11 +502,12 @@ const docSpell = { languageTool: async (lints) => { merged += 1; return lints.co
 @needs_node
 def test_a_lifted_popup_comes_and_goes_inside_a_hidden_holder_not_among_the_cards_children():
     """Taken out of `.card.doc-main` or put back, the word list restyled the card's subtree
-    (310 elements, 19.5 ms at 4x CPU on the key that opened it after a pause). After its first
-    return it lives in a hidden holder, so later moves leave the card's children alone."""
+    (310 elements, 19.5 ms at 4x CPU on the key that opened it after a pause). It is put in a
+    hidden holder when the file loads, so no move on a key touches the card's children."""
     panel = (JS / "documents-suggest-panel.js").read_text(encoding="utf-8")
     start = panel.index("  const docLiftedHome = new WeakMap();")
-    end = panel.index("    docLiftedHome.delete(el);\n  }\n", start) + len("    docLiftedHome.delete(el);\n  }\n")
+    tail = '  for (const id of ["doc-complete-list", "doc-suggest-menu"]) docLiftNest(document.getElementById(id));\n'
+    end = panel.index(tail, start) + len(tail)
     script = """
 let cardWrites = 0;
 class N {
@@ -518,13 +519,12 @@ class N {
   appendChild(n) { this.append(n); return n; }
   replaceWith(n) { const p = this.parentNode, i = p.kids.indexOf(this); p._drop(this); p._put(i, n); }
 }
-const document = { createComment: () => new N("#comment"), createElement: (t) => new N(t), body: new N("body") };
 const card = new N("section"), list = new N("ul"), before = new N("p"), after = new N("p");
+const document = { createComment: () => new N("#comment"), createElement: (t) => new N(t), body: new N("body"), getElementById: (id) => (id === "doc-complete-list" ? list : null) };
 card.append(before, list, after);
+cardWrites = 0;
 """ + panel[start:end] + """
 const out = {};
-docLiftToViewport(list);
-docReturnFromViewport(list);
 out.first = cardWrites;
 const nest = list.parentNode;
 out.nest = { hidden: nest.hidden, at: card.kids.indexOf(nest), kids: card.kids.length };

@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8998, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11052, test files 2881, tests 23100, plan headings 693, app scripts 29, boot scripts 38, script files 382.
+Counts: frontend functions 8999, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11052, test files 2881, tests 23100, plan headings 693, app scripts 29, boot scripts 38, script files 382.
 
-## Frontend functions (8998)
+## Frontend functions (8999)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5104,7 +5104,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `selfAndBelow` | frontend/js/documents-subpages.js:118 |
 | `slash` | frontend/js/documents-subpages.js:170 |
 
-### frontend/js/documents-suggest-panel.js (29)
+### frontend/js/documents-suggest-panel.js (30)
 
 | Name | File:line |
 |---|---|
@@ -5120,22 +5120,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docFindingLabel` | frontend/js/documents-suggest-panel.js:286 |
 | `docFindingLine` | frontend/js/documents-suggest-panel.js:372 |
 | `docKnownWords` | frontend/js/documents-suggest-panel.js:233 |
-| `docLiftToViewport` | frontend/js/documents-suggest-panel.js:457 |
+| `docLiftNest` | frontend/js/documents-suggest-panel.js:463 |
+| `docLiftToViewport` | frontend/js/documents-suggest-panel.js:471 |
 | `docMatchCase` | frontend/js/documents-suggest-panel.js:248 |
 | `docNearestWords` | frontend/js/documents-suggest-panel.js:261 |
-| `docPlaceFixed` | frontend/js/documents-suggest-panel.js:492 |
+| `docPlaceFixed` | frontend/js/documents-suggest-panel.js:495 |
 | `docProseKey` | frontend/js/documents-suggest-panel.js:175 |
-| `docReturnFromViewport` | frontend/js/documents-suggest-panel.js:471 |
-| `docScheduleSuggestFollow` | frontend/js/documents-suggest-panel.js:607 |
+| `docReturnFromViewport` | frontend/js/documents-suggest-panel.js:480 |
+| `docScheduleSuggestFollow` | frontend/js/documents-suggest-panel.js:610 |
 | `docSpellingVariant` | frontend/js/documents-suggest-panel.js:81 |
 | `docSuggestAlternatives` | frontend/js/documents-suggest-panel.js:292 |
 | `docSuggestAnswers` | frontend/js/documents-suggest-panel.js:413 |
-| `docSuggestBand` | frontend/js/documents-suggest-panel.js:520 |
-| `docSuggestFollowAnchor` | frontend/js/documents-suggest-panel.js:586 |
+| `docSuggestBand` | frontend/js/documents-suggest-panel.js:523 |
+| `docSuggestFollowAnchor` | frontend/js/documents-suggest-panel.js:589 |
 | `docTranslatePassage` | frontend/js/documents-suggest-panel.js:421 |
 | `docVariantLookup` | frontend/js/documents-suggest-panel.js:88 |
 | `openDocSuggest` | frontend/js/documents-suggest-panel.js:417 |
-| `placeDocSuggest` | frontend/js/documents-suggest-panel.js:532 |
+| `placeDocSuggest` | frontend/js/documents-suggest-panel.js:535 |
 | `renderDocTools` | frontend/js/documents-suggest-panel.js:27 |
 
 ### frontend/js/documents-suggest.js (6)
