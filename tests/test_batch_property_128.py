@@ -24,7 +24,9 @@ def test_more_menu_sets_a_property_through_one_undo():
     assert "await batchEach(" in body, "one toast, one Undo, the shape every batch act has"
     assert "/entries/${id}/properties" in body
     assert "const { [name]: _, ...next } = had" in body, "an empty value removes the property"
-    assert "before.set(id, had)" in body, "the undo restores each note's own block"
+    #: Review 5907752577: Undo puts back this one key, read fresh, rather
+    #: than the whole block as it was, which reverted edits made since.
+    assert "before.set(id, had[name])" in body and "setOne(id, before.get(id))" in body, "the undo restores each note's own value"
 
 
 def test_both_selection_bars_use_the_shared_menu():

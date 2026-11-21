@@ -1061,19 +1061,31 @@ function batchTag() {
 //: selection bar could move, tag and delete, and nothing else). One PUT or
 //: POST per note, one toast, one undo, the shape `batchTag` has.
 async function batchEach(label, ids, forward, backward) {
-  for (const id of ids) await forward(id);
+  //: A note that refuses partway is left out, not the end of the act
+  //: (review 5907752577): the notes already changed keep their Undo, and
+  //: the toast says how many did not change. `label` may take the ids done.
+  const done = [];
+  for (const id of ids) {
+    try {
+      await forward(id);
+      done.push(id);
+    } catch (err) {
+      console.warn("batch: a note refused", id, err);
+    }
+  }
   exitSelectMode();
   await loadEntries();
-  const undo = async () => {
-    for (const id of ids) await backward(id);
+  const missed = ids.length - done.length;
+  if (!done.length) return toast(`No note changed: ${nounCount(missed, "note")} refused.`, "info");
+  label = typeof label === "function" ? label(done) : label;
+  const each = async (step) => {
+    for (const id of done) await step(id).catch((err) => console.warn("batch: a note refused", id, err));
     await loadEntries();
   };
-  const redo = async () => {
-    for (const id of ids) await forward(id);
-    await loadEntries();
-  };
+  const undo = () => each(backward);
+  const redo = () => each(forward);
   const action = pushUndo(label, undo, redo);
-  toastAction(`${label}.`, "Undo", async () => {
+  toastAction(`${label}.${missed ? ` ${nounCount(missed, "note")} could not be changed.` : ""}`, "Undo", async () => {
     settleUndoFromToast(action);
     await undo();
   });
@@ -1090,14 +1102,14 @@ function batchNoun(ids) {
 async function batchFavourite(on) {
   const ids = batchSelection().filter((id) => Boolean(allEntries.find((e) => e.id === id)?.pinned) !== on);
   if (!ids.length) return toast(on ? "They are all Favourites already." : "None of them is a Favourite.");
-  await batchEach(`${on ? "Added" : "Removed"} ${batchNoun(ids)} ${on ? "to" : "from"} Favourites`, ids, batchPut({ pinned: on }), batchPut({ pinned: !on }));
+  await batchEach((done) => `${on ? "Added" : "Removed"} ${batchNoun(done)} ${on ? "to" : "from"} Favourites`, ids, batchPut({ pinned: on }), batchPut({ pinned: !on }));
 }
 
 async function batchArchive() {
   const ids = batchSelection();
   if (!ids.length) return;
   await batchEach(
-    `Archived ${batchNoun(ids)}`,
+    (done) => `Archived ${batchNoun(done)}`,
     ids,
     (id) => apiJson(`/entries/${id}/archive`, { method: "POST" }),
     (id) => apiJson(`/entries/${id}/unarchive`, { method: "POST" })
@@ -1107,7 +1119,7 @@ async function batchArchive() {
 async function batchPublish() {
   const ids = batchSelection().filter((id) => allEntries.find((e) => e.id === id)?.is_draft);
   if (!ids.length) return toast("None of them is a draft.");
-  await batchEach(`Published ${batchNoun(ids)}`, ids, batchPut({ is_draft: false }), batchPut({ is_draft: true }));
+  await batchEach((done) => `Published ${batchNoun(done)}`, ids, batchPut({ is_draft: false }), batchPut({ is_draft: true }));
 }
 
 function fillBatchMore(hostId = "batch-more-host") {
