@@ -2387,6 +2387,35 @@ class JobRun(Base):
     duration_ms: Mapped[float | None] = mapped_column(Float, default=None)
 
 
+class JobRunLog(Base):
+    """One finished run, kept across restarts (L-world-class-570).
+
+    `JobRun` is the last run of each kind; this is the History tab's list of
+    every run, with its origin, why and process lines, so a restart no longer
+    empties it. Written at a run's finish from `core/jobruns.py`'s ledger entry
+    and pruned there (`jobruns.KEEP_ROWS` rows, `KEEP_DAYS` days by the
+    person's own clock), so it cannot grow without end.
+    """
+
+    __tablename__ = "job_run_log"
+
+    run_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(40), default="")
+    title: Mapped[str] = mapped_column(String(400), default="")
+    label: Mapped[str] = mapped_column(String(400), default="")
+    origin: Mapped[str] = mapped_column(String(20), default="")
+    why: Mapped[str] = mapped_column(String(400), default="")
+    outcome: Mapped[str] = mapped_column(String(12), default="completed")
+    detail: Mapped[str] = mapped_column(String(400), default="")
+    started: Mapped[float] = mapped_column(Float, default=0.0)
+    ended: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    duration_ms: Mapped[float | None] = mapped_column(Float, default=None)
+    count: Mapped[int] = mapped_column(Integer, default=1)
+    lines: Mapped[list] = mapped_column(JSON, default=list)
+    #: The person's own clock when it ended: what the 30-day prune reads.
+    logged_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+
+
 class DurableJob(Base):
     """One piece of queued background work that outlives the process
     (WORLD_CLASS_PLAN B2). Written only through `core/jobstore.py`.

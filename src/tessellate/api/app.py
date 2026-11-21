@@ -818,7 +818,8 @@ def _backup_if_due() -> None:
         config = deps.get_config()
         keep = int(config.get_preference("backup_retention_count", backup.KEEP_BACKUPS))
         if backup.backup_is_due(config.db_path, config.data_dir):
-            with jobruns.job_run("backup") as run:
+            why = "Today's backup was due when the app started."
+            with jobruns.job_run("backup", origin="schedule", why=why) as run:
                 path = backup.backup_now(config.db_path, config.data_dir, keep, run, origin="daily")
                 run.result = f"saved {path.name} (the daily backup at start)"
         #: Every start holds the folder to the retention number, not only a

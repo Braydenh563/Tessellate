@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 89 | 15 | 0 | 0 | 104 |
+| world-class | 0 | 88 | 15 | 0 | 0 | 103 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 479 | 86 | 2 | 111 | 937 |
+| all | 372 | 478 | 86 | 2 | 111 | 936 |
 
 ## graph
 
@@ -553,7 +553,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-280** `world-class` open, M: First paint sits at 300 to 330 ms against the 300 ms line: find what the first frame waits for (844 KB of HTML with every surface template, 22 stylesheets) and trim it. From WORLD_CLASS_PLAN.md:1823 (L-world-class-90 measured). Evidence: first paint median 301 / 332 ms in two 5-run cold loads at 1440x900 (range 246 to 456; 300 line); html 844 KB decoded (163 KB gz), 22 render-blocking css 1,024 KB decoded (195 KB gz); defer on every boot script gave no gain (7 pairs, 408 to 390 ms median); the lock screen paints after 34 to 53 of 85 resources
 - [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
-- [ ] **L-world-class-570** `world-class` open, M: Keep the process history across restarts: a JobRun-style table (migration plus test_alembic_full_chain) fed from Run._to_ledger, and a why for scheduled passes that today carry no origin. From L669. Evidence: core/jobruns.py FINISHED_KEEP=60 ring in process memory; the History tab empties on restart
 
 ## general
 

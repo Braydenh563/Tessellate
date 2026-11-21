@@ -96,7 +96,7 @@ def _reason(row, entry=None) -> str:  # noqa: ANN001
 def compute(session: Session = Depends(get_session)) -> dict:
     """Refresh every note's fading score. Cheap enough to run on demand,
     meant to run nightly."""
-    with jobruns.job_run("resurface") as run:
+    with jobruns.job_run("resurface", origin="you") as run:
         written = resurface.compute_scores(session)
         session.commit()
         run.result = f"scored {written} note{'' if written == 1 else 's'}"

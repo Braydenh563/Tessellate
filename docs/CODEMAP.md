@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8531, frontend ids 2796, CSS sections 527, backend routes 722, backend modules 11115, test files 2888, tests 22822, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8531, frontend ids 2796, CSS sections 527, backend routes 722, backend modules 11120, test files 2888, tests 22831, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8531)
 
@@ -13599,7 +13599,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1787 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1814 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1815 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2035 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:410 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1081 |
@@ -13748,7 +13748,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:1020 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:1028 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1777 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1778 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:407 |
@@ -13771,9 +13771,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:160 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1700 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1053 |
-| `/instance` | GET | `instance` | src/tessellate/api/app.py:1675 |
-| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1689 |
-| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1709 |
+| `/instance` | GET | `instance` | src/tessellate/api/app.py:1676 |
+| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1690 |
+| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1710 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:362 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:615 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1290 |
@@ -13859,7 +13859,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:380 |
-| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1756 |
+| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1757 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat_meta.py:132 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:2010 |
@@ -13880,7 +13880,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1349 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1398 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:693 |
-| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1739 |
+| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1740 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:472 |
 | `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:95 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:640 |
@@ -14024,7 +14024,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sync/reset` | POST | `sync_reset` | src/tessellate/api/routes_sync.py:166 |
 | `/sync/segment` | GET | `sync_segment` | src/tessellate/api/routes_sync.py:46 |
 | `/sync/status` | GET | `sync_status` | src/tessellate/api/routes_sync.py:90 |
-| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1749 |
+| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1750 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1439 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
 | `/system/doctor` | GET | `run_doctor` | src/tessellate/api/routes_maintenance.py:44 |
@@ -14217,7 +14217,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11115)
+## Backend modules (11120)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14640,8 +14640,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `snoozed_for` | src/tessellate/ai/autonomous.py:218 |
 | `start` | src/tessellate/ai/autonomous.py:907 |
 | `stop` | src/tessellate/ai/autonomous.py:928 |
-| `stop_for_quit` | src/tessellate/ai/autonomous.py:1031 |
-| `stop_pass` | src/tessellate/ai/autonomous.py:1011 |
+| `stop_for_quit` | src/tessellate/ai/autonomous.py:1039 |
+| `stop_pass` | src/tessellate/ai/autonomous.py:1019 |
 | `thaw_hold` | src/tessellate/ai/autonomous.py:210 |
 | `trigger_now` | src/tessellate/ai/autonomous.py:956 |
 | `wake` | src/tessellate/ai/autonomous.py:944 |
@@ -17635,41 +17635,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `EmbeddingCacheBroken` | src/tessellate/ai/embeddings.py:52 |
 | `EmbeddingNeedsConsent` | src/tessellate/ai/embeddings.py:56 |
-| `EmbeddingService` | src/tessellate/ai/embeddings.py:908 |
-| `_PinnedModels` | src/tessellate/ai/embeddings.py:1544 |
-| `_attachment_parts` | src/tessellate/ai/embeddings.py:550 |
-| `_backfill_chunks` | src/tessellate/ai/embeddings.py:428 |
-| `_backfill_missing` | src/tessellate/ai/embeddings.py:345 |
-| `_digest` | src/tessellate/ai/embeddings.py:643 |
-| `_download_and_open` | src/tessellate/ai/embeddings.py:889 |
+| `EmbeddingService` | src/tessellate/ai/embeddings.py:911 |
+| `_PinnedModels` | src/tessellate/ai/embeddings.py:1547 |
+| `_attachment_parts` | src/tessellate/ai/embeddings.py:553 |
+| `_backfill_chunks` | src/tessellate/ai/embeddings.py:431 |
+| `_backfill_missing` | src/tessellate/ai/embeddings.py:348 |
+| `_digest` | src/tessellate/ai/embeddings.py:646 |
+| `_download_and_open` | src/tessellate/ai/embeddings.py:892 |
 | `_engine_missing` | src/tessellate/ai/embeddings.py:80 |
-| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:898 |
-| `_filed_under` | src/tessellate/ai/embeddings.py:531 |
-| `_keep_best` | src/tessellate/ai/embeddings.py:761 |
+| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:901 |
+| `_filed_under` | src/tessellate/ai/embeddings.py:534 |
+| `_keep_best` | src/tessellate/ai/embeddings.py:764 |
 | `_notebook_has_notes` | src/tessellate/ai/embeddings.py:143 |
-| `_open_snapshot` | src/tessellate/ai/embeddings.py:869 |
+| `_open_snapshot` | src/tessellate/ai/embeddings.py:872 |
 | `_package_present` | src/tessellate/ai/embeddings.py:67 |
-| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:858 |
-| `_register` | src/tessellate/ai/embeddings.py:830 |
-| `_same_width` | src/tessellate/ai/embeddings.py:747 |
+| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:861 |
+| `_register` | src/tessellate/ai/embeddings.py:833 |
+| `_same_width` | src/tessellate/ai/embeddings.py:750 |
 | `_wait_for_idle` | src/tessellate/ai/embeddings.py:125 |
-| `backfill_missing` | src/tessellate/ai/embeddings.py:313 |
-| `bytes_to_vector` | src/tessellate/ai/embeddings.py:654 |
-| `chunk_text` | src/tessellate/ai/embeddings.py:630 |
-| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:486 |
-| `cosine_similarity` | src/tessellate/ai/embeddings.py:660 |
-| `derived_pairs` | src/tessellate/ai/embeddings.py:775 |
-| `embed_threads` | src/tessellate/ai/embeddings.py:303 |
-| `embedding_text` | src/tessellate/ai/embeddings.py:569 |
+| `backfill_missing` | src/tessellate/ai/embeddings.py:316 |
+| `bytes_to_vector` | src/tessellate/ai/embeddings.py:657 |
+| `chunk_text` | src/tessellate/ai/embeddings.py:633 |
+| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:489 |
+| `cosine_similarity` | src/tessellate/ai/embeddings.py:663 |
+| `derived_pairs` | src/tessellate/ai/embeddings.py:778 |
+| `embed_threads` | src/tessellate/ai/embeddings.py:306 |
+| `embedding_text` | src/tessellate/ai/embeddings.py:572 |
 | `note_request` | src/tessellate/ai/embeddings.py:119 |
-| `similar_pairs` | src/tessellate/ai/embeddings.py:681 |
+| `similar_pairs` | src/tessellate/ai/embeddings.py:684 |
 | `start_warmup` | src/tessellate/ai/embeddings.py:164 |
-| `stop_warmup` | src/tessellate/ai/embeddings.py:471 |
-| `vector_to_bytes` | src/tessellate/ai/embeddings.py:647 |
+| `stop_warmup` | src/tessellate/ai/embeddings.py:474 |
+| `vector_to_bytes` | src/tessellate/ai/embeddings.py:650 |
 | `wait_for_quiet` | src/tessellate/ai/embeddings.py:136 |
-| `warm_then_backfill` | src/tessellate/ai/embeddings.py:337 |
-| `warmup_failed` | src/tessellate/ai/embeddings.py:467 |
-| `warmup_running` | src/tessellate/ai/embeddings.py:463 |
+| `warm_then_backfill` | src/tessellate/ai/embeddings.py:340 |
+| `warmup_failed` | src/tessellate/ai/embeddings.py:470 |
+| `warmup_running` | src/tessellate/ai/embeddings.py:466 |
 
 ### src/tessellate/ai/entities.py (10)
 
@@ -21116,47 +21116,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Layer` | src/tessellate/api/app.py:1425 |
-| `RequestPulse` | src/tessellate/api/app.py:1286 |
+| `Layer` | src/tessellate/api/app.py:1426 |
+| `RequestPulse` | src/tessellate/api/app.py:1287 |
 | `RevalidatedStatic` | src/tessellate/api/app.py:354 |
-| `SpaceGuard` | src/tessellate/api/app.py:1213 |
+| `SpaceGuard` | src/tessellate/api/app.py:1214 |
 | `_UnversionedStatic` | src/tessellate/api/app.py:345 |
-| `_add_instance_routes` | src/tessellate/api/app.py:1672 |
-| `_add_middleware` | src/tessellate/api/app.py:1525 |
-| `_add_system_routes` | src/tessellate/api/app.py:1735 |
+| `_add_instance_routes` | src/tessellate/api/app.py:1673 |
+| `_add_middleware` | src/tessellate/api/app.py:1526 |
+| `_add_system_routes` | src/tessellate/api/app.py:1736 |
 | `_backup_if_due` | src/tessellate/api/app.py:814 |
 | `_check_data_folder` | src/tessellate/api/app.py:800 |
 | `_check_notebook_file` | src/tessellate/api/app.py:783 |
 | `_choose_chat_model_if_missing` | src/tessellate/api/app.py:707 |
-| `_code_for_status` | src/tessellate/api/app.py:957 |
+| `_code_for_status` | src/tessellate/api/app.py:958 |
 | `_compact_event_log` | src/tessellate/api/app.py:625 |
 | `_compact_step` | src/tessellate/api/app.py:671 |
-| `_content_length` | src/tessellate/api/app.py:1265 |
-| `_has_password` | src/tessellate/api/app.py:1399 |
-| `_include_routers` | src/tessellate/api/app.py:1662 |
+| `_content_length` | src/tessellate/api/app.py:1266 |
+| `_has_password` | src/tessellate/api/app.py:1400 |
+| `_include_routers` | src/tessellate/api/app.py:1663 |
 | `_install_pending_extras` | src/tessellate/api/app.py:679 |
 | `_mend_category_names` | src/tessellate/api/app.py:751 |
 | `_purge_expired_bin_entries` | src/tessellate/api/app.py:601 |
 | `_purge_step` | src/tessellate/api/app.py:667 |
 | `_read_note_dates` | src/tessellate/api/app.py:762 |
-| `_register_client_error_handlers` | src/tessellate/api/app.py:968 |
-| `_register_error_handlers` | src/tessellate/api/app.py:1141 |
-| `_register_server_error_handlers` | src/tessellate/api/app.py:1029 |
+| `_register_client_error_handlers` | src/tessellate/api/app.py:969 |
+| `_register_error_handlers` | src/tessellate/api/app.py:1142 |
+| `_register_server_error_handlers` | src/tessellate/api/app.py:1030 |
 | `_seed_companion_milestone` | src/tessellate/api/app.py:770 |
 | `_stamp_for` | src/tessellate/api/app.py:260 |
-| `_start_autonomous_loop` | src/tessellate/api/app.py:912 |
-| `_start_searxng_if_asked` | src/tessellate/api/app.py:839 |
-| `_start_services` | src/tessellate/api/app.py:1323 |
+| `_start_autonomous_loop` | src/tessellate/api/app.py:913 |
+| `_start_searxng_if_asked` | src/tessellate/api/app.py:840 |
+| `_start_services` | src/tessellate/api/app.py:1324 |
 | `_startup_maintenance` | src/tessellate/api/app.py:718 |
 | `_static_gzip` | src/tessellate/api/app.py:540 |
 | `_sweep_sealed_leftovers` | src/tessellate/api/app.py:791 |
-| `_warm_routes` | src/tessellate/api/app.py:867 |
-| `_warm_search_at_launch` | src/tessellate/api/app.py:1414 |
+| `_warm_routes` | src/tessellate/api/app.py:868 |
+| `_warm_search_at_launch` | src/tessellate/api/app.py:1415 |
 | `asset_hash` | src/tessellate/api/app.py:236 |
 | `asset_stamps` | src/tessellate/api/app.py:265 |
 | `clear_static_cache` | src/tessellate/api/app.py:581 |
-| `create_app` | src/tessellate/api/app.py:1850 |
-| `out_of_space_body` | src/tessellate/api/app.py:1182 |
+| `create_app` | src/tessellate/api/app.py:1851 |
+| `out_of_space_body` | src/tessellate/api/app.py:1183 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:203 |
 | `served_index_html` | src/tessellate/api/app.py:310 |
 | `served_offline_html` | src/tessellate/api/app.py:294 |
@@ -24405,13 +24405,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `unwrap_dek` | src/tessellate/core/crypto.py:88 |
 | `wrap_dek` | src/tessellate/core/crypto.py:81 |
 
-### src/tessellate/core/database.py (79)
+### src/tessellate/core/database.py (80)
 
 | Name | File:line |
 |---|---|
 | `AskTurn` | src/tessellate/core/database.py:1349 |
 | `Attachment` | src/tessellate/core/database.py:1271 |
-| `AuditLog` | src/tessellate/core/database.py:2461 |
+| `AuditLog` | src/tessellate/core/database.py:2490 |
 | `Base` | src/tessellate/core/database.py:143 |
 | `BinnedReading` | src/tessellate/core/database.py:1979 |
 | `BoardLibrary` | src/tessellate/core/database.py:2227 |
@@ -24429,7 +24429,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DocumentBookmark` | src/tessellate/core/database.py:1473 |
 | `DocumentLink` | src/tessellate/core/database.py:1814 |
 | `DocumentRevision` | src/tessellate/core/database.py:2063 |
-| `DurableJob` | src/tessellate/core/database.py:2390 |
+| `DurableJob` | src/tessellate/core/database.py:2419 |
 | `EmbeddingRecord` | src/tessellate/core/database.py:1181 |
 | `Entity` | src/tessellate/core/database.py:763 |
 | `EntityMention` | src/tessellate/core/database.py:807 |
@@ -24441,6 +24441,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `EntryProperty` | src/tessellate/core/database.py:1079 |
 | `EntryRevision` | src/tessellate/core/database.py:1704 |
 | `JobRun` | src/tessellate/core/database.py:2363 |
+| `JobRunLog` | src/tessellate/core/database.py:2390 |
 | `LinkProps` | src/tessellate/core/database.py:881 |
 | `LinkReason` | src/tessellate/core/database.py:832 |
 | `MediaUpload` | src/tessellate/core/database.py:2281 |
@@ -24458,7 +24459,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Space` | src/tessellate/core/database.py:146 |
 | `StagedEmbedding` | src/tessellate/core/database.py:1244 |
 | `User` | src/tessellate/core/database.py:439 |
-| `UserPreference` | src/tessellate/core/database.py:2433 |
+| `UserPreference` | src/tessellate/core/database.py:2462 |
 | `Vault` | src/tessellate/core/database.py:466 |
 | `WebPage` | src/tessellate/core/database.py:450 |
 | `WhiteboardNode` | src/tessellate/core/database.py:2105 |
@@ -25158,44 +25159,48 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `wait_until_answering` | src/tessellate/core/instance_lock.py:300 |
 | `write_lock` | src/tessellate/core/instance_lock.py:99 |
 
-### src/tessellate/core/jobruns.py (34)
+### src/tessellate/core/jobruns.py (38)
 
 | Name | File:line |
 |---|---|
-| `Run` | src/tessellate/core/jobruns.py:288 |
-| `_bump` | src/tessellate/core/jobruns.py:203 |
-| `_calling` | src/tessellate/core/jobruns.py:799 |
+| `Run` | src/tessellate/core/jobruns.py:386 |
+| `_bump` | src/tessellate/core/jobruns.py:208 |
+| `_calling` | src/tessellate/core/jobruns.py:900 |
 | `_clip` | src/tessellate/core/jobruns.py:117 |
 | `_database` | src/tessellate/core/jobruns.py:150 |
-| `_named` | src/tessellate/core/jobruns.py:808 |
-| `_open_call` | src/tessellate/core/jobruns.py:815 |
-| `_purpose` | src/tessellate/core/jobruns.py:779 |
-| `_seconds` | src/tessellate/core/jobruns.py:791 |
-| `active` | src/tessellate/core/jobruns.py:764 |
-| `begin` | src/tessellate/core/jobruns.py:591 |
-| `bound` | src/tessellate/core/jobruns.py:754 |
-| `clear_finished` | src/tessellate/core/jobruns.py:241 |
-| `clear_live` | src/tessellate/core/jobruns.py:260 |
-| `current` | src/tessellate/core/jobruns.py:276 |
-| `describe_night_pass` | src/tessellate/core/jobruns.py:722 |
+| `_forget_logged` | src/tessellate/core/jobruns.py:295 |
+| `_logged_now` | src/tessellate/core/jobruns.py:254 |
+| `_named` | src/tessellate/core/jobruns.py:909 |
+| `_open_call` | src/tessellate/core/jobruns.py:916 |
+| `_persist` | src/tessellate/core/jobruns.py:261 |
+| `_purpose` | src/tessellate/core/jobruns.py:880 |
+| `_seconds` | src/tessellate/core/jobruns.py:892 |
+| `active` | src/tessellate/core/jobruns.py:865 |
+| `begin` | src/tessellate/core/jobruns.py:692 |
+| `bound` | src/tessellate/core/jobruns.py:855 |
+| `clear_finished` | src/tessellate/core/jobruns.py:246 |
+| `clear_live` | src/tessellate/core/jobruns.py:358 |
+| `current` | src/tessellate/core/jobruns.py:374 |
+| `describe_night_pass` | src/tessellate/core/jobruns.py:823 |
 | `failure_reason` | src/tessellate/core/jobruns.py:122 |
-| `finished` | src/tessellate/core/jobruns.py:235 |
-| `for_request` | src/tessellate/core/jobruns.py:771 |
-| `job_run` | src/tessellate/core/jobruns.py:601 |
+| `finished` | src/tessellate/core/jobruns.py:240 |
+| `for_request` | src/tessellate/core/jobruns.py:872 |
+| `history` | src/tessellate/core/jobruns.py:311 |
+| `job_run` | src/tessellate/core/jobruns.py:702 |
 | `lane_of` | src/tessellate/core/jobruns.py:107 |
-| `last_runs` | src/tessellate/core/jobruns.py:680 |
-| `live` | src/tessellate/core/jobruns.py:269 |
-| `mark_interrupted` | src/tessellate/core/jobruns.py:651 |
-| `merged_history` | src/tessellate/core/jobruns.py:560 |
-| `model_call` | src/tessellate/core/jobruns.py:828 |
-| `model_stream` | src/tessellate/core/jobruns.py:865 |
-| `note_finished` | src/tessellate/core/jobruns.py:623 |
-| `origin_now` | src/tessellate/core/jobruns.py:212 |
+| `last_runs` | src/tessellate/core/jobruns.py:781 |
+| `live` | src/tessellate/core/jobruns.py:367 |
+| `mark_interrupted` | src/tessellate/core/jobruns.py:752 |
+| `merged_history` | src/tessellate/core/jobruns.py:661 |
+| `model_call` | src/tessellate/core/jobruns.py:929 |
+| `model_stream` | src/tessellate/core/jobruns.py:966 |
+| `note_finished` | src/tessellate/core/jobruns.py:724 |
+| `origin_now` | src/tessellate/core/jobruns.py:217 |
 | `peek_database` | src/tessellate/core/jobruns.py:154 |
 | `set_database_source` | src/tessellate/core/jobruns.py:143 |
-| `started_by` | src/tessellate/core/jobruns.py:223 |
-| `version` | src/tessellate/core/jobruns.py:208 |
-| `why_now` | src/tessellate/core/jobruns.py:217 |
+| `started_by` | src/tessellate/core/jobruns.py:228 |
+| `version` | src/tessellate/core/jobruns.py:213 |
+| `why_now` | src/tessellate/core/jobruns.py:222 |
 
 ### src/tessellate/core/jobs.py (30)
 
@@ -28436,7 +28441,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22822)
+## Tests (22831)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30546,7 +30551,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_private_suggested_tags.py | 6 |
 | tests/test_private_toggle_1736.py | 1 |
 | tests/test_private_view_1110.py | 5 |
-| tests/test_process_ledger.py | 26 |
+| tests/test_process_ledger.py | 35 |
 | tests/test_profile_api.py | 5 |
 | tests/test_profile_face_warm.py | 2 |
 | tests/test_progress_phases.py | 10 |
@@ -31746,14 +31751,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:605 |
+| Needs hardware | docs/roadmap/LEDGER.md:604 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:598 |
+| Owner calls | docs/roadmap/LEDGER.md:597 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31933,7 +31938,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:735 |
+| Plan session briefs | docs/roadmap/LEDGER.md:734 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31987,25 +31992,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:751 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:835 |
+| chat | docs/roadmap/LEDGER.md:750 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:834 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:775 |
-| general | docs/roadmap/LEDGER.md:558 |
+| documents | docs/roadmap/LEDGER.md:774 |
+| general | docs/roadmap/LEDGER.md:557 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:739 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:847 |
+| graph | docs/roadmap/LEDGER.md:738 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:846 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:787 |
+| mindmap | docs/roadmap/LEDGER.md:786 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:811 |
+| timeline | docs/roadmap/LEDGER.md:810 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:799 |
+| ui-modernisation | docs/roadmap/LEDGER.md:798 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:763 |
+| whiteboard | docs/roadmap/LEDGER.md:762 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:823 |
+| world-class | docs/roadmap/LEDGER.md:822 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |
