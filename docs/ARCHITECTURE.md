@@ -1582,7 +1582,11 @@ the architecture:
   set, the app never starts its own (`ai/captions.py`).
 - `TESSELLATE_MCP_TOKEN`: the token an outside client hands
   `python -m tessellate.mcp_server`; Settings shows it in the snippet, and
-  without it the server reads and changes nothing.
+  without it the server reads and changes nothing. The same server also
+  answers over HTTP at `/mcp` on the app's port (`api/routes_mcp.py`) for a
+  client given its own token in Settings (only its hash is kept,
+  `core/mcp_clients.py`): this computer only unless LAN mode is on, reads
+  only unless the token was made to write (INBOX 1860).
 
 User-facing preferences (chat model, embedding backend, recycle-bin days, answer
 style, optional AI profile, …) live in `data/preferences.json`, managed by
@@ -1777,7 +1781,7 @@ thread; a plain save and an edit still embed on the request (corrected
 | Add a built-in skill | `skills.BUILTIN_SKILLS`, not `app.js`; name its tools (§7b) |
 | Log something a user or a website typed | `logbuffer.safe_value()` at the call site; `sanitise` only protects the in-app viewer |
 | Work out why SearXNG won't start | `searxng/searxng.log` in the data folder, surfaced in Settings → Web search |
-| Expose a tool to another program | `mcp_server.py`: it lists only non-destructive, enabled tools, so a new destructive tool needs no change there; a tool that writes is offered only once Settings' "Let that app add and change notes" (`mcp_writes_enabled`) is on, and a client without the notebook's `TESSELLATE_MCP_TOKEN` is refused |
+| Expose a tool to another program | `mcp_server.py`: it lists only non-destructive, enabled tools, so a new destructive tool needs no change there; a tool that writes is offered only once Settings' "Let that app add and change notes" (`mcp_writes_enabled`) is on, and a client without the notebook's `TESSELLATE_MCP_TOKEN` is refused; over HTTP (`api/routes_mcp.py`) the per-client token decides writes instead |
 | Add a background job | `core/jobs.enqueue(kind, func, ...)` with a lane in `KIND_LANES`, never a `Thread` of its own; `api/routes_tasks.collect()` already draws what the pool holds, so the panel needs nothing |
 | Show when a job last ran | wrap the job in `with jobruns.job_run("kind") as run:` (`core/jobruns.py`), set `run.result`, and add the kind to `jobruns.KINDS` for its wording; `GET /jobs/last-runs` and Settings → Background tasks (its Background jobs list) pick it up. Never write a `JobRun` row by hand |
 | Change how a note is filed with no model | `ai/lexical_filing.py` (`suggest_categories`, `suggest_tags`); the janitor and `_keep_suggestions` in `routes_entries.py` call it |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- MCP over HTTP (LEDGER L687, INBOX 1860): the tool server also answers at `/mcp` on the app's own port (streamable HTTP, JSON replies), for an app given its own token in Settings, Tools it can use, Make a link (shown once, only its SHA-256 kept, every stored hash compared in constant time; Revoke ends it at once). A token reads only unless made with "This app can add and change notes"; another device is refused unless LAN mode is on; each call is counted on the token's row. The embedding model stays unloaded until a search needs it, now pinned by a subprocess test. Tests: `tests/test_mcp_http.py`.
 - Two lints caught up with moved code: the small name mark's size rule is read in `nameMarkGenerated`, and the Library's first-document warm (static files into the HTTP cache) is listed with its reason in the bare-fetch lint.
 - Message wording lint: the "file changed while open" detail for a download write-back is checked at its source in core/sealed_files.py (CI de422974).
 - Capture outbox: the staged-picture strip stops at the next bracket (linear on a wall of brackets) and the held reminder is still stripped from the queued note (CI de422974).
