@@ -85,3 +85,81 @@ def test_motion_is_off_when_the_figure_is_not_live() -> None:
 def test_no_path_animation_which_would_take_the_figure_off_the_compositor() -> None:
     block = LIFE[LIFE.index("atlasRigLower.morph = {") : LIFE.index("**When the lower body spells")]
     assert ".animate(" not in block and "requestAnimationFrame" not in block
+
+
+PASS_SCRIPT = r"""
+const fs = require("fs"), vm = require("vm");
+const src = fs.readFileSync(process.argv[1], "utf8");
+const ctx = { atlasFix: (v) => Math.round(v * 100) / 100, console, Math, Map, Set, Object, Array, Number, Float32Array, Infinity, document: {}, window: {}, setTimeout, clearTimeout, performance: { now: () => 0 } };
+vm.createContext(ctx);
+vm.runInContext(src + "\n;this.__m = atlasRigLower.morph;", ctx);
+const M = ctx.__m;
+const d = "M10 20C10 30 12 40 14 50A1 1 0 0 0 16 50C14 40 12 30 12 20Z";
+const path = (kind) => {
+  const el = { v: d, setAttribute(k, v) { this.v = v; }, getAttribute() { return d; } };
+  const t = M.target(el, kind, kind === "hem" ? { y0: 20, y1: 50, cx: 13 } : { rx: 10, ry: 20, far: 30 }, 0.5);
+  M.prep(t);
+  return t;
+};
+const cloud = () => {
+  const c = { cx: 0, cy: 0, setAttribute(k, v) { this[k] = Number(v); } };
+  const t = { el: {}, cloud: c, kind: "cloud", cx: 40, cy: 60, phase: 0.9 };
+  M.prep(t);
+  return t;
+};
+const shape = (t) => (t.kind === "cloud" ? [t.cloud.cx, t.cloud.cy] : (t.el.v.match(/-?\d*\.?\d+/g) || []).map(Number));
+const kinds = ["ribbon", "field", "hem", "cloud"];
+const run = (limit) => {
+  const m = { targets: kinds.map((k) => (k === "cloud" ? cloud() : path(k))), ang: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], clock: 7.3, gain: 1.2 };
+  const full = { targets: kinds.map((k) => (k === "cloud" ? cloud() : path(k))), ang: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]] };
+  let drawn = 0, worst = 0, first = 0;
+  for (let i = 0; i < 300; i += 1) {
+    m.clock += 0.1 * (i < 150 ? 1.1 : 0.7);
+    m.gain += ((i < 100 ? 1.2 : 0.4) - m.gain) * 0.12;
+    const n = M.pass(m, limit);
+    if (i === 0) first = n;
+    drawn += n;
+    full.targets.forEach((t, k) => {
+      M.draw(t, m.clock, m.gain, full.ang);
+      const a = shape(m.targets[k]), b = shape(t);
+      for (let j = 0; j < a.length; j += 1) worst = Math.max(worst, Math.abs(a[j] - b[j]));
+    });
+  }
+  return { drawn, worst, first };
+};
+const out = { half: run(0.5), one: run(1), every: run(0) };
+const r = path("ribbon");
+M.pass({ targets: [r], ang: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], clock: 1, gain: 1 }, 1);
+out.restDue = (M.rest({ morph: { targets: [r] } }), M.due(r, { clock: 1, gain: 1 }));
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_a_tick_draws_only_what_can_have_moved_the_limit_and_never_strays_past_it() -> None:
+    """L-ui-modernisation-201: a held-back target is never further from the shape a draw on every tick shows than the
+    limit (`px` device pixels on screen, half a pixel; the numbers round to a hundredth), and a pass draws far fewer than every tick."""
+    res = subprocess.run(["node", "-e", PASS_SCRIPT, str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    assert res.returncode == 0, res.stderr
+    out = json.loads(res.stdout.strip().splitlines()[-1])
+    every = out["every"]
+    assert every["drawn"] == 1200 and every["worst"] <= 0.011, every
+    for key, limit in (("half", 0.5), ("one", 1)):
+        got = out[key]
+        assert got["first"] == 4, f"every target draws on its first tick: {got}"
+        assert got["worst"] <= limit + 0.011, f"a held target strayed past {limit}: {got}"
+        assert got["drawn"] < 0.6 * every["drawn"], got
+    assert out["one"]["drawn"] < out["half"]["drawn"]
+    # Put back to its drawn shape, a target draws on the next tick.
+    assert out["restDue"] is None or out["restDue"] > 1e9
+
+
+def test_the_tick_reads_its_scale_rarely_and_writes_through_the_pass() -> None:
+    run = LIFE[LIFE.index("atlasRigLower.morph.run = ") :]
+    run = run[: run.index("\n  };\n", run.index("const step = "))]
+    assert "M.pass(m, M.px / M.scale(box, m, now))" in run
+    scale = LIFE[LIFE.index("atlasRigLower.morph.scale = ") :]
+    scale = scale[: scale.index("\n  };")]
+    assert "5000" in scale and "devicePixelRatio" in scale
+    # Half a device pixel: fixed-clock captures put a whole one past the old rule's error (19 to 49 levels against 6 to 19).
+    assert "px: 0.5," in LIFE[LIFE.index("atlasRigLower.morph = {") :][:400]
