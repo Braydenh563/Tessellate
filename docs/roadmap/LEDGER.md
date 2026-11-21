@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 69 | 10 | 0 | 0 | 79 |
+| world-class | 0 | 68 | 10 | 0 | 0 | 78 |
 | general | 0 | 30 | 2 | 0 | 5 | 32 |
-| all | 372 | 454 | 81 | 2 | 112 | 907 |
+| all | 372 | 453 | 81 | 2 | 112 | 906 |
 
 ## graph
 
