@@ -9,6 +9,7 @@ pins every holder at once; these lints keep the suite on it."""
 from __future__ import annotations
 
 import ast
+import importlib
 from pathlib import Path
 
 TESTS = Path(__file__).resolve().parent
@@ -164,15 +165,19 @@ def test_the_lint_sees_a_real_read_and_not_a_mention():
 
 
 def test_pin_clock_reaches_a_module_that_imported_user_now_by_name(monkeypatch):
+    """The route module's own `user_now` is the pinned clock itself. Checked by
+    identity, not by calling it through the module: that call (routes_chat
+    imported for it) cost CodeQL's Analyze its 20 minutes (bisect, #248)."""
     from datetime import datetime
 
-    from tessellate.api import routes_chat
     from tessellate.core import config
     from tests._clock import pin_clock
 
+    routes_chat = importlib.import_module("tessellate.api.routes_chat")
     when = datetime(2026, 8, 1, 9, 0)
     pin_clock(monkeypatch, when)
-    assert config.user_now() == when and routes_chat.user_now(None) == when
+    assert config.user_now() == when
+    assert routes_chat.user_now is config.user_now
 
 
 def test_a_row_made_under_a_pinned_clock_is_stamped_with_it(monkeypatch, session):
