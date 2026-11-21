@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 35 | 3 | 0 | 0 | 38 |
+| chat | 0 | 34 | 3 | 0 | 0 | 37 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 406 | 72 | 0 | 124 | 804 |
+| all | 326 | 405 | 72 | 0 | 124 | 803 |
 
 ## graph
 
@@ -25,7 +25,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L145** `chat` open, M: Landing outcomes on both companions, prop tip-over included. From OPEN.md:4427. Evidence: No test or CHANGELOG entry for prop tip-over landing outcomes on both 2026-11-14 (companion2): landing outcomes are built and tested (test_companion_landing_1683k); prop tip-over is not built. Left: a prop-tip-over fate in companion-throw.js and the engine, needs a design call.
 - [ ] **L151** `chat` open, M: Non-Atlas companions in the desk overlay (picker rows disabled). From overlay-1104.md Remaining. Evidence: INBOX 1656 item 3 'not done' in source; no later commit found 2026-11-14 (companion2): not built. Left: render non-Atlas personas to the overlay sprite sheet and enable the picker rows; needs the frame atlas for each persona.
-- [ ] **L152** `chat` open, M: D5 edge spots/perch spells, A2 far-move sweep, A4 in-app presence spells, warps counts. From presence-desk-1108.md Left. Evidence: Source lists as not built; no later commit found 2026-11-14 (companion2): not built. Left: D5 edge spots, A2 far-move sweep, A4 spells; engine.py is at its line cap so they go in extras.py.
 - [ ] **L160** `chat` open, L: Extend noisy-question set coverage for typos and slang. From OPEN.md:3511. Evidence: Eval-driven open-ended coverage; needs a real-model and human-written set. Remaining: needs a human-written noisy set and a real model to score against; the fake-transport half is the word-pair scoring in tests/test_typo_pairs_l222.py (built 1d5df7da). Genuine 2026-11-14: needs a human-written noisy set; the 1.5B cannot grade its own noise.
 - [ ] **L173** `chat` open, L: Lower body and nebula follow pose and position, distinct silhouettes, in-app and desk parity. From OPEN.md:4366; OPEN.md:4402; OPEN.md:4406; OPEN.md:1079 (+1). Evidence: E6 (OPEN.md:296) built pose-following; W34 left it owner-call (design) to judge. Progress 2026-11-14: measured in the app (drawn path boxes of the lower layer, 1x, feminine; masculine within 3 px): idle 32x52, sit 28x40, lean 29x50, hang 29x58, lie 47x28. Float is the idle spell (`atlasLowerState` has no float state), so float and stand are the same 32x52 silhouette, and lean differs from idle by 3x2 px: those two pairs are the indistinct ones. No dated owner decision exists in HANDOVER, CHAT_PLAN or BACKLOG. Owner question, exact: should a float (hover) and a lean get a lower-body silhouette of their own (a longer, narrower trail for float; a visible side sweep for lean), or is idle-like acceptable? If yes: a `float` and a stronger `lean` entry in the lower-body tables (`flowByState`, the morph targets and `ATLAS_HAIR_STATES` in atlas-life.js, `atlasLowerState` in atlas-motion.js), the desk frame for it (render_desk_frames.js, then the L150 re-render), and a test that the boxes differ by more than 6 px in one dimension. Decided (standing order 3, 2026-11-14, for the owner): build; float gets its own lower state and silhouette, lean differs from idle by at least 6 px in one axis, desk frames match. Progress 2026-11-14b (atlas-3): drawing built and committed in the app (float state and lean in atlas-life.js, masculine back wisps in atlas.js, tests in test_atlas_draw_rows.py). NOT closed: the desk frames were re-rendered once (render_desk_frames.py, canvases 283x309 masculine and 301x311 feminine against 290x308 and 269x308) and 16 overlay tests then failed on the moved geometry (feminine LID_EYES box now about 3.5 px left and 1 px lower; bob idle range 1.08 against 0.9; mouth patch, gaze step, nebula veil, parity, seams, rest, ride, plus load crashes), so the frames were reverted to the committed set. Next step: re-render on a quiet machine, re-register LID_EYES in sprites.py and the canvas anchors with each intent change written in its test comment, run the overlay tests with -n 2, then close.
 - [ ] **L177** `chat` open, L: Companion climbs window sides and inspects window corner, clock, cursor. From OPEN.md:4336; OPEN.md:4340. Evidence: W34 true, w34-unv2-1111.md.
