@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Maps: picking up a branch that is most of the board leaves it in place and moves the few topics and lines outside it the other way, and the drop draws the inside lines from the sizes measured at the pick-up, so the first step of a 500-topic branch drag costs 77 to 118ms of CPU, from 197 to 199; mapperf.js gates it under 160ms (L-mindmap-18).
 - Maps: the grammar repaint indexes the board's objects once per pass instead of a scan per drawn topic, so a 500-topic map reads its objects 501 times a pass, from 125,751 (L-mindmap-19).
 - Notes: a clipped or imported note's source chip now says its kind in its tooltip and label (Clipped from URL, Imported from file); extracted-from-document and transcribed-from-audio are not recorded on the note, so they have no chip (L-general-13).
 - Reminders: ticking one that points at a note asks for a one-line outcome (skippable) added to that note, and Overdue has a Triage sheet (Still matters, Drop, Reschedule, each or all at once, one Undo) (L-general-10, L-general-12).
