@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2855, tests 22970, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2856, tests 22972, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
 ## Frontend functions (8980)
 
@@ -567,59 +567,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2375 |
-| `annotateSliders` | frontend/js/sheets-selects.js:1090 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2377 |
+| `annotateSliders` | frontend/js/sheets-selects.js:1092 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
-| `applyWebPanelWidth` | frontend/js/sheets-selects.js:545 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2474 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2424 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1584 |
-| `dateFieldFace` | frontend/js/sheets-selects.js:1120 |
+| `applyWebPanelWidth` | frontend/js/sheets-selects.js:547 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2476 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2426 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1586 |
+| `dateFieldFace` | frontend/js/sheets-selects.js:1122 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2083 |
-| `enhanceAllSelects` | frontend/js/sheets-selects.js:1101 |
-| `enhanceDateField` | frontend/js/sheets-selects.js:1130 |
-| `enhanceSelect` | frontend/js/sheets-selects.js:752 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2500 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2512 |
-| `focusSelect` | frontend/js/sheets-selects.js:1193 |
-| `formatTokens` | frontend/js/sheets-selects.js:1812 |
-| `initResizableSidebars` | frontend/js/sheets-selects.js:490 |
+| `editedMarker` | frontend/js/sheets-selects.js:2085 |
+| `enhanceAllSelects` | frontend/js/sheets-selects.js:1103 |
+| `enhanceDateField` | frontend/js/sheets-selects.js:1132 |
+| `enhanceSelect` | frontend/js/sheets-selects.js:754 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2502 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2514 |
+| `focusSelect` | frontend/js/sheets-selects.js:1195 |
+| `formatTokens` | frontend/js/sheets-selects.js:1814 |
+| `initResizableSidebars` | frontend/js/sheets-selects.js:492 |
 | `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:278 |
-| `kebabMenu` | frontend/js/sheets-selects.js:1488 |
-| `labelledMenu` | frontend/js/sheets-selects.js:659 |
+| `kebabMenu` | frontend/js/sheets-selects.js:1490 |
+| `labelledMenu` | frontend/js/sheets-selects.js:661 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1783 |
-| `listFilter` | frontend/js/sheets-selects.js:1326 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2302 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1888 |
-| `makeMenuItem` | frontend/js/sheets-selects.js:639 |
-| `makeSidebarResizable` | frontend/js/sheets-selects.js:351 |
-| `makeWebPanelResizable` | frontend/js/sheets-selects.js:582 |
-| `menuRowFits` | frontend/js/sheets-selects.js:1393 |
-| `openConversation` | frontend/js/sheets-selects.js:2091 |
-| `openKebabSheet` | frontend/js/sheets-selects.js:1241 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1821 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2381 |
-| `relativeTime` | frontend/js/sheets-selects.js:1831 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1692 |
-| `resetWebPanelWidth` | frontend/js/sheets-selects.js:563 |
-| `rowActions` | frontend/js/sheets-selects.js:1301 |
-| `selectFaceText` | frontend/js/sheets-selects.js:743 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1785 |
+| `listFilter` | frontend/js/sheets-selects.js:1328 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2304 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1890 |
+| `makeMenuItem` | frontend/js/sheets-selects.js:641 |
+| `makeSidebarResizable` | frontend/js/sheets-selects.js:353 |
+| `makeWebPanelResizable` | frontend/js/sheets-selects.js:584 |
+| `menuRowFits` | frontend/js/sheets-selects.js:1395 |
+| `openConversation` | frontend/js/sheets-selects.js:2093 |
+| `openKebabSheet` | frontend/js/sheets-selects.js:1243 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1823 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2383 |
+| `relativeTime` | frontend/js/sheets-selects.js:1833 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1694 |
+| `resetWebPanelWidth` | frontend/js/sheets-selects.js:565 |
+| `rowActions` | frontend/js/sheets-selects.js:1303 |
+| `selectFaceText` | frontend/js/sheets-selects.js:745 |
 | `setSidebarSheet` | frontend/js/sheets-selects.js:209 |
-| `shortModelName` | frontend/js/sheets-selects.js:1738 |
+| `shortModelName` | frontend/js/sheets-selects.js:1740 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1868 |
+| `sortConversations` | frontend/js/sheets-selects.js:1870 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2440 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2442 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2461 |
-| `watchForSelects` | frontend/js/sheets-selects.js:1205 |
-| `webPanelIsNarrow` | frontend/js/sheets-selects.js:529 |
-| `webPanelMaxWidth` | frontend/js/sheets-selects.js:539 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2463 |
+| `watchForSelects` | frontend/js/sheets-selects.js:1207 |
+| `webPanelIsNarrow` | frontend/js/sheets-selects.js:531 |
+| `webPanelMaxWidth` | frontend/js/sheets-selects.js:541 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
 ### frontend/js/skills.js (49)
@@ -29147,7 +29147,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22970)
+## Tests (22972)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31421,6 +31421,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_semantic_off_1030.py | 3 |
 | tests/test_semantic_search_matrix.py | 10 |
 | tests/test_semantic_switch_1533.py | 2 |
+| tests/test_separator_setup_reads_no_box.py | 2 |
 | tests/test_server_detail_wording.py | 3 |
 | tests/test_server_down_banner.py | 8 |
 | tests/test_server_shutdown.py | 3 |
