@@ -11,8 +11,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import pytest
-
 TESTS = Path(__file__).resolve().parent
 #: `datetime.now()`, `date.today()`, `dt.datetime.utcnow()` and the like, as calls:
 #: a name in a docstring or a lint's pattern is not a read.
@@ -294,7 +292,6 @@ def _wall_bounds(text: str) -> list[int]:
     return sorted(lines)
 
 
-@pytest.mark.xfail(strict=True, reason="L-general-70: the conversion is in progress")
 def test_no_test_bounds_wall_time():
     """No exceptions: time CPU with `time.process_time()`, count operations, or hold a fake on an event."""
     offenders = [f"{path.name}:{line}" for path, text in _sources() for line in _wall_bounds(text)]

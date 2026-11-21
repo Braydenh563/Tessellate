@@ -21,7 +21,7 @@ QUESTIONS = (
 
 
 def test_the_composer_imports_cold_in_under_a_fifth_of_a_second():
-    code = "import time; t = time.perf_counter(); import tessellate.ai.composer; print(time.perf_counter() - t)"
+    code = "import time; t = time.process_time(); import tessellate.ai.composer; print(time.process_time() - t)"
     #: Best of five: a cold import on a loaded machine is noisy, and the
     #: budget is about what the import does, not about the machine's worst moment.
     best = min(

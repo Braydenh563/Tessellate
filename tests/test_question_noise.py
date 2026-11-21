@@ -253,8 +253,8 @@ def test_the_composer_imports_without_the_database_layer() -> None:
     import sys
 
     code = (
-        "import sys, time; t = time.perf_counter(); import tessellate.ai.composer; "
-        "print(time.perf_counter() - t, 'sqlalchemy' in sys.modules)"
+        "import sys, time; t = time.process_time(); import tessellate.ai.composer; "
+        "print(time.process_time() - t, 'sqlalchemy' in sys.modules)"
     )
     runs = []
     #: The faster of two runs: a busy CI machine can stall one process for
