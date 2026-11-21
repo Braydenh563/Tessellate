@@ -315,3 +315,53 @@ def test_the_installed_card_menu_offers_the_models_own_uses():
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "settings-models.js").read_text()
     assert '["chat", "vision", "ocr"]' not in js
     assert "uses: m.uses" in js
+
+
+# --- the licence a re-upload carries (INBOX 1851, B61) ----------------------------
+
+#: What each unsloth upload's Hub model card said on 2026-11-21. A licence is read off
+#: the card, never assumed from the base model: the same author's EmbeddingGemma copy is
+#: `license:gemma`, so "unsloth" alone proves nothing.
+_OPEN_LICENCES = {"Apache-2.0", "MIT"}
+
+
+def test_every_unsloth_download_names_an_open_licence_and_links_its_card():
+    rows = [m for models in SUGGESTED_MODELS.values() for m in models if m["name"].startswith("hf.co/unsloth/")]
+    assert len(rows) == 3
+    for row in rows:
+        assert row["licence"] in _OPEN_LICENCES, row["name"]
+        repo = row["name"].removeprefix("hf.co/").split(":")[0]
+        assert row["licence_url"] == f"https://huggingface.co/{repo}"
+
+
+def test_a_suggested_licence_that_is_not_open_carries_the_terms_link():
+    # None is under non-open terms today; one added later must say so and link the terms
+    # the way core/embedmodels.py's EmbeddingGemma does.
+    for models in SUGGESTED_MODELS.values():
+        for row in models:
+            if "licence" in row:
+                assert row["licence"] in _OPEN_LICENCES or row.get("terms_url"), row["name"]
+
+
+def test_embeddinggemma_stays_behind_googles_terms_even_though_a_mirror_is_ungated():
+    from tessellate.core.embedmodels import EMBED_MODELS_BY_ID
+
+    gemma = EMBED_MODELS_BY_ID["embeddinggemma"]
+    assert gemma.licence == "Gemma terms" and gemma.one_press is False
+    assert gemma.terms_url.startswith("https://ai.google.dev/gemma/terms")
+
+
+def test_the_card_prints_the_licence_as_a_link():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "settings-models.js").read_text()
+    start = js.index("function modelFacts(model)")
+    body = js[start : js.index("// --- actions", start)]
+    assert "model.licence_url" in body and 'rel = "noopener noreferrer"' in body
+    assert "model.licence" in body
+
+
+def test_the_suggested_list_carries_the_licence_to_the_page(ai_client, fake_ollama):
+    moe = {m["name"]: m for m in ai_client.get("/models/suggested").json()["moe"]}
+    gemma = moe["hf.co/unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL"]
+    assert gemma["licence"] == "Apache-2.0" and gemma["licence_url"].startswith("https://huggingface.co/unsloth/")

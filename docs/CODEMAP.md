@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8529, frontend ids 2791, CSS sections 527, backend routes 721, backend modules 11113, test files 2888, tests 22813, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8529, frontend ids 2791, CSS sections 527, backend routes 721, backend modules 11113, test files 2888, tests 22818, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8529)
 
@@ -7626,40 +7626,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildModelCard` | frontend/js/settings-models.js:328 |
-| `checkCustomModel` | frontend/js/settings-models.js:767 |
+| `buildModelCard` | frontend/js/settings-models.js:344 |
+| `checkCustomModel` | frontend/js/settings-models.js:783 |
 | `modelBase` | frontend/js/settings-models.js:73 |
-| `modelBytes` | frontend/js/settings-models.js:309 |
-| `modelCancel` | frontend/js/settings-models.js:200 |
-| `modelCardFor` | frontend/js/settings-models.js:468 |
+| `modelBytes` | frontend/js/settings-models.js:325 |
+| `modelCancel` | frontend/js/settings-models.js:216 |
+| `modelCardFor` | frontend/js/settings-models.js:484 |
 | `modelDisplayName` | frontend/js/settings-models.js:116 |
-| `modelDownload` | frontend/js/settings-models.js:181 |
+| `modelDownload` | frontend/js/settings-models.js:197 |
 | `modelFacts` | frontend/js/settings-models.js:149 |
 | `modelFitReasonText` | frontend/js/settings-models.js:142 |
 | `modelFitTitle` | frontend/js/settings-models.js:131 |
 | `modelGb` | frontend/js/settings-models.js:121 |
-| `modelGroupOpen` | frontend/js/settings-models.js:495 |
-| `modelHardwareSentence` | frontend/js/settings-models.js:648 |
+| `modelGroupOpen` | frontend/js/settings-models.js:511 |
+| `modelHardwareSentence` | frontend/js/settings-models.js:664 |
 | `modelHidesBig` | frontend/js/settings-models.js:65 |
 | `modelInstalledName` | frontend/js/settings-models.js:83 |
-| `modelMenuItems` | frontend/js/settings-models.js:245 |
-| `modelProgressText` | frontend/js/settings-models.js:314 |
-| `modelRemove` | frontend/js/settings-models.js:234 |
+| `modelMenuItems` | frontend/js/settings-models.js:261 |
+| `modelProgressText` | frontend/js/settings-models.js:330 |
+| `modelRemove` | frontend/js/settings-models.js:250 |
 | `modelRoles` | frontend/js/settings-models.js:89 |
 | `modelSame` | frontend/js/settings-models.js:77 |
-| `modelSignature` | frontend/js/settings-models.js:320 |
+| `modelSignature` | frontend/js/settings-models.js:336 |
 | `modelState` | frontend/js/settings-models.js:100 |
-| `modelUse` | frontend/js/settings-models.js:212 |
-| `openModelHardwareForm` | frontend/js/settings-models.js:687 |
-| `paintModelHardware` | frontend/js/settings-models.js:663 |
-| `putModelHardware` | frontend/js/settings-models.js:700 |
-| `refreshModelHardware` | frontend/js/settings-models.js:673 |
-| `renderCustomCards` | frontend/js/settings-models.js:739 |
-| `renderEmbeddingPicker` | frontend/js/settings-models.js:831 |
-| `renderInstalledModels` | frontend/js/settings-models.js:520 |
-| `renderSuggested` | frontend/js/settings-models.js:536 |
-| `saveModelHardware` | frontend/js/settings-models.js:706 |
-| `updateModelProgress` | frontend/js/settings-models.js:454 |
+| `modelUse` | frontend/js/settings-models.js:228 |
+| `openModelHardwareForm` | frontend/js/settings-models.js:703 |
+| `paintModelHardware` | frontend/js/settings-models.js:679 |
+| `putModelHardware` | frontend/js/settings-models.js:716 |
+| `refreshModelHardware` | frontend/js/settings-models.js:689 |
+| `renderCustomCards` | frontend/js/settings-models.js:755 |
+| `renderEmbeddingPicker` | frontend/js/settings-models.js:847 |
+| `renderInstalledModels` | frontend/js/settings-models.js:536 |
+| `renderSuggested` | frontend/js/settings-models.js:552 |
+| `saveModelHardware` | frontend/js/settings-models.js:722 |
+| `updateModelProgress` | frontend/js/settings-models.js:470 |
 
 ### frontend/js/settings-packages.js (20)
 
@@ -18564,36 +18564,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Embedder` | src/tessellate/ai/model_manager.py:33 |
-| `Feature` | src/tessellate/ai/model_manager.py:317 |
-| `Job` | src/tessellate/ai/model_manager.py:840 |
-| `ModelManager` | src/tessellate/ai/model_manager.py:427 |
-| `_check_room` | src/tessellate/ai/model_manager.py:1124 |
-| `_is_app_client` | src/tessellate/ai/model_manager.py:1102 |
-| `_is_app_pair` | src/tessellate/ai/model_manager.py:943 |
-| `_ollama_models_dir` | src/tessellate/ai/model_manager.py:1120 |
-| `_reindex_pass` | src/tessellate/ai/model_manager.py:973 |
-| `_run_pull` | src/tessellate/ai/model_manager.py:1134 |
-| `_run_reindex` | src/tessellate/ai/model_manager.py:965 |
-| `cancel_pull` | src/tessellate/ai/model_manager.py:893 |
-| `cancel_reindex` | src/tessellate/ai/model_manager.py:883 |
-| `choose_chat_model_if_missing` | src/tessellate/ai/model_manager.py:1210 |
-| `choose_installed_chat_model` | src/tessellate/ai/model_manager.py:1186 |
-| `feature_pref_key` | src/tessellate/ai/model_manager.py:409 |
-| `is_installed_name` | src/tessellate/ai/model_manager.py:1201 |
-| `is_ocr_model` | src/tessellate/ai/model_manager.py:222 |
-| `is_small_model` | src/tessellate/ai/model_manager.py:276 |
-| `known_feature` | src/tessellate/ai/model_manager.py:413 |
-| `parameter_count` | src/tessellate/ai/model_manager.py:251 |
-| `pull_model` | src/tessellate/ai/model_manager.py:1110 |
-| `pull_statuses` | src/tessellate/ai/model_manager.py:878 |
-| `reindex_notebook` | src/tessellate/ai/model_manager.py:953 |
-| `reindex_status` | src/tessellate/ai/model_manager.py:873 |
-| `reset_jobs` | src/tessellate/ai/model_manager.py:865 |
-| `served_name` | src/tessellate/ai/model_manager.py:1232 |
-| `start_pull` | src/tessellate/ai/model_manager.py:1075 |
-| `start_reindex` | src/tessellate/ai/model_manager.py:903 |
-| `stop_pulls` | src/tessellate/ai/model_manager.py:1256 |
-| `stop_reindex` | src/tessellate/ai/model_manager.py:1249 |
+| `Feature` | src/tessellate/ai/model_manager.py:325 |
+| `Job` | src/tessellate/ai/model_manager.py:848 |
+| `ModelManager` | src/tessellate/ai/model_manager.py:435 |
+| `_check_room` | src/tessellate/ai/model_manager.py:1132 |
+| `_is_app_client` | src/tessellate/ai/model_manager.py:1110 |
+| `_is_app_pair` | src/tessellate/ai/model_manager.py:951 |
+| `_ollama_models_dir` | src/tessellate/ai/model_manager.py:1128 |
+| `_reindex_pass` | src/tessellate/ai/model_manager.py:981 |
+| `_run_pull` | src/tessellate/ai/model_manager.py:1142 |
+| `_run_reindex` | src/tessellate/ai/model_manager.py:973 |
+| `cancel_pull` | src/tessellate/ai/model_manager.py:901 |
+| `cancel_reindex` | src/tessellate/ai/model_manager.py:891 |
+| `choose_chat_model_if_missing` | src/tessellate/ai/model_manager.py:1218 |
+| `choose_installed_chat_model` | src/tessellate/ai/model_manager.py:1194 |
+| `feature_pref_key` | src/tessellate/ai/model_manager.py:417 |
+| `is_installed_name` | src/tessellate/ai/model_manager.py:1209 |
+| `is_ocr_model` | src/tessellate/ai/model_manager.py:230 |
+| `is_small_model` | src/tessellate/ai/model_manager.py:284 |
+| `known_feature` | src/tessellate/ai/model_manager.py:421 |
+| `parameter_count` | src/tessellate/ai/model_manager.py:259 |
+| `pull_model` | src/tessellate/ai/model_manager.py:1118 |
+| `pull_statuses` | src/tessellate/ai/model_manager.py:886 |
+| `reindex_notebook` | src/tessellate/ai/model_manager.py:961 |
+| `reindex_status` | src/tessellate/ai/model_manager.py:881 |
+| `reset_jobs` | src/tessellate/ai/model_manager.py:873 |
+| `served_name` | src/tessellate/ai/model_manager.py:1240 |
+| `start_pull` | src/tessellate/ai/model_manager.py:1083 |
+| `start_reindex` | src/tessellate/ai/model_manager.py:911 |
+| `stop_pulls` | src/tessellate/ai/model_manager.py:1264 |
+| `stop_reindex` | src/tessellate/ai/model_manager.py:1257 |
 
 ### src/tessellate/ai/natural_voice.py (15)
 
@@ -28426,7 +28426,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22813)
+## Tests (22818)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30155,7 +30155,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_mindmap_colour_discoverability.py | 6 |
 | tests/test_mindmap_dashed_bar.py | 1 |
 | tests/test_mindmap_fill.py | 3 |
-| tests/test_model_cards.py | 24 |
+| tests/test_model_cards.py | 29 |
 | tests/test_model_connect_timeout.py | 2 |
 | tests/test_model_context_z70.py | 3 |
 | tests/test_model_deadline_1029.py | 10 |
@@ -31736,14 +31736,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:606 |
+| Needs hardware | docs/roadmap/LEDGER.md:605 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:599 |
+| Owner calls | docs/roadmap/LEDGER.md:598 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31923,7 +31923,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:736 |
+| Plan session briefs | docs/roadmap/LEDGER.md:735 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31977,25 +31977,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:752 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:836 |
+| chat | docs/roadmap/LEDGER.md:751 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:835 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:776 |
-| general | docs/roadmap/LEDGER.md:559 |
+| documents | docs/roadmap/LEDGER.md:775 |
+| general | docs/roadmap/LEDGER.md:558 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:740 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:848 |
+| graph | docs/roadmap/LEDGER.md:739 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:847 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:788 |
+| mindmap | docs/roadmap/LEDGER.md:787 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:812 |
+| timeline | docs/roadmap/LEDGER.md:811 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:800 |
+| ui-modernisation | docs/roadmap/LEDGER.md:799 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:764 |
+| whiteboard | docs/roadmap/LEDGER.md:763 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:824 |
+| world-class | docs/roadmap/LEDGER.md:823 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |
