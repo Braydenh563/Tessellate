@@ -56572,6 +56572,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14 Built: 31bc0dda0, tests/test_packed_vectors.py; 26.7 to 20.5 MB on 5,000 notes
 - [x] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14 Built: a982a11ad, tests/test_note_memberships.py
 - [x] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14 Built: a982a11ad, tests/test_note_memberships.py
 - [x] **L-world-class-620** `world-class` open, M: Grid-sizing callbacks over 50 ms: read card heights from ResizeObserver entries instead of getBoundingClientRect after the fills dirty layout. From frontend/js/dashboard.js watchDashWidgets rAF and settle afterFrames callbacks. Evidence: sizeDashWidgets 49-307 ms at 4x, 500 notes (forced layout of the filled grid; LoAF user-callback) Built: grid observer sizes from entries' border-box heights, no rAF hop or rect read; layouts 47 to 44, layout ms 258 to 210 (4x, median of 5); tests/test_dash_fill_tasks.py
