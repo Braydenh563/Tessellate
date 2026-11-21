@@ -17270,6 +17270,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .atl-figure-box > svg,
 .atl-lw > svg,
 .atl-lw-pose > svg,
+.atl-lw-drift > svg,
 .atl-lw-breathe > svg {
   position: absolute;
   left: 0;

@@ -14,6 +14,7 @@ fewer frames.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -80,3 +81,45 @@ def test_a_beat_that_steps_nothing_asks_for_no_frame() -> None:
     assert "if (wrote) {" in fn
     assert "if (nmbTempo.anims.length) {\n      nmbTempo.wrote = true;" not in fn
     assert "nmbTempo.gap = nameMarkBuddyPropGaps(nmbTempo.anims, nmbTempo.slow);" in fn
+
+
+CSS = {f: (ROOT / "frontend" / "css" / f).read_text(encoding="utf-8") for f in ("atlas-lazy.css", "characters-lazy.css")}
+INDEPENDENT = {"translate", "rotate", "scale"}
+
+
+def _svg_rules_with_independent_transforms(css: str) -> list[tuple[str, str]]:
+    frames = {m.group(1): m.group(2) for m in re.finditer(r"@keyframes ([\w-]+)\s*\{((?:[^{}]*\{[^}]*\})*)\s*\}", css)}
+    found = []
+    for m in re.finditer(r"([^{};]*?svg)\s*\{\s*animation(?:-name)?:\s*([^;}]*)", css):
+        for part in m.group(2).split(","):
+            name = part.split()[0] if part.split() else ""
+            if INDEPENDENT & set(re.findall(r"([\w-]+)\s*:", frames.get(name, ""))):
+                found.append((m.group(1).strip().splitlines()[-1].strip(), name))
+    return found
+
+
+def test_no_css_loop_turns_an_svg_by_an_independent_transform() -> None:
+    """Chromium runs a `translate`, `rotate` or `scale` animation on an SVG
+    element (an inline `<svg>` root included) on the main thread
+    (kSVGTargetHasIndependentTransformProperty), and one such loop asks for a
+    frame every vsync, each restyling all of the full figure's hundred running
+    loops. Her wisps' and glints' drift and curl were eight of them: with the
+    timers cleared the full figure still drew 30 to 60 frames a second, and
+    none once those eight were cancelled. They run on an HTML box round each
+    drawing (`.atl-lw-drift`), where every one is on the compositor."""
+    for name, css in CSS.items():
+        assert _svg_rules_with_independent_transforms(css) == [], name
+    probe = "@keyframes k { from { rotate: 0deg; } to { rotate: 1deg; } }\n.a > svg { animation: k 1s; }"
+    assert _svg_rules_with_independent_transforms(probe) == [(".a > svg", "k")]
+
+
+def test_the_wisps_drift_box_holds_each_drawing_and_moves_with_its_loops() -> None:
+    atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
+    assert 'drift.className = "atl-lw-drift";' in atlas
+    lazy = CSS["atlas-lazy.css"]
+    for name in ("wisps", "wisps-back", "glint-a", "glint-b"):
+        assert f".atl-lw-pose-{name} > .atl-lw-drift {{ animation: atl-lw-drift" in lazy
+        assert f".atl-lw-pose-{name} > .atl-lw-drift {{ transform-origin: 31px 55.5px; }}" in lazy
+    # Paused wherever the drawing's own loops were: lite, away, carried, off and hidden.
+    pause = re.search(r"((?:[^{}]*\.atl-lw-drift,?\s*)+)\{ animation-play-state: paused !important; \}", lazy)
+    assert pause and pause.group(1).count(".atl-lw-drift") == 5
