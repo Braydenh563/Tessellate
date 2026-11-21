@@ -16,7 +16,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
     const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr || 1), ...(w < 600 ? { isMobile: true, hasTouch: true } : {}) });
-    await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
     const spots = await page.evaluate(() => {
@@ -105,7 +105,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
     const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr), hasTouch: true });
-    await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.theme = 'dark'; });
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);

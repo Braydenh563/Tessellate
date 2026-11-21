@@ -45,7 +45,7 @@ function measure() {
   const before = await page.evaluate(measure);
   console.log('shown', JSON.stringify(before));
   await page.evaluate(() => {
-    const row = document.getElementById('avatar-buddy-row');
+    const row = $('avatar-buddy-row');
     const block = document.createElement('div');
     block.id = 'tourfollow-block';
     block.style.height = '180px';

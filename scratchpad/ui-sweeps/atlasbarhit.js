@@ -8,7 +8,7 @@ const { boot } = require('./lib.js');
   const { browser, page } = await boot({ viewport: { width: 1280, height: 720 } });
   await page.waitForTimeout(1500);
   await page.evaluate(() => {
-    const b = document.getElementById('avatar-buddy');
+    const b = $('avatar-buddy');
     b.value = 'atlas';
     b.dispatchEvent(new Event('change', { bubbles: true }));
   });

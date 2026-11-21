@@ -36,7 +36,7 @@ let page;
 (async () => {
   const b = await boot({ viewport: { width: VW, height: VH } });
   page = b.page;
-  await page.evaluate((kind) => { localStorage.removeItem('nm-buddy-spots'); const s = document.getElementById('avatar-buddy'); s.value = kind; s.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((kind) => { localStorage.removeItem('nm-buddy-spots'); const s = $('avatar-buddy'); s.value = kind; s.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.evaluate((tab) => switchTab(tab), TAB);
   await page.waitForTimeout(4500);
 

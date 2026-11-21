@@ -22,7 +22,7 @@ const STEPS = Number(process.env.STEPS || 6);
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
   let bad = 0;
   const rows = [];
   for (const tab of TABS) {

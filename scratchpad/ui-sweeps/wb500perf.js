@@ -33,7 +33,7 @@ const stop = (page) => page.evaluate(() => { window.__wbOn = false; return { lon
     await page.evaluate((k) => {
       localStorage.removeItem("nm-buddy-spots");
       prefs.set("avatar-buddy", k);
-      const b = document.getElementById("avatar-buddy");
+      const b = $("avatar-buddy");
       if (b) b.value = k;
       syncNameMarkBuddy();
     }, kind);

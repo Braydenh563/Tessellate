@@ -165,7 +165,7 @@ function verdict(r, label = "") {
   const { browser, page } = await boot(opts);
   await page.evaluate((k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
+    const b = $("avatar-buddy");
     b.value = k;
     b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");

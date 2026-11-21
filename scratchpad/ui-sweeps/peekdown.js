@@ -14,7 +14,7 @@ const KIND = process.env.KIND || 'atlas';
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.waitForTimeout(5000);
   const out = await page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');

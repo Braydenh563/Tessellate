@@ -18,10 +18,10 @@ fs.mkdirSync(OUT, { recursive: true });
   for (const [look, pose, mood] of [['feminine', 'stand', 'calm'], ['feminine', 'hang', 'sleepy'], ['feminine', 'sit', 'happy'], ['masculine', 'stand', 'calm'], ['masculine', 'hang', 'sleepy']]) {
     await page.evaluate(([look]) => {
       localStorage.setItem('atlas-look', look);
-      const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
+      const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, [look]);
     await page.waitForTimeout(300);
-    await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+    await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
     await page.waitForTimeout(2600);
     await page.evaluate(([pose, mood]) => { window.__pose = pose; window.__mood = mood; }, [pose, mood]);
     await page.evaluate(() => {

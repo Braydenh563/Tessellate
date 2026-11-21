@@ -298,7 +298,7 @@ async function openPeek(page) {
             const have = await apiJson('/entries?limit=10').catch(() => []);
             const n = (have.items || have).length;
             for (let i = n; i < notes.length; i += 1) await api('/entries', { method: 'POST', body: JSON.stringify({ content: notes[i] }) });
-            const b = document.getElementById('avatar-buddy');
+            const b = $('avatar-buddy');
             if (b) { b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); }
             if (withPeek) {
               await api('/models/provider', { method: 'POST', body: JSON.stringify({ provider: 'openai', base_url: base }) }).catch(() => null);

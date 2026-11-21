@@ -7,7 +7,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   const fails = [];
@@ -116,8 +116,8 @@ const { boot } = require('./lib.js');
   if (grip.shown !== '1') fails.push(`grip on hover: ${grip.shown}`);
   await page.evaluate(() => openSettingsModal('appearance'));
   await page.waitForTimeout(500);
-  size.select = await page.evaluate(() => { const s = document.getElementById('avatar-buddy-size'); return s.options[s.selectedIndex]?.textContent || ''; });
-  await page.evaluate(() => { const s = document.getElementById('avatar-buddy-size'); s.value = '1'; s.dispatchEvent(new Event('change', { bubbles: true })); });
+  size.select = await page.evaluate(() => { const s = $('avatar-buddy-size'); return s.options[s.selectedIndex]?.textContent || ''; });
+  await page.evaluate(() => { const s = $('avatar-buddy-size'); s.value = '1'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(250);
   size.back = await rect();

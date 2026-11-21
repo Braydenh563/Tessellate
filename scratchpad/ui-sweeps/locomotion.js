@@ -16,7 +16,7 @@ const KIND = process.env.KIND || 'me';
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.waitForTimeout(6000);
   const cases = [['step', 22], ['walk', 160], ['far', 640], ['panel', 40]];
   const rows = [];

@@ -10,7 +10,7 @@ const { boot } = require("./lib.js");
   const { browser, page } = await boot({ viewport: { width: W, height: 900 }, ...(W < 600 ? { hasTouch: true, isMobile: true } : {}), ...(process.env.REDUCED ? { reducedMotion: "reduce" } : {}) });
   await page.evaluate((k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
+    const b = $("avatar-buddy");
     b.value = k;
     b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");

@@ -21,7 +21,7 @@ const { boot } = require('./lib.js');
         document.documentElement.dataset.avatarMotion = 'always';
         if (where === 'buddy') {
           localStorage.removeItem('nm-buddy-spots');
-          const b = document.getElementById('avatar-buddy');
+          const b = $('avatar-buddy');
           b.value = 'atlas';
           b.dispatchEvent(new Event('change', { bubbles: true }));
         } else openNameMarkViewer('Atlas');

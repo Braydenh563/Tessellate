@@ -16,10 +16,10 @@ const { boot } = require('./lib.js');
   for (const look of ['masculine', 'feminine']) {
     await page.evaluate(([look]) => {
       localStorage.setItem('atlas-look', look);
-      const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
+      const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, [look]);
     await page.waitForTimeout(300);
-    await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+    await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
     await page.waitForTimeout(2200);
     await page.evaluate(() => {
       clearTimeout(nmb.timer);

@@ -20,7 +20,7 @@ async function pass(buddyKind, reduced) {
   const { browser, page } = await boot(opts);
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
-  await page.evaluate((kind) => { const b = document.getElementById('avatar-buddy'); if (b) { b.value = kind; b.dispatchEvent(new Event('change', { bubbles: true })); } }, buddyKind);
+  await page.evaluate((kind) => { const b = $('avatar-buddy'); if (b) { b.value = kind; b.dispatchEvent(new Event('change', { bubbles: true })); } }, buddyKind);
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); revealTab('dashboard'); });
   await page.waitForTimeout(2500);
   // A real flick first: the lazy file arrives with the carry.
