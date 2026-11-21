@@ -2509,6 +2509,22 @@
      "label": "ph:user Read what the notes hold about Sam Lee: 2 notes"
     }
    }
+  ],
+  "edit_chats": [
+   {
+    "args": {
+     "action": "sort",
+     "sort": "name"
+    },
+    "result": {
+     "view": {
+      "sort": "name",
+      "group": "none",
+      "pinned": true
+     },
+     "label": "ph:sort-descending Chats are by name"
+    }
+   }
   ]
  }
 }

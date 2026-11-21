@@ -1,0 +1,19 @@
+/* The sidebar's group headings (chat-order.js, L-world-class-180): "Pinned", "Today", "Last week",
+   a folder's name. A quiet label above its rows, not a row: no hover fill, no pointer. */
+#conversation-list li.conv-group {
+  display: block;
+  margin: var(--space-2) 0 var(--space-1);
+  padding: 0 var(--space-2);
+  border-left: 0;
+  background: none;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: default;
+}
+#conversation-list li.conv-group:first-child {
+  margin-top: 0;
+}
+#conversation-list li.conv-group:hover {
+  background: none;
+}

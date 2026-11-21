@@ -26,9 +26,10 @@ from typing import Callable
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
+from tessellate.core import chat_view, deps
 from tessellate.core.database import (
     AuditLog,
+    Conversation,
     Document,
     Entry,
     EntryLink,
@@ -234,6 +235,20 @@ def _archive_state(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _chats_edited(session: Session, args: dict, result: dict) -> str | None:
+    """The sort or grouping it names is the stored view, or the chat it names has the title, pin or folder it says."""
+    if isinstance(result.get("view"), dict):
+        stored = chat_view.read(deps.get_config())
+        return None if all(stored.get(k) == v for k, v in result["view"].items()) else "the chat list is not in the view it says"
+    chat = _row(session, Conversation, result.get("id"))
+    if chat is None:
+        return f"chat {result.get('id')} is not there"
+    for key, got in (("title", chat.title), ("pinned", chat.pinned), ("folder", chat.folder or "")):
+        if key in result and result[key] != got:
+            return f"chat {chat.id} has {key} {got!r}, not {result[key]!r}"
+    return None
+
+
 #: The write tools `contracts.py` does not cover, each with the read that
 #: proves its result. A tool in both would be checked twice; the lint keeps
 #: the two tables apart.
@@ -257,6 +272,7 @@ VERIFIERS: dict[str, Verifier] = {
     "restore_link_reasons": _links_restored,
     "check_learned": _learned_checked,
     "archive_note": _archive_state,
+    "edit_chats": _chats_edited,
     "save_skill": _skill_saved,
     "delete_skill": _skill_deleted,
 }

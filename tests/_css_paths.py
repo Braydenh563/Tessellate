@@ -87,6 +87,8 @@ CSS_FILES = [
     CSS_DIR / "key-grid-lazy.css",
     #: The staged chip's upload bar (chat-attach.js `attachmentChip` loads it).
     CSS_DIR / "chip-bar-lazy.css",
+    #: The sidebar's group headings (chat-order.js, L-world-class-180).
+    CSS_DIR / "chat-order-lazy.css",
     #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
     CSS_DIR / "model-menu-lazy.css",
     #: The live captions dock (captions.js, Brief 82).

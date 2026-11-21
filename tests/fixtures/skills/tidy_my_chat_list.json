@@ -1,0 +1,78 @@
+{
+ "skill": "Tidy my chat list",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "by-name",
+   "notebook": [
+    {
+     "content": "Call the landlord about the boiler",
+     "category": "Home",
+     "tags": []
+    },
+    {
+     "content": "Pasta night menu for Friday",
+     "category": "Food",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "unchanged": true,
+    "answer_mentions": [
+     "chat"
+    ]
+   },
+   "inputs": {
+    "how": "sort my chats by name"
+   }
+  },
+  {
+   "id": "by-week",
+   "notebook": [
+    {
+     "content": "Call the landlord about the boiler",
+     "category": "Home",
+     "tags": []
+    },
+    {
+     "content": "Pasta night menu for Friday",
+     "category": "Food",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "unchanged": true,
+    "answer_mentions": [
+     "chat"
+    ]
+   },
+   "inputs": {
+    "how": "group them by week"
+   }
+  },
+  {
+   "id": "pin-paris",
+   "notebook": [
+    {
+     "content": "Call the landlord about the boiler",
+     "category": "Home",
+     "tags": []
+    },
+    {
+     "content": "Pasta night menu for Friday",
+     "category": "Food",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "unchanged": true,
+    "answer_mentions": [
+     "chat"
+    ]
+   },
+   "inputs": {
+    "how": "pin the chat about Paris"
+   }
+  }
+ ]
+}

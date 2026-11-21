@@ -160,12 +160,16 @@ MID_TOPICS.extend(
                 "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
             ),
             "body": (
-                "The Chats list beside the chat shows your last eight saved chats. "
+                "The Chats list beside the chat shows your latest saved chats. "
                 "The search box above it finds a chat by its title or by anything "
-                "said in it and lists up to 32 matches. Sort "
-                "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
-                "chat stays first. Each chat's menu renames, pins, archives or "
-                "deletes it. All in Library opens every chat, with the full search."
+                "said in it. The sort and group button beside it sorts by Recent, "
+                "Oldest, Name or Most messages, groups by day, week or folder, and "
+                "keeps pinned chats first; the choice is kept. Each chat's menu "
+                "renames, pins, archives or deletes it. A folder is set by sentence only. In "
+                "Chat, say sort my chats by name, group my chats by "
+                "week, rename the chat about Paris to Trip plans, pin the chat "
+                "about Paris or move the chat about Paris to the folder Trips; "
+                "each waits for Confirm and has Undo. All in Library opens every chat."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

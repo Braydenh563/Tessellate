@@ -28,6 +28,7 @@ from tessellate.ai.tools.tool_learn import RESTORE_LINK_REASONS, _audit_link_rea
 from tessellate.ai.tools.tool_path import _path_between
 from tessellate.ai.tools.tool_read import _calculate, _check_answer, _count_notes, _find_similar_notes, _get_current_time, _get_note_tool, _list_categories, _list_notes, _list_tags, _notebook_overview, _notebook_structure, _propose_act, _read_text, _related_notes, _search_help, _search_notes, _summarize_notes
 from tessellate.ai.tools.tool_write import _complete_reminder, _create_note, _delete_note, _delete_tag, _edit_note, _link_notes, _list_reminders, _pin_note, _rename_tag, _restore_note, _set_reminder, _tag_note, _unlink_notes, link_type_description
+from tessellate.ai.tools.tool_chats import EDIT_CHATS
 from tessellate.ai.tools.tool_skills import _delete_skill, _search_chat_history, _verify_block
 from tessellate.ai.tools.tool_web import _read_url, _web_search
 
@@ -993,6 +994,7 @@ TOOLS: dict[str, ToolSpec] = {
             _delete_skill,
             destructive=True,
         ),
+        EDIT_CHATS,
         ToolSpec(
             "search_help",
             #: Short on purpose: every tool's schema must fit a 32k window

@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, anchor_acts, board_acts, find_topic, library_acts, note_recency, object_acts, parity_acts, reminder_parser, surface_acts, task_acts, when
+from tessellate.ai import address, anchor_acts, board_acts, chat_acts, find_topic, library_acts, note_recency, object_acts, parity_acts, reminder_parser, surface_acts, task_acts, when
 from tessellate.ai import act_registry, act_steps, recognise
 from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
@@ -47,12 +47,13 @@ from tessellate.ai.filed_name import filed_listing
 VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
+    "chat_sort": "change", "chat_group": "change", "chat_rename": "rename", "chat_pin": "pin", "chat_folder": "file",
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "delete_document": "delete", "delete_skill": "delete", "board_card": "add", "make_map": "create", "board_shape": "add", "board_library": "add", "board_link": "link", "board_move": "move", "board_words": "rename", "board_remove": "delete", "map_node": "add", "map_link": "link", "make_diagram": "create", "make_document": "create", "make_skill": "add", "check_learned": "open", "remember": "add", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
     "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "reschedule": "snooze", "archive": "file", "unarchive": "file", "tag_many": "tag", "make_board": "create", "set_name": "rename", "set_theme": "change", "summarise": "summarise", "find": "find", "similar": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "reschedule", "set_name"}) | surface_acts.INTENTS | library_acts.INTENTS | board_acts.INTENTS
+WRITE_INTENTS = frozenset({"chat_sort", "chat_group", "chat_rename", "chat_pin", "chat_folder", "reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "reschedule", "set_name"}) | surface_acts.INTENTS | library_acts.INTENTS | board_acts.INTENTS | chat_acts.INTENTS
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "similar", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -75,7 +76,7 @@ def __getattr__(name: str) -> str:
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
      "pin_note", "archive_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
-     "delete_document", "restore_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme", "save_user_preference", "drop_preference",
+     "delete_document", "restore_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme", "save_user_preference", "drop_preference", "edit_chats",
      "add_board_shape", "place_library_item", "add_whiteboard_link", "move_board_item", "edit_board_item", "add_map_node", "link_map_nodes", "generate_diagram", "check_learned", "drop_board_link", "drop_map_node", "undo_learned_check", "restore_link_reasons"}
 )
 
@@ -1327,9 +1328,9 @@ def _slipped(tidy: str, now: datetime, locale: str | None) -> dict | None:
         return read(guided, now, locale)
     #: A real word swapped for another ("oven" for "open", "last" for "list") is kept only when it makes one of the
     #: parity acts' own sentences; "oven timer" and "my last three notes" are questions, not the Clock or a list.
-    real = question_noise.guided(tidy, takes, real_to=parity_acts.words() | board_acts.words())
+    real = question_noise.guided(tidy, takes, real_to=parity_acts.words() | board_acts.words() | chat_acts.words())
     parsed = read(real, now, locale) if real else None
-    return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | board_acts.INTENTS | {"untag"} else None
+    return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | board_acts.INTENTS | chat_acts.INTENTS | {"untag"} else None
 
 #: Acts named by a noun the broad acts would swallow on a slip: "delete the
 #: skull Weekly tidy" is the skill, not a note called "skull Weekly tidy";
@@ -1415,7 +1416,7 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
 
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), lambda t: library_acts.read(t, _one_target), board_acts.read, lambda t: surface_acts.read(t, _one_target), anchor_acts.read, task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), lambda t: library_acts.read(t, _one_target), board_acts.read, chat_acts.read, lambda t: surface_acts.read(t, _one_target), anchor_acts.read, task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _similar, _summarise, _navigate, _find):
         found = reader(command)
@@ -1938,13 +1939,15 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
     raise ValueError(intent)
 
 
-_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS | surface_acts.INTENTS | library_acts.INTENTS | board_acts.INTENTS
+_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS | surface_acts.INTENTS | library_acts.INTENTS | board_acts.INTENTS | chat_acts.INTENTS
 
 
 def _plan_object(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """The acts on a kind of thing (a tag, a category, a note's text): `object_acts` and `parity_acts`."""
     if parsed["intent"] in board_acts.INTENTS:
         return board_acts.plan(session, parsed, _parity_helpers())
+    if parsed["intent"] in chat_acts.INTENTS:
+        return chat_acts.plan(session, parsed, _parity_helpers())
     if parsed["intent"] in library_acts.INTENTS:
         return library_acts.plan(session, parsed, note_ids, _parity_helpers())
     if parsed["intent"] in surface_acts.INTENTS:

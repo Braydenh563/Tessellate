@@ -4654,8 +4654,8 @@ def test_the_chat_sidebar_head_is_one_quiet_row():
     """INBOX 578, the owner: "this section in the chat sidebar looks awkward"
     (a filled 81px "+ New" in the head and a 144px "Recent" sort field alone
     on a row under it). The Notes sidebar's shape: the title, then quiet icon
-    controls in the one head row. The sort is the icon-and-caret picker
-    (`data-select-icon`), New chat a ghost icon button, so the tab's one
+    controls in the one head row. The sort and grouping are one `kebabMenu`
+    (`#chat-sidebar-view`, chat-order.js), New chat a ghost icon button, so the tab's one
     filled action stays Send; and the row under the head is the list.
     `scratchpad/ui-sweeps/gl1005-chathead.js` measures it."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -4666,7 +4666,8 @@ def test_the_chat_sidebar_head_is_one_quiet_row():
     #: 2026-10-10: "should that no chats text be at the top not the bottom??").
     between = aside[aside.index('<div id="conv-empty"') : aside.index('<ul id="conversation-list">')]
     assert between.rstrip().endswith("</div>") and between.count("<") == 2
-    assert 'id="chat-sidebar-sort"' in head and 'data-select-icon="ph-sort-descending"' in head
+    #: The sort became a `kebabMenu` that also groups (chat-order.js, L-world-class-180): its slot, not a native select.
+    assert 'id="chat-sidebar-view"' in head and "<select" not in head
     new = re.search(r'<button id="chat-new"[^>]*>', head).group(0)
     assert 'class="ghost small icon-only"' in new and 'aria-label="New chat"' in new
     assert head.rstrip().endswith("</div>")

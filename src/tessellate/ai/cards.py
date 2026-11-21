@@ -347,6 +347,7 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     "check_learned": (),  # counts and the rows' own words, which What it learned lists
     "search_chat_history": (),  # conversations, which the Library lists
     "list_skills": (),  # skills, which Settings lists
+    "edit_chats": (),  # a sort, a rename or a folder, said in the card's own label
     "save_skill": (),
     "delete_skill": (),
     "get_current_time": (),

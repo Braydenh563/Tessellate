@@ -1318,6 +1318,21 @@ BUILTIN_SKILLS: list[dict] = [
     },
 
     {
+        "name": "Tidy my chat list",
+        "prompt": "Organise my saved chats: {{how}}.",
+        "description": "Sorts, groups, renames, pins or files saved chats as you describe.",
+        "when_to_use": "When I ask you to sort, group, rename, pin or file my saved chats.",
+        #: `count_notes` is only here to be verified with: this skill changes the chat list and no note.
+        "tools": ["edit_chats", "count_notes"],
+        "verify": {"tool": "count_notes", "expect": {"unchanged": True}},
+        "inputs": [{"name": "how", "label": "How should they be organised?", "required": True}],
+        "steps": [
+            _step("Run the edit_chats tool once for each change I asked for.", "tool_called", "edit_chats"),
+            _step("Say what changed in the chat list, and that Undo puts it back.", "answer_only"),
+        ],
+    },
+
+    {
         "name": "Find where I disagreed with myself",
         "prompt": (
             "Look for places where my own notes contradict each other, a decision I "

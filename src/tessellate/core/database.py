@@ -1315,6 +1315,9 @@ class Conversation(Base, WorkspaceMixin):
     # so the thread you keep coming back to sinks under a week of one-offs.
     # (Added by the auto-migrator on existing databases, defaulting to false.)
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: A named group the chat sits in ("Trips"), blank for none (L-world-class-180): the
+    #: sidebar's Group by folder, and the agent's `edit_chats`. Added by the auto-migrator.
+    folder: Mapped[str] = mapped_column(String(60), default="")
     # Kept, but out of the way, same shape as Entry.archived_at (BACKLOG
     # §30b), extended here to chats as that item's own named remaining
     # scope. Never implies deletion; added by the auto-migrator, defaulting
