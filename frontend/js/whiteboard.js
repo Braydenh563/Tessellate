@@ -783,7 +783,9 @@ function wbCullNow(transform, size) {
     return x + bw + pad < x0 || x - pad > x1 || y + bh + pad < y0 || y - pad > y1;
   };
   const focused = document.activeElement;
-  for (const el of layer.children) {
+  //: A dragged branch's topics sit in its layer for the gesture (`wbMapDragLayer.open`).
+  const dragLayer = wbMapDragLayer.live?.layer?.el;
+  for (const el of dragLayer ? [...layer.children, ...dragLayer.children] : layer.children) {
     const d = el.__data__;
     if (!d || typeof d.x !== "number") continue;
     const keep =
@@ -902,7 +904,6 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-sketch-rotate-handle",
   ".wb-rotate-handle-stem",
 ];
-let wbInvZoomSheet = null;
 let wbInvZoomValue = "1";
 
 //: **The board's layers are rasterised again once a zoom has settled**
@@ -935,11 +936,11 @@ function wbPublishInvZoom(el, inv) {
     el.style.setProperty("--wb-inv-zoom", inv);
     return;
   }
-  if (!wbInvZoomSheet) {
-    wbInvZoomSheet = new CSSStyleSheet();
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, wbInvZoomSheet];
+  if (!wbPublishInvZoom.sheet) {
+    wbPublishInvZoom.sheet = new CSSStyleSheet();
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, wbPublishInvZoom.sheet];
   }
-  wbInvZoomSheet.replaceSync(`${WB_INV_ZOOM_GRIPS.join(", ")} { --wb-inv-zoom: ${inv}; }`);
+  wbPublishInvZoom.sheet.replaceSync(`${WB_INV_ZOOM_GRIPS.join(", ")} { --wb-inv-zoom: ${inv}; }`);
 }
 
 function wbGridType() {
@@ -8385,10 +8386,14 @@ function wbApplyBulkMove(origin, dx, dy) {
     } else {
       entry.item.x = entry.x + dx;
       entry.item.y = entry.y + dy;
+      //: A branch in its layer moves as one (`wbMapDragLayer.open`): the data
+      //: moves, the elements are carried.
+      if (origin.layer) continue;
       const el = wbBulkMoveElement(entry, WB_SELECTOR_BY_KIND[entry.kind](entry.id));
       if (el) el.style.transform = wbItemTransform(entry.item);
     }
   }
+  if (origin.layer) wbMapDragLayer.move(origin.layer, dx, dy);
   //: **Every line after every move, never between them.** The lines were
   //: redrawn inside the loop above, member by member, and a tree line is
   //: claimed by whichever of its two ends the capture reached first
@@ -18522,7 +18527,12 @@ async function initWhiteboard() {
   function wbEdgePanTick() {
     wbEdgePan.frame = 0;
     if (!wbEdgePanWanted() || !document.body.contains(containerEl)) return;
-    const r = containerEl.getBoundingClientRect();
+    //: The gesture's own box (`wbCanvasOriginRect`, measured at the press):
+    //: this frame runs after the move wrote every moved item, and a fresh
+    //: measure here forced a restyle of the board each frame (L-mindmap-17,
+    //: 1.3s of a 2.7s 200-topic branch drag).
+    const r = wbCanvasOriginRect();
+    if (!r) return;
     const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
     const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
     const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
@@ -22653,6 +22663,9 @@ async function wbDeleteObject(d) {
 }
 
 function renderWhiteboard() {
+  //: A render places every topic from its data; a dragged branch's layer
+  //: would carry them a second time, so it is undone first.
+  if (wbMapDragLayer.live) wbMapDragLayer.close();
   wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
   //: from the previous set is about to describe something that is gone.
@@ -24098,6 +24111,10 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     // line above finds none of them: collected here for the same reason and
     // at the same moment.
     d._mapEdges = wbMapEdgesFor(d.id);
+    //: The canvas box for the whole gesture, measured at the press before any
+    //: move has written: the drop target, the cull and the edge pan read it
+    //: after a step's writes, where a fresh measure forces a restyle.
+    wbCanvasOrigin();
     // `.raise()` deliberately does NOT happen here, moved to objDragMove.
     // See the matching comment on the card drag's own `dragging` for the
     // real bug this caused (raising mid-`start` breaks the browser's click
@@ -24135,6 +24152,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       d._bulkOrigin = wbDragIsBulkMove("object", d.id)
         ? wbCaptureBulkMoveOrigin(wbMultiKey("object", d.id))
         : wbMapBranchDragOrigin(d, d._dragAlone) || wbFrameDragOrigin(d, d._dragAlone);
+      if (d._bulkOrigin?.branchOf === d.id) wbMapDragLayer.open(d._bulkOrigin, d, this.closest(".wb-object"));
     }
     //: Once per gesture, not once per move: the card drag beside this one
     //: took the same fix (INBOX 114, and see its own comment). `raise()`
@@ -24192,7 +24210,8 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     } else {
       wbClearAlignmentGuides();
     }
-    d3.select(this.closest(".wb-object")).style("transform", wbItemTransform(d));
+    //: In a branch's layer the grabbed topic rides the layer's translate too.
+    if (!d._bulkOrigin?.layer) d3.select(this.closest(".wb-object")).style("transform", wbItemTransform(d));
     //: The branch first and this topic's own lines after it, for the reason
     //: `wbApplyBulkMove` gives: a line drawn before its other end has moved
     //: is a line a frame behind.
@@ -24216,6 +24235,8 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
   async function objDragEnd(event, d) {
     if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
     if (window.currentTool?.startsWith("link-")) { const r = dragEndNode.call(this, event, d); d._linkKind = null; return r; }
+    //: The branch's layer first: everything after this reads the topics' own elements.
+    if (d._bulkOrigin?.layer) wbMapDragLayer.close(d._bulkOrigin);
     //: Dropped on the delete target: put back, then deleted (INBOX 660).
     wbTrashTake(d._gesture, "object", d);
     d._linkedSketches = null;

@@ -803,7 +803,8 @@
    A map's tree line has nothing measured on it, so it is simply not
    displayed. */
 #wb-html-layer > .wb-object,
-#wb-html-layer > .wb-card {
+#wb-html-layer > .wb-card,
+.wb-map-drag-layer > .wb-object {
   contain-intrinsic-size: auto 250px auto 44px;
 }
 /* **A long list's rows off screen are not styled either** (INBOX 400).
@@ -1998,6 +1999,13 @@ body.scroll-top-visible .skills-split > .tab-main {
    this they stacked vertically and every card sat below the canvas. */
 .wb-svg-layer,
 .wb-html-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+/* A dragged branch, carried as one (`wbMapDragLayer.open`, L-mindmap-17): at
+   the layer's own origin, so its topics' transforms mean what they meant. */
+.wb-map-drag-layer {
   position: absolute;
   left: 0;
   top: 0;
