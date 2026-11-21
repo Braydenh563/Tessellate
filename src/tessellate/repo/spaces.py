@@ -31,3 +31,17 @@ def counts(session: Session, space_id: str) -> dict[str, int]:
         notes = session.query(func.count(Entry.id)).filter(Entry.workspace_id == space_id).scalar() or 0
         documents = session.query(func.count(Document.id)).filter(Document.workspace_id == space_id).scalar() or 0
     return {"notes": notes, "documents": documents}
+
+
+def shown(session: Session, space_id: str) -> dict[str, int]:
+    """What the space shows, for the dashboard's own line: saved notes, documents and
+    boards, none of them counting the bin (`counts` is what a delete would take, the
+    bin and the boards' companion notes included)."""
+    with impersonate_workspace(session, "all"):
+        def entries(board: bool) -> int:
+            return session.query(func.count(Entry.id)).filter(
+                Entry.workspace_id == space_id, Entry.is_board.is_(board), Entry.is_deleted.is_(False)
+            ).scalar() or 0
+
+        documents = session.query(func.count(Document.id)).filter(Document.workspace_id == space_id).scalar() or 0
+        return {"notes": entries(False), "documents": documents, "boards": entries(True)}

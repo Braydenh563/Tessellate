@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     Boolean,
+    or_,
+    true,
     DateTime as SaDateTime,
     ForeignKey,
     Integer,
@@ -215,9 +217,21 @@ def _add_workspace_filter(execute_state):
             execute_state.statement = execute_state.statement.options(
                 with_loader_criteria(
                     WorkspaceMixin,
-                    lambda cls: cls.workspace_id == workspace_id,
+                    lambda cls: true() if cls is EntryLink else cls.workspace_id == workspace_id,
                     include_aliases=True
-                )
+                ),
+                # A link is the user's own and is never dropped by a move
+                # (L-world-class-22): it reads from either end's space, so a
+                # link between two spaces shows on both notes.
+                with_loader_criteria(
+                    EntryLink,
+                    lambda cls: or_(
+                        cls.workspace_id == workspace_id,
+                        cls.source_entry_id.in_(select(Entry.id).where(Entry.workspace_id == workspace_id)),
+                        cls.target_entry_id.in_(select(Entry.id).where(Entry.workspace_id == workspace_id)),
+                    ),
+                    include_aliases=True
+                ),
             )
         elif workspace_id == "all":
             # "All spaces" means every space that has not opted out. A space

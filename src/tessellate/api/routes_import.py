@@ -168,6 +168,10 @@ def import_report_page(report_id: str) -> dict:
 
 @router.get("/export/folder")
 def export_notebook_folder(background_tasks: BackgroundTasks, session: Session = Depends(get_session)) -> FileResponse:
+    return folder_zip(session, background_tasks, "tessellate-notebook.zip", "folder")
+
+
+def folder_zip(session: Session, background_tasks: BackgroundTasks, filename: str, detail: str) -> FileResponse:
     """The whole notebook as a markdown folder in a zip (WORLD_CLASS 25b):
     every note with its sidecar and attachments, documents, boards and an
     `index.json`. Written to a temporary file, not memory, because the
@@ -181,6 +185,6 @@ def export_notebook_folder(background_tasks: BackgroundTasks, session: Session =
         counts = done.manifest["counts"]
         run.result = f"exported {counts['notes']} notes, {counts['attachments']} attachments" + (
             f", {counts['missing']} attachment files missing" if counts["missing"] else "")
-    manager.log_action(session, "exported", "data", detail="folder")
+    manager.log_action(session, "exported", "data", detail=detail)
     session.commit()
-    return FileResponse(tmp_path, media_type="application/zip", filename="tessellate-notebook.zip", background=background_tasks)
+    return FileResponse(tmp_path, media_type="application/zip", filename=filename, background=background_tasks)

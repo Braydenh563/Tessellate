@@ -1184,6 +1184,14 @@ function entryItem(entry, options = {}) {
       //: KG3: a kind of link is named on the chip from this end ("Has part"
       //: on the whole, "Part of" on the piece); "Related" says nothing.
       const kindName = link.link_label && link.link_type !== "related" ? link.link_label : "";
+      //: A move keeps every link, so the other note may live in another space;
+      //: its chip says which (L-world-class-22).
+      if (link.space_name) {
+        const where = document.createElement("span");
+        where.className = "link-kind";
+        where.textContent = link.space_name;
+        linkChip.insertBefore(where, linkPreview);
+      }
       if (kindName) {
         const kind = document.createElement("span");
         kind.className = "link-kind";
@@ -1192,7 +1200,7 @@ function entryItem(entry, options = {}) {
       }
       linkChip.title = (reasonNote
         ? `${wayRound}: ${label}\nReason: ${reasonNote}`
-        : `${wayRound}: ${label}`) + (kindName ? `\nKind: ${kindName}` : "");
+        : `${wayRound}: ${label}`) + (kindName ? `\nKind: ${kindName}` : "") + (link.space_name ? `\nIn the space ${link.space_name}` : "");
       //: **One chip and one menu per connection** (INBOX 319, the owner: "the
       //: buttons in these connections in notes need a redesign and look").
       //: Edit reason, clear reason and unlink were three round buttons of one

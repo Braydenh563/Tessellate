@@ -502,8 +502,25 @@ const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
+  //: "Client work: 12 notes, 2 documents, 1 board" for the open space, from
+  //: `GET /spaces/{id}/summary`.
+  const dashSpaceLine = async (id) => {
+    if (!spacesCache.length) await loadSpaces().catch(() => {});
+    const name = spacesCache.find((s) => s.id === id)?.name;
+    if (!name) return null;
+    const counts = await apiJson(`/spaces/${encodeURIComponent(id)}/summary`, { silent: true });
+    const part = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+    const held = [part(counts.notes || 0, "note"), part(counts.documents || 0, "document")];
+    if (counts.boards) held.push(part(counts.boards, "board"));
+    return `${name}: ${held.join(", ")}`;
+  };
   dashLine.bucket = dashLineDraw();
-  const [stats, reminders, patterns, composed] = await Promise.all([
+  //: A space's own line (L-world-class-22): its name and what it holds, one
+  //: fact in this line (no new box, so the first widget stays where it was).
+  //: Not in "All spaces", which is no one space.
+  const spaceId = activeSpaceId();
+  const spaceLine = spaceId === SPACE_ALL ? Promise.resolve(null) : dashSpaceLine(spaceId).catch(() => null);
+  const [stats, reminders, patterns, composed, space] = await Promise.all([
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
@@ -514,10 +531,12 @@ async function renderDashSubmessage() {
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
     dashTodayLine(dashLine.bucket).catch(() => ""),
+    spaceLine,
   ]);
   const bits = [];
+  if (space) bits.push(["space", space]);
   if (composed) bits.push(["notes", composed]);
-  else if (stats) {
+  else if (stats && !space) {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }

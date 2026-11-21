@@ -428,7 +428,11 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
-            "A space can be private: Private in New space or Edit space seals everything in it."
+            "A space can be private: Private in New space or Edit space seals everything in it. "
+            "In a space the dashboard line under the greeting names it and counts its notes, documents and boards "
+            "(not in All spaces). Export this space, in Edit space, downloads that space's notes, documents and boards "
+            "as a zip with nothing from another space; a locked private space asks to unlock first. "
+            "Moving notes to another space keeps every link: the link's chip names the other space, and both notes list it."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
