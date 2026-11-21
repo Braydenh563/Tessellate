@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Agent note summaries name a note's extra categories (L-world-class-695): `_note_summary` adds `also_in` only when a note has one (`list_notes` and its kin fetch them in one query); tests/test_note_memberships.py.
 Manage categories counts also-in notes (L-world-class-694): a note also put in a category counts there as well as in its own, as the list filtered by that category shows it (`manager_categories.all_categories`); tests/test_note_memberships.py.
 Search understands `group:` (L-world-class-693): `group:"Trip plan"` in the finder and `/search` keeps the notes in every group named, as the Notes box already did (`query._take_groups`, `engine._by_group`); tests/test_note_memberships.py.
 - Folder import keeps groups and extra categories (L-world-class-692): a note's sidecar `groups` and `also_in` are put back on import (`export_folder._make_entry`), so a folder round trip no longer drops them; tests/test_folder_roundtrip.py.

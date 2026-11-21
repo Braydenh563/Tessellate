@@ -263,7 +263,7 @@ def _readable(entry: Entry) -> str:
 
 
 def _note_summary(
-    session: Session, entry: Entry, chars: int = PREVIEW_CHARS, dates: list | None = None
+    session: Session, entry: Entry, chars: int = PREVIEW_CHARS, dates: list | None = None, also_in: list | None = None
 ) -> dict:
     """What the model gets back about a note, enough to talk about it
     and to reference it in follow-up tool calls.
@@ -272,7 +272,7 @@ def _note_summary(
     `_summarize_notes`) pass in a pre-fetched, batched lookup instead of
     paying one `entry_dates` query per row: the N+1 ROADMAP.md Tier 1 item
     8 named. Left `None` for the single-note callers, which still fetch it
-    themselves below.
+    themselves below; `also_in` the same, from `memberships.also_in_bulk`.
     """
     text = _readable(entry)
     clipped = _clip(text, chars)
@@ -285,6 +285,11 @@ def _note_summary(
         "pinned": entry.pinned,
         "created_at": entry.created_at.isoformat() if entry.created_at else None,
     }
+    #: Where else it is filed (L-world-class-695); the key is left out when there is none, so no note pays for it.
+    if also_in is None:
+        also_in = memberships.also_in_bulk(session, [entry]).get(entry.id, [])
+    if also_in:
+        summary["also_in"] = also_in
     # What the note's own "tomorrow" meant on the day it was written (§10A).
     # Without this the model reads "the deadline is next Friday" in a note
     # from March and answers about the Friday coming up.
