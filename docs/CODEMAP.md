@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2792, CSS sections 529, backend routes 714, backend modules 10916, test files 2886, tests 22645, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8509, frontend ids 2792, CSS sections 529, backend routes 714, backend modules 10916, test files 2886, tests 22647, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8509)
 
@@ -2080,8 +2080,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:846 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:874 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1498 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1473 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1526 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1501 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
@@ -28133,7 +28133,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22645)
+## Tests (22647)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28235,7 +28235,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_acts_1589.py | 6 |
 | tests/test_atlas_arm_over_hair_l461.py | 1 |
 | tests/test_atlas_blink_both_eyes_1644.py | 3 |
-| tests/test_atlas_breath_687.py | 8 |
+| tests/test_atlas_breath_687.py | 10 |
 | tests/test_atlas_carry_and_holds_1589.py | 3 |
 | tests/test_atlas_composite_1101.py | 5 |
 | tests/test_atlas_cover_1587.py | 8 |
