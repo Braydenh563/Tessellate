@@ -2150,7 +2150,7 @@ async function openConversation(id) {
       //: …and the step group, so a replayed turn does not reopen with
       //: "Working: 3 steps" over a conversation that finished yesterday.
       handles.timeline.finish?.();
-      // Rebuild the metadata line. Reported in IDEAS.md as "chat message
+      // Rebuild the metadata line. Reported in the retired IDEAS.md as "chat message
       // metadata disappears on reload": it was only ever built from the live
       // stream, so reopening a chat showed answers with nothing to say which
       // model wrote them or what they cost. Turns saved before this stored no

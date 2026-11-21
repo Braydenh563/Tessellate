@@ -80,4 +80,4 @@ Findings are LEDGER rows (`python scripts/ledger.py add`, one per finding, plan 
 3. What is already good (one line each) and what you could not verify.
 
 Report to the orchestrator in five lines: counts by severity and kind, the
-top five, the file path.
+top five, the row ids.

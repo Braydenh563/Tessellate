@@ -812,7 +812,7 @@ def _thread_bands(notes: list[dict]) -> list[dict]:
     """One lane per thread, a root note and everything that continues it
     (`Entry.parent_id`), the one grouping a grid genuinely cannot show at
     all: a conversation with itself, spread across days or months (§87.6: 
-    IDEAS.md's "branching line with offshoots", joined with the thread
+    the retired IDEAS.md's "branching line with offshoots", joined with the thread
     structure `parent_id` already stores). A parent outside the currently
     loaded window (out of the date range, private, or deleted) makes its
     child a root of its own rather than a second query reaching further

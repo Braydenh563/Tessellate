@@ -65,7 +65,7 @@
   // The sketch reads light-or-dark ONCE, when it is built, and paints its wash
   // from that. Nothing rebuilt it when the mode changed, so toggling to dark left
   // the one panel on the dashboard still wearing the light background until you
-  // pressed Regenerate: reported, and listed in IDEAS.md.
+  // pressed Regenerate: reported, and listed in the retired IDEAS.md.
   let artHolder = null;
 
   // Stable 0–359 hue from a category name, so a category keeps its colour.

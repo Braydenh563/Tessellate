@@ -55,7 +55,7 @@ class TurnBody(BaseModel):
     # long it took, prompt→output counts, how full the window got, whether
     # those counts were measured or estimated.
     #
-    # Reported in IDEAS.md as "chat message metadata disappears on reload".
+    # Reported in the retired IDEAS.md as "chat message metadata disappears on reload".
     # `tokens` above is a sum, which is the right shape for the conversation
     # total and the wrong one for the per-message line, you cannot rebuild
     # "3.9k of 8k, 12 tok/s, llama3.2" from a single integer, so on reload the

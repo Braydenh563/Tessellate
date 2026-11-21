@@ -139,7 +139,7 @@ def test_the_latest_answer_reaches_a_follow_up_nearly_whole():
     assert len(answers[-1]) == librarian.LAST_ANSWER_CHARS
 
 
-# --- surviving a reload (IDEAS.md: "metadata disappears on reload") ----------
+# --- surviving a reload (the retired IDEAS.md: "metadata disappears on reload") ----------
 
 
 def test_a_saved_turn_keeps_the_whole_metadata_line(ai_client):
