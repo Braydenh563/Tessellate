@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11164, test files 2891, tests 22877, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11164, test files 2891, tests 22877, plan headings 685, app scripts 29, boot scripts 38, script files 311.
 
 ## Frontend functions (8538)
 
@@ -106,18 +106,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:222 |
-| `charactersLost` | frontend/js/lazy-entries.js:231 |
-| `emblemHead` | frontend/js/lazy-entries.js:239 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:268 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:301 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:262 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:289 |
-| `onDomReady` | frontend/js/lazy-entries.js:312 |
-| `plainHead` | frontend/js/lazy-entries.js:245 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:253 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:324 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:348 |
+| `afterCharacters` | frontend/js/lazy-entries.js:236 |
+| `charactersLost` | frontend/js/lazy-entries.js:245 |
+| `emblemHead` | frontend/js/lazy-entries.js:253 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:282 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:315 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:276 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:303 |
+| `onDomReady` | frontend/js/lazy-entries.js:326 |
+| `plainHead` | frontend/js/lazy-entries.js:259 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:267 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:338 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:362 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -404,67 +404,53 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:491 |
 
-### frontend/js/chat.js (57)
+### frontend/js/chat.js (43)
 
 | Name | File:line |
 |---|---|
 | `CLIP_LIMITS` | frontend/js/chat.js:55 |
-| `aiWritingTrace` | frontend/js/chat.js:1342 |
-| `applyCompression` | frontend/js/chat.js:1225 |
-| `askAboutPage` | frontend/js/chat.js:636 |
+| `aiWritingTrace` | frontend/js/chat.js:1012 |
+| `applyCompression` | frontend/js/chat.js:895 |
 | `atlasSuggestion` | frontend/js/chat.js:202 |
-| `batteryModeOn` | frontend/js/chat.js:1267 |
+| `batteryModeOn` | frontend/js/chat.js:937 |
 | `bodyTextWithCitations` | frontend/js/chat.js:87 |
 | `chatEmptySettle` | frontend/js/chat.js:223 |
-| `chatTranscriptText` | frontend/js/chat.js:1156 |
-| `citeWebPage` | frontend/js/chat.js:693 |
+| `chatTranscriptText` | frontend/js/chat.js:826 |
 | `clearChatEmptyState` | frontend/js/chat.js:352 |
-| `clearWebSearchHistory` | frontend/js/chat.js:626 |
 | `clipFor` | frontend/js/chat.js:61 |
-| `closeWebReader` | frontend/js/chat.js:422 |
 | `compactTokens` | frontend/js/chat.js:101 |
-| `compressChatContext` | frontend/js/chat.js:1185 |
-| `compressSizeText` | frontend/js/chat.js:1206 |
+| `compressChatContext` | frontend/js/chat.js:855 |
+| `compressSizeText` | frontend/js/chat.js:876 |
 | `copyToClipboard` | frontend/js/chat.js:152 |
 | `copyViaTextarea` | frontend/js/chat.js:112 |
-| `fillPersonaMark` | frontend/js/chat.js:959 |
+| `fillPersonaMark` | frontend/js/chat.js:629 |
 | `flashCopied` | frontend/js/chat.js:134 |
-| `loadResponseModes` | frontend/js/chat.js:908 |
-| `loadWebSearchHistory` | frontend/js/chat.js:615 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1100 |
-| `openWebReader` | frontend/js/chat.js:653 |
-| `personaOptions` | frontend/js/chat.js:976 |
-| `progressMotionWanted` | frontend/js/chat.js:1294 |
-| `progressPhaseText` | frontend/js/chat.js:1538 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:572 |
+| `loadResponseModes` | frontend/js/chat.js:578 |
+| `mountChatActionsMenu` | frontend/js/chat.js:770 |
+| `personaOptions` | frontend/js/chat.js:646 |
+| `progressMotionWanted` | frontend/js/chat.js:964 |
+| `progressPhaseText` | frontend/js/chat.js:1208 |
 | `regenerateFromBubble` | frontend/js/chat.js:190 |
 | `regenerateLastAnswer` | frontend/js/chat.js:195 |
-| `renderChatContextMeter` | frontend/js/chat.js:1054 |
+| `renderChatContextMeter` | frontend/js/chat.js:724 |
 | `renderChatEmptyState` | frontend/js/chat.js:233 |
-| `renderChatTurnCount` | frontend/js/chat.js:1080 |
-| `renderChatUsage` | frontend/js/chat.js:1037 |
-| `renderCompressionState` | frontend/js/chat.js:1238 |
-| `renderModelContextBox` | frontend/js/chat.js:766 |
-| `renderModelHealthNote` | frontend/js/chat.js:870 |
-| `renderModelSpec` | frontend/js/chat.js:798 |
-| `renderWebPageAttachment` | frontend/js/chat.js:720 |
-| `renderWebPanelMenu` | frontend/js/chat.js:510 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1456 |
-| `setResponseMode` | frontend/js/chat.js:937 |
-| `setWebEngineDot` | frontend/js/chat.js:496 |
-| `showCompressReview` | frontend/js/chat.js:1213 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1484 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1506 |
-| `stopWebRequest` | frontend/js/chat.js:407 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1029 |
-| `toggleWebPanel` | frontend/js/chat.js:435 |
-| `typingDots` | frontend/js/chat.js:1560 |
-| `webPageMarkdown` | frontend/js/chat.js:660 |
-| `webReaderIsOpen` | frontend/js/chat.js:418 |
-| `webRequestEnd` | frontend/js/chat.js:397 |
-| `webRequestStart` | frontend/js/chat.js:388 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1391 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1424 |
+| `renderChatTurnCount` | frontend/js/chat.js:750 |
+| `renderChatUsage` | frontend/js/chat.js:707 |
+| `renderCompressionState` | frontend/js/chat.js:908 |
+| `renderModelContextBox` | frontend/js/chat.js:436 |
+| `renderModelHealthNote` | frontend/js/chat.js:540 |
+| `renderModelSpec` | frontend/js/chat.js:468 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1126 |
+| `setResponseMode` | frontend/js/chat.js:607 |
+| `showCompressReview` | frontend/js/chat.js:883 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1154 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1176 |
+| `togglePersonaPrompt` | frontend/js/chat.js:699 |
+| `typingDots` | frontend/js/chat.js:1230 |
+| `webPageMarkdown` | frontend/js/chat.js:391 |
+| `webReaderIsOpen` | frontend/js/chat.js:377 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1061 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1094 |
 
 ### frontend/js/chat-agent.js (40)
 
@@ -8408,22 +8394,41 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webFollowUp` | frontend/js/web-clip.js:345 |
 | `webFollowUpRefers` | frontend/js/web-clip.js:341 |
 
-### frontend/js/web-results.js (12)
+### frontend/js/web-panel.js (15)
 
 | Name | File:line |
 |---|---|
-| `bookmarkWebResult` | frontend/js/web-results.js:188 |
-| `buildWebResultRow` | frontend/js/web-results.js:76 |
-| `pushWebSearchHistory` | frontend/js/web-results.js:221 |
-| `renderWebSearchHistory` | frontend/js/web-results.js:240 |
-| `runWebSearch` | frontend/js/web-results.js:372 |
-| `searxngDownRow` | frontend/js/web-results.js:307 |
-| `setWebSearxngRunning` | frontend/js/web-results.js:288 |
-| `startSearxng` | frontend/js/web-results.js:280 |
-| `waitForSearxng` | frontend/js/web-results.js:362 |
-| `webEngineWords` | frontend/js/web-results.js:13 |
-| `webQueryTerms` | frontend/js/web-results.js:63 |
-| `webResultMark` | frontend/js/web-results.js:42 |
+| `askAboutPage` | frontend/js/web-panel.js:283 |
+| `citeWebPage` | frontend/js/web-panel.js:319 |
+| `clearWebSearchHistory` | frontend/js/web-panel.js:273 |
+| `closeWebReader` | frontend/js/web-panel.js:57 |
+| `loadWebSearchHistory` | frontend/js/web-panel.js:262 |
+| `openWebReader` | frontend/js/web-panel.js:300 |
+| `refreshWebSearxngStrip` | frontend/js/web-panel.js:219 |
+| `renderWebPageAttachment` | frontend/js/web-panel.js:346 |
+| `renderWebPanelMenu` | frontend/js/web-panel.js:164 |
+| `setWebEngineDot` | frontend/js/web-panel.js:151 |
+| `stopWebRequest` | frontend/js/web-panel.js:45 |
+| `toggleWebPanel` | frontend/js/web-panel.js:70 |
+| `webEngineWords` | frontend/js/web-panel.js:134 |
+| `webRequestEnd` | frontend/js/web-panel.js:35 |
+| `webRequestStart` | frontend/js/web-panel.js:26 |
+
+### frontend/js/web-results.js (11)
+
+| Name | File:line |
+|---|---|
+| `bookmarkWebResult` | frontend/js/web-results.js:167 |
+| `buildWebResultRow` | frontend/js/web-results.js:55 |
+| `pushWebSearchHistory` | frontend/js/web-results.js:200 |
+| `renderWebSearchHistory` | frontend/js/web-results.js:219 |
+| `runWebSearch` | frontend/js/web-results.js:351 |
+| `searxngDownRow` | frontend/js/web-results.js:286 |
+| `setWebSearxngRunning` | frontend/js/web-results.js:267 |
+| `startSearxng` | frontend/js/web-results.js:259 |
+| `waitForSearxng` | frontend/js/web-results.js:341 |
+| `webQueryTerms` | frontend/js/web-results.js:42 |
+| `webResultMark` | frontend/js/web-results.js:21 |
 
 ### frontend/js/whiteboard-arrange-more.js (15)
 

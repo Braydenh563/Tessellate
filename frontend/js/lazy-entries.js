@@ -3,6 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
+  webPanel: ["/js/web-panel.js"],
   //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
   //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
   boards: [
@@ -133,8 +135,20 @@ Object.assign(LAZY_MODULES, {
   //: The csv and tsv grid, fetched on the first press of Grid (documents-csvgrid.js).
   docCsvGrid: ["/css/doc-csv-grid-lazy.css", "/js/documents-csvgrid.js"],
 });
+//: The web panel's own door (web-panel.js, out of chat.js; L-world-class-571). Closing a panel that was never
+//: opened has nothing to do, so that call does not fetch the file; every other call to it does (the stand-in).
+window.toggleWebPanel = function toggleWebPanelStandIn(show, ...rest) {
+  if (show === false && !lazyFileLoads.has("/js/web-panel.js")) return undefined;
+  return ensureModule("webPanel").then(() => {
+    const real = window.toggleWebPanel;
+    if (typeof real !== "function" || real === toggleWebPanelStandIn) return lazyLoadFailed();
+    return real(show, ...rest);
+  });
+};
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
+  //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
+  webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).
   //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)
   //: cannot be one, and its caller tests `typeof` instead, meaning "no board is open".
