@@ -337,12 +337,11 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
-            "with a Copy button; that client can also read your notes (never "
-            "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. Below it, For an agent "
-            "that runs commands is a SKILL.md to copy: it runs the same tools "
-            "from a shell with tool NAME --json. "
+            "app: a snippet to paste into an MCP client, which can then read "
+            "your notes (never a private one) and your skills as prompts, "
+            "read only until you tick Let that app add and change notes. For "
+            "an agent that runs commands, a SKILL.md runs the same tools from "
+            "a shell (tool NAME --json). "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
