@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the two strict xfails on chat rows L150 and L-timeline-9); the PR 216 work order closed (L-general-33); open_scan skips the PR template form and SQLAlchemy's `deferred=True`.
+- Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).
