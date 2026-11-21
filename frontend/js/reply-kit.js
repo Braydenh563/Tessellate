@@ -605,7 +605,7 @@
       const text = equation ? p.equation() : p.text();
       await ensureModule("mathEditor");
       if (mathEditorWrite(target, text, { plain: !equation })) close();
-      else toast("Couldn't write into that box.", "info");
+      else toast(voiceLine("failed", "write into that box"), "info");
     };
     const act = (kind) => {
       const why = blocked(kind);
@@ -613,7 +613,7 @@
       const p = current();
       if (kind === "copy") {
         if (p.copy) return p.copy();
-        return navigator.clipboard?.writeText(p.text()).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+        return navigator.clipboard?.writeText(p.text()).then(() => toast("Result copied."), () => toast(voiceLine("failed", "copy the result"), "info"));
       }
       if (p.insert) return p.insert();
       return write(kind === "equation");
@@ -999,7 +999,7 @@
     //: An answer is copied from where it is (INBOX 1541); an equation's value line reads "= 3.5" and copies "3.5".
     const copy = smallButton("ph:copy", "Copy the result", () => {
       const text = figure.textContent.replace(/^=\s*/, "");
-      if (text) navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+      if (text) navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast(voiceLine("failed", "copy the result"), "info"));
     });
     copy.classList.add("calc-copy");
     copy.hidden = true;
@@ -1412,7 +1412,7 @@
       again.title = "Put this back in the fields";
       again.addEventListener("click", () => restore(item));
       const text = () => copy(item);
-      const out = smallButton("ph:copy", "Copy this answer", () => navigator.clipboard?.writeText(text()).then(() => toast("Copied."), () => toast("Couldn't copy it.", "info")));
+      const out = smallButton("ph:copy", "Copy this answer", () => navigator.clipboard?.writeText(text()).then(() => toast(voiceLine("done", "Copied")), () => toast(voiceLine("failed", "copy it"), "info")));
       const edit = smallButton("ph:pencil-simple", "Edit this one", () => {
         replacing = item.key;
         editing = true;
@@ -1681,6 +1681,21 @@
       });
       links.before(toggle);
     };
+    //: Ask's cards only (L-chat-58): the notes linked to and like this one, in place under the card.
+    const around = (li) => {
+      if (list.id !== "raw-results" || li.querySelector(":scope > .record-around")) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ghost small disclosure-row record-links-toggle record-around";
+      button.textContent = "Around this note";
+      button.setAttribute("aria-expanded", "false");
+      button.title = "Show the notes linked to this one and the notes like it, here";
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        ensureModule("askCompose").then(() => digestMore.around(li, button)).catch(() => {});
+      });
+      li.append(button);
+    };
     for (const li of list.querySelectorAll(":scope > li[data-id]")) {
       const old = li.querySelector(":scope > .entry-meta");
       if (!li.classList.contains("record-card") && old && byId.has(li.dataset.id)) {
@@ -1718,6 +1733,7 @@
         li.querySelector(":scope > .entry-why")?.remove();
         excerpt(li);
         folded(li);
+        around(li);
       }
       const why = info?.[li.dataset.id]?.why;
       if (why && !li.querySelector(":scope > .record-why")) {
@@ -1771,9 +1787,9 @@
     if (composed) {
       return help
         ? ["From the help", "No model answered: this is the app's own help for what you asked", "help"]
-        : ["From your notes", "Answered from your notes with no model: every sentence comes from a note", "notes"];
+        : ["Atlas's assistant, from your notes", "Atlas's assistant answered from your notes with no model: every sentence comes from a note", "notes"];
     }
-    if (model) return [model, `Answered by ${model}`];
+    if (model) return [`Atlas, ${model}`, `Atlas answered with ${model}`];
     if (engine) return ["Composer", "The app answered this itself, with no model", "engine"];
     return null;
   }

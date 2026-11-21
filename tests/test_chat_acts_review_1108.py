@@ -21,7 +21,6 @@ HEADING = "# 2026-11-08"
 
 @pytest.fixture(autouse=True)
 def _clock(monkeypatch):
-
     pin_clock(monkeypatch, NOW)
 
 

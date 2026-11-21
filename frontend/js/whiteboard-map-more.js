@@ -334,7 +334,7 @@
     try {
       recordings = (await apiJson("/recordings?limit=500")).recordings || [];
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "read your recordings" }), true);
+      toast(error.message || voiceLine("failed", "read your recordings"), true);
       return null;
     }
     if (!recordings.length) {
@@ -377,7 +377,7 @@
     try {
       segments = (await apiJson(`/recordings/${id}/transcript`)).segments || [];
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "read that transcript" }), true);
+      toast(error.message || voiceLine("failed", "read that transcript"), true);
       return;
     }
     const lines = segments.map((seg) => String(seg.text || "").replace(/\s+/g, " ").trim()).filter(Boolean);
@@ -547,7 +547,7 @@
   function wbShapeCopy(node) {
     if (!node) return;
     wbShapeCopied = wbShapePatch(node.data, WB_MAP_STYLE_KEYS);
-    toast("Copied this topic's shape. Choose another topic and paste it.");
+    toast(voiceLine("done", "Copied this topic's shape. Choose another topic and paste it"));
   }
 
   async function wbShapePaste(node) {
@@ -672,7 +672,7 @@
     const { title, body } = wbMapTreeMarkdown([found]);
     const name = `${(title || "branch").replace(/[^\w\- ]+/g, "").trim().slice(0, 60) || "branch"}.md`;
     downloadBlob(new Blob([body ? `# ${title}\n\n${body}\n` : `# ${title}\n`], { type: "text/markdown" }), name);
-    toast(`Saved “${title}” as ${name}.`);
+    toast(voiceLine("done", `Saved “${title}” as ${name}`));
   }
 
 

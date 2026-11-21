@@ -129,7 +129,9 @@ def test_no_network_and_no_app_imports():
         got = imported(f"src/tessellate/ai/{upper}.py")
         assert got <= {"__future__", "re", "datetime", "tessellate.core.lazyre", "tessellate.ai.recognise", "tessellate.ai.recognise_windows"}, (upper, got)
     windows = imported("src/tessellate/ai/recognise_windows.py")
-    assert windows <= {"__future__", "re", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre"}, windows
+    # "holidays" (MIT, offline calendar tables, imported lazily) is the one outside
+    # name allowed: the test guards against network and app imports, and it has neither.
+    assert windows <= {"__future__", "re", "datetime", "typing", "contextlib", "contextvars", "holidays", "tessellate.core.lazyre"}, windows
     assert imported("src/tessellate/core/lazyre.py") <= {"__future__", "re", "threading"}
 
 

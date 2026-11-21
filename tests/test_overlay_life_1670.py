@@ -155,8 +155,13 @@ def test_the_nebula_veil_is_the_same_in_every_frame_of_the_idle_cycle(look: str)
     np = pytest.importorskip("numpy")
 
     s = SpriteSet(look)
-    raw = [s._raw(n) for n in ("stand", "idle0", "idle3", "idle6", "idle9", "blink", "look")]
-    new = [s._load(n) for n in ("stand", "idle0", "idle3", "idle6", "idle9", "blink", "look")]
+    # Intent kept, frames moved (L150): the idle frames hold the tail at the loop's own 24 moments, so frames three
+    # steps apart (idle3 to idle6, idle9 to the blink) differ by the tail's swing outside the body, not by a flickering
+    # veil. The loop plays one step at a time, so the pairs measured are the ones it plays: every idle step in order
+    # (94 masculine, 61 feminine; the raw captures 92 and 53), and the stand, blink and look, which share the tail's start.
+    steps = [f"idle{i}" for i in range(24)]
+    raw = [s._raw(n) for n in steps]
+    new = [s._load(n) for n in steps]
 
     def change(ims) -> float:
         total = 0.0
@@ -166,6 +171,7 @@ def test_the_nebula_veil_is_the_same_in_every_frame_of_the_idle_cycle(look: str)
             total += np.where(core, 0, d).sum() / 255
         return total / len(ims)
 
+    assert change([s._load(n) for n in ("stand", "blink", "look")]) < 200
     before, after = change(raw), change(new)
     # Intent moved 2026-11-04: the shipped frames are now re-rendered from one nebula, so the raw
     # frames are already steady (about 115 against 830 to 1220 for the old capture) and the loader's

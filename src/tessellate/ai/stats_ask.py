@@ -148,12 +148,17 @@ _YES_NO = re.compile(r"^(?:am|are|did|have|has|was|were|do|is) (?:i|we|my)\b")
 
 def _compare(text: str, session: Session, now: datetime, first_day: int) -> StatAnswer:
     if _period(text) == "week":
-        review = ns.week_review(session, now, first_day)
-        here, before = review["this"], review["last"]
-        label_now, label_before = "this week", "last week"
+        this_start = ns.week_start(now, first_day)
+        last_start = this_start - timedelta(days=7)
+        #: Whole days, as the month: Mon to today against Mon to the same weekday.
+        stretch = min(last_start + timedelta(days=(now.date() - this_start.date()).days + 1), this_start)
+        here = _span(session, this_start, now + timedelta(seconds=1))
+        before = _span(session, last_start, stretch)
+        whole = _span(session, last_start, this_start)
+        label_now, label_before = "this week", "the same day last week"
         verdict_text = (
-            f"This week so far you have made {ns._plural(here['notes'], 'note')} and written {ns._plural(here['words'], 'word')}, "
-            f"against {ns._plural(before['notes'], 'note')} and {ns._plural(before['words'], 'word')} in all of last week."
+            f"This week so far you have made {ns._plural(here['notes'], 'note')}, against {before['notes']} by the same day last week "
+            f"({whole['notes']} in all of last week). Words written: {here['words']:,} against {before['words']:,}."
         )
     else:
         this_start, last_start = _month_start(now), _month_start(now, 1)

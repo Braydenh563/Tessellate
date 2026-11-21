@@ -140,9 +140,9 @@ async function guideLand(link) {
   closeOverlaysForChord();
   if (link.section) await openSettingsModal(link.section, link.target || null);
   else await switchTab(link.tab);
-  //: Notes opens on its list; the topics are about writing one.
-  if (link.tab === "notes") showNotesSection("capture");
   const ids = (link.target || (link.section ? "" : GUIDE_TAB_LANDING[link.tab])).split(" ").filter(Boolean);
+  //: Notes opens on its list; the topics are about writing one, unless the control is in the list (L51).
+  if (link.tab === "notes") showNotesSection($(ids[0])?.closest("#browse") ? "browse" : "capture");
   const live = (id) => (guideOnScreen($(id)) ? $(id) : null);
   //: A row hidden on purpose (no model, not the desktop app) is not waited for.
   const onPurpose = ids.every((id) => $(id)?.closest(".hidden, [hidden]"));
@@ -187,7 +187,9 @@ function renderHelpChatMessage(role, content, badges = [], sources = [], system 
     seg.className = "tabs-line popup-kinds help-chat-views";
     seg.setAttribute("role", "tablist");
     seg.setAttribute("aria-label", "Which answer to show");
-    for (const [key, label] of [["ai", `${GUIDE_NAME}'s answer`], ["help", "From the help"]]) {
+    //: Named for what they show, not who wrote it (L-chat-36): the byline
+    //: badge is the one mark saying where the words came from.
+    for (const [key, label] of [["ai", "Answer"], ["help", "Help topic"]]) {
       const tab = document.createElement("button");
       tab.type = "button";
       tab.setAttribute("role", "tab");
@@ -540,17 +542,9 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
   const list = $("help-chat-messages");
   const toBottom = () => keepAtBottom(list);
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
   let text = "";
   let done = null;
-  //: `raw`, not `line`: that name is the progress line above, and a string
-  //: shadowing it threw on the first delta ("Something went wrong").
-  const take = (raw) => {
-    if (!raw.trim()) return;
-    let event;
-    try { event = JSON.parse(raw); } catch { return; }
+  const take = (event) => {
     if (event.type === "thinking") {
       think.hidden = false;
       line?.setPhase("thinking");
@@ -568,15 +562,8 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
     }
     toBottom();
   };
-  while (true) {
-    const chunk = await reader.read();
-    if (chunk.done) break;
-    buffered += decoder.decode(chunk.value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop() || "";
-    for (const raw of lines) take(raw);
-  }
-  take(buffered);
+  await ensureModule("ndjson");
+  await api.ndjson(response, take, { label: "Guide stream" });
   line?.remove();
   return {
     content: done?.content || text,

@@ -236,12 +236,9 @@ def test_a_list_of_plain_phrases_reads_in_sentence_case():
 def test_compare_draws_two_sides_with_measured_counts():
     result = ask("Compare Lisbon and Porto")
     text = result["text"]
-    assert text.startswith(
-        tuple(
-            f"{lead}one mentions Lisbon and one mentions Porto.\n\n**Lisbon**\n"
-            for lead in composer_phrases.phrase_options("of_found") + composer_phrases.phrase_options("across_found")
-        )
-    ), text
+    #: Intent unchanged (the lead names only what follows); the "Of the notes found," opener is gone: the counts open it (L205, D20).
+    assert text.startswith("One note mentions Lisbon and one mentions Porto.\n\n**Lisbon**\n"), text
+    assert not any(text.startswith(lead) for lead in composer_phrases.phrase_options("of_found") + composer_phrases.phrase_options("across_found")), text
     #: The lead names only what follows (probe P15, ledger row 443): no
     #: sentence promising the sides before the sides, under 14 words.
     assert len(text.split("\n", 1)[0].split()) <= 14, text
@@ -277,7 +274,7 @@ def test_yes_no_never_answers_yes_or_no():
     #: INBOX 741: a sentence holding every word asked is said as the notes'
     #: answer ("Going by your notes, ..."), never as a yes or a no.
     assert first.startswith(
-        tuple(text for key in ("closest_a", "closest_b", "going_by", "notes_have") for text in composer_phrases.phrase_options(key))
+        tuple(text for key in ("closest_a", "closest_b", "going_by", "notes_have", "not_that", "only_plan") for text in composer_phrases.phrase_options(key))
     )
     assert "Beta testers did not know Harbor works offline." in first
     assert not re.search(r"\b(yes|no)\b[,.]", result["text"].split("\n\n", 1)[0], re.I)

@@ -898,3 +898,30 @@ def test_the_composer_is_not_gated_on_a_model_the_guide_does_not_need(client):
     body = client.post("/help/ask", json={"question": "Where do reminders live?"}).json()
     assert "Overdue" in body["content"]
     assert body["sources"] == ["Reminders"]
+
+
+def test_a_model_that_fails_mid_stream_gets_the_helps_own_answer_and_a_log_line(caplog):
+    """L52: the stream route had no fallback (the one-shot route had), so a model that died
+    after its first words ended the Guide's turn with an error. Now the app's help answers
+    and the server log names why."""
+    import logging
+
+    from tessellate.ai.provider import ProviderError
+
+    class Dies:
+        def is_running(self):
+            return True
+
+        def chat_stream(self, model, messages, mode=None):
+            yield {"content_delta": "Press "}
+            raise ProviderError("the connection closed")
+
+    class Manager:
+        def utility_model(self):
+            return "test-model"
+
+    with caplog.at_level(logging.INFO, logger="tessellate.help"):
+        events = list(help_chat.answer_stream("how do I set a reminder?", Manager(), Dies()))
+    assert events[-1]["type"] == "done" and events[-1].get("composed") is True
+    assert events[-1]["content"] and events[-1]["badges"]
+    assert any("the model call ended: the connection closed" in r.getMessage() for r in caplog.records)

@@ -45,6 +45,7 @@ from tessellate.api import (
     routes_capabilities,
     routes_auth,
     routes_bookmarks,
+    routes_goals,
     routes_categories,
     routes_chat,
     routes_conversations,
@@ -1366,6 +1367,9 @@ def _start_services() -> Path:
     from tessellate.search import query as search_query
 
     recognise.configure_date_order(deps.get_config().get_preference("date_order", "auto"))
+    from tessellate.ai import utilities
+
+    utilities.configure_rates(deps.get_config().get_preference("currency_rates", {}))
     search_query.configure_before(deps.get_config().get_preference("before_includes_day", False))
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
         afterunlock.defer("search-warmup", _warm_search_at_launch)
@@ -1600,6 +1604,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     # `routes_reminders.act_from_notification` and tests/test_every_route_is_locked.py.
     (routes_reminders.open_router, OPEN),
     (routes_bookmarks.router, LOCKED),
+    (routes_goals.router, LOCKED),
     (routes_voice.router, LOCKED),
     (routes_studio.router, LOCKED),
     (routes_folder_sync.router, LOCKED),

@@ -464,7 +464,7 @@ class Provider:
         if not model:
             return None
         try:
-            # The same deferred import the ceiling below uses, for the reason
+            # The same lazy import the ceiling below uses, for the reason
             # its comment gives at length; `importlib` itself is imported at
             # module level (CodeQL flagged a redundant local import here).
             deps = importlib.import_module("tessellate.core.deps")

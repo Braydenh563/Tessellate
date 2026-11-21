@@ -275,4 +275,21 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// The Settings pane is built when it is first opened, so `#avatar-buddy` does not exist after boot: open it, choose the companion
+// the way its own control does, close it. `kind` is a value of that select (me, atlas, off ...).
+async function setBuddy(page, kind) {
+  if (!(await page.$('#avatar-buddy'))) {
+    await page.click('#settings-btn');
+    await page.waitForSelector('#avatar-buddy', { state: 'attached', timeout: 10000 });
+  }
+  // On a fresh profile the control is in the page before its change handler is wired, so the first event can fall on nothing:
+  // send it until the app's own preference holds the pick.
+  for (let i = 0; i < 20; i += 1) {
+    const held = await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); return prefs.get('avatar-buddy', null) === k; }, kind);
+    if (held) break;
+    await page.waitForTimeout(500);
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+}
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, setBuddy};

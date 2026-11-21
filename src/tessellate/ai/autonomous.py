@@ -558,8 +558,10 @@ def _drive_agent(session, task_str: str, persona: str, run: "jobruns.Run", chang
             ollama=deps.get_ollama(),
             persona_prompt=persona,
             # Nothing here can be confirmed and nothing here should be
-            # deleted: there is no user in the loop to ask.
-            blocked_tools=frozenset({"ask_user", "delete_note"}) | agent.tools.CHANGE_TOOLS,
+            # deleted: there is no user in the loop to ask. Every destructive
+            # tool, not only delete_note (L565): one that parked failed the
+            # whole pass on a card nobody would see.
+            blocked_tools=frozenset({"ask_user"}) | agent.tools.CHANGE_TOOLS | {n for n, s in agent.tools.TOOLS.items() if s.destructive},
             max_rounds=MAX_ROUNDS,
             mode="autonomous",
             use_utility_model=True,

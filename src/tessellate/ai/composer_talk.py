@@ -21,13 +21,14 @@ from __future__ import annotations
 import calendar
 import re
 from collections import Counter
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
+from tessellate.ai import composer_compose, consent, consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
 from tessellate.ai import recognise_questions
 
 #: The charts the app can already draw from the notes, in the order offered.
@@ -166,7 +167,7 @@ def _other_chart(session: Session, question: str, prev: Prev, today: date) -> li
         return None
     left = [k for k in CHARTS if k not in prev.shown and drawing(session, k, today)]
     if not left:
-        return [{"type": "answer", "delta": "That is every chart I can draw from your notes. Statistics holds the rest of the numbers."}]
+        return _none_yet("none_charts")
     first, rest = left[0], left[1:]
     return _chart_reply(session, first, today, f"Here are your notes {_CHART_WORDS[first]}.", rest)
 
@@ -187,10 +188,19 @@ def _chart_by(session: Session, question: str, prev: Prev, today: date, *, whole
 # --- parts of an answer -------------------------------------------------------
 
 
+#: The chat's voice and the words asked, while `reply` runs: the "none yet" lines are composed in that voice (L-chat-233).
+_SAYING: ContextVar[tuple[str, str]] = ContextVar("composer_talk_saying", default=("natural", ""))
+
+
+def _none_yet(ability: str) -> list[dict]:
+    voice, asked = _SAYING.get()
+    return [{"type": "answer", "delta": composer_compose.frame(ability, composer_compose.mood_of(asked, voice=voice, seed=f"{ability}|{asked}", intent="none"))}]
+
+
 def _tag_list(session: Session, today: date) -> list[dict] | None:
     counts = slash_more.tag_counts(session)
     if not counts:
-        return [{"type": "answer", "delta": "None of your notes carry a tag yet."}]
+        return _none_yet("none_tags")
     top = counts.most_common(SHOWN_TAGS)
     lines = "\n".join(f"- {tag} ({n})" for tag, n in top)
     more = f"\n\n{realise.count_word(len(counts) - len(top)).capitalize()} more are in Notes." if len(counts) > len(top) else ""
@@ -202,7 +212,7 @@ def _tag_list(session: Session, today: date) -> list[dict] | None:
 def _category_list(session: Session, today: date) -> list[dict] | None:
     rows, unfiled = slash_more.category_counts(session)
     if not rows:
-        return [{"type": "answer", "delta": "None of your notes are filed in a category yet."}]
+        return _none_yet("none_categories")
     lines = "\n".join(f"- {name} ({n})" for name, n in rows)
     left = f"\n\n{realise.count_noun(unfiled, 'note').capitalize()} {'is' if unfiled == 1 else 'are'} filed nowhere." if unfiled else ""
     return [{"type": "answer", "delta": f"Your notes sit in {len(rows)} {'category' if len(rows) == 1 else 'categories'}:\n\n{lines}{left}"}]
@@ -213,7 +223,7 @@ def _document_list(session: Session, today: date) -> list[dict] | None:
 
     titles = [str(d.title) for d in session.scalars(select(Document).order_by(Document.updated_at.desc()).limit(SHOWN_TAGS))]
     if not titles:
-        return [{"type": "answer", "delta": "You have no documents yet."}]
+        return _none_yet("none_documents")
     return [{"type": "answer", "delta": f"Your {_n(len(titles), 'document')}, newest first:\n\n" + "\n".join(f"- {t}" for t in titles)}]
 
 
@@ -276,7 +286,7 @@ def from_history(history: list[dict], today: date) -> Prev:
     return last
 
 
-def reply(session: Session, question: str, history: list[dict], today: date) -> list[dict] | None:
+def reply(session: Session, question: str, history: list[dict], today: date, *, voice: str = "natural") -> list[dict] | None:
     """The events for a question that reads against the turn before it (or names a chart), else None."""
     said = _clean(question).rstrip("?!. ")
     if not said:
@@ -284,10 +294,14 @@ def reply(session: Session, question: str, history: list[dict], today: date) -> 
     if asks := follow_items.read(question, history, datetime.combine(today, time(9)))[1]:
         return [{"type": "answer", "delta": asks}]
     prev = from_history(history, today)
-    for read in _READERS:
-        events = read(session, said, prev, today)
-        if events is not None:
-            return events
+    held = _SAYING.set((voice, said))
+    try:
+        for read in _READERS:
+            events = read(session, said, prev, today)
+            if events is not None:
+                return events
+    finally:
+        _SAYING.reset(held)
     return None
 
 
@@ -296,16 +310,27 @@ def chart_ask(session: Session, question: str, history: list[dict], today: date)
     75). A model handed the ask called the notes list with the category "week"
     and said there were none (the owner, 2026-11-12)."""
     said = _clean(question).rstrip("?!. ")
-    return _chart_by(session, said, from_history(history, today), today, whole=True) if said else None
+    drawn = _chart_by(session, said, from_history(history, today), today, whole=True) if said else None
+    return drawn if drawn is not None else _graph_pasted(question, history)
+
+
+def _graph_pasted(question: str, history: list[dict]) -> list[dict] | None:
+    """"Chart this: Mon 3, Tue 5": the values given (or the answer before) as
+    the chart maker's fence, with a model up too (L158, INBOX 1847)."""
+    from tessellate.ai import composer_graph
+
+    previous = str((history or [{}])[-1].get("answer") or "") if history else ""
+    made = composer_graph.pasted(question or "", previous=previous)
+    return [{"type": "answer", "delta": made["text"]}] if made else None
 
 
 # --- an offer taken up (B23) ----------------------------------------------------
 
-_YES = re.compile(
-    r"^(?:oh )?(?:yes|yeah|yep|yup|ya|sure|ok|okay|alright|all right|please|do it|go ahead|go on|why not|sounds good|that would be great|that'd be great)"
-    r"(?:[,.!]? (?:please|do it|go ahead|thanks|thank you|then))*[.!]*$",
-    re.I,
-)
+def is_yes(question: str) -> bool:
+    """A bare yes in any of its forms (yeah, yep, sure, ok, go ahead, please do), the reader typed consent uses."""
+    return consent.says(_clean(question).strip()) == "yes"
+
+
 #: The offers an answer ends with that a sentence can carry out: a reminder, said as the prose asks it or as its button does.
 _REMIND_OFFER = re.compile(
     r"^(?:shall i remind you|remind you|set a reminder|want a nudge|should i remind you|want me to remind you)(?: (?P<every>(?:each|every) \w+))? to (?P<action>.+?)\??$", re.I
@@ -320,7 +345,7 @@ def accepted_offer(question: str, history: list[dict] | None, now: datetime | No
     what that answer showed (`follow_items`)."""
     if history and (said := follow_items.read(question, history, now)[0]):
         return said
-    if not history or not _YES.match(_clean(question).strip()):
+    if not history or not is_yes(question):
         return None
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
     found = _REMIND_OFFER.match(lines[-1]) if lines else None
@@ -337,7 +362,7 @@ def held_offer(question: str, history: list[dict] | None) -> str | None:
     last line, so a yes to another question reaches nothing."""
     last = (history or [{}])[-1] if history else {}
     key = str(last.get("offer_id") or "")
-    if not key or not _YES.match(_clean(question).strip()):
+    if not key or not is_yes(question):
         return None
     held = (consent_store.peek(key) or {}).get("offer")
     lines = [ln.strip(" *_") for ln in str(last.get("answer") or "").splitlines() if ln.strip()]
@@ -509,7 +534,20 @@ class Closing:
         if not asks and not self.offered and answer.strip() and not self.framed and social:
             #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
             asks = composer_chips.resume_chips(self.session, self.history, self.today.isoformat(), self.question)
+            #: A hello or thanks with nothing before it has no answer to resume: the starters (L48).
+            asks = asks or self._starters()
         return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
+
+    def _starters(self) -> list[str]:
+        """Where to begin, under a bare hello or thanks that follows no answer."""
+        from tessellate.ai import question_noise  # lazy: see `social_turn`
+
+        #: Nothing before it offers none (F5, R3: small talk opening a chat stays chip-free), and the starters are
+        #: not the generic trio, which a "thanks" never repeats (`composer_chips.GENERIC`).
+        if not self.history or question_noise.social_kind(self.question) not in ("greeting", "morning", "thanks"):
+            return []
+        asked = [self.question, *(str(t.get("question") or "") for t in self.history or [] if isinstance(t, dict))]
+        return [c for c in composer_chips.STARTERS if not composer_chips.spent(c, asked)]
 
     def apply(self, events: list[dict]) -> list[dict]:
         """A whole turn's events with the chips in."""

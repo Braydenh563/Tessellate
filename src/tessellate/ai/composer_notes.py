@@ -172,13 +172,21 @@ def _is_label_note(content: str) -> bool:
     return len(lines) == 1 and not lines[0].startswith("#") and bool(_LABEL_NOTE.fullmatch(lines[0]))
 
 
+_BOXES = re.compile(r"\s*-\s*\[[ xX]\]\s*")
+
+
+def _unboxed(line: str) -> str:
+    """A checklist read out as items: "- [ ] email Raj - [x] pay tax" says "email Raj; pay tax" (L-chat-189)."""
+    return _BOXES.sub("; ", line).lstrip("; ") if _BOXES.search(line) else line
+
+
 def _item(note: dict, wanted: list[str]) -> str:
     content = str(note.get("content") or "")
     if _is_label_note(content):
         #: Named the way every title-less note is (`composer_frame.name_of`),
         #: never "Untitled" and never its line said twice (audit 1031 C31).
         return f"- {_day(_made(note))}, [{composer_frame.name_of(note)}](#/notes/{note['id']})"
-    line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
+    line = _unboxed(re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or ""))
     title = composer_frame.link_text(note)
     #: The sentence read from a headed note starts with the heading ("Scope
     #: Blockers: none."): the link already says it.
@@ -189,8 +197,13 @@ def _item(note: dict, wanted: list[str]) -> str:
     return f"- {_day(_made(note))}, [{title}](#/notes/{note['id']}){body}"
 
 
+def _recent_text(ctx: Ctx) -> str:
+    #: A window follow-on ("what about last month") is read as the question it restates, not as the typed words (L-chat-251).
+    return " ".join(((ctx.question if ctx.follow_kind == "window" else ctx.asked or ctx.question) or "").split())
+
+
 def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:
-    text = " ".join((ctx.asked or ctx.question or "").split())
+    text = _recent_text(ctx)
     found = _WROTE.match(text) or _NOTES_ON.match(text)
     any_topic = None if found else _WROTE_ANY.match(text)
     window = _window((found or any_topic).group("t"), ctx.now.date()) if (found or any_topic) and len(text) <= 160 else None

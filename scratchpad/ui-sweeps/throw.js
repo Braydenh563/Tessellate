@@ -7,7 +7,7 @@
 // window from where it started, on the side it was thrown to, and stays there.
 // Env: BASE, PHONE=1 for the phone only, DESK=1 for the desktop only,
 // STEP, RISE (px a move across and up), REDUCED=1 to run with Reduce motion (a crossfade to the same landing).
-const { boot } = require('./lib.js');
+const { boot, setBuddy } = require('./lib.js');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function run(phone) {
   const opts = phone ? { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } : { viewport: { width: 1440, height: 900 } };
@@ -15,7 +15,7 @@ async function run(phone) {
   const { browser, page, ctx } = await boot(opts);
   const W = opts.viewport.width;
   const fails = [];
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); if (b) { b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); } });
+  await setBuddy(page, 'me');
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); revealTab('notes'); });
   await page.waitForTimeout(3000);
   const cdp = phone ? await ctx.newCDPSession(page) : null;

@@ -22,17 +22,17 @@
     if (!box.animate) return [];
     const { cx, cy, flat, tilt } = ATLAS_GEO.ringFrame;
     const loops = [];
-    const loop = (el, frames, ms, delay, opts = {}) => loops.push(el.animate(frames, { duration: ms, delay: -delay * ms, iterations: Infinity, direction: "alternate", easing: "ease-in-out", ...opts }));
+    const loop = (el, frames, ms, delay, opts = {}) => loops.push(el.animate(frames, { duration: ms, delay: -delay * ms, iterations: Infinity, direction: "alternate", easing: NMB_CURVE.inOut, ...opts }));
     ATLAS_GEO.rings.forEach((ring, k) => {
       const [secs, deg, squash] = ATLAS_RING_SWAY[k];
       const at = (d, f) => ({ transform: `translate(${cx}px, ${cy}px) rotate(${tilt + d}deg) scale(1, ${+(flat * f).toFixed(4)})` });
       const sway = Math.random();
       for (const el of box.querySelectorAll(`.atl-ring-frame-${k}, .atl-orbit-${k}`)) loop(el, [at(-deg, 1 - squash), at(deg, 1 + squash)], secs * 1000, sway);
       const spin = Math.random();
-      for (const el of box.querySelectorAll(`.atl-ring-frame-${k} .atl-ring-spin`)) loop(el, [{ rotate: "0deg" }, { rotate: `${k % 2 ? -360 : 360}deg` }], (34 + 9 * k) * 1000, spin, { direction: "normal", easing: "linear" });
+      for (const el of box.querySelectorAll(`.atl-ring-frame-${k} .atl-ring-spin`)) loop(el, [{ rotate: "0deg" }, { rotate: `${k % 2 ? -360 : 360}deg` }], (34 + 9 * k) * 1000, spin, { direction: "normal", easing: NMB_CURVE.linear });
     });
     for (const el of box.querySelectorAll(".atl-orbiter-glow")) loop(el, [{ scale: 0.8, opacity: 0.35 }, { scale: 1.2, opacity: 0.9 }], 2200 + Math.random() * 2400, Math.random());
-    box.querySelectorAll(".atl-orbiter-swirl").forEach((el, i) => loop(el, [{ rotate: "0deg", opacity: 0.45 }, { rotate: `${i % 2 ? -180 : 180}deg`, opacity: 0.9 }, { rotate: `${i % 2 ? -360 : 360}deg`, opacity: 0.45 }], 6000 + Math.random() * 5000, Math.random(), { direction: "normal", easing: "linear" }));
+    box.querySelectorAll(".atl-orbiter-swirl").forEach((el, i) => loop(el, [{ rotate: "0deg", opacity: 0.45 }, { rotate: `${i % 2 ? -180 : 180}deg`, opacity: 0.9 }, { rotate: `${i % 2 ? -360 : 360}deg`, opacity: 0.45 }], 6000 + Math.random() * 5000, Math.random(), { direction: "normal", easing: NMB_CURVE.linear }));
     return loops;
   }
 
@@ -529,12 +529,7 @@
     //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
     const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
     if (live) atlasFrameBudget(now);
-    //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this
-    //: beat's own writes, the loops' play and pause and the breath's scale,
-    //: made the next read settle style: `atlasPropsFrame` 71ms, the breath's
-    //: rise 107ms and the rest's release 73ms at 4x CPU in 45s of idle). The
-    //: props read first; the rest's release, which reads where the sway is,
-    //: comes before anything is written; the breath and the loops are writes.
+    //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this beat's writes made the next read settle style, 71 to 107ms at 4x).
     //: Thirty a second: each draw repaints the tail's layer.
     tail.tick += 1;
     //: The props' own loops, while each is shown (`atlasPropsFrame`).
@@ -542,11 +537,11 @@
     //: Resting on the compositor (`atlasTailRest`): nothing to draw while the
     //: state holds and the act has not run out; the breath and the props
     //: are all this beat does.
-    const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy"), box) === tail.state && (now < tail.until || atlasTailCalm.resting(box, tail.state));
+    const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy, #desk-pet"), box) === tail.state && (now < tail.until || atlasTailCalm.resting(box, tail.state));
     if (tail.resting && !holds) atlasTailUnrest(tail);
     //: And the chest's breath (`atlasBreathFrame`), at the rate of the moment.
     atlasBreathFrame(box, live);
-    atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
+    atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy, #desk-pet"), box.dataset.atlasMood, now);
     //: The held loops stay held at rest (`atlasTailCalm.rest.sync` plays them again on input).
     //: Read when `loops` flips or once a second, not every beat (B55: 120 style reads a second through an agent turn).
     //: **A nap slows the rings** (INBOX 1770): a third of the pace, by the animations' playback rate, which keeps every
@@ -565,6 +560,15 @@
       for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
     }
     if (holds) {
+      //: **Resting, the beat ends** (L184: 17.6 to 42 ms a minute of beats that drew nothing). Input calls the waker; a
+      //: class, a pose or a mood wakes it through the rig's observer (`atlasRigWake`, `atlasTailWake`).
+      if (atlasTailCalm.resting(box, tail.state)) {
+        atlasTailCalm.rest.wake.add((tail.wake ||= () => {
+          atlasTailCalm.rest.wake.delete(tail.wake);
+          atlasTailWake(box);
+        }));
+        return;
+      }
       tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
       return;
     }
@@ -572,15 +576,11 @@
       tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
       return;
     }
-    //: The clock runs at the wall's speed up to half a second a frame, so a
-    //: slow frame does not slow the tail (atlas601-tail.js, under load: at
-    //: four frames a second a 0.1s cap ran it at 40% and read the tip still
-    //: for over a second); the springs step in thirtieths, where they are
-    //: stable, however long the frame.
+    //: The clock runs at the wall's speed up to half a second a frame, so a slow frame does not slow the tail; the springs step in thirtieths.
     const dt = tail.at ? Math.min(0.5, (now - tail.at) / 1000) : 1 / 30;
     tail.at = now;
     if (live) {
-      const buddy = box.closest("#nm-buddy");
+      const buddy = box.closest("#nm-buddy, #desk-pet");
       const state = atlasRigLower.spell(buddy, box);
       if (state !== tail.state || now >= tail.until) atlasTailPick(tail, state, now);
       const goal = tail.goal || ATLAS_TAIL_ACTS[tail.act];
@@ -613,17 +613,8 @@
     const stretch = live ? () => 1 + 0.03 * Math.cos(tail.ph3) : null;
     atlasTailDraw(tail, (s) => atlasTailBend(s, p, live ? tail.ph : 0, live ? tail.ph2 : 0, drift, live ? tail.ph3 : 0, follow), stretch);
     tail.drawn = true;
-    //: **At rest in its corner, fifteen draws a second, not thirty** (Brief 34
-    //: decision 7: the companion must never cost the rest of the app).
-    //: Measured at 1440 on the dashboard (companionperf.js IDLE=1, a loaded
-    //: machine): the corner Atlas idle cost 35s of main thread a minute and
-    //: 1,399 layouts, against 0.5s and 3 with the companion off, most of it
-    //: this loop: a frame asked for sixty times a second to draw the tail's
-    //: paths on every other one. Resting, sitting, lying, thinking or low,
-    //: the tail moves on clocks of 1.7s and longer, so fifteen steps a second
-    //: read as the same sway, and a timer between them asks for no frames.
-    //: Walking, carried, gesturing, startled or glad, and always in the large
-    //: view, where it is the one thing on screen, it keeps the frame loop.
+    //: **At rest in its corner, fifteen draws a second, not thirty** (Brief 34 decision 7): the tail moves on clocks of 1.7s and longer, so fifteen
+    //: steps read as the same sway and a timer between them asks for no frames. Walking, carried, gesturing, startled or glad, and the large view, keep the frame loop.
     tail.calm = live && atlasTailCalm(tail, box);
     if (live && tail.calm && now >= tail.settle) {
       atlasTailRest(tail, p);
@@ -637,7 +628,7 @@
   }
   const ATLAS_TAIL_CALM_MS = 66;
   function atlasTailCalm(tail, box) {
-    return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
+    return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy, #desk-pet") && !box.closest(".nm-viewer-figure");
   }
   //: **Two seconds without input and not walking: the drawn loops stop** (owner decision Q10; the lag log: 21 rig calls a
   //: second, 20 to 27 restyles a second at rest, the dress morph alone 35 path writes a second). The CSS loops (sway,
@@ -666,13 +657,15 @@
         }, () => {});
       }
     }
-    return r.mode === "still" || (r.mode === "mains" && !!r.battery);
+    return r.mode === "still" || (r.mode === "mains" && (!!r.battery || !!globalThis.document?.body?.classList.contains("desk-page")));
   };
   //: At rest: a corner companion, in a calm lower-body state, not walking, doing no act, and two seconds from the last input.
   atlasTailCalm.resting = (box, state) => {
-    const buddy = box.closest("#nm-buddy");
-    return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after && atlasTailCalm.rest.holds();
+    const buddy = box.closest("#nm-buddy, #desk-pet");
+    return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after && atlasTailCalm.rest.holds() && (buddy.id !== "desk-pet" || (document.body.dataset.state || "rest") === "rest");
   };
+  //: **The desk window rests too** (L744: no `#nm-buddy` there, so nothing ever rested: 43% of a core). Its pet button stands in; only "always" keeps it drawing.
+
   //: Entering a rest pauses the loops that never end (the sway, the breath, the glow: on SVG parts they are drawn on the main
   //: thread, a restyle and layout a frame, 38 a second at rest); leaving it plays the ones this paused. A finite one (a blink
   //: in flight) is left to finish; one that has since been cancelled is idle, not paused, and stays so.
@@ -681,7 +674,7 @@
     const resting = atlasTailCalm.resting(box, state);
     r.on = resting;
     if (resting && !r.held) {
-      r.held = box.closest("#nm-buddy").getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
+      r.held = box.closest("#nm-buddy, #desk-pet").getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
       for (const a of r.held) a.pause();
     } else if (!resting && r.held) {
       for (const a of r.held) if (a.playState === "paused") a.play();
@@ -698,9 +691,11 @@
       const was = performance.now() - r.at > r.after;
       r.at = performance.now();
       // In the next frame, not in the input: playing the held loops and the pacer's first beat are the input's own cost otherwise (lag log: input 320ms).
-      if (was) setTimeout(() => r.wake.forEach((fn) => fn()), 0);
+      if (was) setTimeout(atlasTailCalm.rest.stir, 0);
     }, { passive: true, capture: true });
   }
+  //: Every waker, now: input, or the desk window leaving its rest (desk-companion.js `show`).
+  atlasTailCalm.rest.stir = () => [...atlasTailCalm.rest.wake].forEach((fn) => fn());
   //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
   atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang", "coil", "ripple_calm", "pool", "heavy"]);
   //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
@@ -730,7 +725,7 @@
     const at = ([d, k]) => ({ transform: `rotate(${d}deg) scale(${k})` });
     tail.swayKeys = [[0, 1], [deg, 1.015], [0, 1], [-deg, 0.99], [0, 1]];
     tail.sway = svg.animate(tail.swayKeys.map(at), {
-      duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: "ease-in-out",
+      duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: NMB_CURVE.inOut,
     });
   }
   function atlasTailUnrest(tail) {
@@ -753,9 +748,10 @@
     }
     tail.sway.cancel();
     tail.sway = null;
-    if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
+    if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: NMB_CURVE.settle });
   }
   function atlasTailDraw(tail, bend, stretch) {
+    if (atlasTailFrame.kit.hold === tail) return;
     const { pts, turn, segs } = atlasTailShape(tail.rest, bend, stretch);
     const d = atlasTailKit.paths(tail.spec, segs);
     const { paths } = tail;
@@ -837,7 +833,7 @@
           el.style.transformBox = "fill-box";
           el.style.transformOrigin = grip === "box" ? "50% 50%" : "50% 0";
         } else if (grip) el.style.transformOrigin = `${grip[0]}px ${grip[1]}px`;
-        const anim = el.animate(frames, { duration: ms, iterations: Infinity, easing: "ease-in-out", id: "atl-prop" });
+        const anim = el.animate(frames, { duration: ms, iterations: Infinity, easing: NMB_CURVE.inOut, id: "atl-prop" });
         anim.cancel();
         //: Staggered rows (a constellation's stars) start a step apart.
         loops.push({ anim, el, root: el.closest(".nmp, .atl-fx-bang") || el, lag: (k * stagger * ms) % ms, on: false });
@@ -902,22 +898,16 @@
   //: about the hips while the head, the arms and the face, other groups, keep
   //: their size: 0.7px on the companion, 1.5px in the large view.
   //:
-  //: **On the compositor, set once** (atlasidle2, 2026-11-07). It was written
-  //: ten times a second (a CSS loop inside the drawing was refused: it
-  //: repainted the large view every frame, 53 frames a second down to 20 to
-  //: 31), and that write was one of the two that kept the companion's ~70
-  //: animated elements restyling at rest: any style write restyles every
-  //: animated element, composited or not (3 torsos x 10 writes a second:
-  //: 90 restyles in 6 s of the hanging pose, 2.7 s of main thread at 4x CPU).
-  //: Now one Web Animation of `transform` per torso (not the individual
-  //: `scale`, which Chromium refuses on an svg box: compositeFailed bit 19),
-  //: started on the rise's own start time so the two share a clock for good,
-  //: and touched again only when the figure's look (its period) changes or it
-  //: comes back from being still. Ease-in-out sine, as the cosine was.
+  //: **Stepped with the lower body's morph, not a Web Animation** (L138, L231, 2026-11-14). A `transform`
+  //: animation on an svg `<g>` never runs on the compositor (measured with an invalidation trace: "Style
+  //: changed g.nmb-torso" every frame, 3,150 a minute), and one animation off the compositor restyles every
+  //: animated element each frame: 975 of 1,950 style recalcs a minute were the torso's alone. So the swell is
+  //: written as an inline `transform` in the morph's own 10 Hz task (`atlasRigLower.morph.run`), whose path
+  //: writes restyle that frame anyway, and by the tail's beat where no morph runs. At rest (`atlasTailCalm.rest`)
+  //: the morph holds, and so does the chest, like every other loop. 0.05px a step on the companion.
   //: It rides the tail's loop, which already knows when the figure is off
   //: screen, on a hidden tab, or still by setting (Avatar animation Off, reduced
-  //: motion, the companion's own Full motion); it cancels the animation then
-  //: and puts the chest back at rest.
+  //: motion, the companion's own Full motion); the chest goes back to rest then.
   //:
   //: On the rise's clock: the swell takes its phase from the box's own
   //: animation, so the chest fills as the shoulders lift.
@@ -925,37 +915,43 @@
   function atlasBreathFrame(box, live) {
     const look = box.dataset.atlasLook;
     if (!live) {
-      if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
+      if (box.atlasBreath) for (const el of box.atlasTorsos || []) el.style.transform = "";
       box.atlasBreath?.rise?.updatePlaybackRate?.(1);
       box.atlasBreath = null;
       return;
     }
-    if (box.atlasBreath?.look === look) return;
-    //: Not under the entrance fade: started while `#nm-buddy` is opacity 0 the
-    //: torso counts as an empty box and the compositor refuses it for good
-    //: (Chromium status bit 17; both torsos on the reload path, none when
-    //: started a beat later). One style read, only at a start or a retune.
-    const faded = box.closest?.("#nm-buddy");
-    if (faded && +getComputedStyle(faded).opacity === 0) return;
-    box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
-    if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
-    box.atlasBreath?.rise?.updatePlaybackRate?.(1);
-    //: The rise's clock is read here only, at a start or a retune (`getAnimations`
-    //: and an animation's times bring the page's style up to date: B87a, 81
-    //: forced restyles in 1.3 s of a carry when this was read each step).
-    const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
-    const going = rise && rise.playState !== "idle";
-    const period = going ? +rise.effect.getComputedTiming().duration : look === "feminine" ? 4000 : 4600;
-    const [sx, sy] = ATLAS_BREATH_SWELL;
-    const frames = [{ transform: "scale(1, 1)" }, { transform: `scale(${1 + sx}, ${1 + sy})` }, { transform: "scale(1, 1)" }];
-    const anims = box.atlasTorsos.map((el) => {
-      const anim = el.animate(frames, { duration: period, iterations: Infinity, easing: "cubic-bezier(0.37, 0, 0.63, 1)", id: "atl-breath" });
-      if (going && rise.startTime !== null) anim.startTime = rise.startTime;
-      else if (going) anim.currentTime = rise.currentTime;
-      return anim;
-    });
-    box.atlasBreath = { look, anims, rise: going ? rise : null, rate: 1 };
+    if (box.atlasBreath?.look !== look) {
+      box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
+      box.atlasBreath?.rise?.updatePlaybackRate?.(1);
+      //: The rise's clock is read here only, at a start or a retune (`getAnimations`
+      //: and an animation's times bring the page's style up to date: B87a, 81
+      //: forced restyles in 1.3 s of a carry when this was read each step).
+      const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
+      const going = rise && rise.playState !== "idle";
+      const period = going ? +rise.effect.getComputedTiming().duration : look === "feminine" ? 4000 : 4600;
+      const now = performance.now();
+      const since = going ? (rise.startTime !== null ? now - rise.startTime : +rise.currentTime || 0) : 0;
+      box.atlasBreath = { look, anims: [], rise: going ? rise : null, rate: 1, period, ph: (((since / period) % 1) + 1) % 1, at: now, rode: 0 };
+    }
+    //: The tail's beat writes only where no morph has for a while (a figure without a lower rig).
+    if (performance.now() - box.atlasBreath.rode > 400) atlasBreathFrame.put(box, performance.now(), false);
   }
+  //: One step of the swell: the phase runs on at the breath's rate, so it keeps the rise's clock through a retune;
+  //: ease-in-out sine, peak at the half, as the keyframes were.
+  atlasBreathFrame.put = (box, now, rode = true) => {
+    const b = box.atlasBreath;
+    if (!b) return;
+    //: A gap over a second is a rest the chest held (L184): it goes on from there, not a jump.
+    if (now - b.at < 1000) b.ph = (b.ph + ((now - b.at) * b.rate) / b.period) % 1;
+    b.at = now;
+    if (rode) b.rode = now;
+    const k = (1 - Math.cos(2 * Math.PI * b.ph)) / 2;
+    const [sx, sy] = ATLAS_BREATH_SWELL;
+    const v = `scale(${(1 + sx * k).toFixed(4)}, ${(1 + sy * k).toFixed(4)})`;
+    if (v === b.v) return;
+    b.v = v;
+    for (const el of box.atlasTorsos || []) el.style.transform = v;
+  };
   //: **The breath quickens and eases** (INBOX 1719 b): a walk, a carry or a lively act leaves the figure out of breath and
   //: it eases back over the table's half-life; sleepy it is slower, startled quicker (`atlasBlink.vitals`). The rate is
   //: the animations' playback rate, set only when its 0.05 step changes (`updatePlaybackRate` keeps the phase, so the
@@ -981,7 +977,7 @@
   //: which wrap the dress) and both tails take a pose per state, on top of
   //: the pose's own CSS: each variant is [turn about the hips, width, length,
   //: lean (skew), the tail's turn], in degrees and scales; `ms` and `ease`
-  //: are the change's time and curve (a curve past 1 overshoots and settles,
+  //: are the change's time and its curve's name in `NMB_CURVE` (a curve past 1 overshoots and settles,
   //: a flick or a snap; an ease in and out is a slow curl). A walk's turns and lean take
   //: the way it goes (it trails behind and stretches). One variant is picked
   //: at random as a state begins, and at rest a new one every 8 to 14
@@ -992,59 +988,64 @@
   //: (and the CSS 42 more lying down); it turns at most 4 now, about the join,
   //: and takes its width from the torso there, so the two read as one chain.
   const ATLAS_LOWER_STATES = {
-    idle: { ms: 900, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[-2.5, 1, 1, 2, -5], [2, 1, 1.02, -2, 4], [3.5, 0.98, 1, 1, 7], [-1, 1.02, 0.99, -3, -2]] },
-    walk: { ms: 450, ease: "cubic-bezier(0.34, 1.3, 0.64, 1)", v: [[-9, 0.94, 1.08, 6, -12], [-7, 0.95, 1.1, 8, -9], [-11, 0.93, 1.06, 4, -15]] },
-    sit: { ms: 550, ease: "cubic-bezier(0.34, 1.25, 0.6, 1)", v: [[3, 1.1, 0.86, -3, -14], [-3, 1.08, 0.88, 3, 14], [2, 1.12, 0.84, -2, -10]] },
-    lie: { ms: 600, ease: "cubic-bezier(0.4, 1.15, 0.6, 1)", v: [[3, 1, 0.86, -3, 24], [2, 1.02, 0.9, -2, 30], [4, 0.99, 0.88, -4, 19]] },
-    gesture: { ms: 350, ease: "cubic-bezier(0.3, 1.6, 0.6, 1)", v: [[-5, 0.98, 0.95, 4, 9], [-3, 1, 0.94, 6, 12], [-6, 0.97, 0.96, 3, 7]] },
-    think: { ms: 900, ease: "cubic-bezier(0.45, 0, 0.55, 1)", v: [[6, 1, 0.97, -4, 12], [4, 0.99, 0.96, -6, 16], [-3, 1, 0.98, 3, 9]] },
-    happy: { ms: 380, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-6, 1.02, 0.94, 5, -10], [5, 1.02, 0.95, -5, -14], [-4, 1.03, 0.93, 3, -8]] },
-    sad: { ms: 800, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1.5, 0.96, 1.07, -1, 16], [-1.5, 0.97, 1.06, 1, 20], [0.5, 0.95, 1.08, -2, 24]] },
-    startle: { ms: 260, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
+    idle: { ms: 900, ease: "settle", v: [[-2.5, 1, 1, 2, -5], [2, 1, 1.02, -2, 4], [3.5, 0.98, 1, 1, 7], [-1, 1.02, 0.99, -3, -2]] },
+    walk: { ms: 450, ease: "spring", v: [[-9, 0.94, 1.08, 6, -12], [-7, 0.95, 1.1, 8, -9], [-11, 0.93, 1.06, 4, -15]] },
+    sit: { ms: 550, ease: "spring", v: [[3, 1.1, 0.86, -3, -14], [-3, 1.08, 0.88, 3, 14], [2, 1.12, 0.84, -2, -10]] },
+    lie: { ms: 600, ease: "spring", v: [[3, 1, 0.86, -3, 24], [2, 1.02, 0.9, -2, 30], [4, 0.99, 0.88, -4, 19]] },
+    gesture: { ms: 350, ease: "flick", v: [[-5, 0.98, 0.95, 4, 9], [-3, 1, 0.94, 6, 12], [-6, 0.97, 0.96, 3, 7]] },
+    think: { ms: 900, ease: "inOut", v: [[6, 1, 0.97, -4, 12], [4, 0.99, 0.96, -6, 16], [-3, 1, 0.98, 3, 9]] },
+    happy: { ms: 380, ease: "pop", v: [[-6, 1.02, 0.94, 5, -10], [5, 1.02, 0.95, -5, -14], [-4, 1.03, 0.93, 3, -8]] },
+    sad: { ms: 800, ease: "inOut", v: [[1.5, 0.96, 1.07, -1, 16], [-1.5, 0.97, 1.06, 1, 20], [0.5, 0.95, 1.08, -2, 24]] },
+    startle: { ms: 260, ease: "snap", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
     //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
     //: up"): the lower body curls and droops, a slow ease, shorter and wider
     //: than a lie, the tail wrapped round (a turn well past a lie's).
-    curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
+    curl: { ms: 1600, ease: "inOut", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
     //: INBOX 1681 (the owner: "crouching down ... lounging ... gliding ... hanging"): a squat folds the
     //: lower body short and wide, a lounge lays it out to one side, a glide trails it long and thin behind
     //: the lean, a drift lets it hang loose and slow, a hang lets it swing from the hips. The act's own
     //: variant (`data-variant`) picks the row, so the body and the lower body agree; the turn stays
     //: within 4 degrees (INBOX 615 and 619) and the lean, the tail and the stretch do the posing.
-    crouch: { ms: 700, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -3, -16], [-3, 1.1, 0.74, 4, 12], [1.5, 1.18, 0.66, -2, -22]] },
-    lounge: { ms: 900, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3.5, 1.06, 0.84, -4, 26], [-2, 1.1, 0.8, 2, -20], [2, 1.04, 0.88, -3, 16]] },
-    glide: { ms: 800, ease: "cubic-bezier(0.3, 0.9, 0.5, 1)", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
-    drift: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
-    hang: { ms: 700, ease: "cubic-bezier(0.34, 1.2, 0.6, 1)", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
+    crouch: { ms: 700, ease: "spring", v: [[2, 1.14, 0.7, -3, -16], [-3, 1.1, 0.74, 4, 12], [1.5, 1.18, 0.66, -2, -22]] },
+    lounge: { ms: 900, ease: "spring", v: [[3.5, 1.06, 0.84, -4, 26], [-2, 1.1, 0.8, 2, -20], [2, 1.04, 0.88, -3, 16]] },
+    glide: { ms: 800, ease: "glide", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
+    drift: { ms: 1400, ease: "inOut", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
+    hang: { ms: 700, ease: "spring", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
     //: E6 (companion-asks B1, B3: "the lower body follows the pose"): leaning on a wall or edge (the weight on one
     //: hip, the hem pulled to the other side), legs over an edge (the hem let straight down, long, a slow swing), a
     //: kick of them (quick, the hem thrown out), a swing from a bar (the hem a pendulum, wide turns of the tail) and a
     //: sloth hang (limp and long, barely moving). The act or pose names the row; the turn stays inside the 4 degrees.
-    lean: { ms: 650, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3, 1.02, 0.96, 7, 14], [-3, 1.02, 0.95, -7, -12], [2, 1.03, 0.97, 5, 18]] },
-    dangle: { ms: 900, ease: "cubic-bezier(0.45, 0.1, 0.4, 1)", v: [[1.5, 1.04, 1.08, -3, 12], [-2, 1.05, 1.12, 4, -10], [2.5, 1.03, 1.1, -2, 16]] },
-    kick: { ms: 320, ease: "cubic-bezier(0.2, 1.9, 0.4, 1)", v: [[-3.5, 1.02, 1.05, 9, -22], [3, 1.03, 1.03, -9, 24], [-2, 1.02, 1.06, 7, -18]] },
-    swing: { ms: 520, ease: "cubic-bezier(0.34, 1.3, 0.6, 1)", v: [[3, 0.96, 1.1, 8, 24], [-3, 0.95, 1.12, -8, -26], [2, 0.97, 1.09, 6, 20]] },
-    sloth: { ms: 1500, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1, 1.02, 1.14, -1, 26], [-1.5, 1.03, 1.16, 1, -22], [1.5, 1.02, 1.12, -2, 30]] },
+    //: L173: `dress` is the dress's own [shear gain, stretch gain] (else 0.4 and 0.5, below): a lean's hem sweeps to one side (every row the same way, so no blend of two comes back to upright) and a
+    //: float's trails long, each 6 px or more past a standing idle's box.
+    lean: { ms: 650, ease: "spring", dress: [1, 0.5], v: [[3, 1.1, 0.96, 18, 14], [-3, 1.1, 0.95, 14, -12], [2, 1.12, 0.97, 20, 18]] },
+    //: L173 (the owner's call under standing order 3): a float, hovering, trails a longer, narrower hem than standing idle (a fifth
+    //: narrower, a fifth longer: 6 px or more past it each way), slow and loose.
+    float: { ms: 1200, ease: "inOut", dress: [0.4, 1], v: [[2, 0.84, 1.22, 6, -20], [-2.5, 0.82, 1.26, -6, 18], [3, 0.86, 1.2, 5, -26]] },
+    dangle: { ms: 900, ease: "inOut", v: [[1.5, 1.04, 1.08, -3, 12], [-2, 1.05, 1.12, 4, -10], [2.5, 1.03, 1.1, -2, 16]] },
+    kick: { ms: 320, ease: "snap", v: [[-3.5, 1.02, 1.05, 9, -22], [3, 1.03, 1.03, -9, 24], [-2, 1.02, 1.06, 7, -18]] },
+    swing: { ms: 520, ease: "sway", v: [[3, 0.96, 1.1, 8, 24], [-3, 0.95, 1.12, -8, -26], [2, 0.97, 1.09, 6, 20]] },
+    sloth: { ms: 1500, ease: "inOut", v: [[1, 1.02, 1.14, -1, 26], [-1.5, 1.03, 1.16, 1, -22], [1.5, 1.02, 1.12, -2, 30]] },
     //: atlascat-1108 C5 (`atlasRigLower.spell` says when): a gust lifts the hem on a fast glide, the legs tucked under
     //: cross-legged, a slow ripple root to hem in a calm spell, a quick flutter when excited, spread flat after a
     //: long sit, a playful kick of the hem when glad, a spiral that unwinds after a twirl, and heavy when tired.
-    billow: { ms: 380, ease: "cubic-bezier(0.25, 1.7, 0.5, 1)", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
-    coil: { ms: 800, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -2, 20], [-2, 1.16, 0.68, 2, -18], [1.5, 1.12, 0.72, -3, 26]] },
-    ripple_calm: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.55, 1)", v: [[1.5, 1, 1.03, -3, 8], [-2, 1.02, 1.01, 3, -10], [2.5, 1, 1.04, -2, 12]] },
-    flutter: { ms: 300, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-3, 1.03, 0.97, 6, -16], [3, 1.03, 0.96, -6, 18], [-2, 1.04, 0.97, 4, -12]] },
-    pool: { ms: 1200, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3, 1.18, 0.62, -3, 30], [-3, 1.2, 0.6, 3, -28], [2, 1.16, 0.64, -2, 24]] },
-    hem_kick: { ms: 320, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-3.5, 1.02, 0.96, 8, -22], [3, 1.03, 0.95, -9, 24], [-2, 1.02, 0.97, 6, -18]] },
-    spiral: { ms: 700, ease: "cubic-bezier(0.3, 1.3, 0.5, 1)", v: [[3.8, 0.96, 1.02, 10, 34], [-3.8, 0.95, 1.04, -12, -40], [3, 0.97, 1, 8, 28]] },
+    billow: { ms: 380, ease: "pop", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
+    coil: { ms: 800, ease: "spring", v: [[2, 1.14, 0.7, -2, 20], [-2, 1.16, 0.68, 2, -18], [1.5, 1.12, 0.72, -3, 26]] },
+    ripple_calm: { ms: 1400, ease: "inOut", v: [[1.5, 1, 1.03, -3, 8], [-2, 1.02, 1.01, 3, -10], [2.5, 1, 1.04, -2, 12]] },
+    flutter: { ms: 300, ease: "pop", v: [[-3, 1.03, 0.97, 6, -16], [3, 1.03, 0.96, -6, 18], [-2, 1.04, 0.97, 4, -12]] },
+    pool: { ms: 1200, ease: "spring", v: [[3, 1.18, 0.62, -3, 30], [-3, 1.2, 0.6, 3, -28], [2, 1.16, 0.64, -2, 24]] },
+    hem_kick: { ms: 320, ease: "snap", v: [[-3.5, 1.02, 0.96, 8, -22], [3, 1.03, 0.95, -9, 24], [-2, 1.02, 0.97, 6, -18]] },
+    spiral: { ms: 700, ease: "sway", v: [[3.8, 0.96, 1.02, 10, 34], [-3.8, 0.95, 1.04, -12, -40], [3, 0.97, 1, 8, 28]] },
     //: atlascat-1108 D5 (`lower.fall`): falling free (a throw's descent, `nmb-falling`), the hem streams up above it,
     //: long and thin, thrown about; fast to take and never at rest.
-    fall: { ms: 240, ease: "cubic-bezier(0.2, 1.9, 0.4, 1)", v: [[-2, 0.88, 1.24, 7, -46], [2.5, 0.86, 1.28, -7, -50], [-3, 0.9, 1.22, 9, -42]] },
-    heavy: { ms: 1100, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1, 1.04, 1.1, -1, 20], [-1, 1.05, 1.12, 1, 24], [1.5, 1.03, 1.09, -1, 16]] },
+    fall: { ms: 240, ease: "snap", v: [[-2, 0.88, 1.24, 7, -46], [2.5, 0.86, 1.28, -7, -50], [-3, 0.9, 1.22, 9, -42]] },
+    heavy: { ms: 1100, ease: "inOut", v: [[1, 1.04, 1.1, -1, 20], [-1, 1.05, 1.12, 1, 24], [1.5, 1.03, 1.09, -1, 16]] },
   };
   //: The hair's turn about the crown and the nebula stream's [turn, width,
   //: height] about the figure's middle, per state (INBOX 575, the owner:
   //: "both atlas avatars have a tail as well, same with the hair, and the
   //: nebular stream ... dynamically animated and changed"), a variant each
   //: as the lower body's; a walk's turn takes the way it goes.
-  const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7], crouch: [3, 1, 4], lounge: [4, 2, 5], glide: [-7, -9, -6], drift: [3, 5, 2], hang: [2, -2, 3], billow: [-8, -10, -7], coil: [2, 1, 3], ripple_calm: [2, -2, 3], flutter: [-3, 3, -2], pool: [4, 3, 5], hem_kick: [-4, 3, -3], spiral: [6, -6, 5], heavy: [3, 4, 5], fall: [-9, -11, -8], lean: [3, 4, 2], dangle: [2, 3, 1], kick: [-4, 4, -3], swing: [4, -4, 5], sloth: [3, 4, 5] };
+  const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7], crouch: [3, 1, 4], lounge: [4, 2, 5], glide: [-7, -9, -6], drift: [3, 5, 2], hang: [2, -2, 3], billow: [-8, -10, -7], coil: [2, 1, 3], ripple_calm: [2, -2, 3], flutter: [-3, 3, -2], pool: [4, 3, 5], hem_kick: [-4, 3, -3], spiral: [6, -6, 5], heavy: [3, 4, 5], fall: [-9, -11, -8], lean: [3, 4, 2], dangle: [2, 3, 1], kick: [-4, 4, -3], swing: [4, -4, 5], sloth: [3, 4, 5], float: [-2, 2.5, -2.5] };
   const ATLAS_NEB_STATES = {
     idle: [[0, 1, 1], [2, 1.02, 0.98], [-2, 0.98, 1.02], [1, 1.01, 1]],
     walk: [[-4, 1.05, 0.95], [-3, 1.06, 0.94], [-5, 1.04, 0.96]],
@@ -1071,6 +1072,7 @@
     spiral: [[7, 1.02, 1.02], [-7, 1.03, 1.01], [5, 1.01, 1.03]],
     heavy: [[1, 0.98, 0.95], [-1, 0.97, 0.96], [2, 0.99, 0.94]],
     lean: [[3, 1.03, 0.96], [-3, 1.04, 0.95], [2, 1.02, 0.97]],
+    float: [[0, 0.98, 1.04], [2, 0.97, 1.06], [-2, 0.98, 1.05]],
     dangle: [[2, 1.02, 1.04], [-2, 1.03, 1.05], [3, 1.01, 1.03]],
     kick: [[-3, 1.04, 1.02], [3, 1.03, 1.03], [-2, 1.05, 1.01]],
     swing: [[4, 1.02, 1.04], [-4, 1.03, 1.05], [3, 1.01, 1.03]],
@@ -1105,7 +1107,7 @@
   //: [reach, rate], so asleep it is small and slow, walking and glad it is wide and quick. A new path starts
   //: from where the old one is, so a change of pose is never a step.
   atlasRigLower.flowKeys = 7;
-  atlasRigLower.flowByState = { idle: [1, 1], walk: [1.5, 0.7], sit: [0.8, 1.15], lie: [0.6, 1.4], curl: [0.45, 1.7], gesture: [1.25, 0.8], think: [0.9, 1.1], happy: [1.45, 0.65], sad: [0.6, 1.5], startle: [1.6, 0.55], crouch: [0.8, 1.2], lounge: [0.9, 1.3], glide: [1.4, 0.75], drift: [1.3, 1.2], hang: [1.1, 0.9], billow: [1.5, 0.7], coil: [0.7, 1.2], ripple_calm: [0.9, 1.4], flutter: [1.4, 0.6], pool: [0.55, 1.5], hem_kick: [1.4, 0.7], spiral: [1.5, 0.65], heavy: [0.5, 1.6], fall: [1.7, 0.5], lean: [0.9, 1.1], dangle: [1.1, 1.0], kick: [1.5, 0.6], swing: [1.4, 0.8], sloth: [0.5, 1.6] };
+  atlasRigLower.flowByState = { idle: [1, 1], walk: [1.5, 0.7], sit: [0.8, 1.15], lie: [0.6, 1.4], curl: [0.45, 1.7], gesture: [1.25, 0.8], think: [0.9, 1.1], happy: [1.45, 0.65], sad: [0.6, 1.5], startle: [1.6, 0.55], crouch: [0.8, 1.2], lounge: [0.9, 1.3], glide: [1.4, 0.75], drift: [1.3, 1.2], hang: [1.1, 0.9], billow: [1.5, 0.7], coil: [0.7, 1.2], ripple_calm: [0.9, 1.4], flutter: [1.4, 0.6], pool: [0.55, 1.5], hem_kick: [1.4, 0.7], spiral: [1.5, 0.65], heavy: [0.5, 1.6], fall: [1.7, 0.5], lean: [0.9, 1.1], dangle: [1.1, 1.0], kick: [1.5, 0.6], swing: [1.4, 0.8], sloth: [0.5, 1.6], float: [1.15, 0.85] };
   //: Per part: [x px, y px] at a reach of 1. The lower body's own box barely moves (its join with the torso
   //: must hold: INBOX 615); the wisps, the stream and the hair move most.
   atlasRigLower.flowParts = { boxes: [0.3, 0.45], wisps: [1.5, 1.1], tails: [0.9, 0.8], hair: [0.9, 0.7], neb: [1.3, 1] };
@@ -1146,7 +1148,7 @@
           if (part === "neb") keys[j] = keys[j].map((v, k) => v + (j % 2 ? 1 : -1) * (k ? 0.6 : 1));
         }
         keys.push(start);
-        const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: "ease-in-out" }));
+        const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: NMB_CURVE.inOut }));
         const anim = el.animate(frames, { duration: Math.round((14 + ((n * 4.7) % 12)) * 1000 * rate), iterations: Infinity });
         Object.assign(anim, { keys, el });
         low.flow.push(anim);
@@ -1394,6 +1396,8 @@
       m.targets.forEach((t, i) => {
         if (t.kind === "ribbon" || (m.n + i) % 2) M.draw(t, m.clock, m.gain, m.ang);
       });
+      //: The chest's swell in the same task, so its write costs no frame of its own (`atlasBreathFrame.put`).
+      atlasBreathFrame.put(box, now);
       m.moved = true;
       m.timer = setTimeout(step, M.tick);
     };
@@ -1459,7 +1463,7 @@
       timer: 0,
     };
     atlasRigWake(box);
-    atlasRigLower.morph.run(box.atlasRig, box.closest("#nm-buddy"));
+    atlasRigLower.morph.run(box.atlasRig, box.closest("#nm-buddy, #desk-pet"));
   }
   //: The lower body's pose for the state: its variant (a new one as the
   //: state begins, and every 5 to 9 seconds at rest, on a timer), and the
@@ -1510,7 +1514,7 @@
     low.shown = key;
     atlasRigLower.flow(rig, state, live);
     const go = (el, transform, lag = 0) => {
-      el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${spec.ease} ${lag}ms` : "none";
+      el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${NMB_CURVE[spec.ease]} ${lag}ms` : "none";
       el.style.transform = transform;
     };
     //: The lower body's own box shears about the join rather than turning
@@ -1521,7 +1525,8 @@
     //: lean and half its stretch: the torso's fade is three units deep, and a
     //: startle's full 8 degrees still opened 1.8px there. The tails and her
     //: wisps, which leave the body, take the whole pose.
-    for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * 0.4)}deg) scale(1, ${(1 + (sy - 1) * 0.5).toFixed(3)})`);
+    const [shear, stretch] = spec.dress || [0.4, 0.5];
+    for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * shear)}deg) scale(1, ${(1 + (sy - 1) * stretch).toFixed(3)})`);
     for (const el of low.wisps) go(el, pose(0.7), 40);
     for (const el of low.tails) go(el, `rotate(${atlasFix(tail * way)}deg)`, 70);
     for (const el of low.hair) go(el, `rotate(${atlasFix(hair)}deg)`, 90);
@@ -1529,11 +1534,14 @@
     for (const el of low.neb) go(el, `rotate(${atlasFix(neb * way)}deg) scale(${nsx}, ${nsy})`, 120);
   }
   //: The states that rest: a new variant every 5 to 9 s (INBOX 1680, 1683 B1: only standing did, so a sat or sleeping figure held one pose for minutes).
-  atlasRigLower.rests = new Set(["idle", "sit", "lie", "curl", "think", "sad", "hang", "happy", "billow", "coil", "ripple_calm", "flutter", "pool", "hem_kick", "spiral", "heavy"]);
+  atlasRigLower.rests = new Set(["idle", "float", "sit", "lie", "curl", "think", "sad", "hang", "happy", "billow", "coil", "ripple_calm", "flutter", "pool", "hem_kick", "spiral", "heavy"]);
   //: The states an act poses (INBOX 1681): the act's drawn variant picks the row, so the figure and its lower body agree. They last one act, so none re-rolls on the rest timer.
   atlasRigLower.acts = ["crouch", "lounge", "glide", "drift"];
   //: Asleep: the sleeping class, a nap, or a lying or curled pose (a property, not a global: `tests/test_global_scope_ratchet.py`).
   atlasRigLower.asleep = (buddy) => !!buddy && (buddy.classList.contains("nmb-sleep") || buddy.classList.contains("nmb-act-nap") || /^(lie|curl)/.test(buddy.dataset.pose || ""));
+
+  //: What scripts/render_desk_frames.js samples; `hold` is a tail the page's loop may not draw. A property, not a global (the scope ratchet).
+  atlasTailFrame.kit = { draw: atlasTailDraw, bend: atlasTailBend, acts: ATLAS_TAIL_ACTS, swell: ATLAS_BREATH_SWELL, hold: null };
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { atlasPropLoops, atlasRigLower, atlasRigLowerAttach, atlasRingLoops, atlasTailAttach, atlasTailCalm, atlasTailFrame });

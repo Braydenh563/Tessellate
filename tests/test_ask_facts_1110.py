@@ -37,7 +37,6 @@ REMINDERS = [
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-
     pin_clock(monkeypatch, NOW)
 
 

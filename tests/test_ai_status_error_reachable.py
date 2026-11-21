@@ -64,7 +64,8 @@ def test_a_search_model_that_failed_to_load_turns_the_dot_red():
 def test_a_failed_poll_drops_the_status_so_the_red_state_shows():
     src = app_js_text()
     catch = src[src.index("A slow answer keeps the last good status") :][:900]
-    assert re.search(r"else \{\s*modelStatus = null;", catch), catch
+    #: Only a server that does not answer drops it (L70, L79): a failed poll while it answers keeps the last status.
+    assert re.search(r"if \(!up\) modelStatus = null;", catch), catch
     assert "button.dataset.level = state.level;" in _function(src, "renderAiPill")
 
 

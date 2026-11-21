@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 
-from tessellate.ai import recognise_questions
+from tessellate.ai import realise, recognise_questions
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
 _ITEM = re.compile(r"^- (?P<text>.+?)(?: \(\[(?P<title>[^\]]+)\]\(#/notes/(?P<id>\d+)\)\)| \(reminder(?:, (?P<rest>[^)]*))?\))$")
@@ -112,7 +112,7 @@ def _note(ctx: Ctx, note_id: int | None) -> dict | None:
 
 def _written(note: dict | None) -> str:
     made = (note or {}).get("created_at")
-    return f"{made:%A} {made.day} {made:%B}" if isinstance(made, datetime) else "an earlier day"
+    return realise.localised_days(f"{made:%A} {made.day} {made:%B}") if isinstance(made, datetime) else "an earlier day"
 
 
 def _how_read(ctx: Ctx, item: Item, note: dict | None) -> str:

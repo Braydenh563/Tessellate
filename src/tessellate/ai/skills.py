@@ -263,12 +263,36 @@ def _one_step_spec(
         retries = int(retries)
     except (TypeError, ValueError):
         retries = DEFAULT_STEP_RETRIES
-    return {
+    spec = {
         "text": text,
         "expects": expects,
         "tools": tools,
         "retries": max(0, min(retries, MAX_STEP_RETRIES)),
     }
+    scan = _scan_cues(step.get("scan"))
+    if scan:
+        spec["scan"] = scan
+    if step.get("reads") == "candidates":
+        spec["reads"] = "candidates"
+    return spec
+
+
+#: The most cue phrases one scanning step may carry, and their longest length.
+MAX_SCAN_CUES = 12
+MAX_SCAN_CUE = 30
+
+
+def _scan_cues(raw) -> list[str]:
+    """A step's cue phrases for the runner's own paged scan (L-chat-62), in
+    canonical form: short strings, no blanks, no duplicates, capped."""
+    if not isinstance(raw, list):
+        return []
+    cues: list[str] = []
+    for cue in raw:
+        cue = str(cue or "").strip().lower()[:MAX_SCAN_CUE]
+        if cue and cue not in cues:
+            cues.append(cue)
+    return cues[:MAX_SCAN_CUES]
 
 
 def verify_spec(raw: dict, known_tools: set[str] | None, declared: list[str]) -> dict | None:
@@ -399,6 +423,8 @@ def step_specs(skill: dict) -> list[dict]:
                 "expects": spec.get("expects") or None,
                 "tools": list(spec.get("tools") or []),
                 "retries": int(spec.get("retries", DEFAULT_STEP_RETRIES)),
+                **({"scan": list(spec["scan"])} if spec.get("scan") else {}),
+                **({"reads": "candidates"} if spec.get("reads") == "candidates" else {}),
             }
         )
     return out
@@ -880,7 +906,7 @@ _READING_TOOLS = ["search_notes", "list_notes", "get_note", "count_notes"]
 #:
 #: - `tool_called` for a step that *looks*, a read, a search, an overview,
 #:   an audit tool. There is always something to read, so a model that
-#:   narrates instead of calling has certainly not done the step. This is the
+#:   narrates instead of calling has certainly skipped the step. This is the
 #:   reported failure ("I ran a skill and it ran no tools") and most of the
 #:   shipped steps are this.
 #: - `notes_changed` where the step exists to change something and the step
@@ -1292,6 +1318,21 @@ BUILTIN_SKILLS: list[dict] = [
     },
 
     {
+        "name": "Tidy my chat list",
+        "prompt": "Organise my saved chats: {{how}}.",
+        "description": "Sorts, groups, renames, pins or files saved chats as you describe.",
+        "when_to_use": "When I ask you to sort, group, rename, pin or file my saved chats.",
+        #: `count_notes` is only here to be verified with: this skill changes the chat list and no note.
+        "tools": ["edit_chats", "count_notes"],
+        "verify": {"tool": "count_notes", "expect": {"unchanged": True}},
+        "inputs": [{"name": "how", "label": "How should they be organised?", "required": True}],
+        "steps": [
+            _step("Run the edit_chats tool once for each change I asked for.", "tool_called", "edit_chats"),
+            _step("Say what changed in the chat list, and that Undo puts it back.", "answer_only"),
+        ],
+    },
+
+    {
         "name": "Find where I disagreed with myself",
         "prompt": (
             "Look for places where my own notes contradict each other, a decision I "
@@ -1358,7 +1399,7 @@ BUILTIN_SKILLS: list[dict] = [
         "prompt": "Find the loose ends in my notes and list them.",
         "steps": [
             #: **A paged pass, not a search** (Brief 13; CHAT_PLAN decision
-            #: 10). This step used to be one `search_notes` call for "todo,
+            #: 10). This step used to be one `search_notes` call for "to-do,
             #: need to, should", which is a top-k similarity query: it returns
             #: the five or twenty notes that most resemble those words, and
             #: the skill's whole claim is *the* loose ends, all of them. A
@@ -1369,20 +1410,33 @@ BUILTIN_SKILLS: list[dict] = [
             #: (bounded by `skill_runner.MAX_PAGES_PER_STEP`, which says so
             #: out loud when it runs out rather than quietly reporting a
             #: partial answer as a complete one).
-            _step(
-                "Go through my notes page by page with list_notes, and keep "
-                "going until it says there are no more. Note which ones read "
-                "as unfinished: todo, need to, should, waiting on, must, "
-                "chase up, follow up.",
-                "tool_called",
-                "list_notes",
-            ),
-            _step(
-                "Read each candidate with get_note, to check it is genuinely "
-                "unfinished rather than something I already closed off.",
-                "tool_called",
-                "get_note",
-            ),
+            #:
+            #: **The runner pages, not the model** (L-chat-62). Measured on a
+            #: 1.5B model over the seventy-note fixture: it called list_notes
+            #: once with made-up filters, never paged, stalled, and named 2 of
+            #: 8. Paging and a cue match are mechanical, so the runner does
+            #: both (`scan`) and reads the matches in full (`reads`); the model
+            #: keeps the judgment, in the answer.
+            {
+                **_step(
+                    "Go through my notes page by page with list_notes, and keep "
+                    "going until it says there are no more. Note which ones read "
+                    "as unfinished: todo, need to, should, waiting on, must, "
+                    "chase up, follow up.",
+                    "tool_called",
+                    "list_notes",
+                ),
+                "scan": ["todo", "need to", "should", "waiting on", "must", "chase up", "follow up"],
+            },
+            {
+                **_step(
+                    "Read each candidate with get_note, to check it is genuinely "
+                    "unfinished rather than something I already closed off.",
+                    "tool_called",
+                    "get_note",
+                ),
+                "reads": "candidates",
+            },
             _step("List each loose end with its note id, newest first.", "answer_only"),
         ],
         "tools": _READING_TOOLS,
@@ -1716,6 +1770,116 @@ BUILTIN_SKILLS: list[dict] = [
         ],
         "inputs": [{"name": "topic", "label": "What idea do you want to think through?"}],
         "tools": [*_READING_TOOLS, "ask_user", "create_note"],
+    },
+    #: The four looking-back skills (L-chat-50 to 53). Each reads first and writes last, one note or one batch
+    #: the person ticked, so a run that stalls earlier has changed nothing.
+    {
+        "name": "Prepare for a meeting",
+        "description": "Notes on the people and the topic, open reminders, and a short agenda drafted into a new note.",
+        "when_to_use": "before a meeting, a call or a catch-up with someone",
+        "prompt": "Prepare me for a meeting with {{people}} about {{topic}}.",
+        "steps": [
+            _step(
+                "Search my notes for {{topic}} and for {{people}}, and read the ones that matter with get_note.",
+                "tool_called",
+                "search_notes",
+            ),
+            _step(
+                "Look up each person named in {{people}} with get_person_page, to see what my notes hold about them.",
+                "tool_optional",
+                "get_person_page",
+            ),
+            _step("Check my open reminders with list_reminders for anything about {{topic}} or {{people}}.", "tool_called", "list_reminders"),
+            _step(
+                "Draft a short agenda: what we last said, what is still open, and two or three things to settle. "
+                "Use only what the notes say, and name the note each point comes from.",
+                "answer_only",
+            ),
+            _step(
+                "Save the agenda with create_note, titled with the meeting and the date, and say where it is.",
+                "tool_called",
+                "create_note",
+            ),
+        ],
+        "inputs": [
+            {"name": "people", "label": "Who is it with?", "required": True},
+            {"name": "topic", "label": "What is it about?", "required": True},
+        ],
+        "tools": [*_READING_TOOLS, "get_person_page", "list_reminders", "create_note"],
+    },
+    {
+        "name": "Monthly look back",
+        "description": "What you wrote, spent and finished in a month, as one note with the numbers cited.",
+        "when_to_use": "at the end of a month, or when you want to see what a month came to",
+        "prompt": "Look back at {{month}}: what I wrote, spent and finished.",
+        "steps": [
+            _step(
+                "Get the month's numbers with count_month_figures for {{month}} (last month when I left it blank).",
+                "tool_called",
+                "count_month_figures",
+            ),
+            _step(
+                "Read the three or four most telling notes it names with get_note, to say what the month was about.",
+                "tool_optional",
+                "get_note",
+            ),
+            _step(
+                "Write the look back: what was written, what was spent and what was finished, each with its number "
+                "and the note ids it came from. If nothing was recorded as spent, say so in one line. Do not guess a figure.",
+                "answer_only",
+            ),
+            _step("Save it with create_note, titled with the month, and say where it is.", "tool_called", "create_note"),
+        ],
+        "inputs": [{"name": "month", "label": "Which month? (blank for last month)"}],
+        "tools": [*_READING_TOOLS, "count_month_figures", "create_note"],
+    },
+    {
+        "name": "Archive stale notes",
+        "description": "Lists notes you have not touched for a span you name, and archives only the ones you pick.",
+        "when_to_use": "to clear old notes out of the lists without deleting any of them",
+        "prompt": "Find notes I have not touched for {{span}} and let me choose which to archive.",
+        "steps": [
+            _step(
+                "List the notes untouched for {{span}} with find_stale_notes, turning the span into a number of days.",
+                "tool_called",
+                "find_stale_notes",
+            ),
+            _step(
+                "Show them as a numbered list with the date each was last touched, then ask which to archive and stop. "
+                "Archiving keeps a note; nothing is deleted.",
+                "answer_only",
+            ),
+            _step(
+                "Archive only the notes I named in my reply, in one archive_note call. If I named none, do nothing.",
+                "tool_optional",
+                "archive_note",
+            ),
+            _step("Say how many you archived, and that Undo in Chat brings them back.", "answer_only"),
+        ],
+        "inputs": [{"name": "span", "label": "Untouched for how long? (e.g. 3 months, 90 days)", "required": True}],
+        "tools": ["find_stale_notes", "get_note", "archive_note"],
+    },
+    {
+        "name": "Everything about a person",
+        "description": "Their page, the notes that name them and open reminders, gathered in one reading note.",
+        "when_to_use": "when you want all you have on one person in one place",
+        "prompt": "Gather everything my notes hold about {{person}} into one note.",
+        "steps": [
+            _step("Read {{person}}'s page with get_person_page.", "tool_called", "get_person_page"),
+            _step(
+                "Read the two or three most recent notes it names with get_note, for what was last said.",
+                "tool_optional",
+                "get_note",
+            ),
+            _step(
+                "Write it as a reading note: who they are to me, the notes that name them (with ids), the notes linked "
+                "to those, and the open reminders with their dates. Say only what the notes say.",
+                "answer_only",
+            ),
+            _step("Save it with create_note, titled with their name, and say where it is.", "tool_called", "create_note"),
+        ],
+        "inputs": [{"name": "person", "label": "Who?", "required": True}],
+        "tools": [*_READING_TOOLS, "get_person_page", "create_note"],
     },
     # BACKLOG §22: "the way skills are used... it doesn't recognise that it
     # needs to use tools" was fixed at the mechanism level (this module's own

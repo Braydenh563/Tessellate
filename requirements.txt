@@ -59,6 +59,11 @@ fastembed>=0.9.1,<1.0
 
 fsspec[http]<=2026.9.0,>=2026.9.0
 
+# The composer's word and date helpers (L-chat-64), all MIT, each added with its first use:
+holidays>=0.108,<1.0       # Easter, Good Friday, Boxing Day, Thanksgiving as dates (recognise_windows.py)
+inflect>=7.6.0,<8.0        # plurals and a/an by the sound (realise.count_noun)
+rapidfuzz>=3.14.6,<4.0     # close names by WRatio (object_acts._close)
+
 # Auth (Phase 4) — single-user unlock
 bcrypt>=5.0.0,<6.0
 

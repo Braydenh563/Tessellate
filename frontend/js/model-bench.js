@@ -69,7 +69,7 @@
           toast(`${row.model} now answers in chat.`);
           renderModelBench();
         } catch (error) {
-          toast(error.message || "Couldn't switch the chat model.", true);
+          toast(error.message || voiceLine("failed", "switch the chat model"), true);
           use.disabled = false;
         }
       });
@@ -157,7 +157,7 @@
   $("bench-run")?.addEventListener("click", runModelBench);
   $("bench-stop")?.addEventListener("click", () => {
     apiJson("/models/bench/stop", { method: "POST" })
-      .catch((error) => toast(error.message || "Couldn't stop the bench.", true))
+      .catch((error) => toast(error.message || voiceLine("failed", "stop the bench"), true))
       .finally(renderModelBench);
   });
 

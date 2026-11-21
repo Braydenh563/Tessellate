@@ -30,6 +30,10 @@ from tessellate.core.lazyre import lazy_compile
 _NUMBER_WORDS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
 
 
+#: An opener that attributes the quote to the note or its writer.
+_OWNS_IT = re.compile(r"\b(?:in your note|you noted)\b", re.I)
+
+
 class _Answer:
     """The answer as tagged parts, the text being their join:
 
@@ -101,6 +105,12 @@ class _Answer:
         lead = text.strip() or text
         return any(said.startswith(lead) for said in (self.recent or [self.previous]) if said)
 
+    def later_turn(self) -> bool:
+        """Whether this answer follows another in the chat: a previous answer, a turn past the first, or Ask again
+        (seeded from the turn first asked, `compose`, so the retry count says it is later)."""
+        turn = _SESSION.get().rpartition(":")[2]
+        return bool(self.previous) or (turn.isdigit() and int(turn) > 1) or _RETRY.get() > 0
+
     def voiced(self, name: str) -> str:
         """The `PHRASES` key that says what `name` says in this answer's
         voice: one of its variants, chosen by the question so the same
@@ -123,7 +133,7 @@ class _Answer:
         usable = fresh or usable
         session = _SESSION.get()
         digest = hashlib.sha1(f"voice:{lead}:{self.question.strip().lower()}{':' + session if session else ''}".encode()).digest()
-        return mine[usable[digest[0] % len(usable)]]
+        return mine[usable[(digest[0] + _RETRY.get()) % len(usable)]]
 
     def t(self, *names: str) -> _Answer:
         for name in names:
@@ -200,7 +210,7 @@ class _Answer:
         if not view.titled:
             #: Its first words are the quote itself; only a when-ask's day is new.
             return self.dated(view) if view.written and self.day_in_cite else self
-        if self._said_before(view.title):
+        if self._said_before(view.title) or self._opener_names_the_note():
             return self
         bold = view.title
         if again:
@@ -215,6 +225,12 @@ class _Answer:
         self.t("cite_from", "bold")
         self.parts.append(("title", bold, view.id))
         return self.t("bold", "cite_note")
+
+    def _opener_names_the_note(self) -> bool:
+        """Whether the opener already says whose words these are ("The day in your note: "), so "From your Dentist
+        note." after the quote would say the same twice (E23). Only the first note the answer names: the opener
+        speaks for it, and a second note's line still needs its own source."""
+        return len(self.named) == 1 and any(p[0] == "template" and _OWNS_IT.search(p[1]) for p in self.parts)
 
     def _said_before(self, title: str) -> bool:
         """Whether an earlier answer in this chat already named the note."""
@@ -346,7 +362,8 @@ class _Answer:
 
     @property
     def text(self) -> str:
-        return realise.mend_stops("".join(part[1] for part in self.parts))
+        #: A measured day follows the person's date order (decision 43); a quote stays the note's own words.
+        return realise.mend_stops(realise.parts_text(self.parts, rec._reads_month_first(None)))
 
 
 #: The openers that promise the person's words as written: after one, the
@@ -377,6 +394,9 @@ def _count_word(n: int) -> str:
 #: openers and joins are chosen again; empty outside a conversation, where the
 #: same question gets the same words every time.
 _SESSION: contextvars.ContextVar[str] = contextvars.ContextVar("composer_session", default="")
+#: Ask again's count (`compose(retry=)`): added to every wording pick, so the nth regeneration of one question
+#: is the nth variant on from the first rather than another throw of the same hash (L-chat-191). 0 changes nothing.
+_RETRY: contextvars.ContextVar[int] = contextvars.ContextVar("composer_retry", default=0)
 
 
 def figures_of(text: str) -> frozenset:

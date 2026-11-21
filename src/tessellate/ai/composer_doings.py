@@ -169,7 +169,7 @@ def _times(n: int) -> str:
 
 
 def _days_said(done: list[Done]) -> str:
-    said = [f"{d.day.day} {d.day:%B}" + (f" ({d.km:g} km)" if d.km else "") + (f" ({_times(d.times)})" if d.times > 1 else "") for d in done]
+    said = [realise.localised_days(f"{d.day.day} {d.day:%B}") + (f" ({d.km:g} km)" if d.km else "") + (f" ({_times(d.times)})" if d.times > 1 else "") for d in done]
     return said[0] if len(said) == 1 else ", ".join(said[:-1]) + " and " + said[-1]
 
 
@@ -247,14 +247,14 @@ def first(text: str, views: list, today: date) -> tuple[str, Done] | None:
     began = bool(_STARTING.match(q))
     verb = _bare(found.group("v"), began)
     forms = _forms(verb)[2] | _forms(verb + "e")[2]
-    done = doings(views, forms, _object(found.group("r")), today)
-    if not done:
+    found_runs = doings(views, forms, _object(found.group("r")), today)
+    if not found_runs:
         return None
-    oldest = done[0]
+    oldest = found_runs[0]
     said = f"{found.group('v')}{found.group('r')}".rstrip()
     did = f"started {'to ' if ' to ' in q[:28] else ''}{said}" if began else f"first {_forms(verb)[1]}{found.group('r')}".rstrip()
     km = f" ({oldest.km:g} km)" if oldest.km else ""
-    return f"You {did} on {oldest.day.day} {oldest.day:%B}{km}.", oldest
+    return realise.localised_days(f"You {did} on {oldest.day.day} {oldest.day:%B}{km}."), oldest
 
 
 def answer(out, text: str, views: list, today: date) -> bool:  # noqa: ANN001
@@ -266,18 +266,18 @@ def answer(out, text: str, views: list, today: date) -> bool:  # noqa: ANN001
     shape, verb, rest = got
     _lemma, past, forms = _forms(verb)
     obj = _object(rest)
-    done = doings(views, forms, obj, today)
+    found_runs = doings(views, forms, obj, today)
     month = _month(rest, today)
     if month:
-        done = [d for d in done if (d.day.year, d.day.month) == month]
-    if shape == "total" and not any(d.km for d in done):
+        found_runs = [d for d in found_runs if (d.day.year, d.day.month) == month]
+    if shape == "total" and not any(d.km for d in found_runs):
         return False  # "how much did I spend": a sum of money, `composer_money`'s
-    if not done:
+    if not found_runs:
         return _say_habit(out, views, obj or [verb], shape)
     span = f" in {date(*month, 1):%B}" if month else ""
     did = past + (" " + " ".join(re.findall(r"[a-z]+", _IN_MONTH.sub(" ", rest))) if obj else "")
-    line = _lead(shape, did.rstrip(), done, span)
+    line = _lead(shape, did.rstrip(), found_runs, span)
     out.lines.append(line)
-    for d in done:
+    for d in found_runs:
         composer_lists._cite(out, d.view, d.sentence, line)  # noqa: SLF001
     return True

@@ -46,11 +46,13 @@ from collections.abc import Callable, Iterator
 from itertools import chain
 from dataclasses import dataclass
 from dataclasses import field as dc_field
+from typing import NamedTuple
 
 from sqlalchemy.orm import Session
 
 from tessellate.ai import presets
 from tessellate.ai import agent, budget as run_budget, plan_writes, skills, tools
+from tessellate.ai import skill_scan as scan_steps
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 
@@ -170,7 +172,7 @@ class Verification:
     one check made against the notebook rather than against the transcript.
 
     `ok` is False for a run that stopped early even when the skill declares no
-    postcondition: a run that did four of its nine steps has not done the job,
+    postcondition: a run that did four of its nine steps has not finished the job,
     whatever the notebook says, and reporting that as verified would be the
     same silent tick one level up.
     """
@@ -821,6 +823,7 @@ class _RunSetup:
     loop come out of a 682-line function (WORLD_CLASS_PLAN A5).
     """
 
+    session: Session
     skill: dict
     values: dict | None
     #: One parsed contract per step, from `skills.step_specs`.
@@ -863,6 +866,9 @@ class _RunState:
     #: What the run knows so far, as ids rather than prose (`_absorb`).
     known: dict
     started: bool = False
+    #: The runner helpers a scanning step calls (`skill_scan` reads them here,
+    #: so it never imports this module back).
+    kit: object = None
     #: The index the run did not get past, None when it finished.
     stopped_at: int | None = None
     paused: bool = False
@@ -982,6 +988,9 @@ def _open_turn(setup: _RunSetup, run: _RunState, st: _StepState):
         run.step_history,
         f"I couldn't finish step {st.index + 1}: I used every round it had without reaching an answer.",
         st.offered,
+        # A step that has to call a tool asks a small model for the call up
+        # front (the model otherwise writes that it did, and the step retries).
+        must_call=bool(st.offered) and st.spec.get("expects") in ("tool_called", "notes_changed"),
     )
     first = next(events, None)
     if first is not None and first.get("type") == "unsupported":
@@ -1079,7 +1088,7 @@ def _stop_reason(run: _RunState, seen: _Seen, answer: str):
         #: re-plan: a rewritten step is not a cheaper one, it is another turn.
         return "stalled", run.out_of_budget, "", False
     if seen.ran_out:
-        # **Stalled, not done.** The runner could only see that the turn
+        # **Stalled, unfinished.** The runner could only see that the turn
         # produced text, and the "I ran out of rounds" notice is text, so a step
         # cut off mid-job was ticked green and the next ran on half-finished
         # work. `stopped_at` is what Resume picks up from.
@@ -1257,6 +1266,10 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
     step = run.steps[index]
     _count_step()
     st = _begin_step(setup, index, step)
+    if st.spec.get("scan") or st.spec.get("reads") == "candidates":
+        run.kit = run.kit or _Kit(_absorb, _halt, _done_event, _step_answer)
+        yield from scan_steps.run(setup, run, st)
+        return _after_done(setup, run, index) if st.outcome == "done" else "stop"
     while st.outcome is None:
         source = yield from _open_turn(setup, run, st)
         if source is None:
@@ -1267,6 +1280,9 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
         return "stop"
     if st.outcome != "done":
         return (yield from _replan_or_stop(setup, run, st))
+    if setup.small_model and st.spec.get("expects") == "answer_only" and index == len(run.steps) - 1:
+        if line := scan_steps.unnamed_line(run, run.step_history[-1]["answer"]):
+            yield {"type": "answer", "delta": line}
     return _after_done(setup, run, index)
 
 
@@ -1377,6 +1393,7 @@ def _run_skill(
     #: are the same mechanism and naming a step is the more specific request.
     resume_from = only_step if only_step is not None else min(max(0, start_at), len(steps))
     setup = _RunSetup(
+        session=session,
         skill=skill,
         values=values,
         specs=specs,
@@ -1486,6 +1503,7 @@ def _turn_for(
         turn_history: list[dict],
         note: str | None,
         offered: list[str] | None = allowed,
+        must_call: bool = False,
     ) -> Iterator[dict]:
         return agent.run_agent(
             session,
@@ -1510,6 +1528,7 @@ def _turn_for(
             # The run draws its own card; a step's rounds are not a second one.
             show_plan=False,
             approved=True,
+            must_call=must_call,
         )
 
     return turn
@@ -1652,7 +1671,7 @@ def _close_run(
         # is the one case where offering the button would be a lie.
         "undo_available": all(change.get("undo") for change in run.changes),
         # The ids the run gathered, so whatever picks it up next, a Resume, a
-        # follow-up question, Phase C's run view: can talk about "those notes"
+        # later question, Phase C's run view: can talk about "those notes"
         # with the same precision the steps did.
         "state": run.known,
         # What the run spent against each cap (Phase E, decision 3), so a
@@ -1669,3 +1688,12 @@ def _collect(events: Iterator[dict], changes: list[dict], state: dict) -> Iterat
             _absorb_change(state, event["change"])
         _absorb(state, event)
         yield event
+
+
+class _Kit(NamedTuple):
+    """What a scanning step needs from the runner (`skill_scan`)."""
+
+    absorb: object
+    halt: object
+    done_event: object
+    step_answer: object

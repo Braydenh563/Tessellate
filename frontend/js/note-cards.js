@@ -357,10 +357,10 @@ async function binNoteWithUndo(entry) {
   };
   const action = pushUndo("Moved a note to the bin", restoreIt, binIt);
   window.nameMarkBuddyReact?.("binned");
-  toastAction("Moved to the bin.", "Undo", async () => {
+  toastAction(`Moved “${noteNamePlain(entry.content, 40) || "a note"}” to the bin.`, "Undo", async () => {
     settleUndoFromToast(action);
     await restoreIt();
-    toast("Note restored.");
+    toast(`Restored “${noteNamePlain(entry.content, 40) || "a note"}”.`);
   }, { also: GO_TO_BIN });
 }
 
@@ -465,14 +465,6 @@ function fitNoteMetas(metas) {
 async function showNoteInGraph(id, options = {}) {
   await switchTab("graph");
   return graphShowNote(id, options);
-}
-
-//: Start a chat about one note. Named by its title in the words a person
-//: would use, so the agent's own search tools find it, rather than pasting the
-//: whole note into the box.
-function askAtlasAboutNote(entry) {
-  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
-  askAtlasAboutThing("note", name);
 }
 
 //: One door into the chat for any object: a note, a document, a board, a

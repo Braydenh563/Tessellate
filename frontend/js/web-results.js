@@ -3,7 +3,8 @@
 // holds the stand-ins for `runWebSearch` and `renderWebSearchHistory`; the
 // reader's buttons only exist once `openWebReader` has loaded it): the panel
 // is opened by a gesture and none of this is drawn before it (the gzip
-// budget). `loadWebSearchHistory` and `clearWebSearchHistory` stay in chat.js.
+// budget). `loadWebSearchHistory` and `clearWebSearchHistory` stay in chat.js; `askAboutPage` moved here with the
+// gzip budget (L-chat-178).
 // One closure; what other files call is the `Object.assign` at the foot.
 (() => {
   //: What the dot says, word for word, in its title and its accessible name.
@@ -214,7 +215,7 @@
       );
       return true;
     } catch (error) {
-      toast(error.message || "Couldn't save that bookmark.", true);
+      toast(error.message || voiceLine("failed", "save that bookmark"), true);
     }
   }
 
@@ -322,6 +323,19 @@
       return row;
     }
     const absent = info?.state === "absent";
+    //: **The search runs itself once the engine answers** (L167 and L-chat-20, "a button to auto retry when searxng or
+    //: another engine is available"): started here, from Settings or from a terminal, the same search goes again once,
+    //: and the line says so. A press that already retried (`retried`) is not retried twice.
+    let retried = false;
+    const retry = () => {
+      if (retried) return;
+      retried = true;
+      if (onRunning) onRunning();
+      else {
+        line.textContent = "SearXNG is running. Ask again and web search will use it.";
+        row.querySelector(".searxng-start")?.remove();
+      }
+    };
     const start = smallButton(
       absent ? "ph:download-simple Install SearXNG" : "ph:play Start SearXNG",
       absent ? "Install SearXNG here and start it" : "Start the local SearXNG instance",
@@ -346,15 +360,25 @@
             return;
           }
         }
-        if (onRunning) onRunning();
-        else {
-          say("SearXNG is running. Ask again and web search will use it.");
-          start.remove();
-        }
+        retry();
       }
     );
+    start.classList.add("searxng-start");
     row.append(line, start);
+    watchSearxngReady(row, retry);
     return row;
+  }
+
+  //: Asks the status route every four seconds while `row` is on the page (a row drawn and gone, a new question, ends it)
+  //: and calls `ready` once, when the engine runs and answers; gives up after ten minutes.
+  function watchSearxngReady(row, ready) {
+    const step = async (waited) => {
+      if (waited > 600000 || !row.isConnected) return;
+      const now = await apiJson("/websearch/searxng/status", { silent: true }).catch(() => null);
+      if (now?.state === "running" && now.responding && row.isConnected) return ready();
+      setTimeout(() => step(waited + 4000), 4000);
+    };
+    setTimeout(() => step(4000), 4000);
   }
 
   //: True once the managed SearXNG answers, false after ten minutes or when the
@@ -455,5 +479,26 @@
     }
   }
 
-  Object.assign(window, { webEngineWords, bookmarkWebResult, renderWebSearchHistory, startSearxng, setWebSearxngRunning, searxngDownRow, runWebSearch });
+  // "Ask about this" used to drop `About <url>, ` into the chat box and stop
+  // there. The model cannot open a URL, so it answered from the address text,
+  // which is why this read as simply not working (user-reported). It now closes
+  // the web panel, writes a question naming the page, and lets the agent's
+  // read_url tool fetch it. The tool needs web search on, so that is checked
+  // first and offered rather than failing silently.
+  async function askAboutPage(url, title) {
+    if (!prefsCache?.web_search_enabled) return toast("Turn on Web search first, reading a page needs it.", "info");
+    // Reading a page is a tool call, so agent mode has to be on for this turn.
+    const input = $("chat-input");
+    input.value = `Read ${url} and tell me about it, "${(title || "").trim() || url}".`;
+    toggleWebPanel(false);
+    input.focus();
+    //: The mode follows the request: Agent goes on, or the question stays in the box (L-chat-178).
+    if (!agentModeAvailable()) return toast("Agent mode needs a model, so the question stays in the box.", "info");
+    if (!$("tools-toggle").checked) setChatMode("agent");
+    // Sent with tools forced on, whatever the toggle says: the request is
+    // meaningless without the one tool that can fetch the page.
+    await sendChatMessage(undefined, { useTools: true });
+  }
+
+  Object.assign(window, { askAboutPage, webEngineWords, bookmarkWebResult, renderWebSearchHistory, startSearxng, setWebSearxngRunning, searxngDownRow, runWebSearch });
 })();

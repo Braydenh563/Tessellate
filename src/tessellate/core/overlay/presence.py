@@ -64,3 +64,36 @@ def pick_spell(rng: random.Random, hour: int, mood: str, recent: list[str]) -> s
 def length_of(rng: random.Random, name: str) -> float:
     lo, hi = SPELLS[name].seconds
     return rng.uniform(lo, hi)
+
+
+#: D5 (L152): the spells it will do sitting on a window's top, at one end of it. A prop that needs the floor under it (a nap on
+#: a blanket, a plant to water) stays on the floor. A perched spell sits an edge spot in from the end of the top, so a rod
+#: hangs over the edge where the window is open to the room.
+PERCH_SPELLS = frozenset({"tea", "read", "doodle", "fish", "stars", "knit"})
+#: How far in from a window top's end the edge spot is (logical px).
+PERCH_EDGE_IN = 14.0
+
+
+def perch_edge_x(left: float, right: float, width: float, scale: float, toward: float) -> float:
+    """The figure's left edge for a perched spell on a window top spanning `left` to `right`: `PERCH_EDGE_IN` in from the end
+    nearer `toward` (an x of its own), the whole figure on the top; a top barely wider than the figure gives its middle."""
+    inset = PERCH_EDGE_IN * scale
+    lo, hi = left + inset, right - width - inset
+    if hi < lo:
+        return (left + right - width) / 2.0
+    return lo if abs(toward - lo) <= abs(toward - hi) else hi
+
+
+def pick_perch_spell(rng: random.Random, hour: int, mood: str, recent: list[str]) -> str | None:
+    """A spell for the hour that can be done on a window top, or None when none suits this hour (it stays on the floor)."""
+    names = [n for n in spells_for(hour) if n in PERCH_SPELLS]
+    if not names:
+        return None
+    live = [n for n in names if not recent or n != recent[-1]] or names
+    weights = [SPELLS[n].weight * (1.6 if mood in SPELLS[n].moods else 1.0) for n in live]
+    roll = rng.random() * sum(weights)
+    for n, w in zip(live, weights):
+        roll -= w
+        if roll < 0:
+            return n
+    return live[-1]

@@ -8,7 +8,7 @@ three cards, each typed and each pinned to a sentence in another note:
 - ``repeats``: the paragraph says again what a note already says;
 - ``contradicts``: the same thing with a different number or a "not" (no
   model needed), or what the model judges a disagreement;
-- ``answers``: the paragraph answers an open question the night shift found
+- ``answers``: the paragraph answers an unanswered question the night shift found
   (`DerivedFact` kind ``question``);
 - ``date``: a time phrase in the paragraph, read by the same date reader
   that fills a note's dates, offered as a reminder;
@@ -39,6 +39,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import clock
 from tessellate.ai import facts
+from tessellate.ai import presets
 from tessellate.ai.fence import FENCE_RULE, fence
 from tessellate.core.database import DerivedFact, Entry
 from tessellate.core.logbuffer import safe_value
@@ -167,7 +168,7 @@ def _judge(provider, model: str, paragraph: str, source: str) -> tuple[str, str]
         reply = provider.chat(model, [
             {"role": "system", "content": f"{JUDGE_SYSTEM} {FENCE_RULE}"},
             {"role": "user", "content": f"First: {fence('paragraph', paragraph[:1200])}\n\nSecond: {fence('note', source[:600])}"},
-        ])
+        ], mode=presets.BACKGROUND_MODE)
     except Exception as exc:  # noqa: BLE001  # a model that fails leaves the local reading
         logger.info("margin: the model could not judge (%s)", safe_value(str(exc), 160))
         return None

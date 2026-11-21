@@ -365,6 +365,9 @@ class OverlayRunner:
 
     def stop(self) -> None:
         self._stopped = True
+        counts = self.engine.warp_counts() if self.engine is not None else {}
+        if counts:  # L152: how its far moves went, counts only, so the log shows whether one way of moving dominates
+            logger.info("overlay: far moves by kind %s, perch spells %d", counts, self.engine.perch_spells)
         if self.host:
             self.host.stop()
         self.host = None

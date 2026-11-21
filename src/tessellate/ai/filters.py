@@ -17,6 +17,7 @@ when any word of a group the query names is in it.
 
 from __future__ import annotations
 
+import calendar
 import re
 from datetime import date, datetime, time, timedelta
 
@@ -44,6 +45,10 @@ _HAS = (
 )
 _KINDS = (("board", re.compile(r"\b(?:boards?|whiteboards?|mind ?maps?|maps)\b", re.I)),)
 _MENTION = re.compile(r"\b(?:mentioning|mentions|naming|that mention) (.+?)(?= (?:and|that|tagged|connected|edited)\b|[,;]|$)", re.I)
+#: A person or a place said as a filter (L-chat-199): "with Sam in them", "where Hannah is mentioned", "from Perth".
+#: Capitalised on purpose (case-sensitive), so "in the garden" and "from last week" are not names; a month or day is a date.
+_NAMED = re.compile(r"\b(?:with|where) ([A-Z][a-z]+(?: [A-Z][a-z]+)?) (?:in (?:them|it)|(?:is|are) mentioned)\b|\b(?:from|in|at) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)\b")
+_NOT_NAMES = frozenset((*calendar.month_name[1:], *calendar.day_name, "The", "My", "Last", "This", "Today", "Yesterday"))
 _FILLER = re.compile(r"\b(?:show|me|all|the|notes?|ones|everything|anything|that|which|are|is|were|was|only|just|my|and|with|find|list)\b", re.I)
 
 
@@ -78,6 +83,9 @@ class _Reading:
 
     def free(self, found: re.Match) -> bool:
         return not any(found.start() < end and start < found.end() for start, end in self.taken)
+
+    def filters_of(self, kind: str) -> list[dict]:
+        return [f for f in self.filters if f["kind"] == kind]
 
     def take(self, found: re.Match, item: dict) -> None:
         self.filters.append({**item, "said": found.group(0).strip()})
@@ -122,6 +130,10 @@ def _read_contents(r: _Reading) -> None:
             r.take(found, {"kind": "type", "what": name})
     if found := _MENTION.search(r.raw):
         r.take(found, {"kind": "mention", "name": found.group(1).strip()})
+    for found in _NAMED.finditer(r.raw):
+        name = found.group(1) or found.group(2)
+        if r.free(found) and name.split()[0] not in _NOT_NAMES and not r.filters_of("mention"):
+            r.take(found, {"kind": "mention", "name": name})
 
 
 def read(text: str, now: datetime) -> dict:

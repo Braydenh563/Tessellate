@@ -45,7 +45,8 @@ CALLED_FLOOR = {
     #: 24 since VC6: import_words, clear_words, ignore_lints, clear_ignored_lints and the dialects.
     "harper": 24,
     "phosphor": 260,
-    "wordlist": 2,
+    #: 3 since VC8: search_manager._one_edit_words asks `variants.is_english` (search typo tolerance).
+    "wordlist": 3,
     #: INBOX 1731: check, suggest, both dictionaries, frequency ranking, own words.
     "spelling": 6,
     #: Completions after `module.` and the hover card (documents-code.js).
@@ -66,6 +67,10 @@ CALLED_FLOOR = {
     #: and not through `p.color` and `p.hue`.
     "p5": 10,
     "flashtext": 2,
+    #: L-chat-64: named holidays; plurals and a or an; close names.
+    "holidays": 1,
+    "inflect": 2,
+    "rapidfuzz": 1,
     "stencils": 7,
     "mammoth": 2,
     #: initialize, render and parse, in the diagram frame (mermaid-frame.js).

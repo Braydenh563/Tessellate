@@ -138,7 +138,7 @@ def _delete_category(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     names = [row["name"] for row in rows]
     name = object_acts._find(parsed["name"], names)  # noqa: SLF001
     if name is None:
-        return {"line": object_acts._unknown("category", parsed["name"], names)}  # noqa: SLF001
+        return {"line": object_acts._unknown("category", parsed["name"], names, "delete")}  # noqa: SLF001
     if name == manager.UNCATEGORISED:
         return {"line": f"“{name}” is where notes with no category sit, so it cannot be deleted."}
     count = next(row["count"] for row in rows if row["name"] == name)
@@ -156,7 +156,7 @@ def _merge(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     found = {key: object_acts._find(parsed[key], names) for key in ("from", "into")}  # noqa: SLF001
     for key in ("from", "into"):
         if found[key] is None:
-            return {"line": object_acts._unknown("category", parsed[key], names)}  # noqa: SLF001
+            return {"line": object_acts._unknown("category", parsed[key], names, "merge")}  # noqa: SLF001
     source, target = found["from"], found["into"]
     if source == target:
         return {"line": f"“{source}” and “{target}” are the same category."}
@@ -173,7 +173,7 @@ def _delete_tag(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     counts = tags_repo.counts(session)
     name = object_acts._find(parsed["name"], list(counts))  # noqa: SLF001
     if name is None:
-        return {"line": object_acts._unknown("tag", parsed["name"], list(counts))}  # noqa: SLF001
+        return {"line": object_acts._unknown("tag", parsed["name"], list(counts), "delete")}  # noqa: SLF001
     if refusal := object_acts.guard(session, "delete_tag", {"name": name}):
         return {"line": refusal}
     notes = counts[name]
@@ -248,7 +248,7 @@ def _source_note(session: Session, parsed: dict, note_ids: list[int] | None, hel
         return helpers["resolve_one"](session, None, note_ids, True, None)
     about = re.sub(r"\s+note$", "", src, flags=re.I)
     found = helpers["resolve_one"](session, about, note_ids, False, None)
-    #: The speller reads "todo" as "to do" before this sees it; a note titled Todo (or To-do) is looked up as typed.
+    #: The speller reads the one-word spelling as "to do" before this sees it; a note with the one-word or hyphenated title is looked up as typed.
     for spelling in ("todo", "to-do"):
         if found[0] is None and re.search(r"\bto do\b", about, re.I):
             found = helpers["resolve_one"](session, re.sub(r"\bto do\b", spelling, about, flags=re.I), note_ids, False, None)

@@ -139,8 +139,8 @@ def test_the_wake_marks_the_figure_for_a_fresh_read() -> None:
 
 @needs_node
 def test_the_breath_reads_the_rise_clock_once_not_each_step() -> None:
-    # Intent moved (atlasidle2): the breath is a Web Animation set once, so the
-    # rise's clock is read at the start (and a retune), never per step.
+    # Intent moved (atlasidle2, then L138): the rise's clock is read at the start
+    # (and a retune), never per step; the steps run on the breath's own phase.
     swell = re.search(r"^const ATLAS_BREATH_SWELL = .*;$", LIFE, re.M).group(0)
     out = _node(
         swell
@@ -151,7 +151,9 @@ let gets = 0;
 const rise = { effect: { getComputedTiming: () => ({ duration: 4600 }) }, startTime: 0 };
 Object.defineProperty(rise, "currentTime", { get() { gets += 1; return 0; } });
 Object.defineProperty(rise, "playState", { get() { gets += 1; return "running"; } });
-const torso = { animate: () => ({ cancel() {} }) };
+const torso = { style: {} };
+const performance = { now: () => 0 };
+atlasBreathFrame.put = () => {};
 const box = { dataset: { atlasLook: "masculine" }, querySelectorAll: () => [torso], querySelector: () => ({ getAnimations: () => { gets += 1; return [rise]; } }) };
 for (let t = 0; t <= 4600; t += 100) atlasBreathFrame(box, true);
 process.stdout.write(JSON.stringify({ gets }));

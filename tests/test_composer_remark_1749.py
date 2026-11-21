@@ -119,7 +119,9 @@ def test_a_casual_hello_is_a_line_not_a_status_report(go, message):
 @pytest.mark.parametrize("message", ["good morning", "Good afternoon"])
 def test_a_formal_hello_keeps_the_welcome(go, message):
     said, _ = go(message)
-    assert "welcome back" in said and "days running" in said, said
+    #: Intent unchanged: the formal hello keeps the status welcome. Since L-chat-229 the greeting is
+    #: one of twenty seeded lines, not always "welcome back", so the welcome is read by its parts.
+    assert said.startswith("Good ") and "#/notes/" in said and "days running" in said, said
     assert not said.startswith("And") and ". And " not in said, said
 
 
@@ -162,7 +164,6 @@ def seeded(session):
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-
     pin_clock(monkeypatch, seed_c.NOW)
 
 

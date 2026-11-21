@@ -232,9 +232,7 @@ class FramesMixin:
             return "think"
         if s == "sit":
             return "lounge" if now - self.state_at >= bh.LOUNGE_AFTER else ""
-        if s in ("walk", "drift"):
-            return "glide"
-        return ""
+        return bh.lower_moving(s, self.gait, abs(self.vx_px), WALK_SPEED * self._scale())
 
     def _tail_view(self, now: float, frame: str) -> tuple[int, ...] | None:
         """The layered tail's view over a stand-family or sit frame, or None (no layer: another frame, reduced motion, a

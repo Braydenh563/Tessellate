@@ -33,7 +33,14 @@ const { boot } = require('./lib.js');
       }, name);
       for (const id of ids) {
         const trigger = `#settings-${name} [data-help-for="${id}"]`;
+        // A '?' inside a closed fold is not on screen for a person either: they open the fold first.
+        await page.evaluate((sel) => {
+          for (let d = document.querySelector(sel)?.closest('details'); d; d = d.parentElement?.closest('details')) d.open = true;
+        }, trigger);
+        await page.waitForTimeout(150);
         await page.locator(trigger).first().scrollIntoViewIfNeeded().catch(() => {});
+        // Settings scrolls smoothly: a scroll event after the press closes the popover (menus.js), so let it settle.
+        await page.waitForTimeout(500);
         const clicked = await page.locator(trigger).first().click({ timeout: 3000 }).then(() => true).catch(() => false);
         await page.waitForTimeout(250);
         const r = await page.evaluate((pid) => {

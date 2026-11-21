@@ -199,11 +199,17 @@ def _recall_row(out: _Answer, view: NoteView) -> None:
     #: A picture's note as what it shows and its words; a note's
     #: heading with the sentence after it (INBOX 787).
     units = _overview().best_line(view.sentences, set()) or _label_line(view)
-    if not units:
+    if not units or _restates_name(view, units):
         out.t("stop")
         return
     out.t("colon")
     _overview_line(out, units, set())
+
+
+def _restates_name(view: NoteView, units: list[Sentence]) -> bool:
+    """A line that is only the note's name again (“milk” (27 October): Milk.): the name already says it (E18)."""
+    plain = lambda text: re.sub(r"[\W_]+", " ", text).strip().lower()  # noqa: E731
+    return plain(" ".join(u.text for u in units)) == plain(composer_frame.name_of(view.note))
 
 
 def _label_line(view: NoteView) -> list[Sentence]:

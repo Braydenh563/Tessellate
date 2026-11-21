@@ -249,6 +249,7 @@ const ctx = {
   renderSpaceMenu: () => log.push("renderSpaceMenu"),
   updateCaptureSpaceLabel: () => log.push("updateCaptureSpaceLabel"),
   toast: (text) => log.push(["toast", text]),
+  voiceLine: (key, what) => (key === "failed" ? `Couldn't ${what}.` : `${what}.`),
   $: (id) => (id === "note-search" ? ctx.__box : grid(id)),
   __box: { value: "x" },
   __activePane: "",
@@ -482,7 +483,7 @@ const log = [];
 let here = "alpha";
 const ctx = {
   Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
-  recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]), voiceLine: (k, w) => `Couldn't ${w}.`,
   spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
 };
 vm.createContext(ctx);

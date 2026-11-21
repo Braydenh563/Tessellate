@@ -8,6 +8,16 @@ from pathlib import Path
 AI = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "ai"
 
 
+def after_path(text: str) -> str:
+    """The answer without its leading click path (the owner, 2026-11-12, L725: the path leads, then one sentence from the help)."""
+    paras = text.split("\n\n")
+    keep = [p for p in paras[:1] if p.startswith(("My reading", "Reading that", "I read that"))]
+    rest = paras[len(keep):]
+    if rest and rest[0].startswith("**Where:** ") and len(rest) > 1:
+        rest = rest[1:]
+    return "\n\n".join(keep + rest)
+
+
 def help_core_text() -> str:
     """`help_topics_core.py` and the second half moved out of it whole (K24)."""
     return "\n".join((AI / name).read_text(encoding="utf-8") for name in ("help_topics_core.py", "help_topics_core_tail.py"))

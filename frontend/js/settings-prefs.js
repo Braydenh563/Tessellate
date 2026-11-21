@@ -8,6 +8,22 @@
 // `prefsCache`, `savePrefs`, `markPrefsDirty` and `markPrefsSaved` stay in
 // settings-panes.js because the status bar and the palette also use them.
 
+//: The prompt reads the first 600 characters of About me
+//: (`librarian.PROFILE_ABOUT_CAP_CHARS`); the box stops there, and the count
+//: says how much is left. A profile saved before the cap may be longer, and
+//: then the line says which part Atlas reads rather than hiding the rest.
+const PROFILE_ABOUT_CAP = 600;
+
+function updateProfileCount() {
+  const line = $("pref-profile-count");
+  const box = $("pref-profile");
+  if (!line || !box) return;
+  const used = box.value.length;
+  line.textContent = used > PROFILE_ABOUT_CAP
+    ? `${used} characters; Atlas reads the first ${PROFILE_ABOUT_CAP}.`
+    : `${used} of ${PROFILE_ABOUT_CAP} characters.`;
+}
+
 async function renderPrefs() {
   //: The optional-package notices for what this pane's switches use (extra-notice.js).
   extraNoticeMount($("xn-documents"), "documents", { fresh: true });
@@ -33,8 +49,17 @@ async function renderPrefs() {
   $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
   $("pref-search-min-sim").value = prefsCache.search_min_similarity;
   $("pref-search-z-margin").value = prefsCache.search_relative_z_margin;
+  showCurrencyRates().catch(() => {});
   $("pref-style").value = prefsCache.communication_style;
   $("pref-voice").value = prefsCache.composer_voice;
+  //: Like the chat dock's Length picker, these two save on change (`setPreference`), and the dock's picker is read again.
+  $("pref-answer-length").value = prefsCache.response_mode;
+  $("pref-answer-length").onchange = (event) => setPreference("response_mode", event.target.value).then(loadResponseModes);
+  $("pref-personas-off").checked = prefsCache.personas_off;
+  $("pref-personas-off").onchange = (event) => setPreference("personas_off", event.target.checked);
+  //: L-chat-17: the surfaces that speak about the notes (greeting, today line, remarks).
+  $("pref-personal-wording").checked = prefsCache.personal_wording !== false;
+  $("pref-personal-wording").onchange = (event) => setPreference("personal_wording", event.target.checked);
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-birthday").value = prefsCache.birthday || "";

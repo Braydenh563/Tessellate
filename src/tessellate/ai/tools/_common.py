@@ -117,6 +117,11 @@ class ToolSpec:
     #: this, and the flag exists rather than a name check so the loop reads
     #: as "why" instead of "which" (§33).
     ends_turn: bool = False
+    #: Offered only to a skill that names it in its `tools`, never to a plain
+    #: chat turn. The look-back tools exist to back four skills, and a schema
+    #: every turn pays for is a cost a tool no one asks for by name cannot earn
+    #: (the prompt budget in tests/test_prompt_budget.py).
+    skill_only: bool = False
 
 
 # --- context budget -------------------------------------------------------------
@@ -265,7 +270,7 @@ def _note_summary(
     session: Session, entry: Entry, chars: int = PREVIEW_CHARS, dates: list | None = None
 ) -> dict:
     """What the model gets back about a note, enough to talk about it
-    and to reference it in follow-up tool calls.
+    and to reference it in later tool calls.
 
     `dates` lets a caller looping over many rows (`list_notes`,
     `_summarize_notes`) pass in a pre-fetched, batched lookup instead of

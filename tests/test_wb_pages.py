@@ -85,7 +85,7 @@ def test_a_locked_item_answers_the_pointer() -> None:
     assert "wbPaintLockBadges();" in _function(BOARD, "wbPaintLocks")
     assert "wbPaintLockHover" not in BOARD and "wbOnLockHoverMove" not in BOARD
     assert 'addEventListener("pointerdown", wbOnLockPress, true)' in BOARD
-    assert "Locked. Right-click to unlock it." in BOARD
+    assert "Locked. Right-click to unlock it" in BOARD
     assert "Unlock this item" in BOARD
     hit = _function(BOARD, "wbLockedItemAt")
     assert "wbItemHidden(" in hit, "a hidden item is not under the pointer"

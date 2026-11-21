@@ -4,14 +4,14 @@
 // grouped by the function that forced them. Companion to throwframes.js.
 // Env: BASE, RATE (4), OUT, BEFORE_DIR (lib.js `routeBefore`).
 const fs = require('fs');
-const { boot, routeBefore } = require('./lib.js');
+const { boot, routeBefore, setBuddy } = require('./lib.js');
 const RATE = Number(process.env.RATE || 4);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
   const { browser, page, ctx } = await boot({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
   await routeBefore(ctx, page);
   const cdp = await ctx.newCDPSession(page);
-  await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await setBuddy(page, 'atlas');
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   await page.evaluate(() => {

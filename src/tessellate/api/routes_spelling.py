@@ -17,9 +17,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+from typing import Annotated
+
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.ai import variants
 from tessellate.core import languagetool, spellpacks
 from tessellate.core.deps import get_session
 from tessellate.repo.spelling import own_words
@@ -35,6 +38,37 @@ def get_own_words(session: Session = Depends(get_session)) -> dict:
 class LanguageToolBody(BaseModel):
     text: str = Field(max_length=languagetool.MAX_CHARS)
     language: str = "en-US"
+
+
+#: The longest word checked: a longer run is not a word a list holds, and the cap keeps one item
+#: from carrying the whole request body (PR 230 review).
+MAX_WORD = 64
+
+
+class SpellCheckBody(BaseModel):
+    words: list[Annotated[str, Field(max_length=MAX_WORD)]] = Field(max_length=2000)
+    lang: str = Field("en", max_length=35)
+
+
+@router.post("/spelling/check")
+def post_spelling_check(body: SpellCheckBody) -> dict:
+    """The words the document's English list does not hold (L-chat-259).
+
+    `lang` is the document's tag: en-GB reads the British list, en-US the American one
+    (`variants.english`). Any other language, Japanese and Chinese included, is not checked
+    (`checked` false, no word flagged): no word list is read against it.
+    """
+    variant = variants.variant_of_lang(body.lang)
+    if variant is None:
+        return {"checked": False, "variant": None, "unknown": []}
+    known = variants.english(variant)
+    #: A dict keeps the first-seen order and answers "seen?" without a scan.
+    seen: dict[str, None] = {}
+    for word in body.words:
+        low = word.lower()
+        if low and low not in known:
+            seen.setdefault(low)
+    return {"checked": True, "variant": variant, "unknown": list(seen)}
 
 
 @router.post("/grammar/languagetool")

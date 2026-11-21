@@ -1353,7 +1353,7 @@ async function openDocument(id) {
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.
   if (!doc) {
-    toast("Couldn't open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
+    toast(voiceLine("failed", "open that document. The one on screen is unchanged"), true, { action: ["Try again", () => openDocument(id)] });
     renderDocList();
     return;
   }
@@ -1799,7 +1799,7 @@ async function docLinkMention(row, button) {
       } else await loadDocuments(currentDoc?.id);
     }
     mentionUndo();
-    toast(`Linked from ${row.title}.`);
+    toast(voiceLine("done", `Linked from ${row.title}`));
   } catch (error) {
     toast(error.message, true);
   } finally {
@@ -2763,7 +2763,7 @@ async function docSaveOnce(silent) {
     //: retrying every pause must not stack a toast each time.
     if (!docSaveFailedSaid) {
       docSaveFailedSaid = true;
-      toast(voiceLine("failed", { what: "save the document", why: `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.` }), true, {
+      toast(voiceLine("failed", "save the document", `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.`), true, {
         action: ["Try again", () => saveDocument({ silent: false })],
       });
     }
@@ -2855,7 +2855,7 @@ async function expandNoteIntoDocument(entry) {
     offerCreateUndo(doc);
     switchTab("documents");
     await loadDocuments(doc.id);
-    toast(`Started a document from this note, the note itself is untouched.`);
+    toast(voiceLine("done", "Started a document from this note, the note itself is untouched"));
   } catch (error) {
     toast(error.message, true);
   }
@@ -7282,7 +7282,7 @@ async function docImageUpload(box, boxId, file, said = "") {
       }
       docImageUpload(box, boxId, file, said);
     };
-    toast("Couldn't upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+    toast(voiceLine("failed", "upload that picture. Add its address by hand"), true, { action: ["Try again", retry] });
   }
 }
 
@@ -8046,6 +8046,9 @@ function docShowSaved(saved, keep = false) {
   $("doc-title").value = saved.title || "";
   renderDocPreview();
   docDirty = false;
+  //: The write above reads as an edit and starts the autosave; the text is the server's own,
+  //: and a save of it after an Undo had changed it again was a false 409 (L-documents-41).
+  clearTimeout(docSaveTimer);
   $("doc-saved").textContent = "Saved";
   renderDocList();
 }
@@ -8166,10 +8169,10 @@ async function openDocAiHistory() {
           }
           docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
           renderDocList();
-          toast("Reverted.");
+          toast(voiceLine("done", "Reverted"));
           dialog.close();
         } catch (error) {
-          toast(error.message || "Couldn't revert that.", true);
+          toast(error.message || voiceLine("failed", "revert that"), true);
         } finally {
           revertBtn.disabled = false;
         }
@@ -12130,7 +12133,7 @@ function docProseFindings(text, lang = docProse.langOf(text)) {
   //: longer one: a regex over the whole list would flag "ot" inside "not".
   const word = /[A-Za-z']+/g;
   const dictionary = docDictionary();
-  const variants = docVariantLookup();
+  const variants = docVariantLookup(text);
   //: Off for a document whose `lang` is not English (`docProse.langOf`): see `docProse.langNote`.
   const checkWords = english;
   let hit;
@@ -12145,7 +12148,7 @@ function docProseFindings(text, lang = docProse.langOf(text)) {
     if (variant) {
       found.push({
         rule: "variant",
-        message: `${DOC_VARIANT_LABEL[docSpellingVariant()] || "US"} spelling: “${variant}”`,
+        message: `${DOC_VARIANT_LABEL[docSpellingVariant(text)] || "US"} spelling: “${variant}”`,
         start: hit.index,
         end: hit.index + hit[0].length,
         text: hit[0],
@@ -12246,20 +12249,30 @@ function docProseFindings(text, lang = docProse.langOf(text)) {
   for (const [at, to] of chunks) {
     const chunk = sentences.slice(at, to);
     if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
+    //: A sentence ends at . ! ? and a space, or at 。！？ with none (L-chat-259), each piece keeping its own offset.
+    const ends = /(?<=[.!?])\s+|(?<=[。！？])\s*/g;
     let cursor = 0;
-    for (const sentence of chunk.split(/(?<=[.!?])\s+/)) {
-      const words = (sentence.match(/\S+/g) || []).length;
+    const pieces = [];
+    let cut;
+    while ((cut = ends.exec(chunk)) !== null) {
+      if (cut[0] === "") ends.lastIndex += 1;
+      if (cut.index > cursor) pieces.push([cursor, cut.index]);
+      cursor = cut.index + cut[0].length;
+    }
+    if (cursor < chunk.length) pieces.push([cursor, chunk.length]);
+    for (const [from, to] of pieces) {
+      const sentence = chunk.slice(from, to);
+      const words = docProse.words(sentence);
       if (words > DOC_LONG_SENTENCE_WORDS) {
         found.push({
           rule: "long-sentence",
           message: `${nounCount(words, "word")} in one sentence`,
-          start: at + cursor,
-          end: at + cursor + sentence.length,
-          text: text.slice(at + cursor, at + cursor + sentence.length),
+          start: at + from,
+          end: at + to,
+          text: text.slice(at + from, at + to),
           replacement: null,
         });
       }
-      cursor += sentence.length + 1;
     }
   }
   return found
@@ -12379,12 +12392,77 @@ const docProse = {
     const key = /^lang(?:uage)?:[ \t]*["']?([A-Za-z]{2,3})/m.exec(block[1]);
     return key ? key[1].toLowerCase() : "en";
   },
+  //: **The full tag** ("en-GB", "fr", "zh-Hans") of the same key, "" when the document names none
+  //: (L-chat-236). `langOf` is this one's primary subtag.
+  tagOf(text) {
+    const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text || "");
+    const key = block && /^lang(?:uage)?:[ \t]*["']?([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*)/m.exec(block[1]);
+    if (!key) return "";
+    const [first, ...rest] = key[1].split(/[-_]/);
+    return [first.toLowerCase(), ...rest.map((part) => (part.length === 2 ? part.toUpperCase() : part.length === 4 ? part[0].toUpperCase() + part.slice(1).toLowerCase() : part))].join("-");
+  },
+  //: The English dialect a document's tag names, null for any other tag. The writer's own choice
+  //: for this document, ahead of the Settings spelling preference (`docSpellingVariant`).
+  variantOf(text) {
+    return { "en-GB": "uk", "en-US": "us", "en-AU": "au", "en-NZ": "au", "en-CA": "ca", "en-IN": "in" }[this.tagOf(text)] || null;
+  },
+  //: Japanese, Chinese and Korean are not written in words split by spaces: no word list is
+  //: matched against them and no space-split pass is run (the count already reads a character
+  //: as a word, `wordCount`).
+  cjk(lang) {
+    return /^(ja|zh|ko|yue)$/.test(lang);
+  },
+  //: **Words of a sentence, CJK included** (L-chat-259; no checker pack exists for Japanese or Chinese, so
+  //: the browser's own `Intl.Segmenter`: no download, no licence). "週末のゴルフについての考え" is 6 words
+  //: (週末 の ゴルフ について の 考え), where splitting on spaces gives 1 and the shared `wordCount` gives 13
+  //: (a character a word, the server's twin has no segmenter). Text with no CJK is counted by its spaces.
+  words(sentence) {
+    if (!/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/.test(sentence) || typeof Intl !== "object" || typeof Intl.Segmenter !== "function") return (sentence.match(/\S+/g) || []).length;
+    docProse.segmenter ||= new Intl.Segmenter(undefined, { granularity: "word" });
+    let count = 0;
+    for (const part of docProse.segmenter.segment(sentence)) if (part.isWordLike) count += 1;
+    return count;
+  },
+  //: The edit that makes `tag` the document's language: replace or add the `lang` line of the
+  //: leading properties block, add the block, or take the line (and an empty block) away when
+  //: `tag` is "". `{start, end, insert}`, empty when nothing changes.
+  withLang(text, tag) {
+    const src = String(text || "");
+    const none = { start: 0, end: 0, insert: "" };
+    const block = /^---(\r?\n)([\s\S]*?)\r?\n---/.exec(src);
+    if (!block) return tag ? { start: 0, end: 0, insert: `---\nlang: ${tag}\n---\n` } : none;
+    const nl = block[1];
+    const body = block[2];
+    const at = 3 + nl.length;
+    const line = /^lang(?:uage)?:[^\r\n]*/m.exec(body);
+    if (tag) {
+      const next = `lang: ${tag}`;
+      if (!line) return { start: at + body.length, end: at + body.length, insert: `${nl}${next}` };
+      return line[0] === next ? none : { start: at + line.index, end: at + line.index + line[0].length, insert: next };
+    }
+    if (!line) return none;
+    if (body === line[0]) return { start: 0, end: block[0].length + (/^\r?\n/.exec(src.slice(block[0].length)) || [""])[0].length, insert: "" };
+    const from = at + line.index;
+    const last = line.index + line[0].length === body.length;
+    return last ? { start: from - nl.length, end: from + line[0].length, insert: "" } : { start: from, end: from + line[0].length + nl.length, insert: "" };
+  },
+  //: **The editor says its language** (L-chat-236): the `lang` attribute of the text area, so a screen
+  //: reader, the browser's own hyphenation and spellcheck and the font choice for Chinese and
+  //: Japanese read the document as it is written. Unset, the attribute is taken off and the page's
+  //: own language applies.
+  paintLang() {
+    const dom = docCmView && docCmView.contentDOM;
+    if (!dom) return;
+    const tag = this.tagOf(docText());
+    if ((dom.getAttribute("lang") || "") !== tag) tag ? dom.setAttribute("lang", tag) : dom.removeAttribute("lang");
+  },
   //: Why the checker is quiet for a non-English document: the English list would
   //: flag every word, and no pack for its language is installed (a30h-1102 step 4). With a
   //: pack (D30, documents-spell.js) spelling is checked and the note says so.
   langNote(text) {
     const lang = this.langOf(text);
     if (lang === "en") return "";
+    if (this.cjk(lang)) return `Spelling and grammar are off for this document: ${docSpell.langName(lang)} is not written in words split by spaces, so no word list is checked against it.`;
     return docSpell.packNote(lang) || `Spelling and grammar are off for this document: its language is set to ${docSpell.langName(lang)}, and only the English checks are installed.`;
   },
   hidden: false,
@@ -12408,7 +12486,7 @@ const docProse = {
   dirty: false,
   nearMin: 8000,
   rules(part, again) {
-    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText(), docSpell.packKey()].join("|");
+    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(part), docCheckLinkText(), docSpell.packKey()].join("|");
     const memo = this.memo;
     if (!((again || this.typing) && memo && memo.part === part && memo.key === key)) {
       const near = (this.typing || again) && memo && memo.key === key && part.length >= this.nearMin && memo.part !== part ? this.near(memo, part) : null;
@@ -13305,7 +13383,7 @@ function docProseFixAll() {
   markDocDirty();
   box.dispatchEvent(new Event("input", { bubbles: true }));
   renderDocProse();
-  toast(`Fixed ${applied}. Ctrl+Z undoes it.`);
+  toast(voiceLine("done", `Fixed ${applied}. Ctrl+Z undoes it`));
 }
 
 // --- inline completion --------------------------------------------------------
@@ -14467,6 +14545,15 @@ docListen("input", (event) => {
 });
 
 $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
+//: This document's language (L-chat-236): written into its properties block, so it goes wherever the text goes.
+$("doc-language")?.addEventListener("change", (event) => {
+  const edit = docProse.withLang(docText(), event.currentTarget.value);
+  if (edit.start === edit.end && !edit.insert) return;
+  docReplaceRange(docSurface(), edit.start, edit.end, edit.insert);
+  docProse.paintLang();
+  docGrammarCache = { text: null, findings: [] };
+  renderDocProse();
+});
 $("doc-spelling-variant")?.addEventListener("change", async (event) => {
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -14837,7 +14924,10 @@ let docVariantFor = null;
 //: owner finding the select first. Anything not English, or a tag with no
 //: dialect of its own, is "off" (no preference); the rest of the English-
 //: speaking world that spells the British way reads as British.
-function docSpellingVariant() {
+function docSpellingVariant(text) {
+  //: The document's own language tag (en-GB, en-US) is the writer's choice for it: it wins.
+  const own = text ? docProse.variantOf(text) : null;
+  if (own) return own;
   const set = (prefsCache && prefsCache.spelling_variant) || "auto";
   if (set !== "auto") return set;
   const tag = String((typeof navigator === "object" && navigator && navigator.language) || "").toLowerCase();
@@ -14845,8 +14935,8 @@ function docSpellingVariant() {
   return byTag[tag] || (/^en-(ie|za|sg|my)$/.test(tag) ? "uk" : "off");
 }
 
-function docVariantLookup() {
-  const variant = docSpellingVariant();
+function docVariantLookup(text) {
+  const variant = docSpellingVariant(text);
   if (docVariantFor === variant && docVariantMap) return docVariantMap;
   docVariantFor = variant;
   docVariantMap = new Map();
@@ -15957,6 +16047,14 @@ async function openDocDictionary() {
   renderDocDictionary();
   const variant = $("doc-spelling-variant");
   if (variant) variant.value = docSpellingVariant();
+  const language = $("doc-language");
+  if (language) {
+    const tag = docProse.tagOf(docText());
+    //: A tag the list does not offer (pt, en-NZ) is shown as it is, never silently changed.
+    if (tag && ![...language.options].some((option) => option.value === tag)) language.add(new Option(tag, tag));
+    language.value = tag;
+    language.disabled = !currentDoc;
+  }
   extraNoticeMount($("xn-languagetool"), "languagetool", { fresh: true });
   const grammar = $("doc-grammar-check");
   if (grammar) {

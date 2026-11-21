@@ -41,7 +41,11 @@ def test_the_subject_is_the_thing_asked_about(go):
     assert "eating your homework" in first, text
     for noise in ("smth", "something, it was a joke", "uhh", "I think", "my homework"):
         assert noise not in first, first
-    assert text.find("Why did the student eat his homework") < text.find("scarecrow") or "scarecrow" not in text, text
+    # L102 (1d5df7da0) added a "Your Fun notes go together: ..." line that names the
+    # scarecrow note by title near the top, so order is read on the quoted lines, which
+    # is what the owner meant: the asked-about note is said before the unrelated one.
+    asked, other = text.find("You wrote “Why did the student eat his homework"), text.find("You wrote “Why did the scarecrow")
+    assert asked >= 0 and (other < 0 or asked < other), text
 
 
 def test_no_tofu_arrow_or_inline_bold_in_the_answer(go):

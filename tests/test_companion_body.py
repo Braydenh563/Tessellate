@@ -174,10 +174,26 @@ def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:
     # Intent moved (in-app dive 1107, ba661be3): with no prop to name, the title is the how-to
     # (the aria-label: click, double-click, drag, right-click), not removed, for learnability.
     assert "face.title = " in name and 'else face.title = face.getAttribute("aria-label");' in name
-    words = AV[AV.index("const NMB_PROP_WORDS") :][:1800]  # a slice of the table, widened as the desk acts (atlascat D1 to D4, INBOX 1710) added their tooltip rows
+    words = AV[AV.index("const NMB_PROP_WORDS") :]
+    words = words[: words.index("];")]  # the whole table: a fixed slice kept missing rows as the desk acts (atlascat D1 to D4, INBOX 1710, L178) added theirs
     for cls in ("nmb-music", "nmb-reading", "nmb-act-bell", "nmb-act-lantern", "nmb-act-carry", "nmb-offline"):
         assert f'["{cls}", ' in words, cls
     assert "nameMarkBuddyNameProps(buddy, face);" in AV
+
+
+LAZY_CSS = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
+
+
+def test_atlas_desk_props_have_a_keyline_and_the_small_ones_are_scaled() -> None:
+    # L-chat-246: atlasprops.js (light and dark, one sheet) read 18 of 30 props under 3 to 1 or under 14px, 1 to
+    # 2.5 to 1 for the desk props; after, 0 of 30, every prop 4.02 to 1 or more and 14px or more in both themes.
+    rule = LAZY_CSS[LAZY_CSS.index("/* **A desk prop reads against the body**") :]
+    for cls in (".atl-ds-mat", ".atl-ds-pillow", ".atl-ds-can", ".atl-ds-piece", ".atl-ds-twinkle", ".atl-ds-gear-disc", ".atl-ds-mote", ".atl-ds-snack", ".atl-prop-bag"):
+        assert cls in rule, cls
+    assert "stroke: var(--atl-navy); stroke-width: 0.7;" in rule and "paint-order: stroke fill;" in rule
+    assert ".atl-ds-rod" in rule and ".atl-nap-z" in rule and ".atl-ds-fold { opacity: 0.85; }" in rule
+    for small in (".nmp-note", ".nmp-gear", ".nmp-piece", ".nmp-snack", ".nmp-napz"):
+        assert small in rule, small
 
 
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
@@ -239,7 +255,7 @@ def test_it_comes_in_three_ways_or_more_wherever_it_stands() -> None:
     fall = enter[enter.index('if (how === "fall") {') :]
     assert 'atlas ? "float" : "leap"' in fall
     tumble = enter[enter.index('if (how === "tumble") {') :]
-    assert '{ rotate: "0deg" },\n    ], { duration, easing: "ease-out" })' in tumble
+    assert '{ rotate: "0deg" },\n    ], { duration, easing: NMB_CURVE.out })' in tumble
 
 
 @needs_node

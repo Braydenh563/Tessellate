@@ -1,0 +1,45 @@
+/* doc-agent-review-lazy.css: an agent's edit marked in the open document (L-documents-41,
+   doc-agent-review.js), fetched with that file the first time an edit_document card names the
+   document that is open. The marks themselves are the suggestion mode's own `.cm-suggest-ins`
+   and `.cm-suggest-del` (05-sidebars-themes.css), so an agent's change and a person's suggested
+   change read the same; this sheet only places the hunk's added lines, its two buttons and
+   the bar over the text. */
+.doc-agent-review-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--field-inset);
+}
+.doc-agent-review-said {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.doc-agent-review-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.doc-agent-hunk {
+  margin: var(--space-1) 0 var(--space-2);
+}
+.doc-agent-hunk-line {
+  white-space: pre-wrap;
+}
+.doc-agent-hunk-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+}
+/* A rejected change shows what stays: the old lines plain, the added ones faded and struck. */
+.doc-agent-hunk.is-rejected .doc-agent-hunk-line {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.doc-agent-hunk-foot button[aria-pressed="true"] {
+  color: var(--accent-text);
+}

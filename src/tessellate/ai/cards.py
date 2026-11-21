@@ -282,6 +282,11 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     # strictly more than a bare chip.
     "tag_note": (),
     "pin_note": (),
+    "archive_note": (),
+    "find_stale_notes": (_N("notes"),),
+    "get_person_page": (_N("mentioned_in"),),
+    # Month figures are counts and a list of bare ids; the sentence names them.
+    "count_month_figures": (),
     "link_notes": (),
     "unlink_notes": (),
     "delete_note": (),
@@ -289,6 +294,7 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     "list_documents": (_D("documents"),),
     "get_document": (_D(),),
     "create_document": (_D(),),
+    "edit_document": (_D(),),
     # Deleted: the id is gone and there is nothing left to open.
     "delete_document": (),
     # --- files ------------------------------------------------------------
@@ -338,9 +344,13 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     "rename_tag": (),
     "delete_tag": (),
     "audit_link_reasons": (),  # a count of reasons written
+    "restore_link_reasons": (),
     "check_learned": (),  # counts and the rows' own words, which What it learned lists
     "search_chat_history": (),  # conversations, which the Library lists
     "list_skills": (),  # skills, which Settings lists
+    "list_goals": (),  # goals and lists, which the Goals tab lists
+    "edit_goals": (),  # a goal, a line or a tick, said in the card's own label
+    "edit_chats": (),  # a sort, a rename or a folder, said in the card's own label
     "save_skill": (),
     "delete_skill": (),
     "get_current_time": (),

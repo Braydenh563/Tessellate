@@ -5,6 +5,8 @@ Undo posts back the call the result carried."""
 
 from __future__ import annotations
 
+import pytest
+
 from tessellate.ai import tools
 
 
@@ -81,6 +83,15 @@ def test_a_note_already_there_is_said_not_moved(client):
     a = _note(client, "Stay", "Garden")
     done = _run(client, {"ids": [a["id"]], "category": "Garden"})
     assert "Already in" in done["label"] and done["undo"] is None
+
+
+@pytest.fixture(autouse=True)
+def _no_act_reader(monkeypatch):
+    """The fake session holds no notes, so the unrun-act reader (L114), which reads the sentence
+    against the notebook, is off here: these tests are about what parks, not the act card."""
+    from tessellate.ai import act_registry
+
+    monkeypatch.setattr(act_registry, "proposer", None)
 
 
 def _session(client):  # noqa: ANN001

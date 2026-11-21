@@ -54,5 +54,5 @@ def test_the_page_says_a_remark_once_through_a_lazy_file_and_a_switch():
     assert 'nameMarkBuddyActOff("remark") && nameMarkBuddyReact("remark")' in boot
     assert "remark: { cool: 3 * 60 * 60 * 1000" in boot
     assert '["remark", "Say something from your notes now and then", ["remark"]]' in boot
-    # Never one it has said, and held as long as it takes to read.
-    assert "!seen.includes(r.key)" in lazy and "nameMarkSay(buddy, next.text, Math.min(12000" in lazy
+    # Never one it has said (by its fact, for 7 days, L-chat-54), and held as long as it takes to read.
+    assert "said[r.fact || r.key]" in lazy and "nameMarkSay(buddy, next.text, Math.min(12000" in lazy

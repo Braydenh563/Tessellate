@@ -380,7 +380,9 @@ def _function(source: str, name: str) -> str:
 
 def test_the_packages_screen_is_a_lazy_bundle_reached_through_its_entry_point():
     app = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-    assert 'packages: ["/js/settings-packages.js"]' in app
+    #: The bundle's list is lazy-entries.js's (it replaced app.js's dead copy, which it overwrote at load).
+    lazy = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    assert '"/js/settings-packages.js"]' in lazy[lazy.index("  packages: [") :].split("\n", 1)[0]
     assert 'packages: ["renderExtras"]' in app
     status = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
     assert "function renderExtras(" not in status

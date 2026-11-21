@@ -50,7 +50,6 @@ def test_a_done_reminder_does_not_block_a_new_one(ai_client, session):
     ],
 )
 def test_the_chat_act_says_it_already_exists_for_the_same_text_and_time(session, monkeypatch, ask):
-
     pin_clock(monkeypatch, NOW)
     parsed = commands.parse(ask, NOW)
     assert parsed is not None and parsed.args["intent"] == "reminder", ask
@@ -62,7 +61,6 @@ def test_the_chat_act_says_it_already_exists_for_the_same_text_and_time(session,
 
 
 def test_the_chat_act_still_asks_for_the_same_words_at_another_time(session, monkeypatch):
-
     pin_clock(monkeypatch, NOW)
     parsed = commands.parse("remind me tomorrow at 9am to call the dentist", NOW)
     session.add(Reminder(text=parsed.args["text"], due_at=datetime(2026, 11, 5, 9, 0)))

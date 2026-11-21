@@ -1060,7 +1060,7 @@ class EntryLink(Base, WorkspaceMixin):
 
 class RelationType(Base):
     """A kind of link a person added (GRAPH_PLAN KG3): "Part of" with its
-    inverse "Has part". The six built-ins (`LINK_TYPES`) stay in code, so a
+    inverse "Has part". The seven built-ins (`LINK_TYPES`) stay in code, so a
     notebook with none of these rows behaves exactly as before; `key` is what
     `EntryLink.link_type` stores."""
 
@@ -1126,6 +1126,9 @@ LINK_TYPES: dict[str, str] = {
     "supports": "Supports: this is evidence for that",
     "contradicts": "Contradicts: these disagree",
     "example_of": "Example of: this is an instance of that",
+    #: INBOX 1842 (L163 O11): this note replaces that one; the older one reads
+    #: "Superseded by" with a link to the newer (the inverse below).
+    "supersedes": "Supersedes: this replaces that",
 }
 
 #: Each built-in's name from its other end (GRAPH_PLAN KG3), and whether it
@@ -1137,6 +1140,7 @@ LINK_TYPE_INVERSES: dict[str, str | None] = {
     "supports": "Supported by",
     "contradicts": None,
     "example_of": "Has example",
+    "supersedes": "Superseded by",
 }
 
 # ROADMAP §87.5's first slice, using only what a link already stores, no new
@@ -1335,6 +1339,9 @@ class Conversation(Base, WorkspaceMixin):
     # so the thread you keep coming back to sinks under a week of one-offs.
     # (Added by the auto-migrator on existing databases, defaulting to false.)
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: A named group the chat sits in ("Trips"), blank for none (L-world-class-180): the
+    #: sidebar's Group by folder, and the agent's `edit_chats`. Added by the auto-migrator.
+    folder: Mapped[str] = mapped_column(String(60), default="")
     # Kept, but out of the way, same shape as Entry.archived_at (BACKLOG
     # §30b), extended here to chats as that item's own named remaining
     # scope. Never implies deletion; added by the auto-migrator, defaulting
@@ -1448,6 +1455,34 @@ class Bookmark(Base, WorkspaceMixin):
     has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
     has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+
+
+class Goal(Base):
+    """A goal or a list (Brief 98): a titled set of ticked-off items with its progress. `kind` is "goal" (may carry a
+    `target_date`, and is marked achieved with `done_at`) or "list" (a shopping or packing list). Its own small
+    tables, not notes: a list's items are ticked and counted, which a note's text cannot be without parsing it.
+    A new table, so `create_all` builds it: no migration, as `jobs`."""
+
+    __tablename__ = "goals"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(200))
+    kind: Mapped[str] = mapped_column(String(8), default="goal")
+    target_date: Mapped[str] = mapped_column(String(10), default="")
+    done_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class GoalItem(Base):
+    """One line of a goal or list; `done_at` is set when it is ticked. Deleted with its goal."""
+
+    __tablename__ = "goal_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    goal_id: Mapped[int] = mapped_column(ForeignKey("goals.id", ondelete="CASCADE"), index=True)
+    text: Mapped[str] = mapped_column(String(300))
+    done_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class EntryBookmark(Base):

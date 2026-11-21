@@ -27,7 +27,12 @@ FETCH_S = 6.0
 #: The room a prop gets round the figure, as a share of its drawn height: a fishing line, a plant, a sky of stars.
 ROOM = 0.18
 #: The size of each step of a fetch (index into `faces.LEVELS`-like steps: 1 small, 2 most, 3 whole).
-SIZES = (0.0, 0.5, 0.85, 1.0)
+SIZES = (0.0, 0.5, 0.85, 1.0, 1.0, 0.6)
+#: L145: a size of `TIPPED` is the prop lying on its side at the figure's feet (a hand-held one a grab knocked out of its hands);
+#: `TIPPED + 1` is the same shrinking away.
+TIPPED = 4
+TIP_PROPS = frozenset({"book", "rod", "map", "lantern", "dumbbell", "cup", "journal", "bowl", "wand", "knit", "plant"})
+TIP_ANGLE = 80.0
 
 
 class Spec(NamedTuple):
@@ -50,7 +55,10 @@ def _breath(depth: float) -> tuple:
 
 
 #: The prop acts: name -> (spec, activity, base weight).
-PROP_ACTS: dict[str, tuple[Spec, bh.Activity, int]] = {
+#: The L178 acts' hour weight (see the note in PROP_ACTS).
+L178_WEIGHT = 0.15
+
+PROP_ACTS: dict[str, tuple[Spec, bh.Activity, float]] = {
     "read_book": (
         Spec("book", 0.5, 4, "focus", (0.12, 0.66)),
         _act("sit", (25.0, 55.0), ((0, 1, 1, 0), (0.1, 1, 0.98, 0.03), (0.9, 1, 0.98, 0.03), (1, 1, 1, 0)), (("curiosity", -0.25), ("rest", -0.1)), "curious"),
@@ -113,6 +121,47 @@ PROP_ACTS: dict[str, tuple[Spec, bh.Activity, int]] = {
         _act("sit", (30.0, 60.0), ((0, 1, 1, 0), (0.1, 1, 0.97, 0.05), (0.9, 1, 0.97, 0.05), (1, 1, 1, 0)), (("rest", -0.15), ("curiosity", -0.1)), "content"),
         2,
     ),
+    #: L178: the catalogue's idle acts with a prop (`act.cloud_pillow` and the rest; the hour weights are the catalogue's;
+    #: each at L178_WEIGHT: the Mind's freshness term lifts a rare act to most hours (facepalm 12 of 12 against the table's 4), so at 1
+    #: these eleven put 5.0 more distinct acts an hour on the desk than the table (1.5 at 0.25), and at 0.5 the seed-1
+    #: walk hour drew 540 wakes a minute against the 500 bar (475 at 0.25; tests/test_overlay_rest_1670.py). At 0.25, after the
+    #: L152 spell weighting merged, seed-2 walk drew 514 and three fidgets; at 0.15 every seed is 310 to 468 and at most one.
+    "cloud_pillow": (
+        Spec("cloud", 0.4, 2, "content", (0.0, 0.82), under=True),
+        _act("land", (15.0, 60.0), ((0, 1, 1, 0), (0.12, 1.04, 0.9, 0.03), (0.9, 1.04, 0.9, 0.03), (1, 1, 1, 0)), (("rest", -0.4),), "sleepy"),
+        L178_WEIGHT,
+    ),
+    "paper_plane": (
+        Spec("plane", 2.0, 4, "happy", (0.2, 0.42)),
+        _act("wave", (3.0, 6.0), ((0, 1, 1, 0), (0.3, 1, 1.02, -0.03), (0.55, 1, 1.03, 0.06), (1, 1, 1, 0)), (("play", -0.3), ("novelty", -0.1)), "happy"),
+        L178_WEIGHT,
+    ),
+    "conduct": (
+        Spec("baton", 3.0, 4, "content", (0.22, 0.4)),
+        _act("wave", (4.0, 7.0), ((0, 1, 1, 0), (0.25, 1, 1.01, 0.04), (0.5, 1, 1.01, -0.04), (0.75, 1, 1.01, 0.04), (1, 1, 1, 0)), (("play", -0.2),), "happy"),
+        L178_WEIGHT,
+    ),
+    "sketch_view": (
+        Spec("sketch", 1.0, 4, "focus", (0.12, 0.68)),
+        _act("sit", (15.0, 60.0), ((0, 1, 1, 0), (0.1, 1, 0.97, 0.05), (0.5, 1, 0.99, -0.02), (0.9, 1, 0.97, 0.05), (1, 1, 1, 0)), (("curiosity", -0.3),), "curious"),
+        L178_WEIGHT,
+    ),
+    "kneel_look": (
+        Spec("speck", 2.0, 4, "curious", (0.18, 0.96)),
+        _act("land", (3.0, 8.0), ((0, 1, 1, 0), (0.2, 1.02, 0.86, 0.08), (0.8, 1.02, 0.86, 0.08), (1, 1, 1, 0)), (("curiosity", -0.25),), "curious"),
+        L178_WEIGHT,
+    ),
+    "lean_on_edge": (
+        Spec("ledge", 0.2, 2, "content", (-0.3, 0.56), under=True),
+        _act("stand", (8.0, 30.0), ((0, 1, 1, 0), (0.15, 1, 0.99, -0.12), (0.9, 1, 0.99, -0.12), (1, 1, 1, 0)), (("rest", -0.15),), "bored"),
+        L178_WEIGHT,
+    ),
+    #: The app's `chair` (catalogue `act.chair`): a small chair pulled up and sat in, the tail round its leg.
+    "chair": (
+        Spec("chair", 0.25, 2, "content", (0.0, 0.66), under=True),
+        _act("sit", (20.0, 40.0), ((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.9, 1, 0.98, 0.02), (1, 1, 1, 0)), (("rest", -0.3),), "sleepy"),
+        L178_WEIGHT,
+    ),
 }
 #: Acts with no prop that the app has and the desk had not.
 #: What a presence spell (INBOX 1692) uses that the short acts do not: a sky, a blanket, a plant. Weight 0: the mind never
@@ -139,12 +188,17 @@ WIND_SPECS: dict[str, Spec] = {
     "spiral": Spec("spiral", 8.0, 4, "", (0.0, 0.5)),
     "eddy": Spec("eddy", 6.0, 4, "", (0.0, 0.92)),
 }
-PLAIN_ACTS: dict[str, tuple[bh.Activity, int, str]] = {
+PLAIN_ACTS: dict[str, tuple[bh.Activity, float, str]] = {
     "hum": (_act("stand", (4.0, 7.0), ((0, 1, 1, 0), (0.25, 1, 1.01, 0.04), (0.75, 1, 1.01, -0.04), (1, 1, 1, 0)), (("play", -0.15),), "happy"), 3, "content"),
     "tiptoe": (_act("look", (2.0, 3.2), ((0, 1, 1, 0), (0.3, 0.98, 1.06, 0.03), (0.7, 0.98, 1.06, 0.03), (1, 1, 1, 0)), (("curiosity", -0.15),), "curious"), 3, "curious"),
     "stargaze": (_act("look", (6.0, 10.0), ((0, 1, 1, 0), (0.2, 0.98, 1.04, -0.05), (0.85, 0.98, 1.04, -0.05), (1, 1, 1, 0)), (("curiosity", -0.2), ("rest", -0.1)), "sleepy"), 2, "content"),
     "daydream": (_act("sit", (10.0, 20.0), ((0, 1, 1, 0), (0.2, 1, 0.98, 0.02), (1, 1, 0.98, 0.02)), (("rest", -0.2),), "sleepy"), 2, "sleepy"),
     "puzzle": (_act("look", (5.0, 9.0), ((0, 1, 1, 0), (0.2, 0.98, 0.99, -0.04), (0.55, 0.98, 0.99, 0.04), (1, 1, 1, 0)), (("curiosity", -0.2),), "curious"), 2, "focus"),
+    #: L178: the catalogue's idle acts without a prop: a turn after the tail, a long stretch, a walk with the arms out, a float face up.
+    "tail_chase": (_act("stand", (2.0, 4.0), ((0, 1, 1, 0), (0.2, -1, 1, 0.08), (0.45, 1, 1, -0.08), (0.7, -1, 1, 0.08), (1, 1, 1, 0)), (("play", -0.3),), "happy"), L178_WEIGHT, "happy"),
+    "tail_stretch": (_act("stand", (2.0, 3.5), ((0, 1, 1, 0), (0.35, 0.97, 1.05, -0.05), (0.7, 0.97, 1.05, -0.05), (1, 1, 1, 0)), (("rest", -0.1),), "sleepy"), L178_WEIGHT, "content"),
+    "balance_walk": (_act("wave", (4.0, 8.0), ((0, 1, 1, 0), (0.2, 1, 1, 0.07), (0.4, 1, 1, -0.07), (0.6, 1, 1, 0.06), (0.8, 1, 1, -0.06), (1, 1, 1, 0)), (("play", -0.2),), "proud"), L178_WEIGHT, "focus"),
+    "stargaze_awake": (_act("look", (10.0, 40.0), ((0, 1, 1, 0), (0.15, 1.03, 0.95, -0.1), (0.9, 1.03, 0.95, -0.1), (1, 1, 1, 0)), (("curiosity", -0.2), ("rest", -0.1)), "curious"), L178_WEIGHT, "content"),
 }
 #: What the menu says it is doing during a prop, spell or plain act (INBOX 1718 b: a figure holding a gridded panel
 #: gave no hint it was reading a map). Acts not listed read as their own name, spaces for underscores.
@@ -154,6 +208,10 @@ DOING = {
     "write_journal": "writing in a journal", "watch_stars": "watching the stars", "blanket_nap": "napping under a blanket",
     "water_plant": "watering a plant", "stargaze": "stargazing", "daydream": "daydreaming", "puzzle": "working on a puzzle",
     "eat_dinner": "eating dinner", "blow_bubbles": "blowing bubbles", "knit_starlight": "knitting a strand of starlight",
+    "cloud_pillow": "resting its chin on a cloud", "paper_plane": "throwing a paper plane", "conduct": "conducting a tune",
+    "sketch_view": "sketching the view", "kneel_look": "kneeling to look at something small", "lean_on_edge": "leaning on the edge",
+    "tail_chase": "chasing its tail", "tail_stretch": "stretching its tail", "balance_walk": "balancing along the top",
+    "stargaze_awake": "floating on its back", "chair": "sitting in a chair",
 }
 #: Act name -> the face it wears for its length (the props' and the plain ones'), added to `faces.ACT_FACES`.
 _REGISTERED: set[str] = set()
@@ -175,7 +233,7 @@ def register() -> None:
     bh.FACTORED.update(n for n in (*PROP_ACTS, *SPELL_ACTS, *PLAIN_ACTS) if n in catalogue.by_desk_name())
 
 
-def _add(name: str, act: bh.Activity, weight: int, face: str) -> None:
+def _add(name: str, act: bh.Activity, weight: float, face: str) -> None:
     bh.ACTIVITIES[name] = act
     bh.BASE_WEIGHT[name] = weight
     bh.AMPLITUDE[name] = bh._amplitude(act.keys)
@@ -249,8 +307,14 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
     {
         "book": _book, "beanbag": _beanbag, "rod": _rod, "mat": _mat, "map": _map, "lantern": _lantern,
         "dumbbell": _dumbbell, "cup": _cup, "journal": _journal, "stars": _stars, "blanket": _blanket, "plant": _plant,
-        "bowl": _bowl, "wand": _wand, "knit": _knit, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
+        "bowl": _bowl, "wand": _wand, "knit": _knit, "cloud": _cloud, "plane": _plane, "baton": _baton, "sketch": _sketch, "speck": _speck, "ledge": _ledge, "chair": _chair, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
     }[name](g, ax, ay, u, d, phase)
+    if size >= TIPPED and name in TIP_PROPS:
+        # over on its side, set down on the floor line: turned about its own anchor, then dropped to the feet
+        layer = layer.rotate(-TIP_ANGLE * d, resample=Image.Resampling.BICUBIC, center=(ax, ay))
+        lying = layer.getchannel("A").getbbox()
+        if lying is not None:
+            layer = layer.transform(layer.size, Image.Transform.AFFINE, (1, 0, 0, 0, 1, -((b + m) * S - lying[3])), resample=Image.Resampling.BICUBIC)
     whole = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     whole.paste(Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa"), (m, m))
     layer = layer.resize((cw, ch), Image.Resampling.LANCZOS)
@@ -470,3 +534,87 @@ def _eddy(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
     for i in range(3):
         th = phase * 0.9 + i * 2.1
         g.ellipse((x + d * math.cos(th) * r * 0.9 - u, y + math.sin(th) * r * 0.25 - 2 * u - u, x + d * math.cos(th) * r * 0.9 + u, y + math.sin(th) * r * 0.25 - 2 * u + u), fill=(*CREAM, a))
+
+
+def _cloud(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A cloud pulled out of the nebula, under the chin: four puffs that breathe a little, a beat a step."""
+    lw = max(1, int(u * 0.8))
+    puff = (0.0, 1.0)[phase % 2] * u
+    for cx, cy, r in ((-14, 2, 7), (-4, -2, 9), (8, -1, 8), (17, 3, 6)):
+        rr = r * u + puff
+        g.ellipse((x + d * cx * u - rr, y + cy * u - rr, x + d * cx * u + rr, y + cy * u + rr), fill=(*CREAM, 235), outline=(*LILAC, 255), width=lw)
+    g.line((x - 18 * u, y + 7 * u, x + 20 * u, y + 7 * u), fill=(*LILAC, 255), width=lw)
+
+
+def _plane(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A folded paper plane: in the hand, let go, gliding off and away, a dotted trail behind it."""
+    lw = max(1, int(u * 0.8))
+    far = (0.0, 10.0, 22.0, 34.0)[phase % 4]
+    px, py = x + d * far * u, y - (far * 0.35 - (phase == 3) * 2) * u
+    nose, tail_top, tail_low, keel = (px + d * 9 * u, py), (px - d * 6 * u, py - 5 * u), (px - d * 6 * u, py + 2 * u), (px - d * 2 * u, py + 3 * u)
+    g.polygon((nose, tail_top, keel), fill=(*CREAM, 255), outline=(*INDIGO, 255))
+    g.polygon((nose, keel, tail_low), fill=(*LILAC, 255), outline=(*INDIGO, 255))
+    for i in range(int(far // 10)):
+        tx = x + d * (i * 10 + 2) * u
+        g.ellipse((tx - 0.8 * u, py + 1 * u + i * u - 0.8 * u, tx + 0.8 * u, py + 1 * u + i * u + 0.8 * u), fill=(*TEAL, 200))
+    g.line((nose, keel), fill=(*INDIGO, 255), width=lw)
+
+
+def _baton(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A conductor's baton beating a four, a note rising off its tip on the down beat."""
+    ang = math.radians((-60, -20, -45, 10)[phase % 4])
+    tx, ty = x + d * math.cos(ang) * 16 * u, y + math.sin(ang) * 16 * u
+    g.line((x, y, tx, ty), fill=(*CREAM, 255), width=max(2, int(u * 0.9)))
+    g.ellipse((x - 1.6 * u, y - 1.6 * u, x + 1.6 * u, y + 1.6 * u), fill=(*INDIGO, 255))
+    nx, ny = tx + d * 4 * u, ty - (4 + phase * 2) * u
+    g.ellipse((nx - 2 * u, ny - 1.4 * u, nx + 2 * u, ny + 1.4 * u), fill=(*WARM, 255))
+    g.line((nx + 1.8 * u, ny, nx + 1.8 * u, ny - 7 * u), fill=(*WARM, 255), width=max(1, int(u * 0.8)))
+
+
+def _sketch(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A sketchbook on the lap and a pencil; the drawing grows a stroke a step (a hill, a sun, a tree)."""
+    lw = max(1, int(u * 0.8))
+    g.rectangle((x - 13 * u, y - 7 * u, x + 13 * u, y + 9 * u), fill=(*CREAM, 255), outline=(*INDIGO, 255), width=lw)
+    g.line((x, y - 7 * u, x, y + 9 * u), fill=(*LILAC, 255), width=lw)
+    strokes = (
+        (x + 1.5 * u, y + 6 * u, x + 6 * u, y + 1 * u, x + 11 * u, y + 6 * u),
+        (x + 9 * u, y - 4 * u, x + 10 * u, y - 3 * u, x + 9 * u, y - 2 * u),
+        (x - 11 * u, y + 7 * u, x - 6 * u, y + 2 * u, x - 2 * u, y + 7 * u),
+    )
+    for st in strokes[: phase % 4]:
+        g.line(st, fill=(*INDIGO, 255), width=lw)
+    tip = (x + d * (2 + 3 * (phase % 4)) * u, y + 3 * u)
+    g.line((tip[0], tip[1], tip[0] + d * 6 * u, tip[1] - 11 * u), fill=(*WARM, 255), width=max(2, int(u * 1.1)))
+
+
+def _speck(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """Something small on the floor: a tiny glowing sprout that turns its leaf, and a glint over it."""
+    lw = max(1, int(u * 0.8))
+    g.line((x, y, x, y - 5 * u), fill=(*TEAL, 255), width=max(1, int(u * 0.9)))
+    lean = (-1, 0, 1, 0)[phase % 4] * 2 * u
+    g.ellipse((x + lean - 3 * u, y - 8 * u, x + lean + 1 * u, y - 4 * u), fill=(*TEAL, 255), outline=(*INDIGO, 255), width=lw)
+    g.ellipse((x - 4 * u, y - 1 * u, x + 4 * u, y + 1.4 * u), fill=(*LILAC, 200))
+    r = (1.2, 2.2, 1.2, 0.6)[phase % 4] * u
+    gx, gy = x + 4 * u, y - 11 * u
+    g.line((gx - r, gy, gx + r, gy), fill=(*WARM, 255), width=lw)
+    g.line((gx, gy - r, gx, gy + r), fill=(*WARM, 255), width=lw)
+
+
+def _ledge(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """The window edge it leans on: a sill at elbow height and the frame going down from it, a mote on the sill now and then."""
+    lw = max(1, int(u * 0.8))
+    g.rectangle((x - 9 * u, y - 2 * u, x + 9 * u, y + 2 * u), fill=(*LILAC, 255), outline=(*INDIGO, 255), width=lw)
+    g.rectangle((x + d * 5 * u - 2 * u, y + 2 * u, x + d * 5 * u + 2 * u, y + 40 * u), fill=(*LILAC, 200), outline=(*INDIGO, 255), width=lw)
+    if phase % 2:
+        g.ellipse((x - d * 5 * u - u, y - 4.5 * u, x - d * 5 * u + u, y - 2.5 * u), fill=(*WARM, 255))
+
+
+def _chair(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A small chair under the seat: a back behind the figure, four legs, a cushion that sinks a little when it settles."""
+    lw = max(1, int(u * 0.9))
+    sink = (phase % 2) * 0.8 * u
+    bx = x - d * 14 * u
+    g.rectangle((bx - 2 * u, y - 26 * u, bx + 2 * u, y + 2 * u), fill=(*LILAC, 255), outline=(*INDIGO, 255), width=lw)
+    for lx in (x - 13 * u, x - 5 * u, x + 5 * u, x + 13 * u):
+        g.line((lx, y + 3 * u, lx + (lx - x) * 0.08, y + 22 * u), fill=(*INDIGO, 255), width=max(2, int(u * 1.2)))
+    g.rounded_rectangle((x - 16 * u, y - 1 * u + sink, x + 16 * u, y + 4 * u), radius=2 * u, fill=(*WARM, 255), outline=(*INDIGO, 255), width=lw)

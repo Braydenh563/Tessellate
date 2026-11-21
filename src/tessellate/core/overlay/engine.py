@@ -103,6 +103,7 @@ from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
 from .engine_roam import RoamMixin
+from .engine_spells import SpellsMixin
 from .engine_touch import TouchMixin
 
 #: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
@@ -112,7 +113,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, TouchMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, SpellsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -224,6 +225,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         self.squash_at = -math.inf  # when a thrown floater last came to rest
         self.shift_at = -math.inf  # when a sit or a sleep last shifted its weight (A4)
         self.kick = 0.0  # the change of turn rate a contact has still to pay out (`_spin`)
+        self.bounce_k = BOUNCE_DAMP  # this throw's wall and ceiling give (`_start_fly` draws it)
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
         self.grounded = False  # a walker's tumble that has reached the floor
@@ -1164,6 +1166,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
     def _begin_spell(self, now: float) -> None:
         """Choose the next spell by the hour and the mood and go to its spot (a seen move, never a long walk), or start
         it where it is when that is spot enough."""
+        if self._perch_spell(now):  # on a window top: a spell up there at its edge spot (engine_spells.py)
+            return
         name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
         self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": pr.length_of(self.rng, name)}
         spot = self._spell_spot(now)
@@ -1399,7 +1403,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         if act == "hang" and self._dest_repeats("hang"):
             return True
         if act == "spell":
-            return up or self._no_spell()
+            return self._spell_blocked(up)
         return act == "stroll" and up
 
     def _no_spell(self) -> bool:
@@ -2019,7 +2023,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         k = self._scale()
         frame = self._frame(now)
         x, y, _clip = self._display(frame)
-        left, top, right, bottom = self._box(frame, self.facing < 0)
+        a, b = self._box(frame, False), self._box(frame, True)  # both facings: a turn to leave (L173's trails) stays clear
+        left, top, right, bottom = min(a[0], b[0]), min(a[1], b[1]), max(a[2], b[2]), max(a[3], b[3])
         room = SPELL_ROOM * self.size[1] if self.state == "act" and extras.props.spec_of(self.act) is not None else 0.0
         keep = tv.padded(self.caret, tv.CARET_MARGIN * k + room)
         if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):

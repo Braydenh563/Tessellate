@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, time, timedelta
 
-from tessellate.ai import recognise
+from tessellate.ai import realise, recognise
 from tessellate.ai.composer_study import Ctx, Reply
 
 _WEEK_NOW = re.compile(
@@ -39,7 +39,7 @@ _QUARTER_MONTHS = ("January to March", "April to June", "July to September", "Oc
 
 
 def long_day(day: date) -> str:
-    return f"{day:%A} {day.day} {day:%B %Y}"
+    return realise.localised_days(f"{day:%A} {day.day} {day:%B %Y}")
 
 
 def computed(said: str, read: str) -> Reply:
@@ -78,9 +78,9 @@ def _year_day(today: date) -> Reply:
 def _neighbour(which: str, today: date) -> Reply:
     if which == "tomorrow":
         day = today + timedelta(days=1)
-        return computed(f"Tomorrow is {long_day(day)}.", f"tomorrow as {long_day(day)}")
+        return computed(f"Tomorrow is {long_day(day)}.", "the day after today")
     day = today - timedelta(days=1)
-    return computed(f"Yesterday was {long_day(day)}.", f"yesterday as {long_day(day)}")
+    return computed(f"Yesterday was {long_day(day)}.", "the day before today")
 
 
 def _this_year(phrase: str, today: date) -> date | None:

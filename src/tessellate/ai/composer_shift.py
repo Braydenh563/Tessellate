@@ -14,7 +14,7 @@ import calendar
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import recognise_questions
+from tessellate.ai import realise, recognise_questions
 from tessellate.core.lazyre import lazy_compile
 
 _NUMBERS = {"a": 1, "one": 1, "two": 2, "three": 3, "four": 4}
@@ -38,7 +38,7 @@ _BACK = {"before", "earlier", "prior", "previous", "preceding"}
 
 
 def _said(day: date, today: date) -> str:
-    return f"{day.day} {calendar.month_name[day.month]}" + ("" if day.year == today.year else f" {day.year}")
+    return realise.localised_days(f"{day.day} {calendar.month_name[day.month]}" + ("" if day.year == today.year else f" {day.year}"))
 
 
 def _months(day: date, count: int) -> date:

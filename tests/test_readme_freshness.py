@@ -101,3 +101,22 @@ def test_every_installable_extra_is_named_in_the_readme() -> None:
         name = re.search(r"\(([^)]+)\)\s*$", extra.label)
         assert name, f"{extra.id}'s label has no bracketed name"
         assert f"({name.group(1)}" in README, f"the README's Packages list does not name {name.group(1)}"
+
+
+def test_the_compatibility_table_lists_each_way_in_with_its_date() -> None:
+    """CHAT_PLAN decision 62 (L-chat-217): every provider the app can talk to is
+    a row with the date its fake-transport suite last ran, and the dialects the
+    app detects are the dialects the table names."""
+    import datetime
+
+    from tessellate.ai import provider
+
+    rows = [line for line in README.splitlines() if line.startswith("| ") and "Fake transport" not in line and "---" not in line]
+    servers = [r.split("|")[1].strip() for r in rows if r.split("|")[1].strip() in {
+        "Ollama", "Ollama, OpenAI-compatible", "LM Studio", "llama.cpp `llama-server`", "Any other OpenAI-compatible server", "No model"}]
+    assert len(servers) == 6, servers
+    for row in rows:
+        cells = [c.strip() for c in row.split("|")]
+        if cells[1] in servers:
+            datetime.date.fromisoformat(cells[5])
+    assert {provider.detect_provider("http://localhost:11434"), provider.detect_provider("http://localhost:1234/v1")} == {"ollama", "openai"}

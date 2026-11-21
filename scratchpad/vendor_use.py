@@ -57,6 +57,10 @@ LIBRARY_KEYS = {
     "MathLive": "mathlive",
     "docx": "docx",
     "draw.io stencils": "stencils",
+    #: Python packages the composer imports (L-chat-64), counted by the calls made.
+    "holidays": "holidays",
+    "inflect": "inflect",
+    "rapidfuzz": "rapidfuzz",
     #: A download extra (Settings, Packages), not vendored JS: the engine, its
     #: model and the parts compiled into its WASM are one capability, counted once.
     "Bergamot translator": "translate",
@@ -805,12 +809,12 @@ WORDLIST_CAPABILITIES = (
     (
         "question noise real-word check (question_noise.py)",
         ("src/tessellate/ai/question_noise.py",),
-        r"wordlist|en\.txt",
+        r"is_english",
     ),
     (
         "search typo tolerance",
-        ("src/tessellate/api/routes_search.py", "src/tessellate/core/search.py"),
-        r"wordlist|en\.txt",
+        ("src/tessellate/api/routes_search.py", "src/tessellate/core/search.py", "src/tessellate/search/search_manager.py"),
+        r"wordlist|en\.txt|is_english",
     ),
 )
 
@@ -875,6 +879,31 @@ def pystdlib_report() -> Report:
     return _capability_report(
         "pystdlib", "Python standard library table", PYSTDLIB_CAPABILITIES, [f"{len(modules)} modules in stdlib.json"]
     )
+
+
+PYPKG_CAPABILITIES = {
+    "holidays": (
+        ("named holidays by country and year", ("src/tessellate/ai/recognise_windows.py",), r"country_holidays\(.*get_named"),
+        ("state and province holidays", ("src/tessellate/ai/recognise_windows.py",), r"subdiv="),
+        ("financial market calendars", ("src/tessellate/ai/recognise_windows.py",), r"financial_holidays\("),
+    ),
+    "inflect": (
+        ("plural nouns", ("src/tessellate/ai/realise.py",), r"\.plural_noun\("),
+        ("a or an by sound", ("src/tessellate/ai/realise.py",), r"_engine\(\)\.a\("),
+        ("ordinals", ("src/tessellate/ai/realise.py",), r"\.ordinal\("),
+        ("numbers to words", ("src/tessellate/ai/realise.py",), r"\.number_to_words\("),
+        ("singular nouns", ("src/tessellate/ai/realise.py",), r"\.singular_noun\("),
+    ),
+    "rapidfuzz": (
+        ("close names by weighted ratio", ("src/tessellate/ai/object_acts.py",), r"process\.extract\(.*fuzz\.WRatio"),
+        ("edit distance metrics", ("src/tessellate/ai/object_acts.py",), r"rapidfuzz\.distance"),
+        ("token set ratio", ("src/tessellate/ai/object_acts.py",), r"token_set_ratio"),
+    ),
+}
+
+
+def pypkg_reports() -> list[Report]:
+    return [_capability_report(key, key, caps, ["a pip dependency, not vendored"]) for key, caps in PYPKG_CAPABILITIES.items()]
 
 
 def atkinson_report() -> Report:
@@ -1123,6 +1152,7 @@ def collect() -> dict[str, Report]:
         mathlive_report(),
         docx_report(scripts),
         translate_report(scripts),
+        *pypkg_reports(),
     ]
     return {r.key: r for r in reports}
 

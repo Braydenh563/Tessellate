@@ -202,7 +202,7 @@
     try {
       await api(`/models/jobs/cancel?kind=pull&name=${encodeURIComponent(model.name)}`, { method: "POST" });
       //: The row used to vanish with nothing said (HR19).
-      toast(`Stopped downloading ${model.name}.`);
+      toast(voiceLine("done", `Stopped downloading ${model.name}`));
     } catch (error) {
       toast(error.message, true);
     }
@@ -235,7 +235,7 @@
     if (!(await confirmDialog(`Remove “${installedName}” from Ollama? This frees its disk space, you can re-download it any time.`))) return;
     try {
       await api("/models/delete", { method: "POST", body: JSON.stringify({ name: installedName }) });
-      toast(`Removed ${installedName}.`);
+      toast(voiceLine("done", `Removed ${installedName}`));
       refreshModelStatus();
     } catch (error) {
       toast(error.message, true);
@@ -283,8 +283,8 @@
       run: async () => {
         //: The shared helper: it falls back where the clipboard API is absent
         //: (the desktop window over plain http), as every copy path does.
-        if (await copyToClipboard(model.name)) toast("Copied the name.");
-        else toast("Couldn't copy it from here.", "info");
+        if (await copyToClipboard(model.name)) toast(voiceLine("done", "Copied the name"));
+        else toast(voiceLine("failed", "copy it from here"), "info");
       },
     });
     if (state.installed) {
@@ -708,7 +708,7 @@
     try {
       await putModelHardware(body);
     } catch (error) {
-      toast(error.message || "Couldn't save the hardware override.", true);
+      toast(error.message || voiceLine("failed", "save the hardware override"), true);
       return;
     }
     openModelHardwareForm(false);
@@ -817,6 +817,16 @@
       if (modelLastStatus) renderSuggested(modelLastStatus);
     }
   });
+  //: **Who answers plain Ask** (L737, the owner, 2026-11-12): the Ask box's AI switch as a Settings choice, one stored value
+  //: (`ask-answer-from`, "ai" by default). Ask's own file listens for the change event, so nothing here calls into it.
+  const answerer = $("ask-answerer-select");
+  if (answerer) {
+    answerer.value = prefs.get("ask-answer-from") === "notes" ? "notes" : "ai";
+    answerer.addEventListener("change", () => {
+      prefs.set("ask-answer-from", answerer.value === "notes" ? "notes" : "ai");
+      document.dispatchEvent(new Event("ask-answerer-changed"));
+    });
+  }
   $("suggested-hide-big")?.addEventListener("change", (event) => {
     try {
       prefs.set("hideBigModels", event.target.checked ? "1" : "0");

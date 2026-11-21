@@ -1,0 +1,155 @@
+{
+ "about": "CHAT_PLAN Phase 10 handoff_1010: 25 questions, each asked with its one note under the six model failures of tests/test_chat_degrades.py (150 turns, fake transport). The composed sentence is the note's; the model's unsupported answer names 2019 and Lisbon, which no note holds. A measured question (\"how far did I run\") is the app's own sum and never asks the model, so none is here.",
+ "rows": [
+  {
+   "title": "Dentist",
+   "note": "Dentist appointment with Dr Patel on Tuesday at 3pm.",
+   "question": "when is the dentist?",
+   "composed": "Dentist appointment with Dr Patel on Tuesday at 3pm."
+  },
+  {
+   "title": "Budget for the trip",
+   "note": "The trip budget is 400 pounds for the whole week.",
+   "question": "what is the trip budget?",
+   "composed": "The trip budget is 400 pounds for the whole week."
+  },
+  {
+   "title": "Gym plan",
+   "note": "Go to the gym on Monday, Wednesday and Friday mornings.",
+   "question": "when do I go to the gym?",
+   "composed": "Go to the gym on Monday, Wednesday and Friday mornings."
+  },
+  {
+   "title": "Car service",
+   "note": "The car service is booked at the Kwik garage for 9 March.",
+   "question": "when is the car service?",
+   "composed": "The car service is booked at the Kwik garage for 9 March."
+  },
+  {
+   "title": "Wifi password",
+   "note": "The guest wifi password is on the card by the router.",
+   "question": "where is the wifi password?",
+   "composed": "The guest wifi password is on the card by the router."
+  },
+  {
+   "title": "Book club",
+   "note": "Book club meets at Priya's flat on the first Thursday.",
+   "question": "where does book club meet?",
+   "composed": "Book club meets at Priya's flat on the first Thursday."
+  },
+  {
+   "title": "Passport renewal",
+   "note": "Renew the passport before the trip in June.",
+   "question": "when should I renew the passport?",
+   "composed": "Renew the passport before the trip in June."
+  },
+  {
+   "title": "Plant care",
+   "note": "Water the fern every Sunday and keep it out of the sun.",
+   "question": "how do I look after the fern?",
+   "composed": "Water the fern every Sunday and keep it out of the sun."
+  },
+  {
+   "title": "Sam's birthday",
+   "note": "Sam's birthday is on 12 August and Sam likes board games.",
+   "question": "when is Sam's birthday?",
+   "composed": "Sam's birthday is on 12 August and Sam likes board games."
+  },
+  {
+   "title": "Boiler",
+   "note": "The boiler pressure should sit at 1.5 bar.",
+   "question": "what should the boiler pressure be?",
+   "composed": "The boiler pressure should sit at 1.5 bar."
+  },
+  {
+   "title": "Recipe: dal",
+   "note": "Cook the lentils for 25 minutes with cumin and turmeric.",
+   "question": "what spices go in the dal?",
+   "composed": "Cook the lentils for 25 minutes with cumin and turmeric."
+  },
+  {
+   "title": "Running",
+   "note": "Ran 5 km in 31 minutes along the canal.",
+   "question": "where did I go running?",
+   "composed": "Ran 5 km in 31 minutes along the canal."
+  },
+  {
+   "title": "Council tax",
+   "note": "Council tax is paid by direct debit on the 1st.",
+   "question": "how is council tax paid?",
+   "composed": "Council tax is paid by direct debit on the 1st."
+  },
+  {
+   "title": "Spare key",
+   "note": "The spare key is with the neighbour at number 14.",
+   "question": "where is the spare key?",
+   "composed": "The spare key is with the neighbour at number 14."
+  },
+  {
+   "title": "Quarterly review",
+   "note": "The quarterly review moved to Thursday at 10am.",
+   "question": "when is the quarterly review?",
+   "composed": "The quarterly review moved to Thursday at 10am."
+  },
+  {
+   "title": "Bike lock",
+   "note": "The bike lock code is written in the blue notebook.",
+   "question": "where is the bike lock code?",
+   "composed": "The bike lock code is written in the blue notebook."
+  },
+  {
+   "title": "Mum's flight",
+   "note": "Mum lands at Gatwick at 6pm on Saturday.",
+   "question": "when does Mum land?",
+   "composed": "Mum lands at Gatwick at 6pm on Saturday."
+  },
+  {
+   "title": "Insurance",
+   "note": "Home insurance renews in October with Aviva.",
+   "question": "when does home insurance renew?",
+   "composed": "Home insurance renews in October with Aviva."
+  },
+  {
+   "title": "Vet",
+   "note": "The cat's vaccinations are due at the vet in May.",
+   "question": "when are the cat's vaccinations due?",
+   "composed": "The cat's vaccinations are due at the vet in May."
+  },
+  {
+   "title": "Lunch order",
+   "note": "Order the team lunch from the Thai place on Fridays.",
+   "question": "where do we order team lunch from?",
+   "composed": "Order the team lunch from the Thai place on Fridays."
+  },
+  {
+   "title": "Printer",
+   "note": "The office printer needs the black toner cartridge 305A.",
+   "question": "which toner does the printer need?",
+   "composed": "The office printer needs the black toner cartridge 305A."
+  },
+  {
+   "title": "Allotment",
+   "note": "Plant the potatoes on the allotment in early April.",
+   "question": "when do I plant the potatoes?",
+   "composed": "Plant the potatoes on the allotment in early April."
+  },
+  {
+   "title": "Rent",
+   "note": "Rent of 950 goes to the landlord on the 28th.",
+   "question": "when is rent paid?",
+   "composed": "Rent of 950 goes to the landlord on the 28th."
+  },
+  {
+   "title": "Swimming",
+   "note": "Swimming lessons for Jo are on Wednesdays at 5pm.",
+   "question": "when are Jo's swimming lessons?",
+   "composed": "Swimming lessons for Jo are on Wednesdays at 5pm."
+  },
+  {
+   "title": "Harbor launch plan",
+   "note": "Ship Harbor to the public on the 14th of next month.",
+   "question": "What is the Harbor launch plan?",
+   "composed": "Ship Harbor to the public on the 14th of next month."
+  }
+ ]
+}

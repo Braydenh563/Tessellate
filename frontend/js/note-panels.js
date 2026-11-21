@@ -317,12 +317,12 @@ function similarNoteRow(entry, other, onLinked) {
         body: JSON.stringify({ target_id: other.id }),
       });
       pushLinkCreateUndo(entry.id, other.id, made, { target_id: other.id });
-      toast("Linked.");
+      toast(voiceLine("done", "Linked"));
       wrap.remove();
       onLinked?.();
     } catch (error) {
       relChip.removeAttribute("aria-disabled");
-      toast(error.message || "Couldn't link those notes.", true);
+      toast(error.message || voiceLine("failed", "link those notes"), true);
     }
   };
   const relChip = chip("", "link entry-related-chip", linkIt);
@@ -412,7 +412,7 @@ function beginOrCompleteLink(entry) {
     body: JSON.stringify({ target_id: target }),
   })
     .then((updated) => {
-      toast("Linked.");
+      toast(voiceLine("done", "Linked"));
       let liveLinkId = updated.links.find((l) => l.entry_id === target)?.link_id;
       pushUndo(
         "Linked two notes",

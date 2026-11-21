@@ -127,7 +127,7 @@ function companionTravelAt(ms, fn) {
 //: (INBOX 1698: it came out under the top bar walking, hanging by its hands).
 function companionTravelSteps(buddy, ms, len, arrive = false) {
   companionTravelAt(ms, () => {
-    if (nmb.feetDown() && !(arrive && nmb.pose === "hang")) nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+    if (nmb.feetDown() && !(arrive && nmb.pose === "hang")) nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);
     nmbTempo.seen = 0;
     clearTimeout(nmbTempo.timer);
     nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
@@ -151,7 +151,7 @@ const COMPANION_TRAVEL_PLAYERS = {
       pos(0, 0, { opacity: 1, offset: 1 }),
     ];
     ctx.ms = T;
-    ctx.body = [{ scale: "1", offset: 0 }, { scale: "0.8", offset: cut }, { scale: "0.8", offset: 0.52 }, { scale: "1.04", offset: 0.8, easing: "ease-out" }, { scale: "1", offset: 1 }];
+    ctx.body = [{ scale: "1", offset: 0 }, { scale: "0.8", offset: cut }, { scale: "0.8", offset: 0.52 }, { scale: "1.04", offset: 0.8, easing: NMB_CURVE.out }, { scale: "1", offset: 1 }];
     companionTravelFx(buddy, "nmb-smoke", dx, dy, 0, 6, 760);
     companionTravelFx(buddy, "nmb-smoke", 0, 0, T * 0.48, 6, 760);
   },
@@ -165,15 +165,15 @@ const COMPANION_TRAVEL_PLAYERS = {
     ctx.frames = [
       pos(dx, dy, { opacity: 1, offset: 0 }),
       pos(dx, dy, { opacity: 1, offset: 0.14 }),
-      pos(dx + step, dy, { opacity: 0, offset: 0.42, easing: "ease-in" }),
+      pos(dx + step, dy, { opacity: 0, offset: 0.42, easing: NMB_CURVE.in }),
       pos(-step, 0, { opacity: 0, offset: 0.43 }),
       pos(-step, 0, { opacity: 0, offset: 0.6 }),
       pos(-step, 0, { opacity: 1, offset: 0.61 }),
-      pos(0, 0, { opacity: 1, offset: 0.9, easing: "ease-out" }),
+      pos(0, 0, { opacity: 1, offset: 0.9, easing: NMB_CURVE.out }),
       pos(0, 0, { opacity: 1, offset: 1 }),
     ];
     ctx.ms = T;
-    ctx.body = [{ scale: "1", offset: 0 }, { scale: "1", offset: 0.14 }, { scale: "0.15", offset: 0.42, easing: "ease-in" }, { scale: "0.15", offset: 0.6 }, { scale: "1", offset: 0.9, easing: "ease-out" }, { scale: "1", offset: 1 }];
+    ctx.body = [{ scale: "1", offset: 0 }, { scale: "1", offset: 0.14 }, { scale: "0.15", offset: 0.42, easing: NMB_CURVE.in }, { scale: "0.15", offset: 0.6 }, { scale: "1", offset: 0.9, easing: NMB_CURVE.out }, { scale: "1", offset: 1 }];
     ctx.turn = dir > 0 ? "r" : "l";
     companionTravelFx(buddy, "nmb-portal", dx + step, dy, 0, 0, 1260);
     companionTravelFx(buddy, "nmb-portal", -step, 0, T * 0.46, 0, 1260);
@@ -200,10 +200,10 @@ const COMPANION_TRAVEL_PLAYERS = {
     if (hung) buddy.dataset.pose = "hang";
     ctx.frames = [
       { translate: `${dx}px ${dy}px`, offset: 0 },
-      { translate: `${dx}px ${dy + (hung ? 26 : 0)}px`, offset: at(lead), easing: "ease-in" },
+      { translate: `${dx}px ${dy + (hung ? 26 : 0)}px`, offset: at(lead), easing: NMB_CURVE.in },
       { translate: `${dx + outTo}px ${dy + (hung ? 26 : 0)}px`, offset: at(lead + t1) },
       { translate: `${inFrom}px 0px`, offset: at(lead + t1) + 0.001 },
-      { translate: `${inFrom}px 0px`, offset: at(lead + t1 + gap), easing: "ease-out" },
+      { translate: `${inFrom}px 0px`, offset: at(lead + t1 + gap), easing: NMB_CURVE.out },
       { translate: "0px 0px", offset: 1 },
     ];
     ctx.ms = T;
@@ -211,10 +211,10 @@ const COMPANION_TRAVEL_PLAYERS = {
     const sq = { scale: `${squeeze} 1`, opacity: 0.2 };
     ctx.body = [
       { scale: "1 1", opacity: 1, offset: 0 },
-      { scale: "1 1", opacity: 1, offset: at(lead + t1 * near), easing: "ease-in" },
+      { scale: "1 1", opacity: 1, offset: at(lead + t1 * near), easing: NMB_CURVE.in },
       { ...sq, offset: at(lead + t1) },
       { ...sq, offset: at(lead + t1 + gap) },
-      { scale: "1 1", opacity: 1, offset: at(lead + t1 + gap + t2 * 0.3), easing: "ease-out" },
+      { scale: "1 1", opacity: 1, offset: at(lead + t1 + gap + t2 * 0.3), easing: NMB_CURVE.out },
       { scale: "1 1", opacity: 1, offset: 1 },
     ];
     ctx.turn = outTo < 0 ? "l" : "r";
@@ -244,9 +244,9 @@ const COMPANION_TRAVEL_PLAYERS = {
     ctx.ms = T;
     ctx.body = [
       { scale: "1", rotate: "0deg", offset: 0 },
-      { scale: "0.1", rotate: "200deg", offset: cut, easing: "ease-in" },
+      { scale: "0.1", rotate: "200deg", offset: cut, easing: NMB_CURVE.in },
       { scale: "0.1", rotate: "200deg", offset: 0.5 },
-      { scale: "1", rotate: "360deg", offset: 0.8, easing: "ease-out" },
+      { scale: "1", rotate: "360deg", offset: 0.8, easing: NMB_CURVE.out },
       { scale: "1", rotate: "360deg", offset: 1 },
     ];
     companionTravelFx(buddy, "nmb-spark", dx, dy, 0, 7, 700);
@@ -256,11 +256,11 @@ const COMPANION_TRAVEL_PLAYERS = {
   cloud(buddy, dx, dy, ctx) {
     const T = Math.round(Math.min(2600, Math.max(1400, Math.hypot(dx, dy) * 2.4)));
     const pos = (x, y, extra = {}) => ({ translate: `${x}px ${y}px`, ...extra });
-    ctx.frames = [pos(dx, dy, { offset: 0 }), pos(dx, dy, { offset: 0.2, easing: "ease-in-out" }), pos(0, 0, { offset: 0.85 }), pos(0, 0, { offset: 1 })];
+    ctx.frames = [pos(dx, dy, { offset: 0 }), pos(dx, dy, { offset: 0.2, easing: NMB_CURVE.inOut }), pos(0, 0, { offset: 0.85 }), pos(0, 0, { offset: 1 })];
     ctx.ms = T;
     ctx.body = [{ translate: "0px 0px", offset: 0 }, { translate: "0px -6px", offset: 0.2 }, { translate: "0px -2px", offset: 0.4 }, { translate: "0px -7px", offset: 0.6 }, { translate: "0px -2px", offset: 0.85 }, { translate: "0px 0px", offset: 1 }];
     const fx = companionTravelFx(buddy, "nmb-cloud", dx, dy, 0, 0, T + 50);
-    fx?.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.14 }, { translate: "0px 0px", opacity: 1, offset: 0.2, easing: "ease-in-out" }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.85 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: "linear" });
+    fx?.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.14 }, { translate: "0px 0px", opacity: 1, offset: 0.2, easing: NMB_CURVE.inOut }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.85 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: NMB_CURVE.linear });
     companionTravelFx(buddy, "nmb-wisp", 0, 0, T * 0.86, 4, 520);
   },
   //: Atlas rides a gust: a spiral curls round it as it lifts, it is carried across, the motes
@@ -268,7 +268,7 @@ const COMPANION_TRAVEL_PLAYERS = {
   wind(buddy, dx, dy, ctx) {
     const T = Math.round(Math.min(2600, Math.max(1400, Math.hypot(dx, dy) * 2.2)));
     const pos = (x, y, extra = {}) => ({ translate: `${x}px ${y}px`, ...extra });
-    ctx.frames = [pos(dx, dy, { offset: 0 }), pos(dx, dy, { offset: 0.18, easing: "ease-in-out" }), pos(0, 0, { offset: 0.88 }), pos(0, 0, { offset: 1 })];
+    ctx.frames = [pos(dx, dy, { offset: 0 }), pos(dx, dy, { offset: 0.18, easing: NMB_CURVE.inOut }), pos(0, 0, { offset: 0.88 }), pos(0, 0, { offset: 1 })];
     ctx.ms = T;
     //: Lifted a little as it goes, set down as it comes in.
     ctx.body = [{ translate: "0px 0px", offset: 0 }, { translate: "0px -8px", offset: 0.22 }, { translate: "0px -5px", offset: 0.55 }, { translate: "0px -8px", offset: 0.75 }, { translate: "0px 0px", offset: 0.9 }, { translate: "0px 0px", offset: 1 }];
@@ -282,7 +282,7 @@ const COMPANION_TRAVEL_PLAYERS = {
         mote.style.animationDelay = `${-i * 90}ms`;
       });
       //: The same beats as the host's own (the lift at 0.18, in at 0.88), so the trail is never ahead of or behind it.
-      gust.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.1 }, { translate: "0px 0px", opacity: 1, offset: 0.18, easing: "ease-in-out" }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.88 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: "linear" });
+      gust.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.1 }, { translate: "0px 0px", opacity: 1, offset: 0.18, easing: NMB_CURVE.inOut }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.88 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: NMB_CURVE.linear });
     }
     companionTravelFx(buddy, "nmb-spiral", dx, dy, 0, 0, 900);
     companionTravelFx(buddy, "nmb-eddy", 0, 0, T * 0.86, 0, 1400);
@@ -303,7 +303,7 @@ const COMPANION_TRAVEL_PLAYERS = {
       const [x, y] = f.translate.split(" ").map(Number.parseFloat);
       return { translate: `${x - dx}px ${y - dy}px`, offset: f.offset };
     });
-    fx?.animate([{ translate: "0px 0px", opacity: 0, scale: "0.3", offset: 0 }, { translate: "0px 0px", opacity: 1, scale: "1", offset: 0.16 }, ...path, { translate: `${-dx}px ${-dy}px`, opacity: 1, scale: "1", offset: 0.88 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, scale: "1.35", offset: 0.95 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, scale: "1.35", offset: 1 }], { duration: T, easing: "ease-in-out" });
+    fx?.animate([{ translate: "0px 0px", opacity: 0, scale: "0.3", offset: 0 }, { translate: "0px 0px", opacity: 1, scale: "1", offset: 0.16 }, ...path, { translate: `${-dx}px ${-dy}px`, opacity: 1, scale: "1", offset: 0.88 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, scale: "1.35", offset: 0.95 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, scale: "1.35", offset: 1 }], { duration: T, easing: NMB_CURVE.inOut });
     companionTravelFx(buddy, "nmb-wisp", 0, 0, T * 0.87, 5, 520);
   },
 };
@@ -323,10 +323,10 @@ function companionTravelPlay(buddy, dx, dy, size, flies, was, force = "") {
   player(buddy, dx, dy, ctx);
   buddy.dataset.route = move;
   if (ctx.turn) buddy.dataset.turn = ctx.turn;
-  nmb.anim = buddy.animate(ctx.frames, { duration: ctx.ms, easing: "linear" });
+  nmb.anim = buddy.animate(ctx.frames, { duration: ctx.ms, easing: NMB_CURVE.linear });
   const anim = nmb.anim;
   const char = buddy.querySelector(".nm-buddy-char");
-  nmb.hopAnim = ctx.body && char ? char.animate(ctx.body, { duration: ctx.ms, easing: "ease-in-out" }) : null;
+  nmb.hopAnim = ctx.body && char ? char.animate(ctx.body, { duration: ctx.ms, easing: NMB_CURVE.inOut }) : null;
   nmb.moveSpeed = 0;
   buddy.classList.add("nmb-poofing");
   const end = () => companionTravelEnd(buddy, anim);
@@ -350,5 +350,5 @@ nmb.leapGrab = function (buddy, char, ms) {
     { translate: "0px -3px", rotate: `${dir * 5}deg`, offset: 0.5 },
     { translate: "0px 1px", rotate: `${-dir * 3}deg`, offset: 0.78 },
     { translate: "0px 0px", rotate: "0deg" },
-  ], { duration: 620, delay: Math.max(0, ms - 140), easing: "ease-out" });
+  ], { duration: 620, delay: Math.max(0, ms - 140), easing: NMB_CURVE.out });
 };

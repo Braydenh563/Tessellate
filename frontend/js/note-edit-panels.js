@@ -630,7 +630,7 @@ async function holdNoteEdit(id, body) {
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
-  toast("Saved on this device. The change goes into your notebook as soon as the server answers.");
+  toast(voiceLine("done", "Saved on this device. The change goes into your notebook as soon as the server answers"));
   await renderEntries();
   focusNoteRow(id);
   return true;

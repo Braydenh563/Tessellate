@@ -222,6 +222,25 @@ def scrub_query_strings(text: str) -> str:
     return _PATH_QUERY.sub(lambda m: f"{m.group(1)}?{_scrub_query_string(m.group(2))}", text)
 
 
+#: A quoted span in a log line: `%r` of a question, a run's title, a note's
+#: title. Straight and curly quotes, one line at most.
+_QUOTED = re.compile(r"'[^'\n]{1,400}'|\"[^\"\n]{1,400}\"|“[^”\n]{1,400}”|‘[^’\n]{1,400}’")
+
+
+def withhold_quoted(text: str) -> str:
+    """`text` with every quoted span replaced, for a file that leaves this
+    machine (the support bundle, L565). A log line quotes what a person typed
+    (the chat's question, an agent run's title), and a question is where a
+    note's words come back: the bundle carried "the quixotic walrus" from a
+    chat about the note. The live viewer keeps them; it never leaves."""
+    return _QUOTED.sub("[quoted text withheld]", text or "")
+
+
+def for_bundle(records: list[dict]) -> list[dict]:
+    """The records with their message and trace quotes withheld."""
+    return [{**r, "message": withhold_quoted(r.get("message", "")), "trace": withhold_quoted(r.get("trace", ""))} for r in records]
+
+
 class QueryScrubFilter(logging.Filter):
     """Keep what people search for out of the access log and the log viewer.
 

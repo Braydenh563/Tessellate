@@ -2344,7 +2344,7 @@ async function renderExportsList() {
         const response = await api(`/files/exports/${encodeURIComponent(file.filename)}`);
         downloadBlob(await response.blob(), file.filename);
       } catch (error) {
-        toast(error.message || `Couldn't fetch ${file.filename}.`, true);
+        toast(error.message || voiceLine("failed", `fetch ${file.filename}`), true);
       }
     });
     get.classList.add("ghost");

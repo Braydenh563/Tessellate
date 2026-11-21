@@ -887,6 +887,7 @@
            it is a fact about the results, and it is the line a reader's eye
            lands on before the first row. -->
       <p id="finder-summary" class="finder-summary muted text-sm" role="status"></p>
+      <p id="finder-answer" class="row finder-answer hidden" role="status"></p>
       <div id="finder-results" class="finder-results" role="group"
         aria-label="Results"></div>
     </div>
@@ -930,7 +931,7 @@
         with Stop where a job can stop part way, and every model call is one of
         them. Under it, what finished in the last half hour says how it ended,
         how long it took and when, with its lines. Stop the model, in the menu,
-        ends any answer and lets the model leave memory. Agent runs lists each
+        ends any answer and lets the model leave memory. Drag the head to move the panel; it stays on screen and remembers where you left it, and a double-click on the head puts it back. Agent runs lists each
         run this session with its steps; the log is in the menu. The two tabs
         show how many each holds, and each part is a card.
       </p>
@@ -1583,6 +1584,8 @@
             aria-controls="ask" tabindex="-1">Ask</button>
           <button role="tab" data-section="questions" aria-selected="false"
             aria-controls="questions" tabindex="-1">Questions</button>
+          <button role="tab" data-section="goals" aria-selected="false"
+            aria-controls="goals" tabindex="-1">Goals</button>
         </div>
 
         <!-- Capture: the start of the core loop -->
@@ -2424,10 +2427,22 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <div class="chat-half">
+              <!-- Under 600px the records are one closed row (INBOX 1843): the heading below
+                   hides and this row, `askRecordsFold` (ask-compose.js), opens the list. -->
+              <button type="button" id="ask-records-fold" class="ghost disclosure-row ask-records-fold"
+                aria-expanded="false" aria-controls="raw-results">Matching records <span id="ask-records-count" class="chip item-label"></span></button>
               <h3 class="panel-head">
                 <i class="ph ph-cards ph-lead" aria-hidden="true"></i>
                 Matching records <span id="search-mode" class="chip item-label"></span>
+                <span id="ask-records-shown" class="muted hidden"></span>
               </h3>
+              <!-- The trail (L-chat-58): answer, thread, note; the breadcrumb recipe (`.doc-crumbs`), drawn by `ask-browser.js`. -->
+              <nav id="ask-browse-trail" class="doc-crumbs ask-browse-trail hidden" aria-label="Where you are in the records">
+                <button type="button" id="ask-browse-back" class="ghost small icon-button" aria-label="Back one step" title="Back one step"><i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+                <ol class="doc-crumbs-list" data-holds-notebook></ol>
+              </nav>
+              <!-- Thread chips (L-chat-58): a woven overview's themes, each a filter on the column below; `ask-browser.js` draws them. -->
+              <div id="ask-threads" class="ask-threads hidden" role="group" aria-label="Threads in this answer"></div>
               <ul id="raw-results" class="entry-list"></ul>
             </div>
           </div>
@@ -2480,6 +2495,45 @@ Link to another note with [[its first few words]]."></textarea>
           <p class="muted questions-lead" id="questions-lead"></p>
           <ul class="dash-list questions-list" id="questions-list" aria-labelledby="questions-heading"></ul>
           <button type="button" class="ghost small questions-more hidden" id="questions-more">Show more</button>
+        </section>
+
+        <!-- Goals and lists (Brief 98): a card each, with its progress and
+             items; `initGoalsView` in goals-view.js, over `/goals`. -->
+        <section class="card hidden" id="goals" aria-labelledby="goals-heading">
+          <div class="dock" data-dock-name="goals" data-dock-more="goals-more-menu" role="toolbar" aria-label="Goals controls">
+            <div class="dock-identity">
+              <h2 id="goals-heading">Goals</h2>
+            </div>
+            <div class="dock-arrange">
+              <select id="goals-show" aria-label="Which goals to show" title="Which goals to show">
+                <option value="" data-label="All">All</option>
+                <option value="goal" data-label="Goals">Goals</option>
+                <option value="list" data-label="Lists">Lists</option>
+                <option value="done" data-label="Finished">Finished</option>
+              </select>
+            </div>
+            <div class="dock-actions">
+              <button id="goals-new-goal" class="ghost small" type="button"
+                title="Add a goal with steps and a progress bar"><i class="ph ph-target ph-lead" aria-hidden="true"></i> New goal</button>
+              <button id="goals-new-list" class="ghost small" type="button" data-fold-narrow
+                title="Add a list to cross things off"><i class="ph ph-list-checks ph-lead" aria-hidden="true"></i> <span class="dock-word">New list</span></button>
+              <button type="button" id="goals-help-toggle" class="icon-only ghost small graph-help-toggle"
+                data-help-for="goals-help-body" aria-controls="goals-help-body"
+                aria-expanded="false" title="What is this?" aria-label="What is this?">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="help-body hidden" id="goals-help-body" role="dialog" aria-label="What is this?">
+            <p>A goal has steps you tick off, a progress bar and an optional
+              target day; a list is for shopping, packing or anything you
+              cross off. Add a line at the foot of a card, tick it, or remove
+              it with the cross. The menu renames, sets the target day,
+              finishes or deletes, and a delete offers Undo.</p>
+            <p>Ask Chat to do the same: "make a goal called Learn Spanish",
+              "add milk to the shopping list", "how far am I on my goals".</p>
+          </div>
+          <ul class="goals-list" id="goals-list" aria-labelledby="goals-heading"></ul>
         </section>
 
         <!-- Browse: everything you've saved -->
@@ -2776,13 +2830,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="row space-between sidebar-head">
           <h2>Chats</h2>
           <span class="row sidebar-head-actions">
-            <select id="chat-sidebar-sort" class="ghost small chat-sidebar-sort" data-select-icon="ph-sort-descending"
-              aria-label="Sort your saved chats" title="Sort your saved chats">
-              <option value="recent">Recent</option>
-              <option value="turns">Most turns</option>
-              <option value="tokens">Most tokens</option>
-              <option value="alpha">A–Z</option>
-            </select>
+            <span id="chat-sidebar-view" class="chat-sidebar-view"></span>
             <button id="chat-new" data-shortcut="newChat" class="ghost small icon-only" type="button" title="New chat: start a fresh conversation"
               aria-label="New chat"><i class="ph ph-plus" aria-hidden="true"></i></button>
           </span>
@@ -2923,7 +2971,7 @@ Link to another note with [[its first few words]]."></textarea>
                        owner, 2026-10-10): the size is the model file's, kept to
                        what this computer can hold, unless set by hand; said here,
                        with the door to the setting. -->
-                  <p class="muted chat-context-pop-note">The window is the model's own size, kept to what this computer can hold, or the one set for it in Settings, Models.</p>
+                  <p id="chat-context-pop-why" class="muted chat-context-pop-note">The window is the model's own size, kept to what this computer can hold, or the one set for it in Settings, Models.</p>
                   <div class="row">
                     <button type="button" id="chat-context-compact" class="ghost small">
                       <i class="ph ph-arrows-in ph-lead" aria-hidden="true"></i> Compact earlier messages</button>
@@ -10141,6 +10189,22 @@ Link to another note with [[its first few words]]."></textarea>
         <option value="in">Indian (colour, organise)</option>
       </select>
     </div>
+    <div class="doc-dictionary-setting">
+      <span class="doc-dictionary-setting-text">
+        <label for="doc-language">This document's language</label>
+        <small class="muted">Kept in its properties; sets the spelling and the editor's language. Japanese and Chinese are not spell checked.</small>
+      </span>
+      <select id="doc-language">
+        <option value="">Not set (English)</option>
+        <option value="en-GB">English, British</option>
+        <option value="en-US">English, American</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+        <option value="ja">Japanese</option>
+        <option value="zh">Chinese</option>
+      </select>
+    </div>
     <label class="setting-check doc-grammar-row">
       <input type="checkbox" id="doc-grammar-check" checked>
       <span>
@@ -10472,6 +10536,27 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="chat-model-stop" class="ghost small" type="button" title="Stop any answer and unload the model from memory"><i class="ph ph-stop-circle ph-lead" aria-hidden="true"></i> Stop the model</button>
               </div>
               <p id="chat-model-note" class="status"></p>
+              <div class="row align-center" id="ask-answerer-row">
+                <label for="ask-answerer-select">Who answers plain Ask</label>
+                <select id="ask-answerer-select" aria-label="Who answers plain Ask">
+                  <option value="ai">Your model</option>
+                  <option value="notes">Quoted from your notes</option>
+                </select>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="ask-answerer-help" aria-controls="ask-answerer-help" aria-expanded="false"
+                  title="About who answers Ask" aria-label="About who answers Ask">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="ask-answerer-help" role="dialog" aria-label="About who answers Ask">
+                <p>
+                  Your model writes the answer in Ask, citing your notes. Choose
+                  quoted from your notes and a plain question is answered by the
+                  app's own answerer, with no model. The switch beside the answer
+                  length in Ask is the same choice. With no model running the
+                  answer is always from your notes.
+                </p>
+              </div>
               <!-- What the backend actually says about the model in use: its
                    size, quantisation, the window it will run at, and whether
                    it can call tools. That last one is the first thing worth
@@ -11104,6 +11189,38 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             </div>
+
+            <!-- Currency rates (CHAT_PLAN decision 43): the table "50 usd in eur"
+                 reads, dated, in the person's hands. One rate per line in a
+                 textarea; the date is said with every answer. -->
+            <div class="settings-group" id="currency-rates-group">
+              <div class="row space-between help-head">
+                <h3>Currency rates</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="currency-rates-help" aria-controls="currency-rates-help" aria-expanded="false"
+                  title="About the currency rates" aria-label="About the currency rates">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="currency-rates-help" role="dialog" aria-label="About the currency rates">
+                <p>Conversions between currencies use this table and say its date, for example "at the rates from 1 October".
+                  Nothing is fetched. Each line is a code and how many units of it make one US dollar. Codes you leave out keep their built-in rate.
+                  Reset to the built-in table puts back the rates this version shipped with.</p>
+              </div>
+              <div class="row">
+                <label for="currency-rates-date" class="muted">Rates from</label>
+                <input id="currency-rates-date" type="date">
+              </div>
+              <div class="row">
+                <label for="currency-rates-text" class="muted">Units per US dollar</label>
+                <textarea id="currency-rates-text" rows="8" spellcheck="false" autocomplete="off"></textarea>
+              </div>
+              <div class="row">
+                <button id="currency-rates-save" class="ghost small" type="button">Save rates</button>
+                <button id="currency-rates-reset" class="ghost small" type="button">Reset to the built-in table</button>
+                <span id="currency-rates-status" class="muted" role="status"></span>
+              </div>
+            </div>
           </section>
 
           <!-- Personas: who the AI is when it answers -->
@@ -11144,6 +11261,71 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="concise">Concise</option>
                   <option value="detailed">Detailed</option>
                 </select>
+              </div>
+              <div class="row">
+                <label for="pref-answer-length" class="muted">How long answers are</label>
+                <select id="pref-answer-length" title="Short is one or two sentences, Normal a short paragraph or two, Detailed adds a supporting sentence for each source">
+                  <option value="quick">Short</option>
+                  <option value="normal">Normal (default)</option>
+                  <option value="detailed">Detailed</option>
+                </select>
+              </div>
+              <p class="muted">
+                Short is one or two sentences; Detailed adds a supporting sentence per source.
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="answer-length-help" aria-controls="answer-length-help" aria-expanded="false"
+                  title="About this setting" aria-label="About how long answers are">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </p>
+              <div class="help-body hidden" id="answer-length-help" role="dialog" aria-label="About how long answers are">
+                <p>
+                  The same choice as Length in the chat dock and beside the Ask
+                  box, with or without a model. Short is one or two sentences,
+                  Normal a short paragraph or two, and Detailed adds a
+                  supporting sentence for each source.
+                </p>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="pref-personas-off">
+                <span>Personas off</span>
+              </label>
+              <p class="muted">
+                Answers use Atlas's own voice, whichever persona is active.
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="personas-off-help" aria-controls="personas-off-help" aria-expanded="false"
+                  title="About this setting" aria-label="About personas off">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </p>
+              <div class="help-body hidden" id="personas-off-help" role="dialog" aria-label="About personas off">
+                <p>
+                  With this on, no persona's instructions reach a model and no
+                  persona's words pick the voice of an answer from your notes.
+                  Your personas are kept; turn it off and the active one is back.
+                </p>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="pref-personal-wording">
+                <span>Lines written from your notes</span>
+              </label>
+              <p class="muted">
+                The greeting, the line under it and the companion speak about your notes.
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="personal-wording-help" aria-controls="personal-wording-help" aria-expanded="false"
+                  title="About this setting" aria-label="About lines written from your notes">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </p>
+              <div class="help-body hidden" id="personal-wording-help" role="dialog" aria-label="About lines written from your notes">
+                <p>
+                  On by default. The dashboard greeting names your streak or
+                  what is due, the line under it names a recent note, and the
+                  companion mentions a reminder or a note from this day. Turn
+                  it off and the greeting is a plain hello, the line shows your
+                  counts, and the companion says nothing about your notes.
+                  Answers in Chat and Ask are not changed.
+                </p>
               </div>
               <div class="row">
                 <label for="pref-voice" class="muted">How Atlas sounds with no model</label>
@@ -12830,7 +13012,10 @@ Link to another note with [[its first few words]]."></textarea>
                   menu reinstalls or removes them all. Tick packages to act on
                   several at once from the bar above the list. They run one
                   after another, each says how it went, and one that fails
-                  does not stop the rest. An installed package's ... menu has
+                  does not stop the rest. A download of a known size shows a
+                  bar with a percentage; a pip install shows a moving bar.
+                  Closing the notice does not stop it, and Activity keeps
+                  showing it. An installed package's ... menu has
                   Reinstall, for a feature that is switched on but not
                   working, and Remove. A notice that says a feature needs a
                   package has an Open Packages button that brings you to
@@ -13139,7 +13324,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <div class="row">
                 <label for="pref-date-order" class="muted">Dates like 3/4 mean</label>
-                <select id="pref-date-order" title="How a date written with slashes is read in searches and questions">
+                <select id="pref-date-order" title="How a date written with slashes is read in searches and questions, and which way round answers say a day">
                   <option value="auto">From my language and region (default)</option>
                   <option value="day">Day first (3 April)</option>
                   <option value="month">Month first (4 March)</option>
@@ -13247,7 +13432,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <label class="setting-check">
                 <input type="checkbox" id="pref-search-suggest">
-                <span>Suggest as you type in search boxes</span>
+                <span>Suggest as you type in search, chat and note boxes</span>
               </label>
               <p class="muted">Recent searches, then your note titles, tags and categories, with the best match in grey.</p>
               <div class="help-body hidden" id="search-suggest-help" role="dialog" aria-label="About search suggestions">
@@ -13257,7 +13442,7 @@ Link to another note with [[its first few words]]."></textarea>
                   with your words. Tab, or Right at the end of the words, takes
                   the grey text; Down and Up walk the list, Enter takes the lit
                   one, Escape closes it. Shift+Delete removes a lit recent
-                  search. Nothing is sent anywhere: it is built from this
+                  search. The chat box offers the end of its last word the same way, in grey. Nothing is sent anywhere: it is built from this
                   notebook, and remembered on this device. Settings, Import
                   &amp; export, Clear and forget clears the recent searches in
                   every box at once.
@@ -13840,7 +14025,9 @@ Link to another note with [[its first few words]]."></textarea>
                   not run, the graph may be slower to update connections, and
                   the two moving pictures stop: the dashboard's constellation
                   and the animated background, if you have it on. They are
-                  the most expensive things on screen to draw.
+                  the most expensive things on screen to draw. It is also
+                  Save power: chat and the Ask box answer from your notes
+                  with no model, say so in one line, and wake nothing.
                 </p>
               </div>
               <label class="check-row">
@@ -16505,6 +16692,9 @@ Link to another note with [[its first few words]]."></textarea>
   <script src="/js/notes-list.js?v=0.7.0"></script>
   <script src="/js/capture-ask.js?v=0.7.0"></script>
   <script src="/js/chat.js?v=0.7.0"></script>
+  <script src="/js/chat-web.js?v=0.7.0"></script>
+  <script src="/js/chat-model-panel.js?v=0.7.0"></script>
+  <script src="/js/chat-progress.js?v=0.7.0"></script>
   <script src="/js/chat-agent.js?v=0.7.0"></script>
   <script src="/js/chat-attach.js?v=0.7.0"></script>
   <script src="/js/sheets-selects.js?v=0.7.0"></script>

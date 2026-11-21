@@ -109,6 +109,19 @@
     return Math.max(320, Math.min(1400, Math.round(measured)));
   }
 
+  //: A histogram is bars of how many values fall in each equal-width range (L-chat-252); the table
+  //: under it says the same, so the ranges are its rows.
+  function askChartBinned(chart) {
+    const values = chart.rows.map((row) => row.value);
+    const low = Math.min(...values);
+    const high = Math.max(...values);
+    const count = Math.max(1, Math.min(12, Math.ceil(Math.sqrt(values.length))));
+    const step = (high - low) / count || 1;
+    const bins = Array.from({ length: count }, (_, i) => ({ label: `${+(low + step * i).toFixed(2)} to ${+(low + step * (i + 1)).toFixed(2)}`, value: 0 }));
+    for (const value of values) bins[Math.min(count - 1, Math.floor((value - low) / step))].value += 1;
+    return { ...chart, kind: "bar", rows: bins, columns: ["Range", "Values"] };
+  }
+
   //: **A pie: one whole, cut into its shares** (L-world-class-179, the owner's
   //: "pie charts for the dashboard"). The largest five rows and the rest as
   //: "Other", since a seventh slice is a sliver nobody can name; each slice is
@@ -185,7 +198,7 @@
     const plotH = ASK_CHART_H - pt - pb;
     const y = (value) => pt + plotH - (value / top) * plotH;
     const svg = askChartSvgEl("svg", { viewBox: `0 0 ${width} ${ASK_CHART_H}`, class: "ask-chart-svg", role: chart.interactive ? "group" : "img" });
-    svg.setAttribute("aria-label", `${chart.title}, as a ${chart.kind === "bar" ? "bar" : "line"} chart; the table below has the numbers`);
+    svg.setAttribute("aria-label", `${chart.title}, as a ${chart.kind} chart; the table below has the numbers`);
     for (const tick of ticks) {
       svg.appendChild(askChartSvgEl("line", { x1: pl, x2: width - pr, y1: y(tick), y2: y(tick), class: "ask-chart-grid" }));
       const text = askChartSvgEl("text", { x: pl - 6, y: y(tick) + 4, "text-anchor": "end", class: "ask-chart-axis" });
@@ -200,15 +213,20 @@
     const isBar = chart.kind === "bar";
     const every = Math.max(1, Math.ceil(rows.length / Math.floor(plotW / (isBar ? 36 : 54))));
     const barW = Math.max(2, Math.min(48, slot * 0.7));
-    if (!isBar) {
-      const points = rows.map((row, i) => `${(pl + slot * i + slot / 2).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
+    //: A scatter puts each mark at its label's number (the x), the others in equal slots.
+    const xs = rows.map((row, i) => (chart.kind === "scatter" && Number.isFinite(Number(row.label)) ? Number(row.label) : i));
+    const [xLow, xHigh] = chart.kind === "scatter" ? [Math.min(...xs), Math.max(...xs)] : [0, Math.max(1, rows.length - 1)];
+    const xAt = (i) => (chart.kind === "scatter" ? pl + 8 + ((xs[i] - xLow) / (xHigh - xLow || 1)) * (plotW - 16) : pl + slot * i + slot / 2);
+    if (chart.kind === "line" || chart.kind === "area") {
+      const points = rows.map((row, i) => `${xAt(i).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
+      if (chart.kind === "area") svg.appendChild(askChartSvgEl("polygon", { points: `${xAt(0).toFixed(1)},${pt + plotH} ${points} ${xAt(rows.length - 1).toFixed(1)},${pt + plotH}`, class: "ask-chart-area" }));
       svg.appendChild(askChartSvgEl("polyline", { points, class: "ask-chart-line" }));
     }
     rows.forEach((row, i) => {
-      const cx = pl + slot * i + slot / 2;
-      if (i % every === 0) {
+      const cx = xAt(i);
+      if (i % every === 0 && (chart.kind !== "scatter" || i === 0 || i === rows.length - 1)) {
         const text = askChartSvgEl("text", { x: cx, y: ASK_CHART_H - pb + 16, "text-anchor": "middle", class: "ask-chart-axis" });
-        text.textContent = askChartFit(askChartLabel(chart, row.label), slot * every - 6);
+        text.textContent = askChartFit(askChartLabel(chart, row.label), chart.kind === "scatter" ? 80 : slot * every - 6);
         svg.appendChild(text);
       }
       const mark = isBar
@@ -239,6 +257,7 @@
   function askChartTable(chart) {
     const wrap = document.createElement("details");
     wrap.className = "ask-chart-numbers";
+    wrap.open = chart.kind === "table";
     const summary = document.createElement("summary");
     summary.textContent = "The numbers";
     const table = document.createElement("table");
@@ -262,9 +281,16 @@
     return wrap;
   }
 
-  //: The chart as a PNG: the SVG with its resolved colours written onto each
-  //: mark (a file has no stylesheet), on the card's own flat background.
-  async function askChartPng(svg, title) {
+  //: The SVG as a standalone file: the resolved colours written onto each mark.
+  function askChartSvgText(svg) {
+    const clone = askChartInline(svg);
+    const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
+    clone.setAttribute("width", wide);
+    clone.setAttribute("height", ASK_CHART_H);
+    return new XMLSerializer().serializeToString(clone);
+  }
+
+  function askChartInline(svg) {
     const clone = svg.cloneNode(true);
     const live = [svg, ...svg.querySelectorAll("*")];
     const copies = [clone, ...clone.querySelectorAll("*")];
@@ -274,8 +300,15 @@
         copies[i].setAttribute(prop, style.getPropertyValue(prop));
       }
     });
-    const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
     clone.setAttribute("xmlns", SVG_NS);
+    return clone;
+  }
+
+  //: The chart as a PNG: the SVG with its resolved colours written onto each
+  //: mark (a file has no stylesheet), on the card's own flat background.
+  async function askChartPng(svg, title) {
+    const clone = askChartInline(svg);
+    const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
     clone.setAttribute("width", wide * 2);
     clone.setAttribute("height", ASK_CHART_H * 2);
     const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" }));
@@ -354,6 +387,7 @@
     //: not only the Statistics page's (the owner, 2026-11-12: "I cant
     //: interact with or see the values"); only `onPick` makes a mark a button.
     chart = { ...chart, interactive: true };
+    if (chart.kind === "histogram") chart = askChartBinned(chart);
     if (chart.kind === "pie") chart.rows = askChartPieRows(chart.rows);
     const head = document.createElement("div");
     head.className = "ask-chart-head";
@@ -365,14 +399,15 @@
     const source = chart.source || "from your notes";
     if (chart.total != null) total.textContent = `${chart.total.toLocaleString()} in all, ${source}`;
     else total.textContent = source[0].toUpperCase() + source.slice(1);
-    const svg = askChartSvg(chart);
+    const svg = chart.kind === "table" ? null : askChartSvg(chart);
     const save = smallButton("ph:download-simple Save as PNG", "Save this chart as a picture", () =>
       askChartPng(host.querySelector(".ask-chart-svg"), chart.title).catch((error) => toast(error.message, true))
     );
     save.classList.add("quiet");
-    head.append(title, total, save);
-    host.replaceChildren(head, svg, ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
+    head.append(title, total, ...(svg ? [save] : []));
+    host.replaceChildren(head, ...(svg ? [svg] : []), ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
     host.classList.remove("hidden");
+    if (!svg) return;
     if (chart.interactive) askChartWire(host, chart);
     else askChartFollow(host, chart);
   }
@@ -459,6 +494,137 @@
     host._chartObserver = observer;
     observer.observe(host);
   }
+
+  //: **The chart maker** (L171, L254): paste values (CSV or two columns), get a bar
+  //: or line chart, export it as SVG, PNG or CSV, and save it to a note as a fenced
+  //: chart block that every note view draws. One object on `drawAskChart`, so the
+  //: shared scope gains no name (tests/test_global_scope_ratchet.py).
+  //:
+  //: The block is plain text: `title:` and `kind:` lines, then a label and a number a
+  //: line, split on a comma, tab or semicolon (or the last run of spaces).
+  const chartMaker = {
+    parse(text) {
+      const chart = { title: "Chart", kind: "bar", rows: [] };
+      for (const raw of String(text || "").split(/\r?\n/)) {
+        const line = raw.trim();
+        if (!line) continue;
+        const head = line.match(/^(title|kind)\s*:\s*(.+)$/i);
+        if (head) {
+          if (head[1].toLowerCase() === "title") chart.title = head[2].trim().slice(0, 80);
+          else chart.kind = (head[2].trim().toLowerCase().match(/^(line|area|pie|scatter|histogram|table)/) || ["", "bar"])[1];
+          continue;
+        }
+        const cells = line.split(/[,;\t]/).length > 1 ? line.split(/[,;\t]/) : line.split(/\s+(?=\S+$)/);
+        const value = Number(String(cells[cells.length - 1]).trim().replace(/^\$/, "").replace(/,/g, ""));
+        const label = cells.slice(0, -1).join(", ").trim();
+        //: A header row ("Day, Hours") has no number in its last cell: skipped, not an error.
+        if (!label || !Number.isFinite(value) || value < 0) continue;
+        chart.rows.push({ label: label.slice(0, 60), value });
+      }
+      chart.rows = chart.rows.slice(0, 60);
+      return chart;
+    },
+    csv(chart) {
+      const cell = (text) => (/[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text);
+      return ["Label,Value", ...chart.rows.map((row) => `${cell(row.label)},${row.value}`)].join("\n") + "\n";
+    },
+    fence(chart) {
+      return ["```chart", `title: ${chart.title}`, `kind: ${chart.kind}`, ...chart.rows.map((row) => `${row.label}, ${row.value}`), "```"].join("\n");
+    },
+    //: The finished card for a block's text: the chart, the numbers, and the three exports.
+    render(host, text) {
+      const chart = chartMaker.parse(text);
+      if (!chart.rows.length) return false;
+      host.className = "ask-chart chart-block";
+      drawAskChart(host, { ...chart, source: "from a chart block", unit: ["", ""] });
+      const head = host.querySelector(".ask-chart-head");
+      const name = chart.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "chart";
+      const svgButton = smallButton("ph:download-simple Save as SVG", "Save this chart as an SVG file", async () => {
+        const svg = host.querySelector(".ask-chart-svg");
+        if (!svg) return;
+        await saveFile(`${name}.svg`, new Blob([askChartSvgText(svg)], { type: "image/svg+xml" })).catch((error) => toast(error.message, true));
+      });
+      const csvButton = smallButton("ph:download-simple Save as CSV", "Save these numbers as a CSV file", () =>
+        saveFile(`${name}.csv`, new Blob([chartMaker.csv(chart)], { type: "text/csv" })).catch((error) => toast(error.message, true))
+      );
+      svgButton.classList.add("quiet");
+      csvButton.classList.add("quiet");
+      head?.append(...(host.querySelector(".ask-chart-svg") ? [svgButton] : []), csvButton);
+      return true;
+    },
+    //: The maker: a sheet with the paste box, Bar or Line, the live chart, and Add to note
+    //: (`onInsert(block)`) when it was opened from a note's editor.
+    open({ onInsert = null, text = "" } = {}) {
+      openSheet({
+        label: "Chart maker",
+        name: "chart-maker",
+        build: (card, close) => {
+          const help = document.createElement("p");
+          help.className = "muted text-sm";
+          help.textContent = "Paste values, one label and number a line, or CSV.";
+          const box = document.createElement("textarea");
+          box.className = "chart-maker-box";
+          box.rows = 6;
+          box.value = text || "title: My chart\nMon, 3\nTue, 5\nWed, 4";
+          box.setAttribute("aria-label", "Chart values");
+          const kinds = document.createElement("div");
+          kinds.className = "tabs-line popup-kinds chart-maker-kinds";
+          kinds.setAttribute("role", "tablist");
+          kinds.setAttribute("aria-label", "Chart kind");
+          let kind = "bar";
+          const preview = document.createElement("div");
+          const draw = () => {
+            const source = /^kind\s*:/im.test(box.value) ? box.value.replace(/^kind\s*:.*$/im, `kind: ${kind}`) : `kind: ${kind}\n${box.value}`;
+            preview.replaceChildren();
+            if (!chartMaker.render(preview, source)) {
+              preview.className = "muted text-sm";
+              preview.textContent = "Add a label and a number on each line to see the chart.";
+            }
+            return chartMaker.parse(source);
+          };
+          for (const [key, name] of [["bar", "Bar"], ["line", "Line"], ["area", "Area"], ["pie", "Pie"], ["scatter", "Scatter"], ["histogram", "Histogram"], ["table", "Table"]]) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = name;
+            button.setAttribute("role", "tab");
+            const choose = (on) => {
+              button.setAttribute("aria-selected", String(on));
+              button.classList.toggle("active", on);
+              button.tabIndex = on ? 0 : -1;
+            };
+            choose(key === kind);
+            button.addEventListener("click", () => {
+              kind = key;
+              for (const other of kinds.children) other.choose(other === button);
+              draw();
+            });
+            button.choose = choose;
+            kinds.appendChild(button);
+          }
+          box.addEventListener("input", draw);
+          const actions = document.createElement("div");
+          actions.className = "row right space-dialog-actions";
+          const add = smallButton(onInsert ? "ph:plus Add to note" : "ph:copy Copy chart block", onInsert ? "Put this chart in the note" : "Copy the chart block to paste into a note", async () => {
+            const chart = draw();
+            if (!chart.rows.length) return toast("Add at least one label and number first.", "info");
+            if (onInsert) onInsert(chartMaker.fence(chart));
+            else await navigator.clipboard?.writeText(chartMaker.fence(chart));
+            close();
+          }, false);
+          actions.appendChild(add);
+          card.append(help, box, kinds, preview, actions);
+          draw();
+          box.focus();
+        },
+      });
+    },
+  };
+  //: A ```chart fence in a note view (L171): drawn in place of its code card; code when it holds no number.
+chartMaker.swap = (block, text) => {
+  const host = document.createElement("div");
+  if (block.isConnected && chartMaker.render(host, text)) block.replaceWith(host);
+};
+drawAskChart.maker = chartMaker;
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { askChartSvgEl, drawAskChart, renderAskChart });

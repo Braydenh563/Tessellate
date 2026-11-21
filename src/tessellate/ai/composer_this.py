@@ -62,8 +62,15 @@ def _which(content: str) -> str:
     return composer_frame.name_of({"content": content})
 
 
-def _words(content: str) -> int:
-    return len(re.findall(r"[\w'’-]+", study.clean(content)))
+#: Han, kana and hangul run together with no spaces, so "words" cannot be counted in them (L25).
+_CJK = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]")
+
+
+def _size(content: str) -> tuple[int, str, int]:
+    """(how many, the noun, per minute): characters when the note is mostly CJK, else words."""
+    text = study.clean(content)
+    characters, words = len(_CJK.findall(text)), len(re.findall(r"[\w'’-]+", _CJK.sub(" ", text)))
+    return (characters, "character", 400) if characters > words else (words, "word", 230)
 
 
 def local(now: datetime, *whens: datetime | None) -> list[datetime | None]:
@@ -94,7 +101,7 @@ def answer(question: str, content: str, created: datetime | None, edited: dateti
         if same or not changed:
             return f"You haven't changed it since you wrote it {made}: {which}." if made else None
         return f"You last changed it {changed}, and wrote it {made}."
-    words = _words(content)
-    minutes = round(words / 230)
+    count, noun, rate = _size(content)
+    minutes = round(count / rate)
     read = "about a minute" if minutes <= 1 else f"about {realise.count_noun(minutes, 'minute')}"
-    return f"It is {realise.count_noun(words, 'word')}, {read} to read: {which}."
+    return f"It is {realise.count_noun(count, noun)}, {read} to read: {which}."

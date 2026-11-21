@@ -365,6 +365,7 @@ document.addEventListener("keydown", (event) => {
   else scope.remove();
 });
 
+
 //: A ```mermaid fence is drawn by the lazy `mermaid` module (mermaid-draw.js).
 //: After a settle, and only if the block is still on the page: a streaming
 //: reply renders again per chunk, and the blocks it throws away are not drawn.
@@ -497,6 +498,7 @@ function renderMarkdown(container, text, depth = 0) {
       block.append(bar, pre);
       container.appendChild(block);
       if (language === "mermaid") mermaidSoon(block);
+      else if (language === "chart") ensureModule("chartMaker").then((ok) => ok && drawAskChart.maker.swap(block, text));
       //: Coloured by the lazy `codeColour` module (code-colour.js) after the same settle.
       else if (language) setTimeout(() => block.isConnected && ensureModule("codeColour").then((ok) => ok && block.dispatchEvent(new Event("codecolour", { bubbles: true }))), 400);
       continue;
@@ -2224,7 +2226,7 @@ function stripMarkdownPreview(text) {
 // Notes sections not collapsing at all a few sessions ago, one implementation
 // quietly undoing the other.
 
-const NOTES_SECTIONS = ["browse", "capture", "writing-room", "ask", "questions"];
+const NOTES_SECTIONS = ["browse", "capture", "writing-room", "ask", "questions", "goals"];
 const NOTES_SECTION_STORE = "notesSection";
 
 // --- a new session starts at the front of every tab ----------------------------
@@ -2309,6 +2311,10 @@ function showNotesSection(name, { focus = false } = {}) {
   if (name === "questions") {
     initQuestionsView();
     loadQuestions();
+  }
+  //: Goals (Brief 98) re-reads too: the agent may have ticked an item in Chat.
+  if (name === "goals") {
+    ensureModule("goalsView").then((ok) => ok && document.dispatchEvent(new Event("goals:show")));
   }
   const wanted = NOTES_SECTIONS.includes(name) ? name : "browse";
   // A sub-tab move is a navigation, so it becomes a history step too. Recorded

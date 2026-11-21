@@ -10,13 +10,15 @@ in bulk. Every restated sentence still ends in a card that waits for Confirm.
 from __future__ import annotations
 
 import re
+
+from tessellate.ai.recognise_reminders import bare_event
 from tessellate.core.lazyre import lazy_compile
 
 _LEAD = r"^(?:(?:hey|please|also|just|can you|could you|will you|would you|i need you to|i want you to|i need to|i must|i want to|i would like to|i'd like to)\s+)*"
 _CAL = r"(?:calendar|schedule|planner|agenda|diary)"
 _LIST = r"(?:[\w ]{0,25}?(?:to[- ]?do|task) list|list of (?:reminders|chores|housework)|reminders? list)"
 _PLACE = rf"(?:my|the)\s+(?:{_CAL}|{_LIST})"
-#: The to-do list the task acts already read ("put buy milk on my todo list").
+#: The to-do list the task acts already read ("put buy milk on my to-do list").
 _PLAIN_TODO = lazy_compile(r"(?:^|\s)(?:my|the)\s+(?:to[- ]?do|task)\s+list$", re.IGNORECASE)
 _WHEN = r"(?P<when>\s+(?:for|on)\s+\S.*)?"
 
@@ -34,6 +36,7 @@ _CHECK_OFF = lazy_compile(rf"{_LEAD}(?:check|tick|cross)\s+(?P<what>.+?)\s+off(?
 _BARE = lazy_compile(r"^(?:(?:i'd like|i want|i need|i would like)\s+)?(?:to\s+)?(?:have\s+)?a reminder (?:made|set|created|added)$", re.IGNORECASE)
 #: The app's alarm is an ordinary reminder (the Clock's "Set alarm" makes one), so setting one is the reminder act.
 _SET_ALARM = lazy_compile(r"\b(?:set|add|put in|make|create|need|want)\b[^?]*?\b(?:an|another|a new|the|my) alarm\b", re.IGNORECASE)
+_QUESTION_LEAD = lazy_compile(r"^(?:is|are|do|does|did|am|was|were|will|what|when|where|who|how|why|can|could|should|i |we )", re.IGNORECASE)
 _EVERYTHING = lazy_compile(r"^(?:everything|all|all of it|all of them|it all|the (?:whole|entire) (?:thing|list))$", re.IGNORECASE)
 
 CLEAR_LINE = (
@@ -81,6 +84,9 @@ def restate(text: str) -> str:
     gone = _REMOVE.match(said)
     if gone and not _EVERYTHING.match(gone.group("what").strip()) and not _PLAIN_TODO.search(said):
         return f"cancel the reminder about {_item(gone.group('what'))}"
+    event = bare_event(said)
+    if event and not _QUESTION_LEAD.match(said):
+        return f"remind me to {event[0]} at {event[1]} {event[2]}"
     ticked = _CHECK_OFF.match(said)
     if ticked:
         return f"mark {ticked.group('what').strip()} as done"

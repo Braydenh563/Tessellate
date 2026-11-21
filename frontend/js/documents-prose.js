@@ -98,7 +98,7 @@ async function docGrammarWhy() {
 //: One lint of `text`, or null when there is no checker. `ignored` is the grammar
 //: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
 function docGrammarAsk(text) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(text), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => docSpell.languageTool(lints, text));
 }
@@ -602,13 +602,21 @@ function noteGrammarPlugin(CM) {
 //: reason `docProseFix` gives.
 function noteGrammarMenu(view, plugin, finding, x, y) {
   if (typeof openMenuAtPoint !== "function") return;
+  //: A note box is a CodeMirror view; the chat box and the Ask box (composer-lint.js) hand a `noteHost`
+  //: of the same three moves instead, so one popover serves a textarea as well as the editor.
+  const host = view.noteHost || {
+    text: () => docStr(view.state.doc),
+    replace: (option) => {
+      view.dispatch({ changes: { from: finding.start, to: finding.end, insert: option } });
+      view.focus();
+    },
+    refresh: () => view.dispatch({ effects: noteGrammarEffect.of(null) }),
+  };
   const apply = (option) => {
-    const text = docStr(view.state.doc);
-    if (text.slice(finding.start, finding.end) !== finding.text) {
+    if (host.text().slice(finding.start, finding.end) !== finding.text) {
       return toast("That text has changed since it was checked.", "info");
     }
-    view.dispatch({ changes: { from: finding.start, to: finding.end, insert: option } });
-    view.focus();
+    host.replace(option, finding);
   };
   const items = finding.alternatives.slice(0, DOC_SUGGEST_MAX).map((option) => ({
     group: "fix",
@@ -631,7 +639,7 @@ function noteGrammarMenu(view, plugin, finding, x, y) {
       title: add.title,
       run: () => {
         plugin.findings = plugin.findings.filter((other) => other.text.toLowerCase() !== finding.text.toLowerCase());
-        view.dispatch({ effects: noteGrammarEffect.of(null) });
+        host.refresh();
         add.run();
       },
     });
@@ -641,7 +649,7 @@ function noteGrammarMenu(view, plugin, finding, x, y) {
     label: "ph:eye-slash Ignore this one",
     run: () => {
       plugin.findings = plugin.findings.filter((other) => other !== finding);
-      view.dispatch({ effects: noteGrammarEffect.of(null) });
+      host.refresh();
     },
   });
   openMenuAtPoint(items, finding.message, x, y);
@@ -3476,7 +3484,7 @@ async function docEditorPaste(view) {
         await action.undo();
       }, { also: { label: "Open", run: () => flashEntry(chosen.id) } });
     } catch (error) {
-      toast(error.message || "Couldn't save that to a note.", true);
+      toast(error.message || voiceLine("failed", "save that to a note"), true);
     }
   }
 

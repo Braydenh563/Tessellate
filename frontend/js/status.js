@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that notification setting.", true);
+    toast(error.message || voiceLine("failed", "save that notification setting"), true);
   }
   renderAgentActivityMode();
 });
@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+      toast(voiceLine("failed", "go back to the space it was made in"), "info", { action: ["Try again", backThenRun] });
     };
   }
   if (!record) return () => run();
@@ -1150,6 +1150,7 @@ let lastToastKey = "";
 const VOICE = {
   failed: "Couldn't {what}.",
   failed_why: "Couldn't {what}: {why}",
+  done: "{what}.",
 };
 
 //: **A toast names the thing** (CHAT_PLAN section 1 row 3): `“Passport
@@ -1171,10 +1172,10 @@ function toastName(text, fallback = "it", limit = 48) {
   return `“${flat.length > limit ? `${flat.slice(0, limit - 1).trimEnd()}…` : flat}”`;
 }
 
-function voiceLine(key, slots = {}) {
-  const why = slots.why ? String(slots.why).trim() : "";
-  const shape = VOICE[key === "failed" && why ? "failed_why" : key] || "";
-  return shape.replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : String(slots[name] ?? "")));
+function voiceLine(key, what = "", why = "") {
+  //: `voiceLine("failed", "open that", why)`: the sentence the realiser's table says, "Couldn't open that: why".
+  why = String(why || "").trim();
+  return VOICE[key === "failed" && why ? "failed_why" : key].replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : what));
 }
 
 function toast(message, isError = false, { exempt = false, action = null } = {}) {
@@ -1708,7 +1709,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || `Couldn't undo “${action.label}”.`, true);
+    toast(error.message || voiceLine("failed", `undo “${action.label}”`), true);
   }
   renderUndoBar();
 }
@@ -1729,7 +1730,7 @@ async function performRedoNow() {
     toast(`Redone: ${action.label}`);
   } catch (error) {
     redoStack.push(action);
-    toast(error.message || "Couldn't redo that.", true);
+    toast(error.message || voiceLine("failed", "redo that"), true);
   }
   renderUndoBar();
 }
@@ -2047,8 +2048,10 @@ async function refreshModelStatus() {
     //: status as before, so the pill shows the worst case.
     if (err?.name === "TimeoutError" || err?.name === "AbortError") modelStatusProblem = "slow";
     else {
-      modelStatus = null; // locked or unreachable: pill shows the worst case
+      //: A failed poll while the server answers keeps the last known status (L70, L79): nulling it greyed the Agent
+      //: panel until the next poll. Only a server that does not answer at all drops it, so the pill shows the worst case.
       const up = await fetch("/health", { signal: AbortSignal.timeout(3000) }).then((r) => r.ok).catch(() => false);
+      if (!up) modelStatus = null;
       modelStatusProblem = up ? "error" : "down";
     }
   }
@@ -2136,10 +2139,12 @@ const AI_OFFLINE_HINT = "Connect a model in Settings";
 //: INBOX 778: a reachable server with no chat model installed answers
 //: nothing). `model_ready` is the server's own verdict; the Needle engine
 //: (`tools_engine`) answers without one, so it keeps the gate open.
-function aiIsOff() {
-  if (!modelStatus) return false;
-  if (modelStatus.ollama_running === false) return true;
-  return modelStatus.model_ready === false && !modelStatus.tools_engine;
+//: `strict` (L128): no model can write a reply, the Needle engine not holding it open, for a control only a model can
+//: serve (Tag with Atlas, the merge assist, the nudge): `ollama_running` alone is true for a server with nothing installed.
+function aiIsOff(strict = false, status = modelStatus) {
+  if (!status) return false;
+  if (status.ollama_running === false) return true;
+  return status.model_ready === false && (strict || !status.tools_engine);
 }
 
 //: **Why this restores rather than enables.** The status poll runs this every
@@ -2192,7 +2197,7 @@ onSurface("chat", () => { syncModelGatedControls(); renderChatActiveModelBadge()
 onSurface("notes", syncModelGatedControls);
 onSurface("palette", () => { syncModelGatedControls(); syncAgentPaletteAvailability(); });
 function syncModelGatedControls(status = modelStatus) {
-  const off = status ? status.ollama_running === false : false;
+  const off = aiIsOff(true, status);
   for (const control of document.querySelectorAll("[data-needs-model]")) {
     const reason = control.dataset.needsModel;
     if (off) {

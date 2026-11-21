@@ -54,8 +54,36 @@ const noteTemplateState = { choice: null, made: false };
 //: and the fill, so the preview cannot show something the button would not
 //: write (the recipe's rule, `docTemplateFill`'s for documents).
 function noteTemplateFill(template) {
-  return noteTemplateText(template?.content).replaceAll(NOTE_TEMPLATE_CURSOR, "");
+  return noteTemplateText(noteTemplateState.vars(template?.content, new Date(), template?.name)).replaceAll(NOTE_TEMPLATE_CURSOR, "");
 }
+
+//: The twin of `ai/template_fill.fill` (CHAT_PLAN X13): {weekday}, {week},
+//: {title} and {n} written out by rule. {date} stays with `noteTemplateText`
+//: (the person's own date format); any other {slot} is left in the text for
+//: the person to fill, as `ai/template_fill.slots` names them.
+Object.assign(noteTemplateState, {
+  slot: /\{(\w+)\}/g,
+  known: ["date", "weekday", "week", "title", "n", "time", "cursor", "clipboard"],
+  //: ISO 8601 week number, the one `datetime.isocalendar()` gives.
+  week(now) {
+    const day = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    day.setUTCDate(day.getUTCDate() + 4 - (day.getUTCDay() || 7));
+    return Math.ceil(((day - Date.UTC(day.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7);
+  },
+  vars(raw, now, title = "", n = 1) {
+    const values = {
+      weekday: now.toLocaleDateString("en-GB", { weekday: "long" }),
+      week: String(this.week(now)),
+      title: String(title || ""),
+      n: String(n),
+    };
+    return String(raw || "").replace(this.slot, (whole, name) => (name in values ? values[name] : whole));
+  },
+  slots(raw) {
+    const found = [...String(raw || "").matchAll(this.slot)].map((m) => m[1]);
+    return [...new Set(found)].filter((name) => !this.known.includes(name));
+  },
+});
 
 //: Yours first, then the built-in ones, as the old dropdown's groups were:
 //: one recognisable shape for "your stuff first, then what shipped".
@@ -111,10 +139,14 @@ async function useNoteTemplate() {
     );
     if (!replace) return;
   }
-  const filled = await noteTemplateForUse(template);
+  const filled = await noteTemplateForUse({ ...template, content: noteTemplateState.vars(template.content, new Date(), template.name) });
   box.value = filled.text;
   box.dispatchEvent(new Event("input", { bubbles: true }));
-  placeTemplateCaret(box, filled.caret);
+  //: With no {{cursor}} mark, the first slot left to fill is selected, so typing replaces it.
+  const slot = filled.caret < 0 ? noteTemplateState.slot.exec(filled.text) : null;
+  noteTemplateState.slot.lastIndex = 0;
+  const open = slot && !noteTemplateState.known.includes(slot[1]);
+  placeTemplateCaret(box, open ? slot.index : filled.caret, open ? slot.index + slot[0].length : -1);
 }
 
 function noteTemplateListKeys(event) {
@@ -164,7 +196,9 @@ function openNoteTemplateDialog() {
     //: else which group it is in, so a row never repeats its preview.
     const hint = document.createElement("span");
     hint.className = "muted text-sm";
-    hint.textContent = template.description || (template.builtin ? (template.overridden ? "Built-in, edited" : "Built-in") : "Yours");
+    //: A phrasing with slots of its own ("Log a workout: {what}") says what is left to fill.
+    const slots = noteTemplateState.slots(template.content);
+    hint.textContent = template.description || (slots.length ? `Fill in: ${slots.join(", ")}` : template.builtin ? (template.overridden ? "Built-in, edited" : "Built-in") : "Yours");
     const check = document.createElement("i");
     check.className = "ph ph-check doc-template-check";
     check.setAttribute("aria-hidden", "true");
@@ -182,16 +216,17 @@ function openNoteTemplateDialog() {
 //: The caret at the template's `{{cursor}}`, in the editor when one is
 //: mounted (it mirrors the textarea a frame later), else in the textarea;
 //: at the end when the template has no mark.
-function placeTemplateCaret(box, caret) {
+function placeTemplateCaret(box, caret, end = -1) {
   requestAnimationFrame(() => {
     const at = caret >= 0 ? caret : box.value.length;
+    const to = end >= at ? end : at;
     const surface = noteSurfaceIfAny(box);
     if (surface) {
       surface.focus();
-      surface.setSelection?.(at, at);
+      surface.setSelection?.(at, to);
     } else {
       box.focus();
-      box.setSelectionRange(at, at);
+      box.setSelectionRange(at, to);
     }
   });
 }

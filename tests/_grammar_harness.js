@@ -72,6 +72,11 @@ const LANG_OF = (() => {
   return SOURCES[0].slice(i, SOURCES[0].indexOf("\n  },", i) + 5).replace(/,\s*$/, "");
 })();
 
+const WORDS = (() => {
+  const i = SOURCES[0].indexOf("  words(sentence) {");
+  return SOURCES[0].slice(i, SOURCES[0].indexOf("\n  },", i) + 5).replace(/,\s*$/, "");
+})();
+
 const wordlist = new Set(
   fs.readFileSync(path.join(root, "frontend", "vendor", "wordlist", "en.txt"), "utf8").split("\n").map((w) => w.trim()).filter(Boolean)
 );
@@ -85,7 +90,7 @@ const factory = new Function(
   let docSpellCache = new Map();
   let docGrammarCache = { text: null, findings: [] };
   const docProseIgnored = new Set();
-  const docProse = { ${LANG_OF} };
+  const docProse = { ${LANG_OF}, ${WORDS} };
   const prefsCache = __env.prefs;
   const currentDoc = null;
   const docDictionary = () => __env.dictionary;

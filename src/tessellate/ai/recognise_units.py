@@ -51,6 +51,8 @@ for _args in (
     ("mass", 0.001, "grams", "g", "gram", "gr"),
     ("mass", 1.0, "kilograms", "kg", "kgs", "kilogram", "kilo", "kilos"),
     ("mass", 1000.0, "tonnes", "t", "tonne", "metric ton", "metric tons"),
+    #: "ton" alone is three weights: `utilities._convert` asks which (T2).
+    ("mass", 1000.0, "tons", "ton"),
     ("mass", 907.18474, "short tons", "short ton", "us ton", "us tons"),
     ("mass", 1016.0469088, "long tons", "long ton", "uk ton", "uk tons"),
     ("mass", 50.80234544, "hundredweight", "cwt"),

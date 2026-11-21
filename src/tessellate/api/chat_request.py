@@ -78,6 +78,8 @@ class ChatTurn(BaseModel):
     #: the page only while the card is still open, so "cancel" can drop it
     #: (`composer_cancel`, CHAT_PLAN X17).
     pending_act: str | None = Field(default=None, max_length=300)
+    #: The label of the act the page confirmed on this turn's card, so a goodbye can name what ran (CHAT_PLAN C2).
+    done_act: str | None = Field(default=None, max_length=300)
     #: The frame the answer was sent with, echoed back; absent from an older page.
     frame: TurnFrame | None = None
     #: The id the server parked that card under (`ai/consent_store.py`), sent with it so a typed
@@ -151,6 +153,11 @@ class ChatRequest(BaseModel):
     locale: str | None = Field(default=None, max_length=35)
     # Prior turns for follow-up context (Round 1); the server clips this.
     history: list[ChatTurn] = Field(default_factory=list, max_length=bounds.HISTORY_MAX_TURNS)
+    #: Answer this one turn with this installed model, the regenerate-with menu (L165).
+    #: Not stored: the next turn goes back to the chosen model.
+    model: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
+    #: Answer this one turn from the notebook alone, as if no model ran (L165).
+    composer_only: bool = False
     # Persona name; None → the active persona preference.
     persona: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
     # Agent mode: may the model call tools to change things?
@@ -495,13 +502,8 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     if composer_digest_sentences.about_this(body.question):
         if _apply_open_this(session, body):
             return
-    elif body.open_note_id and composer_open.kind(body.question):
-        #: "What's left to do?" with a note open is about that note (the
-        #: 22-10 bug doc: Ask gave one reply for every note), unless the
-        #: question names something the note does not hold.
-        opened = _attached_notes(session, [body.open_note_id])
-        if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
-            body.note_ids = [body.open_note_id]
+    elif body.open_note_id and (composer_open.kind(body.question) or composer_open.subjectless(body.question)):
+        _apply_open_note_ask(session, body)
     else:
         names = categories_repo.names(session)
         named = composer_digest_sentences.named_category(body.question, names)
@@ -509,6 +511,23 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = _category_note_ids(session, named)
     if body.note_ids:
         body.attached_notes_only = True
+
+
+def _apply_open_note_ask(session: Session, body: ChatRequest) -> None:
+    """"What's left to do?" with a note open is about that note (the 22-10 bug
+    doc: Ask gave one reply for every note), unless the question names
+    something the note does not hold. A question with no subject at all ("what
+    should I know") is read as "summarise this" on the first turn (L228)."""
+    opened = _attached_notes(session, [body.open_note_id])
+    if not opened:
+        return
+    if composer_open.kind(body.question):
+        if composer_open.reads_note(body.question, {"content": opened[0].content}):
+            body.note_ids = [body.open_note_id]
+    else:
+        body.note_ids = [body.open_note_id]
+        if not body.history:
+            body.question, body.raw_question = "summarise this", None
 
 
 def _apply_open_this(session: Session, body: ChatRequest) -> bool:
@@ -934,3 +953,39 @@ class ToolExecuteBody(BaseModel):
     #: Posted as name "batch" it used to answer 404, so such a change had an
     #: Undo button that could never undo.
     steps: list[dict] = Field(default_factory=list, max_length=bounds.BATCH_STEPS_MAX)
+    #: The hunks of a suggested edit the person skipped (L-world-class-181), as
+    #: the card numbered them (`core/linediff`). Only with a `consent_id`, and
+    #: only for the tools in `routes_chat.SUGGESTED_EDITS`.
+    skip_hunks: list[int] = Field(default_factory=list, max_length=500)
+
+
+#: The tools whose Confirm card draws the edit as a suggestion, and the
+#: argument that names what they edit (L-world-class-181).
+SUGGESTED_EDITS = {"edit_document": "document_id", "edit_note": "note_id"}
+
+
+def _with_hunks_skipped(session: Session, body: ToolExecuteBody) -> dict:
+    """The card's arguments with the skipped hunks left as the text was, read
+    before the card is spent, so a press that cannot be narrowed spends nothing."""
+    from tessellate.core import linediff
+    from tessellate.repo import documents as documents_repo
+
+    if not body.skip_hunks:
+        return body.arguments
+    key = SUGGESTED_EDITS.get(body.name)
+    content = body.arguments.get("content")
+    if not body.consent_id or key is None or not isinstance(content, str):
+        raise HTTPException(status_code=400, detail="Only a suggested edit on its card can skip changes.")
+    try:
+        target_id = int(body.arguments.get(key) or 0)
+        target = documents_repo.find(session, target_id) if body.name == "edit_document" else session.get(Entry, target_id)
+    except (TypeError, ValueError):
+        target = None
+    if target is None:
+        raise HTTPException(status_code=404, detail="That edit is for something that is no longer there.")
+    narrowed, count = linediff.apply(target.content, content, set(body.skip_hunks))
+    if any(index < 0 or index >= count for index in body.skip_hunks):
+        raise HTTPException(status_code=400, detail="That edit has fewer changes than the press skipped.")
+    if len(set(body.skip_hunks)) == count:
+        raise HTTPException(status_code=400, detail="Every change was skipped, so there is nothing to save: decline it instead.")
+    return {**body.arguments, "content": narrowed}

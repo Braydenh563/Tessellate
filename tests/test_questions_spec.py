@@ -42,7 +42,7 @@ def _note(session, content, days_ago=0):
 
 
 class _Judge:
-    def chat(self, model, messages):
+    def chat(self, model, messages, mode=None):
         system = messages[0]["content"]
         if "answer the question" in system:
             asked = messages[1]["content"]

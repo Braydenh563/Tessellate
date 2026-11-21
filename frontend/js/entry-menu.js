@@ -58,9 +58,9 @@ function fillEntryMenu(menu, entry) {
             flashEntry(copy.id);
             await openNoteEditor(copy.id);
           }
-          toast("Note duplicated.");
+          toast(`Duplicated “${noteNamePlain(content, 40) || "a note"}”.`);
         } catch (err) {
-          toast(err.message || "Couldn't duplicate note.", true);
+          toast(err.message || voiceLine("failed", "duplicate note"), true);
         }
       },
     },
@@ -180,7 +180,7 @@ function fillEntryMenu(menu, entry) {
           pushBinPairUndo("Made a mind map from a note", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
           await openWhiteboardBoard(board.id);
         } catch (err) {
-          toast(err.message || "Couldn't make a mind map of this note.", true);
+          toast(err.message || voiceLine("failed", "make a mind map of this note"), true);
         }
       },
     }]),
@@ -289,7 +289,7 @@ function fillEntryMenu(menu, entry) {
             pushUndo(`Kept a note in ${entry.category}`, settle(false), settle(true));
           }
           await refreshEntries([entry.id]);
-          toast(`Kept in ${entry.category}.`);
+          toast(voiceLine("done", `Kept in ${entry.category}`));
         },
       }]
       : []),
@@ -332,7 +332,7 @@ function fillEntryMenu(menu, entry) {
           await apiJson(`/entries/${entry.id}/unarchive`, { method: "POST" });
           pushRoutePairUndo("Unarchived a note", [`/entries/${entry.id}/archive`, "POST"], [`/entries/${entry.id}/unarchive`, "POST"], () => refreshEntries([entry.id]));
           await refreshEntries([entry.id]);
-          toast("Unarchived.");
+          toast(voiceLine("done", "Unarchived"));
         },
       }
     : {
@@ -425,7 +425,7 @@ fillEntryMenu.headings = async function (entry) {
   try {
     whole = await fullEntry(entry.id);
   } catch (error) {
-    toast(error.message || "Couldn't read that note.", true);
+    toast(error.message || voiceLine("failed", "read that note"), true);
     return;
   }
   const entries = mdTocEntries(whole.title ? bodyWithoutTitleLine(whole.content) : stripFrontmatter(whole.content));
@@ -471,6 +471,14 @@ fillEntryMenu.jump = async function (id, index, total, text) {
 };
 
 // Moved here from menus.js with the rows that call them (gzip budget, laglist-1108).
+//: Start a chat about one note. Named by its title in the words a person
+//: would use, so the agent's own search tools find it, rather than pasting the
+//: whole note into the box. Here with its only caller, not boot (the boot gzip budget).
+function askAtlasAboutNote(entry) {
+  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
+  askAtlasAboutThing("note", name);
+}
+
 async function toggleEntryPrivacy(entry) {
   const makingPrivate = !entry.is_private;
   if (makingPrivate) {
@@ -535,7 +543,7 @@ async function generateEntryTitle(entry) {
       detail: title ? `“${title}”` : `Note #${entry.id}`,
     });
   } catch (error) {
-    toast(error.message || "Couldn't generate a title.", true);
+    toast(error.message || voiceLine("failed", "generate a title"), true);
   }
 }
 
@@ -549,7 +557,7 @@ async function removeEntryTitle(entry) {
     // Said out loud: it was silent.
     toast("Title removed.", false, { exempt: true });
   } catch (error) {
-    toast(error.message || "Couldn't remove the title.", true);
+    toast(error.message || voiceLine("failed", "remove the title"), true);
   }
 }
 

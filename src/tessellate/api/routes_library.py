@@ -286,9 +286,20 @@ def _chats(session: Session, q: str = "") -> list[dict]:
             (m.get("content", "") for m in messages if m.get("role") == "user"), ""
         )
         turns = len(messages) // 2
+        needle = q.casefold()
+        #: Which message holds the words searched for (L78), so the hit opens there.
+        turn = next(
+            (
+                at
+                for at, m in enumerate(messages)
+                if needle and isinstance(m, dict) and needle in str(m.get("content", "")).casefold()
+            ),
+            None,
+        )
         items.append(
             {
                 "kind": "chat",
+                "turn": turn,
                 "id": chat.id,
                 "title": chat.title or "Untitled chat",
                 # The first question, because you remember what you asked far

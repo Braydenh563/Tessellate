@@ -69,6 +69,11 @@ SHAKE_AXES, SHAKE_BUCKET, SHAKE_ACROSS, SHAKE_RAW, SHAKE_EVERY = 12, 0.015, 1.5,
 #: A pet this soon after waking is shy; the third pet inside `LOVE_STREAK` s is loved.
 SHY_FOR, LOVE_STREAK, LOVE_PETS = 8.0, 30.0, 3
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
+#: L145: a thrown companion drops what it was holding. Taken from its hands in these states, the prop lies tipped over beside it
+#: for `TIP_S` s once it is back on its feet (`props.TIPPED`), then is gone (`TIP_OUT_S` of it shrinking).
+GRABBED = ("held", "fly", "fall", "tumble")
+TIP_S = 2.4
+TIP_OUT_S = 0.6
 
 
 class Reaction(NamedTuple):
@@ -125,6 +130,7 @@ REACTIONS: dict[str, Reaction] = {
     "morning_hello": Reaction("morning_wave", "smile", 2.6, "happy", 3000.0),
     "fullscreen_app": Reaction("peek_back", "curious", 1.8, "", 30.0),
     "typing_burst": Reaction("nod_done", "smile", 1.6, "happy", 300.0),
+    "writing_stretch": Reaction("dusk_stretch", "content", 3.0, "happy", 300.0),
     # what the app's server notes (W31, `core.companion_events`, read on the screen poll): the in-app companion's reactions
     # to its own page, with the in-app cooldowns. Each plays a pose the desk already ships (look, stand, wave).
     "graph_laid": Reaction("glance_screen", "curious", 2.4, "", 60.0),
@@ -459,6 +465,10 @@ class Extras:
         self.moved_at = -1e9
         #: When a press arrived on a fall or a flight (None: none owed): it clutches once it stands again.
         self.caught_at: float | None = None
+        #: L145: the prop of the act running now, the one it lost when it was grabbed, and when that one began to lie tipped over.
+        self.holding: str | None = None
+        self.lost: str | None = None
+        self.tip: tuple[str, float] | None = None
 
     # --- what to draw ------------------------------------------------------------------------
 
@@ -468,6 +478,7 @@ class Extras:
         if e.reduced:
             return None, None
         self.watch_catch(now)
+        tipped = self._tipped(now)
         wind = self.wind.view(e, now)  # E5: a floater's ride (windspirit.py); an act's own prop wins where both are due
         if e.state not in FACE_STATES:
             return wind, None
@@ -483,7 +494,32 @@ class Extras:
         if face is None and e.state in ("stand", "sit"):
             self.micro.tick(now, e.mind.mood(now, e.hour), self._free_for_micro())
             face = self.micro.view(now)
-        return prop or wind, gaze.worn(face, self.saccade.tick(now, self._attending()))
+        return prop or tipped or wind, gaze.worn(face, self.saccade.tick(now, self._attending()))
+
+    def _tipped(self, now: float) -> tuple[str, int, int] | None:
+        """L145: the prop a grab took out of its hands, lying tipped over beside it once it stands again (`props.draw` size
+        `TIPPED`), shrinking out over the last `TIP_OUT_S`. None while it is held, thrown or lying, and for a prop that is no
+        hand's (a blanket, a mat)."""
+        e = self.e
+        spec = props.spec_of(e.act) if e.state == "act" and e.act else None
+        if spec is not None:  # a prop act of its own: what it holds now, and nothing lying from before
+            self.holding = spec.prop if spec.prop in props.TIP_PROPS else None
+            self.lost = self.tip = None
+        elif e.state in GRABBED:
+            if self.holding is not None:
+                self.lost, self.holding = self.holding, None
+        elif self.lost is not None and e.state in ("stand", "sit", "land", "act"):  # up again (the get-up is an act with no prop)
+            self.tip, self.lost = (self.lost, now), None
+        elif e.state in ("stand", "sit", "walk"):
+            self.holding = None  # the act ended on its own: nothing in its hands to drop
+        if self.tip is None:
+            return None
+        name, since = self.tip
+        age = now - since
+        if age >= TIP_S + TIP_OUT_S:
+            self.tip = None
+            return None
+        return name, 0, props.TIPPED if age < TIP_S else props.TIPPED + 1
 
     def watch_catch(self, now: float) -> None:
         """A press that arrives while it falls or flies is a catch (`int.catch_midair`): once it stands again within

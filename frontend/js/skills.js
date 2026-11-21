@@ -157,12 +157,16 @@ function syncSkillVerifyRow() {
 // the values it asked for, not a prompt assembled here. The mode a skill runs
 // in is settled in `startSkill`, which both entry points go through.
 function runSkill(skill) {
+  //: The menu greys these rows, but the dashboard chip, the Library card and a
+  //: nudge reach here too (L-chat-184), so the gate is on the run itself.
+  if (aiIsOff() && !skill.composer) return toast(runSkill.why, "info");
   if ((skill.inputs || []).length) {
     askSkillInputs(skill, (values) => startSkill(skill, values));
     return;
   }
   startSkill(skill, {});
 }
+runSkill.why = "Unavailable while no model is connected: this skill writes in its own words. Connect one in Settings, Models.";
 
 async function startSkill(skill, values) {
   // Both entry points land here, the Skill dropdown and a run the agent started
@@ -199,7 +203,7 @@ async function startSkill(skill, values) {
   //: to be true before the message leaves.
   if (!$("tools-toggle").checked) {
     await setChatMode("agent");
-    toast("Switched to Agent for this skill.");
+    toast(voiceLine("done", "Switched to Agent for this skill"));
   }
   const given = Object.values(values).filter(Boolean).join(", ");
   sendChatMessage(`${skill.name}${given ? `, ${given}` : ""}`, {
@@ -395,7 +399,7 @@ function fillSkillSelect(select) {
       //: notes says so and waits; the ones it runs stay open.
       if (aiIsOff() && !skill.composer) {
         option.textContent += "  (needs a model)";
-        option.title = "Unavailable while no model is connected: this skill writes in its own words. Connect one in Settings, Models.";
+        option.title = runSkill.why;
         option.disabled = true;
         blocked += 1;
       } else if (skill.needs_larger_model) {
@@ -866,7 +870,7 @@ async function downloadFromApi(path, fallbackName, unlocked = false) {
     if (!unlocked && error?.detail === "Unlock first." && (await ensureVaultOpen())) {
       return downloadFromApi(path, fallbackName, true);
     }
-    if (!error?.isLockout && error?.detail !== "Unlock first.") toast(error.message || "Couldn't download that.", true);
+    if (!error?.isLockout && error?.detail !== "Unlock first.") toast(error.message || voiceLine("failed", "download that"), true);
   }
 }
 
@@ -908,7 +912,7 @@ async function saveFile(filename, blob) {
       // directly after "I have to dig in the app data files to find them".
       toastAction(`Saved to ${saved.path}`, "Open folder", () => {
         apiJson("/files/open-exports-folder", { method: "POST" }).catch((error) => {
-          toast(error.message || "Couldn't open the exports folder.", true);
+          toast(error.message || voiceLine("failed", "open the exports folder"), true);
         });
       }, { record: false });
       renderExportsList();
@@ -926,13 +930,13 @@ async function saveFile(filename, blob) {
       });
       return saved;
     } catch (error) {
-      toast(`Couldn't save ${filename}: ${error.message}`, true);
+      toast(voiceLine("failed", `save ${filename}`, error.message), true);
       return null;
     }
   }
   downloadBlob(blob, filename);
   //: UX-11: a download said nothing; Settings' list is the desktop's folder.
-  toast(`Downloaded ${filename} to your browser's downloads.`);
+  toast(voiceLine("done", `Downloaded ${filename} to your browser's downloads`));
   //: The browser's own downloads shelf has the file; this is the record of
   //: it inside the app, so the notifications list says the same thing on a
   //: browser tab as it does on the desktop (INBOX 159).

@@ -44,7 +44,9 @@ def test_registry_shapes_are_valid_for_ollama(app_state):
     offered = tools.ollama_tools()
     # Expressed as the rule rather than a count, so adding an online tool
     # doesn't fail this test for the wrong reason.
-    assert {t["function"]["name"] for t in offered} == set(tools.TOOLS) - ONLINE_TOOLS
+    # Intent moved (acts3, L-chat-46 to 53): a skill_only tool is offered only inside its skill, not in the default list.
+    skill_only = {n for n, s in tools.TOOLS.items() if s.skill_only}
+    assert {t["function"]["name"] for t in offered} == set(tools.TOOLS) - ONLINE_TOOLS - skill_only
     for item in offered:
         assert item["type"] == "function"
         fn = item["function"]
@@ -421,7 +423,9 @@ def test_agent_warns_on_hallucinated_write(ai_client, fake_ollama):
     # say which four did not happen. The property under test is unchanged, 
     # the user is told, in the answer, that nothing was saved.
     fake_ollama.librarian_reply = "I created a new note titled “Jokes”. Enjoy!"
-    events = _stream_events(ai_client, "add a note of jokes")
+    #: Not "add a note of jokes": that sentence is an act, so the claim now gives way to its Confirm
+    #: card (tests/test_act_claim_guard_1114.py); the heads-up is for a claim with no act behind it.
+    events = _stream_events(ai_client, "write me something funny about cats")
     answer = "".join(e["delta"] for e in events if e["type"] == "answer")
     # Was `assert "" in answer`. The warning glyph went away with the rest of
     # the colour emoji: this is prose appended to the model's own answer, and

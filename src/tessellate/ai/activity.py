@@ -187,7 +187,7 @@ def _day_words(day: date, today: date) -> str:
     if day == today - timedelta(days=1):
         return "Yesterday"
     label = f"{day:%a} {day.day} {day:%b}"
-    return label if day.year == today.year else f"{label} {day.year}"
+    return realise.localised_days(label if day.year == today.year else f"{label} {day.year}")
 
 
 def _title_of(content: str) -> str:
@@ -358,7 +358,7 @@ def _span(start: date, end: date, today: date) -> str:
 
 
 def _say_day(day: date, today: date) -> str:
-    return f"{day.day} {day:%B}" if day.year == today.year else f"{day.day} {day:%B %Y}"
+    return realise.localised_days(f"{day.day} {day:%B}" if day.year == today.year else f"{day.day} {day:%B %Y}")
 
 
 _DOING_WORDS = {"made": "made", "edited": "edited", "binned": "binned", "done": "ticked off"}
@@ -460,6 +460,10 @@ _NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
 
 
 def _first_sentence(text: str) -> str:
+    #: A note of several lines is one sentence a line, never "Phone 020 7946 0011 Dentist check-up" run together (L189).
+    lines = [" ".join(line.split()) for line in text.splitlines() if line.strip()]
+    if len(lines) > 1:
+        return realise.cut_title(". ".join(line.rstrip(".") if i + 1 == len(lines) else line.rstrip(".!?") for i, line in enumerate(lines)), 140)
     return realise.cut_title(re.split(r"(?<=[.!?])\s", " ".join(text.split()), maxsplit=1)[0], 140)
 
 
@@ -467,7 +471,7 @@ _CHECK_ITEM = re.compile(r"^\s*[-*+]\s+\[(?P<box>[ xX])\]\s+(?P<item>.+?)\s*$")
 
 
 def _checklist_gist(body: str) -> str:
-    """A checklist said in words, not as its markdown (R9-16): "oat milk, garlic and lemons still open",
+    """A checklist said in words, not as its markdown (R9-16): its unticked items by name,
     or "all four done"; "" when the body is not made of checklist lines."""
     lines = [ln for ln in body.splitlines() if ln.strip()]
     found = [_CHECK_ITEM.match(ln) for ln in lines]

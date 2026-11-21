@@ -50,6 +50,7 @@ _WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 VOICE = {
     "failed": "Couldn't {what}.",
     "failed_why": "Couldn't {what}: {why}",
+    "done": "{what}.",
 }
 
 
@@ -88,6 +89,7 @@ _AND_WAS = lazy_compile(
 )
 #: "Sam and I", "Sam and me": the person first, as people say it of others.
 _AND_I = lazy_compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)?) and (?:I|me)\b")
+_YOU_AND_WAS = lazy_compile(r"\b(you and [A-Z][a-z]+(?: [A-Z][a-z]+)?) was(n't)?\b")
 #: A sentence's opening word is not a person: "Then Sam and I" is Sam.
 _NOT_A_NAME = frozenset(
     "Then And But So When After Before Yesterday Today Tomorrow Later Also Now Once Last This Next Finally".split()
@@ -112,7 +114,7 @@ def _case_like(word: str, said: str) -> str:
 #: "oh my", "my bad") or a numeral ("Part I", "World War I", "I/O"). Said as
 #: written; each has a pair in the tests.
 _KEEP = lazy_compile(
-    r"(?i:\b(?:let|excuse|trust|believe|pardon|beats)\s+me\b|\boh my\b|\bmy (?:god|goodness|gosh|bad)\b)"
+    r"(?i:\b(?:let|excuse|trust|believe|pardon|beats)\s+me\b|\bbetween you and me\b|\boh my\b|\bmy (?:god|goodness|gosh|bad)\b)"
     r"|\b(?:Part|Chapter|Book|War|Phase|Season|Volume|Act|Henry|Elizabeth|Charles|George|Louis|Type|Level|Grade|Class)\s+I\b"
     r"|\bI/O\b|\bI-\d",
 )
@@ -137,12 +139,24 @@ def _with_you(match: re.Match) -> str:
     return f"you and {match.group(1)}"
 
 
+#: "ran into a uni friend and we caught the next one": one companion, named
+#: before "we" in the same sentence, is "the two of you" (L-chat-39); "we" alone
+#: or with a group ("her kids") keeps its own word.
+_WE_TWO = lazy_compile(
+    r"\b((?:[Aa]n?|[Mm]y|[Yy]our|[Tt]he) (?:[\w-]+ )?(?:friend|mate|partner|colleague|classmate|flatmate|housemate|mum|dad|"
+    r"brother|sister|neighbour)\b(?:(?! and (?:his|her|their)\b)[^.!?;])*?)\bwe\b"
+)
+
+
 def _shift_words(text: str) -> str:
     text = _AND_I.sub(_with_you, text)
+    #: "Sam and I was late" is "you and Sam were late": the pair takes the plural.
+    text = _YOU_AND_WAS.sub(r"\1 were\2", text)
     text = _AND_WAS.sub(lambda m: f"I{m.group(1)} were{m.group(2) or ''}", text)
     for pattern, said in _PHRASE_RES:
         text = pattern.sub(said, text)
-    return _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
+    text = _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
+    return _WE_TWO.sub(lambda m: f"{m.group(1)}the two of you", text)
 
 
 def _shift_part(text: str) -> str:
@@ -246,21 +260,45 @@ def relative_day(day: date, today: date) -> str:
     if 14 <= delta <= 34:
         return f"{count_word(weeks_gone(delta))} weeks ago"
     if day.year == today.year:
-        return f"on {day.day} {_MONTHS[day.month - 1]}"
-    return f"on {day.day} {_MONTHS[day.month - 1]} {day.year}"
+        return localised_days(f"on {day.day} {_MONTHS[day.month - 1]}")
+    return localised_days(f"on {day.day} {_MONTHS[day.month - 1]} {day.year}")
 
 
 _IRREGULAR_PLURALS = {"day": "days", "week": "weeks", "person": "people", "child": "children", "entry": "entries", "copy": "copies"}
 
 
+_INFLECT: list = []
+
+
+def _engine():  # noqa: ANN202
+    """`inflect`'s engine, built on first use: the import costs over a second, and most turns count no noun."""
+    if not _INFLECT:
+        import inflect
+
+        _INFLECT.append(inflect.engine())
+    return _INFLECT[0]
+
+
+def _plural_of(noun: str) -> str:
+    """A lower-case plain word pluralised by `inflect` ("box" to "boxes", "analysis" to "analyses"); a unit or a
+    name ("km", "MP") takes the plain "s"."""
+    if noun in _IRREGULAR_PLURALS:
+        return _IRREGULAR_PLURALS[noun]
+    if noun.isalpha() and noun.islower() and len(noun) >= 3:
+        return _engine().plural_noun(noun) or noun + "s"
+    return noun[:-1] + "ies" if noun.endswith("y") and noun[-2:-1] not in "aeiou" else noun + "s"
+
+
+def _with_article(noun: str) -> str:
+    """"an hour", "a user": by the sound, which `inflect` knows and the first letter does not."""
+    return _engine().a(noun) if noun.isalpha() and noun.islower() else f"{'an' if noun[:1].lower() in 'aeiou' else 'a'} {noun}"
+
+
 def count_noun(n: int, noun: str, *, article: bool = False) -> str:
     """"one note", "two notes"; with `article`, "a day", "three days"."""
     if n == 1:
-        if article:
-            return f"{'an' if noun[:1].lower() in 'aeiou' else 'a'} {noun}"
-        return f"one {noun}"
-    plural = _IRREGULAR_PLURALS.get(noun) or (noun[:-1] + "ies" if noun.endswith("y") and noun[-2:-1] not in "aeiou" else noun + "s")
-    return f"{count_word(n)} {plural}"
+        return _with_article(noun) if article else f"one {noun}"
+    return f"{count_word(n)} {_plural_of(noun)}"
 
 
 def join_items(items: list[str]) -> str:
@@ -343,6 +381,30 @@ _STOP_AFTER_STOP = lazy_compile(r"([?!])\.(?!\.)")
 _COMMA_AFTER_STOP = lazy_compile(r"([?!]),(\s+)(\w)")
 
 
+_DAY_FIRST = re.compile(r"\b(\d{1,2}) (" + "|".join(_MONTHS) + "|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec" + r")(?: (\d{4}))?\b")
+
+
+def month_first_days(text: str) -> str:
+    """"3 April 2025" said the way a month-first locale reads it: "April 3, 2025"
+    (CHAT_PLAN decision 43). Only a day the app measured goes through here; a
+    note's own words are never reordered."""
+    return _DAY_FIRST.sub(lambda m: f"{m.group(2)} {m.group(1)}" + (f", {m.group(3)}" if m.group(3) else ""), text)
+
+
+def localised_days(text: str) -> str:
+    """`text` with its days said the way the person's date order reads them: month
+    first for en-US or Settings, Dates like 3/4 mean, Month first; day first otherwise."""
+    from tessellate.ai import recognise
+
+    return month_first_days(text) if recognise._reads_month_first(None) else text
+
+
+def parts_text(parts: list[tuple], month_first: bool) -> str:
+    """The join of an answer's tagged parts; a measured day (never a quote or a
+    title) is said month first where the person's date order reads that way."""
+    return "".join(month_first_days(part[1]) if month_first and part[0] == "measure" else part[1] for part in parts)
+
+
 def mend_stops(text: str) -> str:
     """`text` without the stop a frame adds after a quote that ends a
     question or an exclamation: "theme?." is "theme?", and "next?, from your
@@ -392,7 +454,8 @@ def variety(results: list[dict]) -> dict:
     return {
         "openers": len({opener(r["parts"]) for r in results}),
         "wordings": len({wording(r["parts"]) for r in results}),
-        "facts": len({protected(r["parts"]) for r in results}),
+        #: Which note said it is not a fact: an opener that names the note stands in for its title (E23).
+        "facts": len({tuple(p for p in protected(r["parts"]) if p[0] != "title") for r in results}),
     }
 
 
@@ -635,7 +698,7 @@ _TODO_TITLE = frozenset({"todo", "todos", "to-do", "to-dos", "tasks", "chores", 
 
 
 def todo_titled(title: str | None) -> bool:
-    """Whether a note's title names it a to-do list ("Todo", "Weekend todo", "Things to do"): its plain "- "
-    lines are tasks not yet done (bt-compcomp-1109 item 9)."""
+    """Whether a note's title names it a to-do list ("To-do", "Weekend to-do", "Things to do", and their one-word spellings): its plain "- "
+    lines are tasks not yet ticked (bt-compcomp-1109 item 9)."""
     words = [w for w in str(title or "")[:200].lower().split(" ") if w]
     return bool(words) and (words[-1] in _TODO_TITLE or words[-2:] == ["to", "do"])

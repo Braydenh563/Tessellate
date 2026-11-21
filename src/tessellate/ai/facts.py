@@ -62,7 +62,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import question_cues
+from tessellate.ai import presets, question_cues
 from tessellate.core import jobruns, model_gate, undo_bin
 from tessellate.core.database import DerivedFact, Entry, EntryLink, utcnow
 from tessellate.core.logbuffer import safe_value
@@ -103,7 +103,7 @@ def _pref_key(name: str) -> str:
 
 #: The kinds the night pass derives. Claims and questions come from one note
 #: each (pass 3); a tension (two claims that disagree, pass 4) and an answer
-#: (a later claim that answers an open question, pass 5) are pairs, stored on
+#: (a later claim that answers an unanswered question, pass 5) are pairs, stored on
 #: the later side with the other in `payload`. The lifecycle below does not
 #: care which kind a row is.
 KINDS = ("claim", "question", "tension", "answered")
@@ -486,6 +486,7 @@ def _narrow(provider, model: str, content: str, proposed: list[Candidate]) -> se
         reply = provider.chat(
             model,
             [{"role": "system", "content": system}, {"role": "user", "content": listed}],
+            mode=presets.BACKGROUND_MODE,
         )
     except Exception as exc:  # noqa: BLE001  # a background pass, any provider
         logger.info("night pass: the model could not be asked (%s)", exc)
@@ -848,6 +849,7 @@ def _judge(provider, model: str, system: str, first: str, second: str) -> tuple[
                 {"role": "system", "content": system},
                 {"role": "user", "content": f"1. {first}\n2. {second}"},
             ],
+            mode=presets.BACKGROUND_MODE,
         )
     except Exception as exc:  # noqa: BLE001  # a background pass, any provider
         logger.info("night pass: the model could not judge a pair (%s)", exc)
@@ -1340,7 +1342,7 @@ def _answers_by_rule(
     counts: dict[str, int],
     models_used: set[str],
 ) -> int:
-    """Pass 5 with no model (INBOX 1466): each open question against the
+    """Pass 5 with no model (INBOX 1466): each unanswered question against the
     sentences of notes written after it, stored as the same `answered` row
     the model's pass writes. Only a question new this run, or a note read
     this run, is compared, so a run with nothing new compares nothing."""

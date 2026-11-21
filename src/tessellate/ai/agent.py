@@ -63,8 +63,10 @@ from tessellate.ai.agent_policy import (
     unsupported_claims,
 )
 from tessellate.ai.agent_turn import (
+    unrun_act_events,
     AWAITING_CONFIRMATION,
     all_it_names,
+    exact_act_instead,
     from_outside as _from_outside,
     _cleared_page,
     _copies_what_was_read,
@@ -246,10 +248,11 @@ def _run_and_record(
     Order: the taint, the ledgers, the write's change, the advice, the event.
     """
     spend = run_budget.current()
-    if name in _WRITE_TOOLS and spend is not None and spend.stop_requested():
+    if spend is not None and spend.stop_requested():
         #: Stop landed while the model was answering; the generator cannot be
-        #: interrupted there, so the write it asked for is refused here
-        #: instead of running before the next yield notices (Brief 101b).
+        #: interrupted there, so the call it asked for (a read as well as a
+        #: write: a long search is work the person stopped) is refused here
+        #: instead of running before the next yield notices (Brief 101b, L66).
         result = {"error": "Stopped before this ran: you pressed Stop."}
     else:
         yield from _query_said(name, arguments)
@@ -461,7 +464,7 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     outside = c.state.tainted and parks_when_tainted(c.name) and not _cleared_page(c.state, c.name, c.arguments)
     if not (tools.needs_confirm(c.name, c.arguments, c.state.approved) or outside):
         return None
-    if (whole := all_it_names(c.session, c.state, c.name, c.arguments, plan_now)) is not None:
+    if (whole := all_it_names(c.session, c.state, c.name, c.arguments, plan_now) or exact_act_instead(c.session, c.state, c.name, plan_now)) is not None:
         return whole
     waiting = c.state.parked.get(c.name, 0)
     if waiting >= MAX_PARKED_CONFIRMS:
@@ -477,8 +480,8 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     c.state.ran_writes.add(c.name)
     c.state.implied |= {"tag_note"} if c.name == "create_note" and c.arguments.get("tags") else set()  # the card carries the tags
     c.state.parked[c.name] = waiting + 1
-    label = tools.confirm_label(c.name, c.arguments, c.session)
-    return AWAITING_CONFIRMATION, [{"type": "confirm", "name": c.name, "arguments": c.arguments, "label": label}]
+    asked = next((m.get("content") for m in reversed(c.plan.messages) if m.get("role") == "user"), "")  # "why" is the person's own words (L-world-class-181)
+    return AWAITING_CONFIRMATION, [{"type": "confirm", "name": c.name, "arguments": c.arguments, "label": tools.confirm_label(c.name, c.arguments, c.session), "removes": bool(c.spec and c.spec.destructive), "why": " ".join(str(asked or "").split())[:160]}]
 
 
 def _tool_spent(c: _Call) -> _Verdict | None:
@@ -702,6 +705,8 @@ class _Loop:
     #: read its page and then stops is finished, and the runner reads that
     #: silence (`skill_runner`'s paging and postconditions depend on it).
     called_any: bool = False
+    #: A skill step whose contract is a tool call asks for it on round one (L250: a 1.5B wrote "I ran it" instead).
+    must_call: bool = False
 
 
 @dataclass
@@ -735,11 +740,8 @@ def _budget_events(spend, state: _TurnState, loop: _Loop) -> list[dict]:  # noqa
 def _round_tools(
     question: str, plan: "_TurnPlan", state: _TurnState, loop: _Loop, session: Session
 ) -> tuple[bool, list[dict]]:
-    required = (
-        (loop.round_number == 0 or loop.retry_forced)
-        and plan.tier.force_first_call
-        and _requires_a_call(question, plan)
-    )
+    first_or_retry = loop.round_number == 0 or loop.retry_forced
+    required = first_or_retry and plan.tier.force_first_call and (loop.must_call or _requires_a_call(question, plan))
     first = loop.round_number == 0 or (loop.retry_forced and required)
     tools = (
         _first_round_tools(question, plan, state.offered, required, session)
@@ -972,9 +974,7 @@ def _claim_notice(state: _TurnState, answer: str, unsupported: list[str]) -> lis
     return []
 
 
-def _settle_answer(
-    state: _TurnState, loop: _Loop, card: _TurnCard, reply: dict, required: bool, show_plan: bool
-):
+def _settle_answer(session: Session, state: _TurnState, loop: _Loop, card: _TurnCard, reply: dict, required: bool, show_plan: bool):
     """A round with no tool call: this text IS the final answer. True when the
     turn is over, False when a nudge asked for another round."""
     answer = reply.get("content", "").strip()
@@ -983,6 +983,10 @@ def _settle_answer(
     # It has usually streamed already; send it only if the tool-call gate held it back.
     if not reply.get("streamed") and answer:
         yield {"type": "answer", "delta": answer}
+    if acted := unrun_act_events(session, state, loop.called_any, answer, plan_now()):
+        yield from acted
+        yield from card.end_round(TURN_ROW_ANSWER)
+        return True
     if (yield from _nudge_prose(state, loop, card, answer, required)) or (
         yield from _nudge_intent(state, loop, card, answer)
     ):
@@ -990,9 +994,7 @@ def _settle_answer(
     # Safety net: a claim to have saved/created something when no write tool
     # ran is a hallucination; say so rather than let the user believe a note
     # exists that doesn't.
-    unsupported = unsupported_claims(
-        f"{loop.said_before}{answer}", state.ran_writes | state.implied
-    )
+    unsupported = unsupported_claims(f"{loop.said_before}{answer}", state.ran_writes | state.implied)
     if (yield from _nudge_claim(state, loop, card, answer, unsupported)):
         return False
     yield from _claim_notice(state, answer, unsupported)
@@ -1130,6 +1132,7 @@ def run_agent(
     image_context: str | None = None,
     show_plan: bool = True,
     approved: bool = False,
+    must_call: bool = False,
 ) -> Iterator[dict]:
     """Yields event dicts:
     {"type": "unsupported", "model": ..., "message": ...}, model can't do
@@ -1141,7 +1144,7 @@ def run_agent(
                                                  (always the first and only event)
     {"type": "thinking", "delta": str}
     {"type": "tool", "label": str, "ok": bool, "error": str|None}
-    {"type": "confirm", "name", "arguments", "label"}
+    {"type": "confirm", "name", "arguments", "label", "removes", "why"}
     {"type": "limit", "reason": "rounds", ...}, ran out of rounds mid-job;
                                                  the answer that follows is a
                                                  stopping notice, not a result
@@ -1178,7 +1181,7 @@ def run_agent(
         asked=question or "",
     )
     state.outside = _from_outside(notes)
-    loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling)
+    loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling, must_call=must_call)
     #: **The run this turn belongs to, if it belongs to one** (Brief 13).
     #: None for an ordinary chat turn: that is bounded per turn already, by
     #: `loop.allowance`, and has no notion of a run to belong to. See
@@ -1204,7 +1207,7 @@ def run_agent(
         yield from _round_stats(spend, reply, plan, loop)
         calls = reply.get("tool_calls") or []
         if not calls:
-            if (yield from _settle_answer(state, loop, card, reply, required, show_plan)):
+            if (yield from _settle_answer(session, state, loop, card, reply, required, show_plan)):
                 return
             continue
         loop.called_any = True

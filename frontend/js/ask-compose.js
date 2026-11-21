@@ -89,6 +89,7 @@ function wireAskUseAi() {
   if (offline) watch.observe(offline, { attributes: true, attributeFilter: ["class"], childList: true });
   const pill = $("ai-status");
   if (pill) watch.observe(pill, { attributes: true, attributeFilter: ["data-level"] });
+  document.addEventListener("ask-answerer-changed", renderAskUseAi);
   renderAskUseAi();
 }
 
@@ -142,6 +143,39 @@ function markSaidSentences(targets, sentences) {
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
+  //: The notes a bulk act names (X14): the first five, then "Show all N" for the rest; null when there are none.
+  function actItemList(items) {
+    const ACT_ITEMS_SHOWN = 5;
+    if (!items || !items.length) return null;
+    const list = document.createElement("ul");
+    list.className = "act-items";
+    items.forEach((title, at) => {
+      const row = document.createElement("li");
+      row.textContent = title;
+      if (at >= ACT_ITEMS_SHOWN) row.hidden = true;
+      list.appendChild(row);
+    });
+    if (items.length > ACT_ITEMS_SHOWN) {
+      const more = document.createElement("li");
+      const button = smallButton(`Show all ${items.length}`, "List every note this changes", () => {
+        for (const row of list.children) row.hidden = false;
+        more.remove();
+      });
+      more.appendChild(button);
+      list.appendChild(more);
+    }
+    return list;
+  }
+  //: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
+  //: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
+  function applyThemeSteps(steps, result) {
+    const step = (steps || []).find((one) => one.name === "set_theme");
+    if (!step || !result) return result;
+    const before = prefs.get("theme", null) || "system";
+    applyThemeChoice(step.arguments.theme, true);
+    for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
+    return result;
+  }
   //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
   const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
   //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
@@ -165,7 +199,7 @@ function renderActCard(holder, event) {
   card.className = "tool-confirm";
   const run = (steps, then) =>
     apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [], consent_id: steps === event.steps ? event.consent_id || null : null }) })
-      .then((result) => (refreshAfterToolChanges(), then(result)))
+      .then((result) => (refreshAfterToolChanges(), then(applyThemeSteps(steps, result))))
       .catch((error) => toast(error.message, true));
   const line = (label, ...more) => {
     const text = document.createElement("p");
@@ -179,7 +213,7 @@ function renderActCard(holder, event) {
   const post = (steps) =>
     apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [] }) }).then((result) => {
       refreshAfterToolChanges();
-      return result;
+      return applyThemeSteps(steps, result);
     });
   //: `said`: the answer above already read this sentence (a reminder, a new
   //: note or a pin ran at once), so the card carries only Undo; drawing the
@@ -222,6 +256,8 @@ function renderActCard(holder, event) {
     }
     line(`ph:check-circle ${summary}`, row);
   };
+  //: A typed yes ran the step on the server; the page applies the theme it named, once (a restored card already did).
+  if (event.done && !restored) applyThemeSteps(event.steps, event);
   if (event.done || event.state === "done") done(event.summary || event.label, event.undo, event.steps, Boolean(event.done), restored);
   else {
     const notice = document.createElement("p");
@@ -229,6 +265,7 @@ function renderActCard(holder, event) {
     notice.textContent = event.notice;
     const row = document.createElement("div");
     row.className = "row";
+    const itemList = actItemList(event.items);
     row.append(
       smallButton("Confirm", "Do this", () =>
         run(event.steps, (result) => {
@@ -241,7 +278,12 @@ function renderActCard(holder, event) {
         card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
       })
     );
-    line(`ph:warning ${event.label}`, notice, row);
+    //: The line above the card already says the change (L57: the bubble read it twice); the label stays on the group for a screen reader.
+    if (event.label_said) {
+      card.setAttribute("role", "group");
+      card.setAttribute("aria-label", event.label);
+      card.replaceChildren(notice, ...(itemList ? [itemList] : []), row);
+    } else line(`ph:warning ${event.label}`, notice, ...(itemList ? [itemList] : []), row);
     if (event.state === "expired") {
       for (const button of row.querySelectorAll("button")) button.disabled = true;
       return void holder.appendChild(card);
@@ -640,6 +682,63 @@ function citationVerdictRow(source, content) {
 }
 
 function askAnswerMenu() {
+  async function askKeepAsFlashcards() {
+    if (!askKept?.text) return toast("There is no answer to keep yet.");
+    const title = askKeptTitle();
+    try {
+      const deck = await apiJson(`/read/flashcards?title=${encodeURIComponent(title)}&text=${encodeURIComponent(askKept.text.slice(0, 8000))}`);
+      if (!deck.count) return toast("This answer holds nothing to turn into flashcards.");
+      const doc = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: `Flashcards: ${title}`, content: deck.text }) });
+      pushUndo(
+        "Made flashcards from an answer",
+        () => api(`/documents/${doc.id}`, { method: "DELETE" }),
+        () => api(`/documents/${doc.id}/restore`, { method: "POST" })
+      );
+      toastAction(`Made ${nounCount(deck.count, "flashcard")}.`, "Open", () => {
+        switchTab("documents");
+        openDocument(doc.id);
+      }, { go: { open: "doc", id: doc.id } });
+    } catch (error) {
+      toast(error.message || voiceLine("failed", "make the flashcards"), true);
+    }
+  }
+
+  async function askRemindAboutAnswer() {
+    if (!askKept?.question) return toast("There is no answer to remind you about yet.");
+    const due = new Date();
+    due.setDate(due.getDate() + 1);
+    due.setHours(9, 0, 0, 0);
+    try {
+      const made = await apiJson("/reminders", {
+        method: "POST",
+        body: JSON.stringify({ text: `Revisit: ${askKeptTitle()}`, due_at: due.toISOString() }),
+      });
+      reminderMadeUndo(made);
+      loadReminders();
+      toast(`Reminder set for tomorrow at 9: ${askKeptTitle()}.`);
+    } catch (error) {
+      toast(error.message || voiceLine("failed", "make that reminder"), true);
+    }
+  }
+
+  async function askRateAnswer(good) {
+    if (!askKept?.text) return toast("There is no answer to rate yet.");
+    const payload = JSON.stringify({ question: askKept.question || "", answer: askKept.text, good });
+    try {
+      let made = await apiJson("/read/rate", { method: "POST", body: payload });
+      pushUndo(
+        good ? "Rated an answer good" : "Rated an answer not good",
+        () => api(`/read/rate?at=${encodeURIComponent(made.at)}`, { method: "DELETE" }),
+        async () => {
+          made = await apiJson("/read/rate", { method: "POST", body: payload });
+        }
+      );
+      toast(good ? "Added to your good answers." : "Marked as not good.");
+    } catch (error) {
+      toast(error.message || voiceLine("failed", "save that rating"), true);
+    }
+  }
+
   const slot = $("ask-answer-more");
   if (!slot || slot.firstChild) return;
   slot.appendChild(
@@ -659,6 +758,26 @@ function askAnswerMenu() {
           label: "ph:graph Make a mind map of its notes",
           title: "A mind map of the notes this answer cites",
           run: () => askKeepAsMap(),
+        },
+        {
+          label: "ph:cards Make flashcards",
+          title: "Questions and answers from this answer's own words, saved as a document",
+          run: () => askKeepAsFlashcards(),
+        },
+        {
+          label: "ph:alarm Remind me about this",
+          title: "A reminder tomorrow at 9 to come back to this question",
+          run: () => askRemindAboutAnswer(),
+        },
+        {
+          label: "ph:thumbs-up Good answer",
+          title: "Add this answer to your local set of good answers",
+          run: () => askRateAnswer(true),
+        },
+        {
+          label: "ph:thumbs-down Not a good answer",
+          title: "Mark this answer as not good; it shows in the weekly gallery",
+          run: () => askRateAnswer(false),
         },
       ],
       "More ways to keep this answer"
@@ -689,7 +808,7 @@ async function askKeepAsDocument() {
       openDocument(doc.id);
     }, { go: { open: "doc", id: doc.id } });
   } catch (error) {
-    toast(error.message || "Couldn't save that document.", true);
+    toast(error.message || voiceLine("failed", "save that document"), true);
   }
 }
 
@@ -700,7 +819,7 @@ async function askKeepAsMap() {
   const board = await apiJson("/whiteboard/maps/from-notes", {
     method: "POST",
     body: JSON.stringify({ name, note_ids: ids }),
-  }).catch((error) => toast(error.message || "Couldn't make the map.", true));
+  }).catch((error) => toast(error.message || voiceLine("failed", "make the map"), true));
   if (!board?.id) return;
   pushUndo(
     "Made a mind map from an answer",
@@ -956,7 +1075,10 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question)).catch(() => {});
+    delete chartHost.dataset.streamed;
+    //: A chart the answer's own stream drew (`onChart` below) is not wiped by
+    //: the parallel fetch coming back empty (L-chat-60).
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question && !chartHost.dataset.streamed)).catch(() => {});
   }
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.
@@ -973,6 +1095,7 @@ async function askQuestion(preset) {
   searching.className = "muted";
   setLabel(searching, "ph:spin Searching your notes…");
   $("raw-results").replaceChildren(searching);
+  digestMore.threads?.(null);
   document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
@@ -1144,6 +1267,14 @@ async function askQuestion(preset) {
       onTip: (event) => { answerTip = event.text || ""; },
       //: Drawn with the foot, once the answer's text is final.
       onPanel: (event) => answerPanels.push(event),
+      //: The chart a no-model answer made (a window's counts, a graph ask):
+      //: the box above the answer, the same recipe Chat draws (L-chat-60).
+      onChart: (event) => ensureModule("askHistory").then(() => {
+        if (!chartHost || !event.chart) return;
+        chartHost.dataset.streamed = "1";
+        chartHost.classList.remove("hidden");
+        drawAskChart(chartHost, event.chart);
+      }),
       //: The web pages a composed answer read, as cards (decision 66), drawn
       //: with the panels for the same reason.
       onWebSources: (event) => answerPanels.push({ web: event.sources }),
@@ -1271,6 +1402,7 @@ async function askQuestion(preset) {
     progress?.remove();
     setBusy($("retry-btn"), false);
     askController = null;
+    matchReasonBadge.reveal();
     setAsking(false);
     // The question used to be cleared here, which left an answer on screen with
     // nothing saying what it answered (user-reported). It stays in the box, 
@@ -1288,14 +1420,15 @@ function renderChatMeta(meta) {
   //: the quote style the composer's lead is drawn in (`.answer-composed`).
   $("ai-answer").classList.toggle("answer-composed", !!meta.composed);
   //: "Atlas" heads the answer; the chip says where it came from (CHAT_PLAN
-  //: decision 36): "From your notes" with no model, the model's name with one.
-  if (meta.composed) setAnsweredBy("From your notes", "Atlas answered from your notes, with no model: every sentence comes from a note");
-  else if (meta.answered_by) setAnsweredBy(meta.answered_by, `Answered by ${meta.answered_by}`);
+  //: decision 36): "Atlas's assistant, from your notes" with no model, "Atlas, <model>" with one.
+  if (meta.composed) setAnsweredBy("Atlas's assistant, from your notes", "Atlas's assistant answered from your notes, with no model: every sentence comes from a note");
+  else if (meta.answered_by) setAnsweredBy(`Atlas, ${meta.answered_by}`, `Atlas answered with ${meta.answered_by}`);
   else if (meta.ollama_running === false) {
     setAnsweredBy("chat model offline", "The chat model is not running, so nothing answered this");
   } else setAnsweredBy("", "");
   const rawList = $("raw-results");
   rawList.replaceChildren();
+  digestMore.threads?.(null);
   if (meta.raw_results.length === 0 && meta.search_mode === "none") {
     // Nothing was searched for, the message was not a question about the
     // notes. "No matching records" would report a failed search that never
@@ -1306,6 +1439,13 @@ function renderChatMeta(meta) {
     return;
   }
   document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
+  //: Under 600px Matching records is one closed row (INBOX 1843, 10-responsive.css).
+  const fold = $("ask-records-fold");
+  $("ask-records-count").textContent = String(meta.raw_results.length);
+  if (!fold.dataset.wired) {
+    fold.dataset.wired = "1";
+    fold.addEventListener("click", () => fold.setAttribute("aria-expanded", String(fold.getAttribute("aria-expanded") !== "true")));
+  }
   if (meta.search_mode === "outside_range" && meta.raw_results.length) {
     // Matched what was asked about, not when it was asked about, the note
     // is real, the stated time was just wrong (reported directly: a joke
@@ -1364,7 +1504,8 @@ function renderChatMeta(meta) {
   //: note list uses, pointed at this list: one implementation, and a second
   //: one is how the two would come to disagree about what "linked by" counts.
   ensureCardCounts(rawList, _entriesLoadGeneration);
-  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).catch(() => {});
+  matchReasonBadge.hold(rawList);
+  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).then(() => matchReasonBadge.hold(rawList)).catch(() => {});
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
 }
@@ -1443,7 +1584,7 @@ function announceAskFoot() {
   const parts = [
     ["related note", shown("#ask-answer-related .answer-related-chip")],
     ["source", shown("#ask-answer-sources .chat-source-card")],
-    ["follow-up question", shown("#ask-followups .chip-interactive")],
+    ["suggested question", shown("#ask-followups .chip-interactive")],
   ].filter(([, count]) => count);
   announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
 }

@@ -18,6 +18,7 @@ from __future__ import annotations
 from tests._help_text import help_chat_text, help_more_text
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -39,9 +40,11 @@ MANUAL = {
     "edit_note": ("note-edit-panels.js", "base_hash: base", "a note's Edit form"),
     "tag_note": ("note-edit-panels.js", 'tagField.className = "tag-field note-edit-tags";', "a note's Edit form, Tags"),
     "pin_note": ("entry-card.js", 'button.classList.add("favourite-btn");', "a note's star"),
+    "archive_note": ("entry-menu.js", 'await apiJson(`/entries/${entry.id}/archive`, { method: "POST" });', "a note's ⋮ menu, Archive (and Unarchive)"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
+    "restore_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
     "check_learned": ("settings-controls.js", 'apiJson("/learned/audit/run"', "Settings, What it learned, Check what it learned"),
     "delete_note": ("note-cards.js", "async function binNoteWithUndo(entry)", "a note's menu, Move to bin"),
     "restore_note": ("note-cards.js", '/restore`, { method: "POST"', "the recycle bin, Restore"),
@@ -49,9 +52,12 @@ MANUAL = {
     "complete_reminder": ("shell-reminders.js", "before, { done: checkbox.checked });", "Reminders, the tick box"),
     "rename_tag": ("tag-manager.js", '"/tags/rename",', "Manage tags, Rename"),
     "delete_tag": ("tag-manager.js", '"/tags/delete", { names }', "Manage tags, Remove from all notes"),
+    "edit_goals": ("goals-view.js", 'send(`/${goal.id}/items`, "POST", { text })', "Notes, Goals, the add line on a card"),
+    "edit_chats": ("chat-order.js", "async function chatViewChange(change) {", "Chats list, the sort and group button"),
     "save_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Save"),
     "delete_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Delete"),
     "create_document": ("documents.js", 'apiJson("/documents", {', "Library, Documents, New"),
+    "edit_document": ("documents.js", 'return apiJson(`/documents/${id}`, { method: "PUT", body: JSON.stringify(fields) });', "open the document and type"),
     "delete_document": ("documents.js", 'apiJson(`/documents/${doc.id}`, { method: "DELETE" });', "a document's menu, Delete"),
     "add_whiteboard_card": ("whiteboard.js", 'apiJson("/whiteboard/nodes", { method: "POST"', "a board, drag a note in from the sidebar's Notes tab"),
     "add_whiteboard_link": ("whiteboard.js", 'apiJson("/whiteboard/objects", { method: "POST"', "a board, draw a link between cards"),
@@ -134,7 +140,7 @@ UTILITIES = {
     "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel(utilityShown()?.kind', "the status bar's timer chip", "timer"),
     "clock panel": ("utility-tools.js", 'function openClockPanel(tab = "timer")', "the palette's Start a timer, Start a stopwatch and Set an alarm", "timer"),
     "alarm": ("settings-panes.js", 'id: "alarm", name: "Set an alarm"', "the palette's Set an alarm", "timer"),
-    "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
+    "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the Atlas's assistant, from your notes badge", "ask-chat"),
     "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work", { target = null } = {})', "the palette's Calculator and equations, or /calc", "calculator"),
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
     "equation": ("math-editor.js", "function mathEditorMount({", "Calculator and equations, Equation tab, Alt+=, or /equation", "equation-editor"),
@@ -246,6 +252,9 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
     assert "Dates beside the strip" in text and "Dates beside the strip" in html
+    # L587: the install bar's percentage and that closing the notice keeps the install going.
+    assert "bar with a percentage" in text and "bar with a percentage" in " ".join(html.split())
+    assert "Activity keeps" in text and "Activity keeps" in " ".join(html.split())
 
 
 def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so() -> None:
@@ -755,3 +764,16 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+
+
+def test_answer_length_personas_off_supersedes_and_tools_are_in_the_guide_and_settings() -> None:
+    """L161 and L163: each control is in Settings with its `data-help-for`, and the Guide names it in the controls' words."""
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    #: The Guide's bodies are split across adjacent string literals: join them.
+    guide = re.sub(r'"\s*\n\s*"', "", help_more_text() + help_chat_text())
+    for control, said in (
+        ("answer-length-help", "Short (one or two sentences)"),
+        ("personas-off-help", "Personas off makes every"),
+    ):
+        assert f'data-help-for="{control}"' in html and said in guide, control
+    assert "Supersedes marks the newer note" in guide and "/tools [n]" in (Path(__file__).resolve().parents[1] / "src/tessellate/ai/slash_table.py").read_text(encoding="utf-8")

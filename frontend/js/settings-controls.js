@@ -143,7 +143,7 @@
       renderLanState(await apiJson("/auth/lan-certificate", { method: "POST" }));
       toast("New certificate made. Compare its fingerprint on the other device.");
     } catch (error) {
-      toast(error.message || "Couldn't make a new certificate.", true);
+      toast(error.message || voiceLine("failed", "make a new certificate"), true);
     }
   });
 
@@ -436,7 +436,7 @@
     try {
       done = await apiJson("/websearch/stored", { method: "DELETE" });
     } catch (error) {
-      return toast(`Couldn't clear the kept pages: ${error.message}`, "info");
+      return toast(voiceLine("failed", "clear the kept pages", error.message), "info");
     }
     toast(`Cleared ${done.cleared} kept page${done.cleared === 1 ? "" : "s"}.`, "info");
   });
@@ -463,7 +463,7 @@
       // button stuck disabled over a real network error someone can just
       // retry once they're back online.
       button.disabled = false;
-      toast((status && status.textContent) || "Couldn't apply the update.", true);
+      toast((status && status.textContent) || voiceLine("failed", "apply the update"), true);
     }
   });
 
@@ -545,7 +545,7 @@
     if (!ok) {
       button.disabled = false;
       select.disabled = false;
-      toast(status.textContent || "Couldn't install that version.", true);
+      toast(status.textContent || voiceLine("failed", "install that version"), true);
     }
   });
 
@@ -569,7 +569,7 @@
       );
     } catch (error) {
       e.target.checked = !checked; // the change didn't take: don't leave the switch lying
-      toast(error.message || "Couldn't switch view.", true);
+      toast(error.message || voiceLine("failed", "switch view"), true);
     }
   });
 
@@ -628,7 +628,7 @@
       const result = await apiJson("/files/open-exports-folder", { method: "POST" });
       toast(`Opened ${result.path}`);
     } catch (error) {
-      toast(error.message || "Couldn't open the exports folder.", true);
+      toast(error.message || voiceLine("failed", "open the exports folder"), true);
     }
   });
 
@@ -1003,6 +1003,48 @@
     savePrefs();
   });
 
+  //: Currency rates (CHAT_PLAN decision 43): lines of "EUR 0.88" and the day they are from.
+  async function showCurrencyRates() {
+    const got = await apiJson("/utilities/units");
+    $("currency-rates-date").value = got.rates_date || "";
+    $("currency-rates-text").value = Object.entries(got.rates || {})
+      .filter(([code]) => code !== "USD")
+      .map(([code, rate]) => `${code} ${rate}`)
+      .join("\n");
+  }
+  async function saveCurrencyRates(clear) {
+    const status = $("currency-rates-status");
+    const rates = {};
+    for (const line of $("currency-rates-text").value.split("\n")) {
+      const [code, rate] = line.trim().split(/[\s:=,]+/);
+      if (code && Number(rate) > 0) rates[code.toUpperCase()] = Number(rate);
+    }
+    const day = $("currency-rates-date").value;
+    if (!clear && !day) {
+      status.textContent = "Pick the day these rates are from.";
+      return;
+    }
+    //: The rates kept before this save, so Undo puts them back (or the built-in table).
+    const before = (await apiJson("/preferences").catch(() => ({})))?.currency_rates || null;
+    const put = async (value) => {
+      await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify(value ? { currency_rates: value } : { unset: ["currency_rates"] }),
+      });
+      await showCurrencyRates();
+    };
+    const after = clear ? null : { date: day, rates };
+    try {
+      await put(after);
+      status.textContent = clear ? "Back to the built-in table." : "Saved.";
+      offerUndo("Currency rates", clear ? "Built-in rates back." : "Rates saved.", () => put(before), () => put(after));
+    } catch (e) {
+      status.textContent = "Couldn't save the currency rates. Check each line reads like EUR 0.92.";
+    }
+  }
+  $("currency-rates-save").addEventListener("click", () => saveCurrencyRates(false));
+  $("currency-rates-reset").addEventListener("click", () => saveCurrencyRates(true));
+
   $("searxng-reinstall").addEventListener("click", async () => {
     if (
       !(await confirmDialog(
@@ -1195,7 +1237,7 @@
   $("import-dir")?.addEventListener("click", importDirectory);
 
   $("export-backup-zip")?.addEventListener("click", () =>
-    exportFullBackup().catch((error) => toast(error.message || "Couldn't save the backup.", true))
+    exportFullBackup().catch((error) => toast(error.message || voiceLine("failed", "save the backup"), true))
   );
 
   $("restore-bundle")?.addEventListener("click", () => $("restore-bundle-file").click());
@@ -1453,7 +1495,7 @@
       renderModelSpec(modelContextModel);
       toast(value ? `${modelContextModel} will run at ${value.toLocaleString()} tokens.` : `${modelContextModel} is back on auto.`);
     } catch (e) {
-      toast(e.message || "Couldn't save that window.", true);
+      toast(e.message || voiceLine("failed", "save that window"), true);
     }
   }
 
@@ -1545,10 +1587,10 @@
         method: "POST",
         body: JSON.stringify({ backend: "ollama", model: EMBEDDING_FALLBACK_MODEL }),
       });
-      toast(`Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now.`);
+      toast(voiceLine("done", `Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now`));
       setStatus("");
     } catch (error) {
-      toast(error.message || `Couldn't switch to ${EMBEDDING_FALLBACK_MODEL}.`, true);
+      toast(error.message || voiceLine("failed", `switch to ${EMBEDDING_FALLBACK_MODEL}`), true);
       setStatus("");
     } finally {
       embeddingFallbackRunning = false;
@@ -1570,7 +1612,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't reset those models.", true);
+      toast(error.message || voiceLine("failed", "reset those models"), true);
     }
   }
 
@@ -1605,7 +1647,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't set that model.", true);
+      toast(error.message || voiceLine("failed", "set that model"), true);
     }
   }
 
@@ -1776,7 +1818,7 @@
         toast("Restart isn't available in this build, close and reopen Tessellate by hand.", "info");
       }
     } catch (error) {
-      toast(error.message || "Couldn't restart.", true);
+      toast(error.message || voiceLine("failed", "restart"), true);
     }
   }
 
@@ -1845,7 +1887,7 @@
       toast(value ? `Exports will now be saved to ${prefsCache.export_save_dir}` : "Exports will save to the default location.");
     } catch (error) {
       input.value = prefsCache?.export_save_dir || "";
-      toast(error.message || "Couldn't save that folder.", true);
+      toast(error.message || voiceLine("failed", "save that folder"), true);
     }
   }
 
@@ -1927,7 +1969,7 @@
       aiBox.type = "checkbox";
       aiBox.id = `merge-ai-${group.entries[0].id}`;
       // Only offer the AI when it can actually do the job.
-      const aiReady = !modelStatus || modelStatus.ollama_running !== false;
+      const aiReady = !aiIsOff(true);
       aiBox.checked = aiReady;
       aiBox.disabled = !aiReady;
       useAi.append(aiBox, document.createTextNode(
@@ -2378,7 +2420,7 @@
     try {
       blob = await (await api(`/privacy/lan-qr.svg?address=${encodeURIComponent(address)}`, { silent: true })).blob();
     } catch (error) {
-      toast(`Couldn't draw the QR code: ${error.message}`, true);
+      toast(voiceLine("failed", "draw the QR code", error.message), true);
       button.setAttribute("aria-expanded", "false");
       settingsControlState.lanQrShown = "";
       return;
@@ -2744,7 +2786,7 @@
       try {
         await apply(data);
       } catch (error) {
-        toast(error?.message || "Couldn't import that file.", "info");
+        toast(error?.message || voiceLine("failed", "import that file"), "info");
       }
     };
     input.click();
@@ -2927,7 +2969,7 @@
             await apiJson(`/memory/${pref.id}/answer`, {
               method: "POST",
               body: JSON.stringify({ accept }),
-            }).catch((error) => toast(error.message || "Couldn't save that answer.", true));
+            }).catch((error) => toast(error.message || voiceLine("failed", "save that answer"), true));
             renderMemorySettings();
           };
           const yes = document.createElement("button");
@@ -2955,7 +2997,7 @@
           const flipped = await apiJson(`/memory/${pref.id}`, {
             method: "PATCH",
             body: JSON.stringify({ active: !pref.active }),
-          }).catch((error) => toast(error.message || "Couldn't change that.", true));
+          }).catch((error) => toast(error.message || voiceLine("failed", "change that"), true));
           if (flipped) {
             pushRequestUndo(pref.active ? "Turned a memory off" : "Turned a memory on", `/memory/${pref.id}`, "PATCH", { active: pref.active }, { active: !pref.active }, () => renderMemorySettings());
           }
@@ -2991,7 +3033,7 @@
               }
             );
           } catch (error) {
-            toast(error.message || "Couldn't forget that.", true);
+            toast(error.message || voiceLine("failed", "forget that"), true);
           }
           renderMemorySettings();
         });
@@ -3793,7 +3835,7 @@
       });
     } catch (error) {
       check.checked = !check.checked;
-      toast(error.message || "Couldn't save that tool setting. Try again.", true);
+      toast(error.message || voiceLine("failed", "save that tool setting. Try again"), true);
       return;
     }
     // The "N of 51 on" count is only true until someone flips one.
@@ -3838,7 +3880,7 @@
         body: JSON.stringify({ disabled_tools: [...next] }),
       });
     } catch (error) {
-      toast(error.message || "Couldn't save those tool settings. Try again.", true);
+      toast(error.message || voiceLine("failed", "save those tool settings. Try again"), true);
       return;
     }
     for (const check of boxes) check.checked = turnOn;
@@ -3972,7 +4014,7 @@
   //: 69), kept on this device: absent reads as on.
   $("pref-search-suggest")?.addEventListener("change", (event) => {
     prefs.set("searchSuggest", event.target.checked ? "on" : "off");
-    toast(event.target.checked ? "Search boxes suggest as you type." : "Search boxes no longer suggest.");
+    toast(event.target.checked ? "Search and chat boxes suggest as you type." : "Search and chat boxes no longer suggest.");
   });
   $("bg-art-toggle").addEventListener("change", (e) => {
     toggleBgArt(e.target.checked);
@@ -4392,7 +4434,7 @@
       });
       toast("Back to what each model recommends.");
     } catch {
-      toast("Couldn't reset those settings.", true);
+      toast(voiceLine("failed", "reset those settings"), true);
     }
     await loadSamplingSettings();
   });
@@ -4787,7 +4829,7 @@
         body: JSON.stringify({ text: next.trim() }),
       });
       pushRequestUndo("Edited a learned claim", `/learned/${fact.id}`, "PATCH", { text: fact.text }, { text: next.trim() }, () => renderLearnedList());
-      toast("Saved. No later run will overwrite it.");
+      toast(voiceLine("done", "Saved. No later run will overwrite it"));
       renderLearnedList();
     } catch (error) {
       toast(error.message, true);
@@ -4808,7 +4850,7 @@
           renderLearnedList();
         }
       );
-      toast("Put the model's own words back.");
+      toast(voiceLine("done", "Put the model's own words back"));
       renderLearnedList();
     } catch (error) {
       toast(error.message, true);
@@ -4974,6 +5016,20 @@
     const text = learnedFromYouText(sum);
     line.textContent = text;
     line.classList.toggle("hidden", !text);
+    //: Answers marked not right (L225): a count and one button, kept only on this device.
+    const marks = (await apiJson("/learned/answer-verdicts").catch(() => null))?.count || 0;
+    let row = line.parentElement.querySelector(".learned-not-right");
+    if (!marks) return void row?.remove();
+    if (!row) {
+      row = document.createElement("p");
+      row.className = "muted row learned-not-right";
+      line.after(row);
+    }
+    const clear = smallButton("ph:eraser Clear answers marked not right", "Forget every answer you marked not right", async () => {
+      await api("/learned/answer-verdicts", { method: "DELETE" });
+      renderLearnedFromYou();
+    }, true);
+    row.replaceChildren(`${nounCount(marks, "answer mark")} kept on this device. `, clear);
   }
 
   async function renderLearned() {

@@ -288,6 +288,8 @@ YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 IDLE_NAMES = tuple(ACTIVITIES)
 #: How much likelier a perch-only act is on a window's top than its catalogue weight says (it is the only place it can happen).
 PERCH_ACT_BOOST = 5.0
+#: L177: on a window top, peering down over its edge and corner is what a visitor does first: `peek_down` is this much likelier there.
+PERCH_PEER_BOOST = 4.0
 #: Base chance of each, before need, mood and repeat shape it. Quiet things are common.
 BASE_WEIGHT = {
     "breathe": 9, "shift_weight": 8, "look_around": 8, "slow_blink": 8, "tail_flick": 7, "nod": 3, "shrug": 3,
@@ -464,6 +466,13 @@ def utility(considerations: list[float]) -> float:
     return out
 
 
+def _perch_boost(name: str, act: Activity, where: str) -> float:
+    """How much likelier an act is on a window top than its catalogue weight says: a perch-only one, and the peer down over the edge."""
+    if act.where == "perch":
+        return PERCH_ACT_BOOST
+    return PERCH_PEER_BOOST if where == "perch" and name == "peek_down" else 1.0
+
+
 class Mind:
     """Needs, mood and what it did lately."""
 
@@ -536,7 +545,7 @@ class Mind:
             if now - self.done.get(name, -1e9) < NO_REPEAT and name not in MICRO:
                 continue  # quiet micro things may recur (not back to back); the rest wait their turn
             #: on a window top the perch-only acts (legs over its edge) are the point of being there: a visit is short
-            out.append((name, self._weight(name, act, mood, hour, now) * (PERCH_ACT_BOOST if act.where == "perch" else 1.0)))
+            out.append((name, self._weight(name, act, mood, hour, now) * _perch_boost(name, act, where)))
         return out
 
     def _when(self, name: str, hour: int) -> float:
@@ -748,6 +757,8 @@ FLOW_LOWER = {
     "billow": (1.0, 1.9, 0.9, 0.9), "coil": (0.6, 0.7, 0.3, -0.3), "ripple_calm": (0.8, 0.5, 0.0, 0.2),
     "flutter": (0.9, 2.0, 0.0, 0.5), "pool": (0.5, 0.5, 0.6, -0.6), "hem_kick": (1.0, 1.8, 0.7, 0.8),
     "spiral": (1.0, 1.6, 0.8, 0.0), "heavy": (0.4, 0.4, 0.0, -0.8),
+    # L173 (the owner's call): a float, hovering, trails a longer, narrower hem on a slow drift than a standing idle.
+    "float": (0.9, 0.6, 0.3, 0.4),
 }
 #: A sit this long is a lounge (the lower body spreads and slackens).
 LOUNGE_AFTER = 6.0
@@ -765,6 +776,13 @@ POOL_AFTER = 40.0
 RIPPLE_EVERY, RIPPLE_AT, RIPPLE_FOR = 40.0, 24.0, 8.0
 FLUTTER_FOR = 4.0
 BILLOW_SPEED = 1.2  # times the walking speed
+
+
+def lower_moving(state: str, gait: str, speed: float, walk: float) -> str:
+    """The lower body on the move: a slow hover (L173) has its own longer, narrower trail; a fast one, or a walk, glides."""
+    if state == "drift" and gait == "float" and speed < BILLOW_SPEED * walk:
+        return "float"
+    return "glide" if state in ("walk", "drift") else ""
 
 
 #: The tail as a layer (atlascat-1108 C1, INBOX 1696 w: "the tail is framed in that it isnt a smooth animation"): the idle

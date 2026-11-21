@@ -16,7 +16,7 @@ tool is wanted, so two weak ones beat one):
 - the **name's words**: "delete" and "tag" in `delete_tag`; a word every tool
   carries ("note") counts for little, the verb and the object for a lot;
 - the **description's words** and the **argument names**, a little each;
-- the **previous turn's tools**: a follow-up often wants the same ones again.
+- the **previous turn's tools**: a next question often wants the same ones again.
 
 A question *about* a capability ("how do I delete a tag") halves its write
 tools: the same rule `toolwords.looks_like_a_question_about` applies to the

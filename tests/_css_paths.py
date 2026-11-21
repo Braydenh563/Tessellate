@@ -87,12 +87,18 @@ CSS_FILES = [
     CSS_DIR / "key-grid-lazy.css",
     #: The staged chip's upload bar (chat-attach.js `attachmentChip` loads it).
     CSS_DIR / "chip-bar-lazy.css",
+    #: The sidebar's group headings (chat-order.js, L-world-class-180).
+    CSS_DIR / "chat-order-lazy.css",
+    #: An agent edit marked in the open document (doc-agent-review.js, L-documents-41).
+    CSS_DIR / "doc-agent-review-lazy.css",
     #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
     CSS_DIR / "model-menu-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).
     CSS_DIR / "questions-lazy.css",
+    #: The Notes tab's Goals view (goals-view.js loads it, Brief 98).
+    CSS_DIR / "goals-lazy.css",
     #: The voice-note recorder and Library, Recordings (meetings.js, Brief 80).
     CSS_DIR / "meetings-lazy.css",
     #: What a click shows fades in and out (`LAZY_MODULES.uiReveal`, INBOX 1565).

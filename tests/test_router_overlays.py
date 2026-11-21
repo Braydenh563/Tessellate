@@ -29,7 +29,8 @@ def test_settle_lives_in_the_lazy_file_and_settings_loads_it():
     assert "function routerSettle" not in ROUTER
     assert "function routerSettle()" in LAZY
     assert 'ensureModule("quickNote").then(() => routerSettle())' in (JS / "settings.js").read_text(encoding="utf-8")
-    assert 'quickNote: ["/js/quick-note.js", "/js/router-overlays.js"]' in APP
+    # The bundle carries router-overlays.js; it may carry more (chat-ghost.js joined it, decision 69).
+    assert 'quickNote: ["/js/quick-note.js", "/js/router-overlays.js"' in APP
 
 
 def test_every_closer_the_hook_calls_is_a_global_function():

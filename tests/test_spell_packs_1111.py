@@ -294,7 +294,7 @@ const env = {
   renderDocProse: () => { renders += 1; },
   docSpellCache: new Map(),
   docDictionary: () => new Set(scenario.own || []),
-  docProse: { langOf: () => "fr", langNote: () => "note" },
+  docProse: { langOf: () => "fr", langNote: () => "note", cjk: () => false },
   extraNoticeMount: () => {},
   document: {},
 };

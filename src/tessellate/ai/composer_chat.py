@@ -67,6 +67,13 @@ _SIMPLER = re.compile(
 )
 _BULLETS = re.compile(rf"^{_POLITE}(?:(?:in )?(?:bullets?|bullet points?|a list|list form)|as (?:a )?(?:bullets?|bullet points?|list))(?: please)?{_END}")
 
+#: C13: "back" restores the answer before the last; "start over" and "stop" end the thread.
+_BACK = re.compile(rf"^{_POLITE}(?:go )?back(?: to (?:the )?(?:last|previous|earlier|one before)(?: answer| one)?)?(?: please)?{_END}")
+_RESET = re.compile(rf"^{_POLITE}(?:start (?:over|again|afresh)|begin again|forget (?:that|it|all that)|never ?mind|stop|cancel that)(?: please)?{_END}")
+_RESET_LINES = ["Starting fresh. What would you like to look up?", "Cleared. Ask me anything about your notes.", "Dropped. What next?"]
+_BACK_LINES = ["Back to the one before:", "The answer before that was:", "Here is the earlier one:"]
+_NO_BACK = ["That was my first answer, so there is nothing earlier to go back to.", "There is no earlier answer in this chat yet."]
+
 _AGAIN_LEADS = ["Of course.", "Sure.", "Here it is again.", "Once more.", "Happy to."]
 _SHORT_SAME = ["That is about as short as it gets.", "There is not much more to cut.", "That is already the short version."]
 _SIMPLE_LEADS = ["In plain words:", "Put simply:", "Simply put:", "The plain version:"]
@@ -93,6 +100,18 @@ def _bullets(answer: str) -> str:
     return "\n".join(f"- {s}" for s in _sentences(answer))
 
 
+def _steer(said: str, history: list[dict] | None, seed: str) -> str | None:
+    """"Back" restores the answer before the last; "start over" clears the thread."""
+    if _BACK.match(said):
+        said_before = [str(t.get("answer") or "").strip() for t in history or [] if str(t.get("answer") or "").strip()]
+        if len(said_before) < 2:
+            return _lead(_NO_BACK, "noback", history, seed)
+        return f"{_lead(_BACK_LINES, 'back', history, seed)} {said_before[-2]}"
+    if _RESET.match(said):
+        return _lead(_RESET_LINES, "reset", history, seed)
+    return None
+
+
 def meta(question: str, history: list[dict] | None, seed: str = "") -> str | None:
     """A turn about the previous answer, acted on it; None when there is no
     previous answer or the turn is not one of these."""
@@ -100,6 +119,9 @@ def meta(question: str, history: list[dict] | None, seed: str = "") -> str | Non
     said = _clean(question)
     if not answer or not said or len(said.split()) > 7:
         return None
+    steered = _steer(said, history, seed)
+    if steered:
+        return steered
     if _AGAIN.match(said):
         return f"{_lead(_AGAIN_LEADS, 'again', history, seed)} {answer}"
     if _SHORTER.match(said):

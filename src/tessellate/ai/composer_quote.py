@@ -14,7 +14,7 @@ import re
 from datetime import date
 
 from tessellate.ai import composer_done, composer_tables, composer_threads, composer_tree
-from tessellate.ai.composer_answer import _Answer, _SESSION
+from tessellate.ai.composer_answer import _Answer, _RETRY, _SESSION
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
 from tessellate.core.lazyre import lazy_compile
@@ -26,7 +26,7 @@ def _pick(question: str, salt: str, options: list[str]) -> str:
     questions."""
     session = _SESSION.get()
     digest = hashlib.sha1(f"{salt}:{question.strip().lower()}{':' + session if session else ''}".encode()).digest()
-    return options[digest[0] % len(options)]
+    return options[(digest[0] + _RETRY.get()) % len(options)]
 
 
 #: The first words a quote may have lowered after a joiner ("Separately,
@@ -255,7 +255,7 @@ def _done_later_note(got: tuple, today) -> str:  # noqa: ANN001
 
 def _checklist_count(out: _Answer, view: NoteView, tasks: list[Sentence], lead: str) -> None:
     """How many of a checklist are ticked. Zero is "none of its three", one
-    left unticked is "one item, not done": a count word before "of" is never
+    left unticked is "one item, not ticked": a count word before "of" is never
     "no" (audit 1029 C6). A line a later note records as done counts done."""
     ticked = sum(1 for s in tasks if s.done) + len(_done_later(out, view, tasks))
     opening = lead == "opening"

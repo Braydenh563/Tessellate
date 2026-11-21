@@ -207,7 +207,7 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
             if scores:
                 phrase_terms = corrected
     if not scores:
-        scores = matching(require_all=False)
+        scores = matching(require_all=False, words=_any_words(terms))
     if not scores:
         return []
 
@@ -220,6 +220,12 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
 
     entries.sort(key=sort_key)
     return entries[:limit]
+
+
+def _any_words(terms: list[str]) -> list[str]:
+    """The words an "any of them" search ORs: a year or number is no subject beside words (L-chat-254), so
+    "tax return 2019" is not a note that only holds 2019; numbers alone are kept."""
+    return [t for t in terms if not t.isdigit()] or terms
 
 
 def _substring_entries(session: Session, terms: list[str], base: tuple, limit: int) -> list[Entry]:
@@ -303,6 +309,7 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
         # The vocabulary holds porter stems ("lectur"), which no one wrote; the
         # correction offered, and searched, is a word a note really uses.
         real = _word_for_stem(session, close[0], term) if close else None
+        real = real or (_one_edit_words(term, vocabulary) or [None])[0]
         corrected.append(real or term)
     return corrected
 
@@ -322,6 +329,47 @@ def _near_words(term: str, vocabulary: list[str]) -> list[str]:
             if ratio >= best_ratio:
                 best, best_ratio = word, ratio
     return [best] if best else []
+
+
+def _one_edit_words(term: str, vocabulary: list[str]) -> list[str]:
+    """VC8: a word the shipped English list does not hold, one edit (a swap, a
+    dropped, added or changed letter) from a word the notes use, is a typo of
+    it, however low difflib's ratio is on a short word. A word the list holds
+    is a word ("tame" is not "time"), and is left as typed. The nearest of
+    the candidates, as a word (the vocabulary's porter stems, "librari", are
+    given back as "library"); the search stems it again."""
+    if variants.is_english(term):
+        return []
+    found: list[str] = []
+    for word in vocabulary:
+        forms = (word, word + "e", word[:-1] + "y" if word.endswith("i") else word)
+        found += [form for form in forms if abs(len(form) - len(term)) <= 1 and _one_edit(term, form, swap_only=len(term) < 5)]
+    #: A swap or a changed letter (same length) before a dropped or added one: "tlie" is "tile", not "tie".
+    #: A word the notes hold before a stem made into a word ("tile", not "thie" from the stem "thi").
+    held = set(vocabulary)
+    found.sort(key=lambda form: (len(form) != len(term), form not in held, -difflib.SequenceMatcher(None, term, form).ratio()))
+    return found[:1]
+
+
+def _swapped(a: str, b: str, diff: list[int]) -> bool:
+    """The two differing places are neighbours holding each other's letter."""
+    return len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
+
+
+def _one_edit(a: str, b: str, swap_only: bool = False) -> bool:
+    """Optimal string alignment distance of one: a swap of neighbours counts as one edit.
+    `swap_only`: a short word may only be a swap ("paer" is "pear"); a changed letter
+    ("paas" is "saas") is another short word or an acronym."""
+    if a == b:
+        return False
+    if len(a) == len(b):
+        diff = [i for i in range(len(a)) if a[i] != b[i]]
+        return _swapped(a, b, diff) or (len(diff) == 1 and not swap_only)
+    if swap_only:
+        return False
+    short, long = (a, b) if len(a) < len(b) else (b, a)
+    i = next((k for k in range(len(short)) if short[k] != long[k]), len(short))
+    return short[i:] == long[i + 1 :]
 
 
 def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:
@@ -415,12 +463,17 @@ def _load_later(embeddings: EmbeddingService) -> None:
     the launch warm-up (`embeddings.start_warmup`) is already loading it."""
     from tessellate.ai import embeddings as embedding_service
 
-    if getattr(embeddings, "_warm_loading", False) or embedding_service.warmup_running():
-        return
-    try:
-        embeddings._warm_loading = True
-    except AttributeError:
-        return
+    #: Check and set under one lock: two requests in the same burst both saw
+    #: the flag unset and queued two loads. The flag alone is the guard, not
+    #: a job `dedupe_key`: a key that matched a job just finishing dropped the
+    #: new one while the flag stayed set, and the model never loaded later.
+    with _query_lock:
+        if getattr(embeddings, "_warm_loading", False) or embedding_service.warmup_running():
+            return
+        try:
+            embeddings._warm_loading = True
+        except AttributeError:
+            return
 
     def load() -> None:
         try:
@@ -442,7 +495,7 @@ def _load_later(embeddings: EmbeddingService) -> None:
 
     from tessellate.core import jobs
 
-    jobs.enqueue("warm", load, name="the search model", dedupe_key="search-warm")
+    jobs.enqueue("warm", load, name="the search model")
 
 
 def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:

@@ -199,6 +199,7 @@ const REVEAL_TARGETS = {
   "notes-ask": { tab: "notes", open: () => showNotesSection("ask"), el: "question", focus: true },
   //: UX-08: the bin is the Library with its own "Include the bin" ticked.
   "notes-questions": { tab: "notes", open: () => showNotesSection("questions"), el: "questions", flash: false },
+  "notes-goals": { tab: "notes", open: () => showNotesSection("goals"), el: "goals", flash: false },
   "library-bin": {
     tab: "library",
     //: The bin itself, not the Library home with a box ticked (audit 1031
@@ -870,7 +871,14 @@ function flashRevealed(target) {
   //: page under a resting pointer, and the hover that follows closed a menu
   //: group the reveal had just opened (measured on the phone's note sheet).
   const box = shown.getBoundingClientRect();
-  const inView = box.top >= 0 && box.left >= 0 && box.bottom <= window.innerHeight && box.right <= window.innerWidth;
+  //: In view means inside the box that scrolls it, not only the window (L85: a control under Settings' head passed `top >= 0`).
+  const clip = nearestScrollParent(shown);
+  const edge = clip && clip !== document.documentElement && clip !== document.body ? clip.getBoundingClientRect() : null;
+  const inView =
+    box.top >= Math.max(0, edge?.top ?? 0) &&
+    box.left >= 0 &&
+    box.bottom <= Math.min(window.innerHeight, edge?.bottom ?? Infinity) &&
+    box.right <= window.innerWidth;
   //: Inside an open menu only the menu's own list scrolls: a scroll of the
   //: page closes every open menu (`closeActionMenusOnScroll`), which took the
   //: document's Export group away the moment it was ringed on a phone.

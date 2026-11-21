@@ -1630,7 +1630,7 @@ async function wbSetBackground(patch, { undo = true } = {}) {
     if (String(window.currentBoardId ?? "") !== String(id)) return false;
     wbState.background = out.background || {};
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "change the background" }), true);
+    toast(err.message || voiceLine("failed", "change the background"), true);
     wbApplyBackground();
     return false;
   }
@@ -2730,7 +2730,7 @@ async function wbGroupSelection() {
       rows.push({ kind: entries[i].kind, item: entries[i].item });
     }
     await wbSaveMany(rows);
-    toast("Grouped.");
+    toast(voiceLine("done", "Grouped"));
   });
   wbUpdateContextBar();
 }
@@ -2769,7 +2769,7 @@ async function wbUngroupSelection() {
     }
     await wbSaveMany(entries);
   });
-  toast("Ungrouped.");
+  toast(voiceLine("done", "Ungrouped"));
   wbUpdateContextBar();
 }
 
@@ -5840,7 +5840,7 @@ async function wbExtractNotes() {
     .filter(Boolean)
     .join("\n\n---\n\n");
   if (!text.trim()) {
-    toast(voiceLine("failed", { what: "read the selected notes' content: try reloading the Notes tab first" }));
+    toast(voiceLine("failed", "read the selected notes' content: try reloading the Notes tab first"));
     return;
   }
   openExtractPreview(text, { sourceEntryIds: entryIds });
@@ -6758,7 +6758,7 @@ function wbEditNodeText(nodeId, firstKey = "", whole = null) {
         // render would use the old content and the edit would look discarded.
         await loadEntries();
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "save that" }), true);
+        toast(err.message || voiceLine("failed", "save that"), true);
       }
     }
     // **Put the text back by hand, not by re-rendering.** Found live: after
@@ -8790,7 +8790,7 @@ async function wbCreateCopies(items, dx, dy, noComments = false) {
   try {
     res = await apiJson(`/whiteboard/boards/${window.currentBoardId ?? 0}/paste`, { method: "POST", body: JSON.stringify({ items: wire }) });
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "make that copy" }), true);
+    toast(err.message || voiceLine("failed", "make that copy"), true);
     return [];
   }
   wbState.objects.push(...res.objects);
@@ -10517,7 +10517,7 @@ function wbDeleteFailed(entry, redoBefore, e, retry) {
   wbDropUndoEntry(entry);
   if (!wbRedoStack.length) wbRedoStack = redoBefore;
   wbUpdateUndoRedoButtons();
-  toast(voiceLine("failed", { what: "delete that" }), true, { action: ["Try again", retry] });
+  toast(voiceLine("failed", "delete that"), true, { action: ["Try again", retry] });
 }
 
 //: One call per frame with the newest event, for a pointermove handler that
@@ -11927,7 +11927,7 @@ async function wbUndo() {
     }
     wbScheduleRender();
   } catch {
-    toast(voiceLine("failed", { what: "undo that" }), true);
+    toast(voiceLine("failed", "undo that"), true);
   }
 }
 
@@ -11945,7 +11945,7 @@ async function wbRedo() {
     toast("Redone: last change on this board", "info");
     wbScheduleRender();
   } catch {
-    toast(voiceLine("failed", { what: "redo that" }), true);
+    toast(voiceLine("failed", "redo that"), true);
   }
 }
 
@@ -11967,7 +11967,7 @@ async function wbCreateObject(kind, data, x, y, width, height, z = wbStackNewZ("
     await refreshBoardList();
     return created;
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "add that to the board" }), true);
+    toast(err.message || voiceLine("failed", "add that to the board"), true);
     return null;
   }
 }
@@ -12380,7 +12380,7 @@ function wbOnLockPress(e) {
   const hit = wbLockedItemAt(x, y);
   if (!hit) return;
   wbBoardState.lockHintSaid = true;
-  toast("Locked. Right-click to unlock it.");
+  toast(voiceLine("done", "Locked. Right-click to unlock it"));
 }
 
 //: --- Comments (WHITEBOARD_PLAN decision 17) --------------------------------
@@ -13502,7 +13502,7 @@ async function wbDeleteBoard(id, title) {
   try {
     await wbBinBoard(id, true);
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "delete that board" }), true);
+    toast(err.message || voiceLine("failed", "delete that board"), true);
     return false;
   }
   const action = pushUndo(`Deleted "${title}"`, () => wbBinBoard(id, false), () => wbBinBoard(id, true));
@@ -13540,7 +13540,7 @@ async function wbClearBoard() {
   wbScheduleRender();
   await refreshBoardList();
   const left = wbState.nodes.length + wbState.sketches.length + (wbState.objects?.length || 0);
-  toast(left ? voiceLine("failed", { what: "clear the whole board; what is left is shown" }) : "Board cleared.", Boolean(left));
+  toast(left ? voiceLine("failed", "clear the whole board; what is left is shown") : "Board cleared.", Boolean(left));
 }
 
 // --- Whiteboard export (asked for directly: "a way to screen clip a or a
@@ -14449,7 +14449,7 @@ async function wbGenerateMapFromNotes() {
       body: JSON.stringify({ note_ids: chosen.map((note) => note.id) }),
     });
   } catch (error) {
-    toast(error.message || voiceLine("failed", { what: "propose a map from those notes" }), true);
+    toast(error.message || voiceLine("failed", "propose a map from those notes"), true);
     return;
   }
 
@@ -14473,7 +14473,7 @@ async function wbGenerateMapFromNotes() {
     wbBoardMadeStep(board);
     await wbMapTidyFresh();
   } catch (error) {
-    toast(error.message || voiceLine("failed", { what: "create that map" }), true);
+    toast(error.message || voiceLine("failed", "create that map"), true);
   }
 }
 
@@ -14615,7 +14615,7 @@ async function wbImportOutlineFile(event) {
     //: it (W5). Everything else is text.
     content = format === "xmind" ? wbBase64(await file.arrayBuffer()) : await file.text();
   } catch {
-    toast(voiceLine("failed", { what: "read that file" }), true);
+    toast(voiceLine("failed", "read that file"), true);
     return;
   }
   if (!content.trim()) {
@@ -14653,7 +14653,7 @@ async function wbImportOutlineFile(event) {
     // The server's own message, not a generic one: it names the actual
     // refusal ("Unknown import format", a DOCTYPE in the OPML, a parse
     // failure), and those are the only things a person can act on.
-    toast(error.message || voiceLine("failed", { what: "import that outline" }), true);
+    toast(error.message || voiceLine("failed", "import that outline"), true);
   }
 }
 
@@ -14826,7 +14826,7 @@ async function wbSaveToLibrary(scope) {
   const blob = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   await uploadToLibrary(`whiteboard-${scope}-${stamp}.png`, blob, wbExportDescription(scope));
-  toast("Added to your image library.");
+  toast(voiceLine("done", "Added to your image library"));
 }
 
 //: The raster types beyond PNG (draw.io's export formats). JPEG has no alpha,
@@ -14861,7 +14861,7 @@ async function wbExportCopyImage(scope) {
   try {
     if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw new Error("no clipboard");
     await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
-    toast("Copied the picture. Paste it into another app.");
+    toast(voiceLine("done", "Copied the picture. Paste it into another app"));
   } catch {
     await saveFile(wbExportFileName(scope, "png"), await picture);
     toast("This browser would not copy a picture, so it was saved as a PNG instead.");
@@ -14875,7 +14875,7 @@ async function wbCopyAsImage() {
   try {
     await wbExportCopyImage(scope);
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "copy the picture" }), true);
+    toast(err.message || voiceLine("failed", "copy the picture"), true);
   }
 }
 
@@ -14888,9 +14888,9 @@ async function wbCopyAsSvg() {
     if (!navigator.clipboard?.writeText) throw new Error("This browser cannot copy text. Export an SVG instead.");
     const { svg } = wbBuildExportSvg(scope, { transparent: wbExportPngPrefs().transparent });
     await navigator.clipboard.writeText(svg);
-    toast("Copied the SVG. Paste it into an editor.");
+    toast(voiceLine("done", "Copied the SVG. Paste it into an editor"));
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "copy the SVG" }), true);
+    toast(err.message || voiceLine("failed", "copy the SVG"), true);
   }
 }
 
@@ -15262,7 +15262,7 @@ function wbExportBoard() {
     try {
       await chosen.run(where);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "export the board" }), true);
+      toast(err.message || voiceLine("failed", "export the board"), true);
     }
   };
 
@@ -15565,7 +15565,7 @@ async function initWhiteboard() {
       await refreshBoardList(board);
       wbBoardPutStep(`Renamed the board to \u201c${board.title}\u201d`, boardId, { title: current }, { title: board.title });
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
+      toast(err.message || voiceLine("failed", "rename that board"), true);
     }
   });
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
@@ -16303,7 +16303,7 @@ async function initWhiteboard() {
       });
       if (await wbSetBackground({ image: uploaded.url })) toast("Background image set.");
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "set that background image" }), true);
+      toast(err.message || voiceLine("failed", "set that background image"), true);
     }
   });
   wbApplyGrid();
@@ -19252,7 +19252,7 @@ async function initWhiteboard() {
       });
       await wbPlaceImageUrl(uploaded.url, x, y);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+      toast(err.message || voiceLine("failed", "add that image"), true);
     }
   }
 
@@ -19271,7 +19271,7 @@ async function initWhiteboard() {
       const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
       await wbCreateObject("image", { url }, x - width / 2, y - height / 2, width, height);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+      toast(err.message || voiceLine("failed", "add that image"), true);
     }
   }
 
@@ -19585,7 +19585,7 @@ async function initWhiteboard() {
       }
     } catch (err) {
       //: Said on screen, not only in a console nobody has open (audit 1028 B22).
-      toast(voiceLine("failed", { what: "save that drawing", why: err.message }), true);
+      toast(voiceLine("failed", "save that drawing", err.message), true);
       if (currentDrawPath) currentDrawPath.remove();
     }
 
@@ -19679,7 +19679,7 @@ async function wbPlaceNote(entryId, at) {
     //: told why. The message is what the server sent, and it belongs on
     //: screen rather than in a console nobody has open.
     const why = (err && err.message) || "the server refused it";
-    toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
+    toast(voiceLine("failed", "add that note to the board", why), true);
   }
 }
 
@@ -19781,7 +19781,7 @@ async function fetchWhiteboardState() {
     wbSyncSidebarKind();
     await refreshBoardList();
   } catch (err) {
-    toast(voiceLine("failed", { what: "open that board", why: err.message }), true);
+    toast(voiceLine("failed", "open that board", err.message), true);
   }
 }
 
@@ -19949,7 +19949,7 @@ async function renameCurrentBoard() {
         wbBoardPutStep(`Renamed the board to “${board.title}”`, boardId, { title: current }, { title: board.title });
         resolve(board.title);
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
+        toast(err.message || voiceLine("failed", "rename that board"), true);
         resolve(null);
       }
     };
@@ -20080,7 +20080,7 @@ async function createNewBoard(preset = null, { reveal = false } = {}) {
       if (board.type !== "map") wbZoomToFit({ animate: false });
       toast(`"${board.title}" started from a template.`);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "create that board" }), true);
+      toast(err.message || voiceLine("failed", "create that board"), true);
     }
     return;
   }
@@ -20146,7 +20146,7 @@ async function wbCreateBlankBoard(name, kind) {
       await apiJson(`/whiteboard/boards/${board.id}/nodes`, {
         method: "POST",
         body: JSON.stringify({ kind: "topic", parent_id: null, text: name.trim() }),
-      }).catch((err) => toast(err.message || voiceLine("failed", { what: "add the root topic" }), true));
+      }).catch((err) => toast(err.message || voiceLine("failed", "add the root topic"), true));
     }
     // `list_boards` only lists a board once something is actually placed on
     // it (see its own docstring), an empty new one is invisible to both
@@ -20183,7 +20183,7 @@ async function wbCreateBlankBoard(name, kind) {
       toast(`Board "${board.title}" created.`);
     }
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "create that board" }), true);
+    toast(err.message || voiceLine("failed", "create that board"), true);
   }
 }
 
@@ -23755,7 +23755,7 @@ async function wbFitImage(el) {
   await wbSaveObject(item);
   wbPushUndo({ action: "move", kind: "object", id: item.id, before });
   wbScheduleRender();
-  toast("Fitted to the picture.");
+  toast(voiceLine("done", "Fitted to the picture"));
 }
 
 async function wbFitToText(el) {
@@ -23798,7 +23798,7 @@ async function wbFitToText(el) {
     await wbSaveObject(item);
     wbPushUndo({ action: "move", kind: "object", id: item.id, before });
     wbScheduleRender();
-    toast("Sized to its text.");
+    toast(voiceLine("done", "Sized to its text"));
     return;
   }
   //: **The card's own `scrollHeight` is not the answer for a note card.**
@@ -23852,7 +23852,7 @@ async function wbFitToText(el) {
   else await wbSaveObject(item);
   wbPushUndo({ action: "move", kind: isNode ? "node" : "object", id: item.id, before });
   wbScheduleRender();
-  toast("Sized to its text.");
+  toast(voiceLine("done", "Sized to its text"));
 }
 
 async function wbSaveNode(node) {
@@ -24321,7 +24321,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       delete d._unsaved;
       if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
       wbScheduleRender();
-      toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      toast(voiceLine("failed", "save the move", "the item went back where it was"), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
       return;
     }
     const primary = moveBefore && reallyMoved
@@ -25421,7 +25421,7 @@ async function dragEndNode(event, d) {
            toast("Cross-link made: it joins two branches without changing the tree.");
          }
        } catch (err) {
-         toast(voiceLine("failed", { what: "connect those", why: err.message }), true);
+         toast(voiceLine("failed", "connect those", err.message), true);
        }
     }
     d.linkSourceAnchor = null;
@@ -25461,7 +25461,7 @@ async function dragEndNode(event, d) {
       delete d._unsaved;
       if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
       wbScheduleRender();
-      toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      toast(voiceLine("failed", "save the move", "the item went back where it was"), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
       return;
     }
     //: The whole drag is one undo step now, carried members and Alt copies

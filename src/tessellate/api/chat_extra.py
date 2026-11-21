@@ -12,7 +12,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_cancel, composer_extra, composer_suggest, composer_talk, realise
+from tessellate.ai import activity, composer_cancel, composer_thennow, composer_extra, composer_suggest, composer_talk, composer_web, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
@@ -54,10 +54,26 @@ _PATTERNS = re.compile(
     re.IGNORECASE,
 )
 _CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b|\b(?:conflicts?|disagreements?) (?:in|between|among|across) (?:my |the |these )?notes\b"
-                             r"|\b(?:any (?:of )?(?:my |the )?notes?|(?:anything|something)\b[^?.]{0,30}\bnotes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?\b(?!\s+with\b(?!\s+(?:each|one|another|other))))", re.IGNORECASE)  # notes among themselves, never "conflicts with the dentist"
+                             r"|\binconsistenc(?:y|ies)\b|^\W*(?:please )?(?:check|look|search|scan|go through)(?: (?:through|over) )?(?: (?:my|the) notes)? for (?:any )?(?:contradictions?|conflicts?|clashes)\b|\b(?:any (?:of )?(?:my |the )?notes?|(?:anything|something)\b[^?.]{0,30}\bnotes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?\b(?!\s+with\b(?!\s+(?:each|one|another|other))))", re.IGNORECASE)  # notes among themselves, never "conflicts with the dentist"
 #: "What am I forgetting" is what is still open; "what have I forgotten" is the faded notes
 #: (second eye F13d), which the older readers list as titles.
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
+
+
+def _changes_of_mind(session: Session, now: datetime, question: str = "") -> str:
+    """The insights reader's dated changes of mind, then each subject a newer
+    note replaced (`supersede.changes`, the pairing answers are read through), L-chat-8."""
+    from tessellate.ai import insights, supersede
+
+    subject = supersede.ask_subject(question)
+    #: A named subject keeps only its own changes (L-chat-245): the words in the line or in either note.
+    lines = [i.text for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift") and supersede.about(subject, i.text)][:4]
+    lines += [supersede.changes_line(r, now.date()) for r in supersede.changes(_notes(session)) if supersede.about(subject, str(r.older.get("content")), str(r.newer.get("content")))][-4:]
+    if not lines and subject:
+        return f"I found no change of mind about {subject} in your dated notes."
+    if not lines:
+        return "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here."
+    return "Each change of mind in your dated notes:\n\n" + "\n".join(f"- {line}" for line in lines)
 
 
 def notebook_events(session: Session, question: str, *, now: datetime) -> list[dict] | None:
@@ -66,7 +82,7 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
     mind ("any contradictions"), what is overdue or open ("what am I
     forgetting"). With no model it is the answer; with one it is handed over
     as facts, so both paths say the same (second audit G11, parity)."""
-    from tessellate.ai import composer_plan, insights
+    from tessellate.ai import composer_plan, insight_asks, insights
 
     text = " ".join((question or "").split())
     try:
@@ -75,9 +91,9 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
             reply = composer_plan._left(ctx)  # noqa: SLF001
             said = reply.text if reply else ""
         elif _CONTRADICTIONS.search(text):
-            found = [i for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift")]
-            said = ("\n".join(f"- {i.text}" for i in found[:4]) if found else
-                    "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here.")
+            said = _changes_of_mind(session, now, text)
+        elif (asked := insight_asks.answer(text, _notes(session), now.date())) is not None:
+            said = asked
         elif _PATTERNS.search(text):
             found = insights.from_session(session, now.date(), limit=4)
             said = ("\n".join(f"- {line}" for line in insights.listed(found)) if found else
@@ -110,15 +126,22 @@ def starter_leads(session: Session, now: datetime) -> list[str]:
     return leads
 
 
-def _early_events(session: Session, typed: str, history: list[dict], now: datetime) -> list[dict] | None:
+def _early_events(session: Session, typed: str, history: list[dict], now: datetime, *, note_open: bool = False, voice: str = "natural") -> list[dict] | None:
     """The readers that go before any note is read. Each reads what was typed, not the rewritten
     question: a follow-up rewrites that ("no cancel it" became a question about a note)."""
     #: "cancel" while a card waits drops that card (CHAT_PLAN X17); the card waiting is not a topic.
     if (dropped := composer_cancel.reply(typed, history)) is not None:
         return dropped
+    if (undone := composer_cancel.undo_reply(session, typed, history)) is not None:
+        return undone
+    if (changed := composer_thennow.answer(session, typed)) is not None:
+        return [{"type": "answer", "delta": changed}]
     #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
-    if (talked := composer_talk.reply(session, typed, history, now.date())) is not None:
+    if (talked := composer_talk.reply(session, typed, history, now.date(), voice=voice)) is not None:
         return talked
+    #: With a note open, "what am I forgetting" is that note's own list (L228), not the notebook's.
+    if note_open and _FORGETTING.search(typed):
+        return None
     return notebook_events(session, typed, now=now)
 
 
@@ -126,7 +149,7 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
            follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False, voice: str = "natural") -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
-    if (early := _early_events(session, asked or question, history, now)) is not None:
+    if (early := _early_events(session, asked or question, history, now, note_open=bool(open_ids), voice=voice)) is not None:
         return early
     if _summary_goes_elsewhere(session, question):
         return None
@@ -272,10 +295,10 @@ def name_events(session: Session, question: str) -> list[dict] | None:
 def figures_events(session: Session, typed: str, history: list[dict], today, open_ids: tuple = ()) -> list[dict] | None:  # noqa: ANN001  # a date
     """A comparison, count or sum over the figures the last answers showed (`ai/composer_figures`, F6),
     or the links of the note "it" is (`ai/composer_openlinks`, F13 j)."""
-    from tessellate.ai import composer_figures, composer_openlinks
+    from tessellate.ai import composer_checklist, composer_figures, composer_openlinks
 
     try:
-        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids))
+        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids)) or composer_checklist.finished(session, typed)
     except Exception:  # noqa: BLE001  # the ordinary readers answer
         log.exception("chat: the figures reader failed")
         return None
@@ -357,12 +380,12 @@ def language_events(session: Session, language: str, *, web_on: bool) -> list[di
     found by script or everyday words (`ai/note_language.py`), listed with
     their links, never a web search. None found says so and, with web search
     on, offers the web as a chip."""
-    from tessellate.ai import note_language, tool_say
+    from tessellate.ai import composer_compose, note_language, tool_say
 
     found = [n for n in _notes(session) if not n["archived"] and not n["draft"] and note_language.is_in(n["content"], language)]
     label = note_language.label(language)
     if not found:
-        events: list[dict] = [{"type": "answer", "delta": f"None of your notes look {label} to me."}]
+        events: list[dict] = [{"type": "answer", "delta": composer_compose.said_plain("none_language", language, label=label)}]
         if web_on:
             events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"Search the web for {language}"]}})
         return events
@@ -417,10 +440,18 @@ def _turn_label(content: str) -> str:
     return re.split(r"[:.!?]", first)[0].strip()[:80]
 
 
+def notes_instead(history: list[dict]) -> str:
+    """The question the "Search my notes instead" chip was offered under: the
+    last turn's, or "" when there is none (L217)."""
+    return str(history[-1].get("question") or "").strip() if history else ""
+
+
 def slot_reply(session: Session, question: str, history: list[dict]) -> str:
     """The reply to "Which note do you want pinned?" completes that act before anything
     routes it ("erm, the interesting bean one" is "Pin note 3"; INBOX 1570). The
     question itself when the last answer was not asking for a note."""
+    if question.strip() == composer_web.NOTES_INSTEAD:
+        return notes_instead(history) or question
     if not composer_suggest.pending_kind(history):
         return question
     #: The notes the other readers here read (`_notes`: visible, newest 400), not a query of its own.

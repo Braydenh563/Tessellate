@@ -77,6 +77,33 @@
 //: All local, all instant, nothing stored: the reading is a pure function of
 //: the name, pinned by tests/test_name_mood.py.
 (() => {
+  //: **One curve table for the companion's motion** (Brief 34, L183): every Web Animation the companion, Atlas and
+  //: their travel, throw and menu files start names its ease here, not a literal, so a joint, a hop and a landing
+  //: share the same few curves (18 literals became 13 names; `settle` is the `--ease-in-out` token). `blend` is the
+  //: ease into an act: shorter than the 480ms blend out, so a quick one (a hop, 800ms) still reads as itself.
+  const NMB_CURVE = {
+    blend: 300,
+    inOut: "ease-in-out",
+    out: "ease-out",
+    in: "ease-in",
+    linear: "linear",
+    settle: "cubic-bezier(0.4, 0, 0.2, 1)",
+    fall: "cubic-bezier(0.55, 0, 1, 0.45)",
+    rise: "cubic-bezier(0, 0.55, 0.45, 1)",
+    apex: "cubic-bezier(0.6, 0, 0.8, 0.6)",
+    launch: "cubic-bezier(0.2, 0.8, 0.4, 1)",
+    arrive: "cubic-bezier(0.3, 0, 0.25, 1)",
+    glide: "cubic-bezier(0.25, 0.5, 0.25, 1)",
+    swing: "cubic-bezier(0.3, 0, 0.7, 1)",
+    hop: "cubic-bezier(0.3, 0.2, 0.4, 1)",
+    //: L-chat-273: the lower body's springs (`ATLAS_LOWER_STATES` names one per pose), its 18 literals folded into five,
+    //: faintest overshoot to the snap; each pose lands within about 10 percent of its old settle and overshoot.
+    spring: "cubic-bezier(0.2, 1.05, 0.45, 1)",
+    sway: "cubic-bezier(0.2, 1.3, 0.4, 1)",
+    flick: "cubic-bezier(0.2, 1.6, 0.35, 1)",
+    pop: "cubic-bezier(0.2, 1.74, 0.36, 1)",
+    snap: "cubic-bezier(0.2, 1.95, 0.35, 1)",
+  };
   const NAME_MOOD_LEXICON = {
     moods: {
       happy: "happy happily cheer* jolly joy joyful glad merry upbeat optimis* bubbly friendly kind sweet delight* sunny sunshine smile* smiley smiling cheery chipper jovial rainbow* sun hopeful wholesome",
@@ -2753,10 +2780,16 @@
     cute: ["Hi.", "Boop."], drunk: ["Heyyy.", "Who moved the floor."], greedy: ["Time is money.", "Stonks."],
   };
 
+  let lastNameMarkLine = "";
+
   function nameMarkLine(seed) {
     const reading = nameMood(seed);
     const lines = NAME_MARK_LINES[reading.mood] || ["Hello.", "Need anything?", "Still here."];
-    return lines[Math.floor(Math.random() * lines.length)];
+    //: Never the line just said: with two lines a mood, a plain random pick repeated one a poke in two (audit G8).
+    const fresh = lines.filter((line) => line !== lastNameMarkLine);
+    const pool = fresh.length ? fresh : lines;
+    lastNameMarkLine = pool[Math.floor(Math.random() * pool.length)];
+    return lastNameMarkLine;
   }
 
   //: A face drawn to always move (the viewer, the companion, the dashboard):
@@ -2826,11 +2859,14 @@
   function nameMarkIdleWake() {
     if (!nameMarkIdleTimer) nameMarkIdleTimer = setTimeout(nameMarkIdleTick, 3000 + Math.random() * 3000);
   }
-  function nameMarkIdleQuiet() {
+  //: Motion still: what stops the loops. A hand-over asks only this (L184: with "What it does" off the giggle
+  //: still runs, and its end went in one frame, 3.21 px).
+  function nameMarkMotionStill() {
     const root = document.documentElement;
-    return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced"
-      || reducedMotionWanted()
-      || nameMarkBuddyActions() === "off";
+    return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced" || reducedMotionWanted();
+  }
+  function nameMarkIdleQuiet() {
+    return nameMarkMotionStill() || nameMarkBuddyActions() === "off";
   }
   function nameMarkIdleTick() {
     nameMarkIdleTimer = 0;
@@ -2862,31 +2898,31 @@
       part(".nm-eyes")?.animate([
         { translate: "0 0" }, { translate: `${side * 2.4}px 0`, offset: 0.2 }, { translate: `${side * 2.4}px 0`, offset: 0.55 },
         { translate: `${-side * 1.6}px 0`, offset: 0.7 }, { translate: "0 0" },
-      ], { duration: 2600, easing: "ease-in-out" });
+      ], { duration: 2600, easing: NMB_CURVE.inOut });
     } else if (act === "blink") {
       //: Every `.nm-blinks` group, not the first: Atlas draws one per eye (INBOX 1644,
       //: the owner: only one eye blinks), the generated faces one group for both.
       for (const lid of el.querySelectorAll(".nm-blinks")) lid.animate([
         { transform: "scaleY(1)" }, { transform: "scaleY(0.1)", offset: 0.12 }, { transform: "scaleY(1)", offset: 0.3 },
         { transform: "scaleY(0.1)", offset: 0.45 }, { transform: "scaleY(1)", offset: 0.62 }, { transform: "scaleY(1)" },
-      ], { duration: 800, easing: "linear" });
+      ], { duration: 800, easing: NMB_CURVE.linear });
     } else if (act === "look") {
       part(".nm-eyes")?.animate([
         { translate: "0 0" }, { translate: "-2.4px 0", offset: 0.22 }, { translate: "-2.4px 0", offset: 0.4 },
         { translate: "2.4px 0", offset: 0.58 }, { translate: "2.4px 0", offset: 0.78 }, { translate: "0 0" },
-      ], { duration: 2800, easing: "ease-in-out" });
+      ], { duration: 2800, easing: NMB_CURVE.inOut });
     } else if (act === "shift") {
       //: `rotate`, which composes with the figure's own `scale` and loop.
       (el.querySelector(".nm-figure") || el).animate([
         { rotate: "0deg" }, { rotate: "3deg", offset: 0.35 }, { rotate: "-2deg", offset: 0.7 }, { rotate: "0deg" },
-      ], { duration: 1800, easing: "ease-in-out" });
+      ], { duration: 1800, easing: NMB_CURVE.inOut });
     } else if (act === "hop") {
       nameMarkReact(el.matches(".name-mark") ? el : part(".name-mark"));
     } else if (act === "wave") {
       part(".nmb-arm-r")?.animate([
-        { rotate: "0deg" }, { rotate: "-120deg", offset: 0.25 }, { rotate: "-100deg", offset: 0.4 },
-        { rotate: "-125deg", offset: 0.55 }, { rotate: "-105deg", offset: 0.7 }, { rotate: "0deg" },
-      ], { duration: 1600, easing: "ease-in-out" });
+        { rotate: "0deg" }, { rotate: "-120deg", offset: 0.31 }, { rotate: "-100deg", offset: 0.42 },
+        { rotate: "-125deg", offset: 0.53 }, { rotate: "-105deg", offset: 0.64 }, { rotate: "0deg" },
+      ], { duration: 3000, easing: NMB_CURVE.inOut });
     }
   }
   //: The pointer onto a large face: it notices (a blink), at most once in
@@ -3129,8 +3165,8 @@
     yawn: { ms: 2200, w: 0, cool: 40000, poses: ["stand", "sit", "hang", "float", "lean"] },
     nap: { ms: 30000, w: 0, cool: 150000, poses: ["stand", "sit", "hang", "float", "lean"] },
     hop: { ms: 800, w: 0.5, cool: 20000, poses: ["stand", "float"] },
-    wave: { ms: 1500, w: 1, cool: 30000, poses: ["stand", "sit", "float", "lean"] },
-    scratch: { ms: 2600, w: 1, cool: 30000, poses: ["stand", "sit", "hang", "lean"] },
+    wave: { ms: 2600, w: 1, cool: 30000, poses: ["stand", "sit", "float", "lean"] },
+    scratch: { ms: 3200, w: 1, cool: 30000, poses: ["stand", "sit", "hang", "lean"] },
     dangle: { ms: 6000, w: 5, cool: 5000, poses: ["sit"], legs: "out" },
     kick: { ms: 1600, w: 2, cool: 12000, poses: ["sit"], legs: "out" },
     peek: { ms: 14000, w: 2, cool: 70000, poses: ["sit", "stand"], edge: "top" },
@@ -3175,7 +3211,7 @@
     bell: { ms: 3000, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     carry: { ms: 2400, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     lantern: { ms: 3000, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
-    hide: { ms: 2400, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
+    hide: { ms: 3600, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     wiggle: { ms: 1400, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     //: Pleased with a piece of work the app finished (`nameMarkBuddyWork`).
     nod: { ms: 1200, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
@@ -3183,9 +3219,9 @@
     //: biological actions", "a companion, not something that distracts"): quiet,
     //: on the body alone, in the lazy sheet that comes with companion-travel.js
     //: (`lazy`: not picked until it is here).
-    shake: { ms: 1200, w: 1, cool: 90000, poses: ["stand", "sit", "float"], lazy: true },
-    groom: { ms: 3200, w: 1.5, cool: 70000, poses: ["stand", "sit"], lazy: true },
-    sniff: { ms: 2400, w: 1, cool: 60000, poses: ["stand", "float"], lazy: true },
+    shake: { ms: 1200, w: 1, cool: 90000, poses: ["stand", "sit", "float"], lazy: true, generated: true },
+    groom: { ms: 3200, w: 1.5, cool: 70000, poses: ["stand", "sit"], lazy: true, generated: true },
+    sniff: { ms: 2400, w: 1, cool: 60000, poses: ["stand", "float"], lazy: true, generated: true },
     sigh: { ms: 2800, w: 1.5, cool: 60000, poses: ["stand", "sit", "float", "lean"], lazy: true },
   };
 
@@ -3269,6 +3305,17 @@
     dinner: { ms: 25000, w: 3, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
     bubbles: { ms: 9500, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
     knit: { ms: 45000, w: 1, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
+    //: L178: the catalogue's idle acts neither companion had (`act.cloud_pillow` and the rest); the hour weights are its `day`.
+    cloudpillow: { ms: 30000, w: 1.2, cool: 360000, poses: ["stand", "sit"], atlas: true, desk: true },
+    plane: { ms: 5000, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+    conduct: { ms: 6000, w: 1, cool: 200000, poses: ["stand"], atlas: true, desk: true },
+    sketch: { ms: 30000, w: 1, cool: 360000, poses: ["stand", "sit"], atlas: true, desk: true },
+    kneel: { ms: 5000, w: 1, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+    leanedge: { ms: 16000, w: 1.5, cool: 240000, poses: ["stand"], atlas: true, desk: true },
+    tailchase: { ms: 3200, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+    tailstretch: { ms: 3000, w: 1.5, cool: 150000, poses: ["stand"], atlas: true, desk: true },
+    balance: { ms: 6000, w: 1, cool: 240000, poses: ["stand"], atlas: true, desk: true },
+    skyfloat: { ms: 24000, w: 1, cool: 360000, poses: ["stand"], atlas: true, desk: true },
     //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
     //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
     daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
@@ -3277,6 +3324,37 @@
     tinker: { ms: 4000, w: 1.5, cool: 120000, poses: ["stand", "sit"], atlas: true, desk: true },
     dust: { ms: 1250, w: 1, cool: 90000, poses: ["stand"], atlas: true, desk: true },
   });
+  //: **Presence spells in the app** (L152 A4, the desk's `presence.SPELLS`, `tests/test_presence_spells_app_l152.py` holds the
+  //: two together): the quiet long ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) suit an hour
+  //: span, last a few minutes within a range and are likelier in their moods (x1.6), as on the desk. `spell` is the desk's name
+  //: for it, `hours` is [from, to) wrapping midnight, `sec` the least and most seconds. The app's `read` stays its short look
+  //: at a book; the desk's reading spell has no counterpart here.
+  const NMB_SPELLS = {
+    tea: { spell: "tea", hours: [5, 12], sec: [120, 270], moods: ["sleepy", "content"] },
+    journal: { spell: "doodle", hours: [10, 20], sec: [120, 360], moods: ["curious", "happy"] },
+    fish: { spell: "fish", hours: [16, 22], sec: [180, 480], moods: ["sleepy", "bored"] },
+    stars: { spell: "stars", hours: [19, 4], sec: [150, 420], moods: ["curious", "sleepy"] },
+    blanket: { spell: "doze", hours: [21, 6], sec: [180, 480], moods: ["sleepy"] },
+    knit: { spell: "knit", hours: [17, 22], sec: [120, 300], moods: ["content", "curious"] },
+    plant: { spell: "plant", hours: [0, 24], sec: [100, 220], moods: ["happy", "proud"] },
+  };
+  //: The weight factor a spell has at this hour and mood: 0 out of its hours, 1.6 in one of its moods, else 1.
+  function nameMarkBuddySpellFactor(act, hour, mood) {
+    const sp = NMB_SPELLS[act];
+    if (!sp) return 1;
+    const [from, to] = sp.hours;
+    const inside = from < to ? hour >= from && hour < to : hour >= from || hour < to;
+    return !inside ? 0 : sp.moods.includes(mood) ? 1.6 : 1;
+  }
+  //: How long this one lasts (ms), anywhere in the spell's range.
+  function nameMarkBuddySpellMs(act, roll = Math.random()) {
+    const [lo, hi] = NMB_SPELLS[act].sec;
+    return Math.round((lo + (hi - lo) * roll) * 1000);
+  }
+  //: **A thrown companion drops what it holds** (L145, the desk's `extras.GRABBED`, `props.TIP_PROPS`): the acts whose prop is in
+  //: its hands. Grabbed in one of them, the prop lies tipped over beside it for `NMB_THROW.tip` once it has landed
+  //: (`companionThrowTip`, companion-throw.js; `nmb-tip-<act>` in atlas-lazy.css), then goes.
+  const NMB_TIP_ACTS = ["tea", "snack", "fish", "journal", "plant", "dinner", "bubbles", "weights", "tinker"];
   //: **More ways to be somewhere** (INBOX 1681, the owner: "positions like how
   //: atlas and regular companions look sitting or crouching down, lying down,
   //: floating, walking, gliding, lounging, climbing, hanging, resting"). Each is
@@ -3321,7 +3399,7 @@
     ["poses", "Settle into other poses (crouch, lounge, rest, drift)", ["crouch", "lounge", "rest", "drift"]],
     ["glide", "Glide through the air and climb while hanging", ["glide", "climb"]],
     ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
-    ["desk", "Atlas does the desk companion's routines: workouts, tea, dinner, fishing, a journal, knitting, bubbles, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
+    ["desk", "Atlas does the desk companion's routines: workouts, tea, dinner, fishing, a journal, knitting, bubbles, a paper plane, a sketch, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
     ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
     ["lie", "Lie down for a nap", ["lie"]],
     ["read", "Read a book", ["read"]],
@@ -3368,7 +3446,7 @@
       { opacity: 1, transform: "translate(1px, -3px) scale(1)", offset: 0.4 },
       { opacity: 1, transform: "translate(2px, -7px) scale(1)", offset: 0.8 },
       { opacity: 0, transform: "translate(3px, -10px) scale(0.95)" },
-    ], { duration: 1600, easing: "ease-out" });
+    ], { duration: 1600, easing: NMB_CURVE.out });
   }
 
   function nameMarkBuddyActions() {
@@ -3832,6 +3910,13 @@
     const { mode, reason } = nameMarkBuddyMotion();
     if (mode === "full" && root.dataset.motion === "reduced") root.dataset.buddyMotion = "full";
     else delete root.dataset.buddyMotion;
+    //: **The system's hint keeps the calm loops** (ledger L741, the owner's call): the sway, breath and glow loops are
+    //: `rotate` and `translate` on the compositor, 102 restyles a minute at rest against 120 with every loop stopped
+    //: (1,485 with all of them going), so they run under the system's own request and stop under the app's Reduce.
+    //: The hop, the giggle and the rig stay stopped; `data-atlas-calm` is read by the CSS gates in 08-consistency.css.
+    const calm = root.dataset.motion === "reduced" && root.dataset.avatarMotion !== "off" && typeof MOTION === "object" && MOTION.cause === "os";
+    if (calm) root.dataset.atlasCalm = "on";
+    else delete root.dataset.atlasCalm;
     const why = document.getElementById("avatar-buddy-motion-why");
     if (why) why.textContent = NMB_MOTION_WHY[reason] || "";
     return mode;
@@ -5279,7 +5364,7 @@
         //: frame. Their keyframes are set from the perch by the band's
         //: measure just below (`nameMarkBuddyRideClip`).
         const timeline = new ScrollTimeline({ source: want, axis: "block" });
-        const opts = { timeline, fill: "both", easing: "linear", rangeStart: "0px", rangeEnd: `${NMB_RIDE_PX}px` };
+        const opts = { timeline, fill: "both", easing: NMB_CURVE.linear, rangeStart: "0px", rangeEnd: `${NMB_RIDE_PX}px` };
         const frames = nameMarkBuddyRideFrames(0, 0, 0);
         nmb.shutterAnim = shutter.animate(frames.shutter, opts);
         nmb.rideAnim = rider.animate(frames.rider, opts);
@@ -5737,7 +5822,7 @@
       nameMarkBuddyGo(buddy, dx, dy, nmb.spot || {}, false);
       return;
     }
-    nmb.glideAnim = buddy.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration: 300, easing: "cubic-bezier(0.4, 0, 0.2, 1)", composite: "add" });
+    nmb.glideAnim = buddy.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration: 300, easing: NMB_CURVE.settle, composite: "add" });
   }
 
   //: **Following, only while something moves.** A frame loop runs for a
@@ -6037,7 +6122,7 @@
       //: nor a move let go (`nameMarkBuddyBlend`, 480ms), for the same reason.
       //: Nor Atlas's blink (atlas.js, `atlasBlink`, 320ms): stepped at
       //: 10Hz its lid jumped in three steps.
-      nmbTempo.anims = buddy.getAnimations({ subtree: true }).filter((a) => a.effect?.target instanceof SVGElement && !(a.effect.target instanceof SVGSVGElement) && !(typeof CSSTransition === "function" && a instanceof CSSTransition) && a.id !== "nmb-blend" && a.id !== "atl-blink" && a.id !== "atl-breath" && a.playState !== "finished");
+      nmbTempo.anims = buddy.getAnimations({ subtree: true }).filter((a) => a.effect?.target instanceof SVGElement && !(a.effect.target instanceof SVGSVGElement) && !(typeof CSSTransition === "function" && a instanceof CSSTransition) && a.id !== "nmb-blend" && a.id !== "atl-blink" && a.playState !== "finished");
       //: **Nor the hands it holds on by, while they are not shown** (Brief 34
       //: decision 7). The hold's reach (`.nmb-hold`, shown only hanging,
       //: carried or in a stretch, a yawn or a cheer) was stepped twenty times
@@ -6459,7 +6544,7 @@
     //: Cut off in mid-air (a hop's arc, a float's lift), the figure comes
     //: down from where it was drawn, added to the new way, not snapped to it.
     const turn = leaning === null ? 0 : leaning - (Number.parseFloat(getComputedStyle(char).rotate) || 0);
-    if ((lift || Math.abs(turn) > 0.2) && char && typeof char.animate === "function") nmb.liftAnim = char.animate([{ translate: `0px ${lift}px`, rotate: `${turn}deg` }, { translate: "0px 0px", rotate: "0deg" }], { duration: 240, easing: "ease-out", composite: "add" });
+    if ((lift || Math.abs(turn) > 0.2) && char && typeof char.animate === "function") nmb.liftAnim = char.animate([{ translate: `0px ${lift}px`, rotate: `${turn}deg` }, { translate: "0px 0px", rotate: "0deg" }], { duration: 240, easing: NMB_CURVE.out, composite: "add" });
   }
 
   //: **Whole in the air** (INBOX 1463, 1432: "cut in half at like 3 points as
@@ -6560,7 +6645,7 @@
   function nameMarkBuddyCrossfade(buddy, dx, dy, ms) {
     nmb.ghost?.remove();
     nmb.ghost = null;
-    const ease = { duration: ms, easing: "ease-in-out" };
+    const ease = { duration: ms, easing: NMB_CURVE.inOut };
     if (buddy.parentNode && Number.isFinite(nmb.lx) && Number.isFinite(nmb.ly)) {
       const ghost = buddy.cloneNode(true);
       ghost.setAttribute("aria-hidden", "true");
@@ -6633,19 +6718,38 @@
     float: { arm: [[0.25, -12], [0.6, 30], [0.86, 8]], lower: [[0.3, 10], [0.72, 6], [0.9, -3]] },
     cue: { arm: [[0.4, 20]] },
   };
+  //: No generic arm turns faster than the Atlas rig's cap (L83): 200 a second at the fastest is 129 mean (ease-in-out peaks at 1.55x).
+  //: A gesture's `[offset, degrees]` frames give up angle, not time: each step and the return are cut to what the cap allows.
+  const NMB_ARM_MEAN_SPEED = 129;
+  function nmbArmKeys(frames, ms) {
+    const room = (from, to) => (NMB_ARM_MEAN_SPEED * (to - from) * ms) / 1000;
+    const out = [];
+    let at = 0;
+    let off = 0;
+    for (const [o, deg] of frames) {
+      at = Math.max(at - room(off, o), Math.min(at + room(off, o), deg));
+      out.push([o, at]);
+      off = o;
+    }
+    for (let i = out.length; i--; ) {
+      const next = out[i + 1];
+      out[i][1] = Math.sign(out[i][1]) * Math.min(Math.abs(out[i][1]), room(out[i][0], next ? next[0] : 1) + (next ? Math.abs(next[1]) : 0));
+    }
+    return out.map(([o, d]) => [o, Math.round(d * 10) / 10]);
+  }
   function nameMarkBuddyLimbs(buddy, kind, ms = 0, delay = 0, way = 1) {
     for (const anim of nmb.limbAnims || []) anim.cancel();
     nmb.limbAnims = [];
     const move = NMB_LIMB_MOVES[kind];
     if (!move || !ms || typeof buddy.animate !== "function") return;
-    const timing = { duration: ms, delay, easing: "ease-in-out", id: "nmb-limb" };
+    const timing = { duration: ms, delay, easing: NMB_CURVE.inOut, id: "nmb-limb" };
     const part = (sel, list, side) => {
       for (const el of list ? buddy.querySelectorAll(sel) : []) {
         const m = side(el);
         nmb.limbAnims.push(el.animate(list.map(([offset, deg, sy]) => (sy ? { offset, rotate: `${deg * m}deg`, scale: `1 ${sy}` } : { offset, rotate: `${deg * m}deg` })), timing));
       }
     };
-    part(".nmb-arm", move.arm, (el) => (el.classList.contains("nmb-arm-r") ? -1 : 1));
+    part(".nmb-arm", move.arm && nmbArmKeys(move.arm, ms), (el) => (el.classList.contains("nmb-arm-r") ? -1 : 1));
     //: Atlas's legs are two `<svg>` roots (`nmb-leg atl-layer`), on which
     //: `rotate` and `scale` are never composited: its boxes (`.atl-lw-leg-*`,
     //: atlas.js) take the gesture and the roots are left to the pose.
@@ -6785,12 +6889,12 @@
       //: A flyer's far way (the plan's run or arc), leaning into the way it
       //: goes, arms out.
       const duration = plan.ms;
-      nmb.anim = buddy.animate(plan.frames, { duration, delay: setOff, fill: "backwards", easing: "linear" });
+      nmb.anim = buddy.animate(plan.frames, { duration, delay: setOff, fill: "backwards", easing: NMB_CURVE.linear });
       const lean = way * 12;
       nmb.hopAnim = char?.animate([
         { rotate: "0deg", translate: "0px 0px" }, { rotate: `${lean}deg`, translate: "0px -3px", offset: 0.3 },
         { rotate: `${lean}deg`, translate: "0px -3px", offset: 0.7 }, { rotate: `${-lean * 0.3}deg`, translate: "0px 0px", offset: 0.9 }, { rotate: "0deg" },
-      ], { duration, delay: setOff, fill: "backwards", easing: "ease-in-out" }) || null;
+      ], { duration, delay: setOff, fill: "backwards", easing: NMB_CURVE.inOut }) || null;
       nameMarkBuddySquash(char, duration + setOff, underway);
       nameMarkBuddyLimbs(buddy, "glide", duration, setOff, way);
       return;
@@ -6799,7 +6903,7 @@
     //: and a squash where it lands.
     if (route === "fall") {
       const duration = Math.round(Math.min(700, 180 + Math.sqrt(Math.abs(dy)) * 30));
-      nmb.anim = buddy.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration, easing: "cubic-bezier(0.55, 0, 1, 0.45)" });
+      nmb.anim = buddy.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration, easing: NMB_CURVE.fall });
       nmb.anim.onfinish = () => nameMarkBuddyAct("land");
       nameMarkBuddyLimbs(buddy, "glide", duration);
       return;
@@ -6818,9 +6922,9 @@
       const lift = (Math.min(28, 8 + distance * 0.06) * (gait === "masculine" ? 0.8 : gait === "feminine" ? 1.15 : 1)) / beat;
       const lean = Math.max(-8, Math.min(8, -dx * 0.04)) * (gait === "feminine" ? 1.4 : 1);
       nmb.hopAnim = char?.animate([
-        { translate: "0px 0px", rotate: "0deg", easing: "ease-in-out" },
-        { translate: `0px ${-lift}px`, rotate: `${lean}deg`, offset: 0.45, easing: "ease-in-out" },
-        { translate: "0px 2px", rotate: `${-lean * 0.3}deg`, offset: 0.88, easing: "ease-in-out" },
+        { translate: "0px 0px", rotate: "0deg", easing: NMB_CURVE.inOut },
+        { translate: `0px ${-lift}px`, rotate: `${lean}deg`, offset: 0.45, easing: NMB_CURVE.inOut },
+        { translate: "0px 2px", rotate: `${-lean * 0.3}deg`, offset: 0.88, easing: NMB_CURVE.inOut },
         { translate: "0px 0px", rotate: "0deg" },
       ], { duration: duration + 120 }) || null;
       nameMarkBuddyLimbs(buddy, "float", duration + 120, 0, way);
@@ -6837,7 +6941,7 @@
         { rotate: "5deg", translate: "0px -2px", offset: 0.6 }, { rotate: "0deg", translate: "0px 0px" },
       ] : [
         { rotate: "0deg" }, { rotate: `${-way * 7}deg`, offset: 0.35 }, { rotate: `${way * 2}deg`, offset: 0.8 }, { rotate: "0deg" },
-      ], { duration: slide, delay: setOff, fill: "backwards", easing: "ease-in-out" }) || null;
+      ], { duration: slide, delay: setOff, fill: "backwards", easing: NMB_CURVE.inOut }) || null;
       nameMarkBuddyLimbs(buddy, "cue", slide, setOff);
       return;
     }
@@ -6852,8 +6956,8 @@
       const arc = plan ? 4 : leap ? Math.min(90, 18 + Math.abs(dy) * 0.35 + Math.abs(dx) * 0.05) : Math.min(22, 8 + distance * 0.35);
       const top = leap && dy > 0 ? 0.55 : 0.45;
       nmb.hopAnim = char?.animate([
-        { translate: "0px 0px", easing: "cubic-bezier(0.2, 0.8, 0.4, 1)" },
-        { translate: `0px ${-arc}px`, offset: top, easing: "cubic-bezier(0.6, 0, 0.8, 0.6)" },
+        { translate: "0px 0px", easing: NMB_CURVE.launch },
+        { translate: `0px ${-arc}px`, offset: top, easing: NMB_CURVE.apex },
         { translate: "0px 0px" },
       ], { duration, delay: setOff, fill: "backwards" }) || null;
       nameMarkBuddySquash(char, duration + setOff, underway);
@@ -6876,7 +6980,7 @@
     const beat = plan ? plan.beat : nameMarkBuddyStride();
     const duration = plan ? plan.ms : Math.round(((climb ? Math.min(2200, 380 + along + up) : Math.min(1600, 450 + distance * 2.2)) * pace) / beat);
     buddy.dataset.turn = dx > 0 ? "l" : "r";
-    if (nmb.feetDown()) nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+    if (nmb.feetDown()) nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);
     //: The walk's own animations are paced from its first step, not when
     //: the pacer next looks (a second later, longer than most walks).
     nmbTempo.seen = 0;
@@ -6950,7 +7054,7 @@
       { scale: "1.07 0.91", offset: at(travel + 50) },
       { scale: "0.98 1.02", offset: at(travel + 160) },
       { scale: "1 1" },
-    ].map((frame) => ({ ...frame, easing: "ease-in-out" })), { duration: total });
+    ].map((frame) => ({ ...frame, easing: NMB_CURVE.inOut })), { duration: total });
   }
   //: **Thrown** (INBOX 882, the owner: "I try throwing the companion across
   //: the screen and it just goes back to the same side, the companion physics
@@ -6966,7 +7070,7 @@
   //: nearest place to where it stopped (`nameMarkBuddyThrowLand`). px and ms.
   const NMB_TOSS_SPEED = 0.6;
   //: `max` is the fastest it is ever drawn: 2.3 px/ms is 38px a 60 Hz frame, under the 40 that reads as a jump (INBOX 1305; it was 4.5, 75px).
-  const NMB_THROW = { max: 2.3, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200 };
+  const NMB_THROW = { max: 2.3, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200, tip: 2400 };
   const NMB_PET_MS = 1100;
 
   //: The speed it is let go at, px per ms, from `samples` ([x, y, ms], oldest
@@ -7121,7 +7225,7 @@
       face.animate([
         { transform: "rotate(0deg)" }, { transform: "rotate(-6deg)", offset: 0.25 }, { transform: "rotate(4deg)", offset: 0.55 },
         { transform: "rotate(-2deg)", offset: 0.8 }, { transform: "rotate(0deg)" },
-      ].map((frame) => ({ ...frame, transformOrigin: "50% 100%" })), { duration: 1400, easing: "ease-in-out" });
+      ].map((frame) => ({ ...frame, transformOrigin: "50% 100%" })), { duration: 1400, easing: NMB_CURVE.inOut });
     }
     if (nameMarkBuddyAsleep(buddy)) return;
     if (now < nmb.grumpyUntil) {
@@ -7173,7 +7277,7 @@
       const face = buddy.querySelector(":scope > .nm-buddy-face");
       if (face && typeof face.animate === "function") {
         const wiggle = [0, -5, 5, -5, 5, -4, 4, -2, 0].map((deg, i, all) => ({ transform: `rotate(${deg}deg) translateY(${i % 2 ? -2 : 0}px)`, offset: i / (all.length - 1), transformOrigin: "50% 100%" }));
-        face.animate(wiggle, { duration: 1500, easing: "ease-in-out" });
+        face.animate(wiggle, { duration: 1500, easing: NMB_CURVE.inOut });
       }
       if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("laughing", 2400, { quiet: true, backEaseMs: 1000 });
       else nameMarkBuddyExpress("laughing", 2400);
@@ -7195,7 +7299,7 @@
         face.animate([
           { transform: "translateY(0) scale(1)" }, { transform: "translateY(-3px) scale(1.03, 1.05)", offset: 0.3 },
           { transform: "translateY(1px) scale(1.04, 0.92)", offset: 0.55 }, { transform: "translateY(0) scale(1)" },
-        ].map((frame) => ({ ...frame, transformOrigin: "50% 100%" })), { duration: 800, easing: "ease-out" });
+        ].map((frame) => ({ ...frame, transformOrigin: "50% 100%" })), { duration: 800, easing: NMB_CURVE.out });
       }
       if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("surprised", 1100, { quiet: true, backEaseMs: 600 });
       else nameMarkBuddyExpress("surprised", 1100);
@@ -7250,7 +7354,7 @@
       const face = buddy.querySelector(":scope > .nm-buddy-face");
       if (face && typeof face.animate === "function") {
         const dab = [0, 3, 0, 3, 0, 2, 0].map((px, i, all) => ({ transform: `translateY(${px}px) scale(1, ${1 - px * 0.012})`, offset: i / (all.length - 1), transformOrigin: "50% 100%" }));
-        face.animate(dab, { duration: 1800, easing: "ease-in-out" });
+        face.animate(dab, { duration: 1800, easing: NMB_CURVE.inOut });
       }
       if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("happy", 3000, { quiet: true, backEaseMs: 1000 });
       else nameMarkBuddyExpress("happy", 3000);
@@ -7262,7 +7366,7 @@
       if (face && typeof face.animate === "function") {
         face.animate([
           { transform: "rotate(0deg) translateY(0)" }, { transform: "rotate(180deg) translateY(-8px)", offset: 0.45 }, { transform: "rotate(360deg) translateY(0)" },
-        ].map((frame) => ({ ...frame, transformOrigin: "50% 60%" })), { duration: 1300, easing: "ease-in-out" });
+        ].map((frame) => ({ ...frame, transformOrigin: "50% 60%" })), { duration: 1300, easing: NMB_CURVE.inOut });
       }
       if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("delighted", 1800, { quiet: true, backEaseMs: 800 });
       else nameMarkBuddyExpress("happy", 1800);
@@ -7282,7 +7386,7 @@
     const frames = on
       ? [{ transform: "rotate(0deg)" }, { transform: "rotate(200deg)", offset: 0.7 }, { transform: "rotate(180deg)" }]
       : [{ transform: "rotate(180deg)" }, { transform: "rotate(372deg)", offset: 0.75 }, { transform: "rotate(360deg)" }];
-    const anim = face.animate(frames.map((frame) => ({ ...frame, transformOrigin: "50% 50%" })), { duration: on ? 420 : 560, easing: "ease-out", fill: on ? "forwards" : "none" });
+    const anim = face.animate(frames.map((frame) => ({ ...frame, transformOrigin: "50% 50%" })), { duration: on ? 420 : 560, easing: NMB_CURVE.out, fill: on ? "forwards" : "none" });
     const atlas = isAtlasSeed(buddy.dataset.seed || "");
     buddy.classList.toggle("nmb-flipped", on);
     if (on) {
@@ -7316,7 +7420,7 @@
     const soft = "cubic-bezier(0.2, 0.8, 0.2, 1)";
     const cut = Math.min(1, at + 0.001);
     nmb.anim = buddy.animate(fromSeen ? [
-      { translate: `${dx}px ${dy}px`, opacity: 1, easing: "ease-in" },
+      { translate: `${dx}px ${dy}px`, opacity: 1, easing: NMB_CURVE.in },
       { translate: `${dx}px ${dy}px`, opacity: 0, offset: at },
       { translate: "0px 0px", opacity: 0, offset: cut, easing: soft },
       { translate: "0px 0px", opacity: 1 },
@@ -7326,12 +7430,12 @@
     ], { duration: total });
     const char = buddy.querySelector(".nm-buddy-char");
     const arrive = (from) => [
-      { scale: "0.6", translate: "0px -8px", offset: from, easing: "ease-out" },
-      { scale: "1.04", translate: "0px 1px", offset: from + (1 - from) * 0.7, easing: "ease-in-out" },
+      { scale: "0.6", translate: "0px -8px", offset: from, easing: NMB_CURVE.out },
+      { scale: "1.04", translate: "0px 1px", offset: from + (1 - from) * 0.7, easing: NMB_CURVE.inOut },
       { scale: "1", translate: "0px 0px" },
     ];
     nmb.hopAnim = char?.animate(fromSeen ? [
-      { scale: "1", translate: "0px 0px", easing: "ease-in" },
+      { scale: "1", translate: "0px 0px", easing: NMB_CURVE.in },
       { scale: "0.6", translate: "0px -6px", offset: at },
       ...arrive(cut),
     ] : arrive(0), { duration: total }) || null;
@@ -7853,8 +7957,7 @@
     const watch = () => {
       for (const page of document.querySelectorAll(".tab-page")) views.observe(page, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden"], attributeOldValue: true, characterData: true });
     };
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch);
-    else watch();
+    onDomReady(watch);
   }
   document.addEventListener("click", (event) => {
     if (event.target?.closest?.(".tab-page [role='tab']")) setTimeout(nameMarkBuddyViewChanged, 300);
@@ -8024,7 +8127,7 @@
     if (typeof buddy.animate !== "function" || nameMarkBuddyMotion().mode === "still") return "";
     if (nameMarkBuddyNoTravel()) {
       nmb.anim?.cancel();
-      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, easing: "ease-out" });
+      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, easing: NMB_CURVE.out });
       nmb.anim.onfinish = null;
       return "fade";
     }
@@ -8197,12 +8300,12 @@
     const char = buddy.querySelector(".nm-buddy-char");
     //: Asleep, it is carried in, not walked: a slow fade where it lies.
     if (nameMarkBuddyAsleep(buddy)) {
-      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: "ease-in-out" });
+      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: NMB_CURVE.inOut });
       nmb.anim.onfinish = null;
       return "asleep";
     }
     if (nameMarkBuddyNoTravel()) {
-      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: "ease-out" });
+      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: NMB_CURVE.out });
       nmb.anim.onfinish = null;
       return "fade";
     }
@@ -8226,7 +8329,7 @@
       buddy.dataset.route = "enter-drop";
       nmb.anim = buddy.animate(
         [{ translate: "0px -56px", opacity: 0 }, { opacity: 1, offset: 0.4 }, { translate: "0px 5px", opacity: 1, offset: 0.78 }, { translate: "0px 0px", opacity: 1 }],
-        { duration: 640, easing: "cubic-bezier(0.3, 0.6, 0.3, 1)" },
+        { duration: 640, easing: NMB_CURVE.glide },
       );
       nmb.hopAnim = null;
       nameMarkBuddyLimbs(buddy, "float", 640);
@@ -8280,11 +8383,11 @@
       const duration = Math.round(Math.min(1100, 480 + Math.abs(dx) * 0.7));
       const way = dx > 0 ? -1 : 1;
       nameMarkBuddyWay(buddy, String(way));
-      nmb.anim = buddy.animate([{ translate: `${dx}px 0px`, opacity: 0 }, { opacity: 1, offset: 0.25 }, { translate: "0px 0px", opacity: 1 }], { duration, easing: "cubic-bezier(0.25, 0.5, 0.25, 1)" });
+      nmb.anim = buddy.animate([{ translate: `${dx}px 0px`, opacity: 0 }, { opacity: 1, offset: 0.25 }, { translate: "0px 0px", opacity: 1 }], { duration, easing: NMB_CURVE.glide });
       nmb.hopAnim = char?.animate([
         { rotate: `${way * 10}deg`, translate: "0px -3px" }, { rotate: `${way * 10}deg`, translate: "0px -3px", offset: 0.6 },
         { rotate: `${-way * 3}deg`, translate: "0px 0px", offset: 0.88 }, { rotate: "0deg" },
-      ], { duration, easing: "ease-in-out" }) || null;
+      ], { duration, easing: NMB_CURVE.inOut }) || null;
       nameMarkBuddyLimbs(buddy, "glide", duration, 0, way);
       return how;
     }
@@ -8305,19 +8408,19 @@
       const duration = Math.round(Math.min(atlas ? 1500 : 1000, (atlas ? 700 : 420) + Math.abs(dy) * (atlas ? 1.1 : 0.6)));
       const hit = atlas ? 0.86 : 0.7;
       nmb.anim = buddy.animate(atlas ? [
-        { translate: `0px ${dy}px`, easing: "cubic-bezier(0.3, 0.2, 0.4, 1)" },
-        { translate: "0px 3px", offset: hit, easing: "ease-in-out" },
+        { translate: `0px ${dy}px`, easing: NMB_CURVE.hop },
+        { translate: "0px 3px", offset: hit, easing: NMB_CURVE.inOut },
         { translate: "0px 0px" },
       ] : [
-        { translate: `0px ${dy}px`, easing: "cubic-bezier(0.55, 0, 1, 0.45)" },
-        { translate: "0px 0px", offset: hit, easing: "cubic-bezier(0, 0.55, 0.45, 1)" },
-        { translate: "0px -9px", offset: 0.83, easing: "cubic-bezier(0.55, 0, 1, 0.45)" },
+        { translate: `0px ${dy}px`, easing: NMB_CURVE.fall },
+        { translate: "0px 0px", offset: hit, easing: NMB_CURVE.rise },
+        { translate: "0px -9px", offset: 0.83, easing: NMB_CURVE.fall },
         { translate: "0px 0px" },
       ], { duration });
       const sway = Math.random() < 0.5 ? -1 : 1;
       nmb.hopAnim = atlas ? char?.animate([
         { rotate: `${sway * 8}deg` }, { rotate: `${-sway * 6}deg`, offset: 0.35 }, { rotate: `${sway * 4}deg`, offset: 0.65 }, { rotate: "0deg" },
-      ], { duration, easing: "ease-in-out" }) || null : null;
+      ], { duration, easing: NMB_CURVE.inOut }) || null : null;
       nameMarkBuddyLimbs(buddy, atlas ? "float" : "leap", duration, 0, sway);
       return how;
     }
@@ -8328,15 +8431,15 @@
       const duration = Math.round(Math.min(1200, 620 + Math.abs(dx) * 0.6));
       nameMarkBuddyWay(buddy, String(way));
       nmb.anim = buddy.animate([
-        { translate: `${dx}px -46px`, easing: "cubic-bezier(0.3, 0, 0.7, 1)" },
-        { translate: `${Math.round(dx * 0.35)}px 0px`, offset: 0.5, easing: "cubic-bezier(0.2, 0.6, 0.4, 1)" },
-        { translate: `${Math.round(dx * 0.12)}px -14px`, offset: 0.72, easing: "cubic-bezier(0.6, 0, 0.8, 0.6)" },
+        { translate: `${dx}px -46px`, easing: NMB_CURVE.swing },
+        { translate: `${Math.round(dx * 0.35)}px 0px`, offset: 0.5, easing: NMB_CURVE.launch },
+        { translate: `${Math.round(dx * 0.12)}px -14px`, offset: 0.72, easing: NMB_CURVE.apex },
         { translate: "0px 0px" },
       ], { duration });
       nmb.hopAnim = char?.animate([
-        { rotate: `${-way * 360}deg`, easing: "cubic-bezier(0.3, 0, 0.5, 1)" }, { rotate: `${-way * 20}deg`, offset: 0.5 },
+        { rotate: `${-way * 360}deg`, easing: NMB_CURVE.swing }, { rotate: `${-way * 20}deg`, offset: 0.5 },
         { rotate: `${way * 6}deg`, offset: 0.85 }, { rotate: "0deg" },
-      ], { duration, easing: "ease-out" }) || null;
+      ], { duration, easing: NMB_CURVE.out }) || null;
       nameMarkBuddyLimbs(buddy, "leap", duration, 0, way);
       return how;
     }
@@ -8366,7 +8469,7 @@
         at(Math.round(from * 0.35), { opacity: 1, offset: 0.5 }),
         at(how === "down" ? 4 : -5, { offset: 0.78 }),
         at(0, {}),
-      ], { duration, easing: "ease-in-out" });
+      ], { duration, easing: NMB_CURVE.inOut });
       //: Hand over hand (INBOX 469), until it is out and standing.
       nameMarkBuddyTravel(buddy, "climb", Math.round(duration * 0.78), "");
       return how;
@@ -8377,7 +8480,7 @@
     //: place read as a pop). At its own size throughout: it used to grow from
     //: half size past its own and back (0.5, 1.06, 1).
     nameMarkBuddyBurst(buddy, 0, 0, 0);
-    nmb.anim = buddy.animate([{ opacity: 0, translate: "0px -14px" }, { opacity: 0, translate: "0px -14px", offset: 0.18 }, { opacity: 1, offset: 0.6 }, { opacity: 1, translate: "0px 0px" }], { duration: 820, easing: "ease-out" });
+    nmb.anim = buddy.animate([{ opacity: 0, translate: "0px -14px" }, { opacity: 0, translate: "0px -14px", offset: 0.18 }, { opacity: 1, offset: 0.6 }, { opacity: 1, translate: "0px 0px" }], { duration: 820, easing: NMB_CURVE.out });
     nmb.hopAnim = null;
     nameMarkBuddyLimbs(buddy, "float", 820);
     return how;
@@ -8411,7 +8514,7 @@
     nmb.hopAnim = null;
     setTimeout(nameMarkBuddyGlanceAtPage, NMB_QUIET_FADE_MS + 120);
     if (how === "fade") {
-      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: NMB_QUIET_FADE_MS, easing: "ease-out" });
+      nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: NMB_QUIET_FADE_MS, easing: NMB_CURVE.out });
       return how;
     }
     //: Faded up within the same 180ms as the fade, over 600ms of steps.
@@ -8424,11 +8527,11 @@
   function nameMarkBuddyWalkIn(buddy, dx, duration, shown) {
     nameMarkBuddyWay(buddy, dx > 0 ? "-1" : "1");
     buddy.dataset.turn = dx > 0 ? "l" : "r";
-    nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+    nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);
     nmbTempo.seen = 0;
     clearTimeout(nmbTempo.timer);
     nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
-    const walk = buddy.animate([{ translate: `${dx}px 0px`, opacity: 0 }, { opacity: 1, offset: shown }, { translate: "0px 0px", opacity: 1 }], { duration, easing: "cubic-bezier(0.3, 0, 0.25, 1)" });
+    const walk = buddy.animate([{ translate: `${dx}px 0px`, opacity: 0 }, { opacity: 1, offset: shown }, { translate: "0px 0px", opacity: 1 }], { duration, easing: NMB_CURVE.arrive });
     nmb.anim = walk;
     const done = () => {
       if (nmb.anim !== walk) return;
@@ -8554,6 +8657,7 @@
     const lieSide = act === "lie" || (act === "nap" && !nameMarkBuddyActOff("lie")) ? nameMarkBuddyLieRoom() : "";
     if (act === "nap" || act === "lie") act = lieSide ? "lie" : "nap";
     const spec = NAME_MARK_BUDDY_ACTS[act];
+    if (!ms && NMB_SPELLS[act]) ms = nameMarkBuddySpellMs(act);
     if (act === "glance") nameMarkBuddyAim(nmb.pointer);
     if (act === "look" || act === "nap") nameMarkBuddyRelease();
     if (act === "turn" || act === "glance") {
@@ -8594,7 +8698,7 @@
     if (act === "land" && nmb.afterLand) {
       if (joined) nameMarkBuddyBlend(buddy, leave);
       into();
-    } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);
+    } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_CURVE.blend);
     //: A new act starts with its arms (INBOX 469): a small lift and back.
     if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
     nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
@@ -8691,7 +8795,7 @@
     }
     const char = buddy.querySelector(".nm-buddy-char");
     if (!char || typeof char.animate !== "function" || nameMarkIdleQuiet() || nmb.pose !== "stand" || nmb.legs || NMB_MANNER_STILL.has(act)) return;
-    const options = { duration: Math.max(600, ms / rate), easing: "ease-in-out", composite: "add", id: "nmb-manner" };
+    const options = { duration: Math.max(600, ms / rate), easing: NMB_CURVE.inOut, composite: "add", id: "nmb-manner" };
     if (manner.shift) {
       const x = (Math.random() < 0.5 ? -1 : 1) * manner.shift;
       char.animate([{ translate: "0px 0px" }, { translate: `${x}px 0.5px`, offset: 0.3 }, { translate: `${x}px 0.5px`, offset: 0.75 }, { translate: "0px 0px" }], options);
@@ -8889,6 +8993,10 @@
 
   //: Stops whatever it is doing, at once and without a follow-on: grabbed.
   function nameMarkBuddyHalt(buddy) {
+    if (NMB_TIP_ACTS.includes(nmb.act)) {
+      nmb.tipAct = nmb.act;
+      nmb.tipAt = Date.now();
+    }
     if (nmb.act) buddy.classList.remove(`nmb-act-${nmb.act}`);
     nmb.act = "";
     nmb.afterLand = false;
@@ -9044,7 +9152,7 @@
     nmb.settleLast = { ...nmb.settleLast, [kind]: pick };
     const side = buddy.dataset.turn === "l" ? -1 : 1;
     const frames = ways[pick].map(([offset, y, r]) => ({ offset, translate: `0 ${y}px`, rotate: `${r * side}deg` }));
-    char.animate(frames, { duration: NMB_BEAT_MS[kind], easing: "ease-in-out", composite: "add" });
+    char.animate(frames, { duration: NMB_BEAT_MS[kind], easing: NMB_CURVE.inOut, composite: "add" });
   }
 
   //: **It looks at a new page rather than crossing it** (INBOX 1463): come
@@ -9092,7 +9200,7 @@
       if ((nmb.cool[act] || 0) > now || act === nmb.lastAct) continue;
       if (nameMarkBuddyActOff(act, off)) continue;
       if (!calm && NMB_LOUD_ACTS.includes(act)) continue;
-      let w = spec.w;
+      let w = spec.w * nameMarkBuddySpellFactor(act, hour, nmb.cat.state.mood);
       if (act === "yawn") w = idle > NMB_YAWN_MS ? 4 : night ? 2 : 0;
       //: At night a nap still wants a quiet half minute, and none just after it was woken (it nodded off again at once).
       if (act === "nap") w = idle > 90 * 1000 ? 3 : night && idle > 30 * 1000 && now >= (nmb.awakeUntil || 0) ? 1 : 0;
@@ -9124,6 +9232,7 @@
       const stance = NMB_STANCES[act];
       if (stance && (!nmb.atlasLook || nmb.atlasLook !== stance.look)) w = 0;
       if (spec.atlas && !nmb.atlasLook) w = 0;
+      if (spec.generated && nmb.atlasLook) w = 0;
       if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;
       w *= drive[act] ?? 1;
       w *= nmb.cat.weigh(act, now, hour);
@@ -9318,7 +9427,7 @@
       //: The new face over the old, faded in; the old goes when it is covered.
       old.classList.add("nmb-fig-leaving");
       old.after(next);
-      next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-in-out" }).finished.then(() => old.remove(), () => old.remove());
+      next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: NMB_CURVE.inOut }).finished.then(() => old.remove(), () => old.remove());
     } else if (old) old.replaceWith(next);
     else char.prepend(next);
     buddy.dataset.expr = want;
@@ -9347,7 +9456,7 @@
       [{ rotate: "0deg" }, { rotate: `${6 * amp}deg`, offset: 0.3 }, { rotate: `${-6 * amp}deg`, offset: 0.7 }, { rotate: "0deg" }],
       [{ transform: "rotateY(0deg)" }, { transform: "rotateY(180deg) translateY(-6px)", offset: 0.5 }, { transform: "rotateY(360deg)" }],
     ][v];
-    char.animate(frames, { duration: Math.round((v === 2 ? 700 : 900) * (0.87 + Math.random() * 0.28)), delay, easing: "ease-in-out" });
+    char.animate(frames, { duration: Math.round((v === 2 ? 700 : 900) * (0.87 + Math.random() * 0.28)), delay, easing: NMB_CURVE.inOut });
   }
 
   //: The smaller face a big one eases down through, and the emote each
@@ -9972,13 +10081,11 @@
   //: redraw keep dirty. Within 100ms of a write the change is made as it is under reduced motion, without the
   //: ease: a jolt at most, on a page that is busy in any case.
   const NMB_BLEND_MS = 480;
-  //: Into an act: shorter, so a quick one (a hop, 800ms) still reads as itself.
-  const NMB_BLEND_IN_MS = 300;
   const NMB_BLEND_PROPS = ["transform", "translate", "rotate", "scale", "opacity"];
   const NMB_BLEND_PARTS = ".nm-buddy-char, .nm-buddy-head, .nm-figure, .nmb-leg-l, .nmb-leg-r, :is(.nmb-arm-l, .nmb-arm-r):not(.atl-rigged, .atl-arm-probe)";
   function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     const roots = (Array.isArray(buddy) ? buddy : [buddy]).filter((el) => el && typeof el.getAnimations === "function");
-    if (!roots.length || nameMarkIdleQuiet() || nmb.written()) {
+    if (!roots.length || nameMarkMotionStill() || nmb.written()) {
       change();
       return;
     }
@@ -10066,7 +10173,7 @@
     }
     for (const { el, moved } of eases) {
       //: `offset: 0`: a lone keyframe with none is the end, not the start.
-      el.animate([{ ...moved, offset: 0 }], { duration: ms, easing: "cubic-bezier(0.4, 0, 0.2, 1)", id: "nmb-blend" });
+      el.animate([{ ...moved, offset: 0 }], { duration: ms, easing: NMB_CURVE.settle, id: "nmb-blend" });
     }
   }
 
@@ -10508,6 +10615,16 @@
     ["nmb-act-dinner", "eating dinner from a bowl"],
     ["nmb-act-bubbles", "blowing bubbles from a wand"],
     ["nmb-act-knit", "knitting a strand of starlight"],
+    ["nmb-act-cloudpillow", "resting its chin on a cloud"],
+    ["nmb-act-plane", "throwing a paper plane"],
+    ["nmb-act-conduct", "conducting a tune"],
+    ["nmb-act-sketch", "sketching the view"],
+    ["nmb-act-kneel", "kneeling to look at something small"],
+    ["nmb-act-leanedge", "leaning on the edge"],
+    ["nmb-act-tailchase", "chasing its tail"],
+    ["nmb-act-tailstretch", "stretching its tail"],
+    ["nmb-act-balance", "balancing with its arms out"],
+    ["nmb-act-skyfloat", "floating on its back"],
     ["nmb-act-daydream", "daydreaming"],
     ["nmb-act-pace", "pacing"],
     ["nmb-act-game", "making up a game"],
@@ -11606,5 +11723,5 @@
   // pull-grab:end
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_BLEND_IN_MS, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });
+  Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_CURVE, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });
 })();

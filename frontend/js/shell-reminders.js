@@ -1121,7 +1121,7 @@ function reminderItem(reminder, label) {
       };
       pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
       loadReminders();
-      toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+      toast(voiceLine("done", `Rescheduled to ${whenText(rolled.due_at)}`));
       reminder.entry_id && loadReminders.act("outcome", reminder);
       return;
     }
@@ -1238,7 +1238,7 @@ function reminderItem(reminder, label) {
     {
       label: "ph:copy Copy text",
       run: async () => {
-        if (await copyToClipboard(reminder.text)) toast("Copied.");
+        if (await copyToClipboard(reminder.text)) toast(voiceLine("done", "Copied"));
       },
       group: "go",
     },
@@ -1295,7 +1295,7 @@ async function openCalendarPage(id, provider) {
     else window.open(links[provider], "_blank", "noopener,noreferrer");
   } catch (error) {
     tab?.close();
-    toast(error.message || "Couldn't open the calendar page.", true);
+    toast(error.message || voiceLine("failed", "open the calendar page"), true);
   }
 }
 

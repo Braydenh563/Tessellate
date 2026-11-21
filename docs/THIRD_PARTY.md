@@ -12,6 +12,16 @@ under `src/tessellate/vendor/` or `frontend/vendor/` is missing from this page.
 | --- | --- | --- | --- | --- | --- |
 | FlashText | `flashtext.py` | 2.7 | MIT (`flashtext.LICENSE.txt`) | https://github.com/vi3k6i5/flashtext | `ai/taxonomy.py`, matching the taxonomy pack's phrases in a note |
 
+## Python packages (`requirements.txt`)
+
+Installed with pip, not vendored; each licence is in the package's own metadata. All MIT, AGPL-compatible, each added with its first use (L-chat-64).
+
+| Library | Files | Version | Licence | Source | Used by |
+| --- | --- | --- | --- | --- | --- |
+| holidays | the `holidays` package | 0.108 | MIT | https://github.com/vacanza/holidays | `ai/recognise_windows.py`, the dates of Easter, Good Friday, Boxing Day and Thanksgiving |
+| inflect | the `inflect` package | 7.6.0 | MIT | https://github.com/jaraco/inflect | `ai/realise.py`, plurals and "a" or "an" in counted nouns |
+| rapidfuzz | the `rapidfuzz` package | 3.14.6 | MIT | https://github.com/rapidfuzz/RapidFuzz | `ai/object_acts.py`, the close names a missing tag or category offers |
+
 ## Browser (`frontend/vendor/`)
 
 | Library | Files | Version | Licence | Source | Used by |
@@ -67,13 +77,14 @@ labels engine `sherpa-onnx` (Apache-2.0, on ONNX Runtime, MIT), read by
 | Firefox Translations model, English to Spanish | `extras/translate/model.enes.intgemm.alphas.bin`, `lex.50.50.enes.s2t.bin`, `vocab.enes.spm` | `retrain_hr_fix_names` export, 2026 registry | MPL-2.0 (the `mozilla/translations` README) | https://github.com/mozilla/translations | the same |
 | pyannote segmentation 3.0 (sherpa-onnx export) | `extras/speakermodels/segmentation.onnx`, `LICENSE-segmentation` | `sherpa-onnx-pyannote-segmentation-3-0` release asset | MIT (`LICENSE-segmentation`, downloaded with it) | https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-segmentation-models | Speaker labels by voice (`ai/diarize.py`) |
 | WeSpeaker ResNet34 (English, VoxCeleb), sherpa-onnx export | `extras/speakermodels/embedding.onnx` | `wespeaker_en_voxceleb_resnet34.onnx` release asset | Apache-2.0 (the Hugging Face card of `Wespeaker/wespeaker-voxceleb-resnet34`) | https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models | Speaker labels by voice (`ai/diarize.py`) |
+| Silero VAD v5.1.2 | `extras/vad-model/silero_vad.onnx` | commit 6478567 of snakers4/silero-vad (`src/silero_vad/data/silero_vad.onnx`) | MIT (the repository's LICENSE) | https://github.com/snakers4/silero-vad | Speech detection, read through onnxruntime (`ai/vad.py`), Brief 87 |
 | Live captions model, whisper.cpp tiny.en (q5_1) | `extras/captionmodel/ggml-tiny.en-q5_1.bin` | commit 5359861 of the model repo | MIT (the whisper.cpp model card) | https://huggingface.co/ggerganov/whisper.cpp | Live captions, read by the captions helper (`ai/captions_helper.py`) |
 | LanguageTool | `extras/languagetool/` (`languagetool.jar`, `languagetool-server.jar`, the jars under `libs/`, `COPYING.txt`) | 6.6 | LGPL-2.1 (`COPYING.txt`, downloaded with it) | https://languagetool.org | A second grammar checker, run as its own Java program on 127.0.0.1, never linked (`core/languagetool.py`) |
 | French Hunspell dictionary | `extras/spell-fr/fr.aff`, `fr.dic`, `LICENSE.txt` | npm `dictionary-fr` 3.0.0 | MPL-2.0 (`LICENSE.txt`, downloaded with it) | https://github.com/wooorm/dictionaries | French spelling in documents, read in the grammar worker (`documents-spell.js`) |
 | German Hunspell dictionary | `extras/spell-de/de.aff`, `de.dic`, `LICENSE.txt` | npm `dictionary-de` 3.0.0 | GPL-2.0 or GPL-3.0 (`LICENSE.txt`, downloaded with it) | https://github.com/wooorm/dictionaries | German spelling, the same |
 | Spanish Hunspell dictionary | `extras/spell-es/es.aff`, `es.dic`, `LICENSE.txt` | npm `dictionary-es` 4.0.0 | GPL-3.0, LGPL-3.0 or MPL-1.1 (`LICENSE.txt`, downloaded with it) | https://github.com/wooorm/dictionaries | Spanish spelling, the same |
 | Pyodide (core) | `extras/pyodide/` (`pyodide.mjs`, `pyodide.asm.mjs`, `pyodide.asm.wasm`, `python_stdlib.zip`, `pyodide-lock.json`, `package.json`) | 314.0.7 | MPL-2.0, CPython's standard library under the PSF licence | https://github.com/pyodide/pyodide | Run on a .py document, in the run sandbox (`api/run_sandbox.py`) |
-| needle | `extras/needle/` (`libneedle3`, `needle3.cact`, `LICENSE`) | engine 3.0.1, files pinned to commit b274efc | Apache-2.0 (`LICENSE`, downloaded with it) | https://huggingface.co/Cactus-Compute/needle3 | Tool calling without Ollama (`ai/needle_provider.py`) |
+| needle | `extras/needle/` (`libcactus`, `needle3.cact`, `LICENSE`) | cactus_runtime 4.1.0 engine pinned to revision 4e822c9; weights and LICENSE pinned to needle3 commit b274efc | Apache-2.0 (`LICENSE`, downloaded with it) | https://huggingface.co/Cactus-Compute/cactus, https://huggingface.co/Cactus-Compute/needle3 | Tool calling without Ollama (`ai/needle_provider.py`) |
 | marian-nmt (inside the Bergamot WASM) | compiled into the `.wasm` | browsermt fork, as pinned by bergamot-translator v0.4.5 | MIT | https://github.com/browsermt/marian-dev | the translation engine |
 | intgemm (inside the Bergamot WASM) | compiled into the `.wasm` | as pinned by marian-dev | MIT | https://github.com/kpu/intgemm | its 8-bit matrix routines |
 | SentencePiece (inside the Bergamot WASM) | compiled into the `.wasm` | as pinned by marian-dev | Apache-2.0 | https://github.com/google/sentencepiece | splitting text into the model's word pieces |

@@ -115,7 +115,7 @@ function renderInlineAction(entry) {
         try {
           if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
         } catch (error) {
-          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          if (!error.isLockout) toast(error.message || voiceLine("failed", "set that reminder"), true);
           return;
         }
         inlineAction = null;
@@ -434,7 +434,7 @@ function entryItem(entry, options = {}) {
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Couldn't remove that image.", true);
+      toast(err.message || voiceLine("failed", "remove that image"), true);
     }
   });
   if (glance) {
@@ -471,6 +471,14 @@ function entryItem(entry, options = {}) {
     });
     li.appendChild(more);
   } else {
+    //: A long note says what it is about before its clamped lines (CHAT_PLAN B22):
+    //: the gist is the server's (`composer_gist`), under 90 characters.
+    if (entry.gist && isLong) {
+      const gist = document.createElement("p");
+      gist.className = "entry-gist muted text-sm";
+      gist.textContent = entry.gist;
+      li.appendChild(gist);
+    }
     li.appendChild(content);
   }
   if (isLong) {
@@ -739,7 +747,7 @@ function entryItem(entry, options = {}) {
     //: span, and an offer that cannot be honoured is worse than none.
     //: Not on a private note: the route refuses it (sweep 1004 item 7), so the
     //: chip's only answer would be a refusal toast.
-    if (options.actions && !entry.is_private && (!modelStatus || modelStatus.ollama_running !== false)) {
+    if (options.actions && !entry.is_private && !aiIsOff(true)) {
       const askAtlas = chip("ph:sparkle Tag with Atlas", "untagged-ai", (event) => {
         event.stopPropagation();
         reevaluateEntry(entry);
@@ -818,7 +826,7 @@ function entryItem(entry, options = {}) {
         await api(`/documents/${doc.id}/notes/${entry.id}`, { method: "DELETE" });
         pushRoutePairUndo(`Detached from “${doc.title}”`, [`/documents/${doc.id}/notes`, "POST", { entry_id: entry.id }], [`/documents/${doc.id}/notes/${entry.id}`, "DELETE"], () => refreshEntries([entry.id]));
         await refreshEntries([entry.id]);
-        toast(`Detached from “${doc.title}”.`);
+        toast(voiceLine("done", `Detached from “${doc.title}”`));
       });
       makeUnlinkAccessible(unlink);
       mark.appendChild(unlink);
@@ -1438,8 +1446,8 @@ async function publishDraft(entry) {
     entry.is_draft = false;
     pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
     await refreshEntries([entry.id]);
-    toast("Published.");
+    toast(voiceLine("done", "Published"));
   } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
+    toast(error.message || voiceLine("failed", "publish that draft"), true);
   }
 }

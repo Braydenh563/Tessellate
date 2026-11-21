@@ -440,7 +440,7 @@ async function insertTemplate(template, caught) {
     target.setRangeText(text, start ?? target.selectionStart, end ?? target.selectionEnd, "end");
     target.dispatchEvent(new Event("input", { bubbles: true }));
   }
-  toast(`Inserted the ${template.name} template.`);
+  toast(voiceLine("done", `Inserted the ${template.name} template`));
 }
 
 // --- The Clock panel (INBOX 1551, the owner: "is there a timer/stopwatch/alarm window") ---

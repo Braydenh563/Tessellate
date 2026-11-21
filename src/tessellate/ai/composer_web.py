@@ -86,6 +86,8 @@ START_LABEL = "Start SearXNG"
 SETUP_LABEL = "Set it up in Settings"
 PANEL_LABEL = "Open the web panel"
 PROVIDER_LABEL = "Use another provider"
+#: The chip under a search that could not run (L217): it sends this text, and the chat reads it as the earlier question asked of the notes alone (`chat_extra.notes_instead`).
+NOTES_INSTEAD = "Search my notes instead"
 
 
 def down_buttons(*, can_start: bool) -> dict:
@@ -94,7 +96,7 @@ def down_buttons(*, can_start: bool) -> dict:
     app can, set it up, open the web panel, or pick another provider. The first
     is the offer; the rest are its `also`, one line each."""
     setup = {"kind": "open", "surface": "settings:websearch", "label": SETUP_LABEL}
-    rest = [{"kind": "open", "surface": "web-panel", "label": PANEL_LABEL}, {"kind": "open", "surface": "settings:websearch", "label": PROVIDER_LABEL}]
+    rest = [{"kind": "open", "surface": "web-panel", "label": PANEL_LABEL}, {"kind": "open", "surface": "settings:websearch", "label": PROVIDER_LABEL}, {"kind": "ask", "label": "", "asks": [NOTES_INSTEAD]}]
     if can_start:
         return {"kind": "searxng-start", "label": START_LABEL, "also": [setup, *rest]}
     return {**setup, "also": rest}
@@ -133,7 +135,7 @@ def start_reply(*, can_start: bool) -> dict:
 
 
 def _button_lines(offer: dict) -> str:
-    return "\n\n".join([offer["label"], *(o["label"] for o in offer["also"])])
+    return "\n\n".join(label for label in [offer["label"], *(o["label"] for o in offer["also"])] if label)
 
 
 def search_down(reason: str, searxng_url: str, provider: str, *, can_start: bool = False) -> dict:

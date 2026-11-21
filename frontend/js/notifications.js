@@ -142,7 +142,7 @@ function reminderDoneButton(item) {
         return;
       }
       button.disabled = false;
-      toast("Couldn't complete that reminder. Press Done to try again.", "info");
+      toast(voiceLine("failed", "complete that reminder. Press Done to try again"), "info");
       return;
     }
     const said = rolled.done ? "Done" : `Done, next ${whenText(rolled.due_at)}`;
@@ -427,9 +427,20 @@ function dismissNotification(item) {
 async function openExportsFromNotification() {
   if (await desktopShell()) {
     apiJson("/files/open-exports-folder", { method: "POST" }).catch((error) => {
-      toast(error.message || "Couldn't open the exports folder.", true);
+      toast(error.message || voiceLine("failed", "open the exports folder"), true);
     });
     return;
   }
   openSettingsModal("data", "exports-recent");
+}
+
+//: The first thing worth typing into or pressing in a dialog: `preferred`
+//: (selector) when it is there, else the first field, else the first button.
+function focusFirstIn(root, preferred = null) {
+  const pick = (selector) => [...root.querySelectorAll(selector)].find((el) => !el.disabled && el.getClientRects().length);
+  const el = (preferred && pick(preferred))
+    || pick("input:not([type=hidden]), textarea, select, [contenteditable=true]")
+    || pick("button, [href], [tabindex]:not([tabindex='-1'])");
+  el?.focus();
+  return !!el;
 }

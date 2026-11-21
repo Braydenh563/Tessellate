@@ -45,6 +45,12 @@ def _pick(lines: tuple[str, ...], key: str) -> str:
     return lines[int(hashlib.sha1(key.encode()).hexdigest(), 16) % len(lines)]
 
 
+def with_act_ran(said: str, kind: str | None, last: dict) -> str:
+    """A goodbye after a card the person confirmed names what ran (C2); a card only proposed is not named."""
+    ran = str(last.get("done_act") or "").strip().rstrip(".")
+    return f"{said} Just done: {ran}." if kind == "bye" and ran else said
+
+
 def ping_subject(message: str) -> str:
     """"test" when a ping says it, else "" ("is this working" names nothing)."""
     return "test" if _PING_WORD.search(message or "") else ""

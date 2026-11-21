@@ -84,19 +84,19 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, cite_marks, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, help_surface, composer_versus, grounding, phrasing, realise, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
-from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
+from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
 from tessellate.ai.composer_read import NoteView, Sentence, _cue, _distinct_ids, read_note
 from tessellate.ai.composer_select import MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, _ASKS_NOW, _Meaning, _score, select
-from tessellate.ai.composer_answer import _Answer, asks_now, _SESSION
+from tessellate.ai.composer_answer import _Answer, asks_now, _RETRY, _SESSION
 from tessellate.ai.composer_unfound import _missing
 from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _body, _compare, _confirmed_lead, _disagreement, _disagreements, _insight_close, _insight_lead, _newest, _still_open, _until_note, _versus_answer, length_wish, _LEARNED
 from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
-from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, stray_reply, window_said
+from tessellate.ai.composer_empty import _absent, refusal, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, stray_reply, window_said
 from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
 
 
@@ -155,7 +155,7 @@ def _multi(question: str, parts: list[str], notes: list[dict], **kwargs) -> dict
                 seen.add((row["note_id"], row["start"]))
                 rows.append(row)
         nexts += [p for p in answer["next_parts"] if p not in nexts]
-    text = "".join(piece[1] for piece in pieces)
+    text = realise.parts_text(pieces, rec._reads_month_first(None))
     return {
         "text": text,
         "grounding": rows,
@@ -217,7 +217,7 @@ def _readings(out: _Answer, question: str, terms: list[str], views: list[NoteVie
     with Sam**; 2. **Meeting notes, Thursday**?" With a model running it
     picks one (or asks); with none, the person does. Never added when
     `_clarify` already asked."""
-    if out.readings or not terms or len((question or "").split()) > READINGS_WORDS or _ASKS_FIRST.match(rephrase(question)):
+    if out.readings or not terms or len((question or "").split()) > READINGS_WORDS or asked_whole(question):
         return
     stems = {_stem(t) for t in terms}
     named = [v for v in views if v.titled and not v.note.get("connected") and stems <= {w for t in v.title_words for w in (t, _stem(t))}]
@@ -249,7 +249,7 @@ def _fit_terms(terms: list[str], views: list[NoteView], report: list | None = No
     for view in views:
         vocabulary |= view.words | view.title_words | view.filed_words
     fitted: list[str] = []
-    for term in terms:
+    for term in composer_tables.concepts(terms, vocabulary, _stem):
         stem = _stem(term)
         #: Four letters at least, the same first letter, and never to a
         #: shorter word: "peru" is not a typo of "per", "hotle" is of "hotel".
@@ -291,9 +291,10 @@ def compose(
     resolved: bool = False,
     learned=None,  # noqa: ANN001
     register: str = "",
+    retry: int = 0,
 ) -> dict:
     """`{"text", "grounding", "support", "shape", "parts", "next", "next_parts"}`
-    for one question.
+    for one question. `retry` is Ask again's count (E62, L93): see `composer_retry`.
 
     `notes` are the route's retrieved notes, ranked (each with `id`,
     `content`, and `written` or `created_at`). `recent` is the retrieval's
@@ -319,14 +320,20 @@ def compose(
         if helped:
             return helped
         voice = composer_tables.DEFAULT_VOICE
+    if help_surface.asks_about_a_part(question, notes) and (helped := _help_result(question, salt=salt, turn=turn, dialogue=dialogue, previous=previous)):
+        return helped
     #: In a conversation (decisions 34, 35): turn and salt choose the wording; a terse turn is read against the ones before.
     names = composer_names.names_of(notes)
-    asked, question = question, composer_names.respell(composer_numbers.normalise(question), names)
+    asked, question = question, composer_small.only_list_question(composer_names.respell(composer_numbers.normalise(question), names), notes)
     if dialogue is not None:
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
         )
-    token = _SESSION.set(f"{salt}:{turn}" if (salt or turn) else "")
+    #: Ask again is turn n + 1 with `retry` n (`_compose_over`): seeded from the turn first asked, so the
+    #: retry's offset walks each pick's options in turn rather than landing on a fresh draw (L-chat-191).
+    first_turn = turn - retry if turn and retry and turn > retry else turn
+    token = _SESSION.set(f"{salt}:{first_turn}" if (salt or turn) else "")
+    again = _RETRY.set(retry)
     registered = _REGISTER.set(register)
     #: `learned`: what the person said of insights (`insights.memory`).
     known = _LEARNED.set(learned)
@@ -335,13 +342,15 @@ def compose(
     minded = typo_context.CTX.set(typo_context.of_notes(notes, names, previous, history=dialogue.history if dialogue else ()))
     current = _ASKS_NOW.set(asks_now(question))
     try:
-        result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
-                              voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
+        answer = lambda pool: _answer_turn(question, pool, today=today, recent=recent, embed=embed, said=said, previous=previous, voice=voice, now=now, salt=salt,  # noqa: E731
+                                            turn=turn, dialogue=dialogue, prefer=prefer)
+        result = composer_retry.varied(answer(notes), notes, answer) if retry else answer(notes)
         result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
     finally:
         _SESSION.reset(token)
+        _RETRY.reset(again)
         _REGISTER.reset(registered)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)
@@ -354,6 +363,8 @@ def compose(
         helped = _help_result(asked, salt=salt, turn=turn, dialogue=None, previous=previous)
         if helped:
             result = helped
+    #: Out of domain (step 11): the plain no-answer, the closest note, what the app can do.
+    result = composer_ood.framed(asked, result, notes)
     if dialogue is not None:
         dialogue.record(asked, result)
     return result
@@ -423,7 +434,7 @@ def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: l
     if not fixed:
         return result
     parts = [*composer_ack.acknowledge(repaired, voice=voice, seed=seed, history=history, previous=previous), *result["parts"]]
-    return {**result, "parts": parts, "text": "".join(part[1] for part in parts)}
+    return {**result, "parts": parts, "text": realise.parts_text(parts, rec._reads_month_first(None))}
 
 
 def _answer_turn(question: str, notes: list[dict], **kwargs) -> dict:
@@ -449,7 +460,7 @@ def _from_dialogue(out: "_Answer", dialogue) -> None:  # noqa: ANN001  # a Dialo
 
 
 def _checklist_or_until(out: "_Answer", said: object, question: str, views: list, today: date) -> dict | None:
-    """What is still open on a checklist, or the days until a note's day,
+    """The unticked items of a checklist, or the days until a note's day,
     when the question asks that and nothing was said before; else None.
     Read as repaired: "hw many days til the dentst" is the same count."""
     if said:
@@ -660,7 +671,7 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
 def _answer_dict(out: "_Answer", shape: str, question: str, terms: list, views_list: list, unsure: list) -> dict:
     quotes = "\n\n".join(row["sentence"] for row in out.rows)
     cited = {row["note_id"] for row in out.rows}
-    next_parts = (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3]
+    next_parts = composer_dialogue.voiced_chips(out, (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3])
     readings = [
         {"n": i, "note_id": out.views[v].note.get("source_id", v), "label": out.views[v].title}
         for i, v in enumerate(out.readings, 1)
@@ -713,21 +724,13 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
     return shape, _fill_selected(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)
 
 
-def _refusal(refused: tuple, question: str, shape: str) -> dict:
-    """The answer that says the word asked about is one the notes are kept
-    from (a filter refused it)."""
-    key, word = refused
-    return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
-                    ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], shape)
-
-
 def _planned(question: str, today: date, recent: bool, embed, prefer: str, notes: list[dict], views_list: list):  # noqa: ANN001, ANN202
     """The plan for the question, the notes it may read, and the refusal when
     a word it asks about is one the notes are kept from (else None)."""
     p = plan(question, today, recent=recent, embed=embed)
     _steer_to_correction(p, prefer, notes)
     views_list, refused = _filtered(views_list, p)
-    return p, views_list, (_refusal(refused, question, p.shape) if refused else None)
+    return p, views_list, (refusal(refused, question, p.shape) if refused else None)
 
 
 def _compose(
@@ -804,12 +807,6 @@ BRIEF_PER_NOTE = 4
 #: A note whose quoted parts come to this share of it goes whole: the cut
 #: would save a few characters and cost the model the sentences around them.
 BRIEF_WHOLE = 0.8
-
-
-def _raw(content: str, s: Sentence) -> str:
-    """The sentence as the note has it: the offsets, not the cleaned text, so a
-    model reads (and the grounding pass later matches) the person's words."""
-    return " ".join(content[s.start : s.end].split())
 
 
 def _add_matching(by_note: dict, view: NoteView, terms: list[str]) -> None:
@@ -892,56 +889,21 @@ def brief(
             if (view.id, s.start) in spans and s not in by_note.get(view.id, []):
                 by_note.setdefault(view.id, []).append(s)
         _add_matching(by_note, view, terms)
-    out: list[dict] = []
-    shortened = before = after = 0
-    for i, note in enumerate(notes):
-        content = str(note.get("content") or "")
-        before += len(content)
-        view = views.get(i)
-        text = _brief_text(view, content, by_note) if view else None
-        if text is None or len(text) >= BRIEF_WHOLE * len(content.strip()):
-            out.append(note)
-            after += len(content)
-            continue
-        out.append({**note, "content": text, "briefed": True})
-        after += len(text)
-        shortened += 1
+    out, marks, shortened, before, after = cite_marks.pack(notes, views, by_note, BRIEF_WHOLE)
     return {
         "notes": out,
         "quoted": sum(len(kept) for kept in by_note.values()),
         "shortened": shortened,
         "chars_before": before,
         "chars_after": after,
+        "marks": marks,
     }
-
-
-def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]]) -> str:
-    """One note's part of the brief: its name, then the sentences kept."""
-    if view.id in by_note:
-        picked = sorted(by_note[view.id], key=lambda s: s.order)
-    else:
-        picked = view.sentences[:1]
-    parts: list[str] = []
-    #: An untitled note is named by its first words; when its first sentence
-    #: is kept, the name would only say those words twice.
-    opens_with_name = bool(picked) and picked[0].order == 0 and _raw(content, picked[0]).startswith(view.title.rstrip("…"))
-    if view.title and not opens_with_name:
-        parts.append(view.title)
-    last = -1
-    for s in picked:
-        if parts and s.order != last + 1:
-            parts.append("…")
-        parts.append(_raw(content, s))
-        last = s.order
-    if last < len(view.sentences) - 1:
-        parts.append("…")
-    return " ".join(parts)
 
 
 act_registry.help_sentence = help_line
 
 
-def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") -> dict | None:
+def open_note_answer(question: str, note: dict, *, today: date, salt: str = "", voice: str = "") -> dict | None:
     """The open note's answer to `question` as a composer result, or None
     when the question is not one of this module's kinds."""
     ask = composer_open.kind(question)
@@ -950,6 +912,6 @@ def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") 
     view = read_note(note, 0)
     if view is None:
         return None
-    out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
+    out = _fresh_answer([view], today, None, "", "", voice or composer_open.composer_voice(), question)
     {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who, "done": composer_open._done}[ask](out, view, question, salt)
     return _answer_dict(out, "open_" + ask, question, [], [view], [])

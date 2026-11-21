@@ -33,6 +33,7 @@ def test_the_two_tables_name_real_tools_and_do_not_overlap():
 #: A claim no empty notebook can hold, per verifier: each must refuse it.
 FALSE_CLAIMS = {
     "create_document": ({"title": "Plan"}, {"id": 999_999}),
+    "edit_document": ({"document_id": 999_999, "content": "x"}, {"id": 999_999, "changed": True}),
     "delete_document": ({"document_id": 0}, {}),
     "add_whiteboard_card": ({}, {"card_id": 999_999, "note_id": 1}),
     "add_whiteboard_link": ({}, {"link_id": 999_999}),
@@ -47,8 +48,12 @@ FALSE_CLAIMS = {
     "restore_board_item": ({}, {"kind": "card", "item_id": 999_999}),
     "place_library_item": ({}, {"sketch_ids": [999_999], "object_ids": []}),
     "audit_link_reasons": ({}, {"updated": 5}),
+    "restore_link_reasons": ({"log_id": 999_999}, {"restored": 5}),
     "check_learned": ({}, {"retired": 3, "run": "2026-11-01T09:00:00"}),
     "save_skill": ({}, {"name": "never saved"}),
+    "edit_chats": ({}, {"id": 999_999}),
+    "edit_goals": ({}, {"id": 999_999}),
+    "archive_note": ({}, {"archived": [999_999], "now_archived": True}),
 }
 
 

@@ -19,7 +19,7 @@ clause of a remark is one of:
 - a value the app measured (`measure`): a count, a day, a year.
 
 Everything else comes from `VOICE`, a closed phrasebook that says nothing
-about the world ("Still open in ", " is due today."). The tests hold every
+about the world (the open-items lead and " is due today."). The tests hold every
 part of every remark to that (`tests/test_composer_voice.py`), and the eval
 (`tests/_voice_eval.py`) measures what the owner asked for: grounded, never
 twice the same, short.
@@ -41,6 +41,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import composer
+from tessellate.ai import scheduled_acts
 from tessellate.ai import composer_quote
 from tessellate.ai import composer_read
 from tessellate.ai.composer import NoteView, Sentence, _Answer, read_note
@@ -96,15 +97,15 @@ VOICE: dict[str, str] = {
     "v_otd_year_mid": ", you wrote ",
     "v_otd_months_end": " months ago today, you wrote ",
     "v_otd_month": "A month ago today, you wrote ",
-    # Something left open.
+    # An unticked item.
     "v_open_a": "Still open in ",
     "v_open_b": "Not ticked yet, in ",
     "v_open_count": " has ",
     "v_open_count_mid": " of ",
     "v_open_count_end": " items still open, the first: ",
     # A pattern this week.
-    "v_pattern_mid": " of your notes this week mention ",
-    "v_pattern_tag_mid": " of your notes this week are filed under ",
+    "v_pattern_mid": " of your notes in the last four weeks mention ",
+    "v_pattern_tag_mid": " of your notes in the last four weeks are filed under ",
     # The week as a count.
     "v_week_a": "You have written ",
     "v_week_a_end": " notes this week",
@@ -192,6 +193,11 @@ PER_KIND = 3
 
 #: A pattern needs at least this many of the week's notes to share a word.
 PATTERN_NOTES = 3
+
+#: ...and be written in at least this many of the last `PATTERN_DAYS`'s weeks
+#: (CHAT_PLAN decision 32: at least 3 mentions across at least 3 weeks).
+PATTERN_WEEKS = 3
+PATTERN_DAYS = 28
 
 #: A quote in a remark is cut here: a bubble is read at a glance.
 REMARK_QUOTE_CHARS = 140
@@ -464,8 +470,17 @@ def _open_items(views: list[NoteView], today: date) -> list[dict]:
     return out[:PER_KIND]
 
 
-def _this_week(views: list[NoteView], today: date) -> list[NoteView]:
-    return [v for v in views if v.written and 0 <= (today - v.written).days < WEEK_DAYS]
+def _this_week(views: list[NoteView], today: date, days: int = WEEK_DAYS) -> list[NoteView]:
+    return [v for v in views if v.written and 0 <= (today - v.written).days < days]
+
+
+def _across_weeks(group: list[NoteView], today: date) -> list[NoteView]:
+    """The newest note of each week the group was written in, newest first;
+    empty when they span fewer than `PATTERN_WEEKS` weeks."""
+    by_week: dict[int, NoteView] = {}
+    for view in sorted(group, key=lambda w: w.written, reverse=True):
+        by_week.setdefault((today - view.written).days // 7, view)
+    return list(by_week.values()) if len(by_week) >= PATTERN_WEEKS else []
 
 
 def _surface(word_stem: str, views: list[NoteView]) -> str | None:
@@ -479,7 +494,7 @@ def _surface(word_stem: str, views: list[NoteView]) -> str | None:
 
 
 def _patterns(views: list[NoteView], today: date) -> list[dict]:
-    week = _this_week(views, today)
+    week = _this_week(views, today, PATTERN_DAYS)
     if len(week) < PATTERN_NOTES:
         return []
     out: list[dict] = []
@@ -491,8 +506,9 @@ def _patterns(views: list[NoteView], today: date) -> list[dict]:
         for label in labels:
             filed.setdefault(label, []).append(view)
     for label, group in sorted(filed.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        group = _across_weeks(group, today)
         if len(group) < PATTERN_NOTES:
-            break
+            continue
         v = _Voice({g.id: g for g in group}, today)
         v.m(_count_word(len(group)).capitalize()).t("v_pattern_tag_mid").filed(label, group[0].id).t("colon")
         v.names(group[:3]).t("stop")
@@ -512,6 +528,7 @@ def _patterns(views: list[NoteView], today: date) -> list[dict]:
             continue
         # Every named note must contain the word as written.
         group = [g for g in group if re.search(rf"\b{re.escape(word)}\b", str(g.note.get("content") or ""), re.I)]
+        group = _across_weeks(group, today)
         if len(group) < PATTERN_NOTES:
             continue
         v = _Voice({g.id: g for g in group}, today)
@@ -575,7 +592,9 @@ def remarks(
     views = _views(notes)
     by_id = {v.id: v for v in views}
     out: list[dict] = []
-    out += _due(reminders or [], by_id, today)
+    #: A repeating act reminder is answered once a day in place of its plain due line (X15, `scheduled_acts`).
+    acts = scheduled_acts.lines(reminders or [], notes, today)
+    out += _due([r for r in reminders or [] if r.get("id") not in {a["reminder_id"] for a in acts}], by_id, today) + acts
     out += _on_this_day(views, today)
     for nid in (resurfaced or [])[:PER_KIND]:
         if nid in by_id:
@@ -599,12 +618,6 @@ def remarks(
 # --- the dashboard ----------------------------------------------------------------
 
 
-def _draw(seed: int, slot: str, n: int) -> int:
-    """A stable index below `n` for this seed and slot: slots draw
-    independently, so the openings and the tails mix."""
-    return int.from_bytes(hashlib.sha1(f"{seed}:{slot}".encode()).digest()[:4], "big") % n
-
-
 def today_line(
     notes: list[dict], *, today: date, seed: int = 0, counts: dict[date, int] | None = None
 ) -> dict | None:
@@ -620,7 +633,10 @@ def today_line(
     if not dated:
         return None
     v = _Voice({w.id: w for w in views}, today)
-    _today_opening(v, dated, today, _draw(seed, "open", 6), counts or {})
+    #: The seed steps through the true openers in order, so two draws in a
+    #: row never say the same one (B41, "no repeat in 20 asks"): a hash drew
+    #: the same of six four times in twenty.
+    _today_opening(v, dated, today, seed, counts or {})
     return v.done("today")
 
 
@@ -672,7 +688,7 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[dat
 
 def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = None) -> dict:
     """The week in review, composed: how many notes and where they went, the
-    sentence each standout note leads with, what is still open, and which of
+    sentence each standout note leads with, what is left unticked, and which of
     the week's notes are linked to nothing. Markdown, every clause traced."""
     views = _this_week(_views(notes), today)
     v = _Voice({w.id: w for w in views}, today)

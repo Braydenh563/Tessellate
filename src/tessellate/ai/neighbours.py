@@ -31,7 +31,7 @@ def reads_whole(question: str) -> bool:
 
 
 def asks_left(question: str) -> bool:
-    """Whether `question` asks what is still open ("what do I need to buy",
+    """Whether `question` asks for the open items ("what do I need to buy",
     "what's left"): answered from the notes that hold something open, which
     the question's own words rarely name."""
     from tessellate.ai import composer_digest_sentences

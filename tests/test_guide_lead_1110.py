@@ -7,6 +7,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import help_chat
+from tests._help_text import after_path
 
 #: A switch topic reads its preference through deps.get_config(); without a
 #: temp data dir that config is the repo's own data/ folder (conftest guard).
@@ -15,6 +16,10 @@ pytestmark = pytest.mark.usefixtures("app_state")
 
 def say(question: str, tab: str | None = None, history: list[dict] | None = None) -> dict:
     return help_chat.offline_answer(question, tab, None, history=history)
+
+
+def said(question: str, tab: str | None = None) -> str:
+    return after_path(say(question, tab)["content"])
 
 
 def first_sentence(topic_id: str) -> str:
@@ -46,15 +51,15 @@ LEADS = [
 
 
 @pytest.mark.parametrize(("question", "tab", "start"), LEADS)
-def test_the_right_sentence_leads(question, tab, start):
-    assert say(question, tab)["content"].startswith(start), say(question, tab)["content"][:200]
+def test_the_right_sentence_leads(app_state, question, tab, start):
+    assert said(question, tab).startswith(start), said(question, tab)[:200]
 
 
 @pytest.mark.parametrize("tab", ["whiteboard", "settings", "statistics", "library", "notes", "chat"])
 @pytest.mark.parametrize("question", ["what does this page do", "what is this page"])
 def test_a_tab_question_leads_with_the_tab_topics_first_sentence(question, tab):
     topic_id = help_chat.TAB_TOPICS[tab][0]
-    assert say(question, tab)["content"].startswith(first_sentence(topic_id)[:60])
+    assert said(question, tab).startswith(first_sentence(topic_id)[:60])
 
 
 @pytest.mark.parametrize("question", ["how do I make a private note", "weekly review"])
@@ -68,7 +73,8 @@ def test_the_recovery_and_template_sentences_no_longer_lead(question):
 def test_a_question_about_the_persons_notes_is_handed_to_chat(question):
     reply = say(question)
     assert reply["content"].startswith("That is one for your notebook")
-    assert reply["asks"] == [question] and reply["asks_to"] == "chat"
+    #: The chip asks the same question, with a capital first (L-chat-35, the owner 2026-11-13).
+    assert reply["asks"] == [question[:1].upper() + question[1:]] and reply["asks_to"] == "chat"
 
 
 @pytest.mark.parametrize("question", ["what is my name", "how do I change my name", "how do I set a reminder", "how do I see my notes"])
@@ -76,7 +82,9 @@ def test_a_how_to_about_the_app_is_not_handed_over(question):
     assert not say(question)["content"].startswith("That is one for your notebook")
 
 
-@pytest.mark.parametrize("question", ["what's the weather", "asdfgh", "xyzzy plugh frobnicate"])
+#: "what's the weather" moved to the outside-the-app line (L-chat-38), which
+#: `tests/test_guide_offline_l38.py` holds to the same two rules.
+@pytest.mark.parametrize("question", ["asdfgh", "xyzzy plugh frobnicate"])
 def test_a_miss_never_blames_the_model(question):
     content = say(question)["content"]
     assert content.startswith("I don't have help on that.")

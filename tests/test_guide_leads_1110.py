@@ -4,6 +4,7 @@ a sentence is not printed after "It's in"."""
 from __future__ import annotations
 
 from tessellate.ai import help_chat
+from tests._help_text import after_path
 
 
 def _said(question: str, tab: str | None = None) -> str:
@@ -11,7 +12,7 @@ def _said(question: str, tab: str | None = None) -> str:
 
 
 def test_what_is_tessellate_says_what_it_is_not_how_many_tabs():
-    lead = _said("what is tessellate").split("\n\n")[0]
+    lead = after_path(_said("what is tessellate")).split("\n\n")[0]
     assert lead.startswith("Tessellate is a notebook"), lead
     assert "seven tabs" not in lead
 

@@ -242,6 +242,35 @@ def test_audit_link_reasons_tool_is_registered_and_callable(session, fake_ollama
     assert link.reason == "both about the Denver move"
 
 
+def test_the_audit_hands_back_an_undo_that_restores_the_old_reasons(session, fake_ollama):
+    """L-chat-258: the audit rewrites with a model, so its result carries the call that puts the batch back."""
+    _, _, link = _linked_pair(session)
+    _, _, other = _linked_pair(session, reason="a reason someone typed", reason_confidence=0.7)
+    fake_ollama.librarian_reply = "both about the Denver move"
+    result = tools.execute_tool(session, "audit_link_reasons", {"limit": 10})
+    assert result["updated"] == 2 and result["undo"]["tool"] == "restore_link_reasons"
+    session.refresh(link)
+    assert link.reason == "both about the Denver move" and link.reason_confidence is None
+
+    # A person edits one of the two afterwards: the undo leaves that one alone.
+    other.reason = "my own words"
+    session.commit()
+    back = tools.execute_tool(session, result["undo"]["tool"], result["undo"]["arguments"])
+    assert back["restored"] == 1
+    session.refresh(link)
+    session.refresh(other)
+    assert (link.reason, link.reason_confidence) == (manager_links.AUTO_REASON_TEXT, 0.8)
+    assert other.reason == "my own words"
+    # Run twice, it is harmless: nothing matches the audited text any more.
+    assert tools.execute_tool(session, "restore_link_reasons", result["undo"]["arguments"])["restored"] == 0
+
+
+def test_an_audit_that_changed_nothing_offers_no_undo(session, fake_ollama):
+    _linked_pair(session)
+    fake_ollama.librarian_reply = "similar in meaning"
+    assert "undo" not in tools.execute_tool(session, "audit_link_reasons", {"limit": 10})
+
+
 def test_the_audit_link_reasons_skill_names_only_that_tool(session):
     """The skill this feature ships with must be specifically about link
     REASONS, not general link management: it offers the one tool that does

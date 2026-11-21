@@ -1,6 +1,6 @@
 """The rest of the slash commands (O6 rest; BACKLOG "Slash commands in Chat
 and the composer": `/today`, `/due`, `/calc`, `/find`, `/stats`, `/orphans`,
-`/random`, `/tags`, `/categories`, `/pinned`, `/oldest`, `/todo`).
+`/random`, `/tags`, `/categories`, `/pinned`, `/oldest`, and the to-do list command).
 
 Read by `slash.COMMANDS`, which pairs each function in `RUN` with its words
 in `slash_table.TABLE`, so a command here reaches the route,

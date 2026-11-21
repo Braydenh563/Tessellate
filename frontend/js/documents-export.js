@@ -405,7 +405,7 @@ async function docExportHtmlRun(slides = false) {
         : docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn, iconCss);
       await saveFile(docExportName(slides ? `${currentDoc.title || "Untitled"} slides` : currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
       if (images.dropped) {
-        toast(`Saved. ${images.dropped} image(s) could not be embedded and are named in the text.`);
+        toast(voiceLine("done", `Saved. ${images.dropped} image(s) could not be embedded and are named in the text`));
       }
     } catch (error) {
       if (status) {

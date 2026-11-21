@@ -10,17 +10,25 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  // Settings open first: the select's handler is wired only once it has been shown.
+  await page.click('#settings-btn');
+  await page.waitForTimeout(1500);
   await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.waitForTimeout(1500);
+  await page.keyboard.press('Escape');
   await page.waitForTimeout(4000);
   const rows = await page.evaluate(() => {
     const lum = (c) => { const m = c.match(/[\d.]+/g); if (!m) return null; const [r, g, b] = m.slice(0, 3).map((v) => { v = v / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
     const ratio = (a, b) => { const x = lum(a); const y = lum(b); if (x === null || y === null) return 0; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     const mix = (c, bg, a) => { const p = c.match(/[\d.]+/g).map(Number); const q = bg.match(/[\d.]+/g).map(Number); const alpha = a * (p.length > 3 ? p[3] : 1); return `rgb(${[0, 1, 2].map((i) => Math.round(p[i] * alpha + q[i] * (1 - alpha))).join(',')})`; };
+    // color-mix() and color() paints compute to forms that are not rgb(): paint them on a pixel and read it back.
+    const px = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const rgbOf = (c) => { px.clearRect(0, 0, 1, 1); px.fillStyle = '#000'; px.fillStyle = c; px.fillRect(0, 0, 1, 1); const d = px.getImageData(0, 0, 1, 1).data; return `rgba(${d[0]},${d[1]},${d[2]},${d[3] / 255})`; };
     const buddy = document.getElementById('nm-buddy');
     const figure = buddy.querySelector('.nm-figure');
     const bodyEl = figure.querySelector('.atl-layer-body path, .atl-layer-body ellipse');
     const body = getComputedStyle(figure).getPropertyValue('--atl-md').trim() || '#9fb8ee';
-    const probe = document.createElement('i'); probe.style.color = body; document.body.append(probe); const bodyRgb = getComputedStyle(probe).color; probe.remove();
+    const probe = document.createElement('i'); probe.style.color = body; document.body.append(probe); const bodyRgb = rgbOf(getComputedStyle(probe).color); probe.remove();
     const out = [];
     const groups = [...figure.querySelectorAll('[class*="nmp-"]')].filter((g) => [...g.classList].some((c) => /^nmp-[a-z]+$/.test(c)) && !g.parentElement.closest('[class*="nmp-"]'));
     const seenNames = new Set();
@@ -39,11 +47,18 @@ const { boot } = require('./lib.js');
       for (const el of g.querySelectorAll('path, circle, ellipse, rect, line, polyline, polygon')) {
         if (/glow/.test(el.getAttribute('class') || '')) continue;
         const cs = getComputedStyle(el);
-        let op = Number(cs.opacity); for (let p = el.parentElement; p && p !== g.parentElement; p = p.parentElement) op *= Number(getComputedStyle(p).opacity);
+        // A part that is fully hidden at rest and fades in during its act (the dust motes) is read at the most its
+        // act's animation reaches: the act class is on only for that read, since its fade-in would hide the rest.
+        let op = Number(cs.opacity);
+        if (op === 0) {
+          buddy.classList.add(`nmb-act-${name.slice(4)}`);
+          for (const a of el.getAnimations()) for (const k of (a.effect.getKeyframes ? a.effect.getKeyframes() : [])) if (k.opacity !== undefined) op = Math.max(op, Number(k.opacity));
+          buddy.classList.remove(`nmb-act-${name.slice(4)}`);
+        }
         for (const [paint, alpha] of [[cs.stroke, Number(cs.strokeOpacity)], [cs.fill, Number(cs.fillOpacity)]]) {
-          if (!paint || paint === 'none' || !paint.startsWith('rgb')) continue;
+          if (!paint || paint === 'none') continue;
           if (paint === cs.stroke && parseFloat(cs.strokeWidth) < 0.5) continue;
-          const c = ratio(mix(paint, bodyRgb, alpha * op), bodyRgb);
+          const c = ratio(mix(rgbOf(paint), bodyRgb, alpha * op), bodyRgb);
           if (c > best) { best = c; bestPart = `${el.getAttribute('class')} ${paint === cs.stroke ? 'stroke' : 'fill'}`; }
         }
       }

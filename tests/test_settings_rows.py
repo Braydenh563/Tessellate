@@ -108,6 +108,7 @@ NO_ROW = {
     "writing_dictionary": "the dictionary editor (Documents)",
     "link_offer_ignored": "the Ignore answer on a link offer, with its count and reset in Settings, Writing",
     "model_context_windows": "one box per model in Models",
+    "currency_rates": "the Currency rates editor in Search and index",
     "custom_templates": "the Templates pane's list",
     "personas": "the Personas pane's list",
     "custom_themes": "Appearance's saved looks",
@@ -124,7 +125,6 @@ NO_ROW = {
     # Chosen where the work is, not in Settings.
     "active_persona": "the chat's persona picker",
     "dashboard_persona": "the dashboard's persona picker",
-    "response_mode": "the chat's mode picker",
     "spelling_variant": "the document editor's writing panel",
     "grammar_check": "the document editor's writing panel",
     "prose_kinds_off": "the document editor's writing panel",

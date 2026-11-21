@@ -181,9 +181,11 @@ _PART_OF_DAY = (
 #: days back from today, and the answer says so (`LATELY_DAYS`).
 LATELY_DAYS = 14
 _LATELY = r"(?:very )?(?:recently|lately|of late)"
-_BEFORE_LAST = r"(?:the )?(?:week|month|year) before last"
+_BEFORE_LAST = r"(?:the )?(?:week|weekend|month|year) before last"
 _QUARTER = r"(?:the )?(?:last|this|next|previous|coming) quarter"
 _PREVIOUS_UNIT = r"the previous (?:week|weekend|month|year|quarter)"
+#: "Tuesday last week", "the Monday of the week before last": a day inside a named week (CHAT_PLAN U9).
+_DAY_IN_WEEK = r"(?:the )?(?:" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r") (?:of |in )?(?:the )?(last week|this week|previous week|week before last)"
 #: "from Monday to Wednesday", "between March and May", "between 1 and 5
 #: October": two days or months, joined. A bare number is only the first end,
 #: and only before a day and month ("from 9 to 5" is a clock).
@@ -265,6 +267,7 @@ _DATE_PHRASE_SOURCE = (
     r"\b(?:"
     + "|".join(
         (
+            "(?:on )?" + _DAY_IN_WEEK,
             *_EDGES,
             *_PERIODS,
             _WEEKEND,
@@ -522,6 +525,35 @@ _HOLIDAYS = {
 }
 
 
+#: Holidays no fixed month and day gives (L-chat-64): the day is read from the `holidays` calendar of the country that
+#: keeps it, as (country, the calendar's name for it, days after that day). Easter Sunday is the Friday plus two.
+_CALENDAR_HOLIDAYS = {
+    "good friday": ("GB", "Good Friday", 0), "easter": ("GB", "Good Friday", 2), "easter sunday": ("GB", "Good Friday", 2),
+    "easter monday": ("GB", "Good Friday", 3), "boxing day": ("GB", "Boxing Day", 0), "thanksgiving": ("US", "Thanksgiving Day", 0),
+    "thanksgiving day": ("US", "Thanksgiving Day", 0),
+}
+
+
+def _calendar_day(text: str, year: int) -> date | None:
+    """The day of a moving holiday in `year`, None for a word that is not one."""
+    found = _CALENDAR_HOLIDAYS.get(text)
+    if found is None:
+        return None
+    import holidays  # noqa: PLC0415  # the first date asked for one loads it, not every start
+
+    country, name, after = found
+    days = holidays.country_holidays(country, years=year).get_named(name, lookup="exact")
+    return min(days) + timedelta(days=after) if days else None
+
+
+def _holiday_day(text: str, year: int) -> date | None:
+    """A named holiday's day in `year`: the fixed table first, then the calendars."""
+    if text in _HOLIDAYS:
+        month, day_n = _HOLIDAYS[text]
+        return date(year, month, day_n)
+    return _calendar_day(text, year)
+
+
 def _one_day(day: date) -> tuple[date, date, str]:
     return day, day, "day"
 
@@ -569,6 +601,9 @@ def _span_week_before_last(text: str, a: date, tense: str | None) -> Any:
     if unit == "week":
         first, last = _week_of(a - timedelta(days=14))
         return first, last, "week"
+    if unit == "weekend":
+        #: The weekend just gone, one week earlier (the same weekday a week back has the same "last weekend").
+        return _calendar_unit_span("last", "weekend", a - timedelta(days=7))
     if unit == "month":
         first = _shift_months(a.replace(day=1), -2)
         return first, _month_end(first), "month"
@@ -778,6 +813,15 @@ def _span_weekday(text: str, a: date, tense: str | None) -> Any:
     return _one_day(_weekday_named(found.group(1), _WEEKDAYS[found.group(2)], a, tense))
 
 
+def _span_day_in_week(text: str, a: date, tense: str | None) -> Any:
+    found = re.fullmatch(_DAY_IN_WEEK, text)
+    if not found:
+        return _MISS
+    week = span(found.group(1), a, tense)
+    day = _WEEKDAYS[text.removeprefix("the ").split()[0]]
+    return _one_day(week[0] + timedelta(days=day)) if week else None
+
+
 def _span_iso(text: str, a: date, tense: str | None) -> Any:
     found = _ISO_DATE.fullmatch(text)
     if not found:
@@ -877,16 +921,14 @@ def _span_holiday(text: str, a: date, tense: str | None) -> Any:
     #: "last Christmas" is the latest one gone, "next Christmas" the next to come, "this Christmas" the one of this
     #: year (W8B 1111: it read as no date, so its window carried no year).
     pointer, _, bare = text.partition(" ")
-    if pointer in ("last", "next", "this") and bare in _HOLIDAYS:
+    if pointer in ("last", "next", "this") and _holiday_day(bare, a.year):
         text, tense = bare, {"last": "past", "next": "future", "this": tense}[pointer]
         if pointer == "this":
-            month, day_n = _HOLIDAYS[text]
-            return _one_day(date(a.year, month, day_n))
-    if text not in _HOLIDAYS:
+            return _one_day(_holiday_day(text, a.year))
+    if _holiday_day(text, a.year) is None:
         return _MISS
-    month, day_n = _HOLIDAYS[text]
-    day = _nearest([date(a.year + k, month, day_n) for k in (-1, 0, 1)], a, tense or "future")
-    if tense != "past" and day == a and text.startswith("new year") and month == 1:
+    day = _nearest([d for d in (_holiday_day(text, a.year + k) for k in (-1, 0, 1)) if d], a, tense or "future")
+    if tense != "past" and day == a and text.startswith("new year") and text in _HOLIDAYS and _HOLIDAYS[text] == (1, 1):
         day = date(a.year + 1, 1, 1)
     return _one_day(day)
 
@@ -1067,7 +1109,7 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
 _SPAN_READERS = (
     _span_edge, _span_fixed, _span_day_run, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_ahead, _span_recent, _span_lately, _span_to_date,
     _span_other_day, _span_same_day, _span_ago, _span_in,
-    _span_nth, _span_weekday, _span_year, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
+    _span_nth, _span_day_in_week, _span_weekday, _span_year, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
     _span_part_of_period, _span_season, _span_part_of_month, _span_end_of, _span_month, _span_holiday,
 )
 
@@ -1262,7 +1304,7 @@ def _holiday_said(low: str) -> str:
     return _HOLIDAY_PREP.get(low.removeprefix("on ").removeprefix("at ").removeprefix("for ").strip(), "")
 
 
-_POINTED_HOLIDAY = lazy_compile(r"(?:last|next|this) (?:christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year)", re.I)
+_POINTED_HOLIDAY = lazy_compile(r"(?:last|next|this) (?:christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year|easter(?: sunday| monday)?|good friday|boxing day|thanksgiving(?: day)?)", re.I)
 
 
 def with_holiday_year(phrase: str, day: date | None) -> str:
