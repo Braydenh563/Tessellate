@@ -11,6 +11,7 @@
 //
 // Options:
 //   VIEWS=live        only these views (default live,source)
+//   PERKEY=1          each key's raw ThreadTime, in typing order
 //   PROFILE=1         a sampled CPU profile of the burst: self ms a key by function (top 30)
 //   PROFOUT=f         keep that profile as f.<view>.cpuprofile (inclusive times, callers)
 //   BUSYOUT=f.json    keep the burst trace (style, layout, recalcs a key are printed anyway)
@@ -80,6 +81,7 @@ async function cpuPerKey(page, cdp) {
   //: same throttle, same page (no constant: the floor moves with the renderer and the box).
   const floor = stats(idleThread).p50;
   const net = stats(thread.map((c) => c - floor));
+  if (process.env.PERKEY) console.log("  per key", [...PHRASE].map((ch, i) => JSON.stringify(ch) + Math.round(thread[i])).join(" "));
   return { task: stats(task), script: stats(script), thread: stats(thread), net, floor, idle: stats(idle), idleThread: stats(idleThread) };
 }
 
