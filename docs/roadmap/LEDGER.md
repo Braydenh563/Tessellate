@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 83 | 10 | 0 | 0 | 93 |
+| world-class | 0 | 82 | 10 | 0 | 0 | 92 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 473 | 81 | 2 | 111 | 926 |
+| all | 372 | 472 | 81 | 2 | 111 | 925 |
 
 ## graph
 
@@ -717,7 +717,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
-- [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
 - [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 
