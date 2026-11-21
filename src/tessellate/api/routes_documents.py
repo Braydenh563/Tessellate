@@ -953,7 +953,7 @@ def document_connections(document_id: int, session: Session = Depends(get_sessio
     endpoint, and the images a document embeds were listed nowhere, you
     could only find them by reading the markdown. One shape, one request.
     """
-    from tessellate.api.routes_entries import _connected_files
+    from tessellate.entry.service import connected_files
 
     document = _existing(session, document_id)
     bookmarks = [
@@ -961,7 +961,7 @@ def document_connections(document_id: int, session: Session = Depends(get_sessio
         for row in bookmark_repo.attached_to_document(session, document.id, by_title=True)
     ]
     notes = _linked_notes(session, document.id)
-    files = _connected_files(session, document.content)
+    files = connected_files(session, document.content)
     return {
         "notes": notes,
         "bookmarks": bookmarks,
