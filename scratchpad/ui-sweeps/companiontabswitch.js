@@ -1,7 +1,10 @@
 // INBOX 430: "the companion lingers on the old tab for a second, then pops
 // in elsewhere". Wanted: hidden with its tab at once, back as it was when
-// the person comes straight back, following only after 1.5 to 3s on a new
-// tab, and coming in by a walk, a climb or a materialise, never a pop.
+// the person comes straight back. INBOX 1673 (the owner, later) replaced
+// the follow after 1.5 to 3s: it lives in a room and stays there, coming
+// over only by its own mind, minutes later, so a stay on the Library must
+// leave it away for the whole of the 4.5s watched. It is put on a card of
+// the Dashboard first: a bar or a hang is the window's and is on every page.
 // Samples the companion's visibility every frame through: a flick Dashboard
 // > Notes > Dashboard inside 600ms, a run of quick switches, and a stay on
 // the Library. Exits 1 when it shows on a tab it has not followed to, when
@@ -23,6 +26,8 @@ const { boot } = require("./lib.js");
   await page.evaluate(() => { localStorage.removeItem("nm-buddy-spots"); const b = $("avatar-buddy"); b.value = "atlas"; b.dispatchEvent(new Event("change", { bubbles: true })); });
   await page.evaluate(() => switchTab("dashboard"));
   await page.waitForTimeout(3500);
+  await page.evaluate(() => { nameMarkBuddyAct(""); nameMarkBuddyMoveTo(document.getElementById("nm-buddy"), { kind: "card", pose: "stand", legs: "", x: 700, y: 420 }, true); });
+  await page.waitForTimeout(800);
   const state = () => page.evaluate(() => {
     const b = document.getElementById("nm-buddy");
     const cs = getComputedStyle(b);
@@ -33,6 +38,8 @@ const { boot } = require("./lib.js");
   //: sweep may have left it on, and this one is about the motion.
   //: Performance mode reduces motion too (Auto turns it on for a small
   //: machine, which this sandbox is), so it is set Off here.
+  // Settings' listeners (Companion movement, Performance mode) come with its lazy file, fetched on first open.
+  await page.evaluate(() => ensureModule("settingsControls"));
   await page.evaluate(([mode, MOVE]) => {
     const t = document.getElementById("reduce-motion-toggle");
     if (t) { t.checked = false; t.dispatchEvent(new Event("change", { bubbles: true })); }
@@ -54,7 +61,8 @@ const { boot } = require("./lib.js");
   const onNotes = await state();
   await page.waitForTimeout(230);
   await page.evaluate(() => switchTab("dashboard"));
-  await page.waitForTimeout(80);
+  // It fades back in over its own place (opacity animations, near 0 at 80ms), so it is read once that has run.
+  await page.waitForTimeout(500);
   const back = await state();
   console.log("flick: on notes", JSON.stringify(onNotes), "back", JSON.stringify(back));
   if (onNotes.shown || !back.shown || back.tab !== "dashboard") bad = true;
@@ -71,40 +79,24 @@ const { boot } = require("./lib.js");
   }
   console.log("quick switches, frames shown on a tab it was not on:", shownWhileAway);
   if (shownWhileAway) bad = true;
-  // 3. Stay on the Library: it follows within 1.5 to 3s, with an entrance.
+  // 3. Stay on the Library (INBOX 1673): it does not follow. Away for all of 4.5s, never shown there.
   await page.evaluate(() => switchTab("library"));
   const t0 = Date.now();
-  let arrived = null;
-  let entrance = [];
+  let shownOnLibrary = 0;
   while (Date.now() - t0 < 4500) {
-    const s = await page.evaluate(() => {
-      const b = document.getElementById("nm-buddy");
-      const cs = getComputedStyle(b);
-      //: The entrance is the host's translate and opacity and the
-      //: character's scale; the figure's own idle loops (breathing is a
-      //: translate on an inner layer) are not an entrance, and counting
-      //: them read "Fades only" as travelling.
-      const props = (list, keep) => list.filter((a) => a.playState === "running").map((a) => a.effect?.getKeyframes?.().map((k) => Object.keys(k).filter((p) => keep.includes(p))).flat()).flat();
-      const char = b.querySelector(".nm-buddy-char");
-      const anims = [...props(b.getAnimations(), ["translate", "opacity"]), ...(char ? props(char.getAnimations(), ["scale"]) : [])];
-      return { shown: cs.visibility !== "hidden", tab: nmb.tab, anims: [...new Set(anims)], how: nmb.enteredBy, perch: nmb.perch };
-    });
-    if (s.shown && s.tab === "library" && arrived === null) {
-      arrived = Date.now() - t0;
-      entrance = s.anims;
-      console.log("entered by", s.how, "to a", s.perch);
-    }
-    if (arrived !== null) break;
-    await page.waitForTimeout(50);
+    const s = await state();
+    if (s.shown) shownOnLibrary += 1;
+    await page.waitForTimeout(100);
   }
-  console.log(`stayed: followed after ${arrived}ms, entering with ${entrance.join("+") || "nothing"}`);
-  if (arrived === null || arrived < 1200 || arrived > 3200 || !entrance.length) bad = true;
-  //: Reduced motion or Fades only: in by a fade where it is, never a pop,
-  //: and no travel; Always: travel whatever the system says.
-  const fades = process.env.MOVE === "fades" || (process.env.MOTION === "reduce" && process.env.MOVE !== "always");
-  if (fades && (entrance.includes("translate") || !entrance.includes("opacity"))) bad = true;
-  if (!fades && !entrance.includes("translate")) bad = true;
-  if ((fades || process.env.PERF === "on") && !why) bad = true;
+  console.log(`stayed on the Library 4.5s: frames shown there ${shownOnLibrary}, away ${(await state()).away}`);
+  if (shownOnLibrary || !(await state()).away) bad = true;
+  // And back on its own tab it is there as it was.
+  await page.evaluate(() => switchTab("dashboard"));
+  await page.waitForTimeout(300);
+  const home = await state();
+  console.log("back on the Dashboard:", JSON.stringify(home));
+  if (!home.shown || home.away) bad = true;
+  if (process.env.MOVE === "fades" && !(await page.evaluate(() => $("avatar-buddy-motion-why").textContent))) bad = true;
   console.log(bad ? "FAIL" : "PASS");
   process.exitCode = bad ? 1 : 0;
   await browser.close();
