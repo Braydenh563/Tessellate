@@ -120,25 +120,37 @@
   //: scanned all twenty-two panes and tokenized their text in one go (172 ms of 763 over nine keys at 4x CPU,
   //: scratchpad/ui-sweeps/handlerlag.js). Focusing the box starts the same reading, one pane at a time; a pane that
   //: changes is dropped from the cache by `settingsSectionText`'s observer and read again as before.
-  function settingRowsWarm(done = new WeakSet()) {
-    const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !done.has(p));
+  function settingRowsWarm() {
+    //: The topics are drawn here, in an idle slot, and not by the first query: that draw changed the Help pane
+    //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
+    if ($("help-topics")?.hasAttribute("aria-busy")) renderHelpTopics();
+    //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
+    const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !settingRowsScan.panes.has(p));
     if (!pane) return;
-    done.add(pane);
-    if (!settingRowsScan.panes.has(pane)) settingRowsScan.panes.set(pane, settingRowsScan.pane(pane));
-    for (const row of settingRowsScan.panes.get(pane)) meaningMissing([], row.haystack);
+    const rows = settingRowsScan.pane(pane);
+    settingRowsScan.panes.set(pane, rows);
+    //: The vocabulary too (`settingVocab`): left to the first key it was 15 to 20 ms of that key at 4x.
+    settingVocab(rows);
+    for (const row of rows) meaningMissing([], row.haystack);
     meaningMissing([], settingsSectionText(pane));
-    const next = () => settingRowsWarm(done);
-    if (window.requestIdleCallback) requestIdleCallback(next, { timeout: 500 });
-    else setTimeout(next, 50);
+    if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
+    else setTimeout(settingRowsWarm, 50);
+  }
+  //: Started when Settings opens and when the box is focused, and again (`settingRowsWarmSoon`, called by the
+  //: pane observer in settings.js) a moment after a pane changes, so a key after a visit to a pane finds the rows
+  //: read (L-world-class-359: the first key scanned the panes the visits had changed, 63 of 133 ms at 4x CPU).
+  function settingRowsWarmSoon(wait = 150) {
+    //: Not pushed back by each change: a pane that keeps changing would never be read.
+    if (settingRowsWarmSoon.timer && wait) return;
+    clearTimeout(settingRowsWarmSoon.timer);
+    settingRowsWarmSoon.timer = setTimeout(() => {
+      settingRowsWarmSoon.timer = 0;
+      settingRowsWarm();
+    }, wait);
   }
   //: Delegated, not bound: the Settings body may be parsed after this file
   //: loads (idle parse), so the box need not exist yet.
-  let settingRowsWarmed = false;
-  document.addEventListener("focusin", (e) => {
-    if (settingRowsWarmed || e.target?.id !== "settings-search") return;
-    settingRowsWarmed = true;
-    settingRowsWarm();
-  });
+  document.addEventListener("focusin", (e) => e.target?.id === "settings-search" && settingRowsWarmSoon(0));
 
   let settingVocabCache = null;
   //: Each row's words are added once, not on every key (perf audit 1108 P4: `meaningWords` over every row was
@@ -299,6 +311,8 @@
     if (!list) return 0;
     list.replaceChildren();
     const found = query.trim().length >= 2 ? findSettings(query) : [];
+    //: filterSettings opens the first one's pane from this list rather than searching again.
+    renderSettingResults.found = found;
     for (const row of found) list.appendChild(settingResultItem(row));
     list.classList.toggle("hidden", !found.length);
     settingNearAdd(query, found);
@@ -1005,5 +1019,7 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: One property of the scan object, not a global of its own (the global-name cap).
+  settingRowsScan.warmSoon = settingRowsWarmSoon;
   Object.assign(window, { findSettings, openSettingRow, renderCredits, renderHelpTopics, renderSettingResults, settingQueryAlts, settingResultsKey, settingRowIsTopic, settingRowText, settingRowsScan, settingsIndexWatchSection });
 })();

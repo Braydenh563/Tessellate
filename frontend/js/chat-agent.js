@@ -258,14 +258,17 @@ function paintUserMarks() {
   const seed = userMarkSeed();
   //: The faces come after the page (`afterCharacters`, lazy-entries.js).
   afterCharacters(() => {
-    for (const holder of document.querySelectorAll("[data-user-mark]")) {
-      //: A face drawn from this name stays; the Settings preview replaces it (B47).
-      const size = +holder.dataset.userMark || 18;
-      if (holder.firstChild?.key === seed + size) continue;
-      const face = nameMark(seed, size);
-      face.key = seed + size;
-      holder.replaceChildren(face);
-    }
+    //: The first face is drawn in this task and cut up in the next (avatars.js `nameMark` part "draw"): cold,
+    //: both in one were 86 ms at 4x CPU (L-world-class-362).
+    const holders = document.querySelectorAll("[data-user-mark]");
+    nameMark(seed, +holders[0]?.dataset.userMark || 18, "draw");
+    setTimeout(() => {
+      for (const holder of holders) {
+        const size = +holder.dataset.userMark || 18;
+        //: A face drawn from this name stays; the Settings preview replaces it (B47).
+        if (holder.firstChild?.key !== seed + size) holder.replaceChildren(Object.assign(nameMark(seed, size), { key: seed + size }));
+      }
+    });
   });
   const head = document.getElementById("profile-head-name");
   if (head) head.textContent = (prefsCache?.display_name || "").trim() || "Your profile";

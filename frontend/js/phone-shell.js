@@ -1835,11 +1835,12 @@ initKeyboardInset();
 //: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
 //: An h3 in a fold's summary is that fold's only name, so it stays (audit 1030 Y3).
 function echoSettingsPaneTitle(select) {
-  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
-  if (select.value.includes("#")) return;
-  const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
-  const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
-  if (head && !head.closest("summary") && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+  //: Written only when it changes: a remove and add on every call was two class mutations a key that marked the pane
+  //: stale for the search index (L-world-class-359).
+  const head = !select.value.includes("#") && document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
+  const want = head && !head.closest("summary") && head.textContent.trim().toLowerCase() === select.selectedOptions[0]?.textContent.trim().toLowerCase() && head;
+  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.toggle("jump-echo", h === want);
+  want && want.classList.toggle("jump-echo", true);
 }
 
 function buildSettingsJumpList() {
@@ -1860,13 +1861,9 @@ function buildSettingsJumpList() {
   for (const group of nav.querySelectorAll(":scope > div[role='group']")) {
     const heading = $(group.getAttribute("aria-labelledby"));
     const optgroup = document.createElement("optgroup");
-    optgroup.label = heading ? heading.textContent.trim() : "Sections";
+    optgroup.label = heading?.textContent.trim() || "Sections";
     for (const button of group.querySelectorAll("button[data-section]")) {
-      const option = document.createElement("option");
-      option.value = button.dataset.section;
-      option.textContent = button.textContent.trim();
-      if (button.classList.contains("active")) option.selected = true;
-      optgroup.appendChild(option);
+      optgroup.append(new Option(button.textContent.trim(), button.dataset.section, false, button.classList.contains("active")));
     }
     if (optgroup.children.length) select.appendChild(optgroup);
   }
@@ -1877,6 +1874,7 @@ function buildSettingsJumpList() {
   // place, and a hidden button still answers `.click()`.
   select.addEventListener("change", () => {
     nav.querySelector(`button[data-section="${CSS.escape(select.value)}"]`)?.click();
+    echoSettingsPaneTitle(select);
   });
 
   // And follows them: the section can also change from a search result, from
@@ -1888,7 +1886,6 @@ function buildSettingsJumpList() {
     }
     echoSettingsPaneTitle(select);
   }).observe(nav, { subtree: true, attributes: true, attributeFilter: ["class"] });
-  select.addEventListener("change", () => echoSettingsPaneTitle(select));
 
   // After the search field, which stays: searching the sections' contents and
   // jumping to one by name are different questions (the search field's own

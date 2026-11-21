@@ -444,6 +444,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
+  //: The search rows are read in idle slots from here, so the first key finds them (settings-find.js).
+  window.settingRowsScan?.warmSoon?.(1500);
   if (typeof renderCredits === "function") renderCredits();
   showSettingsSection(section);
   // Re-read every open, not cached: the panel shows what the *currently
@@ -660,7 +662,6 @@ function paintIntegrity(check) {
 // classes on elements inside this very subtree, and observing those would
 // make every filter pass invalidate the cache it had just filled.
 let settingsTextCache = new WeakMap();
-let settingsTextCacheStale = false;
 let settingsTextObserver = null;
 
 function settingsSectionText(section) {
@@ -668,20 +669,19 @@ function settingsSectionText(section) {
     const modal = $("settings-modal");
     if (modal) {
       settingsTextObserver = new MutationObserver((records) => {
-        // One flag rather than a per-section diff: working out which
-        // sections a mutation touched costs more than re-reading the one
-        // section the next search actually asks about.
         //: A pane's findable rows (settings-find.js `settingRowsScan`, INBOX 1620) go stale with the
         //: pane, by the same records; a pane's own hidden flip, which every search makes, is neither.
+        //: Only the pane a change is in: the results list and the count are outside every pane, and dropping all
+        //: 22 panes' text on each key made the next key read them all again (L-world-class-359).
         for (const rec of records) {
           const at = rec.target.nodeType === 1 ? rec.target : rec.target.parentElement;
-          if (rec.type === "attributes") {
-            if (at?.classList.contains("settings-section")) continue;
-          } else {
-            settingsTextCacheStale = true;
-          }
+          if (rec.type === "attributes" && at?.classList.contains("settings-section")) continue;
           const pane = at?.closest(".settings-section");
-          if (pane) window.settingRowsScan?.panes.delete(pane);
+          //: An attribute changes no text (the rows below still go stale with it).
+          if (rec.type === "attributes");
+          else if (pane) settingsTextCache.delete(pane);
+          else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();
+          if (pane && window.settingRowsScan?.panes.delete(pane)) window.settingRowsScan?.warmSoon?.();
         }
       });
       settingsTextObserver.observe(modal, {
@@ -694,10 +694,6 @@ function settingsSectionText(section) {
     }
   }
   if (!section) return "";
-  if (settingsTextCacheStale) {
-    settingsTextCache = new WeakMap();
-    settingsTextCacheStale = false;
-  }
   const cached = settingsTextCache.get(section);
   if (cached !== undefined) return cached;
   const text = (section.textContent || "").toLowerCase();
@@ -761,7 +757,7 @@ function filterSettings(term) {
       : "Nothing matches that";
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
-  const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
+  const first = settingsFound ? renderSettingResults.found[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
   //: After the typing pauses, not on every key: building the matched pane (Appearance reads the page's styles) was
   //: 100 to 190 ms of the key that changed the match at 4x CPU, and a fast "dark mode" switched panes twice on the way
   //: (scratchpad/ui-sweeps/handlerlag.js). The result list and the nav filter above are already on screen.

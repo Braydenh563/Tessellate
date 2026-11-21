@@ -96,3 +96,75 @@ def test_library_warm_waits_for_calm_in_an_idle_slot():
     assert "requestIdleCallback(fn" in body
     assert body.count("Date.now() < calmAt") == 2
     assert '["pointerdown", "keydown", "click"]' in body
+
+
+def test_settings_search_warms_rows_and_vocab_before_the_first_key():
+    # The first key scanned the pane, built the vocab and the meaning memo (133-141 ms at 4x; L-world-class-359).
+    src = read("settings-find.js")
+    assert "function settingRowsWarmSoon(" in src
+    assert "settingVocab(rows)" in src and "meaningMissing([]" in src
+    assert "renderHelpTopics()" in src
+    assert 'settingRowsWarmSoon(0)' in src
+    settings = read("settings.js")
+    assert "settingRowsScan?.panes.delete(pane)) window.settingRowsScan?.warmSoon?.()" in settings
+    assert "warmSoon?.(1500)" in settings
+
+
+def test_pane_title_echo_writes_only_on_change():
+    # Removing and re-adding the class on every key dirtied the pane for the search index.
+    body = read("phone-shell.js").split("function echoSettingsPaneTitle", 1)[1][:900]
+    assert 'want && want.classList.toggle("jump-echo", true)' in body  # want can be false, and false?.x is not nullish
+
+
+def test_chat_model_panel_does_not_build_a_surface():
+    # `$` builds an unbuilt surface; a scroll while Settings showed built Chat inside a key (60-77 ms; L-world-class-360).
+    body = read("ai-tools.js").split("function placeChatModelPanel", 1)[1][:500]
+    assert 'document.getElementById("chat-model-panel")' in body
+    assert '$("chat-model-panel")' not in body
+
+
+def test_settings_body_parses_in_pieces():
+    # One 56 ms parse task at 4x; 22 pieces of about 1 ms each (L-world-class-361).
+    # The mark is in the script, not an attribute on the tag: the test lints read the tag as `<template id=.. data-surface="settings">`.
+    assert 'splitMark(entry)' in read("settings-body.js") and "data-split-at" not in (JS.parent / "index.html").read_text(encoding="utf-8")
+    src = read("settings-body.js")
+    assert "parseNext(entry, budget)" in src and "parseNext(next[1], 8)" in src
+
+
+def test_first_face_is_two_tasks():
+    # Drawn, then cut and measured: 86 ms as one task, about 43 each (L-world-class-362).
+    assert 'nameMark(seed, +holders[0]?.dataset.userMark || 18, "draw")' in read("chat-agent.js")
+    src = read("avatars.js")
+    assert "nameMarkGenerated(seed, size, drawOnly = false)" in src
+    assert "nameMarkGenerated(seed, 56, true)" in src
+
+
+def test_dashboard_menus_yield_one_task_each():
+    # The post-yield piece was 56-82 ms at 4x: the four menus ran back to back (L-world-class-363).
+    src = read("dashboard.js")
+    menus = "renderQuickLinks(); await dashYield(); renderDashMore(); await dashYield(); wireDashDensity(); await dashYield(); renderFirstStepsLazy(); await dashYield();"
+    assert menus in " ".join(src.split())
+
+
+def test_dashboard_grid_yields_between_widgets_and_a_newer_render_wins():
+    # After the four menus, the widget loop was still one task: 85 ms median at 4x (L-world-class-363).
+    src = read("dashboard.js")
+    body = src.split("async function renderDashboard(", 1)[1].split("\n}\n", 1)[0]
+    assert "const gen = (renderDashboard.gen = (renderDashboard.gen || 0) + 1);" in body
+    loop = body.split("for (const name of layout.order) {", 1)[1].split("grid.appendChild(card);", 1)[0]
+    flat = " ".join(loop.split())
+    assert "if (performance.now() - sliceStart > DASH_SLICE_MS) { await dashYield(); if (gen !== renderDashboard.gen) return; sliceStart = performance.now(); }" in flat
+    # The check comes before anything is appended, so a stale render adds no card to the newer grid.
+    assert flat.index("await dashYield();") < flat.index("document.createElement")
+
+
+def test_a_search_key_drops_no_pane_text():
+    # The results list and the count sit outside every pane, but any childList change in the modal threw
+    # away all 22 panes' text, so each key read them all again (L-world-class-359).
+    src = read("settings.js")
+    obs = src.split("settingsTextObserver = new MutationObserver((records) => {", 1)[1].split("settingsTextObserver.observe(", 1)[0]
+    assert "settingsTextCacheStale = true" not in src
+    assert "else if (pane) settingsTextCache.delete(pane);" in obs
+    flat = " ".join(obs.split())
+    # A change above the panes (a pane added or swapped by the idle parse) still empties the cache.
+    assert 'else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();' in flat
