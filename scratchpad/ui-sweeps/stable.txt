@@ -1,6 +1,9 @@
 # The gate's ui sweeps that passed twice on a fresh data dir (L-general-20,
 # 2026-11-21). scripts/ci_sweeps.sh runs them in CI; one name per line, then
-# its seconds on the second pass. A sweep that turns flaky comes off with its reason.
+# its seconds on the second pass (per run), then any env for it; a `|` value runs once
+# per value (scripts/ci_sweeps.sh). A sweep that turns flaky comes off with its reason.
+errors 185s WIDTHS=1440,1024|820,390
+fontmatrix 190s THEMES=light WIDTHS=1440,390 FONTS=system|serif|mono|arial|readable
 contrast 32s
 leaks 28s
 keyboard 19s
@@ -43,3 +46,4 @@ graphphone 10s
 wbtopbar 87s
 noteobject 40s
 docks 44s
+mapperf 80s

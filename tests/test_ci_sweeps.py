@@ -40,3 +40,31 @@ def test_the_ci_job_runs_the_script_and_the_script_runs_the_list() -> None:
     script = (ROOT / "scripts" / "ci_sweeps.sh").read_text(encoding="utf-8")
     assert "scratchpad/ui-sweeps/stable.txt" in script
     assert "timeout 300 node" in script  # one stuck sweep cannot eat the job
+
+
+def _plan() -> list[list[str]]:
+    import subprocess
+
+    done = subprocess.run(["bash", "scripts/ci_sweeps.sh", "--plan"], cwd=ROOT, capture_output=True, text=True, timeout=30)
+    assert done.returncode == 0, done.stderr
+    return [line.split() for line in done.stdout.splitlines() if line.strip()]
+
+
+def test_a_long_sweep_runs_as_shards_each_well_under_the_timeout() -> None:
+    """errors and fontmatrix took 324s and over 240s whole (2026-11-21), so a
+    `|` in a line's env token splits it into runs of their own, each under
+    its own 300s timeout; `--plan` prints the runs without starting a server."""
+    runs = _plan()
+    errors = [r for r in runs if r[0] == "errors"]
+    assert [r[1:] for r in errors] == [["WIDTHS=1440,1024"], ["WIDTHS=820,390"]]
+    fonts = [r for r in runs if r[0] == "fontmatrix"]
+    assert len(fonts) == 5 and all("THEMES=light" in r and "WIDTHS=1440,390" in r for r in fonts)
+    assert sorted(next(t for t in r if t.startswith("FONTS=")) for r in fonts) == [
+        "FONTS=arial", "FONTS=mono", "FONTS=readable", "FONTS=serif", "FONTS=system",
+    ]
+    assert [r[0] for r in runs if r[0] not in ("errors", "fontmatrix")] == [
+        n for n in _stable() if n not in ("errors", "fontmatrix")
+    ]
+    for line in (SWEEPS / "stable.txt").read_text(encoding="utf-8").splitlines():
+        if line.strip() and not line.startswith("#"):
+            assert int(line.split()[1].rstrip("s")) <= 240, line  # seconds per run
