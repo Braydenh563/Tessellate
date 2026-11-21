@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: an embed is named from its board's title, a read-only one is a group, and an editable one points at a hidden keyboard hint (L-whiteboard-72); an embed made with the board tab never opened leaves the page chrome alone, measured in the app (L-whiteboard-69).
 - Boards: the rulers and the map rings are the page board's only: an embed's pan no longer moves the page's rulers, and in an embed a topic's right-click opens the plain menu instead of a ring placed in the hidden board view (L-whiteboard-60).
 - Boards: right-clicking or holding a map line in an embed opens the topic's plain menu instead of nothing (L-whiteboard-68).
 - Boards: the unit the fields and rulers show and the page view's frames are kept per board, so an embed's units no longer change the page board's (L-whiteboard-67).
