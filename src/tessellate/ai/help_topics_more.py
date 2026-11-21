@@ -1116,7 +1116,7 @@ MORE_TOPICS: list[dict] = [
         "id": "model-bench",
         "keywords": (
             "model bench", "test my models", "which model is best", "compare models",
-            "best model for my notes", "benchmark", "try my models",
+            "best model for my notes", "benchmark", "try my models", "model chosen at start",
         ),
         "body": (
             "Settings, Models, Test my models runs your installed models on your "
@@ -1130,7 +1130,10 @@ MORE_TOPICS: list[dict] = [
             "in chat. Stop ends a run, and a stopped run makes no "
             "recommendation. It needs at least six filed notes, runs entirely on "
             "this computer, and can be switched off in Settings, What it "
-            "learned, What may run, Model bench."
+            "learned, What may run, Model bench. When the stored chat model is "
+            "not installed, the first launch picks the largest one that is, and "
+            "says so once: which chat, background and picture models it chose "
+            "and why, with Change, which opens Settings, Models."
         ),
         "badge": {"label": "Test my models", "section": "models", "target": "bench-box"},
     },

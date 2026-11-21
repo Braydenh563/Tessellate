@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8513, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2878, tests 22754, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8513, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2878, tests 22754, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8513)
 
@@ -106,18 +106,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:220 |
-| `charactersLost` | frontend/js/lazy-entries.js:229 |
-| `emblemHead` | frontend/js/lazy-entries.js:237 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:266 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:299 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:260 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:287 |
-| `onDomReady` | frontend/js/lazy-entries.js:310 |
-| `plainHead` | frontend/js/lazy-entries.js:243 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:251 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:322 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:346 |
+| `afterCharacters` | frontend/js/lazy-entries.js:222 |
+| `charactersLost` | frontend/js/lazy-entries.js:231 |
+| `emblemHead` | frontend/js/lazy-entries.js:239 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:268 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:301 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:262 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:289 |
+| `onDomReady` | frontend/js/lazy-entries.js:312 |
+| `plainHead` | frontend/js/lazy-entries.js:245 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:253 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:324 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:348 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -902,25 +902,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:745 |
 | `agentActivityQuiet` | frontend/js/status.js:737 |
-| `agentModeAvailable` | frontend/js/status.js:2868 |
-| `aiIsOff` | frontend/js/status.js:2136 |
-| `aiOffGlyph` | frontend/js/status.js:2507 |
-| `aiOfflineDismissed` | frontend/js/status.js:2308 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2304 |
-| `aiStatusState` | frontend/js/status.js:2393 |
+| `agentModeAvailable` | frontend/js/status.js:2861 |
+| `aiIsOff` | frontend/js/status.js:2129 |
+| `aiOffGlyph` | frontend/js/status.js:2500 |
+| `aiOfflineDismissed` | frontend/js/status.js:2301 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2297 |
+| `aiStatusState` | frontend/js/status.js:2386 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1662 |
 | `armReminderTimer` | frontend/js/status.js:534 |
 | `askNotificationPermission` | frontend/js/status.js:396 |
 | `boardHistoryActive` | frontend/js/status.js:1627 |
 | `checkDueReminders` | frontend/js/status.js:600 |
-| `closeModelGate` | frontend/js/status.js:2154 |
+| `closeModelGate` | frontend/js/status.js:2147 |
 | `closeNotifications` | frontend/js/status.js:368 |
-| `dismissAiOffline` | frontend/js/status.js:2316 |
+| `dismissAiOffline` | frontend/js/status.js:2309 |
 | `dismissToast` | frontend/js/status.js:962 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2578 |
-| `embeddingToastDue` | frontend/js/status.js:2584 |
+| `embeddingProblemDetail` | frontend/js/status.js:2571 |
+| `embeddingToastDue` | frontend/js/status.js:2577 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
 | `insightLine` | frontend/js/status.js:1544 |
@@ -929,28 +929,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `insightVerdicts` | frontend/js/status.js:1521 |
 | `integrityWords` | frontend/js/status.js:1343 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1978 |
+| `jobsRunning` | frontend/js/status.js:1971 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3129 |
-| `lastAnswerLine` | frontend/js/status.js:2529 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3122 |
+| `lastAnswerLine` | frontend/js/status.js:2522 |
 | `loadMostUsed` | frontend/js/status.js:1842 |
 | `loadRecentQuestions` | frontend/js/status.js:1814 |
 | `lockFieldWants` | frontend/js/status.js:1018 |
 | `noteDamagedNotebook` | frontend/js/status.js:1347 |
 | `noteServerDown` | frontend/js/status.js:1406 |
 | `noteServerUp` | frontend/js/status.js:1415 |
-| `noticeTaskTransitions` | frontend/js/status.js:3234 |
+| `noticeTaskTransitions` | frontend/js/status.js:3227 |
 | `notificationsMuted` | frontend/js/status.js:722 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:477 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2594 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2587 |
 | `offerUndo` | frontend/js/status.js:1569 |
 | `openLanPanel` | frontend/js/status.js:673 |
-| `openModelGate` | frontend/js/status.js:2164 |
+| `openModelGate` | frontend/js/status.js:2157 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:3335 |
+| `paintPrivacyChip` | frontend/js/status.js:3328 |
 | `paintReminderList` | frontend/js/status.js:569 |
-| `paintStatusItem` | frontend/js/status.js:2650 |
+| `paintStatusItem` | frontend/js/status.js:2643 |
 | `paintTitle` | frontend/js/status.js:510 |
 | `paintUndoDoor` | frontend/js/status.js:1764 |
 | `performRedo` | frontend/js/status.js:1683 |
@@ -965,46 +965,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1602 |
 | `pushUndo` | frontend/js/status.js:1480 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3148 |
-| `refreshModelStatus` | frontend/js/status.js:2006 |
-| `refreshPrivacyChip` | frontend/js/status.js:3349 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3141 |
+| `refreshModelStatus` | frontend/js/status.js:1999 |
+| `refreshPrivacyChip` | frontend/js/status.js:3342 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2331 |
-| `renderAiPill` | frontend/js/status.js:2537 |
-| `renderChatModeSeg` | frontend/js/status.js:2896 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2324 |
+| `renderAiPill` | frontend/js/status.js:2530 |
+| `renderChatModeSeg` | frontend/js/status.js:2889 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2965 |
-| `renderStatusBar` | frontend/js/status.js:2699 |
+| `renderSettings` | frontend/js/status.js:2958 |
+| `renderStatusBar` | frontend/js/status.js:2692 |
 | `renderUndoBar` | frontend/js/status.js:1746 |
-| `renderWebSearchToggle` | frontend/js/status.js:2876 |
+| `renderWebSearchToggle` | frontend/js/status.js:2869 |
 | `reopenAnswerPanel` | frontend/js/status.js:780 |
-| `resetStatusCadence` | frontend/js/status.js:1930 |
+| `resetStatusCadence` | frontend/js/status.js:1923 |
 | `retryServerNow` | frontend/js/status.js:1456 |
-| `sayChatModelChosen` | frontend/js/status.js:1893 |
+| `sayChatModelChosen` | frontend/js/status.js:1891 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1430 |
 | `scheduleUndoBar` | frontend/js/status.js:1738 |
-| `setChatMode` | frontend/js/status.js:2942 |
+| `setChatMode` | frontend/js/status.js:2935 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:515 |
 | `setTitleView` | frontend/js/status.js:520 |
-| `settingsOpen` | frontend/js/status.js:1946 |
+| `settingsOpen` | frontend/js/status.js:1939 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1590 |
-| `showAgentNoModelHint` | frontend/js/status.js:2937 |
+| `showAgentNoModelHint` | frontend/js/status.js:2930 |
 | `showServerDownBanner` | frontend/js/status.js:1387 |
-| `startPrivacyChip` | frontend/js/status.js:3359 |
+| `startPrivacyChip` | frontend/js/status.js:3352 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1644 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2375 |
-| `syncModelGatedControls` | frontend/js/status.js:2190 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2368 |
+| `syncModelGatedControls` | frontend/js/status.js:2183 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3209 |
+| `taskKey` | frontend/js/status.js:3202 |
 | `toast` | frontend/js/status.js:1175 |
 | `toastAction` | frontend/js/status.js:1319 |
 | `toastActionButton` | frontend/js/status.js:1299 |
@@ -1022,12 +1022,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:921 |
 | `toastStack` | frontend/js/status.js:925 |
 | `toastYield` | frontend/js/status.js:1040 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2842 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2835 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1169 |
 | `whenText` | frontend/js/status.js:1157 |
-| `withoutEndStop` | frontend/js/status.js:2574 |
+| `withoutEndStop` | frontend/js/status.js:2567 |
 
 ### frontend/js/ai-tools.js (30)
 
@@ -18124,8 +18124,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2600 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2753 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2603 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2756 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -31689,14 +31689,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:626 |
+| Needs hardware | docs/roadmap/LEDGER.md:624 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:619 |
+| Owner calls | docs/roadmap/LEDGER.md:617 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31876,7 +31876,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:756 |
+| Plan session briefs | docs/roadmap/LEDGER.md:754 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31930,25 +31930,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:772 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:856 |
+| chat | docs/roadmap/LEDGER.md:770 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:854 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:796 |
-| general | docs/roadmap/LEDGER.md:579 |
+| documents | docs/roadmap/LEDGER.md:794 |
+| general | docs/roadmap/LEDGER.md:577 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:760 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:868 |
+| graph | docs/roadmap/LEDGER.md:758 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:866 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:808 |
+| mindmap | docs/roadmap/LEDGER.md:806 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:832 |
+| timeline | docs/roadmap/LEDGER.md:830 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:820 |
+| ui-modernisation | docs/roadmap/LEDGER.md:818 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:784 |
+| whiteboard | docs/roadmap/LEDGER.md:782 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:844 |
+| world-class | docs/roadmap/LEDGER.md:842 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |
