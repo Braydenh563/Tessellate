@@ -22,20 +22,26 @@ then-and-now are the note's sentences (`grounding.split_sentences`), paired
 by shared distinctive words; with a model on, the model judges each pair
 (same, changed, contradicts, unrelated: `model_judge`), and with none, or an
 unusable reply, the word rule stands as it always did. Retrieval as of a date takes
-its candidates from the engine (today's notes) and from revisions whose
-text matches the question, then ranks the then-texts by the same words.
+its candidates from the engine (today's notes), from revisions whose text
+matches the question and from the notes edited since that day, then ranks
+the then-texts by the same words and by meaning: each past version's own
+vector, made on demand and kept in memory by revision id (`past_vectors`,
+at most `EMBED_PER_QUERY` new ones per question).
 """
 
 from __future__ import annotations
 
 import re
+import threading
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from sqlalchemy import or_, select
+import numpy as np
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Entry, EntryRevision, like_escape, LIKE_ESCAPE
+from tessellate.core.database import EmbeddingRecord, Entry, EntryRevision, like_escape, LIKE_ESCAPE
 from tessellate.entry import manager
 
 
@@ -116,27 +122,164 @@ def revision_candidates(session: Session, question: str, limit: int = 50) -> lis
     return list(session.scalars(select(Entry).where(Entry.id.in_(ids))))
 
 
-def rewind(session: Session, question: str, when: datetime, candidates: list[Entry], limit: int = 5) -> list[Then]:
+def changed_since(session: Session, when: datetime, limit: int = 200) -> list[Entry]:
+    """Notes edited after `when`: the ones whose text then is not their text
+    now, so the engine's vectors (of today's text) cannot find them by what
+    they said then. The most recently edited first, at most `limit`."""
+    rows = session.execute(
+        select(EntryRevision.entry_id, func.max(EntryRevision.created_at).label("last"))
+        .where(EntryRevision.created_at > _aware(when).astimezone(timezone.utc).replace(tzinfo=None))
+        .group_by(EntryRevision.entry_id)
+        .order_by(func.max(EntryRevision.created_at).desc())
+        .limit(limit)
+    )
+    ids = [row.entry_id for row in rows]
+    if not ids:
+        return []
+    found = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(ids)))}
+    return [found[i] for i in ids if i in found]
+
+
+# --- meaning over past texts ------------------------------------------------------
+
+#: New past texts embedded per question at most. A revision's vector is made
+#: on demand and kept by revision id, so the first question as of a day over
+#: a long history pays for this many and the next ones only for what is new;
+#: a then-text not embedded yet is ranked by its words alone.
+EMBED_PER_QUERY = 48
+#: Past-text vectors kept in memory, by embedding backend and revision.
+PAST_VECTORS_MAX = 4000
+#: How much of a past text is embedded (a note's opening carries its subject).
+PAST_TEXT_CHARS = 2000
+_past_vectors: OrderedDict = OrderedDict()
+_past_lock = threading.Lock()
+
+
+def forget_past_vectors() -> None:
+    """Empty the past-text vector cache (an embedding switch, a test)."""
+    with _past_lock:
+        _past_vectors.clear()
+
+
+def _unit(vector) -> np.ndarray | None:  # noqa: ANN001
+    if vector is None:
+        return None
+    array = np.asarray(vector, dtype="float32")
+    norm = float(np.linalg.norm(array))
+    return array / norm if norm else None
+
+
+def _now_vectors(session: Session, entry_ids: list[int], backend: str) -> dict[int, np.ndarray]:
+    """The stored vectors of notes whose then-text is their text now."""
+    if not entry_ids:
+        return {}
+    rows = session.execute(
+        select(EmbeddingRecord.entry_id, EmbeddingRecord.embedding).where(
+            EmbeddingRecord.entry_id.in_(entry_ids), EmbeddingRecord.model_version == backend
+        )
+    )
+    return {entry_id: np.frombuffer(blob, dtype="float32") for entry_id, blob in rows}
+
+
+def past_vectors(session: Session, thens: list[Then], embeddings) -> dict[int, np.ndarray]:  # noqa: ANN001
+    """A vector per then-text, by note: today's stored one for a note
+    unchanged since, a cached or newly made one by revision id for a past
+    version, at most `EMBED_PER_QUERY` made per call."""
+    backend = embeddings.backend_id()
+    out = _now_vectors(session, [t.entry.id for t in thens if t.revision_id is None], backend)
+    missing: list[tuple[tuple, Then]] = []
+    with _past_lock:
+        for then in thens:
+            if then.entry.id in out:
+                continue
+            key = (backend, then.revision_id) if then.revision_id is not None else (backend, "text", then.text)
+            if key in _past_vectors:
+                _past_vectors.move_to_end(key)
+                out[then.entry.id] = _past_vectors[key]
+            elif len(missing) < EMBED_PER_QUERY:
+                missing.append((key, then))
+    if not missing:
+        return out
+    made = embeddings.embed_many([then.text[:PAST_TEXT_CHARS] for _, then in missing])
+    with _past_lock:
+        for (key, then), vector in zip(missing, made):
+            if vector is None:
+                continue
+            out[then.entry.id] = _past_vectors[key] = np.asarray(vector, dtype="float32")
+        while len(_past_vectors) > PAST_VECTORS_MAX:
+            _past_vectors.popitem(last=False)
+    return out
+
+
+def _meaning_floor(values: list[float]) -> float:
+    """The cosine a then-text must reach to count as about the question: the
+    search's own two floors (`search_manager.semantic_search`), the absolute
+    one and, over five or more, the question's own mean plus a margin, since
+    an anisotropic model scores unrelated texts at 0.4 to 0.6."""
+    from tessellate.search import search_manager
+
+    least, margin = search_manager.configured_thresholds()
+    if len(values) < search_manager.RELATIVE_MIN_CANDIDATES:
+        return least
+    return max(least, float(np.mean(values) + margin * np.std(values)))
+
+
+def _meaning(session: Session, question: str, thens: list[Then], embeddings) -> dict[int, float]:  # noqa: ANN001
+    """Each then-text's cosine with the question, by note, kept only when it
+    clears `_meaning_floor`; empty when the embedding model is not ready (the
+    words alone rank then)."""
+    if embeddings is None or not thens or not embeddings.is_ready():
+        return {}
+    from tessellate.search import search_manager
+
+    asked = _unit(search_manager.query_vector(embeddings, question))
+    if asked is None:
+        return {}
+    out = {}
+    for entry_id, vector in past_vectors(session, thens, embeddings).items():
+        unit = _unit(vector)
+        if unit is not None and unit.shape == asked.shape:
+            out[entry_id] = float(unit @ asked)
+    floor = _meaning_floor(list(out.values()))
+    return {entry_id: value for entry_id, value in out.items() if value >= floor}
+
+
+def rewind(session: Session, question: str, when: datetime, candidates: list[Entry], limit: int = 5, embeddings=None) -> list[Then]:  # noqa: ANN001
     """The notes to answer `question` from, as they stood at `when`: each
-    candidate's text then, ranked by how many of the question's words it
-    holds (the engine's order breaks ties), those that did not exist dropped.
-    When no then-text shares a word, the engine's own order stands."""
+    candidate's text then, ranked by the share of the question's words it
+    holds plus, with `embeddings`, its meaning's closeness to the question
+    (the then-text's own vector, `past_vectors`), the engine's order breaking
+    ties; those that did not exist are dropped. When a then-text shares a
+    word or clears the meaning floor, those that do neither are dropped;
+    when none does, the engine's own order stands."""
     when = _aware(when)
     seen: set[int] = set()
     unique = [e for e in candidates if not (e.id in seen or seen.add(e.id))]
     history = _revisions(session, [e.id for e in unique])
+    thens = [then for e in unique if (then := _then(e, history.get(e.id, []), when)) is not None]
+    meaning = _meaning(session, question, thens, embeddings)
     terms = set(_terms(question))
-    scored: list[tuple[int, int, Then]] = []
-    for rank, entry in enumerate(unique):
-        then = _then(entry, history.get(entry.id, []), when)
-        if then is None:
-            continue
-        hits = len(terms & set(_terms(then.text))) if terms else 0
-        scored.append((-hits, rank, then))
+    scored: list[tuple[float, int, Then]] = []
+    for rank, then in enumerate(thens):
+        hits = len(terms & set(_terms(then.text))) / len(terms) if terms else 0.0
+        scored.append((-(hits + meaning.get(then.entry.id, 0.0)), rank, then))
     scored.sort(key=lambda row: (row[0], row[1]))
-    if terms and any(row[0] < 0 for row in scored):
+    if any(row[0] < 0 for row in scored):
         scored = [row for row in scored if row[0] < 0]
     return [row[2] for row in scored[:limit]]
+
+
+def rewind_question(session: Session, question: str, when: datetime, locale: str | None, embeddings, limit: int = 5) -> list[Then]:  # noqa: ANN001
+    """Ask as of a day (`routes_chat._rewind_as_of`): the candidates are the
+    engine's matches today, the notes whose past text holds the question's
+    words, and the notes edited since that day (today's vectors cannot find
+    a note by what it said then; its past version's own vector can), all
+    ranked by `rewind`."""
+    from tessellate.search import search_manager
+
+    hit = search_manager.retrieve_detailed(session, question, embeddings, limit=20, locale=locale)
+    candidates = hit.entries + revision_candidates(session, question) + changed_since(session, when)
+    return rewind(session, question, when, candidates, limit=limit, embeddings=embeddings)
 
 
 def end_of_day(day, zone) -> datetime:  # noqa: ANN001

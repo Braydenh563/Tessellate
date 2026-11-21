@@ -255,10 +255,8 @@ def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale:
         return
     from tessellate.ai import timetravel
 
-    hit = search_manager.retrieve_detailed(session, question, deps.get_embeddings(), limit=20, locale=locale)
-    candidates = hit.entries + timetravel.revision_candidates(session, question)
-    zone = user_now(deps.get_config()).tzinfo
-    rewound = timetravel.rewind(session, question, timetravel.end_of_day(as_of, zone), candidates, limit=5)
+    when = timetravel.end_of_day(as_of, user_now(deps.get_config()).tzinfo)
+    rewound = timetravel.rewind_question(session, question, when, locale, deps.get_embeddings())
     found.entries, found.mode = [then.entry for then in rewound], "as of"
     found.connected_ids, found.match_info = set(), {}
     found.as_of_then = {then.entry.id: then for then in rewound}

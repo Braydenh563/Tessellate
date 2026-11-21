@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask as of a day finds a note by what it said then: each past version is ranked by its own vector (made on demand, at most 48 per question, kept in memory by revision id) as well as its words, and the notes edited since that day join the candidates (L-world-class-26).
 - Then and now, with a model on: the model judges each pair of claims (same, changed, contradicts, unrelated) in one bounded call (12 pairs, a 420-character prompt), History marks a pair that says the opposite as Contradicts then and names the model; with no model, or an unusable reply, the pairing by shared words stands (L-world-class-26).
 - MCP links: Revoke and Make a link now carry Undo; a revoked token's row is kept an hour so Undo brings the same token back (L687, no undo exemption).
 - A History row from the fading-scores route says you started it, and a lint keeps every route run named with its origin.

@@ -7,6 +7,7 @@ transport only; the dates are a fixed clock.
 from __future__ import annotations
 
 import json
+import time
 from datetime import datetime, timedelta, timezone
 
 from tessellate.ai import timetravel
@@ -115,3 +116,78 @@ def test_the_route_with_no_model_keeps_the_word_rule(client, session):
     body = client.post(f"/entries/{entry.id}/then-and-now", json={"then": THEN}).json()
     assert sorted(c["kind"] for c in body["changed"]) == ["dropped", "new", "revised"]
     assert body["judged_by"] is None
+
+
+# --- as-of retrieval by the meaning of past texts ------------------------------------
+
+
+def _sports_then_shopping_now(session):
+    """Two notes whose subject changed after day 10: what each said then is
+    the other's subject now, so a then-text's own vector is the only way to
+    tell them apart by meaning."""
+    a = _note_with_history(session, ["We ran the 100m sprint at the carnival.", "Buy milk and eggs today."], [0, 30])
+    b = _note_with_history(session, ["Milk, eggs and bread for the week.", "The athletics carnival is next week."], [0, 30])
+    return a, b
+
+
+def test_without_embeddings_a_question_sharing_no_word_keeps_the_engine_order(session):
+    a, b = _sports_then_shopping_now(session)
+    picked = timetravel.rewind(session, "shopping list", T0 + timedelta(days=10), [a, b])
+    assert [t.entry.id for t in picked] == [a.id, b.id]
+
+
+def test_as_of_retrieval_reads_each_past_text_by_its_meaning(session, fake_embeddings):
+    a, b = _sports_then_shopping_now(session)
+    timetravel.forget_past_vectors()
+    picked = timetravel.rewind(session, "shopping list", T0 + timedelta(days=10), [a, b], embeddings=fake_embeddings)
+    assert [t.entry.id for t in picked] == [b.id]
+    assert picked[0].text.startswith("Milk, eggs")
+
+
+def test_past_vectors_are_kept_by_revision_and_bounded_per_question(session, fake_embeddings, monkeypatch):
+    timetravel.forget_past_vectors()
+    entries = [_note_with_history(session, [f"Milk and eggs, list {k}.", f"Sprint {k} at the carnival."], [0, 30]) for k in range(60)]
+    made = []
+    real = fake_embeddings.embed_many
+
+    def counting(texts):
+        made.append(len(texts))
+        return real(texts)
+
+    monkeypatch.setattr(fake_embeddings, "embed_many", counting)
+    when = T0 + timedelta(days=10)
+    timetravel.rewind(session, "shopping", when, entries, embeddings=fake_embeddings)
+    assert made == [timetravel.EMBED_PER_QUERY]
+    timetravel.rewind(session, "shopping", when, entries, embeddings=fake_embeddings)
+    assert made == [timetravel.EMBED_PER_QUERY, 60 - timetravel.EMBED_PER_QUERY]
+    timetravel.rewind(session, "shopping", when, entries, embeddings=fake_embeddings)
+    assert len(made) == 2, "every past text is cached by its revision now"
+
+
+def test_notes_edited_since_the_day_are_candidates(session):
+    a, b = _sports_then_shopping_now(session)
+    untouched = _note_with_history(session, ["Nothing changed here at all."], [0])
+    ids = [e.id for e in timetravel.changed_since(session, T0 + timedelta(days=10))]
+    assert set(ids) == {a.id, b.id} and untouched.id not in ids
+    assert timetravel.changed_since(session, T0 + timedelta(days=40)) == []
+
+
+def test_an_as_of_question_finds_a_note_by_what_it_said_then(ai_client, fake_embeddings, session):
+    a, b = _sports_then_shopping_now(session)
+    timetravel.forget_past_vectors()
+    as_of = (T0 + timedelta(days=10)).date().isoformat()
+    with ai_client.stream("POST", "/chat/stream", json={"question": "what was on my shopping list?", "as_of": as_of}) as r:
+        events = [json.loads(line) for line in r.iter_lines() if line]
+    meta = next(e for e in events if e["type"] == "meta")
+    ids = [row["id"] for row in meta["raw_results"]]
+    assert ids and ids[0] == b.id, meta["raw_results"]
+
+
+def test_the_gate_as_of_retrieval_by_meaning_over_200_candidates_is_under_a_second(session, fake_embeddings):
+    timetravel.forget_past_vectors()
+    entries = [_note_with_history(session, [f"Groceries {k}: milk and eggs.", f"Race {k} at the carnival."], [0, 30]) for k in range(200)]
+    started = time.perf_counter()
+    picked = timetravel.rewind(session, "shopping", T0 + timedelta(days=10), entries, limit=5, embeddings=fake_embeddings)
+    elapsed = time.perf_counter() - started
+    assert len(picked) == 5 and all("milk" in p.text for p in picked)
+    assert elapsed < 1.0, f"{elapsed:.3f}s"
