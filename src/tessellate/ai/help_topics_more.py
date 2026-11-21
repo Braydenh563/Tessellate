@@ -1596,10 +1596,10 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Select a passage in a note, a document or a reading and run "
             "Translate this from the command palette (Ctrl+K): it turns "
-            "English into Spanish on this computer, with no model, in about a "
+            "English and five other languages on this computer, with no model, in about a "
             "second, and Copy or Replace the selection puts it to use. With "
             "nothing selected it takes the whole editor you were in. It needs "
-            "Translate offline, a 27 MB download in Settings, Packages "
+            "Translate offline, a 209 MB download in Settings, Packages "
             "(Languages); until then the row says so and opens that page. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "

@@ -831,6 +831,7 @@ function newTimelineWindow(density) {
 
 //: Every row of the feed, built or not: a hollow one is a shell with its key.
 function timelineRowEls() {
+  timelineWindow.win?.flush();
   return [...$("timeline-scroll").querySelectorAll(".timeline-row, .row-shell")];
 }
 

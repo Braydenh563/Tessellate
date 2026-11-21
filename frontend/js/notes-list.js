@@ -1849,6 +1849,8 @@ const ROW_WINDOW_MARGIN = "1200px 0px";
 const ROW_WINDOW_BATCH = 6;
 const ROW_WINDOW_FAR = 3000;
 const ROW_WINDOW_CARRY = ["rail-subject", "flash"];
+const ROW_WINDOW_FIRST_SHELLS = 240;
+const ROW_WINDOW_CHUNK = 500;
 
 function windowRows(root, o) {
   const info = new WeakMap(); // row -> { items, i }
@@ -1936,28 +1938,66 @@ function windowRows(root, o) {
     clearTimeout(timer);
     timer = setTimeout(settle, 300);
   }, { root, rootMargin: ROW_WINDOW_MARGIN });
+  //: **Shells past the first screens land when the app is idle** (L603). Five
+  //: thousand shells and their observers cost 140 to 210ms on the Notes press
+  //: that shows twelve rows; the rest join the list in idle chunks, in order.
+  //: A row asked to be built (`now`) is always in the first pass, and `flush`
+  //: lands the rest at once for a caller that walks every row.
+  const pending = []; // [list, items, from, to, now]
+  let idle = 0;
+  //: Safari has no idle callback: a short timer stands in, with no deadline.
+  const later = (fn) => (typeof requestIdleCallback === "function" ? requestIdleCallback(fn, { timeout: 400 }) : setTimeout(fn, 60));
+  const cancel = (id) => (typeof cancelIdleCallback === "function" ? cancelIdleCallback(id) : clearTimeout(id));
+  function append(list, items, from, to, now) {
+    const fragment = document.createDocumentFragment();
+    for (let i = from; i < to; i++) {
+      if (now(items[i], i)) { fragment.appendChild(make(items, i)); continue; }
+      const shell = shellFor(items, i);
+      observer.observe(shell);
+      fragment.appendChild(shell);
+    }
+    list.appendChild(fragment);
+  }
+  function drain(deadline, all = false) {
+    idle = 0;
+    while (pending.length && !off) {
+      const job = pending[0];
+      const to = Math.min(job[3], job[2] + ROW_WINDOW_CHUNK);
+      append(job[0], job[1], job[2], to, job[4]);
+      job[2] = to;
+      if (to >= job[3]) pending.shift();
+      if (!all && !(deadline?.timeRemaining?.() >= 4)) break;
+    }
+    if (pending.length && !off) idle = later(drain);
+  }
+  function flush() {
+    if (idle) cancel(idle);
+    idle = 0;
+    drain(null, true);
+  }
   //: `now(item, i)` says which rows are built as they land; the rest are shells.
   function add(list, more, now = () => false) {
     const items = lists.get(list) || [];
     lists.set(list, items);
     const from = items.length;
     for (const item of more) items.push(item);
-    const fragment = document.createDocumentFragment();
-    more.forEach((item, k) => {
-      const i = from + k;
-      if (now(item, i)) return fragment.appendChild(make(items, i));
-      const shell = shellFor(items, i);
-      observer.observe(shell);
-      fragment.appendChild(shell);
-    });
-    list.appendChild(fragment);
+    let first = Math.min(items.length, from + ROW_WINDOW_FIRST_SHELLS);
+    if (pending.length) first = from;
+    else for (let i = items.length - 1; i >= first; i--) if (now(items[i], i)) { first = i + 1; break; }
+    append(list, items, from, first, now);
+    if (first < items.length) {
+      pending.push([list, items, first, items.length, now]);
+      if (!idle) idle = later(drain);
+    }
   }
   function stop() {
     off = true;
     observer.disconnect();
     clearTimeout(timer);
+    if (idle) cancel(idle);
+    pending.length = 0;
   }
-  return { add, fill, stop };
+  return { add, fill, flush, stop };
 }
 
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
@@ -2144,6 +2184,7 @@ function applyNotesViewMode() {
 //: between them, and a second implementation of "which notes are on screen"
 //: is a second thing to keep in step, the DOM already holds the answer.
 function listedNoteIds() {
+  noteWindow.win?.flush();
   return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) =>
     Number(li.dataset.id)
   );
@@ -2325,6 +2366,7 @@ let rowEnterTimer = 0;
 function noteListGrownBy(list, ordered) {
   const was = noteWindow.items;
   if (!was?.length || !noteWindow.win || noteWindow.list !== list || noteWindow.mode !== notesViewMode) return null;
+  noteWindow.win.flush();
   if (ordered.length <= was.length || list.childElementCount !== was.length) return null;
   if (list.lastElementChild.dataset.id !== String(was[was.length - 1][0].id)) return null;
   for (let i = 0; i < was.length; i++) if (was[i][0] !== ordered[i][0] || was[i][1] !== ordered[i][1]) return null;
@@ -2510,6 +2552,7 @@ const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[d
 
 //: A shift-click range over every row between the two, built or not.
 function selectNoteRange(list, fromId, toId, on) {
+  noteWindow.win?.flush();
   const rows = entryListItems(list);
   const a = rows.findIndex((li) => li.dataset.id === fromId);
   const b = rows.findIndex((li) => li.dataset.id === toId);
@@ -2554,6 +2597,7 @@ function initEntryListKeyboardNav() {
     //: deepflows sweep: click into the editor, press End, type). Checkboxes
     //: and buttons are not fields, so the row's arrows still work from them.
     if (event.target.closest('textarea, select, [contenteditable], .cm-editor, input:not([type="checkbox"]):not([type="radio"]):not([type="button"])')) return;
+    noteWindow.win?.flush();
     const items = entryListItems(list);
     const current = event.target.closest("li");
     const index = current ? items.indexOf(current) : -1;

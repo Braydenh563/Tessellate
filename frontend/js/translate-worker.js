@@ -100,6 +100,13 @@ function translateAligned(bytes, alignment) {
 async function translateModel(pair) {
   const key = `${pair.from}-${pair.to}`;
   if (!translateEngine.models.has(key)) {
+    //: One model at a time: the engine's memory aborted on the fifth model held
+    //: at once (measured in Node 22 with the eight pairs), so a pair change frees
+    //: the one before it. Switching back reloads in about 100 ms.
+    for (const [other, held] of [...translateEngine.models]) {
+      translateEngine.models.delete(other);
+      held.then((old) => old.delete()).catch(() => {});
+    }
     const loading = Promise.all([translateBytes(pair.model), translateBytes(pair.lex), translateBytes(pair.vocab)]).then(
       ([model, lex, vocab]) => {
         const vocabs = new translateEngine.module.AlignedMemoryList();
