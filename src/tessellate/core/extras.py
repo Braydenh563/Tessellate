@@ -1699,8 +1699,32 @@ def _requirements_path() -> Path:
     return Path(__file__).resolve().parents[3] / "requirements.txt"
 
 
+#: Each pip extra's version bounds (L-world-class-320, SECURITY.md T23):
+#: an install used to take whatever PyPI's newest release was that day.
+#: The floor is the release current on 2026-11-21 (read from PyPI), the cap
+#: the next major, or the next minor for a 0.x project, as requirements.txt
+#: caps its own; fastembed's bound is requirements.txt's. A constraint, not
+#: a requirement, so it bounds the package wherever it is pulled in and the
+#: extra's `packages` stay names. Hashes are L-world-class-691.
+EXTRA_BOUNDS = (
+    "pypdfium2>=5.15,<6",
+    "Pillow>=13.0,<14",
+    "faster-whisper>=1.2,<2",
+    "pywebview>=6.2,<7",
+    "pystray>=0.19.5,<0.20",
+    "markitdown>=0.1.9,<0.2",
+    "pytesseract>=0.3.13,<0.4",
+    "rapidocr_onnxruntime>=1.4,<2",
+    "llama-cpp-python>=0.3.37,<0.4",
+    "sherpa-onnx>=2.0,<3",
+    "sentence-transformers>=6.3,<7",
+    "torch>=2.15,<3",
+)
+
+
 def _constraints_copy(req_path: Path) -> Path | None:
-    """A version of `req_path` pip will actually accept as a `-c` file.
+    """A version of `req_path` pip will actually accept as a `-c` file, with
+    `EXTRA_BOUNDS` after it (alone when the file cannot be read).
 
     A constraint only needs the version bound, not the extra, so this strips
     `[...]` rather than dropping the affected lines, `uvicorn` and `fsspec`
@@ -1708,12 +1732,12 @@ def _constraints_copy(req_path: Path) -> Path | None:
     temp file; the caller deletes it once pip has run.
     """
     try:
-        text = req_path.read_text(encoding="utf-8")
+        text = _REQUIREMENT_EXTRAS_RE.sub("", req_path.read_text(encoding="utf-8"))
     except OSError:
-        return None
+        text = ""
     fd, tmp_path = tempfile.mkstemp(prefix="memorymap-pip-constraints-", suffix=".txt")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
-        f.write(_REQUIREMENT_EXTRAS_RE.sub("", text))
+        f.write(text.rstrip("\n") + "\n\n# Optional extras (core/extras.py EXTRA_BOUNDS)\n" + "\n".join(EXTRA_BOUNDS) + "\n")
     return Path(tmp_path)
 
 
@@ -1848,7 +1872,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         # package's own dependency resolution can't drag a base package (e.g.
         # tokenizers, numpy) to a version the rest of the app doesn't expect.
         req_path = _requirements_path()
-        constraints_copy = _constraints_copy(req_path) if req_path.is_file() else None
+        constraints_copy = _constraints_copy(req_path)
         constraint = ["-c", str(constraints_copy)] if constraints_copy else []
 
         command = [

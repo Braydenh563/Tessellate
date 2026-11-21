@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11177, test files 2892, tests 22887, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11180, test files 2894, tests 22895, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8538)
 
@@ -14237,7 +14237,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11177)
+## Backend modules (11180)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24841,73 +24841,76 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `resolve` | src/tessellate/core/embedfind.py:236 |
 | `usable_repo` | src/tessellate/core/embedfind.py:231 |
 
-### src/tessellate/core/embedmodels.py (63)
+### src/tessellate/core/embedmodels.py (66)
 
 | Name | File:line |
 |---|---|
-| `DownloadState` | src/tessellate/core/embedmodels.py:390 |
-| `EmbedModel` | src/tessellate/core/embedmodels.py:91 |
-| `OllamaEmbedModel` | src/tessellate/core/embedmodels.py:260 |
-| `OnnxBuild` | src/tessellate/core/embedmodels.py:69 |
-| `_begin_download` | src/tessellate/core/embedmodels.py:1013 |
-| `_build_from_hub` | src/tessellate/core/embedmodels.py:1190 |
-| `_clear_directory` | src/tessellate/core/embedmodels.py:1222 |
-| `_declared_bytes` | src/tessellate/core/embedmodels.py:626 |
-| `_dir_size` | src/tessellate/core/embedmodels.py:756 |
-| `_file_size` | src/tessellate/core/embedmodels.py:635 |
-| `_folder_for` | src/tessellate/core/embedmodels.py:434 |
-| `_format_refusal` | src/tessellate/core/embedmodels.py:1128 |
-| `_human_size` | src/tessellate/core/embedmodels.py:780 |
-| `_in_use` | src/tessellate/core/embedmodels.py:1270 |
-| `_log` | src/tessellate/core/embedmodels.py:861 |
-| `_looks_like_a_dropped_connection` | src/tessellate/core/embedmodels.py:895 |
-| `_model_dir` | src/tessellate/core/embedmodels.py:474 |
-| `_read_json` | src/tessellate/core/embedmodels.py:708 |
-| `_round_download` | src/tessellate/core/embedmodels.py:527 |
-| `_run_download` | src/tessellate/core/embedmodels.py:899 |
-| `_shares_onnx_folder` | src/tessellate/core/embedmodels.py:553 |
-| `_snapshot_missing` | src/tessellate/core/embedmodels.py:653 |
-| `_snapshots` | src/tessellate/core/embedmodels.py:442 |
-| `_spawn_download` | src/tessellate/core/embedmodels.py:1030 |
-| `_torch_files` | src/tessellate/core/embedmodels.py:518 |
-| `_typed_build` | src/tessellate/core/embedmodels.py:450 |
-| `_unlink_weights` | src/tessellate/core/embedmodels.py:606 |
-| `_weights_floor` | src/tessellate/core/embedmodels.py:645 |
-| `backend_name` | src/tessellate/core/embedmodels.py:61 |
-| `build_for` | src/tessellate/core/embedmodels.py:460 |
-| `cache_health` | src/tessellate/core/embedmodels.py:667 |
-| `cache_root` | src/tessellate/core/embedmodels.py:416 |
-| `can_download` | src/tessellate/core/embedmodels.py:793 |
-| `cancel` | src/tessellate/core/embedmodels.py:839 |
-| `catalogue` | src/tessellate/core/embedmodels.py:321 |
-| `current` | src/tessellate/core/embedmodels.py:835 |
-| `disk_size_of` | src/tessellate/core/embedmodels.py:503 |
-| `engine_moved` | src/tessellate/core/embedmodels.py:533 |
-| `fetch` | src/tessellate/core/embedmodels.py:738 |
-| `hub_metadata` | src/tessellate/core/embedmodels.py:1098 |
-| `hub_refusal` | src/tessellate/core/embedmodels.py:1141 |
-| `is_downloaded` | src/tessellate/core/embedmodels.py:496 |
-| `legacy_files` | src/tessellate/core/embedmodels.py:561 |
-| `model_folder` | src/tessellate/core/embedmodels.py:469 |
-| `on_download_finished` | src/tessellate/core/embedmodels.py:975 |
-| `parse_typed_name` | src/tessellate/core/embedmodels.py:1082 |
-| `pooling_of` | src/tessellate/core/embedmodels.py:716 |
-| `prefix_for` | src/tessellate/core/embedmodels.py:315 |
-| `reinstall` | src/tessellate/core/embedmodels.py:980 |
-| `remove` | src/tessellate/core/embedmodels.py:1198 |
-| `remove_legacy` | src/tessellate/core/embedmodels.py:579 |
-| `repair` | src/tessellate/core/embedmodels.py:1042 |
-| `repair_title` | src/tessellate/core/embedmodels.py:1036 |
-| `reset_for_tests` | src/tessellate/core/embedmodels.py:1278 |
-| `resolve_choice` | src/tessellate/core/embedmodels.py:379 |
-| `set_in_use_check` | src/tessellate/core/embedmodels.py:1265 |
-| `size_in_words` | src/tessellate/core/embedmodels.py:788 |
-| `snapshot_path` | src/tessellate/core/embedmodels.py:698 |
-| `snapshot_state` | src/tessellate/core/embedmodels.py:478 |
-| `start` | src/tessellate/core/embedmodels.py:997 |
-| `start_typed` | src/tessellate/core/embedmodels.py:1162 |
-| `status` | src/tessellate/core/embedmodels.py:804 |
-| `width_of` | src/tessellate/core/embedmodels.py:727 |
+| `DownloadState` | src/tessellate/core/embedmodels.py:448 |
+| `EmbedModel` | src/tessellate/core/embedmodels.py:99 |
+| `OllamaEmbedModel` | src/tessellate/core/embedmodels.py:318 |
+| `OnnxBuild` | src/tessellate/core/embedmodels.py:71 |
+| `_arrival_problem` | src/tessellate/core/embedmodels.py:992 |
+| `_begin_download` | src/tessellate/core/embedmodels.py:1120 |
+| `_build_from_hub` | src/tessellate/core/embedmodels.py:1297 |
+| `_clear_directory` | src/tessellate/core/embedmodels.py:1329 |
+| `_declared_bytes` | src/tessellate/core/embedmodels.py:684 |
+| `_dir_size` | src/tessellate/core/embedmodels.py:849 |
+| `_file_size` | src/tessellate/core/embedmodels.py:693 |
+| `_folder_for` | src/tessellate/core/embedmodels.py:492 |
+| `_format_refusal` | src/tessellate/core/embedmodels.py:1235 |
+| `_human_size` | src/tessellate/core/embedmodels.py:873 |
+| `_in_use` | src/tessellate/core/embedmodels.py:1377 |
+| `_log` | src/tessellate/core/embedmodels.py:954 |
+| `_looks_like_a_dropped_connection` | src/tessellate/core/embedmodels.py:988 |
+| `_model_dir` | src/tessellate/core/embedmodels.py:532 |
+| `_read_json` | src/tessellate/core/embedmodels.py:769 |
+| `_round_download` | src/tessellate/core/embedmodels.py:585 |
+| `_run_download` | src/tessellate/core/embedmodels.py:1009 |
+| `_sha256_of` | src/tessellate/core/embedmodels.py:818 |
+| `_shares_onnx_folder` | src/tessellate/core/embedmodels.py:611 |
+| `_snapshot_missing` | src/tessellate/core/embedmodels.py:711 |
+| `_snapshots` | src/tessellate/core/embedmodels.py:500 |
+| `_spawn_download` | src/tessellate/core/embedmodels.py:1137 |
+| `_torch_files` | src/tessellate/core/embedmodels.py:576 |
+| `_typed_build` | src/tessellate/core/embedmodels.py:508 |
+| `_unlink_weights` | src/tessellate/core/embedmodels.py:664 |
+| `_weights_floor` | src/tessellate/core/embedmodels.py:703 |
+| `backend_name` | src/tessellate/core/embedmodels.py:63 |
+| `build_for` | src/tessellate/core/embedmodels.py:518 |
+| `cache_health` | src/tessellate/core/embedmodels.py:725 |
+| `cache_root` | src/tessellate/core/embedmodels.py:474 |
+| `can_download` | src/tessellate/core/embedmodels.py:886 |
+| `cancel` | src/tessellate/core/embedmodels.py:932 |
+| `catalogue` | src/tessellate/core/embedmodels.py:379 |
+| `current` | src/tessellate/core/embedmodels.py:928 |
+| `disk_size_of` | src/tessellate/core/embedmodels.py:561 |
+| `engine_moved` | src/tessellate/core/embedmodels.py:591 |
+| `fetch` | src/tessellate/core/embedmodels.py:799 |
+| `hub_metadata` | src/tessellate/core/embedmodels.py:1205 |
+| `hub_refusal` | src/tessellate/core/embedmodels.py:1248 |
+| `is_downloaded` | src/tessellate/core/embedmodels.py:554 |
+| `legacy_files` | src/tessellate/core/embedmodels.py:619 |
+| `model_folder` | src/tessellate/core/embedmodels.py:527 |
+| `on_download_finished` | src/tessellate/core/embedmodels.py:1082 |
+| `parse_typed_name` | src/tessellate/core/embedmodels.py:1189 |
+| `pooling_of` | src/tessellate/core/embedmodels.py:777 |
+| `prefix_for` | src/tessellate/core/embedmodels.py:373 |
+| `reinstall` | src/tessellate/core/embedmodels.py:1087 |
+| `remove` | src/tessellate/core/embedmodels.py:1305 |
+| `remove_legacy` | src/tessellate/core/embedmodels.py:637 |
+| `repair` | src/tessellate/core/embedmodels.py:1149 |
+| `repair_title` | src/tessellate/core/embedmodels.py:1143 |
+| `reset_for_tests` | src/tessellate/core/embedmodels.py:1385 |
+| `resolve_choice` | src/tessellate/core/embedmodels.py:437 |
+| `set_in_use_check` | src/tessellate/core/embedmodels.py:1372 |
+| `size_in_words` | src/tessellate/core/embedmodels.py:881 |
+| `snapshot_path` | src/tessellate/core/embedmodels.py:756 |
+| `snapshot_state` | src/tessellate/core/embedmodels.py:536 |
+| `start` | src/tessellate/core/embedmodels.py:1104 |
+| `start_typed` | src/tessellate/core/embedmodels.py:1269 |
+| `status` | src/tessellate/core/embedmodels.py:897 |
+| `weights_differ` | src/tessellate/core/embedmodels.py:826 |
+| `width_of` | src/tessellate/core/embedmodels.py:788 |
 
 ### src/tessellate/core/embedswitch.py (17)
 
@@ -25033,69 +25036,69 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Bundle` | src/tessellate/core/extras.py:1054 |
 | `Extra` | src/tessellate/core/extras.py:363 |
 | `InstallState` | src/tessellate/core/extras.py:1142 |
-| `_blocking_failure` | src/tessellate/core/extras.py:2414 |
-| `_bulk_refusal` | src/tessellate/core/extras.py:2240 |
-| `_busy` | src/tessellate/core/extras.py:1989 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2438 |
+| `_bulk_refusal` | src/tessellate/core/extras.py:2264 |
+| `_busy` | src/tessellate/core/extras.py:2013 |
 | `_canonical` | src/tessellate/core/extras.py:1493 |
-| `_claim` | src/tessellate/core/extras.py:1977 |
-| `_constraints_copy` | src/tessellate/core/extras.py:1702 |
-| `_dispatch` | src/tessellate/core/extras.py:1995 |
+| `_claim` | src/tessellate/core/extras.py:2001 |
+| `_constraints_copy` | src/tessellate/core/extras.py:1725 |
+| `_dispatch` | src/tessellate/core/extras.py:2019 |
 | `_extra_size` | src/tessellate/core/extras.py:1031 |
-| `_finish_bulk` | src/tessellate/core/extras.py:2293 |
+| `_finish_bulk` | src/tessellate/core/extras.py:2317 |
 | `_forget_footprints` | src/tessellate/core/extras.py:1373 |
 | `_frozen_target_args` | src/tessellate/core/extras.py:259 |
-| `_install_cleanup` | src/tessellate/core/extras.py:1790 |
-| `_install_ocr_binary` | src/tessellate/core/extras.py:1763 |
-| `_install_refusal` | src/tessellate/core/extras.py:2074 |
-| `_installed_snapshot` | src/tessellate/core/extras.py:1720 |
+| `_install_cleanup` | src/tessellate/core/extras.py:1814 |
+| `_install_ocr_binary` | src/tessellate/core/extras.py:1787 |
+| `_install_refusal` | src/tessellate/core/extras.py:2098 |
+| `_installed_snapshot` | src/tessellate/core/extras.py:1744 |
 | `_interpreter_behind` | src/tessellate/core/extras.py:195 |
-| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2329 |
+| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2353 |
 | `_no_build` | src/tessellate/core/extras.py:1409 |
 | `_pip_base_command` | src/tessellate/core/extras.py:316 |
 | `_pip_platforms` | src/tessellate/core/extras.py:280 |
 | `_pip_reason` | src/tessellate/core/extras.py:102 |
 | `_python_candidates` | src/tessellate/core/extras.py:171 |
 | `_read_footprint` | src/tessellate/core/extras.py:1328 |
-| `_release_captions_helper` | src/tessellate/core/extras.py:2066 |
+| `_release_captions_helper` | src/tessellate/core/extras.py:2090 |
 | `_removable_names` | src/tessellate/core/extras.py:1588 |
 | `_remove_from_frozen_target` | src/tessellate/core/extras.py:1498 |
 | `_requirement_name` | src/tessellate/core/extras.py:1487 |
 | `_requirements_path` | src/tessellate/core/extras.py:1688 |
-| `_roll_back` | src/tessellate/core/extras.py:1731 |
-| `_run_bulk` | src/tessellate/core/extras.py:2203 |
-| `_run_bulk_item` | src/tessellate/core/extras.py:2267 |
-| `_run_download_install` | src/tessellate/core/extras.py:1921 |
-| `_run_download_uninstall` | src/tessellate/core/extras.py:1963 |
-| `_run_install` | src/tessellate/core/extras.py:1831 |
-| `_run_single` | src/tessellate/core/extras.py:2016 |
+| `_roll_back` | src/tessellate/core/extras.py:1755 |
+| `_run_bulk` | src/tessellate/core/extras.py:2227 |
+| `_run_bulk_item` | src/tessellate/core/extras.py:2291 |
+| `_run_download_install` | src/tessellate/core/extras.py:1945 |
+| `_run_download_uninstall` | src/tessellate/core/extras.py:1987 |
+| `_run_install` | src/tessellate/core/extras.py:1855 |
+| `_run_single` | src/tessellate/core/extras.py:2040 |
 | `_run_uninstall` | src/tessellate/core/extras.py:1598 |
 | `_shared_with_others` | src/tessellate/core/extras.py:1565 |
 | `_spell_pack_extras` | src/tessellate/core/extras.py:434 |
 | `_status_row` | src/tessellate/core/extras.py:1268 |
-| `_uninstall_skip` | src/tessellate/core/extras.py:2233 |
+| `_uninstall_skip` | src/tessellate/core/extras.py:2257 |
 | `activate_frozen_extras` | src/tessellate/core/extras.py:245 |
 | `bulk` | src/tessellate/core/extras.py:1392 |
-| `bulk_label` | src/tessellate/core/extras.py:2197 |
+| `bulk_label` | src/tessellate/core/extras.py:2221 |
 | `bulk_status` | src/tessellate/core/extras.py:1377 |
 | `bundles` | src/tessellate/core/extras.py:1297 |
 | `cancel` | src/tessellate/core/extras.py:1434 |
 | `current` | src/tessellate/core/extras.py:1430 |
 | `download_mb` | src/tessellate/core/extras.py:1040 |
-| `download_ready` | src/tessellate/core/extras.py:2426 |
+| `download_ready` | src/tessellate/core/extras.py:2450 |
 | `find_system_python` | src/tessellate/core/extras.py:133 |
 | `footprint` | src/tessellate/core/extras.py:1305 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:223 |
-| `install_blocking` | src/tessellate/core/extras.py:2387 |
+| `install_blocking` | src/tessellate/core/extras.py:2411 |
 | `installed_bytes` | src/tessellate/core/extras.py:1358 |
 | `is_installed` | src/tessellate/core/extras.py:1221 |
-| `legacy_engine` | src/tessellate/core/extras.py:2125 |
-| `on_release` | src/tessellate/core/extras.py:2060 |
+| `legacy_engine` | src/tessellate/core/extras.py:2149 |
+| `on_release` | src/tessellate/core/extras.py:2084 |
 | `removal_locked` | src/tessellate/core/extras.py:1396 |
-| `remove` | src/tessellate/core/extras.py:2087 |
-| `remove_legacy_engine` | src/tessellate/core/extras.py:2136 |
-| `reset_for_tests` | src/tessellate/core/extras.py:2378 |
-| `start` | src/tessellate/core/extras.py:2023 |
-| `start_bulk` | src/tessellate/core/extras.py:2149 |
+| `remove` | src/tessellate/core/extras.py:2111 |
+| `remove_legacy_engine` | src/tessellate/core/extras.py:2160 |
+| `reset_for_tests` | src/tessellate/core/extras.py:2402 |
+| `start` | src/tessellate/core/extras.py:2047 |
+| `start_bulk` | src/tessellate/core/extras.py:2173 |
 | `status` | src/tessellate/core/extras.py:1249 |
 | `unavailable_reason` | src/tessellate/core/extras.py:1413 |
 
@@ -28533,7 +28536,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22887)
+## Tests (22895)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29600,6 +29603,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_embedding_found.py | 11 |
 | tests/test_embedding_models.py | 15 |
 | tests/test_embedding_offline.py | 11 |
+| tests/test_embedding_pins_320.py | 5 |
 | tests/test_embedding_pull.py | 9 |
 | tests/test_embedding_reset.py | 7 |
 | tests/test_embedding_switch.py | 12 |
@@ -29655,6 +29659,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_export_paint.py | 4 |
 | tests/test_export_spaces_private.py | 9 |
 | tests/test_exports_list.py | 5 |
+| tests/test_extra_bounds_320.py | 3 |
 | tests/test_extra_downloads_retry.py | 13 |
 | tests/test_extra_notice.py | 4 |
 | tests/test_extra_notice_mounts_1111.py | 3 |
