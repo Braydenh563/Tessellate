@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 77 | 10 | 0 | 0 | 87 |
-| general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 467 | 81 | 2 | 111 | 920 |
+| general | 0 | 33 | 2 | 0 | 4 | 35 |
+| all | 372 | 465 | 81 | 2 | 111 | 918 |
 
 ## graph
 
@@ -543,9 +543,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L702** `general` open, M: Cut math-editor.js onload forced layout (calculator panel). From agent-remaining/lag-1103.md. Evidence: `math-editor.js` onload 224ms (forced layout 187ms) and the mathlive keydown 530ms: the calculator panel belongs to the
 - [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
-- [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
-- [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
-- [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
 - [ ] **L-general-1** `general` open, S: Decode NAT64 (64:ff9b::/96) addresses to their embedded IPv4 in the SSRF address test. From ANALYSIS.md:4350. Evidence: grep -ri 'ff9b|nat64' src returns nothing; core/security.py:942 relies on `not address.is_global`, which reports NAT64 of 169.254.169.254 and 127.0.0.1 as global on Python 3.13
 - [ ] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it
@@ -578,6 +575,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 - [ ] **L-general-60** `general` open, L: Split the render-blocking shell CSS so the first frame waits only for the lock screen's and the shell's rules. From L-world-class-280, 2026-11-21. Evidence: First paint is the sum of the stylesheets and the boot scripts, not the HTML: served variants, 9 cold loads each on a loaded 4-core box, FCP median full 400, no boot scripts 256, no stylesheets 208, neither 132; templates stripped (868 to 109 KB) 312 vs 312; nine stylesheets dropped 324 vs 268 (noise). Selector matching 29.6 ms over 1,647 selectors with no hotspot (top: .entry-meta.note-meta > .chip.tag + :is(...) 1.3 ms; :has total 2.1 ms). Boot scripts as ordered dynamic scripts: FCP 392 to 332, lock usable 899 vs 868, so no gain where it counts. The lever left is splitting the 2.5 MB of shell CSS so only the lock screen's and the shell's rules block the first frame.
+- [ ] **L-general-61** `general` open, M: Find what lays out 10 times a second while the companion idles (tempo steps on SVG). From agent E, L707 probe. Evidence: avatars.js nameMarkBuddyTempo: Atlas idle on the dashboard at 4x, 1093x614: 12 to 16 layouts per 1.2 s with the companion on, 0 with it off (MODE probe, 3 runs)
 
 ## Owner calls
 

@@ -7,6 +7,9 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Notes: the first press on Notes no longer forces a style pass to find its scrolling column (93ms of style at 4x before; the largest forced pass in a tab press is now fitNoteMetas at 12 to 41ms) (L705).
+- Companion keep-up: L707 closed as measured; extra layouts per tab switch with the companion on are 0 to 3 over its idle rate (12 to 16 per 1.2 s, its own 10 Hz steps), inside the 6 to 9 of a switch without it (L707).
+- Companion tempo: L704 closed as measured; getAnimations on the companion at 4x on chat is 0.1 to 11 ms over 12 s (11 reads), from 54 to 187 ms, so no forced style flush over the 50 ms budget remains (L704).
+- Companion look: L706 is already fixed (08-consistency.css registers --nmb-ex/ey/hx with inherits false, nameMarkBuddyAim writes the four readers); measured 5 to 14 ms a write at 4x on 837 descendants, from 109 ms (L706, pinned by tests/test_lag_forced_layout_1560.py).
 - Notes: in card view a linked note shows two link pills before "+N more links", and they share the details line when both fit (111px instead of 141px a card at 1093x614) (L-world-class-95; the four-card laptop fold is an owner call in BACKLOG).
 - Agent: the chat turn and each skill step run as small named stages that can be tested one at a time; behaviour is unchanged (L-world-class-124).
 - Duplicates: the review on 5,000 alike notes takes 4.8 s instead of 70 s and 613 MB instead of 2.1 GB (L-world-class-410).
