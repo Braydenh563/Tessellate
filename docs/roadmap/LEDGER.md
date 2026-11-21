@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 2 | 0 | 0 | 0 | 2 |
+| chat | 0 | 1 | 0 | 0 | 0 | 1 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 55 | 0 | 69 | 357 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 358 | 66 | 0 | 122 | 750 |
+| all | 326 | 357 | 66 | 0 | 122 | 749 |
 
 ## graph
 
@@ -25,7 +25,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
 
-- [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
 
 ## whiteboard
 
