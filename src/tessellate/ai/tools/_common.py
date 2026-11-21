@@ -21,6 +21,7 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps
+from tessellate.repo import memberships
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import EmbeddingRecord, Entry
 from tessellate.entry import manager
@@ -392,7 +393,7 @@ def _category_clause(session: Session, name: str):
         if name == manager.UNCATEGORISED:
             return Entry.category_id.is_(None)
         return Entry.id.is_(None)  # matches nothing
-    return Entry.category_id == category_id
+    return memberships.in_category(category_id)
 
 
 def _since_days(value) -> int | None:

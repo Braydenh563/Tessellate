@@ -1934,6 +1934,7 @@ TOPIC_META: dict[str, dict] = {
     "filing-settings": {"title": "Filing switches, and asking when unsure", "path": "Settings, Background tasks; Capture, the Filing options menu"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
+    "note-groups": {"title": "Groups, and a note in more than one category", "path": "A note's category chip, then Add to a group or Also file under"},
     "tidy": {"title": "Tidy: reviews with no AI", "path": "Notes tab, the broom in the dock"},
     "manage-categories": {"title": "Managing categories", "path": "Notes tab, the Categories head in the sidebar"},
     "note-history": {"title": "A note's history", "path": "A note's menu, History"},
@@ -1976,7 +1977,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "audio-overview", "folder-sync", "meetings",
     )),
     ("Filing, tags and categories", (
-        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
+        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "note-groups", "tidy",
     )),
     ("Asking Atlas", (
         "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",

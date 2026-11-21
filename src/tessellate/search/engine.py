@@ -60,6 +60,7 @@ from tessellate.search import chunks as search_chunks
 from tessellate.search import index as search_index
 from tessellate.search import query as query_understanding
 from tessellate.search import search_manager
+from tessellate.repo import memberships
 from tessellate.search.snippet import clip_words, window_words
 
 if TYPE_CHECKING:
@@ -1230,18 +1231,10 @@ def _by_category(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     wanted = {name.casefold() for name in _in_scope(session, asked)[1]}
     if not wanted:
         return rows
-    from tessellate.core.database import Category, Entry
 
     ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
-    filed = {}
-    if ids:
-        filed = {
-            entry_id: str(name).casefold()
-            for entry_id, name in session.execute(
-                select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
-            )
-        }
-    return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS and filed.get(row["ref_id"]) in wanted]
+    filed = memberships.folded_names(session, ids)
+    return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS and filed.get(row["ref_id"], set()) & wanted]
 
 
 _COUNTED = {
@@ -1266,18 +1259,10 @@ def _without_categories(session: Session, rows: list, asked) -> list:  # noqa: A
     ruled_out = {name.casefold() for name in asked.without_categories}
     if not ruled_out:
         return rows
-    from tessellate.core.database import Category, Entry
 
     ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
-    filed = {}
-    if ids:
-        filed = {
-            entry_id: str(name).casefold()
-            for entry_id, name in session.execute(
-                select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
-            )
-        }
-    return [row for row in rows if filed.get(row["ref_id"]) not in ruled_out]
+    filed = memberships.folded_names(session, ids)
+    return [row for row in rows if not filed.get(row["ref_id"], set()) & ruled_out]
 
 
 def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int, strict: bool = False) -> tuple:  # noqa: ANN001

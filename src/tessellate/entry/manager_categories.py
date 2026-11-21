@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from tessellate.core.database import Category, EmbeddingRecord, Entry
 from tessellate.entry.cleantext import is_blank, name_key
 from tessellate.entry.manager import BROKEN_BAR, UNCATEGORISED, category_label, category_space, get_or_create_category, log_action, note_filter
+from tessellate.repo import memberships
 
 
 # --- category management (rename / delete) -----------------------------------
@@ -119,6 +120,7 @@ def rename_category(session: Session, category_id: int, new_name: str) -> dict:
     if existing is not None:
         # Merge: move the entries across, then drop the now-empty category.
         moved = _reassign(session, category.id, existing.id)
+        memberships.move_also_in(session, category.id, existing.id)  # L-world-class-173
         log_action(session, "edited", "category", existing.id, f"merged {category.name} → {new_name}")
         session.delete(category)
         session.commit()
