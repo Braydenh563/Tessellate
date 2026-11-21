@@ -1384,10 +1384,18 @@
     if (/\[\[[^\]]*$/.test(upto)) return null;
     return { start: line.from + match.index, fragment: match[0] };
   }
+  //: **Home again on a pause, not on each key** (L342, L-documents-26): the list goes back into the
+  //: card when it closes, and every move in or out of `.doc-main` restyled the card's whole subtree
+  //: (about 365 elements through the `.doc-layout:has()` rules, 11 to 42 ms at 4x CPU, on one key in
+  //: four while a word gained and lost its rows). Hidden at once, moved back a second after the last
+  //: close, unless it opened again.
   function hideDocComplete() {
     const list = $("doc-complete-list");
     list?.classList.add("hidden");
-    docReturnFromViewport(list);
+    clearTimeout(hideDocComplete.home);
+    hideDocComplete.home = setTimeout(() => {
+      if (list?.classList.contains("hidden")) docReturnFromViewport(list);
+    }, 1000);
     docCompleteMatches = [];
     docCompleteBox = null;
     if (typeof docProseGhostSet === "function") docProseGhostSet(null, "");
@@ -1419,6 +1427,59 @@
     if (!options.length) return null;
     return { start: line.from + tok.start, options };
   }
+  //: **The first `max` words that extend the fragment, in the vocabulary's order** (L342): the
+  //: old filter lowercased every word twice and kept scanning past the six it shows, 3.2 to 4.2 ms
+  //: a key of self time at 4x CPU in a 20,000 word document (typegate.js PROFILE=1). Each entry
+  //: keeps its lowercase form once, beside the word and its count, and the list keeps an index by
+  //: the first three letters (DOC_COMPLETE_MIN), so a key reads one bucket instead of every word.
+  function docCompleteIndexOf(words) {
+    if (words.byPrefix) return words.byPrefix;
+    words.byPrefix = new Map();
+    for (const entry of words) {
+      const head = (entry[2] ?? (entry[2] = entry[0].toLowerCase())).slice(0, DOC_COMPLETE_MIN);
+      if (!words.byPrefix.has(head)) words.byPrefix.set(head, []);
+      words.byPrefix.get(head).push(entry);
+    }
+    return words.byPrefix;
+  }
+  function docCompleteMatchWords(words, fragment, max) {
+    const needle = fragment.toLowerCase();
+    const pool = needle.length >= DOC_COMPLETE_MIN ? docCompleteIndexOf(words).get(needle.slice(0, DOC_COMPLETE_MIN)) || [] : words;
+    const out = [];
+    for (const entry of pool) {
+      const low = entry[2] ?? (entry[2] = entry[0].toLowerCase());
+      if (low === needle || !low.startsWith(needle)) continue;
+      if (out.push({ word: entry[0], typed: fragment.length }) >= max) break;
+    }
+    return out;
+  }
+  //: The rows for the caret. The expansions first, and whatever the word switch says: they answer
+  //: a trigger the writer typed on purpose, where word suggestions are a guess. A row is
+  //: `{word, typed}` (the rest of a word) or `{fill, start}` (an expansion that replaces from
+  //: `start` to the caret).
+  function docCompleteRowsAt(box, fill) {
+    const at = docCompleteEnabled() ? docWordFragment(box) : null;
+    let words = [];
+    if (at) {
+      if (!docCompleteWords) docBuildVocabulary();
+      words = docCompleteMatchWords(docCompleteWords, at.fragment, DOC_COMPLETE_MAX);
+    }
+    return [...(fill ? fill.options.map((option) => ({ fill: option, start: fill.start })) : []), ...words];
+  }
+  //: **The ghost for a state, inside the key's own update** (L342): the ghost plugin asks this when
+  //: the text changed, so the ghost is drawn in the keystroke's transaction. Set afterwards by
+  //: `renderDocComplete`, it took a second transaction a key (about 3 ms at 4x CPU, most of it the
+  //: engine putting the DOM selection back round the new widget); that path stays for what this
+  //: cannot see (a row chosen with the arrows, the "/" menu opening on this key).
+  function docCompleteGhostAt(state) {
+    if (typeof editorMenuState === "object" && editorMenuState?.open) return null;
+    const box = { kind: "codemirror", selection: () => state.selection.main, lineAt: (at) => state.doc.lineAt(at) };
+    const rows = docCompleteRowsAt(box, docFillAt(box));
+    if (!rows.length) return null;
+    const chosen = rows[Math.min(docCompleteIndex, rows.length - 1)];
+    const text = chosen.fill ? docFillGhost(chosen.fill) : chosen.word.slice(chosen.typed);
+    return text ? { pos: state.selection.main.from, text } : null;
+  }
   function renderDocComplete(box) {
     const list = $("doc-complete-list");
     if (!list) return hideDocComplete();
@@ -1427,25 +1488,7 @@
     //: drew the word list's "warning" over the top of the block menu's first
     //: group (INBOX 421 b's screenshot pass).
     if (typeof editorMenuState === "object" && editorMenuState?.open) return hideDocComplete();
-    //: The expansions first, and whatever the word switch says: they answer a
-    //: trigger the writer typed on purpose, where word suggestions are a guess.
-    const fill = docFillAt(box);
-    const at = docCompleteEnabled() ? docWordFragment(box) : null;
-    let words = [];
-    if (at) {
-      if (!docCompleteWords) docBuildVocabulary();
-      const needle = at.fragment.toLowerCase();
-      words = docCompleteWords
-        .filter(([word]) => word.toLowerCase().startsWith(needle) && word.toLowerCase() !== needle)
-        .slice(0, DOC_COMPLETE_MAX)
-        .map(([word]) => ({ word, typed: at.fragment.length }));
-    }
-    //: A row is `{word, typed}` (the rest of a word) or `{fill, start}` (an
-    //: expansion that replaces from `start` to the caret).
-    docCompleteMatches = [
-      ...(fill ? fill.options.map((option) => ({ fill: option, start: fill.start })) : []),
-      ...words,
-    ];
+    docCompleteMatches = docCompleteRowsAt(box, docFillAt(box));
     if (!docCompleteMatches.length) return hideDocComplete();
 
     docCompleteBox = box;
@@ -1499,14 +1542,34 @@
       const ghost = chosen.fill ? docFillGhost(chosen.fill) : chosen.word.slice(chosen.typed);
       docProseGhostSet(caret, ghost);
     }
-    const point = docCaretPoint(box);
-    //: Kept on screen: a popup at the caret near the right edge or the bottom of
-    //: the window would otherwise open off it, which is the app-wide rule for
-    //: every menu here. Out of the card first, for the reason `docLiftToViewport`
-    //: gives: this list is placed in viewport coordinates too, so a blurred
-    //: ancestor moves it exactly as it moved the word menu.
+    //: **Placed in the engine's measure, not inside the key** (L342): the caret point and the list's
+    //: size are layout reads, and read here, inside the engine's update, they forced the page's style
+    //: and layout (3.8 ms a key for the size and 1.3 for the caret at 4x CPU in a 20,000 word
+    //: document, typegate.js PROFILE=1) before the frame laid it out again. The engine's own measure
+    //: pass reads the layout that frame makes anyway, before the paint, so the list is never seen
+    //: where it was; the fallback textarea has no such pass and places at once.
+    const view = box.kind === "codemirror" && typeof docCmView !== "undefined" ? docCmView : null;
+    if (view) {
+      view.requestMeasure({
+        key: "doc-complete-place",
+        read: () => (docCompleteBox && !list.classList.contains("hidden") ? docCompletePlace(docCompleteBox, list) : null),
+        write: (at) => at && docPlaceFixed(list, at.left, at.top),
+      });
+    }
+    //: Out of the card first, for the reason `docLiftToViewport` gives: this list is placed in
+    //: viewport coordinates too, so a blurred ancestor moves it exactly as it moved the word menu.
+    clearTimeout(hideDocComplete.home);
     docLiftToViewport(list);
     list.classList.remove("hidden");
+    if (!view) {
+      const at = docCompletePlace(box, list);
+      docPlaceFixed(list, at.left, at.top);
+    }
+  }
+  //: Where the list goes: kept on screen, because a popup at the caret near the right edge or the
+  //: bottom of the window would otherwise open off it, which is the app-wide rule for every menu.
+  function docCompletePlace(box, list) {
+    const point = docCaretPoint(box);
     const width = list.offsetWidth;
     const height = list.offsetHeight;
     const left = Math.min(point.left, window.innerWidth - width - 8);
@@ -1521,7 +1584,7 @@
       Math.max(8, flipped),
       Math.max(8, window.innerHeight - 8 - height)
     );
-    docPlaceFixed(list, Math.max(8, left), top);
+    return { left: Math.max(8, left), top };
   }
   function applyDocComplete(box, match) {
     if (!match) return hideDocComplete();
@@ -1756,8 +1819,11 @@
       else check();
     }, Math.max(DOC_PROSE_DEBOUNCE_MS, Math.min(600, 1.5 * docToolsOnInput.gap)));
     clearTimeout(docVocabTimer);
+    //: Rebuilt in the idle after the pause (L342), not by the first key typed after it: the
+    //: whole-text split is one long task at 4x CPU in a long document, and it landed inside a key.
     docVocabTimer = setTimeout(() => {
       docCompleteWords = null;
+      if (window.requestIdleCallback) requestIdleCallback(() => { if (!docCompleteWords) docBuildVocabulary(); docCompleteIndexOf(docCompleteWords); });
     }, 1200);
   }
   //: **The editing box an event landed in, as a surface.** Three shapes reach
@@ -1779,6 +1845,8 @@
     return docEventFromCm(target) ? docSurface() : null;
   }
 
+  //: On an exported function, not a new shared name (the shared scope is at its cap).
+  docToolsOnInput.ghostAt = docCompleteGhostAt;
   //: The file's surface: what other files call (L335).
   Object.assign(window, { docPhase2State, docSpellContraction, docProseSkipMask, docProse, docProseScrolled, renderDocProse, DOC_FINDING_SKIP, docFindingKind, docProseHeader, docProseDismissed, docFocusSyncProse, renderDocProsePanel, docIgnoreLabel, docProseIgnore, docProseJump, docProseFix, docBuildVocabulary, hideDocComplete, docCompleteKeydown, docAutocorrectAt, DOC_TOOL_KEYS, docToolPref, docSaveToolPref, docToolsOnInput, docToolsBoxFor });
 
