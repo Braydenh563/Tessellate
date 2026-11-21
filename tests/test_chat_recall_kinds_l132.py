@@ -13,9 +13,10 @@ def ask(client, session, monkeypatch):
     return lambda q: sd.ask(client, q, notes_only=False)["text"]
 
 
+#: The due lead now opens its line ("Four dated items for this week"); the count is the intent.
 @pytest.mark.parametrize("question, expect", [
     ("what did I write yesterday", "three notes yesterday"),
-    ("what is due this week", "four dated items"),
+    ("what is due this week", "Four dated items"),
     ("what tasks are still open", "Six items still open"),
     ("which of my to-dos are open", "Six unticked checklist items are still open"),
     ("what did I write about running last week", "one note"),

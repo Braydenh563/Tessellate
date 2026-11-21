@@ -19,7 +19,9 @@ def ask(client, session, monkeypatch):
 @pytest.mark.parametrize("question", ["what did I write last Friday", "what did I do last Friday"])
 def test_last_friday_is_said_back_as_the_friday_it_is(ask, question):
     text = ask(question)
-    assert text.startswith("Last Friday"), text
+    #: Intent unchanged: the lead says the day back. Since L-chat-229 it is one of several seeded
+    #: leads ("Three notes last Friday, newest first:"), so it is read in the line, not at its start.
+    assert "last friday" in text.splitlines()[0].lower(), text
     assert "notes" in text.splitlines()[0]
 
 

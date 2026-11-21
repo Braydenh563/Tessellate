@@ -106,9 +106,10 @@ class _Answer:
         return any(said.startswith(lead) for said in (self.recent or [self.previous]) if said)
 
     def later_turn(self) -> bool:
-        """Whether this answer follows another in the chat: a previous answer, or a turn past the first."""
+        """Whether this answer follows another in the chat: a previous answer, a turn past the first, or Ask again
+        (seeded from the turn first asked, `compose`, so the retry count says it is later)."""
         turn = _SESSION.get().rpartition(":")[2]
-        return bool(self.previous) or (turn.isdigit() and int(turn) > 1)
+        return bool(self.previous) or (turn.isdigit() and int(turn) > 1) or _RETRY.get() > 0
 
     def voiced(self, name: str) -> str:
         """The `PHRASES` key that says what `name` says in this answer's

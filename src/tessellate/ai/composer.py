@@ -329,7 +329,10 @@ def compose(
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
         )
-    token = _SESSION.set(f"{salt}:{turn}" if (salt or turn) else "")
+    #: Ask again is turn n + 1 with `retry` n (`_compose_over`): seeded from the turn first asked, so the
+    #: retry's offset walks each pick's options in turn rather than landing on a fresh draw (L-chat-191).
+    first_turn = turn - retry if turn and retry and turn > retry else turn
+    token = _SESSION.set(f"{salt}:{first_turn}" if (salt or turn) else "")
     again = _RETRY.set(retry)
     registered = _REGISTER.set(register)
     #: `learned`: what the person said of insights (`insights.memory`).

@@ -42,7 +42,7 @@ _OPENERS = (
 #: sentence holds one (`_OPENER_NEEDS`); otherwise the plain ones are.
 _OPENERS_BY_SHAPE = {
     "count": ("", "open_figure", "open_notes"),
-    "when": ("", "open_date"),
+    "when": ("", "open_date", "open_notes"),
     "explain": ("", "open_put", "open_notes"),
     "where": ("", "open_where", "open_notes"),
 }

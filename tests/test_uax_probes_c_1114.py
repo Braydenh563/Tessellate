@@ -24,7 +24,9 @@ def say(client, session, monkeypatch):
 
 def test_c1_a_greeting_follows_the_hour_and_the_return_and_never_runs_twice(say):
     first, second, third = say("hello"), say("hello"), say("hello")
-    assert first.startswith("Good morning") and "welcome back" in first.lower()
+    #: Intent unchanged: the return is said by the last note written; since L-chat-229 the greeting
+    #: itself is one of twenty seeded lines, not always "welcome back".
+    assert first.startswith("Good morning") and "#/notes/" in first, first
     assert len({first, second, third}) == 3
 
 

@@ -34,7 +34,8 @@ def test_a2_a_past_date_is_said_in_words_with_the_exact_day(ask):
 
 def test_a3_days_until_a_named_holiday_are_counted_with_both_dates(ask):
     said = ask("how many days until Christmas")
-    assert said.startswith("55 days") and "25 December 2026" in said
+    #: Intent unchanged: the count leads one of several seeded frames ("There are 55 days until ..."), so it is read in the line.
+    assert "55 days" in said and "25 December 2026" in said
 
 
 def test_a3_days_since_a_note_are_counted_from_the_note_date(ask):

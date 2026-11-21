@@ -1334,8 +1334,10 @@ def _slipped(tidy: str, now: datetime, locale: str | None) -> dict | None:
 
 #: Acts named by a noun the broad acts would swallow on a slip: "delete the
 #: skull Weekly tidy" is the skill, not a note called "skull Weekly tidy";
-#: "find noes similar to" is similar notes, "make a mid map" a mind map.
-_NARROW = {"delete": {"delete_skill", "delete_document"}, "link": {"board_link"}, "find": {"similar"}, "move": {"reschedule"}, "tag": {"tag_many"}, None: {"make_map", "make_board", "similar", "board_card", "set_theme"}}
+#: "find noes similar to" is similar notes, "make a mid map" a mind map; "pin
+#: the cht about Paris" is the saved chat, not a note called "cht about Paris".
+_NARROW = {"delete": {"delete_skill", "delete_document"}, "link": {"board_link"}, "find": {"similar"}, "move": {"reschedule", "chat_folder"},
+           "rename": {"chat_rename"}, "pin": {"chat_pin"}, "tag": {"tag_many"}, None: {"make_map", "make_board", "similar", "board_card", "set_theme"}}
 
 
 def _narrower(tidy: str, found: dict | None, now: datetime, locale: str | None) -> dict | None:
