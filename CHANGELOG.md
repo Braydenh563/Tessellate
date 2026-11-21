@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: two composer date tests read the real clock (a note's written day, a snooze's "the 16th") and failed once the real date passed the 17th; both now run on their fixed day.
 - Boards: deleting a board for good also forgets its embeds' undo histories on this device (L-whiteboard-77).
 - Boards: a frame binding saved past the write check (a bad property name, a list value, `tags`) is ignored instead of written to notes (L-whiteboard-71).
 - Boards: an embed's refetch counts only if it landed while that board was live, so a failed or overtaken read is retried at its next activation; a failed board start is no longer kept for every later embed; the board router returns at once when no embed exists (L-whiteboard-74, 75, 76).

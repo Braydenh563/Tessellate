@@ -36,8 +36,10 @@ NOTES = [
 def ask(client, session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    #: Written on the test's day, not the run's: "on the 17th" in a note is dated from when
+    #: it was written, so a real-clock stamp after the 17th moved Sintra a month on (CI, 2026-11-21).
     for content in NOTES:
-        manager.create_entry(session, content)
+        manager.create_entry(session, content).created_at = NOW
     session.commit()
 
     def go(question: str) -> str:
