@@ -26,12 +26,15 @@
   //: Pure: the data a shape has after it takes `data`'s outline, stretched over its own box. `box` is the shape's box and
   //: `own` the outline's, both `{minX, minY, width, height}`; `transform` is the board's path transform. The words, colours,
   //: line and fill stay; the outline, its kind and its label area come from the entry.
-  function replaceData(parsed, data, box, own, transform) {
+  function replaceData(parsed, data, box, own, transform, table = wbFmtState.shapeTable) {
     const sx = Math.max(box.width, 1) / Math.max(own.width, 1);
     const sy = Math.max(box.height, 1) / Math.max(own.height, 1);
+    //: A drawn shape (`shapeKind`, whiteboard-shape-table.js) is drawn again for the box, so its corners and curves keep their
+    //: size (L-whiteboard-28); a tile stretched to a long box would stretch them.
+    const fresh = data.shapeKind ? table?.shapePathAt?.(data.shapeKind, box.minX, box.minY, Math.max(box.width, 1), Math.max(box.height, 1)) : null;
     const next = {
       ...parsed,
-      d: transform(data.d, { dx: box.minX - own.minX, dy: box.minY - own.minY, sx, sy, anchorX: own.minX, anchorY: own.minY }),
+      d: fresh || transform(data.d, { dx: box.minX - own.minX, dy: box.minY - own.minY, sx, sy, anchorX: own.minX, anchorY: own.minY }),
       shape: data.shape || "custom",
     };
     delete next.label_area;
@@ -41,16 +44,39 @@
     return next;
   }
 
+  //: Pure: the forms of one typed word to look for, the word first: light English stemming (plural, -ing, -ed, -er), so
+  //: "arrows" finds "arrow" and "connecting" finds "connector". Each cut also tries the stem with an "e" back and a
+  //: doubled last letter dropped ("running" to "run", "making" to "make"). Short words are left alone.
+  function wordForms(word) {
+    const out = [word];
+    const add = (stem) => {
+      if (stem.length >= 3 && !out.includes(stem)) out.push(stem);
+    };
+    const cut = (stem) => {
+      add(stem);
+      add(`${stem}e`);
+      if (/([^aeiou])\1$/.test(stem)) add(stem.slice(0, -1));
+    };
+    if (word.length < 4) return out;
+    if (/ies$/.test(word)) add(`${word.slice(0, -3)}y`);
+    if (/(?:ing|ed|er)$/.test(word) && word.length >= 5) cut(word.replace(/(?:ing|ed|er)$/, ""));
+    if (/es$/.test(word)) add(word.slice(0, -2));
+    if (/s$/.test(word) && !/ss$/.test(word)) add(word.slice(0, -1));
+    return out;
+  }
+
   //: Pure: the entries that match `query`, best first: a name that starts with it, a word of the name that starts with the
-  //: first word, a name that holds the words, then a tag or the set's name. Every word must be somewhere in the entry.
+  //: first word, a name that holds the words, then a tag or the set's name. Every word must be somewhere in the entry,
+  //: as typed or as one of its stems (`wordForms`); the typed form wins where both are there, so the order is unchanged.
   function rankEntries(entries, query, limit = ROWS) {
-    const words = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
-    if (!words.length) return [];
+    const typed = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
+    if (!typed.length) return [];
     const scored = [];
     for (const entry of entries) {
       const name = String(entry.name || "").toLowerCase();
       const all = `${name} ${(entry.tags || []).join(" ")} ${entry.set || ""}`.toLowerCase();
-      if (!words.every((w) => all.includes(w))) continue;
+      const words = typed.map((w) => wordForms(w).find((form) => all.includes(form)));
+      if (words.some((w) => w === undefined)) continue;
       const full = words.join(" ");
       const rank = name.startsWith(full) ? 0
         : name.split(/[\s\-_/()]+/).some((part) => part.startsWith(words[0])) && words.every((w) => name.includes(w)) ? 1
@@ -322,8 +348,405 @@
     window.addEventListener("pointercancel", stop, true);
   }
 
+  //: **Shape libraries** (draw.io's "More shapes"): a dialog on the Library tab with one row per set, its name and count and
+  //: an on/off switch. The choice is per device (`prefs`, "wb-lib-sets-off", read by `wbLibState.isOff`). A set that is off is
+  //: not listed or searched, and is not fetched; turning one on fetches it then. The two template sets feed the new-board
+  //: galleries, so they have no row.
+  const SETS_KEY = "wb-lib-sets-off";
+  const librarySets = {
+    rows() {
+      const lib = wbLibState.lib || {};
+      const own = (lib.sets || []).filter((x) => !["templates", "maps"].includes(x.key));
+      return [...own, ...(lib.shape_sets || [])].map((x) => ({ key: x.key, name: x.name, count: x.count }));
+    },
+    //: Turn one set on or off, and draw the list again (a set turned on is fetched first).
+    async setOn(key, on) {
+      const off = new Set(prefs.json(SETS_KEY, []));
+      if (on) off.delete(key);
+      else off.add(key);
+      prefs.set(SETS_KEY, JSON.stringify([...off]));
+      if (on && (wbLibState.lib?.shape_sets || []).some((x) => x.key === key)) await wbLoadShapeSets([key]);
+      else if (on && key === "icons") await wbLoadIcons();
+      if (on) await wbLoadLibrary();
+      else wbRenderLibrary();
+    },
+    async open() {
+      document.getElementById("wb-sets-dialog")?.remove();
+      if (!wbLibState.lib) await wbLoadLibrary();
+      const returnFocus = document.activeElement;
+      const overlay = document.createElement("div");
+      overlay.className = "modal-overlay confirm-overlay wb-sets-overlay";
+      overlay.id = "wb-sets-dialog";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.setAttribute("aria-label", "Shape libraries");
+      const card = document.createElement("div");
+      card.className = "card modal-card confirm-card wb-sets-card";
+      const hint = document.createElement("p");
+      hint.className = "muted wb-sets-hint";
+      hint.textContent = "Sets that are off are hidden from the library and from search. The choice is kept on this device.";
+      const list = document.createElement("div");
+      list.className = "wb-sets-list";
+      for (const row of librarySets.rows()) {
+        const label = document.createElement("label");
+        label.className = "setting-check wb-sets-row";
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.dataset.set = row.key;
+        box.checked = !wbLibState.isOff(row.key);
+        box.addEventListener("change", () => librarySets.setOn(row.key, box.checked));
+        const name = document.createElement("span");
+        name.textContent = row.name;
+        const count = document.createElement("span");
+        count.className = "muted wb-sets-count";
+        count.textContent = String(row.count ?? "");
+        label.append(box, name, count);
+        list.append(label);
+      }
+      let settled = false;
+      const close = () => {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener("keydown", onKey, true);
+        overlay.remove();
+        returnFocus?.focus?.();
+      };
+      const onKey = (event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        event.stopPropagation();
+        close();
+      };
+      card.append(dialogHead("Shape libraries", close), hint, list);
+      overlay.append(card);
+      wireBackdropClose(overlay, close);
+      document.addEventListener("keydown", onKey, true);
+      document.body.appendChild(overlay);
+      list.querySelector("input")?.focus();
+    },
+  };
+
+  //: **Drop a library item onto a line to put it in the line** (draw.io's `dropAndConnect`): the link A to B becomes A to the
+  //: item and the item to B, split at the item's ports (the side facing A to enter, the opposite side to leave, by whichever
+  //: way the line mostly runs). Both halves keep the line's look and its caps; its bends and free ends go with the half they
+  //: belonged to. Run inside the placement's gesture, so the placement and the split are one undo step.
+  const ROUTE_KEYS = ["bend", "points", "via", "waypoints"];
+
+  //: Pure: the two port fractions for an item put on a line from `from` to `to` (board points): `into` is where the first
+  //: half lands on the item, `out` where the second leaves it.
+  function splitPorts(from, to) {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const across = Math.abs(dx) >= Math.abs(dy);
+    const forward = (across ? dx : dy) >= 0;
+    const into = across ? { x: forward ? 0 : 1, y: 0.5 } : { x: 0.5, y: forward ? 0 : 1 };
+    return { into, out: { x: 1 - into.x, y: 1 - into.y } };
+  }
+
+  //: Pure: the two links' data a line `data` becomes when item (`kind`, `id`) is put in it.
+  function splitData(data, kind, id, ports) {
+    const first = { ...data, targetId: id, targetKind: kind, targetAnchor: ports.into };
+    const second = { ...data, sourceId: id, sourceKind: kind, sourceAnchor: ports.out };
+    delete first.targetPoint;
+    delete second.sourcePoint;
+    for (const key of ROUTE_KEYS) {
+      delete first[key];
+      delete second[key];
+    }
+    //: The second half is a line of the board's own, not a part of a library copy.
+    for (const key of ["library_ref", "library_part", "library_link"]) delete second[key];
+    return [first, second];
+  }
+
+  //: Put the placed item (`kind`, `item`) into the line `link` (a sketch). False when the line cannot be split: it has no
+  //: resolvable ends, or it already ends on the item.
+  async function splitLink(link, kind, item) {
+    let data = null;
+    try {
+      data = JSON.parse(link.data);
+    } catch {
+      return false;
+    }
+    if (!data || !String(data.type || "").startsWith("link-")) return false;
+    const ends = wbResolveLinkEndpoints(data);
+    if (!ends) return false;
+    const touches = (side) => data[`${side}Id`] === item.id && (data[`${side}Kind`] || "node") === kind;
+    if (touches("source") || touches("target")) return false;
+    const [firstData, secondData] = splitData(data, kind, item.id, splitPorts(ends.source, ends.target));
+    //: The line is replaced by two new ones, not edited: undone as one step, the old line comes back first and the two halves
+    //: go after it. An edited line would be dropped by the server with the item (it ends on it) before its old shape was put back.
+    await apiJson(`/whiteboard/sketches/${link.id}`, { method: "DELETE" });
+    wbState.sketches = wbState.sketches.filter((s) => s.id !== link.id);
+    for (const half of [firstData, secondData]) {
+      const made = await apiJson("/whiteboard/sketches", {
+        method: "POST",
+        body: JSON.stringify({ data: JSON.stringify(half), x: link.x ?? 0, y: link.y ?? 0, z: link.z ?? wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
+      });
+      wbState.sketches.push(made);
+    }
+    return true;
+  }
+
+  //: **Placed copies and their source** (L-whiteboard-9, L275). A placed part remembers `library_ref` (`{id, version}` or
+  //: `{builtin}`, never followed by the server). "Update from the library" reads that source again and gives the copy its
+  //: content: a drawing takes the source's outline stretched over the copy's own box, an object keeps its place and size, so
+  //: the copy stays where it is and as big as it is. "Linked" is a placement that also carries `library_ref.linked {sig}`
+  //: (a hash of the source's payload); a copy whose source now hashes differently is updated when the board opens and when
+  //: the library item is replaced, with no undo step of its own. Unlink drops the flag. A copy is its group's parts (or the one
+  //: part) plus the links between them; it is matched to the source part by part, per kind in order, so a copy that lost or
+  //: gained a part is left alone and said so.
+  const isLinkRow = (kind, item) => kind === "sketch" && /"type"\s*:\s*"link-/.test(item.data);
+  const refOf = (kind, item) => {
+    if (kind === "object") return item.data?.library_ref || null;
+    try {
+      return JSON.parse(item.data)?.library_ref || null;
+    } catch {
+      return null;
+    }
+  };
+  const refKey = (ref) => JSON.stringify([ref?.id ?? null, ref?.builtin ?? null]);
+  const copies = {
+    //: Pure: a short hash of a payload; it changes when the source's content does.
+    sigOf(payload) {
+      const text = JSON.stringify(payload ?? null);
+      let hash = 5381;
+      for (let i = 0; i < text.length; i += 1) hash = ((hash * 33) ^ text.charCodeAt(i)) >>> 0;
+      return hash.toString(36);
+    },
+    //: The sketches and objects of the open board, as `{kind, item}`.
+    boardRows: () => [
+      ...(wbState?.sketches || []).map((item) => ({ kind: "sketch", item })),
+      ...(wbState?.objects || []).map((item) => ({ kind: "object", item })),
+    ],
+    selectionRows() {
+      const entries = wbMultiSelection.size
+        ? wbSelectionEntries()
+        : wbSelectedItem ? [{ kind: wbSelectedItem.kind, item: wbFindItem(wbSelectedItem.kind, wbSelectedItem.id) }] : [];
+      return entries.filter((e) => e.item && (e.kind === "sketch" || e.kind === "object"));
+    },
+    //: The copies the rows belong to: `{ref, members, links}`, one per source and group.
+    collect(seed) {
+      const board = copies.boardRows();
+      const found = new Map();
+      for (const { kind, item } of seed) {
+        const ref = refOf(kind, item);
+        if (!ref || isLinkRow(kind, item)) continue;
+        const rk = refKey(ref);
+        const group = item.group_id || null;
+        const key = `${rk}|${group || `${kind}${item.id}`}`;
+        if (found.has(key)) continue;
+        const members = group
+          ? board.filter((r) => r.item.group_id === group && !isLinkRow(r.kind, r.item) && refOf(r.kind, r.item) && refKey(refOf(r.kind, r.item)) === rk)
+          : [{ kind, item }];
+        members.sort((a, b) => a.item.id - b.item.id);
+        const ids = new Set(members.map((m) => `${m.kind}:${m.item.id}`));
+        const links = board.filter((r) => {
+          if (!isLinkRow(r.kind, r.item) || refKey(refOf("sketch", r.item)) !== rk) return false;
+          const data = JSON.parse(r.item.data);
+          return ids.has(`${data.sourceKind || "node"}:${data.sourceId}`) && ids.has(`${data.targetKind || "node"}:${data.targetId}`);
+        });
+        links.sort((a, b) => a.item.id - b.item.id);
+        found.set(key, { ref, members, links });
+      }
+      return [...found.values()];
+    },
+    //: The source of a ref now: `{name, kind, payload, body, sig, version}`, or null when it is gone.
+    async resolve(ref, cache) {
+      const key = refKey(ref);
+      if (cache.has(key)) return cache.get(key);
+      let source = null;
+      try {
+        if (ref.id != null) {
+          if (!cache.has("lib")) cache.set("lib", await apiJson("/board-library"));
+          const row = (cache.get("lib").items || []).find((i) => i.id === ref.id);
+          if (row) source = { name: row.name, kind: row.kind, payload: row.payload, version: row.version || 1 };
+        } else if (typeof ref.builtin === "string") {
+          const [set, entryKey] = ref.builtin.split("/");
+          let data = wbLibSets.get(set);
+          if (!data && set !== "icons") {
+            if (!cache.has("lib")) cache.set("lib", await apiJson("/board-library"));
+            const file = (cache.get("lib").shape_sets || []).find((x) => x.key === set)?.path || `${set}.json`;
+            data = await (await api(`/board-library/${file}${lazyAssetStamp()}`, { silent: true })).json();
+          }
+          const entry = (data?.items || []).find((e) => e.key === entryKey);
+          if (entry) source = { name: entry.name, kind: entry.kind || "element", payload: entry.payload };
+        }
+      } catch {
+        source = null;
+      }
+      if (source) {
+        const body = source.kind === "template" ? source.payload?.element : source.payload;
+        source = body && Array.isArray(body.items) ? { ...source, body, sig: copies.sigOf(source.payload) } : null;
+      }
+      cache.set(key, source);
+      return source;
+    },
+    //: Give a copy its source's content. The rows to save, or null when the copy no longer has the source's parts.
+    apply(copy, source) {
+      const parts = source.body.items || [];
+      const srcSketches = parts.filter((p) => p.kind === "sketch");
+      const srcObjects = parts.filter((p) => p.kind !== "sketch");
+      const sketches = copy.members.filter((m) => m.kind === "sketch");
+      const objects = copy.members.filter((m) => m.kind === "object");
+      if (sketches.length !== srcSketches.length || objects.length !== srcObjects.length) return null;
+      const ref = { ...(source.version != null ? { id: copy.ref.id, version: source.version } : { builtin: copy.ref.builtin }), ...(copy.ref.linked ? { linked: { sig: source.sig } } : {}) };
+      const pen = wbLibInk();
+      const inked = (value, was) => (value === "ink" ? (was && was !== "ink" ? was : pen) : value);
+      const KEEP = ["locked", "comments", "layer", "name", "hidden", "page"];
+      const rows = [];
+      sketches.forEach(({ item }, i) => {
+        const old = JSON.parse(item.data);
+        const data = { ...srcSketches[i].data };
+        for (const key of ["color", "fill"]) if (key in data) data[key] = inked(data[key], old[key]);
+        const box = typeof old.d === "string" ? wbPathBBox(old.d) : null;
+        const own = typeof data.d === "string" ? wbPathBBox(data.d) : null;
+        if (box && own) {
+          data.d = wbTransformPathD(data.d, { dx: box.minX - own.minX, dy: box.minY - own.minY, sx: Math.max(box.width, 1) / Math.max(own.width, 1), sy: Math.max(box.height, 1) / Math.max(own.height, 1), anchorX: own.minX, anchorY: own.minY });
+        } else if (typeof old.d === "string") data.d = old.d;
+        for (const key of KEEP) if (old[key] !== undefined) data[key] = old[key];
+        item.data = JSON.stringify({ ...data, library_ref: ref });
+        rows.push({ kind: "sketch", item });
+      });
+      objects.forEach(({ item }, i) => {
+        const old = item.data || {};
+        const data = { ...srcObjects[i].data };
+        for (const key of ["color", "bg", "border_color"]) if (key in data) data[key] = inked(data[key], old[key]);
+        for (const key of KEEP) if (old[key] !== undefined) data[key] = old[key];
+        item.data = { ...data, library_ref: ref };
+        rows.push({ kind: "object", item });
+      });
+      const srcLinks = source.body.links || [];
+      if (copy.links.length === srcLinks.length) {
+        copy.links.forEach(({ item }, i) => {
+          const old = JSON.parse(item.data);
+          const data = { ...srcLinks[i].data };
+          if ("color" in data) data.color = inked(data.color, old.color);
+          //: Where it joins and how it runs belong to the copy; its look comes from the source.
+          for (const key of ["sourceId", "sourceKind", "targetId", "targetKind", "sourceAnchor", "targetAnchor", "points", "bend"]) {
+            if (old[key] === undefined) delete data[key];
+            else data[key] = old[key];
+          }
+          item.data = JSON.stringify({ ...data, library_ref: ref });
+          rows.push({ kind: "sketch", item });
+        });
+      }
+      return rows;
+    },
+    //: The command: update the selected copies from their source, one undo step.
+    async update() {
+      const found = copies.collect(copies.selectionRows());
+      if (!found.length) {
+        toast("Select something placed from the library first.", "info");
+        return false;
+      }
+      const cache = new Map();
+      let done = 0;
+      let gone = 0;
+      let differs = 0;
+      let name = "";
+      await wbRecordGesture(async () => {
+        const rows = [];
+        for (const copy of found) {
+          const source = await copies.resolve(copy.ref, cache);
+          if (!source) {
+            gone += 1;
+            continue;
+          }
+          const got = copies.apply(copy, source);
+          if (!got) {
+            differs += 1;
+            continue;
+          }
+          rows.push(...got);
+          done += 1;
+          name = source.name;
+        }
+        if (rows.length) await wbSaveMany(rows);
+      });
+      wbScheduleRender();
+      const note = gone ? " The library item behind the rest is gone, so they stay as they are." : differs ? " The rest no longer have the parts of their library item, so they were left alone." : "";
+      if (done) {
+        const said = `Updated ${done === 1 ? name : `${done} copies`} from the library.${note}`;
+        toast(said);
+        wbAnnounce(said);
+      } else {
+        toast(gone ? "The library item this copy came from is gone. The copy stays as it is." : "This copy no longer has the parts of its library item, so it was left alone. Place it again to get the new one.", "info");
+      }
+      return done > 0;
+    },
+    //: Linked copies whose source changed are updated, without an undo step of their own. Returns how many.
+    async refresh() {
+      if (!wbState || wbIsMap()) return 0;
+      const boardId = window.currentBoardId;
+      const seed = copies.boardRows().filter((r) => !isLinkRow(r.kind, r.item) && refOf(r.kind, r.item)?.linked);
+      if (!seed.length) return 0;
+      const cache = new Map();
+      const rows = [];
+      let n = 0;
+      for (const copy of copies.collect(seed)) {
+        if (!copy.ref.linked) continue;
+        const source = await copies.resolve(copy.ref, cache);
+        if (!source || source.sig === copy.ref.linked.sig) continue;
+        const got = copies.apply(copy, source);
+        if (got) {
+          rows.push(...got);
+          n += 1;
+        }
+      }
+      if (!rows.length || window.currentBoardId !== boardId) return 0;
+      await wbSaveMany(rows);
+      wbScheduleRender();
+      toast(`Updated ${n === 1 ? "1 linked copy" : `${n} linked copies`} from the library.`);
+      return n;
+    },
+    //: Mark what a placement made as linked to its source (`made` is the place route's answer).
+    async mark(made, entry) {
+      const linked = { sig: copies.sigOf(entry.payload) };
+      const rows = [];
+      for (const item of made.sketches) {
+        if (isLinkRow("sketch", item)) continue;
+        const data = JSON.parse(item.data);
+        if (!data.library_ref) continue;
+        item.data = JSON.stringify({ ...data, library_ref: { ...data.library_ref, linked } });
+        rows.push({ kind: "sketch", item });
+      }
+      for (const item of made.objects) {
+        if (!item.data?.library_ref) continue;
+        item.data = { ...item.data, library_ref: { ...item.data.library_ref, linked } };
+        rows.push({ kind: "object", item });
+      }
+      if (rows.length) await wbSaveMany(rows);
+    },
+    //: Take the selected copies off their link; they stay as they are, still remembering the item they came from.
+    async unlink() {
+      const found = copies.collect(copies.selectionRows()).filter((c) => c.ref.linked);
+      if (!found.length) {
+        toast("Select a linked copy first.", "info");
+        return false;
+      }
+      await wbRecordGesture(async () => {
+        const rows = [];
+        for (const copy of found) {
+          for (const { kind, item } of [...copy.members, ...copy.links]) {
+            const strip = (ref) => {
+              const { linked, ...rest } = ref;
+              return rest;
+            };
+            if (kind === "object") item.data = { ...item.data, library_ref: strip(item.data.library_ref) };
+            else item.data = JSON.stringify({ ...JSON.parse(item.data), library_ref: strip(refOf("sketch", item)) });
+            rows.push({ kind, item });
+          }
+        }
+        await wbSaveMany(rows);
+      });
+      wbAnnounce("Unlinked from the library.");
+      toast("Unlinked. The copy stays as it is.");
+      return true;
+    },
+  };
+
   wbFmtState.libraryMore = {
-    replacement, replaceData, rankEntries, startEntries, replaceWith, open: openPicker, close, gripPress,
+    replacement, replaceData, rankEntries, wordForms, sets: librarySets, splitPorts, splitData, splitLink, copies, startEntries, replaceWith, open: openPicker, close, gripPress,
     dragged: () => state.dragged,
   };
 })();

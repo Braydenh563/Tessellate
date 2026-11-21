@@ -8,6 +8,7 @@ Measured in Chromium by scratchpad/ui-sweeps/wb1025-bar.js (line bar at 1440:
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
@@ -90,7 +91,7 @@ def test_ctrl_enter_inserts_a_parent_topic_in_one_undo_step() -> None:
     wb1025-mapparent.js: B under Root becomes New topic > B in B's place, one
     Ctrl+Z returns it, the centre refuses). Undo runs a batch forwards, so the
     reparent comes before the create's delete, or the branch goes with it."""
-    mind = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    mind = frontend_text("whiteboard-map.js")
     commands = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
     body = mind[mind.index("async function wbMapInsertParent("):]
     body = body[: body.index("\n}\n")]

@@ -20,7 +20,6 @@ lines), `chat_turn` (the streamed turn).
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import re
@@ -32,7 +31,6 @@ from itertools import chain
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
@@ -80,7 +78,7 @@ from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBod
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
-from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
+from tessellate.api.chat_agent import stop_when_gone, _agent_events, consent_events, run_card_events, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api import chat_chips
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
@@ -2250,33 +2248,10 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
 
 
 async def _stop_when_gone(req, lines):  # noqa: ANN001
-    """The turn's lines, with the browser's Stop (or a closed tab) made the
-    model's Stop (audit 1028 E3). Starlette cancels this generator when the
-    client goes; the abort used to end only the HTTP response, so the model
-    kept generating to the end and the next question queued behind it. The
-    cancel sets the turn's stop flag, which cuts the upstream request
-    (`activity.stop_aware`); the sync generator is closed once its current
-    step returns, so its `finally` blocks run."""
-    source = iter(lines)
-    done = object()
-
-    def step():  # noqa: ANN202
-        return next(source, done)
-
-    try:
-        while True:
-            task = asyncio.ensure_future(run_in_threadpool(step))
-            try:
-                line = await asyncio.shield(task)
-            except asyncio.CancelledError:
-                req.stop.set()
-                task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
-                raise
-            if line is done:
-                return
-            yield line
-    finally:
-        req.stop.set()
+    """The chat turn's lines, with the browser's Stop made the model's Stop (audit 1028 E3);
+    the body is `chat_agent.stop_when_gone`, shared with the Guide and the writing room (L889)."""
+    async for line in stop_when_gone(req.stop, lines):
+        yield line
 
 
 def _interactive_lines(req):  # noqa: ANN001, ANN202

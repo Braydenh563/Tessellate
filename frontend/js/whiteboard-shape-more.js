@@ -5,29 +5,40 @@
   // points (draw.io's `editPolygon`) for a closed shape of straight sides. The pure parts take plain data, so a node test
   // runs them without a board.
 
-  //: A row's middle is a fraction of the table's height, rows being of equal height.
-  const rowMiddle = (row, rows) => Math.round(((row + 0.5) / rows) * 1e4) / 1e4;
+  //: A table's row heights as weights: an array is used as it is (the table renderer's own rule, wbTableRowWeights, hands
+  //: it over), a count means equal rows.
+  const weightsOf = (rows) => (Array.isArray(rows) ? rows : Array(Math.max(1, Math.floor(rows) || 1)).fill(1));
+  //: A row's middle is a fraction of the table's height: the rows above it plus half of its own.
+  const rowMiddle = (row, rows) => {
+    const w = weightsOf(rows);
+    const total = w.reduce((a, n) => a + n, 0);
+    const above = w.slice(0, row).reduce((a, n) => a + n, 0);
+    return Math.round(((above + w[row] / 2) / total) * 1e4) / 1e4;
+  };
   const held = new Map();
 
-  //: The ports of a table with `rows` rows, as fractions of its box: the left and right ends of every row, then the
-  //: middles of the top and the bottom edge, so a connector can still come in from above or below.
+  //: The ports of a table with these rows (a count, or the row weights), as fractions of its box: the left and right ends
+  //: of every row, then the middles of the top and the bottom edge, so a connector can still come in from above or below.
   function tableRowPorts(rows) {
-    const n = Math.max(1, Math.floor(rows) || 1);
-    if (held.has(n)) return held.get(n);
+    const w = weightsOf(rows);
+    const key = w.join(",");
+    if (held.has(key)) return held.get(key);
     const out = [];
-    for (let r = 0; r < n; r += 1) out.push({ x: 0, y: rowMiddle(r, n) }, { x: 1, y: rowMiddle(r, n) });
+    for (let r = 0; r < w.length; r += 1) out.push({ x: 0, y: rowMiddle(r, w) }, { x: 1, y: rowMiddle(r, w) });
     out.push({ x: 0.5, y: 0 }, { x: 0.5, y: 1 });
-    held.set(n, out);
+    held.set(key, out);
     return out;
   }
 
-  //: The row a stored anchor sits on in a table of `rows` rows, or -1 when it is not at a row's end.
+  //: The row a stored anchor sits on in a table of these rows (a count, or the row weights), or -1 when it is not at a
+  //: row's end.
   function rowOf(anchor, rows) {
     if (!anchor || !Number.isFinite(anchor.x) || !Number.isFinite(anchor.y)) return -1;
     if (Math.abs(anchor.x) > 0.001 && Math.abs(anchor.x - 1) > 0.001) return -1;
-    const at = anchor.y * rows - 0.5;
-    const row = Math.round(at);
-    return Math.abs(at - row) < 0.02 && row >= 0 && row < rows ? row : -1;
+    const w = weightsOf(rows);
+    const total = w.reduce((a, n) => a + n, 0);
+    for (let r = 0; r < w.length; r += 1) if (Math.abs(anchor.y - rowMiddle(r, w)) < (0.02 * w[r]) / total) return r;
+    return -1;
   }
 
   //: Pure: the row an anchor on row `row` is on after a row is added at `at` (before the row now there) or removed
@@ -38,11 +49,11 @@
   }
 
   //: Pure: the patch a connector needs so its ends stay on their table rows. `ends` is [[name, kind, id]]; `table`
-  //: is the table's id. A removed row's end lets go of the table's side (it floats), the rest move to the row's new
-  //: middle. Returns {} when nothing is on a row.
-  function carryPatch(data, tableId, rows, at, remove) {
+  //: is the table's id; `rows` the row weights before (or a count), `after` the weights after. A removed row's end lets
+  //: go of the table's side (it floats), the rest move to the row's new middle. Returns {} when nothing is on a row.
+  function carryPatch(data, tableId, rows, at, remove, after) {
     const patch = {};
-    const total = rows + (remove ? -1 : 1);
+    const total = weightsOf(after || (Array.isArray(rows) ? rows.length : rows) + (remove ? -1 : 1));
     for (const name of ["source", "target"]) {
       if (data[`${name}Id`] !== tableId || (data[`${name}Kind`] || "node") !== "object") continue;
       const anchor = data[`${name}Anchor`];
@@ -56,11 +67,15 @@
 
   //: For `wbTableReshape`: null when no connector is on a row of this table, else a function that moves the ends
   //: (to run inside the same gesture as the table's own change, so it is one Undo).
-  function carryRowPorts(table, at, remove, rows) {
+  function carryRowPorts(table, at, remove, count) {
+    //: The rows' heights come from the table renderer's rule (one source); the new row takes an average share there too.
+    const rules = typeof wbTableRules !== "undefined" ? wbTableRules : null;
+    const rows = rules ? rules.wbTableRowWeights(table) : count;
+    const after = rules ? rules.wbTableAxisWeights(rows, at, remove) : undefined;
     const jobs = [];
     for (const sketch of wbState.sketches || []) {
       if (!wbIsLinkSketch(sketch)) continue;
-      const patch = carryPatch(wbSketchData(sketch) || {}, table.id, rows, at, remove);
+      const patch = carryPatch(wbSketchData(sketch) || {}, table.id, rows, at, remove, after);
       if (Object.keys(patch).length) jobs.push([sketch, patch]);
     }
     if (!jobs.length) return null;
@@ -301,8 +316,155 @@
 
   onSurface("board", bindPointEditor);
 
+  // --- Connector shapes (WHITEBOARD_PLAN section 4: draw.io's `shape=link|flexArrow|pipe|wire` and tapered arrows) ----
+  //
+  // A connector's `shape` (absent or "line": the plain stroked line) is drawn as an outline around its centre line, the
+  // way the map's ribbon is: `connectorOutline` takes the centre line as points (`wbShaftPoints`, the line before any
+  // end mark) and answers one closed path, with how to paint it. An arrow's head is where the link has an end mark
+  // (the arrow-like caps), or at the end when it has none. Pure, so a node test and the .drawio import share it.
+  const CONNECTOR_SHAPES = ["line", "double", "block", "flex", "tapered", "pipe", "wire"];
+  const CONNECTOR_SHAPE_WORDS = { line: "Line", double: "Double line", block: "Block arrow", flex: "Flex arrow", tapered: "Tapered arrow", pipe: "Pipe", wire: "Wire" };
+
+  //: The half-width of the body and of the head, the head's length, and how the body is painted, for a line `w` thick.
+  //: `geom` is the connector's own `arrowBody` and `arrowHead` (full widths in px; draw.io's width and arrow size on a
+  //: flex arrow): the body of a block or flex arrow and its head, each 0 or absent for the shape's own proportion.
+  function connectorProfile(shape, w, geom = {}) {
+    const profile = connectorBaseProfile(shape, w);
+    if (!profile || (shape !== "block" && shape !== "flex")) return profile;
+    const body = Number(geom.body), head = Number(geom.head);
+    if (body > 0) profile.half = () => Math.min(200, body) / 2;
+    if (head > 0 && profile.head) profile.head = { ...profile.head, half: Math.min(400, head) / 2 };
+    return profile;
+  }
+
+  function connectorBaseProfile(shape, w) {
+    switch (shape) {
+      case "double": return { half: () => w * 1.75, paint: "outline", stroke: w };
+      case "pipe": return { half: () => w * 2.2, paint: "tube", stroke: Math.max(1, w * 0.6) };
+      case "wire": return { half: () => w * 0.9, paint: "solid", stroke: 1, dots: w * 1.6 };
+      case "block": return { half: () => w * 1.5, paint: "solid", stroke: 1, head: { half: w * 3.5, len: w * 5 + 8 } };
+      case "flex": return { half: () => w * 0.9, paint: "solid", stroke: 1, head: { half: w * 3.2, len: w * 4 + 12 } };
+      case "tapered": return { half: (u) => w * (0.4 + 2.6 * u), paint: "solid", stroke: 1 };
+      default: return null;
+    }
+  }
+
+  //: Where along a polyline (`cum` its running lengths) the length `s` falls: the point and the direction there, the
+  //: average of the two runs at a corner.
+  function polylineFrame(pts, cum, s) {
+    const n = pts.length;
+    let k = 0;
+    while (k < n - 2 && cum[k + 1] < s - 1e-6) k++;
+    const dir = (i) => {
+      const dx = pts[i + 1].x - pts[i].x, dy = pts[i + 1].y - pts[i].y, len = Math.hypot(dx, dy) || 1;
+      return { x: dx / len, y: dy / len };
+    };
+    const d = dir(k);
+    const u = Math.max(0, Math.min(1, (s - cum[k]) / ((cum[k + 1] - cum[k]) || 1)));
+    const p = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * u, y: pts[k].y + (pts[k + 1].y - pts[k].y) * u };
+    let t = d;
+    if (Math.abs(s - cum[k]) < 1e-6 && k > 0) {
+      const a = dir(k - 1);
+      t = { x: a.x + d.x, y: a.y + d.y };
+    } else if (Math.abs(s - cum[k + 1]) < 1e-6 && k < n - 2) {
+      const b = dir(k + 1);
+      t = { x: b.x + d.x, y: b.y + d.y };
+    }
+    const tl = Math.hypot(t.x, t.y) || 1;
+    t = { x: t.x / tl, y: t.y / tl };
+    //: How much wider a corner's offset is than the run's, held to a miter limit.
+    const scale = Math.min(2.5, 1 / Math.max(0.4, t.x * d.x + t.y * d.y));
+    return { p, t, scale };
+  }
+
+  //: The outline of a connector shape round the centre line `pts`, or null for the plain line (or a line with no length).
+  //: `heads`: which ends carry an arrowhead on a shape that has one. Answers `{ d, paint, stroke }`.
+  function connectorOutline(shape, pts, width, heads = { start: false, end: true }, geom = {}) {
+    const w = Number(width) > 0 ? Number(width) : 3;
+    const profile = connectorProfile(shape, w, geom);
+    if (!profile || !pts || pts.length < 2) return null;
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+    const total = cum[cum.length - 1];
+    if (total < 1) return null;
+    const head = profile.head;
+    const headLen = head ? Math.min(head.len, total / (heads.start && heads.end ? 2.2 : 1.2)) : 0;
+    const from = head && heads.start ? headLen : 0, to = total - (head && heads.end ? headLen : 0);
+    const stops = [from, ...cum.filter((c) => c > from + 1e-6 && c < to - 1e-6), to];
+    const left = [], right = [];
+    for (const s of stops) {
+      const f = polylineFrame(pts, cum, s);
+      const h = profile.half(s / total) * f.scale;
+      left.push({ x: f.p.x - f.t.y * h, y: f.p.y + f.t.x * h });
+      right.push({ x: f.p.x + f.t.y * h, y: f.p.y - f.t.x * h });
+    }
+    //: A head: out to its full width at the shaft's end, then in to the tip.
+    const headAt = (s, tipS) => {
+      const f = polylineFrame(pts, cum, s), tip = polylineFrame(pts, cum, tipS).p;
+      return { l: { x: f.p.x - f.t.y * head.half, y: f.p.y + f.t.x * head.half }, r: { x: f.p.x + f.t.y * head.half, y: f.p.y - f.t.x * head.half }, tip };
+    };
+    const ring = [...left];
+    if (head && heads.end) {
+      const h = headAt(to, total);
+      ring.push(h.l, h.tip, h.r);
+    }
+    ring.push(...right.reverse());
+    if (head && heads.start) {
+      const h = headAt(from, 0);
+      ring.push(h.r, h.tip, h.l);
+    }
+    const num = (n) => Math.round(n * 100) / 100;
+    let d = `M ${ring.map((p) => `${num(p.x)} ${num(p.y)}`).join(" L ")} Z`;
+    //: A wire ends in a round terminal at each end.
+    if (profile.dots) {
+      for (const p of [pts[0], pts[pts.length - 1]]) {
+        const r = num(profile.dots);
+        d += ` M ${num(p.x - r)} ${num(p.y)} a ${r} ${r} 0 1 0 ${num(r * 2)} 0 a ${r} ${r} 0 1 0 ${num(-r * 2)} 0 Z`;
+      }
+    }
+    return { d, paint: profile.paint, stroke: profile.stroke };
+  }
+
+  //: A shaped connector as drawn: its outline, the plain centre line (the hit band, the label's line) and how the outline
+  //: is painted; null for the plain line. Called from the board's render (`renderWhiteboard`).
+  function shapedLink(parsed, endpoints) {
+    if (!CONNECTOR_SHAPES.includes(parsed.shape) || parsed.shape === "line") return null;
+    const centre = wbLinkPathD(parsed.type, endpoints.source, endpoints.target, { startCap: "none", endCap: "none" }, parsed.width, parsed.bend, wbLinkShape(parsed));
+    const out = connectorOutline(parsed.shape, wbShaftPoints(centre), parsed.width, connectorHeads(wbLinkCaps(parsed)), { body: parsed.arrowBody, head: parsed.arrowHead });
+    return out && { ...out, centre };
+  }
+
+  //: Which ends of a shaped connector carry a head: where it has an arrow-like end mark, else the end.
+  function connectorHeads(caps) {
+    const mark = (c) => c && c !== "none";
+    const start = mark(caps?.startCap), end = mark(caps?.endCap);
+    return start || end ? { start, end } : { start: false, end: true };
+  }
+
+
+  //: A connector's bends as the numeric list the panel shows and takes (draw.io's `addEdgeWaypoints` list): "120, 80; 200, 80".
+  //: `waypointsText` writes it; `parseWaypoints` answers the points, [] for an empty field and null for text that is not
+  //: pairs of numbers (so the panel says so and keeps the old bends). Rounded to whole pixels, at most 50.
+  function waypointsText(points) {
+    if (!Array.isArray(points)) return "";
+    return points.filter((p) => Number.isFinite(Number(p?.x)) && Number.isFinite(Number(p?.y))).map((p) => `${Math.round(p.x)}, ${Math.round(p.y)}`).join("; ");
+  }
+  function parseWaypoints(text) {
+    const parts = String(text || "").split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 50) return null;
+    const out = [];
+    for (const part of parts) {
+      const m = /^(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)$/.exec(part);
+      if (!m) return null;
+      out.push({ x: Math.round(Number(m[1])), y: Math.round(Number(m[2])) });
+    }
+    return out;
+  }
+
   wbFmtState.shapeMore = {
+    waypointsText, parseWaypoints,
     tableRowPorts, rowOf, rowAfter, carryPatch, carryRowPorts,
     polygonPoints, polygonD, nearestCorner, nearestOnSide, pointsTarget, editPoints,
+    connectorOutline, connectorProfile, connectorHeads, shapedLink, CONNECTOR_SHAPES, CONNECTOR_SHAPE_WORDS,
   };
 })();

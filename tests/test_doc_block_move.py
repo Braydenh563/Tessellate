@@ -18,9 +18,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 #: The heading scan and the section range moved to documents-outline.js, one closure (doc24-1102).

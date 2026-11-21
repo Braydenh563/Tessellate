@@ -572,7 +572,8 @@
 .sp-message.sp-error {
   color: var(--error);
 }
-.sp-foot :is(.sp-download, .sp-save) {
+.sp-foot .sp-download,
+.sp-foot .sp-save {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);

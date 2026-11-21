@@ -11,10 +11,10 @@ the focus.
 import re
 from pathlib import Path
 
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-BOARD = {n: (JS / n).read_text(encoding="utf-8") for n in ("whiteboard-templates.js", "whiteboard-map.js")}
+BOARD = {n: frontend_text(n) for n in ("whiteboard-templates.js", "whiteboard-map.js")}
 
 
 def _body(js: str, signature: str) -> str:

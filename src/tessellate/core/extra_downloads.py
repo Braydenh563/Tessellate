@@ -70,6 +70,8 @@ MARKER = "installed.json"
 
 #: A written name: a plain file name, nothing that could be a path.
 _NAME_RE = re.compile(r"[A-Za-z0-9._-]+")
+#: One path part inside a tree: Java inner classes carry a `$`.
+_TREE_PART_RE = re.compile(r"[A-Za-z0-9._$@+=,-]+")
 
 #: How much is read at a time, and how often the progress line changes.
 _CHUNK = 256 * 1024
@@ -95,6 +97,15 @@ class Download:
     #: A native library whose imported symbols are read before it is kept
     #: (INBOX 699): one that imports a network call is refused.
     inspect_imports: bool = False
+    #: Zip only: (folder in the archive, folder to write it as). Every file
+    #: under it is kept with its relative path, for a program that reads data
+    #: from directories on its class path (LanguageTool's language modules are
+    #: unpacked folders beside its jars, not jars; without them the server
+    #: dies at start with "'es' is not a language code known").
+    trees: tuple[tuple[str, str], ...] = ()
+    #: A regex over a tree file's path below its prefix: a match is not kept
+    #: (LanguageTool's other-language data, L-documents-110).
+    tree_skip: str = ""
 
     def __post_init__(self) -> None:
         if self.unpack not in {"file", "tar", "zip", "gzip"}:
@@ -104,6 +115,13 @@ class Download:
         for _member, name in self.members:
             if not _NAME_RE.fullmatch(name or "") or name in {".", ".."}:
                 raise ValueError(f"{name!r} is not a plain file name")
+        for prefix, dest in self.trees:
+            if (
+                self.unpack != "zip"
+                or not prefix.endswith("/")
+                or not _NAME_RE.fullmatch(dest or "")
+            ):
+                raise ValueError(f"{prefix!r} is not a tree of a zip")
 
 
 def platform_key() -> str:
@@ -411,6 +429,33 @@ def _check_engine(download: Download, written: list[str], staging: Path, state) 
     state.log.append(f"{download.url.rsplit('/', 1)[-1]} imports no network calls")
 
 
+def _unpack_tree(
+    archive: zipfile.ZipFile, prefix: str, dest: str, staging: Path, skip: str = ""
+) -> list[str]:
+    """Write every file under `prefix` into `staging/dest`, keeping its path
+    below the prefix. A part that is not a plain name (`..`, an empty part, a
+    drive letter) fails the install; nothing is written outside `staging`.
+    Returns one sentinel (the first file), so the marker stays short."""
+    first = ""
+    for info in archive.infolist():
+        if not info.filename.startswith(prefix) or info.is_dir():
+            continue
+        rel = info.filename[len(prefix) :]
+        if skip and re.search(skip, rel):
+            continue
+        parts = rel.split("/")
+        if not all(_TREE_PART_RE.fullmatch(part) and part not in {".", ".."} for part in parts):
+            raise DownloadFailed("missing_member")
+        target = staging.joinpath(dest, *parts)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with archive.open(info) as handle, open(target, "wb") as out:
+            shutil.copyfileobj(handle, out)
+        first = first or "/".join([dest, *parts])
+    if not first:
+        raise KeyError(prefix)
+    return [first]
+
+
 def _unpack(download: Download, fetched: Path, staging: Path) -> list[str]:
     """Write the named members into `staging`. Returns the names written."""
     written = []
@@ -443,6 +488,8 @@ def _unpack(download: Download, fetched: Path, staging: Path) -> list[str]:
                     with archive.open(member) as handle, open(staging / name, "wb") as out:
                         shutil.copyfileobj(handle, out)
                     written.append(name)
+                for prefix, dest in download.trees:
+                    written += _unpack_tree(archive, prefix, dest, staging, download.tree_skip)
     except KeyError as exc:
         raise DownloadFailed("missing_member") from exc
     except (tarfile.TarError, zipfile.BadZipFile, gzip.BadGzipFile, EOFError) as exc:

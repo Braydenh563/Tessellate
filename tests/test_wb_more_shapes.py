@@ -6,6 +6,7 @@ stored as the library's `custom` shape with its text area, so a hexagon drawn
 here and one placed from the library are the same thing. The browser half is
 `scratchpad/ui-sweeps/wbcolour-shapes.js`."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -15,7 +16,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 WANTED = {"rounded", "ellipse", "hexagon", "parallelogram", "star", "cylinder", "cloud", "callout", "block-arrow"}

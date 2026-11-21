@@ -7,12 +7,12 @@ measured in the sweep named in its CHANGELOG line.
 
 from __future__ import annotations
 
-from tests._app_js import JS_DIR, app_js_text
+from tests._app_js import JS_DIR, app_js_text, frontend_text
 
 
 def _js(name: str) -> str:
     """A lazy bundle's file, which `app_js_text()` (the boot scripts) does not hold."""
-    return (JS_DIR / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") or name == "documents.js" else (JS_DIR / name).read_text(encoding="utf-8")
 
 
 def _between(text: str, start: str, end: str) -> str:
@@ -46,7 +46,7 @@ def test_u38_a_document_title_another_has_is_said_once_and_left_as_typed():
 
 def test_u48_the_export_dialog_opens_on_the_whole_board_when_nothing_is_selected():
     """U48: "On screen" was the first export's scope and put "(view)" in its file name."""
-    block = _between(_js("whiteboard.js"), "function wbExportBoard()", "const overlay = ")
+    block = _between(_js("whiteboard.js"), "function wbExportBoard(", "const overlay = ")  # takes { branch } since L267
     assert 'let scope = hasSelection ? "selection" : "whole";' in block
 
 

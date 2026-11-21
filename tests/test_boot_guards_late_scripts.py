@@ -12,7 +12,7 @@ GUARDS = {
     "markdown.js": 'typeof calloutKindOf === "function"',  # cards render callouts before editor.js ran
     "navigation.js": 'typeof settingsScroller !== "function"',  # settings.js is the last script
     "status.js": 'typeof GUIDE_NAME === "string"',
-    "settings-panes.js": 'typeof TAB_JUMP_KEYS !== "undefined"',
+    "app-features.js": 'typeof TAB_JUMP_KEYS !== "undefined"',  # paletteKeys moved here from settings-panes.js (boot cut, 2026-11-21); the guard went with it
 }
 
 

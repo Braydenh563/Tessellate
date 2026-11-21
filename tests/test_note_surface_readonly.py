@@ -12,6 +12,8 @@ through, so the stream itself is not blocked.
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 DOCUMENTS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
 
 
@@ -21,7 +23,7 @@ def _between(text: str, start: str, end: str) -> str:
 
 
 def test_the_mounted_editor_has_a_read_only_compartment():
-    text = DOCUMENTS.read_text(encoding="utf-8")
+    text = documents_text()
     extensions = _between(text, "function noteSurfaceExtensions", "function noteSurfaceName")
     assert "noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly))" in extensions
     # Both halves: `readOnly` refuses the keymap and commands, `editable`
@@ -31,7 +33,7 @@ def test_the_mounted_editor_has_a_read_only_compartment():
 
 
 def test_assigning_read_only_on_the_box_reconfigures_the_editor():
-    text = DOCUMENTS.read_text(encoding="utf-8")
+    text = documents_text()
     own = _between(text, "function noteSurfaceOwnValue", "async function mountNoteSurface")
     assert 'getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "readOnly")' in own
     assert "noteReadOnlySlot.reconfigure(" in own

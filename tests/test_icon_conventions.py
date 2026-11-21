@@ -38,7 +38,7 @@ STRAY_OVERFLOW = ("dots-three-circle", "dots-three-outline", "dots-three-circle-
 #: markup. A new vertical one is a decision, so it is a line here.
 VERTICAL_KEBABS = {
     "categories-panel.js": 1,  # Manage categories, one row per category
-    "documents.js": 1,  # the documents rail's rows
+    "documents-surface.js": 1,  # the documents rail's rows
     "documents-codekit.js": 1,  # a saved snippet's row in the code panel's narrow column (INBOX 788)
     "documents-history.js": 1,  # a history version's row (Brief 76)
     "link-types.js": 1,  # the relation types list
@@ -93,7 +93,7 @@ def test_in_script_the_overflow_glyph_belongs_to_the_menu_builders_alone() -> No
         "sheets-selects.js",  # kebabMenu
         "menus.js",  # the note row's own builder, a card (meatball)
         "entry-card.js",  # that builder (`entryOverflowMenu`), moved here from menus.js for the boot gzip budget
-        "documents.js",  # the dock's More toggle label
+        "documents-toolbar.js",  # the dock's More toggle label (moved out of documents.js, L-documents-116)
         "whiteboard-commands.js",  # the legend naming the menu key
         "editor.js",  # (comment on the section break: not a glyph)
     }

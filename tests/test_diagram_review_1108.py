@@ -146,7 +146,9 @@ def test_the_embedded_picture_click_listens_to_click_only_so_a_press_still_reach
     box = draw[draw.index('box.classList.add("diagram-embed-box")') :]
     box = box[: box.index("box.append(open);")]
     assert 'addEventListener("click"' in box and "mousedown" not in box and "pointerdown" not in box and "preventDefault" not in box
-    cm = (JS / "documents-cm.js").read_text(encoding="utf-8")
+    from tests._js_scope import unwrapped
+
+    cm = unwrapped((JS / "documents-cm.js").read_text(encoding="utf-8"))  # the file is one closure now (L-documents-62)
     widget = cm[cm.index("class DocEmbedWidget") :][:1200]
     assert "ignoreEvent() {\n      return true;" in widget
 

@@ -22,7 +22,7 @@ import pytest
 
 from tests import _js_scope
 
-from tests._app_js import lazy_modules_source
+from tests._app_js import lazy_modules_source, documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -157,10 +157,12 @@ def test_a_kept_line_stays_in_its_group_when_blocks_are_added_above_it():
 
 
 def test_the_layout_places_each_kept_line_where_it_stood():
-    got = _script(KEPT, "return JSON.stringify(o.layout(m));")
-    layout = json.loads(got["result"])
+    """Since L-documents-60 a group's `direction` is the group's own `dir`, read
+    and printed inside it (not a kept line); the lines still kept stay put."""
+    got = _script(KEPT, "return JSON.stringify([o.layout(m), m.subgraphs[0].dir]);")
+    layout, way = json.loads(got["result"])
     kids = layout[0]["kids"]
-    assert [k["type"] for k in kids] == ["k", "n", "n"] and kids[0]["line"] == "direction LR"
+    assert [k["type"] for k in kids] == ["n", "n"] and way == "LR"
     assert any(x["type"] == "k" and x["line"].startswith("style A") for x in layout)
 
 
@@ -268,7 +270,7 @@ def test_the_bundle_is_named_where_the_library_is_and_never_at_boot():
 
 
 def test_the_document_shows_blocks_for_a_diagram_and_hands_its_edits_to_the_history():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     state = docs[docs.index("const docViewState = {") :]
     state = state[: state.index("\n};")]
     assert '["split", "rendered", "canvas", "blocks"].includes(mode)' in state

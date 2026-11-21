@@ -7,6 +7,7 @@ is a pure function between markers in documents.js, run in node here.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -21,7 +22,7 @@ END = "// DOC-UNTITLED-END"
 
 
 def source() -> str:
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     start, stop = text.find(BEGIN), text.find(END)
     assert start != -1 and stop > start, "DOC-UNTITLED markers are missing from documents.js"
     return text[start:stop]
@@ -56,7 +57,7 @@ def test_case_and_spacing_do_not_hide_a_number():
 
 
 def test_creation_paths_use_the_rule():
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     assert text.count("docNextName()") >= 3, "template, first keystroke, empty title (a blank draft names itself on first edit)"
 
 
@@ -79,7 +80,7 @@ def test_an_emptied_title_waits_for_the_field_to_be_left():
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     start = text.index("function docFillBlankTitle()")
     fill = text[start:text.index("\n}\n", start) + 3]
     save = text[text.index("async function docSaveOnce(silent)"):]
@@ -108,7 +109,7 @@ process.stdout.write(JSON.stringify(out));
 def test_a_failed_drop_puts_the_document_back_in_the_list():
     """D36 (audit 1028): a refused DELETE left the row on the server while
     the list forgot it."""
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     start = text.index("async function docDropIfUntouched(")
     body = text[start: text.index("\n}\n", start)]
     assert '.catch(() => { docs = [doc, ...docs]; })' in body
@@ -117,7 +118,7 @@ def test_a_failed_drop_puts_the_document_back_in_the_list():
 
 def test_a_failed_save_says_so_once_with_try_again():
     """D34 (audit 1028): a failed save was two words in the status bar."""
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     start = text.index("async function docSaveOnce(silent)")
     body = text[start: text.index("\n}\n", start)]
     assert "if (!docSaveFailedSaid) {" in body and 'action: ["Try again", () => saveDocument({ silent: false })]' in body

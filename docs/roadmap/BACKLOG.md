@@ -252,6 +252,7 @@ in the Library's Whiteboards gallery. **Pointer:** every open whiteboard questio
 section 4 (the gap matrix), section 5 (draw.io) and section 8 (the object library).
 The raster-versus-structured reasoning that stood here is in this file's git history.
 
+
 ---
 
 ## 4b. Templates and base layouts (boards, maps, documents)
@@ -377,6 +378,9 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   are (it is a hub over them, which is exactly what `document_links` records);
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
+- **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
+- **Adding a block to a large flowchart in one short task** (L-documents-112). Owner decided 2026-11-21: parked until Mermaid offers incremental layout. Measured 2026-11-21 at 390 px, load about 2: the first task of each add to a 40-block flowchart is 100 to 174 ms (102, 100, 174, 141), later ones 60 to 83 ms; the first is the single `mermaid.render` layout with no yield point (htmlLabels already off, mermaid-frame.js:101; the redundant parse removed). Check: `scratchpad/ui-sweeps/dgm40.js` at 390, every task under 50 ms, when Mermaid offers incremental layout.
+- **Diagram pan p95 under 16 ms** (L-documents-102). Owner decided 2026-11-21: parked; what is left is the browser's scroll commit of the picture layer. Measured 2026-11-21 at 1440 and 4x CPU, 5 interleaved runs: p50 median 7.0 ms (met), p95 median 19.6 to 22.9 ms; the minimap frame is throttled; a 0.4x raster during the pan gave 19.2, and 2048 px tiles gave 25.0 to 29.5 (worse). Check: `scratchpad/ui-sweeps/diagram-pan-latency.js` at 1440 and 4x CPU on a quiet box, p95 under 16 ms.
 
 ---
 
@@ -4435,6 +4439,39 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L912, the Timeline tab to first rows under 300 ms, on the owner's idle hardware.** Headless on a loaded or idle sandbox cannot stand in for the owner's machine. With the notebook at about 96 notes, open the dashboard, click the Timeline tab, and read the time to the first row (DevTools Performance, or the 10-run method in the L912 HISTORY line); under 300 ms is the bar.
 - **L913, the look of the OS notification on real Windows and macOS.** The page's calls are measured with a stubbed `Notification` and a stubbed worker registration; how Windows (Action Center, Focus Assist) and macOS (Notification Center, Do Not Disturb) draw the "Reminder" title, the body, the Done and Snooze 10 minutes buttons, and the 12 s auto-close is the check left. On each: allow notifications, make a reminder due in a minute with the app in the background, and read what appears and whether the buttons act.
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
+
+## Whiteboard, parked 2026-11-13
+
+- **L-whiteboard-5, pen pressure on a real pen.** Built and measured with synthetic PointerEvents (pointerType "pen", pressure 0.15 and 0.9 give outlines 2.4 times apart in `scratchpad/ui-sweeps/wbink3.js`; `tests/test_wb_ink_more.py`). No Apple Pencil or Wacom was available. On a tablet with a pen: pick the Pen, draw a line pressing lightly then hard, and see the stroke thicken with pressure and stay smooth; do the same with a finger and a mouse and see the width follow speed instead.
+- **L279, owner input: the texts of U19, U20, U23, U30, U31, U36, U37, U39, U41, U45 and U49.** They came from `bs-1111.md`, a scratch file of the 2026-11-11 run that was never committed (`git log --all -- '*bs-1111*'` is empty). The repo and HISTORY hold other audits' items under the same numbers (U23, U36, U37 and U39 in audit 1028 copy, U41 the mind-map toast), so none can be matched to these 11 ids. Needs the owner to name what each item asked for; each then becomes a row on its surface's plan.
+
+- **Whiteboard device checks (moved from LEDGER 2026-11-14; each needs the named device, everything that runs headless is built and swept):**
+  - L872: Verify link-label blur and re-raster after zoom on a GPU compositor or desktop webview. From OPEN.md:1678; OPEN.md:2676. Evidence: Needs the owner's desktop webview / GPU; not reproducible headless
+  - L873: Verify pinch: board handles starting d3-drag on a second finger, on real touch. From OPEN.md:1717. Evidence: wbCancelGesture exists (whiteboard.js:8430) but the second-finger case needs real touch hardware
+  - L874: Verify touch drag from Library on real touch hardware. From OPEN.md:3524. Evidence: HTML5 DnD does not run on touch; needs touch hardware.
+  - L875: Verify real pointer flick, splat look and phone size. From OPEN.md:3856. Evidence: Needs a human with a pointer and phone
+  - L876: Verify Windows webview and drag-select outside Chromium. From OPEN.md:3904. Evidence: Needs the owner's Windows desktop and other browsers.
+  - L877: Verify trackpad middle-pan heuristic on a real trackpad. From OPEN.md:3905. Evidence: tests/test_wb_middle_pan.py exists with synthetic sequences; real trackpad needed.
+  - L878: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
+  - L282: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
+  - L-whiteboard-11: Check the real model's wording of "What changed" in the board history bar. Built with a fake transport (tests/test_board_narrate.py); with scratchpad/llama-dev.sh serve, narrate a board with 3 cards added and one moved, and confirm the sentence names nothing that is not in the composer text.
+  - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
+
+## Whiteboard, parked 2026-11-14
+
+- **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
+- **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
+
+- **Documents device checks (moved from LEDGER 2026-11-14; each needs the named device or person, everything that runs headless is built and swept):**
+  - L884: Verify phone selection menus and selection bar placement with a real finger on iOS and Android. From OPEN.md:738; OPEN.md:3122; OPEN.md:3861. Evidence: iOS/Android native selection UI; cannot be emulated headless. Blocked: needs a real finger on iOS and Android native selection UI, which no headless browser reproduces.
+  - L887: Run a screen reader over aria-current=location in the documents outline. From OPEN.md:1483; OPEN.md:3402. Evidence: Needs a human with a screen reader; documents-comments.js:438 sets aria-current. Blocked: needs a human with a screen reader; documents-comments.js:438 sets aria-current but speech cannot be checked headless.
+  - L-documents-91: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here
+  - L-documents-92: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code
+  - L-documents-93: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested
+  - L-documents-95: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
+  - L891: Device check: a real print dialog, Safari, Firefox (not installed here: /opt/pw-browsers has only Chromium), a screen reader and a phone IME over the documents editor. From L891. Evidence: Measured 2026-11-14 in Chromium: an image pasted through the real clipboard with Ctrl+V lands as an attachment 4/4 (hw891.js); Harper p2-harper.js 16/16, cold first lint 1,797 ms, warm 111 ms for 1,401 words, nothing at boot
+  - L893: Device check: the diagram builder with real inference, on Windows, and under a screen reader. From L893. Evidence: Measured 2026-11-14 at 390 light with CDP touch (diagram-touch.js, rewritten for the Add split and the phone's Blocks sheet): Add menu 10 rows 44 px hit-tested, a block added, pinch to 5x, zoom kept on redraw, pan 264 px, double tap fits; light contrast 8 of 8 texts at 4.5 or more; 40 blocks open 2.5 s, an added block repaints in 483 ms (long tasks 114 and 115 ms on a loaded box, see the new row); print to PDF one page with all four labels and no chrome
+  - L894: Device check: ClearType greyscale on a real Windows display. From L894. Evidence: The CodeMirror per-key cost is measured and tracked in L-documents-26; only the Windows display is left
 
 ## Placed from IDEAS.md, 2026-11-14
 

@@ -1,5 +1,6 @@
 """Board audit 1028: B8, B16 (see test_wb_edge_pan), B21, B5 and the UX rows U1 to U3, U5."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -9,8 +10,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
+MAP = frontend_text("whiteboard-map.js")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 MISC = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 

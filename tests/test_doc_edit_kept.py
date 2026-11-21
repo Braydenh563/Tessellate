@@ -13,11 +13,10 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
-DOCS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
 
 
 def _function(source: str, head: str) -> str:
@@ -27,7 +26,7 @@ def _function(source: str, head: str) -> str:
 
 
 def test_kept_at_unload_and_on_a_refused_save_and_dropped_by_a_landed_one():
-    source = DOCS.read_text(encoding="utf-8")
+    source = documents_text()
     assert 'window.addEventListener("pagehide", keepDocEditLocally);' in source
     # The save body moved into docSaveOnce when saves were serialised.
     save = _function(source, "async function docSaveOnce(")
@@ -39,7 +38,7 @@ def test_kept_at_unload_and_on_a_refused_save_and_dropped_by_a_landed_one():
 
 
 def _run(kept: dict | None, doc: dict, *, dirty: bool = True, extra: str = "") -> dict:
-    source = DOCS.read_text(encoding="utf-8")
+    source = documents_text()
     parts = [
         _function(source, "function docKeptDrafts() {"),
         _function(source, "function keepDocEditLocally() {"),

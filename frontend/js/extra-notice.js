@@ -39,6 +39,7 @@
     "naturalvoice-voice": "Read aloud in a natural voice needs the voice file.",
     speakers: "Labelling who speaks needs the speaker packages.",
     speakermodels: "Telling voices apart needs the two speaker models.",
+    ruff: "Checking Python files for mistakes needs Ruff.",
     searxng: "Private web search needs SearXNG, which is not installed.",
   };
   let cache = { at: 0, rows: null };

@@ -230,12 +230,22 @@
       return null;
     }
     if (!length) return null;
-    let best = null, bestDist = Infinity;
+    let best = null, bestDist = Infinity, bestAt = 0;
+    const at = (n) => wbLinkMeasurePath.getPointAtLength(n);
     for (let i = 0; i <= 240; i++) {
-      const q = wbLinkMeasurePath.getPointAtLength((length * i) / 240);
+      const q = at((length * i) / 240);
       const dist = Math.hypot(q.x - x, q.y - y);
-      if (dist < bestDist) { bestDist = dist; best = q; }
+      if (dist < bestDist) { bestDist = dist; best = q; bestAt = i; }
     }
+    //: Then a narrowing search between the two samples either side of the best, so a long outline is not off by half a step.
+    let lo = (length * Math.max(0, bestAt - 1)) / 240, hi = (length * Math.min(240, bestAt + 1)) / 240;
+    for (let i = 0; i < 14; i++) {
+      const a = lo + (hi - lo) / 3, b = hi - (hi - lo) / 3;
+      const qa = at(a), qb = at(b);
+      if (Math.hypot(qa.x - x, qa.y - y) < Math.hypot(qb.x - x, qb.y - y)) hi = b; else lo = a;
+    }
+    const fine = at((lo + hi) / 2);
+    if (Math.hypot(fine.x - x, fine.y - y) <= bestDist) { best = fine; bestDist = Math.hypot(fine.x - x, fine.y - y); }
     const w = box.maxX - box.minX || 1, h = box.maxY - box.minY || 1;
     const round = (n) => Math.round(n * 1e4) / 1e4;
     return best ? { x: round((best.x - box.minX) / w), y: round((best.y - box.minY) / h), dist: bestDist } : null;
@@ -280,6 +290,123 @@
     await savePorts(target.item, [], "Connection points back to the standard ones.");
   }
 
+  //: **Format's connection-point rows** (L-whiteboard-13; draw.io's `editConnectionPoints` and its `points` constraints): for
+  //: the one selected closed shape, a list of its points, Add (the outline editor above), Remove, "On outline" (`perimeter`)
+  //: and a pixel nudge (`dx`, `dy`) of the chosen point. Each edit is one `savePorts`, so one Undo step. A shape on its
+  //: standard points shows them; the first edit makes them its own, as the outline editor does.
+  const MAX_OFFSET = 2000;
+  const portRow = { i: 0 };
+
+  //: The points as stored (not slid to the outline), or the standard ones, as copies to change.
+  function rawPorts(target) {
+    const own = Array.isArray(target.parsed.ports) && target.parsed.ports.length ? target.parsed.ports : wbPortFractions("sketch", target.item);
+    return own.map((q) => ({ ...q }));
+  }
+
+  function portWords(q, i) {
+    const place = `${Math.round(q.x * 100)}%, ${Math.round(q.y * 100)}%`;
+    return `${i + 1}: ${q.name ? `${q.name}, ` : ""}${place}${q.perimeter ? ", on outline" : ""}`;
+  }
+
+  function fillPortFields(q) {
+    if (!q) return;
+    document.getElementById("wb-fmt-port-perim").checked = Boolean(q.perimeter);
+    for (const key of ["dx", "dy"]) {
+      const el = document.getElementById(`wb-fmt-port-${key}`);
+      if (document.activeElement !== el) el.value = Number(q[key]) ? String(q[key]) : "";
+    }
+  }
+
+  function syncPortsRow(takes, entries) {
+    if (!takes.has("ports")) return;
+    const target = entries.length === 1 && entries[0].kind === "sketch" ? wbSwapTarget() : null;
+    for (const row of document.querySelectorAll('[data-fmt="ports"]')) row.hidden = !target;
+    const select = document.getElementById("wb-fmt-port");
+    if (!target || !select || document.activeElement === select) return;
+    const ports = rawPorts(target);
+    portRow.i = Math.max(0, Math.min(ports.length - 1, portRow.i));
+    select.replaceChildren(...ports.map((q, i) => {
+      const option = document.createElement("option");
+      option.value = String(i);
+      option.textContent = portWords(q, i);
+      return option;
+    }));
+    select.value = String(portRow.i);
+    fillPortFields(ports[portRow.i]);
+  }
+
+  //: One edit of the chosen point: `change(port, ports)` may change it or the list (false: nothing changed); the list is
+  //: saved in one step. Edits queue behind each other: a nudge's change fires on blur as the next control is pressed, and
+  //: two saves in flight shared one Undo step and could land out of order, losing the second (sweep wbports-offsets.js).
+  let portQueue = Promise.resolve();
+  function editChosenPort(change, said) {
+    portQueue = portQueue.then(async () => {
+      const target = wbSwapTarget();
+      if (!target) return;
+      const ports = rawPorts(target);
+      const q = ports[Math.max(0, Math.min(ports.length - 1, portRow.i))];
+      if (!q || change(q, ports) === false) return;
+      await savePorts(target.item, ports, said);
+    }).catch((error) => console.error(error));
+    return portQueue;
+  }
+
+  //: The keyboard Add (review 5883430964): halfway along the outline between the chosen point and the next one (with one
+  //: point, the outline nearest the middle of the box), measured in the unturned box as the outline editor's press is.
+  function addPortByKey() {
+    let added = -1;
+    return editChosenPort((q, ports) => {
+      const target = wbSwapTarget();
+      const box = target && wbItemBBox("sketch", target.item);
+      if (!box) return false;
+      const i = Math.max(0, Math.min(ports.length - 1, portRow.i));
+      const next = ports.length > 1 ? ports[(i + 1) % ports.length] : { x: 1 - q.x, y: 1 - q.y };
+      const w = box.maxX - box.minX, h = box.maxY - box.minY;
+      const near = outlineNear(target.parsed.d, box.minX + ((q.x + next.x) / 2) * w, box.minY + ((q.y + next.y) / 2) * h);
+      if (!near) return false;
+      ports.splice(i + 1, 0, { x: near.x, y: near.y });
+      added = i + 1;
+      portRow.i = added;
+    }, "Connection point added after the chosen one; X and Y nudge it.").then(() => {
+      if (added < 0) return;
+      wbFormatSync();
+      document.getElementById("wb-fmt-port-dx")?.focus();
+    });
+  }
+
+  function bindPortsRows() {
+    const field = (id) => document.getElementById(id);
+    field("wb-fmt-port")?.addEventListener("change", (e) => {
+      portRow.i = Math.max(0, Number(e.target.value) || 0);
+      const target = wbSwapTarget();
+      if (target) fillPortFields(rawPorts(target)[portRow.i]);
+    });
+    //: A pointer opens the outline editor; a key (a click with no `detail`) has no outline to press, so the point goes on
+    //: the outline halfway from the chosen point to the next, is chosen, and the nudge's X field takes the keys.
+    field("wb-fmt-port-add")?.addEventListener("click", (e) => (e?.detail === 0 ? addPortByKey() : editPorts()));
+    field("wb-fmt-port-del")?.addEventListener("click", () => editChosenPort((q, ports) => {
+      ports.splice(portRow.i, 1);
+      portRow.i = Math.max(0, portRow.i - 1);
+    }, "Connection point taken out."));
+    field("wb-fmt-port-perim")?.addEventListener("change", (e) => {
+      const on = e.target.checked;
+      return editChosenPort((q) => {
+        if (on) q.perimeter = true; else delete q.perimeter;
+      }, on ? "Connection point held on the outline." : "Connection point free of the outline.");
+    });
+    for (const key of ["dx", "dy"]) {
+      field(`wb-fmt-port-${key}`)?.addEventListener("change", (e) => {
+        const n = Math.round(Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Number(e.target.value) || 0)) * 100) / 100;
+        return editChosenPort((q) => {
+          if ((Number(q[key]) || 0) === n) return false;
+          if (n) q[key] = n; else delete q[key];
+        }, `Connection point moved ${n} pixels ${key === "dx" ? "across" : "down"}.`);
+      });
+    }
+  }
+
+  onSurface("board", bindPortsRows);
+
   function bindPortEditor() {
     const container = document.getElementById("whiteboard-container");
     if (!container) return;
@@ -292,7 +419,7 @@
       }
       const [x, y] = wbClientToBoard(e.clientX, e.clientY);
       const grab = GRAB_PX / zoomK();
-      const ports = wbPortFractions("sketch", target.item).map((q) => ({ ...q }));
+      const ports = rawPorts(target);
       const hit = wbAnchorPositions("sketch", target.item).findIndex((q) => Math.hypot(q.x - x, q.y - y) <= grab);
       const near = hit < 0 ? outlineNear(target.parsed.d, x, y) : null;
       if (hit < 0 && !(near && near.dist <= grab * 1.5)) {
@@ -306,6 +433,7 @@
         savePorts(target.item, ports, ports.length ? "Connection point taken out." : "No points left of its own: the standard connection points are back.");
       } else {
         ports.push({ x: near.x, y: near.y });
+        portRow.i = ports.length - 1;
         savePorts(target.item, ports, `Connection point added; the shape has ${ports.length}.`);
       }
     }, true);
@@ -365,5 +493,176 @@
     });
   }
 
-  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, resetPorts, outlineNear, frameOf, linkWords, pageLinkItem };
+  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, syncPortsRow, resetPorts, outlineNear, frameOf, linkWords, pageLinkItem };
+  // The obstacle-avoiding elbow router (WHITEBOARD_PLAN section 10, step 6; connector row "Orthogonal routing that
+  // avoids other shapes"): grid A* over every item's box on a grid whose lines sit a margin off each box's edges (and so
+  // keep off them), so the grid stays coarse however far apart the ends are. A bend costs more than a long run, so the path with
+  // the fewest bends wins; ties break by the order the cells were reached, so the same input is the same route. The
+  // route leaves and enters on a stub square to the side it is attached to (the snap to connection: the last leg is
+  // always square to the side it enters). `find` is pure (node tests, tests/test_wb_router.py); `route` gathers the
+  // boxes and remembers the last answers, so a drag that repaints the same link twice costs one search. It answers null
+  // when no path exists or the grid would pass `MAX_CELLS`, and `wbLinkPathD` then draws the classic `wbElbowRoute`.
+  const MARGIN = 16, STUB_LEN = 24, REACH = 160, MAX_CELLS = 9000, BEND_COST = 400, EPS = 0.5, SOFT = 8;
+  const STEPS = [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 0, y: -1 }];
+  const memo = new Map();
+
+  //: The way an end leaves its shape, always one of the four: its edge's outward normal when it has one, else the
+  //: side of its box it is nearest, else along the longer way toward the other end.
+  function squareDir(pt, other) {
+    if (pt.dir && (pt.dir.x || pt.dir.y)) return Math.abs(pt.dir.x) >= Math.abs(pt.dir.y) ? { x: Math.sign(pt.dir.x), y: 0 } : { x: 0, y: Math.sign(pt.dir.y) };
+    const b = pt.box;
+    if (b) {
+      const gaps = [[pt.x - b.minX, { x: -1, y: 0 }], [b.maxX - pt.x, { x: 1, y: 0 }], [pt.y - b.minY, { x: 0, y: -1 }], [b.maxY - pt.y, { x: 0, y: 1 }]];
+      return gaps.reduce((best, g) => (Math.abs(g[0]) < Math.abs(best[0]) ? g : best))[1];
+    }
+    const dx = other.x - pt.x, dy = other.y - pt.y;
+    return Math.abs(dx) >= Math.abs(dy) ? { x: Math.sign(dx) || 1, y: 0 } : { x: 0, y: Math.sign(dy) || 1 };
+  }
+
+  const inside = (p, b) => p.x > b.minX - SOFT && p.x < b.maxX + SOFT && p.y > b.minY - SOFT && p.y < b.maxY + SOFT;
+  const uniq = (list) => [...new Set(list.map((n) => Math.round(n * 100) / 100))].sort((a, b) => a - b);
+  const before = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
+
+  //: A minimal binary heap of [cost, order, state] rows.
+  function heapPush(h, row) {
+    h.push(row);
+    let i = h.length - 1;
+    while (i > 0) {
+      const up = (i - 1) >> 1;
+      if (!before(h[i], h[up])) break;
+      [h[up], h[i]] = [h[i], h[up]];
+      i = up;
+    }
+  }
+  function heapPop(h) {
+    const top = h[0], last = h.pop();
+    if (h.length) {
+      h[0] = last;
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1, r = l + 1;
+        let m = i;
+        if (l < h.length && before(h[l], h[m])) m = l;
+        if (r < h.length && before(h[r], h[m])) m = r;
+        if (m === i) break;
+        [h[m], h[i]] = [h[i], h[m]];
+        i = m;
+      }
+    }
+    return top;
+  }
+
+  //: The route from `s` to `t` (points with `x`, `y` and optionally `dir`/`box`) round `boxes` (minX..maxY), as a
+  //: polyline of axis-aligned runs from `s` to `t`, or null.
+  function find(s, t, boxes) {
+    const sDir = squareDir(s, t), tDir = squareDir(t, s);
+    const s1 = { x: s.x + sDir.x * STUB_LEN, y: s.y + sDir.y * STUB_LEN };
+    const t1 = { x: t.x + tDir.x * STUB_LEN, y: t.y + tDir.y * STUB_LEN };
+    const lo = { x: Math.min(s1.x, t1.x) - REACH, y: Math.min(s1.y, t1.y) - REACH };
+    const hi = { x: Math.max(s1.x, t1.x) + REACH, y: Math.max(s1.y, t1.y) + REACH };
+    const near = boxes.filter((b) => b.maxX > lo.x && b.minX < hi.x && b.maxY > lo.y && b.minY < hi.y);
+    if (near.some((b) => inside(s1, b) || inside(t1, b))) return null;
+    const xs = uniq([s1.x, t1.x, ...near.flatMap((b) => [b.minX - MARGIN, b.maxX + MARGIN])]);
+    const ys = uniq([s1.y, t1.y, ...near.flatMap((b) => [b.minY - MARGIN, b.maxY + MARGIN])]);
+    const nx = xs.length, ny = ys.length;
+    if (nx * ny > MAX_CELLS) return null;
+    //: Edges the boxes' insides block: horizontal (row j, between columns i and i+1), vertical (column i, between rows j and j+1).
+    const hb = new Uint8Array(ny * nx), vb = new Uint8Array(ny * nx);
+    for (const b of near) {
+      for (let j = 0; j < ny; j++) {
+        if (ys[j] > b.minY - SOFT && ys[j] < b.maxY + SOFT) for (let i = 0; i < nx - 1; i++) if (xs[i + 1] > b.minX - SOFT && xs[i] < b.maxX + SOFT) hb[j * nx + i] = 1;
+      }
+      for (let i = 0; i < nx; i++) {
+        if (xs[i] > b.minX - SOFT && xs[i] < b.maxX + SOFT) for (let j = 0; j < ny - 1; j++) if (ys[j + 1] > b.minY - SOFT && ys[j] < b.maxY + SOFT) vb[j * nx + i] = 1;
+      }
+    }
+    const at = (list, v) => list.indexOf(Math.round(v * 100) / 100);
+    const si = at(xs, s1.x), sj = at(ys, s1.y), ti = at(xs, t1.x), tj = at(ys, t1.y);
+    const dirIndex = (d) => STEPS.findIndex((q) => q.x === d.x && q.y === d.y);
+    const startState = (sj * nx + si) * 4 + dirIndex(sDir), intoDir = dirIndex({ x: -tDir.x, y: -tDir.y });
+    const g = new Float64Array(nx * ny * 4).fill(Infinity), from = new Int32Array(nx * ny * 4).fill(-1);
+    const heap = [];
+    let order = 0, best = Infinity, bestState = -1;
+    const h = (i, j) => Math.abs(xs[i] - xs[ti]) + Math.abs(ys[j] - ys[tj]);
+    g[startState] = 0;
+    heapPush(heap, [h(si, sj), order++, startState]);
+    while (heap.length) {
+      const [f, , state] = heapPop(heap);
+      if (f >= best) break;
+      const d = state & 3, cell = state >> 2, i = cell % nx, j = (cell - i) / nx;
+      const here = g[state];
+      if (f > here + h(i, j) + 1e-9) continue;
+      if (i === ti && j === tj) {
+        const total = here + (d === intoDir ? 0 : BEND_COST);
+        if (total < best) {
+          best = total;
+          bestState = state;
+        }
+        continue;
+      }
+      for (let nd = 0; nd < 4; nd++) {
+        if (nd === ((d + 2) & 3)) continue;
+        const ni = i + STEPS[nd].x, nj = j + STEPS[nd].y;
+        if (ni < 0 || nj < 0 || ni >= nx || nj >= ny) continue;
+        const blocked = nd === 0 ? hb[j * nx + i] : nd === 2 ? hb[j * nx + ni] : nd === 1 ? vb[j * nx + i] : vb[nj * nx + i];
+        if (blocked) continue;
+        const cost = here + Math.abs(xs[ni] - xs[i]) + Math.abs(ys[nj] - ys[j]) + (nd === d ? 0 : BEND_COST);
+        const next = (nj * nx + ni) * 4 + nd;
+        if (cost < g[next]) {
+          g[next] = cost;
+          from[next] = state;
+          heapPush(heap, [cost + h(ni, nj), order++, next]);
+        }
+      }
+    }
+    if (bestState < 0) return null;
+    const cells = [];
+    for (let st = bestState; st >= 0; st = from[st]) {
+      const cell = st >> 2, i = cell % nx;
+      cells.push({ x: xs[i], y: ys[(cell - i) / nx] });
+    }
+    cells.reverse();
+    const run = [{ x: s.x, y: s.y }, ...cells, { x: t.x, y: t.y }];
+    //: Only the corners (and both ends) stay.
+    return run.filter((p, k) => {
+      if (k === 0 || k === run.length - 1) return true;
+      const a = run[k - 1], b = run[k + 1];
+      if (Math.abs(p.x - a.x) < EPS && Math.abs(p.y - a.y) < EPS) return false;
+      return !((Math.abs(a.x - p.x) < EPS && Math.abs(p.x - b.x) < EPS) || (Math.abs(a.y - p.y) < EPS && Math.abs(p.y - b.y) < EPS));
+    });
+  }
+
+  //: Every item's box, read once per frame: a drag repaints several links in one frame, and a card's box comes from
+  //: the page, so this keeps that to one pass.
+  //: It is kept for 10 ms by the clock (no frame callback of its own: a drag frame is 16 ms or more apart).
+  let frameBoxes = null;
+  let frameBoxesAt = 0;
+  function boardBoxes() {
+    if (frameBoxes && performance.now() - frameBoxesAt < 10) return frameBoxes;
+    const out = [];
+    const items = wbLinkCandidates();
+    for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "diagram") items.push(["object", o]);
+    for (const [kind, item] of items) {
+      if (wbHiddenOnBoard(kind, item)) continue;
+      const b = wbItemBBox(kind, item);
+      if (b) out.push(b);
+    }
+    frameBoxes = out;
+    frameBoxesAt = performance.now();
+    return out;
+  }
+
+  //: The router for one link's two ends, or null for the classic route (no path, a grid too large). The two end
+  //: boxes are always obstacles, even when the board scan lacks them.
+  function route(s, t, sBox, tBox) {
+    const boxes = [...boardBoxes(), ...[sBox, tBox].filter(Boolean)];
+    const key = [s.x, s.y, s.dir?.x, s.dir?.y, t.x, t.y, t.dir?.x, t.dir?.y, boxes.length, boxes.reduce((a, b) => a + b.minX * 3 + b.minY * 5 + b.maxX * 7 + b.maxY * 11, 0)].join(",");
+    if (memo.has(key)) return memo.get(key);
+    const found = find(s, t, boxes);
+    memo.set(key, found);
+    if (memo.size > 64) memo.delete(memo.keys().next().value);
+    return found;
+  }
+
+  wbFmtState.router = { find, route, squareDir, MAX_CELLS };
 })();

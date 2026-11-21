@@ -7,10 +7,11 @@ live, the item followed a buttonless hover and the delete target stayed up
 with no word. drag-edge.js: a pointercancel or native drag left its zone, press
 and frame loop running (3 orphans)."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 JS = Path(__file__).resolve().parent.parent / "frontend/js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 EDGE = (JS / "drag-edge.js").read_text(encoding="utf-8")
 
 

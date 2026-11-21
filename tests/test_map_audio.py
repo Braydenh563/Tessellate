@@ -3,6 +3,7 @@ recording is its own object (WORLD_CLASS_PLAN "Audio in the notebook",
 decision 2), so a topic holds a link to an existing recording, picked from the
 Library's recordings, and never raw audio. No upload route, no new media type."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -14,7 +15,7 @@ from tests.test_mindmap import _map, _node, _set_data, _styles_by_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 AUDIO = (JS / "whiteboard-map-more.js").read_text(encoding="utf-8")
 
 
@@ -35,9 +36,13 @@ def test_a_topic_holds_a_recording_id_checked_and_kept_by_a_look_reset(client):
 
 
 def test_no_upload_route_takes_audio_for_a_topic():
-    from tessellate.api.routes_files import MEDIA_SUFFIXES
+    from tessellate.api.routes_files import MEDIA_SUFFIXES, VIDEO_TYPES
 
-    assert not {".wav", ".mp3", ".m4a", ".webm", ".ogg"} & set(MEDIA_SUFFIXES)
+    # .webm is also the video container a document embeds since L-documents-68,
+    # and it is served as video/webm, never as an audio type; the audio-only
+    # suffixes stay out, and the map topic still uploads nothing.
+    assert not {".wav", ".mp3", ".m4a", ".ogg", ".oga", ".opus", ".flac", ".aac"} & set(MEDIA_SUFFIXES)
+    assert VIDEO_TYPES[".webm"] == "video/webm"
     assert "/media/upload" not in AUDIO and "FormData" not in AUDIO
 
 

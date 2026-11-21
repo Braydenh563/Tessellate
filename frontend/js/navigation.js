@@ -1889,7 +1889,8 @@ async function switchTab(name) {
   // old one was still running or already stopped.
   const leavingGraph = prefs.get("activeTab", null) === "graph" && name !== "graph";
   //: Leaving Notes forgets the last card clicked (L709): it is the open note only while you are there.
-  if (name !== "notes") delete $("entry-list")?.dataset.lastCard;
+  //: `getElementById`, not `$`: an unbuilt Notes surface has no card to forget, and `$` would build it (1,092 elements) on a Documents open.
+  if (name !== "notes") delete document.getElementById("entry-list")?.dataset.lastCard;
   recordTabVisit(name);
   //: The next 400ms belong to the page arriving (INBOX 580): the companion's
   //: paced animations hold still through them (`nameMarkBuddyTempo`), so the

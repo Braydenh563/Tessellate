@@ -17,11 +17,12 @@ These read the source because the behaviour lives in two listeners on
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 WIRING = (JS / "settings-wiring.js").read_text(encoding="utf-8")
 
 
@@ -71,7 +72,7 @@ def test_escape_leaves_a_text_box_selected_rather_than_typing_on():
     assert 'selectWbItem("object", d.id)' in esc
 
 
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def test_siblings_sort_by_their_order_key_and_colours_by_creation():
@@ -260,3 +261,15 @@ def test_nothing_outside_the_boards_setup_calls_its_private_tool_picker():
     code = re.sub(r"(?m)^\s*//.*$", "", WB)
     inside = len(re.findall(r"\bselectWbTool\(", re.sub(r"(?m)^\s*//.*$", "", init)))
     assert len(re.findall(r"\bselectWbTool\(", code)) == inside
+
+
+def test_select_all_and_the_tab_walk_take_connectors():
+    """L-whiteboard-21: Select all and the Tab walk skipped connectors (`wbLinkCandidates` leaves link sketches out).
+    A board connector (`wbLinkSelectionBox`, never a map's cross-link) is selectable, boxed by its ends and bends,
+    and spoken as a connector."""
+    items = _function_body(WB, "wbSelectableItems")
+    assert "wbIsLinkSketch(sk) && wbLinkSelectionBox(sk)" in items
+    walk = _function_body(WB, "wbWalkItems")
+    assert "wbItemBBox(kind, item) || (kind === \"sketch\" ? wbLinkSelectionBox(item) : null)" in walk
+    spoken = _function_body(WB, "wbItemSpokenName")
+    assert "wbIsLinkSketch(item)" in spoken and "\"Connector\"" in spoken

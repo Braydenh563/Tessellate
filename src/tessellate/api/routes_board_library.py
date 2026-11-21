@@ -45,6 +45,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.api.downloads import attachment_headers, safe_filename
+from tessellate.api.wb_model import PDF_PAGE_URL_RE
 from tessellate.api.routes_whiteboard import (
     BOARD_BG_COLOR_RE,
     BOARD_LAYOUTS,
@@ -121,10 +122,18 @@ def _fail(detail: str) -> HTTPException:
     return HTTPException(status_code=422, detail=detail)
 
 
+#: A `/media/<name>` reference, or a rendered page of an uploaded PDF
+#: (`/media/pdf-page/<name>.pdf/<n>`), which points at the PDF's own upload.
+_MEDIA_REF_RE = re.compile(r"/media/(?:pdf-page/([A-Za-z0-9][A-Za-z0-9._-]{0,115}\.pdf)/\d{1,3}|([A-Za-z0-9][A-Za-z0-9._-]{0,119}))")
+
+
+def _media_upload(match: re.Match) -> str:
+    return f"/media/{match.group(1) or match.group(2)}"
+
+
 def _media_urls(value: Any) -> list[str]:
-    """Every `/media/...` string anywhere in a payload."""
-    text = json.dumps(value)
-    return re.findall(r"/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}", text)
+    """The upload behind every `/media/...` string anywhere in a payload."""
+    return [_media_upload(m) for m in _MEDIA_REF_RE.finditer(json.dumps(value))]
 
 
 def _clean_number(value: Any, default: float = 0.0) -> float:
@@ -167,7 +176,8 @@ def _clean_object_item(raw: dict, item: dict[str, Any]) -> None:
     except ValueError as err:
         logger.info("board library: an item did not validate: %s", err)
         raise _fail("An item's data is not valid.") from None
-    if kind == "image" and not MEDIA_URL_RE.match(checked.get("url") or ""):
+    url = checked.get("url") or ""
+    if kind == "image" and not (MEDIA_URL_RE.match(url) or PDF_PAGE_URL_RE.match(url)):
         raise _fail("A picture in the library is one of this notebook's uploads.")
     item.update(
         kind="object", type=kind, data=checked,
@@ -823,7 +833,7 @@ def _import_item(raw: dict, have: set[str]) -> tuple[dict | None, str | None, in
     payload = raw.get("payload")
     if not isinstance(payload, dict) or kind not in ITEM_KINDS:
         return None, kind, 0
-    missing = [u for u in _media_urls(payload) if u not in have]
+    missing = list(dict.fromkeys(u for u in _media_urls(payload) if u not in have))
     if missing:
         payload = _drop_media(payload, set(missing))
     try:
@@ -875,7 +885,7 @@ def _drop_media(payload: dict, missing: set[str]) -> dict:
         out["items"] = [i for i in out["items"] if keep(i)]
         keys = {i.get("key") for i in out["items"] if isinstance(i, dict)}
         out["links"] = [lk for lk in out.get("links") or [] if isinstance(lk, dict) and lk.get("from") in keys and lk.get("to") in keys]
-    return json.loads(re.sub(r"/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}", lambda m: "" if m.group(0) in missing else m.group(0), json.dumps(out)))
+    return json.loads(_MEDIA_REF_RE.sub(lambda m: "" if _media_upload(m) in missing else m.group(0), json.dumps(out)))
 
 
 # --- placing --------------------------------------------------------------------

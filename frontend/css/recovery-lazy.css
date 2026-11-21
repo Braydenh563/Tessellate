@@ -42,7 +42,8 @@
 
 /* A finger's floor under a touch pointer (`--target-min`, 44px there): the
    inputs and the two actions measured 42 and 38 at 390 (forgotpw.js). */
-.lock-forgot-card :is(input, .lock-forgot-action) {
+.lock-forgot-card :where(input):is(input, .lock-forgot-action),
+.lock-forgot-card .lock-forgot-action {
   min-height: var(--target-min);
 }
 

@@ -709,11 +709,15 @@
     if (wbGrammar.found.size > WB_GRAMMAR_KEPT) wbGrammar.found.clear();
     for (const text of texts) {
       wbGrammar.asks += 1;
-      const lints = await docGrammarAsk(text).catch(() => null);
+      //: Harper's answer is kept at once and repainted; LanguageTool's replaces it when it joins.
+      const keep = (lints) => {
+        const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
+        wbGrammar.found.set(text, hits[0] || null);
+      };
+      const lints = await docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); }).catch(() => null);
       //: No answer (the worker is off or failed): leave the text unasked so the next check asks again.
       if (lints === null) continue;
-      const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
-      wbGrammar.found.set(text, hits[0] || null);
+      keep(lints);
     }
     wbGrammarRepaint();
     if (wbGrammar.queue.size) wbGrammarSoon();

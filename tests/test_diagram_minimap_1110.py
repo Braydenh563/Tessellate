@@ -90,3 +90,28 @@ def test_the_overview_lifts_above_the_sideways_offer():
     assert 'querySelector(":scope > .dgm-minimap")' in outline and "lift(true)" in outline and outline.count("lift(false)") == 2
     assert 'getComputedStyle?.(S.sideways).position !== "absolute"' in outline
     assert "map.style.insetBlockEnd = below ?" in outline
+
+
+def test_a_scroll_moves_the_frame_with_a_transform_and_reads_no_layout():
+    """L-documents-89: the scroll listener re-measured the picture and wrote left, top, width and height on every scroll
+    event of a pan (a forced layout each frame, 1440 only: a phone hides the overview). It now measures on a zoom and a
+    resize and moves the frame by a transform on a scroll."""
+    text = (ROOT / "frontend" / "js" / "diagram-minimap.js").read_text(encoding="utf-8")
+    assert 'fig.addEventListener("scroll", pan, { passive: true })' in text
+    pan = text[text.index("const pan = ") : text.index("//: Press, and drag")]
+    for forbidden in ("offsetWidth", "offsetLeft", "scrollWidth", "getBoundingClientRect", ".style.left", ".style.top", "place("):
+        assert forbidden not in pan, forbidden
+    assert "translate(" in pan
+
+
+def test_the_frame_moves_at_most_every_48_ms_and_has_its_own_layer():
+    """L-documents-102: each frame write repainted the overview over the 9,679 px thumbnail (Paint 178 ms and raster 141 ms
+    over a 90-move pan at 4x CPU, 6 ms a frame; 7 and 16 ms with the overview hidden). The write is throttled with a
+    trailing call so the frame settles on the last position, and the frame is its own layer (raster 141 to 15 ms)."""
+    text = (ROOT / "frontend" / "js" / "diagram-minimap.js").read_text(encoding="utf-8")
+    pan = text[text.index("const pan = ") : text.index("//: Press, and drag")]
+    assert "48 - (performance.now() - movedAt)" in pan
+    assert "setTimeout(() => ((tail = 0), pan()), wait)" in pan
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    block = css[css.index(".dgm-minimap-view {") :].split("}", 1)[0]
+    assert "will-change: transform" in block
