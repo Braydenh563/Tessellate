@@ -82,7 +82,7 @@
   const noteFilesDrop = (key) => noteFilesRun((store) => store.delete(key));
   const noteFileForm = (file) => { const form = new FormData(); form.append("file", file); return form; };
   //: A staged picture is `![name](staged:key)`; with its bytes gone it is only its name.
-  const stripStagedUrls = (text) => String(text || "").replace(/!\[([^\]]*)\]\(staged:[^)]*\)/g, "[$1]");
+  const stripStagedUrls = (text) => String(text || "").replace(/!\[([^[\]\n]*)\]\(staged:[^()\n]*\)/g, "[$1]");
 
   //: Hold a note for later. Answers whether it is held; with `held` ({images, files}) a promise of that.
   function noteOutboxAdd(body, held) {
@@ -151,7 +151,7 @@
     noteOutboxFlushing = (async () => {
       let sent = 0;
       for (const item of noteOutbox()) {
-        const { queued_at: _queuedAt, edit_id: editId, held_reminder: heldReminder, blobs: hasFiles, ...payload } = item;
+        const { queued_at: _queuedAt, edit_id: editId, blobs: hasFiles, held_reminder: heldReminder, ...payload } = item;
         let files = [];
         try {
           if (editId) {
