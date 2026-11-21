@@ -8134,9 +8134,8 @@ def test_each_popup_is_the_kind_the_table_rules() -> None:
 
 def test_a_sheet_host_is_lifted_into_the_one_sheet_recipe() -> None:
     js = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
-    assert 'customElements.define("sheet-host", SheetHost)' in js
-    start = js.index("class SheetHost extends HTMLElement")
-    body = js[start : js.index('customElements.define("sheet-host"', start)]
+    start = js.index('customElements.define("sheet-host", class extends HTMLElement')
+    body = js[start : start + 1800]
     for needed in ("get open()", "showModal()", "close()", "openSheet({", "headless: true", 'variant: panel ? "panel" : "hosted"', "modal: !panel", 'new Event("close")'):
         assert needed in body, needed
     sheet = js[js.index("function openSheet(") :][:9000]

@@ -940,7 +940,7 @@ sheet-host[hidden] {
   margin: 0;
   background: none;
 }
-@media (max-width: 599px) {
+@media (max-width: 599.98px) {
   .sheet-card.sheet-card-hosted,
   .sheet-card.sheet-card-panel {
     width: 100%;

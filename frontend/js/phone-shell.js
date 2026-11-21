@@ -1628,7 +1628,7 @@ function sheetRow(iconClass, label, run) {
 //: markup stays a `<sheet-host>` in the page, and `showModal()` lifts it into `openSheet`, so the
 //: scrim, Escape and the fade are the recipe's. It keeps the dialog's `open`, `showModal`, `close`
 //: and `close` event, so no caller changed; `data-sheet-kind="panel"` is a history.
-class SheetHost extends HTMLElement {
+customElements.define("sheet-host", class extends HTMLElement {
   get open() {
     return !!this._close;
   }
@@ -1659,8 +1659,7 @@ class SheetHost extends HTMLElement {
   close() {
     this._close?.();
   }
-}
-customElements.define("sheet-host", SheetHost);
+});
 
 // --- More: the three tabs the phone's five-item bar does not show -------------
 // UI_MODERNISATION_PLAN.md Phase 11, item 1; INBOX 1314 for which three. The
