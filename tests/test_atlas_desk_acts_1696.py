@@ -67,6 +67,17 @@ ACTS = {
     "dinner": ("act.dinner", ["nmp-bowl", "nmp-spoon"], 8),
     "bubbles": ("act.blow_bubbles", ["nmp-wand"], 5),
     "knit": ("act.knit_starlight", ["nmp-needles"], 6),
+    #: L178 (2026-11-21): the catalogue's ten idle acts built on both sides.
+    "cloudpillow": ("act.cloud_pillow", ["nmp-cloud"], 6),
+    "plane": ("act.paper_plane", ["nmp-plane"], 5),
+    "conduct": ("act.conduct", ["nmp-baton"], 1.5),
+    "sketch": ("act.sketch_view", ["nmp-sketch"], 7),
+    "kneel": ("act.kneel_look", ["nmp-speck"], 2.4),
+    "leanedge": ("act.lean_on_edge", ["nmp-ledge"], 8),
+    "tailchase": ("act.tail_chase", [], 1.6),
+    "tailstretch": ("act.tail_stretch", [], 3),
+    "balance": ("act.balance_walk", [], 2),
+    "skyfloat": ("act.stargaze_awake", [], 7),
 }
 
 
@@ -149,9 +160,10 @@ def test_the_face_smiles_now_and_then_and_never_frowns(key):
 
 
 SAMPLER = r"""
-const css = process.argv[1];
-const act = process.argv[2];
-const cycle = +process.argv[3];
+// The sheet comes on stdin: past 128 KB it no longer fits in one argument (E2BIG, L178).
+const css = require("fs").readFileSync(0, "utf8");
+const act = process.argv[1];
+const cycle = +process.argv[2];
 const frames = (name) => {
   const at = css.indexOf("@keyframes " + name + " {");
   let depth = 0, i = css.indexOf("{", at), start = i + 1, out = [];
@@ -187,7 +199,7 @@ console.log(JSON.stringify(out));
 @needs_node
 @pytest.mark.parametrize("key", sorted(ACTS))
 def test_over_a_cycle_the_arm_the_eyes_and_the_tail_have_moved(key):
-    run = subprocess.run(["node", "-e", SAMPLER, LAZY, key, str(ACTS[key][2])], capture_output=True, text=True)
+    run = subprocess.run(["node", "-e", SAMPLER, key, str(ACTS[key][2])], input=LAZY, capture_output=True, text=True)
     assert run.returncode == 0, run.stderr[-1500:]
     got = json.loads(run.stdout)
     for part, samples in got.items():

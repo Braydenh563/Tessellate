@@ -560,6 +560,15 @@
       for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
     }
     if (holds) {
+      //: **Resting, the beat ends** (L184: 17.6 to 42 ms a minute of beats that drew nothing). Input calls the waker; a
+      //: class, a pose or a mood wakes it through the rig's observer (`atlasRigWake`, `atlasTailWake`).
+      if (atlasTailCalm.resting(box, tail.state)) {
+        atlasTailCalm.rest.wake.add((tail.wake ||= () => {
+          atlasTailCalm.rest.wake.delete(tail.wake);
+          atlasTailWake(box);
+        }));
+        return;
+      }
       tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
       return;
     }
@@ -682,9 +691,11 @@
       const was = performance.now() - r.at > r.after;
       r.at = performance.now();
       // In the next frame, not in the input: playing the held loops and the pacer's first beat are the input's own cost otherwise (lag log: input 320ms).
-      if (was) setTimeout(() => r.wake.forEach((fn) => fn()), 0);
+      if (was) setTimeout(atlasTailCalm.rest.stir, 0);
     }, { passive: true, capture: true });
   }
+  //: Every waker, now: input, or the desk window leaving its rest (desk-companion.js `show`).
+  atlasTailCalm.rest.stir = () => [...atlasTailCalm.rest.wake].forEach((fn) => fn());
   //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
   atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang", "coil", "ripple_calm", "pool", "heavy"]);
   //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
@@ -930,7 +941,8 @@
   atlasBreathFrame.put = (box, now, rode = true) => {
     const b = box.atlasBreath;
     if (!b) return;
-    b.ph = (b.ph + ((now - b.at) * b.rate) / b.period) % 1;
+    //: A gap over a second is a rest the chest held (L184): it goes on from there, not a jump.
+    if (now - b.at < 1000) b.ph = (b.ph + ((now - b.at) * b.rate) / b.period) % 1;
     b.at = now;
     if (rode) b.rode = now;
     const k = (1 - Math.cos(2 * Math.PI * b.ph)) / 2;

@@ -37,7 +37,9 @@ def ask(client, session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for content in NOTES:
-        manager.create_entry(session, content)
+        #: Written on the fixed day: a note's own "the 17th" is read from the day it was written.
+        entry = manager.create_entry(session, content)
+        entry.created_at = entry.updated_at = NOW
     session.commit()
 
     def go(question: str) -> str:

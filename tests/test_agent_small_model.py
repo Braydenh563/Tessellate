@@ -15,10 +15,20 @@ better with this, and this file cannot show that.
 
 from __future__ import annotations
 
+import pytest
 import json
 
 from tessellate.ai import agent, model_manager
 from tessellate.ai import agent_policy
+
+
+@pytest.fixture(autouse=True)
+def _no_act_reader(monkeypatch):
+    """The fake session holds no notes, so the unrun-act reader (L114), which reads the sentence
+    against the notebook, is off here: these tests are about the tools offered, not the act card."""
+    from tessellate.ai import act_registry
+
+    monkeypatch.setattr(act_registry, "proposer", None)
 
 
 class _Session:

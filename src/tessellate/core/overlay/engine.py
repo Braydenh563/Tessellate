@@ -103,6 +103,7 @@ from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
 from .engine_roam import RoamMixin
+from .engine_spells import SpellsMixin
 from .engine_touch import TouchMixin
 
 #: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
@@ -112,7 +113,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, TouchMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, SpellsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -1165,6 +1166,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
     def _begin_spell(self, now: float) -> None:
         """Choose the next spell by the hour and the mood and go to its spot (a seen move, never a long walk), or start
         it where it is when that is spot enough."""
+        if self._perch_spell(now):  # on a window top: a spell up there at its edge spot (engine_spells.py)
+            return
         name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
         self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": pr.length_of(self.rng, name)}
         spot = self._spell_spot(now)
@@ -1400,7 +1403,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         if act == "hang" and self._dest_repeats("hang"):
             return True
         if act == "spell":
-            return up or self._no_spell()
+            return self._spell_blocked(up)
         return act == "stroll" and up
 
     def _no_spell(self) -> bool:
