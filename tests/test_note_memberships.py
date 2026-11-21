@@ -133,6 +133,22 @@ def test_the_search_category_filters_see_an_also_category(client, session):
     assert hits("invoice -cat:Travel") == set()
 
 
+def test_the_search_understands_group_names(client, session):
+    from tessellate.search import engine
+
+    a, b = _note(client, "invoice for pasta", "Recipes"), _note(client, "invoice for tickets", "Travel")
+    gid = client.post("/groups", json={"name": "Trip plan"}).json()["id"]
+    client.post(f"/groups/{gid}/notes", json={"ids": [b]})
+
+    def hits(q):
+        return {h.ref_id for h in engine.search(session, q, ctx=None, hybrid=False) if h.kind == "note"}
+
+    assert hits('group:"Trip plan" invoice') == {b}
+    assert hits("group:trip invoice") == set()
+    assert hits('group:"trip PLAN"') == {b}  # no words: the group alone selects
+    assert hits("invoice") == {a, b}
+
+
 def test_merging_a_category_carries_the_also_in_notes_along(client):
     a = _note(client, "x", "Recipes")
     client.put(f"/entries/{a}/also-in", json={"categories": ["Cooking"]})

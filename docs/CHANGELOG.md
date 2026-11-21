@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Search understands `group:` (L-world-class-693): `group:"Trip plan"` in the finder and `/search` keeps the notes in every group named, as the Notes box already did (`query._take_groups`, `engine._by_group`); tests/test_note_memberships.py.
 - Folder import keeps groups and extra categories (L-world-class-692): a note's sidecar `groups` and `also_in` are put back on import (`export_folder._make_entry`), so a folder round trip no longer drops them; tests/test_folder_roundtrip.py.
 - Smaller notebook on disk (L-world-class-174): embeddings (and paragraph and staged vectors) are stored as float16 and read back as float32, so no reader changed (`core/packed_vector.py`, migration b5d2e8a1c7f3 with a downgrade); a seeded 5,000-note notebook with 384-dimension vectors went 26,693,632 to 20,533,248 bytes (23%) after the nightly VACUUM, the embeddings table 10.3 to about 4.2 MB, top-10 overlap 0.97 or better; note text stays as it is, since the full-text index reads it in place.
 - Boot long tasks (L-world-class-354): the signed-in face marks in `paintUserMarks` are drawn one holder a timer task instead of all in one (chat-agent.js:setTimeout was a 65 ms median at 4x CPU over 5 runs; after, it is under the 30 ms listing line in a repeat run).

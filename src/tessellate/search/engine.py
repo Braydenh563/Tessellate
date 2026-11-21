@@ -1237,6 +1237,17 @@ def _by_category(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS and filed.get(row["ref_id"], set()) & wanted]
 
 
+def _by_group(session: Session, rows: list, asked) -> list:  # noqa: ANN001
+    """Only the notes in every group `group:` named (L-world-class-693)."""
+    wanted = {name.casefold() for name in asked.groups}
+    if not wanted:
+        return rows
+    ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
+    held = memberships.groups_bulk(session, ids)
+    return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS
+            and wanted <= {n.casefold() for n in held.get(row["ref_id"], [])}]
+
+
 _COUNTED = {
     "<": lambda have, want: have < want,
     "<=": lambda have, want: have <= want,
@@ -1338,7 +1349,7 @@ def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     rows = _by_flags_and_title(rows, asked, wanted_is)
     if wanted_has:
         rows = _having(session, rows, wanted_has)
-    rows = _without_categories(session, _by_tag_count(_by_category(session, rows, asked), asked), asked)
+    rows = _without_categories(session, _by_tag_count(_by_group(session, _by_category(session, rows, asked), asked), asked), asked)
     return _without(_by_tags(rows, asked), asked)
 
 
@@ -1500,7 +1511,7 @@ def search(
     # be the search box answering a question nobody put. The Notes list is
     # already showing every note when the box is empty; a search that also
     # returns every note is not an answer, it is noise with a scrollbar.
-    if not (terms or asked.phrases or any(asked.filters.values()) or asked.categories or asked.without_categories or asked.tag_count is not None or asked.has_range):
+    if not (terms or asked.phrases or any(asked.filters.values()) or asked.categories or asked.without_categories or asked.groups or asked.tag_count is not None or asked.has_range):
         return []
     rows, terms = _candidate_rows(session, q, subject, terms, asked, wanted_kinds, space, hybrid, limit, depth)
     rows = _filter_rows(session, rows, asked) if rows else rows
