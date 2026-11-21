@@ -176,11 +176,11 @@ def grip_x(im: Image.Image, side: str) -> float:
     return sum(cols) / len(cols)
 
 
-def hung_from_the_edge(im: Image.Image, hang: Image.Image, side: str) -> Image.Image:
+def hung_from_the_edge(im: Image.Image, hang: Image.Image, side: str, column: bool = True) -> Image.Image:
     """`im` moved so its grip is where the shipped hang's is: the same top row (the engine places a hang by it) and the same column
     (a hang is drawn about the grip, so a swap between two hang pictures does not jump)."""
     dy = drawn(hang)[1] - drawn(im)[1]
-    dx = round(grip_x(hang, "left" if side == "left" else "both") - grip_x(im, side))
+    dx = round(grip_x(hang, "left" if side == "left" else "both") - grip_x(im, side)) if column else 0
     moved = Image.new("RGBA", im.size)
     moved.paste(im, (dx, dy))
     return moved
@@ -260,11 +260,13 @@ def main() -> int:
             nebs = {name: Image.open(Path(raw) / look / f"{name}.neb.png").convert("RGBA") for name in captured}
             shared = shared_stream(captured, nebs, [n for n in STREAM_SHARED if n in captured])
             images = {name: with_stream(im, nebs[name], shared if name in STREAM_SHARED else None) for name, im in captured.items()}
-            #: The hang's tricks hang from its grip here too, not only when added (`DESK_ADD`): a full render shipped the sloth
-            #: 3 px under the hang's top row, where the rig's sleeping hang drew it (L-ui-modernisation-152).
+            #: The hang's tricks take the hang's top row here too, not only when added (`DESK_ADD`): the engine places a hang by
+            #: it, and a full render shipped the sloth 3 px under it and the flip 7 over (L-ui-modernisation-152). Not its grip
+            #: column: one capture draws every hang where the app does (the sloth's grip is 1 px off), and the flip moved 61 px
+            #: to its grip widened both canvases 86 px, past the frames' byte cap.
             for name, side in HANG_HELD.items():
                 if name in images and "hang" in images:
-                    images[name] = hung_from_the_edge(images[name], images["hang"], side)
+                    images[name] = hung_from_the_edge(images[name], images["hang"], side, column=False)
             #: A capture can come out blank (seen once on a cold page: eight idle frames
             #: of one look): refuse to ship it rather than a figure that vanishes.
             blank = [n for n, im in captured.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]
