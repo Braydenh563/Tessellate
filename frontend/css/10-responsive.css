@@ -143,6 +143,28 @@
     font-size: var(--text-xs);
   }
 }
+/* --- the one row, kept again at 820 to 879 (L-world-class-106) ----------
+   The Local chip (row 1641) took 42px more of the header after the fit above
+   was measured, and the strip wrapped again: the top bar was 100px, two rows,
+   from 820 to 875 (`scratchpad/ui-sweeps/shell-devibe-106.js`). Measured at
+   820: brand 28, space switcher 65, strip 438, header controls 259, plus
+   three 9.6px gaps and 32px of padding is 851px in 820. One spacing step off
+   the header's three gaps and the switcher's caret (the circles icon is the
+   button; its menu still opens on it and `aria-haspopup` still says so)
+   frees 50px: 56px, one row, with no target under 36px and the tabs still at
+   their 44px floor. */
+@media (min-width: 820px) and (max-width: 879.98px) {
+  header#top-bar {
+    column-gap: var(--space-2);
+  }
+  #top-bar .header-controls,
+  #top-bar .header-cluster {
+    gap: var(--space-1);
+  }
+  #space-switcher-btn .ph-caret-down {
+    display: none;
+  }
+}
 /* A count on a tab is a badge on its glyph, not a word beside it, wherever the
    strip is narrow enough to care (everything below 1100: band 2's icons, band
    3's small captions, band 4's five columns). In the flow it cost 31px of a

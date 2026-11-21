@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Top bar: one row again from 820 to 879px; it had wrapped to two rows (100px) after the Local chip joined it (L-world-class-106).
 - Settings, Account: the private-by-default and mute-except-reminders switches show what is saved again; opening the pane threw before.
 - Command palette: a browser tool run by the palette's agent opens its page in the Web panel, as in Chat (L-world-class-629).
 - VS Code extension: sign in with a tool server token, which does not idle out and keeps to the categories and tags it was made for (L-world-class-627).
