@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Budgets (L540): browser figures re-measured on an idle machine and the caps tightened (first paint 1070 to 460 ms, first interaction 6960 to 3060, list 210 to 110, search 50 to 40, document 540 to 180); the server shares keep their loaded caps; the budgets sweep now waits for the update-check question.
 - Library and graph search (L628): "notes about the harbor" drops the request words and a slip ("harbr") still finds the notes; the notebook's own words, never the Settings synonyms.
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.
