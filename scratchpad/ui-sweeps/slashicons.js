@@ -46,7 +46,11 @@ function ok(label, pass, detail) {
   }
   await box.click();
   await page.keyboard.type("/");
-  await page.waitForTimeout(500);
+  //: Waited for, not slept: the first "/" asks for the editor bundle (editor.js
+  //: `editorSurfaceFor`) and the menu opens when it arrives, which on a loaded
+  //: machine is longer than any fixed pause.
+  await page.waitForSelector(".editor-menu-item", { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(300);
   const menu = await page.evaluate(() => {
     const rows = [...document.querySelectorAll(".editor-menu-item")];
     //: The icon sits in the row's tile since the block menu's redesign
