@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8507, frontend ids 2782, CSS sections 524, backend routes 713, backend modules 10916, test files 2796, tests 22386, plan headings 692, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8507, frontend ids 2782, CSS sections 524, backend routes 713, backend modules 10916, test files 2796, tests 22387, plan headings 692, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8507)
 
@@ -28095,7 +28095,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22386)
+## Tests (22387)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29254,7 +29254,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_run_prefs_q25.py | 3 |
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
-| tests/test_fixed_clock_lint.py | 9 |
+| tests/test_fixed_clock_lint.py | 10 |
 | tests/test_fixed_day_1693.py | 2 |
 | tests/test_flash_entry_missing_s93.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
