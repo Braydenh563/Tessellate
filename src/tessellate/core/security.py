@@ -793,11 +793,27 @@ def _backend_addresses(host: str) -> list:
     return found
 
 
+#: NAT64 prefixes (RFC 6052 well-known /96, RFC 8215 local-use /48): the
+#: last 32 bits are an IPv4 address a translator reaches on the caller's
+#: behalf, so 64:ff9b::a9fe:a9fe is the metadata address by another road.
+_NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+
+
+def embedded_ipv4(address):  # noqa: ANN001, ANN201  # an ipaddress object
+    """The IPv4 address an IPv6 one stands for (IPv4-mapped or NAT64), else
+    the address itself: each check judges where a connection really lands."""
+    if isinstance(address, ipaddress.IPv6Address):
+        if address.ipv4_mapped:
+            return address.ipv4_mapped
+        if any(address in net for net in _NAT64):
+            return ipaddress.IPv4Address(int(address) & 0xFFFFFFFF)
+    return address
+
+
 def _refuses(address) -> str | None:
     """Why this address can't be a model backend, or None if it can be."""
-    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:
-        # ::ffff:169.254.169.254 is the metadata address wearing a hat.
-        address = address.ipv4_mapped
+    # ::ffff:169.254.169.254 and 64:ff9b::a9fe:a9fe are the metadata address wearing a hat.
+    address = embedded_ipv4(address)
     # The order of these three blocks is load-bearing, because Python's
     # categories overlap in two places that would each flip an answer:
     #
@@ -926,8 +942,10 @@ def is_internal_address(address) -> bool:  # noqa: ANN001  # an ipaddress object
     URL that resolves to one of these, and `search/websearch.py` requires it
     of a self-hosted SearXNG instance, which must be local and nowhere else.
     One definition, so the two cannot drift apart and leave a hole in the
-    half nobody re-read.
+    half nobody re-read. A NAT64 or IPv4-mapped address is judged by the
+    IPv4 address it reaches (`embedded_ipv4`).
     """
+    address = embedded_ipv4(address)
     return (
         address.is_private
         or address.is_loopback

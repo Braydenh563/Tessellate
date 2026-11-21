@@ -211,3 +211,25 @@ def test_the_scan_sees_fetchers_that_do_not_use_requests():
         "    snapshot_download(repo_id='r')\n"
     )
     assert {"urllib.request.urlopen", "snapshot_download"} <= _calls(sample) & OUTBOUND
+
+
+@pytest.mark.parametrize(
+    ("address", "local"),
+    [
+        ("64:ff9b::a9fe:a9fe", True),  # NAT64 of the cloud metadata address
+        ("64:ff9b::7f00:1", True),  # NAT64 of 127.0.0.1
+        ("64:ff9b:1::a00:5", True),  # local-use NAT64 (RFC 8215) of 10.0.0.5
+        ("64:ff9b::808:808", False),  # NAT64 of a public address is public
+    ],
+)
+def test_a_nat64_address_is_judged_by_the_ipv4_it_reaches(monkeypatch, address, local):
+    """L-general-1: the last 32 bits of 64:ff9b::/96 are where a translator
+    connects, so the guard judges those, not Python's view of the prefix."""
+    from tessellate.core import security
+
+    monkeypatch.setattr(security, "_resolve", lambda host: [address])
+    if local:
+        with pytest.raises(security.UnsafeUrl, match="local address"):
+            security.public_addresses("https://example.com/")
+    else:
+        assert security.public_addresses("https://example.com/")

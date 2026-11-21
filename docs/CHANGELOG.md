@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Security: the address guards judge a NAT64 address (64:ff9b::/96 and the local-use 64:ff9b:1::/48) by the IPv4 address it reaches, so the metadata address through a local translator is refused as a model backend and a public address through NAT64 is no longer refused as local (L-general-1).
 - Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the strict xfails on chat row L150 and on L-timeline-9, which PR 241 builds); the PR 216 work order closed (L-general-33); open_scan skips the PR template form, and strips SQLAlchemy's `deferred=True` and two exact verb phrases before it looks, so a marker on the same line is still found.
 - Filing keeps a note's tag suggestions in the same commit as its settled `filing_state`, so a reader that stops polling on the settled state no longer reads them as empty; `jobs.in_flight(None)` is False.
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
