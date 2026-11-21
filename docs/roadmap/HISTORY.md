@@ -56398,3 +56398,7 @@ From DOCUMENTS_PLAN section 17d (L-documents-67). The plan's earlier text: "One 
 - [x] **L42** `chat` open, S: Fix 'five notes about knives' showing one; show total vs shown. Built: 17550496a; tests/test_composer_1324.py::test_one_note_shown_of_many_is_not_called_the_first_ones and the "find notes about knives" route test.
 - [x] **L46** `chat` open, S: Match 'tell me about this' in composer_digest.about_this. Built: 0c2be876d; tests/test_composer_attached_1461.py ("tell me about this" reads as the attachment).
 - [x] **L190** `chat` partly, S: Name a title-less note one way everywhere (R3-15). Built: 0c2be876d (link_wording.title uses the composer's note name); tests/test_link_wording.py::test_a_title_less_note_is_named_like_the_composer_names_it.
+## INBOX resolved, 2026-11-21
+
+1840. **Chat session, 2026-11-14 ~16:00Z (decision taken under standing order 3, not the owner's words):** L180's "enlarged view corner/oval/notice" is read as Brief 34's second part (HISTORY): the enlarged view mirrors the corner companion, a framed Atlas is clipped to its round mark, and the Show companion notice meets the toast recipe. All three were measured built in uxfix5-1018 and ai1518-1101; no new corner oval is drawn. Pinned by tests/test_atlas_enlarged_and_framed_l180.py. Recommendation: close L180 on that reading; taken 2026-11-14. The owner may reverse it.
+
