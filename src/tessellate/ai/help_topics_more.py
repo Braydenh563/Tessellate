@@ -115,8 +115,8 @@ MORE_TOPICS: list[dict] = [
             "it to blinks and looks. Pat its head with slow dabs and it enjoys it (Lean into a rub or a pat), "
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
             "a hard throw into the top bar bonks it before it falls, throw it while it holds something (a cup, a rod, a journal) and the thing lies tipped over beside it for a moment, and a long way across the page is sometimes a ride on a "
-            "cloud, in a bubble or on a gust of motes (a spiral as it sets off, an eddy where it settles; the desktop's floating trips too). The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
-            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) keep to their hours, last a few minutes and come likelier in a mood that suits them, as on the desktop. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
+            "cloud, in a bubble or on a gust of motes, as on the desktop. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
+            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones keep to their hours, last a few minutes and come likelier in a mood that suits them. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
