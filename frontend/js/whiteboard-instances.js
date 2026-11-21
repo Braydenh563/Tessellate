@@ -126,9 +126,16 @@
     wbUpdateUndoRedoButtons();
     //: The toolbar and the incoming container's cursor show its own tool.
     wbSelectToolRef?.swap(inst.tool);
+    //: The read counts only if it replaced `wbState` while `inst` was still live. The fetch
+    //: toasts its own failure and drops an answer for another board, so either leaves
+    //: `inst` stale and its next activation reads again (L-whiteboard-74).
     if (inst.stale) {
       inst.stale = false;
-      fetchWhiteboardState().then(() => wbScheduleRender());
+      const before = wbState;
+      fetchWhiteboardState().then(() => {
+        if (active === inst && wbState !== before) wbScheduleRender();
+        else inst.stale = true;
+      });
     }
     if (inst.renderPending) {
       inst.renderPending = false;
@@ -256,6 +263,8 @@
   //: board the drag began on, and so does a wheel turned while a button is held.
   const ROUTED = ["pointerdown", "mousedown", "touchstart", "contextmenu", "dblclick", "wheel", "keydown", "focusin", "paste", "drop"];
   function routeToBoard(event) {
+    //: Only the page board: nothing to route, so every key and wheel in the app costs one compare (L-whiteboard-76).
+    if (list.length === 1) return;
     if (event.type === "wheel" && event.buttons) return;
     const target = event.target;
     const onPageView = document.getElementById(PAGE_CONTAINER)?.contains?.(target) || target?.closest?.("#library-view-whiteboard");
@@ -285,7 +294,12 @@
   let embedBoardInit = null;
   async function createEmbed(host, boardId, opts = {}) {
     const editable = opts.editable === true;
-    await (embedBoardInit ??= window.initWhiteboard?.());
+    //: Only a real promise is kept, and a failed one is dropped, so the next embed tries again (L-whiteboard-75).
+    if (!embedBoardInit) {
+      const run = window.initWhiteboard?.();
+      if (run && typeof run.then === "function") embedBoardInit = run.catch((err) => { embedBoardInit = null; throw err; });
+    }
+    await embedBoardInit;
     const box = document.createElement("div");
     box.className = editable ? "whiteboard-container wb-embed" : "whiteboard-container wb-embed wb-embed-readonly";
     box.tabIndex = 0;

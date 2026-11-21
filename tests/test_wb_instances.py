@@ -1052,7 +1052,9 @@ const reloads = [], embedReloads = [];
 let scheduledRenders = 0;
 apiJson = async () => { throw new Error("409"); };
 function recordBrowserLog() {}
-async function fetchWhiteboardState() { reloads.push(window.currentBoardId); }
+//: A read that succeeds replaces `wbState`, as the real one does: activateInstance
+//: counts a refetch only when it did (L-whiteboard-74).
+async function fetchWhiteboardState() { reloads.push(window.currentBoardId); wbState = { read: reloads.length }; }
 const WB_KIND_INFO = { node: { list: "nodes", payload: () => ({}) } };
 wbScheduleRender = () => { scheduledRenders++; };
 (async () => {
@@ -1159,3 +1161,71 @@ process.stdout.write(JSON.stringify({ onPage, asked }));
     got = subprocess.run([node, "-e", stubs + fn + body], capture_output=True, text=True, timeout=30)
     assert got.returncode == 0, got.stderr
     assert json.loads(got.stdout) == {"onPage": 0, "asked": [["node", 42, 5, 6], ["node", 42, 7, 8]]}
+
+
+def test_a_stale_refetch_counts_only_for_the_board_still_live():
+    """L-whiteboard-74: a read that lands after another board went live, or that failed
+    (the fetch toasts and leaves `wbState`), leaves the board stale for its next activation."""
+    out = _run("""
+let scheduled = 0, release, fail = false;
+wbScheduleRender = () => { scheduled++; };
+async function fetchWhiteboardState() {
+  await new Promise((r) => { release = r; });
+  if (!fail) wbState = { fresh: true };
+}
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+emb.stale = true;
+I.activate(emb);
+I.activate(I.page);
+release();
+await new Promise((r) => setTimeout(r, 1));
+out.moved = { scheduled, stale: emb.stale };
+I.activate(emb);
+fail = true;
+release();
+await new Promise((r) => setTimeout(r, 1));
+out.failed = { scheduled, stale: emb.stale };
+fail = false;
+I.activate(I.page);
+I.activate(emb);
+release();
+await new Promise((r) => setTimeout(r, 1));
+out.ok = { scheduled, stale: emb.stale };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["moved"] == {"scheduled": 0, "stale": True}, out
+    assert out["failed"] == {"scheduled": 0, "stale": True}, out
+    assert out["ok"]["stale"] is False and out["ok"]["scheduled"] >= 1, out
+
+
+def test_create_keeps_only_a_real_init_promise_and_drops_a_failed_one():
+    """L-whiteboard-75: no initWhiteboard yet, then a rejecting one, then a working one:
+    each embed tries again instead of reusing the first answer."""
+    out = _run("""
+const calls = [];
+window.initWhiteboard = undefined;
+(async () => {
+await window.wbInstance.create(fakeEl("div", "h1"), 5, {});
+window.initWhiteboard = async () => { calls.push("fail"); throw new Error("boom"); };
+out.rejected = await window.wbInstance.create(fakeEl("div", "h2"), 5, {}).then(() => false, () => true);
+window.initWhiteboard = async () => { calls.push("ok"); };
+await window.wbInstance.create(fakeEl("div", "h3"), 5, {});
+await window.wbInstance.create(fakeEl("div", "h4"), 5, {});
+out.calls = calls;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out == {"rejected": True, "calls": ["fail", "ok"]}, out
+
+
+def test_the_router_returns_at_once_with_only_the_page_board():
+    """L-whiteboard-76: with no embed, routeToBoard stops at its first line."""
+    src = (JS / "whiteboard-instances.js").read_text(encoding="utf-8")
+    at = src.index("  function routeToBoard(event) {")
+    body = src[at : src.index("\n  }\n", at)]
+    first = [line.strip() for line in body.splitlines()[1:] if line.strip() and not line.strip().startswith("//")][0]
+    assert first == "if (list.length === 1) return;"

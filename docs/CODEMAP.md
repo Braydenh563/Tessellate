@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8829, frontend ids 2825, CSS sections 525, backend routes 717, backend modules 10967, test files 2819, tests 22739, plan headings 691, app scripts 29, boot scripts 38, script files 347.
+Counts: frontend functions 8829, frontend ids 2825, CSS sections 525, backend routes 717, backend modules 10967, test files 2819, tests 22743, plan headings 691, app scripts 29, boot scripts 38, script files 347.
 
 ## Frontend functions (8829)
 
@@ -8990,27 +8990,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activateInstance` | frontend/js/whiteboard-instances.js:115 |
-| `activeContainer` | frontend/js/whiteboard-instances.js:197 |
-| `activeLayer` | frontend/js/whiteboard-instances.js:201 |
-| `bindBoard` | frontend/js/whiteboard-instances.js:170 |
-| `bindOne` | frontend/js/whiteboard-instances.js:159 |
-| `createEmbed` | frontend/js/whiteboard-instances.js:286 |
-| `drawEmbed` | frontend/js/whiteboard-instances.js:270 |
+| `activeContainer` | frontend/js/whiteboard-instances.js:204 |
+| `activeLayer` | frontend/js/whiteboard-instances.js:208 |
+| `bindBoard` | frontend/js/whiteboard-instances.js:177 |
+| `bindOne` | frontend/js/whiteboard-instances.js:166 |
+| `createEmbed` | frontend/js/whiteboard-instances.js:295 |
+| `drawEmbed` | frontend/js/whiteboard-instances.js:279 |
 | `dropBoardCaches` | frontend/js/whiteboard-instances.js:102 |
-| `embedFor` | frontend/js/whiteboard-instances.js:182 |
-| `embedSkeleton` | frontend/js/whiteboard-instances.js:231 |
+| `embedFor` | frontend/js/whiteboard-instances.js:189 |
+| `embedSkeleton` | frontend/js/whiteboard-instances.js:238 |
 | `instanceZoom` | frontend/js/whiteboard-instances.js:47 |
-| `mountInstance` | frontend/js/whiteboard-instances.js:142 |
+| `mountInstance` | frontend/js/whiteboard-instances.js:149 |
 | `newInstance` | frontend/js/whiteboard-instances.js:26 |
-| `notifyChanged` | frontend/js/whiteboard-instances.js:219 |
-| `queryEvery` | frontend/js/whiteboard-instances.js:214 |
-| `queryOne` | frontend/js/whiteboard-instances.js:211 |
+| `notifyChanged` | frontend/js/whiteboard-instances.js:226 |
+| `queryEvery` | frontend/js/whiteboard-instances.js:221 |
+| `queryOne` | frontend/js/whiteboard-instances.js:218 |
 | `restoreGlobals` | frontend/js/whiteboard-instances.js:83 |
-| `routeToBoard` | frontend/js/whiteboard-instances.js:258 |
-| `scoped` | frontend/js/whiteboard-instances.js:210 |
+| `routeToBoard` | frontend/js/whiteboard-instances.js:265 |
+| `scoped` | frontend/js/whiteboard-instances.js:217 |
 | `stashGlobals` | frontend/js/whiteboard-instances.js:69 |
-| `unbindInstance` | frontend/js/whiteboard-instances.js:175 |
-| `unmountInstance` | frontend/js/whiteboard-instances.js:187 |
+| `unbindInstance` | frontend/js/whiteboard-instances.js:182 |
+| `unmountInstance` | frontend/js/whiteboard-instances.js:194 |
 
 ### frontend/js/whiteboard-interchange.js (50)
 
@@ -14094,7 +14094,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:124 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
 | `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:195 |
-| `/boards/{board_id}/binds/sync` | POST | `sync_board_binds` | src/tessellate/api/wb_binds.py:131 |
+| `/boards/{board_id}/binds/sync` | POST | `sync_board_binds` | src/tessellate/api/wb_binds.py:140 |
 | `/boards/{board_id}/draft` | POST | `draft_board_document` | src/tessellate/api/wb_make.py:345 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:685 |
@@ -24349,16 +24349,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_held` | src/tessellate/api/wb_binds.py:59 |
-| `_inside` | src/tessellate/api/wb_binds.py:48 |
-| `_readable` | src/tessellate/api/wb_binds.py:64 |
-| `_target` | src/tessellate/api/wb_binds.py:119 |
-| `_value` | src/tessellate/api/wb_binds.py:72 |
-| `apply_card_binding` | src/tessellate/api/wb_binds.py:105 |
-| `bound_frames` | src/tessellate/api/wb_binds.py:34 |
-| `frame_at` | src/tessellate/api/wb_binds.py:53 |
-| `sync_board_binds` | src/tessellate/api/wb_binds.py:132 |
-| `write_binding` | src/tessellate/api/wb_binds.py:78 |
+| `_held` | src/tessellate/api/wb_binds.py:68 |
+| `_inside` | src/tessellate/api/wb_binds.py:57 |
+| `_readable` | src/tessellate/api/wb_binds.py:73 |
+| `_target` | src/tessellate/api/wb_binds.py:128 |
+| `_value` | src/tessellate/api/wb_binds.py:81 |
+| `apply_card_binding` | src/tessellate/api/wb_binds.py:114 |
+| `bound_frames` | src/tessellate/api/wb_binds.py:37 |
+| `frame_at` | src/tessellate/api/wb_binds.py:62 |
+| `sync_board_binds` | src/tessellate/api/wb_binds.py:141 |
+| `write_binding` | src/tessellate/api/wb_binds.py:87 |
 
 ### src/tessellate/api/wb_board.py (33)
 
@@ -28750,7 +28750,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22739)
+## Tests (22743)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31393,7 +31393,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_format.py | 13 |
 | tests/test_wb_format2.py | 24 |
 | tests/test_wb_format_button.py | 3 |
-| tests/test_wb_frame_binds.py | 10 |
+| tests/test_wb_frame_binds.py | 11 |
 | tests/test_wb_frame_link.py | 6 |
 | tests/test_wb_frame_margins.py | 9 |
 | tests/test_wb_frame_pad.py | 3 |
@@ -31411,7 +31411,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_ink_recognise.py | 8 |
 | tests/test_wb_ink_replay.py | 4 |
 | tests/test_wb_inline_format_k24.py | 6 |
-| tests/test_wb_instances.py | 31 |
+| tests/test_wb_instances.py | 34 |
 | tests/test_wb_interchange.py | 13 |
 | tests/test_wb_keep_ratio.py | 3 |
 | tests/test_wb_key_object.py | 4 |
@@ -31995,14 +31995,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:707 |
+| Needs hardware | docs/roadmap/LEDGER.md:709 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:700 |
+| Owner calls | docs/roadmap/LEDGER.md:702 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32182,7 +32182,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:884 |
+| Plan session briefs | docs/roadmap/LEDGER.md:886 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32238,25 +32238,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:900 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:984 |
-| documents | docs/roadmap/LEDGER.md:286 |
-| documents | docs/roadmap/LEDGER.md:924 |
-| general | docs/roadmap/LEDGER.md:659 |
+| chat | docs/roadmap/LEDGER.md:902 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:986 |
+| documents | docs/roadmap/LEDGER.md:288 |
+| documents | docs/roadmap/LEDGER.md:926 |
+| general | docs/roadmap/LEDGER.md:661 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:888 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:996 |
+| graph | docs/roadmap/LEDGER.md:890 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:998 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:302 |
-| mindmap | docs/roadmap/LEDGER.md:936 |
-| timeline | docs/roadmap/LEDGER.md:422 |
-| timeline | docs/roadmap/LEDGER.md:960 |
-| ui-modernisation | docs/roadmap/LEDGER.md:305 |
-| ui-modernisation | docs/roadmap/LEDGER.md:948 |
+| mindmap | docs/roadmap/LEDGER.md:304 |
+| mindmap | docs/roadmap/LEDGER.md:938 |
+| timeline | docs/roadmap/LEDGER.md:424 |
+| timeline | docs/roadmap/LEDGER.md:962 |
+| ui-modernisation | docs/roadmap/LEDGER.md:307 |
+| ui-modernisation | docs/roadmap/LEDGER.md:950 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:912 |
-| world-class | docs/roadmap/LEDGER.md:424 |
-| world-class | docs/roadmap/LEDGER.md:972 |
+| whiteboard | docs/roadmap/LEDGER.md:914 |
+| world-class | docs/roadmap/LEDGER.md:426 |
+| world-class | docs/roadmap/LEDGER.md:974 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |

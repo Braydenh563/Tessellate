@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: a frame binding saved past the write check (a bad property name, a list value, `tags`) is ignored instead of written to notes (L-whiteboard-71).
+- Boards: an embed's refetch counts only if it landed while that board was live, so a failed or overtaken read is retried at its next activation; a failed board start is no longer kept for every later embed; the board router returns at once when no embed exists (L-whiteboard-74, 75, 76).
 - Boards: the rulers and the map rings are the page board's only: an embed's pan no longer moves the page's rulers, and in an embed a topic's right-click opens the plain menu instead of a ring placed in the hidden board view (L-whiteboard-60).
 - Boards: right-clicking or holding a map line in an embed opens the topic's plain menu instead of nothing (L-whiteboard-68).
 - Boards: the unit the fields and rulers show and the page view's frames are kept per board, so an embed's units no longer change the page board's (L-whiteboard-67).

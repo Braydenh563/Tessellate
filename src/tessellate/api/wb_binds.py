@@ -22,6 +22,9 @@ from tessellate.core.events import node_state
 from tessellate.entry import manager, manager_text
 from tessellate.entry import properties as note_properties
 from tessellate.repo.content import BOARDS
+from pydantic import ValidationError
+
+from tessellate.api.wb_model import FrameBinds
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -40,8 +43,14 @@ def bound_frames(db: Session, board_id: int | None) -> list[tuple[WhiteboardObje
             binds = (json.loads(frame.data or "{}") or {}).get("binds")
         except ValueError:
             continue
-        if isinstance(binds, dict) and binds.get("property") and binds.get("value"):
-            out.append((frame, binds))
+        #: A frame saved before the write check, or edited in the file, is read
+        #: through the same rules as a new one: a card never writes a bad key (L-whiteboard-71).
+        try:
+            checked = FrameBinds.model_validate(binds) if isinstance(binds, dict) else None
+        except ValidationError:
+            checked = None
+        if checked is not None:
+            out.append((frame, {"property": checked.property, "value": checked.value}))
     return out
 
 
