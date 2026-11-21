@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 MP4 = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom" + bytes(range(256)) * 8
 WEBM = b"\x1a\x45\xdf\xa3" + bytes(range(256)) * 8
@@ -58,9 +60,9 @@ def test_the_page_policy_lets_video_play_from_this_origin_only():
 
 
 def test_the_picker_offers_video_and_both_views_draw_a_player():
-    js = "\n".join(
+    js = documents_text() + "\n" + "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("documents.js", "documents-cm.js", "image-layout.js", "notes-list.js")
+        for name in ("image-layout.js", "notes-list.js")
     )
     assert 'input.accept = "image/*,video/mp4,video/webm,.mp4,.webm"' in js
     assert 'player.preload = "metadata"' in js and "player.controls = true" in js
