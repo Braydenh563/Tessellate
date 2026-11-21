@@ -13622,8 +13622,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
 | `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:853 |
-| `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:959 |
-| `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:886 |
+| `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:964 |
+| `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:891 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:559 |
 | `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:238 |
 | `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:252 |
@@ -22866,11 +22866,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_sentence_case` | src/tessellate/api/routes_insights.py:166 |
 | `_true_fact` | src/tessellate/api/routes_insights.py:238 |
 | `_written_label` | src/tessellate/api/routes_insights.py:775 |
-| `composed_week` | src/tessellate/api/routes_insights.py:879 |
+| `composed_week` | src/tessellate/api/routes_insights.py:884 |
 | `confirm_insight` | src/tessellate/api/routes_insights.py:546 |
 | `day_digest_lines` | src/tessellate/api/routes_insights.py:443 |
 | `digest_question` | src/tessellate/api/routes_insights.py:788 |
-| `digest_structure_note` | src/tessellate/api/routes_insights.py:835 |
+| `digest_structure_note` | src/tessellate/api/routes_insights.py:840 |
 | `dismiss_confirmed` | src/tessellate/api/routes_insights.py:672 |
 | `dismiss_insight` | src/tessellate/api/routes_insights.py:560 |
 | `done_insight` | src/tessellate/api/routes_insights.py:573 |
@@ -22886,8 +22886,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stats` | src/tessellate/api/routes_insights.py:39 |
 | `tag_cloud` | src/tessellate/api/routes_insights.py:683 |
 | `today_line` | src/tessellate/api/routes_insights.py:493 |
-| `weekly_digest` | src/tessellate/api/routes_insights.py:960 |
-| `weekly_digest_stream` | src/tessellate/api/routes_insights.py:887 |
+| `weekly_digest` | src/tessellate/api/routes_insights.py:965 |
+| `weekly_digest_stream` | src/tessellate/api/routes_insights.py:892 |
 
 ### src/tessellate/api/routes_kept_words.py (5)
 

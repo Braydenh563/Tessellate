@@ -794,7 +794,12 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    cutoff = utcnow() - timedelta(days=7)
+    # The user's clock, not `utcnow()`: the digest's other halves (the
+    # question's date, the composed week) read `user_now`, and a cutoff on a
+    # second clock disagreed with them (CI went red once the fixed test clock
+    # was more than 7 days behind the real one).
+    now = user_now(deps.get_config())
+    cutoff = (now if now.tzinfo is None else now.astimezone(timezone.utc).replace(tzinfo=None)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't
