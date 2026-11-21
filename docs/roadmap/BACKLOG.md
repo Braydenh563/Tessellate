@@ -4468,3 +4468,8 @@ that date (the agent activity monitor that is not movable is L-chat-13):
 - **The sketch highlighter's opacity** (`WB_HIGHLIGHTER_ALPHA`): a taste call, left
   alone during the audit.
 - **Streamline and optimise the backend and every AI interaction** (ongoing).
+
+## Owner input from the general rows (2026-11-21)
+
+- **L-general-31, the Fable whole-app review the owner named** (HANDOVER owner note). Parked because standing order 4 says Fable runs only when the owner names it for a task, in that session. Check: the owner names Fable for this review in a session. Until then, the deep-audit skill's Opus and Sonnet agents cover the same surfaces.
+- **L-general-25, keeping Wikipedia's misspelling pairs under CC BY-SA 4.0** (`ai/data/common_misspellings.json`). Measured: 3892 of 3974 pairs match Wikipedia's "Lists of common misspellings/For machines" exactly. The pairs are credited, kept in their own file, and combined through BY-SA 4.0's one-way compatibility with GPLv3 (docs/THIRD_PARTY.md). CLAUDE.md section 3 lets in only AGPL or MIT code. Check: the owner rules keep, or replace (delete the file; typo repair then falls back on the speller).
