@@ -259,7 +259,7 @@ def test_the_notes_chrome_says_less():
     # login (INBOX 653).
     for kind in ("embeddings", "embedding-model", "reindex", "job-caption"):
         assert f'"{kind}"' in status.split("const QUIET_TASK_KINDS", 1)[1].split("]);", 1)[0], kind
-    assert "if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);" in status
+    assert "if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);" in _read("status-tasks.js")  # moved (L-world-class-571)
     # The sidebar fold is remembered and its peek icon is a pin.
     sheets = _read("sheets-selects.js")
     assert "sidebarCollapsed:${aside.id}" in sheets and "ph-push-pin icon-peek" in sheets

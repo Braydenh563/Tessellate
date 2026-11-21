@@ -2751,4 +2751,10 @@ def _run_server_holding_lock() -> None:
 
 
 if __name__ == "__main__":
+    # First, before any window or server: in a packaged build the reader's
+    # child process (core/parse_guard.py) is this same exe started again, and
+    # this is what makes that start run the child instead of a second app.
+    import multiprocessing
+
+    multiprocessing.freeze_support()
     main()

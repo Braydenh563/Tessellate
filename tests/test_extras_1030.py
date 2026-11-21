@@ -196,7 +196,8 @@ def test_y7_upkeep_jobs_stay_out_of_the_bell_unless_they_fail():
     from tessellate.core import jobs
 
     assert jobs.LABELS["warm"] == "Warming up"
-    status = (ROOT / "frontend/js/status.js").read_text(encoding="utf-8")
+    # QUIET_TASK_KINDS stays in status.js; the task notices that read it moved to status-tasks.js (L-world-class-571)
+    status = "".join((ROOT / f"frontend/js/{n}").read_text(encoding="utf-8") for n in ("status.js", "status-tasks.js"))
     quiet = status.split("const QUIET_TASK_KINDS", 1)[1].split("]);", 1)[0]
     for kind in ("job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup"):
         assert f'"{kind}"' in quiet, kind
