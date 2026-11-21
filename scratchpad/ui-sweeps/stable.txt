@@ -47,3 +47,17 @@ wbtopbar 87s
 noteobject 40s
 docks 44s
 mapperf 80s
+libreadingfoot 21s
+libreader 14s
+doccodecopy 15s
+dockeyboard 25s
+doctoolbarstate 20s
+slashicons 10s
+uitrio 21s
+spinners 12s
+asktab 22s
+touch 63s
+phonesidebar 16s
+phonecapture 12s
+tourdim 10s
+toursteps 124s
