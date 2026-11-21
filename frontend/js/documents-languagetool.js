@@ -65,13 +65,30 @@
     return body && body.available ? body.matches || [] : null;
   }
 
+  //: The touched paragraph whose joined span holds `at`, by halving: they are
+  //: in joined order, and a scan per match was another quadratic pass.
+  function touchedAt(touched, at) {
+    let lo = 0, hi = touched.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const q = touched[mid];
+      if (at < q.joined) hi = mid - 1;
+      else if (at >= q.joined + q.text.length + 1) lo = mid + 1;
+      else return q;
+    }
+    return undefined;
+  }
+
   //: Matches for each paragraph (relative to it): remembered ones for those
   //: unchanged since the last check, one request for the touched ones joined by
   //: newlines (the whole text when none is remembered), their matches mapped
   //: back by offset. Null when the ask failed.
   async function matchesByParagraph(text, paras, language) {
     const known = seen && seen.language === language ? seen.byText : new Map();
-    const touched = paras.filter((p, i) => !known.has(p.text) && paras.findIndex((q) => q.text === p.text) === i);
+    //: Each text once, by a set (L342): a search per paragraph was quadratic,
+    //: 7 ms at 4x CPU on a first check of 1,176 paragraphs.
+    const once = new Set();
+    const touched = paras.filter((p) => !known.has(p.text) && !once.has(p.text) && once.add(p.text));
     const fresh = new Map();
     if (touched.length) {
       const whole = !known.size;
@@ -84,7 +101,7 @@
       const found = await ask(whole ? text : touched.map((p) => p.text).join("\n"), language);
       if (found === null) return null;
       for (const m of found) {
-        const p = touched.find((q) => m.start >= q.joined && m.start < q.joined + q.text.length + 1);
+        const p = touchedAt(touched, m.start);
         if (!p || m.end > p.joined + p.text.length) continue;
         fresh.get(p.text).push({ ...m, start: m.start - p.joined, end: m.end - p.joined });
       }

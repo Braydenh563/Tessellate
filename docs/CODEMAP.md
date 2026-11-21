@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8985, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2857, tests 22986, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8986, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2858, tests 22988, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
-## Frontend functions (8985)
+## Frontend functions (8986)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4583,16 +4583,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `show` | frontend/js/documents-json-schema.js:82 |
 | `typeOk` | frontend/js/documents-json-schema.js:81 |
 
-### frontend/js/documents-languagetool.js (6)
+### frontend/js/documents-languagetool.js (7)
 
 | Name | File:line |
 |---|---|
 | `asLint` | frontend/js/documents-languagetool.js:20 |
 | `ask` | frontend/js/documents-languagetool.js:49 |
-| `matchesByParagraph` | frontend/js/documents-languagetool.js:72 |
-| `merge` | frontend/js/documents-languagetool.js:98 |
+| `matchesByParagraph` | frontend/js/documents-languagetool.js:86 |
+| `merge` | frontend/js/documents-languagetool.js:115 |
 | `overlaps` | frontend/js/documents-languagetool.js:30 |
 | `paragraphs` | frontend/js/documents-languagetool.js:39 |
+| `touchedAt` | frontend/js/documents-languagetool.js:70 |
 
 ### frontend/js/documents-links-panels.js (5)
 
@@ -29152,7 +29153,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22986)
+## Tests (22988)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30140,6 +30141,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_type_fields.py | 2 |
 | tests/test_doc_type_picker.py | 6 |
 | tests/test_doc_typing_dx1.py | 15 |
+| tests/test_doc_typing_l342.py | 2 |
 | tests/test_doc_video.py | 7 |
 | tests/test_doc_view_held.py | 6 |
 | tests/test_doc_writing_streak.py | 6 |
