@@ -133,6 +133,15 @@ const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x84
   // mid-poof, Shift+F10, and a touch long-press. The menu must be within
   // 24px of the companion's box and inside the window.
   const HARD = (process.env.HARD_SIZES || '1440x900@1.25,1280x800@1.5').split(',');
+  // Notes enough for the dashboard to scroll: on a fresh data dir it is 796px of content in a 796px page, so there is
+  // no scroll to ride and ride() reported "not riding a panel" at both sizes (L-general-48).
+  if (HARD.length) {
+    const seed = await boot({ viewport: { width: 1280, height: 800 } });
+    await seed.page.evaluate(async () => {
+      for (let i = 0; i < 20; i += 1) await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: `Menu sweep note ${i}. A line of words so the dashboard has something to list.` }) });
+    });
+    await seed.browser.close();
+  }
   for (const size of HARD) {
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
