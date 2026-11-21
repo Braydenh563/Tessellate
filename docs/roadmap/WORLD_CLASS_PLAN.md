@@ -1131,7 +1131,7 @@ empty, honest answer rather than today's.
 **Gate.** As-of retrieval under 1s at 5k notes for a 200-candidate set.
 **Size** M. **Model** Opus.
 
-**State 2026-10-05:** (b) built (row 23): `as_of` on `/chat/stream`, `GET` and `POST /entries/{id}/then-and-now`, the clock on Ask and Then and now in a note's History (`ai/timetravel.py`, `tests/test_time_travel_spec.py`): HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)". Open: the model's judgement over the claim pairs (the pairing is by shared words), re-embedding past texts (as-of retrieval ranks then-texts by words), and the answer's cards grouped by month (H8); LEDGER L-world-class-26. `GET /entries/{id}/claims?as_of=` is built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (I7 wrong on a card, B4 person and project pages, I5 claims as of)").
+**State 2026-10-05:** (b) built (row 23): `as_of` on `/chat/stream`, `GET` and `POST /entries/{id}/then-and-now`, the clock on Ask and Then and now in a note's History (`ai/timetravel.py`, `tests/test_time_travel_spec.py`): HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)". The model's judgement over the claim pairs, as-of retrieval by past texts' own vectors and the answer's cards grouped by month (H8) are built 2026-11-21 (HISTORY.md, LEDGER L-world-class-26); their real-model check is in BACKLOG. `GET /entries/{id}/claims?as_of=` is built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (I7 wrong on a card, B4 person and project pages, I5 claims as of)").
 
 ### I6 Evidence cards: answers you can audit sentence by sentence
 
@@ -1633,7 +1633,7 @@ numbers go in the CHANGELOG with each step.
 
 ### H8 Time travel and the margin reader (I5, I2)
 
-Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (H8, time travel and the margin reader)". Open: the answer's cards by month (LEDGER L-world-class-26), a date slider (LEDGER L-world-class-91; a day picker is built), and the margin's typing latency (LEDGER L-world-class-86).
+Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (H8, time travel and the margin reader)". The answer's cards by month are built 2026-11-21 (HISTORY.md, LEDGER L-world-class-26). Open: a date slider (LEDGER L-world-class-91; a day picker is built), and the margin's typing latency (LEDGER L-world-class-86).
 
 ### H9 Polish in use (the owner's question, 2026-09-14; S to M each)
 

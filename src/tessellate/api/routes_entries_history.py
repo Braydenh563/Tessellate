@@ -42,6 +42,14 @@ def entry_references(entry_id: int, session: Session = Depends(get_session)) -> 
     return {"items": items, "total": len(items)}
 
 
+def _judge() -> tuple:
+    """The running model as the judge of the claim pairs (I5), or no judge,
+    which keeps the pairing by shared words."""
+    from tessellate.ai import timetravel
+
+    return timetravel.model_judge(deps.get_ollama(), deps.get_model_manager())
+
+
 @router.get("/{entry_id}/then-and-now")
 def then_and_now(entry_id: int, as_of: date = Query(...), session: Session = Depends(get_session)) -> dict:
     """This note's claims as they stood at the end of `as_of` against its
@@ -57,7 +65,7 @@ def then_and_now(entry_id: int, as_of: date = Query(...), session: Session = Dep
     then = timetravel.text_as_of(session, entry, timetravel.end_of_day(as_of, zone))
     if then is None:
         raise HTTPException(status_code=404, detail=f"This note did not exist on {timetravel.day_words(as_of)}.")
-    out = timetravel.then_and_now(then.text, entry.content or "")
+    out = timetravel.then_and_now(then.text, entry.content or "", *_judge())
     out.update({"as_of": as_of.isoformat(), "revision_id": then.revision_id, "exact": then.exact})
     return out
 
@@ -105,7 +113,7 @@ def then_and_now_of_text(entry_id: int, body: ThenTextBody, session: Session = D
     entry = _existing_entry(session, entry_id)
     if entry.is_private:
         raise HTTPException(status_code=403, detail="This note is private, so its history is not compared.")
-    return timetravel.then_and_now(body.then, entry.content or "")
+    return timetravel.then_and_now(body.then, entry.content or "", *_judge())
 
 
 @router.get("/{entry_id}/history")

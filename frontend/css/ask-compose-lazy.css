@@ -299,3 +299,15 @@
   font-variant-numeric: tabular-nums;
   text-align: end;
 }
+
+/* An as-of answer's month heads (H8, `asOfMonthHead`): the group-head recipe
+   (`.reminder-group-head`), so a row of the list without the card's tone. */
+#raw-results > li.as-of-month {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: var(--space-4) 0 var(--space-2);
+}
+#raw-results > li.as-of-month:first-child {
+  margin-top: 0;
+}
