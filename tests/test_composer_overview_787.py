@@ -173,7 +173,7 @@ def test_a_picture_with_several_lines_is_said_once_not_a_sentence_a_line():
 
 
 def test_the_notice_under_a_composed_answer_shows_only_when_pictures_carry_it():
-    from tessellate.api.routes_chat import _composed_support
+    from tessellate.api.chat_turn import _composed_support
 
     quoted = {"grounding": [{"said": "quoted"}, {"said": "picture"}], "support": {"low": True}}
     pictured = {"grounding": [{"said": "picture"}, {"said": "picture"}, {"said": "quoted"}], "support": {"low": False}}

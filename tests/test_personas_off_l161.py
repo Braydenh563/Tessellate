@@ -5,7 +5,7 @@ persona's own words no longer pick the composer's voice."""
 from __future__ import annotations
 
 from tessellate.ai import librarian
-from tessellate.api import routes_chat
+from tessellate.api import chat_service
 from tessellate.core import deps
 
 
@@ -39,7 +39,7 @@ def test_the_composer_no_longer_takes_a_voice_from_the_persona(client) -> None:
     class _Req:
         persona_prompt = librarian.resolve_persona_prompt(None, config)
 
-    assert routes_chat._chat_voice(_Req) == "playful"
+    assert chat_service._chat_voice(_Req) == "playful"
     client.put("/preferences", json={"personas_off": True})
     _Req.persona_prompt = librarian.resolve_persona_prompt(None, config)
-    assert routes_chat._chat_voice(_Req) == "natural"
+    assert chat_service._chat_voice(_Req) == "natural"

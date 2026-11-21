@@ -8,7 +8,7 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
+from tessellate.api import chat_service
 from tessellate.entry import manager
 from tests._clock import pin_clock
 
@@ -35,7 +35,7 @@ def clock(monkeypatch):
 def test_z64_an_app_tool_answer_carries_no_search_footer(client, session, clock, monkeypatch, question):
     from tessellate.ai import composer_digest_sentences
 
-    monkeypatch.setattr(routes_chat, "_meaning_off", lambda: True)
+    monkeypatch.setattr(chat_service, "_meaning_off", lambda: True)
     entry = manager.create_entry(session, "# Chess ideas\n\nTry the Sicilian.", category_name="Journal")
     assert entry.id
 

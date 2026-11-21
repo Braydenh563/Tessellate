@@ -1410,12 +1410,12 @@ def _prepared(**body):
     needs a running model to answer, and this is a test about what the model
     is *given*, not about what it says back.
     """
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_service
     from tessellate.core import deps
 
     session = deps.get_db().session()
     try:
-        return routes_chat._prepare(
+        return chat_service._prepare(
             session, body.pop("question", "what is on it?"), **body
         )
     finally:

@@ -143,7 +143,7 @@ answers from the notes alone, and the janitor files by meaning or keywords.
 5. The entry is written to SQLite, its embedding is stored, and the action is
    recorded in the audit log.
 
-**Asking a question** (`POST /chat/stream`, `api/routes_chat.py`):
+**Asking a question** (`POST /chat/stream`, a thin route in `api/routes_chat.py` over `api/chat_service.py`, which calls the `chat_attach`, `chat_request`, `chat_pool`, `chat_recent`, `chat_web`, `chat_agent`, `chat_said` and `chat_turn` layers and never imports the route):
 
 The route streams newline-delimited JSON events (`status`, `meta`, `token`,
 `answer`, `grounding`, `act`, `confirm`) so the chat shows progress at once.
@@ -153,7 +153,7 @@ before any model is asked.
 
 ```mermaid
 flowchart TD
-  Q["POST /chat/stream<br/>chat_stream builds _StreamRequest"] --> Gone["_stop_when_gone: stops when the tab closes"]
+  Q["POST /chat/stream<br/>chat_service builds _StreamRequest"] --> Gone["_stop_when_gone: stops when the tab closes"]
   Gone --> AL{"_answer_lines:<br/>a slash command?"}
   AL -- yes --> Slash["_guarded_slash_lines<br/>ai/slash.answer, exact reply"]
   AL -- no --> IL["_interactive_lines<br/>model_gate.interactive + activity.tracked_stream"]

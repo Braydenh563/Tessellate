@@ -9,7 +9,7 @@ decision 75), so both are widened by the same call.
 
 from __future__ import annotations
 
-from tessellate.api import routes_chat
+from tessellate.api import chat_service
 from tessellate.entry import manager
 from tessellate.search import search_manager
 
@@ -52,10 +52,10 @@ def test_prepare_widens_for_a_retry_and_not_for_a_first_ask(session, fake_embedd
     """The one retrieval both the composer and a model read: `_prepare` takes
     the retry count, so neither path can be widened without the other."""
     _health, outside = _seed(session)
-    monkeypatch.setattr(routes_chat.deps, "get_embeddings", lambda: fake_embeddings)
+    monkeypatch.setattr(chat_service.deps, "get_embeddings", lambda: fake_embeddings)
     question = "my Health notes about the physio appointment"
-    first = routes_chat._prepare(session, question)
-    again = routes_chat._prepare(session, question, widen=1)
+    first = chat_service._prepare(session, question)
+    again = chat_service._prepare(session, question, widen=1)
 
     def ids(prepared):
         return {n.get("id") for n in prepared["notes"]}

@@ -141,10 +141,10 @@ def test_quiz_openings_differ_between_rounds(ask):
 
 
 def test_an_app_answered_turn_does_not_pay_for_the_note_search(client, ask, monkeypatch):
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_service
     calls = []
-    real = routes_chat._retrieve_for
-    monkeypatch.setattr(routes_chat, "_retrieve_for", lambda *a, **k: (calls.append(1), real(*a, **k))[1])
+    real = chat_service._retrieve_for
+    monkeypatch.setattr(chat_service, "_retrieve_for", lambda *a, **k: (calls.append(1), real(*a, **k))[1])
     ask("what's left to do")
     assert calls == []
     ask("tell me about scheduling")

@@ -254,7 +254,7 @@ def test_a_cold_process_that_loads_the_chat_route_routes_an_act():
 
     src = Path(__file__).resolve().parents[1] / "src"
     code = (
-        "import tessellate.api.routes_chat;from tessellate.ai import intent;"
+        "import tessellate.api.routes_chat;import tessellate.api.chat_service;from tessellate.ai import intent;"
         "print(intent.classify('pin the dentist noe'), intent.classify('unlnk the gym note from the running note'))"
     )
     out = subprocess.run(

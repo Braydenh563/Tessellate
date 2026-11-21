@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 from tessellate.ai.grounding import composed_support
-from tessellate.api.routes_chat import _composed_support
+from tessellate.api.chat_turn import _composed_support
 from tessellate.api.routes_conversations import TurnBody, _turn_messages
 from tests._app_js import app_js_text
 

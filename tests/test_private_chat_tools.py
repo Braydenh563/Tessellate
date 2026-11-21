@@ -150,28 +150,28 @@ def test_a_regenerated_private_answer_leaves_nothing(ai_client, fake_ollama, bea
 
 
 def test_a_private_question_does_not_enter_the_rows_cache(ai_client, fake_ollama, beans):
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_said
 
-    routes_chat._ROWS_KEPT.clear()
+    chat_said._ROWS_KEPT.clear()
     fake_ollama.running = False  # the composed path is the one that remembers rows
     _turn(ai_client, "what did I write about beans", private=True)
-    assert not routes_chat._ROWS_KEPT
+    assert not chat_said._ROWS_KEPT
 
 
 def test_the_rows_cache_refuses_a_write_while_the_turn_is_private():
     import datetime
 
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_said
     from tessellate.core import private_turn
 
-    routes_chat._ROWS_KEPT.clear()
+    chat_said._ROWS_KEPT.clear()
     today = datetime.date(2026, 1, 1)
     with private_turn.scope(True):
-        routes_chat._remember_rows("q", [], today, {"grounding": [{"note_id": 1}]})
-    assert not routes_chat._ROWS_KEPT
-    routes_chat._remember_rows("q", [], today, {"grounding": [{"note_id": 1}]})
-    assert routes_chat._ROWS_KEPT, "the control: a kept turn remembers"
-    routes_chat._ROWS_KEPT.clear()
+        chat_said._remember_rows("q", [], today, {"grounding": [{"note_id": 1}]})
+    assert not chat_said._ROWS_KEPT
+    chat_said._remember_rows("q", [], today, {"grounding": [{"note_id": 1}]})
+    assert chat_said._ROWS_KEPT, "the control: a kept turn remembers"
+    chat_said._ROWS_KEPT.clear()
 
 
 # --- a skill run ------------------------------------------------------------

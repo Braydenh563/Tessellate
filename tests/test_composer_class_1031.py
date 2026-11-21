@@ -23,7 +23,7 @@ import pytest
 
 import tests._seed_1030 as seed_1030
 from tessellate.ai import composer_frame, composer_lines, composer_tone
-from tessellate.api import bounds, routes_chat
+from tessellate.api import bounds, chat_request
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests.test_composer_timing_1461 import MORE, NOTES, NOW
@@ -185,5 +185,5 @@ def test_a_short_run_and_ordinary_text_are_kept():
 
 
 def test_the_chat_request_squeezes_the_question():
-    request = routes_chat.ChatRequest(question="hello" + " " * 15000 + "there")
+    request = chat_request.ChatRequest(question="hello" + " " * 15000 + "there")
     assert request.question == "hello there"

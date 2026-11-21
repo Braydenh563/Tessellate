@@ -11,7 +11,6 @@ import re
 
 import pytest
 
-from tessellate.api import routes_chat
 from tessellate.api import chat_said
 from tessellate.entry import manager
 from tests.test_composer_grammar_1029b import book  # noqa: F401  (the fixture)
@@ -33,14 +32,14 @@ FUNCTION_WORDS = ("about", "above", "after", "again", "against", "also", "becaus
 def test_a_function_word_is_never_the_word_a_note_is_about(session, word):
     manager.create_entry(session, f"{word.capitalize()} cats and dogs, and the garden")
     session.commit()
-    assert routes_chat._newest_word(session) not in FUNCTION_WORDS
+    assert chat_said._newest_word(session) not in FUNCTION_WORDS
 
 
 @pytest.mark.parametrize("title", ["Note 1 about cats", "Note 2 about cats", "Notes about cats"])
 def test_a_note_titled_note_n_about_x_is_about_x(session, title):
     manager.create_entry(session, title)
     session.commit()
-    assert routes_chat._newest_word(session) == "cats"
+    assert chat_said._newest_word(session) == "cats"
 
 
 @pytest.mark.parametrize("word", FUNCTION_WORDS)

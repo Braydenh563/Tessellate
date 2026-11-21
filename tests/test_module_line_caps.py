@@ -21,7 +21,9 @@ ROOT = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 #: shrinks; never raise one.
 CAPS = {
     "ai/composer.py": 958,
-    "api/routes_chat.py": 2465,
+    "api/routes_chat.py": 281,
+    #: The chat turn moved out whole from routes_chat.py (L-world-class-634); the routes there are thin.
+    "api/chat_service.py": 2231,
     #: The routes and models moved out whole to the wb_*.py layers; this module only includes them (gods-2).
     "api/routes_whiteboard.py": 64,
     #: The table moved out whole to help_topics_core.py (audit AI23): 3,740 lines before.

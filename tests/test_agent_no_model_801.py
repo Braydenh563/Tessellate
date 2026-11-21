@@ -245,7 +245,7 @@ def test_an_unsaid_result_is_said_by_its_label_and_an_error_by_its_reason():
 
 
 def test_the_route_asks_needle_only_when_the_engine_has_no_answer():
-    source = (ROOT / "src" / "tessellate" / "api" / "routes_chat.py").read_text(encoding="utf-8")
+    source = (ROOT / "src" / "tessellate" / "api" / "chat_service.py").read_text(encoding="utf-8")
     helper = source[source.index("def _tools_provider(") : source.index("def _stream_lines(")]
     assert "not _engine_answers(req, prepared)" in helper
 

@@ -324,7 +324,7 @@ def test_removing_it_while_the_engine_is_loaded_asks_for_a_restart(fake_engine):
 def test_the_agent_route_uses_it_only_when_the_backend_is_down():
     """Source check: the fallback is asked only after `is_running()` said no,
     and only for a turn that may use tools."""
-    source = (ROOT / "src" / "tessellate" / "api" / "routes_chat.py").read_text(encoding="utf-8")
+    source = (ROOT / "src" / "tessellate" / "api" / "chat_service.py").read_text(encoding="utf-8")
     at = source.index("tool_fallback.for_tools(req.ollama)")
     before = source[at - 400 : at]
     assert "not ollama_running and req.use_tools" in before

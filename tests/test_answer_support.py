@@ -93,7 +93,7 @@ def test_the_stream_sends_support_beside_the_sentences():
     never appears, silently, which is the shape `test_lazy_bundle_calls.py`
     exists for in another corner of the app.
     """
-    source = (ROOT / "src" / "tessellate" / "api" / "routes_chat.py").read_text(encoding="utf-8")
+    source = (ROOT / "src" / "tessellate" / "api" / "chat_service.py").read_text(encoding="utf-8")
     emits = re.findall(r'\{\s*"type":\s*"grounding".*?\}', source, re.S)
     assert emits, "no grounding event found in routes_chat.py"
     without = [e for e in emits if '"support"' not in e]

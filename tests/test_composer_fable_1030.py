@@ -11,7 +11,7 @@ import pytest
 
 from tessellate.ai import composer_digest
 from tessellate.ai import composer_digest_sentences
-from tessellate.api import routes_chat
+from tessellate.api import chat_service
 from tessellate.entry import manager
 from tests._clock import pin_clock
 
@@ -206,7 +206,7 @@ def test_f8_tell_me_more_does_not_answer_the_earlier_question_again(client, sess
     pin_clock(monkeypatch, NOW)
     asked = []
     real = composer_digest.answer
-    monkeypatch.setattr(routes_chat.composer_digest, "answer", lambda q, *a, **k: asked.append(q) or real(q, *a, **k))
+    monkeypatch.setattr(chat_service.composer_digest, "answer", lambda q, *a, **k: asked.append(q) or real(q, *a, **k))
 
     def post(question, **body):
         text = ""

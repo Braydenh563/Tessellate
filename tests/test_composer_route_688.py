@@ -298,7 +298,7 @@ def test_the_gold_personal_and_random_questions(client, session):
     for question, lead in PERSONAL_GOLD["questions"]:
         said, _ = _ask_personal(client, question)
         #: A list is a family whose line varies by chat and by day
-        #: (`routes_chat._reply_seed`): any of its openings is right.
+        #: (`chat_said._reply_seed`): any of its openings is right.
         if not said.startswith(tuple(lead) if isinstance(lead, list) else lead) or any(n in said for n in PERSONAL_GOLD["never"]) or not said.strip():
             misses.append((question, said[:120]))
     assert len(PERSONAL_GOLD["questions"]) >= 30
