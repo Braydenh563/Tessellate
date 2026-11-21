@@ -33,7 +33,7 @@
 //: lying down, a stretch, a swing from the bar). Every place it ends is the
 //: drop's (`nameMarkBuddyThrowSpot`), so it never ends over a control.
 //: Pure apart from `nameMarkBuddyThrow` and the three DOM helpers under it;
-//: the rolls come from `rand`, seeded by `companionThrowSeed` in the sweep
+//: the rolls come from `rand`, seeded by `companionThrowSeed` (`companionThrowPlan.seeded` outside) in the sweep
 //: (scratchpad/ui-sweeps/throwfates.js) and in tests/test_companion_throw_fates.py.
 (() => {
   const COMPANION_THROW_ODDS = { hang: 0.55, climb: 0.45, wrap: 0.3, splat: 0.4, grab: 0.5, slip: 0.6 };
@@ -888,7 +888,9 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { companionThrowPlan, companionThrowSeed, nameMarkBuddyThrow });
+  //: The sweeps' seed rides on the plan (`companionThrowPlan.seeded.seed = n`), not a name of its own.
+  companionThrowPlan.seeded = companionThrowSeed;
+  Object.assign(window, { companionThrowPlan, nameMarkBuddyThrow });
   //: avatars.js asks for this on a carried panel's shake, the way it asks `nmb.travelPlay` (the file is lazy).
   nmb.shakenOff = nameMarkBuddyShaken;
 })();

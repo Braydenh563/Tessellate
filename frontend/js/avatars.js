@@ -7859,6 +7859,23 @@
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch);
     else watch();
   }
+  //: **The window's bars are read too, so they are watched too** (L-general-44): the status bar's
+  //: Agent and Guide buttons are 0 by 0 until status.js fills them, and a sweep kept from before the
+  //: fill let the companion perch over them (perchall, 3 of 6 runs). A size change, not a mutation:
+  //: a status word rewritten at the same width needs no new sweep.
+  if (globalThis.ResizeObserver) {
+    const barSizes = new ResizeObserver(() => { nmb.covers = null; });
+    const watchBars = () => {
+      for (const id of ["top-bar", "status-bar", "phone-tab-dock"]) {
+        const bar = document.getElementById(id);
+        if (!bar) continue;
+        barSizes.observe(bar);
+        for (const el of bar.querySelectorAll(NAME_MARK_BUDDY_NEVER_COVER)) barSizes.observe(el);
+      }
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watchBars);
+    else watchBars();
+  }
   document.addEventListener("click", (event) => {
     if (event.target?.closest?.(".tab-page [role='tab']")) setTimeout(nameMarkBuddyViewChanged, 300);
   }, { passive: true });

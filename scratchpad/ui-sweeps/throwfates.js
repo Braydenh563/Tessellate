@@ -58,7 +58,7 @@ async function pass(buddyKind, reduced) {
         nmb.flight?.stop();
         nmb.act && nameMarkBuddyAct('');
         nameMarkBuddyMoveTo(buddy, { kind: 'yours', pose: 'float', legs: '', x: cfg.x, y: cfg.y }, true);
-        companionThrowSeed.seed = sd;
+        companionThrowPlan.seeded.seed = sd;
         nameMarkBuddyIndexReset();
         const w = nameMarkBuddyWorld(nameMarkBuddyTab());
         if (cfg.solo) w.ledges = w.ledges.filter((l) => Math.round(l.y) === cfg.solo && l.right < cfg.x && l.right > cfg.x - 40);
