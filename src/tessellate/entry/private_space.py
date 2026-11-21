@@ -50,6 +50,11 @@ class VaultLocked(RuntimeError):
     """Sealing needs the key, and none is loaded for this caller."""
 
 
+class NeedsKey(RuntimeError):
+    """A save or a restore needs the encryption key and it is not loaded; the
+    message is the sentence the person is told (the route answers 409)."""
+
+
 def private_space_ids(session: Session) -> set[str]:
     return set(session.scalars(select(Space.id).where(Space.is_private.is_(True))))
 

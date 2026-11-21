@@ -248,3 +248,11 @@ def previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
             row.content = (cut.rsplit(None, 1)[0] if " " in cut or "\n" in cut else cut).rstrip()
             row.content_truncated = True
     return rows
+
+
+def similar_out(found: tuple | None) -> SimilarOut | None:
+    """The near-duplicate warning (`filing_background.near_duplicate`'s entry and score) as the API says it."""
+    if found is None:
+        return None
+    other, score = found
+    return SimilarOut(id=other.id, preview=manager_text.preview(other.content), similarity=round(score, 2))

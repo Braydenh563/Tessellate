@@ -773,12 +773,12 @@ def _read_note_dates() -> None:
 def _seed_companion_milestone() -> None:
     """The notes already here are the desk companion's baseline, so a restart at 100 notes does not cheer the 100 again
     (`core/companion_events.seed`)."""
-    from tessellate.api.routes_entries import _note_total
+    from tessellate.entry.capture import note_total
     from tessellate.core import companion_events
 
     session = deps.get_db().session()
     try:
-        companion_events.seed(_note_total(session))
+        companion_events.seed(note_total(session))
     finally:
         session.close()
 

@@ -16,12 +16,13 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 API = SRC / "api"
 
 #: The services, and what each may not import (the layers above it).
-SERVICES = (SRC / "entry" / "service.py",)
+SERVICES = (SRC / "entry" / "service.py", SRC / "entry" / "capture.py")
 _UPWARD = ("tessellate.api", "fastapi", "starlette")
 
 #: Route module -> the route functions already moved behind a service.
 CONVERTED = {
     "routes_entries.py": {
+        "create_entry",
         "daily_journal",
         "daily_note",
         "open_daily_note",
@@ -55,6 +56,13 @@ MOVED_OUT = {
     "_offered_categories",
     "_filing_why",
     "_filed_by",
+    "_mark_new_entry",
+    "_decide_filing",
+    "_new_note_text",
+    "_finish_new_entry",
+    "_starts_sealed",
+    "_cheer_note_count",
+    "_find_near_duplicate",
 }
 
 #: The ORM verbs and statement builders a route body may not call itself.
