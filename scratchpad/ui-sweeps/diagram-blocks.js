@@ -145,7 +145,7 @@ async function suggestRun(page) {
   out.paths.describeOff.reason = await page.evaluate(() => document.querySelector(".dgm-hint:not(.hidden)")?.textContent.slice(0, 90) || null);
   await openNew(page, "Describe");
   await page.route("**/drafts/compose", (route) => route.fulfill({ json: { draft: "", diagram: 'flowchart TD\n  a["Plan"] --> b["Do"]\n', diagram_error: "", said: "Drafted by the model.", ollama_running: true } }));
-  await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true }; });
+  await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true, ai_off: false }; });
   await suggestMenu(page, "Describe it");
   await page.waitForSelector(".prompt-card input");
   await page.fill(".prompt-card input", "plan then do");
@@ -155,7 +155,7 @@ async function suggestRun(page) {
   await page.unroute("**/drafts/compose");
   await page.route("**/drafts/compose", (route) => route.fulfill({ json: { draft: "```mermaid\nflowchart TD\n  a[", diagram: "", diagram_error: "The model's diagram was cut off before the fence closed. Try again, or describe fewer steps.", ollama_running: true } }));
   await openNew(page, "Describe broken");
-  await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true }; });
+  await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true, ai_off: false }; });
   await suggestMenu(page, "Describe it");
   await page.waitForSelector(".prompt-card input");
   await page.fill(".prompt-card input", "anything");
@@ -217,7 +217,7 @@ async function kindsRun(page) {
     out.merge[t.id] = { offered: offered.join(","), ghosts, taken, before: before.total, after: after.total, reread, undone: (await KIND_BLOCKS(page)).total, sourceBack: (await source(page)) === src0 };
     // the refusal: a flowchart on this diagram says why and changes nothing
     await page.route("**/drafts/compose", (route) => route.fulfill({ json: { draft: "", diagram: 'flowchart TD\n  a["Plan"] --> b["Do"]\n', diagram_error: "", said: "Drafted by the model.", ollama_running: true } }));
-    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true }; });
+    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, model_ready: true, ai_off: false }; });
     await page.click(".dgm-suggest");
     await menuItem(page, "Describe it").click();
     await page.waitForSelector(".prompt-card input");

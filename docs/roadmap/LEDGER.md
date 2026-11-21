@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 97 | 29 | 0 | 0 | 126 |
+| world-class | 0 | 97 | 28 | 0 | 0 | 125 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 487 | 100 | 2 | 111 | 959 |
+| all | 372 | 487 | 99 | 2 | 111 | 958 |
 
 ## graph
 
@@ -493,7 +493,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L636** `world-class` open, L: Sweep coverage: open board/map, graph popup at 390, print dialog, lightbox, confirm, looks, contrast, forced colours. From OPEN.md:1244; OPEN.md:3503. Evidence: No sweeps listed for these surfaces; print dialog also not automatable.
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
-- [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924. 2026-11-14 not done, on purpose: `aiIsOff()` is not a second source of truth, it is the one reader of `model_ready`: it also holds `ollama_running === false` and the Needle `tools_engine` exemption (pinned by tests/test_agent_gate_778.py), and 28 call sites in 14 files use it (plus 10 tests that assert the call). Inlining would copy a three-clause predicate 28 times and let the sites drift; the real gap is that the server's `model_ready` does not already fold the other two in. Decision wanted: make `/models/status` send one `ai_off` verdict (routes_models.py:537) and have aiIsOff read that single field, then it can go.
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx

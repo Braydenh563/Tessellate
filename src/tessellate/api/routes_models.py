@@ -518,6 +518,8 @@ def _status_chat_fields(  # noqa: ANN001
     chat_model, is_local, privacy_note, local_only, utility_resolved, utility_reason, resolved_vision,
 ) -> dict:
     """The chat backend half of /status: reachability, privacy, and the models in use."""
+    ready = _model_ready(running, installed, provider, chat_model)
+    tools_engine = None if running else _tools_engine()
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
         # backend is answering", which is the question the pill asks whoever
@@ -535,12 +537,17 @@ def _status_chat_fields(  # noqa: ANN001
         #: cannot write a reply. An OpenAI-dialect server answers with whatever
         #: it has loaded, so any listed model counts there. The Chat tab's
         #: Agent mode gates on this, not on `ollama_running`.
-        "model_ready": _model_ready(running, installed, provider, chat_model),
+        "model_ready": ready,
         #: What can still call tools with no model (INBOX 725): "needle" when
         #: its extra is on disk (`tool_fallback.for_tools`'s own test, a
         #: folder check, no import), so the Chat tab's Agent mode is greyed
         #: only when nothing could run it.
-        "tools_engine": None if running else _tools_engine(),
+        "tools_engine": tools_engine,
+        #: **The one "is the AI off" verdict** (L643): the runner did not
+        #: answer, or no model can write a reply and nothing (Needle) can call
+        #: tools. Every gated control reads this through `aiIsOff`, so the
+        #: clauses live here once instead of in 28 call sites.
+        "ai_off": running is False or (not ready and not tools_engine),
         "unreachable_hint": unreachable_hint,
         # Which dialect is actually in use (§6), so the UI can say so rather
         # than claiming Ollama when the answers came from LM Studio.

@@ -2131,12 +2131,11 @@ const AI_OFFLINE_HINT = "Connect a model in Settings";
 //:
 //: **Off means no model can answer, not only no server** (ledger 1521;
 //: INBOX 778: a reachable server with no chat model installed answers
-//: nothing). `model_ready` is the server's own verdict; the Needle engine
-//: (`tools_engine`) answers without one, so it keeps the gate open.
+//: nothing). The server folds the clauses (runner down, `model_ready`, the
+//: Needle `tools_engine` exemption) into one `ai_off` field (L643).
 function aiIsOff() {
-  if (!modelStatus) return false;
-  if (modelStatus.ollama_running === false) return true;
-  return modelStatus.model_ready === false && !modelStatus.tools_engine;
+  //: The server's one verdict (`ai_off`, routes_models.py); before the first poll, not off.
+  return modelStatus?.ai_off === true;
 }
 
 //: **Why this restores rather than enables.** The status poll runs this every
