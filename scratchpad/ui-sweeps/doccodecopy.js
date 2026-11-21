@@ -87,12 +87,14 @@ const DOC = [
     JSON.stringify(read.langs) === JSON.stringify(["python", "code"]),
     JSON.stringify(read.langs)
   );
-  ok("with a Copy and a Save on each", read.copies === 4, `${read.copies} buttons`);
+  //: Each bar also carries the wrap toggle (markdown.js `wrapToggle`; DESIGN.md, the card head:
+  //: "Wrapping is an icon toggle in the shell, beside Copy"), so three buttons a block.
+  ok("with a Copy and a Save on each", read.copies === 6 && read.icons.filter((c) => c === "ph-copy").length === 2 && read.icons.filter((c) => c === "ph-download-simple").length === 2, `${read.copies} buttons`);
   //: The fault this probe actually found. A label that is nothing but words
   //: leaves no `i.ph` behind, so counting the icons is the measurement.
   ok(
     "both buttons are drawn with the app's own icons",
-    JSON.stringify(read.icons) === JSON.stringify(["ph-copy", "ph-download-simple", "ph-copy", "ph-download-simple"]),
+    JSON.stringify(read.icons) === JSON.stringify(["ph-text-align-left", "ph-copy", "ph-download-simple", "ph-text-align-left", "ph-copy", "ph-download-simple"]),
     JSON.stringify(read.icons)
   );
   ok(
@@ -114,7 +116,9 @@ const DOC = [
         const quiet = opens.filter((n) => n.classList.contains("cm-md-fence-quiet"));
         r({
           opens: opens.length,
-          langs: opens.map((n) => n.dataset.lang || null),
+          //: The label is a widget button now (`DocFenceLabelWidget`, documents-cm.js), no longer a
+          //: `data-lang` on the line; its text is the language, or "Language" when there is none.
+          langs: opens.map((n) => (n.querySelector(".cm-md-fence-label") || {}).textContent || null),
           quiet: quiet.length,
           quietHeight: quiet[0] ? Math.round(quiet[0].getBoundingClientRect().height) : null,
           rowHeight: opens[0]
