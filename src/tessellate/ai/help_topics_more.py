@@ -114,7 +114,7 @@ MORE_TOPICS: list[dict] = [
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
             "a hard throw into the top bar bonks it before it falls, and a long way across the page is sometimes a ride on a "
             "cloud or in a bubble. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
-            "dinner and knitting to the evening, and the loud ones hold off at night. A long way for Atlas is sometimes a ride on a gust of motes that curls a spiral when it sets off and settles in a small eddy; on the desktop its floating trips do the same. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
+            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) keep to their hours, last a few minutes and come likelier in a mood that suits them, as on the desktop. A long way for Atlas is sometimes a ride on a gust of motes that curls a spiral when it sets off and settles in a small eddy; on the desktop its floating trips do the same. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
