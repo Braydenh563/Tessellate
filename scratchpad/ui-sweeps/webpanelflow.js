@@ -58,7 +58,7 @@ let failed=0;const check=(ok,what)=>{console.log(`${ok?'ok  ':'FAIL'} ${what}`);
   delay=50;await page.press('#web-query','Enter');await page.waitForTimeout(400);
   await page.evaluate(()=>document.querySelector('.web-result-title').click());await page.waitForTimeout(400);
   await page.click('#web-reader-cite');await page.waitForTimeout(300);
-  const chip=await page.evaluate(()=>document.querySelector('#chat-web-attachment:not(.hidden) .attachment-chip')?.textContent||'');
+  const chip=await page.evaluate(()=>document.querySelector('#chat-web-attachment:not(.hidden) .att-chip')?.textContent||'');
   check(/Local-first software/.test(chip),`Cite in chat puts a chip in the composer: "${chip.trim()}"`);
   await page.evaluate(()=>sendChatMessage('What does it say about sync?'));await page.waitForTimeout(800);
   check(Boolean(sent)&&/citing this web page: Local-first software/.test(sent)&&/Local copies sync/.test(sent),'the page rides on the message to the model');

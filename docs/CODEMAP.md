@@ -404,67 +404,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:491 |
 
-### frontend/js/chat.js (57)
+### frontend/js/chat.js (45)
 
 | Name | File:line |
 |---|---|
 | `CLIP_LIMITS` | frontend/js/chat.js:55 |
-| `aiWritingTrace` | frontend/js/chat.js:1342 |
-| `applyCompression` | frontend/js/chat.js:1225 |
-| `askAboutPage` | frontend/js/chat.js:636 |
+| `aiWritingTrace` | frontend/js/chat.js:1072 |
+| `applyCompression` | frontend/js/chat.js:955 |
 | `atlasSuggestion` | frontend/js/chat.js:202 |
-| `batteryModeOn` | frontend/js/chat.js:1267 |
+| `batteryModeOn` | frontend/js/chat.js:997 |
 | `bodyTextWithCitations` | frontend/js/chat.js:87 |
 | `chatEmptySettle` | frontend/js/chat.js:223 |
-| `chatTranscriptText` | frontend/js/chat.js:1156 |
-| `citeWebPage` | frontend/js/chat.js:693 |
+| `chatTranscriptText` | frontend/js/chat.js:886 |
 | `clearChatEmptyState` | frontend/js/chat.js:352 |
-| `clearWebSearchHistory` | frontend/js/chat.js:626 |
 | `clipFor` | frontend/js/chat.js:61 |
-| `closeWebReader` | frontend/js/chat.js:422 |
 | `compactTokens` | frontend/js/chat.js:101 |
-| `compressChatContext` | frontend/js/chat.js:1185 |
-| `compressSizeText` | frontend/js/chat.js:1206 |
+| `compressChatContext` | frontend/js/chat.js:915 |
+| `compressSizeText` | frontend/js/chat.js:936 |
 | `copyToClipboard` | frontend/js/chat.js:152 |
 | `copyViaTextarea` | frontend/js/chat.js:112 |
-| `fillPersonaMark` | frontend/js/chat.js:959 |
+| `fillPersonaMark` | frontend/js/chat.js:689 |
 | `flashCopied` | frontend/js/chat.js:134 |
-| `loadResponseModes` | frontend/js/chat.js:908 |
-| `loadWebSearchHistory` | frontend/js/chat.js:615 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1100 |
-| `openWebReader` | frontend/js/chat.js:653 |
-| `personaOptions` | frontend/js/chat.js:976 |
-| `progressMotionWanted` | frontend/js/chat.js:1294 |
-| `progressPhaseText` | frontend/js/chat.js:1538 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:572 |
+| `loadResponseModes` | frontend/js/chat.js:638 |
+| `mountChatActionsMenu` | frontend/js/chat.js:830 |
+| `personaOptions` | frontend/js/chat.js:706 |
+| `progressMotionWanted` | frontend/js/chat.js:1024 |
+| `progressPhaseText` | frontend/js/chat.js:1268 |
 | `regenerateFromBubble` | frontend/js/chat.js:190 |
 | `regenerateLastAnswer` | frontend/js/chat.js:195 |
-| `renderChatContextMeter` | frontend/js/chat.js:1054 |
+| `renderChatContextMeter` | frontend/js/chat.js:784 |
 | `renderChatEmptyState` | frontend/js/chat.js:233 |
-| `renderChatTurnCount` | frontend/js/chat.js:1080 |
-| `renderChatUsage` | frontend/js/chat.js:1037 |
-| `renderCompressionState` | frontend/js/chat.js:1238 |
-| `renderModelContextBox` | frontend/js/chat.js:766 |
-| `renderModelHealthNote` | frontend/js/chat.js:870 |
-| `renderModelSpec` | frontend/js/chat.js:798 |
-| `renderWebPageAttachment` | frontend/js/chat.js:720 |
-| `renderWebPanelMenu` | frontend/js/chat.js:510 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1456 |
-| `setResponseMode` | frontend/js/chat.js:937 |
-| `setWebEngineDot` | frontend/js/chat.js:496 |
-| `showCompressReview` | frontend/js/chat.js:1213 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1484 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1506 |
-| `stopWebRequest` | frontend/js/chat.js:407 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1029 |
-| `toggleWebPanel` | frontend/js/chat.js:435 |
-| `typingDots` | frontend/js/chat.js:1560 |
-| `webPageMarkdown` | frontend/js/chat.js:660 |
-| `webReaderIsOpen` | frontend/js/chat.js:418 |
+| `renderChatTurnCount` | frontend/js/chat.js:810 |
+| `renderChatUsage` | frontend/js/chat.js:767 |
+| `renderCompressionState` | frontend/js/chat.js:968 |
+| `renderModelContextBox` | frontend/js/chat.js:496 |
+| `renderModelHealthNote` | frontend/js/chat.js:600 |
+| `renderModelSpec` | frontend/js/chat.js:528 |
+| `renderWebPageAttachment` | frontend/js/chat.js:450 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1186 |
+| `setResponseMode` | frontend/js/chat.js:667 |
+| `showCompressReview` | frontend/js/chat.js:943 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1214 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1236 |
+| `togglePersonaPrompt` | frontend/js/chat.js:759 |
+| `typingDots` | frontend/js/chat.js:1290 |
+| `webPageMarkdown` | frontend/js/chat.js:417 |
 | `webRequestEnd` | frontend/js/chat.js:397 |
 | `webRequestStart` | frontend/js/chat.js:388 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1391 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1424 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1121 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1154 |
 
 ### frontend/js/chat-agent.js (40)
 
@@ -8412,22 +8400,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webFollowUp` | frontend/js/web-clip.js:345 |
 | `webFollowUpRefers` | frontend/js/web-clip.js:341 |
 
-### frontend/js/web-results.js (12)
+### frontend/js/web-results.js (24)
 
 | Name | File:line |
 |---|---|
-| `bookmarkWebResult` | frontend/js/web-results.js:188 |
-| `buildWebResultRow` | frontend/js/web-results.js:76 |
-| `pushWebSearchHistory` | frontend/js/web-results.js:221 |
-| `renderWebSearchHistory` | frontend/js/web-results.js:240 |
-| `runWebSearch` | frontend/js/web-results.js:372 |
-| `searxngDownRow` | frontend/js/web-results.js:307 |
-| `setWebSearxngRunning` | frontend/js/web-results.js:288 |
-| `startSearxng` | frontend/js/web-results.js:280 |
-| `waitForSearxng` | frontend/js/web-results.js:362 |
-| `webEngineWords` | frontend/js/web-results.js:13 |
-| `webQueryTerms` | frontend/js/web-results.js:63 |
-| `webResultMark` | frontend/js/web-results.js:42 |
+| `askAboutPage` | frontend/js/web-results.js:231 |
+| `bookmarkWebResult` | frontend/js/web-results.js:459 |
+| `buildWebResultRow` | frontend/js/web-results.js:347 |
+| `citeWebPage` | frontend/js/web-results.js:253 |
+| `clearWebSearchHistory` | frontend/js/web-results.js:221 |
+| `closeWebReader` | frontend/js/web-results.js:25 |
+| `loadWebSearchHistory` | frontend/js/web-results.js:210 |
+| `openWebReader` | frontend/js/web-results.js:248 |
+| `pushWebSearchHistory` | frontend/js/web-results.js:492 |
+| `refreshWebSearxngStrip` | frontend/js/web-results.js:167 |
+| `renderWebPanelMenu` | frontend/js/web-results.js:113 |
+| `renderWebSearchHistory` | frontend/js/web-results.js:511 |
+| `runWebSearch` | frontend/js/web-results.js:643 |
+| `searxngDownRow` | frontend/js/web-results.js:578 |
+| `setWebEngineDot` | frontend/js/web-results.js:99 |
+| `setWebSearxngRunning` | frontend/js/web-results.js:559 |
+| `startSearxng` | frontend/js/web-results.js:551 |
+| `stopWebRequest` | frontend/js/web-results.js:10 |
+| `toggleWebPanel` | frontend/js/web-results.js:38 |
+| `waitForSearxng` | frontend/js/web-results.js:633 |
+| `webEngineWords` | frontend/js/web-results.js:284 |
+| `webQueryTerms` | frontend/js/web-results.js:334 |
+| `webReaderIsOpen` | frontend/js/web-results.js:21 |
+| `webResultMark` | frontend/js/web-results.js:313 |
 
 ### frontend/js/whiteboard-arrange-more.js (15)
 
@@ -31872,14 +31872,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4386 |
-| Needs hardware | docs/roadmap/LEDGER.md:580 |
+| Needs hardware | docs/roadmap/LEDGER.md:579 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:573 |
+| Owner calls | docs/roadmap/LEDGER.md:572 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4259 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32059,7 +32059,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3154 |
-| Plan session briefs | docs/roadmap/LEDGER.md:708 |
+| Plan session briefs | docs/roadmap/LEDGER.md:707 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2635 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32113,25 +32113,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:724 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:808 |
+| chat | docs/roadmap/LEDGER.md:723 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:807 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:748 |
-| general | docs/roadmap/LEDGER.md:538 |
+| documents | docs/roadmap/LEDGER.md:747 |
+| general | docs/roadmap/LEDGER.md:537 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:712 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:820 |
+| graph | docs/roadmap/LEDGER.md:711 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:819 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4395 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:760 |
+| mindmap | docs/roadmap/LEDGER.md:759 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:784 |
+| timeline | docs/roadmap/LEDGER.md:783 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:772 |
+| ui-modernisation | docs/roadmap/LEDGER.md:771 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:736 |
+| whiteboard | docs/roadmap/LEDGER.md:735 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:796 |
+| world-class | docs/roadmap/LEDGER.md:795 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2805 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2856 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2963 |
