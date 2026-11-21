@@ -2467,7 +2467,7 @@ function renderEntries(appendOnly = false) {
     list,
     ordered,
     ([entry, depth]) => {
-      const li = entryItem(entry, { actions: true });
+      const li = entryItem(entry, { actions: true, linksShown: notesViewMode === "cards" ? 2 : 0 });
       if (depth > 0) {
         li.classList.add("thread-child");
         li.style.marginLeft = `${Math.min(depth, 4) * 1.4}rem`;

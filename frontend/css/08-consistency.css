@@ -6506,6 +6506,33 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #entry-list:not(.is-rows) > li:not(.list-window-sentinel) > :not(.entry-meta, .entry-title) {
   margin-bottom: 0;
 }
+/* **The link row shares the details line when both fit** (L-world-class-95,
+   the owner's "4 note cards above the fold" at 1093x614). A card with links
+   was 141px there: title, preview, a 26px row of link pills, then the
+   details line under it. The card wraps as rows instead of a column, every
+   part a full row of its own but these two: the links first, then the
+   details at their own max-content width, so when the pair is wider than
+   the card the details drop to the next row, as before, and nothing is
+   hidden or clipped. An open editor keeps the column. */
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) {
+  flex-flow: row wrap;
+  align-items: center;
+  column-gap: var(--space-4);
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) > * {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)) > .entry-links {
+  flex: 0 1 auto;
+  order: 1;
+  margin-top: var(--space-3);
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) > .entry-meta {
+  flex: 1 0 auto;
+  width: auto;
+  order: 2;
+}
 /* Phase 12 decision 7: chips only for state, so the category is its dot and
    its word, as the Timeline's rows already draw it; the pointer inks it. */
 #entry-list .entry-meta.note-meta > .chip.category {

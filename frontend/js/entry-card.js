@@ -1266,10 +1266,14 @@ function entryItem(entry, options = {}) {
     //: every connection as a chip, measured at 109 controls on the Notes tab
     //: with 19 under 24px, and the chips outweighed the note. The first
     //: three show; the rest wait behind "+N more links", which opens them
-    //: in place (and stays open for this render).
-    const LINKS_SHOWN = 3;
+    //: in place (and stays open for this render). The Notes list's card
+    //: view asks for two (`options.linksShown`, L-world-class-95): there the
+    //: row shares the details line, which two pills and the count fit and
+    //: three mostly did not (2 of 9 showcase cards at 1093x614), and the
+    //: count always replaces the rest, never a lone hidden pill's worth.
+    const LINKS_SHOWN = options.linksShown || 3;
     const connections = [...linkRow.children];
-    if (connections.length > LINKS_SHOWN + 1) {
+    if (connections.length > LINKS_SHOWN + (options.linksShown ? 0 : 1)) {
       for (const extra of connections.slice(LINKS_SHOWN)) extra.classList.add("entry-link-extra");
       const more = document.createElement("button");
       more.type = "button";

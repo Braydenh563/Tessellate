@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11168, test files 2894, tests 22878, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11168, test files 2895, tests 22881, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8539)
 
@@ -5133,16 +5133,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `entryItem` | frontend/js/entry-card.js:231 |
-| `entryOverflowMenu` | frontend/js/entry-card.js:1435 |
-| `favouriteButton` | frontend/js/entry-card.js:1338 |
+| `entryOverflowMenu` | frontend/js/entry-card.js:1439 |
+| `favouriteButton` | frontend/js/entry-card.js:1342 |
 | `meetingGlance` | frontend/js/entry-card.js:50 |
-| `noteMetaMore` | frontend/js/entry-card.js:1400 |
-| `noteReviewActions` | frontend/js/entry-card.js:1304 |
-| `notesSpanSpaces` | frontend/js/entry-card.js:1418 |
-| `publishDraft` | frontend/js/entry-card.js:1489 |
-| `renderAttachmentCards` | frontend/js/entry-card.js:1374 |
+| `noteMetaMore` | frontend/js/entry-card.js:1404 |
+| `noteReviewActions` | frontend/js/entry-card.js:1308 |
+| `notesSpanSpaces` | frontend/js/entry-card.js:1422 |
+| `publishDraft` | frontend/js/entry-card.js:1493 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1378 |
 | `renderInlineAction` | frontend/js/entry-card.js:115 |
-| `searchHighlightTerms` | frontend/js/entry-card.js:1428 |
+| `searchHighlightTerms` | frontend/js/entry-card.js:1432 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
 ### frontend/js/entry-menu.js (7)
@@ -28525,7 +28525,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22878)
+## Tests (22881)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28808,6 +28808,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_capture_tools_row_1024.py | 1 |
 | tests/test_capture_undo_order.py | 1 |
 | tests/test_card_button_names_n17.py | 2 |
+| tests/test_card_links_line_95.py | 3 |
 | tests/test_card_open_ring_bs1.py | 2 |
 | tests/test_casual_acts_1507.py | 7 |
 | tests/test_catalogue_reveal.py | 7 |
