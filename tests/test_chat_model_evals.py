@@ -186,17 +186,17 @@ def test_the_link_reason_audit_can_be_undone_with_a_real_model(notebook):  # noq
             session.add(EntryLink(source_entry_id=a, target_entry_id=b, reason=manager_links.AUTO_REASON_TEXT, reason_confidence=0.8))
         session.commit()
         started = time.monotonic()
-        done = tools.execute_tool(session, "audit_link_reasons", {"limit": 4})
+        audit = tools.execute_tool(session, "audit_link_reasons", {"limit": 4})
         took = time.monotonic() - started
         written = [r for (r,) in session.query(EntryLink.reason).all()]
-        print(f"\n  audit: rewrote {done.get('updated')} of {len(written)} in {took:.0f}s; reasons {written}", flush=True)
-        if not done.get("updated"):
-            assert "undo" not in done  # only vague replies, so there is nothing to put back
+        print(f"\n  audit: rewrote {audit.get('updated')} of {len(written)} in {took:.0f}s; reasons {written}", flush=True)
+        if not audit.get("updated"):
+            assert "undo" not in audit  # only vague replies, so there is nothing to put back
             return
-        back = tools.execute_tool(session, done["undo"]["tool"], done["undo"]["arguments"])
+        back = tools.execute_tool(session, audit["undo"]["tool"], audit["undo"]["arguments"])
         left = session.query(EntryLink).filter(EntryLink.reason == manager_links.AUTO_REASON_TEXT, EntryLink.reason_confidence == 0.8).count()
         print(f"  undo: put back {back.get('restored')}, {left} links carry the old reason again", flush=True)
-        assert back["restored"] == done["updated"] and left == len(written)
+        assert back["restored"] == audit["updated"] and left == len(written)
 
 
 def test_a_real_models_tags_are_kept_only_when_the_note_has_their_words(notebook):  # noqa: F811

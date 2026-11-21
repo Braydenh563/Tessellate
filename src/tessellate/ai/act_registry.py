@@ -430,6 +430,7 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("generate_diagram", r"\bdraw a (?:diagram|tree|flowchart) of\b"),
     ("add_board_shape", r"\bdraw an? (?:rectangle|ellipse|diamond|circle|frame|box)\b"),
     ("restore_board_item", r"\bput the \w+ back on the board\b"),
+    ("restore_link_reasons", r"\bput the (?:old )?link reasons? back\b|\bundo the link reason audit\b"),
     ("delete_board_item", r"\btake the \w+ off the board\b"),
     ("move_board_item", r"\bmove the (?:sticky|card|shape|frame|text box)\b.*\bboard\b"),
     ("edit_board_item", r"\bchange the (?:words|text|colour|color|fill) on the (?:sticky|card|shape|frame)\b"),
