@@ -70,7 +70,7 @@ GitHub and the docs site draw these fences; any mermaid viewer does too.
 ```mermaid
 flowchart TB
   subgraph Browser["Browser: frontend/, vanilla JS, no build step"]
-    Shell["29 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
+    Shell["32 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
     Lazy["Lazy modules<br/>LAZY_MODULES + ensureModule:<br/>board, graph, docs, code, meetings, mermaid"]
     SW["sw.js: offline cache, hash-stamped assets"]
     Shell -- "first use" --> Lazy
@@ -457,7 +457,7 @@ Tessellate/
 │   ├── theme-boot.js · boot-guard.js # before first paint: theme, perf mode,
 │   │                        #   and the guard that reports a boot failure
 │   ├── app.js … agent-activity.js # the shell, notes, chat and settings
-│   │                        #   glue: 29 classic scripts, one file until
+│   │                        #   glue: 32 classic scripts, one file until
 │   │                        #   2026-09-26, in index.html's order (app.js
 │   │                        #   first: api, auth, the lazy loader;
 │   │                        #   agent-activity.js, Agent Activity's list of
@@ -1379,10 +1379,10 @@ fetched by `ensureP5` the first time something draws: the dashboard's art asks f
 is ever loaded from a CDN, consistent with the offline-first rule. The
 JavaScript is split by surface (`dashboard.js`, `timeline.js`,
 `library.js`, `documents.js`, `graph.js`, `whiteboard.js`, `settings.js`); `app.js`
-and the 28 files after it hold the shell and everything shared, cut on
+and the 31 files after it hold the shell and everything shared, cut on
 2026-09-26 from one 50,000-line file into contiguous ranges kept in the old
 order, so a file may call into the ones above it while the page loads and
-never into one below (`tests/test_frontend_load_order.py`; tests read the 29
+never into one below (`tests/test_frontend_load_order.py`; tests read the 32
 as one text through `tests/_app_js.py`). The two biggest lazy surfaces are split
 further by concern: `documents-code.js` and `documents-prose.js` hold the
 document editor's code and prose tools, and `whiteboard-map.js` the mind map
@@ -1404,7 +1404,7 @@ stripped (`api/asset_strip.py`); the files on disk keep them
 | Kind | Files | Loaded |
 | --- | --- | --- |
 | Before first paint | `boot-guard.js`, `theme-boot.js` | in `<head>`, so the theme and the boot-failure guard apply before anything draws |
-| The app's own code | `settings-body.js` first (it keeps the surfaces the page shows only on request as raw `<script type="text/x-surface">` text and builds each on first need), then the 29: `app.js`, `prefs.js`, `store.js`, `lazy-entries.js` (the rest of `LAZY_MODULES` and `LAZY_ENTRY_POINTS`), `att-chip.js`, `note-cards.js`, `menus.js`, `lightbox.js`, `selection.js`, `notes-list.js`, `capture-ask.js`, `chat.js`, `chat-agent.js`, `chat-attach.js`, `sheets-selects.js`, `skills.js`, `shell-reminders.js`, `markdown.js`, `navigation.js`, `router.js`, `settings-panes.js`, `media.js`, `status.js`, `ai-tools.js`, `phone-shell.js`, `wiring.js`, `settings-wiring.js`, `spaces-find.js`, `agent-activity.js` | at the end of `<body>`, in this order |
+| The app's own code | `settings-body.js` first (it keeps the surfaces the page shows only on request as raw `<script type="text/x-surface">` text and builds each on first need), then the 32: `app.js`, `prefs.js`, `store.js`, `lazy-entries.js` (the rest of `LAZY_MODULES` and `LAZY_ENTRY_POINTS`), `att-chip.js`, `note-cards.js`, `menus.js`, `lightbox.js`, `selection.js`, `notes-list.js`, `capture-ask.js`, `chat.js`, `chat-web.js`, `chat-model-panel.js`, `chat-progress.js`, `chat-agent.js`, `chat-attach.js`, `sheets-selects.js`, `skills.js`, `shell-reminders.js`, `markdown.js`, `navigation.js`, `router.js`, `settings-panes.js`, `media.js`, `status.js`, `ai-tools.js`, `phone-shell.js`, `wiring.js`, `settings-wiring.js`, `spaces-find.js`, `agent-activity.js` | at the end of `<body>`, in this order |
 | The boot surfaces | `rich-picker.js`, `editor.js`, `dashboard.js`, `timeline.js`, `palette.js`, `settings.js` | straight after, in this order (`bg-art.js` left the boot list: it is the lazy `bgArt`, fetched only when the art is on) |
 | Lazy bundles | `graph.js` and `graph-canvas.js` (the Graph tab); `undo-store.js`, `documents-code.js`, `documents-prose.js`, `documents.js`, `margin-reader.js`, `whiteboard-map.js`, `whiteboard.js`, `whiteboard-commands.js`, `whiteboard-library.js`, `whiteboard-format.js`, `whiteboard-interchange.js`, `library.js` (Library and Documents; the bundle has grown many more `documents-*.js` and `whiteboard-*.js` files since, and its exact list is `LAZY_MODULES.library`); `boards-gallery.js` (`boardsGallery`: the Boards & maps cards, painted from the library code before the 2.6 MB board code has run, which then loads in idle time) | on the first visit to the tab, by `ensureModule` from `LAZY_MODULES` in `app.js` and `lazy-entries.js` |
 | Lazy pieces | one entry each in `LAZY_MODULES` (the earliest moves are named here; the tables in `app.js` and `lazy-entries.js` are the full list): `panel-movable.js` (`panelMovable`, with `panel-movable-lazy.css`), `lightbox-view.js`, `edit-conflict.js`, `categories-panel.js`, `tag-manager.js`, `chip-menus.js`, `note-history.js`, `ask-history.js`, `settings-data.js`, `settings-find.js` + `settings-models.js` (`settingsUi`), `tag-suggest.js`, `attachment-actions.js`, `ocr-engine.js`, `quick-note.js`, `field-clear.js`, `assistant-avatar.js`, `quick-access.js`, `notes-rail-spy.js`, `dash-boards.js`, `suggestions-inbox.js` + `entity-page.js` + `link-types.js` + `note-properties.js` (`inbox`), `model-bench.js`, `web-clip.js`, `app-import.js`, `usage-ledger.js`, and (2026-10-05) `reveal-targets.js`, `onboarding.js`, `update-dialogs.js`, `app-palette.js`, `note-panels.js` + `note-edit-panels.js` (`notePanels`), `attach-to.js`, `settings-controls.js` (no entry points: `openSettingsModal` awaits it on the first open), and, from the boot-budget moves, `tour.js` (the guided tour, when one starts or Settings, Help opens), `icon-picker.js` (the one emoji and icon picker), `nav-history.js` (the Back and Forward list's rows), `settings-packages.js`, `help-chat.js` (the Guide), `chord-guide.js`, `batch-space.js`, `note-templates.js`, `companion-menu.js`, `avatars.js` + `atlas.js` + `characters-ready.js` (`characters`: the faces, the companion and Atlas, fetched once the app is open and idle; `afterCharacters` and the stand-ins in `lazy-entries.js` carry what the boot files ask of them meanwhile), `vault-unlock.js`, `pick-row.js`, `drag-edge.js`, `atlas-life.js` and `atlas-motion.js`, `ask-chart.js` (with `ask-history.js`), and `whiteboard-history.js` (with the boards) | on first use through `LAZY_ENTRY_POINTS`, to keep the boot scripts under their gzip budget; `quick-note.js` is fetched a few seconds after boot, because its outbox is for the moment the server is gone and a script cannot be fetched then |
@@ -1461,7 +1461,7 @@ top-level read of a later file's constant, and on a lazy name read at load
 with no stand-in; `tests/test_lazy_bundle_calls.py` covers the lazy bundles.
 `scratchpad/appjs-map.js --check FROM TO [AFTER]` answers the same question
 for a range of lines before it moves. The app's own code was one 50,000-line
-`app.js` until 0.3.3; it was cut into the 29 files above as contiguous
+`app.js` until 0.3.3; it was cut into the 32 files above as contiguous
 ranges in their old order, so every reference that was backward stayed
 backward (git history: appjs-split.md). A test
 that means "the app's code" reads all of them as one text through
@@ -1796,7 +1796,7 @@ ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM and FA
 - Licence rule for taking code in: MIT, ISC, BSD, Apache-2.0 and GPL-3.0 may come in with notices; EPL-2.0 (ELK.js), CC share-alike and non-commercial licences are refused; tldraw (own licence) and a ProseMirror/Tiptap swap are refused; model weights and voices are licensed per file. (was ANALYSIS.md:4420; topic: CLAUDE.md section 3 licence line / docs/THIRD_PARTY.md header)
 - Library verdicts: drop networkx, Whoosh, NLTK, textblob, snips-nlu, adapt-parser, hunspell, pyspellchecker, rapidfuzz, transformers.js, ruff-wasm, KaTeX; Pyodide, sql.js and eslint-linter stay optional downloads, never vendored; Harper's 16 MB stays lazy and off the boot gzip budget; model2vec potion is the torch-free embedding candidate, unmeasured against bge-small. (was ANALYSIS.md:4112; topic: ARCHITECTURE.md vendoring section or docs/THIRD_PARTY.md)
 - Algorithm verdicts: build bigram LLR collocations, pair-count co-occurrence, Naive Bayes (only if it beats TF-IDF on the filing eval), SimHash, K-means; skip BK-tree; drop t-SNE/UMAP/HMM/CRF/SVM. (was ANALYSIS.md:4096; topic: BACKLOG.md filing section)
-- Architecture review verdicts: keep FastAPI+SQLite in one process, the no-build frontend, imperative DOM helpers, the event log and job runtime as the spine (finish B2 before new background features); change to cascade layers, ES modules (rejected as of CLAUDE.md: 29 classic scripts stay), and move the 20 stable sweeps into CI. (was ANALYSIS.md:3676; topic: ARCHITECTURE.md decisions)
+- Architecture review verdicts: keep FastAPI+SQLite in one process, the no-build frontend, imperative DOM helpers, the event log and job runtime as the spine (finish B2 before new background features); change to cascade layers, ES modules (rejected as of CLAUDE.md: 32 classic scripts stay), and move the 20 stable sweeps into CI. (was ANALYSIS.md:3676; topic: ARCHITECTURE.md decisions)
 - Vendor shortlist ranked: Silero VAD via faster-whisper plus browser audio constraints and language/initial_prompt (built), then Piper, Kokoro-82M via kokoro-onnx (no code yet), perfect-freehand, model2vec potion; rbush, dagre, MiniSearch, chrono-node, GLiNER, lingua-py, DeepFilterNet left until a measurement asks. (was ANALYSIS.md:4488; topic: BACKLOG.md voice/whiteboard sections)
 - A tool argument is either intent (the model's) or a fact the app can compute (never asked of the model): reminder arithmetic, dates, offsets are computed by the harness. (was AGENT_SKILLS_REFORM.md:134; topic: ARCHITECTURE.md agent harness section)
 - Real-model reach for tests is two env vars, TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL, read at import by the eval module; no pytest option or conftest hook, so 'every eval skipped' is the default. (was AGENT_SKILLS_REFORM.md:143; topic: CLAUDE.md section 4 / WORKING.md evals)

@@ -29,8 +29,8 @@ LONG_LEAD = {
     "check_answer", "check_learned", "count_notes", "create_document", "create_mindmap", "edit_board_item",
     "find_contradictions", "find_similar_notes", "get_current_time", "link_map_nodes", "list_documents",
     "list_library", "list_notes", "list_tags", "map_from_note", "merge_categories",
-    "notebook_overview", "notebook_structure", "path_between", "place_library_item", "propose_act",
-    "read_mindmap", "read_text", "read_whiteboard", "related_notes", "restore_board_item",
+    "notebook_structure", "path_between", "place_library_item", "propose_act",
+    "read_text", "read_whiteboard", "restore_board_item",
     "search_files", "search_whiteboard", "summarize_notes"
 }
 

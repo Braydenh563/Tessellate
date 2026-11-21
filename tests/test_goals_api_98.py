@@ -23,20 +23,20 @@ def test_a_goal_starts_with_no_progress(client):
 
 def test_ticking_items_moves_the_progress(client):
     goal = _make(client, items=[{"text": "Buy shoes"}, {"text": "Run 5 km"}, {"text": "Run 10 km"}, {"text": "Run 21 km"}])
-    first = goal["items"][0]["id"]
-    body = client.patch(f"/goals/{goal['id']}/items/{first}", json={"done": True}).json()
+    first, goal_id = goal["items"][0]["id"], goal["id"]
+    body = client.patch(f"/goals/{goal_id}/items/{first}", json={"done": True}).json()
     assert body["progress"] == {"total": 4, "done": 1, "percent": 25}
-    body = client.patch(f"/goals/{goal['id']}/items/{first}", json={"done": False}).json()
+    body = client.patch(f"/goals/{goal_id}/items/{first}", json={"done": False}).json()
     assert body["progress"]["done"] == 0
 
 
 def test_an_item_is_added_renamed_and_removed(client):
     goal = _make(client, "Packing", "list")
     added = client.post(f"/goals/{goal['id']}/items", json={"text": "passport"}).json()
-    item = added["items"][0]["id"]
-    renamed = client.patch(f"/goals/{goal['id']}/items/{item}", json={"text": "  passport  and visa "}).json()
+    item, goal_id = added["items"][0]["id"], goal["id"]
+    renamed = client.patch(f"/goals/{goal_id}/items/{item}", json={"text": "  passport  and visa "}).json()
     assert renamed["items"][0]["text"] == "passport and visa"
-    sent = client.delete(f"/goals/{goal['id']}/items/{item}").json()["text"]
+    sent = client.delete(f"/goals/{goal_id}/items/{item}").json()["text"]
     assert sent == "passport and visa"
     assert client.get("/goals").json()["goals"][0]["items"] == []
 
@@ -76,14 +76,15 @@ def test_what_cannot_be_stored_is_refused(client, body):
 
 
 def test_an_unknown_goal_or_item_is_a_404(client):
-    goal = _make(client)
+    #: A plain name in the path, so tests/test_routes_named.py reads the route.
+    goal_id = _make(client)["id"]
     sent = client.patch("/goals/999", json={"title": "x"}).status_code
     assert sent == 404
     sent = client.delete("/goals/999").status_code
     assert sent == 404
     sent = client.post("/goals/999/items", json={"text": "x"}).status_code
     assert sent == 404
-    sent = client.patch(f"/goals/{goal['id']}/items/999", json={"done": True}).status_code
+    sent = client.patch(f"/goals/{goal_id}/items/999", json={"done": True}).status_code
     assert sent == 404
 
 

@@ -143,7 +143,13 @@
 
   //: Filing a chat: the folders already in use, "No folder", and what is typed as a new one, in the app's picker. Undo files it back where it was.
   async function chatMoveToFolder(conversation) {
-    const all = await apiJson("/conversations").catch(() => []);
+    //: A failed read says so: an empty list would offer "No folders yet" over folders that exist.
+    let all;
+    try {
+      all = await apiJson("/conversations");
+    } catch (error) {
+      return toast(voiceLine("failed", "read your folders", error.message), true);
+    }
     const used = [...new Set(all.map((c) => c.folder).filter(Boolean))].sort((a, b) => a.localeCompare(b));
     const chosen = await new Promise((resolve) => {
       const shell = pickerDialog({ title: "Move to folder", placeholder: "Find a folder or type a new one…", searchLabel: "Find a folder or type a new one" });

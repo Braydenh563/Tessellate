@@ -48,10 +48,11 @@ def _out(session: Session, goal) -> dict:
 def list_goals(
     kind: Literal["goal", "list"] | None = None,
     state: Literal["open", "done", "all"] = Query(default="open"),
+    limit: int = Query(default=goals.MAX_GOALS, ge=1, le=goals.MAX_GOALS),
     session: Session = Depends(get_session),
 ) -> dict:
-    """`{goals, counts}`: each with its items and `progress` (`total`, `done`, `percent`)."""
-    return goals.page(session, kind, state)
+    """`{goals, counts}`: each with its items and `progress` (`total`, `done`, `percent`), newest `limit` first."""
+    return goals.page(session, kind, state, limit)
 
 
 @router.post("", status_code=201)

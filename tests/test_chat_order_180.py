@@ -43,7 +43,8 @@ def test_an_unknown_sort_is_refused_or_ignored_never_stored(client):
 def test_a_folder_is_stored_listed_and_keeps_the_chats_place_by_date(client):
     made = _chat(client, "Plan the Paris trip")
     before = client.get(f"/conversations/{made['id']}").json()["updated_at"]
-    filed = client.put(f"/conversations/{made['id']}/folder", json={"folder": "  Trips "})
+    made_id = made["id"]
+    filed = client.put(f"/conversations/{made_id}/folder", json={"folder": "  Trips "})
     assert filed.status_code == 200
     listed = client.get("/conversations").json()[0]
     assert listed["folder"] == "Trips"

@@ -129,6 +129,7 @@ TOPIC_LEADS: dict[str, str] = {
     "documents-list-styles": "Pick dots, circles, squares or dashes, or number a list in digits or letters.",
     "documents-paste": "Choose how pasted text lands, such as plain text, a table or a checklist.",
     "documents-comments": "Leave remarks on words in a document, reply to them and resolve them.",
+    "documents-agent-edit": "Accept or reject each change Atlas suggests in the document you have open.",
     "documents-turn-into": "Reshape the lines you selected without retyping their markers.",
     "documents-to-note": "Turn selected text into a new note, or add it to one, with a link back.",
     "callouts": "Set off a note, tip or warning in a tinted box that can fold.",

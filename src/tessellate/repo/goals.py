@@ -104,10 +104,10 @@ def shape(goal: Goal, items: list[GoalItem]) -> dict:
     }
 
 
-def page(session: Session, kind: str | None = None, state: str = "open") -> dict:
+def page(session: Session, kind: str | None = None, state: str = "open", limit: int = MAX_GOALS) -> dict:
     """`{goals, counts}`: every goal or list of a `kind` (both when None), `open`, `done` (achieved) or
     `all`, newest first, each with its items and progress. `counts` is per kind over the open ones."""
-    query = select(Goal).order_by(Goal.id.desc()).limit(MAX_GOALS)
+    query = select(Goal).order_by(Goal.id.desc()).limit(min(limit, MAX_GOALS))
     if kind:
         query = query.where(Goal.kind == _kind(kind))
     if state == "open":

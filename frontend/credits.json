@@ -149,6 +149,11 @@
      "source": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models"
     },
     {
+     "name": "Silero VAD v5.1.2",
+     "licence": "MIT",
+     "source": "https://github.com/snakers4/silero-vad"
+    },
+    {
      "name": "Live captions model, whisper.cpp tiny.en (q5_1)",
      "licence": "MIT",
      "source": "https://huggingface.co/ggerganov/whisper.cpp"

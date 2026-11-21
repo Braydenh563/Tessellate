@@ -14,6 +14,7 @@
 #conversation-list li.conv-group:first-child {
   margin-top: 0;
 }
-#conversation-list li.conv-group:hover {
+#conversation-list li.conv-group:hover,
+#conversation-list li.conv-group:is(:focus-visible, :has(:focus-visible)) {
   background: none;
 }
