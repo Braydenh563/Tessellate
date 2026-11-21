@@ -1436,7 +1436,7 @@ onSurface("reminders", () => {
   });
   $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
   $("reminders-new")?.addEventListener("click", openReminderCompose);
-  $("reminder-clear-done").addEventListener("click", clearDoneReminders);
+  $("reminder-clear-done").addEventListener("click", () => loadReminders.act("clear"));
   $("reminders-page-size").value = remindersPageSize;
   $("reminders-page-size").addEventListener("change", (e) => {
     remindersPageSize = e.target.value;
