@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_unwrap import split_top
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
@@ -27,7 +28,7 @@ WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 def _rules(selector: str) -> list[str]:
     text = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
     return [body for sels, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)
-            if selector in [s.strip() for s in sels.split(",")]]
+            if selector in split_top(sels)]
 
 
 def test_the_frame_title_grows_to_a_target_on_screen():

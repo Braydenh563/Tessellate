@@ -2151,12 +2151,6 @@ button.scroll-row-arrow[hidden] {
 .library-card {
   position: relative;
 }
-.library-card-thumb {
-  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) 0;
-  max-height: 240px;
-  border-bottom: 1px solid var(--border);
-  display: block;
-}
 /* The ⋯, top-right, revealed on hover or focus the way the note cards' actions
    are: a permanent one on every card in a grid is a column of dots down the
    page competing with the titles beside them. `focus-within` rather than
@@ -2262,17 +2256,6 @@ button.scroll-row-arrow[hidden] {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* The image a file actually is. Fixed height so a shelf of photos keeps its
-   rows level: a grid whose rows are different heights is the thing that reads
-   as unconsidered, and it is worse here than anywhere because these cards are
-   deliberately uniform. */
-.library-card-thumb {
-  width: 100%;
-  height: 6.5rem;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-}
 .library-card-tick {
   align-self: center;
 }
@@ -2295,21 +2278,6 @@ button.scroll-row-arrow[hidden] {
 
 #library-boards-grid:not(.library-list) > .library-card {
   margin-bottom: 0;
-}
-/* An audit-log entry's own preview can run to the full 400-char budget
-   (routes_library.py's ACTIVITY_DETAIL_CHARS) and, unlike every other kind
-   here, has nowhere else to read the rest, the grid view already shows it
-   in full (.library-activity .library-card-preview above); list view's
-   generic one-line clamp just above was clipping every activity row down
-   to a fragment with no way to see more, reported directly. A few lines,
-   not unclamped: list view's row-alignment is still worth keeping for
-   every *other* kind sharing this list, so this stays a real (generous)
-   cap rather than "as tall as the text wants to be". */
-.library-list .library-card-thumb {
-  width: 3rem;
-  height: 2.2rem;
-  flex: 0 0 auto;
-  order: 1;
 }
 .library-empty {
   margin: var(--space-6) 0 0;
@@ -2368,21 +2336,6 @@ button.scroll-row-arrow[hidden] {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   box-shadow: var(--glass-shadow);
 }
-/* **Visible before you hover it.** Reported: "there is no elipse button on
-   files in the files library subtab", there is, on every tile, and it was at
-   `opacity: 0` until the pointer happened to land on the tile. A control
-   nobody can see is a control nobody has: the whole point of a kebab is that
-   it *says* there is more here. Faded rather than full strength so a wall of
-   thumbnails is still thumbnails, and full on hover/focus as before.
-   (`:has(...[open])` went with the `<details>` menu it was written for, the
-   gallery uses the app's own `kebabMenu` now, whose open state lives on a
-   `.action-menu` sibling, and the row no longer fades at all.) The 0.6 is
-   set in the row's main rule above. */
-.library-image-tile:hover .library-image-actions,
-.library-image-tile:focus-within .library-image-actions,
-.library-image-actions:focus-within {
-  opacity: 1;
-}
 .library-image-tile img {
   display: block;
   width: 100%;
@@ -2422,20 +2375,6 @@ button.scroll-row-arrow[hidden] {
   color: var(--muted);
   background: var(--inner);
 }
-/* The caption becomes the rename field in place, so the field has to occupy
-   exactly the caption's box: a full-width input that changed the tile's
-   height would make the whole grid reflow while you type in one cell of it. */
-.library-image-rename-input {
-  width: 100%;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--accent);
-  border-radius: 0;
-  background: none;
-  font: inherit;
-  color: var(--ink);
-}
 .library-image-tile figcaption {
   padding: var(--space-3);
   font-size: var(--text-md);
@@ -2448,16 +2387,6 @@ button.scroll-row-arrow[hidden] {
 .library-image-tile figcaption:hover,
 .library-image-tile figcaption:is(:focus-visible, :has(:focus-visible)) {
   color: var(--accent-text);
-}
-/* **The picture and its name are one object** (INBOX 56). The name under the
-   thumbnail was the second of six blocks stacked at one weight; on the
-   picture it is a caption, which is what it has always been. The frame is
-   the positioning context, and it is the only child of the tile that reaches
-   the tile's own top corners. */
-.library-image-frame {
-  position: relative;
-  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-  overflow: hidden;
 }
 /* **A card with nothing in it is short, not padded** (INBOX 115: "the bottom
    of the image cards in the library images subsaection needs a desperate

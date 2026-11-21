@@ -2548,53 +2548,6 @@ button:not(.ghost) > .spinner {
   transition: transform var(--ui-base) var(--ease-out);
 }
 
-/* One column, under a guide line that starts below the heading's caret, so
-   the eye runs down the titles the way it runs down a book's index. */
-.contents-list {
-  list-style: none;
-  margin: 0 0 0 calc(var(--space-3) + 0.5em);
-  padding: var(--space-1) 0 0 var(--space-2);
-  border-left: 1px solid var(--divider);
-  display: flex;
-  flex-direction: column;
-  gap: var(--row-gap);
-}
-
-/* A row: the `.timeline-row` shape, a transparent border so the hover moves
-   nothing, the ground arriving with the pointer. The left gutter is where a
-   document's caret sits, so every title starts at one edge whether or not
-   its row folds. */
-.contents-row,
-.contents-heading-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: var(--space-1) var(--space-3) var(--space-1) calc(var(--space-6) + var(--space-3));
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--ink);
-  font-size: var(--text-md);
-  text-decoration: none;
-}
-
-/* The mark: a 2rem square, the picture or the kind's glyph centred in it. */
-.contents-thumb,
-.contents-row > .contents-icon {
-  flex: 0 0 auto;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-sm);
-}
-.contents-row > .contents-icon {
-  display: inline-grid;
-  place-items: center;
-  background: var(--surface-3);
-  color: var(--muted);
-  font-size: var(--text-body);
-}
-
 /* The focused item must be findable without the pointer. */
 .contents-outline [role="treeitem"]:focus-visible {
   outline: 2px solid var(--accent);
@@ -4671,25 +4624,6 @@ html.modal-open body {
    single class, so a `--text-base` here never drew (L418). */
 .inline-h3 {
   display: inline;
-}
-/* The bookmark row's in-place edit form (library.js). Replaces a chain of
-   two modal prompts - see that handler's comment for why sequencing the
-   fields was the problem rather than the code behind them. Laid out as a
-   column so all three fields and their labels are readable at once at any
-   width, which a row of three inputs is not. */
-.bookmark-edit-form {
-  /* The row is a grid, so the form it opens inside would otherwise be placed
-     in the next cell of that grid, one column wide and beside the tick. It
-     takes the whole row instead. */
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  width: 100%;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--inner);
 }
 
 /* The Links "+ Add" button sat shorter than the three inputs beside it -

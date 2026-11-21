@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
+- Styles: 50 more Library-only rules moved from the boot sheets to library-lazy.css (hover twins, split shorthands, `font: inherit`, token-equal heights included), computed styles unchanged in light and dark at 1280, 900, 700 and 390 including Settings, notes, chat, the board and the map; the lints that read boot CSS now read the lazy sheet with the same rules (L-ui-modernisation-51); 30 of 231 stay on the row.
 - Styles: 18 more Library-only rules moved from the boot sheets to library-lazy.css (nested, unknown-order and media-list competitors included), computed styles unchanged in light and dark at 1280, 900, 700 and 390 including the board and map views (L-ui-modernisation-51); 80 of 231 stay on the row.
 - Companion: the flow's ribbon and rise above the waist start at 0.45 of the half width (`FLOW_TORSO_CORE`), not the core's 0.3, so the feminine stand's torso keeps its pixels (core diff 20 to 3 of 255, masculine 16 to 5; L-ui-modernisation-200).
 - Tests: 14 fixed-clock tests that read the real date (past 2026-11-21) now pin it: the digest window and its structure note count back from `user_now` (`routes_insights._week_ago`), and three fixtures patch `config.user_now` too and write their notes on the pinned day.

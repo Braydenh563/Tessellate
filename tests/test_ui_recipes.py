@@ -29,6 +29,8 @@ from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 from tests._js_scope import unwrapped
 from tests._css_paths import FORMER_08, FORMER_10, sheets
+from tests._css_unwrap import unwrap as _unwrap
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -4220,7 +4222,7 @@ def test_a_frame_is_one_kind_reached_three_ways() -> None:
     wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     wbmap = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
+    css = unwrap_all("\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css")))
     assert 'f: "frame",' in wb
     assert '"sticky", "text", "frame",' in wbmap, "a map's F never picks the frame"
     assert 'data-tool="frame"' in index and 'data-wb-insert="frame"' in index
@@ -4325,8 +4327,9 @@ def test_the_text_box_grip_stands_on_an_opaque_ground() -> None:
     in most looks, so on a sticky's yellow the muted glyph measured 1.68:1 in
     dark (`scratchpad/ui-sweeps/wbgripink.js`; 7.86:1 on the opaque ground)."""
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
-    rule = css[css.index(".wb-object-grip {") :][:900]
-    assert "background: var(--modal-bg-opaque);" in rule and "var(--card)" not in rule.split("}")[0]
+    #: The rule moved to library-lazy.css in guarded pieces (L-ui-modernisation-51): read every piece of it.
+    rule = "}".join(body for sel, body in _rules(css) if _unwrap(sel) == ".wb-object-grip")
+    assert "background: var(--modal-bg-opaque);" in rule and "var(--card)" not in rule
 
 
 def test_a_maps_boundaries_and_summaries_are_drawn_in_one_pass() -> None:
@@ -5265,11 +5268,12 @@ def test_a_library_row_reserves_no_leading_slot_for_a_thumbnail() -> None:
         if ".library-list" in selector and "::before" in selector and "content" in body:
             raise AssertionError(f"a Rows line reserves space before its icon: {selector}")
     thumb = [
-        body for selector, body in _rules((ROOT / "frontend/css/00-tokens-shell.css").read_text(encoding="utf-8"))
-        if selector == ".library-list .library-card-thumb"
+        body for selector, body in _rules("".join((ROOT / "frontend/css" / name).read_text(encoding="utf-8") for name in ("00-tokens-shell.css", "library-lazy.css")))
+        if _unwrap(selector) == ".library-list .library-card-thumb"
     ]
     assert thumb, "the Rows thumbnail rule is missing"
-    order = re.search(r"order\s*:\s*(-?\d+)", thumb[0])
+    #: The rule moved to library-lazy.css (L-ui-modernisation-51), in pieces: the order is in one of them.
+    order = re.search(r"order\s*:\s*(-?\d+)", "\n".join(thumb))
     assert order and int(order.group(1)) > 0, "a Rows thumbnail follows the title; it never leads the row"
     assert "has-thumbs" not in (ROOT / "frontend/js/library.js").read_text(encoding="utf-8")
 
@@ -5351,7 +5355,7 @@ def test_a_rail_rows_title_takes_the_full_width_and_its_menu_overlays_it() -> No
         return [
             re.search(rf"(?:^|;)\s*{prop}\s*:\s*([^;]+)", body).group(1).strip()
             for sel, body in _rules(css)
-            if selector in [part.strip() for part in sel.split(",")] and re.search(rf"(?:^|;)\s*{prop}\s*:", body)
+            if selector in [part.strip() for part in _unwrap(sel).split(",")] and re.search(rf"(?:^|;)\s*{prop}\s*:", body)
         ]
 
     assert "absolute" in declared("#conversation-list li .entry-actions", "position"), "a chat row's ⋮ overlays the row"
@@ -5359,7 +5363,8 @@ def test_a_rail_rows_title_takes_the_full_width_and_its_menu_overlays_it() -> No
     assert "absolute" in declared(".menu-wrap.doc-item-menu", "position"), "a Documents row's ⋮ overlays the row"
     # No right padding held back for the ⋮: the row keeps its own 0.6rem, the
     # old `var(--space-9)` (2rem) reservation is gone.
-    paddings = declared(".doc-item-button", "padding")
+    #: Written as longhands since the row's rule moved to library-lazy.css (L-ui-modernisation-51).
+    paddings = declared(".doc-item-button", "padding") + declared(".doc-item-button", "padding-right")
     assert paddings and all("space-9" not in value for value in paddings), "the Documents row reserves a column for its ⋮"
     # The words fade under the ⋮ rather than stopping short of it.
     fades = [body for sel, body in _rules(css) if "#conversation-list li" in sel and "mask-image" in body]
@@ -6052,7 +6057,7 @@ def test_no_popup_head_paints_a_block_of_its_own() -> None:
             grounds = re.findall(r"(?<![\w-])background(?:-color|-image)?:\s*([^;]*);", body)
             if not any(v.strip() not in {"none", "transparent"} for v in grounds):
                 continue
-            for part in selector.split(","):
+            for part in _unwrap(selector).split(","):
                 part = " ".join(part.split())
                 last = re.split(r"[\s>+~]+", part)[-1]
                 if re.search(r"(\.dialog-head|\.panel-head|\.monitor-header)(:[\w-]+(\([^)]*\))?)*$", last):
@@ -6854,7 +6859,7 @@ def test_close_is_the_last_control_of_every_popup_head() -> None:
     for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         for sel, body in re.findall(r"([^{}@]+)\{([^{}]*)\}", text):
-            rest = [s.strip() for s in sel.split(",") if head_buttons.search(s) and not states.search(s) and ".hidden" not in s]
+            rest = [s.strip() for s in _unwrap(sel).split(",") if head_buttons.search(s) and not states.search(s) and ".hidden" not in s]
             fill = re.search(r"(?:^|;)\s*background(?:-color)?:\s*([^;]+)", body)
             if rest and fill and not re.fullmatch(r"none|transparent|inherit|initial|unset", fill.group(1).strip()):
                 raise AssertionError(f"{path.name}: {rest[0][:70]} fills a head button at rest ({fill.group(1).strip()[:40]})")
@@ -7345,13 +7350,14 @@ def _floating_and_motioned_classes() -> tuple[dict[str, str], set[str]]:
         for selector, body in _rules(path.read_text(encoding="utf-8")):
             moves = bool(
                 re.search(r"animation(?:-name)?\s*:[^;]*\bui-(?:fade|grow|row)", body)
-                or re.search(r"transition\s*:[^;]*\b(?:opacity|scale|translate|transform)\b", body)
+                or re.search(r"transition(?:-property)?\s*:[^;]*\b(?:opacity|scale|translate|transform)\b", body)
             )
             lays_over = bool(re.search(r"position\s*:\s*(?:absolute|fixed)|z-index\s*:|box-shadow\s*:\s*var\(--shadow-(?:md|lg)", body))
             for part in selector.split(","):
-                part = part.strip()
                 if moves:
-                    motioned.update(class_re.findall(part))
+                    motioned.update(class_re.findall(part.strip()))
+            for part in _unwrap(selector).split(","):
+                part = part.strip()
                 if lays_over and part:
                     for name in class_re.findall(re.split(r"[\s>+~]+", part)[-1]):
                         if name.endswith(FLOATING_SUFFIXES):

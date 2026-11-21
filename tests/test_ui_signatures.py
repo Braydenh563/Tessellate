@@ -28,6 +28,7 @@ from collections import Counter
 import pytest
 
 from tests._css_paths import css_text
+from tests._css_unwrap import unwrap_all
 
 # A raw rem on the scale means the same thing as its token, so the two must
 # count as one value, otherwise a family could pass with one token and one
@@ -74,7 +75,8 @@ def _rules() -> list[tuple[str, str]]:
     selector rather than the media query's: good enough for counting what a
     selector *declares*, which is all this needs.
     """
-    text = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
+    #: A moved rule ends in a zero-specificity guard naming other elements (L-ui-modernisation-51): not its subject.
+    text = unwrap_all(re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S))
     return [(sel.strip(), body) for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)]
 
 

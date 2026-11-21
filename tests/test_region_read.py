@@ -26,6 +26,7 @@ import io
 from tessellate.ai import captioning, vision_ocr
 from tessellate.core import deps
 from tessellate.core.database import PageRead
+from tests._css_unwrap import unwrap_all
 
 #: The smallest real PNG, a 1x1 greyscale pixel. Enough to satisfy the magic
 #: number check, which is the only thing this endpoint looks at before handing
@@ -204,7 +205,9 @@ from pathlib import Path  # noqa: E402  (the lints below are a separate concern)
 
 LIBRARY = Path("frontend/js/library.js").read_text(encoding="utf-8")
 INDEX = Path("frontend/index.html").read_text(encoding="utf-8")
-CSS = Path("frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = unwrap_all(
+    Path("frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8") + Path("frontend/css/library-lazy.css").read_text(encoding="utf-8")
+)  # L-ui-modernisation-51: moved rules end in :where(:not(...))
 
 
 def test_the_drag_layer_is_not_the_regions_layer():
