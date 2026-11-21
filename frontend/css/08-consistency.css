@@ -4891,7 +4891,11 @@ body .chip.item-label,
    (the touch target floor widened it) in a 25px-high pill, 1px from the top,
    2.2px from the bottom and 5px from the right. With a mouse it is a round
    button two pixels inside the pill on every side, centred; a finger keeps
-   the 28px target (the pill grows around it there). */
+   the 28px target (the pill grows around it there). L-world-class-107
+   measured it 1px from the top and the bottom but 3px from the end (a 24px
+   button in a 26px pill, plus a 2px end margin): it now ends flush, and its
+   circle is drawn 2px inside a 24px target (padding, content-box), 3px from
+   the pill's outer edge on all three sides. */
 @media (pointer: fine) {
   #entry-list .link-connection > .menu-wrap {
     display: inline-flex;
@@ -4902,7 +4906,9 @@ body .chip.item-label,
     height: 1.5rem;
     min-width: 0;
     min-height: 0;
-    margin-inline-end: 2px;
+    margin-inline-end: 0;
+    padding: 2px;
+    background-clip: content-box;
   }
 }
 /* --- A note's time: the same corner on every card --- */

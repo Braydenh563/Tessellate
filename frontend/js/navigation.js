@@ -1632,7 +1632,12 @@ document.addEventListener("keydown", (event) => {
       return;
     }
   }
-  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'])");
+  //: A row that opens a submenu ("Atlas ›") is a menu row first: APG walks
+  //: past it on the arrows, and treating it as a closed menu button here
+  //: opened its flyout and took the focus back from the row
+  //: `wireMenuKeyboard` had just moved to (L-world-class-107, menus.js: the
+  //: first ArrowDown in every note's ⋯ menu stayed on Atlas).
+  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false']):not([role='menuitem'])");
   if (opener === target && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
     const menu = menuOfOpener(opener);
     const rows = menu ? menuRowsOf(menu) : [];

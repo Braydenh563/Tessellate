@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Menus: the first ArrowDown in a menu whose first row opens a submenu (every note's ⋯, Atlas) moves to the next row again instead of opening the flyout and staying; the connection pill's ⋯ circle sits 3px inside the pill on the top, the bottom and the end (was 1, 1 and 3) (L-world-class-107).
 - Design re-measured at laptop widths: note cards 12 to 16px of padding with 14.72px text, Settings section heads at 650 over 400 labels, the toast clear of the dashboard head; one icon weight is now a lint, and the pinned model's dead fill class is gone (L-world-class-105).
 - Pillow for the tests is a `test` extra in pyproject.toml, which CI installs, instead of a line in the workflow.
 - Search by meaning question: on a phone it waits while Settings is open, where Search and index holds the same switch, and comes back when Settings closes; it had covered the lower quarter of every section (L-world-class-394).
