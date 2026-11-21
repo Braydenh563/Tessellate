@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
+| ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 54 | 5 | 0 | 0 | 59 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 445 | 77 | 2 | 112 | 894 |
+| all | 372 | 444 | 77 | 2 | 112 | 893 |
 
 ## graph
 
@@ -385,7 +385,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
 - [ ] **L418** `ui-modernisation` open, S: Sweep other sheets' h3 titles for the same rank clash as .card h3 over .tidy-title. From OPEN.md:1989. Evidence: Tidy fix present (tidy-lazy.css:61 .tidy-nav .tidy-title); no sweep of other h3 titles found
 - [ ] **L419** `ui-modernisation` open, S: Fix focus ring clipping: header buttons, Library sub-tab, chat composer at 390. From OPEN.md:2546. Evidence: Mechanical clipping open per row
-- [ ] **L420** `ui-modernisation` open, S: Make skeleton shimmer honour OS reduced-motion. From OPEN.md:2668. Evidence: 02-chat-graph.css:2080 gates on data-progress-motion=always; verified open
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
 - [ ] **L422** `ui-modernisation` open, S: Settings row focus should land on the control, not label/head. From OPEN.md:2791. Evidence: settings-find.js openSettingRow; verified open
 - [ ] **L423** `ui-modernisation` open, S: Let help popovers play an exit transition instead of closing at once. From OPEN.md:3468. Evidence: menus.js closeHelpPopovers removes panel on close; no exit transition path found.
