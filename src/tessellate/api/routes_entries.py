@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import collections
 import contextlib
-import dataclasses
 import hashlib
 import json
 import logging
@@ -1172,38 +1171,6 @@ def open_daily_note(day: str, session: Session = Depends(get_session)) -> EntryO
     return _to_out(session, entry_service.open_daily_note(session, _daily_date(day)))
 
 
-FILING_STOP_ACTIONS = ("keep", "fallback")
-
-
-def stop_filing(session: Session, entry, action: str) -> str:  # noqa: ANN001
-    """Stop filing one note by hand (owner, 0.3.31: "a manual way to stop
-    note filing and to just do it manually or leave what has already been
-    done, or to just use the fall back"). `keep` leaves it where it is,
-    `fallback` files it by meaning now (no chat model). Either way the note
-    is marked as the person's to file, so a model answer that lands later
-    (`_LateFiling`) or a job still queued for it writes nothing. Returns the
-    category it ends in."""
-    if action == "fallback":
-        match = janitor._semantic_category(
-            session,
-            manager_text.readable_content(entry),
-            deps.get_embeddings(),
-            exclude_entry_id=entry.id,
-        )
-        if match is not None:
-            manager.record_filing(
-                session, entry, match[0],
-                by=janitor.filed_by_label(match[2], match[1], embeddings=deps.get_embeddings()),
-            )
-            entry.ai_confidence = match[1]
-    # **Stopped, not chosen.** It used to set `user_filed`, which reads as
-    # "the person picked this category" and so kept re-evaluate away from
-    # it for good; stopping only means "not now".
-    entry.filing_state = manager.FILING_STOPPED
-    session.commit()
-    return manager.category_name_for(session, entry)
-
-
 class FilingStopBody(BaseModel):
     action: str = "keep"
 
@@ -1212,13 +1179,12 @@ class FilingStopBody(BaseModel):
 def stop_filing_one(
     entry_id: int, body: FilingStopBody, session: Session = Depends(get_session)
 ) -> dict:
-    if body.action not in FILING_STOP_ACTIONS:
+    """Stop filing one note by hand (`entry_service.stop_filing`)."""
+    if body.action not in entry_service.FILING_STOP_ACTIONS:
         raise HTTPException(status_code=422, detail="Pick keep or fallback.")
     entry = _existing_entry(session, entry_id)
-    if (getattr(entry, "filing_state", "") or "") not in ("pending", manager.STAND_IN):
-        return {"id": entry.id, "stopped": False, "category": manager.category_name_for(session, entry)}
-    category = stop_filing(session, entry, body.action)
-    return {"id": entry.id, "stopped": True, "category": category}
+    stopped, category = entry_service.stop_filing_one(session, entry, body.action)
+    return {"id": entry.id, "stopped": stopped, "category": category}
 
 
 class FilingDecisionBody(BaseModel):
@@ -1231,122 +1197,10 @@ class FilingDecisionBody(BaseModel):
 def decide_filing(
     entry_id: int, body: FilingDecisionBody, session: Session = Depends(get_session)
 ) -> EntryOut:
-    """The review queue's Accept (WORLD_CLASS_PLAN section 17, row 1): the
-    category stays and becomes the person's (`user_filed`), which is what a
-    move to another category already does. Logged, so the activity log says
-    who decided."""
+    """The review queue's Accept (`entry_service.accept_filing`)."""
     entry = NOTES.writable(session, entry_id)
-    if bool(entry.user_filed) != body.accepted:
-        entry.user_filed = body.accepted
-        manager.log_action(
-            session,
-            "filing_accepted" if body.accepted else "filing_unaccepted",
-            "entry",
-            entry.id,
-            detail=manager.category_name_for(session, entry),
-        )
-        session.commit()
+    entry_service.accept_filing(session, entry, body.accepted)
     return _to_out(session, entry)
-
-
-def stop_all_filing(action: str = "fallback") -> int:
-    """Every note still filing, in every space: the Stop on the filing rows
-    of Settings, Background tasks and the activity popup. Each note is
-    stopped in its own space, so the fallback weighs that space's
-    categories only. Returns how many were stopped."""
-    from tessellate.core.database import impersonate_workspace
-
-    stopped = 0
-    with deps.get_db().session() as session:
-        pending = [
-            (row.id, getattr(row, "workspace_id", "default") or "default")
-            for row in session.query(Entry)
-            .filter(Entry.filing_state.in_(("pending", manager.STAND_IN)))
-            .all()
-        ]
-    for entry_id, workspace_id in pending:
-        try:
-            with deps.get_db().session() as session:
-                with impersonate_workspace(session, workspace_id):
-                    entry = session.get(Entry, entry_id)
-                    if entry is not None and entry.filing_state in ("pending", manager.STAND_IN):
-                        stop_filing(session, entry, action)
-                        stopped += 1
-        except Exception:
-            logger.warning("couldn't stop filing entry %s", entry_id, exc_info=True)
-    return stopped
-
-
-def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
-    """The near-duplicate the filing pass found, as `{id, preview}`, or None."""
-    duplicate_id = getattr(entry, "filing_similar_id", None)
-    other = session.get(Entry, duplicate_id) if duplicate_id is not None else None
-    if other is None:
-        return None
-    return {"id": other.id, "preview": entry_service.connection_label(other, 60)}
-
-
-def _choices_filled(session: Session, content: str, entry_id: int, category: str, choices: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """The filing call's choices, then recent categories by the words, up to three, never the current one."""
-    from tessellate.ai import lexical_filing
-
-    explained = [(name, reason) for name, reason in choices if name != category]
-    if len(explained) < 3:
-        taken = {name for name, _ in explained} | {category}
-        for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry_id, limit=4):
-            if name not in taken:
-                explained.append((name, reason))
-                taken.add(name)
-    return explained
-
-
-def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
-    """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
-    one-tap choices (INBOX 434), each one's line, a new category the pack proposes
-    (WORLD_CLASS 23, decisions 2, 3 and 6), a sensitive topic that held it back, and
-    why it waits. The choices are the filing call's own, first and in its order
-    (`lexical_filing.filing_call`, INBOX 1583), so the saved note offers what the
-    Capture hint offered; recent categories fill the row only after them."""
-    from tessellate.ai import lexical_filing
-
-    explained: list[tuple[str, str]] = []
-    proposal = None
-    held = None
-    why = ""
-    try:
-        content = manager_text.readable_content(entry) or ""
-        call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
-        explained = _choices_filled(session, content, entry.id, category, call.choices)
-        #: A pick the person asked to be asked about (a model's, or by
-        #: meaning) is first among the choices, with the words' reason.
-        if call.category and call.category != category and lexical_filing.ask_when_unsure():
-            explained = [(call.category, call.why)] + [row for row in explained if row[0] != call.category]
-            call = dataclasses.replace(call, why=lexical_filing.ASK_WHY)
-        explained = explained[:3]
-        if call.proposal is not None:
-            proposal = {"name": call.proposal.name, "why": call.proposal.why}
-        if call.held and call.choices:
-            held = {"category": call.choices[0][0], "topic": call.held}
-        why = call.why
-    except Exception:  # noqa: BLE001 - a hint never fails the status
-        logger.debug("no category suggestions for entry %s", entry.id, exc_info=True)
-    suggestions = [name for name, _ in explained]
-    reasons = {name: reason for name, reason in explained if reason}
-    return suggestions, reasons, proposal, held, why
-
-
-def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
-    """The one line behind a filing by words, or an empty string."""
-    from tessellate.ai import lexical_filing
-
-    try:
-        decision = lexical_filing.decide(
-            session, manager_text.readable_content(entry) or "", exclude_entry_id=entry.id
-        )
-        return next((c.why for c in decision.ranked if c.name == category), "")
-    except Exception:  # noqa: BLE001 - a hint never fails the status
-        logger.debug("no filing reason for entry %s", entry.id, exc_info=True)
-        return ""
 
 
 @router.get("/{entry_id}/filing")
@@ -1368,64 +1222,7 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
     # key makes that a no-op while a job for it is already queued or running.
     if (getattr(entry, "filing_state", "") or "") == "pending":
         _queue_filing(entry)
-    similar = _filing_similar(session, entry)
-    state = getattr(entry, "filing_state", "done") or "done"
-    category = manager.category_name_for(session, entry)
-    filed_by = _filed_by(entry, state)
-    shown = filing_certainty.shown(
-        entry.ai_confidence, user_filed=bool(getattr(entry, "user_filed", False))
-    )
-    #: A pick the calibration put under the review line (`filing_certainty`)
-    #: is offered the same way: the alternatives beside the one it chose.
-    unsure_pick = filed_by == "ai" and 0 < shown < manager.REVIEW_CONFIDENCE
-    suggestions: list[str] = []
-    reasons: dict[str, str] = {}
-    why = ""
-    proposal = None
-    held = None
-    waits = ""
-    if (filed_by == "none" and category == manager.UNCATEGORISED) or unsure_pick:
-        suggestions, reasons, proposal, held, waits = _offered_categories(session, entry, category)
-    elif filed_by == "words" and category != manager.UNCATEGORISED:
-        why = _filing_why(session, entry, category)
-    return {
-        "id": entry.id,
-        "filing_state": state,
-        "category": category,
-        "ai_confidence": shown,
-        "similar": similar,
-        "filed_by": filed_by,
-        "suggestions": suggestions,
-        "suggestion_reasons": reasons,
-        "why": why,
-        "proposal": proposal,
-        "held_sensitive": held,
-        #: Why the words left it waiting ("A close call between Hobbies and
-        #: Study, so it waits for you to choose."), said by the saved line.
-        "waits_why": waits if filed_by == "none" else "",
-    }
-
-
-def _filed_by(entry, state: str) -> str:  # noqa: ANN001
-    """Who decided, in the composer's three words (INBOX 432).
-
-    `ai` when the model or a match by meaning chose; `user` when the person
-    did; `none` when nothing could, which is a note left in Uncategorised
-    with no AI behind it. The composer said "Filed under Uncategorised (0%
-    sure)" for that last one, which reads as a decision when it is the
-    absence of one, and offered no way to pick a category instead.
-    """
-    if getattr(entry, "user_filed", False):
-        return "user"
-    if state == manager.WORDS_FILED:
-        return "words"
-    if state in (manager.AUTO_FILED, manager.STAND_IN):
-        return "ai"
-    if state == "pending":
-        return "pending"
-    if state == "failed" or not (entry.ai_confidence or 0):
-        return "none"
-    return "ai"
+    return entry_service.filing_status(session, entry)
 
 
 def _tag_vocabulary(session: Session) -> list[str]:
@@ -2515,12 +2312,9 @@ def make_all_private(body: MakeAllPrivateBody, session: Session = Depends(get_se
     server refuses without `confirm` so a stray call cannot do it."""
     if not body.confirm:
         raise HTTPException(status_code=400, detail="Confirm first: this locks every note.")
-    sealed = manager_private.make_all_private(session)
+    sealed = entry_service.make_all_private(session)
     if sealed is None:
         raise HTTPException(status_code=409, detail="Unlock the app first: the encryption key isn't loaded.")
-    session.commit()
-    if sealed:
-        manager_private.scrub_private_leftovers(session)
     return {"sealed": len(sealed), "ids": sealed}
 
 
@@ -2537,19 +2331,11 @@ def set_entry_privacy(
     if not body.private and private_space.is_private_space(session, entry.workspace_id):
         # INBOX 1727: no per-note opt-out inside a private space.
         raise HTTPException(status_code=409, detail=private_space.MOVE_OUT_TO_SHARE)
-    if not manager_private.set_private(session, entry, body.private):
+    if not entry_service.set_privacy(session, entry, body.private):
         raise HTTPException(
             status_code=409,
             detail="Unlock the app first: the encryption key isn't loaded.",
         )
-    #: KG4: a private note has no property index; a public one gets it back.
-    manager.reindex_properties(session, entry)
-    session.commit()
-    if body.private:
-        # SEC-03: the note's words out of the search index's segments and the
-        # WAL too, not only out of the answers.
-        manager_private.scrub_private_leftovers(session)
-    session.refresh(entry)
     return _to_out(session, entry)
 
 
@@ -2587,13 +2373,7 @@ def generate_entry_title(
         raise HTTPException(status_code=502, detail=librarian.AI_FAILED_MESSAGE) from exc
     if not title:
         raise HTTPException(status_code=502, detail="The AI didn't return a usable title.")
-
-    manager.record_revision(session, entry)
-    entry.content = manager_text.apply_title(content, title)
-    manager.mark_edited(entry)
-    manager.log_action(session, "edited", "entry", entry.id, f"generated title: {title}")
-    session.commit()
-    session.refresh(entry)
+    entry_service.retitle(session, entry, content, title, f"generated title: {title}")
     return _to_out(session, entry)
 
 
@@ -2607,12 +2387,7 @@ def _composed_title(session: Session, entry, content: str) -> EntryOut:  # noqa:
     title = composer_voice.title_for(manager_text.remove_title(content) or content)
     if not title:
         raise HTTPException(status_code=422, detail="There's no sentence here to take a title from yet.")
-    manager.record_revision(session, entry)
-    entry.content = manager_text.apply_title(content, title)
-    manager.mark_edited(entry)
-    manager.log_action(session, "edited", "entry", entry.id, f"title from its own words: {title}")
-    session.commit()
-    session.refresh(entry)
+    entry_service.retitle(session, entry, content, title, f"title from its own words: {title}")
     return _to_out(session, entry)
 
 
@@ -2629,15 +2404,7 @@ def remove_entry_title(entry_id: int, session: Session = Depends(get_session)) -
         raise HTTPException(
             status_code=400, detail="Make this note readable first: private notes can't be edited here."
         )
-    content = manager_text.readable_content(entry)
-    stripped = manager_text.remove_title(content)
-    if stripped != content:
-        manager.record_revision(session, entry)
-        entry.content = stripped
-        manager.mark_edited(entry)
-        manager.log_action(session, "edited", "entry", entry.id, "removed the title")
-        session.commit()
-        session.refresh(entry)
+    entry_service.remove_title(session, entry)
     return _to_out(session, entry)
 
 
@@ -2709,60 +2476,18 @@ class ExtractCommitBody(BaseModel):
 @router.post("/extract/commit", status_code=201)
 def extract_commit(body: ExtractCommitBody, session: Session = Depends(get_session)) -> dict:
     """Write exactly what a preview showed (possibly edited, possibly
-    trimmed) to the notebook: the notes, then the links between them, 
-    `manager.create_link`'s own `reason=` bypasses the generic
-    `AUTO_REASON_TEXT` guess entirely, so every link gets the specific
-    reason the preview generated for it.
-    """
-    by_ref: dict[str, Entry] = {}
-    created = []
-    for note in body.notes:
-        if note.ref in by_ref:
-            raise HTTPException(status_code=400, detail=f"Each note needs its own reference, and '{note.ref}' is used by more than one.")
-        entry = manager.create_entry(
-            session,
-            content=note.content,
-            category_name=note.category or manager.UNCATEGORISED,
-            tags=note.tags,
-            # Reviewed (and possibly edited) by the person before it was
-            # ever asked to save, the same confidence level a user-filed
-            # category gets in `create_entry` above, not the AI's own guess
-            # from the preview (which was about the SPLIT, not the filing).
-            ai_confidence=100,
-        )
-        by_ref[note.ref] = entry
-        deps.store_quietly(session, entry)
-        created.append(entry)
-
-    if body.source_document_id is not None:
-        document = documents_repo.find(session, body.source_document_id)
-        # A document deleted between preview and commit is skipped rather
-        # than refused: the notes are the thing being saved, same reasoning
-        # `create_entry`'s own `document_ids` handling already uses.
-        if document is not None:
-            for entry in created:
-                manager.link_document(session, document.id, entry.id)
-
-    links_created = 0
-    for link in body.links:
-        source = by_ref.get(link.source_ref)
-        if source is None:
-            continue  # a ref that isn't among the notes just created, ignore rather than fail the whole save
-        if link.target_ref.startswith("existing:"):
-            try:
-                target_id = int(link.target_ref.removeprefix("existing:"))
-            except ValueError:
-                continue
-            target = manager.get_entry(session, target_id)
-            if target is None or target.is_deleted:
-                continue  # deleted between preview and commit
-        else:
-            target = by_ref.get(link.target_ref)
-            if target is None:
-                continue
-        if manager_links.create_link(session, source, target, reason=link.reason) is not None:
-            links_created += 1
-
+    trimmed) to the notebook: the notes, then the links between them
+    (`entry_service.commit_extraction`)."""
+    refs = [note.ref for note in body.notes]
+    for ref in refs:
+        if refs.count(ref) > 1:
+            raise HTTPException(status_code=400, detail=f"Each note needs its own reference, and '{ref}' is used by more than one.")
+    created, links_created = entry_service.commit_extraction(
+        session,
+        [(note.ref, note.content, note.category, note.tags) for note in body.notes],
+        [(link.source_ref, link.target_ref, link.reason) for link in body.links],
+        body.source_document_id,
+    )
     return {
         "notes": _to_out_bulk(session, created),
         "links_created": links_created,

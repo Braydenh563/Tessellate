@@ -51,8 +51,9 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: and count reads to repo/spaces.py: 688; the chat attach paths' Library upload
 #: reads to repo/uploads.py: 687; the affinity sort's sticky read to
 #: repo/whiteboard.py: 686; the journal and Connections reads to entry/service.py
-#: (decision 55, L-world-class-123): 658.
-ORM_CALLS_CAP = 658
+#: (decision 55, L-world-class-123): 658; the filing stop and the extraction's
+#: reads there too: 655.
+ORM_CALLS_CAP = 655
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("

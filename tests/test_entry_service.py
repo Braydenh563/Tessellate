@@ -52,3 +52,54 @@ def test_connections_fold_in_a_wiki_link_with_no_stored_link(session):
 
 def test_connected_files_reads_only_referenced_uploads(session):
     assert service.connected_files(session, "no pictures here") == []
+
+
+def test_stopping_a_settled_note_changes_nothing(session):
+    entry = _note(session, "plain words")
+    entry.filing_state = "done"
+    stopped, category = service.stop_filing_one(session, entry, "keep")
+    assert (stopped, category) == (False, manager.UNCATEGORISED)
+
+
+def test_stopping_a_pending_note_marks_it_stopped(session):
+    entry = _note(session, "plain words")
+    entry.filing_state = "pending"
+    stopped, _category = service.stop_filing_one(session, entry, "keep")
+    assert stopped and entry.filing_state == manager.FILING_STOPPED
+
+
+def test_accepting_a_filing_makes_it_the_persons_and_logs_once(session):
+    entry = _note(session, "plain words")
+    service.accept_filing(session, entry, True)
+    service.accept_filing(session, entry, True)
+    assert entry.user_filed is True
+    assert service.filing_status(session, entry)["filed_by"] == "user"
+
+
+def test_a_note_nothing_filed_says_none(session):
+    entry = _note(session, "plain words")
+    entry.filing_state, entry.ai_confidence = "done", 0
+    status = service.filing_status(session, entry)
+    assert status["filed_by"] == "none" and status["category"] == manager.UNCATEGORISED
+
+
+def test_a_title_replaces_the_old_one_and_goes_back_out(session):
+    entry = _note(session, "# Old\nbody text")
+    service.retitle(session, entry, entry.content, "New", "generated title: New")
+    assert entry.content.startswith("# New") and "# Old" not in entry.content
+    service.remove_title(session, entry)
+    assert entry.content.strip() == "body text"
+    service.remove_title(session, entry)
+    assert entry.content.strip() == "body text"
+
+
+def test_extraction_links_its_own_notes_and_skips_unknown_refs(session):
+    existing = _note(session, "an older note")
+    created, links = service.commit_extraction(
+        session,
+        [("n1", "first new note", "", []), ("n2", "second new note", "", ["kept"])],
+        [("n1", "n2", "same topic"), ("n2", f"existing:{existing.id}", "follows on"), ("n9", "n1", "nobody"), ("n1", "existing:x", "bad")],
+        None,
+    )
+    assert [entry.content for entry in created] == ["first new note", "second new note"]
+    assert links == 2

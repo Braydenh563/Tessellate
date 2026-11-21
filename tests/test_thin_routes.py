@@ -25,6 +25,14 @@ CONVERTED = {
         "daily_journal",
         "daily_note",
         "open_daily_note",
+        "stop_filing_one",
+        "decide_filing",
+        "filing_status",
+        "extract_commit",
+        "make_all_private",
+        "set_entry_privacy",
+        "generate_entry_title",
+        "remove_entry_title",
     },
     "routes_entries_links.py": {"entry_connections"},
 }
@@ -40,6 +48,13 @@ MOVED_OUT = {
     "_connected_files",
     "_daily_notes",
     "_daily_note",
+    "stop_filing",
+    "stop_all_filing",
+    "_filing_similar",
+    "_choices_filled",
+    "_offered_categories",
+    "_filing_why",
+    "_filed_by",
 }
 
 #: The ORM verbs and statement builders a route body may not call itself.

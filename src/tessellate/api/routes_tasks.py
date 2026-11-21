@@ -552,7 +552,7 @@ FILING_KINDS = frozenset({"job-file-entry", "filing-late"})
 
 
 def _stop_filing() -> tuple[bool, str]:
-    from tessellate.api.routes_entries import stop_all_filing
+    from tessellate.entry.service import stop_all_filing
 
     count = stop_all_filing("fallback")
     if not count:
