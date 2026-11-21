@@ -35,7 +35,8 @@
   function proseOnly(text) {
     const trimmed = text.trim();
     if (trimmed.startsWith("/") || trimmed.includes("```")) return false;
-    return trimmed.split(/\s+/).length >= COMPOSER_LINT_MIN_WORDS;
+    //: The one word count (settings-wiring.js), so CJK text counts as the editor counts it.
+    return wordCount(trimmed) >= COMPOSER_LINT_MIN_WORDS;
   }
 
   function wire(input) {

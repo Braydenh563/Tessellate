@@ -45,6 +45,8 @@ const ctx = {
   location: { href: "http://x.test/app", origin: "http://x.test" },
   toasts,
   toast: (message, kind) => toasts.push([message, kind]),
+  //: The realiser's done line ("{what}.") around the words (status.js).
+  voiceLine: (key, what) => `${what}.`,
   mediaSrc: (url) => url,
   api: async (path) => { log.push(["api", path]); return { blob: async () => ({ type: scenario.includes("jpeg") ? "image/jpeg" : "image/png", size: 3 }) }; },
   saveFile: async () => {},

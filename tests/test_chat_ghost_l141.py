@@ -1,6 +1,7 @@
 """L-chat-141 (CHAT_PLAN decision 69): ghost-text completions in the chat box,
 from the person's own tags, titles and recent searches. No model, one switch."""
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -38,7 +39,8 @@ def test_it_is_lazy_one_switch_and_accept_rate_kept():
     #: Preloaded with the quickNote bundle three seconds after boot (the boot scripts are at
     #: their gzip cap); it wires its own focus listener, and catches a box already focused.
     app = (JS / "app.js").read_text(encoding="utf-8")
-    assert '"/js/router-overlays.js", "/js/chat-ghost.js"]' in app
+    #: The bundle's list, not its last entry: composer-lint.js joined it (L-chat-227).
+    assert '"/js/router-overlays.js", "/js/chat-ghost.js"' in re.search(r"quickNote: \[[^\]]*\]", app).group(0)
     assert "document.activeElement?.matches?.(CHAT_GHOST_BOXES)" in SRC
     assert 'prefs.get("searchSuggest", "on") !== "off"' in SRC
     assert "chatGhostTally" in SRC and '"Tab"' in SRC and '"Escape"' in SRC

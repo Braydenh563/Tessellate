@@ -149,7 +149,9 @@ def test_note_toasts_name_the_note_l169():
         assert said in js, said
     assert 'toastAction("Moved to the bin."' not in js
     library = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-    assert "Archived \u201c${item.title}\u201d." in library and "Deleted \u201c${item.title}\u201d." in library
+    #: Said through the realiser's done line since L-chat-255, which ends the sentence.
+    assert 'voiceLine("done", `Archived \u201c${item.title}\u201d`)' in library
+    assert 'voiceLine("done", `Deleted \u201c${item.title}\u201d`)' in library
 
 
 def test_autofill_is_composed_before_any_model_l174():
