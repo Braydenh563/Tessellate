@@ -7,6 +7,11 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-21 (BACKLOG §11 perf leftovers)
+
+- [x] **The first Intl call (L-world-class-354, 624)** built 2026-11-21: it was 42 to 180ms of ICU set-up at 4x CPU on the main thread (`firstClockPaint` 51 to 144ms by run), whichever formatter came first. ICU's caches are the process's, so `frontend/js/intl-warm.js`, a worker shell-reminders.js starts, formats first and the clocks paint when it answers. Boot trace, 3 runs: the clock paint task 2.4 to 6.4ms; every Intl call in the boot 0.1 to 1.5ms (first `toLocaleTimeString` 102.6 to 0.4ms in the instrumented run). A bare page: main-thread first call 73 to 281ms alone, 0 to 3ms after a worker's.
+- [x] **app.js fetch.then (624)** closed 2026-11-21 as not app.js's cost: in a boot trace with the CPU profiler (3 runs, 4x CPU), `api` (app.js:357) is 3 to 5ms self; the 48 to 131ms microtask tasks LoAF names after it are the callers' own continuations (dashboard widgets, still in BACKLOG §11).
+
 ## Moved from the plans, 2026-11-14 (L982 closed by the owner)
 
 - [x] **L982** closed 2026-11-14: Settings panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms (INBOX 1726). Owner decided 2026-11-14: stale unless it recurs; reopen if the lag reporter flags it again. It did not reproduce off Windows at 4x CPU; settings-panes.js returns early on a plain key.

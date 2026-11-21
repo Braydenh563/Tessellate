@@ -3887,6 +3887,11 @@
     renderSmallModelMode(prefs.small_model_mode || "auto");
     renderRunBudget(prefs);
     const disabled = new Set(prefs.disabled_tools || []);
+    //: A revisit with the same catalog and switches keeps its rows: the rebuild of 73 rows was a 34 to 62 ms
+    //: style pass and 41 ms of layout at 4x CPU a few hundred ms after every Tools switch (2026-11-21).
+    const drawn = JSON.stringify([catalog, [...disabled].sort()]);
+    if (list.dataset.drawn === drawn && list.querySelector(":scope > .tool-group-head")) return applyToolFilter();
+    list.dataset.drawn = drawn;
     list.replaceChildren();
     //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
     //: grouped table (read, write, destructive)"), each group under an

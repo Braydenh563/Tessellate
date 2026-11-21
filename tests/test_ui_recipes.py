@@ -6847,8 +6847,10 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
     responsive = css["10-responsive.css"]
     assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
-    assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
-    delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
+    # No `:not(.hidden)` on the menu (2026-11-21): it made every `hidden` toggle restyle a
+    # whole subtree (test_css_invalidation), and a shown menu starts its rows' animations anyway.
+    assert ".action-menu > :nth-child(-n + 8)" in responsive
+    delays = re.findall(r"\.action-menu > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
     assert [int(n) for n, _ in delays] == list(range(2, 9)), "rows 2 to 8 each have a step of delay, and nothing past 8"
     assert all("var(--ui-step)" in d for _, d in delays)
     for frames in ("ui-grow", "ui-row"):

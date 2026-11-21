@@ -720,23 +720,17 @@
 
   let helpTopicsLoad = null;
 
-  //: Leaving Help empties its topics a slice of rows per timer: all 1,770 nodes in one `replaceChildren` were a
-  //: 220 to 350 ms task at 4x CPU, landing on the next pane's switch (L675). Rows, then their groups; a visit
-  //: back first draws a fresh set, and the old nodes are already off the page or on their way.
-  const HELP_DROP_SLICE = 60;
+  //: Leaving Help empties its topics in one `replaceChildren`, in a timer after the next pane's first frame, so
+  //: the drop never shares that frame's task. The pane is hidden by then: 1,722 hidden nodes are 8 to 22 ms at 4x
+  //: CPU, where the earlier slices restyled the page once per timer (30 tasks of 60 to 95 ms, 2026-11-21).
+  //: A visit back before the timer (`helpTopicsLoad` set again) keeps the rows.
   function helpTopicsDrop(box) {
     box.dataset.dropping = "1";
-    const groups = [...box.children];
-    const rows = groups.flatMap((group) => [...group.children]);
-    const step = () => {
-      for (const row of rows.splice(0, HELP_DROP_SLICE)) row.remove();
-      if (rows.length) setTimeout(step);
-      else {
-        groups.forEach((group) => group.remove());
-        if (!helpTopicsLoad) delete box.dataset.dropping;
-      }
-    };
-    setTimeout(step);
+    afterFrames(() => setTimeout(() => {
+      if (helpTopicsLoad) return;
+      box.replaceChildren();
+      delete box.dataset.dropping;
+    }), 1);
   }
 
   function helpTopicLink(link) {

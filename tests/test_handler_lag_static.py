@@ -61,6 +61,18 @@ def test_first_clock_paint_is_its_own_task():
     assert "setTimeout(function firstClockPaint()" in src
 
 
+def test_the_first_intl_call_is_made_in_a_worker():
+    # The ICU set-up (73 to 281 ms at 4x CPU, whichever formatter is first) is the process's, so a
+    # worker that formats first leaves the page's first call at 0.2 to 1.5 ms (2026-11-21). The
+    # clocks paint when it answers, or on the timer when there is no worker.
+    src = read("shell-reminders.js")
+    start = src[src.index("new Worker(`/js/intl-warm.js") :][:400]
+    assert 'lazyAssetStamp("/js/intl-warm.js")' in start
+    assert "warm.onmessage = warm.onerror = () => {" in start and "startClockTicker();" in start
+    warm = read("intl-warm.js")
+    assert "toLocaleString()" in warm and "toLocaleDateString" in warm and "postMessage(" in warm
+
+
 def test_atlas_looks_build_on_first_read():
     # Both looks built at eval were 52 of atlas.js's 86 ms eval at 4x CPU.
     src = read("atlas.js")
