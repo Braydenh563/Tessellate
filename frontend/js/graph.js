@@ -2247,7 +2247,9 @@ let graphHighlightIds = null;
 //: (`GET /read/filter`, ai/filters.py; this file reads no words itself). The
 //: words left over still match the preview. A box with no filter in it
 //: (`ids` null) is the plain search it always was.
-const graphPhrase = { q: "", ids: null, rest: "", waiting: false, timer: 0 };
+//: `words`: the notes holding the words on the meaning layer (L628: request
+//: words dropped, a slip folded), lit beside the literal match.
+const graphPhrase = { q: "", ids: null, rest: "", words: null, waiting: false, timer: 0 };
 
 //: The server is asked after a pause, not per key: the plain words are matched
 //: in the page at once, and a phrase that is a filter replaces them when the
@@ -2257,6 +2259,7 @@ function graphReadPhrase(query) {
   if (graphPhrase.q === query) return;
   graphPhrase.q = query;
   graphPhrase.ids = null;
+  graphPhrase.words = null;
   clearTimeout(graphPhrase.timer);
   graphPhrase.waiting = Boolean(query);
   if (!query) return;
@@ -2269,6 +2272,7 @@ function graphReadPhrase(query) {
           graphPhrase.ids = new Set(got.ids);
           graphPhrase.rest = (got.rest || "").toLowerCase();
         }
+        if (got.word_ids) graphPhrase.words = new Set(got.word_ids);
         applyGraphHighlight(true);
       })
       .catch(() => {
@@ -2282,7 +2286,7 @@ function graphReadPhrase(query) {
 //: one match?": several times a note, and once per line end, every frame. Now
 //: it asks a set. The key is the node array, the query and what the server
 //: said about a phrase, so a hover or a pan reuses the last answer untouched.
-const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", ids: null, list: [], at: -1, current: null };
+const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", words: null, ids: null, list: [], at: -1, current: null };
 
 //: A note's lowercase name, kept on the node and made again only when the
 //: preview itself changed (an edit, a rename): the label index.
@@ -2295,10 +2299,11 @@ function graphPreviewLower(node) {
 }
 
 function graphNodeMatches(node, query) {
+  const held = graphPhrase.q === query && Boolean(graphPhrase.words?.has(node.id));
   if (graphPhrase.ids && graphPhrase.q === query) {
-    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || graphPreviewLower(node).includes(graphPhrase.rest));
+    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || held || graphPreviewLower(node).includes(graphPhrase.rest));
   }
-  return !query || graphPreviewLower(node).includes(query);
+  return !query || held || graphPreviewLower(node).includes(query);
 }
 
 //: The notes `query` lights: `list` newest first (the order Enter walks them
@@ -2307,8 +2312,9 @@ function graphNodeMatches(node, query) {
 function graphSearchFor(nodes, query) {
   const g = graphSearch;
   const phrase = graphPhrase.q === query ? graphPhrase.ids : null;
-  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest) return g;
-  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, at: -1, current: null });
+  const words = graphPhrase.q === query ? graphPhrase.words : null;
+  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest && g.words === words) return g;
+  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, words, at: -1, current: null });
   g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query)) : [];
   g.list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")) || a.id - b.id);
   g.ids = query ? new Set(g.list.map((n) => n.id)) : null;

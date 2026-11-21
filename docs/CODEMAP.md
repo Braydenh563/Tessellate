@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11149, test files 2890, tests 22856, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2891, tests 22863, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8538)
 
@@ -5617,152 +5617,152 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyGraphHighlight` | frontend/js/graph.js:2340 |
+| `applyGraphHighlight` | frontend/js/graph.js:2346 |
 | `arcPath` | frontend/js/graph.js:559 |
 | `arcRise` | frontend/js/graph.js:579 |
 | `askLinkDetails` | frontend/js/graph.js:1373 |
-| `clearGraphKeyboardFocus` | frontend/js/graph.js:3766 |
+| `clearGraphKeyboardFocus` | frontend/js/graph.js:3772 |
 | `clearTrace` | frontend/js/graph.js:925 |
-| `closeGraphLinkPeek` | frontend/js/graph.js:2652 |
-| `closeGraphNewNote` | frontend/js/graph.js:3908 |
-| `closeGraphPopup` | frontend/js/graph.js:3746 |
+| `closeGraphLinkPeek` | frontend/js/graph.js:2658 |
+| `closeGraphNewNote` | frontend/js/graph.js:3914 |
+| `closeGraphPopup` | frontend/js/graph.js:3752 |
 | `drawTrace` | frontend/js/graph.js:1300 |
-| `exportGraphPng` | frontend/js/graph.js:3965 |
+| `exportGraphPng` | frontend/js/graph.js:3971 |
 | `fillTracePickers` | frontend/js/graph.js:743 |
 | `fitGraphToView` | frontend/js/graph.js:2158 |
 | `focusGraphNode` | frontend/js/graph.js:1902 |
 | `frameTree` | frontend/js/graph.js:589 |
-| `graphApplySettings` | frontend/js/graph.js:5408 |
-| `graphApplyView` | frontend/js/graph.js:4834 |
-| `graphAutoFitOn` | frontend/js/graph.js:5041 |
+| `graphApplySettings` | frontend/js/graph.js:5414 |
+| `graphApplyView` | frontend/js/graph.js:4840 |
+| `graphAutoFitOn` | frontend/js/graph.js:5047 |
 | `graphCalmScheme` | frontend/js/graph.js:1761 |
-| `graphCaptureSettings` | frontend/js/graph.js:5375 |
-| `graphCaptureView` | frontend/js/graph.js:4776 |
+| `graphCaptureSettings` | frontend/js/graph.js:5381 |
+| `graphCaptureView` | frontend/js/graph.js:4782 |
 | `graphCategoryScale` | frontend/js/graph.js:1771 |
-| `graphCloseOtherMenus` | frontend/js/graph.js:5098 |
+| `graphCloseOtherMenus` | frontend/js/graph.js:5104 |
 | `graphColourMode` | frontend/js/graph.js:1593 |
-| `graphControlsSheetParts` | frontend/js/graph.js:5528 |
+| `graphControlsSheetParts` | frontend/js/graph.js:5534 |
 | `graphEndpoint` | frontend/js/graph.js:1812 |
 | `graphFill` | frontend/js/graph.js:1838 |
 | `graphFitFrame` | frontend/js/graph.js:2135 |
-| `graphGlide` | frontend/js/graph.js:4379 |
-| `graphGlideMs` | frontend/js/graph.js:4311 |
+| `graphGlide` | frontend/js/graph.js:4385 |
+| `graphGlideMs` | frontend/js/graph.js:4317 |
 | `graphGroupColour` | frontend/js/graph.js:1624 |
 | `graphGroupNode` | frontend/js/graph.js:253 |
 | `graphGroups` | frontend/js/graph.js:1609 |
 | `graphLayout` | frontend/js/graph.js:171 |
 | `graphLayoutIsComputed` | frontend/js/graph.js:195 |
-| `graphLinkKind` | frontend/js/graph.js:2659 |
+| `graphLinkKind` | frontend/js/graph.js:2665 |
 | `graphLocalQuery` | frontend/js/graph.js:1803 |
-| `graphMinimapCanShow` | frontend/js/graph.js:4101 |
-| `graphMinimapChildren` | frontend/js/graph.js:4130 |
-| `graphMinimapEdgePairs` | frontend/js/graph.js:4042 |
-| `graphMinimapFinite` | frontend/js/graph.js:4415 |
-| `graphMinimapFrame` | frontend/js/graph.js:4429 |
-| `graphMinimapPaint` | frontend/js/graph.js:4155 |
-| `graphMinimapQueuePaint` | frontend/js/graph.js:4108 |
-| `graphMinimapSet` | frontend/js/graph.js:4148 |
-| `graphMinimapShown` | frontend/js/graph.js:4079 |
+| `graphMinimapCanShow` | frontend/js/graph.js:4107 |
+| `graphMinimapChildren` | frontend/js/graph.js:4136 |
+| `graphMinimapEdgePairs` | frontend/js/graph.js:4048 |
+| `graphMinimapFinite` | frontend/js/graph.js:4421 |
+| `graphMinimapFrame` | frontend/js/graph.js:4435 |
+| `graphMinimapPaint` | frontend/js/graph.js:4161 |
+| `graphMinimapQueuePaint` | frontend/js/graph.js:4114 |
+| `graphMinimapSet` | frontend/js/graph.js:4154 |
+| `graphMinimapShown` | frontend/js/graph.js:4085 |
 | `graphNeighbourInDirection` | frontend/js/graph.js:1881 |
 | `graphNodeById` | frontend/js/graph.js:1874 |
-| `graphNodeLabel` | frontend/js/graph.js:2773 |
-| `graphNodeMatches` | frontend/js/graph.js:2297 |
+| `graphNodeLabel` | frontend/js/graph.js:2779 |
+| `graphNodeMatches` | frontend/js/graph.js:2301 |
 | `graphNodeRadius` | frontend/js/graph.js:139 |
 | `graphNodeScreenPoint` | frontend/js/graph.js:1923 |
 | `graphNodeUnder` | frontend/js/graph.js:1334 |
-| `graphPanToNode` | frontend/js/graph.js:2393 |
-| `graphPanelRoom` | frontend/js/graph.js:3016 |
+| `graphPanToNode` | frontend/js/graph.js:2399 |
+| `graphPanelRoom` | frontend/js/graph.js:3022 |
 | `graphPinSave` | frontend/js/graph.js:58 |
 | `graphPinStep` | frontend/js/graph.js:110 |
 | `graphPinnedRows` | frontend/js/graph.js:88 |
-| `graphPopupActionList` | frontend/js/graph.js:3504 |
-| `graphPopupCap` | frontend/js/graph.js:3124 |
-| `graphPopupDragEnd` | frontend/js/graph.js:3264 |
-| `graphPopupDragMove` | frontend/js/graph.js:3251 |
-| `graphPopupDragStart` | frontend/js/graph.js:3241 |
-| `graphPopupFollowSpot` | frontend/js/graph.js:3196 |
-| `graphPopupIsDirty` | frontend/js/graph.js:3788 |
-| `graphPopupMayLeave` | frontend/js/graph.js:3798 |
-| `graphPopupMediaRefs` | frontend/js/graph.js:2935 |
-| `graphPopupShows` | frontend/js/graph.js:2506 |
-| `graphPreviewLower` | frontend/js/graph.js:2289 |
-| `graphRailOffset` | frontend/js/graph.js:4548 |
-| `graphReadPhrase` | frontend/js/graph.js:2256 |
-| `graphRemoveLink` | frontend/js/graph.js:2607 |
+| `graphPopupActionList` | frontend/js/graph.js:3510 |
+| `graphPopupCap` | frontend/js/graph.js:3130 |
+| `graphPopupDragEnd` | frontend/js/graph.js:3270 |
+| `graphPopupDragMove` | frontend/js/graph.js:3257 |
+| `graphPopupDragStart` | frontend/js/graph.js:3247 |
+| `graphPopupFollowSpot` | frontend/js/graph.js:3202 |
+| `graphPopupIsDirty` | frontend/js/graph.js:3794 |
+| `graphPopupMayLeave` | frontend/js/graph.js:3804 |
+| `graphPopupMediaRefs` | frontend/js/graph.js:2941 |
+| `graphPopupShows` | frontend/js/graph.js:2512 |
+| `graphPreviewLower` | frontend/js/graph.js:2293 |
+| `graphRailOffset` | frontend/js/graph.js:4554 |
+| `graphReadPhrase` | frontend/js/graph.js:2258 |
+| `graphRemoveLink` | frontend/js/graph.js:2613 |
 | `graphRenderGroups` | frontend/js/graph.js:1646 |
-| `graphResetToDefaults` | frontend/js/graph.js:5444 |
+| `graphResetToDefaults` | frontend/js/graph.js:5450 |
 | `graphResolveGroups` | frontend/js/graph.js:1631 |
 | `graphRestorePins` | frontend/js/graph.js:104 |
-| `graphRestoreSwitches` | frontend/js/graph.js:5021 |
-| `graphSaveCurrentView` | frontend/js/graph.js:4824 |
-| `graphSavedViews` | frontend/js/graph.js:4767 |
-| `graphSearchClear` | frontend/js/graph.js:2420 |
-| `graphSearchCountText` | frontend/js/graph.js:2323 |
-| `graphSearchFor` | frontend/js/graph.js:2307 |
-| `graphSearchGo` | frontend/js/graph.js:2402 |
-| `graphSearchKey` | frontend/js/graph.js:2430 |
-| `graphSearchNodes` | frontend/js/graph.js:2318 |
-| `graphSearchRefresh` | frontend/js/graph.js:2329 |
-| `graphSearchStepIndex` | frontend/js/graph.js:2387 |
-| `graphSearchTyped` | frontend/js/graph.js:2366 |
+| `graphRestoreSwitches` | frontend/js/graph.js:5027 |
+| `graphSaveCurrentView` | frontend/js/graph.js:4830 |
+| `graphSavedViews` | frontend/js/graph.js:4773 |
+| `graphSearchClear` | frontend/js/graph.js:2426 |
+| `graphSearchCountText` | frontend/js/graph.js:2329 |
+| `graphSearchFor` | frontend/js/graph.js:2312 |
+| `graphSearchGo` | frontend/js/graph.js:2408 |
+| `graphSearchKey` | frontend/js/graph.js:2436 |
+| `graphSearchNodes` | frontend/js/graph.js:2324 |
+| `graphSearchRefresh` | frontend/js/graph.js:2335 |
+| `graphSearchStepIndex` | frontend/js/graph.js:2393 |
+| `graphSearchTyped` | frontend/js/graph.js:2372 |
 | `graphSetGroups` | frontend/js/graph.js:1618 |
 | `graphSetPin` | frontend/js/graph.js:63 |
-| `graphSettingsEqual` | frontend/js/graph.js:5397 |
-| `graphShowNote` | frontend/js/graph.js:3296 |
+| `graphSettingsEqual` | frontend/js/graph.js:5403 |
+| `graphShowNote` | frontend/js/graph.js:3302 |
 | `graphSizeMode` | frontend/js/graph.js:1556 |
 | `graphSizeRadius` | frontend/js/graph.js:1561 |
 | `graphSyncFocusChip` | frontend/js/graph.js:1718 |
-| `graphSyncSimilarityRow` | frontend/js/graph.js:5275 |
-| `graphTopicFor` | frontend/js/graph.js:3352 |
+| `graphSyncSimilarityRow` | frontend/js/graph.js:5281 |
+| `graphTopicFor` | frontend/js/graph.js:3358 |
 | `graphUnpinAllNow` | frontend/js/graph.js:95 |
-| `graphZoomBy` | frontend/js/graph.js:5112 |
-| `graphZoomRoving` | frontend/js/graph.js:5124 |
+| `graphZoomBy` | frontend/js/graph.js:5118 |
+| `graphZoomRoving` | frontend/js/graph.js:5130 |
 | `hierarchyPath` | frontend/js/graph.js:541 |
-| `initGraphDockHeightToken` | frontend/js/graph.js:4516 |
+| `initGraphDockHeightToken` | frontend/js/graph.js:4522 |
 | `initGraphGroups` | frontend/js/graph.js:1680 |
 | `initGraphKeyboard` | frontend/js/graph.js:1941 |
-| `initGraphMinimap` | frontend/js/graph.js:4596 |
-| `initGraphRailToken` | frontend/js/graph.js:4553 |
-| `initGraphToastClearance` | frontend/js/graph.js:4579 |
-| `initGraphViews` | frontend/js/graph.js:4959 |
+| `initGraphMinimap` | frontend/js/graph.js:4602 |
+| `initGraphRailToken` | frontend/js/graph.js:4559 |
+| `initGraphToastClearance` | frontend/js/graph.js:4585 |
+| `initGraphViews` | frontend/js/graph.js:4965 |
 | `layoutHierarchy` | frontend/js/graph.js:408 |
 | `layoutTreemap` | frontend/js/graph.js:342 |
 | `linkByDrop` | frontend/js/graph.js:1482 |
-| `openGraphControlsSheet` | frontend/js/graph.js:5544 |
-| `openGraphLinkPanel` | frontend/js/graph.js:2788 |
-| `openGraphLinkPeek` | frontend/js/graph.js:2667 |
-| `openGraphNewNote` | frontend/js/graph.js:3860 |
-| `openGraphPopup` | frontend/js/graph.js:2510 |
+| `openGraphControlsSheet` | frontend/js/graph.js:5550 |
+| `openGraphLinkPanel` | frontend/js/graph.js:2794 |
+| `openGraphLinkPeek` | frontend/js/graph.js:2673 |
+| `openGraphNewNote` | frontend/js/graph.js:3866 |
+| `openGraphPopup` | frontend/js/graph.js:2516 |
 | `pickTraceEnd` | frontend/js/graph.js:819 |
-| `placeGraphNewNote` | frontend/js/graph.js:3886 |
-| `placeGraphPopup` | frontend/js/graph.js:3129 |
+| `placeGraphNewNote` | frontend/js/graph.js:3892 |
+| `placeGraphPopup` | frontend/js/graph.js:3135 |
 | `radialRings` | frontend/js/graph.js:304 |
 | `renderGraph` | frontend/js/graph.js:1779 |
-| `renderGraphPopupActions` | frontend/js/graph.js:3690 |
-| `renderGraphPopupHeader` | frontend/js/graph.js:2469 |
-| `renderGraphPopupInfo` | frontend/js/graph.js:3436 |
-| `renderGraphPopupMedia` | frontend/js/graph.js:2956 |
-| `renderGraphPopupProps` | frontend/js/graph.js:3389 |
-| `renderGraphPopupTopic` | frontend/js/graph.js:3327 |
-| `renderGraphViews` | frontend/js/graph.js:4906 |
+| `renderGraphPopupActions` | frontend/js/graph.js:3696 |
+| `renderGraphPopupHeader` | frontend/js/graph.js:2475 |
+| `renderGraphPopupInfo` | frontend/js/graph.js:3442 |
+| `renderGraphPopupMedia` | frontend/js/graph.js:2962 |
+| `renderGraphPopupProps` | frontend/js/graph.js:3395 |
+| `renderGraphPopupTopic` | frontend/js/graph.js:3333 |
+| `renderGraphViews` | frontend/js/graph.js:4912 |
 | `renderTraceReadout` | frontend/js/graph.js:1131 |
 | `renderTraceState` | frontend/js/graph.js:847 |
 | `replyLoops` | frontend/js/graph.js:324 |
 | `runTrace` | frontend/js/graph.js:954 |
-| `saveGraphNewNote` | frontend/js/graph.js:3917 |
-| `saveGraphPopup` | frontend/js/graph.js:3813 |
+| `saveGraphNewNote` | frontend/js/graph.js:3923 |
+| `saveGraphPopup` | frontend/js/graph.js:3819 |
 | `selectTraceRoute` | frontend/js/graph.js:1030 |
 | `setGraphPhysicsEnabled` | frontend/js/graph.js:203 |
 | `setTraceEnd` | frontend/js/graph.js:904 |
 | `setTracePanelOpen` | frontend/js/graph.js:750 |
-| `showTopicInGraph` | frontend/js/graph.js:3371 |
+| `showTopicInGraph` | frontend/js/graph.js:3377 |
 | `showTraceMessage` | frontend/js/graph.js:917 |
 | `storyPrompt` | frontend/js/graph.js:1118 |
-| `syncGraphPopupSave` | frontend/js/graph.js:2596 |
-| `toggleGraphFullscreen` | frontend/js/graph.js:5163 |
+| `syncGraphPopupSave` | frontend/js/graph.js:2602 |
+| `toggleGraphFullscreen` | frontend/js/graph.js:5169 |
 | `traceLabel` | frontend/js/graph.js:840 |
 | `tracePath` | frontend/js/graph.js:1286 |
-| `watchGraphPopupSize` | frontend/js/graph.js:3101 |
+| `watchGraphPopupSize` | frontend/js/graph.js:3107 |
 
 ### frontend/js/harper-worker.js (5)
 
@@ -5985,52 +5985,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityDetailText` | frontend/js/library.js:1566 |
-| `activitySettingValue` | frontend/js/library.js:1550 |
-| `allBookmarkGroups` | frontend/js/library.js:11793 |
-| `analyseMediaRow` | frontend/js/library.js:8740 |
-| `applyLibraryMediaView` | frontend/js/library.js:4111 |
-| `attachBoardTick` | frontend/js/library.js:11397 |
-| `binRoutes` | frontend/js/library.js:1321 |
-| `bookmarkAddress` | frontend/js/library.js:4317 |
-| `bookmarkRow` | frontend/js/library.js:12192 |
-| `bookmarkSiteSection` | frontend/js/library.js:12155 |
-| `bookmarkSort` | frontend/js/library.js:12073 |
-| `buildFileReadingSummary` | frontend/js/library.js:8898 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:11436 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11689 |
-| `bulkDeleteLibraryMedia` | frontend/js/library.js:9065 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11737 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11711 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:11428 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11593 |
-| `clearLibraryMediaSelection` | frontend/js/library.js:9059 |
-| `closeBinnedReader` | frontend/js/library.js:1949 |
-| `closeOcrWorkspace` | frontend/js/library.js:6102 |
-| `contentsBuildSection` | frontend/js/library.js:12929 |
-| `contentsDocRow` | frontend/js/library.js:12842 |
-| `contentsGlyph` | frontend/js/library.js:12777 |
-| `contentsGroupMark` | frontend/js/library.js:12913 |
-| `contentsGroups` | frontend/js/library.js:12616 |
-| `contentsMonthKey` | frontend/js/library.js:12609 |
-| `contentsNoteFacts` | frontend/js/library.js:12804 |
-| `contentsNoteMark` | frontend/js/library.js:12784 |
-| `contentsNoteName` | frontend/js/library.js:12717 |
-| `contentsNoteRow` | frontend/js/library.js:12816 |
-| `contentsOpenDocument` | frontend/js/library.js:12735 |
-| `contentsOrderedKeys` | frontend/js/library.js:12688 |
-| `contentsRenameTopic` | frontend/js/library.js:13005 |
-| `contentsRowBody` | frontend/js/library.js:12764 |
-| `contentsSectionLabel` | frontend/js/library.js:12668 |
-| `contentsSetAll` | frontend/js/library.js:13215 |
-| `contentsTopicNames` | frontend/js/library.js:12677 |
-| `contentsTreeItem` | frontend/js/library.js:12750 |
-| `contentsTreeKeys` | frontend/js/library.js:13230 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12979 |
-| `createLibrarySelectbar` | frontend/js/library.js:11332 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11832 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11648 |
-| `deleteSkillWithUndo` | frontend/js/library.js:2885 |
+| `activityDetailText` | frontend/js/library.js:1568 |
+| `activitySettingValue` | frontend/js/library.js:1552 |
+| `allBookmarkGroups` | frontend/js/library.js:11799 |
+| `analyseMediaRow` | frontend/js/library.js:8746 |
+| `applyLibraryMediaView` | frontend/js/library.js:4117 |
+| `attachBoardTick` | frontend/js/library.js:11403 |
+| `binRoutes` | frontend/js/library.js:1323 |
+| `bookmarkAddress` | frontend/js/library.js:4323 |
+| `bookmarkRow` | frontend/js/library.js:12198 |
+| `bookmarkSiteSection` | frontend/js/library.js:12161 |
+| `bookmarkSort` | frontend/js/library.js:12079 |
+| `buildFileReadingSummary` | frontend/js/library.js:8904 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:11442 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11695 |
+| `bulkDeleteLibraryMedia` | frontend/js/library.js:9071 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11743 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11717 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:11434 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11599 |
+| `clearLibraryMediaSelection` | frontend/js/library.js:9065 |
+| `closeBinnedReader` | frontend/js/library.js:1951 |
+| `closeOcrWorkspace` | frontend/js/library.js:6108 |
+| `contentsBuildSection` | frontend/js/library.js:12935 |
+| `contentsDocRow` | frontend/js/library.js:12848 |
+| `contentsGlyph` | frontend/js/library.js:12783 |
+| `contentsGroupMark` | frontend/js/library.js:12919 |
+| `contentsGroups` | frontend/js/library.js:12622 |
+| `contentsMonthKey` | frontend/js/library.js:12615 |
+| `contentsNoteFacts` | frontend/js/library.js:12810 |
+| `contentsNoteMark` | frontend/js/library.js:12790 |
+| `contentsNoteName` | frontend/js/library.js:12723 |
+| `contentsNoteRow` | frontend/js/library.js:12822 |
+| `contentsOpenDocument` | frontend/js/library.js:12741 |
+| `contentsOrderedKeys` | frontend/js/library.js:12694 |
+| `contentsRenameTopic` | frontend/js/library.js:13011 |
+| `contentsRowBody` | frontend/js/library.js:12770 |
+| `contentsSectionLabel` | frontend/js/library.js:12674 |
+| `contentsSetAll` | frontend/js/library.js:13221 |
+| `contentsTopicNames` | frontend/js/library.js:12683 |
+| `contentsTreeItem` | frontend/js/library.js:12756 |
+| `contentsTreeKeys` | frontend/js/library.js:13236 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12985 |
+| `createLibrarySelectbar` | frontend/js/library.js:11338 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11838 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11654 |
+| `deleteSkillWithUndo` | frontend/js/library.js:2891 |
 | `docSizeText` | frontend/js/library.js:202 |
 | `docTypeFilter` | frontend/js/library.js:173 |
 | `docTypeFilterKey` | frontend/js/library.js:158 |
@@ -6038,224 +6038,224 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTypeHeadingsFit` | frontend/js/library.js:152 |
 | `docTypeItems` | frontend/js/library.js:117 |
 | `docTypeMenu` | frontend/js/library.js:191 |
-| `duplicateSkill` | frontend/js/library.js:2857 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11770 |
-| `ensureLibraryGridStop` | frontend/js/library.js:1811 |
-| `fetchAllBookmarks` | frontend/js/library.js:11550 |
-| `fileMetaLine` | frontend/js/library.js:4298 |
-| `filterBookmarks` | frontend/js/library.js:12088 |
-| `filterLibraryImagesGallery` | frontend/js/library.js:9323 |
-| `flashLibraryItem` | frontend/js/library.js:1995 |
-| `focusLibraryFile` | frontend/js/library.js:4245 |
-| `importLibraryDocuments` | frontend/js/library.js:3483 |
-| `isImageUrl` | frontend/js/library.js:4073 |
-| `keepLibraryScroll` | frontend/js/library.js:1438 |
-| `libraryActions` | frontend/js/library.js:1030 |
-| `libraryBackgroundRun` | frontend/js/library.js:4474 |
-| `libraryCard` | frontend/js/library.js:1584 |
+| `duplicateSkill` | frontend/js/library.js:2863 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11776 |
+| `ensureLibraryGridStop` | frontend/js/library.js:1813 |
+| `fetchAllBookmarks` | frontend/js/library.js:11556 |
+| `fileMetaLine` | frontend/js/library.js:4304 |
+| `filterBookmarks` | frontend/js/library.js:12094 |
+| `filterLibraryImagesGallery` | frontend/js/library.js:9329 |
+| `flashLibraryItem` | frontend/js/library.js:1997 |
+| `focusLibraryFile` | frontend/js/library.js:4251 |
+| `importLibraryDocuments` | frontend/js/library.js:3489 |
+| `isImageUrl` | frontend/js/library.js:4079 |
+| `keepLibraryScroll` | frontend/js/library.js:1440 |
+| `libraryActions` | frontend/js/library.js:1032 |
+| `libraryBackgroundRun` | frontend/js/library.js:4480 |
+| `libraryCard` | frontend/js/library.js:1586 |
 | `libraryColumnCount` | frontend/js/library.js:715 |
-| `libraryCopyActions` | frontend/js/library.js:988 |
+| `libraryCopyActions` | frontend/js/library.js:990 |
 | `libraryCustomCmp` | frontend/js/library.js:623 |
-| `libraryDocSort` | frontend/js/library.js:3459 |
-| `libraryDocsMatchesProperty` | frontend/js/library.js:3380 |
-| `libraryDocsNewMount` | frontend/js/library.js:3558 |
-| `libraryDocsPropertyOptions` | frontend/js/library.js:3365 |
-| `libraryImageOrigin` | frontend/js/library.js:9256 |
-| `libraryImagesFingerprint` | frontend/js/library.js:4016 |
+| `libraryDocSort` | frontend/js/library.js:3465 |
+| `libraryDocsMatchesProperty` | frontend/js/library.js:3386 |
+| `libraryDocsNewMount` | frontend/js/library.js:3564 |
+| `libraryDocsPropertyOptions` | frontend/js/library.js:3371 |
+| `libraryImageOrigin` | frontend/js/library.js:9262 |
+| `libraryImagesFingerprint` | frontend/js/library.js:4022 |
 | `libraryKeyOf` | frontend/js/library.js:439 |
-| `libraryLightboxItems` | frontend/js/library.js:8842 |
-| `libraryMediaBinItem` | frontend/js/library.js:9038 |
-| `libraryMediaRepaint` | frontend/js/library.js:9043 |
-| `libraryMediaSort` | frontend/js/library.js:9213 |
-| `libraryNewDocument` | frontend/js/library.js:3538 |
-| `librarySelectedItems` | frontend/js/library.js:1396 |
+| `libraryLightboxItems` | frontend/js/library.js:8848 |
+| `libraryMediaBinItem` | frontend/js/library.js:9044 |
+| `libraryMediaRepaint` | frontend/js/library.js:9049 |
+| `libraryMediaSort` | frontend/js/library.js:9219 |
+| `libraryNewDocument` | frontend/js/library.js:3544 |
+| `librarySelectedItems` | frontend/js/library.js:1398 |
 | `librarySorted` | frontend/js/library.js:627 |
-| `libraryTitleAndPreview` | frontend/js/library.js:1502 |
+| `libraryTitleAndPreview` | frontend/js/library.js:1504 |
 | `libraryView` | frontend/js/library.js:435 |
-| `linkNoteFromLibrary` | frontend/js/library.js:1339 |
+| `linkNoteFromLibrary` | frontend/js/library.js:1341 |
 | `loadDocTypeTable` | frontend/js/library.js:100 |
 | `loadLibrary` | frontend/js/library.js:455 |
-| `manageBookmarkGroups` | frontend/js/library.js:11839 |
-| `mediaFileIcon` | frontend/js/library.js:4259 |
-| `mediaFileKind` | frontend/js/library.js:4341 |
-| `mediaHasBeenRead` | frontend/js/library.js:8768 |
-| `mediaReading` | frontend/js/library.js:8764 |
-| `mediaReadingBadge` | frontend/js/library.js:8776 |
-| `mediaReadingSummary` | frontend/js/library.js:8805 |
-| `mediaRowDeleteEndpoint` | frontend/js/library.js:9031 |
-| `mediaRowKey` | frontend/js/library.js:9024 |
-| `metaLine` | frontend/js/library.js:4281 |
-| `noteAnyImage` | frontend/js/library.js:13401 |
-| `noteFirstImage` | frontend/js/library.js:13391 |
-| `ocrAllText` | frontend/js/library.js:8042 |
-| `ocrApplyFind` | frontend/js/library.js:7382 |
-| `ocrApplyPageCount` | frontend/js/library.js:5727 |
-| `ocrApplyZoom` | frontend/js/library.js:6630 |
-| `ocrAskRange` | frontend/js/library.js:7931 |
-| `ocrBase` | frontend/js/library.js:8655 |
-| `ocrBinField` | frontend/js/library.js:8715 |
-| `ocrBinPage` | frontend/js/library.js:8710 |
-| `ocrBuildPageRail` | frontend/js/library.js:6027 |
-| `ocrBuildScrollPages` | frontend/js/library.js:6863 |
-| `ocrCan` | frontend/js/library.js:7229 |
-| `ocrCanOpen` | frontend/js/library.js:6245 |
-| `ocrChooseReader` | frontend/js/library.js:7265 |
-| `ocrCleanLoops` | frontend/js/library.js:8723 |
-| `ocrClearRegionSelection` | frontend/js/library.js:5293 |
-| `ocrCloseEdit` | frontend/js/library.js:8036 |
-| `ocrDockApply` | frontend/js/library.js:7725 |
-| `ocrDockFits` | frontend/js/library.js:7701 |
-| `ocrDocumentReading` | frontend/js/library.js:5585 |
-| `ocrEmptyLine` | frontend/js/library.js:7977 |
-| `ocrFetchFileText` | frontend/js/library.js:6252 |
-| `ocrFieldText` | frontend/js/library.js:8670 |
-| `ocrFillPageCaptions` | frontend/js/library.js:5674 |
-| `ocrFindMarkRegion` | frontend/js/library.js:7359 |
-| `ocrFindShowCurrent` | frontend/js/library.js:7409 |
-| `ocrFindStep` | frontend/js/library.js:7438 |
-| `ocrFitDock` | frontend/js/library.js:7735 |
-| `ocrFitLiveText` | frontend/js/library.js:4788 |
-| `ocrFitStage` | frontend/js/library.js:6526 |
-| `ocrIsLocal` | frontend/js/library.js:7222 |
-| `ocrIsPdf` | frontend/js/library.js:4407 |
-| `ocrIsTextFile` | frontend/js/library.js:6238 |
-| `ocrKeepCentre` | frontend/js/library.js:6715 |
-| `ocrKeepNodes` | frontend/js/library.js:4714 |
-| `ocrKnownPages` | frontend/js/library.js:5697 |
-| `ocrLiveTextSelection` | frontend/js/library.js:4809 |
-| `ocrLoadPage` | frontend/js/library.js:5741 |
-| `ocrLoadReaders` | frontend/js/library.js:6997 |
-| `ocrLoadReadersNow` | frontend/js/library.js:7002 |
-| `ocrLoadSiblings` | frontend/js/library.js:6205 |
-| `ocrLocalName` | frontend/js/library.js:7238 |
-| `ocrMoveOverlays` | frontend/js/library.js:5285 |
-| `ocrNaturalScale` | frontend/js/library.js:6626 |
-| `ocrNoRendererLink` | frontend/js/library.js:6017 |
-| `ocrOfferBinUndo` | frontend/js/library.js:8694 |
-| `ocrOfferTextUndo` | frontend/js/library.js:8688 |
-| `ocrOpenEdit` | frontend/js/library.js:8026 |
-| `ocrOpenReaderSettings` | frontend/js/library.js:7861 |
-| `ocrOpenSibling` | frontend/js/library.js:6399 |
-| `ocrPageImageUrl` | frontend/js/library.js:4433 |
-| `ocrPaintBoxes` | frontend/js/library.js:4748 |
-| `ocrPaintCaption` | frontend/js/library.js:5651 |
-| `ocrPaintEmpty` | frontend/js/library.js:7950 |
-| `ocrPaintLiveText` | frontend/js/library.js:4658 |
-| `ocrPaintRegionRect` | frontend/js/library.js:5303 |
-| `ocrPlaceRegionPopover` | frontend/js/library.js:5320 |
-| `ocrRailActive` | frontend/js/library.js:5715 |
-| `ocrRailKey` | frontend/js/library.js:6084 |
-| `ocrReadImage` | frontend/js/library.js:7450 |
-| `ocrReadInFlight` | frontend/js/library.js:4516 |
-| `ocrReadMenuItems` | frontend/js/library.js:7876 |
-| `ocrReadRange` | frontend/js/library.js:7627 |
-| `ocrReader` | frontend/js/library.js:7215 |
-| `ocrReaderName` | frontend/js/library.js:7253 |
-| `ocrReaderNameFor` | frontend/js/library.js:7242 |
-| `ocrRefusedPress` | frontend/js/library.js:7204 |
-| `ocrRegionCrop` | frontend/js/library.js:5384 |
-| `ocrRegionPage` | frontend/js/library.js:7296 |
-| `ocrRegionPoint` | frontend/js/library.js:5368 |
-| `ocrRegionsUrl` | frontend/js/library.js:4411 |
-| `ocrRenderOtherReadings` | frontend/js/library.js:4567 |
-| `ocrRenderRail` | frontend/js/library.js:6350 |
-| `ocrRenderRailSwitch` | frontend/js/library.js:6266 |
-| `ocrRenderRegions` | frontend/js/library.js:4830 |
-| `ocrRepaintReading` | frontend/js/library.js:8659 |
-| `ocrRevealRegionsForPage` | frontend/js/library.js:7324 |
-| `ocrRoveKeys` | frontend/js/library.js:7997 |
-| `ocrRoveSync` | frontend/js/library.js:7988 |
-| `ocrRunRegion` | frontend/js/library.js:5482 |
-| `ocrScheduleFitDock` | frontend/js/library.js:7781 |
-| `ocrScrollToPage` | frontend/js/library.js:6925 |
-| `ocrSelectImage` | frontend/js/library.js:5275 |
-| `ocrSelectRegion` | frontend/js/library.js:4543 |
-| `ocrSelectStage` | frontend/js/library.js:5271 |
-| `ocrSetBox` | frontend/js/library.js:4773 |
-| `ocrSetLiveWord` | frontend/js/library.js:4694 |
-| `ocrSetViewMode` | frontend/js/library.js:6800 |
-| `ocrSetZoom` | frontend/js/library.js:7866 |
-| `ocrShowReadPages` | frontend/js/library.js:7590 |
-| `ocrShowRegionResult` | frontend/js/library.js:5405 |
-| `ocrShownZoom` | frontend/js/library.js:6668 |
-| `ocrSizeStage` | frontend/js/library.js:6543 |
-| `ocrStageRead` | frontend/js/library.js:7926 |
-| `ocrStepPage` | frontend/js/library.js:6965 |
-| `ocrStepZoom` | frontend/js/library.js:6698 |
-| `ocrStopRead` | frontend/js/library.js:4523 |
-| `ocrStoredPageReads` | frontend/js/library.js:5554 |
-| `ocrStoredViewMode` | frontend/js/library.js:6775 |
-| `ocrSyncCanRead` | frontend/js/library.js:7179 |
-| `ocrSyncMoreMenu` | frontend/js/library.js:7522 |
-| `ocrSyncPager` | frontend/js/library.js:6939 |
-| `ocrSyncReadMenu` | frontend/js/library.js:7897 |
-| `ocrSyncReaderButton` | frontend/js/library.js:7131 |
-| `ocrSyncStopButton` | frontend/js/library.js:4533 |
-| `ocrSyncToolsMenu` | frontend/js/library.js:7808 |
-| `ocrSyncViewButtons` | frontend/js/library.js:6789 |
-| `ocrSyncZoomButtons` | frontend/js/library.js:6729 |
-| `ocrTearDownScroll` | frontend/js/library.js:6845 |
-| `ocrTextWriter` | frontend/js/library.js:8679 |
-| `ocrVisibleStages` | frontend/js/library.js:6533 |
-| `ocrWatchDock` | frontend/js/library.js:7794 |
-| `ocrWatchPane` | frontend/js/library.js:6592 |
-| `ocrWatchScroll` | frontend/js/library.js:6900 |
-| `ocrWireRegionJump` | frontend/js/library.js:7304 |
-| `ocrZoomAbout` | frontend/js/library.js:6682 |
-| `openBinnedNote` | frontend/js/library.js:1920 |
-| `openLibraryCreatePicker` | frontend/js/library.js:2493 |
-| `openLibraryItem` | frontend/js/library.js:1834 |
-| `openOcrWorkspace` | frontend/js/library.js:6432 |
-| `openPageReader` | frontend/js/library.js:6148 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11701 |
-| `refreshLibraryPhrase` | frontend/js/library.js:2074 |
+| `manageBookmarkGroups` | frontend/js/library.js:11845 |
+| `mediaFileIcon` | frontend/js/library.js:4265 |
+| `mediaFileKind` | frontend/js/library.js:4347 |
+| `mediaHasBeenRead` | frontend/js/library.js:8774 |
+| `mediaReading` | frontend/js/library.js:8770 |
+| `mediaReadingBadge` | frontend/js/library.js:8782 |
+| `mediaReadingSummary` | frontend/js/library.js:8811 |
+| `mediaRowDeleteEndpoint` | frontend/js/library.js:9037 |
+| `mediaRowKey` | frontend/js/library.js:9030 |
+| `metaLine` | frontend/js/library.js:4287 |
+| `noteAnyImage` | frontend/js/library.js:13407 |
+| `noteFirstImage` | frontend/js/library.js:13397 |
+| `ocrAllText` | frontend/js/library.js:8048 |
+| `ocrApplyFind` | frontend/js/library.js:7388 |
+| `ocrApplyPageCount` | frontend/js/library.js:5733 |
+| `ocrApplyZoom` | frontend/js/library.js:6636 |
+| `ocrAskRange` | frontend/js/library.js:7937 |
+| `ocrBase` | frontend/js/library.js:8661 |
+| `ocrBinField` | frontend/js/library.js:8721 |
+| `ocrBinPage` | frontend/js/library.js:8716 |
+| `ocrBuildPageRail` | frontend/js/library.js:6033 |
+| `ocrBuildScrollPages` | frontend/js/library.js:6869 |
+| `ocrCan` | frontend/js/library.js:7235 |
+| `ocrCanOpen` | frontend/js/library.js:6251 |
+| `ocrChooseReader` | frontend/js/library.js:7271 |
+| `ocrCleanLoops` | frontend/js/library.js:8729 |
+| `ocrClearRegionSelection` | frontend/js/library.js:5299 |
+| `ocrCloseEdit` | frontend/js/library.js:8042 |
+| `ocrDockApply` | frontend/js/library.js:7731 |
+| `ocrDockFits` | frontend/js/library.js:7707 |
+| `ocrDocumentReading` | frontend/js/library.js:5591 |
+| `ocrEmptyLine` | frontend/js/library.js:7983 |
+| `ocrFetchFileText` | frontend/js/library.js:6258 |
+| `ocrFieldText` | frontend/js/library.js:8676 |
+| `ocrFillPageCaptions` | frontend/js/library.js:5680 |
+| `ocrFindMarkRegion` | frontend/js/library.js:7365 |
+| `ocrFindShowCurrent` | frontend/js/library.js:7415 |
+| `ocrFindStep` | frontend/js/library.js:7444 |
+| `ocrFitDock` | frontend/js/library.js:7741 |
+| `ocrFitLiveText` | frontend/js/library.js:4794 |
+| `ocrFitStage` | frontend/js/library.js:6532 |
+| `ocrIsLocal` | frontend/js/library.js:7228 |
+| `ocrIsPdf` | frontend/js/library.js:4413 |
+| `ocrIsTextFile` | frontend/js/library.js:6244 |
+| `ocrKeepCentre` | frontend/js/library.js:6721 |
+| `ocrKeepNodes` | frontend/js/library.js:4720 |
+| `ocrKnownPages` | frontend/js/library.js:5703 |
+| `ocrLiveTextSelection` | frontend/js/library.js:4815 |
+| `ocrLoadPage` | frontend/js/library.js:5747 |
+| `ocrLoadReaders` | frontend/js/library.js:7003 |
+| `ocrLoadReadersNow` | frontend/js/library.js:7008 |
+| `ocrLoadSiblings` | frontend/js/library.js:6211 |
+| `ocrLocalName` | frontend/js/library.js:7244 |
+| `ocrMoveOverlays` | frontend/js/library.js:5291 |
+| `ocrNaturalScale` | frontend/js/library.js:6632 |
+| `ocrNoRendererLink` | frontend/js/library.js:6023 |
+| `ocrOfferBinUndo` | frontend/js/library.js:8700 |
+| `ocrOfferTextUndo` | frontend/js/library.js:8694 |
+| `ocrOpenEdit` | frontend/js/library.js:8032 |
+| `ocrOpenReaderSettings` | frontend/js/library.js:7867 |
+| `ocrOpenSibling` | frontend/js/library.js:6405 |
+| `ocrPageImageUrl` | frontend/js/library.js:4439 |
+| `ocrPaintBoxes` | frontend/js/library.js:4754 |
+| `ocrPaintCaption` | frontend/js/library.js:5657 |
+| `ocrPaintEmpty` | frontend/js/library.js:7956 |
+| `ocrPaintLiveText` | frontend/js/library.js:4664 |
+| `ocrPaintRegionRect` | frontend/js/library.js:5309 |
+| `ocrPlaceRegionPopover` | frontend/js/library.js:5326 |
+| `ocrRailActive` | frontend/js/library.js:5721 |
+| `ocrRailKey` | frontend/js/library.js:6090 |
+| `ocrReadImage` | frontend/js/library.js:7456 |
+| `ocrReadInFlight` | frontend/js/library.js:4522 |
+| `ocrReadMenuItems` | frontend/js/library.js:7882 |
+| `ocrReadRange` | frontend/js/library.js:7633 |
+| `ocrReader` | frontend/js/library.js:7221 |
+| `ocrReaderName` | frontend/js/library.js:7259 |
+| `ocrReaderNameFor` | frontend/js/library.js:7248 |
+| `ocrRefusedPress` | frontend/js/library.js:7210 |
+| `ocrRegionCrop` | frontend/js/library.js:5390 |
+| `ocrRegionPage` | frontend/js/library.js:7302 |
+| `ocrRegionPoint` | frontend/js/library.js:5374 |
+| `ocrRegionsUrl` | frontend/js/library.js:4417 |
+| `ocrRenderOtherReadings` | frontend/js/library.js:4573 |
+| `ocrRenderRail` | frontend/js/library.js:6356 |
+| `ocrRenderRailSwitch` | frontend/js/library.js:6272 |
+| `ocrRenderRegions` | frontend/js/library.js:4836 |
+| `ocrRepaintReading` | frontend/js/library.js:8665 |
+| `ocrRevealRegionsForPage` | frontend/js/library.js:7330 |
+| `ocrRoveKeys` | frontend/js/library.js:8003 |
+| `ocrRoveSync` | frontend/js/library.js:7994 |
+| `ocrRunRegion` | frontend/js/library.js:5488 |
+| `ocrScheduleFitDock` | frontend/js/library.js:7787 |
+| `ocrScrollToPage` | frontend/js/library.js:6931 |
+| `ocrSelectImage` | frontend/js/library.js:5281 |
+| `ocrSelectRegion` | frontend/js/library.js:4549 |
+| `ocrSelectStage` | frontend/js/library.js:5277 |
+| `ocrSetBox` | frontend/js/library.js:4779 |
+| `ocrSetLiveWord` | frontend/js/library.js:4700 |
+| `ocrSetViewMode` | frontend/js/library.js:6806 |
+| `ocrSetZoom` | frontend/js/library.js:7872 |
+| `ocrShowReadPages` | frontend/js/library.js:7596 |
+| `ocrShowRegionResult` | frontend/js/library.js:5411 |
+| `ocrShownZoom` | frontend/js/library.js:6674 |
+| `ocrSizeStage` | frontend/js/library.js:6549 |
+| `ocrStageRead` | frontend/js/library.js:7932 |
+| `ocrStepPage` | frontend/js/library.js:6971 |
+| `ocrStepZoom` | frontend/js/library.js:6704 |
+| `ocrStopRead` | frontend/js/library.js:4529 |
+| `ocrStoredPageReads` | frontend/js/library.js:5560 |
+| `ocrStoredViewMode` | frontend/js/library.js:6781 |
+| `ocrSyncCanRead` | frontend/js/library.js:7185 |
+| `ocrSyncMoreMenu` | frontend/js/library.js:7528 |
+| `ocrSyncPager` | frontend/js/library.js:6945 |
+| `ocrSyncReadMenu` | frontend/js/library.js:7903 |
+| `ocrSyncReaderButton` | frontend/js/library.js:7137 |
+| `ocrSyncStopButton` | frontend/js/library.js:4539 |
+| `ocrSyncToolsMenu` | frontend/js/library.js:7814 |
+| `ocrSyncViewButtons` | frontend/js/library.js:6795 |
+| `ocrSyncZoomButtons` | frontend/js/library.js:6735 |
+| `ocrTearDownScroll` | frontend/js/library.js:6851 |
+| `ocrTextWriter` | frontend/js/library.js:8685 |
+| `ocrVisibleStages` | frontend/js/library.js:6539 |
+| `ocrWatchDock` | frontend/js/library.js:7800 |
+| `ocrWatchPane` | frontend/js/library.js:6598 |
+| `ocrWatchScroll` | frontend/js/library.js:6906 |
+| `ocrWireRegionJump` | frontend/js/library.js:7310 |
+| `ocrZoomAbout` | frontend/js/library.js:6688 |
+| `openBinnedNote` | frontend/js/library.js:1922 |
+| `openLibraryCreatePicker` | frontend/js/library.js:2499 |
+| `openLibraryItem` | frontend/js/library.js:1836 |
+| `openOcrWorkspace` | frontend/js/library.js:6438 |
+| `openPageReader` | frontend/js/library.js:6154 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11707 |
+| `refreshLibraryPhrase` | frontend/js/library.js:2078 |
 | `refreshLibrarySemantic` | frontend/js/library.js:674 |
-| `refreshLibraryServerSearch` | frontend/js/library.js:2048 |
-| `remindAbout` | frontend/js/library.js:13356 |
-| `renameBookmarkGroup` | frontend/js/library.js:11805 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11943 |
-| `renderBookmarks` | frontend/js/library.js:11561 |
-| `renderContents` | frontend/js/library.js:13059 |
+| `refreshLibraryServerSearch` | frontend/js/library.js:2050 |
+| `remindAbout` | frontend/js/library.js:13362 |
+| `renameBookmarkGroup` | frontend/js/library.js:11811 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11949 |
+| `renderBookmarks` | frontend/js/library.js:11567 |
+| `renderContents` | frontend/js/library.js:13065 |
 | `renderIncrementally` | frontend/js/library.js:245 |
 | `renderLibrary` | frontend/js/library.js:748 |
-| `renderLibraryContextBars` | frontend/js/library.js:1358 |
-| `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3397 |
-| `renderLibraryDocuments` | frontend/js/library.js:3818 |
+| `renderLibraryContextBars` | frontend/js/library.js:1360 |
+| `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3403 |
+| `renderLibraryDocuments` | frontend/js/library.js:3824 |
 | `renderLibraryFilters` | frontend/js/library.js:545 |
-| `renderLibraryImageOrigins` | frontend/js/library.js:9274 |
-| `renderLibraryImagesGallery` | frontend/js/library.js:9102 |
+| `renderLibraryImageOrigins` | frontend/js/library.js:9280 |
+| `renderLibraryImagesGallery` | frontend/js/library.js:9108 |
 | `renderLibraryOverview` | frontend/js/library.js:523 |
 | `renderLibraryView` | frontend/js/library.js:443 |
-| `renderSkillCards` | frontend/js/library.js:2932 |
-| `renderSkillLogs` | frontend/js/library.js:3188 |
-| `renderSkillsDashboard` | frontend/js/library.js:3036 |
-| `reopenOcrWorkspace` | frontend/js/library.js:6121 |
-| `runLibrarySearch` | frontend/js/library.js:2087 |
-| `seedLibraryDocsAll` | frontend/js/library.js:3527 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11781 |
-| `setLibraryCardStop` | frontend/js/library.js:1807 |
-| `setLibraryMediaKind` | frontend/js/library.js:4183 |
-| `setLibraryMediaView` | frontend/js/library.js:4141 |
-| `showDetailDialog` | frontend/js/library.js:13307 |
-| `shownTicksIn` | frontend/js/library.js:11301 |
-| `skillCard` | frontend/js/library.js:2648 |
-| `skillColumnCount` | frontend/js/library.js:2911 |
-| `skillLastRunIndex` | frontend/js/library.js:2637 |
-| `skillSort` | frontend/js/library.js:2844 |
-| `startLibraryImagesPoll` | frontend/js/library.js:4046 |
-| `stopLibraryImagesPoll` | frontend/js/library.js:4059 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:11383 |
-| `syncLibraryDocsSelectbar` | frontend/js/library.js:3934 |
-| `syncLibraryFilterButton` | frontend/js/library.js:2124 |
-| `syncLibraryMediaSelectbar` | frontend/js/library.js:9048 |
-| `syncSelectAllLabels` | frontend/js/library.js:11305 |
-| `syncSelectbarCount` | frontend/js/library.js:11278 |
-| `toggleLibrarySelection` | frontend/js/library.js:1400 |
-| `trackOcrRead` | frontend/js/library.js:4485 |
-| `updateLibraryCreateButton` | frontend/js/library.js:2586 |
+| `renderSkillCards` | frontend/js/library.js:2938 |
+| `renderSkillLogs` | frontend/js/library.js:3194 |
+| `renderSkillsDashboard` | frontend/js/library.js:3042 |
+| `reopenOcrWorkspace` | frontend/js/library.js:6127 |
+| `runLibrarySearch` | frontend/js/library.js:2093 |
+| `seedLibraryDocsAll` | frontend/js/library.js:3533 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11787 |
+| `setLibraryCardStop` | frontend/js/library.js:1809 |
+| `setLibraryMediaKind` | frontend/js/library.js:4189 |
+| `setLibraryMediaView` | frontend/js/library.js:4147 |
+| `showDetailDialog` | frontend/js/library.js:13313 |
+| `shownTicksIn` | frontend/js/library.js:11307 |
+| `skillCard` | frontend/js/library.js:2654 |
+| `skillColumnCount` | frontend/js/library.js:2917 |
+| `skillLastRunIndex` | frontend/js/library.js:2643 |
+| `skillSort` | frontend/js/library.js:2850 |
+| `startLibraryImagesPoll` | frontend/js/library.js:4052 |
+| `stopLibraryImagesPoll` | frontend/js/library.js:4065 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:11389 |
+| `syncLibraryDocsSelectbar` | frontend/js/library.js:3940 |
+| `syncLibraryFilterButton` | frontend/js/library.js:2130 |
+| `syncLibraryMediaSelectbar` | frontend/js/library.js:9054 |
+| `syncSelectAllLabels` | frontend/js/library.js:11311 |
+| `syncSelectbarCount` | frontend/js/library.js:11284 |
+| `toggleLibrarySelection` | frontend/js/library.js:1402 |
+| `trackOcrRead` | frontend/js/library.js:4491 |
+| `updateLibraryCreateButton` | frontend/js/library.js:2592 |
 | `watchLibraryColumns` | frontend/js/library.js:734 |
-| `watchSkillColumns` | frontend/js/library.js:2922 |
-| `withLibraryCopyActions` | frontend/js/library.js:1008 |
+| `watchSkillColumns` | frontend/js/library.js:2928 |
+| `withLibraryCopyActions` | frontend/js/library.js:1010 |
 
 ### frontend/js/lightbox-actions.js (3)
 
@@ -13927,13 +13927,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/query` | GET | `query_entries` | src/tessellate/api/routes_entries.py:1754 |
 | `/read` | GET | `read_text` | src/tessellate/api/routes_read.py:36 |
 | `/read` | POST | `read` | src/tessellate/api/routes_editor.py:34 |
-| `/read/acts` | GET | `act_rows` | src/tessellate/api/routes_read.py:158 |
+| `/read/acts` | GET | `act_rows` | src/tessellate/api/routes_read.py:163 |
 | `/read/board` | GET | `board_act` | src/tessellate/api/routes_read.py:83 |
 | `/read/dates` | POST | `date_chips` | src/tessellate/api/routes_read.py:98 |
 | `/read/filter` | GET | `phrase_filter` | src/tessellate/api/routes_read.py:106 |
-| `/read/near` | POST | `near_rows` | src/tessellate/api/routes_read.py:139 |
+| `/read/near` | POST | `near_rows` | src/tessellate/api/routes_read.py:144 |
 | `/read/offers` | POST | `note_offers` | src/tessellate/api/routes_read.py:71 |
-| `/read/words` | GET | `setting_words` | src/tessellate/api/routes_read.py:124 |
+| `/read/words` | GET | `setting_words` | src/tessellate/api/routes_read.py:129 |
 | `/reading-bin/{bin_id}/purge` | DELETE | `purge_binned_reading` | src/tessellate/api/routes_reading_bin.py:87 |
 | `/reading-bin/{bin_id}/restore` | POST | `restore_binned_reading` | src/tessellate/api/routes_reading_bin.py:69 |
 | `/receipt` | GET | `receipt` | src/tessellate/api/routes_privacy.py:103 |
@@ -14237,7 +14237,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11149)
+## Backend modules (11150)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17933,7 +17933,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `calibrated` | src/tessellate/ai/filing_certainty.py:61 |
 | `shown` | src/tessellate/ai/filing_certainty.py:81 |
 
-### src/tessellate/ai/filters.py (16)
+### src/tessellate/ai/filters.py (17)
 
 | Name | File:line |
 |---|---|
@@ -17950,9 +17950,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_where_labelled` | src/tessellate/ai/filters.py:187 |
 | `_where_links` | src/tessellate/ai/filters.py:145 |
 | `_window` | src/tessellate/ai/filters.py:61 |
+| `by_words` | src/tessellate/ai/filters.py:238 |
 | `read` | src/tessellate/ai/filters.py:127 |
 | `resolve` | src/tessellate/ai/filters.py:215 |
-| `setting_words` | src/tessellate/ai/filters.py:238 |
+| `setting_words` | src/tessellate/ai/filters.py:271 |
 
 ### src/tessellate/ai/find_it.py (17)
 
@@ -23306,17 +23307,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `DatesBody` | src/tessellate/api/routes_read.py:92 |
-| `NearRequest` | src/tessellate/api/routes_read.py:134 |
+| `NearRequest` | src/tessellate/api/routes_read.py:139 |
 | `OffersBody` | src/tessellate/api/routes_read.py:58 |
 | `_clock` | src/tessellate/api/routes_read.py:27 |
-| `act_rows` | src/tessellate/api/routes_read.py:159 |
+| `act_rows` | src/tessellate/api/routes_read.py:164 |
 | `board_act` | src/tessellate/api/routes_read.py:84 |
 | `date_chips` | src/tessellate/api/routes_read.py:99 |
-| `near_rows` | src/tessellate/api/routes_read.py:140 |
+| `near_rows` | src/tessellate/api/routes_read.py:145 |
 | `note_offers` | src/tessellate/api/routes_read.py:72 |
 | `phrase_filter` | src/tessellate/api/routes_read.py:107 |
 | `read_text` | src/tessellate/api/routes_read.py:37 |
-| `setting_words` | src/tessellate/api/routes_read.py:125 |
+| `setting_words` | src/tessellate/api/routes_read.py:130 |
 
 ### src/tessellate/api/routes_reading_bin.py (7)
 
@@ -28500,7 +28501,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22856)
+## Tests (22863)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29675,6 +29676,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_filing_reasons_1031.py | 3 |
 | tests/test_filing_sketches_only.py | 2 |
 | tests/test_filing_standin_watch.py | 1 |
+| tests/test_filter_meaning_l628.py | 7 |
 | tests/test_final_pass_bugs.py | 5 |
 | tests/test_find_it.py | 8 |
 | tests/test_find_repaint_1526.py | 6 |
@@ -31812,14 +31814,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:602 |
+| Needs hardware | docs/roadmap/LEDGER.md:601 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:595 |
+| Owner calls | docs/roadmap/LEDGER.md:594 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31999,7 +32001,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:732 |
+| Plan session briefs | docs/roadmap/LEDGER.md:731 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32053,25 +32055,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:748 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:832 |
+| chat | docs/roadmap/LEDGER.md:747 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:831 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:772 |
-| general | docs/roadmap/LEDGER.md:555 |
+| documents | docs/roadmap/LEDGER.md:771 |
+| general | docs/roadmap/LEDGER.md:554 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:736 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:844 |
+| graph | docs/roadmap/LEDGER.md:735 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:843 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:784 |
+| mindmap | docs/roadmap/LEDGER.md:783 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:808 |
+| timeline | docs/roadmap/LEDGER.md:807 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:796 |
+| ui-modernisation | docs/roadmap/LEDGER.md:795 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:760 |
+| whiteboard | docs/roadmap/LEDGER.md:759 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:820 |
+| world-class | docs/roadmap/LEDGER.md:819 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |

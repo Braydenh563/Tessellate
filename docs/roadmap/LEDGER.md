@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 91 | 10 | 0 | 0 | 101 |
+| world-class | 0 | 90 | 10 | 0 | 0 | 100 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 481 | 81 | 2 | 111 | 934 |
+| all | 372 | 480 | 81 | 2 | 111 | 933 |
 
 ## graph
 
@@ -486,7 +486,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L623** `world-class` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
 - [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
-- [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `world-class` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
 - [ ] **L634** `world-class` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done

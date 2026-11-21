@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, time, timedelta
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import meaning, recognise
@@ -227,6 +227,39 @@ def resolve(session: Session, filters: list[dict], now: datetime) -> list[int]:
             query = narrow(session, query, item)
     return list(session.scalars(query.order_by(Entry.id.desc()).limit(2000)))
 
+
+
+#: A note search's own request words, beyond the Settings ones: "notes about
+#: the harbor" names the harbor. Kept here, not in `meaning.FILLER`, because
+#: "about" is a Settings pane.
+NOTE_FILLER = meaning.FILLER | frozenset({"about", "regarding", "called", "named", "titled"})
+
+
+def by_words(session: Session, said: str, among: list[int] | None = None) -> list[int]:
+    """The notes that hold every word `said` names (L628), newest first.
+
+    The meaning layer's rules for a notebook: request words dropped, each word
+    held at a word start with an ending (`meaning.holds`), and a slip read as
+    a word the notes themselves hold (`meaning.fold_typo` against their words).
+    The Settings synonym groups are left out: in a note, "dark" is a word, not
+    the theme. Visibility is `resolve`'s; `among` narrows to a filter's notes.
+    """
+    from tessellate.core.database import Entry
+
+    named = [w for w in meaning.words_of(said) if w not in NOTE_FILLER]
+    if not named:
+        return []
+    query = select(Entry.id, func.substr(Entry.content, 1, 2000)).where(
+        Entry.is_deleted == False, Entry.is_draft == False, Entry.is_private == False, Entry.is_board == False  # noqa: E712
+    )
+    if among is not None:
+        query = query.where(Entry.id.in_(among))
+    rows = session.execute(query.order_by(Entry.id.desc()).limit(2000)).all()
+    vocab: set[str] = set()
+    for _, text in rows:
+        vocab.update(meaning.words_of(text or ""))
+    things = [[word if word in vocab else (meaning.fold_typo(word, vocab) or word)] for word in named]
+    return [note_id for note_id, text in rows if meaning.holds(things, text or "")]
 
 #: Words a person says for one thing, each group searched as one: what a
 #: setting does, not only what its label says. One table for every search box
