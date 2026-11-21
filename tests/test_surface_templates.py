@@ -103,6 +103,19 @@ SURFACES = {
         ("openMeetingRecorder",),
         ("meeting-card", "meeting-close", "meeting-title", "meeting-transcript", "meeting-done"),
     ),
+    #: L-world-class-530: the hidden dialogs built on first open.
+    "finder": (
+        "finder-overlay",
+        ("search.js", "wiring.js", "settings-wiring.js", "router-overlays.js", "reveal-targets.js", "spaces-find.js"),
+        ("openFinder",),
+        ("finder-input", "finder-results", "finder-summary", "finder-sort", "finder-save", "finder-close", "finder-filters"),
+    ),
+    "agentMonitor": (
+        "agent-monitor",
+        ("agent-activity.js", "dashboard.js", "status.js", "phone-shell.js"),
+        ("setAgentMonitorVisible",),
+        ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-list"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),

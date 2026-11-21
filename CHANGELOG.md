@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Perf (L-world-class-530): Find anything's card and the Activity panel's body are `data-surface` scripts built on first open (`openFinder`, `setAgentMonitorVisible`; a run landing in the panel builds it too, log lines before that are held). Elements in index.html's live tree 1,009 to 897; after sign-in on the dashboard 2,465 to 2,348.
 - MCP links: Revoke and Make a link now carry Undo; a revoked token's row is kept an hour so Undo brings the same token back (L687, no undo exemption).
 - A History row from the fading-scores route says you started it, and a lint keeps every route run named with its origin.
 - Two ratchets after the merges: Help topics released on leaving Help are marked by an empty list, not a hand-set aria-busy (the spinner recipe), and the size caps for composer_tables.py and question_noise.py fall to their new sizes.

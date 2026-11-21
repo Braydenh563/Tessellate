@@ -655,6 +655,7 @@ function finderMove(step) {
 //: asks for documents); a caller cannot set `finderKind` itself before this
 //: file has loaded.
 function openFinder(prefill = "", opts = {}) {
+  surfaceBuild("finder");
   const overlay = finderOverlay();
   if (!overlay) return;
   if (typeof opts.kind === "string") finderKind = opts.kind;
@@ -701,30 +702,34 @@ function syncFinderStar() {
 
 function wireFinder() {
   const overlay = finderOverlay();
-  const input = document.getElementById("finder-input");
-  if (!overlay || !input) return;
-  input.addEventListener("input", () => {
-    finderQuery = input.value;
-    syncFinderStar();
-    clearTimeout(finderState.timer);
-    //: Long enough that a typist does not fire a query per letter, short
-    //: enough that the list feels attached to the keyboard. The abort is the
-    //: `finderState.run` counter rather than an AbortController because the route
-    //: is cheap and a cancelled fetch mid-index-read is not.
-    finderState.timer = setTimeout(finderSearch, 180);
+  if (!overlay) return;
+  //: The box's own controls are wired when its surface is built (the first open, L-world-class-530);
+  //: the overlay's backdrop and Escape are live from load.
+  onSurface("finder", () => {
+    const input = document.getElementById("finder-input");
+    input.addEventListener("input", () => {
+      finderQuery = input.value;
+      syncFinderStar();
+      clearTimeout(finderState.timer);
+      //: Long enough that a typist does not fire a query per letter, short
+      //: enough that the list feels attached to the keyboard. The abort is the
+      //: `finderState.run` counter rather than an AbortController because the route
+      //: is cheap and a cancelled fetch mid-index-read is not.
+      finderState.timer = setTimeout(finderSearch, 180);
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") { event.preventDefault(); finderMove(1); }
+      else if (event.key === "ArrowUp") { event.preventDefault(); finderMove(-1); }
+      else if (event.key === "Enter") {
+        const rows = [...document.querySelectorAll("#finder-results .finder-row")];
+        const row = rows[finderState.active] || rows[0];
+        if (row) { event.preventDefault(); row.click(); }
+      }
+    });
+    document.getElementById("finder-sort")?.addEventListener("change", finderRender);
+    document.getElementById("finder-save")?.addEventListener("click", saveFinderSearch);
+    document.getElementById("finder-close")?.addEventListener("click", closeFinder);
   });
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowDown") { event.preventDefault(); finderMove(1); }
-    else if (event.key === "ArrowUp") { event.preventDefault(); finderMove(-1); }
-    else if (event.key === "Enter") {
-      const rows = [...document.querySelectorAll("#finder-results .finder-row")];
-      const row = rows[finderState.active] || rows[0];
-      if (row) { event.preventDefault(); row.click(); }
-    }
-  });
-  document.getElementById("finder-sort")?.addEventListener("change", finderRender);
-  document.getElementById("finder-save")?.addEventListener("click", saveFinderSearch);
-  document.getElementById("finder-close")?.addEventListener("click", closeFinder);
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) closeFinder();
   });
