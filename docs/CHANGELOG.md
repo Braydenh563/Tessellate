@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docker: the image has a HEALTHCHECK on /health and carries its source commit; the ignore file moved to docker/Dockerfile.dockerignore, the one BuildKit reads (the old one was never read, so data/ went into the build context); hadolint runs in CI (L-general-5).
 - About: Settings names the commit, start time and data folder (with whether it can be written) of the copy that answers, from /health on this computer only; a phone or another device gets none of it (L-general-6).
 - CI: every action is pinned to a commit SHA with its tag beside it (36 lines), every checkout sets persist-credentials false, the release notes step reads the version through env, and a Workflow lint workflow runs pinned actionlint and zizmor on workflow changes (L-general-2; zizmor and actionlint not run locally).
 - Security: the address guards judge a NAT64 address (64:ff9b::/96 and the local-use 64:ff9b:1::/48) by the IPv4 address it reaches, so the metadata address through a local translator is refused as a model backend and a public address through NAT64 is no longer refused as local (L-general-1).

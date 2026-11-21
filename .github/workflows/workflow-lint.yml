@@ -1,13 +1,14 @@
 name: Workflow lint
 # The workflows themselves are supply chain (L-general-2): actionlint checks
 # their syntax and expressions, zizmor their security (unpinned actions,
-# persisted credentials, template injection, permissions).
+# persisted credentials, template injection, permissions); hadolint the
+# Dockerfile (L-general-5).
 on:
   push:
     branches: [main]
-    paths: [".github/workflows/**"]
+    paths: [".github/workflows/**", "docker/**"]
   pull_request:
-    paths: [".github/workflows/**"]
+    paths: [".github/workflows/**", "docker/**"]
   workflow_dispatch:
 
 permissions:
@@ -25,8 +26,10 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
-      - run: python -m pip install actionlint-py==1.7.12.24 zizmor==1.31.1
+      - run: python -m pip install actionlint-py==1.7.12.24 zizmor==1.31.1 hadolint-bin==2.15.1
       - name: actionlint
         run: actionlint -shellcheck= .github/workflows/*.yml
       - name: zizmor
         run: zizmor --offline --min-severity medium .github/workflows
+      - name: hadolint
+        run: hadolint --failure-threshold error docker/Dockerfile
