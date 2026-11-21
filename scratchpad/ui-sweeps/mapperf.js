@@ -89,6 +89,12 @@ function outline(n) {
   return lines.join("\n");
 }
 
+//: The pick-up step's budget (L-mindmap-18), from measurement on this box over five fresh runs:
+//: 77 to 118ms at 500 topics after the fix (40 to 72 at 50 and 200), 197 to 199ms before it. 160
+//: is 1.35 times the worst after and 0.8 times the best before, and a build slowed on purpose
+//: (SLOW=drag SLOW_MS=80, two pointermoves in the step) adds 160, so it fails at every size.
+const PICKUP_MS = 160;
+
 const median = (xs) => {
   const s = [...xs].sort((a, b) => a - b);
   return s.length ? s[Math.floor(s.length / 2)] : 0;
@@ -479,6 +485,9 @@ const r1 = (x) => Math.round(x * 10) / 10;
       branchSize: plain.size,
       branchWorst: r1(Math.max(0, ...plain.frames)),
       branchLinkedWorst: r1(Math.max(0, ...linked.frames)),
+      // The pick-up: the press and the first move, booked as one step.
+      dragPickup: r1(dragFrames[0] || 0),
+      branchPickup: r1(Math.max(plain.frames[0] || 0, linked.frames[0] || 0)),
       linkSketches: madeLinks,
       zoomMedian: r1(median(zoomFrames)),
       zoomWorst: r1(Math.max(0, ...zoomFrames)),
@@ -517,6 +526,11 @@ const r1 = (x) => Math.round(x * 10) / 10;
     check(`${n}: links do not double the worst frame of a branch drag`,
       !plain.size || row.branchLinkedWorst <= Math.max(50, row.branchWorst * 2),
       `${row.branchWorst}ms without, ${row.branchLinkedWorst}ms with ${row.linkSketches} links, branch of ${row.branchSize}`);
+    // L-mindmap-18's gate: the first step of a drag is the pick-up (the branch's origin and its drag
+    // layer), and it was the one step no check saw: about 200ms at 500 topics while every other
+    // step of the same drag was 7 to 15ms. The budget is PICKUP_MS's, above.
+    check(`${n}: picking a branch up is under ${PICKUP_MS}ms`, !plain.size || (row.branchPickup < PICKUP_MS && row.dragPickup < PICKUP_MS),
+      `${row.dragPickup}ms for the drag, ${row.branchPickup}ms for the branch of ${row.branchSize}`);
   }
 
   console.log("\n  size | open ms | index ms | layout ms | render one/all/idle | pan med/worst | drag med/worst | zoom med/worst | branch worst plain/linked");

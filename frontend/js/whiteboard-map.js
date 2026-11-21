@@ -3023,9 +3023,24 @@ function wbMapBranchDragOrigin(d, alone) {
 //: The layer is undone by `wbMapDragLayer.close` at the drop and before any
 //: render, so nothing else ever sees a topic outside `#wb-html-layer`'s own
 //: children for longer than a gesture.
+//:
+//: **The smaller side is the one moved** (L-mindmap-18). Moving an element
+//: restyles it and everything in it, about 50us an element on this app's
+//: stylesheet, so lifting a 500-topic branch into the layer cost 200 to 350ms
+//: on the first step (mapperf.js, CDP ThreadTime). When the branch is most
+//: of the board it stays put: the board layer and the edge group carry the
+//: drag's translate, and the topics and lines outside the branch go into a
+//: layer that carries the opposite one. Whatever else the board layer holds
+//: (pins, an editor) is held still by its own `translate`, so it is never
+//: moved. The mid-line `+` layer rides with the branch: its buttons are
+//: invisible until hovered and the drop's render places them again, and a
+//: translate on it re-layerized its thousand buttons, 20 to 34ms a step.
+//: Below `stayAt` members either side costs a few milliseconds, and lifting
+//: keeps the branch above every topic it passes.
 //: One shared name for the three steps (the global-scope ratchet).
 const wbMapDragLayer = {
   live: null,
+  stayAt: 32,
 
   open(origin, d, grabbedEl) {
     const html = document.getElementById("wb-html-layer");
@@ -3038,18 +3053,22 @@ const wbMapDragLayer = {
     //: The members in the order the layer holds them, so they go back in it.
     const itemOf = new Map([[grabbedEl, d]]);
     for (const entry of origin.values()) if (entry.el) itemOf.set(entry.el, entry.item);
-    const els = [...html.children].filter((el) => itemOf.has(el));
+    const all = [...html.children];
+    const els = all.filter((el) => itemOf.has(el));
+    const stay = els.length >= wbMapDragLayer.stayAt && all.length - els.length < els.length;
     const el = document.createElement("div");
     el.setAttribute("class", "wb-map-drag-layer");
     const edges = document.createElementNS("http://www.w3.org/2000/svg", "g");
     edges.setAttribute("class", "wb-map-drag-edges");
-    const home = els.map((member) => [member, member.nextSibling, itemOf.get(member)]);
+    const item = (child) => child.classList.contains("wb-object") || child.classList.contains("wb-card");
+    const carried = stay ? all.filter((child) => !itemOf.has(child) && item(child)) : els;
+    const home = carried.map((member) => [member, member.nextSibling, itemOf.get(member)]);
     //: Above every topic it passes, as the one grabbed topic was by its raise:
-    //: the ranks are inline (`stackRank`), so this reads no layout.
-    el.style.zIndex = String(Math.max(0, ...[...html.children].map((child) => Number(child.style.zIndex) || 0)) + 1);
-    for (const member of els) el.appendChild(member);
-    html.appendChild(el);
-    edgeGroup.appendChild(edges);
+    //: the ranks are inline (`stackRank`), so this reads no layout. Staying,
+    //: the still layer goes first at rank 0, under every member.
+    el.style.zIndex = stay ? "0" : String(Math.max(0, ...all.map((child) => Number(child.style.zIndex) || 0)) + 1);
+    for (const member of carried) el.appendChild(member);
+    html.insertBefore(el, stay ? html.firstChild : null);
     //: Each line and link once, however many members listed it.
     const innerEdges = new Map();
     const innerLinks = new Map();
@@ -3065,19 +3084,53 @@ const wbMapDragLayer = {
       if (entry.mapEdges) entry.mapEdges = sort(entry.mapEdges, false);
       if (entry.linked) entry.linked = sort(entry.linked, false);
     }
-    for (const edge of innerEdges.values()) if (edge.el.parentNode) edges.appendChild(edge.el.parentNode);
-    //: A link's group, found once (the same lookup `wbUpdateLinkedSketches` keeps).
+    const innerWraps = new Set([...innerEdges.values()].map((edge) => edge.el.parentNode).filter(Boolean));
+    const wraps = stay ? [...edgeGroup.children].filter((wrap) => !innerWraps.has(wrap)) : [...innerWraps];
+    for (const wrap of wraps) edges.appendChild(wrap);
+    edgeGroup.appendChild(edges);
+    //: A link's group, found once (the same lookup `wbUpdateLinkedSketches`
+    //: keeps), in one pass over the groups: a query per link was a walk of
+    //: the document each, 300 of them for a branch carrying 300 links.
     const links = [...innerLinks.values()];
-    for (const pair of links) pair.el = pair.el?.isConnected ? pair.el : document.querySelector(`.sketch-group[data-id="${pair.sketch.id}"]`);
-    origin.layer = { el, edges, home, innerEdges: [...innerEdges.values()], links, grabbed: d };
+    const groups = new Map();
+    if (links.some((pair) => !pair.el?.isConnected)) {
+      for (const group of document.querySelectorAll(".sketch-group[data-id]")) if (!groups.has(group.dataset.id)) groups.set(group.dataset.id, group);
+    }
+    for (const pair of links) if (!pair.el?.isConnected) pair.el = groups.get(String(pair.sketch.id)) || null;
+    //: The branch's sizes as the pick-up measured them: a move resizes no
+    //: topic, and the pointerup empties the cache before the drop draws the
+    //: inside lines, which then measured every topic again (a query and a
+    //: forced layout each, 30 to 57ms of a 50-topic drop).
+    const sizes = new Map();
+    for (const id of ids) {
+      const size = wbMapNodeSizeCache?.get(id);
+      if (size) sizes.set(id, size);
+    }
+    origin.layer = {
+      el, edges, home, innerEdges: [...innerEdges.values()], links, grabbed: d, sizes,
+      stay: stay ? {
+        html, edgeGroup, members: els.map((member) => [member, itemOf.get(member)]),
+        fixed: all.filter((child) => !itemOf.has(child) && !item(child) && !child.classList.contains("wb-map-plus-layer")),
+      } : null,
+    };
     wbMapDragLayer.live = origin;
     return origin.layer;
   },
 
-  //: One step of the drag: three kinds of write, whatever the branch's size.
+  //: One step of the drag: a few writes, whatever the branch's size.
   move(layer, dx, dy) {
-    layer.el.style.transform = `translate(${dx}px, ${dy}px)`;
-    layer.edges.setAttribute("transform", `translate(${dx} ${dy})`);
+    const sign = layer.stay ? -1 : 1;
+    layer.el.style.transform = `translate(${sign * dx}px, ${sign * dy}px)`;
+    layer.edges.setAttribute("transform", `translate(${sign * dx} ${sign * dy})`);
+    if (layer.stay) {
+      //: The board layer's own transform is the zoom's, so the drag rides on
+      //: the separate `translate` property, which applies outside it: in
+      //: screen pixels, so scaled by the zoom.
+      const k = d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+      layer.stay.html.style.translate = `${dx * k}px ${dy * k}px`;
+      layer.stay.edgeGroup.setAttribute("transform", `translate(${dx} ${dy})`);
+      for (const still of layer.stay.fixed) still.style.translate = `${-dx}px ${-dy}px`;
+    }
     for (const pair of layer.links) pair.el?.setAttribute("transform", `translate(${dx} ${dy})`);
   },
 
@@ -3090,15 +3143,25 @@ const wbMapDragLayer = {
     if (!layer) return;
     origin.layer = null;
     const html = layer.el.parentNode;
+    if (layer.stay) {
+      layer.stay.html.style.translate = "";
+      layer.stay.edgeGroup.removeAttribute("transform");
+      for (const still of layer.stay.fixed) still.style.translate = "";
+      for (const [member, item] of layer.stay.members) member.style.transform = wbItemTransform(item);
+    }
     for (let i = layer.home.length - 1; i >= 0; i -= 1) {
       const [member, next, item] = layer.home[i];
-      member.style.transform = wbItemTransform(item);
+      if (!layer.stay) member.style.transform = wbItemTransform(item);
       if (html) html.insertBefore(member, next && next.parentNode === html ? next : null);
     }
     layer.el.remove();
     const edgeGroup = layer.edges.parentNode;
     for (const wrap of [...layer.edges.children]) edgeGroup?.appendChild(wrap);
     layer.edges.remove();
+    if (layer.sizes.size) {
+      if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
+      for (const [id, size] of layer.sizes) if (!wbMapNodeSizeCache.has(id)) wbMapNodeSizeCache.set(id, size);
+    }
     if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges);
     for (const pair of layer.links) pair.el?.removeAttribute("transform");
     if (layer.links.length) wbUpdateLinkedSketches(layer.grabbed.id, layer.links);
