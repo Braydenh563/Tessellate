@@ -2366,7 +2366,7 @@ function rememberNoteFilter(words) {
 
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
-  if (!$("tab-notes").classList.contains("hidden") && $("entry-list").dataset.stale) renderSidebar();
+  if (!$("tab-notes").classList.contains("hidden") && ($("entry-list").dataset.stale || window.notesSidebarOwed)) renderSidebar();
   //: A card is drawn by `entryItem` (entry-card.js: lazy, for the boot gzip ratchet), fetched
   //: when the app goes idle. A draw asked before it is in waits for it and happens once, whole,
   //: and the promise this returns settles after it (false when the file never came): a caller that
@@ -2655,11 +2655,16 @@ function renderSidebar() {
   //: on the dashboard: the first page of notes drew the Notes tab's category list, 11 and 29ms in its two
   //: calls at 6x CPU, behind the page on screen). It is owed instead, with the list's own debt
   //: (`data-stale`), and drawn when the tab is shown (`renderEntries` pays it).
+  //: Its own debt, apart from the list's: a page of notes arriving behind
+  //: another tab draws the list and clears `data-stale`, and the category
+  //: list it skipped stayed empty when the tab was opened (L499, 2026-11-21).
   if ($("tab-notes").classList.contains("hidden")) {
     const list = document.getElementById("entry-list");
     if (list) list.dataset.stale = "1";
+    window.notesSidebarOwed = true;
     return;
   }
+  window.notesSidebarOwed = false;
   // Categories + counts are derived from the loaded entries, the
   // simplest thing that works; no extra endpoint needed yet.
   // Drafts only belong in the Drafts row (user-reported: they were still

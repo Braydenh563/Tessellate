@@ -861,7 +861,7 @@ function revealTab(name) {
   }
   scheduleUndoBar();
   if (name === "notes") window.initNotesSubtabHeightToken?.();
-  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  if (name === "notes" && ($("entry-list").dataset.stale || window.notesSidebarOwed)) renderEntries();
   //: The companion finds its perch on the tab it is now on (avatars.js).
   window.nameMarkBuddyTabChanged?.();
   // When the strip is narrow enough to scroll, the tab you just chose is the

@@ -536,8 +536,13 @@
   //: `things` is the query read by meaning (meaning.js, Brief 94): "trash" is
   //: the bin's other word, "keybord" a slip of "keyboard". A row its name or
   //: other words hold that way scores as another word for it (2).
+  //: A row's name as a person reads it: the label without its icon token.
+  function paletteName(row) {
+    return paletteText(row.label).replace(/(^|\s)ph:[\w-]+\s*/g, " ").trim();
+  }
+
   function paletteScore(row, phrase, words, things = null) {
-    const label = paletteText(row.label).replace(/(^|\s)ph:[\w-]+\s*/g, " ").trim();
+    const label = paletteName(row);
     if (label.startsWith(phrase) || label.includes(` ${phrase}`)) return 4;
     if (label.includes(phrase)) return 3;
     const named = `${label} ${paletteText(row.keywords)} ${PALETTE_ALIASES[paletteTarget(row)] || ""}`;
@@ -587,8 +592,11 @@
       if (!score || (score === 1 && ++loose > 3)) return;
       const name = paletteFeature(row);
       //: Between rows of one score, the one nearer the words typed (meaning.js):
-      //: "change password" is the password row before the lock.
-      const near = 2 * meaningCloseness(things, paletteText(row.label)) + meaningCloseness(things, paletteText(row.keywords));
+      //: "change password" is the password row before the lock. Read on the
+      //: name without its icon token: "ph:pencil-simple New note" put "new" at
+      //: the 17th letter, so "Finding new versions" in Settings outranked
+      //: New note for "new" (L499, the README's palette shot).
+      const near = 2 * meaningCloseness(things, paletteName(row)) + meaningCloseness(things, paletteText(row.keywords));
       scored.push({ row, score, index, near, tier: paletteTier(row, score), picked: picks[name] || 0, used: paletteUsage.get(name) || 0 });
     });
     scored.sort((a, b) => b.picked - a.picked || a.tier - b.tier || b.score - a.score || b.near - a.near || b.used - a.used || a.index - b.index);
