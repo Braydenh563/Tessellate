@@ -9,14 +9,11 @@ from __future__ import annotations
 import json
 import re
 
-from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import (
     LIKE_ESCAPE,
     Entry,
-    WhiteboardNode,
-    WhiteboardObject,
     like_escape,
 )
 from tessellate.entry import manager_purge
@@ -24,6 +21,7 @@ from tessellate.entry import manager_text
 from tessellate.entry.service import REFERENCE_SOURCES_MAX
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import references as references_repo
 
 
 #: How many rows a references scan answers with; how many sources it reads is
@@ -65,29 +63,12 @@ def _board_reference_rows_batch(session: Session, entry_ids: list[int]) -> dict[
     found: dict[int, list[tuple[int, Entry]]] = {i: [] for i in wanted}
     if not wanted:
         return {}
-    for entry_id, board_id, board in session.execute(
-        select(WhiteboardNode.entry_id, WhiteboardNode.board_id, Entry)
-        .join(Entry, Entry.id == WhiteboardNode.board_id)
-        .where(
-            WhiteboardNode.entry_id.in_(wanted),
-            Entry.is_deleted.is_(False),
-        )
-        .order_by(WhiteboardNode.id)
-    ).all():
+    for entry_id, board_id, board in references_repo.boards_holding_cards(session, wanted):
         if board_id is None or board_id in seen_boards[entry_id]:
             continue
         seen_boards[entry_id].add(board_id)
         found[entry_id].append((board_id, board))
-    for board_id, board, raw in session.execute(
-        select(WhiteboardObject.board_id, Entry, WhiteboardObject.data)
-        .join(Entry, Entry.id == WhiteboardObject.board_id)
-        .where(
-            WhiteboardObject.kind == "note",
-            func.json_extract(WhiteboardObject.data, "$.ref_id").in_(wanted),
-            Entry.is_deleted.is_(False),
-        )
-        .order_by(WhiteboardObject.id)
-    ).all():
+    for board_id, board, raw in references_repo.boards_holding_note_objects(session, wanted):
         try:
             ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
         except (ValueError, AttributeError):
@@ -217,31 +198,8 @@ def _note_mentions(session: Session, distinct: list[str]) -> dict[str, list[tupl
 
 def _scan_note_group(session: Session, group: list[str], narrowed: dict, hits: dict[str, list[tuple[int, str]]]) -> None:
     flags = [Entry.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in group]
-    where = [
-        Entry.is_deleted.is_(False),
-        #: A private note is encrypted at rest, so its content could not
-        #: match the LIKE anyway; the filter is here so that stays true
-        #: by decision rather than by side effect. The same sentence
-        #: `routes_documents._backlinks` carries, for the same reason.
-        Entry.is_private.is_(False),
-        or_(*flags),
-    ]
-    if narrowed[group[0]] is not None:
-        where.append(
-            Entry.id.in_(
-                text(
-                    " UNION ".join(
-                        f"SELECT rowid FROM entries_fts WHERE entries_fts MATCH :p{i}"
-                        for i in range(len(group))
-                    )
-                ).bindparams(**{f"p{i}": narrowed[label] for i, label in enumerate(group)})
-            )
-        )
-    for row in session.execute(
-        select(Entry.id, Entry.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
-        .where(*where)
-        .order_by(Entry.id.desc())
-    ):
+    phrases = [narrowed[label] for label in group] if narrowed[group[0]] is not None else None
+    for row in references_repo.scan_notes(session, flags, phrases):
         for i, label in enumerate(group):
             #: One over the cap, because the note itself can be among its
             #: own label's matches and is dropped per note below: the cap

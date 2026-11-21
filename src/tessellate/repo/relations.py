@@ -16,7 +16,7 @@ from __future__ import annotations
 from sqlalchemy import Row, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.core.database import Entry, EntryLink
+from tessellate.core.database import DerivedTension, Entry, EntryLink
 from tessellate.repo import NotFound
 
 MISSING = "That link could not be found."
@@ -144,3 +144,8 @@ def count_live(session: Session) -> int:
         )
         or 0
     )
+
+
+def tension_pairs(session: Session) -> list[str]:
+    """The key of every pair already in the tensions table, whatever became of it."""
+    return list(session.scalars(select(DerivedTension.pair)))

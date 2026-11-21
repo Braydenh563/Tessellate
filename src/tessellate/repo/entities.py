@@ -77,3 +77,13 @@ def unmerged(session: Session) -> list[Entity]:
 
 def name_of(session: Session, entity_id: int) -> str:
     return session.scalar(select(Entity.name).where(Entity.id == entity_id)) or ""
+
+
+def mention_names(session: Session) -> list[tuple[str, int]]:
+    """(entity name, note id) of every mention."""
+    return [
+        (name, entry_id)
+        for name, entry_id in session.execute(
+            select(Entity.name, EntityMention.entry_id).join(Entity, Entity.id == EntityMention.entity_id)
+        )
+    ]

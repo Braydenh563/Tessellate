@@ -128,3 +128,15 @@ def events_of(db: Session, entity_type: str, ids: list[int]) -> list[AuditLog]:
             select(AuditLog).where(AuditLog.entity_type == entity_type, AuditLog.entity_id.in_(ids)).order_by(AuditLog.id.asc())
         )
     )
+
+
+def children_of(db: Session, parent_id: int) -> list[WhiteboardObject]:
+    """The objects directly under a topic, in no set order."""
+    return list(db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == parent_id)).all())
+
+
+def objects_of_kinds(db: Session, board_id: int, kinds) -> list[WhiteboardObject]:  # noqa: ANN001
+    """A board's objects whose kind is one of `kinds`."""
+    return list(
+        db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id, WhiteboardObject.kind.in_(kinds))).all()
+    )

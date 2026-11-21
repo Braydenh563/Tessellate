@@ -11,7 +11,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import event, select
+from sqlalchemy import event
 from sqlalchemy.orm import Session
 
 from tessellate.ai import backend_hint, learning, librarian, links, relations
@@ -24,9 +24,6 @@ from tessellate.api.schemas import (
 from tessellate.core import deps, jobruns
 from tessellate.core.database import (
     AuditLog,
-    DerivedTension,
-    Entity,
-    EntityMention,
     Entry,
 )
 from tessellate.core.deps import get_session
@@ -34,6 +31,7 @@ from tessellate.entry import duplicates, link_facts, manager
 from tessellate.entry import manager_links
 from tessellate.entry import manager_text
 from tessellate.repo import bookmarks as bookmark_repo
+from tessellate.repo import entities as entities_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo.content import NOTES
 from tessellate.search import engine as search_engine
@@ -146,12 +144,7 @@ def _recognised_pairs(session: Session, entries: list, candidates: dict, already
         )
     edges = relations_repo.pairs(session)
     edges += [(e.parent_id, e.id) for e in entries if e.parent_id is not None]
-    mentions = [
-        (name, entry_id)
-        for name, entry_id in session.execute(
-            select(Entity.name, EntityMention.entry_id).join(Entity, Entity.id == EntityMention.entity_id)
-        )
-    ]
+    mentions = entities_repo.mention_names(session)
     notes = {
         i: _LazyNoteFacts(e.content, frozenset(t.lower() for t in manager.entry_tags(e)), e.created_at)
         for i, e in candidates.items()
@@ -275,7 +268,7 @@ def _known_tension_keys(session: Session) -> set[str]:
     # earlier scan or the night shift, whatever became of it) is never asked
     # about again; the widget and `GET /entries/tensions/known` list it.
     tensions_module.refresh(session)
-    known.update(session.scalars(select(DerivedTension.pair)))
+    known.update(relations_repo.tension_pairs(session))
     return known
 
 
@@ -384,12 +377,7 @@ def known_tensions(
     so the Tensions widget can show it on every Dashboard draw."""
     rows, counts = tensions_module.listing(session, status=None if status == "all" else status, limit=limit)
     session.commit()
-    notes = {
-        e.id: e
-        for e in session.scalars(
-            select(Entry).where(Entry.id.in_({r.earlier_id for r in rows} | {r.later_id for r in rows}))
-        )
-    }
+    notes = entities_repo.notes_by_ids(session, list({r.earlier_id for r in rows} | {r.later_id for r in rows}))
     out = []
     for row in rows:
         earlier, later = notes.get(row.earlier_id), notes.get(row.later_id)
@@ -656,10 +644,8 @@ def related_entries(entry_id: int, session: Session = Depends(get_session)) -> l
     }
     found = {
         other.id: other
-        for other in session.scalars(
-            select(Entry).where(Entry.id.in_(wanted), Entry.is_deleted == False)  # noqa: E712
-        )
-        if not other.is_private and other.id not in linked and bool(other.is_draft) == bool(entry.is_draft)
+        for other in entities_repo.notes_by_ids(session, list(wanted)).values()
+        if not other.is_deleted and not other.is_private and other.id not in linked and bool(other.is_draft) == bool(entry.is_draft)
     }
     ordered = [found[other_id] for other_id in wanted if other_id in found]
     return _with_reasons(session, entry.id, [to_out(session, e) for e in ordered[:3]])
