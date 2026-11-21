@@ -47,6 +47,7 @@ def _pair(source: str, target: str, label: str) -> dict:
     `vocab.<pair>.spm`), the one the English to Spanish files already carry."""
     tag = source + target
     return {
+        "extra": extras.TRANSLATE_PAIR_EXTRA[f"{source}-{target}"],
         "from": source,
         "to": target,
         "label": label,
@@ -84,17 +85,24 @@ def _folder() -> Path | None:
     return extras.download_ready(EXTRA_ID)
 
 
+def _pair_folder(pair: dict) -> Path | None:
+    """The installed folder of the package that carries `pair`: the base one
+    for English to Spanish, a language package for the rest (L-world-class-628)."""
+    return extras.download_ready(pair["extra"])
+
+
 def installed_pairs() -> list[dict]:
-    """The registry rows whose three files are all in the installed folder, in
-    registry order (English to Spanish first, so the first is the default)."""
-    folder = _folder()
-    if folder is None:
+    """The registry rows whose three files are all in their package's installed
+    folder, in registry order (English to Spanish first, so the first is the
+    default). None without the engine: a language package alone cannot run."""
+    if _folder() is None:
         return []
-    return [
-        {key: pair[key] for key in _PAIR_KEYS}
-        for pair in PAIRS
-        if all((folder / pair[key]).is_file() for key in ("model", "lex", "vocab"))
-    ]
+    rows = []
+    for pair in PAIRS:
+        folder = _pair_folder(pair)
+        if folder is not None and all((folder / pair[key]).is_file() for key in ("model", "lex", "vocab")):
+            rows.append({key: pair[key] for key in _PAIR_KEYS})
+    return rows
 
 
 def status() -> dict:
@@ -116,14 +124,21 @@ def served(name: str) -> tuple[Path, str] | None:
     `name` only picks an entry from the extra's own list of written files
     (the engine, the licence, each pair's three), so no spelling of a path
     reaches the disk and the marker file is never served."""
-    folder = _folder()
-    if folder is None:
+    if _folder() is None:
         return None
     extra = extras.EXTRAS_BY_ID[EXTRA_ID]
-    allowed = {file: file for download in extra.downloads for _member, file in download.members}
-    allowed.update({pair[key]: pair[key] for pair in PAIRS for key in ("model", "lex", "vocab")})
-    listed = allowed.get(name)
-    if listed is None or not (folder / listed).is_file():
+    #: file name -> (the same name, the package holding it); the name served
+    #: is the list's own string, never the request's.
+    allowed = {file: (file, EXTRA_ID) for download in extra.downloads for _member, file in download.members}
+    for pair in PAIRS:
+        for key in ("model", "lex", "vocab"):
+            allowed.setdefault(pair[key], (pair[key], pair["extra"]))
+    entry = allowed.get(name)
+    if entry is None:
+        return None
+    listed, extra_id = entry
+    folder = extras.download_ready(extra_id)
+    if folder is None or not (folder / listed).is_file():
         return None
     suffix = "." + listed.rsplit(".", 1)[-1] if "." in listed else ""
     return folder / listed, _TYPES.get(suffix, "application/octet-stream")

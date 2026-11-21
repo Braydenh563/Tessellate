@@ -86,8 +86,13 @@ def test_the_package_is_a_pinned_mpl_download_never_in_the_repo():
     written = {name for d in extra.downloads for _m, name in d.members}
     assert set(translate.ENGINE_FILES) <= written
     assert "LICENSE" in written, "the MPL text travels with the engine"
-    # Every registered direction is carried (L-world-class-41), each a complete row.
-    carried = [p for p in translate.PAIRS if {p["model"], p["lex"], p["vocab"]} <= written]
+    # Every registered direction is carried (L-world-class-41), each a complete
+    # row; since L-world-class-628 a language beyond Spanish rides in a package
+    # of its own beside this one, so the carrier is the pair's own package.
+    def files(extra_id):
+        return {name for d in extras.EXTRAS_BY_ID[extra_id].downloads for _m, name in d.members}
+
+    carried = [p for p in translate.PAIRS if {p["model"], p["lex"], p["vocab"]} <= files(p["extra"])]
     assert carried == list(translate.PAIRS)
     assert not {n for n in written if n.startswith("model.")} - {p["model"] for p in carried}
     assert any(extra.id in bundle.extras for bundle in extras.BUNDLES)

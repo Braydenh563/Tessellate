@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Translate offline: English to Spanish installs no longer download again; French, German, Italian, Portuguese and Spanish to English are a package each (L-world-class-628).
 - Graph: concurrent requests for the same version of the graph cache now share one build instead of each running community detection (eight clients, one build).
 - Notes: on a long notebook the first Notes press lands only the first 240 row placeholders and the rest join in idle chunks (5,000 notes: click to first row 459 to 213ms of main thread, style 139 to 66ms).
 

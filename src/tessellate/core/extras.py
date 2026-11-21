@@ -472,7 +472,7 @@ def _spell_pack_extras() -> tuple[Extra, ...]:
 #: (`.../storage/v1/b/moz-fx-translations-data--303e-prod-translations-data/o?prefix=
 #: models/<pair>/`): the run folder is content-addressed (it carries the run id), so the
 #: bytes cannot move under the URL; take the run's `exported/` files, `sha256sum` each
-#: .gz, write the byte count. A new pair is a row here and a row in `ai/translate.PAIRS`.
+#: .gz, write the byte count. A new pair is a row here, in `_TRANSLATE_LANGUAGES` and in `ai/translate.PAIRS`.
 _MOZ_MODELS = (
     "https://storage.googleapis.com/moz-fx-translations-data--303e-prod-translations-data/models"
 )
@@ -574,6 +574,62 @@ _TRANSLATE_PAIR_PINS: tuple[tuple[str, str, tuple[tuple[str, str, int], ...]], .
         ),
     ),
 )
+
+#: Which package carries each direction (L-world-class-628). English to Spanish
+#: rides in `translate` with the engine, at the version installs already have;
+#: each other language is a package of its own, so nobody downloads a language
+#: they did not ask for, and adding one never bumps the base package's version.
+_TRANSLATE_LANGUAGES = (
+    ("fr", "French", "English with French", ("en-fr", "fr-en")),
+    ("de", "German", "English with German", ("en-de", "de-en")),
+    ("it", "Italian", "English to Italian", ("en-it",)),
+    ("pt", "Portuguese", "English to Portuguese", ("en-pt",)),
+    ("es", "Spanish", "Spanish to English", ("es-en",)),
+)
+TRANSLATE_PAIR_EXTRA: dict[str, str] = {
+    "en-es": "translate",
+    **{pair: f"translate-{lang}" for lang, _n, _d, pairs in _TRANSLATE_LANGUAGES for pair in pairs},
+}
+
+
+def _translate_pair_downloads(pairs: tuple[str, ...]) -> tuple[Download, ...]:
+    return tuple(
+        Download(
+            url=f"{_MOZ_MODELS}/{pair}/{run}/exported/{name}.gz",
+            sha256=sha,
+            size=size,
+            unpack="gzip",
+            members=(("", name),),
+        )
+        for pair, run, files in _TRANSLATE_PAIR_PINS
+        if pair in pairs
+        for name, sha, size in files
+    )
+
+
+def _translate_language_extras() -> tuple[Extra, ...]:
+    out = []
+    for lang, name, directions, pairs in _TRANSLATE_LANGUAGES:
+        downloads = _translate_pair_downloads(pairs)
+        out.append(
+            Extra(
+                id=f"translate-{lang}",
+                label=f"Translate offline, {name} (Bergamot)",
+                short_label=f"{name} for the translator",
+                enables=f"{directions} in Translate this, on this computer with no model. "
+                "Adds the language to the picker of Translate offline, which it needs.",
+                packages=(f"{directions} model{'s' if len(pairs) > 1 else ''}",),
+                module="",
+                size=f"~{round(sum(d.size for d in downloads) / 1_000_000)} MB download",
+                caveat="Needs Translate offline installed first. A small on-device model: "
+                "good for the gist and a first draft, not for legal or medical text.",
+                kind="download",
+                version="1",
+                licence="MPL-2.0",
+                downloads=downloads,
+            )
+        )
+    return tuple(out)
 
 
 #: The allowlist. Adding an entry here is the only way to make something
@@ -888,24 +944,28 @@ EXTRAS: tuple[Extra, ...] = (
     #: **To bump:** the engine is `@browsermt/bergamot-translator` on npm
     #: (`npm view @browsermt/bergamot-translator dist`, then `sha256sum` the
     #: tarball); a model's three files and their sizes are in the registry
-    #: at `mozilla/translations`' `db/models.json`. A new pair is a new
-    #: entry here and a row in `ai/translate.PAIRS`.
+    #: at `mozilla/translations`' `db/models.json`. A new pair goes in
+    #: `_TRANSLATE_PAIR_PINS`, never here: bumping this version makes every
+    #: English to Spanish install download again.
     Extra(
         id="translate",
-        label="Translate offline (Bergamot, English with Spanish, French, German, Italian, Portuguese)",
+        label="Translate offline (Bergamot, English to Spanish)",
         short_label="the translator",
         enables="Translate this, in the command palette: a passage of a note, "
         "a document or a reading turned into another language, or back into "
         "English, on this computer in about a second, with no model and "
         "nothing sent anywhere.",
-        packages=("bergamot-translator 0.4.9", "eight language-pair models"),
+        packages=("bergamot-translator 0.4.9", "English to Spanish model"),
         module="",
-        size="~209 MB download, 286 MB on disk",
+        size="~27 MB download, 42 MB on disk",
         caveat="A small on-device model: good for the gist and a first draft, "
-        "not for legal or medical text. English to Spanish, French, German, "
-        "Italian and Portuguese, and back from Spanish, French and German.",
+        "not for legal or medical text. English to Spanish; French, German, "
+        "Italian, Portuguese and Spanish to English are packages of their own "
+        "(More translation languages).",
         kind="download",
-        version="0.4.9-pairs-1",
+        #: Kept at the English to Spanish version so an install from before the
+        #: language packages still counts (L-world-class-628).
+        version="0.4.9-enes-1",
         licence="MPL-2.0",
         downloads=(
             Download(
@@ -926,19 +986,10 @@ EXTRAS: tuple[Extra, ...] = (
                 unpack="file",
                 members=(("", "LICENSE"),),
             ),
-            *(
-                Download(
-                    url=f"{_MOZ_MODELS}/{pair}/{run}/exported/{name}.gz",
-                    sha256=sha,
-                    size=size,
-                    unpack="gzip",
-                    members=(("", name),),
-                )
-                for pair, run, files in _TRANSLATE_PAIR_PINS
-                for name, sha, size in files
-            ),
+            *_translate_pair_downloads(("en-es",)),
         ),
     ),
+    *_translate_language_extras(),
     Extra(
         id="localllm",
         label="Built-in model runner (llama-cpp-python)",
@@ -1230,6 +1281,12 @@ BUNDLES: tuple[Bundle, ...] = (
         label="Languages",
         about="Translate a passage into Spanish, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
         extras=("translate", "languagetool", "spell-fr", "spell-de", "spell-es"),
+    ),
+    Bundle(
+        id="translate-languages",
+        label="More translation languages",
+        about="French, German, Italian and Portuguese with English, and Spanish back to English, for Translate this.",
+        extras=("translate", *(f"translate-{lang}" for lang, _n, _d, _p in _TRANSLATE_LANGUAGES)),
     ),
     Bundle(
         id="code",

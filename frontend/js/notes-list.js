@@ -1946,8 +1946,10 @@ function windowRows(root, o) {
   const pending = []; // [list, items, from, to, now]
   let idle = 0;
   //: Safari has no idle callback: a short timer stands in, with no deadline.
-  const later = (fn) => (typeof requestIdleCallback === "function" ? requestIdleCallback(fn, { timeout: 400 }) : setTimeout(fn, 60));
-  const cancel = (id) => (typeof cancelIdleCallback === "function" ? cancelIdleCallback(id) : clearTimeout(id));
+  //: Safari and the node test harness have no idle callback: a short timer.
+  const idleOk = !!globalThis.requestIdleCallback;
+  const later = (fn) => (idleOk ? requestIdleCallback(fn, { timeout: 400 }) : setTimeout(fn, 60));
+  const cancel = (id) => (idleOk ? cancelIdleCallback(id) : clearTimeout(id));
   function append(list, items, from, to, now) {
     const fragment = document.createDocumentFragment();
     for (let i = from; i < to; i++) {
