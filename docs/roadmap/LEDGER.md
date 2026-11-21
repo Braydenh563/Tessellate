@@ -15,9 +15,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 90 | 11 | 0 | 0 | 101 |
+| world-class | 0 | 91 | 10 | 0 | 0 | 101 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 480 | 82 | 2 | 111 | 934 |
+| all | 372 | 481 | 81 | 2 | 111 | 934 |
+
+## graph
+
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -499,7 +502,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
-- [ ] **L701** `world-class` partly, L: 380ms style-and-layout first frame (13k nodes); dashboard.js widget fill callbacks 98-119ms not fixed. From ledger-1112 I8.
 - [ ] **L810** `world-class` open, M: Decide FIT42: ?preview=300 adoption awaiting server-side note search. From OPEN.md:4321. Evidence: Waits on Q9 (server-side note search) decision. Owner decided 2026-11-12: Server search first (Add a local search route over the notebook database, switch the filter box to it, then move the other readers onto previews). Build: routes_entries.py: GET /entries?q= local text search; notes-list.js filter calls it; then migrate allEntries content readers in batches; measure on a 5,000-note notebook.
 - [ ] **L795** `world-class` open, M: Decide whether to remove routes only tests use. From OPEN.md:4213. Evidence: Ledger owner call: removing public routes changes the interface. Owner decided 2026-11-12: Remove, one by one (Each route with no app, MCP or doc caller is deleted with its tests after a grep; fewer paths to secure). Build: Script listing routes with no frontend/js, mcp_server or docs reference; delete each with its tests, CODEMAP regenerated, CHANGELOG line.
 - [ ] **L785** `world-class` open, M: Decide manual pictures only where needed, as WebP (1612c). From OPEN.md:4328. Evidence: W34 owner-call, w34-fix2-1111.md. Owner decided 2026-11-12: Add a few pictures. Build: Image field in help topic rendering (ai/help_topics_core.py, help_chat.py), sweep step writing WebP under frontend assets, a manual-parity lint for the image list.
@@ -548,6 +550,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-571** `world-class` open, L: Free about 4 KB gzipped from boot (lazy web panel) before splitting status.js, notes-list.js, chat.js. From L698; frontend/js/chat.js, status.js, notes-list.js. Evidence: Measured 2026-11-21: boot gzip total 249,722 of cap 250,450 (headroom 728 B); one tail split of chat.js (chat-progress.js, 506 lines) cost +1,087 B gzipped (29,195 to 30,282) and tripped tests/test_static_compression.py at 250,809; each split costs about 1 KB, so status.js, notes-list.js and chat.js cannot be split as boot scripts without moving about 4 KB gzipped out of boot first. Lazy seams checked: chat.js 367-765 web panel (callers wiring.js, web-results.js, chat-turn.js; state read at runtime by boot files), status.js 3181-3371 background-task notices. index.html now 16,747 (other agent). Per-file lists to update with a split: tests/_app_js.py MOVED_OUT, tests/wake_sources_seed.json, tests/test_undo_coverage.py EXEMPT key, tests/test_spinner_recipe.py:340
+- [ ] **L-world-class-620** `world-class` open, M: Grid-sizing callbacks over 50 ms: read card heights from ResizeObserver entries instead of getBoundingClientRect after the fills dirty layout. From frontend/js/dashboard.js watchDashWidgets rAF and settle afterFrames callbacks. Evidence: sizeDashWidgets 49-307 ms at 4x, 500 notes (forced layout of the filled grid; LoAF user-callback)
 
 ## general
 
