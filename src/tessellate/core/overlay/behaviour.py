@@ -751,14 +751,14 @@ FLOW_POSE_EASE = 0.8
 #: `ATLAS_LOWER_STATES`, decision 7 of the UI modernisation plan), by the start of the frame's name, longest first;
 #: and the most px a strand's tip leans toward it (its middle 0.7 of that), what is left of `FLOW_LEAN` on that family's
 #: pictures with the largest rise, whole eighths (`FLOW_Q`) so the rounding never passes it, to 3.77 to 3.95 degrees
-#: in all (tests/test_flow_baked_shear_l_ui_150.py, the pose-arranged frames of 2026-11-14; asleep the curl bakes all 4). A clamp, not a
+#: in all (tests/test_flow_baked_shear_l_ui_150.py, the pose-arranged frames of 2026-11-21). A clamp, not a
 #: scale: the ordinary sway keeps its range and only a throw or a gust stops short (L-ui-modernisation-150: the two
 #: added to 4.22 degrees).
 FLOW_BAKED = (
-    ("hang_sloth", -4.0, 0.0), ("back_float", -3.92, 0.0), ("meditate", 1.6, 2.375), ("tumble", 3.2, 0.875),
-    ("dangle", -1.8, 3.25), ("sleep", -4.0, 0.0), ("stand", 1.8, 2.375), ("blink", 1.8, 2.375), ("look", 1.8, 2.375),
+    ("hang_sloth", -3.2, 1.125), ("back_float", -3.92, 0.0), ("meditate", 1.6, 2.375), ("tumble", 3.2, 0.875),
+    ("dangle", -1.8, 3.25), ("sleep", -3.2, 0.75), ("stand", 1.8, 2.375), ("blink", 1.8, 2.375), ("look", 1.8, 2.375),
     ("idle", 1.8, 2.375), ("walk", 1.8, 2.375), ("hop", 1.8, 2.875), ("land", 1.8, 2.5), ("card", 1.8, 2.375),
-    ("sit", -2.4, 1.625), ("held", -1.4, 3.625), ("fall", 3.2, 1.125), ("kick", -1.8, 3.0), ("hang", -1.4, 3.25),
+    ("sit", -2.4, 1.625), ("held", -1.4, 3.625), ("fall", 3.2, 1.125), ("kick", -1.8, 3.0), ("hang", -1.4, 3.0),
     ("lean", 1.6, 3.375), ("wave", 1.8, 2.375),
 )
 #: A side with no baked lean: further than any strand reaches (the follow-through's cap and the posed worst).

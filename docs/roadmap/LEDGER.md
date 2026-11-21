@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 5 | 6 | 0 | 0 | 11 |
+| ui-modernisation | 0 | 6 | 6 | 0 | 0 | 12 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
-| all | 406 | 426 | 132 | 2 | 162 | 964 |
+| all | 406 | 427 | 132 | 2 | 162 | 965 |
 
 ## graph
 
@@ -360,6 +360,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-170** `ui-modernisation` open, S: Desk frames: the held frame bakes 6 degrees of lower-body lean, past the join's 4 by itself. From src/tessellate/core/overlay/behaviour.py. Evidence: Found 2026-11-14 building L-ui-modernisation-150: `held` takes the walk state's first row (`0.4 * (6 - -9)` = 6.0 deg on the lower boxes, atlas-life.js ATLAS_LOWER_STATES), so `behaviour.FLOW_BAKED` gives it no lean toward that side at all; while held the engine also keeps the last flow view (FLOW_FROZEN), drawn for the frame before. Pin the held frame's lower row to one inside 4 (or a held state of its own) and re-render held.
 - [ ] **L-ui-modernisation-171** `ui-modernisation` open, S: Companion: an ear flick moves the ear's pivot for good. From frontend/js/atlas-micro.js. Evidence: Found 2026-11-14 building L-ui-modernisation-151: the flick (atlas-micro.js about line 253) leaves `transform-box: fill-box` and `transform-origin: 50% 90%` on the ear, so every later mood's ear turn pivots elsewhere (35 to 47 px apart on a sleeping frame's capture); the desk capture puts each ear back on its ATLAS_GEO pivot, the app does not.
 - [ ] **L-ui-modernisation-152** `ui-modernisation` open, L: Desk frames: ship the pose-arranged frames (a full render fails 39 desk-frame tests). From scripts/render_desk_frames.py. Evidence: Found 2026-11-14 on L-ui-modernisation-57: a full render on the pinned capture (BASE=... render_desk_frames.py, 1,455,133 bytes, canvases masculine 271x296 and feminine 276x305, were 289x304 and 275x298) fails 39 tests in 13 files: test_overlay_deskface_1704 (9, brows), test_overlay_deskframes_1696 (5), test_overlay_rest_1670 (5), test_overlay_desk_acts_1710 (4), test_overlay_land_1683 (3), test_overlay_e3_1111, test_overlay_hang_tricks_ui10, test_overlay_ride_1670, test_overlay_bob_1670, test_flow_reach_l_ui_100 (2 each), test_flow_1683, test_overlay_desk_frames_ui41, test_overlay_seams_1683e (1 each). Re-render per frame family into the shipped canvas (as DESK_ADD does) and retune the face boxes, or render the pose frames only, then ship.
+- [ ] **L-ui-modernisation-200** `ui-modernisation` open, S: Desk companion: the feminine stand's flow core leaks a ghost pixel past the torso's edge. From tests/test_flow_1683.py, the pose-arranged desk frames (L-ui-modernisation-152). Evidence: Found 2026-11-21 shipping the pose-arranged frames: the feminine stand's drawn box widened 164 to 175 px (the baked lower shear), so the flow's core (FLOW_CORE, from the box) moved 1 px left onto the gap between arm and torso, and the mesh's bilinear pass leaves a 20 of 255 ghost at x 117, y 133 (the torso check allows 16; masculine 16). Fix the warp's core edge above the waist (measure it on the torso, or clamp the cell), then drop the strict xfail on the feminine param.
 
 ## timeline
 

@@ -113,10 +113,6 @@ def _family(frame: str) -> str:
     return f"{bh.flow_baked(frame)}|{pose}"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="L-ui-modernisation-150 and 152: passes on the re-rendered pose-arranged frames; the shipped frames are the old render",
-)
 @pytest.mark.parametrize("look", ["masculine", "feminine"])
 def test_the_baked_lean_and_the_flow_stay_inside_four_degrees(look: str) -> None:
     """On every shipped frame, either way the figure faces: toward the frame's own lean the streams take what is left of
@@ -129,21 +125,17 @@ def test_the_baked_lean_and_the_flow_stay_inside_four_degrees(look: str) -> None
         for side in (1.0, -1.0):
             toward = _angle(look, frame, *_lean(rep, side, True))
             away = _angle(look, frame, *_lean(rep, side, False))
-            # a frame that bakes all of the 4 (asleep: the curl's row) takes no lean toward it at all
-            over = toward > 0.05 if baked >= bh.FLOW_LEAN else toward + baked >= bh.FLOW_LEAN
-            if over or away - baked >= bh.FLOW_LEAN:
+            if toward + baked >= bh.FLOW_LEAN or away - baked >= bh.FLOW_LEAN:
                 bad.append((frame, side, round(toward, 2), round(away, 2), baked))
     assert not bad, bad
 
 
-def test_no_frame_bakes_past_four_and_one_at_four_takes_no_lean_toward_it() -> None:
-    """L-ui-modernisation-170: `held` took the walk state's row (6 degrees, past the join's 4 by itself); held up by a
-    hand it hangs now (1.4). The sleeping frames bake the curl's 4.0, all of it: the streams lean only away from it."""
-    assert all(abs(b) <= bh.FLOW_LEAN for _p, b, _l in bh.FLOW_BAKED)
-    assert abs(bh.flow_baked("held")[0]) < bh.FLOW_LEAN
-    at_four = [p for p, b, _l in bh.FLOW_BAKED if abs(b) >= bh.FLOW_LEAN]
-    assert at_four == ["hang_sloth", "sleep"]
-    for frame in at_four:
+def test_no_frame_bakes_the_whole_four_degrees() -> None:
+    """Source text: a frame that bakes the join's whole 4 leaves the streams no lean toward it at all (the flow's
+    arrangements halve). L-ui-modernisation-170: `held` took the walk state's row (6 degrees); held up by a hand it hangs
+    now (1.4). The curl's first row sheared 4.0; asleep it is 3.2 now (L-ui-modernisation-150)."""
+    assert all(abs(b) < bh.FLOW_LEAN for _p, b, _l in bh.FLOW_BAKED), bh.FLOW_BAKED
+    for frame in ("held", "sleep", "hang_sloth"):
         for side in (1.0, -1.0):
-            tip, mid, _rise = _lean(frame, side, True)
-            assert tip <= 0.0 and mid <= 0.0, (frame, side, tip, mid)
+            tip, _mid, _rise = _lean(frame, side, True)
+            assert tip > 0.0, (frame, side, tip)

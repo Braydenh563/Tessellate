@@ -1018,8 +1018,9 @@
     startle: { ms: 260, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
     //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
     //: up"): the lower body curls and droops, a slow ease, shorter and wider
-    //: than a lie, the tail wrapped round (a turn well past a lie's).
-    curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
+    //: than a lie, the tail wrapped round (a turn well past a lie's). The first row shears 3.2 degrees, not the join's whole
+    //: 4: the desk's sleeping frames bake it, and at 4 the streams could not lean toward it at all (L-ui-modernisation-150).
+    curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[3, 1.1, 0.74, -5, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
     //: INBOX 1681 (the owner: "crouching down ... lounging ... gliding ... hanging"): a squat folds the
     //: lower body short and wide, a lounge lays it out to one side, a glide trails it long and thin behind
     //: the lean, a drift lets it hang loose and slow, a hang lets it swing from the hips. The act's own

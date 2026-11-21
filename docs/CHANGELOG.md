@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
+- Companion: the desk frames are re-rendered pose-arranged (decision 7): each bakes its pose's first lower row, the capture pins the pacer so two takes agree on 126 of 126 frames, held hangs from the grip (1.4 degrees, was 6), the curl sleeps at 3.2, and the follow-through stays within 3.77 to 3.95 degrees in all (L-ui-modernisation-57, 150, 151, 152, 170).
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
 - Companion: an ear flick gives the ear its own pivot back when it ends, so a later mood's turn of the ear no longer pivots 35 to 47 px elsewhere (L-ui-modernisation-171).
 - Copy: the open-work scan's lowercase to-do names are reworded (INBOX 1811): the capture bar's list button is `capture-bar-list`, a redundant callout ink rule went, queue and step locals are renamed, and typed words (`/todo`, `[!todo]`, saved draft modes) still work.
