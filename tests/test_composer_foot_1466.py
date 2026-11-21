@@ -1,5 +1,5 @@
 """INBOX 1466, the rest: under a composed Ask answer (no model) only "Why this
-answer" showed. The prose offer ("Next, I can open ...") is now the follow-up
+answer" showed. The prose offer ("Next, I can open ...") is now the next-step
 chips, and the notes linked to the ones it cited fill the related row. A model
 answer is untouched (CHAT_PLAN decision 75: the composer never stands in)."""
 

@@ -109,7 +109,73 @@
     return Math.max(320, Math.min(1400, Math.round(measured)));
   }
 
+  //: **A pie: one whole, cut into its shares** (L-world-class-179, the owner's
+  //: "pie charts for the dashboard"). The largest five rows and the rest as
+  //: "Other", since a seventh slice is a sliver nobody can name; each slice is
+  //: the row's own colour when it has one (a category's dot, `row.colour`)
+  //: and the accent otherwise, so both themes hold. The legend beside it names
+  //: each share, and the marks are `.ask-chart-pt` groups like a bar's, so the
+  //: tooltip, the arrow keys and `onPick` work unchanged.
+  const ASK_PIE_SLICES = 6;
+  function askChartPieRows(rows) {
+    const sorted = [...rows].filter((row) => row.value > 0).sort((a, b) => b.value - a.value);
+    if (sorted.length <= ASK_PIE_SLICES) return sorted;
+    const rest = sorted.slice(ASK_PIE_SLICES - 1);
+    return [...sorted.slice(0, ASK_PIE_SLICES - 1), { label: "Other", value: rest.reduce((sum, row) => sum + row.value, 0), other: true }];
+  }
+
+  function askChartPieSvg(chart, width) {
+    //: Filtered here too, so a caller that skips `askChartPieRows` cannot
+    //: draw a zero or negative slice (review 5907752577).
+    const rows = chart.rows.filter((row) => row.value > 0);
+    const whole = rows.reduce((sum, row) => sum + row.value, 0) || 1;
+    //: The legend keeps 130 units for "Category 20%": a narrow card takes the
+    //: room from the pie, never from the names (measured: a 322-unit card cut
+    //: three of six names at a full-height pie).
+    const r = Math.max(48, Math.min(ASK_CHART_H / 2 - 14, (width - 14 - 24 - 130) / 2));
+    const cx = r + 14;
+    const cy = ASK_CHART_H / 2;
+    const svg = askChartSvgEl("svg", { viewBox: `0 0 ${width} ${ASK_CHART_H}`, class: "ask-chart-svg ask-chart-pie", role: chart.interactive ? "group" : "img" });
+    svg.setAttribute("aria-label", `${chart.title}, as a pie chart; the table below has the numbers`);
+    const legendX = cx + r + 24;
+    const room = width - legendX - 8;
+    const step = Math.min(28, (ASK_CHART_H - 24) / Math.max(1, rows.length));
+    let angle = -Math.PI / 2;
+    rows.forEach((row, i) => {
+      const share = row.value / whole;
+      const pct = Math.round(share * 100);
+      const end = angle + share * Math.PI * 2;
+      const at = (a) => `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
+      //: One row is the whole circle: an arc from a point to itself draws nothing.
+      const mark = rows.length === 1
+        ? askChartSvgEl("circle", { cx, cy, r, class: "ask-chart-slice" })
+        : askChartSvgEl("path", { d: `M${cx},${cy} L${at(angle)} A${r},${r} 0 ${share > 0.5 ? 1 : 0} 1 ${at(end)} Z`, class: "ask-chart-slice" });
+      if (row.colour) mark.style.fill = row.colour;
+      else if (row.other) mark.classList.add("is-other");
+      else mark.style.fillOpacity = String(Math.max(0.35, 1 - i * 0.13));
+      angle = end;
+      const y = 12 + step * i + step / 2;
+      const swatch = askChartSvgEl("rect", { x: legendX, y: y - 6, width: 12, height: 12, rx: 3, class: mark.getAttribute("class") });
+      swatch.style.cssText = mark.style.cssText;
+      const text = askChartSvgEl("text", { x: legendX + 18, y: y + 4, class: "ask-chart-axis ask-chart-legend" });
+      text.textContent = askChartFit(`${row.label} ${pct}%`, room - 18);
+      const label = `${askChartTipText(chart, row)}, ${pct}%`;
+      if (!chart.interactive) {
+        const tip = askChartSvgEl("title");
+        tip.textContent = label;
+        mark.appendChild(tip);
+        svg.append(mark, swatch, text);
+        return;
+      }
+      const group = askChartSvgEl("g", { class: "ask-chart-pt", tabindex: i === 0 ? 0 : -1, role: chart.onPick ? "button" : "img", "aria-label": label, "data-i": i });
+      group.append(mark, swatch, text);
+      svg.appendChild(group);
+    });
+    return svg;
+  }
+
   function askChartSvg(chart, width = ASK_CHART_W) {
+    if (chart.kind === "pie") return askChartPieSvg(chart, width);
     const rows = chart.rows;
     const max = Math.max(1, ...rows.map((r) => r.value));
     const ticks = askChartTicks(max);
@@ -288,6 +354,7 @@
     //: not only the Statistics page's (the owner, 2026-11-12: "I cant
     //: interact with or see the values"); only `onPick` makes a mark a button.
     chart = { ...chart, interactive: true };
+    if (chart.kind === "pie") chart.rows = askChartPieRows(chart.rows);
     const head = document.createElement("div");
     head.className = "ask-chart-head";
     const title = document.createElement("strong");

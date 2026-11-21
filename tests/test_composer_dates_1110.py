@@ -12,9 +12,8 @@ import pytest
 
 from tessellate.ai import follow_items
 from tessellate.ai import recognise_questions
-from tessellate.api import chat_said, chat_turn, routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_user_now
 from tests._consent import confirmed
 
 NOW = datetime(2026, 11, 10, 9, 0)
@@ -24,10 +23,7 @@ FACT = [{"question": "when is the dentist check-up", "answer": "Check-up 21 Nove
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    #: `config` too: a snooze reads the clock there at call time (`commands._plan_task`), so
-    #: "the 16th" was counted from the real day and became 16 December once it passed (CI, 2026-11-21).
-    for module in (routes_chat, chat_said, chat_turn, config):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_user_now(monkeypatch, NOW)
 
 
 def _events(client, question, **body):

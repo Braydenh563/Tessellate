@@ -8239,21 +8239,26 @@ input[type="color"].wb-mixed {
    left with the library's defaults (DOCUMENTS_PLAN Phase 2 decision 7; lazy since audit 1028, fields on the md radius like every other input). The
    panel is CodeMirror's own DOM, so this is layout and chrome only: the input
    and button *shapes* come from the app's existing rules by reusing their
-   selectors here rather than by re-describing them. */
+   selectors here rather than by re-describing them. A note's edit box carries
+   the same panel (L-world-class-127). */
+.note-surface .cm-panels,
 .doc-editor .cm-panels {
   background: var(--card);
   border-color: var(--border);
   color: var(--text);
 }
 
+.note-surface .cm-panels.cm-panels-top,
 .doc-editor .cm-panels.cm-panels-top {
   border-bottom: 1px solid var(--border);
 }
 
+.note-surface .cm-panels.cm-panels-bottom,
 .doc-editor .cm-panels.cm-panels-bottom {
   border-top: 1px solid var(--border);
 }
 
+.note-surface .cm-search,
 .doc-editor .cm-search {
   display: flex;
   flex-wrap: wrap;
@@ -8262,6 +8267,7 @@ input[type="color"].wb-mixed {
   padding: var(--space-3) var(--space-4);
 }
 
+.note-surface .cm-search .cm-textfield,
 .doc-editor .cm-search .cm-textfield {
   background: var(--input-bg);
   color: var(--text);
@@ -8272,11 +8278,13 @@ input[type="color"].wb-mixed {
   min-width: 12ch;
 }
 
+.note-surface .cm-search .cm-textfield:focus-visible,
 .doc-editor .cm-search .cm-textfield:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
+.note-surface .cm-search .cm-button,
 .doc-editor .cm-search .cm-button {
   background: var(--ghost-btn-bg);
   color: var(--text);
@@ -8287,11 +8295,14 @@ input[type="color"].wb-mixed {
   cursor: pointer;
 }
 
+.note-surface .cm-search .cm-button:hover,
 .doc-editor .cm-search .cm-button:hover,
+.note-surface .cm-search .cm-button:is(:focus-visible, :has(:focus-visible)),
 .doc-editor .cm-search .cm-button:is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg-hover);
 }
 
+.note-surface .cm-editor .cm-panel.cm-search label,
 .doc-editor .cm-editor .cm-panel.cm-search label {
   color: var(--muted);
   /* CodeMirror's own 80% put these at 11.776px, off the type scale (audit
@@ -8302,6 +8313,7 @@ input[type="color"].wb-mixed {
   gap: var(--space-1);
 }
 
+.note-surface .cm-search button[name="close"],
 .doc-editor .cm-search button[name="close"] {
   color: var(--muted);
   background: none;
@@ -8313,6 +8325,7 @@ input[type="color"].wb-mixed {
 }
 
 @media (pointer: coarse) {
+  .note-surface .cm-search button[name="close"],
   .doc-editor .cm-search button[name="close"] {
     min-width: 44px;
     min-block-size: 44px;

@@ -66,7 +66,7 @@ def by_id() -> dict[str, dict]:
     return {e["id"]: e for e in entries()}
 
 
-def built(e: dict, side: str) -> bool:
+def has_side(e: dict, side: str) -> bool:
     return e[side]["s"] == "built"
 
 
@@ -79,14 +79,14 @@ def test_entries_are_well_formed():
         assert 0 < lo <= hi, e["id"]
         for s in SIDES:
             assert e[s]["s"] in {"built", "missing"}, (e["id"], s)
-            assert ("at" in e[s]) == built(e, s), (e["id"], s)
+            assert ("at" in e[s]) == has_side(e, s), (e["id"], s)
 
 
 def test_built_claims_point_at_real_code():
     """`at` is `path#text`: the text must be in that file, so a claim of built is checked, not trusted."""
     for e in entries():
         for s in SIDES:
-            if built(e, s):
+            if has_side(e, s):
                 path, _, needle = e[s]["at"].partition("#")
                 text = unwrapped((ROOT / path).read_text(encoding="utf-8"))
                 assert needle and needle in text, f"{e['id']} {s}: {needle!r} not in {path}"
@@ -130,7 +130,7 @@ def desk_rows() -> frozenset[str]:
 def test_every_table_row_is_catalogued(side):
     """A row added to either side's tables needs its entry here, which states the other side's status (INBOX 1696 v)."""
     rows = app_rows() if side == "app" else desk_rows()
-    named = {n for e in entries() if built(e, side) for n in e[side]["names"]}
+    named = {n for e in entries() if has_side(e, side) for n in e[side]["names"]}
     assert len(rows) > 50, len(rows)
     assert sorted(rows - named) == [], f"{side} rows with no catalogue entry"
     assert sorted(named - rows) == [], f"{side} names that are no longer a table row"
@@ -138,9 +138,9 @@ def test_every_table_row_is_catalogued(side):
 
 def test_one_sided_entries_are_on_the_allow_lists():
     """Parity (INBOX 1696 v, kk): what one side has, the other is to build. The lists may only shrink."""
-    app_only = {e["id"] for e in entries() if built(e, "app") and not built(e, "desk")}
-    desk_only = {e["id"] for e in entries() if built(e, "desk") and not built(e, "app")}
-    neither = [e["id"] for e in entries() if not built(e, "app") and not built(e, "desk")]
+    app_only = {e["id"] for e in entries() if has_side(e, "app") and not has_side(e, "desk")}
+    desk_only = {e["id"] for e in entries() if has_side(e, "desk") and not has_side(e, "app")}
+    neither = [e["id"] for e in entries() if not has_side(e, "app") and not has_side(e, "desk")]
     assert sorted(app_only - APP_ONLY) == [], "new in-app-only entries: build the desk side too"
     assert sorted(desk_only - DESK_ONLY) == [], "new desk-only entries: build the in-app side too"
     assert sorted(APP_ONLY - app_only) == [], "built on both now (or gone): delete these ids and lower the cap"
@@ -217,8 +217,8 @@ def seeded_hour(seed: int, hour: int, side: str | None = None) -> dict:
     `side`, only what that side has built. The acts, tail poses, lower sways and faces shown, and the longest hold."""
     d, ids, rng = doc(), by_id(), random.Random(seed)
     parts_rng = random.Random(seed * 7919 + 1)  # its own stream: building a part row must not reshuffle the acts drawn
-    acts = [e for e in entries() if e["kind"] == "idle_act" and e.get("w", 0) > 0 and (side is None or built(e, side))]
-    parts = {e["id"] for e in entries() if side is None or built(e, side)}
+    acts = [e for e in entries() if e["kind"] == "idle_act" and e.get("w", 0) > 0 and (side is None or has_side(e, side))]
+    parts = {e["id"] for e in entries() if side is None or has_side(e, side)}
     t, mood, mood_until, recent, last_end = 0.0, "content", 0.0, [], {}
     seen: dict[str, set] = {"acts": set(), "tail": set(), "lower": set(), "face": set()}
     longest = 0.0

@@ -197,16 +197,8 @@ W_REPEAT = [
 ]
 
 
-#: Classes still failing, each case a strict xfail until its fix lands (take
-#: the letter out when the class passes).
-OPEN: set[str] = set()
-
-
-def _cases(cls: str, rows: list):  # noqa: ANN202
-    def mark(q: str) -> list:
-        return [pytest.mark.xfail(strict=True, reason="open")] if cls in OPEN or q in OPEN else []
-
-    return [pytest.param(*row, id=row[0], marks=mark(row[0])) for row in rows]
+def _cases(cls: str, rows: list):  # noqa: ANN202, ARG001
+    return [pytest.param(*row, id=row[0]) for row in rows]
 
 
 def _check(said: str, must: str, never: str | None, q: str, cls: str) -> None:

@@ -169,7 +169,7 @@ def _citation_names(contents: list[str]) -> list[str]:
 
 
 def test_a_citation_label_is_cut_at_a_word_not_mid_word():
-    """The marker's aria-label was `slice(0, 40)`: "follow up with her by em"."""
+    """The marker's aria-label was `slice(0, 40)`, which cut the line mid-word."""
     names = _citation_names([
         "Met Dana at the meetup, follow up with her by email next week",
         "---\ntags: [a]\n---\n- [ ] buy a capo and restring the guitar before friday",

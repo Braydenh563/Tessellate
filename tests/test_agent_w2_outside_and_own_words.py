@@ -112,7 +112,7 @@ def test_an_acts_words_are_never_respelled(frame, own):
     typed = frame.format(w=own)
     found = commands.read_typed(typed, NOW)
     assert found, typed
-    said = set(_words(typed)) | {"to", "do"}  # "todo" read as "to do" is a split, not a respelling
+    said = set(_words(typed)) | {"to", "do"}  # the one-word spelling read as "to do" is a split, not a respelling
     for key in _KEYS:
         if key in found:
             if key == "asked":

@@ -65,8 +65,10 @@ def test_the_time_is_the_lines_last_fact_everywhere():
     cards = (_read("note-cards.js") + _read("entry-card.js"))
     block = cards[cards.index('date.className = "entry-date";'):]
     assert "meta.appendChild(date);" in block[:2000]
-    # The imported file's chip goes before it, not after.
-    assert "meta.insertBefore(fileChip, date);" in cards
+    # The imported file's chip goes before it, not after (since L-general-13
+    # one provenance chip carries the file, the page, the document section
+    # and the recording).
+    assert "meta.insertBefore(provenance, date);" in cards
     # One auto margin on the phone's line (the time's), not two: two split the
     # room and moved the time on every card.
     phone = _css("10-responsive.css")

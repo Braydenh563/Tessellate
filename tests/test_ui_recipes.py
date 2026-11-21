@@ -7946,3 +7946,28 @@ def test_a_tool_rail_is_one_tab_stop_per_section() -> None:
     assert "tabIndex = button === keep ? 0 : -1" in src and '"Home"' in src and '"End"' in src
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "A toolbar of many tools" in design and "whiteboard-toolbar.js" in design
+
+
+def test_a_note_s_provenance_is_one_chip_built_in_the_note_card() -> None:
+    """L-general-13: the origin chip is drawn once, in entry-card.js, from the server's `source_kind`;
+    no second place builds a `source-path` chip, and nothing reads `source_url` to draw its own."""
+    card = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8")
+    assert card.count('"source-path"') == 1
+    assert "entry.source_kind && entry.source_label" in card
+    assert "Imported from ${entry.source_path}" not in card
+    others = [
+        p.name
+        for p in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js")
+        if p.name != "entry-card.js" and '"source-path"' in p.read_text(encoding="utf-8")
+    ]
+    assert others == []
+
+
+def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
+    """L-general-12: Triage opens `openSheet`, never a hand-built overlay, and each act (and the bulk
+    one) joins the undo stack once."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-triage.js").read_text(encoding="utf-8")
+    assert "openSheet({" in js
+    assert 'createElement("dialog")' not in js and "modal-overlay" not in js
+    assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
+    assert ".style." not in js and "style=" not in js

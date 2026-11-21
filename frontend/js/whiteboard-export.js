@@ -1435,6 +1435,33 @@
       run: () => wbExportDrawio(),
     },
     {
+      //: **A folder with its notes** (WORLD_CLASS_PLAN decision 66,
+      //: L-world-class-130): one zip holding the picture as SVG and PNG and
+      //: every note on the board (or in the selection) as Markdown, the files
+      //: the Notes selection's Export writes. Inline so the shared scope does
+      //: not grow; the server only packs what the browser drew.
+      value: "folder", label: "Folder with notes", scopes: ["selection", "whole"], picture: true,
+      note: "A zip: the picture as SVG and PNG, with every note on it as Markdown.",
+      run: async function wbExportBoardFolder(scope) {
+        const { scale, transparent } = wbExportPngPrefs();
+        const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
+        const png = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png").catch(() => null);
+        const keys = scope === "selection" ? wbSelectedKeys() : null;
+        const ids = [...new Set(wbState.nodes.filter((n) => n.entry_id && (!keys || keys.has(wbMultiKey("node", n.id)))).map((n) => n.entry_id))];
+        const name = wbBoardTitleForExport() || "Board";
+        //: Uploads, not JSON: a board with its pictures inlined passes the
+        //: 16 MB JSON cap, and an upload keeps the large one.
+        const form = new FormData();
+        form.append("name", name);
+        form.append("ids", ids.join(","));
+        form.append("svg", new Blob([await wbInlineSvgImages(svg)], { type: "image/svg+xml" }), "board.svg");
+        if (png) form.append("png", png, "board.png");
+        const response = await api("/export/board-folder", { method: "POST", body: form });
+        await saveFile(wbExportFileName(scope, "zip"), await response.blob());
+        toast(`Board exported as a folder with ${nounCount(ids.length, "note")}.`);
+      },
+    },
+    {
       value: "pdf", label: "PDF", scopes: ["selection", "visible", "whole"],
       note: "A PDF file: pick the page size, the direction and how the board is cut into pages.",
       run: (scope) => wbExportPdf(scope),

@@ -817,29 +817,18 @@
 [data-wb-layer="wb-html-layer"] > .wb-card {
   contain-intrinsic-size: auto 250px auto 44px;
 }
-/* **A long list's rows off screen are not styled either** (INBOX 400).
-   The page's scrollers are plain overflow boxes, so the browser's own
-   on-screen test works here where it could not on the board's transform:
-   `content-visibility: auto` skips style, layout and paint for a row until
-   it comes near the window, and `auto` in the intrinsic size remembers the
-   height it last drew at, so the scrollbar does not jump once a row has
-   been seen. Traced at 500 notes (`scratchpad/ui-sweeps/f2-trace.js`): 1,206
-   of the 1,382 elements in the Notes list were more than a window below the
-   fold, and entering the tab restyled all of them, 61ms; with this, 31ms.
-   Not the Timeline's feed (L492): it is windowed (`windowRows`), so only
-   rows near the window exist, and a row locking and unlocking as it crossed
-   the edge was a layout a frame: 38 to 44 layouts a second while scrolling,
-   6 to 10 without, entry unchanged (430 nodes, 6 to 15ms of layout).
-   Not a row being edited, holding an open disclosure or holding focus:
-   containment clips what a row paints to its own box, and the note editor's
-   toolbar menus and a `<details>` list open past it. The ⋯ menus are not
-   affected, they leave for `<body>` when they open (`wireEscapedActionMenu`).
-   The `:has()` here is anchored on the row, so it only ever looks inside
-   one row. */
-#entry-list > li:not(.row-shell, .list-window-sentinel, :focus-within):not(:has(textarea, details[open], .cm-editor)) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 8.25rem;
-}
+/* **The Notes list's rows do not lock either** (L-general-34; they did, INBOX 400).
+   `content-visibility: auto` skipped style, layout and paint for a row off
+   screen, which was worth 61 to 31ms on entering the tab at 500 notes. But
+   `windowRows` already keeps only rows near the window, so the rule's saving
+   went and its cost stayed: scrolling 500 notes at 4x CPU (`scrolltrace.js`
+   SCENE=notes, five runs each) layout took 478 to 575ms with it and 216 to
+   262ms without, raster 1.1 to 1.6s against 0.8 to 1.0s, the layouts a
+   second the same (12 to 23 either way); entering the tab took 977ms of
+   layout and style with it and 818ms without (seven runs). The Timeline's
+   feed was dropped the same way (L492: 38 to 44 layouts a second against
+   6 to 10). The Library's cards keep the rule (`library-lazy.css`): they
+   are not windowed. */
 /* Each list's placeholders are its own rows' shape (`showSkeletons`,
    app.js; the look is `.skeleton`, 02-chat-graph.css): a Library card's
    height in the grid's columns, a Timeline row's in the feed. */
@@ -10440,8 +10429,8 @@ header#top-bar {
    tab and drops the other six, citing the HIG's own tab-bar guidance, because a
    bar that says where you are is worth more than a bar that names everywhere you
    could go. The same shape, at the other end of the scale, costs one rule and no
-   copy decision (the "Dashboard" to "Home" question the note above defers is
-   still deferred, and still the better answer).
+   copy decision (the "Dashboard" to "Home" question the note above raises
+   stays as it is, and is still the better answer).
    The selected tab takes its own content width and the other six share what is
    left. Measured after, at 320, 360 and 390: the strip fits on one row with no
    sideways scroll at all three, and the caption on the selected tab is whole. */
