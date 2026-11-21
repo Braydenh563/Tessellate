@@ -930,7 +930,8 @@
         them. Under it, what finished in the last half hour says how it ended,
         how long it took and when, with its lines. Stop the model, in the menu,
         ends any answer and lets the model leave memory. Agent runs lists each
-        run this session with its steps; the log is in the menu. The two tabs
+        run this session with its steps; the log is in the menu. History
+        lists every run since the app started, with what started it and why. The three tabs
         show how many each holds, and each part is a card.
       </p>
     </div>
@@ -939,6 +940,7 @@
     <div class="tabs-line popup-kinds activity-tabs" id="activity-tabs" role="tablist" aria-label="Activity">
       <button type="button" role="tab" id="activity-tab-running" data-value="running" aria-selected="true" aria-controls="activity-running"><i class="ph ph-activity pop-tab-glyph ph-lead" aria-hidden="true"></i>Running<span class="pop-count" id="activity-count-running">0</span></button>
       <button type="button" role="tab" id="activity-tab-runs" data-value="runs" aria-selected="false" aria-controls="activity-runs" tabindex="-1"><i class="ph ph-strategy pop-tab-glyph ph-lead" aria-hidden="true"></i>Agent runs<span class="pop-count" id="activity-count-runs">0</span></button>
+      <button type="button" role="tab" id="activity-tab-history" data-value="history" aria-selected="false" aria-controls="activity-history" tabindex="-1"><i class="ph ph-clock-counter-clockwise pop-tab-glyph ph-lead" aria-hidden="true"></i>History<span class="pop-count" id="activity-count-history">0</span></button>
     </div>
     <div id="activity-running" role="tabpanel" aria-labelledby="activity-tab-running" class="activity-running">
       <section class="pop-card">
@@ -955,6 +957,17 @@
         <div class="pop-card-head"><i class="ph ph-check-circle pop-glyph" aria-hidden="true"></i><h3 id="activity-finished-head" class="pop-card-title">Finished in the last half hour</h3></div>
         <div class="pop-card-body">
           <ul id="activity-finished" class="entry-list" aria-labelledby="activity-finished-head"></ul>
+        </div>
+      </section>
+    </div>
+    <!-- Every AI and background run since the app started, one list: what
+         started it, what it was, when, how long, how it ended and why (L669). -->
+    <div id="activity-history" role="tabpanel" aria-labelledby="activity-tab-history" class="hidden">
+      <section class="pop-card">
+        <div class="pop-card-head"><i class="ph ph-clock-counter-clockwise pop-glyph" aria-hidden="true"></i><h3 class="pop-card-title">Every run since the app started</h3></div>
+        <div class="pop-card-body">
+          <ul id="activity-history-list" class="entry-list" aria-label="Every run since the app started"></ul>
+          <p id="activity-history-empty" class="muted empty-line">Nothing has run yet.</p>
         </div>
       </section>
     </div>

@@ -1027,6 +1027,35 @@ def list_activity() -> dict:
     return {"jobs": activity_rows(), "finished": finished_rows(), "model": _model_state(), "now": time.time()}
 
 
+@router.get("/activity/history")
+def activity_history() -> dict:
+    """Every AI and background run the app remembers, newest first (L669):
+    what started it, what it was, when, how long it took, how it ended and
+    why. The runs in flight come first, then the ledger's ring."""
+    rows = [
+        {
+            "run_id": run["id"], "kind": run["kind"], "label": run["label"], "title": run["title"],
+            "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""), "why": run.get("why", ""),
+            "outcome": "running", "result": run.get("detail", ""), "started": run["started"],
+            "finished": None, "duration_ms": None, "count": 1,
+        }
+        for run in reversed(jobruns.live())
+    ]
+    rows.extend(
+        {
+            "run_id": run["run_id"], "kind": run["kind"], "label": run["label"], "title": run["title"],
+            "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""), "why": run.get("why", ""),
+            "outcome": run.get("outcome", "completed"), "result": run.get("detail", ""),
+            "started": run.get("started"), "finished": run.get("ended"),
+            "duration_ms": run.get("duration_ms"), "count": run.get("count", 1),
+        }
+        for run in jobruns.finished()
+    )
+    for row in rows:
+        row["label"] = jobruns.KINDS.get(row["kind"]) or row["label"]
+    return {"runs": rows}
+
+
 #: Finished runs the Running tab lists under what is running, newest first.
 FINISHED_ROWS = 20
 
@@ -1041,6 +1070,7 @@ def _finished_run_row(run: dict, report: dict | None) -> dict:
         "detail": run.get("detail", ""),
         "outcome": run.get("outcome", "completed"),
         "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""),
+        "why": run.get("why", ""),
         "started": run.get("started"),
         "finished": run.get("ended") or 0.0,
         "duration_ms": run.get("duration_ms"),

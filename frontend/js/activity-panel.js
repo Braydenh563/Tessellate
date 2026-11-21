@@ -124,6 +124,49 @@
     $("activity-count-running").textContent = String(jobs.length);
   }
 
+  //: The History tab (L669): every run, newest first, from `GET /activity/history`.
+  //: Read once per opening and on a click of the tab, not polled: it is a record.
+  const HISTORY_OUTCOMES = { running: "Running", completed: "Done", failed: "Failed", cancelled: "Stopped" };
+
+  function historyRow(run) {
+    const li = document.createElement("li");
+    li.dataset.runId = run.run_id;
+    const head = document.createElement("div");
+    head.className = "entry-meta";
+    const name = document.createElement("strong");
+    name.textContent = run.title || run.label;
+    head.appendChild(name);
+    const state = document.createElement("span");
+    state.className = `muted task-elapsed history-outcome is-${run.outcome}`;
+    const took = activityDuration(run.duration_ms);
+    state.textContent = `${HISTORY_OUTCOMES[run.outcome] || run.outcome}${took ? ` in ${took}` : ""}${run.count > 1 ? `, ${run.count} times` : ""}`;
+    head.appendChild(state);
+    li.appendChild(head);
+    const when = new Date(run.started * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", ...clockOptions() });
+    const origin = run.origin ? `${run.origin[0].toUpperCase()}${run.origin.slice(1)}` : "";
+    const facts = document.createElement("p");
+    facts.className = "muted task-detail history-facts";
+    facts.textContent = [run.label, when, origin].filter(Boolean).join(" · ");
+    li.appendChild(facts);
+    for (const text of [run.why, run.result]) {
+      if (!text) continue;
+      const line = document.createElement("p");
+      line.className = "muted task-detail";
+      line.textContent = text[0].toUpperCase() + text.slice(1);
+      li.appendChild(line);
+    }
+    return li;
+  }
+
+  async function renderActivityHistory() {
+    const body = await apiJson("/activity/history", { silent: true }).catch(() => null);
+    if (!body) return;
+    const runs = body.runs || [];
+    $("activity-history-list").replaceChildren(...runs.map(historyRow));
+    $("activity-history-empty").classList.toggle("hidden", runs.length > 0);
+    $("activity-count-history").textContent = String(runs.length);
+  }
+
   //: The report sheet lives with the importers (app-import.js, lazy).
   async function openActivityReport(id) {
     if (await ensureModule("appImport")) openImportReport(id);
@@ -188,10 +231,12 @@
     }
     $("activity-running").classList.toggle("hidden", name !== "running");
     $("activity-runs").classList.toggle("hidden", name !== "runs");
+    $("activity-history").classList.toggle("hidden", name !== "history");
     //: The broom and the log are the runs' own controls.
     $("agent-monitor-clear")?.classList.toggle("hidden", name !== "runs");
     $("agent-monitor-log-toggle")?.classList.toggle("hidden", name !== "runs");
     if (name === "running") renderActivity();
+    if (name === "history") renderActivityHistory();
   }
   window.setActivityTab = setActivityTab;
 
@@ -199,7 +244,9 @@
     tab.addEventListener("click", () => setActivityTab(tab.dataset.value));
     tab.addEventListener("keydown", (event) => {
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      const next = tab.dataset.value === "running" ? "runs" : "running";
+      const names = [...document.querySelectorAll("#activity-tabs [role=tab]")].map((t) => t.dataset.value);
+      const step = event.key === "ArrowRight" ? 1 : -1;
+      const next = names[(names.indexOf(tab.dataset.value) + step + names.length) % names.length];
       setActivityTab(next);
       document.querySelector(`#activity-tabs [data-value="${next}"]`)?.focus();
     });
