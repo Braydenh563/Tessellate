@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 6 | 1 | 0 | 3 | 7 |
+| chat | 0 | 7 | 1 | 0 | 3 | 8 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,12 +17,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 57 | 0 | 69 | 359 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 363 | 69 | 0 | 125 | 758 |
+| all | 326 | 364 | 69 | 0 | 125 | 759 |
 
 ## graph
 
 ## chat
 
+- [ ] **L-world-class-770** `chat` open, M: Split chat.js into cohesive classic scripts, index.html order kept, app_js_text and CODEMAP fresh, ratchets held. From L639/L698 (hub 2026-11-21; world-class fffd0c47f, not yet fetched). Evidence: frontend/js/chat.js 1639 lines
 - [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
 - [ ] **L974** `chat` blocked-hardware, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model
 - [ ] **L975** `chat` blocked-hardware, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine
