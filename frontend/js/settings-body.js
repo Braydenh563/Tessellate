@@ -110,6 +110,25 @@ const SURFACES = Object.assign(new Map(), {
     SURFACES.fragment(next[0], next[1]);
     SURFACES.warmLater(1000);
   },
+  //: A listener for a control of an unbuilt surface, added when that surface is built instead of building it
+  //: now (L675: each `$` in settings-controls.js built all of Settings). Nested surfaces are asked first.
+  wire(id, ...args) {
+    const live = document.getElementById(id);
+    const hit = !live && [...SURFACES].sort(([, a]) => (a.parent ? -1 : 0)).find(([name, entry]) => !entry.done && entry.tpl && SURFACES.holds(name, entry, id));
+    if (hit) onSurface(hit[0], () => SURFACES.wire(id, ...args));
+    else live?.addEventListener(...args);
+  },
+  //: A built surface's nodes moved into a fragment, listeners and typed state with them, for the next
+  //: build to move back (L676: a closed Settings kept up to 12,000 elements in the page).
+  park(name) {
+    const entry = SURFACES.get(name);
+    const host = document.getElementById(name);
+    if (!entry?.done || !host) return;
+    const frag = document.createDocumentFragment();
+    frag.append(...host.childNodes);
+    host.append((entry.tpl = document.createElement("template")));
+    Object.assign(entry, { frag, done: false });
+  },
   warmLater(delay) {
     const go = () => SURFACES.warm();
     setTimeout(() => (window.requestIdleCallback ? window.requestIdleCallback(go, { timeout: 6000 }) : go()), delay);
@@ -154,9 +173,9 @@ function surfaceFind(id) {
   return null;
 }
 
-//: Runs `run` now when the surface is built, else the moment it is.
+//: Runs `run` now when the surface is built, else the moment it is; queued once however often it is asked.
 function onSurface(name, run) {
   const entry = SURFACES.get(name);
-  if (entry && !entry.done) entry.after.push(run);
+  if (entry && !entry.done) entry.after.includes(run) || entry.after.push(run);
   else run();
 }

@@ -395,7 +395,7 @@ def test_the_clear_button_carries_note_tags_and_a_look_undo_repaints_the_theme_b
 
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
     data = (js / "settings-data.js").read_text(encoding="utf-8")
-    assert "note_tags: done.note_tags" in data.split('$("clear-dismissed")', 1)[1][:600]
+    assert "note_tags: done.note_tags" in data.split('wire("clear-dismissed"', 1)[1][:600]
     look = data.split('kept.kind === "look") {', 1)[1].split("} else if", 1)[0]
     assert "applyThemeChoice(" in look and "await" not in look.split("applyThemeChoice(", 1)[0].split("\n")[-1]
     settings = (js / "settings.js").read_text(encoding="utf-8")

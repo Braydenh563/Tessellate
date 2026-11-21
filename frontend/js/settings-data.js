@@ -307,11 +307,11 @@ async function saveBackupCopyDir(value) {
   }
 }
 
-$("pref-backup-copy-dir")?.addEventListener("blur", (event) => saveBackupCopyDir(event.target.value.trim()));
-$("pref-backup-copy-dir")?.addEventListener("keydown", (event) => {
+SURFACES.wire("pref-backup-copy-dir", "blur", (event) => saveBackupCopyDir(event.target.value.trim()));
+SURFACES.wire("pref-backup-copy-dir", "keydown", (event) => {
   if (event.key === "Enter") event.target.blur();
 });
-$("pref-backup-copy-clear")?.addEventListener("click", () => {
+SURFACES.wire("pref-backup-copy-clear", "click", () => {
   $("pref-backup-copy-dir").value = "";
   saveBackupCopyDir("");
 });
@@ -854,14 +854,14 @@ async function renderSettingsClear() {
     }
   }
 
-  $("dismissed-toggle")?.addEventListener("click", () => {
+  SURFACES.wire("dismissed-toggle", "click", () => {
     const toggle = $("dismissed-toggle");
     const open = toggle.getAttribute("aria-expanded") !== "true";
     toggle.setAttribute("aria-expanded", String(open));
     $("dismissed-list").classList.toggle("hidden", !open);
     if (open) renderDismissedList();
   });
-  $("dismissed-toggle")?.addEventListener("dismissed-refresh", renderDismissedList);
+  SURFACES.wire("dismissed-toggle", "dismissed-refresh", renderDismissedList);
 })();
 
 const DISMISSED_KIND_WORDS = {
@@ -902,7 +902,7 @@ function settingsClearDone(change, message) {
   if (settingsModalOpen()) renderSettingsClear();
 }
 
-$("clear-recents")?.addEventListener("click", async () => {
+SURFACES.wire("clear-recents", "click", async () => {
   await ensureModule("searchSuggest");
   const before = searchRecentClearAll();
   const total = Object.values(before).reduce((sum, list) => sum + list.length, 0);
@@ -915,7 +915,7 @@ $("clear-recents")?.addEventListener("click", async () => {
   );
 });
 
-$("clear-previews")?.addEventListener("click", () => {
+SURFACES.wire("clear-previews", "click", () => {
   const count = previewCount();
   if (!count) return;
   clearPreviews();
@@ -923,7 +923,7 @@ $("clear-previews")?.addEventListener("click", () => {
   renderSettingsClear();
 });
 
-$("clear-guide")?.addEventListener("click", async () => {
+SURFACES.wire("clear-guide", "click", async () => {
   const turns = guideTurns().slice();
   if (!turns.length) return;
   await ensureModule("helpChat");
@@ -944,7 +944,7 @@ function restoreGuideTurns(turns) {
   for (const turn of turns) renderHelpChatMessage(turn.role, turn.content, [], [], null);
 }
 
-$("clear-dismissed")?.addEventListener("click", async () => {
+SURFACES.wire("clear-dismissed", "click", async () => {
   try {
     const done = await apiJson("/suggestions/dismissed/clear", { method: "POST" });
     if (!done.cleared) return;

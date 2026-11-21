@@ -502,7 +502,7 @@ def test_atlas_look_says_when_it_follows_face_looks() -> None:
     assert 'ownNameMarkStyle().look' in look
     assert 'return { look: "masculine", reason: "default" };' in look
     assert "return atlasLookReason().look;" in atlas[atlas.index("function atlasLook()") :][:120]
-    face = settings[settings.index('$("face-look").addEventListener') :]
+    face = settings[settings.index('wire("face-look").addEventListener') :]
     face = face[: face.index("});")]
     assert "atlasRepaint()" in face, "a Face looks change leaves an Auto Atlas in the old look"
 
@@ -695,7 +695,8 @@ def test_the_colour_pairs_hold_on_both_pages() -> None:
 def test_the_small_mark_keeps_one_cue() -> None:
     # 28px and under draws the "mini" mark: no hat on a creature (its ears
     # are the cue), no specks, a thicker line.
-    mark = APP[APP.index("function nameMark(seed") :][:1200]
+    # The size rule moved into nameMarkGenerated when the first draw split in two (L-world-class-362).
+    mark = APP[APP.index("function nameMarkGenerated(seed") :][:1200]
     assert 'mini ? "mini" : "mark"' in mark and "const mini = size <= 28;" in mark
     draw = APP[APP.index("function drawCharacter(") : APP.index("//: A nigiri about")]
     assert 'const worn = mini && beast ? reading.props.filter((p) => !NAME_MARK_HEAD_KINDS.includes(p))' in draw

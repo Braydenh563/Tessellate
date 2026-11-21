@@ -203,10 +203,10 @@ function renderChatActiveModelBadge() {
 //: `position: fixed` (see the stylesheet's own note on why `absolute` put it
 //: off the bottom of the screen), so nothing positions it but this.
 function placeChatModelPanel() {
-  //: Not `$`: a scroll or resize while Settings shows asked it for ids in the unbuilt Chat surface and built
-  //: the whole surface inside that event (60 to 77 ms of a Settings key at 4x CPU, L-world-class-360).
+  //: Not `$`: this runs on every scroll, and asking for an id of the unbuilt Chat tab built it (L675, L-world-class-360).
   const panel = document.getElementById("chat-model-panel");
-  const badge = panel && !panel.classList.contains("hidden") && $("chat-active-model");
+  if (!panel || panel.classList.contains("hidden")) return;
+  const badge = $("chat-active-model");
   if (!badge) return;
   const margin = 8;
   panel.style.left = "0px";

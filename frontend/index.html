@@ -10361,10 +10361,12 @@ Link to another note with [[its first few words]]."></textarea>
           </template>
           <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
-          <script type="text/x-surface" id="settings-body-template" data-surface="settings">
+          <script type="text/x-surface" id="settings-body-template" data-surface="settings"
+            data-nests="settings-models settings-searchindex settings-personas settings-skills settings-templates settings-memory settings-learned settings-tools settings-appearance settings-extras settings-shortcuts settings-preferences settings-general settings-websearch settings-tasks settings-data settings-account settings-privacy settings-logs settings-help settings-about">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
+          <template data-surface="settings-models">
             <p id="ollama-status" class="status is-checking">Checking the models…</p>
             <!-- The shape of what is coming while the first status is on its
                  way (`renderSettings`: showSkeletons / clearSkeletons). -->
@@ -10827,6 +10829,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <div id="custom-model-cards" class="model-grid"></div>
               </div>
             </div>
+          </template>
           </section>
 
           <!-- Search and index (INBOX 444). The engine that makes the vectors,
@@ -10835,6 +10838,7 @@ Link to another note with [[its first few words]]."></textarea>
                (relevance). Models was 4,737px with them. Measured:
                scratchpad/ui-sweeps/settingsia.js. -->
           <section class="settings-section hidden" id="settings-searchindex">
+          <template data-surface="settings-searchindex">
             <p id="search-engine-health" class="status"></p>
             <!-- WORLD_CLASS_PLAN section 21 rows 1 and 2: DESIGN.md's notice
                  recipe (an icon, one line, the warn tone), not an error line. -->
@@ -11133,10 +11137,12 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <p id="currency-rates-status" class="status" role="status"></p>
             </div>
+          </template>
           </section>
 
           <!-- Personas: who the AI is when it answers -->
           <section class="settings-section hidden" id="settings-personas">
+          <template data-surface="settings-personas">
             <div class="dock settings-pane-title" data-dock-name="settings-personas">
               <div class="dock-identity"><h3>Personas</h3></div>
               <div class="dock-actions">
@@ -11267,10 +11273,12 @@ Link to another note with [[its first few words]]."></textarea>
               <input id="persona-import-file" aria-label="Import a persona from a JSON file" title="Import a persona from a JSON file" type="file" accept=".json" class="hidden">
             </div>
             </div>
+          </template>
           </section>
 
           <!-- Skills (§21): named, repeatable jobs over the notebook -->
           <section class="settings-section hidden" id="settings-skills">
+          <template data-surface="settings-skills">
             <div class="dock settings-pane-title" data-dock-name="settings-skills">
               <div class="dock-identity"><h3>Skills</h3></div>
               <div class="dock-actions">
@@ -11434,10 +11442,12 @@ Link to another note with [[its first few words]]."></textarea>
               <input id="skill-import-file" aria-label="Import a skill from a JSON file" title="Import a skill from a JSON file" type="file" accept=".json" class="hidden">
             </div>
             </div>
+          </template>
           </section>
 
           <!-- Templates: prefills for the Capture box -->
           <section class="settings-section hidden" id="settings-templates">
+          <template data-surface="settings-templates">
             <div class="dock settings-pane-title" data-dock-name="settings-templates">
               <div class="dock-identity"><h3>Templates</h3></div>
               <div class="dock-actions">
@@ -11487,10 +11497,12 @@ Link to another note with [[its first few words]]."></textarea>
               <span id="template-status" class="status"></span>
             </div>
             </div>
+          </template>
           </section>
 
           <!-- AI Tools: toggle what the chat AI is allowed to do -->
           <section class="settings-section hidden" id="settings-memory">
+          <template data-surface="settings-memory">
             <div class="dock settings-pane-title" data-dock-name="settings-memory">
               <div class="dock-identity"><h3>What it remembers</h3></div>
               <div class="dock-actions">
@@ -11541,6 +11553,7 @@ Link to another note with [[its first few words]]."></textarea>
             </p>
             <!-- Confirmed patterns (CHAT_PLAN B9) are built on first draw
                  (settings-controls.js `confirmedHost`), not shipped in the page. -->
+          </template>
           </section>
 
           <!-- What the notebook learned (WORLD_CLASS_PLAN I9). The backend has
@@ -11557,6 +11570,7 @@ Link to another note with [[its first few words]]."></textarea>
                is what it worked out, and the only way a person finds the
                second is by recognising it beside the first. -->
           <section class="settings-section hidden" id="settings-learned">
+          <template data-surface="settings-learned">
             <div class="dock settings-pane-title" data-dock-name="settings-learned">
               <div class="dock-identity"><h3>What it learned</h3></div>
               <div class="dock-actions">
@@ -11679,9 +11693,11 @@ Link to another note with [[its first few words]]."></textarea>
                 <button type="button" id="learned-forget" class="ghost small danger">Forget everything learned</button>
               </div>
             </div>
+          </template>
           </section>
 
           <section class="settings-section hidden" id="settings-tools">
+          <template data-surface="settings-tools">
             <!-- One line (standing order 6, INBOX 464: it was three); turning
                  one off is said where the switches are. -->
             <p class="muted">What Atlas may do in <strong>Agent mode</strong>; risky changes ask you first.</p>
@@ -11868,10 +11884,12 @@ Link to another note with [[its first few words]]."></textarea>
                 <button type="button" id="mcp-config-copy" class="ghost small"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
               </div>
             </div>
+          </template>
           </section>
 
           <!-- Appearance: grouped into scannable setting rows -->
           <section class="settings-section hidden" id="settings-appearance">
+          <template data-surface="settings-appearance">
 
             <!-- ---------- Curated themes ---------- -->
             <div class="fold-help-wrap">
@@ -12827,6 +12845,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="row">
               <button id="appearance-reset" class="ghost small">Reset appearance to defaults</button>
             </div>
+          </template>
           </section>
 
           <!-- Keyboard shortcuts. The rebinding UI existed only behind the ?
@@ -12839,6 +12858,7 @@ Link to another note with [[its first few words]]."></textarea>
                terminal and a README, which for a local-first app is the same
                as not having the feature at all. -->
           <section class="settings-section hidden" id="settings-extras" data-this-computer>
+          <template data-surface="settings-extras">
             <div class="fold-help-wrap">
               <button type="button" class="icon-only ghost small graph-help-toggle fold-help"
                 data-help-for="packages-help" aria-controls="packages-help" aria-expanded="false"
@@ -12953,9 +12973,11 @@ Link to another note with [[its first few words]]."></textarea>
                  were a second list here that did the same and less. -->
             <p class="muted" id="packages-embed-pointer">Embedding models, what search by meaning uses, are in
               <button type="button" class="link-button" id="packages-embed-link">Search and index</button>.</p>
+          </template>
           </section>
 
           <section class="settings-section hidden" id="settings-shortcuts">
+          <template data-surface="settings-shortcuts">
             <details class="settings-group settings-fold" data-fold-key="shortcuts-yours" open>
               <summary><h3 class="inline-h3">Your shortcuts</h3></summary>
               <p class="muted">
@@ -13061,10 +13083,12 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="capture-command-copy" class="ghost small" type="button"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
               </div>
             </div>
+          </template>
           </section>
 
           <!-- Profile -->
           <section class="settings-section hidden" id="settings-preferences">
+          <template data-surface="settings-preferences">
             <!-- The profile's head: the person's mark (`nameMark` seeded by
                  `userMarkSeed`, the same mark the chat's own bubbles wear),
                  the name, and one line. Redrawn as the name is typed, so the
@@ -13146,6 +13170,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="profile-delete" class="ghost small">Delete my profile data</button>
               </div>
             </div>
+          </template>
           </section>
           <!-- INBOX 424 (l): the notebook's own behaviour (the bin, chat
                history, how Atlas writes, search relevance, notifications,
@@ -13154,6 +13179,7 @@ Link to another note with [[its first few words]]."></textarea>
                (PREFS_FIELD_IDS in app.js); the pointer heading that only
                linked to Web search is gone, since Web search is in the nav. -->
           <section class="settings-section hidden" id="settings-general">
+          <template data-surface="settings-general">
             <div class="settings-group">
               <h3>Bin</h3>
               <div class="row">
@@ -13412,12 +13438,14 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="usage-clear" class="ghost small" type="button"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i> Clear the counts</button>
               </div>
             </div>
+          </template>
           </section>
 
           <!-- Web search. Its own screen rather than four inches of the
                Preferences page: it is the only feature that leaves the
                machine, and the error messages point people here by name. -->
           <section class="settings-section hidden" id="settings-websearch">
+          <template data-surface="settings-websearch">
             <div class="dock settings-pane-title" data-dock-name="settings-websearch">
               <div class="dock-identity"><h3>Web search</h3></div>
               <div class="dock-actions">
@@ -13589,10 +13617,12 @@ Link to another note with [[its first few words]]."></textarea>
             </details>
             </div>
             </div>
+          </template>
           </section>
 
           <!-- Tasks: see and quit background jobs -->
           <section class="settings-section hidden" id="settings-tasks">
+          <template data-surface="settings-tasks">
             <nav class="tabs-line popup-kinds pane-tabs" id="tasks-tabs" aria-label="Tasks sections">
               <button type="button" data-target="#tasks-live-group"><i class="ph ph-activity pop-tab-glyph ph-lead" aria-hidden="true"></i>Running<span class="pop-count" id="tasks-count">0</span></button>
               <button type="button" data-target="#job-runs-group"><i class="ph ph-clock-counter-clockwise pop-tab-glyph ph-lead" aria-hidden="true"></i>Last runs</button>
@@ -13911,10 +13941,12 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <button id="app-quit" data-this-computer="hide" class="ghost small"><i class="ph ph-power ph-lead" aria-hidden="true"></i> Quit the app</button>
             </div>
+          </template>
           </section>
 
           <!-- Data: markdown + backups join the exports -->
           <section class="settings-section hidden" id="settings-data">
+          <template data-surface="settings-data">
             <div class="settings-group">
               <div class="row help-head">
                 <h3>Export your data</h3>
@@ -14533,11 +14565,13 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <ul class="entry-list recent-changes" id="recent-changes-list" aria-label="Recent changes"></ul>
             </div>
+          </template>
           </section>
 
           <!-- Logs -->
           <!-- Account & security: the one place credentials are managed. -->
           <section class="settings-section hidden" id="settings-account">
+          <template data-surface="settings-account">
             <div class="dock settings-pane-title" data-dock-name="settings-account">
               <div class="dock-identity"><h3>Account &amp; security</h3></div>
               <div class="dock-actions">
@@ -15091,6 +15125,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <pre class="code-block"><code>python -m tessellate --reset-password</code></pre>
               </div>
             </div>
+          </template>
           </section>
 
           <!-- Privacy: "where your data went" (WORLD_CLASS_PLAN section 2,
@@ -15099,6 +15134,7 @@ Link to another note with [[its first few words]]."></textarea>
                made (core/egress.py), not a list of features that promise to
                behave. Filled by `renderPrivacyReceipt` in settings-panes.js. -->
           <section class="settings-section hidden" id="settings-privacy">
+          <template data-surface="settings-privacy">
             <div class="dock settings-pane-title" data-dock-name="settings-privacy">
               <div class="dock-identity"><h3>Where your data went</h3></div>
               <div class="dock-actions">
@@ -15165,9 +15201,11 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" id="privacy-refresh" class="ghost small">
                 <i class="ph ph-arrow-clockwise ph-lead" aria-hidden="true"></i> Read it again</button>
             </div>
+          </template>
           </section>
 
           <section class="settings-section hidden" id="settings-logs">
+          <template data-surface="settings-logs">
             <!-- **The head is a dock** (UI_MODERNISATION_PLAN Phase 8), and
                  it is the last control row in the app that was not. Reported:
                  "can you also redesign the top dock at the top of the settings
@@ -15319,11 +15357,13 @@ Link to another note with [[its first few words]]."></textarea>
               <button id="logs-empty-clear" class="ghost small" type="button"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear filters</button>
             </div>
             <p id="logs-filtered-out" class="muted hidden"></p>
+          </template>
           </section>
 
           <!-- About -->
           <!-- Help guide (learnability): a feature reference + re-run the tour -->
           <section class="settings-section hidden" id="settings-help">
+          <template data-surface="settings-help">
             <!-- Redesigned (the owner, with a screenshot of this head: "areas
                  like this in the settings need a redesign"). The section's
                  own title already says Help, and under it sat a second head,
@@ -15420,9 +15460,11 @@ Link to another note with [[its first few words]]."></textarea>
               <p class="muted">Tessellate is built on these libraries and data, each under its own licence.</p>
               <div id="credits-list" class="credits-list" aria-busy="true"></div>
             </details>
+          </template>
           </section>
 
           <section class="settings-section hidden" id="settings-about">
+          <template data-surface="settings-about">
             <!-- Redesigned into the same boxed `.settings-group` shape every
                  other section here uses (Preferences, Appearance, Data): 
                  reported directly: About read as a flat, undifferentiated
@@ -15881,6 +15923,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="about-shortcuts" class="ghost small" type="button"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> Change keyboard shortcuts</button>
               </div>
             </div>
+          </template>
           </section>
 
           </script>

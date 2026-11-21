@@ -180,7 +180,7 @@ def test_live_captions_have_doors_where_people_look():
     assert 'id="meeting-captions"' in HTML and 'id="recordings-captions"' in HTML
     bar = HTML.split('data-dock-name="library-recordings"')[1].split("</section>")[0]
     assert 'id="recordings-captions"' in bar
-    assert '$("meeting-captions")' in JS and '$("recordings-captions")' in JS
+    assert '$("meeting-captions")' in JS and 'wire("recordings-captions"' in JS
     assert "function openLiveCaptionsFrom()" in JS
     features = (ROOT / "frontend/js/app-features.js").read_text(encoding="utf-8")
     assert 'name: "Live captions"' in features

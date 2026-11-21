@@ -65,7 +65,7 @@ def test_the_switch_has_a_row_a_default_a_reset_and_a_help_line():
     assert '"glass-controls": "off",' in settings
     assert "root.dataset.glassControls = appearancePref(\"glass-controls\");" in settings
     assert 'ensureModule("glassControls")' in settings
-    assert '$("glass-controls-toggle").addEventListener("change"' in settings
+    assert 'wire("glass-controls-toggle").addEventListener("change"' in settings
     reset = settings[settings.index("function resetAppearance()") :]
     assert '"glass-controls"' in reset[: reset.index("prefs.remove(key)")]
     rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")

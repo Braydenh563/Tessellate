@@ -82,15 +82,15 @@
   //: Wired when Settings is built, never by asking for its ids here: this file is preloaded after boot, and
   //: `$("usage-clear")` on the unbuilt surface built all of Settings (a 151 ms task at 4x CPU, bootlongtasks.js).
   onSurface("settings", () => {
-    $("capture-command-copy")?.addEventListener("click", async () => {
+    SURFACES.wire("capture-command-copy", "click", async () => {
       //: Through the shared helper, which falls back where the clipboard API
       //: is not allowed (tests/test_log_console.py).
       if (await copyToClipboard($("capture-command").textContent)) toast("Copied. Paste it as the command your shortcut runs.");
       else toast(voiceLine("failed", { what: "copy here", why: "select the command and copy it" }), "info");
     });
 
-    $("pref-simple-mode")?.addEventListener("change", (event) => applySimpleMode(event.target.checked));
-    $("usage-clear")?.addEventListener("click", async () => {
+    SURFACES.wire("pref-simple-mode", "change", (event) => applySimpleMode(event.target.checked));
+    SURFACES.wire("usage-clear", "click", async () => {
       try {
         await apiJson("/usage", { method: "DELETE" });
         //: And the palette's learned order, which is the same habit kept per

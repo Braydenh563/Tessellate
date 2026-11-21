@@ -240,7 +240,7 @@ def test_the_reminder_poll_waits_for_the_unlock():
     assert "authToken()" in body.split("apiJson")[0], (
         "checkDueReminders asks for /reminders before checking there is a token"
     )
-    assert source.count('$("app-quit").addEventListener("click", quitApp)') == 1
+    assert source.count('wire("app-quit").addEventListener("click", quitApp)') == 1
     assert source.count('$("quit-btn")?.addEventListener("click", quitApp)') == 1
 
 

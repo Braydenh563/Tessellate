@@ -3018,6 +3018,61 @@ function renderSettings() {
   //: (semantic-notice.js, lazy): opened while the server says it is owed,
   //: closed once it is answered.
   if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved);
+  //: Search and index's half is drawn with that pane, now when it is built and at its build if not (L675).
+  onSurface("settings-searchindex", renderSettings.index);
+  // The "install Ollama" advice only helps someone who chose Ollama.
+  $("ollama-help").classList.toggle(
+    "hidden",
+    status.ollama_running || status.provider !== "ollama"
+  );
+  $("models-config").classList.toggle("hidden", !status.ollama_running);
+  // Downloads are an Ollama capability. Every other backend is handed a model
+  // that is already on disk, so the panel hides rather than offering a button
+  // that cannot work. With Ollama simply not running (audit 1028 E38) the
+  // cards stay: choosing a model for this computer needs no backend, and
+  // each Download waits with the reason on it.
+  $("suggested-box").classList.toggle("hidden", status.supports_pull === false);
+
+  //: Always, not only while a backend answers: the rows come from saved
+  //: settings, and a person with the server down still needs to see and clear
+  //: an override (WORLD_CLASS_PLAN 20, "Still open").
+  renderFeatureModels(status);
+  settingsReadouts.smallModel?.();
+  if (status.ollama_running) {
+    renderChatModelPicker(status);
+    renderUtilityModelPicker(status);
+    renderVisionModelPicker(status);
+  renderOcrModelPicker(status);
+    //: Background tasks' picker, with that pane (L675).
+    onSurface("settings-tasks", renderSettings.tasks);
+    //: Both live in the lazy `settingsUi` file: one check that it has loaded
+    //: covers the two (it has whenever Settings is open, the only time this runs).
+    if (typeof renderSuggested === "function") {
+      renderInstalledModels(status);
+      renderSuggested(status);
+    }
+    renderModelSpec(status.chat_model);
+  } else {
+    $("installed-box").classList.add("hidden");
+    $("model-spec").classList.add("hidden");
+    $("model-spec-health").classList.add("hidden");
+    //: The cards draw with no backend too (audit 1028 E38): what fits this
+    //: computer needs none. `window.` because the file is lazy, as above.
+    if (status.supports_pull !== false) window.renderSuggested?.(status);
+  }
+}
+
+renderSettings.tasks = () => modelStatus?.ollama_running && renderAutonomousModelPicker(modelStatus);
+
+//: The search engine's picker, the reindex box, the engine's error line and its one-click fix, in Search and index.
+renderSettings.index = () => {
+  const status = modelStatus;
+  if (!status) return;
+  // The search engine is always adjustable: its recommended option is the
+  // built-in one, which needs no Ollama. Only the Ollama half of it depends
+  // on Ollama being up.
+  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
+  renderReindex(status);
   const embeddingError = $("embedding-error");
   embeddingError.classList.toggle("hidden", !status.embedding_error);
   //: A missing optional package arrives as a sentence the backend wrote for
@@ -3057,51 +3112,7 @@ function renderSettings() {
   );
   stagePrimary("embedding-apply", "embedding-error-fix", !fixRow.classList.contains("hidden"));
   renderSearchEngineHealth(status);
-  // The "install Ollama" advice only helps someone who chose Ollama.
-  $("ollama-help").classList.toggle(
-    "hidden",
-    status.ollama_running || status.provider !== "ollama"
-  );
-  $("models-config").classList.toggle("hidden", !status.ollama_running);
-  // Downloads are an Ollama capability. Every other backend is handed a model
-  // that is already on disk, so the panel hides rather than offering a button
-  // that cannot work. With Ollama simply not running (audit 1028 E38) the
-  // cards stay: choosing a model for this computer needs no backend, and
-  // each Download waits with the reason on it.
-  $("suggested-box").classList.toggle("hidden", status.supports_pull === false);
-
-  // The search engine is always adjustable: its recommended option is the
-  // built-in one, which needs no Ollama. Only the Ollama half of it depends
-  // on Ollama being up.
-  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
-  //: Always, not only while a backend answers: the rows come from saved
-  //: settings, and a person with the server down still needs to see and clear
-  //: an override (WORLD_CLASS_PLAN 20, "Still open").
-  renderFeatureModels(status);
-  settingsReadouts.smallModel?.();
-  if (status.ollama_running) {
-    renderChatModelPicker(status);
-    renderUtilityModelPicker(status);
-    renderVisionModelPicker(status);
-  renderOcrModelPicker(status);
-    renderAutonomousModelPicker(status);
-    //: Both live in the lazy `settingsUi` file: one check that it has loaded
-    //: covers the two (it has whenever Settings is open, the only time this runs).
-    if (typeof renderSuggested === "function") {
-      renderInstalledModels(status);
-      renderSuggested(status);
-    }
-    renderModelSpec(status.chat_model);
-  } else {
-    $("installed-box").classList.add("hidden");
-    $("model-spec").classList.add("hidden");
-    $("model-spec-health").classList.add("hidden");
-    //: The cards draw with no backend too (audit 1028 E38): what fits this
-    //: computer needs none. `window.` because the file is lazy, as above.
-    if (status.supports_pull !== false) window.renderSuggested?.(status);
-  }
-  renderReindex(status);
-}
+};
 
 // GET /tasks, once per status poll, feeding everything that wants to know what
 // is running: the status bar's job slot, the Background tasks panel when it is
