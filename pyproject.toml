@@ -42,6 +42,9 @@ memorymap = "tessellate.__main__:main"  # brand: keep (the command before the re
 [project.optional-dependencies]
 voice = ["faster-whisper"]
 desktop = ["pywebview", "pystray", "Pillow"]
+# Test-only: Pillow is optional for people, but 46 test files (the desk
+# companion's frames, the OCR clean-up) skip without it. CI installs this.
+test = ["Pillow"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -6,6 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Pillow for the tests is a `test` extra in pyproject.toml, which CI installs, instead of a line in the workflow.
+- Search by meaning question: on a phone it waits while Settings is open, where Search and index holds the same switch, and comes back when Settings closes; it had covered the lower quarter of every section (L-world-class-394).
+- Import from another app: a folder of more than 1,000 notes goes in as one import (up to 5,000); it was refused before the import's own cap was reached (L-world-class-411).
+- CI: the test job installs Pillow, so the 46 test files that need it (desk companion frames, OCR clean-up) run instead of skipping; the RapidOCR enlargement test now draws real glyphs, which the text measure can read (L703).
+- Desk companion: a companion made from a name is checked to walk, run, climb, crouch, sit and lie with the frames it captured (L185).
 - Chat agent: a small model's tool call written with a doubled opening brace is still run; a real-model check of the browser tools is in `pytest -m evals` (L-world-class-630).
 - Top bar: one row again from 820px; from 820 to 875px it had wrapped to two rows (100px) after the Local chip joined it (L-world-class-106).
 - Settings, Account: the private-by-default and mute-except-reminders switches show what is saved again; opening the pane threw before.

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 61 | 10 | 0 | 0 | 71 |
+| world-class | 0 | 59 | 10 | 0 | 0 | 69 |
 | general | 0 | 28 | 2 | 0 | 6 | 30 |
-| all | 372 | 442 | 81 | 2 | 113 | 895 |
+| all | 372 | 440 | 81 | 2 | 113 | 893 |
 
 ## graph
 
@@ -520,14 +520,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-381** `world-class` open, M: Transcribe and read a private space's sealed files in the background (a key for background jobs). From L-world-class-52. Evidence: routes_recordings.py _refuse_sealed_in_background answers 409; background threads get no vault key (vault.key), so a sealed recording cannot be read and its sealed transcript cannot be written; docreader and media_process skip sealed files for the same reason. Also: deleting a private space into an ordinary one carries the sealed bytes as they are; a generated recording (recording_make.save_generated), an import and the live-caption PCM spool (captions.begin) are written plain until the next unlock seals them (tests/test_sealed_readers.py PLAIN_WRITES)
 - [ ] **L-world-class-420** `world-class` open, M: Give the 51 Help topics the Guide cannot find by title a keyword each, then lower GUIDE_MISSES_BY_TITLE to 0. From L-world-class-114. Evidence: tests/test_ui_recipes.py GUIDE_MISSES_BY_TITLE = 51
 - [ ] **L-world-class-421** `world-class` open, S: Rule the Replace and Statistics dialogs into 27.2's table (sheet or dialog) and empty UNRULED_DIALOGS. From L-world-class-131. Evidence: doc-replace-dialog and doc-stats-dialog are native dialogs the 27.2 table does not rule (UNRULED_DIALOGS in tests/test_ui_recipes.py)
-- [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 - [ ] **L-world-class-625** `world-class` open, M: Run Pillow and the OCR readers (core/ocr.py, core/ocr_prep.py) in the parse sandbox child. From L-world-class-321. Evidence: core/ocr.py:479,504,741,812,888 Image.open and _rapidocr_lines run in the server; the runner core/parse_sandbox.py is built (reused child, 0.3-0.5 ms a call warm, 117 ms a cold child with pypdfium2); RapidOCR loads onnxruntime, so it needs the reused child and a memory limit measured with its model loaded
 
 ## general
 
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 - [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
-- [ ] **L-world-class-394** `world-class` open, S: On a 360x740 phone, opening Settings with no meaning-search model shows the 'Search by meaning needs a one-time download of about 130 MB' toast at 341x173px (top 503, bottom 676), still up after 10 s, over the lower quarter of every section until dismissed. From L-world-class-177, 2026-11-14. Evidence: scratchpad/ui-sweeps/settings-phone-177.js before its toast removal line; 0 bad with the toast gone
 
 ## general
 
