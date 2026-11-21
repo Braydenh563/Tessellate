@@ -528,6 +528,12 @@
     //: (atlas-lazy.css, B87a): drawn every frame then, each one restyles.
     //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
     const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
+    //: While the page scrolls the companion's tail stops where it is (`atlasTailCalm.scroll`, whose end wakes it); its clock
+    //: starts again from a frame's step, so the sway takes up where it stood.
+    if (live && atlasTailCalm.scroll.on && box.closest("#nm-buddy")) {
+      tail.at = 0;
+      return;
+    }
     if (live) atlasFrameBudget(now);
     //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this
     //: beat's own writes, the loops' play and pause and the breath's scale,
@@ -559,7 +565,8 @@
       for (const anim of box.atlasLoops || []) anim.updatePlaybackRate(pace);
       box.atlasPace = pace !== 1;
     }
-    if (!atlasTailCalm.resting(box, tail.state) && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
+    //: Nor while the page scrolls (`atlasTailCalm.scroll` holds them and plays them back).
+    if (!atlasTailCalm.resting(box, tail.state) && !atlasTailCalm.scroll.on && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
       box.atlasLoopsOn = loops;
       box.atlasLoopsAt = now;
       for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
@@ -716,6 +723,44 @@
       if (was) setTimeout(() => r.wake.forEach((fn) => fn()), 0);
     }, { passive: true, capture: true });
   }
+  //: **Held while the page scrolls** (L-ui-modernisation-202): every scroll frame restyled the figure's running loops
+  //: (companioncpu.js: 10 to 11 ms a wheel step more with Atlas shown). A wheel or a touch drag pauses every loop that
+  //: never ends (`pause()`: each keeps its phase, so nothing jumps) and the morph draws nothing; `scrollend`, or `quiet`
+  //: ms with no scroll where it never fires, plays back the ones the hold paused and no other. A scroll with no wheel
+  //: or touch (the chat following a streamed answer) holds nothing. Collected a task after the input, so a loop the
+  //: rest's wake plays (`atlasTailCalm.rest.wake`) is held too. `atlasRigFrame.held` is the rig's copy (atlas-motion.js loads alone too).
+  atlasTailCalm.scroll = { on: false, held: null, timer: 0, quiet: 200 };
+  atlasTailCalm.scroll.start = () => {
+    const s = atlasTailCalm.scroll;
+    clearTimeout(s.timer);
+    s.timer = setTimeout(s.end, s.quiet);
+    if (s.on) return;
+    const buddy = document.getElementById("nm-buddy");
+    if (!buddy) return;
+    s.on = true;
+    atlasRigFrame.held = true;
+    s.held = buddy.getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
+    for (const a of s.held) a.pause();
+  };
+  atlasTailCalm.scroll.end = () => {
+    const s = atlasTailCalm.scroll;
+    clearTimeout(s.timer);
+    for (const a of s.held || []) if (a.playState === "paused") a.play();
+    s.on = false;
+    s.held = null;
+    //: The tail's and the rig's frames stopped where they stood (`atlasTailFrame`, `atlasRigFrame`); they take up from there.
+    atlasRigFrame.held = false;
+    for (const box of document.getElementById("nm-buddy")?.querySelectorAll(".atl-figure-box") || []) atlasRigWake(box);
+  };
+  for (const type of typeof document.addEventListener === "function" ? ["wheel", "touchmove", "scroll", "scrollend"] : []) {
+    document.addEventListener(type, () => {
+      const s = atlasTailCalm.scroll;
+      if (type === "scrollend") return s.on && s.end();
+      if (type === "scroll") return s.on && s.start();
+      setTimeout(s.start, 0);
+    }, { passive: true, capture: true });
+  }
+  //: End of the scroll hold.
   //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
   atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang", "coil", "ripple_calm", "pool", "heavy"]);
   //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
@@ -1433,6 +1478,12 @@
         atlasBreathFrame.pace(box, false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
+        return;
+      }
+      //: While the page scrolls the shapes hold (`atlasTailCalm.scroll`); the clock stops with them, so they take up where they were.
+      if (atlasTailCalm.scroll.on) {
+        m.at = 0;
+        m.timer = setTimeout(step, M.tick);
         return;
       }
       m.targets ||= M.build(low);

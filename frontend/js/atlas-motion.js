@@ -574,6 +574,12 @@ function atlasRigFrame(rig, now) {
     rig.dirty = true;
     return;
   }
+  //: Nor while the page scrolls under the companion (`atlasTailCalm.scroll`, atlas-life.js, sets `held` and its end wakes it).
+  if (atlasRigFrame.held && rig.host?.id === "nm-buddy") {
+    rig.at = 0;
+    rig.dirty = true;
+    return;
+  }
   const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !rig.fresh;
   rig.fresh = false;
   const buddy = rig.host && rig.host.id === "nm-buddy" ? rig.host : null;
@@ -712,6 +718,7 @@ function atlasRigFrame(rig, now) {
   if (live && rig.still < 6) rig.raf = requestAnimationFrame((t) => atlasRigFrame(rig, t));
   else rig.at = 0;
 }
+atlasRigFrame.held = false;
 //: The shortest gap between two drawn frames of the corner companion's rig (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasRigFrame.gapMs = 24;
 //: The same loop's next frame, for a frame skipped under the gap (the frame's end asks for the next one itself).
