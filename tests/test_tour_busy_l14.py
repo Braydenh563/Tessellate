@@ -44,3 +44,16 @@ def test_closing_the_tour_never_leaves_next_busy() -> None:
 def test_the_sweep_measures_a_step_only_once_it_settles() -> None:
     sweep = (ROOT / "scratchpad" / "ui-sweeps" / "toursteps.js").read_text(encoding="utf-8")
     assert 'getAttribute("aria-busy") === "true"' in sweep
+
+
+def test_toasts_step_aside_for_the_lit_control_not_only_for_focus() -> None:
+    """toursteps at 1440: `#toast-box` was what was drawn at the centre of
+    Chat's mode switch and gear on their steps, because focus sits on the
+    card's Next and `toastYield` only measured the focused element."""
+    status = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+    start = status.index("function toastYield(")
+    body = status[start : status.index("\n}\n", start)]
+    assert '$("tour-spot")' in body and "meets(b, lit)" in body
+    shown = _body("tourShow")
+    assert shown.index('getElementById("tour-next").focus();') < shown.index("toastYield();")
+    assert "toastYield();" in _body("tourClose")

@@ -1740,6 +1740,9 @@
       // itself is the `aria-modal` dialog, so app.js's Tab trap keeps focus in
       // here until the tour ends.
       document.getElementById("tour-next").focus();
+      //: Focus stays on Next from step to step, so no focusin re-asks the
+      //: toasts: asked here, they step aside for the lit control (status.js).
+      toastYield();
       return;
     }
     tourClose(true);
@@ -1849,6 +1852,7 @@
     //: And the folds it opened to reach a control are folded again.
     for (const fold of run.openedFolds || []) fold.open = false;
     focusBackTo(run.returnFocus, "#tab-bar [aria-selected='true']");
+    toastYield();
     if (finished) {
       toast("That is the tour. Settings, help and guide has it again whenever you want it.");
     }
