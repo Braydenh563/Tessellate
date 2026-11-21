@@ -88,6 +88,7 @@ def test_a_long_list_is_one_shell_per_row_and_only_the_first_screenful_is_built(
     out = _run("""
 const { items, list, win } = make(5000);
 win.add(list, items, (item, i) => i < 12);
+win.flush();
 process.stdout.write(JSON.stringify({
   rows: list.kids.length, shells: shells(list).length, built: built.length,
   shellHeight: shells(list)[0].style.cssText, hidden: shells(list)[0].attrs['aria-hidden'],
@@ -156,11 +157,33 @@ process.stdout.write(JSON.stringify({
     assert out["stillShell"] is True and out["off"] is True
 
 
+def test_shells_past_the_first_screens_land_later_in_order_603():
+    """L603: the Notes press on 5,000 notes paid 140 to 210ms for shells nobody
+    could see. The first 240 land with the press, the rest in later chunks in
+    order, a row asked to be built is always in the first pass, and `flush`
+    lands everything for a caller that walks every row."""
+    out = _run("""
+const { items, list, win } = make(5000);
+win.add(list, items, (item, i) => i < 12 || i === 900);
+const first = list.kids.length;
+const builtFirst = built.length;
+timers.shift()();
+const second = list.kids.length;
+win.flush();
+const ids = list.kids.map((k) => Number(k.dataset.id));
+process.stdout.write(JSON.stringify({ first, builtFirst, second, rows: list.kids.length,
+  ordered: ids.every((id, i) => i === 0 || id === ids[i - 1] + 1) }));
+""")
+    assert out["first"] == 901 and out["builtFirst"] == 13
+    assert out["second"] == 1401 and out["rows"] == 5000 and out["ordered"] is True
+
+
 def test_a_table_body_gets_row_shells_of_its_own_tag():
     """L491: the Timeline table windows its rows, and a `<li>` in a `<tbody>` is not a row."""
     out = _run("""
 const { items, list, win } = make(300, { shell: 'tr' });
 win.add(list, items, (item, i) => i < 40);
+win.flush();
 process.stdout.write(JSON.stringify({ tags: [...new Set(shells(list).map((k) => k.tag))], shells: shells(list).length, built: built.length }));
 """)
     assert out == {"tags": ["tr"], "shells": 260, "built": 40}
