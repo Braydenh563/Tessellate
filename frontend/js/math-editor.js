@@ -561,7 +561,9 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     event.preventDefault();
     jump.scrollLeft += event.deltaY;
   }, { passive: false });
-  const scroller = host.closest(".calc-panes");
+  //: The Equation pane scrolls itself (reply-kit-lazy.css `.calc-pane.calc-equation`); `.calc-panes` around it does
+  //: not from 600px up, so a listener there never heard a scroll and the strip stayed on the first group.
+  const scroller = host.closest(".calc-equation, .calc-panes");
   const mark = () => {
     const edge = band.getBoundingClientRect().bottom + 2;
     let on = jump.firstChild;
@@ -576,8 +578,11 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   };
   //: A scroll event is already one per frame; 17 rects are read.
   scroller?.addEventListener("scroll", mark, { passive: true });
-  const draw = () => {
-    const before = scroller?.scrollHeight || 0;
+  //: `first` is the mount: nothing has scrolled and nothing is laid out, so the first chip is the one in view
+  //: and the rects wait for the frame; reading them here laid out the whole palette inside the press that
+  //: opened it (675ms of layout and 571ms of style at 4x, L702).
+  const draw = ({ first = false } = {}) => {
+    const before = first ? 0 : scroller?.scrollHeight || 0;
     mathEditorPalette(list, search.querySelector("input").value);
     jump.replaceChildren(
       ...[...list.querySelectorAll(".math-editor-group")].map((head) => {
@@ -590,6 +595,12 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
       })
     );
     band.hidden = !jump.children.length;
+    if (first) {
+      jump.firstChild?.classList.add("active");
+      jump.firstChild?.setAttribute("aria-current", "true");
+      afterFrames(() => host.isConnected && mark());
+      return;
+    }
     mark();
     //: A row arriving above (a pin) must not move what is being looked at.
     if (scroller?.scrollTop > 0) scroller.scrollTop += scroller.scrollHeight - before;
@@ -673,7 +684,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
 
   //: Copy and Insert are the dialog's action row, pinned under the panes (reply-kit.js), so neither is a scroll away.
   host.replaceChildren(mode.seg, ledeRow, pane.el, ...(note ? [note] : []), ...(log ? [log] : []), search, band, list);
-  draw();
+  draw({ first: true });
   //: After the first paint: the field's first focus laid out the pane and its tiles inside the press
   //: that opened it (245ms at 4x, INBOX 1534).
   if (focus) afterFrames(() => setTimeout(() => host.isConnected && pane.start()), 1);

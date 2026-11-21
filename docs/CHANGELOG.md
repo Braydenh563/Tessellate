@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Equation editor: opening it no longer lays out the whole palette inside the press (675ms of layout and 571ms of style at 4x before, 0 after), and the jump strip now follows the pane as it scrolls (L702).
 - Lag: L708 closed as measured; tab clicks take 1 to 31ms at 4x (97 to 201ms on the owner's log) and opening a document forces at most 17ms once warm; the real-Tesseract dock fit waits for hardware (L-general-62).
 - Notes: the first press on Notes no longer forces a style pass to find its scrolling column (93ms of style at 4x before; the largest forced pass in a tab press is now fitNoteMetas at 12 to 41ms) (L705).
 - Companion keep-up: L707 closed as measured; extra layouts per tab switch with the companion on are 0 to 3 over its idle rate (12 to 16 per 1.2 s, its own 10 Hz steps), inside the 6 to 9 of a switch without it (L707).
