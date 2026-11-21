@@ -197,7 +197,7 @@ jobs:
       # on the runner's cores.
       - name: Run the budgets alone
         working-directory: tests-e2e
-        run: npx playwright test specs/budgets.spec.js --project=notebook --workers=1
+        run: npx playwright test specs/budgets.spec.js specs/map-budgets.spec.js --project=notebook --workers=1
 
       - name: Upload the report on failure
         if: failure()

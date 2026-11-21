@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
+- Tests: the map's perf budgets are held in CPU time (`tests-e2e/specs/map-budgets.spec.js`, run by the CI budgets-alone step): per-task CPU from a CDP trace at CPU throttle 4, median of 3, so a loaded runner cannot skew them; medians at 50, 200, 500 topics: open to painted 247, 316, 687ms of 1000, worst pan task 9.7, 8.5, 12.6ms and zoom 13.2, 14.8, 39.3ms of 50, 300 links within 2x of a plain branch drag; no code change needed (L-ui-modernisation-61 and -97).
 - Styles: 18 more Library-only rules moved from the boot sheets to library-lazy.css (nested, unknown-order and media-list competitors included), computed styles unchanged in light and dark at 1280, 900, 700 and 390 including the board and map views (L-ui-modernisation-51); 80 of 231 stay on the row.
 - Companion: the flow's ribbon and rise above the waist start at 0.45 of the half width (`FLOW_TORSO_CORE`), not the core's 0.3, so the feminine stand's torso keeps its pixels (core diff 20 to 3 of 255, masculine 16 to 5; L-ui-modernisation-200).
 - Tests: 14 fixed-clock tests that read the real date (past 2026-11-21) now pin it: the digest window and its structure note count back from `user_now` (`routes_insights._week_ago`), and three fixtures patch `config.user_now` too and write their notes on the pinned day.
