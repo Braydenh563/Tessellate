@@ -7524,8 +7524,13 @@
     const lock = document.querySelector("#lock-overlay:not(.hidden)");
     //: A minimised panel (`data-panel-min`, panel-movable.js) is a pill in the tray, not a cover (the owner, 2026-11-04).
     const cover = lock ? "lock" : document.querySelector("dialog[open]:modal:not([data-panel-min]), .modal-overlay:not(.hidden):not([data-panel-min]), .lock-overlay:not(.hidden)") ? "modal" : "";
+    const was = buddy.dataset.cover;
     if (cover) buddy.dataset.cover = cover;
     else delete buddy.dataset.cover;
+    //: The tail and lower-body loops rest while covered (`atlasCornerCovered`); the cover lifting starts them again.
+    //: A drawn figure box means the Atlas files are loaded, so the wake is there.
+    const box = !cover && was && buddy.querySelector(".atl-figure-box");
+    if (box) atlasRigWake(box);
   }
   //: **Nothing is measured behind a modal** (INBOX 1587, the owner's lag log:
   //: `avatars.js TimerHandler:setTimeout 846ms (forced layout 810ms)` every one

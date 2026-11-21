@@ -157,3 +157,15 @@ process.stdout.write(JSON.stringify({ sway: made[0].keys[1].transform, gone: !!m
     # An eighth of the swing is half way to the first keyframe: half its turn, half its swell.
     assert got["back"][0]["transform"] == f"rotate({round(deg / 2, 2):g}deg) scale(1.01)"
     assert got["back"][1] == {"transform": "none"} and got["gone"] and got["live"] == "live"
+
+
+def test_the_corner_loops_rest_behind_a_cover_and_wake_when_it_lifts() -> None:
+    """AT (L675) measured about 140 attribute writes a second from the corner figure with Settings
+    open: the blink and the look asked the cover, the tail and the lower body did not."""
+    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    assert "function atlasCornerCovered(box)" in life
+    assert life.count("&& !atlasCornerCovered(box)") == 2
+    check = AV[AV.index("function nameMarkBuddyCoverCheck"):AV.index("function nameMarkBuddyBehindCover")]
+    assert "atlasRigWake(box)" in check and "!cover && was" in check
+    step = MOTION[MOTION.index("atlasBlink.saccade.step ="):MOTION.index("function atlasBlinkStart")]
+    assert GATE in step
