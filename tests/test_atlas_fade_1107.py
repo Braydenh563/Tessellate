@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
 
 

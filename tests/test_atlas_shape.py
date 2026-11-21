@@ -10,12 +10,13 @@ away from coming back, and nothing else in the suite draws Atlas.
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 #: atlas.js and its lazy halves, atlas-motion.js (the blink clock and the arm
 #: rig) and atlas-life.js (the living tail and the rings' loops), read as one.
 ATLAS = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("atlas.js", "atlas-motion.js", "atlas-life.js"))
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 #: The large view's visit and home moved to companion-menu.js (boot budget).
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
@@ -41,13 +42,20 @@ def test_the_feminine_look_has_no_legs_and_one_spectral_tail():
     assert "fill: atlasStem(seg, width, { samples: 18, round: true, tip: hemTip })," in ATLAS
 
 
+# The roots' own loops (the front's shimmer, the skirt's and the nebula's
+# drift) run on the roots' boxes and stop under reduced motion.
+REDUCED_ROOTS = ':where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-root { animation: none !important; }'
+
+
 def test_the_skirt_sways_on_its_layer_root_only():
     # A transform animated inside an svg repaints it every frame; on the
-    # layer's root it is the compositor's.
+    # root's own box (`.atl-lw-root-lower`, an HTML box round the layer's
+    # root since L-ui-modernisation-201: no loop on an svg is composited) it
+    # is the compositor's.
     for name in ("atl-skirt-idle", "atl-lower-sway", "atl-lower-flick"):
         assert f"@keyframes {name}" in CSS
         for rule in re.findall(r"([^{}\n]+)\{[^{}]*animation:[^;{}]*\b" + name + r"\b", CSS):
-            assert ".atl-layer-lower" in rule, rule
+            assert ".atl-lw-root-lower" in rule, rule
     # The pose shapes the group inside, statically.
     assert '#nm-buddy[data-pose="sit"] .atl-figure .atl-lower { transform:' in CSS
 
@@ -89,10 +97,11 @@ def test_the_nebula_is_one_orbit_split_into_a_far_and_a_near_half_that_drift_tog
     single = ATLAS[ATLAS.index("function atlasDraw(size") :]
     assert single.index("atlasRing(rig, id, ring, k, true)") < single.index('atlasBand(rig, id, "front", look)')
     # Both halves on the one drift, so the ribbon never parts at a seam.
-    drift = re.findall(r"([^{}\n]+)\{[^{}]*animation: atl-neb-drift", CSS)
-    assert drift and all(".atl-layer-neb, .atl-layer-neb-front" in rule for rule in drift)
+    drift = re.findall(r"([^{}\n]+)\{[^{}]*animation: atl-neb-drift ([^;]*);", CSS)
+    assert [rule.strip() for rule, _ in drift] == ["& .atl-lw-root-neb", "& .atl-lw-root-neb-front"]
+    assert len({clock.split(" -")[0] + clock.split("s ", 2)[-1] for _, clock in drift}) == 1, drift
     # Held still under reduced motion.
-    assert "&:is(.atl-layer-neb, .atl-layer-neb-front), & .atl-mane, " in CSS
+    assert REDUCED_ROOTS in CSS
     # The halves meet where the ribbon turns edge-on (the pinch).
     assert "ATLAS_HELIX.near.reduce(" in ATLAS
 
@@ -100,9 +109,9 @@ def test_the_nebula_is_one_orbit_split_into_a_far_and_a_near_half_that_drift_tog
 def test_the_skirt_and_the_nebula_move_in_the_large_view_too():
     # The large view draws the layered figure (atlasFigure), so the loops
     # are written for every layered figure, not for #nm-buddy alone.
-    for loop in ("&.atl-layer-lower { animation: atl-skirt-idle", "&:is(.atl-layer-neb, .atl-layer-neb-front) { animation: atl-neb-drift"):
+    for loop in ("& .atl-lw-root-lower { animation: atl-skirt-idle", "& .atl-lw-root-neb { animation: atl-neb-drift"):
         assert loop in CSS
-    assert "#nm-buddy .atl-layer-neb" not in CSS
+    assert "#nm-buddy .atl-lw-root-neb" not in CSS
 
 
 def test_round_8_hands_feet_hair_waist_and_nebula():
@@ -153,7 +162,7 @@ def test_the_planets_orbit_on_the_compositor():
     # each planet's glow and swirl are Web Animations of transform, rotate,
     # scale and opacity only, paused with the tail's loop.
     assert "layers.back.svg.after(atlasRings(look, false));" in ATLAS
-    assert "layers.front.svg.after(atlasRings(look, true));" in ATLAS
+    assert "layers.front.svg.parentElement.after(atlasRings(look, true));" in ATLAS
     loops = re.search(r"function atlasRingLoops\(box\) \{(.*?)\n\}", ATLAS, re.S).group(1)
     assert set(re.findall(r"\{ (rotate|transform|scale|opacity|translate):", loops)) <= {"rotate", "transform", "scale", "opacity"}
     assert "for (const anim of box.atlasLoops || [])" in ATLAS
@@ -228,7 +237,7 @@ def test_secondary_motion_is_compositor_only_and_still_under_reduced_motion():
         assert not re.search(rf"&[^{{\n]*\.atl-layer[^{{\n]*\{{[^}}\n]*{name}", CSS), name
     assert "&.atl-full .atl-mane { animation: atl-hair-flow" in CSS
     assert "&.atl-layer :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > :is(.atl-lashes,.atl-liner:not(.atl-liner-low)), .atl-sway, .atl-mane," in CSS
-    assert "&:is(.atl-layer-neb, .atl-layer-neb-front), & .atl-mane, " in CSS
+    assert REDUCED_ROOTS in CSS and "  & .atl-mane, & .atl-zf," in CSS
 
 
 
@@ -478,7 +487,7 @@ def test_the_walks_tilt_and_way_do_not_inherit_either():
     assert "atl-lw-lower, .atl-layer-lower) { --nmb-lean: inherit" not in CSS
     way = AVATARS[AVATARS.index("function nameMarkBuddyWay"):][:420]
     assert 'buddy.style.setProperty("--nmb-lean", way);' in way
-    assert 'querySelectorAll(".atl-layer-lower")' in way and 'el.style.setProperty("--nmb-lean", way)' in way
+    assert 'querySelectorAll(".atl-lw-root-lower")' in way and 'el.style.setProperty("--nmb-lean", way)' in way
     # Nothing else writes the way straight onto the buddy.
     assert AVATARS.count('.setProperty("--nmb-lean"') == 2
     assert AVATARS.count("nameMarkBuddyWay(buddy,") == 5  # its definition, the three walks and the tumble in that set it
@@ -495,7 +504,7 @@ def test_the_lie_down_and_curl_frames_are_hooks_with_the_stream_as_a_bed():
     for pose in ("lie-1", "lie-2", "lie", "curl-1", "curl"):
         assert f'#nm-buddy[data-pose="{pose}"] .nm-figure {{ --nmb-lean-pose:' in CSS, pose
     # The stream turns back upright and flattens under the body.
-    assert '#nm-buddy[data-pose="lie"] :is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); scale:' in CSS
+    assert '#nm-buddy[data-pose="lie"] :is(.atl-lw-root-neb, .atl-lw-root-neb-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); scale:' in CSS
     # Per look: sprawled with an arm behind the head, or curled with hands
     # under the cheek and the skirt drawn up.
     # The look in `:where`, no weight, so an act's arms still outrank the pose's (INBOX 1589).
@@ -504,7 +513,7 @@ def test_the_lie_down_and_curl_frames_are_hooks_with_the_stream_as_a_bed():
     # INBOX 619 (the owner: "when sleeping etc, her lower body actually
     # rotates halfway off her upperbody which stays mostly upright"): the
     # lower body lies down with the torso, as one chain, not 42 degrees off it.
-    assert ".atl-layer-lower { rotate:" not in CSS
+    assert ".atl-layer-lower { rotate:" not in CSS and ".atl-lw-root-lower { rotate:" not in CSS
     # Variant 1 lies the other way round; the Zs and the rings stay upright.
     assert '#nm-buddy[data-pose="lie"] :is(.atl-layer-fx-1, .atl-layer-fx-2) { rotate: calc(84deg - 168deg * var(--atl-v1)); }' in CSS
     assert '#nm-buddy[data-pose="lie"] :is(.atl-layer-back, .atl-layer-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); }' in CSS
@@ -579,7 +588,8 @@ def test_the_feminine_hair_is_a_side_swept_fringe_not_a_cap():
     cap = ATLAS[ATLAS.index("function atlasHairCap(") : ATLAS.index("function atlasEars(")]
     assert "spec.fringePaths" in cap and '"atl-skin atl-lock atl-fringe-lock"' in cap
     for gone in ("fringeShade", "atl-fringe-shade", "frontLocks:", "hairline:", "atl-strand-light", "atl-hairline-shade"):
-        assert gone not in ATLAS and gone not in CSS, gone
+        # Rules only: 07-whiteboard-misc.css, where 08's rules went too, says "not a hairline:" in a comment.
+        assert gone not in ATLAS and gone not in re.sub(r"/\*.*?\*/", "", CSS, flags=re.S), gone
     x, y, k = (float(v) for v in re.search(r"browStar: \[([^\]]+)\]", feminine).group(1).split(","))
     assert abs(x - 31) >= 6 and k <= 1.2, "a small star off centre, an ornament at the parting, not a badge"
     for gone in ("rootDust:", "circlet:", "spec.rootDust", "spec.circlet"):
@@ -824,8 +834,8 @@ def test_atlas_moves_by_its_own_look_and_its_rules_out_rank_the_generic_ones():
     for glide in ("atl-glide ", "atl-glide-heavy "):
         assert f"@keyframes {glide.strip()} {{" in CSS
     assert '&[data-atlas-figure="masculine"].nmb-walking .nm-buddy-char { animation: atl-glide-heavy' in CSS
-    assert "&.nmb-walking .nm-live .nm-atlas.atl-layer-lower {" in CSS
-    assert '&.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"] { animation: atl-lower-trail' in CSS
+    assert "&.nmb-walking .nm-live .atl-lw-root-lower {" in CSS
+    assert '&.nmb-walking .nm-live .atl-lw-root-lower[data-atlas-look="masculine"] { animation: atl-lower-trail' in CSS
     assert "&.nmb-act-wave .atl-figure .nmb-arm-r { animation: atl-buddy-wave 1.5s" in CSS
     assert '&.nmb-act-wave .atl-figure[data-atlas-look="feminine"] .nmb-arm-r { animation: atl-buddy-wave-f 1.5s' in CSS
     assert "animation-name: atl-buddy-wave" not in CSS
@@ -1254,7 +1264,7 @@ def test_the_figure_head_never_pulses_and_its_loops_start_at_rest():
     for name in ("atl-hair-trail", "atl-tail-wave", "atl-hem-wind", "atl-wisp-drift", "atl-float"):
         for delay in re.findall(rf"animation: {name} [0-9.]+s ease-in-out (-?[0-9.]+)s", CSS):
             assert float(delay) < 0, (name, delay)
-    assert ":root[data-atlas-hidden] :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe)" in CSS
+    assert ":root[data-atlas-hidden] :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-lw-root)" in CSS
 
 
 def test_the_lower_body_moves_with_the_torso_and_turns_about_the_join():
@@ -1269,7 +1279,7 @@ def test_the_lower_body_moves_with_the_torso_and_turns_about_the_join():
     assert "breathe.prepend(lowerBox);" in ATLAS
     assert ATLAS.count("lowerPivot: [31, 55.5],") == 2 and "spec.lowerPivot || [31, 55.5];" in ATLAS
     assert ".atl-lw-lower { transform-origin: 31px 55.5px; }" in CSS
-    assert ".nm-atlas.atl-layer-lower { transform-origin: 31px 55.5px;" in CSS
+    assert ".atl-lw-root-lower { transform-origin: 31px 55.5px;" in CSS
     assert "for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * 0.4)}deg) scale(1, ${(1 + (sy - 1) * 0.5).toFixed(3)})`);" in ATLAS
     # Its idle loops shear about the join and never turn or slide there.
     for name in ("atl-hem-wind", "atl-skirt-idle", "atl-lower-sway", "atl-lower-sway-heavy", "atl-lower-flick"):
@@ -1326,7 +1336,11 @@ def test_an_act_is_eased_into_as_well_as_out_of():
     # (lag 1111: `data-variant` is written first thing in `into`, so the page settles once after the hand-over's reads.)
     assert "const into = () => {\n    if (variant) buddy.dataset.variant = variant;\n    else delete buddy.dataset.variant;\n    buddy.classList.add(`nmb-act-${act}`, " in AVATARS
     # (INBOX 1634: the leave and the enter are one hand-over, the leave written inside the enter's change.)
-    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);" in AVATARS
+    # (L-ui-modernisation-62: a lids-only act, a blink, glance or turn, eased
+    # nothing in every probed run yet paid the hand-over's reads, so it changes
+    # straight; every other act is still eased in.)
+    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS
+    assert "const change = joined ? () => (leave(), into()) : into;\n    if (lidsOnly) change();\n    else nameMarkBuddyBlend(buddy, change, NMB_BLEND_IN_MS);" in AVATARS
     assert "const leave = () => {\n    if (easeOut) nameMarkBuddyEase(buddy, 1800);\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
     ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
     assert 250 <= ms <= 500

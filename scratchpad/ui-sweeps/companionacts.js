@@ -24,7 +24,7 @@ const PROP = { lie: 'pillow', read: 'book', beanbag: 'beanbag', chair: 'chair' }
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
   const layouts = async () => (await cdp.send('Performance.getMetrics')).metrics.find((m) => m.name === 'LayoutCount').value;
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, KIND);
   await page.waitForTimeout(6000);
   const rows = [];
   for (const act of ACTS) {

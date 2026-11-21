@@ -246,3 +246,121 @@ def test_the_render_after_the_servers_answer_redraws_only_the_new_topics_lines()
     body = _code("wbRenderMapEdges")
     assert body.index("only.has(parent.id)") < body.index("wbMapEdgeGeometry(")
     assert "only.has(parent.id)" in _code("wbRenderMapEdgePluses")
+
+
+def test_the_accent_is_read_before_the_render_writes() -> None:
+    """Source text: wbMapAccentInk and renderWbObjects (L-ui-modernisation-61).
+
+    Traced opening a 500-topic map: the first topic's paint read `--accent`
+    with every topic just inserted, so the read restyled all 13,022 elements
+    (180ms), and the size pass after the writes restyled them again (210ms).
+    The render asks for it before its first write, while the page is clean.
+    """
+    assert "getComputedStyle(root)" in _code("wbMapAccentInk")
+    render = _code("renderWbObjects")
+    asked = render.find("if (mapIndex) wbMapAccentInk();")
+    assert 0 <= asked < render.find(".data(objectData")
+
+
+def test_a_line_builds_its_grips_only_when_they_can_show() -> None:
+    """Source text: wbMapEdgeElement, wbSyncMapEdgeHandles and wbRenderMapEdges
+    in whiteboard-map.js, plus library-lazy.css. L-ui-modernisation-61: each
+    line drew eight elements (group, two paths, a waypoint grip and two end
+    grips with a title each), so a 500-topic map wrote about 4,000 SVG
+    elements that the first layout read restyled though none could be seen.
+    The grips are built on the first hover or focus of the line, or when its
+    topic is selected; until then a line is its group and two paths."""
+    element = _code("wbMapEdgeElement")
+    made = element.split("wbMapEdgeElement.grips")[0]
+    assert "wb-map-edge-handle" not in made and "wb-map-edge-end" not in made
+    assert "wbMapEdgeElement.grips = " in WB
+    grips = WB.split("wbMapEdgeElement.grips = ")[1].split("\n};")[0]
+    assert "wbWireMapEdgeHandle(" in grips and "wbWireMapEdgeEnd(" in grips
+    assert "wbMapEdgeHandlePoint(" in grips and "wbMapEdgeEndPoints(" in grips
+    # Kept on the path, so a drag frame (`wbUpdateMapEdges`) moves them.
+    assert "path._wbHandle = " in grips and "path._wbEnds = " in grips
+    # Selection is the route that needs no pointer.
+    assert "wbMapEdgeElement.grips(held.wrap)" in _code("wbSyncMapEdgeHandles")
+    # Hover and focus, delegated once on the group rather than per line.
+    render = _code("wbRenderMapEdges")
+    assert '"pointerover"' in render and '"focusin"' in render
+    # Not mid-pan or mid-drag, where a sweep over the lines built dozens.
+    assert "if (event.buttons) return;" in render and '"pointermove"' in render
+    # A grip built under the pointer still fades in, as one that was there did.
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    start = lazy.split("@starting-style")
+    assert any(".wb-map-edge-group:hover .wb-map-edge-handle" in part.split("}")[0] for part in start[1:])
+
+
+def _async_body(name: str) -> str:
+    """An `async function`'s text, to the next left-margin function."""
+    match = re.search(rf"^async function {re.escape(name)}\(", WB, re.MULTILINE)
+    assert match, f"{name} is gone; this lint is about its body"
+    rest = WB[match.end() :]
+    end = re.search(r"^(async )?function \w+\(", rest, re.MULTILINE)
+    code = rest[: end.start()] if end else rest
+    return "\n".join(line for line in code.splitlines() if not line.lstrip().startswith("//"))
+
+
+def test_the_open_asks_for_the_board_while_the_canvas_settles() -> None:
+    """The open waited 60ms for the canvas, then asked for the board: at 500
+    topics that is one round trip (50 to 70ms, phase probe) spent after a
+    wait it could have overlapped. The request starts before the wait and the
+    fetch takes its answer."""
+    body = _async_body("openWhiteboardBoard")
+    ask = body.index("apiJson(")
+    assert ask < body.index("setTimeout(resolve, 60)")
+    assert re.search(r"await fetchWhiteboardState\(\{[^}]*state", body), body
+    fetch = _async_body("fetchWhiteboardState")
+    assert re.search(r"await \(state \|\| apiJson\(url\)\)", fetch), fetch
+
+
+def test_the_open_draws_before_the_board_picker_is_rebuilt() -> None:
+    """The picker's list is a third round trip (30 to 100ms) nothing drawn on
+    the canvas reads: the open draws and frames, then waits for it."""
+    body = _async_body("openWhiteboardBoard")
+    assert body.index("wbRestoreOrFrameBoard(") < body.index("await listed.wait"), body
+    fetch = _async_body("fetchWhiteboardState")
+    assert re.search(r"if \(list\) list\.wait = refreshBoardList\(\)", fetch), fetch
+    assert "else await refreshBoardList();" in fetch
+
+
+def test_the_board_count_is_written_only_to_the_open_boards_row() -> None:
+    """With the picker rebuilt after the first render, its selected row is
+    still the last board's while that render runs."""
+    code = _code("wbSyncBoardCount")
+    assert "opt.value !== String(window.currentBoardId)" in code, code
+
+
+def test_a_prefetched_board_is_used_only_for_the_board_it_was_asked_for() -> None:
+    """PR 224 review: a second open during the first one's settle must not draw the first board's answer. Run in node
+    with the fetch's helpers stubbed: a prefetch for board 1 handed to a fetch for board 2 asks for board 2 again."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    fetch = _async_body("fetchWhiteboardState")
+    script = (
+        "const asked = []; let wbState = null; const window = { currentBoardId: 2 };\n"
+        "const apiJson = async (url) => { asked.push(url); return { board: url }; };\n"
+        "const noop = () => {}; const toast = noop; const voiceLine = () => '';\n"
+        "const handler = { get: (t, k) => (k in t ? t[k] : noop) };\n"
+        "with (new Proxy({ window, apiJson, toast, voiceLine, asked }, handler)) {\n"
+        + "async function fetchWhiteboardState("
+        + fetch
+        + "\n(async () => {\n"
+        "  await fetchWhiteboardState({ state: Promise.resolve({ board: 'one' }), stateFor: 1, list: {} });\n"
+        "  const first = wbState;\n"
+        "  await fetchWhiteboardState({ state: Promise.resolve({ board: 'two' }), stateFor: 2, list: {} });\n"
+        "  console.log(JSON.stringify({ asked, first, second: wbState }));\n"
+        "})();\n}\n"
+    )
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout
+    got = json.loads(out)
+    assert got["asked"] == ["/whiteboard/?board_id=2"], got
+    assert got["first"] == {"board": "/whiteboard/?board_id=2"}, got
+    assert got["second"] == {"board": "two"}, got

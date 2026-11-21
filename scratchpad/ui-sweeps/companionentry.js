@@ -24,7 +24,7 @@ const TABS = (process.env.TABS || 'notes,chat,dashboard,notes').split(',');
 const REDUCED = !!process.env.REDUCED;
 
 (async () => {
-  const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+  const { chromium } = require('playwright');
   void chromium;
   const opts = { viewport: { width: VW, height: VH } };
   if (REDUCED) opts.reducedMotion = 'reduce';

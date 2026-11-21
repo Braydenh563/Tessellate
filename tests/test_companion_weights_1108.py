@@ -91,12 +91,18 @@ def _app_acts() -> dict:
     return acts
 
 
+#: Twelve seeds, not the catalogue's three: the app stream nearly saturates (61 of 75 reachable acts an hour), so with
+#: three seeds the gap swung with each act built (4.08 once the desk built lean, back_float and the chair, measured
+#: 5.5, 5.5, 4.08 over the first three seeds and 1.25 over twelve). More samples, the same tolerance.
+APP_SEEDS = tuple(range(1, 13))
+
+
 def test_the_app_factor_reproduces_the_seeded_hours() -> None:
     acts = _app_acts()
-    app = [len(run(APP_SIM % {"seed": s, "hour": h}, acts)) for h in HOURS for s in SEEDS]
+    app = [len(run(APP_SIM % {"seed": s, "hour": h}, acts)) for h in HOURS for s in APP_SEEDS]
     reach = {  # what the app's act table can pick (the rest are micro-motions and engine states)
         e["id"] for e in catalogue.entries()
         if e["kind"] == "idle_act" and e["desk"]["s"] == "built" and any(n[5:] in acts for n in e["app"].get("names", []) if n.startswith("acts:"))
     }
-    table = [len([a for a in seeded_hour(s, h, "app")["acts"] if a in reach]) for h in HOURS for s in SEEDS]
+    table = [len([a for a in seeded_hour(s, h, "app")["acts"] if a in reach]) for h in HOURS for s in APP_SEEDS]
     assert abs(statistics.mean(app) - statistics.mean(table)) <= TOLERANCE, (app, table)

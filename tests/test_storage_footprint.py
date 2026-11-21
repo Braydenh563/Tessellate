@@ -99,3 +99,19 @@ def test_the_two_totals_say_what_each_covers():
     page = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "which leave out the search index, logs and other working files" in page
     assert "The five add up to less than the data folder" in page
+
+
+def test_files_nothing_uses_are_counted_in_about_and_deleted_only_when_asked():
+    # L-ui-modernisation-74: the background pass never deletes uploads (a gallery-only picture is wanted).
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = (root / "frontend" / "index.html").read_text(encoding="utf-8")
+    data_js = (root / "frontend" / "js" / "settings-data.js").read_text(encoding="utf-8")
+    body = data_js.split("renderStorageBreakdown.orphans = async")[1].split("\n};\n")[0]
+    assert 'id="media-orphans-row"' in page and 'id="media-orphans-delete"' in page
+    assert '"/media/orphans?limit=1"' in body and "confirmDialog(" in body
+    assert body.index("confirmDialog(") < body.index('method: "DELETE"')
+    assert "skipped_private" in body
+    autonomous = (root / "src" / "tessellate" / "ai" / "autonomous.py").read_text(encoding="utf-8")
+    assert "delete_orphaned_media" not in autonomous

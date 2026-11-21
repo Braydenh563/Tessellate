@@ -19,12 +19,12 @@ const { boot } = require('./lib.js');
   const runs = Number(process.env.RUNS || 4);
   const routes = [];
   for (let i = 0; i < runs; i += 1) {
+    await page.evaluate(() => ensureModule("characters"));
     const r = await page.evaluate(() => new Promise((done) => {
-      const sel = document.getElementById('avatar-buddy');
-      sel.value = 'off'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set("avatar-buddy", "off"); syncNameMarkBuddy();
       setTimeout(() => {
         localStorage.removeItem('nm-buddy-spots');
-        sel.value = 'atlas'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+        prefs.set("avatar-buddy", "atlas"); syncNameMarkBuddy();
         const t0 = performance.now();
         const frames = [];
         const tick = () => {

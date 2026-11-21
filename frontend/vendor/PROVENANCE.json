@@ -1,0 +1,914 @@
+{
+ "files": [
+  {
+   "path": "atkinson/LICENSE",
+   "sha256": "18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+   "size": 4314,
+   "library": "Atkinson Hyperlegible",
+   "version": "latin subset, 400 and 700 with their italics (woff2)",
+   "upstream": "https://github.com/googlefonts/atkinson-hyperlegible",
+   "licence": "SIL OFL 1.1",
+   "notice": "atkinson/LICENSE"
+  },
+  {
+   "path": "atkinson/atkinson-hyperlegible-latin-400-italic.woff2",
+   "sha256": "f49625ed0476fc53b74e555391a6e87d61467e4ea28815a97d327480cb0f3f2b",
+   "size": 18276,
+   "library": "Atkinson Hyperlegible",
+   "version": "latin subset, 400 and 700 with their italics (woff2)",
+   "upstream": "https://github.com/googlefonts/atkinson-hyperlegible",
+   "licence": "SIL OFL 1.1",
+   "notice": "atkinson/LICENSE"
+  },
+  {
+   "path": "atkinson/atkinson-hyperlegible-latin-400-normal.woff2",
+   "sha256": "b09653e3ba9d95e26da5c408979f40451990a4573ce5f96abe6982e2fcb09e6c",
+   "size": 17184,
+   "library": "Atkinson Hyperlegible",
+   "version": "latin subset, 400 and 700 with their italics (woff2)",
+   "upstream": "https://github.com/googlefonts/atkinson-hyperlegible",
+   "licence": "SIL OFL 1.1",
+   "notice": "atkinson/LICENSE"
+  },
+  {
+   "path": "atkinson/atkinson-hyperlegible-latin-700-italic.woff2",
+   "sha256": "07fe0570672d9d416c5d695a4b738f2fef869a462420b19d11250d7afbaf888a",
+   "size": 18596,
+   "library": "Atkinson Hyperlegible",
+   "version": "latin subset, 400 and 700 with their italics (woff2)",
+   "upstream": "https://github.com/googlefonts/atkinson-hyperlegible",
+   "licence": "SIL OFL 1.1",
+   "notice": "atkinson/LICENSE"
+  },
+  {
+   "path": "atkinson/atkinson-hyperlegible-latin-700-normal.woff2",
+   "sha256": "d8e8b1e0e929651439e25e23ade4b9d6cac073f2444aadb8e8b85431726c2036",
+   "size": 17616,
+   "library": "Atkinson Hyperlegible",
+   "version": "latin subset, 400 and 700 with their italics (woff2)",
+   "upstream": "https://github.com/googlefonts/atkinson-hyperlegible",
+   "licence": "SIL OFL 1.1",
+   "notice": "atkinson/LICENSE"
+  },
+  {
+   "path": "codemirror/LICENSE",
+   "sha256": "f9afe3fd7d169499ad6f651fc6907894ad74531893772409da51a424aea86253",
+   "size": 2075,
+   "library": "CodeMirror 6",
+   "version": "packages pinned in `codemirror/package.json` (view 6.x)",
+   "upstream": "https://codemirror.net",
+   "licence": "MIT",
+   "notice": "codemirror/LICENSE"
+  },
+  {
+   "path": "codemirror/build.sh",
+   "sha256": "62f03a22c065f70fbf114d02dd6a7acf094aadaa28c5630d7120c2b1af5e0700",
+   "size": 1989,
+   "library": "CodeMirror 6",
+   "version": "packages pinned in `codemirror/package.json` (view 6.x)",
+   "upstream": "https://codemirror.net",
+   "licence": "MIT",
+   "notice": "codemirror/LICENSE"
+  },
+  {
+   "path": "codemirror/codemirror.min.js",
+   "sha256": "e825c202ce005bf4f84240971b0cb72454999d89d933c47628ba5e5437d71299",
+   "size": 851783,
+   "library": "CodeMirror 6",
+   "version": "packages pinned in `codemirror/package.json` (view 6.x)",
+   "upstream": "https://codemirror.net",
+   "licence": "MIT",
+   "notice": "codemirror/LICENSE"
+  },
+  {
+   "path": "codemirror/entry.js",
+   "sha256": "c8ff6df2e72d1207af4ca575b044c2352f23befb4c46e5f090d407df604636a8",
+   "size": 3089,
+   "library": "CodeMirror 6",
+   "version": "packages pinned in `codemirror/package.json` (view 6.x)",
+   "upstream": "https://codemirror.net",
+   "licence": "MIT",
+   "notice": "codemirror/LICENSE"
+  },
+  {
+   "path": "codemirror/package.json",
+   "sha256": "f54de86b203e93b2c50948a0000945da78dce004f98c4610580cef13bf7b76e6",
+   "size": 948,
+   "library": "CodeMirror 6",
+   "version": "packages pinned in `codemirror/package.json` (view 6.x)",
+   "upstream": "https://codemirror.net",
+   "licence": "MIT",
+   "notice": "codemirror/LICENSE"
+  },
+  {
+   "path": "d3.LICENSE.txt",
+   "sha256": "f3f3b3a4e5fd8951a695e2eaee2867ef3ac72f3a3ce65330b9bf9a85eb113548",
+   "size": 861,
+   "library": "D3",
+   "version": "7.9.0",
+   "upstream": "https://d3js.org",
+   "licence": "ISC",
+   "notice": "d3.LICENSE.txt"
+  },
+  {
+   "path": "d3.v7.min.js",
+   "sha256": "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539",
+   "size": 279706,
+   "library": "D3",
+   "version": "7.9.0",
+   "upstream": "https://d3js.org",
+   "licence": "ISC",
+   "notice": "d3.LICENSE.txt"
+  },
+  {
+   "path": "docx/LICENSE",
+   "sha256": "b5b2364c0c95a26b2a2399d7e706a61acac680be1d5b180b00592ee85830bffb",
+   "size": 1072,
+   "library": "docx",
+   "version": "9.10.0 (`dist/index.iife.js` minified)",
+   "upstream": "https://github.com/dolanmiu/docx",
+   "licence": "MIT",
+   "notice": "docx/LICENSE"
+  },
+  {
+   "path": "docx/docx.min.js",
+   "sha256": "be66e532b3fdcd446227c2a7b5165a80829dc18dee2fdbf0ab6317d485e6c98e",
+   "size": 481553,
+   "library": "docx",
+   "version": "9.10.0 (`dist/index.iife.js` minified)",
+   "upstream": "https://github.com/dolanmiu/docx",
+   "licence": "MIT",
+   "notice": "docx/LICENSE"
+  },
+  {
+   "path": "emmet/LICENSE",
+   "sha256": "a8996022b1f276442584c353dae18b930c513283e3970a54fe3ad87bf7125162",
+   "size": 2561,
+   "library": "Emmet",
+   "version": "2.4.11",
+   "upstream": "https://github.com/emmetio/emmet",
+   "licence": "MIT",
+   "notice": "emmet/LICENSE"
+  },
+  {
+   "path": "emmet/build.sh",
+   "sha256": "1ccc67c3ebcf18ef078628a78943f3cb7eb67f6bd9a0095f953d7ed34e2a194a",
+   "size": 970,
+   "library": "Emmet",
+   "version": "2.4.11",
+   "upstream": "https://github.com/emmetio/emmet",
+   "licence": "MIT",
+   "notice": "emmet/LICENSE"
+  },
+  {
+   "path": "emmet/emmet.min.js",
+   "sha256": "b7f557577b8005278e74d5cf26361a14f7730ab0ba294af971cb28a45e57d798",
+   "size": 85273,
+   "library": "Emmet",
+   "version": "2.4.11",
+   "upstream": "https://github.com/emmetio/emmet",
+   "licence": "MIT",
+   "notice": "emmet/LICENSE"
+  },
+  {
+   "path": "emmet/entry.js",
+   "sha256": "b1d9ba3e22e4e98cd2de19b16a1230ae131144c692267384158040b4929d0baf",
+   "size": 1365,
+   "library": "Emmet",
+   "version": "2.4.11",
+   "upstream": "https://github.com/emmetio/emmet",
+   "licence": "MIT",
+   "notice": "emmet/LICENSE"
+  },
+  {
+   "path": "emmet/package.json",
+   "sha256": "215594e139af5616bd2fbef01b7c3c6ccc7a1ce8691296979e979df49be3143e",
+   "size": 389,
+   "library": "Emmet",
+   "version": "2.4.11",
+   "upstream": "https://github.com/emmetio/emmet",
+   "licence": "MIT",
+   "notice": "emmet/LICENSE"
+  },
+  {
+   "path": "harper/BinaryModule-BmeyZWwZ.js",
+   "sha256": "8728c2c143a4437929401149390170372874d1aa4376dc0f517dd3518aa88015",
+   "size": 97235,
+   "library": "Harper",
+   "version": "harper.js 2.10.0",
+   "upstream": "https://github.com/Automattic/harper",
+   "licence": "Apache-2.0",
+   "notice": "harper/LICENSE"
+  },
+  {
+   "path": "harper/LICENSE",
+   "sha256": "fbc8f1bffe04ab962340fabb1324d57d8b875070f67759d606516144ee53ac19",
+   "size": 11345,
+   "library": "Harper",
+   "version": "harper.js 2.10.0",
+   "upstream": "https://github.com/Automattic/harper",
+   "licence": "Apache-2.0",
+   "notice": "harper/LICENSE"
+  },
+  {
+   "path": "harper/harper_wasm_slim_bg.wasm",
+   "sha256": "8d354f62d697194235959cb6fa58699b195c058de36d59e914f4078410e9e0a1",
+   "size": 15935196,
+   "library": "Harper",
+   "version": "harper.js 2.10.0",
+   "upstream": "https://github.com/Automattic/harper",
+   "licence": "Apache-2.0",
+   "notice": "harper/LICENSE"
+  },
+  {
+   "path": "harper/package.json",
+   "sha256": "8900fa14392b30065bb2c102ed5da1fd51c83e673f1282c6cd36cc1b3fd60044",
+   "size": 2008,
+   "library": "Harper",
+   "version": "harper.js 2.10.0",
+   "upstream": "https://github.com/Automattic/harper",
+   "licence": "Apache-2.0",
+   "notice": "harper/LICENSE"
+  },
+  {
+   "path": "harper/slimBinary.js",
+   "sha256": "07a7e558783fcb0cbdf6402cff9ce2579a5b69ca3aa6de37acf1dc8866a8c23e",
+   "size": 257,
+   "library": "Harper",
+   "version": "harper.js 2.10.0",
+   "upstream": "https://github.com/Automattic/harper",
+   "licence": "Apache-2.0",
+   "notice": "harper/LICENSE"
+  },
+  {
+   "path": "js-beautify/LICENSE",
+   "sha256": "2829716775dfdac45467d7384d8eb1bcaa1ae186994eedca0f513fb09038c134",
+   "size": 1119,
+   "library": "js-beautify",
+   "version": "2.0.3",
+   "upstream": "https://github.com/beautifier/js-beautify",
+   "licence": "MIT",
+   "notice": "js-beautify/LICENSE"
+  },
+  {
+   "path": "js-beautify/beautify.min.js",
+   "sha256": "7544f5dc78e3a58d5799fd2669bc22d8a4ff5a2f88a7179dc9f6bf85a0bc309b",
+   "size": 103476,
+   "library": "js-beautify",
+   "version": "2.0.3",
+   "upstream": "https://github.com/beautifier/js-beautify",
+   "licence": "MIT",
+   "notice": "js-beautify/LICENSE"
+  },
+  {
+   "path": "js-beautify/build.sh",
+   "sha256": "d11f513ef06d977d458197b0e462ee2c0fa1a2a440fc5297b8e23001ca119b5c",
+   "size": 1034,
+   "library": "js-beautify",
+   "version": "2.0.3",
+   "upstream": "https://github.com/beautifier/js-beautify",
+   "licence": "MIT",
+   "notice": "js-beautify/LICENSE"
+  },
+  {
+   "path": "js-beautify/entry.js",
+   "sha256": "1ebec57acef9c315afec631de5c2cf019d715fa5bf014101b80f9ac57a5516fa",
+   "size": 272,
+   "library": "js-beautify",
+   "version": "2.0.3",
+   "upstream": "https://github.com/beautifier/js-beautify",
+   "licence": "MIT",
+   "notice": "js-beautify/LICENSE"
+  },
+  {
+   "path": "js-beautify/package.json",
+   "sha256": "2e0b222d6198c5a024d48335c4e396a546bfcbc40f8a00cb597feddf8b47490a",
+   "size": 253,
+   "library": "js-beautify",
+   "version": "2.0.3",
+   "upstream": "https://github.com/beautifier/js-beautify",
+   "licence": "MIT",
+   "notice": "js-beautify/LICENSE"
+  },
+  {
+   "path": "js-interpreter/LICENSE",
+   "sha256": "20e8484ee7d95ca1b1c7e588ea6c0fadeb6c13bf890d21ff9881fac155744063",
+   "size": 12520,
+   "library": "JS-Interpreter",
+   "version": "commit 45d00b0 (2026-06-12; `interpreter.js` with its Acorn, minified by `js-interpreter/build.sh`)",
+   "upstream": "https://github.com/NeilFraser/JS-Interpreter",
+   "licence": "Apache-2.0, Acorn MIT",
+   "notice": "js-interpreter/LICENSE"
+  },
+  {
+   "path": "js-interpreter/build.sh",
+   "sha256": "2e9217342497a2295781e40d2d2a208b5fa4e00f29d68c59233f4418b1b4937f",
+   "size": 1603,
+   "library": "JS-Interpreter",
+   "version": "commit 45d00b0 (2026-06-12; `interpreter.js` with its Acorn, minified by `js-interpreter/build.sh`)",
+   "upstream": "https://github.com/NeilFraser/JS-Interpreter",
+   "licence": "Apache-2.0, Acorn MIT",
+   "notice": "js-interpreter/LICENSE"
+  },
+  {
+   "path": "js-interpreter/js-interpreter.min.js",
+   "sha256": "7d6d0e342815307a6ae7fe4eb4b7c1e0016f8cb0a799f11f923c82598363d849",
+   "size": 102770,
+   "library": "JS-Interpreter",
+   "version": "commit 45d00b0 (2026-06-12; `interpreter.js` with its Acorn, minified by `js-interpreter/build.sh`)",
+   "upstream": "https://github.com/NeilFraser/JS-Interpreter",
+   "licence": "Apache-2.0, Acorn MIT",
+   "notice": "js-interpreter/LICENSE"
+  },
+  {
+   "path": "mammoth/LICENSE",
+   "sha256": "6663bbd049205d38a496ccacb412a151980b444627d38de218b3b809aef330f1",
+   "size": 1307,
+   "library": "Mammoth",
+   "version": "1.13.0 (`mammoth.browser.min.js`)",
+   "upstream": "https://github.com/mwilliamson/mammoth.js",
+   "licence": "BSD-2-Clause",
+   "notice": "mammoth/LICENSE"
+  },
+  {
+   "path": "mammoth/mammoth.browser.min.js",
+   "sha256": "92914a3708cfdf1e62cb553d1856a7fedab21da83d8ee82845de2f897b368cab",
+   "size": 405060,
+   "library": "Mammoth",
+   "version": "1.13.0 (`mammoth.browser.min.js`)",
+   "upstream": "https://github.com/mwilliamson/mammoth.js",
+   "licence": "BSD-2-Clause",
+   "notice": "mammoth/LICENSE"
+  },
+  {
+   "path": "mathlive/LICENSE",
+   "sha256": "3caebd18611959ca725ab976a004d408017eb1d7093d6c9b9b09c5a4790eaff8",
+   "size": 1099,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/VERSION.txt",
+   "sha256": "d0feaf98c200b42162c0ade6bb3b1849d3c42a346fac6d5e7c1ce1965d848c48",
+   "size": 520,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_AMS-Regular.woff2",
+   "sha256": "0cdd387c9590a1a9f9794560022dbb59654a7d86f187aa0c81495ad42d3a7308",
+   "size": 28076,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Caligraphic-Bold.woff2",
+   "sha256": "de7701e42cf1f4cf0b766c03fb27977207eee2f4fd5d76fa82188406da43ea4c",
+   "size": 6912,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Caligraphic-Regular.woff2",
+   "sha256": "5d53e70ad607c2352162dec9e0923fb54ecdafaccbf604cd8dcf7d00facb989b",
+   "size": 6908,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Fraktur-Bold.woff2",
+   "sha256": "74444efd593c005e3f4573b44524704c0af0a937fe911cca9e94068d0d140d3f",
+   "size": 11348,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Fraktur-Regular.woff2",
+   "sha256": "51814d270d06ff0255dba0799994fa4d8c84d11f09951d47595f4abb1f3602dc",
+   "size": 11316,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Main-Bold.woff2",
+   "sha256": "0f60d1b897938ec918c8ce073092411baf9438f6739465693ff18b0f9d20b021",
+   "size": 25324,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Main-BoldItalic.woff2",
+   "sha256": "99cd42a3c072d918f2f44984a807cf7aa16e13545fd0875fc07c6c65f99e715b",
+   "size": 16780,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Main-Italic.woff2",
+   "sha256": "97479ca6cce906abc961ecac96faa5f9ca2e61b8e7670d475826bcdee9a7c267",
+   "size": 16988,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Main-Regular.woff2",
+   "sha256": "c2342cd8b869e01752a9321dc17213fc40d4d04c79688c1d43f2cf316abd7866",
+   "size": 26272,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Math-BoldItalic.woff2",
+   "sha256": "dc47344dbb6cb5b655c8460d561f4df5f501b90c804ad3c6cec65fe322351ab1",
+   "size": 16400,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Math-Italic.woff2",
+   "sha256": "7af58c5ec8f132a2ddde9027c6d7814decce4d3b822a11192a42a20e2e973264",
+   "size": 16440,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_SansSerif-Bold.woff2",
+   "sha256": "e99ae51144bf1232efcc1bfe5add36262c6866b0faab24fa75740e1b98577a62",
+   "size": 12216,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_SansSerif-Italic.woff2",
+   "sha256": "00b26ac825e2095056396e0553b8ac26d3f8ad158c3826e28b4c45b385c4714a",
+   "size": 12028,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_SansSerif-Regular.woff2",
+   "sha256": "68e8c73ef42afd3ccec58bf0fba302cce448938e7fc020a5e31f8a952eee1342",
+   "size": 10344,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Script-Regular.woff2",
+   "sha256": "036d4e95149b69ff9bcc0cd55771efeb25ffa3947293e69acd78d5ac328c684b",
+   "size": 9644,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Size1-Regular.woff2",
+   "sha256": "6b47c40166b6dbe21a5dfca7718413f2147fd2399be1ba605d8ad39cedf25dfe",
+   "size": 5468,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Size2-Regular.woff2",
+   "sha256": "d04c54219f9eaec6d4d4fd42dfb28785975a4794d6b2fc71e566b9cd6db842dd",
+   "size": 5208,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Size3-Regular.woff2",
+   "sha256": "73d591271b1604960cb10bb90fee021670af7297017e0e98480b332d11f51995",
+   "size": 3624,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Size4-Regular.woff2",
+   "sha256": "a4af7d414440a1c1790825cfb700cf9cf43b0f2c4b04f0ebc523011ad9853ec0",
+   "size": 4928,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/fonts/KaTeX_Typewriter-Regular.woff2",
+   "sha256": "71d517d67827787cfabdf186914cc3358eda539e37931941f2b2fd4a21f68c0b",
+   "size": 13568,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mathlive/mathlive.min.js",
+   "sha256": "51e9ab5c4739209a2951a550042dcecb99ad3047269c1d791d09d7d613226eae",
+   "size": 843924,
+   "library": "MathLive",
+   "version": "0.111.1 (`mathlive.min.js` and `fonts/`, unchanged from the npm package; `mathlive/VERSION.txt`)",
+   "upstream": "https://github.com/arnog/mathlive",
+   "licence": "MIT",
+   "notice": "mathlive/LICENSE"
+  },
+  {
+   "path": "mermaid/LICENSE",
+   "sha256": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80",
+   "size": 1089,
+   "library": "Mermaid",
+   "version": "12.2.0 (`mermaid.min.js`, unchanged from the npm package; `mermaid/VERSION.txt`)",
+   "upstream": "https://mermaid.js.org",
+   "licence": "MIT",
+   "notice": "mermaid/LICENSE"
+  },
+  {
+   "path": "mermaid/VERSION.txt",
+   "sha256": "75846c589a7e4b7b7a0a89bec318a11e8006f849e65f6375b9530dedb296066f",
+   "size": 485,
+   "library": "Mermaid",
+   "version": "12.2.0 (`mermaid.min.js`, unchanged from the npm package; `mermaid/VERSION.txt`)",
+   "upstream": "https://mermaid.js.org",
+   "licence": "MIT",
+   "notice": "mermaid/LICENSE"
+  },
+  {
+   "path": "mermaid/mermaid.min.js",
+   "sha256": "a8a6a6f805b074a8261a2825c86f99c8054acb3b35f50bb7e24a4f9f2c3c3b9f",
+   "size": 5494801,
+   "library": "Mermaid",
+   "version": "12.2.0 (`mermaid.min.js`, unchanged from the npm package; `mermaid/VERSION.txt`)",
+   "upstream": "https://mermaid.js.org",
+   "licence": "MIT",
+   "notice": "mermaid/LICENSE"
+  },
+  {
+   "path": "p5.LICENSE.txt",
+   "sha256": "e1b262f56ffd158261545edad97a101a93f554c6004e13aaf0fff482339cb613",
+   "size": 420,
+   "library": "p5.js",
+   "version": "1.11.13",
+   "upstream": "https://p5js.org",
+   "licence": "LGPL-2.1",
+   "notice": "p5.LICENSE.txt"
+  },
+  {
+   "path": "p5.min.js",
+   "sha256": "e9df7d05fd7c3ff028fc09a312a43101241f23c43143b387bf89d96b2e4e0849",
+   "size": 1063246,
+   "library": "p5.js",
+   "version": "1.11.13",
+   "upstream": "https://p5js.org",
+   "licence": "LGPL-2.1",
+   "notice": "p5.LICENSE.txt"
+  },
+  {
+   "path": "phosphor/LICENSE",
+   "sha256": "ff053b805bf9d58b7cf95e59a7eb65f46e69c5304648d8f4a5fc1e10cc7356c1",
+   "size": 1178,
+   "library": "Phosphor Icons",
+   "version": "the web font build",
+   "upstream": "https://phosphoricons.com",
+   "licence": "MIT",
+   "notice": "phosphor/LICENSE"
+  },
+  {
+   "path": "phosphor/Phosphor.ttf",
+   "sha256": "06b91e022b7ee899a63efced879392a74f0bacbda54e4467e9f663220d173a10",
+   "size": 488636,
+   "library": "Phosphor Icons",
+   "version": "the web font build",
+   "upstream": "https://phosphoricons.com",
+   "licence": "MIT",
+   "notice": "phosphor/LICENSE"
+  },
+  {
+   "path": "phosphor/Phosphor.woff",
+   "sha256": "396c5eae7f2dfb4d1f5432edd87109eda2f92a451b2167e43a26165b82770f75",
+   "size": 488716,
+   "library": "Phosphor Icons",
+   "version": "the web font build",
+   "upstream": "https://phosphoricons.com",
+   "licence": "MIT",
+   "notice": "phosphor/LICENSE"
+  },
+  {
+   "path": "phosphor/Phosphor.woff2",
+   "sha256": "c2ea45ea05ff5c7df1936770c104725f2a68f43fd343f35f3da23a30b27de32a",
+   "size": 147380,
+   "library": "Phosphor Icons",
+   "version": "the web font build",
+   "upstream": "https://phosphoricons.com",
+   "licence": "MIT",
+   "notice": "phosphor/LICENSE"
+  },
+  {
+   "path": "phosphor/style.css",
+   "sha256": "24b6a12379074947d8eec0835a96ebfe959760ef31e7963a916a5b6317952a37",
+   "size": 78081,
+   "library": "Phosphor Icons",
+   "version": "the web font build",
+   "upstream": "https://phosphoricons.com",
+   "licence": "MIT",
+   "notice": "phosphor/LICENSE"
+  },
+  {
+   "path": "python-stdlib/LICENSE",
+   "sha256": "b568b7de1c847988a72f3a982b444790812b2d536b90b801c7feff24da4d7f41",
+   "size": 372,
+   "library": "Python standard library table",
+   "version": "built by `scripts/gen_python_completions.py`",
+   "upstream": "https://docs.python.org/3/license.html",
+   "licence": "PSF License Agreement",
+   "notice": "python-stdlib/LICENSE"
+  },
+  {
+   "path": "python-stdlib/stdlib.json",
+   "sha256": "8b7a480f2e8b95db864a0e9f3d889ce85d6eb478776ceb46a4d8e499aa920ebd",
+   "size": 108883,
+   "library": "Python standard library table",
+   "version": "built by `scripts/gen_python_completions.py`",
+   "upstream": "https://docs.python.org/3/license.html",
+   "licence": "PSF License Agreement",
+   "notice": "python-stdlib/LICENSE"
+  },
+  {
+   "path": "spelling/LICENSE",
+   "sha256": "1d31d84df38d6df8f88aa3926dafe6c05ab19a610344d9de74b883e88f5cfd76",
+   "size": 5152,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/SCOWL-README.txt",
+   "sha256": "0bcf1616b29dee3fbcbef1428b0c3d4d77f6a36cc88b9e130ee65e5382899029",
+   "size": 15740,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/build.sh",
+   "sha256": "616c3472a9fd44f3f56711e5d891824e63a737f4df59c3f894ae6f3b41e3094c",
+   "size": 2000,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/en_AU.aff",
+   "sha256": "e746c882dd6f303c2c46e7452804b9201115a6942cfeb15f18f8edf774d2e24e",
+   "size": 3205,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/en_AU.dic",
+   "sha256": "aa07c46571f306b79fc1bc534357ed357af15687381b26f891ba66e8a2caed89",
+   "size": 554336,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/en_GB.aff",
+   "sha256": "c7a8c4d08c29d237880844b1623099f59092602f189be38ce3912e457ff38bc1",
+   "size": 3090,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/en_GB.dic",
+   "sha256": "869fe17ba4ee4b5401c60a666ee2d6a3dcc237f460b7294435df1cc6a799aa57",
+   "size": 552106,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/frequency.txt",
+   "sha256": "e19b1479678ecdb709cc8ca328de4bddf461c59bca02cca8fe2658a53c908e5a",
+   "size": 670885,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "spelling/nspell.js",
+   "sha256": "984994d01f138d3b63ee622b276f963bd1562c9ca270043a3a7f33868117ed97",
+   "size": 28626,
+   "library": "Spelling second opinion",
+   "version": "nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh`",
+   "upstream": "https://github.com/wooorm/nspell",
+   "licence": "see `spelling/LICENSE` (section below)",
+   "notice": "spelling/LICENSE"
+  },
+  {
+   "path": "sqljs/LICENSE",
+   "sha256": "60a3f6e4d7b29b4321359e683b36cf198d24f58e24582070f56e6fa89d5ee2be",
+   "size": 2199,
+   "library": "sql.js",
+   "version": "1.14.2 (`sql-wasm.js` and `sql-wasm.wasm`, copied by `sqljs/build.sh`)",
+   "upstream": "https://github.com/sql-js/sql.js",
+   "licence": "MIT",
+   "notice": "sqljs/LICENSE"
+  },
+  {
+   "path": "sqljs/build.sh",
+   "sha256": "0ba2700c1c789097f71222c315a4bc38a9bb39614abd3ac17a7943201200901f",
+   "size": 955,
+   "library": "sql.js",
+   "version": "1.14.2 (`sql-wasm.js` and `sql-wasm.wasm`, copied by `sqljs/build.sh`)",
+   "upstream": "https://github.com/sql-js/sql.js",
+   "licence": "MIT",
+   "notice": "sqljs/LICENSE"
+  },
+  {
+   "path": "sqljs/package.json",
+   "sha256": "981bac5dc67fb4e3325163d9c7e72d74f255535a3e30c2c68bc7f496e43b8c76",
+   "size": 196,
+   "library": "sql.js",
+   "version": "1.14.2 (`sql-wasm.js` and `sql-wasm.wasm`, copied by `sqljs/build.sh`)",
+   "upstream": "https://github.com/sql-js/sql.js",
+   "licence": "MIT",
+   "notice": "sqljs/LICENSE"
+  },
+  {
+   "path": "sqljs/sql-wasm.js",
+   "sha256": "f1c84000dbc856c9d87f4f3aabc4d3654bd436165db4be3da13751db3a9c20d7",
+   "size": 46535,
+   "library": "sql.js",
+   "version": "1.14.2 (`sql-wasm.js` and `sql-wasm.wasm`, copied by `sqljs/build.sh`)",
+   "upstream": "https://github.com/sql-js/sql.js",
+   "licence": "MIT",
+   "notice": "sqljs/LICENSE"
+  },
+  {
+   "path": "sqljs/sql-wasm.wasm",
+   "sha256": "38c14f6e379210bc942bdc4ebca44e7bfdb4318ecc1c72ca666a28fdce96670a",
+   "size": 658410,
+   "library": "sql.js",
+   "version": "1.14.2 (`sql-wasm.js` and `sql-wasm.wasm`, copied by `sqljs/build.sh`)",
+   "upstream": "https://github.com/sql-js/sql.js",
+   "licence": "MIT",
+   "notice": "sqljs/LICENSE"
+  },
+  {
+   "path": "sucrase/LICENSE",
+   "sha256": "c43b99fc682391ced47fee2bf964bc387ab5e65ba7b626b39cd6d1facd24e6a5",
+   "size": 1106,
+   "library": "sucrase",
+   "version": "3.35.1 (bundled by `sucrase/build.sh`)",
+   "upstream": "https://github.com/alangpierce/sucrase",
+   "licence": "MIT",
+   "notice": "sucrase/LICENSE"
+  },
+  {
+   "path": "sucrase/build.sh",
+   "sha256": "31b44bc80fba16b3fe7c77eac7174a0509690042d78bb6f73a2acd1c0f34ce22",
+   "size": 987,
+   "library": "sucrase",
+   "version": "3.35.1 (bundled by `sucrase/build.sh`)",
+   "upstream": "https://github.com/alangpierce/sucrase",
+   "licence": "MIT",
+   "notice": "sucrase/LICENSE"
+  },
+  {
+   "path": "sucrase/entry.js",
+   "sha256": "d0b34f376f6e1b3178f5d56c78b01cf592e48cf5effa84ddd182fe0fbd8a98e0",
+   "size": 271,
+   "library": "sucrase",
+   "version": "3.35.1 (bundled by `sucrase/build.sh`)",
+   "upstream": "https://github.com/alangpierce/sucrase",
+   "licence": "MIT",
+   "notice": "sucrase/LICENSE"
+  },
+  {
+   "path": "sucrase/package.json",
+   "sha256": "91abe61dc726da45c2675fa67fdfdcb4faba7ae645ef61d17697ac7bf398f4dc",
+   "size": 241,
+   "library": "sucrase",
+   "version": "3.35.1 (bundled by `sucrase/build.sh`)",
+   "upstream": "https://github.com/alangpierce/sucrase",
+   "licence": "MIT",
+   "notice": "sucrase/LICENSE"
+  },
+  {
+   "path": "sucrase/sucrase.min.js",
+   "sha256": "2389f8968733a0e2bff1583853968ef355e5ebd5ef74045083438c54bf6fdacb",
+   "size": 206318,
+   "library": "sucrase",
+   "version": "3.35.1 (bundled by `sucrase/build.sh`)",
+   "upstream": "https://github.com/alangpierce/sucrase",
+   "licence": "MIT",
+   "notice": "sucrase/LICENSE"
+  },
+  {
+   "path": "wordlist/LICENSE",
+   "sha256": "0787060a40ddab39dd7d1de3dfd2522bb4da73ab6ffc926135559713defd5ac6",
+   "size": 1728,
+   "library": "English word list",
+   "version": "built by `wordlist/build.sh`",
+   "upstream": "https://wordlist.aspell.net",
+   "licence": "the English Speller Database licence",
+   "notice": "wordlist/LICENSE"
+  },
+  {
+   "path": "wordlist/build.sh",
+   "sha256": "3042484f19a833d7bcfbce2a5f7d760dc7bd3c43c7aa849ca54a27ee7de7c0dc",
+   "size": 2650,
+   "library": "English word list",
+   "version": "built by `wordlist/build.sh`",
+   "upstream": "https://wordlist.aspell.net",
+   "licence": "the English Speller Database licence",
+   "notice": "wordlist/LICENSE"
+  },
+  {
+   "path": "wordlist/en.txt",
+   "sha256": "d1be997337455e8aed72a3ee42c49a7671c87c6d6915be36b4807b07acb5fe7d",
+   "size": 871173,
+   "library": "English word list",
+   "version": "built by `wordlist/build.sh`",
+   "upstream": "https://wordlist.aspell.net",
+   "licence": "the English Speller Database licence",
+   "notice": "wordlist/LICENSE"
+  }
+ ]
+}

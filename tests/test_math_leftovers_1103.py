@@ -6,10 +6,14 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parents[1]
 EDITOR = (ROOT / "frontend" / "js" / "math-editor.js").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+CSS = unwrap_all(
+    (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    + (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+)  # L-ui-modernisation-51: moved rules end in :where(:not(...))
 
 
 def test_the_palette_offers_a_box_and_a_strike():

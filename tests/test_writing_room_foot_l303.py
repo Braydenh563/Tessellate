@@ -1,4 +1,6 @@
-"""L303 and L326: the Writing Room's two boxes end on one line.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L303 and L326: the Writing Room's two boxes end on one line.
 
 Measured at 1440x900 with both boxes mounted: the thoughts box was 326.8px and the draft box 294.8px
 (32px apart). The draft side's footer is two `.ask-composer` rows and the actions row; the thoughts side

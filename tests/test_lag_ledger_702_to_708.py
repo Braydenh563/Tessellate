@@ -1,4 +1,6 @@
-"""Source pins for the lag rows L702 to L708 and L-general-34.
+"""Source text: each fix was measured in a throttled browser, which the unit suite cannot run; these pins keep the measured shape from coming undone.
+
+Source pins for the lag rows L702 to L708 and L-general-34.
 
 Each row was measured in a Playwright run at a 4x CPU throttle (CDP `Emulation.setCPUThrottlingRate`),
 medians of at least five runs, before and after in the same session; the numbers are in the
@@ -76,4 +78,4 @@ def test_l706_the_look_is_never_written_on_the_companion_itself():
     text = (JS / "avatars.js").read_text()
     assert not re.search(r'buddy\.style\.setProperty\("--nmb-(ex|ey|hx)"', text)
     assert "nameMarkBuddyAim.set = (buddy, name, value) => {" in text
-    assert re.search(r'@property --nmb-ex \{ syntax: "<number>"; inherits: false;', (CSS / "08-consistency.css").read_text())
+    assert re.search(r'@property --nmb-ex \{ syntax: "<number>"; inherits: false;', (CSS / "07-whiteboard-misc.css").read_text())

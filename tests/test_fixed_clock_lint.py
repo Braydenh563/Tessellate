@@ -1,4 +1,6 @@
-"""Tests use a fixed clock, never the real one (CLAUDE.md section 8).
+"""Source text: a lint over the tests' own source, so their text is the thing under test.
+
+Tests use a fixed clock, never the real one (CLAUDE.md section 8).
 
 On 2026-11-21 five composer tests failed on py3.13: their fixture pinned
 `user_now` on two or three modules, and the modules it missed (`from

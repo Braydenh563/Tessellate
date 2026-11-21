@@ -25,15 +25,24 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._css_unwrap import unwrap_all
+
 ROOT = Path(__file__).resolve().parent.parent
-CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+#: The board's rules are in the boot sheet and in library-lazy.css (L-ui-modernisation-51 moved the ones only
+#: the Library bundle draws, in guarded pieces).
+CSS = unwrap_all("\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css")))
 
 
 def _rule(selector_start: str) -> str:
     """The body of the first rule whose prelude starts with `selector_start`."""
     text = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
-    idx = text.index("\n" + selector_start) + 1
-    return text[text.index("{", idx) + 1 : text.index("}", idx)]
+    bodies, at = [], 0
+    while (idx := text.find("\n" + selector_start, at)) >= 0:
+        idx += 1
+        bodies.append(text[text.index("{", idx) + 1 : text.index("}", idx)])
+        at = idx
+    assert bodies, selector_start
+    return "\n".join(bodies)
 
 
 def test_a_resting_grip_is_not_in_the_tree():

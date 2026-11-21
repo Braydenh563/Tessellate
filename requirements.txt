@@ -95,7 +95,7 @@ pytest-xdist>=3.8.0,<4.0
 # comments so pip skips them; install by hand only if you want the feature:
 #   pip install faster-whisper   # local voice-to-text for the 🎙 buttons
 #   pip install pywebview        # `python -m tessellate --desktop` app window
-#   pip install pystray Pillow   # tray icon for the desktop window above
+#   pip install "pystray>=0.19,<0.20" Pillow   # tray icon for the desktop window above
 #   pip install pytesseract Pillow   # OCR text on uploaded images (core/ocr.py)
 #     — also needs the `tesseract` system binary on PATH, which pip cannot
 #     install (apt/brew/choco install tesseract-ocr, or see INSTALL.md);

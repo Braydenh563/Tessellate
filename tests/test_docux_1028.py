@@ -66,7 +66,10 @@ def test_find_panel_is_tokened_with_a_tappable_close_button():
     close = _rule(LAZY_CSS, '.doc-editor .cm-search button[name="close"]')
     assert "min-width: 24px" in close and "min-block-size: 24px" in close
     coarse = LAZY_CSS[LAZY_CSS.index('.doc-editor .cm-search button[name="close"] {') :]
-    assert re.search(r"@media \(pointer: coarse\) \{[^@]*cm-search button\[name=\"close\"\][^}]*min-block-size: 44px", coarse)
+    # The touch size is the token since L-ui-modernisation-15: `--target-min`
+    # is 44px or more under a coarse pointer (07-whiteboard-misc.css, touch
+    # targets), so the intent, a 44px close under touch, is unchanged.
+    assert re.search(r"@media \(pointer: coarse\) \{[^@]*cm-search button\[name=\"close\"\][^}]*min-block-size: var\(--target-min\)", coarse)
 
 
 def test_d7_large_documents_check_a_window_not_the_whole_text():

@@ -361,6 +361,7 @@ REACHED_AFTER_LOAD = {
     "settingsIndexWatchSection": "settingsUi, awaited by openSettingsModal before a section is shown",
     "renderHelpTopics": "settingsUi, called when Help is shown or Settings is first searched, both inside the open dialog that awaited the bundle",
     "renderCredits": "settingsUi, awaited by openSettingsModal two lines before the call",
+    "openSettingRow": "settingsUi, awaited on the line of the call in openSettingsModal's popped-out Appearance branch",
     "renderSettingResults": "settingsUi, called from the search field inside the open dialog",
     "settingQueryAlts": "settingsUi, called from filterSettings, the search field inside the open dialog (an empty query returns before it)",
     "meaningHolds": "settingsUi (meaning.js), called from filterSettings beside settingQueryAlts; without the bundle the plain substring rule runs",

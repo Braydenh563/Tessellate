@@ -447,7 +447,7 @@
   // against 29px. The markup for the backlinks had already written the rule down
   // ("the sidebar already has two tabs too many for the space it has"), which is
   // the kind of decision this project keeps in the file it applies to precisely so
-  // that the next session does not have to rediscover it with a ruler.
+  // that whoever reads this next does not have to rediscover it with a ruler.
   //
   // A row does its work in place, which is DOCUMENTS_PLAN 12 D3's rule for the
   // writing panel arrived at from the other end: pressing a row jumps the

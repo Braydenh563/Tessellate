@@ -146,7 +146,8 @@ def test_the_margin_card_is_on_its_recipe():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    css = (root / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+    # 09-editor.css or, since UI plan 13b (L459), library-lazy.css.
+    css = "\n".join((root / "frontend" / "css" / n).read_text(encoding="utf-8") for n in ("09-editor.css", "library-lazy.css"))
     card = re.search(r"\.doc-margin-card \{(.*?)\}", css, re.S).group(1)
     assert "var(--surface-2)" in card and not re.search(r"\bborder(-(top|left|right|bottom))?\s*:", card)
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")

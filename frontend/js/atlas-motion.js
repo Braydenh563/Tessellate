@@ -8,15 +8,36 @@
 //: later frame lies over an earlier one and its skin covers the earlier
 //: lid's edge, so the frames stack as the lid comes down. Strokes never
 //: change width.
-function atlasBlink(box, slow = false) {
+function atlasBlink(box, slow = false, waited = 0) {
   const roots = box.querySelectorAll(".atl-layer-lids");
   if (!roots.length) return;
+  //: Unseen, the lids take each new place at once (their transitions off, the CSS, L-ui-modernisation-201), so a blink
+  //: first waits out the face's own move under them (a turn of the head, under 300ms), at most three times.
+  const wait = waited < 3 ? atlasBlink.settling(box) : 0;
+  if (wait) {
+    setTimeout(() => atlasBlinkMay(box) && atlasBlink(box, slow, waited + 1), wait);
+    return;
+  }
   const cls = slow ? "atl-blinking-slow" : "atl-blinking";
   for (const el of roots) el.classList.add(cls);
   setTimeout(() => {
     for (const el of roots) el.classList.remove(cls);
   }, slow ? 1460 : 360);
 }
+//: The ms until no transition moves the face's eyes and not its lids (a box round both moves the two alike), and a frame.
+atlasBlink.settling = (box) => {
+  const eye = box.querySelector(".atl-layer-body .atl-eye");
+  const lids = box.querySelector(".atl-layer-lids");
+  if (!eye || !lids || typeof CSSTransition !== "function") return 0;
+  let left = 0;
+  for (const a of box.getAnimations({ subtree: true })) {
+    const t = a.effect?.target;
+    if (!(a instanceof CSSTransition) || a.playState !== "running" || !t?.contains(eye) || t.contains(lids)) continue;
+    const c = a.effect.getComputedTiming();
+    left = Math.max(left, c.endTime - c.localTime);
+  }
+  return left > 0 ? Math.ceil(left) + 16 : 0;
+};
 
 //: **When the figures blink.** One clock for every layered figure on the
 //: page: every 3.4 to 7.6 seconds each one that is on screen, has its eyes
@@ -151,7 +172,10 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-act-startle") || mood === "surprised") return "startle";
   if (/^(lie|curl)/.test(pose) || has("nmb-sleep") || has("nmb-act-nap") || has("nmb-act-lie") || has("nmb-act-blanket")) return "lie";
   if (has("nmb-falling")) return "fall";
-  if (has("nmb-walking") || has("nm-buddy-dragging") || buddy?.dataset.travel) return "walk";
+  //: Held up by a hand it hangs from the grip, not a walk's lean into its travel (L-ui-modernisation-170: the walk's rows
+  //: shear the lower body 6 degrees off the torso, past the join's 4, and the desk's held frame baked it).
+  if (has("nm-buddy-dragging")) return "hang";
+  if (has("nmb-walking") || buddy?.dataset.travel) return "walk";
   const posed = atlasLowerState.acts.find((act) => has(`nmb-act-${act}`)) || (pose === "hang" ? "hang" : "");
   if (posed) return posed;
   if (pose === "lean") return "lean";
@@ -550,6 +574,12 @@ function atlasRigFrame(rig, now) {
     rig.dirty = true;
     return;
   }
+  //: Nor while the page scrolls under the companion (`atlasTailCalm.scroll`, atlas-life.js, sets `held` and its end wakes it).
+  if (atlasRigFrame.held && rig.host?.id === "nm-buddy") {
+    rig.at = 0;
+    rig.dirty = true;
+    return;
+  }
   const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !rig.fresh;
   rig.fresh = false;
   const buddy = rig.host && rig.host.id === "nm-buddy" ? rig.host : null;
@@ -688,6 +718,7 @@ function atlasRigFrame(rig, now) {
   if (live && rig.still < 6) rig.raf = requestAnimationFrame((t) => atlasRigFrame(rig, t));
   else rig.at = 0;
 }
+atlasRigFrame.held = false;
 //: The shortest gap between two drawn frames of the corner companion's rig (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasRigFrame.gapMs = 24;
 //: The same loop's next frame, for a frame skipped under the gap (the frame's end asks for the next one itself).

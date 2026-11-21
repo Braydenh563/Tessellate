@@ -111,7 +111,7 @@ Object.assign(LAZY_MODULES, {
   //: The failed-load state (load-failed.js's header).
   loadFailed: ["/js/load-failed.js"],
   //: The generated faces, the companion and Atlas (see "The characters" below).
-  characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
+  characters: ["/css/characters-lazy.css", "/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
   //: What a person does to the companion on purpose: the Settings controls, Show or
   //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
   companionSettings: ["/js/companion-settings.js"],

@@ -1,4 +1,4 @@
-"""Voice to map (MINDMAP_PLAN 12.4, reopened 2026-11-14: only a session line
+"""Source text: the paste runs in the browser's map code with no Python seam, so its single transaction is read as text. Voice to map (MINDMAP_PLAN 12.4, reopened 2026-11-14: only a session line
 kept it out of scope). A recording's local transcript becomes a branch, one
 topic per transcript line, under the selected topic, through the same outline
 paste a pasted list takes (one transaction, one Undo step)."""

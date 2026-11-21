@@ -65,7 +65,10 @@
   display: flex;
   flex-wrap: nowrap;
   gap: var(--space-1);
-  padding: var(--space-2);
+  /* overflow-x: auto clips both axes, so the padding holds the whole focus
+     ring: outline-offset (--space-1 + 4px) plus its 2px width, 6px past
+     --space-1 at any density. */
+  padding: calc(var(--space-1) + var(--ring-room) * 1.5);
   overflow-x: auto;
   scrollbar-width: thin;
 }

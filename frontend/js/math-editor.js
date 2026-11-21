@@ -604,7 +604,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     if (!again) return markFirst();
     mark();
     //: A row arriving above (a pin) must not move what is being looked at.
-    if (scroller?.scrollTop > 0) scroller.scrollTop += scroller.scrollHeight - before;
+    if (top > 0) scroller.scrollTop += scroller.scrollHeight - before;
   };
   //: **Pin mode**: a press on a tile pins it to Favourites or takes it off (a right-click does the same), so a touch screen needs no long press.
   let pinning = false;

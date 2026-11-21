@@ -9,6 +9,9 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # A new release waits a week before a bump (zizmor dependabot-cooldown).
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 5
     labels:
       - dependencies
@@ -21,6 +24,9 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # A new release waits a week before a bump (zizmor dependabot-cooldown).
+    cooldown:
+      default-days: 7
     labels:
       - dependencies
       - github-actions
@@ -32,6 +38,9 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # A new release waits a week before a bump (zizmor dependabot-cooldown).
+    cooldown:
+      default-days: 7
     labels: [dependencies]
     commit-message:
       prefix: "deps"
@@ -41,4 +50,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # A new release waits a week before a bump (zizmor dependabot-cooldown).
+    cooldown:
+      default-days: 7
     labels: [dependencies]

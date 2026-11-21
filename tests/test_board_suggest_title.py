@@ -1,4 +1,6 @@
-"""AI rename for boards and maps (L348, L280): `POST /whiteboard/boards/{id}/suggest-title`.
+"""Source text: the route is exercised through the test client; the front-end half has no browser under pytest, so its script is read as text.
+
+AI rename for boards and maps (L348, L280): `POST /whiteboard/boards/{id}/suggest-title`.
 
 Like a document's suggest-title (INBOX 904 B17) it saves nothing: the client
 renames through the board's own undoable path. `client` has the AI off, so

@@ -46,6 +46,7 @@ from pathlib import Path
 
 from tests._app_js import frontend_text
 from tests._css_paths import css_text
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = ROOT / "frontend" / "index.html"
@@ -236,7 +237,8 @@ def test_a_stage_gated_pair_hands_the_fill_over():
 
 def _rules() -> list[tuple[str, str]]:
     """(selector, body) for every innermost rule, comments stripped."""
-    text = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
+    #: A moved rule ends in a zero-specificity guard naming other elements (L-ui-modernisation-51): not its subject.
+    text = unwrap_all(re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S))
     return [(sel.strip(), body) for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text)]
 
 
@@ -398,6 +400,7 @@ def test_a_menu_item_is_transparent_at_rest():
 #: the wrong thing. Anything else must be in the palette.
 CONTEXTUAL_CHORDS = {
     "palette": "the palette itself",
+    "renameRow": "renames the list row that has focus; with the palette open no row has it",
     "findAnything": "the other palette; Find anything lists the same commands",
     "search": "focuses the search box of the tab you are on",
     "undo": "acts on the last change of the surface in front",

@@ -477,6 +477,11 @@
         pixelDensityY: PDY,
         darkCap: 0.1,
         lightFloor: 0.35,
+        // The curtain's noise and the motes (0.12 to 0.37 px a frame) move
+        // slowly: 15 frames a second show the same sky at half the per-pixel
+        // loops (L-ui-modernisation-20). `k` is how many of the old frames one
+        // draw stands for, so the clock and the motes keep their speed.
+        fps: 15,
         init() {
           W = p.width; H = p.height;
           const canvas = p.drawingContext.canvas;
@@ -507,6 +512,8 @@
         },
         frame(t) {
           const g = p.drawingContext;
+          const k = Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+          t *= k;
           // Only the rows written last frame hold anything to clear.
           if (prevBottom >= prevTop) acc.fill(0, prevTop * bw * 4, (prevBottom + 1) * bw * 4);
           let rowTop = bh, rowBottom = -1;
@@ -574,8 +581,8 @@
           let lastHue = -1;
           for (let i = 0; i < n; i++) {
             const z = mz[i];
-            my[i] -= 0.12 + z * 0.25;
-            mx[i] += (bgFlow(mx[i] * 0.004 + t * 0.2, my[i] * 0.004) - 0.5) * 0.8;
+            my[i] -= (0.12 + z * 0.25) * k;
+            mx[i] += (bgFlow(mx[i] * 0.004 + t * 0.2, my[i] * 0.004) - 0.5) * 0.8 * k;
             if (my[i] < -8) { my[i] = H + 8; mx[i] = p.random(W); }
             if (mx[i] < -8) mx[i] = W + 8;
             else if (mx[i] > W + 8) mx[i] = -8;
@@ -1122,7 +1129,7 @@
       const TRAILS = ["none", "dots", "wake"];
       const HL = 7; // wake points kept per organism
       const CELL = 80;
-      let W = 0, H = 0, cap = 0, n = 0, frameNo = 0;
+      let W = 0, H = 0, cap = 0, n = 0, frameNo = 0, owe = 0;
       const species = [];
       let X, Y, VX, VY, ANG, SPIN, AGE, NEXT, LIFE, DIV, BORN, DYING, SEED, OFF, ORBR, ORBD, SP;
       let HX, HY, HN, HH, AQ, FIELDS, grid;
@@ -1545,8 +1552,13 @@
         settle() {
           for (let i = 0; i < 90; i++) step();
         },
+        // The physics runs as many steps as the old frames one draw stands
+        // for, so the swimming is the same; only the picture is drawn half as
+        // often (L-ui-modernisation-20). `owe` carries the fraction at 20 fps.
+        fps: 15,
         frame() {
-          step();
+          owe += Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+          for (; owe >= 1; owe--) step();
           const g = p.drawingContext;
           // Motes in three strengths, one path each.
           g.fillStyle = moteFill;
@@ -1700,7 +1712,7 @@
       let TX, TY, TA, TW, TL, TG, TC, TD;
       let SEG, SEGN, NODE, NODEC, nNodes = 0;
       const colonies = [];
-      let phase = "grow", phaseFrame = 0, growFrame = 0;
+      let phase = "grow", phaseFrame = 0, growFrame = 0, owe = 0;
       let tipFill = "";
       const ink = ctx.dark ? 68 : 40;
       // The two canvases a moving mycelium alternates between, and the
@@ -1880,7 +1892,15 @@
           const g = p.drawingContext;
           for (let i = 0; i < 420 && n; i++) grow(g);
         },
+        // The growth runs as many steps as the old frames one draw stands
+        // for, onto the canvas it keeps, so a colony grows the same; the
+        // canvas is uploaded half as often (L-ui-modernisation-20).
+        fps: 15,
         frame() {
+          owe += Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+          for (; owe >= 1; owe--) this.tick();
+        },
+        tick() {
           const layer = layers[cur];
           const g = layer.g;
           phaseFrame++;

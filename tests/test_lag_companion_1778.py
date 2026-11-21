@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -47,14 +48,14 @@ def test_no_script_writes_an_atlas_ease_property_nothing_reads() -> None:
 
 
 def test_the_companion_css_has_no_has_selector() -> None:
-    css = _strip_css((CSS / "08-consistency.css").read_text(encoding="utf-8"))
+    css = _strip_css(sheets("07-whiteboard-misc.css", "characters-lazy.css"))
     bad = [line.strip()[:120] for line in css.splitlines() if "nm-buddy" in line and ":has(" in line]
     bad += [line.strip()[:120] for line in css.splitlines() if re.search(r"&(?:\[[^\]]*\])?(?::not\()?:has\(\.atl-figure", line)]
     assert not bad, f"a :has() on the companion re-matches its 790 elements on every insert or remove: {bad}"
 
 
 def test_the_companion_css_reads_the_marker_attribute() -> None:
-    css = _strip_css((CSS / "08-consistency.css").read_text(encoding="utf-8"))
+    css = _strip_css(sheets("07-whiteboard-misc.css", "characters-lazy.css"))
     assert '#nm-buddy[data-atlas-figure]:is([data-pose="lie"], [data-pose="lie-2"], [data-pose="curl"])::before' in css
     assert "#nm-buddy[data-atlas-figure] .nms { opacity: 0; }" in css
     assert '&[data-atlas-figure="masculine"].nmb-walking .nm-buddy-char' in css

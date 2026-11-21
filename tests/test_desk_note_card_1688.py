@@ -13,7 +13,7 @@ HTML = (ROOT / "frontend" / "desktop-companion.html").read_text(encoding="utf-8"
 DESK = (ROOT / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
 ENV = (ROOT / "frontend" / "js" / "desk-env.js").read_text(encoding="utf-8")
 CARD_CSS = (ROOT / "frontend" / "css" / "capture-card-lazy.css").read_text(encoding="utf-8")
-SHELL_CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+SHELL_CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 
 
 def test_the_panel_hosts_the_capture_card_not_a_textarea_of_its_own():

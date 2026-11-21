@@ -472,13 +472,6 @@ still unverified on real macOS/Linux hardware rather than reasoned from the
 code: the honest status is "should work," not "confirmed." The PyInstaller
 builds above are the part with no cross-platform equivalent yet at all.
 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
 
 ---
 
@@ -1256,7 +1249,6 @@ history. What's still weak:
   whether the tool registry can get there first before reaching for UI
   automation.
   **Next:** a decision for the owner (it needs its own cancellation and audit story); the `GET /chat/tools` and `POST /chat/tools/execute` registry (WORLD_CLASS_PLAN B8) is the cheaper route and is built.
-- (Odysseus, fourth read 2026-10-10) 
 
 ---
 
@@ -1861,7 +1853,6 @@ them are close to being built:
   worth asking what it would let someone do that the app's own web UI, PWA
   and desktop window don't, before scoping anything. **(needs owner)**
 - ~~**A browser clipper.**~~ **Built 2026-10-05** (WORLD_CLASS_PLAN row 24, D9): `POST /links/clip-page` (`routes_webclip.py`), the "Clip to MemoryMap" bookmarklet and `frontend/clip.html` / `clip.js`, `tests/test_webclip_page.py`. A packaged browser extension is not built; the bookmarklet is the capture path (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: BACKLOG)").
-- (Odysseus, fourth read 2026-10-10) 
 
 ## 29c. Whiteboard, brainstormed: not yet triaged
 
@@ -2251,7 +2242,6 @@ need its own answer, not an assumption it behaves like Linux. Worth
 deciding deliberately rather than discovering after building the rest.
 **Next:** `packaging/macos/` does not exist; the Apple Developer account and notarization are the owner's, so nothing is buildable here (the Linux spec, `packaging/linux/memorymap.spec`, is the template).
 
-- (Odysseus, fourth read 2026-10-10) 
 
 ---
 
@@ -3226,9 +3216,8 @@ follows the active filter chip for the four unambiguous kinds
 (Notes/Documents/Chats/Meetings), and §105 item 1 already names the
 remaining gap precisely: a real "choose what to create" picker for
 Everything and every kind with no single obvious answer (Files, Tags,
-Drafts, Activity, the bin), not yet built, with the open question being
-dropdown-off-the-button vs. a real modal. Nothing new to add here; re-
-reading §105 rather than re-logging it.
+Drafts, Activity, the bin). Built since: `openLibraryCreatePicker`
+(library.js), a dialog of rich-picker rows (L-ui-modernisation-63, 2026-11-12).
 
 **A second competitor-analysis pass (Kortex/Granola/Mem.ai) was re-pasted
 this session, from a different subagent run than §102's**: cross-checked
@@ -4416,6 +4405,26 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
 
+## Device and model checks left from the UI modernisation session (2026-11-12)
+
+Each row is the one step that needs hardware or a real model; everything that runs here is built and tested.
+
+- **"ai is cool" with a real model (L-ui-modernisation-71).** No-model filing is pinned by `tests/test_short_note_filing_l_general_43.py` (AI, then Technology, else nothing; never Sketches). **Check:** `scratchpad/llama-dev.sh serve`, a notebook with Sketches, Work and Technology, save "ai is cool", and confirm it is not filed under Sketches.
+
+- **model2vec potion against bge-small (L-general-19).** The research verdict in docs/ARCHITECTURE.md (search by meaning) has never been measured. **Check:** with a real model set up (`scratchpad/llama-dev.sh serve`), embed the eval notebook with each, run `pytest -m evals` for search by meaning, and record recall at 5 and the embed time per 100 notes; keep bge-small unless potion is within 2 points at a fraction of the time.
+- **0.9 public beta gates (L-general-23, L-general-29).** From ROADMAP's milestone table, each one a person or a device: (1) Windows, macOS and Linux launchers and the Docker image installed on a clean machine by someone who is not the owner, timed, with the first-run queue measured; (2) the phone over HTTPS trusted by the QR and guide flow on iOS and Android; (3) the update path from 0.8 with data in place; (4) a local, opt-in crash and feedback bundle sent by hand; (5) ten testers for two weeks, their reports placed and the bugs closed.
+- **1.0 gates (L-general-23, L-general-29).** (1) 0.9's testers report no data loss and no blocker for a month; (2) the full suite, the sweeps and the scripted session green on the tag; (3) THIRD_PARTY.md complete; (4) the Guide covers every control (test_manual_parity); (5) AGPL notices in place; (6) release notes written for a reader who has never seen the app.
+
+- **Windows lag lines (L983, INBOX 1716, 1726).** Desk overlay hide and show flips, the desk window scan counted as invisible, the avatars.js 1295 ms timer, a 285 ms settings-panes keydown and chat pointerover. None reproduces on Linux at 4x CPU. **Check:** on the owner's Windows desktop, Settings, About, the lag log after a minute of each surface; a line over 50 ms becomes a LEDGER row with its stack.
+
+## Fable whole-app review (owner-named, 2026-11-10; parked 2026-11-12, L-general-31)
+
+The owner named Fable 5.2 for one task: a read-only review and deep dive of the whole app, in a session of its own. It is parked here, not run, because the UI modernisation session runs at tier `pro` (no Opus or Fable agents; CLAUDE.md standing order 4 and section 8). **Run:** in a fresh `max`-tier session the owner opens for it; the `deep-audit` skill's per-surface agents are the shape, findings to one file under `docs/roadmap/agent-remaining/`, each finding then a LEDGER row.
+
+## In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-ui-modernisation-69)
+
+- A browser pane inside Tessellate whose pages an MCP client could read and act on. Parked: a large security surface for a local-first app; web clip and web search cover reading the web now. Revisit only with an owner request.
+
 ## Device and owner checks from the mindmap plan (2026-11-12)
 
 Each row is the one step that needs the owner's own machine, a device or a real model; everything that runs here was built and tested first.
@@ -4451,3 +4460,27 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L704, the companion's Tempo look flushes the style other code dirtied.** `nameMarkBuddyTempo`'s `getAnimations` still shows 3 to 11 forced style flushes per tab-flip run (median 17 ms, max 46 ms at 4x). Measured with invalidation tracking: the dirt is the tab's own (timeline rows' class and rule changes, 168 elements in the 21 ms one) plus running animations, not the companion's writes. Three variants changed nothing (look taken inside the idle callback: median 25.7 ms; looks every 4 s when the last found nothing: 30.5 ms; idle callback held while `nmb.pageAt` is under 300 ms old: 38.1 ms, all against 17.4 ms before, n=6 each), so none was kept. **The check:** `scratchpad/w`-style trace (CPU 4, `disabled-by-default-devtools.timeline.stack`), five tab clicks, `UpdateLayoutTree` events whose top frame is `nameMarkBuddyTempo`; the fix must come from the pages that dirty (batch the timeline rows' class writes) or from listing the figure's animations without `getAnimations`.
 - **L707, the companion adds layouts to a tab switch that no listener of its own causes.** With the Atlas companion on, a tab click to chat counts a median 102 Layout events against 25 with it off, reminders 136 against 7 (4x CPU, six fresh loads each). A traced chat switch (four loads) splits 355 Layouts into 266 unforced, the figure's own frame-stepped drawing and walk, and 89 forced, the largest being `atlasRigRead` 10, `check@:7321` 8, the composer's `autoGrow` 20, `nameMarkBuddySupported` 5. Swallowing `transitionrun`, `transitionend`, `transitioncancel`, `animationstart` and `animationend` before the keep-up sees them gave 387 Layouts (305 unforced), so the keep-up is not the cause and no change to it was made. **The check:** `scratchpad/ui-sweeps/companionperf.js`-style trace (CPU 4, stack category), tab clicks with `prefs.set('avatar-buddy','atlas')` against `'off'`, count `Layout`; the fix must come from stepping the figure's layers on the compositor or from the forced readers above (`atlasRigRead`, `nameMarkBuddyBlend`, `rect@avatars.js:5484`).
 - **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).
+## Device and owner checks from the UI modernisation plan (2026-11-14)
+
+Each row is the one step that needs the owner's own machine, data or a recording, a device or a real model; what a headless check could cover was measured first (L-ui-modernisation-18 closed that way).
+
+- **L897, Measure phone toggle first frames (50-80 ms) on a real phone.** Needs a real phone; headless emulation only. Hardware audit 2026-11-14: genuine, needs absolute first-frame ms on a phone CPU and GPU; headless timing is the host's.
+- **L898, Verify light theme, 390 sidebar sheet and screen reader.** Screen reader needs a human; others sweepable. Hardware audit 2026-11-14: the light theme and 390 sidebar sheet parts split to their own open row; the screen reader alone stays here
+- **L899, Verify phone foot bar touch and scroll-driven animation in webview.** Needs touch device and desktop webview Hardware audit 2026-11-14: genuine, needs a touch device and the desktop webview (pywebview) engine, neither in the container.
+- **L901, Verify the phone action sheet (openKebabSheet) below 600 with touch and a screen reader, plus Settings jump list.** Needs real phone/touch and screen reader Hardware audit 2026-11-14: genuine, needs a person with a screen reader and a real touch sheet.
+- **L902, Judge phone first toggle frame timing and animation jump on a real touch device.** Headless emulation timing; real touch device needed to judge Hardware audit 2026-11-14: genuine, needs judging an animation jump by eye on a real touch device.
+- **L903, Check the dark palette on an OLED panel and other gamma, and re-run glassdepth.js.** Needs a real OLED panel / gamma, a human look Hardware audit 2026-11-14: genuine, needs an OLED panel and another gamma, a human look.
+- **L904, Reproduce the two-finger scroll jump (460) with a real touchpad trace.** Needs a real touchpad trace; not reproduced Hardware audit 2026-11-14: genuine, needs a real touchpad trace; synthetic wheel events did not reproduce 460.
+- **L905, Check logo with real OS install icons, Android maskable and busy lift.** Needs Windows/Android devices and a real model turn Hardware audit 2026-11-14: genuine, needs Windows and Android install icons and a real model turn.
+- **L906, Check real phone safe-area insets and the owner's read on Graph behind More.** Needs a real phone (headless insets are 0) and the owner's judgement of Graph under More; nothing to code. Hardware audit 2026-11-14: genuine, needs real safe-area insets (0 in headless Chromium).
+- **L907, Screen reader pass (needs a person with one). Re-audited 2026-11-14: applyThemeChoice('light') now leaves data-mode light (probed light, dark, light, system: light/light, dark/dark, light/light, -/light); forced colours and 200% zoom were done as L-ui-modernisation-49 (forcedzoom.js). Was: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark.** Screen reader and forced-colours need human/OS; theme data-mode case not re-driven. Hardware audit 2026-11-14: the theme case re-driven at 8781, dark/light/system/dark/light and light under an OS dark scheme: data-mode followed the theme every time (not reproduced); forced colours and 200% zoom are emulable, split to their own open row; the screen reader alone stays here
+- **L908, Reproduce dashboard scroll jump (426 u) with owner's preferences.** Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference Hardware audit 2026-11-14: genuine, needs the owner's own preferences (LS=), owner data rather than a device.
+- **L909, Frame-cost numbers need GPU; background slider effect unmeasured.** Needs real GPU hardware to confirm absolute milliseconds. Hardware audit 2026-11-14: genuine, needs absolute GPU frame ms; the container has no GPU.
+- **L-ui-modernisation-8, Check the composer above a soft keyboard and iPad landscape on real devices.** Open line in the plan's prose a session could miss. A phone gate left unmeasured, with phone.md's real iPad landscape look. There is no hardware row. Hardware audit 2026-11-14: genuine, needs a real soft keyboard (visualViewport resize) and an iPad.
+- **L-ui-modernisation-21, Verify paused background art and freed GPU memory on a minimised Windows window.** Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row. Hardware audit 2026-11-14: genuine, needs a minimised Windows window and its GPU memory.
+- **L-ui-modernisation-23, Verify the desktop pet on-top, transparency and DPI on Windows and macOS.** Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row. Hardware audit 2026-11-14: genuine, needs the Windows and macOS window manager for on-top, transparency and DPI.
+- **L-ui-modernisation-32, Check Tidy's 'Tags Atlas added' review against tags a real model wrote.** No GGUF or llama-server in the cloud container (scratchpad/llama-dev.sh needs a fetched model); the review is covered by fake-transport tests only Hardware audit 2026-11-14: genuine, needs tags a real model wrote; no GGUF or llama-server in the container.
+- **L-ui-modernisation-34, Check unslop findings 5 to 12 on a real phone in dark.** Emulated 390 measured clean 2026-11-13; no phone in the container Hardware audit 2026-11-14: genuine, needs a real phone in dark; emulated 390 measured clean.
+- **L-ui-modernisation-45, Desk companion: the diagonal resize cursor over the size handle on X11.** Split from L-ui-modernisation-44. Windows has it (runner.py _hit_cursor, host.py _cursor); x11.py sets no cursor, and nothing can verify one without an X11 desktop. Hardware audit 2026-11-14: genuine, needs an X11 desktop session for the resize cursor.
+- **L-ui-modernisation-55, Pat over Atlas's head in the viewer lifts it 30 px (1606): needs the owner's window size and pose, or a recording.** Not reproduced headless: about 8 variations (fast, slow, jitter, 1440 and 2560 wide, float and stand), the figure's top moved at most 9.7 px, the buddy box 0. Recommendation check 2026-11-14: the viewer (companion-menu.js) has no pat handler; its stage answers a click (`nameMarkViewerFace`, an opacity crossfade) and its one pointer reaction is the follow look, at most 2.6 px (characters-lazy.css:497), so no code path in the viewer lifts the figure 30 px; the lift has to be reproduced from the owner's window and pose before anything is changed.
+- **L-ui-modernisation-56, Real Windows check of the desk companion fixes (1670, 1683, 1696, 1719, 1721; W15).** W15: the desk ride, perch gap, idle life, hops and 1696/1719 desk fixes are built and measured on FakeWin32 and Xvfb; none has run on real Windows. Hardware audit 2026-11-14: genuine, needs the real Windows desk companion (W15).

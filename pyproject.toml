@@ -41,7 +41,7 @@ memorymap = "tessellate.__main__:main"  # brand: keep (the command before the re
 #   pip install -e ".[desktop]"   # `python -m tessellate --desktop` app window
 [project.optional-dependencies]
 voice = ["faster-whisper"]
-desktop = ["pywebview", "pystray", "Pillow"]
+desktop = ["pywebview", "pystray>=0.19,<0.20", "Pillow"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -29,6 +29,8 @@ const LAYOUTS = (process.env.LAYOUTS || "tree-right,tree-down,radial,tree-both")
     await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
     await page.waitForTimeout(1000);
     await page.evaluate(async () => {
+      // The board code is its own lazy bundle, so a fresh notebook asks for it.
+      await ensureModule("boards");
       const v = document.getElementById("library-view-whiteboard");
       for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
       await initWhiteboard();

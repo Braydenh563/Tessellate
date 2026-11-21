@@ -354,7 +354,7 @@
   //: Built with SVG attributes and never an inline `style` string: this app's
   //: CSP drops those outright, and thirty-five of them once shipped as silently
   //: dead markup (CLAUDE.md, "a policy silently refusing the work").
-  function mapPreviewDraw(svg, board, size) {
+  function mapPreviewDraw(svg, board, size, opts = {}) {
     const geo = MAP_PREVIEW_SIZES[size] || MAP_PREVIEW_SIZES.card;
     const items = Array.isArray(board?.preview_items) ? board.preview_items : [];
     const NS = "http://www.w3.org/2000/svg";
@@ -369,11 +369,18 @@
     const aspect = Number(board?.preview_aspect) > 0 ? Number(board.preview_aspect) : 1;
     const vw = aspect >= 1 ? MAP_PREVIEW_BASE : MAP_PREVIEW_BASE * aspect;
     const vh = aspect >= 1 ? MAP_PREVIEW_BASE / aspect : MAP_PREVIEW_BASE;
-    svg.setAttribute("viewBox", `0 0 ${round2(vw)} ${round2(vh)}`);
+    //: **A tall map in the dashboard's short box is cropped around its centre**
+    //: (L778, the owner 2026-11-12): letterboxed, a 25-topic tree drew a thin
+    //: strip with no labels. `crop` shows a window of the box's own shape out
+    //: of the middle, at the scale the box's width allows.
+    const crop = Boolean(opts.crop) && vh / vw > geo.h / geo.w;
+    const cropH = vw * (geo.h / geo.w);
+    svg.setAttribute("viewBox", crop ? `0 ${round2((vh - cropH) / 2)} ${round2(vw)} ${round2(cropH)}` : `0 0 ${round2(vw)} ${round2(vh)}`);
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    if (crop) svg.dataset.crop = "centre";
     // The scale `meet` is about to apply, so every fixed size below can be
     // expressed in the box's units and divided back out: see MAP_PREVIEW_SIZES.
-    const scale = Math.min(geo.w / vw, geo.h / vh);
+    const scale = crop ? geo.w / vw : Math.min(geo.w / vw, geo.h / vh);
     const unit = 1 / scale;
     const pad = geo.pad * unit;
     const blockW = geo.blockW * unit;

@@ -1,4 +1,4 @@
-const {chromium}=require('/opt/node22/lib/node_modules/playwright');
+const {chromium}=require('playwright');
 const PW='testpassword123'; const BASE=process.env.BASE||'http://127.0.0.1:8781';
 (async()=>{
   const browser=await chromium.launch(); const ctx=await browser.newContext({viewport:{width:1366,height:768}}); const page=await ctx.newPage();

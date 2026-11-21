@@ -12,7 +12,9 @@ from pathlib import Path
 from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-EDITOR_CSS = (ROOT / "frontend/css/09-editor.css").read_text(encoding="utf-8")
+#: The editor's rules are in 09-editor.css and, for the ones only the Library
+#: bundle draws, library-lazy.css (UI plan 13b, L459).
+EDITOR_CSS = "\n".join((ROOT / "frontend/css" / n).read_text(encoding="utf-8") for n in ("09-editor.css", "library-lazy.css"))
 MISC_CSS = (ROOT / "frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
 DOCS_JS = documents_text()
 

@@ -9,7 +9,7 @@ const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
   // Two long notes to open.
   const ids = await page.evaluate(async () => {
     const body = (n) => `Long note ${n} for the companion. ${'A sentence that goes on for a while, with enough words to need a Show more. '.repeat(24)}`;
@@ -20,7 +20,9 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => revealTab('notes'));
   await page.evaluate(() => typeof loadEntries === 'function' && loadEntries()).catch(() => {});
   await page.waitForTimeout(3000);
-  const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reacted = ''; nameMarkBuddyAct(''); });
+  // `reactLog` is the four-in-a-minute budget (Brief 34, INBOX 752: `NMB_REACT_BUDGET`): a sweep that asks for
+  // eight kinds in a few seconds clears it with the gap and the cool-downs, or the fifth is refused for it.
+  const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reactLog = []; nmb.reacted = ''; nameMarkBuddyAct(''); });
   const reacted = () => page.evaluate(() => nmb.reacted || '');
   const openNote = async (id) => {
     const found = await page.evaluate((i) => {
@@ -104,19 +106,31 @@ const { boot } = require('./lib.js');
   if (streak.first !== 'streak' || streak.again) fails.push(`streak: ${JSON.stringify(streak)}`);
   // Night: a tick yawns.
   await reset();
-  const night = await page.evaluate(() => {
-    const orig = Date.prototype.getHours;
-    Date.prototype.getHours = function () { return 23; };
-    try { nmb.lastInput = Date.now(); nameMarkBuddyTick(); } finally { Date.prototype.getHours = orig; }
-    return { kind: nmb.reacted || '', act: nmb.act };
-  });
+  // A tick that finds it moving or reacting (the streak's cheer a moment ago), or that its own mind takes (a
+  // stroll, `nameMarkBuddyMind`), does nothing: ticked again, a second apart, until one is a clean night tick.
+  // It stays on the tab it was put on (the notes) and is away while the graph is shown: a tick has nobody to
+  // act out for then (`nmb.away`), so the notes are shown again first.
+  await page.evaluate(() => revealTab('notes'));
+  await page.waitForTimeout(4000);
+  let night = { kind: '', act: '' };
+  for (let i = 0; i < 6 && !night.kind; i += 1) {
+    night = await page.evaluate(() => {
+      const orig = Date.prototype.getHours;
+      Date.prototype.getHours = function () { return 23; };
+      try { nmb.lastInput = Date.now(); nmb.tick(true); } finally { Date.prototype.getHours = orig; }
+      return { kind: nmb.reacted || '', act: nmb.act };
+    });
+    if (!night.kind) await page.waitForTimeout(1000);
+  }
   if (night.kind !== 'yawn' || night.act !== 'yawn') fails.push(`night: ${JSON.stringify(night)}`);
   // Reduce motion: nothing.
   await reset();
   const still = await page.evaluate(() => {
-    document.documentElement.dataset.motion = 'reduced';
+    // The page's Reduce motion alone no longer stills it (`nameMarkBuddyMotion`: its own setting decides, and
+    // "Avatar animation: Off" is what stills it), so the sweep sets that.
+    document.documentElement.dataset.avatarMotion = 'off';
     const r = ['read', 'graph', 'streak', 'yawn', 'private', 'toast'].map((k) => nameMarkBuddyReact(k));
-    delete document.documentElement.dataset.motion;
+    delete document.documentElement.dataset.avatarMotion;
     return r.some(Boolean);
   });
   if (still) fails.push('a reaction under Reduce motion');

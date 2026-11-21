@@ -1,4 +1,6 @@
-"""Graph hover decision (GRAPH_PLAN, audit Rank 36): the hover card's refill was
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+Graph hover decision (GRAPH_PLAN, audit Rank 36): the hover card's refill was
 ~17 ms of a ~50 ms hover at 500 notes and 4x CPU. A pointer's card now fills
 only once the pointer rests on a note; the dot's highlight stays instant and the
 keyboard's card is not delayed."""

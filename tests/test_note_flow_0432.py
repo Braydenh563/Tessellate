@@ -20,6 +20,7 @@ from pathlib import Path
 from tessellate.api import routes_entries
 from tests._app_js import with_pieces
 from tests import _js_scope
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -273,7 +274,7 @@ def test_the_notes_chrome_says_less():
 def test_a_row_is_one_line_with_the_time_at_its_end():
     """Rows were 74px (the date on a line of its own above the chips); 47px
     after, measured at 1440 in Chromium, thirteen to a screen against nine."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
     assert "padding-top: 1.4em;" not in css
     # No width held back for the hover strip (INBOX 719): it overlays the end.
     assert "padding-inline-end: 6.5rem" not in css

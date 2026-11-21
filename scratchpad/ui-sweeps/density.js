@@ -82,6 +82,22 @@ function measure(page, label, rootSel) {
       if (c.borderTopLeftRadius !== '0px') radii.add(c.borderTopLeftRadius);
       if (c.boxShadow !== 'none' && !e.matches(':focus')) shadows.add(c.boxShadow);
     }
+    // Alignment (L-ui-modernisation-53, the owner's "very messy"): the distinct left edges, to the pixel, of
+    // the blocks of text in the active page. Every type size and radius here is a token, so variety
+    // alone did not say which surface looks messy; ragged starts do (CARP alignment).
+    const edges = new Map();
+    if (page) for (const e of page.querySelectorAll('*')) {
+      if (!vis(e) || ![...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+      // Right-aligned text (the end of a space-between row, or text-align end) lines up on its right edge.
+      const ps = e.parentElement && getComputedStyle(e.parentElement);
+      if (/right|end/.test(getComputedStyle(e).textAlign) || (ps && /flex/.test(ps.display) && ps.justifyContent === 'space-between' && e === e.parentElement.lastElementChild && e !== e.parentElement.firstElementChild)) continue;
+      const x = Math.round(e.getBoundingClientRect().left);
+      edges.set(x, (edges.get(x) || 0) + 1);
+    }
+    const edgeList = [...edges].sort((a, b) => b[1] - a[1]);
+    // Near misses: two starts 1 to 4px apart, which read as a mistake where a shared edge was meant.
+    const xs = [...edges.keys()].sort((a, b) => a - b);
+    const near = xs.filter((x, i) => i && x - xs[i - 1] <= 4).map((x, i) => `${xs[xs.indexOf(x) - 1]}/${x}`);
     const firstContent = page ? (() => { const r = page.getBoundingClientRect(); return Math.round(r.top + parseFloat(getComputedStyle(page).paddingTop)); })() : null;
     return {
       label, type: hist(sizes).slice(0, 8), typeDistinct: new Set(sizes).size,
@@ -91,7 +107,7 @@ function measure(page, label, rootSel) {
       rows: hist(rowsH).slice(0, 5),
       topBar: tbH, chromeBottom, chromePct: Math.round((chromeBottom / vh) * 1000) / 10,
       firstContent, rowsAbove, radii: radii.size, shadows: shadows.size,
-      radiiList: [...radii].slice(0, 14), shadowList: [...shadows].map((s) => s.slice(0, 70)).slice(0, 12),
+      edges: edges.size, near, edgeList: edgeList.slice(0, 12), radiiList: [...radii].slice(0, 14), shadowList: [...shadows].map((s) => s.slice(0, 70)).slice(0, 12),
     };
   }, [label, rootSel]);
 }
@@ -129,11 +145,11 @@ function measure(page, label, rootSel) {
   results.push(await measure(page, 'settings', '#settings-modal'));
   if (process.env.JSON) fs.writeFileSync(process.env.JSON, JSON.stringify(results, null, 1));
   for (const r of results) {
-    console.log(`\n== ${r.label} @${W}x${H}  topbar ${r.topBar}px  chrome ${r.chromeBottom}px (${r.chromePct}%)  first content y=${r.firstContent}  rows above fold ${r.rowsAbove}  radii ${r.radii}  shadows ${r.shadows}  type sizes ${r.typeDistinct}`);
+    console.log(`\n== ${r.label} @${W}x${H}  topbar ${r.topBar}px  chrome ${r.chromeBottom}px (${r.chromePct}%)  first content y=${r.firstContent}  rows above fold ${r.rowsAbove}  radii ${r.radii}  shadows ${r.shadows}  type sizes ${r.typeDistinct}  left edges ${r.edges}  near misses ${r.near.length} ${r.near.join(' ')}`);
     console.log('  type    ', JSON.stringify(r.type));
     console.log('  controls', JSON.stringify(r.controls), 'n=' + r.controlsN);
     console.log('  cards   ', JSON.stringify(r.cards), ' bars', JSON.stringify(r.bars), ' rows', JSON.stringify(r.rows));
-    if (process.env.VERBOSE) console.log('  radii', r.radiiList.join(' | '), '\n  shadows', r.shadowList.join(' | '));
+    if (process.env.VERBOSE) console.log('  edges', JSON.stringify(r.edgeList), '\n  radii', r.radiiList.join(' | '), '\n  shadows', r.shadowList.join(' | '));
   }
   await browser.close();
 })().catch((e) => { console.error('SWEEP_ERROR', e.message); process.exit(1); });

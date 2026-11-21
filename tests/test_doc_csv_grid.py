@@ -1,4 +1,6 @@
-"""The csv and tsv grid (L328, decision D42): the pure model of `documents-csvgrid.js`, run in node.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+The csv and tsv grid (L328, decision D42): the pure model of `documents-csvgrid.js`, run in node.
 
 A cell edit is a change to the editor's own text, so the model must rewrite only the cell's own characters, quote
 what needs it and keep every other byte (CRLF, a file's own quoting, a last line with no break). The browser half

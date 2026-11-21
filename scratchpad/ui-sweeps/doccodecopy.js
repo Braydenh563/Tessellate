@@ -87,12 +87,12 @@ const DOC = [
     JSON.stringify(read.langs) === JSON.stringify(["python", "code"]),
     JSON.stringify(read.langs)
   );
-  ok("with a Copy and a Save on each", read.copies === 4, `${read.copies} buttons`);
+  ok("with a Wrap, a Copy and a Save on each", read.copies === 6, `${read.copies} buttons`);
   //: The fault this probe actually found. A label that is nothing but words
   //: leaves no `i.ph` behind, so counting the icons is the measurement.
   ok(
     "both buttons are drawn with the app's own icons",
-    JSON.stringify(read.icons) === JSON.stringify(["ph-copy", "ph-download-simple", "ph-copy", "ph-download-simple"]),
+    JSON.stringify(read.icons) === JSON.stringify(["ph-text-align-left", "ph-copy", "ph-download-simple", "ph-text-align-left", "ph-copy", "ph-download-simple"]),
     JSON.stringify(read.icons)
   );
   ok(
@@ -102,7 +102,7 @@ const DOC = [
   );
 
   //: Live view: the language in the corner, by the decision recorded in the
-  //: theme (`.cm-md-fence-open[data-lang]::after`) and in DOCUMENTS_PLAN
+  //: theme (a `.cm-md-fence-label` widget) and in DOCUMENTS_PLAN
   //: section 15. The assertion is that the label is there, not that a button
   //: is: a control inside a contenteditable is a caret trap, and this row is
   //: half a line tall on purpose.
@@ -114,7 +114,7 @@ const DOC = [
         const quiet = opens.filter((n) => n.classList.contains("cm-md-fence-quiet"));
         r({
           opens: opens.length,
-          langs: opens.map((n) => n.dataset.lang || null),
+          langs: opens.map((n) => { const b = n.querySelector(".cm-md-fence-label"); return b ? b.textContent : null; }),
           quiet: quiet.length,
           quietHeight: quiet[0] ? Math.round(quiet[0].getBoundingClientRect().height) : null,
           rowHeight: opens[0]

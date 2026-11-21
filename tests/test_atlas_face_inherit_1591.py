@@ -21,7 +21,7 @@ ANCHOR = r"(?:(?<=[{}])|\A)"
 RULE = re.compile(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}")
 PROP = re.compile(r"(--atl-[\w-]+)\s*:")
 READ = re.compile(r"var\(\s*(--atl-[\w-]+)")
-#: Registered before this change, each with its own `inherit` path (08-consistency.css, "The
+#: Registered before this change, each with its own `inherit` path (07-whiteboard-misc.css, "The
 #: pose's four numbers"); the arms' two numbers are written on the arm itself.
 OWN_PATH = {"--atl-lean", "--atl-sx", "--atl-sy", "--atl-tail", "--atl-lean-dir", "--atl-v1", "--atl-v2", "--atl-chin"}
 #: Theme, not state: written once per theme, read by the drawing's fills, so it stays inherited.
@@ -29,7 +29,7 @@ THEME = {"--atl-aura-a"}
 
 
 def _css() -> str:
-    text = "\n".join(re.sub(r"/\*.*?\*/", "", (CSS_DIR / name).read_text(encoding="utf-8"), flags=re.S) for name in ("08-consistency.css", "atlas-lazy.css"))
+    text = "\n".join(re.sub(r"/\*.*?\*/", "", (CSS_DIR / name).read_text(encoding="utf-8"), flags=re.S) for name in ("07-whiteboard-misc.css", "atlas-lazy.css"))
     return text
 
 

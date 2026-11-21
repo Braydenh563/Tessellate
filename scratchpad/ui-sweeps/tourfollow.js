@@ -12,12 +12,12 @@
 const { boot } = require('./lib.js');
 
 function measure() {
-  const el = tourRun?.el;
+  const el = openTour.inspect.run?.el;
   const spot = document.getElementById('tour-spot').getBoundingClientRect();
   const card = document.getElementById('tour-card').getBoundingClientRect();
   const t = el.getBoundingClientRect();
   const ov = Math.max(0, Math.min(card.right, t.right) - Math.max(card.left, t.left)) * Math.max(0, Math.min(card.bottom, t.bottom) - Math.max(card.top, t.top));
-  return { title: tourRun.step.title, ringOff: Math.round(Math.max(Math.abs(spot.left + 6 - t.left), Math.abs(spot.top + 6 - t.top))), cover: Math.round(ov) };
+  return { title: openTour.inspect.run.step.title, ringOff: Math.round(Math.max(Math.abs(spot.left + 6 - t.left), Math.abs(spot.top + 6 - t.top))), cover: Math.round(ov) };
 }
 
 (async () => {
@@ -37,9 +37,9 @@ function measure() {
   await page.waitForTimeout(1500);
   // Walk to the companion step.
   for (let i = 0; i < 6; i++) {
-    const t = await page.evaluate(() => tourRun?.step?.title);
+    const t = await page.evaluate(() => openTour.inspect.run?.step?.title);
     if (/companion/i.test(t || '')) break;
-    await page.evaluate(() => tourNext());
+    await page.evaluate(() => openTour.inspect.next());
     await page.waitForTimeout(1200);
   }
   const before = await page.evaluate(measure);

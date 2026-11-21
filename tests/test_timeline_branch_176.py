@@ -1,4 +1,6 @@
-"""L-world-class-176: the timeline draws a thread as a branching line.
+"""Source text: the branch drawing is read from the script text, as the unit suite has no browser to drive.
+
+L-world-class-176: the timeline draws a thread as a branching line.
 
 A row that continues a loaded note is an off-shoot (`data-branch`), with an
 elbow from the spine to its mark. The parent is found by row key

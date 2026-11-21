@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 FLOOR = CSS[CSS.index("The target floor (audit 1031 class 28") :]
 
 
@@ -43,7 +44,11 @@ def test_a_skip_link_jumps_past_the_chrome_to_the_list():
 def test_show_more_the_rail_menus_and_the_board_grips_meet_the_floor():
     assert "min-height: var(--target-min)" in _rule("#entry-list .entry-more,\n#entry-list:not(.is-rows) > li:not(.list-window-sentinel) > .entry-more")
     assert "min-block-size: var(--target-min)" in re.search(r"\n\.card-open \{([^}]*)\}", CSS).group(1)
-    assert "border: var(--space-3) solid transparent" in (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8").split("@media (pointer: coarse)")[-1]
+    # The coarse block that holds the board grips, found by its selector rather than
+    # by being the file's last coarse block (L-ui-modernisation-80 appended another after it).
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    grips = next(b for b in lazy.split("@media (pointer: coarse)")[1:] if b.lstrip(" {\n").startswith(".wb-resize-handle"))
+    assert "border: var(--space-3) solid transparent" in grips.split("\n}\n")[0]
     # Where they are declared: the rail's link menus and a card's task boxes.
     assert re.search(r"@media \(pointer: fine\) \{\s*#entry-list \.link-connection > \.menu-wrap \{[^}]*\}\s*#entry-list \.link-connection > \.menu-wrap > button \{\s*width: 1\.5rem;\s*height: 1\.5rem;", CSS)
     forms = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")

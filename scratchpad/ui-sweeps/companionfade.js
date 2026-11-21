@@ -12,11 +12,9 @@ const { boot } = require("./lib.js");
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: Number(process.env.W || 1440), height: 900 }, reducedMotion: "reduce" });
-  await page.evaluate((k) => {
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
-    b.value = k;
-    b.dispatchEvent(new Event("change", { bubbles: true }));
+    prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy();
   }, process.env.KIND || "atlas");
   await page.waitForTimeout(3500);
   const r = await page.evaluate(async () => {

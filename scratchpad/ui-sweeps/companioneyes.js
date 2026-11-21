@@ -14,12 +14,12 @@ const { boot } = require('./lib.js');
   let worst = 0;
   const moods = (process.env.MOODS || 'calm,thinking,happy,curious').split(',');
   for (const look of ['masculine', 'feminine']) {
-    await page.evaluate(([look]) => {
+    await page.evaluate(async ([look]) => {
       localStorage.setItem('atlas-look', look);
-      const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy();
     }, [look]);
     await page.waitForTimeout(300);
-    await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+    await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
     await page.waitForTimeout(2200);
     await page.evaluate(() => {
       clearTimeout(nmb.timer);
@@ -33,7 +33,7 @@ const { boot } = require('./lib.js');
           nameMarkBuddyRide(null, 700, 420);
           nameMarkBuddyMoveTo(buddy, { kind: 'card', pose, legs: '', x: 700, y: 420 }, true);
           setAtlasMood(mood, 0, { quiet: true });
-          const [cx, cy] = nameMarkBuddyHeadAt();
+          const [cx, cy] = nmb.inner.nameMarkBuddyHeadAt();
           return [cx, cy];
         }, [pose, mood]);
         await page.waitForTimeout(400);

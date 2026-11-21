@@ -30,3 +30,16 @@ def test_no_stylesheet_lets_the_strip_wrap_again():
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         for body in re.findall(r"\.doc-statusbar\s*\{([^}]*)\}", css):
             assert "flex-wrap: wrap" not in body, path.name
+
+
+def test_the_strip_tightens_its_gaps_on_a_phone():
+    """Source text: the mono font at 390px put the file type button 7px past
+    the strip (`overflow: hidden` cut it): the buttons keep their words, so
+    the gaps between items give way instead (fontmatrix, 2026-11-14)."""
+    base = (CSS / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    base = re.sub(r"/\*.*?\*/", "", base, flags=re.S)
+    match = re.search(
+        r"@media \(max-width: 599\.98px\) \{\s*#tab-documents \.doc-statusbar \{([^}]*)\}", base
+    )
+    assert match
+    assert "gap: var(--space-1)" in match.group(1)

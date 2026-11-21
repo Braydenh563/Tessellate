@@ -1,4 +1,6 @@
-"""The spell checker stays shipped (DOCUMENTS_PLAN owner bug, "you removed
+"""Source text: whether the checker ships is a packaging fact (its files and dependencies), so it is read from the source tree.
+
+The spell checker stays shipped (DOCUMENTS_PLAN owner bug, "you removed
 spellchecker.py"). No file of that name ever existed in this repo: the checker
 is `ai/spelling.py` (typed questions, the Tidy pass) plus the browser list at
 `frontend/vendor/wordlist/en.txt` (the editor's underline). Both must load and

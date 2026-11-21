@@ -76,6 +76,28 @@
 #settings-modal :is(.select-shell > .setting-reset, .select-shell + .setting-reset) {
   margin-inline-start: var(--space-2);
 }
+/* A form row keeps its reset's slot from 820 up (L416): the Bin row at 820
+   had 12px to spare, so the 28px reset that appears on a change wrapped to a
+   line of its own (the row 32 to 57px), and at 1440 the label gave way and
+   the field moved 37px. Every form row reserves the slot, so the fields keep
+   one right edge and a reset appears without moving anything: the per-row
+   mark of a changed setting. */
+@media (min-width: 820px) {
+  #settings-modal .settings-section .row:has(> label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label)) {
+    position: relative;
+    padding-inline-end: calc(var(--control-h-dense) + var(--space-2));
+  }
+  #settings-modal .settings-section .row:has(> label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label)) > .setting-reset {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  /* The label's 16rem floor gives the slot back, or every row wraps at 820. */
+  #settings-modal .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
+    flex-basis: calc(16rem - var(--control-h-dense) - var(--space-2));
+  }
+}
 /* On a phone the actions are ordered after the title (`order: 2`); the reset
    goes after them, so the '?' stays to its left. */
 @media (max-width: 599.98px) {
@@ -105,7 +127,7 @@
 }
 
 /* A backup row's origin label sits on three tints, like Skills' rows (the
-   rule for those is in 08-consistency.css): "Automatic daily backup" measured
+   rule for those is in 07-whiteboard-misc.css): "Automatic daily backup" measured
    4.27:1 in light, muted on rgb(219, 219, 221) (UX audit 2026-10-19). It takes
    the ink. The warn label keeps its tone. */
 #backup-list > li .chip.item-label:not(.is-yours, .is-ok, .is-warn) {

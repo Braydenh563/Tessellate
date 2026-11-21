@@ -6,7 +6,7 @@
 // the same. Also reads the night cap on the standing and sitting sleep
 // cards. Exits 1 when a specimen's mood moves with Live off, or a standing
 // card wears the cap.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 
 (async () => {

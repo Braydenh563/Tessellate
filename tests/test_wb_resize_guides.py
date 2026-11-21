@@ -129,7 +129,9 @@ def test_a_sticker_glyph_follows_its_box_during_the_resize() -> None:
 
 # K19 / K17 / K16 (owner-1026b)
 
-CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
+    ROOT / "frontend" / "css" / "library-lazy.css"
+).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
 
 
 def test_only_the_moving_edges_measure_carries_a_badge_and_it_sits_outside_the_handle() -> None:

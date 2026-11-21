@@ -12,11 +12,15 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
+CSS = unwrap_all(
+    (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
+    + (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+)  # L-ui-modernisation-51: moved rules end in :where(:not(...))
 
 
 def _view() -> str:

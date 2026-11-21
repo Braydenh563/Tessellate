@@ -98,8 +98,12 @@ labels engine `sherpa-onnx` (Apache-2.0, on ONNX Runtime, MIT), read by
   `tests/test_taxonomy_pack.py` (WORLD_CLASS_PLAN 23, decision 1).
 - `ai/question_noise.py`'s misspelling table (the block added 2026-10-10)
   appears to be drawn from Wikipedia's "Lists of common misspellings", which
-  is CC BY-SA 4.0. Its origin is not recorded in the commit that added it;
-  until it is confirmed or replaced, it is credited here as that list.
+  is CC BY-SA 4.0. Its origin is not recorded in the commit that added it
+  and cannot be confirmed offline, so it is treated as that list: an adaptation
+  of a CC BY-SA 4.0 work, which CC declares one-way compatible with GPLv3, and
+  AGPLv3 section 13 lets GPLv3 code combine with this project. That block stays
+  under CC BY-SA 4.0 (or GPLv3), credited to Wikipedia's contributors (decided
+  2026-11-12, L-general-25: keep and credit, not replace).
   https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings
 
 ## Elsewhere in the repository

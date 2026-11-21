@@ -31,7 +31,7 @@ const BUSY = Number(process.env.BUSY || 12);
       for (let i = 0; i < n; i += 1) await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: `Smooth probe note ${i}. A line of words so the card has a body to it, and a second sentence for height.` }) });
     }, 16 - have);
   }
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(async () => { prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy(); });
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate((t) => revealTab(t), process.env.TAB || 'notes');
   await page.waitForTimeout(3000);

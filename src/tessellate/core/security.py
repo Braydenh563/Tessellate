@@ -919,6 +919,9 @@ class UnsafeUrl(ValueError):
     """A URL that must not be fetched, with a sentence fit to show a person."""
 
 
+_NAT64 = ipaddress.IPv6Network("64:ff9b::/96")
+
+
 def is_internal_address(address) -> bool:  # noqa: ANN001  # an ipaddress object
     """True for anything on this machine or the local network.
 
@@ -928,6 +931,10 @@ def is_internal_address(address) -> bool:  # noqa: ANN001  # an ipaddress object
     One definition, so the two cannot drift apart and leave a hole in the
     half nobody re-read.
     """
+    if address.version == 6 and address in _NAT64:
+        # 64:ff9b::/96 carries an IPv4 address in its last 32 bits; Python
+        # 3.13 calls the wrapped metadata and loopback addresses global.
+        return is_internal_address(ipaddress.IPv4Address(int(address) & 0xFFFFFFFF))
     return (
         address.is_private
         or address.is_loopback

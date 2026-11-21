@@ -38,16 +38,9 @@ def _step(a, b) -> float:
 
 
 # Intent moved (INBOX 1696 hh, deskframes-1108): the frames are re-shot with the tail held, so the masculine idle wraps like
-# any other step (3.99 against a median 1.47). The feminine one still jumps (hair and the ring change between idle 11 and
-# 12, 17 and 18, 23 and 0), so only it keeps the marker.
-@pytest.mark.parametrize(
-    "look",
-    [
-        "masculine",
-        pytest.param("feminine", marks=pytest.mark.xfail(strict=True, reason="the feminine idle's hair and ring jump at three of its steps (wrap step 4x the median); "
-                                                                                "LEDGER L150 (chat)")),
-    ],
-)
+# any other step (3.99 against a median 1.47). The feminine one jumped too (hair and the ring between idle 11 and 12, 17
+# and 18, 23 and 0) until the capture pinned the spell clock and the pacer's beat (L-ui-modernisation-151, 2026-11-21).
+@pytest.mark.parametrize("look", ["masculine", "feminine"])
 def test_the_idle_cycle_wraps_like_any_other_step(look: str) -> None:
     s = sp.SpriteSet(look)
     frames = [np.asarray(s._load(n)).astype(float) for n in sp.IDLE_FRAMES]

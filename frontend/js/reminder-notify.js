@@ -91,7 +91,17 @@
     //: reminder made from a note or a document says so under its words.
     const about = one && one.target_title ? `\nAbout ${toastName(one.target_title)}` : "";
     await showReminderNotification(one ? "Reminder" : "Tessellate", text + about, one && !one.early ? one.id : null);
-    toast(text, false, { exempt: true });
+    const brief = one ? await apiJson(`/reminders/${one.id}/brief`, { silent: true }).catch(() => null) : null;
+    const notes = brief?.notes || [];
+    if (!notes.length) return toast(text, false, { exempt: true });
+    //: A meeting-prep brief (L-general-11): the last notes the reminder's
+    //: words point at, so "Meet Priya" opens with what was written last time.
+    const open = (note) => ({ label: `Open ${toastName(note.title)}`, run: () => openNoteEditor(note.id) });
+    const [first, second] = notes.map(open);
+    toastAction(`${text}\nLast notes: ${notes.map((n) => toastName(n.title)).join(", ")}`, first.label, first.run, {
+      ms: 15000,
+      ...(second ? { also: second } : {}),
+    });
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).

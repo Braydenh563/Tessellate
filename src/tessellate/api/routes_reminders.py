@@ -133,7 +133,7 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
         return "document", document.title or "Untitled"
     if reminder.entry_id is None:
         return None, None
-    entry = session.get(Entry, reminder.entry_id)
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted:
         return None, None
     text = strip_properties(readable_content(entry))
@@ -164,7 +164,7 @@ def _to_out(session: Session, reminder) -> dict:
     private = False
     target_kind, target_title = _target(session, reminder)
     if reminder.entry_id is not None:
-        entry = session.get(Entry, reminder.entry_id)
+        entry = reminder_repo.its_note(session, reminder)
         private = bool(entry is not None and entry.is_private)
         if entry is not None and not entry.is_deleted:
             # `readable_content`, not the raw column: a private note's
@@ -360,7 +360,7 @@ def _event_details(session: Session, reminder) -> str:
     own text and nothing of the note behind it."""
     if reminder.entry_id is None:
         return ""
-    entry = session.get(Entry, reminder.entry_id)
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted or entry.is_private:
         return ""
     return " ".join(readable_content(entry).split())[:280]
@@ -801,6 +801,21 @@ def complete_reminder(
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()
     return {**_to_out(session, reminder), "was_due_at": was}
+
+
+@router.get("/{reminder_id}/brief")
+def reminder_brief(reminder_id: int, session: Session = Depends(get_session)) -> dict:
+    """A meeting-prep brief (L-general-11): when a reminder fires, the last
+    notes its words point at (a person, a topic), so the meeting starts with
+    what was written last time. Keyword search, so it works with no model;
+    it already leaves out private notes and boards. The reminder's own note
+    is the one being opened anyway, so it is left out too. Newest first."""
+    from tessellate.search import search_manager
+
+    reminder = _existing(session, reminder_id)
+    hits = [e for e in search_manager.keyword_search(session, reminder.text, limit=8) if e.id != reminder.entry_id]
+    hits.sort(key=lambda e: e.updated_at or e.created_at, reverse=True)
+    return {"notes": [{"id": e.id, "title": plain_label(readable_content(e), 60)} for e in hits[:3]]}
 
 
 @router.post("/{reminder_id}/notification-token")

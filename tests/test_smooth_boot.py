@@ -28,7 +28,7 @@ from __future__ import annotations
 import re
 
 from tests._app_js import app_js_text
-from tests._css_paths import CSS_DIR
+from tests._css_paths import CSS_DIR, FORMER_10, sheets
 from tests._js_scope import unwrapped
 
 ROOT = CSS_DIR.parents[1]
@@ -95,7 +95,7 @@ def test_one_curtain_lifts_over_a_drawn_first_tab():
     assert "lockOpened(" in _fn(JS, "submitLockForm")
     for name in ("initAuth", "enterWithoutPassword", "lockOpened"):
         assert "curtainShell(opening);" in _fn(JS, name), name
-    assert "#lock-overlay.lock-leaving {" in CSS["08-consistency.css"]
+    assert "#lock-overlay.lock-leaving {" in "\n".join(CSS[n] for n in ("00-tokens-shell.css", "07-whiteboard-misc.css", "characters-lazy.css"))
 
 
 def test_the_status_bar_is_at_the_foot_before_any_page():
@@ -110,7 +110,7 @@ def test_the_dashboard_banner_keeps_its_lines_before_its_words():
 
 
 def test_a_page_never_arrives_from_nothing():
-    css = CSS["08-consistency.css"]
+    css = "\n".join(CSS[n] for n in ("00-tokens-shell.css", "07-whiteboard-misc.css", "characters-lazy.css"))
     block = css[css.index("/* --- motion: a page arrives") :]
     block = block[: block.index("/* --- ", 10)]
     # INBOX 1462: opacity plus a one-step rise, both compositor-only, on one token.
@@ -127,7 +127,7 @@ def test_the_small_popups_and_the_hover_card_arrive_on_the_menu_recipe():
     """INBOX 1462: the selection popup, the spelling menu and the OCR region popover
     join the shared fade and grow (no per-surface rule); the graph's hover card
     fades by opacity alone, since its own `transform` places it."""
-    resp = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    resp = sheets(*FORMER_10)
     at = resp.index(".action-menu:not(.hidden),\n.dock-menu[open]")
     head = resp[at : resp.index("{", at)]
     for sel in (".selection-popup", ".doc-suggest-menu", ".ocr-region-popover"):
@@ -139,7 +139,7 @@ def test_the_small_popups_and_the_hover_card_arrive_on_the_menu_recipe():
 
 
 def test_every_popup_has_one_way_in():
-    css = CSS["08-consistency.css"]
+    css = "\n".join(CSS[n] for n in ("00-tokens-shell.css", "07-whiteboard-misc.css", "characters-lazy.css"))
     block = css[css.index("/* --- motion: a popup arrives") :]
     block = block[: block.index("/* --- ", 10)]
     which = ":where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {"
@@ -156,7 +156,7 @@ def test_a_heavy_tab_shows_its_shape_while_its_code_loads():
     # Given back on the draw, on a timer, and on a failed load.
     assert switch.count("tabPlaceholder(lazyPage, false)") == 2
     assert "drawing = renderGraph();" in switch and "drawing = loadLibrary();" in switch
-    css = CSS["08-consistency.css"]
+    css = "\n".join(CSS[n] for n in ("00-tokens-shell.css", "07-whiteboard-misc.css", "characters-lazy.css"))
     assert ".tab-page.tab-loading > :not(.tab-placeholder) {" in css
     assert ".tab-page > .tab-placeholder.tab-placeholder-leaving {" in css
 
@@ -222,5 +222,5 @@ def test_the_dashboard_shows_its_widgets_once_they_have_drawn():
     assert "window.dashSettled = Promise.race([Promise.allSettled(drawing)" in render
     assert 'grid.classList.remove("dash-filling")' in render
     assert "return drawn;" in _fn(dash, "mountWidgetBody")
-    assert "#dash-grid.dash-filling {" in CSS["08-consistency.css"]
+    assert "#dash-grid.dash-filling {" in "\n".join(CSS[n] for n in ("00-tokens-shell.css", "07-whiteboard-misc.css", "characters-lazy.css"))
     assert ".then(() => window.dashSettled).then(lift, lift);" in _fn(JS, "curtainShell")

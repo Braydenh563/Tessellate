@@ -1,4 +1,6 @@
-"""L-world-class-129, WORLD_CLASS decision 64: the note menu is grouped Atlas,
+"""Source text: the menu's row order is read from the script text, as the unit suite has no browser to drive; the row counts were measured in the app.
+
+L-world-class-129, WORLD_CLASS decision 64: the note menu is grouped Atlas,
 structure, share, destructive, in that order, with under nine rows showing.
 Measured before: ten rows (eleven with Headings); after: eight."""
 

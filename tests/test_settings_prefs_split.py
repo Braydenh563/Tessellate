@@ -39,6 +39,6 @@ def test_what_the_file_defines_is_no_longer_defined_at_boot():
 
 def test_the_callers_outside_the_bundle_reach_it_through_a_stand_in():
     app = (JS / "app.js").read_text(encoding="utf-8")
-    stubs = re.search(r"^  settingsControls: \[\"refreshSearxngHost\".*?\],$", app, re.M).group(0)
+    stubs = re.search(r"^  settingsControls: \[\"(?!/).*?\],$", app, re.M).group(0)
     for name in ("renderPrefs", "renderWebSearch", "syncEmbeddingPickerState"):
         assert f'"{name}"' in stubs, name

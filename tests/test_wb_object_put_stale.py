@@ -1,4 +1,6 @@
-"""A late PUT for an item that was just deleted answers 404, never a 500 StaleDataError.
+"""Source text: the route is exercised through the test client; the front-end half has no browser under pytest, so its script is read as text.
+
+A late PUT for an item that was just deleted answers 404, never a 500 StaleDataError.
 
 Undo of a just-added map topic deletes the row while a debounced PUT for it is still on its way. The
 request reads the row, the delete lands, and the UPDATE at commit then matches nothing: SQLAlchemy raised

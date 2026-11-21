@@ -17,7 +17,7 @@ const CASES = [
 (async () => {
   if (process.env.ONLY) CASES.length = 0;
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block', reducedMotion: process.env.REDUCE ? 'reduce' : 'no-preference' });
-  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate(async (k) => { localStorage.removeItem('nm-buddy-spots'); prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, KIND);
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   await page.evaluate(() => ensureModule('companionMenu')); await page.waitForTimeout(1500);

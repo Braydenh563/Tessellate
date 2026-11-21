@@ -265,7 +265,7 @@ function docTreeDiagnostics(CM, state) {
 }
 
 //: HTML's check (Brief 71, for the Problems tab): a closing tag that closes
-//: nothing open here, and an element left open that HTML does not close by
+//: nothing open here, and an unclosed element that HTML does not close by
 //: itself. A void element, or one whose end tag is optional, is not one.
 function docHtmlDiagnostics(CM, state) {
   const tree = CM.language.ensureSyntaxTree(state, state.doc.length, 200) || CM.language.syntaxTree(state);
@@ -1286,7 +1286,7 @@ function docXmlOpenedBy(before) {
   return match && !before.endsWith("/") ? match[1] : null;
 }
 
-//: The innermost element still open at the end of `before`, for `</`: the
+//: The innermost unclosed element at the end of `before`, for `</`: the
 //: close it should be finished with, or null.
 function docXmlUnclosed(before) {
   const stack = [];
@@ -5411,7 +5411,7 @@ function docCodeScan(text, ext) {
     const lost = stack.pop();
     problems.push({ kind: "unclosed", at: lost.at, ch: lost.ch, line: lost.line, before: n });
   }
-  //: **One mistake, one report.** A string left open on its line swallows
+  //: **One mistake, one report.** An unclosed string on its line swallows
   //: the `)` and `;` after it, so the `(` before it then reads as unclosed
   //: too: two underlines for one missing quote, and a second "fix" that
   //: would add a bracket the code never lacked. The string is the cause, so
@@ -5960,7 +5960,7 @@ function docCodeLastCodeBefore(scan, text, before, minLine, floor) {
   return floor + 1;
 }
 
-//: A string left open on its line closes before the `);` or `;` the line
+//: An unclosed string on its line closes before the `);` or `;` the line
 //: ends with, which is where it was meant to end in every case that is not
 //: a string with a bracket inside it: `printf("hi);` becomes
 //: `printf("hi");`.
@@ -6001,7 +6001,7 @@ function docJsonFixes(text, found, unit) {
     const single = /^'([^'"\\\n]*)'/.exec(text.slice(at));
     if (single) fixes.push({ name: "Use double quotes", edits: [{ from: at, to: at + single[0].length, insert: `"${single[1]}"` }] });
   }
-  //: At the end of the text with brackets still open: close them all, each
+  //: At the end of the text with unclosed brackets: close them all, each
   //: on its own line, innermost first.
   if (at >= text.trimEnd().length) {
     const scan = docCodeScan(text, "json");

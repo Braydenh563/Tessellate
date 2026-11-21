@@ -14,6 +14,7 @@ from pathlib import Path
 
 from tests._app_js import APP_JS, INDEX_HTML, LAZY_PIECES, app_js_files
 from tests import _js_scope
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -88,7 +89,8 @@ def test_the_mode_switch_is_a_seg_in_the_card_and_a_todo_icon_in_the_bar():
     # INBOX 1572 (the owner: the bar is "a little trippy to use"): the Note / To-do seg left the bar's
     # row; the bar keeps one To-do icon that opens the card as a list, and the card keeps the seg.
     assert 'class="seg capture-bar-modes"' not in INDEX
-    assert 'id="capture-bar-todo"' in INDEX and 'data-mode="todo"' in INDEX
+    # INBOX 1811: the bar button is `capture-bar-list`; showCaptureCard opens the card in the to-do mode from it.
+    assert 'id="capture-bar-list"' in INDEX and 'closest?.(".capture-bar-list") ? "todo"' in CARD
     assert '"seg capture-card-modes"' in _function_body(CARD, "captureModeSeg")
     assert "aria-pressed" in _function_body(CARD, "setCaptureMode")
 
@@ -162,7 +164,7 @@ def test_tags_take_hashes_spaces_and_commas():
 def test_a_note_card_is_tinted_by_its_colour_with_the_swatch_hex_from_the_one_palette():
     cards = ((JS / "note-cards.js").read_text(encoding="utf-8") + (JS / "entry-card.js").read_text(encoding="utf-8"))
     assert "CATEGORY_PALETTE[entry.colour]" in cards and '"--swatch"' in cards
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("03-dashboard-widgets.css", "07-whiteboard-misc.css")
     assert '#entry-list li[data-colour]' in css and "color-mix(in srgb, var(--swatch) 10%" in css
 
 

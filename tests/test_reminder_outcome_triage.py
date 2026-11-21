@@ -1,4 +1,6 @@
-"""Reminder outcome (L-general-10) and overdue triage (L-general-12).
+"""Source text: the append runs client side and is read from the script text, as the unit suite has no browser to drive.
+
+Reminder outcome (L-general-10) and overdue triage (L-general-12).
 
 The append is client side (`reminderOutcomePrompt`, reminder-triage.js): it reads the source note,
 writes `content + blank line + "Outcome (day): line"` with the note's own `PUT /entries/{id}`, and

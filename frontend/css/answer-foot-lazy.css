@@ -133,7 +133,7 @@
 /* **A chip that opens a part reads as a disclosure** (INBOX 1696 o, the owner:
    "their visual style of the buttons doesn indicate that they are a dropdown
    and different from the ask next stuff"): the folds' own caret
-   (`.fold-summary::after` in 08-consistency.css) at the chip's end, turned
+   (`.fold-summary::after` in 01-forms-settings.css) at the chip's end, turned
    down while its part is open. Ask next's chips ask a question and carry none. */
 .answer-foot-chip::after {
   content: "\e136"; /* ph-caret-down, as `.fold-summary::after` */

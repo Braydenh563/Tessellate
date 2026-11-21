@@ -97,21 +97,24 @@ function atlasMicroMay(box) {
 //: Plays `frames` on `el`, in place of whatever else moves that property
 //: (never added to it: `composite: "add"` is not the compositor's).
 function atlasMicroPlay(el, frames, ms) {
-  el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
+  return el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
 }
 //: A function property, not a global: the shared scope has a cap on names (`tests/test_global_scope_ratchet.py`).
+//: The pointer a look may take: none with Faces follow the pointer off (round 5: a pointer merely passing is not
+//: followed; L-ui-modernisation-98, a glance took it 40% of the time and every look back).
+atlasMicroDo.pointer = () => (document.documentElement.dataset.avatarFollow === "off" ? null : nmb.pointer);
 atlasMicroDo.glance = function (box) {
   const field = document.activeElement;
   const fr = field && field !== document.body ? field.getBoundingClientRect?.() : null;
   const r = Math.random();
   let point;
   if (fr && fr.width && r < 0.4) point = [fr.left + fr.width / 2, fr.top + Math.min(fr.height / 2, 80)];
-  else if (nmb.pointer && r < 0.8) point = nmb.pointer;
+  else if (atlasMicroDo.pointer() && r < 0.8) point = atlasMicroDo.pointer();
   else point = [Math.random() * innerWidth, Math.random() * innerHeight];
   nameMarkBuddyAim(point);
   setTimeout(() => {
     //: Back to the pointer if it moved lately, else to looking ahead.
-    nameMarkBuddyAim(nmb.pointer && Date.now() - (nmb.lastInput || 0) < 4000 ? nmb.pointer : null);
+    nameMarkBuddyAim(atlasMicroDo.pointer() && Date.now() - (nmb.lastInput || 0) < 4000 ? atlasMicroDo.pointer() : null);
     if (Math.random() < 0.35 && atlasMicroMay(box)) atlasBlink(box);
   }, 700 + Math.random() * 1300);
 };
@@ -180,7 +183,7 @@ atlasMicroCast.stop = function () {
 //: the tilt and the shift play them, and the look as a glance aims it.
 atlasMicroDo.rare = function (kind, box, sign) {
   atlasMicroState.rareAt[kind] = Date.now();
-  const back = () => atlasMicroMay(box) && nameMarkBuddyAim(nmb.pointer && Date.now() - (nmb.lastInput || 0) < 4000 ? nmb.pointer : null);
+  const back = () => atlasMicroMay(box) && nameMarkBuddyAim(atlasMicroDo.pointer() && Date.now() - (nmb.lastInput || 0) < 4000 ? atlasMicroDo.pointer() : null);
   if (kind === "around") {
     const y = innerHeight * (0.35 + Math.random() * 0.2);
     const side = (k) => [k < 0 ? innerWidth * 0.08 : innerWidth * 0.92, y];
@@ -188,7 +191,7 @@ atlasMicroDo.rare = function (kind, box, sign) {
     setTimeout(() => atlasMicroMay(box) && nameMarkBuddyAim(side(-sign)), 900 + Math.random() * 300);
     setTimeout(back, 2000 + Math.random() * 400);
   } else if (kind === "double") {
-    const p = nmb.pointer;
+    const p = atlasMicroDo.pointer();
     nameMarkBuddyAim(p);
     setTimeout(() => atlasMicroMay(box) && nameMarkBuddyAim(null), 420);
     setTimeout(() => {
@@ -247,20 +250,33 @@ function atlasMicroDo(kind, box) {
     const ears = [...box.querySelectorAll(".atl-ear")];
     const ear = ears[Math.floor(Math.random() * ears.length)];
     if (!ear) return;
-    ear.style.transformBox = "fill-box";
-    ear.style.transformOrigin = "50% 90%";
+    //: The flick tips about the ear's root (`fill-box`, 50% 90%) only while it plays: the ear's own pivot
+    //: (atlasPivot, ATLAS_GEO.ear) comes back when the last flick ends, or every later mood's turn of the ear
+    //: pivoted 35 to 47 px elsewhere (L-ui-modernisation-171).
+    const flick = () => {
+      ear.atlFlickRest ??= [ear.style.transformBox || "", ear.style.transformOrigin || ""];
+      ear.style.transformBox = "fill-box";
+      ear.style.transformOrigin = "50% 90%";
+      const an = (ear.atlFlickLast = atlasMicroPlay(ear, frames, ms));
+      const back = () => {
+        if (ear.atlFlickLast !== an || !ear.atlFlickRest) return;
+        [ear.style.transformBox, ear.style.transformOrigin] = ear.atlFlickRest;
+        ear.atlFlickRest = null;
+      };
+      an?.finished?.then(back, back);
+    };
     //: **The flick replaces the crest's `transform`** (audit 1101, row 17's
     //: leftover): it added an individual `rotate` over it (`composite: "add"`),
     //: which is the main thread's, so each flick put the figure's loops back
     //: there for its third of a second. The ear's own turn (`--atl-crest`,
-    //: mirrored on the left ear: 08-consistency.css) is written into the
+    //: mirrored on the left ear: characters-lazy.css) is written into the
     //: keyframes, so the ear tips from where the mood holds it and back.
     const turn = (deg) => ({ transform: `rotate(calc(var(--atl-crest) * ${ear.classList.contains("atl-ear-l") ? -1 : 1} + ${deg}deg))` });
     const a = Number((sign * (3.5 + Math.random() * 2)).toFixed(1));
     const ms = 220 + Math.random() * 160;
     const frames = [turn(0), { ...turn(a), offset: 0.35 }, turn(0)];
-    atlasMicroPlay(ear, frames, ms);
-    if (Math.random() < 0.3) setTimeout(() => atlasMicroPlay(ear, frames, ms), ms + 90);
+    flick();
+    if (Math.random() < 0.3) setTimeout(flick, ms + 90);
     return;
   }
   if (kind === "blink") {
@@ -286,7 +302,7 @@ function atlasMicroTick() {
   const hour = new Date().getHours();
   const kind = atlasMicroPick({
     typing: now - (nmb.keyAt || 0) < 5000, idle: now - (nmb.lastInput || 0), hour, phase: atlasDriftState.phase?.(hour), mood: atlasMoodNow, look: box.dataset.atlasLook,
-    sinceCast: now - atlasMicroState.castAt, now, rareAt: atlasMicroState.rareAt, rareOff: nameMarkBuddyActOff("habits") || document.documentElement.dataset.motion === "reduced", pointer: !!nmb.pointer,
+    sinceCast: now - atlasMicroState.castAt, now, rareAt: atlasMicroState.rareAt, rareOff: nameMarkBuddyActOff("habits") || document.documentElement.dataset.motion === "reduced", pointer: !!atlasMicroDo.pointer(),
   }, atlasMicroState.last);
   atlasMicroState.last = kind;
   //: **On a page a frame has drawn** (INBOX 1667: `atlas-micro.js:272` 118ms of forced layout at 4x; a glance

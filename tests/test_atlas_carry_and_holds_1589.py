@@ -1,7 +1,7 @@
 """Her raised arms turn about her shoulders and the carry act has its note (INBOX 1589 leftovers).
 
 - The raised-arm drawings (`.nmb-hold`, shown hanging, carried, in a cheer or a stretch) turned about
-  his shoulders, `24.6px 41px` and `37.4px 41px` (08-consistency.css; 25.6 and 36.4 since INBOX 1607 b). Her arms
+  his shoulders, `24.6px 41px` and `37.4px 41px` (characters-lazy.css; 25.6 and 36.4 since INBOX 1607 b). Her arms
   are rooted 1.8 units further in, `armPivots` (`ATLAS_LOOKS.feminine`), and the hold is drawn from that root: turned about
   his, its shoulder swung out of the torso as her arms once did (INBOX 612). It takes the same pivot
   as the arm, inline, wherever the look names one.
@@ -16,10 +16,11 @@ from __future__ import annotations
 import re
 
 from pathlib import Path
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets("05-sidebars-themes.css", "characters-lazy.css")
 
 
 def _fn(name: str) -> str:

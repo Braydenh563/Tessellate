@@ -284,8 +284,47 @@ onboardingRun.renderPrefs = async () => {
     row.append(label, select);
     grid.appendChild(row);
   }
+  //: **The update question too, while the card asks about the person** (L451):
+  //: the first run cost three acts (the welcome, the recovery key, this
+  //: question as its own dialog). Off is shown first, as the welcome promises;
+  //: closing from this card records what it shows (`saveUpdateChoice`), and
+  //: the dialog (update-dialogs.js) then skips an answered question.
+  if (typeof prefsCache !== "undefined" && prefsCache?.update_choice_made === false) {
+    const label = document.createElement("label");
+    label.htmlFor = "onboarding-pref-update";
+    label.className = "muted";
+    label.textContent = "Check for a newer version";
+    const select = document.createElement("select");
+    select.id = "onboarding-pref-update";
+    for (const [value, text] of [["no", "Don't check"], ["yes", "Check each time it starts"]]) select.appendChild(new Option(text, value));
+    const row = document.createElement("div");
+    row.className = "onboarding-pref";
+    row.append(label, select);
+    grid.appendChild(row);
+    onboardingRun.updateSelect = select;
+  }
   box.replaceChildren(grid);
   box.classList.remove("hidden");
+};
+onboardingRun.saveUpdateChoice = () => {
+  const select = onboardingRun.updateSelect;
+  //: The card on screen, not one visited earlier: the actions box keeps its
+  //: children, hidden, on the other cards.
+  if (!select || !ONBOARDING_SLIDES[onboardingRun.index]?.prefs) return;
+  if (typeof prefsCache === "undefined" || prefsCache?.update_choice_made !== false) return;
+  const check = select.value === "yes";
+  //: Marked answered now, not when the POST lands: the queue's next turn
+  //: reads it 300 ms after the welcome closes. A failed save asks again.
+  prefsCache.update_choice_made = true;
+  apiJson("/update/choice", { method: "POST", body: JSON.stringify({ check }) })
+    .then((saved) => {
+      Object.assign(prefsCache, saved);
+      if (check) checkForUpdate(true);
+    })
+    .catch((error) => {
+      prefsCache.update_choice_made = false;
+      toast(error.message || "Couldn't save that answer.", true);
+    });
 };
 
 function renderOnboardingSlide() {
@@ -487,6 +526,7 @@ function openOnboarding() {
 }
 
 function showOnboarding() {
+  lazyScript("/css/first-run-lazy.css");
   onboardingRun.index = 0;
   overlayReturnFocus = document.activeElement;
   renderOnboardingSlide();
@@ -495,6 +535,7 @@ function showOnboarding() {
 }
 
 function closeOnboarding(withTour = false) {
+  onboardingRun.saveUpdateChoice();
   $("onboarding-overlay").classList.add("hidden");
   prefs.set("onboardingDone", "1");
   // Skipping the welcome is also an answer about the tour: whoever closed this

@@ -109,5 +109,21 @@ def test_the_note_line_is_spaced_in_groups():
     them; one rule now spaces every note line, 16px between groups."""
     from pathlib import Path
 
-    css = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ":is(#entry-list, #raw-results, .timeline-feed, body) .entry-meta.note-meta {\n  column-gap: var(--space-6);" in css
+
+
+def test_tidy_runs_only_from_the_background_filing_job():
+    # PR 224 review: `_embed_and_tidy` runs Tidy's automatic reviews inline, which is only safe
+    # off the request path; its one caller is the filing job (jobstore "file-entry"), a worker thread.
+    import inspect
+
+    from tessellate.api import routes_entries as r
+
+    src = inspect.getsource(r)
+    calls = [line for line in src.splitlines() if "_embed_and_tidy(" in line and "def _embed_and_tidy" not in line]
+    assert len(calls) == 1, calls
+    assert "_embed_and_tidy(session" in inspect.getsource(r._file_entry_in_background)
+    assert '"file-entry": "tessellate.api.routes_entries:_file_entry_in_background"' in inspect.getsource(
+        __import__("tessellate.core.jobstore", fromlist=["x"])
+    )

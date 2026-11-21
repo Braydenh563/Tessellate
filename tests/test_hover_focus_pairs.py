@@ -27,6 +27,7 @@ from __future__ import annotations
 import re
 
 from tests._css_paths import CSS_FILES
+from tests._css_unwrap import unwrap_all
 
 NOT = re.compile(r":not\((?:[^()]|\([^()]*\))*\)")
 FOCUS = re.compile(r":focus-visible|:focus-within|:focus\b")
@@ -52,7 +53,7 @@ def _selector_lists() -> list[list[str]]:
     lists = []
     for path in CSS_FILES:
         served = strip_for_path(path.name, path.read_bytes()).decode("utf-8")
-        served = re.sub(r"@(media|supports|container|layer)[^{]*\{", "", served)
+        served = unwrap_all(re.sub(r"@(media|supports|container|layer)[^{]*\{", "", served))
         for m in re.finditer(r"([^{};]+)\{", served):
             lists.append(_split_top(m.group(1)))
     return lists
@@ -140,7 +141,7 @@ def _hover_only_selectors() -> set[tuple[str, str]]:
 
     rules = []
     for path in CSS_FILES:
-        text = _strip(path.read_text(encoding="utf-8"))
+        text = unwrap_all(_strip(path.read_text(encoding="utf-8")))
         for m in re.finditer(r"([^{}@;]+)\{([^{}]*)\}", text):
             rules.append((path.name, m.group(1).strip(), m.group(2)))
 

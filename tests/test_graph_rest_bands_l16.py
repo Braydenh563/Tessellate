@@ -1,4 +1,6 @@
-"""L-graph-16: a big map's settle repaint is painted in bands, a frame apart.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L-graph-16: a big map's settle repaint is painted in bands, a frame apart.
 
 At 2,000 notes and CPU 4x each wheel stop repainted the whole rest layer 160 ms
 later as one task (a 110 ms long task). The scaled layer stays on screen while

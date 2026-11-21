@@ -16,6 +16,11 @@ hanging pose). It is now one Web Animation of `transform` per torso, started
 on the rise's start time and set again only when the figure's look changes or
 it comes back from being still. The shape (a few percent, wider than tall, on
 the rise's clock, at rest when still) is what the tests below still hold.
+
+Intent moved again (L-ui-modernisation-201): on the companion the running
+transform laid out and repainted the body on every frame the page drew, so
+while the dress's morph ticks the torsos are held and set to the rise's own
+time on each tick (`atlasBreathFrame.pace`), and let go on its start time at rest.
 """
 
 from __future__ import annotations
@@ -30,7 +35,7 @@ import pytest
 from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 LIFE = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
 
 
@@ -194,3 +199,49 @@ def test_the_pacer_leaves_the_breath_on_the_compositor():
     pick = tempo[: tempo.index("nmbTempo.slow = new WeakSet")]
     assert 'a.id !== "atl-breath"' in pick
     assert 'id: "atl-breath"' in LIFE
+
+
+def _pace() -> str:
+    match = re.search(r"^atlasBreathFrame\.pace = \(box, on\) => \{.*?^\};", LIFE, re.S | re.M)
+    assert match, "atlasBreathFrame.pace is gone from atlas-life.js"
+    return match.group(0)
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_the_companion_chest_is_stepped_on_the_rise_clock_and_let_go_at_rest():
+    # L-ui-modernisation-201: a running transform on an SVG group lays out and repaints the body
+    # layer on every frame the page draws (traced, script frozen: 9.5 ms a frame running, 4.7 held).
+    # Held and set to the rise's own time on the dress's tick, it costs only frames that tick draws.
+    out = _run(
+        FAKE
+        + _pace()
+        + """
+const torso = () => ({ playState: "running", currentTime: 0, startTime: 5, pause() { this.playState = "paused"; this.startTime = null; this.pauses = (this.pauses || 0) + 1; }, play() { this.playState = "running"; } });
+const rise = { currentTime: 1234.5, startTime: 77 };
+const box = { atlasBreath: { anims: [torso(), torso()], rise, paced: false } };
+atlasBreathFrame.pace(box, true);
+rise.currentTime = 1334.5;
+atlasBreathFrame.pace(box, true);
+const held = box.atlasBreath.anims.map((a) => [a.playState, a.currentTime, a.pauses]);
+atlasBreathFrame.pace(box, false);
+const free = box.atlasBreath.anims.map((a) => a.startTime);
+const none = { atlasBreath: { anims: [torso()], rise: null, paced: false } };
+atlasBreathFrame.pace(none, true);
+atlasBreathFrame.pace({ atlasBreath: null }, true);
+process.stdout.write(JSON.stringify({ held, free, paced: box.atlasBreath.paced, alone: none.atlasBreath.anims[0].playState }));
+"""
+    )
+    assert out["held"] == [["paused", 1334.5, 1], ["paused", 1334.5, 1]], "held once, then set to the rise's time each tick"
+    assert out["free"] == [77, 77] and out["paced"] is False, "let go on the rise's own start time: never behind it"
+    assert out["alone"] == "running", "with no rise to follow it runs free, as before"
+
+
+def test_the_dress_tick_steps_the_companion_chest_and_lets_it_go():
+    run = LIFE[LIFE.index("atlasRigLower.morph.run = (rig, buddy) => {") :]
+    run = run[: run.index("m.wake = () => {")]
+    # Not live (off screen, hidden, the lite set, carried) and at rest: let go.
+    assert run.count("atlasBreathFrame.pace(box, false);") == 2
+    # Each live tick: the companion only (the large view is the one thing on screen and runs it free).
+    assert 'atlasBreathFrame.pace(box, !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure"));' in run
+    # The tick draws (through `M.pass`, which draws only what has moved, L-ui-modernisation-202) before it paces.
+    assert run.index("M.pass(m, ") < run.index("atlasBreathFrame.pace(box, !!box")

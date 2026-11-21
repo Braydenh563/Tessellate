@@ -1,4 +1,6 @@
-"""The status dot's red error state can be reached (L-world-class-184, IDEAS.md
+"""Source text: it lifts `aiStatusState` out of the script text to run it in node, as the unit suite has no browser to drive.
+
+The status dot's red error state can be reached (L-world-class-184, IDEAS.md
 "check that the status dot's error state in the top bar can be reached").
 `aiStatusState` runs in node over the two ways it says "error": the server
 stops answering after it has answered once, and the search model fails to

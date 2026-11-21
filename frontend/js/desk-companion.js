@@ -232,9 +232,10 @@
       motion.asleep ? figure("Wake up", "sun-horizon", "wake", null) : figure("Take a nap", "moon-stars", "nap", null),
     ];
     const perch = figure("Sit on a window", "app-window", "perch", motion);
-    if (motion.roam === false || stays) {
+    const noPerch = { on: "Already sitting on a window", none: "No window to sit on right now" }[motion.perch];
+    if (motion.roam === false || stays || noPerch) {
       perch.disabled = true;
-      perch.title = stays ? "Choose Roam first" : "Roam over windows is off";
+      perch.title = stays ? "Choose Roam first" : motion.roam === false ? "Roam over windows is off" : noPerch;
     }
     rows.push(perch);
     return rows;

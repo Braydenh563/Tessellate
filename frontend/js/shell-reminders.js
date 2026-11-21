@@ -147,7 +147,9 @@ function tabRowSpace() {
   let others = 0;
   let siblings = 0;
   for (const child of header.children) {
-    if (child === bar || child.classList.contains("hidden")) continue;
+    //: An item with no box takes no flex gap: the header's `display: none`
+    //: h1 was charged one, 7.2px the strip never lost (844x390, L466).
+    if (child === bar || !child.getClientRects().length) continue;
     others += child.getBoundingClientRect().width;
     siblings += 1;
   }
@@ -294,7 +296,7 @@ $("tab-bar")?.addEventListener("scroll", syncTabOverflowFade);
 
 //: **One sliding indicator for every strip** (the owner, 2026-10-04: "a
 //: slight css sliding animation ... cheap but looks professional", and
-//: 2026-10-05: "Also like the smooth slide across tabs"; 08-consistency.css,
+//: 2026-10-05: "Also like the smooth slide across tabs"; 07-whiteboard-misc.css,
 //: "one sliding indicator"). The top bar, the sub-tab strips, every
 //: segmented control, the Settings sections and a pane's groups: the strip's
 //: `::before` takes the chosen option's place and size at once (custom
@@ -451,10 +453,14 @@ function edgeFadeWire(bar) {
   const seen = new ResizeObserver(() => syncEdgeFade(bar));
   for (const box of [bar, ...bar.querySelectorAll("[data-status-zone]")]) seen.observe(box);
   bar.addEventListener("scroll", () => syncEdgeFade(bar));
-  bar.addEventListener("click", (event) => {
+  //: And the tab the keyboard reaches (L419): `focus()` leaves a half-shown
+  //: tab where it is, its ring cut by the strip's edge. Both events, as
+  //: Safari does not focus a pressed button.
+  const reveal = (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
     if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
-  });
+  };
+  for (const type of ["click", "focusin"]) bar.addEventListener(type, reveal);
 }
 
 // The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes
@@ -1027,6 +1033,7 @@ async function loadReminders() {
   if (!groups.Done.length) donePagination.classList.add("hidden");
 }
 
+
 function paginateDoneReminders(items) {
   const bar = $("reminders-done-pagination");
   if (remindersPageSize === "all") {
@@ -1203,24 +1210,8 @@ function reminderItem(reminder, label) {
   //: is touched for; four same-sized icons were one more than a row reads.
   //: A deleted reminder goes to the recycle bin (WORLD_CLASS_PLAN 5 item
   //: 10); Undo restores the same reminder, its id and its target kept.
-  const deleteReminder = async () => {
-    await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
-    loadReminders();
-    const restore = async () => {
-      await apiJson(`/reminders/${reminder.id}/restore`, { method: "POST" });
-      loadReminders();
-    };
-    const rebin = async () => {
-      await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
-      loadReminders();
-    };
-    const action = pushUndo("Moved a reminder to the bin", restore, rebin);
-    toastAction(`Moved ${toastName(reminder.text, "the reminder")} to the bin.`, "Undo", async () => {
-      settleUndoFromToast(action);
-      await restore().catch((e) => toast(e.message, true));
-      toast(`Restored ${toastName(reminder.text, "the reminder")}.`);
-    });
-  };
+  //: Bin with Undo, in the lazy reminder-edit.js: only a press needs it.
+  const deleteReminder = () => lazyScript("/js/reminder-edit.js").then(() => loadReminders.binOne(reminder));
   const menuItems = [];
   const target = reminderTarget(reminder);
   if (target) menuItems.push({ label: target.label, run: target.open, group: "go" });

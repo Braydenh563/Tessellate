@@ -388,7 +388,7 @@ function docCmUpdate(update) {
     //: to CodeMirror silently turned the feature off: measured 2026-09-12,
     //: typing "teh " with autocorrect switched on left "teh ".
     //:
-    //: Deferred by a microtask rather than called here, because this runs
+    //: Postponed by a microtask rather than called here, because this runs
     //: *during* the view's own update and dispatching a transaction into an
     //: update in progress is the one thing CodeMirror will not have. A
     //: microtask still runs before the frame is painted, so the correction is

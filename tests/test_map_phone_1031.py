@@ -13,12 +13,14 @@ from pathlib import Path
 
 import pytest
 
+from tests._css_paths import FORMER_10, sheets
+
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
 SELECTS = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
 MISC = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
-RESPONSIVE = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+RESPONSIVE = sheets(*FORMER_10)
 
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 

@@ -9,18 +9,22 @@ const { boot } = require('./lib.js');
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: Number(process.env.VW || 1440), height: Number(process.env.VH || 900) } });
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(async () => { prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy(); });
   await page.waitForTimeout(6000);
   const out = await page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const op = (sel) => Number(getComputedStyle(buddy.querySelector(sel)).opacity);
     nameMarkBuddyAct('');
+    // The cap shows only sitting or lying (the owner: never asleep standing).
+    const pose = buddy.dataset.pose;
+    buddy.dataset.pose = 'sit';
     buddy.classList.add('nmb-sleep');
     await wait(1400);
     const zs = [...buddy.querySelectorAll('.nm-buddy-z i')].map((z) => Math.round(Number(getComputedStyle(z).opacity) * 100) / 100);
     const capAsleep = buddy.querySelector('.nmp-nightcap') ? op('.nmp-nightcap') : null;
     buddy.classList.remove('nmb-sleep');
+    if (pose === undefined) delete buddy.dataset.pose; else buddy.dataset.pose = pose;
     await wait(900);
     const capAwake = buddy.querySelector('.nmp-nightcap') ? op('.nmp-nightcap') : null;
     nameMarkBuddyExpress('confused', 2500);

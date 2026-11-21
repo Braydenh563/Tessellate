@@ -49,7 +49,8 @@ def test_every_python_module_under_vendor_is_credited_with_a_licence() -> None:
 
 def test_every_browser_bundle_under_vendor_is_credited() -> None:
     for path in sorted(WEB_VENDOR.iterdir()):
-        if path.name.endswith(".LICENSE.txt"):
+        # PROVENANCE.json is the generated manifest of these very files.
+        if path.name.endswith(".LICENSE.txt") or path.name == "PROVENANCE.json":
             continue
         name = f"{path.name}/" if path.is_dir() else path.name
         assert _credited(name), f"frontend/vendor/{name} has no row in docs/THIRD_PARTY.md"

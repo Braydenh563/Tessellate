@@ -35,7 +35,7 @@ def test_an_activity_detail_is_plain_text_in_words() -> None:
 
 def test_the_tick_keeps_the_gap_token_from_the_menu() -> None:
     css = re.sub(
-        r"/\*.*?\*/", "", (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8"),
+        r"/\*.*?\*/", "", (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8"),
         flags=re.S,
     )
     ticks = re.findall(r"\.library-card-tick\s*\{[^}]*right:\s*calc\(([^;]*)\);", css)

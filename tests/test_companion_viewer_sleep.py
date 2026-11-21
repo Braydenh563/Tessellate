@@ -16,7 +16,7 @@ from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-menu.js"))
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 
 
 def _fn(name: str) -> str:
@@ -67,7 +67,7 @@ def test_the_reduce_hint_stops_atlas_figure_loops_and_keeps_acts() -> None:
     block = CSS[CSS.index("ledger 669") :]
     block = block[: block.index("\n}\n")]
     assert '#nm-buddy[data-atlas-figure]:is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }' in block
-    assert "#nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower," in block
+    assert "#nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .atl-lw-root-lower," in block
     assert "[class*=" not in block, "a class attribute selector up the tree restyles the subtree on every class change"
     assert "nmb-act" not in block.split("*/")[-1], "an act, one gesture, still plays"
 

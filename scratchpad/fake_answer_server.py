@@ -128,7 +128,10 @@ def _sentences_from_prompt(prompt: str) -> list[str]:
             continue
         text = rest.strip()
         text = re.sub(r"^\[[^\]]*\]\s*", "", text)          # [General]
-        text = re.sub(r"^\((?:[^)]*)\)\s*", "", text).strip()  # (similarity: 0.56)
+        #: Every leading group, not the first: the header now carries several
+        #: (`(matched: boots) (tags: gear)`), and the answer quoted them.
+        while text.startswith("(") and ")" in text:
+            text = text[text.index(")") + 1 :].lstrip()  # (similarity: 0.56)
         if len(text.split()) < 6:
             continue
         first = re.split(r"(?<=[.!?])\s", text)[0]

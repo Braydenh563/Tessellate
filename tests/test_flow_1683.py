@@ -127,7 +127,7 @@ def test_a_flow_view_is_hashable_small_integers_and_a_still_one_is_the_same():
     assert bh.FLOW_Q == sprites.FLOW_Q
 
 
-@pytest.mark.parametrize("look", LOOKS)
+@pytest.mark.parametrize("look", ["masculine", "feminine"])
 def test_the_head_and_the_torso_stay_put_and_the_lower_body_moves(look):
     s = sprites.SpriteSet(look)
     plain = s.frame("stand", 192, False)

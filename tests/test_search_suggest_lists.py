@@ -78,6 +78,8 @@ globalThis.window = {{
   }},
 }};
 globalThis.document = {{ addEventListener() {{}}, querySelectorAll: () => [] }};
+// The app's `$` (app.js): no notes box here, so the query hint stays out (L-ui-modernisation-16).
+globalThis.$ = () => null;
 globalThis.navigator = {{ platform: "Linux" }};
 const fs = require("fs");
 eval(fs.readFileSync({str(PREFS)!r}, "utf8") + "; globalThis.prefs = prefs; globalThis.prefsStore = prefsStore;");

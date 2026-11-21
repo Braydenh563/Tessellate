@@ -51,6 +51,13 @@
   }
 }
 
+/* Settings' Peek (unslop 1103, 9): after the title, taking the free space
+   after it so the utilities stay at the head's right edge whether or not the
+   section shows it. */
+.dialog-head > #settings-peek {
+  margin-inline-end: auto;
+}
+
 .inbox-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -475,6 +482,18 @@
    sheet order, so zoom applies whichever text size is active. */
 :root {
   font-size: calc(16px * var(--zoom));
+}
+
+.library-card-title {
+  font-weight: 600;
+}
+
+/* The dashboard edit row's drag handle lines up with Remove and Wide. */
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  line-height: 1;
 }
 
 :root[data-fontsize="small"] {
@@ -1928,6 +1947,16 @@ header#top-bar select,
   contain-intrinsic-size: auto 6rem;
 }
 
+/* The heatmap's gap was costing more than its cells (the owner: "the heatmap
+   on the dashboard is a little small"). Measured in a 306px column: 53 weekly
+   columns at a 3px gap spend 156px on gaps and leave 2.8px per cell. At 1px
+   the same column gives 4.8px, and in the full-width section the widget now
+   starts in, the cells reach their 12px cap. A denser grid is also the right
+   shape for the thing: this is a year read as a texture, not a table. */
+.heatmap {
+  gap: 1px;
+}
+
 .heat-cell {
   /* Square by ratio rather than by a fixed pair, because the width is now
      decided by the column and the height has to follow it. */
@@ -1937,6 +1966,13 @@ header#top-bar select,
   max-width: var(--heat-cell-max);
   border-radius: var(--radius-sm);
   background: var(--chip-bg);
+}
+
+.heat-legend > .heat-cell {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: var(--radius-sm);
 }
 
 .heat-blank {
@@ -1978,6 +2014,12 @@ header#top-bar select,
 
 .heat-legend span:last-child {
   margin-left: 0.25rem;
+}
+
+.heat-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 /* Category breakdown bars */
@@ -2074,9 +2116,6 @@ header#top-bar select,
 }
 
 @media (hover: none) {
-  .entry-list li .entry-actions {
-    opacity: 1;
-  }
 
   /* touch has no hover */
 }
@@ -2197,6 +2236,18 @@ header#top-bar select,
   align-items: center;
 }
 
+/* **The line is grouped, and the groups have air** (INBOX 447, the owner:
+   "there's no spacing between note metadata"). Measured in the Notes list at
+   1440: 6.4px from one fact's text to the next, because
+   `#entry-list:not(.is-rows) .entry-meta` (an id, 03-dashboard-widgets.css)
+   outranked the `--space-5` above, and each chip's -4px hover bleed then sat
+   the boxes 1.6px over each other. Now one rule for every note line: 16px
+   between facts, and 8px inside a group, so the line reads as where it lives
+   (category and how sure), what it is tagged, then what points at it. */
+:is(#entry-list, #raw-results, .timeline-feed, body) .entry-meta.note-meta {
+  column-gap: var(--space-6);
+}
+
 /* Same ask: the title's own gap to the body below it, and its leading,
    tightened alongside the card padding and the clamp, not replacing
    either. `:not(.is-rows)` for the same reason as the padding rule beside
@@ -2262,8 +2313,8 @@ header#top-bar select,
   margin-top: var(--space-4);
 }
 
-/* **Where a follow-up came from** (INBOX 490, `followupTrail`): one muted
-   line above the question, "Follow-up of" and each earlier question as a
+/* **Where a follow-on question came from** (INBOX 490, `followupTrail`): one muted
+   line above the question, the trail's label and each earlier question as a
    link, a caret between them. A question is clipped to one line with its
    whole text on the title, so a long chain wraps by crumbs, not by words. */
 .chat-trail {
@@ -2393,6 +2444,15 @@ button.chat-trail-link {
   margin-block: calc(-1 * var(--space-1));
 }
 
+/* The dashboard's widgets wait unseen while they draw and their spans
+   settle, then fade in together (`renderDashboard`): drawn in view, the
+   cards moved about for a second on every visit. `visibility` as well as
+   opacity, so nothing under it is clickable and nothing it does is a
+   layout shift anyone sees; the fade back is opacity alone. */
+#dash-grid {
+  transition: opacity var(--ui-base) var(--ease-out);
+}
+
 @media (max-width: 599.98px) {
   .ai-offline-note.notice {
     display: grid;
@@ -2427,7 +2487,7 @@ button.chat-trail-link {
 }
 
 /* The Ask tab's answer foot (CHAT_PLAN.md Phase 3): "Elsewhere in your
-   notebook", the sources disclosure and the follow-up chips as one stack under
+   notebook", the sources disclosure and the follow-on chips as one stack under
    the answer, each in its own container so that one renderer clearing its own
    box can never take another's row with it (which is exactly what used to
    happen, see index.html). Each row already carries its own `margin-top`, so
@@ -2533,6 +2593,16 @@ button.chat-trail-link {
   padding-right: calc(1.25rem + var(--space-3));
 }
 
+/* A whole group folded (settings.js, `wireSettingsFolds`): closed, it is one
+   row, the group's heading with its chevron, not a 92px box holding a 12px
+   word (measured: the group's 16px top padding, the summary's 16px bottom
+   padding and the heading's own 16px top margin, all around one line). The
+   heading keeps the group heading's type; only the space around it goes.
+   Open, the rule under the summary is the gap the heading used to have. */
+#settings-modal details.settings-group[data-fold-key] {
+  padding-block: var(--space-2);
+}
+
 /* Square, because it holds one or two digits and a mark that is wider than it
    is tall reads as a chip rather than a number. `.chat-source-index` sets a
    `min-width` and no height, so the padding decided the shape and one digit
@@ -2557,6 +2627,10 @@ button.chat-trail-link {
      nothing is behind it. */
   background-color: var(--card);
   background-image: linear-gradient(var(--accent-soft), var(--accent-soft));
+}
+
+#raw-results li > .record-index {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 .answer-grounding-label {
@@ -2694,6 +2768,20 @@ button.answer-figure-open {
   min-width: 0;
 }
 
+/* The "why this matched" sentence is a quiet line under the card, not a plate:
+   no ground, no edge, normal weight, muted ink at the small size, and the
+   sparkle as tall as the first line so a wrapped sentence keeps it level with
+   its first line (it sat 1.55px above, on a 36px slab). */
+#raw-results .result-reason-why {
+  background: none;
+  padding: 0;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted);
+  align-items: flex-start;
+}
+
 .result-reason-connected {
   background: var(--accent-soft);
   color: var(--accent-text);
@@ -2746,14 +2834,15 @@ button.answer-figure-open {
   margin-bottom: 0.8rem;
 }
 
-@media (max-width: 599.98px) {
-  .reminders-card {
-    /* The horizontal inset is `.tab-page`'s job (--page-gutter). Setting one
-       here put the card 1rem inside a gutter that had already been applied,
-       so this one card sat narrower than every other card on narrow windows. */
-    margin: 0 0 var(--space-6);
-  }
+/* Reminders below 1100: the list is the page, and the add form is the sheet
+   "New reminder" opens (`openReminderCompose`, app.js; the floating + below
+   600, the dock's filled button above). While the form is on the page it is
+   not shown in this band; in the sheet it sheds its card, since the sheet is
+   the card. */
+@media (max-width: 1099.98px) {
 }
+
+/* The horizontal inset is `.tab-page`'s job (--page-gutter), not the card's. */
 
 /* The add form as a grid, so the fields line up instead of drifting. */
 /* Columns that fill the width they are given rather than six fixed ones:
@@ -2843,6 +2932,18 @@ button.answer-figure-open {
   gap: var(--space-3);
 }
 
+/* 4. Reminders' When row draws the form's own height and corner (INBOX 464
+      (17), then unslop 1103, 12). "Quick set" was --radius-md beside two
+      steppers at the pill, so INBOX 464 made the opener a pill too; but the
+      fields above them are 36px at --radius-md, so the card held three shapes
+      and four heights (36 / 32 pill / 32 pill / an 18px readout). The row's
+      controls now take the fields' height (44 under touch) and corner, and the
+      stepper's round buttons the concentric corner inside it. The stepper
+      recipe elsewhere (the map's size stepper, the zoom strip) is unchanged. */
+#reminder-due-row {
+  --button-min-h: var(--control-h-body);
+}
+
 /* No reserved width: it follows the steppers now (wrapup-0927 8(c)), so its
    length moves nothing anyone is pressing, and 15rem of it was the gap the
    steppers floated across when they followed it. */
@@ -2852,6 +2953,19 @@ button.answer-figure-open {
 
 #reminder-due-readout.error {
   color: var(--warn);
+}
+
+/* --- reminders, de-vibecoded -------------------------------------------------
+   1. The due readout ("in 2 min: Wed, Sep 23, 3:25 PM") is a confirmation
+      of the fields beside it, and it was set at 600 in full ink at body
+      size, the loudest line in the card after its heading. It is a note on
+      the form: regular weight, muted, small.
+   2. A reminder's own words were 12px beside a 28px checkbox, the smallest
+      text in its own row (smaller than "in 22 hours" beside it). The thing
+      you have to do is the row's title, at body size. */
+#reminder-due-readout {
+  font-weight: 400;
+  font-size: var(--text-sm);
 }
 
 /* **A stray bottom margin reads as a misalignment, and this one was
@@ -2911,6 +3025,15 @@ button.answer-figure-open {
   border-left-width: 3px;
 }
 
+/* An overdue reminder said so twice: a 3px amber edge and an amber frame
+   round the whole row, two rows stacked read as a warning banner. The edge
+   carries it; the frame goes back to the row's own. */
+#reminder-groups li.overdue {
+  border-top-color: var(--divider);
+  border-right-color: var(--divider);
+  border-bottom-color: var(--divider);
+}
+
 #reminder-groups .entry-meta {
   gap: 0.6rem;
   align-items: center;
@@ -2937,6 +3060,46 @@ button.answer-figure-open {
 @media (hover: none) {
   #tab-reminders .entry-actions > :not(.menu-wrap) {
     opacity: 1;
+  }
+}
+
+/* 6. **The last reminder can be scrolled clear of "New reminder".** The
+       floating button (`.dock-fab`, 07-whiteboard-misc.css) kept 8px of
+       page foot, a button is 44px and stands 20px above the tab bar, so at
+       the end of the list (360x740, scrolled to the bottom) it covered the
+       bottom 10px of the last card and its date. The foot is the button's
+       height and its offset, the same figure `scroll-padding-bottom` uses
+       there for a focused row. */
+@media (max-width: 599.98px) {
+  #tab-reminders:has(> .dock-fab) {
+    padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3));
+  }
+}
+
+#entry-list li:is(:hover, :focus-within) .link-connection > .menu-wrap {
+  opacity: 0;
+}
+
+#entry-list li .link-connection:is(:hover, :focus-within) > .menu-wrap,
+#entry-list li .link-connection > .menu-wrap:has([aria-expanded="true"]) {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  #entry-list .link-connection > .menu-wrap {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (min-width: 600px) {
+  /* **The ⋯ is the strip's one part that is always there** (the owner, on the
+     Reminders row: the kebab sat under the date, both right edges at 1230, and
+     a plain click on it was intercepted until the row was hovered). It takes
+     presses at rest, and the time stops short of it by a gap
+     (1.75rem is the 28px button), so the two never share pixels.
+     The snoozes and Edit still lie over the time while the row is pointed at. */
+  #reminder-groups li .entry-meta > .entry-actions > .menu-wrap {
+    pointer-events: auto;
   }
 }
 
@@ -3144,6 +3307,10 @@ button.answer-figure-open {
   animation-play-state: paused;
 }
 
+.chat-empty.is-short #chat-empty-emblem .emblem-art {
+  scale: calc(32 / 52);
+}
+
 .emblem-centred {
   display: flex;
   justify-content: center;
@@ -3198,6 +3365,15 @@ button.answer-figure-open {
   height: 75%;
 }
 
+/* The mark wears Atlas's own face once atlas.js has drawn it (the host
+   carries `data-atlas-avatar`): the disc's tint goes, the drawing fills it.
+   The popup agent's head wears the same, a size down; Find anything's
+   Atlas row wears it in line with its words. */
+.atlas-mark:has(> .nm-atlas) {
+  background: none;
+  overflow: hidden;
+}
+
 /* Both roles line up the same way now that the user has an avatar too, one
    rule rather than an assistant-only one, so the two columns cannot drift. */
 .msg-role,
@@ -3205,6 +3381,18 @@ button.answer-figure-open {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+/* **This head joins family 4 while we are here**, and it pays for itself in the
+   measurement above. `.answer-title` set its own `gap: 0.4rem` and the sparkle
+   also carried `.ph-lead`'s `margin-inline-end: 0.35em`, the exact
+   double-counting family 4 was written for: 6.4 + 4.8 = 11.2px between an icon
+   and the two words it leads, against the app's 6.4px everywhere else. Taking
+   the margin off is 4.8px back in a row that was four pixels short of fitting
+   `granite4.1:3b` uncut at 1024, so the ellipsis is now reserved for ids that
+   genuinely are long. */
+.answer-title {
+  gap: var(--space-2);
 }
 
 /* **The user's own row reads right-to-left, and this is the rule that makes
@@ -3226,7 +3414,7 @@ button.answer-figure-open {
 
 /* **The person's own mark** (INBOX 409), generated from the profile name
    (`nameMark`, app.js). It replaced a glyph avatar in the label row, which
-   08-consistency.css hides on the user's side on purpose, so the mark is
+   a component file (08-consistency.css until UI plan 13b) hides on the user's side on purpose, so the mark is
    not in the row and not in the flow: it sits on the bubble's top right
    corner, a third off, the way a badge sits on a card. 18px at -6px ends
    12px in from the edge, clear of the text's box (12.8px of padding in:
@@ -3340,6 +3528,12 @@ button.answer-figure-open {
   mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
 }
 
+/* Your words at the size Atlas's are: the user body was a step smaller
+   (14.7px against 16px), so the question read as a caption to its answer. */
+.msg.user .msg-body {
+  font-size: inherit;
+}
+
 .msg.user > .entry-more {
   color: inherit;
   opacity: 0.8;
@@ -3360,6 +3554,24 @@ button.answer-figure-open {
   letter-spacing: 0.01em;
   color: var(--accent-text);
   font-weight: 600;
+}
+
+:root[data-palette="utilitarian"] :is(
+  .card h3, .eyebrow, .nav-group-label, .launch-label,
+  .contents-heading, .msg-role,
+  #palette-list li.palette-group-header, .features-group, .reminder-group-head,
+  .rich-picker-group, .note-embed-head, .doc-prose-group,
+  .wb-export-card .wb-export-label, .wb-tool-section-label,
+  .dash-widgets-group-label, .wb-panel-group-label, .connection-heading,
+  .wb-help-section-head, .finder-group, .chord-guide-title
+) {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.answer-head .msg-role {
+  /* The same title size as "Matching records" beside it (h3.panel-head). */
+  font-size: var(--text-body);
 }
 
 .msg.assistant .bubble-answer {
@@ -3566,6 +3778,36 @@ button.answer-figure-open {
   text-decoration: line-through;
 }
 
+/* --- the graph's legend: one container, not a pill in a box ------------------
+   Each legend entry drew its own tinted pill inside the legend's own
+   bordered panel, so one fact ("these dots are Seed") sat in two frames.
+   The panel is the frame; an entry is a toggle in it with a hover ground,
+   and its dimmed state (hidden kinds) still reads through its opacity. */
+.graph-legend-row .legend-item {
+  background: transparent;
+  border-color: transparent;
+}
+
+.graph-legend-row .legend-item:hover,
+.graph-legend-row .legend-item:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--chip-bg);
+}
+
+/* --- the graph's floating controls clear its New note (INBOX 430) -----------
+   "The controls overlap the legend and the New note FAB": measured at 390x844
+   with `graphphone.js`, the legend ran 38px under the floating New note and
+   the zoom strip 23px into it. Below 600 the New note floats at the page's
+   foot (`.dock-fab`, 07-whiteboard-misc.css), so the legend and the zoom
+   strip stand on a line one target and a step above the map's bottom edge,
+   where the button is, and the legend stops short of the zoom strip's column
+   as before. */
+@media (max-width: 599.98px) {
+  #tab-graph:has(.dock-fab) .graph-legend-row,
+  #tab-graph:has(.dock-fab) .graph-zoom {
+    bottom: calc(var(--target-min) + var(--space-5));
+  }
+}
+
 /* Segmented Controls (replaces native radio buttons) */
 /* --- the two radio-backed segmented bars ------------------------------------
    `#doc-ai-verb` (Edit / Write / Remove, in the document assistant) and
@@ -3674,6 +3916,21 @@ button.answer-figure-open {
   background: var(--accent-surface);
 }
 
+/* --- choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) ---------
+   "this edit/write/remove bar is ugly and doesnt suit a modern app": the
+   AI assistant's verbs are the radio form of a choice control
+   (`.segmented-control`), and the flat looks' raised-neutral selection above
+   named only the button form, so this one alone kept a solid accent block
+   in a dark well. One selected state for both forms, as DESIGN.md says. */
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .segmented-control label:has(input[type="radio"]:checked),
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .segmented-control input[type="radio"]:checked + span {
+  background: color-mix(in srgb, var(--ink) 11%, transparent);
+  color: var(--ink);
+  /* The selected segment's ring is the control edge (3:1), not an 8% ink
+     tint: the 11% fill alone measured 1.25:1 against its well (INBOX 464). */
+  box-shadow: inset 0 0 0 1px var(--control-edge);
+}
+
 .timeline-custom-range {
   gap: var(--space-1);
   margin-left: var(--space-2);
@@ -3684,24 +3941,8 @@ button.answer-figure-open {
    regardless of how many controls sit before it at a given width. */
 .graph-help-toggle {
   margin-left: auto;
-  /* A literal, not var(--control-h): that token is only declared inside a
-     handful of scopes (.graph-toolbar among them), so on the Skills/
-     Whiteboards/Image Gallery copies of this button, which sit in a plain
-     card header with no such scope, var(--control-h) resolved to nothing
-     and the property fell back to its initial value: `auto` for both width
-     and height, sized off `button.small`'s asymmetric padding instead
-     (0.25rem block / 0.8rem inline), an oval, reported live and
-     photographed. This wasn't `padding: 0` failing to override that
-     asymmetry (it can't: button.small is a tag+class selector, higher
-     specificity than this single class); it was width/height never
-     actually being fixed at all outside .graph-toolbar. A var() fallback
-     would dodge that, but the token IS declared elsewhere in the sheet, so
-     the project's own lint (test_style_scale.py) correctly refuses it as
-     dead code hiding a scope bug, this button wants one fixed size
-     everywhere it appears, not the locally-scoped control height, so a
-     literal is the honest fix, not a workaround. */
-  width: 2rem;
-  height: 2rem;
+  /* Its one size everywhere is `button.graph-help-toggle` in
+     07-whiteboard-misc.css, which outscores `button.small`'s padding. */
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -3728,7 +3969,7 @@ button.answer-figure-open {
 .setting-hint-toggle,
 #wb-help-btn {
   width: 2rem;
-  height: 2rem;
+  height: var(--control-h-lg);
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -3938,7 +4179,7 @@ button.answer-figure-open {
    words at the row's left edge. They were bordered tonal buttons, two to a
    row, one at each end, which is a dialog's footer inside a list. A mode
    that is on takes the accent tint a menu row's selected state wears
-   (08-consistency.css), since both write `.is-on` from their handlers. */
+   (07-whiteboard-misc.css), since both write `.is-on` from their handlers. */
 .graph-options .graph-view-tools {
   display: flex;
   flex-direction: column;
@@ -3989,7 +4230,7 @@ button.answer-figure-open {
 /* A section of this panel that is set once and then left, folded away on the
    app's `details.settings-fold` recipe (DESIGN.md, the recipe index): the
    flat summary, the chevron and the hover fill all come from
-   08-consistency.css's disclosure rules, which `.settings-fold` already
+   07-whiteboard-misc.css's disclosure rules, which `.settings-fold` already
    names. Only the room is restated here, because a fold in a popover list
    is a row among rows and the Settings screen's `--space-3` block padding
    plus a `0.5rem` margin would stand a head taller than every
@@ -4609,6 +4850,28 @@ button.answer-figure-open {
   justify-content: space-between;
 }
 
+/* The shortcut rows are ruled rows, so the divider is their separation: the
+   6.4px margin 02-chat-graph.css gives every `.shortcut-list li` (written
+   for the unruled overlay list) stacked on the rule and the row's own
+   padding, 56px a row where 49 reads the same. */
+#settings-modal .shortcut-list li {
+  margin-bottom: 0;
+}
+
+/* A small gap between a note card's text and its metadata row (reported at
+   release: the chips sat flush under the last line of text). */
+#entry-list > li > .entry-meta {
+  margin-top: var(--space-2);
+}
+
+/* A note's files and sketches (`.entry-links`) sat 2px above the metadata
+   row (the owner at release: "no gap between note attachments and the
+   metadata", "a larger vertical gap between sketches and the note
+   metadata"). */
+#entry-list > li > .entry-links {
+  margin-bottom: var(--space-3);
+}
+
 #tool-list > li.tool-group-head:first-child {
   margin-top: 0;
 }
@@ -4745,7 +5008,7 @@ button.answer-figure-open {
 }
 
 /* **Tools it can use: one hairline per grid row, level in every column.**
-   The stack rule in 08-consistency.css draws a top line on every row after
+   The stack rule in 06-timeline-dialogs.css draws a top line on every row after
    the first, which is right for one column and wrong for this grid: the
    first row of column two is the second `li`, so it alone had a line over
    it, a second one under the filter row's own (the owner, INBOX 430). Every

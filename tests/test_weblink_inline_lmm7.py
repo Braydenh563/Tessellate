@@ -1,4 +1,6 @@
-"""L-mindmap-7 (the owner 2026-11-12: inline syntax): the slash menu's Web link on
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L-mindmap-7 (the owner 2026-11-12: inline syntax): the slash menu's Web link on
 a line of its own writes `[text](<url>)`, which the lone-link card rule skips and
 the inline grammar draws as a plain link; inside a sentence it stays `[text](url)`."""
 

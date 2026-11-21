@@ -82,13 +82,18 @@ async function openLibrary(page, subtab) {
   }, WALK);
   console.log(`files at rest: tile ${fileRest.tile}px, summary "${fileRest.summary}", ${fileRest.controls} controls`);
 
+  // The first tile is whichever file sorts first; on a notebook where it has no
+  // extracted text its fold holds the empty note, not a reading. Open the first
+  // tile that has one (marked so the measure below reads the same tile).
   await page.evaluate(() => {
-    const d = document.querySelector('.library-image-tile .library-image-reading');
-    if (d) d.open = true;
+    const d = [...document.querySelectorAll('.library-image-tile .library-image-reading')].find((e) =>
+      e.querySelector('.library-file-reading-text')
+    );
+    if (d) { d.open = true; d.closest('.library-image-tile').dataset.rf = '1'; }
   });
   await page.waitForTimeout(500);
   const fileOpen = await page.evaluate((walk) => {
-    const tile = document.querySelector('.library-image-tile');
+    const tile = document.querySelector('.library-image-tile[data-rf]') || document.querySelector('.library-image-tile');
     const reading = tile.querySelector('.library-image-reading');
     const body = reading.querySelector('.library-image-reading-body');
     return {

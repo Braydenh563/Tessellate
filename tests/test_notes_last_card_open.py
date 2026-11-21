@@ -1,4 +1,6 @@
-"""L709, the owner 2026-11-12: on card view the open note is the last card
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L709, the owner 2026-11-12: on card view the open note is the last card
 clicked or focused, until another is clicked or Notes is left; search ranks
 its linked notes higher.
 

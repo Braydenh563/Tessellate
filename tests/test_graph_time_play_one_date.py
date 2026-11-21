@@ -1,4 +1,6 @@
-"""gaudit 2026-11-12: Play on the time slider did nothing when every note had
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+gaudit 2026-11-12: Play on the time slider did nothing when every note had
 the same timestamp (min equals max, nothing to sweep). The button is now off
 with a title saying why. The Map of meaning layout also gets its stats line
 (it was blank)."""

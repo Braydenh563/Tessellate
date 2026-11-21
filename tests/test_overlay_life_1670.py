@@ -494,3 +494,16 @@ def test_the_frames_held_in_memory_stay_bounded() -> None:
     for i in range(200):
         s.posed("stand", 96, bool(i % 2), (1.0, 1.0 - (i % 9) / 100, 0.0, float(i % 5)))
     assert len(s._cache) + len(s._posed) <= 10 + 40 + 1
+
+
+def test_a_hang_far_from_home_fills_the_far_spells_share() -> None:
+    """A hang away from home is time away: it counts against `SPELL_FAR_SHARE`, so the next spell stays on the home's side."""
+    e, _s = make("masculine", "float", 1)
+    e.update(0.0, (400, 600))
+    m = e.current_monitor()
+    e.home_x, e.x = m.area[0] + 10.0, m.area[2] - e.size[0] - 10.0
+    assert e._far_ok(5.0)
+    e._enter("hang", 5.0)
+    assert e.far_log and e.far_log[-1][0] == 5.0 and e.far_log[-1][1] >= 90.0
+    e.far_log = ((1.0, 150.0), *e.far_log)  # a far spell before it: 150 s plus a hang of 90 s or more is past 216 s
+    assert not e._far_ok(200.0)

@@ -76,7 +76,24 @@ BOOT_JS_CAP = 448_400
 #: 2026-10-31 INBOX 1479: the Notes tab's capture bar (one line of markup that
 #: draws with the tab) and a coloured note's tint cost 151 gzipped bytes; the
 #: card is a lazy file, the bar is not, so the cap rises by 200.
-BOOT_CSS_CAP = 179_300
+#: 2026-11-12, UI plan 13b (owner decision: keep the cap, free room, lower
+#: it): 08-consistency.css dissolved into the component files and its 758
+#: character rules (faces, companion, Atlas) moved to the lazy
+#: characters-lazy.css. Measured 165,450 (was 178,870); the cap is that plus 450.
+#: 2026-11-12, UI plan 13b, L459: 110 boot rules that only the Library
+#: bundle's own surfaces can match (a class outside every :is/:where/:has list
+#: that no other script, page or server file names; no conflicting pair
+#: reordered) moved to library-lazy.css. Measured 163,749; the cap is that
+#: plus 551, of which the next step (10-responsive.css dissolved, about 460
+#: bytes of lost gzip context) takes about 460.
+#: 2026-11-12, UI plan 13b, decision 19: 10-responsive.css's component rules
+#: moved beside their components; 10 keeps the shell bands. Measured 164,254;
+#: the cap holds (a margin of 46) and is not raised.
+#: 2026-11-14, UI plan 13b, L-ui-modernisation-30 and -31: 16 dead names and
+#: 148 more Library-only rules (a cascade check against every later boot rule
+#: and every lazy sheet, then a same-DOM computed-style A/B) left the boot.
+#: Measured 160,279 (was 164,254); the cap is that plus 521, and comes down.
+BOOT_CSS_CAP = 160_800
 
 
 def _served_gzip(url: str) -> int:

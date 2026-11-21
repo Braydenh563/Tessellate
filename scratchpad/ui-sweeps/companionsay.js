@@ -12,12 +12,12 @@ fs.mkdirSync(OUT, { recursive: true });
     const mobile = w < 600 ? { hasTouch: true, isMobile: true } : {};
     const { browser, page } = await boot({ viewport: { width: w, height: h }, ...mobile });
     for (const look of ['masculine', 'feminine']) {
-      await page.evaluate(([look]) => {
+      await page.evaluate(async ([look]) => {
         localStorage.setItem('atlas-look', look);
-        const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
+        prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy();
       }, [look]);
       await page.waitForTimeout(400);
-      await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+      await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
       await page.waitForTimeout(2500);
       await page.evaluate(() => {
         clearTimeout(nmb.timer);

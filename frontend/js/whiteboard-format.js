@@ -2547,7 +2547,7 @@ const wbColour = (() => {
 
   //: A box the popover holds for the saved palettes, one labelled row of swatches each. The library
   //: index is fetched here when the Library panel has not (`/board-library`, one small request), and
-  //: the rows fill in when it lands, if the popover is still open.
+  //: the rows fill in when it lands, if the popover is still showing.
   function wbColourPalettes(pick, current) {
     const box = document.createElement("div");
     box.className = "wb-colour-palettes";

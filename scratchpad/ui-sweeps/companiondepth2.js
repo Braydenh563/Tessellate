@@ -16,9 +16,9 @@ async function companionmoods() {
   const KIND = process.env.KIND || 'atlas';
   const MS = Number(process.env.MS || 180000);
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-    await page.evaluate((k) => {
+    await page.evaluate(async (k) => {
       localStorage.removeItem('nm-buddy-spots');
-      const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy();
       revealTab('dashboard');
     }, KIND);
     await page.waitForTimeout(5000);
@@ -68,9 +68,9 @@ async function companioncost() {
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
     const metric = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
-    await page.evaluate(([k, look]) => {
+    await page.evaluate(async ([k, look]) => {
       localStorage.setItem('atlas-look', look); localStorage.removeItem('nm-buddy-spots');
-      const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy();
     }, [KIND, process.env.LOOK || 'masculine']);
     await page.waitForTimeout(3000);
     await page.evaluate((r) => {
@@ -110,9 +110,9 @@ async function companioncost() {
 async function companionrecalcorder() {
   const { boot } = require('./lib.js');
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-    await page.evaluate((look) => {
+    await page.evaluate(async (look) => {
       localStorage.setItem('atlas-look', look); localStorage.removeItem('nm-buddy-spots');
-      const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy();
     }, process.env.LOOK || 'masculine');
     await page.waitForTimeout(3500);
     await page.evaluate(() => {

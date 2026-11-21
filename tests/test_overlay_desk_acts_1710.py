@@ -64,14 +64,31 @@ def test_every_shipped_look_has_the_five_pictures_on_the_sit_canvas(look: str) -
                 assert im.size == sit.size, name
 
 
+def _eyes_at(s: sprites.SpriteSet, name: str, reach: int = 12) -> tuple[int, int]:
+    """Where the stand's eye box (`sprites.LID_EYES`) sits in frame `name`, in shipped px: the best match within `reach`."""
+    import numpy as np
+    from PIL import Image
+
+    x0, y0, x1, y1 = sprites.LID_EYES[s.look]
+    with Image.open(s.directory / "stand.png") as st, Image.open(s.directory / f"{name}.png") as im:
+        ref = np.asarray(st.convert("RGBA")).astype(int)[y0:y1, x0:x1]
+        a = np.asarray(im.convert("RGBA")).astype(int)
+    return min(
+        ((np.abs(a[y0 + dy:y1 + dy, x0 + dx:x1 + dx] - ref).mean(), dx, dy) for dy in range(-reach, reach + 1) for dx in range(-reach, reach + 1)),
+    )[1:]
+
+
 @pytest.mark.parametrize("look", LOOKS)
 def test_the_hem_hangs_under_the_seat_and_the_hands_stay_on_the_edge(look: str) -> None:
     s = sprites.SpriteSet(look)
     box = s.metrics(96)
     sit = box[("sit", False)]
+    sit_eyes = _eyes_at(s, "sit")
     for name in ("dangle", "kick0", "kick1"):
         b = box[(name, False)]
-        assert abs(b[1] - sit[1]) <= 3, (name, b, sit)  # the head where the sit's is
+        # the head where the sit's is, by the face itself: the box's top is the nebula's arc over the head, which each pose
+        # arranges its own way since the frames carry their pose's arrangement (decision 7; the dangle's arc is 8 px higher)
+        assert max(abs(u - v) for u, v in zip(_eyes_at(s, name), sit_eyes)) <= 2, (name, _eyes_at(s, name), sit_eyes)
         assert name != "dangle" or b[3] - sit[3] >= 3, (name, b, sit)  # the hem is let down under the seat (a kick swings it about within that)
     # the hands of the one-handed hang meet the edge where the hang's do (the held hand's top row, 2x pixels: within 1 logical px)
     from PIL import Image
@@ -145,7 +162,7 @@ def test_the_one_handed_hang_is_drawn_inside_a_long_hang_and_nowhere_else(look: 
         while t < 300:
             t += TICK
             out = e.update(t)
-            if out.frame == "hang_one":
+            if out.frame in ("hang_one", "hang_sloth", "hang_feet"):  # L-ui-modernisation-10: the let-go hand is one of three tricks
                 assert e.state == "hang" and e.pulling is None and e.swing_to is None and not e.releasing
                 assert e.state_until - t >= 9.0 - 1e-6 or e.hang_one_until > t  # never begun in the last nine seconds
                 seen += 1
@@ -154,7 +171,7 @@ def test_the_one_handed_hang_is_drawn_inside_a_long_hang_and_nowhere_else(look: 
             elif in_hang:
                 hangs += 1
                 break
-        assert e.mind.done.get("hang_one_hand") is not None, seed  # it fed the mind: it happened
+        assert any(e.mind.done.get(a) is not None for a in ("hang_one_hand", "sloth", "hang_by_feet")), seed  # a trick fed the mind: it happened
     assert hangs == 8 and seen > 8 * 20 / TICK / 20, (hangs, seen)  # every hang had its moments of it, a share of the time held
 
 

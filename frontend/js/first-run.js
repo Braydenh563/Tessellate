@@ -367,8 +367,8 @@ async function firstStepsBellRow() {
   title.className = "notif-title";
   //: Names what is left: "2 of 3 done" with no name set read as wrong to
   //: a blind tester (2026-10-31) when it was true (a note and an answer).
-  const unticked = steps.filter((step) => !step.done).map((step) => step.label.toLowerCase());
-  title.textContent = `First steps, ${steps.length - left} of ${steps.length} done. Left: ${unticked.join(", ")}`;
+  const unfinished = steps.filter((step) => !step.done).map((step) => step.label.toLowerCase());
+  title.textContent = `First steps, ${steps.length - left} of ${steps.length} done. Left: ${unfinished.join(", ")}`;
   const list = document.createElement("ul");
   list.className = "notif-start-steps";
   for (const step of steps) {

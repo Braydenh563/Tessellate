@@ -355,7 +355,7 @@ def _fake_pystray_and_pil(monkeypatch):
     created = {}
 
     class FakeMenuItem:
-        def __init__(self, text, action, default=False, checked=None):
+        def __init__(self, text, action, default=False, checked=None, visible=True):
             self.text = text
             self.action = action
             self.checked = checked
@@ -373,7 +373,7 @@ def _fake_pystray_and_pil(monkeypatch):
         def __init__(self, name, image, title, menu):
             created["menu"] = menu
 
-        def run(self):
+        def run(self, setup=None):
             pass
 
         def stop(self):
@@ -402,7 +402,7 @@ def _fake_pystray_only(monkeypatch):
     created = {}
 
     class FakeMenuItem:
-        def __init__(self, text, action, default=False, checked=None):
+        def __init__(self, text, action, default=False, checked=None, visible=True):
             self.text = text
             self.action = action
             self.checked = checked
@@ -421,7 +421,7 @@ def _fake_pystray_only(monkeypatch):
             created["menu"] = menu
             created["image"] = image
 
-        def run(self):
+        def run(self, setup=None):
             pass
 
         def stop(self):
@@ -569,7 +569,8 @@ def test_tray_has_no_hide_console_item_without_a_real_console(monkeypatch, tmp_p
     launcher._start_tray(_fake_window(), tmp_path / "missing.ico", None, False)
 
     # `getattr`: a separator is pystray's own sentinel object, not a MenuItem.
-    texts = [getattr(item, "text", None) for item in created["menu"].items]
+    # A callable text is a line that names its own state (the snooze's "Companion back ...").
+    texts = [(lambda t: "(live)" if callable(t) else t)(getattr(item, "text", None)) for item in created["menu"].items]
     assert "Hide console window" not in texts
     # "New note" sits second on purpose: it is the only item on this menu that
     # does the app's actual job rather than manage the app, and it is the
@@ -594,6 +595,7 @@ def test_tray_has_no_hide_console_item_without_a_real_console(monkeypatch, tmp_p
         None,  # separator
         "Hide to tray",
         "Show desktop companion",  # BACKLOG 16: the Settings switch, from the tray
+        "(live)",  # L-ui-modernisation-44: while snoozed, when it comes back and a way to end it
         "Restart",
         "Quit",
     ]

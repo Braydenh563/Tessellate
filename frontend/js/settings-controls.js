@@ -823,6 +823,19 @@
     renderAutonomousReview();
   });
 
+  //: Discard the whole pass (L-ui-modernisation-73): every row's own Undo, last change
+  //: first, so an edit made twice goes back through its middle state.
+  $("autonomous-review-undo-all")?.addEventListener("click", async () => {
+    const undos = [...document.querySelectorAll("#autonomous-review-list [data-change-undo]")].reverse();
+    if (!undos.length) return toast("Nothing left to undo from the last run.");
+    if (!(await confirmDialog(`Undo all ${nounCount(undos.length, "change")} the last run made?`, { confirmLabel: "Undo all" }))) return;
+    for (const button of undos) {
+      button.click();
+      //: Each Undo is a request; the next waits for this one to settle (the row drops its button).
+      for (let i = 0; i < 50 && button.isConnected; i++) await new Promise((r) => setTimeout(r, 100));
+    }
+  });
+
   $("autonomous-trigger").addEventListener("click", () => {
     api("/tasks/trigger-autonomous", { method: "POST" })
       .then(async (response) => {
@@ -2308,6 +2321,19 @@
     const text = JSON.stringify({ mcpServers: { tessellate: mcp.config } }, null, 2);
     pre.textContent = text;
     copy.onclick = () => copyToClipboard(text, copy);
+    //: The same tools for an agent that reads skills (L-general-34): no token, a shell command.
+    const skill = $("mcp-skill-snippet");
+    const skillCopy = $("mcp-skill-copy");
+    skill.textContent = mcp.skill || "";
+    $("mcp-skill-row").classList.toggle("hidden", !mcp.skill);
+    skillCopy.onclick = () => copyToClipboard(mcp.skill, skillCopy);
+    //: Folded: 40 lines of tools would push the rest of the pane a screen down.
+    const toggle = $("mcp-skill-toggle");
+    toggle.onclick = () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      skill.classList.toggle("hidden", !open);
+    };
   }
 
   //: The network pane's state line and certificate facts, lazy with the listeners that
@@ -3694,6 +3720,9 @@
     ]);
     clearSkeletons(list);
     prefsCache = prefs;
+    //: `#pref-mcp-writes` sits here (Other apps) and was filled only by `renderAutonomousSettings`,
+    //: so after a reload it read off over a preference that was on (L-ui-modernisation-82, deepflows).
+    $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
     renderToolFocus(prefs.tool_focus || "auto");
     renderSmallModelMode(prefs.small_model_mode || "auto");
     renderRunBudget(prefs);
@@ -4533,7 +4562,7 @@
     host.appendChild(master.row);
 
     //: **The seven live in their own box, and that is a layout decision with a
-    //: rule behind it.** 08-consistency.css makes consecutive `.setting-check`
+    //: rule behind it.** 07-whiteboard-misc.css makes consecutive `.setting-check`
     //: rows one stack: hairline between, square where they meet, rounded only
     //: at the two outer ends. That is right for the seven, which are one set of
     //: choices. It is wrong across the master, which is set apart by a gap, and
@@ -5317,7 +5346,7 @@
     //: A title, a label and facts, not six pills of one weight (owner: "there
     //: is still missing distinguishing between titles that used to be
     //: badges"). The recipe is `.item-title`, `.item-label` and `.item-fact`
-    //: in 08-consistency.css, shared with the personas.
+    //: in 07-whiteboard-misc.css, shared with the personas.
     row.appendChild(chip(skill.name, "item-title"));
     if (skill.builtin) row.appendChild(chip("Built-in", "item-label"));
     if (skill.folder) {

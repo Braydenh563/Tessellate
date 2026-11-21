@@ -98,10 +98,12 @@ __all__ = [
     "TAIL_TOUCHED_FOR", "THROW_MAX", "THROW_MIN", "TITLE_BAR", "WALL_SCRABBLE", "WAVE_FOR",
     "perch_room", "LAND_FOR", "ld", "wisps",
 ]
+from .engine_beats import BeatsMixin
 from .engine_deskacts import SIT_REGISTERED, DeskActsMixin
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
+from .engine_nap import NapMixin
 from .engine_roam import RoamMixin
 from .engine_touch import TouchMixin
 
@@ -112,7 +114,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, TouchMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMixin, DeskActsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -421,7 +423,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         """How far a frame is drawn below the window's rest line so its lowest drawn row is on
         the floor: every frame is registered to one box, and the margin below the feet varies by
         pose (INBOX 1670). A hang is held by its hands, not stood on; a tumble keeps a held pose's."""
-        if not self.metrics or frame in ("hang", "hang_one"):
+        if not self.metrics or frame.startswith("hang"):
             return 0.0
         if frame in SIT_REGISTERED:  # a dangle sits on the line with its hem below it; a meditation is the sit
             frame = "sit"
@@ -779,6 +781,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
 
     def _on_hang(self, now: float) -> None:
         self.state_until = now + self.rng.uniform(*bh.HANG_BY_MOOD.get(self.mind.mood(now, self.hour), HANG_FOR))
+        # a hang far from home is time away as a far spell is: a 174 s hold left a seeded hour away 0.29 (at most 0.25)
+        self._note_far((self.x, self.y), now, self.state_until - now)
         self.phase_started = self.hang_started = now
         self.hang_drag0 = self.cur.drag  # the hem the hang starts from: the swing is blended in from it (`_target_pose`)
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
@@ -1128,8 +1132,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         if self.come is not None and self.come["phase"] != "wait":  # keeping company: small things, not a stroll
             self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
             return
-        if self._away() and self.perch is None:
-            self._go_home(now)
+        if self._gap_or_home(now):
             return
         self._tell_mind(now, idle)
         self._perform(self._pick_act(now, idle), now)
@@ -1164,9 +1167,12 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
     def _begin_spell(self, now: float) -> None:
         """Choose the next spell by the hour and the mood and go to its spot (a seen move, never a long walk), or start
         it where it is when that is spot enough."""
-        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
-        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": pr.length_of(self.rng, name)}
+        used = pr.used_by_kind(self.spells, now)  # INBOX 1834: each kind held to its share of a while
+        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]], used)
+        length = min(pr.length_of(self.rng, name), pr.left_of(name, used))
+        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": length}
         spot = self._spell_spot(now)
+        self._note_far(spot, now)
         if spot is not None and abs(spot[0] - self.x) > SPELL_MOVE * self._scale():
             self._go(spot, "spell", now)
         else:
@@ -1182,7 +1188,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
             # so the first spell took it back there in a puff, seconds after it arrived
             return self._clear_of_caret(self.home_x, self.ground_y(m), SPELL_ROOM * self.size[1])
         side = tv.nearest_edge(self.x, m.area, self.size[0])
-        if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65:
+        if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65 and self._far_ok(now):
             side = -side
         x = tv.edge_x(side, m.area, self.size[0], self.rng.uniform(6.0, tv.EDGE_ZONE * 0.8) * k)
         if self.home_x is not None and tv.nearest_edge(self.home_x, m.area, self.size[0]) == side:
@@ -1225,6 +1231,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
                 self._face(-self.facing, now)
         if self.mind.shift_due(now, self.var_rng):
             self.shift_at = now  # A4: the same lean and settle as a sit's, the window does not move
+        self._spell_beat_due(now)
         if self.act in bh.YIELD_TO_SIT and now - self.last_active >= IDLE_SIT:
             self.state_until = now  # a long seated act gives way to the ten-minute sit
         if now >= self.state_until:
@@ -1399,7 +1406,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         if act == "hang" and self._dest_repeats("hang"):
             return True
         if act == "spell":
-            return up or self._no_spell()
+            return up or self._spell_shut(now)
         return act == "stroll" and up
 
     def _no_spell(self) -> bool:
@@ -1430,6 +1437,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
             self._note_dest("window" if act == "climb" else "hang")
         if act != "spell":
             self.spell = None
+        self.spell_gap = act == "spell"  # the next thing is a short act at the spell's spot (`_spell_gap_act`)
         if act == "spell":
             self._begin_spell(now)
         elif act == "stroll":
@@ -1459,7 +1467,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         effect; False when it cannot be done now (carried, no window to sit on, motion off), and it looks sad."""
         done = self._command(name, now)
         if not done:
-            self.ex.fire("refused", now)
+            self.ex.fire("declined", now)
         return done
 
     def _command(self, name: str, now: float) -> bool:
@@ -1521,39 +1529,6 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
             self._enter("stand", now)
             return True
         return self.state in self._FREE
-
-    def _nap(self, now: float) -> None:
-        if self.perch is not None and not self.reduced and self.gait == "walk":
-            self.nap_after_land = True  # it never sleeps on a window: down first, then to sleep
-            self._leave_perch(now, hop=False)
-            return
-        self.perch = None
-        self.spell = None
-        self.follow_until = self.follow_close_until = 0.0
-        self.relocate_at = None
-        if self.reduced:
-            self._enter("sit", now)
-            return
-        self.nap_req = True
-        spot = self._nap_spot()
-        if spot is not None and self.gait == "walk":
-            self._go(spot, "nap", now, plain=True)  # to a corner first, on foot
-            return
-        self._settle_to_sleep(now)
-
-    def _nap_spot(self) -> tuple[float, float] | None:
-        """Where a nap is taken: out of the middle third, by the nearer edge; None when it is there already."""
-        m = self.current_monitor()
-        x = tv.out_of_middle(self.x, m.area, self.size[0])
-        if abs(x - self.x) < 12 * self._scale():
-            return None
-        return x, self.ground_y(m)
-
-    def _settle_to_sleep(self, now: float) -> None:
-        """A turn (to face the way it came, tail to the room) and a curl, then asleep."""
-        if self.metrics:
-            self._face(-self.facing, now)
-        self._enter("sleep", now)
 
     def _wake_up(self, now: float) -> None:
         if not self.reduced:
@@ -1695,6 +1670,10 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         gx = min(max(float(goal), lo), hi)  # on this monitor, on its floor: a screen may have gone with the old runner
         if abs(gx - self.x) >= 12 * self._scale():
             self._go((gx, self.ground_y(m)), str(carried.get("then") or "home"), now)
+
+    def perch_free(self) -> str:
+        """Whether "Sit on a window" can be done now, for the menu: "on" (sitting on one), "none" (no top fits), "" (yes)."""
+        return "on" if self.perch is not None else "" if self._candidates() else "none"
 
     def _sit_on_window(self, now: float) -> bool:
         """Climb to a window's top edge the last scan found. False when there is none to sit on."""
@@ -2020,6 +1999,12 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         frame = self._frame(now)
         x, y, _clip = self._display(frame)
         left, top, right, bottom = self._box(frame, self.facing < 0)
+        if frame.startswith("idle"):
+            # the idle cycle sways through the stand's reach at its wrap and leaves on a trip from the stand: a figure an idle
+            # frame keeps 1 px clear was over the caret's margin as it set off (L-ui-modernisation-152, the pose-arranged
+            # idle sways 9 px at 96 dpi)
+            s_left, s_top, s_right, s_bottom = self._box("stand", self.facing < 0)
+            left, top, right, bottom = min(left, s_left), min(top, s_top), max(right, s_right), max(bottom, s_bottom)
         room = SPELL_ROOM * self.size[1] if self.state == "act" and extras.props.spec_of(self.act) is not None else 0.0
         keep = tv.padded(self.caret, tv.CARET_MARGIN * k + room)
         if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):
@@ -2552,7 +2537,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         pace = self._brake(now, dt) if self._yields(now, math.cos(self.heading) * 90 * scale) else self._pace(now, dist)
         if pace <= 0.0:
             return
-        self._drift_move(m, FLOAT_SPEED * scale * pace * dt)
+        self._drift_move(m, min(dist, FLOAT_SPEED * scale * pace * dt))  # never past the goal: it stepped over and back (L-ui-140)
         if abs(math.cos(self.heading)) > 0.5:
             self._face(1 if math.cos(self.heading) > 0 else -1, now)
         if wandering and now >= self.state_until:
@@ -2766,7 +2751,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge", "crouch", "warp", "land") or self.turn_to:  # land: its squash eases at 60 Hz (INBOX 1683 j: one 170 ms draw jumped it 18 px)
             return self._moving_wake(s)
         if s == "act":
-            soonest = min(self.state_until, self._next_pose_change(now, 0.5))
+            soonest = min(self.state_until, self._next_pose_change(now, 0.5), self._spell_beat_wake(now))
             return max(REST_DRAW_MS if self.ex.calm(self.act) else TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
         if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
             return TICK_FALL_MS

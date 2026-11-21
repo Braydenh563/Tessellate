@@ -45,7 +45,7 @@ async function openEntryHistory(entry) {
   const revisions = history?.revisions || [];
   if (!events.length && !revisions.length) {
     const p = document.createElement("p");
-    p.className = "muted";
+    p.className = "muted empty-line";
     p.textContent = "Nothing has happened to this note yet, so there's nothing to go back to.";
     list.appendChild(p);
     return;

@@ -56,7 +56,7 @@ def test_a_note_card_keeps_one_gap_above_its_metadata_row():
     """10(d): card view, box gap above the meta row: 6.4px under the text,
     8 under "Show more", 6.4 under a file row before; 8 (`--space-3`) under
     each after. The rows view is untouched (its meta sits beside the text)."""
-    css = _read("css/08-consistency.css")
+    css = _read("css/07-whiteboard-misc.css")
     assert "#entry-list:not(.is-rows) > li > .entry-meta {\n  margin-top: var(--space-3);\n}" in css
 
 
@@ -64,7 +64,7 @@ def test_today_keeps_its_count_in_the_column_of_counts():
     """8(b): with rows today, the count floated 729px short of the head's end
     (two auto margins split the space); after, it ends where every other
     day's count does (0px), with "Start today's note" just before it."""
-    css = _read("css/08-consistency.css")
+    css = _read("css/07-whiteboard-misc.css")
     assert (
         ".timeline-bucket-head:has(> .timeline-today-action) > .timeline-bucket-count {\n"
         "  order: 1;\n  margin-left: 0;\n}"

@@ -104,3 +104,4 @@ def test_the_gallery_file_is_in_both_bundles_that_call_it() -> None:
     app = _text("app.js")
     library = re.search(r"\n  library: \[(.*?)\],\n", app, re.S).group(1)
     assert '"/js/boards-gallery.js"' in library, "the board code calls the gallery, so every bundle that carries it carries the gallery"
+

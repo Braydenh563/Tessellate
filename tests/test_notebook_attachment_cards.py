@@ -58,7 +58,7 @@ def test_one_card_builder_serves_the_bubble_and_the_composer() -> None:
 
 
 def test_the_old_black_bar_and_blue_chip_rules_are_gone() -> None:
-    for css in ("02-chat-graph.css", "08-consistency.css"):
+    for css in ("02-chat-graph.css", "07-whiteboard-misc.css"):
         text = _read("frontend", "css", css)
         assert ".msg-attachment-note" not in text, css
         assert ".msg-attachment-doc" not in text, css

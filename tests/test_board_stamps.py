@@ -1,4 +1,6 @@
-"""Reaction stamps on board items (MINDMAP_PLAN 14.4): the topic's stamps, reused on stickies and cards."""
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+Reaction stamps on board items (MINDMAP_PLAN 14.4): the topic's stamps, reused on stickies and cards."""
 
 from pathlib import Path
 

@@ -9,7 +9,7 @@ const SHOTS = `${process.env.SCRATCH || '.'}/shots`;
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
   await page.evaluate(() => revealTab('dashboard'));
   await page.waitForTimeout(6000);
   await page.evaluate(() => {

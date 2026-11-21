@@ -1,4 +1,6 @@
-"""L310: a TypeScript file's Problems list carries sucrase's own parse errors.
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L310: a TypeScript file's Problems list carries sucrase's own parse errors.
 
 The Lezer tree check (`docTreeDiagnostics`) decides first. When it finds nothing in a `.ts`
 document, the pass a Run would use (sucrase, `run-core.js`) is asked too, so a file the editor
