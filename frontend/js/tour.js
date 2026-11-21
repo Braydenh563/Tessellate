@@ -2045,8 +2045,9 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  //: Read-only, for the sweeps (L-general-14): the run, the sections and the
-  //: section counter live inside this IIFE, so a probe reads them here.
-  openTour.inspect = () => ({ run: tourRun, sections: TOUR_SECTIONS, place: tourSectionPlace, blockPanels: tourBlockPanels });
+  //: For the sweeps (L-general-14): the run, the sections and the section
+  //: counter live inside this IIFE, so a probe reads them here, and drives
+  //: Next, Close and the needs table (a stubbed "has a map") through it.
+  openTour.inspect = () => ({ run: tourRun, sections: TOUR_SECTIONS, place: tourSectionPlace, blockPanels: tourBlockPanels, next: tourNext, close: tourClose, needs: TOUR_NEEDS });
   Object.assign(window, { TOUR_ENABLED, openTour, renderTourReplay });
 })();
