@@ -57,7 +57,7 @@ const CARD = {
       }
     }, 32 - docs);
   }
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   if (SCALE !== 1) await page.evaluate((s) => nameMarkBuddySetSize(s, true), SCALE);
   let bad = 0;

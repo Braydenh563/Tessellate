@@ -1,0 +1,35 @@
+# The gate's ui sweeps that passed twice on a fresh data dir (L-general-20,
+# 2026-11-21). scripts/ci_sweeps.sh runs them in CI; one name per line, then
+# its seconds on the second pass. A sweep that turns flaky comes off with its reason.
+contrast 32s
+leaks 28s
+keyboard 19s
+diskspace 12s
+vibecheck 41s
+vibefail 67s
+graphminimap 23s
+wbgroupguides 23s
+phonehead 15s
+phoneswipe 21s
+phonenotepage 20s
+phoneshare 20s
+phonedocs 25s
+phonereminders 18s
+wbphone 20s
+draftreadonly 12s
+hoveronly 31s
+wbtopbar820 17s
+docdaily 18s
+docfallback 20s
+doctabs 33s
+mindmapcurve 27s
+tagoffer 10s
+imagecardfoot 14s
+maptwokinds 20s
+mapmidpan 25s
+animcost 19s
+mapdoors 16s
+canvasconventions 66s
+libtlscroll 60s
+wbshapetext 24s
+calheadalign 16s
