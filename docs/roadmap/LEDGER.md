@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 82 | 9 | 0 | 0 | 91 |
+| world-class | 0 | 81 | 9 | 0 | 0 | 90 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 460 | 80 | 2 | 112 | 912 |
+| all | 372 | 459 | 80 | 2 | 112 | 911 |
 
 ## graph
 
@@ -543,7 +543,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-693** `world-class` open, S: Find box and server search understand group:. From L-world-class-172. Evidence: group: filters only client-side in the Notes box
 - [ ] **L-world-class-694** `world-class` open, S: Manage categories counts notes that are also in a category. From L-world-class-173. Evidence: Manage categories counts only primary categories
 - [ ] **L-world-class-695** `world-class` open, S: Agent tool note summaries include a note's extra categories. From L-world-class-173. Evidence: ai/tools _common note summaries near lines 282 and 324 omit also_in
-- [ ] **L-world-class-696** `world-class` open, M: Compress revision text once time travel stops searching it with LIKE. From L-world-class-174. Evidence: entry_revisions.content 3.2 MB at 5,000 notes; ai/timetravel.py searches it with SQL LIKE
 
 ## general
 

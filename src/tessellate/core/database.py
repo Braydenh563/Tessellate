@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import zlib
 from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -1741,6 +1742,30 @@ class NightRun(Base):
     counts: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+class PackedText(TypeDecorator):
+    """Text stored zlib-compressed when that is smaller (L-world-class-696):
+    a revision is a whole older copy of a note, so a notebook's history was
+    most of its size. A value is kept as bytes behind `_MAGIC`; text that does
+    not shrink, and every row written before this type, stays plain text and
+    reads back unchanged, so no migration is needed (SQLite keeps either in a
+    TEXT column). Not searchable with SQL: readers filter in Python."""
+
+    impl = Text
+    cache_ok = True
+    _MAGIC = b"\x01tz1"
+
+    def process_bind_param(self, value, dialect):
+        if not isinstance(value, str) or len(value) < 120:
+            return value
+        packed = self._MAGIC + zlib.compress(value.encode("utf-8"), 6)
+        return packed if len(packed) < len(value.encode("utf-8")) else value
+
+    def process_result_value(self, value, dialect):
+        if isinstance(value, (bytes, bytearray, memoryview)) and bytes(value[:4]) == self._MAGIC:
+            return zlib.decompress(bytes(value[4:])).decode("utf-8")
+        return value
+
+
 class EntryRevision(Base):
     """A note's text as it was before an edit.
 
@@ -1754,7 +1779,7 @@ class EntryRevision(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), index=True)
-    content: Mapped[str] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(PackedText)
     tags: Mapped[str] = mapped_column(Text, default="[]")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 

@@ -38,10 +38,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 import numpy as np
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import EmbeddingRecord, Entry, EntryRevision, like_escape, LIKE_ESCAPE
+from tessellate.core.database import EmbeddingRecord, Entry, EntryRevision
 from tessellate.entry import manager
 
 
@@ -112,15 +112,19 @@ def revision_candidates(session: Session, question: str, limit: int = 50) -> lis
     """Notes whose *past* text matches the question: a note that said "batch
     size 32" in March and something else now is still the note to read as of
     March. Three of the question's words, any of them, in any kept revision."""
-    terms = [t for t in _terms(question) if len(t) > 2][:3]
+    terms = [t.casefold() for t in _terms(question) if len(t) > 2][:3]
     if not terms:
         return []
-    matches = [EntryRevision.content.ilike(f"%{like_escape(t)}%", escape=LIKE_ESCAPE) for t in terms]
-    ids = list(
-        session.scalars(
-            select(EntryRevision.entry_id).where(or_(*matches)).group_by(EntryRevision.entry_id).limit(limit)
-        )
-    )
+    #: Revision text is stored compressed, so SQL cannot LIKE it: read each
+    #: revision and look in the decompressed text.
+    ids: dict[int, None] = {}
+    rows = session.execute(select(EntryRevision.entry_id, EntryRevision.content).execution_options(yield_per=500))
+    for entry_id, content in rows:
+        if entry_id not in ids and content and any(t in content.casefold() for t in terms):
+            ids[entry_id] = None
+            if len(ids) >= limit:
+                break
+    ids = list(ids)
     if not ids:
         return []
     return list(session.scalars(select(Entry).where(Entry.id.in_(ids))))
