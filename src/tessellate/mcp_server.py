@@ -466,3 +466,69 @@ def _serve_lines(stdin: TextIO, stdout: TextIO) -> None:
 
 if __name__ == "__main__":
     serve()
+
+
+def run_tool_command(argv: list[str], stdout: TextIO = sys.stdout) -> int:
+    """`tessellate tool NAME [--json ARGS]` (L-general-8): one tool call from a
+    shell, for an agent that runs commands but speaks no MCP. The same tools
+    and the same token as the server: the ones `offered_tools()` lists, and
+    `TESSELLATE_MCP_TOKEN` set to this notebook's token. `tool --list` prints
+    them. The result is the tool's own JSON on one line; exit 1 on an error."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="tessellate tool", description="Run one of this notebook's tools and print its JSON result.")
+    parser.add_argument("name", nargs="?", help="the tool to run (tool --list names them)")
+    parser.add_argument("--json", default="{}", metavar="ARGS", help="the tool's arguments as one JSON object")
+    parser.add_argument("--list", action="store_true", help="list the tools this notebook offers, one JSON line each")
+    args = parser.parse_args(argv)
+    deps.init_app_state()
+    denied = _check_token(os.environ.get(TOKEN_ENV, ""))
+    if denied:
+        print(json.dumps({"error": denied}), file=stdout)
+        return 2
+    if args.list or not args.name:
+        for spec in offered_tools():
+            print(json.dumps({"name": spec.name, "description": spec.description, "parameters": spec.parameters}), file=stdout)
+        return 0
+    try:
+        arguments = json.loads(args.json)
+    except json.JSONDecodeError as error:
+        print(json.dumps({"error": f"--json is not JSON: {error.msg}"}), file=stdout)
+        return 2
+    if not isinstance(arguments, dict):
+        print(json.dumps({"error": "--json must be one JSON object"}), file=stdout)
+        return 2
+    _client["name"] = _client["name"] or "command line"
+    result = _call_tool(args.name, arguments)
+    text = result["content"][0]["text"]
+    if result["isError"] and not text.startswith("{"):
+        text = json.dumps({"error": text})
+    print(text, file=stdout)
+    return 1 if result["isError"] else 0
+
+
+def skill_snippet(command: list[str], env: dict[str, str]) -> str:
+    """A SKILL.md an agent that runs shell commands can keep (Settings, Tools
+    it can use): when to reach for this notebook, then which tool a request
+    maps to, one line each, and the command that runs it."""
+    import shlex
+
+    prefix = " ".join([*(f"{key}={shlex.quote(value)}" for key, value in env.items()), *map(shlex.quote, command)])
+    lines = [
+        "---",
+        "name: tessellate-notebook",
+        "description: Read and search the person's Tessellate notebook (their notes, reminders and documents). "
+        "Use when they ask what they wrote, saved or planned, or to find a note.",
+        "---",
+        "",
+        "Run one tool and read its JSON result:",
+        "",
+        f"    {prefix} tool NAME --json '{{\"argument\": \"value\"}}'",
+        "",
+        f"`{prefix} tool --list` prints each tool's arguments. Pick the tool by what is asked:",
+        "",
+    ]
+    for spec in offered_tools():
+        first = re.split(r"(?<=\.)\s", spec.description.strip(), maxsplit=1)[0]
+        lines.append(f"- {spec.name}: {first}")
+    return "\n".join(lines) + "\n"

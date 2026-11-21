@@ -2295,6 +2295,14 @@
     const mcp = caps?.features?.mcp;
     const note = $("mcp-config-note");
     const copy = $("mcp-config-copy");
+    const skill = $("mcp-skill-snippet");
+    const skillCopy = $("mcp-skill-copy");
+    const skillShown = !!(mcp?.installed && mcp.skill);
+    for (const node of [skill, skillCopy, $("mcp-skill-head"), $("mcp-skill-note")]) node?.classList.toggle("hidden", !skillShown);
+    if (skillShown) {
+      skill.textContent = mcp.skill;
+      skillCopy.onclick = () => copyToClipboard(mcp.skill, skillCopy);
+    }
     if (!mcp?.installed || !mcp.config) {
       pre.classList.add("hidden");
       copy.classList.add("hidden");

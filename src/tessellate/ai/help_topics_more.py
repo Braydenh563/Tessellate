@@ -333,13 +333,16 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
+            "skill.md", "tool command", "agent that runs commands",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
             "app: a snippet to paste into an MCP client such as Claude Desktop, "
             "with a Copy button; that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. "
+            "you tick Let that app add and change notes. Below it, For an agent "
+            "that runs commands is a SKILL.md to copy: it runs the same tools "
+            "from a shell with tool NAME --json. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "

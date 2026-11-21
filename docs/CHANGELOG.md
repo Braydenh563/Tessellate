@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tools: `python -m tessellate tool NAME --json ARGS` (or the packaged app's `Tessellate tool`) runs one offered tool from a shell behind the MCP token, and Settings, Tools it can use gives a SKILL.md that routes a request to the right tool (L-general-8).
 - Gate: scripts/source_text_tests.py counts the tests that read file text (6264 of 22243 today) and the gate refuses a new one with no docstring saying why behaviour cannot be asserted (L-general-9).
 - Credits: frontend/vendor/PROVENANCE.json lists all 91 vendored browser files with sha256, size, version, upstream, licence and notice, written by scripts/vendor_provenance.py from THIRD_PARTY.md; a test rechecks every hash (L-general-4).
 - Packaging: LICENSE and THIRD_PARTY.md ship at the root of the Windows installer, the MSI, the Linux tarball and zip, and the Docker image (L-general-3).
