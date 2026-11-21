@@ -673,7 +673,7 @@ _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
-    from tessellate.entry import manager_private
+    from tessellate.entry import frontmatter_keys, manager_private
 
     entry = manager.create_entry(session, record["content"], category_name=record.get("category") or manager.UNCATEGORISED,
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
@@ -687,6 +687,7 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
         manager_private.set_private(session, entry, True)
     if entry.created_at is not None:
         manager.record_dates(session, entry)
+    frontmatter_keys.keep_exported_state(session, entry, {k: record.get(k) for k in ("also_in", "groups")})
     return entry
 
 

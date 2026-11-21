@@ -119,6 +119,8 @@ class Understood:
     #: many tags a note carries, as `(operator, number)`.
     without_categories: list[str] = field(default_factory=list)
     tag_count: tuple[str, int] | None = None
+    #: `group:"Trip plan"`: notes in every group named (L-world-class-693), as the Notes box reads it.
+    groups: list[str] = field(default_factory=list)
 
     @property
     def has_range(self) -> bool:
@@ -133,6 +135,7 @@ class Understood:
             or any(self.without.values())
             or bool(self.categories)
             or bool(self.without_categories)
+            or bool(self.groups)
             or self.tag_count is not None
         )
 
@@ -363,6 +366,21 @@ def _take_categories(text: str) -> tuple[str, list[str], list[str]]:
     return _CATEGORY.sub(take, text), wanted, ruled_out
 
 
+_GROUP = lazy_compile(r'(?<!\S)group:(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+
+
+def _take_groups(text: str) -> tuple[str, list[str]]:
+    """Lift `group:Name` and `group:"Two words"` out of a query: the rest and the names."""
+    wanted: list[str] = []
+
+    def take(match: re.Match) -> str:
+        raw = match.group(1) if match.group(1) is not None else match.group(2)
+        wanted.extend(name for name in _split_values(raw) if name not in wanted)
+        return " "
+
+    return _GROUP.sub(take, text), wanted
+
+
 def _take_tag_count(text: str) -> tuple[str, tuple[str, int] | None]:
     """Lift `tags:<2` out of a query: the rest and the (operator, number)."""
     found: list[tuple[str, int]] = []
@@ -554,6 +572,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # left in the text would be read a second time by the time pass below.
     text, without = _take_negated(text)
     text, categories, without_categories = _take_categories(text)
+    text, groups = _take_groups(text)
     text, tag_count = _take_tag_count(text)
     remainder, filters, phrases, excluded, since, until = _parse_operators(text, today, locale)
     operator_dates = since is not None or until is not None
@@ -580,7 +599,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # range: `kind:document before:2026-01-01` has a constraint to apply, and
     # answering it with "every note in the window" would drop the one thing
     # the person actually typed.
-    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded, categories + without_categories, tag_count)
+    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded, categories + without_categories + groups, tag_count)
     return Understood(
         subject=subject if _has_content(subject) else "",
         since=since,
@@ -596,6 +615,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
         categories=categories,
         without_categories=without_categories,
         tag_count=tag_count,
+        groups=groups,
     )
 
 

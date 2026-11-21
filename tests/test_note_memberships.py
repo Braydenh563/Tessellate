@@ -118,6 +118,19 @@ def test_the_agents_category_filter_finds_a_note_by_either_category(client, sess
     assert a not in set(session.scalars(select(Entry.id).where(_category_clause(session, "Family"))))
 
 
+def test_the_agents_note_summaries_name_a_notes_extra_categories(client, session):
+    from tessellate.ai.tools._common import _note_summary
+    from tessellate.ai.tools.tool_read import _list_notes
+    from tessellate.core.database import Entry
+
+    a, b = _note(client, "pasta night", "Recipes"), _note(client, "museum day", "Travel")
+    client.put(f"/entries/{a}/also-in", json={"categories": ["Travel", "Family"]})
+    assert _note_summary(session, session.get(Entry, a))["also_in"] == ["Family", "Travel"]
+    assert "also_in" not in _note_summary(session, session.get(Entry, b))
+    listed = {n["id"]: n for n in _list_notes(session, {"limit": 10})["notes"]}
+    assert listed[a]["also_in"] == ["Family", "Travel"] and "also_in" not in listed[b]
+
+
 def test_the_search_category_filters_see_an_also_category(client, session):
     from tessellate.search import engine
 
@@ -131,6 +144,30 @@ def test_the_search_category_filters_see_an_also_category(client, session):
     assert hits("cat:Travel invoice") == {a, b}
     assert hits("cat:Recipes invoice") == {a}
     assert hits("invoice -cat:Travel") == set()
+
+
+def test_the_search_understands_group_names(client, session):
+    from tessellate.search import engine
+
+    a, b = _note(client, "invoice for pasta", "Recipes"), _note(client, "invoice for tickets", "Travel")
+    gid = client.post("/groups", json={"name": "Trip plan"}).json()["id"]
+    client.post(f"/groups/{gid}/notes", json={"ids": [b]})
+
+    def hits(q):
+        return {h.ref_id for h in engine.search(session, q, ctx=None, hybrid=False) if h.kind == "note"}
+
+    assert hits('group:"Trip plan" invoice') == {b}
+    assert hits("group:trip invoice") == set()
+    assert hits('group:"trip PLAN"') == {b}  # no words: the group alone selects
+    assert hits("invoice") == {a, b}
+
+
+def test_manage_categories_counts_the_also_in_notes_too(client):
+    a = _note(client, "invoice for pasta", "Recipes")
+    _note(client, "invoice for tickets", "Travel")
+    client.put(f"/entries/{a}/also-in", json={"categories": ["Travel"]})
+    counts = {c["name"]: c["count"] for c in client.get("/categories").json()}
+    assert counts["Travel"] == 2 and counts["Recipes"] == 1
 
 
 def test_merging_a_category_carries_the_also_in_notes_along(client):

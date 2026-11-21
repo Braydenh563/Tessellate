@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from tessellate.core.database import Category, EmbeddingRecord, Entry
+from tessellate.core.database import Category, EmbeddingRecord, Entry, EntryCategory
 from tessellate.entry.cleantext import is_blank, name_key
 from tessellate.entry.manager import BROKEN_BAR, UNCATEGORISED, category_label, category_space, get_or_create_category, log_action, note_filter
 from tessellate.repo import memberships
@@ -20,7 +20,7 @@ def all_categories(session: Session) -> list[dict]:
     """Every category with how many live entries sit in it, biggest first.
 
     The number is the Notes list's own under that category, so it counts
-    exactly what the list shows: not binned, not archived, not a draft (the
+    exactly what the list shows (a note also put in a category counts there too): not binned, not archived, not a draft (the
     list keeps drafts in their own view), not a board. It used to exclude
     only the bin, and two numbers for one category disagreed on screen:
     Health 4 in the sidebar and 5 in Manage categories with one archived
@@ -34,6 +34,13 @@ def all_categories(session: Session) -> list[dict]:
         category_id: total
         for category_id, total in session.execute(query.group_by(Entry.category_id))
     }
+    #: A note also put in a category counts there too (L-world-class-694), as the list filtered by it shows it.
+    also = note_filter(
+        select(EntryCategory.category_id, func.count(Entry.id)).join(Entry, Entry.id == EntryCategory.entry_id),
+        include_archived=False,
+    ).where(EntryCategory.category_id != Entry.category_id)
+    for category_id, total in session.execute(also.group_by(EntryCategory.category_id)):
+        counts[category_id] = counts.get(category_id, 0) + total
     out = [
         {"id": c.id, "name": c.name, "count": counts.get(c.id, 0), "colour": c.colour}
         for c in rows

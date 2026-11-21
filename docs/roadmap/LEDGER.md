@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 81 | 9 | 0 | 0 | 90 |
+| world-class | 0 | 77 | 9 | 0 | 0 | 86 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 459 | 80 | 2 | 112 | 911 |
+| all | 372 | 455 | 80 | 2 | 112 | 907 |
 
 ## graph
 
@@ -537,10 +537,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-631** `world-class` open, L: Split notes-list.js (3,780), status.js (3,241) once index.html has element room for the script tags. From L698, L639; tests/test_boot_diet3.py:122. Evidence: Measured 2026-11-21 after 318122a33 and 95061e80e: boot gzip headroom is now about 6 KB (652,408 to 646,261 level-6 sum), so the gzip cap allows the splits, but index.html parses 749 elements against BOOT_ELEMENTS_CAP 749: each new boot script tag adds one, so 4 notes-list.js script tags gave 753 and failed. Tried notes-list.js cut at 547, 1770, 2889, 3541 (notes-text, notes-render, notes-load, notes-rail; 1227, 1122, 655, 244 lines): also about 20 tests read notes-list.js directly and need path updates, and wake_sources_seed.json needs notes-render/notes-rail entries. status.js (3,241) cuts at 813, 1360, 1882, 2608; chat.js (1,336) cut at 1168 (chat-progress.js).
 - [ ] **L-world-class-690** `world-class` open, S: Cap the parse child's memory on Windows with a job object (JOB_OBJECT_LIMIT_PROCESS_MEMORY), as RLIMIT_AS does on Linux. From L-world-class-321. Evidence: src/tessellate/core/parse_guard.py _limit_memory: RLIMIT_AS on POSIX only; on Windows a crafted file can still allocate without bound in the child (the child dies, not the server, but the machine can page)
 - [ ] **L-world-class-691** `world-class` open, M: Install each pip extra from a hashed lock (--require-hashes), without moving a base package. From SECURITY.md, Threat model T23 (L-world-class-320). Evidence: core/extras.py _run_install hands pip names plus EXTRA_BOUNDS constraints, no --require-hashes. A hash lock needs every transitive dependency pinned per platform and Python (uv pip compile --universal --generate-hashes against requirements.txt's constraints), and pinning base packages that requirements.txt only ranges would let an extra install move numpy or tokenizers under the running app. Check: a lock per extra whose base-package pins equal the installed versions, pip install --require-hashes --no-deps from it in a scratch venv and in the frozen --target build.
-- [ ] **L-world-class-692** `world-class` open, S: Folder import restores a note's groups and extra categories from its sidecar. From L-world-class-172/173. Evidence: folder-export sidecar exports groups and also_in but import ignores them
-- [ ] **L-world-class-693** `world-class` open, S: Find box and server search understand group:. From L-world-class-172. Evidence: group: filters only client-side in the Notes box
-- [ ] **L-world-class-694** `world-class` open, S: Manage categories counts notes that are also in a category. From L-world-class-173. Evidence: Manage categories counts only primary categories
-- [ ] **L-world-class-695** `world-class` open, S: Agent tool note summaries include a note's extra categories. From L-world-class-173. Evidence: ai/tools _common note summaries near lines 282 and 324 omit also_in
 - [ ] **L-world-class-696** `world-class` open, M: Compress revision text once time travel stops searching it with LIKE. From L-world-class-174. Evidence: entry_revisions.content 3.2 MB at 5,000 notes; ai/timetravel.py searches it with SQL LIKE
 - [ ] **L-world-class-650** `world-class` open, S: Lexicon over-generalises: 20 synthetic refiles take held-out filing accuracy down 12 points; weigh a taught topic by how few categories share it, then remove the strict xfail. From tests/test_filing_learning_eval.py. Evidence: tests/test_filing_learning_eval.py: held-out filing 43/47 to 37/47 after 20 corrections; lexical_filing.personal_lexicon teaches topics shared by categories to the one taught most
 
