@@ -1141,6 +1141,15 @@ palettes."
 - **Live preview** while hovering a theme, before committing. **Next:** `applySavedTheme` writes through `appearancePref`; a hover preview needs the same writes held in a scratch layer and reverted on `mouseleave`, with the hover disabled on touch; `settings.js:1933` is the tile.
 - ~~Fix the reported bug where individual controls resist change under a
   theme~~ done (§8, HISTORY.md).
+- **Desk hang acts** (found in L178, 2026-11-21): the catalogue's `act.sloth` and `act.hang_by_feet` are the app's
+  (`sloth`, `feet`) and missing on the desk. They belong inside the desk's hang, played the way `hang_one_hand` is
+  (`engine_deskacts.py`, `_let_one_go`), not in the Mind's table, and the head-down one needs a picture registered at the
+  edge (a rotated frame's box is not the hang's). **Check:** `tests/test_companion_acts_l178.py`'s `IN_THE_HANG` empties
+  and a desk render of each shows the hands or feet on the edge line.
+- **The desk Mind over-picks rare acts** (found in L178, 2026-11-21): its freshness term puts `act.facepalm`,
+  `act.lantern` and `act.hiccup` in 12 of 12 seeded hours against the table's 4 to 6, so the L178 acts went in at weight
+  0.25 to hold the hour's distinct count to the table's (gap 1.5 against 3.6) and the idle wakes under 500 a minute. **Check:** a per-act count of
+  `tests/test_companion_weights_1108.py`'s twelve hours has no act more than 4 hours off the table, with the L178 acts at 1.
 
 ---
 

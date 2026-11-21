@@ -1232,6 +1232,169 @@
    enough that the dress's own star dust and glints still lead. */
 .atl-stipple-dot { fill: var(--atl-hi); }
 .nm-atlas .atl-lower-stipple { opacity: 0.5; pointer-events: none; }
+
+/* **L178: the catalogue's idle acts** (`act.cloud_pillow` to `act.stargaze_awake`; the desk's are in `core/overlay/props.py`).
+   The same recipe as the doings above: the prop its act shows, the arms and the eyes on it, a lean, the tail; the
+   loops are in the motion gate below, so with Motion off each is a still pose. */
+#nm-buddy.nmb-act-cloudpillow .atl-figure .nmp-cloud,
+#nm-buddy.nmb-act-plane .atl-figure .nmp-plane,
+#nm-buddy.nmb-act-conduct .atl-figure .nmp-baton,
+#nm-buddy.nmb-act-sketch .atl-figure .nmp-sketch,
+#nm-buddy.nmb-act-kneel .atl-figure .nmp-speck,
+#nm-buddy.nmb-act-leanedge .atl-figure .nmp-ledge { opacity: 1; }
+.nm-atlas .atl-ds-cloud { fill: color-mix(in oklab, var(--atl-glow-c) 30%, var(--atl-hi)); stroke: var(--atl-navy); stroke-width: 0.7; }
+.nm-atlas :is(.atl-ds-plane, .atl-ds-plane-keel) { fill: var(--atl-hi); stroke: var(--atl-navy); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-plane-keel { fill: var(--atl-lilac); }
+.nm-atlas .atl-ds-plane-trail { stroke: var(--atl-gold); stroke-dasharray: 0.8 1.2; }
+.nm-atlas .atl-ds-baton { fill: none; stroke: var(--atl-gold-line); stroke-width: 0.8; stroke-linecap: round; }
+.nm-atlas :is(.atl-ds-sketch-a, .atl-ds-sketch-b, .atl-ds-sketch-c) { stroke-dasharray: 1; }
+.nm-atlas :is(.atl-ds-flight, .atl-ds-note, .atl-ds-sprout) { transform-box: fill-box; transform-origin: 50% 100%; }
+/* A cloud for a pillow: the chin on it, the body tipped forward, both arms folded under. */
+#nm-buddy.nmb-act-cloudpillow .atl-figure .nmb-arm-r { transform: rotate(-28deg); }
+#nm-buddy.nmb-act-cloudpillow .atl-figure .nmb-arm-l { transform: rotate(28deg); }
+#nm-buddy.nmb-act-cloudpillow .nm-atlas { --atl-lean: 9deg; --atl-tail: 4deg; --atl-head-y: 2px; --atl-tilt: 6deg; }
+/* A paper plane: wound up behind the head, the eyes after it. */
+#nm-buddy.nmb-act-plane .atl-figure .nmb-arm-r { transform: rotate(-118deg); }
+#nm-buddy.nmb-act-plane .nm-atlas { --atl-lean: -3deg; --atl-tail: 10deg; --atl-head-y: -0.6px; --atl-tilt: -3deg; }
+#nm-buddy.nmb-act-plane .nmp-plane .atl-ds-turn { rotate: 118deg; }
+/* Conducting: the right hand up with the baton, the left open at the side. */
+#nm-buddy.nmb-act-conduct .atl-figure .nmb-arm-r { transform: rotate(-64deg); }
+#nm-buddy.nmb-act-conduct .atl-figure .nmb-arm-l { transform: rotate(34deg); }
+#nm-buddy.nmb-act-conduct .nm-atlas { --atl-lean: -2deg; --atl-tail: 6deg; --atl-head-y: -0.4px; --atl-tilt: -4deg; }
+/* Sketching: the book on the lap, the pencil hand in, the head bowed to it. */
+#nm-buddy.nmb-act-sketch .atl-figure .nmb-arm-r { transform: rotate(-32deg); }
+#nm-buddy.nmb-act-sketch .atl-figure .nmb-arm-l { transform: rotate(30deg); }
+#nm-buddy.nmb-act-sketch .nm-atlas { --atl-lean: 4deg; --atl-tail: 4deg; --atl-head-y: 1.4px; --atl-tilt: 2deg; }
+#nm-buddy.nmb-act-sketch .nm-atlas .atl-pupil { --atl-px: 0.4px; --atl-py: 1.8px; }
+/* Kneeling to look: bent well over, the head right down, a hand reaching to the sprout. */
+#nm-buddy.nmb-act-kneel .atl-figure .nmb-arm-r { transform: rotate(16deg); }
+#nm-buddy.nmb-act-kneel .atl-figure .nmb-arm-l { transform: rotate(-8deg); }
+#nm-buddy.nmb-act-kneel .nm-atlas { --atl-lean: 14deg; --atl-tail: 10deg; --atl-head-y: 3.2px; --atl-tilt: 8deg; }
+#nm-buddy.nmb-act-kneel .nm-atlas .atl-pupil { --atl-px: 1.6px; --atl-py: 2px; }
+/* Leaning on the edge: an elbow on the sill, the chin in the other hand, tipped well over to it. */
+#nm-buddy.nmb-act-leanedge .atl-figure .nmb-arm-l { transform: rotate(64deg); }
+#nm-buddy.nmb-act-leanedge .atl-figure .nmb-arm-r { transform: rotate(-128deg); }
+#nm-buddy.nmb-act-leanedge .nm-atlas { --atl-lean: -11deg; --atl-tail: -8deg; --atl-head-y: 1px; --atl-tilt: -9deg; }
+/* Chasing its tail: the tail swung out wide, the body after it. */
+#nm-buddy.nmb-act-tailchase .nm-atlas { --atl-lean: 6deg; --atl-tail: 24deg; --atl-tilt: 6deg; }
+#nm-buddy.nmb-act-tailchase .nm-atlas .atl-pupil { --atl-px: -1.8px; --atl-py: 1.2px; }
+/* Stretching the tail: it reaches out long and straight, then curls back. */
+#nm-buddy.nmb-act-tailstretch .nm-atlas { --atl-lean: -2deg; --atl-tail: -26deg; --atl-head-y: -0.4px; }
+/* Balancing: both arms straight out to the sides, the eyes ahead. */
+#nm-buddy.nmb-act-balance .atl-figure .nmb-arm-r { transform: rotate(-88deg); }
+#nm-buddy.nmb-act-balance .atl-figure .nmb-arm-l { transform: rotate(88deg); }
+#nm-buddy.nmb-act-balance .nm-atlas { --atl-lean: 0deg; --atl-tail: 12deg; }
+/* Floating on its back: tipped right back, both hands behind the head, the eyes up. */
+#nm-buddy.nmb-act-skyfloat .atl-figure .nmb-arm-r { transform: rotate(-150deg); }
+#nm-buddy.nmb-act-skyfloat .atl-figure .nmb-arm-l { transform: rotate(150deg); }
+#nm-buddy.nmb-act-skyfloat .nm-atlas { --atl-lean: -16deg; --atl-tail: 18deg; --atl-head-y: -1px; --atl-tilt: -10deg; }
+#nm-buddy.nmb-act-skyfloat .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: -2px; }
+@keyframes atl-l178-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.03 0.97; } }
+@keyframes atl-ds-plane-arm { 0%, 30% { transform: rotate(-118deg); } 42% { transform: rotate(-36deg); } 60%, 100% { transform: rotate(-40deg); } }
+@keyframes atl-l178-fly { 0%, 36% { translate: 0 0; opacity: 1; } 80% { translate: 26px -14px; opacity: 0.6; } 81%, 92% { translate: 0 0; opacity: 0; } 100% { opacity: 1; } }
+@keyframes atl-ds-conduct-arm { 0%, 100% { transform: rotate(-64deg); } 25% { transform: rotate(-30deg); } 50% { transform: rotate(-52deg); } 75% { transform: rotate(-84deg); } }
+@keyframes atl-l178-note { 0%, 20% { translate: 0 0; opacity: 0; } 30% { opacity: 1; } 100% { translate: 2px -8px; opacity: 0; } }
+@keyframes atl-ds-sketch-eye { 0%, 60%, 100% { translate: 0.4px 1.8px; } 70%, 85% { translate: 0.8px -1.6px; } }
+@keyframes atl-l178-stroke { 0% { stroke-dashoffset: 1; } 30%, 100% { stroke-dashoffset: 0; } }
+@keyframes atl-l178-sway { 0%, 100% { rotate: -6deg; } 50% { rotate: 6deg; } }
+@keyframes atl-l178-chase { 0%, 100% { --atl-lean: 6deg; --atl-tail: 24deg; } 50% { --atl-lean: -6deg; --atl-tail: -24deg; } }
+@keyframes atl-l178-stretch { 0%, 100% { --atl-tail: 0deg; } 30%, 55% { --atl-tail: -26deg; } 80% { --atl-tail: 20deg; } }
+@keyframes atl-ds-balance-arm { 0%, 100% { transform: rotate(-88deg); } 25% { transform: rotate(-98deg); } 75% { transform: rotate(-78deg); } }
+@keyframes atl-l178-wobble-l { 0%, 100% { transform: rotate(88deg); } 25% { transform: rotate(78deg); } 75% { transform: rotate(98deg); } }
+@keyframes atl-l178-lean { 0%, 100% { --atl-lean: 0deg; } 25% { --atl-lean: 5deg; } 75% { --atl-lean: -5deg; } }
+@keyframes atl-l178-float { 0%, 100% { --atl-lean: -16deg; } 50% { --atl-lean: -12deg; } }
+@keyframes atl-ds-cloudpillow-arm { 0%, 100% { transform: rotate(-28deg); } 50% { transform: rotate(-36deg); } }
+@keyframes atl-ds-cloudpillow-eye { 0%, 100% { translate: 0.4px 1.2px; } 50% { translate: -0.4px 1.4px; } }
+@keyframes atl-ds-cloudpillow-tail { 0%, 100% { rotate: 0deg; } 50% { rotate: 6deg; } }
+@keyframes atl-ds-plane-eye { 0%, 36% { translate: 0 0; } 60%, 90% { translate: 1.6px -1px; } 100% { translate: 0 0; } }
+@keyframes atl-ds-plane-tail { 0%, 100% { rotate: 0deg; } 45% { rotate: 9deg; } 70% { rotate: -4deg; } }
+@keyframes atl-ds-conduct-eye { 0%, 100% { translate: 0.2px -0.4px; } 50% { translate: -0.4px -0.2px; } }
+@keyframes atl-ds-conduct-tail { 0%, 100% { rotate: -4deg; } 50% { rotate: 5deg; } }
+@keyframes atl-ds-sketch-arm { 0%, 100% { transform: rotate(-32deg); } 25% { transform: rotate(-38deg); } 50% { transform: rotate(-30deg); } 75% { transform: rotate(-40deg); } }
+@keyframes atl-ds-sketch-tail { 0%, 100% { rotate: 0deg; } 50% { rotate: 5deg; } }
+@keyframes atl-ds-kneel-arm { 0%, 100% { transform: rotate(16deg); } 50% { transform: rotate(4deg); } 75% { transform: rotate(10deg); } }
+@keyframes atl-ds-kneel-eye { 0%, 100% { translate: 0.2px 2px; } 50% { translate: -0.4px 2.2px; } }
+@keyframes atl-ds-kneel-tail { 0%, 100% { rotate: -3deg; } 50% { rotate: 6deg; } }
+@keyframes atl-ds-leanedge-arm { 0%, 100% { transform: rotate(-128deg); } 40% { transform: rotate(-122deg); } 70% { transform: rotate(-134deg); } }
+@keyframes atl-ds-leanedge-eye { 0%, 30%, 100% { translate: 0.6px 0.2px; } 50%, 80% { translate: 1.4px 0.4px; } }
+@keyframes atl-ds-tailchase-arm { 0%, 100% { transform: rotate(-13deg); } 50% { transform: rotate(-30deg); } 75% { transform: rotate(-20deg); } }
+@keyframes atl-ds-tailchase-eye { 0%, 100% { translate: 1.4px 1.2px; } 50% { translate: -1.4px 1.2px; } }
+@keyframes atl-ds-tailchase-tail { 0%, 100% { rotate: 8deg; } 50% { rotate: -8deg; } }
+@keyframes atl-ds-tailstretch-arm { 0%, 100% { transform: rotate(-13deg); } 40% { transform: rotate(-40deg); } 70% { transform: rotate(-24deg); } }
+@keyframes atl-ds-tailstretch-eye { 0%, 100% { translate: 0 0; } 40%, 60% { translate: -1px 0.8px; } }
+@keyframes atl-ds-tailstretch-tail { 0%, 100% { rotate: 0deg; } 40% { rotate: -8deg; } 80% { rotate: 6deg; } }
+@keyframes atl-ds-balance-eye { 0%, 100% { translate: 0 0.4px; } 25% { translate: 0.8px 0.4px; } 75% { translate: -0.8px 0.4px; } }
+@keyframes atl-ds-balance-tail { 0%, 100% { rotate: 0deg; } 25% { rotate: -7deg; } 75% { rotate: 7deg; } }
+@keyframes atl-ds-skyfloat-arm { 0%, 100% { transform: rotate(-150deg); } 50% { transform: rotate(-140deg); } 75% { transform: rotate(-146deg); } }
+@keyframes atl-ds-skyfloat-eye { 0%, 100% { translate: 0 -1.6px; } 50% { translate: 0.8px -1.8px; } }
+@keyframes atl-ds-skyfloat-tail { 0%, 100% { rotate: 0deg; } 50% { rotate: 5deg; } }
+@keyframes atl-ds-leanedge-tail { 0%, 100% { rotate: 0deg; } 33% { rotate: 7deg; } 66% { rotate: -5deg; } }
+:root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) {
+  /* L178 loops */
+  & #nm-buddy.nmb-act-cloudpillow .atl-ds-cloud { animation: atl-l178-breathe 6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+  & #nm-buddy.nmb-act-plane .atl-figure .nmb-arm-r { animation: atl-ds-plane-arm 5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plane .atl-ds-flight { animation: atl-l178-fly 5s ease-out infinite; }
+  & #nm-buddy.nmb-act-conduct .atl-figure .nmb-arm-r { animation: atl-ds-conduct-arm 1.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-conduct .atl-ds-note { animation: atl-l178-note 1.5s ease-out infinite; }
+  & #nm-buddy.nmb-act-sketch .nm-atlas .atl-pupil { animation: atl-ds-sketch-eye 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-sketch .atl-ds-sketch-a { animation: atl-l178-stroke 10s linear infinite; }
+  & #nm-buddy.nmb-act-sketch .atl-ds-sketch-b { animation: atl-l178-stroke 10s linear -3s infinite; }
+  & #nm-buddy.nmb-act-sketch .atl-ds-sketch-c { animation: atl-l178-stroke 10s linear -6s infinite; }
+  & #nm-buddy.nmb-act-kneel .atl-ds-sprout { animation: atl-l178-sway 2.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailchase .nm-atlas { animation: atl-l178-chase 1.6s ease-in-out 2; }
+  & #nm-buddy.nmb-act-tailstretch .nm-atlas { animation: atl-l178-stretch 3s ease-in-out 1; }
+  & #nm-buddy.nmb-act-balance .atl-figure .nmb-arm-r { animation: atl-ds-balance-arm 2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-balance .atl-figure .nmb-arm-l { animation: atl-l178-wobble-l 2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-balance .nm-atlas { animation: atl-l178-lean 2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-skyfloat .nm-atlas { animation: atl-l178-float 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-cloudpillow .atl-figure .nmb-arm-r { animation: atl-ds-cloudpillow-arm 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-cloudpillow .nm-atlas .atl-pupil { animation: atl-ds-cloudpillow-eye 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-cloudpillow .nm-atlas .atl-tail { animation: atl-ds-cloudpillow-tail 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-cloudpillow .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-cloudpillow .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-plane .nm-atlas .atl-pupil { animation: atl-ds-plane-eye 5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plane .nm-atlas .atl-tail { animation: atl-ds-plane-tail 5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plane .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-plane .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-conduct .nm-atlas .atl-pupil { animation: atl-ds-conduct-eye 1.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-conduct .nm-atlas .atl-tail { animation: atl-ds-conduct-tail 1.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-conduct .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-conduct .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-sketch .atl-figure .nmb-arm-r { animation: atl-ds-sketch-arm 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-sketch .nm-atlas .atl-tail { animation: atl-ds-sketch-tail 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-sketch .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-sketch .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-kneel .atl-figure .nmb-arm-r { animation: atl-ds-kneel-arm 2.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-kneel .nm-atlas .atl-pupil { animation: atl-ds-kneel-eye 2.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-kneel .nm-atlas .atl-tail { animation: atl-ds-kneel-tail 2.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-kneel .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-kneel .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-leanedge .atl-figure .nmb-arm-r { animation: atl-ds-leanedge-arm 8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-leanedge .nm-atlas .atl-pupil { animation: atl-ds-leanedge-eye 8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-leanedge .nm-atlas .atl-tail { animation: atl-ds-leanedge-tail 8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-leanedge .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-leanedge .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-tailchase .atl-figure .nmb-arm-r { animation: atl-ds-tailchase-arm 1.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailchase .nm-atlas .atl-pupil { animation: atl-ds-tailchase-eye 1.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailchase .nm-atlas .atl-tail { animation: atl-ds-tailchase-tail 1.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailchase .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-tailchase .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-tailstretch .atl-figure .nmb-arm-r { animation: atl-ds-tailstretch-arm 3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailstretch .nm-atlas .atl-pupil { animation: atl-ds-tailstretch-eye 3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailstretch .nm-atlas .atl-tail { animation: atl-ds-tailstretch-tail 3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tailstretch .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-tailstretch .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-balance .nm-atlas .atl-pupil { animation: atl-ds-balance-eye 2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-balance .nm-atlas .atl-tail { animation: atl-ds-balance-tail 2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-balance .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-balance .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-skyfloat .atl-figure .nmb-arm-r { animation: atl-ds-skyfloat-arm 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-skyfloat .nm-atlas .atl-pupil { animation: atl-ds-skyfloat-eye 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-skyfloat .nm-atlas .atl-tail { animation: atl-ds-skyfloat-tail 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-skyfloat .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-skyfloat .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+}
+
 /* **A desk prop reads against the body** (L-chat-246; the rule `08-consistency.css` gives the worn props).
    atlasprops.js read these at 1.4 to 2.5 to 1 against the pale blue body in both looks (the sheet is the
    same in both): a dark keyline under each fill, the line-art strokes in navy, and the three small glyphs at

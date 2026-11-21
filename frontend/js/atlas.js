@@ -2207,6 +2207,19 @@ atlasHandProps.desk = function (armR, armL, look) {
       atlasSpark(strand, -8.4, 9.4, 1.4, "atl-sparkle");
     }
   }
+  //: L178, the desk's `paper_plane` and `conduct`: a folded plane held up to throw (it flies off in the act's loop and a
+  //: dotted trail follows it), and a slim baton with a note that leaves its tip on the down beat.
+  const plane = atlasHandProps.deskHand(armR, right, "plane");
+  const flight = atlasGroup(plane, "atl-ds-flight");
+  atlasMake("path", { class: "atl-ds-plane", d: "M7.6 -10.8L0.4 -8.6L2.4 -7.4Z" }, flight);
+  atlasMake("path", { class: "atl-ds-plane-keel", d: "M7.6 -10.8L2.4 -7.4L2.8 -5.8Z" }, flight);
+  atlasMake("path", { class: "atl-ds-trail atl-ds-plane-trail", d: "M2 -6.4Q-2 -5 -5.4 -6.8" }, flight);
+  const baton = atlasHandProps.deskHand(armR, right, "baton");
+  atlasMake("path", { class: "atl-ds-baton", d: "M0.2 1.2L8.4 -11.6" }, baton);
+  atlasMake("circle", { class: "atl-ds-pen-tip", cx: 0, cy: 1.4, r: 0.9 }, baton);
+  const note = atlasGroup(baton, "atl-ds-note");
+  atlasMake("ellipse", { class: "atl-ds-snack", cx: 10.4, cy: -12.6, rx: 1.3, ry: 0.9 }, note);
+  atlasMake("path", { class: "atl-ds-ink", d: "M11.6 -12.6V-17" }, note);
 };
 //: **The rest of the desk's doings, drawn in front of the body** (a diary at
 //: the belly with a stroke that writes itself, a sky of stars and a
@@ -2274,6 +2287,30 @@ atlasHandProps.front = function (layer) {
   //: Dust brushed off a shoulder: four motes that drift down and fade.
   const dust = atlasGroup(layer, "nmp nmp-dust");
   [[15, 40, 1.3], [12.6, 44, 1], [48.6, 40, 1.3], [51, 44, 1]].forEach(([x, y, r], k) => atlasMake("circle", { class: `atl-ds-mote atl-ds-mote-${k}`, cx: x, cy: y, r }, dust));
+};
+//: **L178's props in front of the body**: a cloud pulled out of the nebula for a pillow under the chin, a sketchbook on
+//: the lap whose drawing grows a stroke at a time, a small sprout on the floor that is knelt to, and the window edge
+//: leant on at the elbow. Shown by their act (`nmb-act-cloudpillow`, `-sketch`, `-kneel`, `-leanedge`), like the diary.
+atlasHandProps.front.more = function (layer) {
+  const cloud = atlasGroup(layer, "nmp nmp-cloud");
+  atlasMake("path", { class: "atl-ds-cloud", d: "M10 46Q8 39.6 14.4 39.4Q16 33.6 22.4 35.4Q26 31 31.6 34Q37.6 31 41 35.6Q47.6 34 48.6 39.6Q55 40 53.4 46Q52 49 47 48.6H15Q11 49 10 46Z" }, cloud);
+  atlasMake("path", { class: "atl-ds-fold", d: "M15 46Q22 43.6 31 45Q40 43.6 48 46" }, cloud);
+  const sketch = atlasGroup(layer, "nmp nmp-sketch");
+  atlasMake("path", { class: "atl-ds-diary", d: "M24 51L48 51L49 64L23 64Z" }, sketch);
+  atlasMake("path", { class: "atl-ds-page", d: "M25.4 52.4H46.6L47.4 62.6H24.6Z" }, sketch);
+  atlasMake("path", { class: "atl-ds-scrawl atl-ds-sketch-a", pathLength: 1, d: "M27 61Q31 55 35 61" }, sketch);
+  atlasMake("path", { class: "atl-ds-scrawl atl-ds-sketch-b", pathLength: 1, d: "M35.4 61Q39.6 56.4 45 61" }, sketch);
+  atlasMake("circle", { class: "atl-ds-scrawl atl-ds-sketch-c", pathLength: 1, cx: 42, cy: 55.4, r: 1.6 }, sketch);
+  const speck = atlasGroup(layer, "nmp nmp-speck");
+  atlasMake("ellipse", { class: "atl-ds-ripple", cx: 50, cy: 87.4, rx: 4.2, ry: 0.9 }, speck);
+  atlasMake("path", { class: "atl-ds-stem", d: "M50 87V82.6" }, speck);
+  const sprout = atlasGroup(speck, "atl-ds-sprout", [50, 83]);
+  atlasMake("path", { class: "atl-ds-leaf", d: "M50 83.4Q46 83 46.4 79.6Q49.8 80 50 83.4Z" }, sprout);
+  atlasMake("path", { class: "atl-ds-leaf", d: "M50 82.6Q54 82.2 53.8 79Q50.4 79.2 50 82.6Z" }, sprout);
+  atlasSpark(speck, 54.6, 76.4, 1.4, "atl-ds-twinkle");
+  const ledge = atlasGroup(layer, "nmp nmp-ledge");
+  atlasMake("rect", { class: "atl-ds-mat", x: -4, y: 55, width: 20, height: 3.4, rx: 1 }, ledge);
+  atlasMake("rect", { class: "atl-ds-mat", x: 9, y: 58.4, width: 3, height: 30, rx: 0.6 }, ledge);
 };
 //: The push-ups' mat, behind the body and under its feet.
 atlasHandProps.mat = function (layer) {
@@ -2750,6 +2787,7 @@ function atlasBody(parent, id, props, look, route = null) {
     atlasBookProp(frontAt.fill);
     atlasMapProp(frontAt.fill);
     atlasHandProps.front(frontAt.fill);
+    atlasHandProps.front.more(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the
     //: reference's `startle` cell); the CSS shows it.
     const bubble = atlasGroup(frontAt.fill, "nmp nmp-bubble");

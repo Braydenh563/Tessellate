@@ -190,7 +190,8 @@ def test_6_blinks_are_irregular_two_to_seven_seconds_with_the_odd_double() -> No
     assert min(regular) >= 1.9, min(regular)  # was 3 to 7
     assert len(inside) / len(regular) >= 0.7 and max(inside) - min(inside) > 4.0, (len(inside), len(regular))
     assert 0.06 <= share <= 0.22, share  # an occasional double
-    assert all(g <= 0.45 for g in doubles)
+    # 1e-9: the clock adds 0.05 steps, so a nine-step double reads a float hair over 0.45 late in the run (L178 moved two onto it)
+    assert all(g <= 0.45 + 1e-9 for g in doubles)
     spread = {round(g) for g in regular}
     assert len(spread) >= 5, spread  # not one rhythm
 
