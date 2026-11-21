@@ -20,8 +20,8 @@ from tessellate.api.routes_entries import (
     _readable,
     _refuse_while_sealed,
     _stored_form,
-    _to_out,
 )
+from tessellate.api.entry_out import to_out
 from tessellate.api.routes_entries_refs import _reference_rows
 from tessellate.api.schemas import EntryOut
 from tessellate.core import deps, events
@@ -260,7 +260,7 @@ def restore_event(
     )
     session.commit()
     session.refresh(entry)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 @router.post("/{entry_id}/history/{revision_id}/restore", response_model=EntryOut)
@@ -285,4 +285,4 @@ def restore_revision(
     manager.log_action(session, "edited", "entry", entry.id, "restored an earlier version")
     session.commit()
     session.refresh(entry)
-    return _to_out(session, entry)
+    return to_out(session, entry)

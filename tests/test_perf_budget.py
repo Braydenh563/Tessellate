@@ -95,15 +95,15 @@ def test_each_route_stays_inside_its_budget(notebook, path):
 
 def test_a_deliberate_regression_is_caught(notebook, monkeypatch):
     """The gate's own proof: the same route made N+1 fails its budget."""
-    from tessellate.api import routes_entries
+    from tessellate.api import entry_out
 
-    real = routes_entries._to_out_bulk
+    real = entry_out.to_out_bulk
 
     def one_at_a_time(session, entries):
         for entry in entries:
             session.get(type(entry), entry.id, populate_existing=True)
         return real(session, entries)
 
-    monkeypatch.setattr(routes_entries, "_to_out_bulk", one_at_a_time)
+    monkeypatch.setattr(entry_out, "to_out_bulk", one_at_a_time)
     statements, _seconds, _status = _measure(notebook, "/entries?limit=60")
     assert statements > BUDGET["/entries?limit=60"][0]

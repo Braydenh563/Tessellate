@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.api import routes_entries, routes_files
+from tessellate.api import entry_out, routes_entries, routes_files
 from tessellate.api.schemas import EntryCreate, EntryOut
 from tessellate.core import deps, webclip, webimage
 from tessellate.core.config import user_now
@@ -152,7 +152,7 @@ def clip_page(body: ClipPageIn, response: Response, session: Session = Depends(g
     )
     if already is not None:
         response.status_code = 200
-        return ClipPageOut(entry=routes_entries._to_out(session, already), existing=True)
+        return ClipPageOut(entry=entry_out.to_out(session, already), existing=True)
     selection = body.selection.strip()
     if selection:
         extracted = {

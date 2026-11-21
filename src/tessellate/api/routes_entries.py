@@ -7,14 +7,10 @@ calls run (plan §4).
 
 from __future__ import annotations
 
-import collections
 import contextlib
-import hashlib
 import json
 import logging
 import re
-import threading
-from collections import OrderedDict
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
@@ -27,7 +23,6 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import (
     extractor,
-    filing_certainty,
     janitor,
     librarian,
 )
@@ -41,19 +36,16 @@ from tessellate.api.edit_conflicts import (
     refuse_if_tags_stale,
     refuse_unless_match,
 )
+from tessellate.api import entry_out
 from tessellate.api.routes_entries_refs import _reference_rows_batch
 from tessellate.api.schemas import (
-    AttachmentOut,
     ContextBody,
-    DocumentRefOut,
     EntryCreate,
-    EntryDateOut,
     EntryOut,
     EntryUpdate,
-    LinkOut,
     SimilarOut,
 )
-from tessellate.core import cjk, companion_events, deps, events, vault
+from tessellate.core import companion_events, deps, events, vault
 from tessellate.core.database import (
     EmbeddingRecord,
     Entry,
@@ -63,20 +55,16 @@ from tessellate.core.deps import get_session
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.entry import manager, private_space
-from tessellate.entry import filing_background, manager_wiki, tag_suggestions
-from tessellate.entry import manager_links
+from tessellate.entry import filing_background, manager_wiki, tag_reasons, tag_suggestions
 from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
-from tessellate.entry import provenance
 from tessellate.entry import service as entry_service
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
-from tessellate.repo import memberships
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
-from tessellate.repo import relation_types
 from tessellate.repo.content import NOTES
 from tessellate.search import search_manager
 
@@ -89,180 +77,20 @@ _connection_label = entry_service.connection_label
 logger = logging.getLogger("tessellate.api.entries")
 
 
-def _preview(text: str, length: int = 60) -> str:
-    """A short, readable version of a note for link chips and lists.
-
-    The [[link]] syntax is scaffolding rather than content, so a preview shows
-    the words without the brackets, seeing "[[bread proving]]" on a link chip
-    that already means "linked to bread proving" is just noise.
-    """
-    from tessellate.entry.properties import strip as strip_properties
-
-    plain = manager_text.strip_inline_markdown(manager_text.wiki_plain(strip_properties(text or "").lstrip()))
-    return plain if len(plain) <= length else plain[: length - 1] + "…"
-
-
-def _to_out(
-    session: Session,
-    entry,  # noqa: ANN001
-    filed_by: str | None = None,
-    similar: SimilarOut | None = None,
-    *,
-    category_name: str | None = None,
-    dates: list | None = None,
-    documents: list | None = None,
-    links: list | None = None,
-    attachments: list | None = None,
-    transcribed: bool | None = None,
-    member: tuple[list[str], list[str]] | None = None,
-) -> EntryOut:
-    # Decrypted here if private and the vault is open, every read of a
-    # note's text goes through this one helper.
-    #
-    # The four `category_name`/`dates`/`documents`/`links` overrides let a
-    # list endpoint pass in pre-fetched, bulk-queried values instead of this
-    # function issuing one query per entry per field (ROADMAP.md #0 priority,
-    # item 1: `GET /entries` was doing exactly that). Single-entry callers
-    # (create/update/get) pass none of them and keep the original per-entry
-    # queries below, unchanged.
-    content = manager_text.readable_content(entry)
-    resolved_dates = manager.entry_dates(session, entry) if dates is None else dates
-    resolved_documents = (
-        manager.documents_for_entry(session, entry) if documents is None else documents
-    )
-    resolved_links = manager_links.links_for_entry(session, entry) if links is None else links
-    resolved_attachments = (
-        manager_purge.attachments_for(session, entry) if attachments is None else attachments
-    )
-    #: Where the note came from (`entry/provenance.py`); the audio check is one query unless a list pre-fetched it.
-    source_kind, source_label = provenance.source_kind(
-        getattr(entry, "source_url", None),
-        getattr(entry, "source_path", None),
-        bool(provenance.transcribed_ids(session, [entry.id])) if transcribed is None and entry.id else bool(transcribed),
-    )
-    also_in, in_groups = member if member is not None else memberships.for_one(session, entry)
-    return EntryOut(
-        id=entry.id,
-        content=content,
-        content_hash=content_hash(content),
-        title=manager_text.extract_title(content),
-        #: KG4: what the note's `---` block says, and its type.
-        properties=(props := note_properties.split(content)[0]),
-        note_type=note_properties.note_type(props),
-        category=(
-            manager.category_name_for(session, entry) if category_name is None else category_name
-        ),
-        also_in=also_in,
-        groups=in_groups,
-        tags=manager.shown_tags(entry),
-        ai_confidence=filing_certainty.shown(
-            entry.ai_confidence, user_filed=bool(getattr(entry, "user_filed", False))
-        ),
-        tag_suggest_off=bool(getattr(entry, "tag_suggest_off", False)),
-        suggested_tags=(offered := _open_suggestions(entry)),
-        suggested_tag_reasons=_tag_reasons(content, offered),
-        #: Never a private note's: derived from its text, as its suggestions
-        #: are (tests/test_private_suggested_tags.py).
-        discarded_tags=[] if getattr(entry, "is_private", False) else tag_suggestions.json_tags(getattr(entry, "discarded_tags", "[]")),
-        access_count=entry.access_count,
-        last_opened_at=getattr(entry, "last_opened_at", None),
-        edited_at=getattr(entry, "edited_at", None),
-        parent_id=entry.parent_id,
-        pinned=entry.pinned,
-        colour=getattr(entry, "colour", None),
-        user_filed=entry.user_filed,
-        is_private=bool(getattr(entry, "is_private", False)),
-        is_draft=bool(getattr(entry, "is_draft", False)),
-        source_url=getattr(entry, "source_url", None),
-        source_title=getattr(entry, "source_title", None),
-        source_path=getattr(entry, "source_path", "") or "",
-        source_kind=source_kind,
-        source_label=source_label,
-        is_board=bool(getattr(entry, "is_board", False)),
-        board_kind=getattr(entry, "board_kind", None),
-        map_topic=bool(getattr(entry, "map_topic", False)),
-        workspace_id=getattr(entry, "workspace_id", "default") or "default",
-        created_at=entry.created_at,
-        deleted_at=entry.deleted_at if entry.is_deleted else None,
-        archived_at=entry.archived_at,
-        dates=_date_outs(resolved_dates),
-        documents=[
-            DocumentRefOut(id=doc.id, title=doc.title) for doc in resolved_documents
-        ],
-        links=_link_outs(session, entry, resolved_links),
-        attachments=_attachment_outs(resolved_attachments),
-        filed_by=filed_by,
-        filing_state=getattr(entry, "filing_state", "done") or "done",
-        similar=similar,
-    )
-
-
-def _date_outs(dates: list) -> list[EntryDateOut]:
-    return [
-        EntryDateOut(
-            phrase=d.phrase,
-            at=d.at.date(),
-            precision=d.precision,
-            time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
-        )
-        for d in dates
-    ]
-
-
-def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: ANN001
-    return [
-        LinkOut(
-            link_id=link.id,
-            entry_id=other.id,
-            preview=entry_service.connection_label(other, 60),
-            reason=link.reason,
-            reason_confidence=link.reason_confidence,
-            # The one fact the merged list could never carry. See
-            # `LinkOut.direction`.
-            direction="out" if link.source_entry_id == entry.id else "in",
-            link_type=link.link_type,
-            link_label=manager_links.relation_label(
-                relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
-            ),
-            props=link.props,
-        )
-        for link, other in links
-    ]
-
-
-def _attachment_outs(attachments: list) -> list[AttachmentOut]:
-    return [
-        AttachmentOut(
-            id=a.id,
-            filename=a.filename,
-            size=a.size,
-            is_image=a.mime.startswith("image/"),
-            created_at=a.created_at.isoformat() if a.created_at else "",
-        )
-        for a in attachments
-    ]
 
 
 
 
-def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
-    """The kept suggestions still worth showing: not on the note already and
-    not discarded (a tag added by hand since filing drops out by itself).
-    None while the note is set to "Don't suggest tags" (brief 89); what was
-    kept is still on the row and comes back when that is cleared. None while
-    a private note is locked, like its tags (INBOX 1437)."""
-    if getattr(entry, "tag_suggest_off", False) or manager.note_is_sealed(getattr(entry, "is_private", False)):
-        return []
-    have = {tag.casefold() for tag in manager.entry_tags(entry)}
-    gone = {tag.casefold() for tag in tag_suggestions.json_tags(getattr(entry, "discarded_tags", "[]"))}
-    return [
-        tag for tag in tag_suggestions.json_tags(getattr(entry, "suggested_tags", "[]"))
-        if tag.casefold() not in have and tag.casefold() not in gone
-    ]
 
 
-#: Longest note whose reasons are remembered: the cache holds the text as its key.
-REASONS_CACHE_CHARS = 20_000
+
+
+
+
+
+
+
+
 #: A note longer than this, opened, is the in-app companion's reading glasses (`avatars.js` `nameMarkBuddyNoteOpened`).
 LONG_NOTE_CHARS = 1200
 
@@ -272,104 +100,20 @@ def _kept_private(session: Session, entry) -> bool:  # noqa: ANN001
     return bool(entry.is_private) or private_space.is_private_space(session, entry.workspace_id)
 
 
-def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
-    """Each offered tag's one line for its chip (decision 5: each explained).
-
-    A pure function of the text and the tags (the taxonomy is read once per
-    process), so a list that reads the same two hundred notes on every load
-    remembers the answers: 5 ms a note was 2.2 of 3.4 profiled seconds of
-    `GET /entries?limit=200` at 530 notes (BK10)."""
-    if not tags or not content:
-        return {}
-    if len(content) > REASONS_CACHE_CHARS:
-        return dict(_reasons_for(content, tuple(tags)))
-    return dict(_cached_reasons(content, tuple(tags)))
-
-
-def _reasons_for(content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
-    from tessellate.ai import tagging, taxonomy
-
-    own = tagging.clean(content)
-    hits = taxonomy.topic_hits(own)
-    note_stems = tagging.stems(tagging.tokens(own))
-    return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits, note_stems, own)))
-
-
-#: Rows the reasons cache keeps: more than a whole `GET /entries` page, or a list
-#: read in order evicts each row before the next load reaches it and hits nothing.
-REASONS_CACHE_ROWS = 5200
-
-
-class _ReasonsCache:
-    """`_reasons_for` remembered per (text, tags), keyed by a 16-byte digest of
-    the text so 5,000 rows cost about 3 MB whatever the notes' length (L-world-class-161:
-    the `lru_cache` it replaces held the text itself and was 1,024 rows, so a
-    5,000 page thrashed it). Same `cache_clear` / `cache_info` as `lru_cache`."""
-
-    Info = collections.namedtuple("Info", "hits misses maxsize currsize")
-
-    def __init__(self, maxsize: int) -> None:
-        self._rows: OrderedDict[tuple[bytes, tuple[str, ...]], tuple[tuple[str, str], ...]] = OrderedDict()
-        self._maxsize, self._hits, self._misses = maxsize, 0, 0
-        self._lock = threading.Lock()
-
-    def __call__(self, content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
-        key = (hashlib.blake2b(content.encode("utf-8", "surrogatepass"), digest_size=16).digest(), tags)
-        with self._lock:
-            found = self._rows.get(key)
-            if found is not None:
-                self._rows.move_to_end(key)
-                self._hits += 1
-                return found
-            self._misses += 1
-        value = _reasons_for(content, tags)  # outside the lock: it is the slow part
-        with self._lock:
-            self._rows[key] = value
-            while len(self._rows) > self._maxsize:
-                self._rows.popitem(last=False)
-        return value
-
-    def cache_clear(self) -> None:
-        with self._lock:
-            self._rows.clear()
-            self._hits = self._misses = 0
-
-    def cache_info(self) -> tuple:
-        return self.Info(self._hits, self._misses, self._maxsize, len(self._rows))
-
-
-_cached_reasons = _ReasonsCache(REASONS_CACHE_ROWS)
 
 
 
 
 
 
-def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
-    """`_to_out` for a whole list-endpoint page in a fixed number of queries
-    instead of ~4 per entry (ROADMAP.md #0 priority, item 1)."""
-    ids = [e.id for e in entries]
-    category_names = manager.bulk_category_names(session, entries)
-    dates_by_id = manager.entry_dates_bulk(session, ids)
-    documents_by_id = manager.documents_for_entries_bulk(session, ids)
-    links_by_id = manager.links_for_entries_bulk(session, ids)
-    attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
-    heard = provenance.transcribed_ids(session, ids)
-    also_in, in_groups = memberships.bulk(session, entries)
-    return [
-        _to_out(
-            session,
-            e,
-            category_name=category_names.get(e.category_id, manager.UNCATEGORISED),
-            dates=dates_by_id.get(e.id, []),
-            documents=documents_by_id.get(e.id, []),
-            links=links_by_id.get(e.id, []),
-            attachments=attachments_by_id.get(e.id, []),
-            transcribed=e.id in heard,
-            member=(also_in.get(e.id, []), in_groups.get(e.id, [])),
-        )
-        for e in entries
-    ]
+
+
+
+
+
+
+
+
 
 
 def _find_near_duplicate(session: Session, entry) -> SimilarOut | None:  # noqa: ANN001
@@ -379,7 +123,7 @@ def _find_near_duplicate(session: Session, entry) -> SimilarOut | None:  # noqa:
     if found is None:
         return None
     other, score = found
-    return SimilarOut(id=other.id, preview=_preview(other.content), similarity=round(score, 2))
+    return SimilarOut(id=other.id, preview=manager_text.preview(other.content), similarity=round(score, 2))
 
 
 def _existing_entry(session: Session, entry_id: int):  # noqa: ANN202
@@ -586,7 +330,7 @@ def _cheer_note_count(session: Session, entry: Entry) -> None:
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
     earlier = filing_background._already_delivered(session, body.client_key)
     if earlier is not None:
-        return _to_out(session, earlier, filed_by=None, similar=None)
+        return entry_out.to_out(session, earlier, filed_by=None, similar=None)
     parent = _existing_entry(session, body.parent_id) if body.parent_id is not None else None
     sealed, by_ask = _starts_sealed(session, body)
     if sealed:
@@ -611,7 +355,7 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         earlier = filing_background._already_delivered(session, body.client_key) if body.client_key else None
         if earlier is None:
             raise
-        return _to_out(session, earlier, filed_by=None, similar=None)
+        return entry_out.to_out(session, earlier, filed_by=None, similar=None)
     if parent is not None:
         entry.parent_id = parent.id
     _mark_new_entry(entry, body, filed_by)
@@ -627,7 +371,7 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     else:
         _cheer_note_count(session, entry)
     _finish_new_entry(session, entry, body, defer)
-    out = _to_out(
+    out = entry_out.to_out(
         session,
         entry,
         filed_by=filed_by,
@@ -712,7 +456,7 @@ def daily_note(day: str, session: Session = Depends(get_session)) -> EntryOut:
     found = entry_service.daily_note(session, _daily_date(day))
     if found is None:
         raise HTTPException(status_code=404, detail="Nothing is written on that day yet.")
-    return _to_out(session, found)
+    return entry_out.to_out(session, found)
 
 
 @router.post("/daily/{day}", response_model=EntryOut)
@@ -726,7 +470,7 @@ def open_daily_note(day: str, session: Session = Depends(get_session)) -> EntryO
     the same reason: whether this call made the note is not the caller's
     business and is not stable between two presses a second apart.
     """
-    return _to_out(session, entry_service.open_daily_note(session, _daily_date(day)))
+    return entry_out.to_out(session, entry_service.open_daily_note(session, _daily_date(day)))
 
 
 class FilingStopBody(BaseModel):
@@ -758,7 +502,7 @@ def decide_filing(
     """The review queue's Accept (`entry_service.accept_filing`)."""
     entry = NOTES.writable(session, entry_id)
     entry_service.accept_filing(session, entry, body.accepted)
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.get("/{entry_id}/filing")
@@ -834,7 +578,7 @@ def suggest_tags_for_draft(
             _SAID_ONCE.add("no-model-tags")
             logger.info("no model running: tag suggestions come from the notebook's own tags")
     offered = tag_suggestions.engine_tags(session, content, body.tags, suggested, None)
-    return {"suggested_tags": offered, "suggested_tag_reasons": _tag_reasons(content, offered)}
+    return {"suggested_tags": offered, "suggested_tag_reasons": tag_reasons.reasons(content, offered)}
 
 
 class SuggestedTagsBody(BaseModel):
@@ -882,7 +626,7 @@ def answer_suggested_tags(
     kept_folded = {tag.casefold() for tag in kept}
     entry.suggested_tags = json.dumps(kept + [tag for key, tag in restored.items() if key not in kept_folded])
     session.commit()
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.post("/{entry_id}/context", response_model=EntryOut)
@@ -948,7 +692,7 @@ def add_context(
             logger.warning("re-filing after new context failed", exc_info=True)
             filed_by = None  # AI down, the note keeps its old category
 
-    return _to_out(session, entry, filed_by=filed_by)
+    return entry_out.to_out(session, entry, filed_by=filed_by)
 
 
 class ImproveBody(BaseModel):
@@ -1070,51 +814,12 @@ ENTRIES_BY_IDS_MAX = 200
 ENTRIES_PREVIEW_MAX = 2000
 
 
-_TASK_OPEN = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[ \t]\]", re.M)
-_TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
-#: The list's own `[[wiki link]]` test (`matchesSearch`, `is:linked`), for the part of a note past the preview.
-_WIKI_LINK = re.compile(r"\[\[[^\]\n]{1,120}\]\]")
 
 
-_FENCE = re.compile(r"^[ \t]*(?:```|~~~)")
-_ATX = re.compile(r"^#{1,6}[ \t]+\S")
 
 
-def _heading_count(text: str) -> int:
-    """`#` headings outside code fences, as the card's outline (`mdTocEntries`) counts them."""
-    fenced, count = False, 0
-    for line in text.split("\n"):
-        if _FENCE.match(line):
-            fenced = not fenced
-        elif not fenced and _ATX.match(line):
-            count += 1
-    return count
 
 
-def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
-    """`rows` with each note's text cut to `preview` characters (0 keeps it
-    whole), at the last space before the cut when there is one, and
-    `content_truncated` set so a caller knows it holds a part. `content_hash`
-    stays the whole text's, so a save is still checked against the note as it
-    is. A list that draws a row's first lines never needs the rest (BK10)."""
-    if not preview:
-        return rows
-    for row in rows:
-        #: The numbers a list draws from the whole text (the dashboard's words and open tasks), counted before the cut.
-        row.word_count = cjk.word_count(row.content)
-        row.tasks_open = len(_TASK_OPEN.findall(row.content))
-        row.tasks_done = len(_TASK_DONE.findall(row.content))
-        row.wiki_linked = bool(_WIKI_LINK.search(row.content))
-        row.heading_count = _heading_count(row.content)
-        #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
-        #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
-        #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.
-        whole = row.is_private or "meeting" in {v.lower() for v in row.properties.get("type", [])}
-        if len(row.content) > preview and not whole:
-            cut = row.content[:preview]
-            row.content = (cut.rsplit(None, 1)[0] if " " in cut or "\n" in cut else cut).rstrip()
-            row.content_truncated = True
-    return rows
 
 
 @router.get("", response_model=list[EntryOut])
@@ -1216,7 +921,7 @@ def list_entries(
         # second threshold here was a different number for the same job.
         matched = [e for e, _score in results if e.id in scope_ids]
         response.headers["X-Total-Count"] = str(len(matched))
-        return _previewed(_to_out_bulk(session, matched), preview)
+        return entry_out.previewed(entry_out.to_out_bulk(session, matched), preview)
 
     if ids:
         parts = [part.strip() for part in ids.split(",") if part.strip()]
@@ -1232,7 +937,7 @@ def list_entries(
         wanted = [int(part) for part in parts]
         entries = manager.list_entries(session, boards=boards, ids=wanted)
         response.headers["X-Total-Count"] = str(manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True))
-        return _previewed(_to_out_bulk(session, entries), preview)
+        return entry_out.previewed(entry_out.to_out_bulk(session, entries), preview)
 
     if deleted or archived:
         # The bin and the archive page by position: both are short, both sort
@@ -1267,7 +972,7 @@ def list_entries(
             )
         total = manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True)
     response.headers["X-Total-Count"] = str(total)
-    return _previewed(_to_out_bulk(session, entries), preview)
+    return entry_out.previewed(entry_out.to_out_bulk(session, entries), preview)
 
 
 # Declared before /{entry_id} so "most-accessed" isn't parsed as an id.
@@ -1276,7 +981,7 @@ def most_accessed(session: Session = Depends(get_session)) -> list[EntryOut]:
     """Top entries by how often they've been opened or matched a
     question: the quick-access dashboard."""
     entries = manager.most_accessed_entries(session, limit=5)
-    return _to_out_bulk(session, entries)
+    return entry_out.to_out_bulk(session, entries)
 
 
 # Onboarding's own "is this notebook empty" check: deliberately just a
@@ -1477,7 +1182,7 @@ def get_entry(
         if bool(getattr(entry, "is_private", False)) and vault.key() is not None:
             manager.log_action(session, "decrypted", "entry", entry.id)
         session.commit()
-    out = _to_out(session, entry)
+    out = entry_out.to_out(session, entry)
     #: B7: the note's version as an HTTP entity tag, the same text hash the
     #: editor already sends back as `base_hash`, so a client that never reads
     #: the body's fields can still say "only if it is still this version" with
@@ -1607,7 +1312,7 @@ def update_entry(
     refuse_unless_match(
         if_match,
         current_hash=content_hash(manager_text.readable_content(entry)),
-        current=lambda: _to_out(session, entry),
+        current=lambda: entry_out.to_out(session, entry),
         noun="note",
     )
     #: Two windows, one note (WORLD_CLASS_PLAN 22.1 item 5): a save that
@@ -1619,14 +1324,14 @@ def update_entry(
             base_hash=body.base_hash,
             current_text=manager_text.readable_content(entry),
             new_text=body.content,
-            current=lambda: _to_out(session, entry),
+            current=lambda: entry_out.to_out(session, entry),
             noun="note",
         )
     refuse_if_tags_stale(
         base_tags=body.base_tags,
         current_tags=manager.entry_tags(entry),
         new_tags=body.tags,
-        current=lambda: _to_out(session, entry),
+        current=lambda: entry_out.to_out(session, entry),
         noun="note",
     )
     content_changed, new_content = _content_change(entry, body)
@@ -1657,7 +1362,7 @@ def update_entry(
     _apply_flags(session, entry, body)
     if content_changed:
         _after_content_edit(session, entry, body)
-    out = _to_out(session, entry)
+    out = entry_out.to_out(session, entry)
     out.wiki_rename = _wiki_rename(session, entry, old_name)
     response.headers["ETag"] = entity_tag(out.content_hash)
     return out
@@ -1693,20 +1398,20 @@ def delete_entry(
     refuse_unless_match(
         if_match,
         current_hash=content_hash(manager_text.readable_content(entry)),
-        current=lambda: _to_out(session, entry),
+        current=lambda: entry_out.to_out(session, entry),
         noun="note",
     )
     if not entry.is_deleted:
         manager.soft_delete_entry(session, entry)
         companion_events.record("private_note" if _kept_private(session, entry) else "note_binned")  # kind and time only (W31)
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.post("/{entry_id}/restore", response_model=EntryOut)
 def restore_entry(entry_id: int, session: Session = Depends(get_session)) -> EntryOut:
     entry, _was_binned = content_repo.restore(session, "note", entry_id)
     session.commit()
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.post("/{entry_id}/archive", response_model=EntryOut)
@@ -1717,7 +1422,7 @@ def archive_entry(entry_id: int, session: Session = Depends(get_session)) -> Ent
     entry = NOTES.writable(session, entry_id)
     if not entry.archived_at:
         manager.archive_entry(session, entry)
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.post("/{entry_id}/unarchive", response_model=EntryOut)
@@ -1725,7 +1430,7 @@ def unarchive_entry(entry_id: int, session: Session = Depends(get_session)) -> E
     entry = NOTES.writable(session, entry_id)
     if entry.archived_at:
         manager.unarchive_entry(session, entry)
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.delete("/{entry_id}/purge")
@@ -1884,7 +1589,7 @@ def set_entry_privacy(
             status_code=409,
             detail="Unlock the app first: the encryption key isn't loaded.",
         )
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.post("/{entry_id}/generate-title", response_model=EntryOut)
@@ -1922,7 +1627,7 @@ def generate_entry_title(
     if not title:
         raise HTTPException(status_code=502, detail="The AI didn't return a usable title.")
     entry_service.retitle(session, entry, content, title, f"generated title: {title}")
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 def _composed_title(session: Session, entry, content: str) -> EntryOut:  # noqa: ANN001
@@ -1936,7 +1641,7 @@ def _composed_title(session: Session, entry, content: str) -> EntryOut:  # noqa:
     if not title:
         raise HTTPException(status_code=422, detail="There's no sentence here to take a title from yet.")
     entry_service.retitle(session, entry, content, title, f"title from its own words: {title}")
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 @router.post("/{entry_id}/remove-title", response_model=EntryOut)
@@ -1953,7 +1658,7 @@ def remove_entry_title(entry_id: int, session: Session = Depends(get_session)) -
             status_code=400, detail="Make this note readable first: private notes can't be edited here."
         )
     entry_service.remove_title(session, entry)
-    return _to_out(session, entry)
+    return entry_out.to_out(session, entry)
 
 
 
@@ -2037,6 +1742,6 @@ def extract_commit(body: ExtractCommitBody, session: Session = Depends(get_sessi
         body.source_document_id,
     )
     return {
-        "notes": _to_out_bulk(session, created),
+        "notes": entry_out.to_out_bulk(session, created),
         "links_created": links_created,
     }

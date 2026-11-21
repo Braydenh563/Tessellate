@@ -19,8 +19,8 @@ from tessellate.api.routes_entries import (
     LinkReasonBody,
     _existing_entry,
     _refuse_while_sealed,
-    _to_out,
 )
+from tessellate.api.entry_out import to_out
 from tessellate.api.routes_entities import names_in_note
 from tessellate.api.routes_entries_refs import _reference_rows
 from tessellate.api.schemas import EntryOut
@@ -92,7 +92,7 @@ def create_link(
         raise HTTPException(
             status_code=400, detail="Those notes are already linked, or you tried to link a note to itself."
         )
-    return _to_out(session, source)
+    return to_out(session, source)
 
 
 @router.delete("/{entry_id}/links/{link_id}", response_model=EntryOut)
@@ -102,7 +102,7 @@ def delete_link(
     entry = NOTES.writable(session, entry_id)
     link = relations_repo.get_for_note(session, entry.id, link_id)
     manager_links.delete_link(session, link)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 @router.patch("/{entry_id}/links/{link_id}", response_model=EntryOut)
@@ -122,7 +122,7 @@ def patch_link(
         manager_links.set_link_props(session, link, body.props)
     if "two_way" in sent:
         manager_links.set_link_two_way(session, link, body.two_way)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 @router.put("/{entry_id}/links/{link_id}/reason", response_model=EntryOut)
@@ -136,7 +136,7 @@ def update_link_reason(
     link = relations_repo.get_for_note(session, entry.id, link_id)
     try:
         manager_links.set_link_reason(session, link, body.reason)
-        return _to_out(session, entry)
+        return to_out(session, entry)
     except Exception:
         # The exception text can carry paths or content; only the log gets it
         # (see test_removing_a_model_never_returns_the_filesystem_path).

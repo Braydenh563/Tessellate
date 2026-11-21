@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.api import routes_entries, routes_graph
+from tessellate.api import routes_graph
 from tessellate.entry import manager_text
 from tests._app_js import app_js_text
 
@@ -20,7 +20,7 @@ CONTROLS = ["‪", "‫", "‬", "‭", "‮", "⁦", "⁧", "⁨", "⁩"]
 def test_server_labels_drop_every_bidi_control(mark):
     text = f"# Pay {mark}rtl{mark} bill\n\nbody {mark}words"
     assert mark not in (manager_text.extract_title(text) or "")
-    assert mark not in routes_entries._preview(text)
+    assert mark not in manager_text.preview(text)
     assert mark not in routes_graph._preview(text)
     assert manager_text.extract_title(text) == "Pay rtl bill"
 

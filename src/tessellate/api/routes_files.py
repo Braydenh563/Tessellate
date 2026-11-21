@@ -30,7 +30,8 @@ from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
 from tessellate.api.downloads import sealed_aware, unsealed
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
-from tessellate.api.routes_entries import _existing_entry, _to_out
+from tessellate.api.entry_out import to_out
+from tessellate.api.routes_entries import _existing_entry
 from tessellate.api.schemas import EntryOut
 from tessellate.api.this_computer import this_computer_only
 from tessellate.core import (
@@ -183,7 +184,7 @@ def upload_file(
     new_id = getattr(attachment, "id", None)
     if new_id is not None:
         docreader.read_in_background(new_id)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 def _refuse_while_sealed(session: Session, attachment: Attachment) -> Attachment:
@@ -1048,7 +1049,7 @@ def delete_file(
         {"bytes": _within(config.uploads_dir, attachment.stored_name)},
     )
     manager_purge.delete_attachment(session, attachment, config.uploads_dir)
-    out = _to_out(session, entry)
+    out = to_out(session, entry)
     return JSONResponse({**out.model_dump(mode="json"), "undo_token": token})
 
 
@@ -1123,7 +1124,7 @@ def rename_file(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except FileExistsError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 # --- saving a file the app generated (§35E) ---------------------------------------
