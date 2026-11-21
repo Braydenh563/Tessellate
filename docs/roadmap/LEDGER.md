@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 97 | 29 | 0 | 0 | 126 |
+| world-class | 0 | 94 | 29 | 0 | 0 | 123 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 487 | 100 | 2 | 111 | 959 |
+| all | 372 | 484 | 100 | 2 | 111 | 956 |
 
 ## graph
 
@@ -539,7 +539,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
 - [ ] **L-world-class-108** `world-class` open, S: Verify 391's agent items: mind maps in Find anything, digest filler, activity panel alignment, image filter, a closed panel's finished answer. From WORLD_CLASS_PLAN.md:2415. Evidence: WORLD_CLASS_PLAN.md:2415 lists them as 'agents running', with no result recorded
 - [ ] **L-world-class-114** `world-class` open, M: Help accordion: name its thirteen details, move them to the recipe family, lint that every id has a Guide topic. From WORLD_CLASS_PLAN.md:2952. Evidence: no accordion-to-Guide lint in tests (grep 'accordion' hits only settings tests)
-- [ ] **L-world-class-115** `world-class` open, S: Capture: hold staged pictures and files while offline. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'staged pictures and files cannot be held offline'
 - [ ] **L-world-class-118** `world-class` open, S: First run: fewer questions before the dashboard, and a sample notebook. From WORLD_CLASS_PLAN.md:3598. Evidence: WORLD_CLASS_PLAN.md:3598 'still asks three questions before the dashboard'; :3601 'no sample notebook'
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
@@ -557,8 +556,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-185** `world-class` open, M: Streamline, enhance and optimise the backend and every AI interaction (ongoing). From IDEAS.md:129. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
-- [ ] **L-world-class-202** `world-class` open, S: Ctrl+Z inside dialog text fields, and the wording of the Ctrl+S answer on tabs with nothing to save. From L-world-class-102. Evidence: Ctrl+S audit was driven on 7 tabs; Ctrl+Z in dialog text fields (promptDialog and others) was not measured reliably, and tabs with nothing to save answer 'Nothing to save yet.' where a closer line would say what to do.
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
 - [ ] **L-world-class-231** `world-class` open, S: Reproduce the 486 ms first document open at 2,000 notes and profile it before choosing a warm. From L-world-class-40, 2026-11-14. Evidence: Cold probe (fresh page each, Documents tab idle 6.5 s, 6 docs of 80 sections, 1440 wide): openDocument first call 35, 49, 46, 39 ms, second call 53 to 81 ms, so the 486 ms first open does not reproduce without the 2,000-note data; the cost is the data size, not a cold compile a warm can remove. Needs a profile at 2,000 notes before any third warm is written.
 - [ ] **L-world-class-320** `world-class` open, M: Pin the optional pip extras and the embedding weights: a version bound and --require-hashes for each pip extra, a sha256 for each weights file, refused on mismatch like the download extras. From SECURITY.md, Threat model T23 (L-world-class-18). Evidence: src/tessellate/core/extras.py:478-575 hands pip bare names (pypdfium2, faster-whisper, markitdown[pdf,docx,pptx], pytesseract, rapidocr_onnxruntime, pywebview, pystray, Pillow) with no version bound and no hash; only fastembed is bounded (requirements.txt:58, via the -c constraints copy, extras.py:1670). Embedding weights are checked against a size floor only (core/embedmodels.py:620-623, 30% of the stated size), no digest.

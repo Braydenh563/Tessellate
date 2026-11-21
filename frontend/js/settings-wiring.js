@@ -570,102 +570,25 @@ function flashSaved(el) {
   ring.finished.then(finish, finish);
 }
 
-//: **Ctrl+S saves what is in front of you** (INBOX 74, asked for: "register
-//: the ctrl s command for saving progress such as settings"). Settings: the
-//: visible section's own Save button, or the nav button for a section that
-//: saves as you change it; Documents: the document; Capture: the note.
-//:
-//: **Called from `runShortcut`, not from a Ctrl+S branch of its own.** This
-//: was written as a second `if` further down the same keydown handler, and
-//: it never ran once: `shortcuts` carries a `save` binding whose default keys
-//: are Ctrl+S, and the chorded loop at the top of that handler matches it,
-//: calls `runShortcut("save")` and returns first. Measured live with the
-//: Settings modal open (`scratchpad/ui-sweeps/ctrlss4.js`): `matchesShortcut`
-//: against a Ctrl+S event returns the `save` binding, so every keystroke went
-//: to that two-line handler, which knows only about Documents and Capture and
-//: called `saveEntry()` with the settings modal in front of the reader. Both
-//: halves of the report ("doesnt work", "needs visual confirmation") were
-//: still true for that reason. `runShortcut` now calls this, so the binding
-//: is the one place Ctrl+S is decided and rebinding it still works.
+//: **Ctrl+S saves what is in front of you** (INBOX 74): Settings (the visible section's Save, or a ring on its nav button),
+//: Documents (the document), Notes (the note). Called from `runShortcut`, so the `save` binding stays the one place
+//: Ctrl+S is decided and rebinding works (`scratchpad/ui-sweeps/ctrlss4.js`).
 function saveWhatIsInFront() {
+  //: Settings: the Save on screen (by id suffix, else any button reading "Save"; a hidden section's buttons have no layout), else the ring goes on the section's nav button because it saves as you change it.
   if (settingsModalOpen()) {
-    //: **Look for a control that is actually on screen, not for a naming
-    //: convention.** Reported on 2026-09-09: "ctrl s for saving settings
-    //: changes while on the settings modal doesnt work and it needs visual
-    //: confirmation as well." Measured with the modal open on its default
-    //: section: seventeen `.settings-section` elements, exactly one of them
-    //: visible (`#settings-models`), and every one of the six
-    //: `button[id$="-save"]` in the document laid out at zero height,
-    //: because they all belong to other sections. So the lookup found
-    //: nothing every time and the keystroke answered "this section saves as
-    //: you change it" whether or not that was true.
-    //:
-    //: `offsetParent` is the test that a screenshot would use: is this
-    //: button on screen. The id suffix stays as the first preference, since
-    //: it is exact where it applies, and a visible "Save…" button anywhere
-    //: in the modal is the fallback for the sections that never adopted it.
-    const onScreen = (el) => el && el.offsetParent !== null && !el.disabled;
-    const section = [...document.querySelectorAll(".settings-section")].find(
-      (el) => el.offsetParent !== null,
-    );
-    let save = [...(section?.querySelectorAll('button[id$="-save"]') || [])].find(onScreen);
-    if (!save) {
-      save = [...document.querySelectorAll("#settings-modal button")].find(
-        (el) => onScreen(el) && /^save\b/i.test((el.textContent || "").trim()),
-      );
-    }
-    if (save) {
-      save.click();
-      //: The visual half of the same report. The save handlers each raise
-      //: their own toast, but a keystroke with no immediate mark on the
-      //: control it pressed reads as a keystroke that went nowhere, so the
-      //: button itself acknowledges the press before its handler answers.
-      flashSaved(save);
-    } else {
-      //: **The other fifteen sections acknowledge the keystroke too.**
-      //: Measured across all seventeen (`scratchpad/ui-sweeps/settingssave.js`):
-      //: exactly two, Appearance and Preferences, have a Save button on
-      //: screen. Everywhere else, including the section Settings opens on,
-      //: Ctrl+S raised a toast and marked nothing, so the half of the report
-      //: that asked for visual confirmation was still true for most of the
-      //: modal. The nav button for the open section is what gets the ring:
-      //: it is small, always in view, and it is the control that names the
-      //: page the keystroke was aimed at, where the section panel itself is
-      //: a scrolling column whose edges are mostly off screen.
-      flashSaved(document.querySelector("#settings-nav button.active"));
-      toast("Nothing on this settings page needs saving. It saves as you change it.");
-    }
-    return;
+    const buttons = [...document.querySelectorAll("#settings-modal button")].filter((el) => el.offsetParent && !el.disabled);
+    const save = buttons.find((el) => el.matches('[id$="-save"]')) || buttons.find((el) => /^save\b/i.test(el.textContent.trim()));
+    save?.click();
+    flashSaved(save || document.querySelector("#settings-nav button.active"));
+    return save || toast("Nothing to save here. It saves as you go.");
   }
-  if (!$("tab-documents")?.classList.contains("hidden") && typeof saveDocument === "function") {
-    saveDocument();
-    return;
-  }
-  //: **Capture, and the button does not have to be on screen.** This branch
-  //: required `offsetParent`, which was written while the code was unreachable
-  //: and is wrong: measured on a fresh Notes tab, the composer is collapsed and
-  //: `#save-btn.offsetParent` is null, so with the branch finally running every
-  //: keyboard save on Notes answered "Nothing to save here." The question the
-  //: keystroke asks is whether anything has been written, not whether the
-  //: button happens to be laid out. What the visibility does decide is the
-  //: mark: there is no point ringing a control nobody can see.
-  const capture = $("save-btn");
-  if (capture && !capture.disabled) {
-    //: Ctrl+S on an empty composer is a keystroke, not a mistake worth
-    //: scolding: pressing the button would raise the composer's own "write
-    //: something first" error, which is the line the owner found sitting
-    //: there having "didnt do anything".
-    const written = ($("entry-content")?.value || "").trim() || ($("entry-title")?.value || "").trim();
-    if (!written) {
-      toast("Nothing to save yet.");
-      return;
-    }
-    capture.click();
-    if (capture.offsetParent) flashSaved(capture);
-    return;
-  }
-  toast("Nothing to save here.");
-  return;
+  if (!$("tab-documents")?.classList.contains("hidden") && typeof saveDocument === "function") return saveDocument();
+  //: Notes only; it asks whether anything is written, not whether the collapsed button is laid out.
+  const capture = $("tab-notes")?.classList.contains("hidden") ? null : $("save-btn");
+  if (!capture || capture.disabled) return toast("Nothing to save here. It saves as you go.");
+  if (!($("entry-content")?.value.trim() || $("entry-title")?.value.trim())) return toast("Nothing to save yet. Write a note first.");
+  capture.click();
+  capture.offsetParent && flashSaved(capture);
 }
 
 //: Item 9: a key within 1.5 s of typing in an editor is not a command. The
@@ -921,6 +844,8 @@ document.addEventListener("keydown", (e) => {
   }
   if (e.key === "Escape") closeActionMenus();
   if (e.key === "Escape" && linkSource !== null) linkCancel();
+  //: Escape puts away any "Undo" notice once nothing else took the key (L-world-class-200); Ctrl+Z still undoes it from the bar.
+  if (e.key === "Escape" && !e.defaultPrevented) document.querySelectorAll(".toast").forEach((n) => n.toastKey?.endsWith(":Undo") && dismissToast(n));
 });
 
 // Clicking anywhere outside an open ⋯ menu closes it (Wave L).

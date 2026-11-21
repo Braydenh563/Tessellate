@@ -615,16 +615,19 @@ function captureNeedsWords() {
 }
 
 //: **The server is gone, not the note** (INBOX 434): held in the outbox
-//: (quick-note.js) and the box cleared. Staged files cannot be held, so then
-//: the words stay, saying why. Answers whether it said anything.
+//: (quick-note.js) and the box cleared; staged pictures and files go with it
+//: (IndexedDB, L-world-class-115). When storage refuses, the words stay, saying
+//: why. Answers whether it said anything.
 async function heldOffline(error, body, contentBox, titleBox) {
   if (!(error instanceof TypeError)) return false;
   const status = $("save-status");
-  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd(body))) {
+  if (!(await noteOutboxAdd(body, { images: captureStagedImages, files: captureStagedFiles }))) {
     status.textContent = "The server is not answering. Your note is kept here; save again when it is back.";
     status.classList.add("error");
     return true;
   }
+  clearStagedImages();
+  captureStagedFiles = [];
   resetCaptureForm(contentBox, titleBox);
   focusCaptureBox();
   status.textContent = "Saved on this device. It goes into your notebook as soon as the server answers.";
