@@ -95,8 +95,11 @@ def test_a_database_from_before_the_columns_gains_them_and_keeps_its_rows(tmp_pa
         con.close()
 
 
-def test_the_migration_is_the_chain_head():
-    assert ScriptDirectory.from_config(_config(Path("/x.db"))).get_current_head() == "a3d7c1e9b5f4"
+def test_the_migration_is_on_the_single_chain():
+    # One head, and this migration on its path (later migrations chain after it).
+    script = ScriptDirectory.from_config(_config(Path("/x.db")))
+    assert len(script.get_heads()) == 1
+    assert "a3d7c1e9b5f4" in {r.revision for r in script.walk_revisions()}
 
 
 def test_the_documents_and_media_bars_offer_the_meta_menu_from_a_lazy_file():

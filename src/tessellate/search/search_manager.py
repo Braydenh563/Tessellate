@@ -32,6 +32,7 @@ from tessellate.core import cjk
 from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
 from tessellate.search import long_question
 from tessellate.search import query as query_understanding
+from tessellate.repo import memberships
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
 # records at length: the one annotation naming `np.ndarray` is a local
@@ -1223,7 +1224,7 @@ def _category_notes(session: Session, category_id: int, limit: int) -> list[Entr
                 Entry.is_deleted == False,  # noqa: E712
                 Entry.is_private == False,  # noqa: E712
                 Entry.is_board == False,  # noqa: E712
-                Entry.category_id == category_id,
+                memberships.in_category(category_id),
             )
             .order_by(Entry.created_at.desc(), Entry.id.desc())
             .limit(limit)
@@ -1265,9 +1266,10 @@ def _candidates(session: Session, subject: str, embeddings: EmbeddingService, sc
     )
     keyword = keyword_search(session, subject, limit=FUSION_DEPTH)
     if scope is not None:
+        also = memberships.also_ids(session, scope.id)
         if semantic is not None:
-            semantic = [(entry, score) for entry, score in semantic if entry.category_id == scope.id]
-        keyword = [entry for entry in keyword if entry.category_id == scope.id]
+            semantic = [(entry, score) for entry, score in semantic if entry.category_id == scope.id or entry.id in also]
+        keyword = [entry for entry in keyword if entry.category_id == scope.id or entry.id in also]
     return semantic, keyword
 
 

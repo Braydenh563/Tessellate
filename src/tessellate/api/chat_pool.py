@@ -21,6 +21,7 @@ from tessellate.ai import composer_ask, composer_property, composer_tables
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import memberships
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
@@ -128,7 +129,7 @@ def _with_open(session: Session, question: str, entries: list) -> list:
         shops = ("grocer", "shopping", "shop list")
         clauses += tags_repo.mentioning(list(shops))
         named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops)))
-        clauses.append(Entry.category_id.in_(named))
+        clauses.append(memberships.in_any_category(named))
     found = session.scalars(
         select(Entry)
         .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, or_(*clauses))  # noqa: E712
@@ -160,7 +161,7 @@ def _filed_under(session: Session, terms: list[str], limit: int = OVERVIEW_LIMIT
     #: A word at the start of the name or after a space in it ("study" is in "Courses & study").
     said = [like_escape(w.rstrip("s")) for w in words]
     named = select(Category.id).where(or_(*(func.lower(Category.name).like(pattern, escape=LIKE_ESCAPE) for w in said for pattern in (f"{w}%", f"% {w}%"))))
-    clauses.append(Entry.category_id.in_(named))
+    clauses.append(memberships.in_any_category(named))
     query = (
         select(Entry)
         .where(Entry.is_deleted == False, Entry.is_private == False, or_(*clauses))  # noqa: E712
@@ -225,6 +226,8 @@ class _NoteCtx:
     as_of: "date | None"
     #: Category names for every entry in one query, not one per note.
     category_names: dict = field(default_factory=dict)
+    #: The categories a person also put each note in (L-world-class-173).
+    also_in: dict = field(default_factory=dict)
 
 
 def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001

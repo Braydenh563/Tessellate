@@ -318,6 +318,10 @@ class EntryOut(BaseModel):
     # go out of sync with the content it's supposedly titling.
     title: str | None = None
     category: str
+    #: The categories a person also put the note in (L-world-class-173), never its own.
+    also_in: list[str] = []
+    #: The note groups it is in (L-world-class-172).
+    groups: list[str] = []
     tags: list[str]
     ai_confidence: int
     #: Offered at filing, not yet taken or discarded (INBOX 440).

@@ -66,11 +66,11 @@ from tessellate.core.config import user_now
 from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager, private_space
-from tessellate.search import chunks as search_chunks
-from tessellate.search import search_manager
+from tessellate.search import chunks as search_chunks, search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
 from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, _StreamRequest, _Turn, take_up_offer, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
+from tessellate.repo import memberships
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, _feature_for
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
@@ -292,6 +292,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         #: answer shows them beside this note's citation (INBOX 502).
         "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
         "category": ctx.category_names.get(entry.category_id, manager.UNCATEGORISED),
+        "also_in": ctx.also_in.get(entry.id, []),
         # Marked so the prompt can say which notes the user chose.
         "attached": entry.id in ctx.attached_ids,
         # Clipped from the web or imported (SEC-02): the agent starts the turn
@@ -336,6 +337,7 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
         session, found, attached_ids, now.tzinfo, now.date(),
         manager.entry_dates_bulk(session, ids), _files_on(session, ids), as_of,
         manager.bulk_category_names(session, found.entries),
+        memberships.also_in_bulk(session, found.entries),
     )
     notes = [_context_note(ctx, entry) for entry in found.entries]
     #: Listed newest first for "my last note": said on the first, which a small

@@ -47,6 +47,8 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm.attributes import flag_modified
 
+from tessellate.core.packed_vector import PackedVector
+
 
 
 @contextmanager
@@ -520,6 +522,44 @@ class Category(Base, WorkspaceMixin):
     #: no clean-up pass. `_rebuild_categories_unique_constraint` copies it.
     colour: Mapped[str | None] = mapped_column(String(16), default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class EntryCategory(Base):
+    """A note's further categories (L-world-class-173): `entries.category_id`
+    stays the one the filer decides; a row here is a second place the person
+    put the note. Only people write it, so the janitor's single centroid rule
+    is untouched. Both keys cascade, so deleting a note or a category needs no
+    clean-up pass; a row naming the note's own primary category is never read
+    (`entry/memberships.py`)."""
+
+    __tablename__ = "entry_categories"
+
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id", ondelete="CASCADE"), primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+
+
+class NoteGroup(Base, WorkspaceMixin):
+    """A set of notes a person gathered by hand (L-world-class-172), apart from
+    categories and tags: no model files into it and no rule re-sorts it."""
+
+    __tablename__ = "note_groups"
+    __table_args__ = (UniqueConstraint("workspace_id", "name", name="uq_note_groups_workspace_name"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class NoteGroupMember(Base):
+    __tablename__ = "note_group_members"
+
+    group_id: Mapped[int] = mapped_column(ForeignKey("note_groups.id", ondelete="CASCADE"), primary_key=True)
+    entry_id: Mapped[int] = mapped_column(
+        ForeignKey("entries.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    added_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class Entry(Base, WorkspaceMixin):
@@ -1187,7 +1227,7 @@ class EmbeddingRecord(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -1236,7 +1276,7 @@ class ChunkVector(Base):
     start: Mapped[int] = mapped_column(Integer)
     end: Mapped[int] = mapped_column(Integer)
     digest: Mapped[str] = mapped_column(String(32))
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
 
@@ -1262,7 +1302,7 @@ class StagedEmbedding(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(Integer, unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

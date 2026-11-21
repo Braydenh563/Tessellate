@@ -26,9 +26,9 @@ from tessellate import __version__
 from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, parse_guard, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import memberships
 from tessellate.entry import importer, manager
-from tessellate.entry import manager_wiki
-from tessellate.entry import manager_text
+from tessellate.entry import frontmatter_keys, manager_text, manager_wiki
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
@@ -87,6 +87,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
     }
 
     category_names = manager.bulk_category_names(session, entries)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
 
     for e in entries:
         payload["entries"].append({
@@ -98,6 +99,9 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # search index either: `backup.strip_leftovers`.)
             "content": manager_text.readable_content(e),
             "category": category_names.get(e.category_id, manager.UNCATEGORISED),
+            #: Where a person also put it and the groups it is in (L-world-class-172, 173).
+            "also_in": also_in.get(e.id, []),
+            "groups": in_groups.get(e.id, []),
             "tags": manager.shown_tags(e),
             "ai_confidence": e.ai_confidence,
             # Said, so a note decrypted for the export is not mistaken for an
@@ -164,7 +168,8 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
         wanted = set(ids)
         entries = [entry for entry in entries if entry.id in wanted]
     category_names = manager.bulk_category_names(session, entries)
-    
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
+
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         for entry in entries:
@@ -182,6 +187,10 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
             ]
             if tags:
                 front.append(f"tags: [{', '.join(tags)}]")
+            if also_in.get(entry.id):
+                front.append(f"also-in: [{', '.join(also_in[entry.id])}]")
+            if in_groups.get(entry.id):
+                front.append(f"note-groups: [{', '.join(in_groups[entry.id])}]")
             if entry.pinned:
                 front.append("pinned: true")
             readable = manager_text.readable_content(entry)
@@ -288,9 +297,6 @@ MAX_IMPORT_BYTES = 1024 * 1024  # a single markdown note, not a novel
 MAX_IMPORT_FILES = 500
 
 
-#: The keys the app reads into its own fields (and writes on export); every
-#: other key stays in the note's text as a property (GRAPH_PLAN KG4).
-_APP_KEYS = {"category", "tags", "created", "updated", "pinned"}
 
 
 def _exported_created(values: list[str] | None):
@@ -311,12 +317,8 @@ def _exported_created(values: list[str] | None):
 
 
 def _keep_exported_state(session: Session, entry, meta: dict) -> None:
-    """Put back the date and pin an exported note carried."""
-    if meta.get("created"):
-        entry.created_at = meta["created"]
-    if meta.get("pinned"):
-        entry.pinned = True
-    if meta.get("created") or meta.get("pinned"):
+    """Put back the date, pin, extra categories and groups an exported note carried."""
+    if frontmatter_keys.keep_exported_state(session, entry, meta):
         session.commit()
 
 
@@ -345,14 +347,8 @@ def _parse_frontmatter(text: str) -> tuple[dict, str]:
         meta["created"] = stamp
     if (found.get("pinned") or [""])[0].lower() == "true":
         meta["pinned"] = True
-    kept: list[str] = []
-    skipping = False
-    for line in text[:end].rstrip("\n").split("\n")[1:-1]:
-        head = line.partition(":")[0].strip().lower()
-        if line[:1] not in (" ", "\t", "-") and ":" in line:
-            skipping = head in _APP_KEYS
-        if not skipping:
-            kept.append(line)
+    meta.update(frontmatter_keys.exported_memberships(found))
+    kept = frontmatter_keys.unexported_lines(text[:end])
     body = body.lstrip("\n")
     if any(line.strip() for line in kept):
         return meta, "---\n" + "\n".join(kept) + "\n---\n" + body
@@ -857,10 +853,11 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(
-        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted"]
+        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted", "also_in", "groups"]
     )
-    
+
     category_names = manager.bulk_category_names(session, entries)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
     
     for e in entries:
         writer.writerow(
@@ -872,6 +869,8 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
                 e.ai_confidence,
                 e.created_at.isoformat(),
                 e.is_deleted,
+                "|".join(also_in.get(e.id, [])),
+                "|".join(in_groups.get(e.id, [])),
             ]
         )
     manager.log_action(session, "exported", "data", detail="csv")

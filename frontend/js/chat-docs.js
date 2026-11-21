@@ -4,13 +4,12 @@
 // (`attachChatFiles`, the popup agent's staging) already await it. The boot scripts were over their
 // gzip total when the Quick capture card began sharing the attachment chip.
 
-//: The suffixes `/media/upload` accepts (`MEDIA_SUFFIXES`, routes_files.py).
-//: Kept as a literal rather than fetched: it is a fallback path that must not
-//: itself need a round trip to decide whether it can run.
-const MEDIA_FALLBACK_SUFFIXES = /\.(png|jpe?g|gif|webp|avif|bmp|ico|pdf)$/i;
-
 async function keepUnreadableChatFile(file, error) {
-  if (!MEDIA_FALLBACK_SUFFIXES.test(file.name || "")) return false;
+  //: The suffixes `/media/upload` accepts (`MEDIA_SUFFIXES`, routes_files.py).
+  //: Kept as a literal rather than fetched: it is a fallback path that must not
+  //: itself need a round trip to decide whether it can run. Local, not a
+  //: global (test_global_scope_ratchet).
+  if (!/\.(png|jpe?g|gif|webp|avif|bmp|ico|pdf)$/i.test(file.name || "")) return false;
   const form = new FormData();
   form.append("file", file);
   form.append("direct", "true");

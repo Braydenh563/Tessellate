@@ -78,6 +78,7 @@ from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import provenance
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
+from tessellate.repo import memberships
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relation_types
@@ -115,6 +116,7 @@ def _to_out(
     links: list | None = None,
     attachments: list | None = None,
     transcribed: bool | None = None,
+    member: tuple[list[str], list[str]] | None = None,
 ) -> EntryOut:
     # Decrypted here if private and the vault is open, every read of a
     # note's text goes through this one helper.
@@ -140,6 +142,7 @@ def _to_out(
         getattr(entry, "source_path", None),
         bool(provenance.transcribed_ids(session, [entry.id])) if transcribed is None and entry.id else bool(transcribed),
     )
+    also_in, in_groups = member if member is not None else memberships.for_one(session, entry)
     return EntryOut(
         id=entry.id,
         content=content,
@@ -151,6 +154,8 @@ def _to_out(
         category=(
             manager.category_name_for(session, entry) if category_name is None else category_name
         ),
+        also_in=also_in,
+        groups=in_groups,
         tags=manager.shown_tags(entry),
         ai_confidence=filing_certainty.shown(
             entry.ai_confidence, user_filed=bool(getattr(entry, "user_filed", False))
@@ -400,6 +405,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
     links_by_id = manager.links_for_entries_bulk(session, ids)
     attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
     heard = provenance.transcribed_ids(session, ids)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, ids)
     return [
         _to_out(
             session,
@@ -410,6 +416,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
             links=links_by_id.get(e.id, []),
             attachments=attachments_by_id.get(e.id, []),
             transcribed=e.id in heard,
+            member=(also_in.get(e.id, []), in_groups.get(e.id, [])),
         )
         for e in entries
     ]

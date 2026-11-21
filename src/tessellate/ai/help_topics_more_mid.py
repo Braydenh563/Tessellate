@@ -375,6 +375,29 @@ MID_TOPICS.extend(
             "badge": {"label": "Notes", "tab": "notes"},
         },
         {
+            "id": "note-groups",
+            "keywords": (
+                "group notes", "groups", "note group", "note groups", "gather notes",
+                "collect notes", "put notes together", "group notes together",
+                "also file under", "more than one category", "two categories",
+                "multiple categories", "note in two categories", "second category",
+            ),
+            "body": (
+                "A group is a set of notes you gather by hand, apart from "
+                "categories and tags: nothing files into it and no sorting moves "
+                "a note out of it. Click a note's category chip and choose Add to "
+                "a group to put it in one (or make a new one); the Groups row in "
+                "the notes sidebar lists them, and a group's menu shows its notes, "
+                "renames it or deletes it (the notes are kept). In the Notes box, "
+                "group:\"Trip plans\" shows one group's notes. A note keeps the "
+                "one category it is filed under and can also sit in others: the "
+                "same chip menu's Also file under puts it in more categories, "
+                "which only you set. It then shows under each one in the sidebar "
+                "and in a category filter, search, Ask and exports."
+            ),
+            "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
             "id": "manage-categories",
             "keywords": (
                 "manage categories", "merge categories", "merge two categories",

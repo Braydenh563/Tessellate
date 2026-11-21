@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 84 | 8 | 0 | 0 | 92 |
+| world-class | 0 | 86 | 8 | 0 | 0 | 94 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 462 | 79 | 2 | 112 | 913 |
+| all | 372 | 464 | 79 | 2 | 112 | 915 |
 
 ## graph
 
@@ -520,9 +520,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
-- [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-180** `world-class` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
@@ -545,6 +542,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-690** `world-class` open, S: Cap the parse child's memory on Windows with a job object (JOB_OBJECT_LIMIT_PROCESS_MEMORY), as RLIMIT_AS does on Linux. From L-world-class-321. Evidence: src/tessellate/core/parse_guard.py _limit_memory: RLIMIT_AS on POSIX only; on Windows a crafted file can still allocate without bound in the child (the child dies, not the server, but the machine can page)
 - [ ] **L-world-class-691** `world-class` open, M: Install each pip extra from a hashed lock (--require-hashes), without moving a base package. From SECURITY.md, Threat model T23 (L-world-class-320). Evidence: core/extras.py _run_install hands pip names plus EXTRA_BOUNDS constraints, no --require-hashes. A hash lock needs every transitive dependency pinned per platform and Python (uv pip compile --universal --generate-hashes against requirements.txt's constraints), and pinning base packages that requirements.txt only ranges would let an extra install move numpy or tokenizers under the running app. Check: a lock per extra whose base-package pins equal the installed versions, pip install --require-hashes --no-deps from it in a scratch venv and in the frozen --target build.
 - [ ] **L-world-class-660** `world-class` open, M: Chats: group-by control, agent tool and skill to manage chat order (rest of L-world-class-180). From L-world-class-180. Evidence: Sorts exist (#chat-sidebar-sort: recent, most turns, most tokens, A-Z; sortConversations in sheets-selects.js:1859). Not built: a group-by (day, project, pinned), an agent tool to sort, group and pin chats, and the skill.
+- [ ] **L-world-class-692** `world-class` open, S: Folder import restores a note's groups and extra categories from its sidecar. From L-world-class-172/173. Evidence: folder-export sidecar exports groups and also_in but import ignores them
+- [ ] **L-world-class-693** `world-class` open, S: Find box and server search understand group:. From L-world-class-172. Evidence: group: filters only client-side in the Notes box
+- [ ] **L-world-class-694** `world-class` open, S: Manage categories counts notes that are also in a category. From L-world-class-173. Evidence: Manage categories counts only primary categories
+- [ ] **L-world-class-695** `world-class` open, S: Agent tool note summaries include a note's extra categories. From L-world-class-173. Evidence: ai/tools _common note summaries near lines 282 and 324 omit also_in
+- [ ] **L-world-class-696** `world-class` open, M: Compress revision text once time travel stops searching it with LIKE. From L-world-class-174. Evidence: entry_revisions.content 3.2 MB at 5,000 notes; ai/timetravel.py searches it with SQL LIKE
 
 ## general
 

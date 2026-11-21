@@ -311,6 +311,7 @@ function parseNoteQuery(raw) {
     exclude: [],
     tags: [],
     categories: [],
+    groups: [],
     flags: [],
     tagCount: null,
     titles: [],
@@ -329,11 +330,12 @@ function parseNoteQuery(raw) {
   });
   //: `tag:"two words"` and `cat:"Home office"` first, then bare quoted
   //: phrases, so neither's spaces become word breaks.
-  const named = (raw || "").replace(/\b(tag|cat|category|in|title):"([^"]+)"/gi, (_, key, value) => {
+  const named = (raw || "").replace(/\b(tag|cat|category|in|title|group):"([^"]+)"/gi, (_, key, value) => {
     const v = value.toLowerCase().trim();
     const k = key.toLowerCase();
     if (k === "tag") query.tags.push(v);
     else if (k === "title") query.titles.push(v);
+    else if (k === "group") query.groups.push(v);
     else query.categories.push(v);
     return " ";
   });
@@ -349,13 +351,14 @@ function parseNoteQuery(raw) {
     //: `#trip` is how a card shows a tag, so it is how people type one
     //: (INBOX 432: it matched nothing); `tag:#trip` the same.
     //: A bare `tag:` is still being typed: it narrows nothing yet.
-    if (/^(tag:#?|#|category:|cat:|in:|title:|is:|kind:|has:|space:)$/.test(lower)) continue;
+    if (/^(tag:#?|#|category:|cat:|in:|title:|group:|is:|kind:|has:|space:)$/.test(lower)) continue;
     if (lower.startsWith("tag:")) query.tags.push(lower.slice(4).replace(/^#/, ""));
     else if (lower.startsWith("#") && lower.length > 1) query.tags.push(lower.slice(1));
     else if (lower.startsWith("category:")) query.categories.push(lower.slice(9));
     else if (lower.startsWith("cat:")) query.categories.push(lower.slice(4));
     else if (lower.startsWith("in:")) query.categories.push(lower.slice(3));
     else if (lower.startsWith("title:")) query.titles.push(lower.slice(6));
+    else if (lower.startsWith("group:")) query.groups.push(lower.slice(6));
     else if (/^(before|after):\S+$/.test(lower) && parseNoteQuery.day(lower.split(":")[1])) {
       //: A span leaves its whole extent out: before March is before the 1st, after March is after the 31st (as Find anything does).
       const [key, word] = lower.split(":");
@@ -393,6 +396,8 @@ parseNoteQuery.day = function (word, now = new Date()) {
   return { first: iso(new Date(year, month, 1)), last: iso(new Date(year, month + 1, 0)) };
 };
 
+//: In a category: filed there, or also put there by hand (L-world-class-173).
+
 function noteQueryIsEmpty(query) {
   return (
     !query.words.length &&
@@ -400,6 +405,7 @@ function noteQueryIsEmpty(query) {
     !query.exclude.length &&
     !query.tags.length &&
     !query.categories.length &&
+    !query.groups.length &&
     !query.flags.length &&
     !query.tagCount &&
     !query.titles.length &&
@@ -446,7 +452,7 @@ function matchesSearch(entry) {
   }
   const content = (entry.content || "").toLowerCase();
   const tags = (entry.tags || []).map((t) => t.toLowerCase());
-  const category = (entry.category || "").toLowerCase();
+  const category = [entry.category, ...(entry.also_in || [])].join("\n").toLowerCase();
   const haystack = `${content} ${tags.join(" ")}`;
 
   // A tag: or cat: filter is a statement about which notes count at all.
@@ -455,6 +461,7 @@ function matchesSearch(entry) {
   if (query.tags.length && !query.tags.every((t) => tags.some((tag) => tag === t || tag.startsWith(`${t}/`)))) {
     return false;
   }
+  if (query.groups.length && !query.groups.every((g) => (entry.groups || []).some((n) => n.toLowerCase() === g))) return false;
   if (query.titles.length) {
     const title = noteSortName(entry).toLowerCase();
     if (!query.titles.every((t) => title.includes(t))) return false;
@@ -2293,7 +2300,7 @@ function libraryVisibleRows() {
     : favouritesOnly
       ? allEntries.filter((e) => e.pinned && noteListed(e))
       : activeCategory
-        ? allEntries.filter((e) => e.category === activeCategory && noteListed(e))
+        ? allEntries.filter((e) => (e.category === activeCategory || (e.also_in || []).includes(activeCategory)) && noteListed(e))
         : allEntries.filter(noteListed);
   const matched = visible.filter(matchesSearch);
   //: UX-04: no match, and /search corrected a typo: show what it found.
@@ -2446,7 +2453,7 @@ function renderEntries(appendOnly = false) {
     : favouritesOnly
       ? allEntries.filter((e) => e.pinned && noteListed(e)).length
       : activeCategory
-        ? allEntries.filter((e) => e.category === activeCategory && noteListed(e)).length
+        ? allEntries.filter((e) => (e.category === activeCategory || (e.also_in || []).includes(activeCategory)) && noteListed(e)).length
         : allEntries.filter(noteListed).length;
   $("entries-heading-label").textContent =
     noteSearchCorrectionShown
@@ -2672,7 +2679,7 @@ function renderSidebar() {
   for (const name of categoryMeta.keys()) if (name !== "Uncategorised") counts.set(name, 0);
   for (const entry of allEntries) {
     if (!noteListed(entry)) continue;
-    counts.set(entry.category, (counts.get(entry.category) || 0) + 1);
+    for (const name of [entry.category, ...(entry.also_in || [])]) counts.set(name, (counts.get(name) || 0) + 1);
   }
 
   const ul = $("category-list");
@@ -2796,16 +2803,21 @@ function renderSidebar() {
   queryRow("ph:lock Private", (e) => e.is_private, "is:private", "");
   //: Tags, beside Drafts and Favourites (INBOX 432): a sheet of every tag
   //: (categories-panel.js `openTagsSheet`), not a second long list here.
-  const tagRow = document.createElement("li");
-  tagRow.className = "category-drafts-row";
-  const tagName = document.createElement("span");
-  tagName.className = "category-name";
-  setLabel(tagName, "ph:hash Tags");
-  tagRow.append(tagName);
-  tagRow.title = "Every tag: see its notes, rename, merge or remove it";
-  tagRow.addEventListener("click", () => openTagsSheet());
-  wireSidebarRowKeys(tagRow);
-  ul.appendChild(tagRow);
+  const sheetRow = (label, title, open) => {
+    const row = document.createElement("li");
+    row.className = "category-drafts-row";
+    const name = document.createElement("span");
+    name.className = "category-name";
+    setLabel(name, label);
+    row.append(name);
+    row.title = title;
+    row.addEventListener("click", open);
+    wireSidebarRowKeys(row);
+    ul.appendChild(row);
+  };
+  sheetRow("ph:hash Tags", "Every tag: see its notes, rename, merge or remove it", () => openTagsSheet());
+  //: Groups of notes gathered by hand (L-world-class-172), a sheet too.
+  sheetRow("ph:folders Groups", "Notes you gathered by hand, apart from categories and tags", () => openNoteGroupsSheet());
 
   //: One order everywhere a list of categories is shown: by name, ignoring
   //: case and accents, numbers in number order (INBOX 432: a bare `.sort()`

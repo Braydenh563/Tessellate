@@ -462,6 +462,10 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "note-groups.js:newGroup": "job: makes an empty group; the group's own Delete removes it and no note is changed",
+    "note-groups.js:toggle": "settings: a check row that is its own undo (press again) and no note text is changed",
+    "note-groups.js:save": "settings: a check row that is its own undo (press again) and no note text is changed",
+    "note-groups.js:build": "job: renames or deletes a group after its own prompt or confirm; the notes are kept",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",

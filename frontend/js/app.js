@@ -1540,6 +1540,8 @@ const LAZY_MODULES = {
   tagManager: ["/js/tag-manager.js"],
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
+  //: Groups of notes gathered by hand, and a note's further categories: see note-groups.js.
+  noteGroups: ["/js/note-groups.js"],
   noteHistory: ["/js/note-history.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
@@ -1885,6 +1887,7 @@ const LAZY_ENTRY_POINTS = {
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
+  noteGroups: ["openNoteGroupsSheet"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
   extraNotice: ["extraNoticeMount"],

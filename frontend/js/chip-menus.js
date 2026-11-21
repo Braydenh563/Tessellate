@@ -60,6 +60,8 @@
       [
         { label: `ph:eye Show notes in ${name}`, title: `Show only the notes in ${name}`, run: () => showCategoryNotes(name, { clearSearch: true }) },
         { label: "ph:folder-open Move to another category…", title: "Move this note to a different category", run: () => chooseNoteCategory([entry.id], name) },
+        { label: "ph:copy-simple Also file under…", title: "Show this note in more categories too; the sorting leaves them alone", run: () => openNoteGroupsSheet(entry, "also") },
+        { label: "ph:folders Add to a group…", title: "Gather this note with others by hand", run: () => openNoteGroupsSheet(entry, "groups") },
         { label: "ph:sliders-horizontal Manage categories…", title: "Rename, merge, split or delete categories", group: "all", run: () => openManageCategories(name) },
       ],
       `Category ${name}`
