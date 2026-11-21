@@ -103,6 +103,18 @@ SURFACES = {
         ("openMeetingRecorder",),
         ("meeting-card", "meeting-close", "meeting-title", "meeting-transcript", "meeting-done"),
     ),
+    "finder": (
+        "finder-overlay",
+        ("search.js", "search-suggest.js", "wiring.js", "settings-wiring.js", "reveal-targets.js", "router-overlays.js", "vault-unlock.js"),
+        ("openFinder",),
+        ("finder-input", "finder-results", "finder-summary", "finder-filters", "finder-sort", "finder-save", "finder-close", "finder-help"),
+    ),
+    "agentMonitor": (
+        "agent-monitor",
+        ("agent-activity.js", "activity-panel.js", "app-features.js"),
+        ("setAgentMonitorVisible",),
+        ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-more", "activity-list"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -158,7 +170,7 @@ def test_the_surface_sits_in_one_template_inside_its_live_root(name):
     before, body = _template(name)
     # The root stays live (checks of "is it open" never build it); the template
     # is its first child, comments aside.
-    opening = re.search(rf'<(?:div|dialog|sheet-host)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
+    opening = re.search(rf'<(?:div|dialog|sheet-host|aside)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
     assert opening, f"the {name} template is not the first child of #{root}"
     ids = _ids(body)
     assert root not in ids

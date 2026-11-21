@@ -655,6 +655,7 @@ function finderMove(step) {
 //: asks for documents); a caller cannot set `finderKind` itself before this
 //: file has loaded.
 function openFinder(prefill = "", opts = {}) {
+  surfaceBuild("finder");
   const overlay = finderOverlay();
   if (!overlay) return;
   if (typeof opts.kind === "string") finderKind = opts.kind;
@@ -738,7 +739,8 @@ function wireFinder() {
     }
   }, true);
 }
-wireFinder();
+//: The card is a surface (settings-body.js), built on the first open: its wiring waits for it.
+onSurface("finder", wireFinder);
 
 // --- saved searches -------------------------------------------------------------
 //

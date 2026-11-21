@@ -240,35 +240,39 @@
   }
   window.setActivityTab = setActivityTab;
 
-  for (const tab of document.querySelectorAll("#activity-tabs [role=tab]")) {
-    tab.addEventListener("click", () => setActivityTab(tab.dataset.value));
-    tab.addEventListener("keydown", (event) => {
-      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      const names = [...document.querySelectorAll("#activity-tabs [role=tab]")].map((t) => t.dataset.value);
-      const step = event.key === "ArrowRight" ? 1 : -1;
-      const next = names[(names.indexOf(tab.dataset.value) + step + names.length) % names.length];
-      setActivityTab(next);
-      document.querySelector(`#activity-tabs [data-value="${next}"]`)?.focus();
-    });
-  }
+  //: The panel is a surface built on its first open (agent-activity.js): this file can load before
+  //: that (the palette's Stop the model), so the tabs and the ⋯ are wired when it is built.
+  onSurface("agentMonitor", () => {
+    for (const tab of document.querySelectorAll("#activity-tabs [role=tab]")) {
+      tab.addEventListener("click", () => setActivityTab(tab.dataset.value));
+      tab.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+        const names = [...document.querySelectorAll("#activity-tabs [role=tab]")].map((t) => t.dataset.value);
+        const step = event.key === "ArrowRight" ? 1 : -1;
+        const next = names[(names.indexOf(tab.dataset.value) + step + names.length) % names.length];
+        setActivityTab(next);
+        document.querySelector(`#activity-tabs [data-value="${next}"]`)?.focus();
+      });
+    }
 
-  //: The panel's ⋯ (the `kebabMenu` recipe): what acts on the whole panel.
-  {
-    const slot = $("activity-more");
-    const menu = kebabMenu([
-      { label: "ph:stop-circle Stop the model", title: "Stop any answer and unload the model from memory", run: stopActivityModel },
-      { label: "ph:stop Stop everything", title: "Stop every job that can stop part way", run: stopAllActivity },
-      { label: "ph:terminal-window Show the log", title: "The agent's log lines, on the Agent runs tab", group: "runs", run: () => {
-        setActivityTab("runs");
-        setAgentMonitorLogVisible(true);
-      } },
-      { label: "ph:broom Clear finished runs", title: "Clear finished runs", group: "runs", run: () => $("agent-monitor-clear")?.click() },
-      { label: "ph:gear Background tasks settings", title: "History, last runs and schedules", group: "settings", run: () => openSettingsModal("tasks") },
-    ], "More activity actions");
-    menu.id = "activity-more";
-    menu.querySelector("button")?.classList.add("dialog-head-btn");
-    slot?.replaceWith(menu);
-  }
+    //: The panel's ⋯ (the `kebabMenu` recipe): what acts on the whole panel.
+    {
+      const slot = $("activity-more");
+      const menu = kebabMenu([
+        { label: "ph:stop-circle Stop the model", title: "Stop any answer and unload the model from memory", run: stopActivityModel },
+        { label: "ph:stop Stop everything", title: "Stop every job that can stop part way", run: stopAllActivity },
+        { label: "ph:terminal-window Show the log", title: "The agent's log lines, on the Agent runs tab", group: "runs", run: () => {
+          setActivityTab("runs");
+          setAgentMonitorLogVisible(true);
+        } },
+        { label: "ph:broom Clear finished runs", title: "Clear finished runs", group: "runs", run: () => $("agent-monitor-clear")?.click() },
+        { label: "ph:gear Background tasks settings", title: "History, last runs and schedules", group: "settings", run: () => openSettingsModal("tasks") },
+      ], "More activity actions");
+      menu.id = "activity-more";
+      menu.querySelector("button")?.classList.add("dialog-head-btn");
+      slot?.replaceWith(menu);
+    }
+  });
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { setActivityTab, stopActivityModel });
