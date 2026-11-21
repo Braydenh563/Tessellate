@@ -63,7 +63,14 @@ for (let shard = 0; shard < SHARDS; shard += 1) {
         // Not after the last box: MathLive's Tab past the end throws inside the field (its own, not the app's).
         if (slot < slots - 1) await page.keyboard.press("Tab");
       }
-      const last = await boxes(page);
+      // The field draws a box a frame after the edit: on a loaded runner the 50 ms beat above is not always
+      // enough (a different structure came up one box short on each of four loaded runs, and every one
+      // drew whole when read a moment later). Wait for it to settle; a box that never comes back still fails.
+      let last = await boxes(page);
+      for (let tries = 0; tries < 20 && (last.inTex !== slots || last.drawn !== slots); tries += 1) {
+        await page.waitForTimeout(100);
+        last = await boxes(page);
+      }
     if (last.inTex !== slots || last.drawn !== slots) broken.push(`${name}: ${first.inTex} boxes at first, ${last.inTex} in the TeX and ${last.drawn} drawn after, of ${slots}: ${last.tex}`);
   }
   expect(broken, "a structure lost a box").toEqual([]);

@@ -7,7 +7,7 @@
 // destination with its depth and the click path, those deeper than 3, and the
 // destinations no palette command names.
 //
-//   BASE=http://127.0.0.1:8791 [THEME=dark] [MAXD=4] node reach.js
+//   BASE=http://127.0.0.1:8791 [THEME=dark] [MAXD=4] [WORKERS=3] node reach.js
 // **What it does not see:** right-click menus, keyboard-only routes, controls
 // that appear only while something is selected, and anything behind a label
 // the allow-list below does not call navigation. A destination missing here is
@@ -95,6 +95,17 @@ async function home(page) {
   await page.waitForTimeout(500);
   await L.closeOverlays(page);
 }
+// Back to a node's state. A press that landed on an already-seen destination used
+// to cost a full replay from the dashboard; closing overlays and reading the page
+// is one round trip, and when it already is the node's state nothing is replayed.
+let replays = 0, restores = 0;
+async function restore(page, node) {
+  await L.closeOverlays(page);
+  const now = await look(page);
+  if (now.sig === node.sig && JSON.stringify(now.candidates) === JSON.stringify(node.candidates)) { restores++; return true; }
+  replays++;
+  return replay(page, node.path);
+}
 async function replay(page, path) {
   await home(page);
   for (const key of path) {
@@ -107,6 +118,12 @@ async function replay(page, path) {
 (async () => {
   const { browser, page } = await L.boot();
   await L.ensureSeed(page);
+  // The crawl is split across WORKERS browsers (default 3, of four cores): each takes the next
+  // node of the level from one queue, and `seen` and `pressed` are shared, so a destination or a
+  // press is still done once. Depth 3 alone outran 40 minutes on one browser.
+  const NW = Math.max(1, Number(process.env.WORKERS || 3));
+  const pages = [page], browsers = [browser];
+  for (let i = 1; i < NW; i++) { const b = await L.boot(); pages.push(b.page); browsers.push(b.browser); await home(b.page); }
   await home(page);
   const start = await look(page);
   const seen = new Map([[start.sig, { depth: 0, path: [], name: 'Dashboard' }]]);
@@ -150,10 +167,12 @@ async function replay(page, path) {
   const chrome = new Set(start.candidates.filter((k) => k.startsWith('nav|')));
   const pressed = new Set();
   const waitMs = Number(process.env.WAIT || 450);
+  const T0 = Date.now();
   for (let depth = 1; depth <= MAXD; depth++) {
     const next = [];
     let n = 0;
-    for (const node of frontier) {
+    const queue = frontier.slice();
+    const processNode = async (pg, node) => {
       n++;
       const inOverlay = / \| ON:/.test(node.sig);
       // Past depth 3 only the doors are pressed (tabs, menus, lists), not every button.
@@ -162,10 +181,10 @@ async function replay(page, path) {
         .filter((k) => { const id = (inOverlay ? node.sig : node.page) + '#' + k; if (pressed.has(id)) return false; pressed.add(id); return true; });
       let inPlace = false;
       for (const key of cands.slice(0, Number(process.env.CAP || 45))) {
-        if (!inPlace) { if (!(await replay(page, node.path))) break; }
-        if (!(await clickKey(page, key))) { inPlace = false; continue; }
-        await page.waitForTimeout(waitMs);
-        const now = await look(page);
+        if (!inPlace) { if (!(await restore(pg, node))) break; }
+        if (!(await clickKey(pg, key))) { inPlace = false; continue; }
+        await pg.waitForTimeout(waitMs);
+        const now = await look(pg);
         // Nothing opened: the page is as it was, no replay needed for the next press.
         inPlace = now.sig === node.sig && JSON.stringify(now.candidates) === JSON.stringify(node.candidates);
         if (seen.has(now.sig)) continue;
@@ -173,11 +192,12 @@ async function replay(page, path) {
         seen.set(now.sig, { depth, path, name: path.map((k) => k.split('|').slice(1).join('|')).join(' > ') });
         if (depth < MAXD) next.push({ path, sig: now.sig, candidates: now.candidates, page: now.sig.split(' | ')[0] });
       }
-      if (process.env.DEBUG) console.log(`  depth ${depth} node ${n}/${frontier.length} done, ${seen.size} destinations`);
-    }
-    console.log(`depth ${depth}: ${[...seen.values()].filter((s) => s.depth === depth).length} new destinations (frontier ${next.length})`);
+      if (process.env.DEBUG) console.log(`  depth ${depth} node ${n}/${frontier.length} done, ${seen.size} destinations, ${Math.round((Date.now() - T0) / 1000)}s`);
+    };
+    await Promise.all(pages.map(async (pg) => { for (let node; (node = queue.shift());) await processNode(pg, node); }));
+    console.log(`depth ${depth} (${Math.round((Date.now() - T0) / 1000)}s, ${NW} browsers): replays ${replays}, cheap restores ${restores}, ${[...seen.values()].filter((s) => s.depth === depth).length} new destinations (frontier ${next.length})`);
     frontier = next;
     await report(depth);
   }
-  await browser.close();
+  await Promise.all(browsers.map((b) => b.close()));
 })();
