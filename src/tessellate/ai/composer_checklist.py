@@ -46,7 +46,7 @@ def _named(content: str) -> str:
 
 
 def finished(session: Session, typed: str) -> str | None:
-    """The remark, or the count of what is still open, for a list said to be done."""
+    """The remark, or the count of what is left unticked, for a list said to be done."""
     said = _FINISHED.match(typed or "")
     note = _list_of(session, said.group("name") or "") if said else None
     if note is None:

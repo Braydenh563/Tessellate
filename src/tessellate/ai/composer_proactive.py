@@ -2,7 +2,7 @@
 (CHAT_PLAN "Proactive", P1, P2, P5, P8, P9, P10; L-chat-54 and 57).
 
 `composer_voice.remarks` says what the recent notes and the due reminders
-hold. These say what the notebook has *noticed*: a plan left open a month, two
+hold. These say what the notebook has *noticed*: a plan untouched for a month, two
 notes that disagree, a dated plan with no reminder, a new sentence that answers
 an old question. Each is built on the voice's own machinery (`_Voice`: every
 factual clause is a note's quoted sentence, a name, a reminder's words or a
@@ -24,7 +24,7 @@ from tessellate.ai import composer_voice, reminder_suggest
 from tessellate.ai.composer import NoteView, Sentence
 from tessellate.ai.composer_voice import _Voice, lead
 
-#: A plan fact still open this long is drift (P5).
+#: A plan fact unfinished this long is drift (P5).
 DRIFT_DAYS = 30
 #: A dated plan this near with no reminder is worth saying (P10).
 UPCOMING_DAYS = 7
@@ -171,11 +171,11 @@ def upcoming(views: list[NoteView], reminders: list[dict], now: datetime) -> lis
     return [_fact(remark, f"upcoming:{view.id}:{due.date().isoformat()}")]
 
 
-# --- P8: a new sentence answers an open question -----------------------------------
+# --- P8: a new sentence answers an unanswered question ------------------------------
 
 
 def answered(view: NoteView, questions: list[dict], today: date) -> dict | None:
-    """The first open question (`id`, `text`, `entry_id`) that a sentence of
+    """The first unanswered question (`id`, `text`, `entry_id`) that a sentence of
     `view`, a note just saved, answers: they share at least three words and the
     sentence is not the question's own note. Said once with both quoted."""
     for q in questions:

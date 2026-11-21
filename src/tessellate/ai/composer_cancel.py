@@ -44,8 +44,8 @@ def undo_reply(session, question: str, history: list[dict]) -> list[dict] | None
     if Dialogue.from_history(history).pending_act or not _UNDO.match(low):
         return None
     label, steps = consent_store.take_latest()
-    done = acts.run(session, steps, []) if steps else None
-    if done is None or not done["ok"]:
+    ran = acts.run(session, steps, []) if steps else None
+    if ran is None or not ran["ok"]:
         return None
     return [{"type": "answer", "delta": f"Undone: {label[:1].lower()}{label[1:].rstrip('.')}."}]
 

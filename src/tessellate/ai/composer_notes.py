@@ -198,7 +198,7 @@ def _item(note: dict, wanted: list[str]) -> str:
 
 
 def _recent_text(ctx: Ctx) -> str:
-    #: A window follow-up ("what about last month") is read as the question it restates, not as the typed words (L-chat-251).
+    #: A window follow-on ("what about last month") is read as the question it restates, not as the typed words (L-chat-251).
     return " ".join(((ctx.question if ctx.follow_kind == "window" else ctx.asked or ctx.question) or "").split())
 
 
