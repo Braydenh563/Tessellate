@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
-from tessellate.ai import agent
+from tessellate.ai import agent, agent_policy, agent_turn
 from tessellate.ai.agent_turn import _TurnState
 
 
@@ -49,7 +49,7 @@ def test_a_barred_tool_is_refused_with_the_reason_and_counted(session):
         }
     ]
     assert _told(state)["error"] == "run_skill cannot be used inside a run"
-    assert _told(state)["what_to_do"] == agent._RECOVERY_HINTS["already_running"]
+    assert _told(state)["what_to_do"] == agent_policy._RECOVERY_HINTS["already_running"]
     assert state.tool_failures == {"run_skill": 1} and len(state.failed_calls) == 1
     assert state.messages[-1]["tool_name"] == "run_skill"
 
@@ -66,7 +66,7 @@ def test_a_tool_outside_the_skills_allowlist_is_refused_and_a_repeat_is_told_to_
     ]
     first = _told(state)
     assert first["error"] == "tag_note is not part of this skill's tools"
-    assert first["what_to_do"] == agent._RECOVERY_HINTS["not_in_skill"]
+    assert first["what_to_do"] == agent_policy._RECOVERY_HINTS["not_in_skill"]
     assert state.tool_failures == {"tag_note": 1}
     _dispatch(session, plan, state, call)
     assert _told(state)["what_to_do"] == agent.REPEATED_CALL_NOTE
@@ -93,7 +93,7 @@ def test_arguments_that_were_not_json_say_so_with_an_example(session):
 
 
 def test_a_destructive_tool_already_waiting_at_the_limit_queues_no_more(session):
-    limit = agent.MAX_PARKED_CONFIRMS
+    limit = agent_policy.MAX_PARKED_CONFIRMS
     state = _TurnState(messages=[], offered=[], parked={"delete_document": limit})
     events, over = _dispatch(session, _plan(), state, {"name": "delete_document", "arguments": {"id": 1}})
     assert over is False
@@ -113,7 +113,7 @@ def test_a_destructive_tool_under_the_limit_is_parked_with_a_card(session):
     events, over = _dispatch(session, _plan(), state, {"name": "delete_document", "arguments": {"id": 1}})
     assert over is False and [e["type"] for e in events] == ["confirm"]
     assert state.parked == {"delete_document": 2} and state.did_write and state.ran_writes == {"delete_document"}
-    assert _told(state) == agent.AWAITING_CONFIRMATION
+    assert _told(state) == agent_turn.AWAITING_CONFIRMATION
 
 
 def test_a_tool_that_failed_three_times_is_spent_whatever_the_arguments(session):
