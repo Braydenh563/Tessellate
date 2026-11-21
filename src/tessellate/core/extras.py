@@ -1484,6 +1484,38 @@ def cancel(_name: str = "") -> tuple[bool, str]:
     return True, "Stopping the install."
 
 
+#: The version range each pip extra may install (SECURITY.md T23). A bare name
+#: took whatever PyPI served that day; this is the line a release is allowed to
+#: cross only by an edit here. Floor = the version measured 2026-11-21, cap = the
+#: next breaking release. Names already pinned with `==` are not listed.
+#: Hashes (`--require-hashes`) are not used: pip then wants a sha256 for every
+#: transitive dependency per platform and Python (BACKLOG.md section 11).
+PIP_BOUNDS: dict[str, str] = {
+    "pypdfium2": ">=5.15,<6",
+    "pillow": ">=12,<14",
+    "faster-whisper": ">=1.2.1,<2",
+    "pywebview": ">=6.2,<7",
+    "pystray": ">=0.19.5,<0.20",
+    "markitdown": ">=0.1.9,<0.2",
+    "pytesseract": ">=0.3.13,<0.4",
+    "rapidocr-onnxruntime": ">=1.2.3,<2",
+    "llama-cpp-python": ">=0.3.37,<0.4",
+    "sherpa-onnx": ">=2.0,<3",
+    "fastembed": ">=0.9.1,<1.0",  # as requirements.txt, which also reaches pip through -c
+}
+
+
+def pip_requirements(extra: Extra) -> list[str]:
+    """What pip is handed for a pip extra: each package with its version range
+    (`markitdown[pdf,docx,pptx]>=0.1.9,<0.2`). A package already pinned with
+    `==` goes as written; one with no range is a bug `test_every_pip_extra_is_bounded` catches."""
+    out = []
+    for package in extra.packages:
+        bound = PIP_BOUNDS.get(_canonical(_requirement_name(package)), "")
+        out.append(package if "==" in package or not bound else f"{package}{bound}")
+    return out
+
+
 def _requirement_name(spec: str) -> str:
     """`markitdown[pdf,docx]>=0.1` -> `markitdown`: the project a requirement
     names, which is what an uninstall takes."""
@@ -1867,7 +1899,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             # 2 GB), kept after a finished install and after a stopped one.
             "--no-cache-dir",
             *_frozen_target_args(),
-            *extra.packages,
+            *pip_requirements(extra),
             *constraint,
         ]
         _state.step = f"pip install {' '.join(extra.packages)}"

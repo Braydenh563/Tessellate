@@ -27,6 +27,7 @@ happen. Every deletion is checked to be inside the cache root as well.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import logging
@@ -80,6 +81,13 @@ class OnnxBuild:
     extra_files: tuple[str, ...] = ()
     pooling: str = ""
     dim: int = 0
+    #: The Hub commit the files are fetched at and the sha256 of each weights
+    #: file (name, hex), read from the Hub's own file list (LFS oid) 2026-11-21.
+    #: Empty for a typed repo, which has nothing to compare against. **To bump:**
+    #: take the repo's newest commit from `/api/models/<repo>`, and each file's
+    #: `lfs.oid` from `/api/models/<repo>/tree/<commit>?recursive=1`.
+    revision: str = ""
+    digests: tuple[tuple[str, str], ...] = ()
 
 
 #: The small files every snapshot is fetched with: fastembed reads the
@@ -146,7 +154,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         context="256 tokens",
         licence="Apache-2.0",
         best_for="An old or small machine: the fastest here, a little less precise.",
-        onnx=OnnxBuild("Qdrant/all-MiniLM-L6-v2-onnx", "model.onnx"),
+        onnx=OnnxBuild(
+            "Qdrant/all-MiniLM-L6-v2-onnx",
+            "model.onnx",
+            revision="d13954661f83248295ba75c1ed411eef3b7b936e",
+            digests=(("model.onnx", "bbd7b466f6d58e646fdc2bd5fd67b2f5e93c0b687011bd4548c420f7bd46f0c5"),),
+        ),
     ),
     EmbedModel(
         id="bge-small",
@@ -159,7 +172,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         params="33M",
         licence="MIT",
         best_for="Most notebooks in English: quick on any laptop, good matches.",
-        onnx=OnnxBuild("Qdrant/bge-small-en-v1.5-onnx-Q", "model_optimized.onnx"),
+        onnx=OnnxBuild(
+            "Qdrant/bge-small-en-v1.5-onnx-Q",
+            "model_optimized.onnx",
+            revision="aa8f8b060edb00e03bfdd08813a2949946c8ba55",
+            digests=(("model_optimized.onnx", "51f1bd0addd6e859e42c2c8021a5e5461385bb676a649f4b269aa445449f2431"),),
+        ),
     ),
     EmbedModel(
         id="me5-small",
@@ -173,7 +191,13 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         licence="MIT",
         best_for="Notes in more than one language on an ordinary laptop.",
         prefix="query: ",
-        onnx=OnnxBuild("intfloat/multilingual-e5-small", pooling="MEAN", dim=384),
+        onnx=OnnxBuild(
+            "intfloat/multilingual-e5-small",
+            pooling="MEAN",
+            dim=384,
+            revision="614241f622f53c4eeff9890bdc4f31cfecc418b3",
+            digests=(("onnx/model.onnx", "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"),),
+        ),
     ),
     EmbedModel(
         id="bge-base",
@@ -185,7 +209,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         params="110M",
         licence="MIT",
         best_for="English notes when better matches are worth a slower save.",
-        onnx=OnnxBuild("Qdrant/bge-base-en-v1.5-onnx-Q", "model_optimized.onnx"),
+        onnx=OnnxBuild(
+            "Qdrant/bge-base-en-v1.5-onnx-Q",
+            "model_optimized.onnx",
+            revision="199291fdd1aa89faf9c20b722dc72ad5e17aa0d0",
+            digests=(("model_optimized.onnx", "4e556722bc4f65716c544c8a931f1e90fb3f866e5741fd93a96f051d673339c7"),),
+        ),
     ),
     EmbedModel(
         id="nomic-v1.5",
@@ -202,7 +231,11 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         terms_url="https://huggingface.co/nomic-ai/nomic-embed-text-v1.5",
         why_not="Not offered built in yet. The same model is nomic-embed-text in Ollama.",
         prefix="search_query: ",
-        onnx=OnnxBuild("nomic-ai/nomic-embed-text-v1.5"),
+        onnx=OnnxBuild(
+            "nomic-ai/nomic-embed-text-v1.5",
+            revision="e9b6763023c676ca8431644204f50c2b100d9aab",
+            digests=(("onnx/model.onnx", "147d5aa88c2101237358e17796cf3a227cead1ec304ec34b465bb08e9d952965"),),
+        ),
     ),
     EmbedModel(
         id="qwen3-0.6b",
@@ -216,7 +249,15 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         context="32,768 tokens",
         licence="Apache-2.0",
         best_for="The best matches, with 8 GB of memory or more to spare.",
-        onnx=OnnxBuild("Qdrant/Qwen3-Embedding-0.6B-onnx", extra_files=("onnx/model.onnx_data",)),
+        onnx=OnnxBuild(
+            "Qdrant/Qwen3-Embedding-0.6B-onnx",
+            extra_files=("onnx/model.onnx_data",),
+            revision="af95f2c416ffe9379369ad64f9113e865db6112c",
+            digests=(
+                ("onnx/model.onnx", "754d6ba1c7a323d7b3af0d85b8268f8b716b0cd362ce73295e0f71d3dd831639"),
+                ("onnx/model.onnx_data", "15d02a315e3b95296700c73d72a436e79facf4e17d919345bed730e98433bcb4"),
+            ),
+        ),
     ),
     EmbedModel(
         id="bge-m3",
@@ -230,7 +271,15 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         licence="MIT",
         best_for="Long notes in many languages on a well-equipped machine.",
         onnx=OnnxBuild(
-            "BAAI/bge-m3", extra_files=("onnx/model.onnx_data", "onnx/Constant_7_attr__value"), pooling="CLS", dim=1024
+            "BAAI/bge-m3",
+            extra_files=("onnx/model.onnx_data", "onnx/Constant_7_attr__value"),
+            pooling="CLS",
+            dim=1024,
+            revision="5617a9f61b028005a4858fdac845db406aefb181",
+            digests=(
+                ("onnx/model.onnx", "f84251230831afb359ab26d9fd37d5936d4d9bb5d1d5410e66442f630f24435b"),
+                ("onnx/model.onnx_data", "1eebfb28493f67bba03ce0ef64bfdc7fc5a3bd9d7493f818bb1d78cd798416b4"),
+            ),
         ),
     ),
     EmbedModel(
@@ -247,7 +296,15 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         one_press=False,
         terms_url="https://ai.google.dev/gemma/terms",
         why_not="Under Google's Gemma terms, not an open licence: accept them on the Hub first, then use embeddinggemma in Ollama.",
-        onnx=OnnxBuild("onnx-community/embeddinggemma-300m-ONNX", extra_files=("onnx/model.onnx_data",)),
+        onnx=OnnxBuild(
+            "onnx-community/embeddinggemma-300m-ONNX",
+            extra_files=("onnx/model.onnx_data",),
+            revision="5090578d9565bb06545b4552f76e6bc2c93e4a66",
+            digests=(
+                ("onnx/model.onnx", "ea91fd315a7c152d427d231746f0f811a1ac93beaba656abfdf2b24e091265e4"),
+                ("onnx/model.onnx_data", "ef835ae565d8695236652475903078e8ed794c7c35faf1164d78ec3238e8a88d"),
+            ),
+        ),
     ),
 )
 
@@ -750,7 +807,44 @@ def fetch(repo: str, build: OnnxBuild | None = None) -> None:
             repo_id=build.source,
             allow_patterns=[build.model_file, *build.extra_files, *CONFIG_FILES],
             cache_dir=str(cache_root()),
+            revision=build.revision or None,
         )
+    bad = verify_digests(repo, build)
+    if bad:
+        raise WeightsDigestMismatch(
+            f"{', '.join(bad)} did not match the checksum this app expects, so it was removed and not used."
+        )
+
+
+class WeightsDigestMismatch(Exception):
+    """A weights file whose sha256 is not the pinned one: refused, as a download extra's is."""
+
+
+def verify_digests(repo: str, build: OnnxBuild | None = None) -> list[str]:
+    """The pinned weights files of `repo` whose sha256 does not match, each one
+    deleted (link and blob) so a bad file is never loaded. A build with no
+    digests (a typed repo) has nothing to check. A missing file is left to
+    `cache_health`."""
+    build = build or build_for(repo)
+    bad: list[str] = []
+    for snapshot in _snapshots(build.source):
+        if build.revision and snapshot.name != build.revision:
+            continue
+        for name, want in build.digests:
+            path = snapshot / name
+            if not path.is_file():
+                continue
+            digest = hashlib.sha256()
+            with path.open("rb") as handle:
+                while chunk := handle.read(1 << 20):
+                    digest.update(chunk)
+            if digest.hexdigest() != want:
+                bad.append(name)
+                blob = path.resolve()
+                path.unlink(missing_ok=True)
+                if blob.is_file() and blob != path:
+                    blob.unlink(missing_ok=True)
+    return bad
 
 
 def _dir_size(path: Path) -> int:
