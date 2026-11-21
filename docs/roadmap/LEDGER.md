@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 502 | 570 | 129 | 2 | 183 | 1201 |
+| general | 0 | 34 | 2 | 0 | 4 | 36 |
+| all | 502 | 568 | 129 | 2 | 183 | 1199 |
 
 ## graph
 
@@ -720,10 +720,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule
 - [ ] **L-general-8** `general` open, S: Add `python -m tessellate tool NAME --json` over mcp_server.offered_tools() and a SKILL.md intent-router snippet on Settings' MCP row. From ANALYSIS.md:4353. Evidence: __main__.py argparse has no `tool` subcommand; renderMcpSnippet in settings-controls.js has no SKILL.md
 - [ ] **L-general-9** `general` open, S: Make new source-text tests carry a docstring saying why behaviour cannot be asserted, and have gate.sh print the source-text test count. From ANALYSIS.md:4355. Evidence: grep read_text scripts/gate.sh returns nothing; 54% of test files read file text per the review
-- [ ] **L-general-10** `general` open, S: Completing a reminder prompts for a one-line outcome appended to the source note. From ANALYSIS.md:1216. Evidence: shell-reminders.js has no outcome prompt on complete; not in any plan
 - [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
-- [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
-- [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
@@ -742,6 +739,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
+- [ ] **L-general-36** `general` open, S: Extracted-and-committed notes and notes from the extract flow record no origin, so they get no provenance chip (needs a source field set at commit). From L-general-13 build.
 
 ## Owner calls
 
