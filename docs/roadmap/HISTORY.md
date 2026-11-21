@@ -55326,6 +55326,8 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - **Hub crossings (W34, INBOX 1306).** A hub's neighbours are dealt into their spots in the order their other lines lead, every turn and both directions, then 2-opt runs of the fan (`untangleOrderSteps`, graph-worker.js); the least crossed layout of the passes and relaxes is the one cleaned (`untangleKeepBest`/`untangleTakeBest`: a relax gave back 38 of a pass's 43). Ten 36-note two-hub seeds each shape: hub crossings 90 to 44 and 256 to 150, total 133 to 75 and 359 to 202, 0 overlaps (`tests/test_graph_hub_crossings.py`, counter clock `clockStep` in the harness).
 
 ## Moved from the LEDGER
+- [x] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired. Built: IDEAS.md deleted; built to HISTORY, open to BACKLOG; links fixed (test_docs_links, rebrand.py)
+- [x] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open Built: ROADMAP queues cut, items checked against LEDGER L275, HISTORY, plans; README link repointed; test_docs_layout
 - [x] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2 Built: inbox_resolve 1779 1748 1726 1716 904; B03 B11 B15 B18 B20 B23 checked in code; test_plan_hygiene
 - [x] **L-general-27** `general` open, S: Align CONTRIBUTING with replace, do not layer and the current test count. From open-work sweep 2026-11-12, CONTRIBUTING.md:129. Evidence: This contradicts CLAUDE.md section 8, "Replace, do not layer: remove the old path". Line 52's "13,300+ tests" also disagrees with CLAUDE.md's "about 9,000". The docs/ mirror carries the same text. Built: CONTRIBUTING replace-do-not-layer; 22,296 test functions by grep, 52,937 collected
 - [x] **L-general-26** `general` open, S: Update the deep-audit skill steps to brief from and write LEDGER rows, not ranked files. From open-work sweep 2026-11-12, .claude/skills/deep-audit/SKILL.md:38. Evidence: Steps 2 and 3 say to brief from and write audit-*-ranked.md files, which no longer exist. checklist.md says findings are LEDGER rows. The skill contradicts its own checklist. Built: deep-audit SKILL.md steps 2 to 4 and checklist.md say LEDGER rows
@@ -55943,3 +55945,102 @@ From DOCUMENTS_PLAN section 17d (L-documents-67). The plan's earlier text: "One 
      B85. Composer's wording and grammar, especially around dates is a bit off and hard to read. And other things could be improved as well **E18 true.** Composer wording and dates are O4 (open).
      B86. The compsoer guide didn’t answer my question :( **E18 true.** Guide answer gap is W22 (open).
 
+
+## Moved from the plans, 2026-11-21 (ROADMAP.md's queues retired, L-general-30)
+
+ROADMAP.md's "Next PR, first", "How to proceed after PR 149" and "Next up, ranked"
+sections are gone (full text in git history before this commit), and its plan table
+no longer states dated progress. Each item in them was checked: INBOX 646 (the code
+editor) was built (see "found built by audit 2026-11-14" above), INBOX 644 (meeting
+notes) is built (`tests/test_meetings_644.py`), INBOX 643 (OneNote research) was
+placed and is in the plans, the remainder of INBOX 641 (Illustrator's linked symbols
+and Photoshop's effects) is L275, the speed budget, BACKLOG 115 and the horizon are in
+WORLD_CLASS_PLAN and BACKLOG, the llama.cpp runner is `scratchpad/llama-dev.sh`, and
+INBOX 258, 261 and B1's feed are in HISTORY. The owner's 2026-10-05 words: "maybe push
+these to next pr at the top of the roadmap".
+
+## Moved from the plans, 2026-11-21 (IDEAS.md retired, L-general-32)
+
+IDEAS.md was the owner's parking lot, tidied on 2026-10-05 and checked against
+the app. Its built entries stay here with where they live, because their wording
+is what a future session will search for; its open entries are in BACKLOG,
+"Placed from IDEAS.md, 2026-11-21". Also built, found by the 2026-11-21 check: a
+visual timeline drawn as a branching line (the thread lanes, `routes_timeline.py:811`),
+sorting saved chats (BACKLOG, "Sorting and grouping saved chats"), whiteboard
+cards that die with their note (swept with the orphaned vectors on the background
+pass), and a memory-stream screen (Settings, What it remembers).
+
+### Capture and the shell
+
+- Handle image and file uploads, with drag and drop: attachments, the Library's
+  Images and Files views, captions, vision reads, Tesseract text and the OCR
+  workspace.
+- A guided setup on first install: the welcome card and the guided tour (Settings,
+  Help), which walks through the real controls.
+- A mini bar at the bottom with statuses and quick access to the command palette:
+  the status bar at the foot of the window, and the palette on `Ctrl`/`Cmd`+`K`.
+- Allow saving custom appearances and themes: thirteen themes and saved looks, in
+  Settings, Appearance.
+- Collapsible sidebars.
+- Make Tessellate cross-platform: a Windows installer and a Linux package, and
+  macOS from source.
+- Package the application, and improve the Settings models page: the installers,
+  and Settings, Models with fit badges and a model per feature.
+- Improve start.bat: no console window to keep open, and a tray icon. The launcher
+  has `--doctor`, `--logs` and `--shortcut`, and the desktop window has a tray menu
+  with Open, View logs, Restart and Quit.
+- A way to exit the app and quit the backend: Quit in the header, and Settings,
+  Background tasks.
+- An interface for managing the application (backend, console, update, packages,
+  restart, health): Settings, Background tasks, Packages, Logs and About.
+- Improve the console in settings and show all console messages: Settings, Logs.
+- A way to run the application on a phone: a layout built for the phone, the
+  Share to Tessellate action, and, for a phone on your own network, LAN mode over
+  HTTPS (Settings, Account & security).
+- The help area in settings has an ask-AI feature that knows the program's
+  documentation: the Guide, and Ask Atlas about the app (`Ctrl`+`Shift`+`H`).
+- A full security sweep: the audit of 2026-10-05 and its fixes are in the
+  changelog under Security, and [`SECURITY.md`](SECURITY.md) states the model.
+- Update the readme: rewritten on 2026-10-05, with every document in `docs/`.
+
+### The AI
+
+- More tools, including managing categories (create, rename, merge, delete), and
+  better agentic workflow: 65 tools, a visible plan, a confirm card for anything
+  that changes or deletes.
+- More skills, and a way to make new ones, including a full audit and clean-up of
+  the notebook: 21 built-in skills (Notebook health check, Clean up my tags,
+  Reorganise my categories, Fix my links, Find notes worth combining, Build a
+  skill), and your own as Markdown files.
+- Quick, normal and detailed modes for chat and agent: response presets.
+- Reduce token usage in every AI interaction: the per-turn context budget, the
+  small-model mode and schema compaction.
+- Optimise outputs for what the current model can do: the small-model mode, and
+  per-model sampling defaults.
+- A nudge for the semantic search so "what did I save in the last two days" works:
+  date-aware search operators and time travel over meaning.
+- Reduce the cap on semantic search results, based on the model's context:
+  `search_notes` scales its default result count with the model's window. The
+  ceiling deliberately does not scale, because letting it do so meant a 128k model
+  could pull 768 note previews into one tool result.
+- Have the agent reachable from anywhere in the program: the popup agent
+  (`Ctrl`+`Shift`+`A`) over every tab, and the agent activity monitor.
+- Dynamically change models based on the task: background work uses the utility
+  model so it does not tie up the chat model (`smart_model_routing_enabled`).
+- Chat message metadata that survives a reload: the whole stats block is stored
+  per turn, and every message says how full the model's window got.
+- Make the notebook constellation regenerate on a light or dark change: it is
+  rebuilt on every mode, accent and palette change, keeping the same arrangement.
+- The background librarian: runs on an interval, tags, links and flags
+  duplicates, off by default, never deletes. The category work (rename, merge,
+  move) is done by the skills above.
+
+### Notes, documents and boards
+
+- Expand and improve the sketches board, maybe a whiteboard tab: boards and mind
+  maps in the Library's Boards & maps view, with shapes, connectors, an object
+  library and mind maps.
+- Better documents UI and usability, and make notes and documents two halves of a
+  whole: the long-form editor, document links, backlinks and the Contents tree.
+- A visual timeline: the Timeline tab with feed, table and scrubber.
+- More dashboard widgets: the dashboard's widget set, including Boards & maps.

@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 29 | 2 | 0 | 4 | 31 |
-| all | 502 | 558 | 129 | 2 | 183 | 1189 |
+| general | 0 | 27 | 2 | 0 | 4 | 29 |
+| all | 502 | 556 | 129 | 2 | 183 | 1187 |
 
 ## graph
 
@@ -725,9 +725,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-21** `general` open, S: Add a periodic sweep that clears dangling filing_similar_id values. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1806. Evidence: filing_similar_id is deliberately not a foreign key, and the doc's suggested follow-up, a periodic sweep, was never built or tracked.
 - [ ] **L-general-25** `general` open, S: Confirm or replace the question_noise misspelling table's source. From open-work sweep 2026-11-12, docs/THIRD_PARTY.md:101. Evidence: The question_noise.py misspelling table may be CC BY-SA 4.0 from Wikipedia. Its provenance is unconfirmed, and nothing tracks confirming or replacing it. This is a licence risk under AGPL.
-- [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
-- [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 
 ## Owner calls
@@ -1030,7 +1028,7 @@ Each step: tests first, scripts/gate.sh --changed, one commit, tick the LEDGER r
 ```text
 YOUR SOLE PURPOSE IS TO LEAVE NOTHING OPEN ANYWHERE IN THE REPO EXCEPT docs/roadmap/BACKLOG.md (the owner, 2026-11-12: "I want absolutely and I mean ABSOLUTELY nothing left outside of the backlog file").
 Start with the orient skill and CLAUDE.md. Branch claude/closing from main; a PR every 3 to 5 finished items, CI green before the next; the owner merges.
-1. Run `python scripts/open_scan.py` with no filter and read every hit; also read every *_PLAN.md, HANDOVER, INBOX, docs/ROADMAP.md, IDEAS.md and the scratchpad audits in full, and list open GitHub issues and pull requests. Signal words miss things: read, do not only grep.
+1. Run `python scripts/open_scan.py` with no filter and read every hit; also read every *_PLAN.md, HANDOVER, INBOX, docs/ROADMAP.md and the scratchpad audits in full, and list open GitHub issues and pull requests. Signal words miss things: read, do not only grep.
 2. Every open item found is done here (tests first, scripts/gate.sh --changed, one commit), or, only if its last step needs the owner's own device, a real model or the owner's input, moved to BACKLOG as one row naming that exact step.
 3. Lines that only read as open (history, feature names) are reworded so the scan is clean; never widen the scanner to hide a hit.
 4. A plan file with nothing open is retired: its standing decisions move to docs/ARCHITECTURE.md or docs/DESIGN.md, its record to HISTORY, and every link to it is updated.

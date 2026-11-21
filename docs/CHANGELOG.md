@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: ROADMAP.md drops its dated queues (Next PR first, How to proceed after PR 149, Next up ranked) and states no progress in its plan table; each item was a LEDGER row, in a plan or built (L-general-30). IDEAS.md is retired: built entries to HISTORY, open ones to BACKLOG (Placed from IDEAS.md), every link to it fixed (L-general-32).
 - INBOX: the five items that carry a Placed id (1779, 1748, 1726, 1716, 904) moved to HISTORY; 904's statuses for B03, B11, B15, B18, B20 and B23 now say fixed, each against its code (L-general-28).
 - Docs: CONTRIBUTING.md says replace, do not layer (CLAUDE.md section 8) in place of additive only, and states 22,000+ tests (22,296 test functions by grep, 52,937 collected items with parameters); the deep-audit skill briefs from and writes LEDGER rows, not ranked files (L-general-26, L-general-27).
 - Docs: ARCHITECTURE.md no longer says documents have no revisions, that the packaged app has no stdio MCP, that the .msi ships, or that assets cannot be cached immutable (each checked against the code); RELEASING.md names the pyproject version test, fastembed as the optional engine, and ROADMAP's milestone table as the 1.0 criteria (L-general-22, L-general-24).

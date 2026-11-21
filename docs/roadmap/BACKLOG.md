@@ -497,7 +497,7 @@ those: has been reproduced in Chromium and fixed. Full detail, including
 repeat if it isn't kept), is in HISTORY.md.
 
 **From the ideas parking lot, never formally triaged.** Reported informally
-(`IDEAS.md`) rather than reproduced in a browser yet, worth the same
+(the retired `IDEAS.md`, in git history) rather than reproduced in a browser yet, worth the same
 ten-second grep-first check as everything else in this document before
 anyone spends a session on them. (The other four of the original five were
 checked 2026-10-04 and are in HISTORY.md, "Moved from the backlog".)
@@ -4435,3 +4435,36 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L912, the Timeline tab to first rows under 300 ms, on the owner's idle hardware.** Headless on a loaded or idle sandbox cannot stand in for the owner's machine. With the notebook at about 96 notes, open the dashboard, click the Timeline tab, and read the time to the first row (DevTools Performance, or the 10-run method in the L912 HISTORY line); under 300 ms is the bar.
 - **L913, the look of the OS notification on real Windows and macOS.** The page's calls are measured with a stubbed `Notification` and a stubbed worker registration; how Windows (Action Center, Focus Assist) and macOS (Notification Center, Do Not Disturb) draw the "Reminder" title, the body, the Done and Snooze 10 minutes buttons, and the 12 s auto-close is the check left. On each: allow notifications, make a reminder due in a minute with the app in the background, and read what appears and whether the buttons act.
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
+
+## Placed from IDEAS.md, 2026-11-21
+
+IDEAS.md is retired; its built entries are in HISTORY ("Moved from the plans,
+2026-11-21"). What it held that is still open, each checked against the app on
+that date (the agent activity monitor that is not movable is L-chat-13):
+
+- **A before-and-after comparison for every agent edit**, and the agent's edit
+  proposed in chat and documents as a suggestion you can accept. The confirm card
+  exists for destructive and outside-text changes only.
+- **Dynamic model choice by task complexity.** Routing is by caller, not by how
+  hard the task is.
+- **A research mode for web search** that plans several searches (`web_search` and
+  `read_url` exist, with a SearXNG option).
+- **Notes**: manually group notes apart from the main sorting; a note with more than
+  one category; compress notes and data on disk.
+- **Graph**: gravity and spread have no effect on the other layouts.
+- **Dashboard**: no Markdown rendering in some widgets; pie charts (bar and line exist).
+- **Chats**: grouping chats, with an agent tool and a skill to manage them.
+- **Settings** pages cannot be reached on a narrow phone view (check the other pages
+  for the same).
+- **An in-built browser with MCP tool abilities** beside web search (the stdio MCP
+  server over the app's own tools exists); **a VS Code extension**.
+- **The status dot's error state**: the AI status lives in the status bar now; check
+  that its error state can be reached.
+- **Check `docs/index.html`'s text against the README**, so the site and README agree.
+- **A dry run for the background librarian**: it edits notes unattended; `taskhistory`
+  records each run, what is missing is "here is the diff, apply or discard".
+- **Sweep attachments for orphans on a schedule**, as `clean_orphaned_vectors` and
+  `clean_orphaned_board_cards` do (`clean_orphaned_media` is a route today).
+- **The sketch highlighter's opacity** (`WB_HIGHLIGHTER_ALPHA`): a taste call, left
+  alone during the audit.
+- **Streamline and optimise the backend and every AI interaction** (ongoing).
