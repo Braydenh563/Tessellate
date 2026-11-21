@@ -15,6 +15,7 @@ import json
 import logging
 from collections.abc import Iterator
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 from datetime import datetime
 
@@ -87,6 +88,7 @@ from tessellate.ai.ollama_client import (
     ToolsUnsupportedError,
 )
 from tessellate.ai.provider import tools_unsupported_message
+from tessellate.ai.steps import drive as drive_steps
 from tessellate.core import private_turn
 
 
@@ -1187,41 +1189,125 @@ def run_agent(
     #: `ai/budget.py` for why this is a scope rather than a parameter.
     spend = run_budget.current()
     card = _TurnCard(question, show_plan)
-
-    while loop.round_number + 1 < loop.allowance:
-        stop = _budget_events(spend, state, loop)
-        if stop:
-            yield from stop
-            return
-        loop.round_number += 1
-        yield from card.start_round(loop.called_any)
-        # Set by any tool call that succeeded and had not been made before,
-        # the definition of "this round got somewhere". Read at the bottom of
-        # the loop, where it buys the next round.
-        state.progressed = False
-        got = yield from _stream_round(ollama, plan, state, loop, question, mode, session, card)
-        if got is None:
-            return
-        reply, required = got
-        yield from _round_stats(spend, reply, plan, loop)
-        calls = reply.get("tool_calls") or []
-        if not calls:
-            if (yield from _settle_answer(state, loop, card, reply, required, show_plan)):
-                return
-            continue
-        loop.called_any = True
-        state.messages.append(_replay_message(reply))
-        _widen_focus(plan, state, calls)
-        state.tainted = state.outside
-        if not state.tainted:
-            _prefetch_outbound(calls)
-        if (yield from _dispatch_round(session, plan, state, card, calls, history)):
-            return
-        if state.progressed and loop.allowance < loop.ceiling:
-            # This round did something new, so the turn gets another one. The
-            # cap that stops a runaway is still there: a round that repeats
-            # itself or errors buys nothing, so a loop never reaches `ceiling`.
-            loop.allowance += 1
-    yield from _exhausted_events(
-        ollama, plan, state, loop, card, spend, mode, show_plan, exhausted_note
+    turn = _Turn(
+        session=session,
+        ollama=ollama,
+        plan=plan,
+        state=state,
+        loop=loop,
+        spend=spend,
+        card=card,
+        question=question,
+        mode=mode,
+        history=history,
+        show_plan=show_plan,
+        exhausted_note=exhausted_note,
     )
+    yield from drive_steps(_TURN_STEPS, Step.ROUND, Step.DONE, turn)
+
+
+class Step(Enum):
+    """`run_agent`'s states (WORLD_CLASS_PLAN decision 61), one function each.
+
+    ROUND checks the budget and the allowance and opens a round; STREAM asks
+    the model; SETTLE decides whether a reply without calls is the answer;
+    DISPATCH runs the calls and may earn another round; EXHAUST writes the
+    stopping answer when the rounds are spent.
+    """
+
+    ROUND = "round"
+    STREAM = "stream"
+    SETTLE = "settle"
+    DISPATCH = "dispatch"
+    EXHAUST = "exhaust"
+    DONE = "done"
+
+
+@dataclass
+class _Turn:
+    """Everything a `Step` function reads or changes, for one turn."""
+
+    session: Session
+    ollama: OllamaClient
+    plan: Any
+    state: Any
+    loop: _Loop
+    spend: Any
+    card: Any
+    question: str
+    mode: str | None
+    history: list[dict] | None
+    show_plan: bool
+    exhausted_note: str | None
+    reply: dict = field(default_factory=dict)
+    required: Any = None
+
+
+def _step_round(turn: _Turn) -> Iterator[dict]:
+    loop = turn.loop
+    if loop.round_number + 1 >= loop.allowance:
+        return Step.EXHAUST
+    stop = _budget_events(turn.spend, turn.state, loop)
+    if stop:
+        yield from stop
+        return Step.DONE
+    loop.round_number += 1
+    yield from turn.card.start_round(loop.called_any)
+    # Set by any tool call that succeeded and had not been made before, the
+    # definition of "this round got somewhere". Read after the dispatch,
+    # where it buys the next round.
+    turn.state.progressed = False
+    return Step.STREAM
+
+
+def _step_stream(turn: _Turn) -> Iterator[dict]:
+    got = yield from _stream_round(
+        turn.ollama, turn.plan, turn.state, turn.loop, turn.question, turn.mode, turn.session, turn.card
+    )
+    if got is None:
+        return Step.DONE
+    turn.reply, turn.required = got
+    yield from _round_stats(turn.spend, turn.reply, turn.plan, turn.loop)
+    return Step.DISPATCH if turn.reply.get("tool_calls") else Step.SETTLE
+
+
+def _step_settle(turn: _Turn) -> Iterator[dict]:
+    if (yield from _settle_answer(turn.state, turn.loop, turn.card, turn.reply, turn.required, turn.show_plan)):
+        return Step.DONE
+    return Step.ROUND
+
+
+def _step_dispatch(turn: _Turn) -> Iterator[dict]:
+    plan, state, loop = turn.plan, turn.state, turn.loop
+    calls = turn.reply.get("tool_calls") or []
+    loop.called_any = True
+    state.messages.append(_replay_message(turn.reply))
+    _widen_focus(plan, state, calls)
+    state.tainted = state.outside
+    if not state.tainted:
+        _prefetch_outbound(calls)
+    if (yield from _dispatch_round(turn.session, plan, state, turn.card, calls, turn.history)):
+        return Step.DONE
+    if state.progressed and loop.allowance < loop.ceiling:
+        # This round did something new, so the turn gets another one. The
+        # cap that stops a runaway is still there: a round that repeats
+        # itself or errors buys nothing, so a loop never reaches `ceiling`.
+        loop.allowance += 1
+    return Step.ROUND
+
+
+def _step_exhaust(turn: _Turn) -> Iterator[dict]:
+    yield from _exhausted_events(
+        turn.ollama, turn.plan, turn.state, turn.loop, turn.card, turn.spend,
+        turn.mode, turn.show_plan, turn.exhausted_note,
+    )
+    return Step.DONE
+
+
+_TURN_STEPS = {
+    Step.ROUND: _step_round,
+    Step.STREAM: _step_stream,
+    Step.SETTLE: _step_settle,
+    Step.DISPATCH: _step_dispatch,
+    Step.EXHAUST: _step_exhaust,
+}

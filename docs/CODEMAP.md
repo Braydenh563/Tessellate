@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11154, test files 2893, tests 22870, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11168, test files 2894, tests 22878, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8539)
 
@@ -14238,7 +14238,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11154)
+## Backend modules (11168)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14466,60 +14466,67 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_set` | src/tessellate/ai/address.py:89 |
 | `run_step` | src/tessellate/ai/address.py:117 |
 
-### src/tessellate/ai/agent.py (50)
+### src/tessellate/ai/agent.py (57)
 
 | Name | File:line |
 |---|---|
-| `_Call` | src/tessellate/ai/agent.py:355 |
-| `_Loop` | src/tessellate/ai/agent.py:683 |
-| `_Streamed` | src/tessellate/ai/agent.py:710 |
-| `_barred` | src/tessellate/ai/agent.py:391 |
-| `_blocked_for_turn` | src/tessellate/ai/agent.py:1102 |
-| `_budget_events` | src/tessellate/ai/agent.py:718 |
-| `_change_diff` | src/tessellate/ai/agent.py:136 |
-| `_claim_notice` | src/tessellate/ai/agent.py:943 |
-| `_confirm_gate` | src/tessellate/ai/agent.py:448 |
-| `_count_call` | src/tessellate/ai/agent.py:145 |
-| `_dispatch_call` | src/tessellate/ai/agent.py:599 |
-| `_dispatch_round` | src/tessellate/ai/agent.py:1046 |
-| `_exhausted_events` | src/tessellate/ai/agent.py:1066 |
-| `_finish_handover` | src/tessellate/ai/agent.py:93 |
-| `_first_verdict` | src/tessellate/ai/agent.py:573 |
-| `_hand_over` | src/tessellate/ai/agent.py:429 |
-| `_handoff_refused` | src/tessellate/ai/agent.py:327 |
-| `_hold_result` | src/tessellate/ai/agent.py:577 |
-| `_model_died_events` | src/tessellate/ai/agent.py:792 |
-| `_not_permitted` | src/tessellate/ai/agent.py:402 |
-| `_note_copy` | src/tessellate/ai/agent.py:520 |
-| `_nudge` | src/tessellate/ai/agent.py:860 |
-| `_nudge_claim` | src/tessellate/ai/agent.py:918 |
-| `_nudge_empty` | src/tessellate/ai/agent.py:869 |
-| `_nudge_intent` | src/tessellate/ai/agent.py:907 |
-| `_nudge_prose` | src/tessellate/ai/agent.py:886 |
-| `_one_option_ask` | src/tessellate/ai/agent.py:313 |
-| `_plan_writes` | src/tessellate/ai/agent.py:113 |
-| `_plans` | src/tessellate/ai/agent.py:129 |
-| `_query_said` | src/tessellate/ai/agent.py:152 |
-| `_record_call` | src/tessellate/ai/agent.py:173 |
-| `_relay_stream` | src/tessellate/ai/agent.py:755 |
-| `_repeated_failure` | src/tessellate/ai/agent.py:502 |
-| `_repeated_read` | src/tessellate/ai/agent.py:544 |
-| `_repeated_write` | src/tessellate/ai/agent.py:531 |
-| `_replay_message` | src/tessellate/ai/agent.py:1008 |
-| `_round_stats` | src/tessellate/ai/agent.py:845 |
-| `_round_tools` | src/tessellate/ai/agent.py:737 |
-| `_run_and_record` | src/tessellate/ai/agent.py:241 |
-| `_settle_answer` | src/tessellate/ai/agent.py:977 |
-| `_stream_round` | src/tessellate/ai/agent.py:815 |
-| `_tidied_arguments` | src/tessellate/ai/agent.py:283 |
-| `_tool_spent` | src/tessellate/ai/agent.py:486 |
-| `_unreadable_arguments` | src/tessellate/ai/agent.py:413 |
-| `_unsupported_events` | src/tessellate/ai/agent.py:778 |
-| `_widen_focus` | src/tessellate/ai/agent.py:1029 |
-| `_with_advice` | src/tessellate/ai/agent.py:223 |
-| `_wrap_up_round` | src/tessellate/ai/agent.py:643 |
-| `plan_now` | src/tessellate/ai/agent.py:120 |
-| `run_agent` | src/tessellate/ai/agent.py:1113 |
+| `Step` | src/tessellate/ai/agent.py:1209 |
+| `_Call` | src/tessellate/ai/agent.py:357 |
+| `_Loop` | src/tessellate/ai/agent.py:685 |
+| `_Streamed` | src/tessellate/ai/agent.py:712 |
+| `_Turn` | src/tessellate/ai/agent.py:1227 |
+| `_barred` | src/tessellate/ai/agent.py:393 |
+| `_blocked_for_turn` | src/tessellate/ai/agent.py:1104 |
+| `_budget_events` | src/tessellate/ai/agent.py:720 |
+| `_change_diff` | src/tessellate/ai/agent.py:138 |
+| `_claim_notice` | src/tessellate/ai/agent.py:945 |
+| `_confirm_gate` | src/tessellate/ai/agent.py:450 |
+| `_count_call` | src/tessellate/ai/agent.py:147 |
+| `_dispatch_call` | src/tessellate/ai/agent.py:601 |
+| `_dispatch_round` | src/tessellate/ai/agent.py:1048 |
+| `_exhausted_events` | src/tessellate/ai/agent.py:1068 |
+| `_finish_handover` | src/tessellate/ai/agent.py:95 |
+| `_first_verdict` | src/tessellate/ai/agent.py:575 |
+| `_hand_over` | src/tessellate/ai/agent.py:431 |
+| `_handoff_refused` | src/tessellate/ai/agent.py:329 |
+| `_hold_result` | src/tessellate/ai/agent.py:579 |
+| `_model_died_events` | src/tessellate/ai/agent.py:794 |
+| `_not_permitted` | src/tessellate/ai/agent.py:404 |
+| `_note_copy` | src/tessellate/ai/agent.py:522 |
+| `_nudge` | src/tessellate/ai/agent.py:862 |
+| `_nudge_claim` | src/tessellate/ai/agent.py:920 |
+| `_nudge_empty` | src/tessellate/ai/agent.py:871 |
+| `_nudge_intent` | src/tessellate/ai/agent.py:909 |
+| `_nudge_prose` | src/tessellate/ai/agent.py:888 |
+| `_one_option_ask` | src/tessellate/ai/agent.py:315 |
+| `_plan_writes` | src/tessellate/ai/agent.py:115 |
+| `_plans` | src/tessellate/ai/agent.py:131 |
+| `_query_said` | src/tessellate/ai/agent.py:154 |
+| `_record_call` | src/tessellate/ai/agent.py:175 |
+| `_relay_stream` | src/tessellate/ai/agent.py:757 |
+| `_repeated_failure` | src/tessellate/ai/agent.py:504 |
+| `_repeated_read` | src/tessellate/ai/agent.py:546 |
+| `_repeated_write` | src/tessellate/ai/agent.py:533 |
+| `_replay_message` | src/tessellate/ai/agent.py:1010 |
+| `_round_stats` | src/tessellate/ai/agent.py:847 |
+| `_round_tools` | src/tessellate/ai/agent.py:739 |
+| `_run_and_record` | src/tessellate/ai/agent.py:243 |
+| `_settle_answer` | src/tessellate/ai/agent.py:979 |
+| `_step_dispatch` | src/tessellate/ai/agent.py:1280 |
+| `_step_exhaust` | src/tessellate/ai/agent.py:1299 |
+| `_step_round` | src/tessellate/ai/agent.py:1246 |
+| `_step_settle` | src/tessellate/ai/agent.py:1274 |
+| `_step_stream` | src/tessellate/ai/agent.py:1263 |
+| `_stream_round` | src/tessellate/ai/agent.py:817 |
+| `_tidied_arguments` | src/tessellate/ai/agent.py:285 |
+| `_tool_spent` | src/tessellate/ai/agent.py:488 |
+| `_unreadable_arguments` | src/tessellate/ai/agent.py:415 |
+| `_unsupported_events` | src/tessellate/ai/agent.py:780 |
+| `_widen_focus` | src/tessellate/ai/agent.py:1031 |
+| `_with_advice` | src/tessellate/ai/agent.py:225 |
+| `_wrap_up_round` | src/tessellate/ai/agent.py:645 |
+| `plan_now` | src/tessellate/ai/agent.py:122 |
+| `run_agent` | src/tessellate/ai/agent.py:1115 |
 
 ### src/tessellate/ai/agent_policy.py (30)
 
@@ -19799,65 +19806,71 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `parse` | src/tessellate/ai/skill_folder.py:115 |
 | `scan` | src/tessellate/ai/skill_folder.py:171 |
 
-### src/tessellate/ai/skill_runner.py (55)
+### src/tessellate/ai/skill_runner.py (61)
 
 | Name | File:line |
 |---|---|
-| `Verification` | src/tessellate/ai/skill_runner.py:166 |
-| `_RunSetup` | src/tessellate/ai/skill_runner.py:819 |
-| `_RunState` | src/tessellate/ai/skill_runner.py:848 |
-| `_Seen` | src/tessellate/ai/skill_runner.py:923 |
-| `_StepState` | src/tessellate/ai/skill_runner.py:894 |
-| `_absorb` | src/tessellate/ai/skill_runner.py:462 |
-| `_absorb_change` | src/tessellate/ai/skill_runner.py:516 |
-| `_after_done` | src/tessellate/ai/skill_runner.py:1230 |
-| `_announce_early` | src/tessellate/ai/skill_runner.py:698 |
-| `_begin_step` | src/tessellate/ai/skill_runner.py:942 |
-| `_clamp_only_step` | src/tessellate/ai/skill_runner.py:1408 |
-| `_close_run` | src/tessellate/ai/skill_runner.py:1620 |
-| `_collect` | src/tessellate/ai/skill_runner.py:1668 |
-| `_contract_met` | src/tessellate/ai/skill_runner.py:572 |
-| `_count_step` | src/tessellate/ai/skill_runner.py:882 |
-| `_done_event` | src/tessellate/ai/skill_runner.py:1120 |
-| `_event_mark` | src/tessellate/ai/skill_runner.py:781 |
-| `_fallback_replan` | src/tessellate/ai/skill_runner.py:631 |
-| `_halt` | src/tessellate/ai/skill_runner.py:968 |
-| `_judge_turn` | src/tessellate/ai/skill_runner.py:1139 |
-| `_note_event` | src/tessellate/ai/skill_runner.py:1016 |
-| `_observe_turn` | src/tessellate/ai/skill_runner.py:1047 |
-| `_open_turn` | src/tessellate/ai/skill_runner.py:979 |
-| `_pages_left` | src/tessellate/ai/skill_runner.py:524 |
-| `_paging_nudge` | src/tessellate/ai/skill_runner.py:554 |
-| `_plan_event` | src/tessellate/ai/skill_runner.py:1441 |
-| `_plan_step_offer` | src/tessellate/ai/skill_runner.py:714 |
-| `_plan_step_tools` | src/tessellate/ai/skill_runner.py:709 |
-| `_reading` | src/tessellate/ai/skill_runner.py:215 |
-| `_record_run` | src/tessellate/ai/skill_runner.py:322 |
-| `_remember` | src/tessellate/ai/skill_runner.py:452 |
-| `_replan_or_stop` | src/tessellate/ai/skill_runner.py:1204 |
-| `_replan_step` | src/tessellate/ai/skill_runner.py:645 |
-| `_reword_step` | src/tessellate/ai/skill_runner.py:1423 |
-| `_run_one_step` | src/tessellate/ai/skill_runner.py:1247 |
-| `_run_skill` | src/tessellate/ai/skill_runner.py:1277 |
-| `_run_stepless` | src/tessellate/ai/skill_runner.py:1522 |
-| `_step_answer` | src/tessellate/ai/skill_runner.py:105 |
-| `_step_tools` | src/tessellate/ai/skill_runner.py:721 |
-| `_stop_reason` | src/tessellate/ai/skill_runner.py:1069 |
-| `_stopped_by` | src/tessellate/ai/skill_runner.py:1593 |
-| `_tag_arguments` | src/tessellate/ai/skill_runner.py:443 |
-| `_touched_clause` | src/tessellate/ai/skill_runner.py:94 |
-| `_touched_ids` | src/tessellate/ai/skill_runner.py:90 |
-| `_truncation_note` | src/tessellate/ai/skill_runner.py:1113 |
-| `_turn_for` | src/tessellate/ai/skill_runner.py:1475 |
-| `_turn_instruction` | src/tessellate/ai/skill_runner.py:950 |
-| `_unchecked_reason` | src/tessellate/ai/skill_runner.py:1604 |
-| `_undo_span` | src/tessellate/ai/skill_runner.py:790 |
-| `_unmet_reason` | src/tessellate/ai/skill_runner.py:383 |
-| `_usage` | src/tessellate/ai/skill_runner.py:889 |
-| `_walk_steps` | src/tessellate/ai/skill_runner.py:1571 |
-| `_where` | src/tessellate/ai/skill_runner.py:255 |
-| `run_skill` | src/tessellate/ai/skill_runner.py:738 |
-| `verify` | src/tessellate/ai/skill_runner.py:270 |
+| `Step` | src/tessellate/ai/skill_runner.py:1268 |
+| `Verification` | src/tessellate/ai/skill_runner.py:168 |
+| `_Attempt` | src/tessellate/ai/skill_runner.py:1284 |
+| `_RunSetup` | src/tessellate/ai/skill_runner.py:821 |
+| `_RunState` | src/tessellate/ai/skill_runner.py:850 |
+| `_Seen` | src/tessellate/ai/skill_runner.py:925 |
+| `_StepState` | src/tessellate/ai/skill_runner.py:896 |
+| `_absorb` | src/tessellate/ai/skill_runner.py:464 |
+| `_absorb_change` | src/tessellate/ai/skill_runner.py:518 |
+| `_after_done` | src/tessellate/ai/skill_runner.py:1232 |
+| `_announce_early` | src/tessellate/ai/skill_runner.py:700 |
+| `_attempt_judge` | src/tessellate/ai/skill_runner.py:1309 |
+| `_attempt_observe` | src/tessellate/ai/skill_runner.py:1304 |
+| `_attempt_open` | src/tessellate/ai/skill_runner.py:1297 |
+| `_attempt_settle` | src/tessellate/ai/skill_runner.py:1314 |
+| `_begin_step` | src/tessellate/ai/skill_runner.py:944 |
+| `_clamp_only_step` | src/tessellate/ai/skill_runner.py:1463 |
+| `_close_run` | src/tessellate/ai/skill_runner.py:1675 |
+| `_collect` | src/tessellate/ai/skill_runner.py:1723 |
+| `_contract_met` | src/tessellate/ai/skill_runner.py:574 |
+| `_count_step` | src/tessellate/ai/skill_runner.py:884 |
+| `_done_event` | src/tessellate/ai/skill_runner.py:1122 |
+| `_event_mark` | src/tessellate/ai/skill_runner.py:783 |
+| `_fallback_replan` | src/tessellate/ai/skill_runner.py:633 |
+| `_halt` | src/tessellate/ai/skill_runner.py:970 |
+| `_judge_turn` | src/tessellate/ai/skill_runner.py:1141 |
+| `_note_event` | src/tessellate/ai/skill_runner.py:1018 |
+| `_observe_turn` | src/tessellate/ai/skill_runner.py:1049 |
+| `_open_turn` | src/tessellate/ai/skill_runner.py:981 |
+| `_pages_left` | src/tessellate/ai/skill_runner.py:526 |
+| `_paging_nudge` | src/tessellate/ai/skill_runner.py:556 |
+| `_plan_event` | src/tessellate/ai/skill_runner.py:1496 |
+| `_plan_step_offer` | src/tessellate/ai/skill_runner.py:716 |
+| `_plan_step_tools` | src/tessellate/ai/skill_runner.py:711 |
+| `_reading` | src/tessellate/ai/skill_runner.py:217 |
+| `_record_run` | src/tessellate/ai/skill_runner.py:324 |
+| `_remember` | src/tessellate/ai/skill_runner.py:454 |
+| `_replan_or_stop` | src/tessellate/ai/skill_runner.py:1206 |
+| `_replan_step` | src/tessellate/ai/skill_runner.py:647 |
+| `_reword_step` | src/tessellate/ai/skill_runner.py:1478 |
+| `_run_one_step` | src/tessellate/ai/skill_runner.py:1249 |
+| `_run_skill` | src/tessellate/ai/skill_runner.py:1332 |
+| `_run_stepless` | src/tessellate/ai/skill_runner.py:1577 |
+| `_step_answer` | src/tessellate/ai/skill_runner.py:107 |
+| `_step_tools` | src/tessellate/ai/skill_runner.py:723 |
+| `_stop_reason` | src/tessellate/ai/skill_runner.py:1071 |
+| `_stopped_by` | src/tessellate/ai/skill_runner.py:1648 |
+| `_tag_arguments` | src/tessellate/ai/skill_runner.py:445 |
+| `_touched_clause` | src/tessellate/ai/skill_runner.py:96 |
+| `_touched_ids` | src/tessellate/ai/skill_runner.py:92 |
+| `_truncation_note` | src/tessellate/ai/skill_runner.py:1115 |
+| `_turn_for` | src/tessellate/ai/skill_runner.py:1530 |
+| `_turn_instruction` | src/tessellate/ai/skill_runner.py:952 |
+| `_unchecked_reason` | src/tessellate/ai/skill_runner.py:1659 |
+| `_undo_span` | src/tessellate/ai/skill_runner.py:792 |
+| `_unmet_reason` | src/tessellate/ai/skill_runner.py:385 |
+| `_usage` | src/tessellate/ai/skill_runner.py:891 |
+| `_walk_steps` | src/tessellate/ai/skill_runner.py:1626 |
+| `_where` | src/tessellate/ai/skill_runner.py:257 |
+| `run_skill` | src/tessellate/ai/skill_runner.py:740 |
+| `verify` | src/tessellate/ai/skill_runner.py:272 |
 
 ### src/tessellate/ai/skills.py (34)
 
@@ -20086,6 +20099,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_unused` | src/tessellate/ai/stats_ask.py:259 |
 | `_usage` | src/tessellate/ai/stats_ask.py:130 |
 | `ask` | src/tessellate/ai/stats_ask.py:286 |
+
+### src/tessellate/ai/steps.py (1)
+
+| Name | File:line |
+|---|---|
+| `drive` | src/tessellate/ai/steps.py:23 |
 
 ### src/tessellate/ai/studio.py (8)
 
@@ -28506,7 +28525,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22870)
+## Tests (22878)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30774,6 +30793,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_run_sandbox.py | 17 |
 | tests/test_run_skill.py | 41 |
 | tests/test_run_stop_mid_call.py | 4 |
+| tests/test_runner_steps_124.py | 8 |
 | tests/test_running_copies_1641.py | 26 |
 | tests/test_sample_notebook.py | 3 |
 | tests/test_sampling.py | 17 |
@@ -31821,14 +31841,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:593 |
+| Needs hardware | docs/roadmap/LEDGER.md:592 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:586 |
+| Owner calls | docs/roadmap/LEDGER.md:585 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32008,7 +32028,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:723 |
+| Plan session briefs | docs/roadmap/LEDGER.md:722 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32062,25 +32082,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:739 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:823 |
+| chat | docs/roadmap/LEDGER.md:738 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:822 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:763 |
-| general | docs/roadmap/LEDGER.md:545 |
+| documents | docs/roadmap/LEDGER.md:762 |
+| general | docs/roadmap/LEDGER.md:544 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:727 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:835 |
+| graph | docs/roadmap/LEDGER.md:726 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:834 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:775 |
+| mindmap | docs/roadmap/LEDGER.md:774 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:799 |
+| timeline | docs/roadmap/LEDGER.md:798 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:787 |
+| ui-modernisation | docs/roadmap/LEDGER.md:786 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:751 |
+| whiteboard | docs/roadmap/LEDGER.md:750 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:811 |
+| world-class | docs/roadmap/LEDGER.md:810 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |
