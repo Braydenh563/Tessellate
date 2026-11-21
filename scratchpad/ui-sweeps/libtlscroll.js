@@ -9,7 +9,7 @@
 // Exits 1 when a surface's 95th percentile frame is over MAX95.
 const fs = require('fs');
 const os = require('os');
-const { boot } = require('./lib.js');
+const { boot, seedBulkOnce } = require('./lib.js');
 const SURFACES = (process.env.SURFACES || 'library,feed,table').split(',');
 const OUT = process.env.OUT || `${os.tmpdir()}/libtl-scroll.json`;
 const MAX95 = Number(process.env.MAX95 || 20);
@@ -20,6 +20,7 @@ async function metrics(cdp) {
 }
 
 (async () => {
+  seedBulkOnce(1000);
   const results = {};
   for (const surface of SURFACES) {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });

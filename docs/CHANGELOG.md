@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: the seeded sweeps run the python CI gives them (VENV) rather than a .venv CI does not have, and libtlscroll seeds its own thousand notes once per data dir (in a shared CI dir it found 15 rows and no scroller).
 - Sweeps: deepflows finds Make private and Make readable under Share and export (the grouped note menu), and the library readings are seeded until their own files are there, so uitrio after libreader in one CI job still has its Files box.
 - Sweeps: companionmenu seeds 20 notes so the dashboard scrolls at its hard sizes (a fresh one was 796px of content in a 796px page, nothing to ride; L-general-48), and companionpin waits for the companion menu after its reload, when the menu module is lazy again and opens about 37ms after the right-click (L-general-45).
 - Companion: Motion at rest is Still when idle by default, so Atlas (and every companion) rests two seconds after your last move; idle main thread over off falls from +340 to +563ms/s to +22 to +73 (companionperf). Alive on mains power only is the opt-in, and unplugging stills it in the same event (`chargingchange`); the setting has its own help. Switching the companion looks at once whether the new figure covers a control, so Atlas no longer walks off the status bar's Navigation history 7.7 s later (part of L-general-47).

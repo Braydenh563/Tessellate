@@ -337,9 +337,31 @@ async function seedLibtextIfEmpty(page) {
   const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
   if (!DATA) throw new Error('empty library and no DATA (the data dir) to seed the readings into');
   execFileSync('node', [path.join(__dirname, 'seed-libtext.js')], {stdio: 'inherit', env: process.env});
-  execFileSync(path.join(__dirname, '..', '..', '.venv', 'bin', 'python'),
-    [path.join(__dirname, 'seed-libtext.py'), path.join(DATA, 'tessellate.db')], {stdio: 'inherit'});
+  execFileSync(venvPython(), [path.join(__dirname, 'seed-libtext.py'), path.join(DATA, 'tessellate.db')], {stdio: 'inherit'});
   return true;
 }
 
-module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, seedLibtextIfEmpty};
+//: CI has no .venv: ci_sweeps.sh is run with VENV (the python prefix), as serve.sh is.
+function venvPython() {
+  const path = require('path');
+  return path.join(process.env.VENV || path.join(__dirname, '..', '..', '.venv'), 'bin', 'python');
+}
+
+//: A sweep about long lists seeds its own thousand notes (seed-timeline-bulk.py)
+//: once per data dir, a marker file saying so: in CI the job's sweeps share one
+//: dir and libtlscroll found 15 rows and no scroller. Without DATA it measures
+//: whatever the served notebook holds, as before.
+function seedBulkOnce(count) {
+  const fs = require('fs');
+  const path = require('path');
+  const { execFileSync } = require('child_process');
+  const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
+  if (!DATA) return false;
+  const mark = path.join(DATA, '.seeded-bulk');
+  if (fs.existsSync(mark)) return false;
+  execFileSync(venvPython(), [path.join(__dirname, 'seed-timeline-bulk.py'), path.join(DATA, 'tessellate.db'), String(count)], {stdio: 'inherit'});
+  fs.writeFileSync(mark, String(count));
+  return true;
+}
+
+module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, seedLibtextIfEmpty, seedBulkOnce, venvPython};
