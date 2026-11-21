@@ -74,8 +74,15 @@
     };
     //: A scroll moves the frame by a transform from the stored boxes: it reads the scroll position only and writes no
     //: layout property, so a pan costs the picture's move and nothing more (L-documents-89).
+    //: One frame move per 48 ms (L-documents-102): each write repaints the overview and, with the 9,679 px picture as its thumbnail,
+    //: cost 4 to 6 ms a frame at 4x CPU; a trailing call settles the frame on the last position.
+    let movedAt = 0;
+    let tail = 0;
     const pan = () => {
       if (!geo) return;
+      const wait = 48 - (performance.now() - movedAt);
+      if (wait > 0) return void (tail ||= setTimeout(() => ((tail = 0), pan()), wait));
+      movedAt = performance.now();
       //: A pane that changed size is measured again (these two reads are free: nothing in a pan dirties the layout).
       if (fig.clientWidth !== geo.w || fig.clientHeight !== geo.h) return refresh();
       const w = math.window(geo.p, { left: fig.scrollLeft, top: fig.scrollTop, w: geo.w, h: geo.h });

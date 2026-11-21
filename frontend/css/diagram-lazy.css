@@ -398,6 +398,7 @@
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
   pointer-events: none;
+  will-change: transform;
 }
 
 /* The shelf (1661 l): six blocks of the kind on the picture's top left. Each is the library's own tile, icon only, so a
