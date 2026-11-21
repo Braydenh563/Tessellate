@@ -4471,7 +4471,8 @@ FLOATING_PANELS = (
 
 def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
     css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    enter = css.index(":is(.space-menu, .notif-panel,")
+    # Each panel is its own selector, filed under its class (L342).
+    enter = css.index(":where(.space-menu):is(.space-menu, #status-clock-detail):not(.hidden),")
     enter_block = css[enter : css.index("}", enter)]
     assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;" in enter_block
     assert ":not(.hidden)" in enter_block.split("{")[0]

@@ -668,7 +668,8 @@
   grid-area: grip;
 }
 
-.dgm-card-two > :is(i, .dgm-shape) {
+.dgm-card-two > :where(i):is(i, .dgm-shape),
+.dgm-card-two > .dgm-shape {
   grid-area: glyph;
 }
 
@@ -1390,7 +1391,8 @@
     grid-template-rows: minmax(0, 1fr);
   }
 
-  .dgm.dgm-phonelist.dgm-listless :is(.dgm-picture, .dgm-stage) {
+  .dgm.dgm-phonelist.dgm-listless .dgm-picture,
+  .dgm.dgm-phonelist.dgm-listless .dgm-stage {
     block-size: auto;
     min-block-size: 0;
   }
@@ -1840,7 +1842,8 @@
 
   /* The picture keeps 240 px (it was 96 beside a kind's pane); the blocks pane scrolls under it. */
   .dgm-dialog-body .dgm-picture,
-  .dgm-dialog-body .dgm.dgm-phonelist :is(.dgm-picture, .dgm-stage) {
+  .dgm-dialog-body .dgm.dgm-phonelist .dgm-picture,
+  .dgm-dialog-body .dgm.dgm-phonelist .dgm-stage {
     min-block-size: 240px;
   }
 
@@ -2349,7 +2352,8 @@
 
 @media (min-width: 600px) {
   .dgm-body.dgm-fold-left > :is(.dgm-listcol, .dgm-split-handle),
-  .dgm-body.dgm-fold-right > :is(.dgm-stage, .dgm-split-handle) {
+  .dgm-body.dgm-fold-right > .dgm-stage,
+  .dgm-body.dgm-fold-right > .dgm-split-handle {
     display: none;
   }
 

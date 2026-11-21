@@ -45,10 +45,11 @@ def test_graph_options_sections_pad_both_sides_equally():
 
 def test_boards_filter_gap_is_set_after_the_ring_room_rule():
     text = _css("08-consistency.css")
-    ring = text.index(":is(.launch-row, .library-filters, #chat-suggest) {")
-    gap = text.index(":is(#library-boards-filter, #reminder-filter) {")
+    # One selector per row, each filed under its class or id (L342).
+    ring = text.index(":where(.launch-row):is(.launch-row, #chat-suggest),\n:where(.library-filters):is(.library-filters, #chat-suggest),\n#chat-suggest {")
+    gap = text.index("#library-boards-filter,\n#reminder-filter {")
     assert gap > ring, "the gap must come after the `:is()` whose #chat-suggest id outranks a lone id"
-    body = _rule(text, ":is(#library-boards-filter, #reminder-filter)")
+    body = _rule(text, "#library-boards-filter,\n#reminder-filter")
     assert "margin-bottom: calc(var(--space-6) - var(--ring-room))" in body
     # The earlier lone-id rules never applied; they must not come back.
     assert not re.search(r"(?m)^#library-boards-filter\s*\{", _css("00-tokens-shell.css"))
@@ -149,7 +150,7 @@ def test_a_link_row_underlines_its_words_not_its_icon():
     assert "text-decoration" not in plain
     # An always-underlined link that holds an icon is not a flex row.
     chat = _css("04-chat-dock-appearance.css")
-    assert ":is(.linklike, .link-button):has(> .ph) {\n  display: inline-block;" in chat
+    assert ".linklike:has(> .ph),\n.link-button:has(> .ph) {\n  display: inline-block;" in chat
 
 
 def test_the_snippets_bar_is_one_height_and_its_label_one_line():

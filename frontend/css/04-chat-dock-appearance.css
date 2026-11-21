@@ -2641,7 +2641,8 @@ label.setting-check,
    every in-flow item, the icon included. As an inline-block the words sit in
    an inline formatting context, where an inline-block icon is atomic and the
    decoration stops at its edge. */
-:is(.linklike, .link-button):has(> .ph) {
+.linklike:has(> .ph),
+.link-button:has(> .ph) {
   display: inline-block;
 }
 :is(.linklike, .link-button) > .ph {
@@ -3397,7 +3398,8 @@ span > .chip {
   background: none;
   border-radius: inherit;
 }
-.att-chip-pill :is(.att-chip-open, .att-chip-x) {
+.att-chip-pill .att-chip-open,
+.att-chip-pill .att-chip-x {
   gap: var(--space-2);
   margin: calc((var(--control-h-lg) - var(--target-min)) / 2) 0;
   padding: 0;
@@ -3879,7 +3881,9 @@ span > .chip {
   .doc-sidebar .doc-new-split .toolbar-word {
     display: none;
   }
-  #doc-sidebar-list .doc-head-tools > :is(.graph-help-toggle, #doc-new-template, #doc-new-diagram) {
+  #doc-sidebar-list .doc-head-tools > :where(.graph-help-toggle):is(.graph-help-toggle, #doc-new-template),
+  #doc-sidebar-list .doc-head-tools > #doc-new-template,
+  #doc-sidebar-list .doc-head-tools > #doc-new-diagram {
     display: none;
   }
   .doc-sidebar .doc-head-more {
@@ -4992,22 +4996,26 @@ span > .chip {
   scrollbar-width: auto;
 }
 
-.entry-pick-card > :is(.entry-pick-list, .media-pick-grid)::-webkit-scrollbar {
+.entry-pick-card > .entry-pick-list::-webkit-scrollbar,
+.entry-pick-card > .media-pick-grid::-webkit-scrollbar {
   width: 10px;
 }
 
-.entry-pick-card > :is(.entry-pick-list, .media-pick-grid)::-webkit-scrollbar-track {
+.entry-pick-card > .entry-pick-list::-webkit-scrollbar-track,
+.entry-pick-card > .media-pick-grid::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.entry-pick-card > :is(.entry-pick-list, .media-pick-grid)::-webkit-scrollbar-thumb {
+.entry-pick-card > .entry-pick-list::-webkit-scrollbar-thumb,
+.entry-pick-card > .media-pick-grid::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--muted) 55%, transparent) padding-box;
 }
 
 @supports not selector(::-webkit-scrollbar) {
-  .entry-pick-card > :is(.entry-pick-list, .media-pick-grid) {
+  .entry-pick-card > .entry-pick-list,
+  .entry-pick-card > .media-pick-grid {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
   }

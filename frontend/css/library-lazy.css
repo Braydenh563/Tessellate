@@ -1623,7 +1623,11 @@ textarea.has-gutter {
   background: var(--accent-soft);
 }
 
-.library-file-rows .library-image-tile > .library-file-facts :is(.library-file-meta, .library-read-strip, .library-read-badge, .library-image-usage, .library-image-usage > .muted) {
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-file-meta):is(.library-file-meta, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-read-strip):is(.library-read-strip, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-read-badge):is(.library-read-badge, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-image-usage):is(.library-image-usage, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :is(.library-image-usage > .muted) {
   font-size: inherit;
   line-height: inherit;
 }
@@ -1631,7 +1635,8 @@ textarea.has-gutter {
 /* Each group's own gap is the space after its dot: the dot is a flex item
    of the group it opens, so the group's gap already stands between the two,
    and a symmetric margin put 15px after the dot against 8px before it. */
-.library-file-rows .library-image-tile > .library-file-facts > :is(.library-read-strip, .library-image-usage) {
+.library-file-rows .library-image-tile > .library-file-facts > .library-read-strip,
+.library-file-rows .library-image-tile > .library-file-facts > .library-image-usage {
   padding-top: 0;
   column-gap: var(--space-2);
 }
@@ -5265,7 +5270,14 @@ body.printing-doc #doc-preview p,
 
 /* The pictures (`wbMapThumbSpec`, `wbBoardThumbSpec`): one hairline at any
    size, colours from the theme. */
-.wb-lib-thumb :is(.wb-thumb-line, .wb-thumb-label, .wb-thumb-node, .wb-thumb-root, .wb-thumb-leafbox, .wb-thumb-frame, .wb-thumb-frame-plain, .wb-thumb-blank) {
+.wb-lib-thumb .wb-thumb-line,
+.wb-lib-thumb .wb-thumb-label,
+.wb-lib-thumb .wb-thumb-node,
+.wb-lib-thumb .wb-thumb-root,
+.wb-lib-thumb .wb-thumb-leafbox,
+.wb-lib-thumb .wb-thumb-frame,
+.wb-lib-thumb .wb-thumb-frame-plain,
+.wb-lib-thumb .wb-thumb-blank {
   vector-effect: non-scaling-stroke;
   stroke-width: 1px;
 }
@@ -5353,7 +5365,8 @@ body.printing-doc #doc-preview p,
   stroke: var(--thumb-b);
 }
 
-.wb-lib-thumb :is(.wb-thumb-leaf, .wb-thumb-leafbox)[class*="wb-thumb-b"] {
+.wb-lib-thumb .wb-thumb-leaf[class*="wb-thumb-b"],
+.wb-lib-thumb .wb-thumb-leafbox[class*="wb-thumb-b"] {
   fill: var(--thumb-b);
   fill-opacity: 0.7;
 }
@@ -5890,7 +5903,8 @@ button.ghost.doc-template-choice.wb-template-choice {
     white-space: nowrap;
   }
 
-  .ocr-regions-foot > :is(#ocr-copy-all, #ocr-to-chat) {
+  .ocr-regions-foot > #ocr-copy-all,
+  .ocr-regions-foot > #ocr-to-chat {
     width: var(--control-h);
     padding-inline: 0;
     justify-content: center;
@@ -6712,7 +6726,8 @@ button.ghost.doc-template-choice.wb-template-choice {
 .doc-main {
   --doc-code-cap: 78ch;
 }
-#tab-documents.doc-is-code:not(.doc-wide) :is(.doc-statusbar, .doc-hint) {
+#tab-documents.doc-is-code:not(.doc-wide) .doc-statusbar,
+#tab-documents.doc-is-code:not(.doc-wide) .doc-hint {
   width: 100%;
   max-width: var(--doc-code-cap);
   margin-inline: auto;
@@ -8266,7 +8281,10 @@ input[type="color"].wb-mixed {
    every pan frame; while the board moves they are plain translucent panels
    (the ground is still `--modal-bg`), and the blur returns 180 ms after the
    last step. The same surfaces Glass off clears for good. */
-#wb-canvas-view.wb-moving :is(.wb-topbar, .whiteboard-floating-panel, .wb-map-strip, .wb-sidebar) {
+#wb-canvas-view.wb-moving .wb-topbar,
+#wb-canvas-view.wb-moving .whiteboard-floating-panel,
+#wb-canvas-view.wb-moving .wb-map-strip,
+#wb-canvas-view.wb-moving .wb-sidebar {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -8838,7 +8856,8 @@ input[type="color"].wb-mixed {
     min-width: 5rem;
   }
   #doc-code-snippets-open,
-  #tab-documents.doc-is-code :is(#doc-code-assist-open, #doc-code-format) {
+  #tab-documents.doc-is-code #doc-code-assist-open,
+  #tab-documents.doc-is-code #doc-code-format {
     flex: 0 0 var(--target-min);
     justify-content: center;
     padding-inline: 0;
@@ -8870,7 +8889,9 @@ input[type="color"].wb-mixed {
 #tab-documents.doc-is-code .doc-dock.doc-run-why :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
   display: none;
 }
-#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-snippets-open,
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-assist-open,
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-format {
   flex: 0 0 var(--target-min);
   justify-content: center;
   padding-inline: 0;
@@ -9867,7 +9888,8 @@ input[type="color"].wb-mixed {
 }
 
 /* --- motion: an Insert menu's chevron turns open, as a select's does ------- */
-:is([aria-expanded="true"], [open] > summary) > :is(.doc-toolbar-menu-caret, .wb-menu-caret) {
+:is([aria-expanded="true"], [open] > summary) > .doc-toolbar-menu-caret,
+:is([aria-expanded="true"], [open] > summary) > .wb-menu-caret {
   transform: rotate(180deg);
 }
 /* --- motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in

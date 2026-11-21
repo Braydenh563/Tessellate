@@ -32,7 +32,10 @@
         },
         ".cm-line": { padding: "0" },
         ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--text)" },
-        "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
+        //: The drawn layer's focused rule must out-rank the library's own
+        //: (6 classes) or it paints its fixed lavender, not the accent (L342:
+        //: the native selection now shows while focused, so the two must agree).
+        "&.cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
           backgroundColor: "var(--accent-soft)",
         },
         ".cm-gutters": {
