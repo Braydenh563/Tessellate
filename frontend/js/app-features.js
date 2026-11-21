@@ -445,10 +445,9 @@ function paletteCommands() {
       label: "ph:paperclip Browse files",
       reveal: "library-files",
     },
-    {
-      label: "ph:link Browse links",
-      reveal: "library-links",
-    },
+    //: Named as the Library's tab names it (reach.js, L-world-class-132: "Library >
+    //: Bookmarks" had no command, the row said "links").
+    { label: "ph:link Browse bookmarks", reveal: "library-links", keywords: "links saved pages" },
     { label: "ph:folders Browse boards and maps", reveal: "library-boards", keywords: "boards whiteboards maps mind maps library gallery", about: "Every board and mind map, in the Library." },
     { label: "ph:waveform Browse recordings", reveal: "library-recordings", keywords: "recordings audio meetings library", about: "Every recording, in the Library." },
     { label: "ph:lightning Browse skills", reveal: "library-skills", keywords: "skills library run", about: "The skills you can run, in the Library." },
@@ -529,6 +528,10 @@ function paletteCommands() {
     { label: "ph:sliders Settings, General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
     { label: "ph:floppy-disk Settings, Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
     { label: "ph:brain Settings, What it remembers", reveal: "settings:memory" },
+    //: The three sections reach.js found no command for (L-world-class-132).
+    { label: "ph:magnifying-glass Settings, Search and index", reveal: "settings:searchindex", about: "The search engine, the index it builds, and how strict a match must be." },
+    { label: "ph:graduation-cap Settings, What it learned", reveal: "settings:learned", about: "What it picked up from how you file and fix, and the switches for each." },
+    { label: "ph:globe Settings, Web search", reveal: "settings:websearch", about: "Searching the web from Chat, off by default." },
     { label: "ph:note-blank Settings, Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
     { label: "ph:shield-check Settings, Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
     { label: "ph:globe-hemisphere-west Settings, Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },

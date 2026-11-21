@@ -598,6 +598,7 @@ EXEMPT: dict[str, str] = {
     "ai-tools.js:wireReindexButton": "job: starts or stops work or a model; deletes no user data",
     "app-palette.js:openPalette": "telemetry: telemetry or a background warm-up; no user data",
     "app.js:lockNow": "auth: sign-in, recovery or lock; no user data",
+    "app.js:submit": "auth: a locked PDF's password, kept in memory for the run (askPdfPassword); no user data",
     "app.js:startApp": "telemetry: telemetry or a background warm-up; no user data",
     "app.js:startWithoutPassword": "auth: sign-in, recovery or lock; no user data",
     "ask-chart.js:renderAskChart": "read: reads or asks the model; shows a result, writes nothing",

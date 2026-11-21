@@ -8831,6 +8831,17 @@ header#top-bar {
    beside it. Seven icons at 45.7px is the better trade at that width, and 320 is
    the width the shell is held to rather than the width it is used at. */
 @media (max-width: 359.98px) {
+  /* At 320 the documents dock's actions grew to 136px and left the title
+     10px of a 40px row (overlap.js, L-world-class-132): the back and the
+     title take a row of their own, as a diagram's do. The :not() outranks
+     the boards bundle's nowrap under 600; one width query (test_breakpoints). */
+  #tab-documents:not(.doc-is-diagram) .doc-dock {
+    flex-wrap: wrap;
+  }
+  #tab-documents:not(.doc-is-diagram) .doc-dock > .doc-dock-identity {
+    flex: 1 0 100%;
+    order: 1;
+  }
   /* INBOX 1859: the Dashboard caption reads "Home" below 480: 62.6px of
      "Dashboard" in a 64px column at 320, 33.9px of "Home". CSS, so the text
      other code reads stays "Dashboard". */

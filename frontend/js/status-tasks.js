@@ -35,19 +35,16 @@ const seenRunningTasks = new Map();
 //: screen is it".
 const backgroundRunRows = new Map();
 
-function taskKey(task) {
-  // `name` distinguishes two downloads running at once; `kind` alone would
-  // merge them into one job that appears to start twice and finish once.
-  return `${task.kind || "job"}:${task.name || ""}`;
-}
-
-
 //: **A watched run that outlived its page** (L514): a transcription (or any
 //: run its own surface watches) still running on the first poll after a
 //: reload has no page watching it any more, so its ending is announced like
 //: any other job's rather than passing in silence. Its start is not news.
 //: (`polled` is a property, not a global: tests/test_global_scope_ratchet.py.)
 function noticeTaskTransitions(running, history) {
+  //: `name` distinguishes two downloads running at once; `kind` alone would
+  //: merge them into one job that appears to start twice and finish once.
+  //: Local, not a global (test_global_scope_ratchet).
+  const taskKey = (task) => `${task.kind || "job"}:${task.name || ""}`;
   const now = new Map(running.map((task) => [taskKey(task), task]));
   const firstPoll = !noticeTaskTransitions.polled;
   noticeTaskTransitions.polled = true;

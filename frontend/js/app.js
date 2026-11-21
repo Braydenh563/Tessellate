@@ -702,6 +702,26 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
   });
 }
 
+//: A locked PDF asks once (L-world-class-133): `unlockUrl` keeps the password
+//: in memory for this run; the PDF's info on success, null on Not now.
+async function askPdfPassword(unlockUrl) {
+  //: A locked PDF asks once a visit (L-world-class-133), whichever surface
+  //: opened it; once it opens, the server keeps the password in memory.
+  if (askPdfPassword.asked.has(unlockUrl)) return null;
+  askPdfPassword.asked.add(unlockUrl);
+  let info = null;
+  const opened = await askPasswordPrompt({
+    title: "This PDF has a password",
+    message: "Enter it to see the pages. It is kept until the app closes, never saved.",
+    submitLabel: "Open",
+    submit: async (password) => {
+      info = await apiJson(unlockUrl, { method: "POST", body: JSON.stringify({ password }) });
+    },
+  });
+  return opened ? info : null;
+}
+askPdfPassword.asked = new Set();
+
 function showLockScreen(setupMode) {
   settleLockPrompt(false);
   $("lock-overlay").classList.remove("hidden");

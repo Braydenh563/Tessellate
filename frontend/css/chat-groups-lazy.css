@@ -5,6 +5,7 @@
   padding: var(--space-3) var(--space-3) var(--space-1);
   background: transparent;
   border: 0;
+  border-radius: var(--radius-sm);
   cursor: default;
 }
 #conversation-list .conv-group-head:hover {
