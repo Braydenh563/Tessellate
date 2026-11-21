@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: BACKLOG §11's perf leftovers record the 2026-11-21 re-measure at 4x (Settings pane switch floor about 130ms, first Intl call, api() json continuations, the first nameMark draw).
+- Boot: the companion's looks warm in slices (the build is a generator, one part per task, the getter finishing any rest), so `atlasWarmLook` falls from a 37 to 88 ms task (median 64) to 23 to 26 ms at 4x CPU.
 - Optional pip extras are installed within a version range, and embedding model weights are pinned to a Hub commit and a sha256, a mismatch refused and deleted.
 - Boot: Find anything, the Activity panel and the Settings head and nav are built on their first open (the x-surface recipe; the body slots into the shell with `data-in`), so the page at first paint falls from 1,157 elements to 955 and after unlock from 1,529 to 1,325; each build costs 2 to 11 ms at 4x CPU (L-world-class-530).
 - Security: PDFium (page counts and page pictures) and markitdown (Word and Office import, the document viewer) now parse in one reused child process with a deadline, a 2 GB address-space limit and a per-job processor limit on POSIX; a hang, a memory blow-up or a crash costs that child, and an import stopped at a limit says so. A warm call adds about 0.3 to 0.5 ms; a cold child is 117 ms with pypdfium2 and 687 ms with markitdown (L-world-class-321; Pillow and OCR are L-world-class-625).
