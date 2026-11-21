@@ -217,7 +217,7 @@ def test_17_the_empty_chat_sidebar_is_the_empty_state_recipe():
     """A bare 13.6px grey line in a 40px strip, where every other empty list has icon, title, sentence, action."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<div id="conv-empty" class="empty-state hidden"></div>' in html, "one element in the page: the rest is drawn on demand"
-    js = _js("sheets-selects.js")
+    js = _js("chat-list.js")  # moved out of sheets-selects.js (gzip budget)
     start = js.index("async function loadConversationList(")
     body = js[start : js.index("\n}\n", start)]
     for part in ('icon.className = "empty-icon"', 'setLabel(icon, "ph:chats")', 'title.className = "empty-title"', 'start.dataset.emptyAction = "new-chat"', '"ph:plus New chat"'):

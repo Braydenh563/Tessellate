@@ -2684,6 +2684,12 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .notice-warn > .ph {
   color: var(--warn);
 }
+/* A notice's button keeps its word whole and the text beside it wraps:
+   `min-width: 44px` replaces the min-content floor, so a shrinking button
+   cut "Install" by 6px in the mono font at 390 (L-general-43). */
+.notice > button {
+  flex: none;
+}
 /* --- glass reaches the floating chrome that sat outside it ------------------
    Owner, with four screenshots: "some elements dont use the glass styles if
    they are active". Measured with glass on in Classic dark: the graph's
@@ -10970,6 +10976,12 @@ header#top-bar button.space-switcher-btn:focus-visible {
   height: var(--control-h-body);
   min-height: var(--control-h-body);
   margin: 0;
+}
+/* A finger gets the touch floor on the row's icons and its input, so the row stays one strip (iconfloor.js: 44 wide, 36 tall at 1024 touch). */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .capture-bar-row :is(.capture-bar-input, .capture-bar-icon) {
+    min-height: max(var(--control-h-body), var(--target-min));
+  }
 }
 .capture-bar-row .capture-bar-input {
   flex: 1 1 auto;

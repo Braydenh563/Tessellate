@@ -98,3 +98,48 @@ def test_radial_leaves_are_narrower_so_a_31_topic_map_is_smaller(tmp_path):
     assert out["narrow"]["n"] == 31
     #: Measured in this harness: 1911 wide before the leaf cap, 1240 after.
     assert out["narrow"]["w"] < out["wide"]["w"] * 0.8, out
+
+
+TALL = r"""
+wbMapGapBreadth = () => 24; wbMapGapDepth = () => 80;
+const mk = (id, parent_id) => ({ id, parent_id, x: 0, y: 0, width: 200, height: 44, data: {} });
+//: The sweep's map (scratchpad/ui-sweeps/maplayouts.js): 200 topics, four to a parent, breadth first.
+const nodes = [mk(1, null)];
+const queue = [nodes[0]];
+for (let id = 2; id <= 200; id++) {
+  const parent = queue[0];
+  const node = mk(id, parent.id);
+  nodes.push(node);
+  queue.push(node);
+  if (nodes.filter((k) => k.parent_id === parent.id).length === 4) queue.shift();
+}
+const idx = { nodes, byId: new Map(nodes.map((n) => [n.id, n])), roots: [nodes[0]], childrenOf: new Map() };
+for (const n of nodes) idx.childrenOf.set(n.id, nodes.filter((k) => k.parent_id === n.id));
+const pos = wbMapColumnPositions(idx, "fishbone");
+for (const n of nodes) Object.assign(n, pos.get(n.id));
+const bad = [];
+for (const rib of idx.childrenOf.get(1)) {
+  const d = wbMapEdgePathD(nodes[0], rib, "fishbone");
+  const pts = [...d.matchAll(/[ML]\s*(-?[\d.]+)\s+(-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+  let hit = null;
+  for (let s = 0; s < pts.length - 1 && !hit; s++) {
+    for (let i = 0; i <= 400 && !hit; i++) {
+      const x = pts[s][0] + ((pts[s + 1][0] - pts[s][0]) * i) / 400;
+      const y = pts[s][1] + ((pts[s + 1][1] - pts[s][1]) * i) / 400;
+      hit = nodes.find((k) => k.id !== 1 && k.id !== rib.id && x > k.x + 2 && x < k.x + k.width - 2 && y > k.y + 2 && y < k.y + k.height - 2);
+    }
+  }
+  if (hit) bad.push({ rib: rib.id, box: hit.id });
+}
+__out({ ribs: idx.childrenOf.get(1).length, bad });
+"""
+
+
+@needs_node
+def test_a_tall_fishbones_ribs_cross_no_topic_box(tmp_path):
+    """maplayouts.js (L-general-20): with 50 topics under each main the column is
+    thousands of units tall, and a rib that ran straight from the head to the
+    main's corner crossed other columns' boxes (4 of 4 ribs at 200 topics)."""
+    out = run(tmp_path, TALL)
+    assert out["ribs"] == 4
+    assert out["bad"] == [], out

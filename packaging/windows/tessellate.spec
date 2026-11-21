@@ -169,9 +169,14 @@ a = Analysis(
         # reads it from the bundle root when frozen). Without it the panel
         # was empty on every packaged build.
         (str(CHANGELOG), "."),
-        # The taxonomy pack filing reads (ai/taxonomy.py `DATA_DIR`): JSON
-        # beside the module, so it goes where the module's package is.
-        (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data" / "taxonomy"), "tessellate/ai/data/taxonomy"),
+        # The licence and third-party notices, at the bundle root, so the
+        # installer, the MSI and the Linux tarball and zip carry them (L-general-3).
+        (str(REPO_ROOT / "LICENSE"), "."),
+        (str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),
+        # The JSON the ai package reads from beside its modules (the taxonomy
+        # pack, skill rates, study terms, common misspellings): the whole folder,
+        # since naming only taxonomy/ left the study glossary out of the build.
+        (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data"), "tessellate/ai/data"),
         # The Run sandbox's pages, workers and Python runner (api/run_sandbox.py
         # reads them at import from beside the module).
         (str(REPO_ROOT / "src" / "tessellate" / "api" / "run_sandbox_assets"), "tessellate/api/run_sandbox_assets"),

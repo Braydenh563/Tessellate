@@ -2577,6 +2577,16 @@ def _capture() -> int:
 
 def main() -> None:
     _ensure_std_streams()
+    #: `tessellate tool NAME --json ARGS` (L-general-8): a subcommand ahead of
+    #: the flags, so it is read before argparse sees an unknown positional.
+    if sys.argv[1:2] == ["tool"]:
+        _close_bootloader_splash()
+        from tessellate import mcp_server
+
+        #: Descriptor 1, as `_run_mcp` does: a windowed build has pointed
+        #: `sys.stdout` at a log file, and the caller reads the pipe.
+        with open(1, "w", encoding="utf-8", newline="\n", closefd=False) as out:  # noqa: SIM115
+            raise SystemExit(mcp_server.run_tool_command(sys.argv[2:], stdout=out))
     parser = argparse.ArgumentParser(prog="tessellate", description="Tessellate")
     parser.add_argument(
         "--desktop",

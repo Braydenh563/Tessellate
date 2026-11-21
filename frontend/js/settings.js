@@ -206,7 +206,18 @@ function showSettingsSection(name) {
   if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
-  if (name === "tools") renderToolSettings();
+  if (name === "tools") {
+    renderToolSettings();
+    //: `#pref-mcp-writes` is in this section but was only filled by
+    //: `renderAutonomousSettings` (Web search, Background tasks): opened
+    //: straight onto Tools it read off over a saved on, as Models did above.
+    apiJson("/preferences")
+      .then((prefs) => {
+        prefsCache = prefs;
+        $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
+      })
+      .catch(() => {});
+  }
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
   if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
@@ -348,6 +359,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
   const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
   $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
+  //: The running build (L-general-6): which commit, since when, and whether the notebook folder takes writes.
+  //: Local, not a top-level function: the shared scope only shrinks (test_global_scope_ratchet).
+  const aboutBuildLine = (h) => {
+    const commit = h.source_commit ? `Build ${h.source_commit.slice(0, 10)}` : "Build not stamped";
+    const since = whenText(h.started_at);
+    const folder = h.data_dir_writable ? "the notebook folder takes writes" : "the notebook folder is read-only, so nothing new can be saved";
+    return `${commit}, running since ${since}, notebook ${h.data_dir_id}; ${folder}.`;
+  };
+  $("about-build").textContent = aboutHealth?.started_at ? aboutBuildLine(aboutHealth) : "";
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
@@ -2892,7 +2912,7 @@ function renderAppearance() {
   } catch (e) {
     $("avatar-buddy-motion").value = "follow";
   }
-  $("avatar-buddy-rest").value = prefs.get("avatar-buddy-rest", null) || "mains";
+  $("avatar-buddy-rest").value = prefs.get("avatar-buddy-rest", null) || "still";
   nameMarkBuddyMotionApply();
   nameMarkBuddySizeSelect();
   $("atlas-style").value = appearancePref("atlas-style");

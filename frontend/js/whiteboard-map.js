@@ -1283,14 +1283,18 @@ function wbMapThemeDialog() {
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
   const out = [];
-  for (const group of WB_MAP_THEME_GROUPS) {
+  for (const def of WB_MAP_THEME_GROUPS) {
+    //: One block per group, so a wide dialog can run the groups in two columns without cutting one in half.
+    const group = document.createElement("div");
+    group.className = "wb-map-theme-group";
     const head = document.createElement("h4");
     head.className = "setting-subhead";
-    head.textContent = group.label;
-    out.push(head);
-    for (const field of group.fields) {
-      out.push(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
+    head.textContent = def.label;
+    group.appendChild(head);
+    for (const field of def.fields) {
+      group.appendChild(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
     }
+    out.push(group);
   }
   return out;
 }
@@ -3001,8 +3005,168 @@ function wbMapBranchDragOrigin(d, alone) {
   const keys = wbMapSubtree(index, d.id)
     .filter((o) => o.id !== d.id)
     .map((o) => wbMultiKey("object", o.id));
-  return keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+  const origin = keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+  if (origin) origin.branchOf = d.id;
+  return origin;
 }
+
+//: **A dragged branch is one layer** (L-mindmap-17). Every topic of it moved
+//: by its own transform and every line inside it was rebuilt each step
+//: (`wbMapRibbonD`, 27ms a step at 200 topics), though the whole branch moves
+//: by one delta: measured by mapperf.js, 92ms of main-thread CPU a step at 200
+//: topics against a 17ms budget. So the topics go into one element and the
+//: lines with both ends in the branch into one SVG group, each carrying the
+//: drag's translate, and a link with both ends inside is translated too. What
+//: is still drawn per step is what crosses the branch's edge: the grabbed
+//: topic's line up to its parent, and links to topics outside.
+//:
+//: The layer is undone by `wbMapDragLayer.close` at the drop and before any
+//: render, so nothing else ever sees a topic outside `#wb-html-layer`'s own
+//: children for longer than a gesture.
+//:
+//: **The smaller side is the one moved** (L-mindmap-18). Moving an element
+//: restyles it and everything in it, about 50us an element on this app's
+//: stylesheet, so lifting a 500-topic branch into the layer cost 200 to 350ms
+//: on the first step (mapperf.js, CDP ThreadTime). When the branch is most
+//: of the board it stays put: the board layer and the edge group carry the
+//: drag's translate, and the topics and lines outside the branch go into a
+//: layer that carries the opposite one. Whatever else the board layer holds
+//: (pins, an editor) is held still by its own `translate`, so it is never
+//: moved. The mid-line `+` layer rides with the branch: its buttons are
+//: invisible until hovered and the drop's render places them again, and a
+//: translate on it re-layerized its thousand buttons, 20 to 34ms a step.
+//: Below `stayAt` members either side costs a few milliseconds, and lifting
+//: keeps the branch above every topic it passes.
+//: One shared name for the three steps (the global-scope ratchet).
+const wbMapDragLayer = {
+  live: null,
+  stayAt: 32,
+
+  open(origin, d, grabbedEl) {
+    const html = document.getElementById("wb-html-layer");
+    const edgeGroup = document.querySelector("#wb-zoom-group .wb-map-edges");
+    if (!origin || origin.layer || !html || !edgeGroup || !grabbedEl) return null;
+    const ids = new Set([d.id]);
+    for (const entry of origin.values()) if (entry.kind === "object") ids.add(entry.id);
+    const inside = (edge) => ids.has(edge.parent.id) && ids.has(edge.child.id);
+    const ends = (parsed) => (parsed.sourceKind === "object" && ids.has(parsed.sourceId)) && (parsed.targetKind === "object" && ids.has(parsed.targetId));
+    //: The members in the order the layer holds them, so they go back in it.
+    const itemOf = new Map([[grabbedEl, d]]);
+    for (const entry of origin.values()) if (entry.el) itemOf.set(entry.el, entry.item);
+    const all = [...html.children];
+    const els = all.filter((el) => itemOf.has(el));
+    const stay = els.length >= wbMapDragLayer.stayAt && all.length - els.length < els.length;
+    const el = document.createElement("div");
+    el.setAttribute("class", "wb-map-drag-layer");
+    const edges = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    edges.setAttribute("class", "wb-map-drag-edges");
+    const item = (child) => child.classList.contains("wb-object") || child.classList.contains("wb-card");
+    const carried = stay ? all.filter((child) => !itemOf.has(child) && item(child)) : els;
+    const home = carried.map((member) => [member, member.nextSibling, itemOf.get(member)]);
+    //: Above every topic it passes, as the one grabbed topic was by its raise:
+    //: the ranks are inline (`stackRank`), so this reads no layout. Staying,
+    //: the still layer goes first at rank 0, under every member.
+    el.style.zIndex = stay ? "0" : String(Math.max(0, ...all.map((child) => Number(child.style.zIndex) || 0)) + 1);
+    for (const member of carried) el.appendChild(member);
+    html.insertBefore(el, stay ? html.firstChild : null);
+    //: Each line and link once, however many members listed it.
+    const innerEdges = new Map();
+    const innerLinks = new Map();
+    const sort = (list, keep) => list.filter((item) => {
+      if (item.parent ? !inside(item) : !ends(item.parsed)) return true;
+      if (item.parent) innerEdges.set(item.el, item);
+      else innerLinks.set(item.sketch.id, item);
+      return keep;
+    });
+    d._mapEdges = sort(d._mapEdges || [], false);
+    d._linkedSketches = sort(d._linkedSketches || [], false);
+    for (const entry of origin.values()) {
+      if (entry.mapEdges) entry.mapEdges = sort(entry.mapEdges, false);
+      if (entry.linked) entry.linked = sort(entry.linked, false);
+    }
+    const innerWraps = new Set([...innerEdges.values()].map((edge) => edge.el.parentNode).filter(Boolean));
+    const wraps = stay ? [...edgeGroup.children].filter((wrap) => !innerWraps.has(wrap)) : [...innerWraps];
+    for (const wrap of wraps) edges.appendChild(wrap);
+    edgeGroup.appendChild(edges);
+    //: A link's group, found once (the same lookup `wbUpdateLinkedSketches`
+    //: keeps), in one pass over the groups: a query per link was a walk of
+    //: the document each, 300 of them for a branch carrying 300 links.
+    const links = [...innerLinks.values()];
+    const groups = new Map();
+    if (links.some((pair) => !pair.el?.isConnected)) {
+      for (const group of document.querySelectorAll(".sketch-group[data-id]")) if (!groups.has(group.dataset.id)) groups.set(group.dataset.id, group);
+    }
+    for (const pair of links) if (!pair.el?.isConnected) pair.el = groups.get(String(pair.sketch.id)) || null;
+    //: The branch's sizes as the pick-up measured them: a move resizes no
+    //: topic, and the pointerup empties the cache before the drop draws the
+    //: inside lines, which then measured every topic again (a query and a
+    //: forced layout each, 30 to 57ms of a 50-topic drop).
+    const sizes = new Map();
+    for (const id of ids) {
+      const size = wbMapNodeSizeCache?.get(id);
+      if (size) sizes.set(id, size);
+    }
+    origin.layer = {
+      el, edges, home, innerEdges: [...innerEdges.values()], links, grabbed: d, sizes,
+      stay: stay ? {
+        html, edgeGroup, members: els.map((member) => [member, itemOf.get(member)]),
+        fixed: all.filter((child) => !itemOf.has(child) && !item(child) && !child.classList.contains("wb-map-plus-layer")),
+      } : null,
+    };
+    wbMapDragLayer.live = origin;
+    return origin.layer;
+  },
+
+  //: One step of the drag: a few writes, whatever the branch's size.
+  move(layer, dx, dy) {
+    const sign = layer.stay ? -1 : 1;
+    layer.el.style.transform = `translate(${sign * dx}px, ${sign * dy}px)`;
+    layer.edges.setAttribute("transform", `translate(${sign * dx} ${sign * dy})`);
+    if (layer.stay) {
+      //: The board layer's own transform is the zoom's, so the drag rides on
+      //: the separate `translate` property, which applies outside it: in
+      //: screen pixels, so scaled by the zoom.
+      const k = d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+      layer.stay.html.style.translate = `${dx * k}px ${dy * k}px`;
+      layer.stay.edgeGroup.setAttribute("transform", `translate(${dx} ${dy})`);
+      for (const still of layer.stay.fixed) still.style.translate = `${-dx}px ${-dy}px`;
+    }
+    for (const pair of layer.links) pair.el?.setAttribute("transform", `translate(${dx} ${dy})`);
+  },
+
+  //: Let go (or a render is about to run): every topic back where it was in
+  //: the layer, carrying its own transform at its new place, and every inside
+  //: line and link drawn once there, untranslated.
+  close(origin = wbMapDragLayer.live) {
+    const layer = origin?.layer;
+    if (wbMapDragLayer.live === origin) wbMapDragLayer.live = null;
+    if (!layer) return;
+    origin.layer = null;
+    const html = layer.el.parentNode;
+    if (layer.stay) {
+      layer.stay.html.style.translate = "";
+      layer.stay.edgeGroup.removeAttribute("transform");
+      for (const still of layer.stay.fixed) still.style.translate = "";
+      for (const [member, item] of layer.stay.members) member.style.transform = wbItemTransform(item);
+    }
+    for (let i = layer.home.length - 1; i >= 0; i -= 1) {
+      const [member, next, item] = layer.home[i];
+      if (!layer.stay) member.style.transform = wbItemTransform(item);
+      if (html) html.insertBefore(member, next && next.parentNode === html ? next : null);
+    }
+    layer.el.remove();
+    const edgeGroup = layer.edges.parentNode;
+    for (const wrap of [...layer.edges.children]) edgeGroup?.appendChild(wrap);
+    layer.edges.remove();
+    if (layer.sizes.size) {
+      if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
+      for (const [id, size] of layer.sizes) if (!wbMapNodeSizeCache.has(id)) wbMapNodeSizeCache.set(id, size);
+    }
+    if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges);
+    for (const pair of layer.links) pair.el?.removeAttribute("transform");
+    if (layer.links.length) wbUpdateLinkedSketches(layer.grabbed.id, layer.links);
+  },
+};
 
 //: The topic under the pointer that this branch could be dropped on, or null.
 //:
@@ -3928,7 +4092,9 @@ function wbMapEdgePathD(parent, child, layout) {
   //: moves its turn to it. An unbent line is the same string it always was.
   const w = wbMapEdgeWaypoint(a, child);
   if (a.rib && !w.bent) {
-    const slant = Math.abs(a.y2 - a.y1) * 0.5;
+    //: The slant spans no more than the gap beside its column: a tall column
+    //: would otherwise send the rib on a long diagonal over the nearer columns.
+    const slant = Math.min(Math.abs(a.y2 - a.y1) * 0.5, wbMapGapDepth());
     const foot = a.right ? Math.max(a.x1, a.x2 - slant) : Math.min(a.x1, a.x2 + slant);
     return `M${a.x1} ${a.y1} L${foot} ${a.y1} L${a.x2} ${a.y2}`;
   }
@@ -6305,16 +6471,19 @@ function wbMapColumnPositions(index, layout) {
   };
   //: Rows from `y` down, or up from `y` (each row's bottom at the cursor),
   //: nearest first either way, so a branch reads away from its topic.
-  const stack = (rows, x, y, up) => {
+  //: `flush` lays the rows against a right edge instead of a left one (the
+  //: fishbone's column), each indented leftward from it.
+  const stack = (rows, x, y, up, flush = null) => {
     let cursor = y;
     for (const r of rows) {
       const s = size(r.o);
+      const at = flush == null ? x + r.depth * WB_MAP_INDENT : flush - r.depth * WB_MAP_INDENT - s.w;
       if (up) {
         cursor -= s.h;
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at, y: cursor });
         cursor -= gapB;
       } else {
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at, y: cursor });
         cursor += s.h + gapB;
       }
     }
@@ -6366,15 +6535,20 @@ function wbMapColumnPositions(index, layout) {
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));
       const x = right - w;
+      //: The column is flush right, the main topic and its causes alike: the
+      //: rib meets the main at its spine-side corner, which is then the column's
+      //: right edge, so the rib passes no cause of its own, and the gap beside the
+      //: column (`gapD`, to the next pair's) is clear for it to run in.
+      const edge = x + w;
       pair.forEach((b, side) => {
         const tall = b.ks.h + (b.rows.length ? gapB + b.ext.h : 0);
         if (side === 0) {
           const y = spine - gapD - tall;
-          positions.set(b.kid.id, { x, y });
-          stack(b.rows, x, y + b.ks.h + gapB, false);
+          positions.set(b.kid.id, { x: edge - b.ks.w, y });
+          stack(b.rows, x, y + b.ks.h + gapB, false, edge);
         } else {
-          stack(b.rows, x, spine + gapD, false);
-          positions.set(b.kid.id, { x, y: spine + gapD + tall - b.ks.h });
+          stack(b.rows, x, spine + gapD, false, edge);
+          positions.set(b.kid.id, { x: edge - b.ks.w, y: spine + gapD + tall - b.ks.h });
           bottom = Math.max(bottom, spine + gapD + tall);
         }
       });

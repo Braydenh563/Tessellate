@@ -169,6 +169,35 @@ function reminderDoneButton(item) {
 //: not also stamp the "seen everything" watermark: that is what made one
 //: tick mark every unread row as read (reported twice).
 async function openNotifications({ keepWatermark = false } = {}) {
+  //: **The meeting-prep brief** (L-general-11): the newest notes about what a
+  //: fired reminder names, under its row as connection rows (`connectionRowEl`,
+  //: connections.js, brought on first use; local, as the shared scope only
+  //: shrinks). A row opens its note, not the row's
+  //: own target, so it stops the click there.
+  const notificationBriefEl = (brief) => {
+    const box = document.createElement("div");
+    box.className = "notif-brief";
+    const head = document.createElement("div");
+    head.className = "connection-heading";
+    head.textContent = `Last notes on ${brief.subjects.join(" and ")}`;
+    const list = document.createElement("div");
+    list.setAttribute("role", "list");
+    list.setAttribute("aria-label", head.textContent);
+    box.append(head, list);
+    lazyScript("/js/connections.js").then((ok) => {
+      if (!ok) return;
+      for (const note of brief.notes) {
+        const row = connectionRowEl("ph:note", note.title, `Open ${note.title}`, "", (event) => {
+          event.stopPropagation();
+          closeNotifications();
+          runNotificationGo({ open: "entry", id: note.id });
+        });
+        row.setAttribute("role", "listitem");
+        list.append(row);
+      }
+    });
+    return box;
+  };
   const panel = $("notif-panel");
   const list = $("notif-list");
   //: A fresh open (not a row's own re-render) takes focus into the panel (SH2).
@@ -283,6 +312,7 @@ async function openNotifications({ keepWatermark = false } = {}) {
       meta.textContent = item.detail;
       body.append(meta);
     }
+    if (item.brief?.notes?.length) body.append(notificationBriefEl(item.brief));
     const foot = document.createElement("div");
     foot.className = "notif-foot";
     body.append(foot);

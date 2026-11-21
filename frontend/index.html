@@ -7151,12 +7151,13 @@ Link to another note with [[its first few words]]."></textarea>
                  under Canvas and is hidden on a whiteboard. -->
             <div class="wb-menu-col">
             <div class="wb-menu-section" role="group" aria-label="Panels">
-              <button type="button" class="wb-menu-item" data-wb-cmd="format-panel"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Format panel</span><kbd>Ctrl+Shift+P</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="format-panel" data-wb-surface="board"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Format panel</span><kbd>Ctrl+Shift+P</kbd></button>
               <label class="wb-menu-row wb-snap-label" title="Show the context bar above the selection, and above the rail while a drawing tool is held"><span><i class="ph ph-selection-plus ph-lead" aria-hidden="true"></i>Context bar</span><input type="checkbox" id="wb-panel-props" checked></label>
               <label class="wb-menu-row wb-snap-label" title="The board overview (Shift+N)"><span><i class="ph ph-map-trifold ph-lead" aria-hidden="true"></i>Overview</span><input type="checkbox" id="wb-panel-overview"></label>
               <label class="wb-menu-row wb-snap-label" title="The sidebar: the library, notes and layers"><span><i class="ph ph-sidebar-simple ph-lead" aria-hidden="true"></i>Sidebar</span><input type="checkbox" id="wb-panel-library"></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="map" hidden title="The map as an indented list you can edit"><span><i class="ph ph-list-dashes ph-lead" aria-hidden="true"></i>Outline</span><input type="checkbox" id="wb-panel-outline"></label>
               <label class="wb-menu-row wb-snap-label" title="Find on this board (Ctrl+F)"><span><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i>Search</span><input type="checkbox" id="wb-panel-search"></label>
+              <button type="button" class="wb-menu-item" id="wb-map-stats-item" hidden><i class="ph ph-chart-bar ph-lead" aria-hidden="true"></i><span>What this map is made of</span></button>
               <button id="wb-dock-toggle" class="wb-menu-item" type="button" title="Dock the tools as a sidebar" aria-label="Dock the tools at the side as a sidebar"><i class="ph ph-sidebar-simple ph-lead" aria-hidden="true"></i><span>Dock the tools at the side</span></button>
             </div>
             <!-- Zoom in and Zoom out are the zoom bar's two buttons already,
@@ -7192,8 +7193,8 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <label class="wb-menu-row wb-snap-label" title="Snap items to the grid while dragging"><span><i class="ph ph-magnet ph-lead" aria-hidden="true"></i>Snap to grid</span><input type="checkbox" id="wb-snap-toggle"></label>
-              <label class="wb-menu-row wb-snap-label" title="Show the four arrows round a selected shape that copy it and join the copy"><span><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i>Connection arrows</span><input type="checkbox" id="wb-view-grips" checked></label>
-              <label class="wb-menu-row wb-snap-label" title="Show the dots where a line can join a shape while you draw one; joining still snaps to them when hidden"><span><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i>Connection points</span><input type="checkbox" id="wb-view-ports" checked></label>
+              <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Show the four arrows round a selected shape that copy it and join the copy"><span><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i>Connection arrows</span><input type="checkbox" id="wb-view-grips" checked></label>
+              <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Show the dots where a line can join a shape while you draw one; joining still snaps to them when hidden"><span><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i>Connection points</span><input type="checkbox" id="wb-view-ports" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw the bottom corner of this board's sticky notes folded over; a note's Format panel can differ"><span><i class="ph ph-note ph-lead" aria-hidden="true"></i>Folded sticky corners</span><input type="checkbox" id="wb-sticky-fold" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw this board's shapes and lines rough, as by hand; a shape's Format panel can differ"><span><i class="ph ph-scribble-loop ph-lead" aria-hidden="true"></i>Hand-drawn look</span><input type="checkbox" id="wb-rough-toggle"></label>
             </div>
@@ -7226,7 +7227,6 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" id="wb-map-fold-all" hidden title="Show the trunks only (Alt+1)"><i class="ph ph-arrows-in-line-vertical ph-lead" aria-hidden="true"></i><span>Fold every branch</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that carries none of the markers or labels you pick"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-gantt-item" data-wb-surface="map" hidden title="A bar from start to due for each topic that has both"><i class="ph ph-chart-bar-horizontal ph-lead" aria-hidden="true"></i><span>Gantt chart…</span></button>
-              <button type="button" class="wb-menu-item" id="wb-map-stats-item" hidden><i class="ph ph-chart-bar ph-lead" aria-hidden="true"></i><span>What this map is made of</span></button>
             </div>
             </div>
           </div>
@@ -11833,6 +11833,12 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row">
                 <button type="button" id="mcp-config-copy" class="ghost small"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
               </div>
+              <h4 class="setting-subhead" id="mcp-skill-head">For an agent that runs commands</h4>
+              <p class="muted" id="mcp-skill-note">Save this as a SKILL.md: it runs the same tools with <code>tool NAME --json</code>.</p>
+              <pre id="mcp-skill-snippet" class="code-block"></pre>
+              <div class="row">
+                <button type="button" id="mcp-skill-copy" class="ghost small"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
+              </div>
             </div>
           </section>
 
@@ -12485,17 +12491,33 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <!-- Whether it keeps moving when nothing is happening (the owner, decision 55; atlas-life.js,
-                   `atlasTailCalm.rest`): two seconds from the last input the drawn loops stop, always, never, or on battery. -->
+                   `atlasTailCalm.rest`): two seconds from the last input the drawn loops stop. Still by default
+                   (L-general-47: alive, Atlas cost +340 to +563 ms/s of main thread); on battery, or never, by choice. -->
               <div class="setting-row" id="avatar-buddy-rest-row">
                 <div class="setting-label">
-                  <span>Motion at rest</span>
+                  <span class="setting-hint-row">
+                    <span>Motion at rest</span>
+                    <button type="button" class="icon-only ghost small graph-help-toggle"
+                      data-help-for="avatar-buddy-rest-help" aria-controls="avatar-buddy-rest-help"
+                      aria-expanded="false" title="About motion at rest" aria-label="About motion at rest">
+                      <i class="ph ph-question" aria-hidden="true"></i>
+                    </button>
+                  </span>
                   <small class="muted">Whether it keeps breathing, swaying and glancing when you are not doing anything.</small>
                 </div>
                 <select id="avatar-buddy-rest" class="small-select setting-control" aria-label="Motion at rest">
+                  <option value="still">Still when idle</option>
                   <option value="mains">Alive on mains power only</option>
                   <option value="always">Always alive</option>
-                  <option value="still">Still when idle</option>
                 </select>
+              </div>
+              <div class="help-body hidden" id="avatar-buddy-rest-help" role="dialog" aria-label="About motion at rest">
+                <p>
+                  Two seconds after your last move the companion goes still to save power, and your next move
+                  wakes it. Still when idle is the default. Alive on mains power only keeps it breathing and
+                  swaying while the computer is plugged in (or has no battery) and stills it the moment you
+                  unplug. Always alive never stills it, which costs the most.
+                </p>
               </div>
               <!-- How it comes in on a new page (INBOX 1463): a short fade or
                    a few steps by default; the glide, walk on, tumble, fall
@@ -15387,6 +15409,7 @@ Link to another note with [[its first few words]]."></textarea>
               </p>
               <p class="muted">Tessellate for short. Formerly MemoryMap AI.</p>
               <p class="muted" id="about-version"></p>
+              <p class="muted" id="about-build"></p>
               <p class="muted">Free software, licensed under the GNU Affero General Public License v3.
                 <a id="about-github" href="https://github.com/Braydenh563/Tessellate" target="_blank" rel="noopener">Source and releases on GitHub</a>.</p>              <!-- How much the companion moves and why (`nameMarkBuddyMotion`):
                    checkable here when it seems not to move. -->

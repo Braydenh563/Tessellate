@@ -1,4 +1,4 @@
-"""The agent can stop and ask, instead of guessing (§33, IDEAS.md).
+"""The agent can stop and ask, instead of guessing (§33, the retired IDEAS.md).
 
 The failure this replaces is the quiet one. Told "file this properly" or "delete
 the one about the beans" when there are three, the agent had exactly one move:

@@ -1,0 +1,75 @@
+# The gate's ui sweeps that passed twice on a fresh data dir (L-general-20,
+# 2026-11-21). scripts/ci_sweeps.sh runs them in CI; one name per line, then
+# its seconds on the second pass (per run), then any env for it; a `|` value runs once
+# per value (scripts/ci_sweeps.sh). A sweep that turns flaky comes off with its reason.
+errors 185s WIDTHS=1440,1024|820,390
+fontmatrix 190s SHARD=1|2|3|4|5|6|7|8|9|10|11|12|13|14|15
+contrast 32s
+leaks 28s
+keyboard 19s
+diskspace 12s
+vibecheck 41s
+vibefail 67s
+graphminimap 23s
+wbgroupguides 23s
+phonehead 15s
+phoneswipe 21s
+phonenotepage 20s
+phoneshare 20s
+phonedocs 25s
+phonereminders 18s
+wbphone 20s
+draftreadonly 12s
+hoveronly 31s
+wbtopbar820 17s
+docdaily 18s
+docfallback 20s
+doctabs 33s
+mindmapcurve 27s
+tagoffer 10s
+imagecardfoot 14s
+maptwokinds 20s
+mapmidpan 25s
+animcost 19s
+mapdoors 16s
+canvasconventions 66s
+libtlscroll 60s
+wbshapetext 24s
+calheadalign 16s
+maplayouts 26s
+maptheme 23s
+mapviewmenu 17s
+maplinkcue 41s
+wbexportimage 42s
+ctrlwheelzoom 41s
+graphphone 10s
+wbtopbar 87s
+noteobject 40s
+docks 44s
+# mapperf came off (L-mindmap-22): two fresh passes failed different timing checks (pan 98.9ms, link drag 78.7ms, open 1181ms).
+libreadingfoot 21s
+libreader 14s
+doccodecopy 15s
+dockeyboard 25s
+doctoolbarstate 20s
+slashicons 10s
+uitrio 21s
+spinners 12s
+asktab 22s
+touch 63s
+phonesidebar 16s
+phonecapture 12s
+tourdim 10s
+toursteps 84s
+companionscroll 30s
+companionbeats 40s
+companionsmooth 112s
+companionmenu 111s
+companionlife 32s
+profilelook 9s
+companionpin 49s
+iconfloor 27s
+companionreact 15s
+companioninteract 25s
+deepflows 156s SHARD=1|2|3|4|5|6|7|8
+perchall 133s

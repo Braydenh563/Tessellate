@@ -17,10 +17,8 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(500);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(700);
+  // New makes an untitled board at once (INBOX 1520); there is no name dialog to fill.
   await page.evaluate(() => document.getElementById('wb-boards-new').click());
-  await page.waitForTimeout(700);
-  await page.fill('#wb-template-name', 'Export picture');
-  await page.click('#wb-template-create');
   await page.waitForTimeout(2500);
   await page.keyboard.press('Escape');
   const made = await page.evaluate(async () => {

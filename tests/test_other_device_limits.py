@@ -70,6 +70,8 @@ def test_health_says_the_desktop_only_to_this_computer(app, monkeypatch):
     assert mine["desktop"] is True and mine["this_computer"] is True
     assert theirs["desktop"] is False and theirs["this_computer"] is False
     assert theirs["os_notify"] is False
+    #: The build stamp names the exact code: this computer only (L-general-6).
+    assert "source_commit" in mine and "source_commit" not in theirs and "data_dir_writable" not in theirs
 
 
 # --- no password, network listening ------------------------------------------

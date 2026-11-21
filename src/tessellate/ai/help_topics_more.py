@@ -206,8 +206,9 @@ MORE_TOPICS: list[dict] = [
             "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
             "Motion off, or Interface animations off, it only fades or "
             "stays put. Two seconds after your last move it can go still to save "
-            "power: Motion at rest, in the same place, keeps it always alive, "
-            "alive on mains power only (the default), or still when idle. "
+            "power: Motion at rest, in the same place, is still when idle (the "
+            "default), alive on mains power only (still the moment you unplug), "
+            "or always alive. "
             "To keep it still, set Corner companion to Off in "
             "Settings, Appearance, Atlas and faces."
         ),
@@ -333,13 +334,15 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
+            "skill.md", "tool command", "agent that runs commands",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
-            "with a Copy button; that client can also read your notes (never "
-            "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. "
+            "app: a snippet to paste into an MCP client, which can then read "
+            "your notes (never a private one) and your skills as prompts, "
+            "read only until you tick Let that app add and change notes. For "
+            "an agent that runs commands, a SKILL.md runs the same tools from "
+            "a shell (tool NAME --json). "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
@@ -2510,7 +2513,7 @@ MORE_TOPICS.extend([
             "holding one block. Each row's button shows its fix the same way. A mind map, timeline or sequence has Ask too (add Rent under Budget, add event Launch under 2024, add message Pay from Shop to Bank; rename, move and remove work too), and Suggestions: a topic repeated, a period with no events, a participant that never sends. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
             "one to compare it with now, and Restore puts one back; Named only hides the plain saves. "
-            "Suggest, Templates, on a diagram with blocks, offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
+            "Suggest, Templates lists the ones you use most first; on a diagram with blocks it offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

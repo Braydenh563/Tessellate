@@ -1,3 +1,44 @@
+// The two questions a fresh data dir asks after unlock, answered the moment they
+// are drawn, on every document the context loads (an init script, so it is there
+// before the app is). `boot` calls it; a sweep that makes its own context calls
+// it before its first page.
+//
+// **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked
+// "Check for updates automatically?" after unlock, a dialog that would sit
+// over every click a sweep makes. It is answered "Don't check" here (nothing
+// touches the network either way); UPDATE_ASK=1 leaves it for a sweep that
+// measures the dialog itself.
+//
+// **By watching for the card, not by waiting for it** (L-general-20). The
+// card comes behind the first-run queue, and when is not a number a sweep can
+// know: 6 s on one fresh dir, and past 60 s on another, where it then arrived
+// seconds after the first tab press, over that sweep's next click. A wait of
+// any length either costs a minute on every boot or gives up too soon; an
+// observer answers it the moment it is drawn, on every document a sweep loads
+// or reloads (an init script, so it is there before the app is).
+async function quietFirstRun(ctx) {
+  if (!process.env.UPDATE_ASK) {
+    await ctx.addInitScript(() => {
+      const answer = () => {
+        const card = [...document.querySelectorAll('.confirm-overlay')]
+          .find((o) => /Check for updates automatically/.test(o.textContent));
+        const no = card && [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
+        if (no) no.click();
+      };
+      new MutationObserver(answer).observe(document, { childList: true, subtree: true });
+    });
+  }
+  //: The recovery-key dialog too (RECOVERY_ASK=1 keeps it): it queues behind the
+  //: first-run turns like the update question, and one that opened after boot's
+  //: one look sat over graphphone's whole run on a fresh dir.
+  if (!process.env.RECOVERY_ASK) {
+    await ctx.addInitScript(() => {
+      const close = () => { const d = document.getElementById('recovery-key-dialog'); if (d && d.open) d.close(); };
+      new MutationObserver(close).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['open'] });
+    });
+  }
+}
+
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const OUT = (process.env.SCRATCH||'.') + '/shots';
 require('fs').mkdirSync(OUT,{recursive:true});
@@ -97,6 +138,19 @@ async function boot(opts={}) {
   // FONT=mono (or any `#font-seg` value) sweeps that Appearance font, so
   // touch.js, docks.js and every sweep on this boot can run the font matrix
   // (fontmatrix.js) the way errors.js does.
+  // `timerFns: true` keeps the companion's private timer callbacks (avatars.js is one closure, so nameMarkBuddyTick and
+  // nameMarkBuddyBeat are not globals) in `window.__timerFns`, for a sweep that forces a tick or a beat now. Only
+  // named callbacks of those two, passed on to the real setTimeout unchanged.
+  if (opts.timerFns) {
+    await ctx.addInitScript(() => {
+      const real = window.setTimeout;
+      window.__timerFns = {};
+      window.setTimeout = function (fn, ...rest) {
+        if (typeof fn === 'function' && /^nameMarkBuddy(Tick|Beat)$/.test(fn.name)) window.__timerFns[fn.name] = fn;
+        return real.call(this, fn, ...rest);
+      };
+    });
+  }
   await ctx.addInitScript((font) => {
     try {
       if (font) localStorage.setItem('font', font);
@@ -128,6 +182,7 @@ async function boot(opts={}) {
     const body = require('fs').readFileSync(file, 'utf8');
     await ctx.route(`**/css/${name}*`, (route) => route.fulfill({ body, contentType: 'text/css' }));
   }
+  await quietFirstRun(ctx);
   const page = await ctx.newPage();
   //: SLOW=1 (a loaded machine, load past 30): every wait and the boot get
   //: four times as long, so a sweep measures rather than times out.
@@ -187,27 +242,14 @@ async function boot(opts={}) {
   }
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
   await page.waitForTimeout(800);
-  //: **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked
-  //: "Check for updates automatically?" after unlock, a dialog that would sit
-  //: over every click a sweep makes. Answered "Don't check" here (nothing
-  //: touches the network either way); UPDATE_ASK=1 leaves it for a sweep
-  //: that measures the dialog itself.
-  if (!process.env.UPDATE_ASK) {
-    await page.waitForFunction(() => {
-      const card = [...document.querySelectorAll('.confirm-overlay')]
-        .find((o) => /Check for updates automatically/.test(o.textContent));
-      //: Not `readyState`: the card comes after the page has loaded, and a
-      //: guard that stopped at load let it land over a sweep's first click.
-      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made === true);
-      const no = [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
-      if (no) no.click();
-      return true;
-    }, null, {timeout: 4000, polling: 200}).catch(() => {});
-  }
-  //: A fresh data dir shows the recovery-key dialog after the first password;
-  //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
-  if (!process.env.RECOVERY_ASK) {
-    await page.evaluate(() => { const d = document.getElementById('recovery-key-dialog'); if (d && d.open) d.close(); });
+  //: **Search by meaning asks once too** (semantic-notice.js): the first save
+  //: that wants the missing package raises a sticky toast, which sat over the
+  //: bottom controls of whatever a sweep measured (touch: nine "covered"
+  //: findings, landing mid-run, so it cannot be dismissed at boot). Answered
+  //: "No thanks" up front, with the same preference write the toast makes, so
+  //: it is never asked; SEMANTIC_ASK=1 leaves it for a sweep that measures it.
+  if (!process.env.SEMANTIC_ASK) {
+    await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => null));
   }
   //: `signIn` says which way it came in: 'lock' or 'app' (sign-in off).
   return {browser, ctx, page, OUT, signIn: way};
@@ -275,4 +317,25 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// A fresh library holds nothing to measure, so a sweep about the Library's readings seeds
+// it itself: the uploads through seed-libtext.js, then the readings (a caption, a vision
+// reading, fourteen page reads a file) straight into the database with seed-libtext.py,
+// which needs the data dir (DATA, or TESSELLATE_DATA_DIR when that is what served it).
+// Only when the library is empty, so a second run on the same dir adds nothing.
+async function seedLibtextIfEmpty(page) {
+  const path = require('path');
+  const { execFileSync } = require('child_process');
+  const rows = await page.evaluate(async () => {
+    const r = await apiJson('/media');
+    return (Array.isArray(r) ? r : r.items || r.media || r.files || []).length;
+  });
+  if (rows) return false;
+  const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
+  if (!DATA) throw new Error('empty library and no DATA (the data dir) to seed the readings into');
+  execFileSync('node', [path.join(__dirname, 'seed-libtext.js')], {stdio: 'inherit', env: process.env});
+  execFileSync(path.join(__dirname, '..', '..', '.venv', 'bin', 'python'),
+    [path.join(__dirname, 'seed-libtext.py'), path.join(DATA, 'tessellate.db')], {stdio: 'inherit'});
+  return true;
+}
+
+module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, seedLibtextIfEmpty};

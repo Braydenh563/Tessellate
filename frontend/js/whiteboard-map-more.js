@@ -742,9 +742,11 @@
     }
   }
 
+  //: One index per pass: a find per drawn topic was 500 x 500 at 500 topics (L-mindmap-19).
   function wbGrammarRepaint() {
+    const byId = new Map((wbState.objects || []).map((o) => [String(o.id), o]));
     for (const el of document.querySelectorAll(".wb-map-node")) {
-      const datum = (wbState.objects || []).find((o) => String(o.id) === el.dataset.id);
+      const datum = byId.get(el.dataset.id);
       if (datum) wbGrammarPaint(el, datum);
     }
   }

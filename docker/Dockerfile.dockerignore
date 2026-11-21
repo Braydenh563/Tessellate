@@ -1,0 +1,13 @@
+# Read by BuildKit for `-f docker/Dockerfile` (a docker/.dockerignore is not: the
+# context is the repo root, so it was never used). Paths are from the root.
+.venv
+.git
+tests
+tests-e2e
+scratchpad
+docs/screenshots
+**/__pycache__
+data
+.claude
+node_modules
+**/*.pyc

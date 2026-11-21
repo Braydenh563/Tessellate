@@ -654,7 +654,18 @@ function wbZoomFrameWork() {
   if (typeof nameMarkBuddyCanvasZoom === "function") nameMarkBuddyCanvasZoom(t.k);
   //: In the same frame as the transform it answers, so a topic panned into
   //: view is drawn on the frame it arrives in rather than one later.
-  wbCullNow(t, size);
+  //:
+  //: **A zoom step culls only when the window has left what was drawn**
+  //: (L-mindmap-17). The cull draws half a window past every side, and a
+  //: pinch step is about 1.18x, so most steps of a zoom show nothing the last
+  //: cull did not already draw; culling each one anyway hid and showed edges
+  //: at the margin every step (8 to 16ms a step at 500 topics). The full
+  //: cull runs once when the zoom settles (`wbZoomSettle`). A pan culls every
+  //: frame as before: it is what brings new ground into view.
+  const scaling = t.k !== wbZoomSettle.k;
+  wbZoomSettle.k = t.k;
+  wbCullNow(t, size, scaling);
+  if (scaling) wbZoomSettle();
   clearTimeout(wbAddGate.panBarTimer);
   wbAddGate.panBarTimer = 0;
   wbUpdateSelectionBar(true);
@@ -754,7 +765,18 @@ function wbScheduleCull() {
   });
 }
 
-function wbCullNow(transform, size) {
+//: Run once a zoom has had no scale change for `WB_ZOOM_SETTLE_MS`: the
+//: one full redraw a zoom gets (the cull here; the grips' true size in
+//: `wbSyncGridToTransform`, which shares the wait).
+const WB_ZOOM_SETTLE_MS = 250;
+function wbZoomSettle() {
+  clearTimeout(wbZoomSettle.timer);
+  wbZoomSettle.timer = setTimeout(() => wbCullNow(), WB_ZOOM_SETTLE_MS);
+}
+
+//: `unlessDrawn`: nothing to do when the window, at this transform, is inside
+//: the ground the last cull drew (`wbCullNow.drawn`, board units).
+function wbCullNow(transform, size, unlessDrawn = false) {
   if (wbCullHeld) return;
   const container = document.getElementById("whiteboard-container");
   const layer = document.getElementById("wb-html-layer");
@@ -768,12 +790,15 @@ function wbCullNow(transform, size) {
   if (!w || !h) return;
   const t = transform || d3.zoomTransform(container);
   const k = t.k || 1;
+  const drawn = wbCullNow.drawn;
+  if (unlessDrawn && drawn && -t.x / k >= drawn.x0 && (w - t.x) / k <= drawn.x1 && -t.y / k >= drawn.y0 && (h - t.y) / k <= drawn.y1) return;
   const mx = w * WB_CULL_MARGIN;
   const my = h * WB_CULL_MARGIN;
   const x0 = (-mx - t.x) / k;
   const x1 = (w + mx - t.x) / k;
   const y0 = (-my - t.y) / k;
   const y1 = (h + my - t.y) / k;
+  wbCullNow.drawn = { x0, x1, y0, y1 };
   //: A box from what the datum says rather than from the element: reading
   //: a box would flush layout on every pan frame. Padded by half its larger
   //: side, so a rotated item's corners and a card taller than its stored
@@ -783,7 +808,9 @@ function wbCullNow(transform, size) {
     return x + bw + pad < x0 || x - pad > x1 || y + bh + pad < y0 || y - pad > y1;
   };
   const focused = document.activeElement;
-  for (const el of layer.children) {
+  //: A dragged branch's topics sit in its layer for the gesture (`wbMapDragLayer.open`).
+  const dragLayer = wbMapDragLayer.live?.layer?.el;
+  for (const el of dragLayer ? [...layer.children, ...dragLayer.children] : layer.children) {
     const d = el.__data__;
     if (!d || typeof d.x !== "number") continue;
     const keep =
@@ -831,7 +858,6 @@ const WB_GRID_SPACING = 24;
 //: assumed all along (see the drop handler and `dragStart`'s own comments).
 const WB_CARD_DEFAULT_SIZE = { w: 250, h: 150 };
 
-let wbInvZoomTimer = 0;
 
 function wbSyncGridToTransform(transform) {
   const el = document.getElementById("whiteboard-container");
@@ -861,10 +887,16 @@ function wbSyncGridToTransform(transform) {
   //: writes nothing; a zoom writes once, 120ms after its last step, so the
   //: grips ride the board's scale for the length of the gesture and snap to
   //: their true size when it stops.
+  //:
+  //: **"Stops" is the zoom's settle, not a 120ms gap** (L-mindmap-17). One
+  //: publish re-styles every grip on the board (2,000 at 500 topics, 70 to
+  //: 180ms), and a slow pinch on a big map has steps more than 120ms apart,
+  //: so the publish landed inside the gesture: mapperf's worst zoom step at
+  //: 500 topics, 320ms, was one. It waits for the same quiet as the cull.
   const inv = String(1 / (t.k || 1));
-  clearTimeout(wbInvZoomTimer);
-  if (wbInvZoomValue === inv) return;
-  wbInvZoomTimer = setTimeout(() => wbPublishInvZoom(el, inv), 120);
+  clearTimeout(wbSyncGridToTransform.timer);
+  if ((wbPublishInvZoom.value || "1") === inv) return;
+  wbSyncGridToTransform.timer = setTimeout(() => wbPublishInvZoom(el, inv), WB_ZOOM_SETTLE_MS);
 }
 
 //: **Written onto the grips, not inherited down the whole board** (INBOX
@@ -902,8 +934,6 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-sketch-rotate-handle",
   ".wb-rotate-handle-stem",
 ];
-let wbInvZoomSheet = null;
-let wbInvZoomValue = "1";
 
 //: **The board's layers are rasterised again once a zoom has settled**
 //: (INBOX 791, "labels look pixelated"). A layer promoted with `will-change:
@@ -921,7 +951,7 @@ function wbRefreshRaster() {
 }
 
 function wbPublishInvZoom(el, inv) {
-  wbInvZoomValue = inv;
+  wbPublishInvZoom.value = inv;
   wbRefreshRaster();
   //: Below half zoom a topic's link button goes (INBOX 816): `inv` is 1 / zoom.
   el.toggleAttribute("data-wb-zoom-far", Number(inv) > 2);
@@ -935,11 +965,11 @@ function wbPublishInvZoom(el, inv) {
     el.style.setProperty("--wb-inv-zoom", inv);
     return;
   }
-  if (!wbInvZoomSheet) {
-    wbInvZoomSheet = new CSSStyleSheet();
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, wbInvZoomSheet];
+  if (!wbPublishInvZoom.sheet) {
+    wbPublishInvZoom.sheet = new CSSStyleSheet();
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, wbPublishInvZoom.sheet];
   }
-  wbInvZoomSheet.replaceSync(`${WB_INV_ZOOM_GRIPS.join(", ")} { --wb-inv-zoom: ${inv}; }`);
+  wbPublishInvZoom.sheet.replaceSync(`${WB_INV_ZOOM_GRIPS.join(", ")} { --wb-inv-zoom: ${inv}; }`);
 }
 
 function wbGridType() {
@@ -8385,10 +8415,14 @@ function wbApplyBulkMove(origin, dx, dy) {
     } else {
       entry.item.x = entry.x + dx;
       entry.item.y = entry.y + dy;
+      //: A branch in its layer moves as one (`wbMapDragLayer.open`): the data
+      //: moves, the elements are carried.
+      if (origin.layer) continue;
       const el = wbBulkMoveElement(entry, WB_SELECTOR_BY_KIND[entry.kind](entry.id));
       if (el) el.style.transform = wbItemTransform(entry.item);
     }
   }
+  if (origin.layer) wbMapDragLayer.move(origin.layer, dx, dy);
   //: **Every line after every move, never between them.** The lines were
   //: redrawn inside the loop above, member by member, and a tree line is
   //: claimed by whichever of its two ends the capture reached first
@@ -15322,6 +15356,8 @@ function wbFoldMenuSubmenus(menu) {
 }
 
 function wbStampMenuRoles(menu) {
+  //: The View menu's two column wrappers hold the groups; a wrapper is `none`, not a generic child of a menu.
+  for (const column of menu.querySelectorAll(":scope > .wb-menu-col")) column.setAttribute("role", "none");
   for (const section of menu.querySelectorAll(".wb-menu-section")) {
     section.setAttribute("role", "group");
   }
@@ -18547,7 +18583,12 @@ async function initWhiteboard() {
   function wbEdgePanTick() {
     wbEdgePan.frame = 0;
     if (!wbEdgePanWanted() || !document.body.contains(containerEl)) return;
-    const r = containerEl.getBoundingClientRect();
+    //: The gesture's own box (`wbCanvasOriginRect`, measured at the press):
+    //: this frame runs after the move wrote every moved item, and a fresh
+    //: measure here forced a restyle of the board each frame (L-mindmap-17,
+    //: 1.3s of a 2.7s 200-topic branch drag).
+    const r = wbCanvasOriginRect();
+    if (!r) return;
     const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
     const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
     const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
@@ -22676,6 +22717,9 @@ async function wbDeleteObject(d) {
 }
 
 function renderWhiteboard() {
+  //: A render places every topic from its data; a dragged branch's layer
+  //: would carry them a second time, so it is undone first.
+  if (wbMapDragLayer.live) wbMapDragLayer.close();
   wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
   //: from the previous set is about to describe something that is gone.
@@ -24121,6 +24165,10 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     // line above finds none of them: collected here for the same reason and
     // at the same moment.
     d._mapEdges = wbMapEdgesFor(d.id);
+    //: The canvas box for the whole gesture, measured at the press before any
+    //: move has written: the drop target, the cull and the edge pan read it
+    //: after a step's writes, where a fresh measure forces a restyle.
+    wbCanvasOrigin();
     // `.raise()` deliberately does NOT happen here, moved to objDragMove.
     // See the matching comment on the card drag's own `dragging` for the
     // real bug this caused (raising mid-`start` breaks the browser's click
@@ -24158,6 +24206,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       d._bulkOrigin = wbDragIsBulkMove("object", d.id)
         ? wbCaptureBulkMoveOrigin(wbMultiKey("object", d.id))
         : wbMapBranchDragOrigin(d, d._dragAlone) || wbFrameDragOrigin(d, d._dragAlone);
+      if (d._bulkOrigin?.branchOf === d.id) wbMapDragLayer.open(d._bulkOrigin, d, this.closest(".wb-object"));
     }
     //: Once per gesture, not once per move: the card drag beside this one
     //: took the same fix (INBOX 114, and see its own comment). `raise()`
@@ -24215,7 +24264,8 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     } else {
       wbClearAlignmentGuides();
     }
-    d3.select(this.closest(".wb-object")).style("transform", wbItemTransform(d));
+    //: In a branch's layer the grabbed topic rides the layer's translate too.
+    if (!d._bulkOrigin?.layer) d3.select(this.closest(".wb-object")).style("transform", wbItemTransform(d));
     //: The branch first and this topic's own lines after it, for the reason
     //: `wbApplyBulkMove` gives: a line drawn before its other end has moved
     //: is a line a frame behind.
@@ -24239,6 +24289,8 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
   async function objDragEnd(event, d) {
     if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
     if (window.currentTool?.startsWith("link-")) { const r = dragEndNode.call(this, event, d); d._linkKind = null; return r; }
+    //: The branch's layer first: everything after this reads the topics' own elements.
+    if (d._bulkOrigin?.layer) wbMapDragLayer.close(d._bulkOrigin);
     //: Dropped on the delete target: put back, then deleted (INBOX 660).
     wbTrashTake(d._gesture, "object", d);
     d._linkedSketches = null;

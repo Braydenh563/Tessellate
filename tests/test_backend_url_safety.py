@@ -78,6 +78,8 @@ def test_only_http_addresses_can_be_a_backend(url):
         "http://169.254.169.254:80/latest/",
         "http://[fe80::1]/v1",                # IPv6 link-local
         "http://[::ffff:169.254.169.254]/v1", # the same address wearing a hat
+        "http://[64:ff9b::a9fe:a9fe]/v1",     # NAT64 of it (L-general-1)
+        "http://[64:ff9b:1::a9fe:a9fe]/v1",   # local-use NAT64 of it
     ],
 )
 def test_the_cloud_metadata_address_is_refused(url):

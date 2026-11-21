@@ -106,15 +106,23 @@ const STOPS = [
       return new Promise((r) =>
         setTimeout(() => {
           const bar = document.getElementById("doc-toolbar");
+          //: Heading 1 to 3 and Quote have no button on the strip (DX6, DX26: they are rows of
+          //: Insert; index.html's note in #doc-toolbar), so there is nothing there to be lit.
+          //: Their state is still the app's answer to "what is the caret inside", which
+          //: `docToolbarMarksAt` gives and `renderDocToolbarState` paints on whichever
+          //: button exists; the stop asserts that answer for a mark with no button.
+          const marks = [...docToolbarMarksAt(window.CM6, docCmView.state)];
+          const unbuttoned = marks.filter((m) => !bar.querySelector(`button[data-md="${m}"]`));
           r({
             at,
             //: Deduplicated: `#doc-toolbar` legitimately holds two buttons
             //: for some marks, the one in the strip and the one in the block
             //: menu it mounts, and both are lit by the same rule.
             on: [
-              ...new Set(
-                [...bar.querySelectorAll('button[data-md][aria-pressed="true"]')].map((b) => b.dataset.md)
-              ),
+              ...new Set([
+                ...[...bar.querySelectorAll('button[data-md][aria-pressed="true"]')].map((b) => b.dataset.md),
+                ...unbuttoned,
+              ]),
             ].sort(),
           });
         }, 220)
@@ -269,21 +277,30 @@ const STOPS = [
     };
   });
   console.log("      table menu:", JSON.stringify(menu));
-  ok("the table cell menu still offers all ten commands", menu.items === 10, `${menu.items} items`);
-  ok("in four groups, so three hairlines", menu.separators === 3, `${menu.separators} separators`);
+  //: The menu has grown past the ten commands of section 16 (move, sort, filter, sum, select), so
+  //: "ten items in four groups" became "the ten are all still there, in groups divided by one
+  //: hairline each": every separator sits between two commands (none leads, trails or doubles up),
+  //: is one pixel tall, spans the menu, and is a separator in the tree, never a menu item.
+  const ORIGINAL_TEN = ["Insert row above", "Insert row below", "Delete row", "Insert column left", "Insert column right", "Delete column", "Align left", "Align centre", "Align right", "Delete table"];
+  const order = menu.order || [];
+  const missing = ORIGINAL_TEN.filter((name) => !order.includes(name));
+  const seps = order.filter((x) => x === "---").length;
+  const wellPlaced = order.length > 2 && order[0] !== "---" && order[order.length - 1] !== "---" && order.every((x, i) => x !== "---" || order[i - 1] !== "---");
+  ok("the table cell menu still offers the ten commands", missing.length === 0 && menu.items >= 10, missing.length ? `missing ${JSON.stringify(missing)}` : `${menu.items} items`);
+  ok("grouped, with a hairline only between groups", seps >= 3 && menu.separators === seps && wellPlaced, `${menu.separators} separators, ${seps} in the order`);
   ok(
     "each hairline is drawn and is one pixel tall",
-    (menu.sepHeights || []).length === 3 && (menu.sepHeights || []).every((h) => h === 1),
+    (menu.sepHeights || []).length === seps && (menu.sepHeights || []).every((h) => h === 1),
     JSON.stringify(menu.sepHeights)
   );
   ok(
     "and spans the menu's rows rather than collapsing",
-    (menu.sepWidths || []).length === 3 && menu.sepWidths.every((w) => w > 80),
+    (menu.sepWidths || []).length === seps && menu.sepWidths.every((w) => w > 80),
     JSON.stringify(menu.sepWidths)
   );
   ok(
     "a hairline is a separator, never a menu item",
-    menu.menuItemRoles === 10 && menu.separatorRoles === 3,
+    menu.menuItemRoles === menu.items && menu.separatorRoles === seps,
     `${menu.menuItemRoles} menuitems, ${menu.separatorRoles} separators`
   );
   console.log("      menu order:", JSON.stringify(menu.order));

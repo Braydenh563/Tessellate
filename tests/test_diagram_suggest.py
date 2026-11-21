@@ -310,3 +310,31 @@ def test_the_template_picker_filters_and_the_door_offers_the_existing_diagrams()
     #: Intent unchanged, the list moved (R12): the open-an-existing button asks the sheet, which lists the mmd documents (diagram-suggest.js).
     mermaid = (ROOT / "frontend" / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
     assert 'file_type === "mmd"' in suggest and "chooseDiagram({ fresh: false })" in mermaid
+
+
+def test_templates_are_offered_most_used_first():
+    """W18's last row: the templates come most used first, ties in the file's order, and a
+    use is counted per browser (a count stored for a removed template is ignored)."""
+    got = _node(
+        "const rows = [{id: 'a'}, {id: 'b'}, {id: 'c'}, {id: 'd'}];"
+        " const uses = {c: 3, b: 1, d: 1, gone: 9, a: 'x'};"
+        " console.log(JSON.stringify({"
+        " order: dgsByUse(rows, uses).map((t) => t.id),"
+        " none: dgsByUse(rows, null).map((t) => t.id),"
+        " bumped: dgsBumpUse({c: 3, gone: 9}, 'b', rows),"
+        " kept: rows.map((t) => t.id) }));"
+    )
+    assert got["order"] == ["c", "b", "d", "a"]
+    assert got["none"] == ["a", "b", "c", "d"]
+    assert got["bumped"] == {"c": 3, "b": 1}
+    assert got["kept"] == ["a", "b", "c", "d"]
+
+
+def test_the_dialog_orders_and_counts_through_the_helpers():
+    """The dialog's wiring: a source check, because the dialog needs the whole builder and
+    a browser; the ordering itself is asserted in node above."""
+    body = SUGGEST.read_text(encoding="utf-8")
+    start = body.index("async function templates(S, h)")
+    templates = body[start : body.index("\n  }\n", start)]
+    assert "dgsByUse(" in templates and "dgsBumpUse(" in templates
+    assert 'prefs.json("diagram.templateUses"' in templates

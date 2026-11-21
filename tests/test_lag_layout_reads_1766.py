@@ -93,16 +93,63 @@ def test_the_rig_loop_stops_in_a_hidden_window_and_off_screen() -> None:
     assert '"atl-off"' in atlas and "IntersectionObserver" in atlas
 
 
-def test_the_follow_loop_reads_in_a_task_not_a_frame_callback() -> None:
+def test_the_follow_loop_reads_in_a_task_at_rest_and_in_the_frame_while_moving() -> None:
+    """Intent moved (L-general-37): "no layout reads in a frame at rest; reads before writes while moving".
+
+    The task after a drawn frame (INBOX 1766) paints the companion one frame behind a card that a transform
+    animation moves: 7.6px at the end of the 0.6s return against a 2px budget (companionscroll.js). While
+    the panel moves, the anchor is read in the frame's own callback, ahead of every write it makes."""
     keep = _code(_fn(AV, "function nameMarkBuddyKeepUp("))
     assert not READS.search(keep), READS.search(keep).group(0)
     assert "requestAnimationFrame(" not in keep and "nameMarkBuddyFollowFrame.ask()" in keep
     ask = _fn(AV, "nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk(")
-    assert ask.index("requestAnimationFrame(") < ask.index("setTimeout("), "a frame, then a timer on: the page has drawn"
-    assert ask.index("setTimeout(") < ask.index("nameMarkBuddyFollowFrame(performance.now())")
+    assert ask.index("requestAnimationFrame(") < ask.index("setTimeout("), "at rest: a frame, then a timer on: the page has drawn"
+    assert ask.index("setTimeout(") < ask.rindex("nameMarkBuddyFollowFrame(performance.now())")
+    assert "if (nmbFollow.moving)" in ask[: ask.index("setTimeout(")], "while moving it looks in the frame callback"
     assert "requestAnimationFrame(nameMarkBuddyFollowFrame)" not in AV
     cancel = _fn(AV, "nameMarkBuddyFollowFrame.cancel = function nameMarkBuddyFollowCancel(")
     assert "cancelAnimationFrame" in cancel and "clearTimeout" in cancel
+    # Reads before writes: the animation question, then the box, then the write.
+    frame = _fn(AV, "function nameMarkBuddyFollowFrame(")
+    assert frame.index("nameMarkBuddyPanelMoving(") < frame.index("nameMarkBuddyFollow();")
+    follow = _code(_fn(AV, "function nameMarkBuddyFollow("))
+    first_write = follow.index("nameMarkBuddyPut(")
+    for read in ("checkVisibility(", "g.el.getBoundingClientRect()", "nameMarkBuddyRideBox();"):
+        assert follow.index(read) < first_write, read
+    assert follow.index("nameMarkBuddyGlueBand(g, y)") < follow.rindex("nameMarkBuddyPut(buddy, x, y)")
+
+
+@needs_node
+def test_a_moving_panel_is_looked_at_in_the_frame_and_a_resting_one_after_it() -> None:
+    ask = _fn(AV, "nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk(")
+    script = r"""
+const log = [];
+let inFrame = false;
+const frames = [];
+const timers = [];
+globalThis.requestAnimationFrame = (f) => { frames.push(f); return frames.length; };
+globalThis.setTimeout = (f) => { timers.push(f); return timers.length; };
+globalThis.performance = { now: () => 0 };
+const nmbFollow = { moving: false, frame: 0, stage: "" };
+const nameMarkBuddyFollowFrame = () => { log.push(inFrame ? "in frame" : "in task"); };
+__ASK__
+const out = {};
+for (const moving of [true, false]) {
+  nmbFollow.moving = moving;
+  log.length = 0;
+  nameMarkBuddyFollowFrame.ask();
+  const f = frames.shift();
+  inFrame = true; f(); inFrame = false;
+  while (timers.length) timers.shift()();
+  out[moving ? "moving" : "rest"] = log.slice();
+}
+process.stdout.write(JSON.stringify(out));
+""".replace("__ASK__", ask)
+    run = subprocess.run(["node", "-e", script], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    out = json.loads(run.stdout)
+    assert out["moving"] == ["in frame"], "the anchor is read in the frame, so the figure is drawn with its panel"
+    assert out["rest"] == ["in task"], "at rest nothing is read in a frame callback"
 
 
 def test_a_press_or_key_look_never_reads_a_page_that_stays_dirty() -> None:
@@ -164,3 +211,14 @@ process.stdout.write(JSON.stringify(out));
     assert out["clean"] == 1, "a clean page: the look runs once"
     assert out["dirty"] == 0, "a page that stays dirty: it never reads"
     assert out["rounds"] < 400, "and it stops asking"
+
+
+def test_a_transition_just_started_is_asked_about_every_look_until_it_is_running() -> None:
+    """L-general-37: a transform transition is `pending` for its first frame or two. The loop asked once, was
+    told no, and napped 300ms on a cached answer while the card moved (6.2px of lag at the start of
+    companionscroll.js's transform phase). For 300ms after a start event it asks at every look, uncached."""
+    frame = _fn(AV, "function nameMarkBuddyFollowFrame(")
+    assert "nmbFollow.animAt < NMB_START_MS" in frame[: frame.index("nameMarkBuddyFollow();")]
+    moving = _fn(AV, "function nameMarkBuddyPanelMoving(")
+    assert "NMB_START_MS" in moving[: moving.index("pm.el = el")]
+    assert re.search(r"const NMB_START_MS = 300;", AV)

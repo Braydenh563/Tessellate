@@ -7,9 +7,9 @@
 // rate limit or Reduce motion is not respected.
 const { boot } = require('./lib.js');
 (async () => {
-  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  const { browser, page } = await boot({ timerFns: true, viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   // Two long notes to open.
   const ids = await page.evaluate(async () => {
     const body = (n) => `Long note ${n} for the companion. ${'A sentence that goes on for a while, with enough words to need a Show more. '.repeat(24)}`;
@@ -20,7 +20,7 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => revealTab('notes'));
   await page.evaluate(() => typeof loadEntries === 'function' && loadEntries()).catch(() => {});
   await page.waitForTimeout(3000);
-  const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reacted = ''; nameMarkBuddyAct(''); });
+  const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reactLog = []; nmb.reacted = ''; nameMarkBuddyAct(''); });
   const reacted = () => page.evaluate(() => nmb.reacted || '');
   const openNote = async (id) => {
     const found = await page.evaluate((i) => {
@@ -104,19 +104,27 @@ const { boot } = require('./lib.js');
   if (streak.first !== 'streak' || streak.again) fails.push(`streak: ${JSON.stringify(streak)}`);
   // Night: a tick yawns.
   await reset();
+  // It lives in a room (INBOX 1673): the graph test left its tab, so it is away until the page it lives on is shown again.
+  await page.evaluate(() => revealTab('notes'));
+  await page.waitForFunction(() => !nmb.away, null, { timeout: 15000 });
+  // The tick decides nothing while it moves or reacts (nameMarkBuddyStateOf): wait until the streak's move has ended.
+  await page.waitForFunction(() => !nmb.flight && ![nmb.anim, nmb.glideAnim].some((a) => a && a.playState === 'running') && !document.getElementById('nm-buddy').classList.contains('nmb-think'), null, { timeout: 15000 });
   const night = await page.evaluate(() => {
+    nmb.lastPoke = 0; nmb.reactAt = 0;
     const orig = Date.prototype.getHours;
     Date.prototype.getHours = function () { return 23; };
-    try { nmb.lastInput = Date.now(); nameMarkBuddyTick(); } finally { Date.prototype.getHours = orig; }
+    // The tick is private to avatars.js (one closure): armed once, boot's timerFns kept its callback.
+    nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
+    try { nmb.lastInput = Date.now(); window.__timerFns.nameMarkBuddyTick(true); } finally { Date.prototype.getHours = orig; }
     return { kind: nmb.reacted || '', act: nmb.act };
   });
   if (night.kind !== 'yawn' || night.act !== 'yawn') fails.push(`night: ${JSON.stringify(night)}`);
   // Reduce motion: nothing.
   await reset();
   const still = await page.evaluate(() => {
-    document.documentElement.dataset.motion = 'reduced';
+    MOTION.apply('off');
     const r = ['read', 'graph', 'streak', 'yawn', 'private', 'toast'].map((k) => nameMarkBuddyReact(k));
-    delete document.documentElement.dataset.motion;
+    MOTION.apply('follow');
     return r.some(Boolean);
   });
   if (still) fails.push('a reaction under Reduce motion');

@@ -242,3 +242,24 @@ def prepare(img) -> Prepared:
         size = (max(1, round(grey.width * scale)), max(1, round(grey.height * scale)))
         grey = grey.resize(size, resample=Image.Resampling.LANCZOS)
     return Prepared(grey.point(stretch_table(grey.histogram())), scale)
+
+
+def prepare_for_detector(img) -> Prepared | None:
+    """The picture RapidOCR should read (L703), or None when the original is
+    already what it wants: grey, dark text on a light ground, text near
+    `TARGET_TEXT_PX`. No Otsu stretch: its neural detector reads grey
+    gradients, and a hard two-tone page loses the antialiased edges it uses.
+    Pure: the input is untouched."""
+    from PIL import Image, ImageOps  # noqa: PLC0415  # optional extra, imported where it is used
+
+    grey = to_grey(img)
+    dark = is_dark_ground(grey.histogram())
+    if dark:
+        grey = ImageOps.invert(grey)
+    scale = scale_factor(estimate_text_height(grey), *grey.size)
+    if not dark and scale <= 1.0:
+        return None
+    if scale > 1.0:
+        size = (max(1, round(grey.width * scale)), max(1, round(grey.height * scale)))
+        grey = grey.resize(size, resample=Image.Resampling.LANCZOS)
+    return Prepared(grey, scale)
