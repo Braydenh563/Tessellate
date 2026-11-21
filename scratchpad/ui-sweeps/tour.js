@@ -353,7 +353,9 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       switchTab("dashboard");
     });
     await page.waitForTimeout(700);
-    await page.evaluate(() => openOnboarding());
+    //: Not awaited: `openOnboarding` on a first run resolves when the welcome
+    //: closes (`firstRunTurn`), so returning it hung the sweep for good.
+    await page.evaluate(() => { openOnboarding(); });
     await page.waitForTimeout(400);
     const slides = await page.evaluate(() => ONBOARDING_SLIDES.length);
     for (let slide = 0; slide < slides - 1; slide += 1) {
