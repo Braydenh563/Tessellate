@@ -25760,28 +25760,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Frame` | src/tessellate/core/overlay/sprites.py:113 |
 | `SpriteSet` | src/tessellate/core/overlay/sprites.py:256 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:946 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:951 |
 | `_drawn_box` | src/tessellate/core/overlay/sprites.py:219 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:875 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:834 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:823 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:786 |
-| `_star` | src/tessellate/core/overlay/sprites.py:940 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:894 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:880 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:839 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:828 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:791 |
+| `_star` | src/tessellate/core/overlay/sprites.py:945 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:899 |
 | `capped_pose` | src/tessellate/core/overlay/sprites.py:147 |
 | `captured_root` | src/tessellate/core/overlay/sprites.py:184 |
 | `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:208 |
 | `clipped` | src/tessellate/core/overlay/sprites.py:128 |
-| `effect` | src/tessellate/core/overlay/sprites.py:1013 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:791 |
+| `effect` | src/tessellate/core/overlay/sprites.py:1018 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:796 |
 | `frames_dir` | src/tessellate/core/overlay/sprites.py:192 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:933 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:938 |
 | `graded` | src/tessellate/core/overlay/sprites.py:240 |
 | `look_for` | src/tessellate/core/overlay/sprites.py:199 |
-| `mix` | src/tessellate/core/overlay/sprites.py:914 |
+| `mix` | src/tessellate/core/overlay/sprites.py:919 |
 | `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:225 |
-| `squashed` | src/tessellate/core/overlay/sprites.py:990 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:870 |
+| `squashed` | src/tessellate/core/overlay/sprites.py:995 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:875 |
 | `tapered` | src/tessellate/core/overlay/sprites.py:163 |
 
 ### src/tessellate/core/overlay/standing.py (1)
@@ -31407,13 +31407,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-ui-modernisation-69) | docs/roadmap/BACKLOG.md:4424 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4391 |
-| Needs hardware | docs/roadmap/LEDGER.md:606 |
+| Needs hardware | docs/roadmap/LEDGER.md:605 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:528 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:599 |
+| Owner calls | docs/roadmap/LEDGER.md:598 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:533 |
@@ -31588,7 +31588,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:775 |
+| Plan session briefs | docs/roadmap/LEDGER.md:774 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2641 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31642,25 +31642,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:791 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:875 |
+| chat | docs/roadmap/LEDGER.md:790 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:874 |
 | documents | docs/roadmap/LEDGER.md:332 |
-| documents | docs/roadmap/LEDGER.md:815 |
-| general | docs/roadmap/LEDGER.md:596 |
+| documents | docs/roadmap/LEDGER.md:814 |
+| general | docs/roadmap/LEDGER.md:595 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:779 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:887 |
+| graph | docs/roadmap/LEDGER.md:778 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:886 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:348 |
-| mindmap | docs/roadmap/LEDGER.md:827 |
-| timeline | docs/roadmap/LEDGER.md:359 |
-| timeline | docs/roadmap/LEDGER.md:851 |
+| mindmap | docs/roadmap/LEDGER.md:826 |
+| timeline | docs/roadmap/LEDGER.md:358 |
+| timeline | docs/roadmap/LEDGER.md:850 |
 | ui-modernisation | docs/roadmap/LEDGER.md:351 |
-| ui-modernisation | docs/roadmap/LEDGER.md:839 |
+| ui-modernisation | docs/roadmap/LEDGER.md:838 |
 | whiteboard | docs/roadmap/LEDGER.md:286 |
-| whiteboard | docs/roadmap/LEDGER.md:803 |
-| world-class | docs/roadmap/LEDGER.md:361 |
-| world-class | docs/roadmap/LEDGER.md:863 |
+| whiteboard | docs/roadmap/LEDGER.md:802 |
+| world-class | docs/roadmap/LEDGER.md:360 |
+| world-class | docs/roadmap/LEDGER.md:862 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2969 |
