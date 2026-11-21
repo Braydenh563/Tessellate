@@ -2684,6 +2684,12 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .notice-warn > .ph {
   color: var(--warn);
 }
+/* A notice's button keeps its word whole and the text beside it wraps:
+   `min-width: 44px` replaces the min-content floor, so a shrinking button
+   cut "Install" by 6px in the mono font at 390 (L-general-43). */
+.notice > button {
+  flex: none;
+}
 /* --- glass reaches the floating chrome that sat outside it ------------------
    Owner, with four screenshots: "some elements dont use the glass styles if
    they are active". Measured with glass on in Classic dark: the graph's

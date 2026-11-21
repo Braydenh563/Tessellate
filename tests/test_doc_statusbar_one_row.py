@@ -30,3 +30,17 @@ def test_no_stylesheet_lets_the_strip_wrap_again():
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         for body in re.findall(r"\.doc-statusbar\s*\{([^}]*)\}", css):
             assert "flex-wrap: wrap" not in body, path.name
+
+
+def test_the_goal_and_findings_labels_give_way_before_the_type_picker():
+    """L-general-43: with the mono font at 390 the strip's items needed 373px
+    of 330 (goal 104, findings 133, type 90), and the type picker ended at 397
+    of a 390 window, past the strip's clip. The two labels shrink with an
+    ellipsis (their titles say the rest), so the picker keeps its place.
+    A CSS rule, because the fit is measured by fontmatrix.js in a browser."""
+    base = (CSS / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    buttons = _rule(base, "#doc-word-goal,\n#doc-prose")
+    assert "flex: 0 1 auto" in buttons and "min-width: 0" in buttons
+    labels = _rule(base, "#doc-goal-label,\n#doc-prose-count")
+    for decl in ("min-width: 0", "overflow: hidden", "text-overflow: ellipsis", "white-space: nowrap"):
+        assert decl in labels, decl
