@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 2 | 0 | 0 | 0 | 2 |
+| chat | 0 | 1 | 0 | 0 | 0 | 1 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,13 +17,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 55 | 0 | 69 | 357 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 359 | 66 | 0 | 122 | 751 |
+| all | 326 | 358 | 66 | 0 | 122 | 750 |
 
 ## graph
 
 ## chat
 
-- [ ] **L-world-class-770** `chat` open, M: Split chat.js into cohesive classic scripts, index.html order kept, app_js_text and CODEMAP fresh, ratchets held. From L639/L698 (hub 2026-11-21; world-class fffd0c47f, not yet fetched). Evidence: frontend/js/chat.js 1639 lines
 - [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
 
 
