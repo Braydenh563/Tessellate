@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2891, tests 22860, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8538, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11151, test files 2891, tests 22860, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8538)
 
@@ -7528,19 +7528,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `backupNow` | frontend/js/settings-data.js:500 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
-| `clearPreviews` | frontend/js/settings-data.js:754 |
-| `dismissedWords` | frontend/js/settings-data.js:890 |
-| `guideTurns` | frontend/js/settings-data.js:760 |
+| `clearPreviews` | frontend/js/settings-data.js:753 |
+| `dismissedWords` | frontend/js/settings-data.js:889 |
+| `guideTurns` | frontend/js/settings-data.js:759 |
 | `humanBytes` | frontend/js/settings-data.js:434 |
 | `importDirectory` | frontend/js/settings-data.js:511 |
-| `importDocument` | frontend/js/settings-data.js:674 |
-| `importMarkdown` | frontend/js/settings-data.js:603 |
+| `importDocument` | frontend/js/settings-data.js:673 |
+| `importMarkdown` | frontend/js/settings-data.js:601 |
 | `importSummary` | frontend/js/settings-data.js:536 |
 | `markdownPreview` | frontend/js/settings-data.js:581 |
-| `noteSettingChange` | frontend/js/settings-data.js:1068 |
-| `paintClearRow` | frontend/js/settings-data.js:765 |
-| `previewCaches` | frontend/js/settings-data.js:740 |
-| `previewCount` | frontend/js/settings-data.js:749 |
+| `noteSettingChange` | frontend/js/settings-data.js:1067 |
+| `paintClearRow` | frontend/js/settings-data.js:764 |
+| `previewCaches` | frontend/js/settings-data.js:739 |
+| `previewCount` | frontend/js/settings-data.js:748 |
 | `privacyAddressLine` | frontend/js/settings-data.js:39 |
 | `privacyDestinationRow` | frontend/js/settings-data.js:47 |
 | `privacyGroups` | frontend/js/settings-data.js:23 |
@@ -7549,35 +7549,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderBackupRetention` | frontend/js/settings-data.js:486 |
 | `renderBackupSchedule` | frontend/js/settings-data.js:275 |
 | `renderBackups` | frontend/js/settings-data.js:319 |
-| `renderExportsList` | frontend/js/settings-data.js:1370 |
+| `renderExportsList` | frontend/js/settings-data.js:1369 |
 | `renderIntegrityNotice` | frontend/js/settings-data.js:474 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
-| `renderSettingsClear` | frontend/js/settings-data.js:772 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1350 |
+| `renderSettingsClear` | frontend/js/settings-data.js:771 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1349 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:952 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:951 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:1112 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:1124 |
-| `searchRecentRestore` | frontend/js/settings-data.js:1130 |
-| `settingChangeWords` | frontend/js/settings-data.js:1033 |
-| `settingListWords` | frontend/js/settings-data.js:1016 |
-| `settingName` | frontend/js/settings-data.js:1009 |
-| `settingShown` | frontend/js/settings-data.js:998 |
-| `settingsClearCount` | frontend/js/settings-data.js:734 |
-| `settingsClearDone` | frontend/js/settings-data.js:904 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:1171 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1190 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:1152 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:1182 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:1141 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1302 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1316 |
-| `settingsHistorySave` | frontend/js/settings-data.js:1145 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1285 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:1047 |
+| `searchRecentAll` | frontend/js/settings-data.js:1111 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:1123 |
+| `searchRecentRestore` | frontend/js/settings-data.js:1129 |
+| `settingChangeWords` | frontend/js/settings-data.js:1032 |
+| `settingListWords` | frontend/js/settings-data.js:1015 |
+| `settingName` | frontend/js/settings-data.js:1008 |
+| `settingShown` | frontend/js/settings-data.js:997 |
+| `settingsClearCount` | frontend/js/settings-data.js:733 |
+| `settingsClearDone` | frontend/js/settings-data.js:903 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:1170 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1189 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:1151 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1181 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:1140 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1301 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1315 |
+| `settingsHistorySave` | frontend/js/settings-data.js:1144 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1284 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:1046 |
 | `undoImport` | frontend/js/settings-data.js:546 |
 
 ### frontend/js/settings-find.js (39)
@@ -14237,7 +14237,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11150)
+## Backend modules (11151)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26945,42 +26945,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `normalise` | src/tessellate/entry/duplicates.py:43 |
 | `similarity` | src/tessellate/entry/duplicates.py:73 |
 
-### src/tessellate/entry/export_folder.py (60)
+### src/tessellate/entry/export_folder.py (61)
 
 | Name | File:line |
 |---|---|
 | `ExportResult` | src/tessellate/entry/export_folder.py:400 |
-| `Progress` | src/tessellate/entry/export_folder.py:945 |
+| `Progress` | src/tessellate/entry/export_folder.py:951 |
 | `_Parts` | src/tessellate/entry/export_folder.py:507 |
 | `_Related` | src/tessellate/entry/export_folder.py:175 |
 | `_attachment_names` | src/tessellate/entry/export_folder.py:146 |
 | `_attachment_record` | src/tessellate/entry/export_folder.py:159 |
 | `_categories` | src/tessellate/entry/export_folder.py:406 |
-| `_categories_in` | src/tessellate/entry/export_folder.py:933 |
+| `_categories_in` | src/tessellate/entry/export_folder.py:939 |
 | `_decoded` | src/tessellate/entry/export_folder.py:472 |
 | `_documents_in` | src/tessellate/entry/export_folder.py:606 |
-| `_existing_documents` | src/tessellate/entry/export_folder.py:895 |
+| `_existing_documents` | src/tessellate/entry/export_folder.py:901 |
 | `_existing_notes` | src/tessellate/entry/export_folder.py:648 |
 | `_fingerprint` | src/tessellate/entry/export_folder.py:643 |
-| `_fix_object_links` | src/tessellate/entry/export_folder.py:822 |
-| `_fresh_bin_period` | src/tessellate/entry/export_folder.py:727 |
+| `_fix_object_links` | src/tessellate/entry/export_folder.py:828 |
+| `_fresh_bin_period` | src/tessellate/entry/export_folder.py:733 |
 | `_from_markdown` | src/tessellate/entry/export_folder.py:552 |
 | `_front_matter` | src/tessellate/entry/export_folder.py:328 |
 | `_group` | src/tessellate/entry/export_folder.py:532 |
 | `_grouped` | src/tessellate/entry/export_folder.py:188 |
-| `_hang_canvas` | src/tessellate/entry/export_folder.py:780 |
-| `_hang_cards` | src/tessellate/entry/export_folder.py:796 |
-| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:842 |
-| `_hang_links` | src/tessellate/entry/export_folder.py:763 |
-| `_hang_rows` | src/tessellate/entry/export_folder.py:811 |
+| `_hang_canvas` | src/tessellate/entry/export_folder.py:786 |
+| `_hang_cards` | src/tessellate/entry/export_folder.py:802 |
+| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:848 |
+| `_hang_links` | src/tessellate/entry/export_folder.py:769 |
+| `_hang_rows` | src/tessellate/entry/export_folder.py:817 |
 | `_imported` | src/tessellate/entry/export_folder.py:586 |
 | `_iso` | src/tessellate/entry/export_folder.py:72 |
 | `_json` | src/tessellate/entry/export_folder.py:479 |
-| `_json_dict` | src/tessellate/entry/export_folder.py:862 |
-| `_keep_updated` | src/tessellate/entry/export_folder.py:870 |
+| `_json_dict` | src/tessellate/entry/export_folder.py:868 |
+| `_keep_updated` | src/tessellate/entry/export_folder.py:876 |
 | `_link_ends` | src/tessellate/entry/export_folder.py:282 |
 | `_link_record` | src/tessellate/entry/export_folder.py:166 |
-| `_make_entry` | src/tessellate/entry/export_folder.py:704 |
+| `_make_entry` | src/tessellate/entry/export_folder.py:710 |
+| `_new_space` | src/tessellate/entry/export_folder.py:693 |
 | `_note_base` | src/tessellate/entry/export_folder.py:357 |
 | `_note_record` | src/tessellate/entry/export_folder.py:563 |
 | `_parsed` | src/tessellate/entry/export_folder.py:85 |
@@ -26992,14 +26993,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_restore` | src/tessellate/entry/export_folder.py:95 |
 | `_row` | src/tessellate/entry/export_folder.py:76 |
 | `_safe_name` | src/tessellate/entry/export_folder.py:108 |
-| `_second_pass` | src/tessellate/entry/export_folder.py:883 |
+| `_second_pass` | src/tessellate/entry/export_folder.py:889 |
 | `_sha1_file` | src/tessellate/entry/export_folder.py:114 |
 | `_space_for` | src/tessellate/entry/export_folder.py:668 |
 | `_stored_names` | src/tessellate/entry/export_folder.py:390 |
 | `_strip_attachments` | src/tessellate/entry/export_folder.py:501 |
-| `_write_attachments` | src/tessellate/entry/export_folder.py:746 |
+| `_write_attachments` | src/tessellate/entry/export_folder.py:752 |
 | `_write_documents` | src/tessellate/entry/export_folder.py:415 |
-| `_write_documents_in` | src/tessellate/entry/export_folder.py:906 |
+| `_write_documents_in` | src/tessellate/entry/export_folder.py:912 |
 | `_write_note` | src/tessellate/entry/export_folder.py:363 |
 | `board_canvas` | src/tessellate/entry/export_folder.py:240 |
 | `document_record` | src/tessellate/entry/export_folder.py:233 |
@@ -27008,7 +27009,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `note_record` | src/tessellate/entry/export_folder.py:213 |
 | `read` | src/tessellate/entry/export_folder.py:618 |
 | `snapshot` | src/tessellate/entry/export_folder.py:304 |
-| `write` | src/tessellate/entry/export_folder.py:953 |
+| `write` | src/tessellate/entry/export_folder.py:959 |
 
 ### src/tessellate/entry/folder_sync.py (29)
 
