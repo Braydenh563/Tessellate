@@ -611,7 +611,6 @@ EXEMPT: dict[str, str] = {
     "ask-compose.js:renderAskFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "capture-ask.js:scheduleCaptureTagSuggestions": "read: reads or asks the model; shows a result, writes nothing",
     "categories-panel.js:propose": "read: asks for a split proposal",
-    "answer-kit.js:renderToolConfirm": "send: runs a tool the agent asked for, in the chat's own turn history",
     "chat-turn.js:commitStagedImages": "send: uploads the pictures of a chat message at the moment it is sent; the message is in the chat's own turn history",
     "chat-turn.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",

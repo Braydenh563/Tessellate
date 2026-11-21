@@ -2509,6 +2509,21 @@
      "label": "ph:user Read what the notes hold about Sam Lee: 2 notes"
     }
    }
+  ],
+  "edit_document": [
+   {
+    "args": {
+     "document_id": 1,
+     "content": "# Launch checklist\n\n- Beta feedback\n- Store listing\n- Press kit\n"
+    },
+    "result": {
+     "id": 1,
+     "title": "Launch checklist",
+     "changed": true,
+     "words": 11,
+     "label": "ph:file-text Edited the document “Launch checklist”"
+    }
+   }
   ]
  }
 }

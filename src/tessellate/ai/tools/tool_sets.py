@@ -37,7 +37,7 @@ WRITE_TOOLS = {
     "delete_tag",
     "save_skill",
     "delete_skill",
-    "create_document",
+    "create_document", "edit_document",
     "delete_document",
     "add_whiteboard_card",
     "add_whiteboard_link",
@@ -78,7 +78,7 @@ set_write_tools(WRITE_TOOLS)
 #: `tests/test_write_gate_h2.py` fails when a write tool is in none of them.
 CHANGE_TOOLS = frozenset({
     "check_learned",
-    "edit_note",
+    "edit_note", "edit_document",
     "unlink_notes",
     "rename_tag",
     "rename_category",
@@ -260,7 +260,7 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ("delete", "remove", "bin", "trash", "restore", "undelete", "recycle"),
     ),
     (
-        ("list_documents", "get_document", "create_document"),
+        ("list_documents", "get_document", "create_document", "edit_document"),
         (
             "document", "doc ", "docs", "write-up", "essay", "report", "chapter",
             # The words that mean "make me one", which cued nothing before

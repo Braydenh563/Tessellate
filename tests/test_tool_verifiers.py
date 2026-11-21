@@ -33,6 +33,7 @@ def test_the_two_tables_name_real_tools_and_do_not_overlap():
 #: A claim no empty notebook can hold, per verifier: each must refuse it.
 FALSE_CLAIMS = {
     "create_document": ({"title": "Plan"}, {"id": 999_999}),
+    "edit_document": ({"document_id": 999_999, "content": "x"}, {"id": 999_999, "changed": True}),
     "delete_document": ({"document_id": 0}, {}),
     "add_whiteboard_card": ({}, {"card_id": 999_999, "note_id": 1}),
     "add_whiteboard_link": ({}, {"link_id": 999_999}),
