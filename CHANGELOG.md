@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Library Documents and Media selection bars get a More menu (L-world-class-392): Tags, Move to category and Set a property on what is ticked, one Undo, in a lazy file (library-bulk.js).
 - Documents and files carry tags, a category and properties (L-world-class-393): three additive columns on documents and media_uploads (migration a3d7c1e9b5f4), read and written through /library/meta (bulk, restore for one Undo), so the Library bars of decision 65 have something to write.
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.

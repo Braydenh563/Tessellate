@@ -97,3 +97,10 @@ def test_a_database_from_before_the_columns_gains_them_and_keeps_its_rows(tmp_pa
 
 def test_the_migration_is_the_chain_head():
     assert ScriptDirectory.from_config(_config(Path("/x.db"))).get_current_head() == "a3d7c1e9b5f4"
+
+
+def test_the_documents_and_media_bars_offer_the_meta_menu_from_a_lazy_file():
+    text = Path("frontend/js/library.js").read_text()
+    assert text.count('libraryMeta("menu", "document"') == 1 and text.count('libraryMeta("menu", "media"') == 1
+    entries = Path("frontend/js/lazy-entries.js").read_text()
+    assert '["/js/library-bulk.js"]' in entries and 'libraryBulk: ["libraryMeta"]' in entries

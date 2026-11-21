@@ -3947,6 +3947,10 @@ function syncLibraryDocsSelectbar() {
   const bar = document.getElementById("library-docs-selectbar");
   const count = document.getElementById("library-docs-selected-count");
   if (!bar || !count) return;
+  libraryMeta("menu", "document", () => [...libraryDocsSelection], async () => {
+    libraryDocsSelection.clear();
+    renderLibraryDocuments();
+  }, bar);
   const n = libraryDocsSelection.size;
   bar.classList.toggle("hidden", n === 0);
   count.textContent = `${n} selected`;
@@ -9061,6 +9065,10 @@ function syncLibraryMediaSelectbar() {
   const bar = document.getElementById("library-media-selectbar");
   const count = document.getElementById("library-media-selected-count");
   if (!bar || !count) return;
+  //: Only uploads carry the three; a file attached to a note is filed with its note.
+  libraryMeta("menu", "media", () => [...libraryMediaSelection.values()].filter((row) => !row._isAttachment).map((row) => row.id), async () => {
+    clearLibraryMediaSelection();
+  }, bar);
   const n = libraryMediaSelection.size;
   bar.classList.toggle("hidden", n === 0);
   //: Not `body:has(#library-media-selectbar)`: it restyled every tile on any page change (INBOX 1716).
