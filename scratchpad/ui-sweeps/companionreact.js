@@ -107,7 +107,7 @@ const { boot } = require('./lib.js');
   const night = await page.evaluate(() => {
     const orig = Date.prototype.getHours;
     Date.prototype.getHours = function () { return 23; };
-    try { nmb.lastInput = Date.now(); nameMarkBuddyTick(); } finally { Date.prototype.getHours = orig; }
+    try { nmb.lastInput = Date.now(); nmb.sweep.nameMarkBuddyTick(); } finally { Date.prototype.getHours = orig; }
     return { kind: nmb.reacted || '', act: nmb.act };
   });
   if (night.kind !== 'yawn' || night.act !== 'yawn') fails.push(`night: ${JSON.stringify(night)}`);

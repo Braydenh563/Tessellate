@@ -25,7 +25,7 @@ const read = () => page.evaluate(() => {
     pose: nmb.pose, perch: nmb.perch, x: Math.round(nmb.x), y: Math.round(nmb.y), tab: nameMarkBuddyTab(),
     glue: g ? { lost: g.lost, held: g.held, conn: !!(g.el && g.el.isConnected), w: box ? Math.round(box.width) : 0, top: box ? Math.round(box.top) : null } : null,
     deliberate: !!(nmb.spot && nmb.spot.kind === 'yours' && nmb.spot.pose === 'float'),
-    supported: nameMarkBuddySupported(), pinned: !!nmb.pinned, moving: !!(nmb.anim && nmb.anim.playState === 'running'),
+    supported: nmb.sweep.nameMarkBuddySupported(), pinned: !!nmb.pinned, moving: !!(nmb.anim && nmb.anim.playState === 'running'),
     // The bar or edge it holds on to is gone from the page (hidden, emptied, removed).
     edgeGone: (() => { const el = nmb.spot && nmb.spot.edge && nmb.spot.edge.el; if (!el || !['bar', 'hang'].includes(nmb.spot.edge.kind)) return false; const r = el.isConnected ? el.getBoundingClientRect() : null; return !r || !r.width || !r.height || getComputedStyle(el).visibility === 'hidden'; })(),
     away: !!nmb.away, hidden: !!(buddy && buddy.classList.contains('hidden')), act: nmb.act || '',

@@ -28,9 +28,9 @@ const { boot } = require('./lib.js');
   seen.walk = [];
   // A walk's length (a float's, for Atlas): a short step is a hop and a
   // long way a poof, which have no stride; one is counted when it took a
-  // stride (`nameMarkBuddyStride`, watched for the call).
+  // stride (its pick written to `nmb.stride`, watched for the write: the picker is the file's own).
   for (let i = 0; seen.walk.length < rounds && i < rounds * 3; i += 1) {
-    const s = await page.evaluate(([x, t]) => { const b = document.getElementById('nm-buddy'); const orig = nameMarkBuddyStride; let took = null; window.nameMarkBuddyStride = () => { const v = orig(); took = String(nmb.stride); return v; }; try { nameMarkBuddyMoveTo(b, { kind: 'yours', pose: 'stand', legs: '', x, y: Math.round(t - NMB_FEET + 1) }); } finally { window.nameMarkBuddyStride = orig; } return took; }, [i % 2 ? 480 : 700, top]);
+    const s = await page.evaluate(([x, t]) => { const b = document.getElementById('nm-buddy'); let took = null; let held = nmb.stride; Object.defineProperty(nmb, 'stride', { configurable: true, get: () => held, set: (v) => { held = v; took = String(v); } }); try { nameMarkBuddyMoveTo(b, { kind: 'yours', pose: 'stand', legs: '', x, y: Math.round(t - NMB_FEET + 1) }); } finally { delete nmb.stride; nmb.stride = held; } return took; }, [i % 2 ? 480 : 700, top]);
     if (s !== null) seen.walk.push(s);
     await page.waitForTimeout(2200);
   }

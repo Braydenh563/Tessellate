@@ -88,13 +88,13 @@ const { boot, PW } = require('./lib.js');
     for (let i = 0; i < 6; i += 1) {
       nmb.lastAct = '';
       nmb.cool = {};
-      nameMarkBuddyTick();
+      nmb.sweep.nameMarkBuddyTick();
     }
-    nameMarkBuddyBeat();
-    nameMarkBuddyCheck();
-    if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
-    if (typeof nameMarkBuddyChatErrand === 'function') nameMarkBuddyChatErrand();
-    nameMarkBuddySeen(false);
+    nmb.sweep.nameMarkBuddyBeat();
+    nmb.sweep.nameMarkBuddyCheck();
+    if (typeof nmb.sweep.nameMarkBuddyBellErrand === 'function') nmb.sweep.nameMarkBuddyBellErrand();
+    if (typeof nmb.sweep.nameMarkBuddyChatErrand === 'function') nmb.sweep.nameMarkBuddyChatErrand();
+    nmb.sweep.nameMarkBuddySeen(false);
     nameMarkBuddyQueuePlace();
     nameMarkBuddyCue('cheer');
     nameMarkBuddyCue('bell');

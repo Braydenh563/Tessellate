@@ -75,11 +75,11 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       await page.waitForTimeout(250);
       const held = await page.evaluate(async () => {
         const before = [nmb.x, nmb.y];
-        if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
+        if (typeof nmb.sweep.nameMarkBuddyBellErrand === 'function') nmb.sweep.nameMarkBuddyBellErrand();
         nmb.lastInput = Date.now();
-        nameMarkBuddyTick();
-        nameMarkBuddyBeat();
-        nameMarkBuddyCheck();
+        nmb.sweep.nameMarkBuddyTick();
+        nmb.sweep.nameMarkBuddyBeat();
+        nmb.sweep.nameMarkBuddyCheck();
         await new Promise((r) => setTimeout(r, 2500));
         const f = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect();
         const m = nmb.menu && !nmb.menu.classList.contains('hidden') ? nmb.menu.getBoundingClientRect() : null;

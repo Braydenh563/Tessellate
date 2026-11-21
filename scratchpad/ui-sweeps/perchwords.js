@@ -4,9 +4,9 @@
 // inside a card below its heading, every settle checked against the words,
 // and on scroll it keeps to its edge or goes to a valid one.
 // For each tab (TABS) and a run of scroll positions of the tab's own
-// scroller, this asks the chooser for its perch (`nameMarkBuddyChoose`),
+// scroller, this asks the chooser for its perch (`nmb.sweep.nameMarkBuddyChoose`),
 // then measures densely: the square pixels of the figure's shape
-// (`nameMarkBuddyShape`) over the line boxes of every text node in the tab,
+// (`nmb.sweep.nameMarkBuddyShape`) over the line boxes of every text node in the tab,
 // whether the edge it stands on is inside a card below the card's top, and
 // whether it hangs from anything but the top bar. Then it lets the live
 // companion settle after each scroll and measures its drawn box the same
@@ -49,12 +49,12 @@ const STEPS = Number(process.env.STEPS || 6);
         if (live) {
           spot = { x: nmb.x, y: nmb.y, pose: nmb.pose, legs: nmb.legs, kind: nmb.perch, edge: nmb.spot?.edge, anchor: nmb.spot?.anchor };
         } else {
-          spot = nameMarkBuddyChoose(t, nameMarkBuddyObstacles(t));
+          spot = nmb.sweep.nameMarkBuddyChoose(t, nmb.sweep.nameMarkBuddyObstacles(t));
         }
         //: At the size it would take there (`spot.fit`, a small perch).
         const own = nmb.scale;
         if (spot.fit) nmb.scale = spot.fit;
-        shape = nameMarkBuddyShape(spot.x, spot.y, spot.pose, spot.legs);
+        shape = nmb.sweep.nameMarkBuddyShape(spot.x, spot.y, spot.pose, spot.legs);
         nmb.scale = own;
         const tabEl = document.getElementById(`tab-${t}`);
         const walker = document.createTreeWalker(tabEl, NodeFilter.SHOW_TEXT);
@@ -70,7 +70,7 @@ const STEPS = Number(process.env.STEPS || 6);
           range.selectNodeContents(n);
           //: Only what can be seen: clipped by the text's scroll box and
           //: the window (a list scrolled away is still laid out above it).
-          const sc = nameMarkBuddyScroller(n.parentElement);
+          const sc = nmb.sweep.nameMarkBuddyScroller(n.parentElement);
           const clip = sc ? sc.getBoundingClientRect() : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
           for (const raw of range.getClientRects()) {
             const r = { left: Math.max(raw.left, clip.left, 0), right: Math.min(raw.right, clip.right, innerWidth), top: Math.max(raw.top, clip.top, 0), bottom: Math.min(raw.bottom, clip.bottom, innerHeight) };

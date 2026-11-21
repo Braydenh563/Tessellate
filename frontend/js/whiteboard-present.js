@@ -443,5 +443,8 @@
   });
 
   //: The file's surface: what other files call (L286).
+  //: The sweeps' hands on its own names (scratchpad/ui-sweeps/wb1005-pages), on a name already shared so
+  //: the shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
+  wbStartPresenting.sweep = { steps: wbPresentSteps };
   Object.assign(window, { wbFramesInOrder, wbStartPresenting, wbPresentShow, wbStopPresenting });
 })();

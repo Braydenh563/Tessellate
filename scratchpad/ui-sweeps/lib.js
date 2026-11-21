@@ -284,4 +284,14 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// A new board or map by name, the way the app makes one (wbCreateBlankBoard): "New" makes an
+// untitled board at once now, and the template dialog the sweeps once filled
+// (#wb-template-name, #wb-template-create) is the split menu's, so they fill it no longer.
+async function newBoard(page, name, kind = 'board', timeout = 30000) {
+  await openBoardsTab(page, ['initWhiteboard', 'wbCreateBlankBoard']);
+  await page.evaluate(([n, k]) => wbCreateBlankBoard(n, k), [name, kind === 'map' ? 'map' : 'board']);
+  await page.waitForFunction((k) => Boolean(window.currentBoardId) && (k !== 'map' || wbIsMap()), kind, { timeout, polling: 100 });
+  await waitForBoardOpen(page, 0, timeout);
+}
+
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, newBoard};

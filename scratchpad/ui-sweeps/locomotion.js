@@ -52,7 +52,7 @@ const KIND = process.env.KIND || 'me';
         sample();
         box.style.top = `${300 + dist}px`;
         target = { x: 200, y: 300 + dist - NMB_FEET + 1 };
-        nameMarkBuddyKeepUp();
+        nmb.sweep.nameMarkBuddyKeepUp();
         window.__box = box;
       } else {
         target = { x: 200 + dist, y: y0 };

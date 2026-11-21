@@ -51,7 +51,7 @@ const { boot } = require('./lib.js');
               setAtlasMood(from, 0, { quiet: true });
               document.getAnimations().forEach((a) => { if (a instanceof CSSTransition) a.finish(); });
               await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-              if (eased && where === 'buddy') nameMarkBuddyEase(root, 2400);
+              if (eased && where === 'buddy') nmb.sweep.nameMarkBuddyEase(root, 2400);
               setAtlasMood(to, 0, { quiet: true });
               const anims = body.getAnimations({ subtree: true }).filter((a) => a instanceof CSSTransition);
               anims.forEach((a) => a.pause());

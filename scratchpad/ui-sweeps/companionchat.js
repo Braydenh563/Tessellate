@@ -77,7 +77,7 @@ async function sample(page, label) {
       over,
       //: Whether its own placement thinks this place is clear: a cover
       //: the sweep sees and this misses is the shape being wrong.
-      hits: nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nameMarkBuddyObstacles("chat"), nmb.legs),
+      hits: nmb.sweep.nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nmb.sweep.nameMarkBuddyObstacles("chat"), nmb.legs),
       stopBox: r(box(document.getElementById("chat-stop"))),
       at: [nmb.x, nmb.y].map(Math.round),
       //: On its way between two places (a walk, a poof, a crossfade): a

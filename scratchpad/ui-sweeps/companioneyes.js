@@ -33,7 +33,7 @@ const { boot } = require('./lib.js');
           nameMarkBuddyRide(null, 700, 420);
           nameMarkBuddyMoveTo(buddy, { kind: 'card', pose, legs: '', x: 700, y: 420 }, true);
           setAtlasMood(mood, 0, { quiet: true });
-          const [cx, cy] = nameMarkBuddyHeadAt();
+          const [cx, cy] = nmb.sweep.nameMarkBuddyHeadAt();
           return [cx, cy];
         }, [pose, mood]);
         await page.waitForTimeout(400);

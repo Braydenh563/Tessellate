@@ -381,14 +381,16 @@ async function seed() {
     for (let i = 0; i < 4; i++) await post('/whiteboard/objects', { board_id: map.id, kind: 'topic', x: 300, y: 100 + i * 80, width: 170, height: 52, data: { content: `Topic ${i}` } }).catch(() => {});
     return out;
   }, { LONG_MD, CODE_JS, CODE_PY, MMD });
-  console.log(JSON.stringify(ids));
+  if (process.argv[2] === 'seed') console.log(JSON.stringify(ids));
   await browser.close();
+  return ids;
 }
 
 // ---- driver ----------------------------------------------------------------
 async function run() {
   const { boot } = require('./lib.js');
-  const ids = JSON.parse(fs.readFileSync(process.env.SEEDF, 'utf8'));
+  // With no SEEDF it seeds first (the two-step form above is for many runs on one seed).
+  const ids = process.env.SEEDF ? JSON.parse(fs.readFileSync(process.env.SEEDF, 'utf8')) : await seed();
   const which = (process.env.VPS || MATRIX.map((_, i) => i).join(',')).split(',').map(Number);
   const outf = process.env.OUTF || '/dev/stdout';
   const theme = process.env.THEME || 'light';

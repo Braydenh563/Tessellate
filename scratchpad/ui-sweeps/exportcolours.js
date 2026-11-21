@@ -11,7 +11,7 @@
 //
 //   BASE=http://127.0.0.1:8785 SCRATCH=/tmp/mm-mapfix THEME=dark \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/exportcolours.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 const { execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -46,15 +46,7 @@ async function exportSelection(page, file) {
 }
 
 async function openNew(page, name, kind) {
-  await page.evaluate(() => document.querySelector('[data-tab="library"]')?.click());
-  await page.waitForTimeout(500);
-  await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]')?.click());
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new")?.click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  if (kind === "map") await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
+  await libNewBoard(page, name, kind);
   await page.waitForFunction((kind) => (kind === "map" ? wbIsMap() && wbMapIndex().roots.length > 0 : Boolean(window.currentBoardId)), kind, { timeout: 90000 });
   await page.waitForTimeout(1500);
   await page.keyboard.press("Escape");

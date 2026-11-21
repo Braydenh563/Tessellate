@@ -17,13 +17,13 @@ const { boot } = require('./lib.js');
     // The gate's roll (under 0.35 to act), then the branch's (0.65 or over:
     // wander, not a few steps), then anything.
     const rolls = [0.1, 0.9]; const r = Math.random; Math.random = () => (rolls.length ? rolls.shift() : r());
-    const left = nameMarkBuddyWander(Date.now());
+    const left = nmb.sweep.nameMarkBuddyWander(Date.now());
     Math.random = r;
     const away = { x: nmb.x, y: nmb.y, why: nmb.moveWhy, walking: buddy.classList.contains('nmb-walking') || !!(nmb.anim && nmb.anim.playState === 'running') };
     await new Promise((res) => setTimeout(res, 2500));
     nmb.home && (nmb.home.at = Date.now() - 31000);
     nameMarkBuddyAct('');
-    const back = nameMarkBuddyWander(Date.now());
+    const back = nmb.sweep.nameMarkBuddyWander(Date.now());
     const backWhy = nmb.moveWhy;
     const backMoving = !!(nmb.anim && nmb.anim.playState === 'running');
     await new Promise((res) => setTimeout(res, 2500));

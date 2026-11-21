@@ -84,7 +84,7 @@ const { boot } = require('./lib.js');
   if (slow) fails.push('a slow let-go was tossed');
   // Reduce motion: no petting.
   await page.mouse.move(100, 100);
-  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduced'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nameMarkBuddyPet(); });
+  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduced'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.sweep.nameMarkBuddyPet(); });
   const stillPet = await page.evaluate(() => nmb.act);
   await page.evaluate(() => { delete document.documentElement.dataset.motion; });
   if (stillPet === 'wiggle') fails.push('petted under Reduce motion');

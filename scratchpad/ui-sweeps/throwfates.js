@@ -7,7 +7,7 @@
 // ledge's end and caught it (grab); slid off its end and caught on (slip,
 // K12). For each it
 // measures the moment (the class seen, the slide, the x range), where it
-// ended (pose, inside the window, over no control: `nameMarkBuddyHits`),
+// ended (pose, inside the window, over no control: `nmb.sweep.nameMarkBuddyHits`),
 // that its frame loop has stopped, and the companion's box size. Then one
 // real-pointer flick (the lazy file arrives with the carry) and, with
 // REDUCED=1 or always as a second pass, Reduce motion: no moments at all.
@@ -83,7 +83,7 @@ async function pass(buddyKind, reduced) {
         cancelAnimationFrame(raf); mo.disconnect();
         const tab = nameMarkBuddyTab();
         const spot = nmb.spot || {};
-        const hits = nameMarkBuddyHits(nmb.x, nmb.y, spot.pose, nameMarkBuddyYoursObstacles(nameMarkBuddyObstacles(tab), spot), spot.legs);
+        const hits = nmb.sweep.nameMarkBuddyHits(nmb.x, nmb.y, spot.pose, nmb.sweep.nameMarkBuddyYoursObstacles(nmb.sweep.nameMarkBuddyObstacles(tab), spot), spot.legs);
         const ys = rec.splatYs;
         return {
           fate: nmb.thrown?.fate, classes: [...rec.classes], restMs, flightOff: !nmb.flight,
