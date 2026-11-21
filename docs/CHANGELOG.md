@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- INBOX: the five items that carry a Placed id (1779, 1748, 1726, 1716, 904) moved to HISTORY; 904's statuses for B03, B11, B15, B18, B20 and B23 now say fixed, each against its code (L-general-28).
 - Docs: CONTRIBUTING.md says replace, do not layer (CLAUDE.md section 8) in place of additive only, and states 22,000+ tests (22,296 test functions by grep, 52,937 collected items with parameters); the deep-audit skill briefs from and writes LEDGER rows, not ranked files (L-general-26, L-general-27).
 - Docs: ARCHITECTURE.md no longer says documents have no revisions, that the packaged app has no stdio MCP, that the .msi ships, or that assets cannot be cached immutable (each checked against the code); RELEASING.md names the pyproject version test, fastembed as the optional engine, and ROADMAP's milestone table as the 1.0 criteria (L-general-22, L-general-24).
 - Docs: SECURITY.md has a Known gaps list, and CONTRIBUTING.md a 30-day dependency-age floor that dependabot.yml now enforces with a cooldown (L-general-7).

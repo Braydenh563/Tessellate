@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 30 | 2 | 0 | 4 | 32 |
-| all | 502 | 559 | 129 | 2 | 183 | 1190 |
+| general | 0 | 29 | 2 | 0 | 4 | 31 |
+| all | 502 | 558 | 129 | 2 | 183 | 1189 |
 
 ## graph
 
@@ -725,7 +725,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-21** `general` open, S: Add a periodic sweep that clears dangling filing_similar_id values. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1806. Evidence: filing_similar_id is deliberately not a foreign key, and the doc's suggested follow-up, a periodic sweep, was never built or tracked.
 - [ ] **L-general-25** `general` open, S: Confirm or replace the question_noise misspelling table's source. From open-work sweep 2026-11-12, docs/THIRD_PARTY.md:101. Evidence: The question_noise.py misspelling table may be CC BY-SA 4.0 from Wikipedia. Its provenance is unconfirmed, and nothing tracks confirming or replacing it. This is a licence risk under AGPL.
-- [ ] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2
 - [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
