@@ -379,6 +379,8 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
 - **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
+- **Adding a block to a large flowchart in one short task** (L-documents-112). Owner decided 2026-11-21: parked until Mermaid offers incremental layout. Measured 2026-11-21 at 390 px, load about 2: the first task of each add to a 40-block flowchart is 100 to 174 ms (102, 100, 174, 141), later ones 60 to 83 ms; the first is the single `mermaid.render` layout with no yield point (htmlLabels already off, mermaid-frame.js:101; the redundant parse removed). Check: `scratchpad/ui-sweeps/dgm40.js` at 390, every task under 50 ms, when Mermaid offers incremental layout.
+- **Diagram pan p95 under 16 ms** (L-documents-102). Owner decided 2026-11-21: parked; what is left is the browser's scroll commit of the picture layer. Measured 2026-11-21 at 1440 and 4x CPU, 5 interleaved runs: p50 median 7.0 ms (met), p95 median 19.6 to 22.9 ms; the minimap frame is throttled; a 0.4x raster during the pan gave 19.2, and 2048 px tiles gave 25.0 to 29.5 (worse). Check: `scratchpad/ui-sweeps/diagram-pan-latency.js` at 1440 and 4x CPU on a quiet box, p95 under 16 ms.
 
 ---
 
