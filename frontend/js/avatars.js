@@ -96,6 +96,13 @@
     glide: "cubic-bezier(0.25, 0.5, 0.25, 1)",
     swing: "cubic-bezier(0.3, 0, 0.7, 1)",
     hop: "cubic-bezier(0.3, 0.2, 0.4, 1)",
+    //: L-chat-273: the lower body's springs (`ATLAS_LOWER_STATES` names one per pose), its 18 literals folded into five,
+    //: faintest overshoot to the snap; each pose lands within about 10 percent of its old settle and overshoot.
+    spring: "cubic-bezier(0.2, 1.05, 0.45, 1)",
+    sway: "cubic-bezier(0.2, 1.3, 0.4, 1)",
+    flick: "cubic-bezier(0.2, 1.6, 0.35, 1)",
+    pop: "cubic-bezier(0.2, 1.74, 0.36, 1)",
+    snap: "cubic-bezier(0.2, 1.95, 0.35, 1)",
   };
   const NAME_MOOD_LEXICON = {
     moods: {
