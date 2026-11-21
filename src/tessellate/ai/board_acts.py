@@ -134,11 +134,13 @@ def _board_items(session: Session, kinds: str) -> list[tuple]:
 
     rows: list[tuple] = []
     if kinds == "card":
-        for node in session.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id.is_(None))):
-            entry = session.get(Entry, node.entry_id)
-            if entry is not None and not entry.is_private:
-                rows.append((_first_line(entry.content), "card", node.id))
-        return rows
+        #: One join: a card for a private or binned note is never offered by name.
+        cards = session.execute(
+            select(WhiteboardNode.id, Entry.content)
+            .join(Entry, Entry.id == WhiteboardNode.entry_id)
+            .where(WhiteboardNode.board_id.is_(None), Entry.is_private.is_(False), Entry.is_deleted.is_(False))
+        )
+        return [(_first_line(content), "card", node_id) for node_id, content in cards]
     if kinds == "shape":
         for sketch in session.scalars(select(WhiteboardSketch).where(WhiteboardSketch.board_id.is_(None))):
             data = _data(sketch)
@@ -299,17 +301,43 @@ def undo_for(name: str, args: dict, result: dict) -> dict | None:
 
 
 def run_step(session: Session, name: str, args: dict) -> dict:
-    """The steps this module owns (`OWN_STEPS`)."""
+    """The steps this module owns (`OWN_STEPS`). An Undo names a row by id, and
+    a stale or hand-edited one could name any row: each step takes only the
+    kind it says, never from a private board."""
     from tessellate.core.database import WhiteboardObject, WhiteboardSketch
 
     if name == "undo_learned_check":
         from tessellate.ai import learned_audit_run
 
         return {"label": f"Put back {learned_audit_run.undo(session, str(args.get('run') or ''))} learned items"}
-    model = WhiteboardSketch if name == "drop_board_link" else WhiteboardObject
-    row = session.get(model, int(args.get("id") or 0))
+    link = name == "drop_board_link"
+    row = session.get(WhiteboardSketch if link else WhiteboardObject, int(args.get("id") or 0))
     if row is None:
         return {"label": "It was already gone"}
+    refused = _refuse_drop(session, row, link)
+    if refused:
+        return {"error": refused}
+    if not link:
+        from tessellate.api.wb_board import _forget_links_to
+
+        _forget_links_to(session, row.board_id, "object", row.id)
     session.delete(row)
     session.commit()
-    return {"label": "Took the link off the board" if name == "drop_board_link" else "Took the node off the map"}
+    return {"label": "Took the link off the board" if link else "Took the node off the map"}
+
+
+def _refuse_drop(session: Session, row, link: bool) -> str:  # noqa: ANN001
+    """Why `row` is not one `drop_board_link` or `drop_map_node` may take, or ""."""
+    from tessellate.api.wb_model import MAP_REFERENCE_KINDS, MAP_TOPIC_KIND
+    from tessellate.core.database import Entry, WhiteboardObject
+
+    board = session.get(Entry, row.board_id) if row.board_id is not None else None
+    if board is not None and board.is_private:
+        return "That board is private."
+    if link:
+        return "" if str(_data(row).get("type", "")).startswith("link-") else "That is not a link."
+    if row.board_id is None or (row.kind != MAP_TOPIC_KIND and row.kind not in MAP_REFERENCE_KINDS):
+        return "That is not a map node."
+    if session.scalars(select(WhiteboardObject.id).where(WhiteboardObject.parent_id == row.id).limit(1)).first() is not None:
+        return "That node has nodes under it."
+    return ""

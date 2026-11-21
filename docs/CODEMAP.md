@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11383, test files 2978, tests 23212, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8538, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11384, test files 2979, tests 23219, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
 ## Frontend functions (8538)
 
@@ -13732,7 +13732,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/followups` | POST | `chat_followups` | src/tessellate/api/routes_chat.py:150 |
 | `/forget` | POST | `forget` | src/tessellate/api/routes_hello.py:200 |
 | `/from-notes` | POST | `document_from_notes` | src/tessellate/api/routes_documents_from_notes.py:48 |
-| `/grammar/languagetool` | POST | `post_languagetool` | src/tessellate/api/routes_spelling.py:66 |
+| `/grammar/languagetool` | POST | `post_languagetool` | src/tessellate/api/routes_spelling.py:74 |
 | `/graph` | GET | `graph` | src/tessellate/api/routes_graph.py:861 |
 | `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1469 |
 | `/graph/match` | GET | `graph_match` | src/tessellate/api/routes_graph.py:452 |
@@ -13998,10 +13998,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:141 |
 | `/speak` | POST | `speak` | src/tessellate/api/routes_voice.py:56 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:776 |
-| `/spelling/check` | POST | `post_spelling_check` | src/tessellate/api/routes_spelling.py:46 |
-| `/spelling/own-words` | GET | `get_own_words` | src/tessellate/api/routes_spelling.py:31 |
-| `/spellpacks` | GET | `get_spell_packs` | src/tessellate/api/routes_spelling.py:82 |
-| `/spellpacks/{lang}/{kind}` | GET | `get_spell_pack_file` | src/tessellate/api/routes_spelling.py:89 |
+| `/spelling/check` | POST | `post_spelling_check` | src/tessellate/api/routes_spelling.py:53 |
+| `/spelling/own-words` | GET | `get_own_words` | src/tessellate/api/routes_spelling.py:33 |
+| `/spellpacks` | GET | `get_spell_packs` | src/tessellate/api/routes_spelling.py:90 |
+| `/spellpacks/{lang}/{kind}` | GET | `get_spell_pack_file` | src/tessellate/api/routes_spelling.py:97 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
 | `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:25 |
 | `/statistics/ask` | POST | `ask_statistics` | src/tessellate/api/routes_statistics.py:39 |
@@ -14223,7 +14223,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11383)
+## Backend modules (11384)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14702,33 +14702,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `fingerprint` | src/tessellate/ai/bench.py:268 |
 | `run` | src/tessellate/ai/bench.py:363 |
 
-### src/tessellate/ai/board_acts.py (24)
+### src/tessellate/ai/board_acts.py (25)
 
 | Name | File:line |
 |---|---|
 | `_aimed` | src/tessellate/ai/board_acts.py:77 |
 | `_board_items` | src/tessellate/ai/board_acts.py:131 |
-| `_data` | src/tessellate/ai/board_acts.py:154 |
-| `_first_line` | src/tessellate/ai/board_acts.py:162 |
+| `_data` | src/tessellate/ai/board_acts.py:156 |
+| `_first_line` | src/tessellate/ai/board_acts.py:164 |
 | `_kind` | src/tessellate/ai/board_acts.py:112 |
-| `_map_nodes` | src/tessellate/ai/board_acts.py:167 |
+| `_map_nodes` | src/tessellate/ai/board_acts.py:169 |
 | `_name` | src/tessellate/ai/board_acts.py:60 |
 | `_node` | src/tessellate/ai/board_acts.py:81 |
 | `_pick` | src/tessellate/ai/board_acts.py:120 |
-| `_plan_diagram` | src/tessellate/ai/board_acts.py:254 |
-| `_plan_item` | src/tessellate/ai/board_acts.py:201 |
-| `_plan_library` | src/tessellate/ai/board_acts.py:190 |
-| `_plan_link` | src/tessellate/ai/board_acts.py:222 |
-| `_plan_map` | src/tessellate/ai/board_acts.py:235 |
-| `_say` | src/tessellate/ai/board_acts.py:186 |
+| `_plan_diagram` | src/tessellate/ai/board_acts.py:256 |
+| `_plan_item` | src/tessellate/ai/board_acts.py:203 |
+| `_plan_library` | src/tessellate/ai/board_acts.py:192 |
+| `_plan_link` | src/tessellate/ai/board_acts.py:224 |
+| `_plan_map` | src/tessellate/ai/board_acts.py:237 |
+| `_refuse_drop` | src/tessellate/ai/board_acts.py:329 |
+| `_say` | src/tessellate/ai/board_acts.py:188 |
 | `_shaped` | src/tessellate/ai/board_acts.py:64 |
-| `_step` | src/tessellate/ai/board_acts.py:182 |
+| `_step` | src/tessellate/ai/board_acts.py:184 |
 | `_titled` | src/tessellate/ai/board_acts.py:68 |
 | `_tree` | src/tessellate/ai/board_acts.py:72 |
-| `plan` | src/tessellate/ai/board_acts.py:259 |
+| `plan` | src/tessellate/ai/board_acts.py:261 |
 | `read` | src/tessellate/ai/board_acts.py:103 |
-| `run_step` | src/tessellate/ai/board_acts.py:301 |
-| `undo_for` | src/tessellate/ai/board_acts.py:285 |
+| `run_step` | src/tessellate/ai/board_acts.py:303 |
+| `undo_for` | src/tessellate/ai/board_acts.py:287 |
 | `words` | src/tessellate/ai/board_acts.py:23 |
 
 ### src/tessellate/ai/budget.py (6)
@@ -24162,13 +24163,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `LanguageToolBody` | src/tessellate/api/routes_spelling.py:36 |
-| `SpellCheckBody` | src/tessellate/api/routes_spelling.py:41 |
-| `get_own_words` | src/tessellate/api/routes_spelling.py:32 |
-| `get_spell_pack_file` | src/tessellate/api/routes_spelling.py:90 |
-| `get_spell_packs` | src/tessellate/api/routes_spelling.py:83 |
-| `post_languagetool` | src/tessellate/api/routes_spelling.py:67 |
-| `post_spelling_check` | src/tessellate/api/routes_spelling.py:47 |
+| `LanguageToolBody` | src/tessellate/api/routes_spelling.py:38 |
+| `SpellCheckBody` | src/tessellate/api/routes_spelling.py:48 |
+| `get_own_words` | src/tessellate/api/routes_spelling.py:34 |
+| `get_spell_pack_file` | src/tessellate/api/routes_spelling.py:98 |
+| `get_spell_packs` | src/tessellate/api/routes_spelling.py:91 |
+| `post_languagetool` | src/tessellate/api/routes_spelling.py:75 |
+| `post_spelling_check` | src/tessellate/api/routes_spelling.py:54 |
 
 ### src/tessellate/api/routes_statistics.py (3)
 
@@ -28855,7 +28856,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23212)
+## Tests (23219)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29071,6 +29072,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board2_1028.py | 9 |
 | tests/test_board_acts.py | 6 |
 | tests/test_board_acts_1114.py | 18 |
+| tests/test_board_acts_guard_review.py | 6 |
 | tests/test_board_affinity.py | 8 |
 | tests/test_board_background.py | 8 |
 | tests/test_board_bpmn_icons.py | 3 |
@@ -31358,7 +31360,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_spell_packs_1111.py | 19 |
 | tests/test_spell_second_opinion_1731.py | 8 |
 | tests/test_spellcheck_present.py | 2 |
-| tests/test_spelling_check_route_l259.py | 4 |
+| tests/test_spelling_check_route_l259.py | 5 |
 | tests/test_spelling_dialects.py | 5 |
 | tests/test_spelling_own_words_1731.py | 4 |
 | tests/test_spelling_variants.py | 6 |

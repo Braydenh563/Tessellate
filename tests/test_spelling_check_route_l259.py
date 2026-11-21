@@ -35,3 +35,11 @@ def test_cjk_and_other_languages_are_not_checked(client) -> None:
 def test_repeats_collapse_and_case_is_ignored(client) -> None:
     got = _check(client, ["Zzqxv", "zzqxv", "garden"], "en-US")
     assert got["unknown"] == ["zzqxv"]
+
+
+def test_a_word_longer_than_any_list_word_is_refused(client):
+    """PR 230 review: the item count was capped, an item's length was not."""
+    from tessellate.api.routes_spelling import MAX_WORD
+
+    response = client.post("/spelling/check", json={"words": ["a" * (MAX_WORD + 1)], "lang": "en-GB"})
+    assert response.status_code == 422

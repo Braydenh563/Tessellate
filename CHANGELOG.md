@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat acts: an Undo's drop steps take only a link or a childless map node, never from a private board, and a node's links go with it; a binned note's card is not offered by name; `/spelling/check` caps each word at 64 characters (PR 230 review).
 - CI fixes: the composer lint mirror re-places on window resize (no new ResizeObserver), the no-model line names reminders again, the composer imports cold in 0.075 s (help_chat loads on first help question; was 0.113 s), one assert-with-request rewritten (cap 226 held).
 
 - Chat: the contrast of web-source rows, `.said` text and the act card is at least 5.15 in light and 5.52 in dark (WCAG 4.5 needed), measured over the real background in Playwright, so no token changed; a real DuckDuckGo search is answered with a bot challenge from here (BACKLOG, needs the owner's network) (L164).

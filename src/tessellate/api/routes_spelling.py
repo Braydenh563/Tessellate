@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+from typing import Annotated
+
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -38,9 +40,14 @@ class LanguageToolBody(BaseModel):
     language: str = "en-US"
 
 
+#: The longest word checked: a longer run is not a word a list holds, and the cap keeps one item
+#: from carrying the whole request body (PR 230 review).
+MAX_WORD = 64
+
+
 class SpellCheckBody(BaseModel):
-    words: list[str] = Field(max_length=2000)
-    lang: str = "en"
+    words: list[Annotated[str, Field(max_length=MAX_WORD)]] = Field(max_length=2000)
+    lang: str = Field("en", max_length=35)
 
 
 @router.post("/spelling/check")
@@ -55,12 +62,13 @@ def post_spelling_check(body: SpellCheckBody) -> dict:
     if variant is None:
         return {"checked": False, "variant": None, "unknown": []}
     known = variants.english(variant)
-    seen: list[str] = []
+    #: A dict keeps the first-seen order and answers "seen?" without a scan.
+    seen: dict[str, None] = {}
     for word in body.words:
         low = word.lower()
-        if low and low not in known and low not in seen:
-            seen.append(low)
-    return {"checked": True, "variant": variant, "unknown": seen}
+        if low and low not in known:
+            seen.setdefault(low)
+    return {"checked": True, "variant": variant, "unknown": list(seen)}
 
 
 @router.post("/grammar/languagetool")
