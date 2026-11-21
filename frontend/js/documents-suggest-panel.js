@@ -462,9 +462,22 @@
     document.body.appendChild(el);
     return el;
   }
+  //: **Home in a hidden holder of its own** (L342): a popup taken out of `.card.doc-main` or put
+  //: back restyled the card's whole subtree through its children's sibling rules (310 elements,
+  //: 19.5 ms at 4x CPU, on the key that opened the word list after a pause, typegate.js). The
+  //: first return puts a `hidden` div in the popup's slot, off the keys; later moves come and go
+  //: inside it and leave the card's children as they are. Closed popups are hidden anyway.
+  const docLiftNests = new WeakSet();
   function docReturnFromViewport(el) {
     const home = el && docLiftedHome.get(el);
     if (!home || !home.parentNode) return;
+    if (!docLiftNests.has(home.parentNode)) {
+      const nest = document.createElement("div");
+      nest.hidden = true;
+      docLiftNests.add(nest);
+      home.replaceWith(nest);
+      nest.append(home);
+    }
     home.replaceWith(el);
     docLiftedHome.delete(el);
   }

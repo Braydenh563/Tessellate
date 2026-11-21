@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8998, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11052, test files 2881, tests 23099, plan headings 693, app scripts 29, boot scripts 38, script files 382.
+Counts: frontend functions 8998, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11052, test files 2881, tests 23100, plan headings 693, app scripts 29, boot scripts 38, script files 382.
 
 ## Frontend functions (8998)
 
@@ -5123,19 +5123,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docLiftToViewport` | frontend/js/documents-suggest-panel.js:457 |
 | `docMatchCase` | frontend/js/documents-suggest-panel.js:248 |
 | `docNearestWords` | frontend/js/documents-suggest-panel.js:261 |
-| `docPlaceFixed` | frontend/js/documents-suggest-panel.js:479 |
+| `docPlaceFixed` | frontend/js/documents-suggest-panel.js:492 |
 | `docProseKey` | frontend/js/documents-suggest-panel.js:175 |
-| `docReturnFromViewport` | frontend/js/documents-suggest-panel.js:465 |
-| `docScheduleSuggestFollow` | frontend/js/documents-suggest-panel.js:594 |
+| `docReturnFromViewport` | frontend/js/documents-suggest-panel.js:471 |
+| `docScheduleSuggestFollow` | frontend/js/documents-suggest-panel.js:607 |
 | `docSpellingVariant` | frontend/js/documents-suggest-panel.js:81 |
 | `docSuggestAlternatives` | frontend/js/documents-suggest-panel.js:292 |
 | `docSuggestAnswers` | frontend/js/documents-suggest-panel.js:413 |
-| `docSuggestBand` | frontend/js/documents-suggest-panel.js:507 |
-| `docSuggestFollowAnchor` | frontend/js/documents-suggest-panel.js:573 |
+| `docSuggestBand` | frontend/js/documents-suggest-panel.js:520 |
+| `docSuggestFollowAnchor` | frontend/js/documents-suggest-panel.js:586 |
 | `docTranslatePassage` | frontend/js/documents-suggest-panel.js:421 |
 | `docVariantLookup` | frontend/js/documents-suggest-panel.js:88 |
 | `openDocSuggest` | frontend/js/documents-suggest-panel.js:417 |
-| `placeDocSuggest` | frontend/js/documents-suggest-panel.js:519 |
+| `placeDocSuggest` | frontend/js/documents-suggest-panel.js:532 |
 | `renderDocTools` | frontend/js/documents-suggest-panel.js:27 |
 
 ### frontend/js/documents-suggest.js (6)
@@ -29212,7 +29212,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23099)
+## Tests (23100)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30207,7 +30207,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_type_fields.py | 2 |
 | tests/test_doc_type_picker.py | 6 |
 | tests/test_doc_typing_dx1.py | 15 |
-| tests/test_doc_typing_l342.py | 13 |
+| tests/test_doc_typing_l342.py | 14 |
 | tests/test_doc_video.py | 7 |
 | tests/test_doc_view_held.py | 6 |
 | tests/test_doc_writing_streak.py | 6 |

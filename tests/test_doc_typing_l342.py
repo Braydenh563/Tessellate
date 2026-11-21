@@ -497,3 +497,44 @@ const docSpell = { languageTool: async (lints) => { merged += 1; return lints.co
     assert got["askedAgain"], got
     assert got["paused"] == {"merged": 1, "n": 2, "partial": False}, got
     assert got["answered"], got
+
+
+@needs_node
+def test_a_lifted_popup_comes_and_goes_inside_a_hidden_holder_not_among_the_cards_children():
+    """Taken out of `.card.doc-main` or put back, the word list restyled the card's subtree
+    (310 elements, 19.5 ms at 4x CPU on the key that opened it after a pause). After its first
+    return it lives in a hidden holder, so later moves leave the card's children alone."""
+    panel = (JS / "documents-suggest-panel.js").read_text(encoding="utf-8")
+    start = panel.index("  const docLiftedHome = new WeakMap();")
+    end = panel.index("    docLiftedHome.delete(el);\n  }\n", start) + len("    docLiftedHome.delete(el);\n  }\n")
+    script = """
+let cardWrites = 0;
+class N {
+  constructor(tag) { this.tag = tag; this.kids = []; this.parentNode = null; this.hidden = false; this.id = tag; }
+  get parentElement() { return this.parentNode; }
+  _put(i, ...ns) { for (const n of ns) { if (n.parentNode) n.parentNode._drop(n); n.parentNode = this; } this.kids.splice(i, 0, ...ns); if (this === card) cardWrites += 1; }
+  _drop(n) { this.kids.splice(this.kids.indexOf(n), 1); n.parentNode = null; if (this === card) cardWrites += 1; }
+  append(...ns) { this._put(this.kids.length, ...ns); }
+  appendChild(n) { this.append(n); return n; }
+  replaceWith(n) { const p = this.parentNode, i = p.kids.indexOf(this); p._drop(this); p._put(i, n); }
+}
+const document = { createComment: () => new N("#comment"), createElement: (t) => new N(t), body: new N("body") };
+const card = new N("section"), list = new N("ul"), before = new N("p"), after = new N("p");
+card.append(before, list, after);
+""" + panel[start:end] + """
+const out = {};
+docLiftToViewport(list);
+docReturnFromViewport(list);
+out.first = cardWrites;
+const nest = list.parentNode;
+out.nest = { hidden: nest.hidden, at: card.kids.indexOf(nest), kids: card.kids.length };
+cardWrites = 0;
+for (let i = 0; i < 3; i += 1) { docLiftToViewport(list); out.lifted = list.parentNode === document.body; docReturnFromViewport(list); }
+out.later = cardWrites;
+out.home = list.parentNode === nest && nest.kids.length === 1;
+console.log(JSON.stringify(out));
+"""
+    got = _node(script)
+    assert got["nest"] == {"hidden": True, "at": 1, "kids": 3}, got
+    assert got["lifted"] and got["home"], got
+    assert got["later"] == 0 and got["first"] > 0, got
