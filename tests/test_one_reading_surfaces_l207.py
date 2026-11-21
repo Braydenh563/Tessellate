@@ -22,7 +22,7 @@ def _text(rel: str) -> str:
 
 
 def test_each_surface_reaches_the_reading():
-    assert "reading.read(" in _text("src/tessellate/api/routes_chat.py")
+    assert "reading.read(" in _text("src/tessellate/api/chat_service.py")
     assert '"/read" + query' in _text("frontend/js/quickadd.js")
     assert "`/read/act?q=" in _text("frontend/js/app-palette.js")
     assert "reading.read(" in _text("src/tessellate/api/routes_read.py")

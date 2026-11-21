@@ -457,7 +457,7 @@ def test_an_answer_no_model_wrote_says_so_in_its_support_notice() -> None:
     """INBOX 724: "this message needs to be altered as a model wasnt used"."""
     from pathlib import Path
 
-    routes = Path("src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
+    routes = Path("src/tessellate/api/chat_service.py").read_text(encoding="utf-8")
     #: The mark moved into `grounding.composed_support` (INBOX 1706), which the
     #: live and the saved turn both call, so the route must call it.
     grounding = Path("src/tessellate/ai/grounding.py").read_text(encoding="utf-8")

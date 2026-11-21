@@ -150,7 +150,7 @@ def test_ollama_client_forwards_a_message_not_a_bare_event():
 
     agent_src = agent_text()
     assert '"message": tools_unsupported_message(agent_model, getattr(exc, "declared", True))' in agent_src
-    routes_src = _read("src/tessellate/api/routes_chat.py")
+    routes_src = _read("src/tessellate/api/chat_service.py")
     # The branch that used to be `pass` must now hand the enriched event back
     # (`_choose_events`) and the stream must yield it before the plain answer.
     assert "return events, first" in routes_src
