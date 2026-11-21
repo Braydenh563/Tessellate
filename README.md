@@ -511,6 +511,7 @@ share of each against your own notebook.
 | --- | --- |
 | [INSTALL](docs/INSTALL.md) | The Windows installer, the launcher, manual setup, updating and uninstalling |
 | [DOCKER](docs/DOCKER.md) | Running Tessellate in Docker: compose, volumes, ports, a model server on the host |
+| [VS Code extension](editors/vscode/README.md) | Save a selection, search notes and open one read only from VS Code |
 | [MCP](docs/MCP.md) | The MCP server: tools, resources, client config, security |
 | [MODELS](docs/MODELS.md) | Which model suits your machine, and using a server other than Ollama |
 | [PRIVACY](docs/PRIVACY.md) | What touches the network, private-note encryption, sessions |
