@@ -551,8 +551,8 @@ def _settle_filed_entry(session, entry, entry_id: int, late, category, confidenc
 
 
 def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
-    """Embed the settled note, look for a near duplicate, keep tag
-    suggestions and run Tidy's automatic reviews."""
+    """Embed the settled note, look for a near duplicate and run Tidy's
+    automatic reviews (its tag suggestions are kept before it settles)."""
     deps.store_quietly(session, entry)
     duplicate = _find_near_duplicate(session, entry)
     if duplicate is not None:
@@ -560,12 +560,6 @@ def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
     session.commit()
     if run is not None:
         run.say("Saved its search vector and checked for a near duplicate.")
-    try:
-        _keep_suggestions(session, entry, filed_by)
-        session.commit()
-    except Exception:
-        logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
-        session.rollback()
     # Tidy's reviews a person switched on (INBOX 691, off by
     # default): after filing, as `system:tidy`, each run undoable
     # from Tidy's history. Never raises.
@@ -650,6 +644,15 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 if (getattr(entry, "filing_state", "") or "") != "pending":
                     return
                 run = _settle_filed_entry(session, entry, entry_id, late, category, confidence, filed_by)
+                # **Suggestions in the same commit as the settled state.**
+                # Kept after it, a reader polling `/entries/{id}/filing`
+                # saw the note settled and read `suggested_tags` as []
+                # (review of PR 240). They need the notebook's tags, not
+                # this note's vector, so they need not wait for the embed.
+                try:
+                    _keep_suggestions(session, entry, filed_by)
+                except Exception:
+                    logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
                 # **Settled first, embedded after.** The vector and the
                 # near-duplicate search used to land before `filing_state`
                 # did, so the card said "Filing…" for as long as the
