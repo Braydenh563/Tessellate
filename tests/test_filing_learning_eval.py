@@ -8,15 +8,16 @@ refile corrections (the person putting each in its labelled category, with the n
 excerpt); accuracy is read before and after on the 47 notes that were not taught, so a correction
 can only help by generalising, never by remembering its own note.
 
-After L-world-class-650 (a taught topic weighs by how specific it is to the category, among the
-corrections and every note's own words): 40 of 47 (85%) after, minus 6 points. Only 4 held-out
-notes were missed before, so plus 10 (5 notes) is out of reach on this set whatever the loop does.
-Measured first, 2026-11-21, fixed clock not needed (no dates): held-out accuracy 43 of 47 (91%) before,
-37 of 47 (79%) after: minus 12 points. The corrections teach the lexicon that topics shared by
-several categories belong to the category taught most ("Ideas"), which takes notes from "Uni"
-out of the confident band. The gate's bar is plus 10, so the gate test below is a strict xfail:
-it flips to a pass, and the marker must go, when the loop gains what it promises. A real model
-(embedding filing, `janitor._semantic_category`) was not run: this is the lexical filer only.
+Measured 2026-11-21: held-out accuracy 43 of 47 (91%) before and after, so corrections cost nothing
+(they had cost 3 notes, 91% to 85%). Cause: a single refile from nowhere voted outright for its
+category and added its topic's whole weight to that category's profile, even for topics the note
+does not say and topics another category's notes already own, so Ideas (taught 5) outranked Games on
+"Game night ... flatmates" and thinned its own notes' similarity on others. Now a vote needs a firm
+correction (a move out of a category, a merge, three refiles) and a taught topic joins the
+profile only when the note says it, never above the category's own strongest topic.
+Plus 10 (5 notes) stays out of reach lexically: only 4 held-out notes are missed before, and they
+read as Uni ("semester", "exams") or have no pack topic, so no taught topic can move them. The gate
+test below stays a strict xfail for the real-model (embedding) run, BACKLOG L-world-class-28.
 """
 
 from __future__ import annotations
@@ -65,9 +66,10 @@ def test_twenty_corrections_are_measured_on_notes_they_did_not_teach(session):
     print(f"\nFILING EVAL: {before}/{held} ({round(100 * before / held)}%) -> {after}/{held} ({round(100 * after / held)}%)")
     assert held == len(_tag_eval.NOTES) - TAUGHT
     assert before == 43, "the baseline moved: re-measure before trusting the gate below"
+    assert after >= before, "corrections must never lower accuracy"
 
 
-@pytest.mark.xfail(strict=True, reason="measured minus 12 points (91% to 79%) on 2026-11-21; LEDGER L-world-class-87")
+@pytest.mark.xfail(strict=True, reason="43/47 to 43/47 on 2026-11-21: +10 is unreachable lexically; real-model run is BACKLOG L-world-class-28")
 def test_the_loop_gains_ten_points_after_twenty_corrections(session):
     held, before, after = _gain(session)
     assert 100 * (after - before) / held >= GATE_POINTS

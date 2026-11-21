@@ -686,7 +686,10 @@ def _taught_share(sent: dict[str, int], name: str, topic: str, profiles: dict) -
 
 def _taught_weight(sent: dict[str, int], name: str, topic: str, profiles: dict) -> float:
     """What one topic's teaching adds to a category's profile."""
-    return LEXICON_WEIGHT * min(sent[name], LEXICON_MAX) * _taught_share(sent, name, topic, profiles)
+    weight = LEXICON_WEIGHT * min(sent[name], LEXICON_MAX) * _taught_share(sent, name, topic, profiles)
+    #: A teaching never outweighs what the category's own notes say, or a few
+    #: corrections drown the profile and move its other notes away.
+    return min(weight, max(profiles.get(name, {}).values(), default=weight))
 
 
 def _taught_topics(name: str, profile: dict, read: _NoteRead) -> dict[str, float]:
@@ -695,11 +698,15 @@ def _taught_topics(name: str, profile: dict, read: _NoteRead) -> dict[str, float
     taught = {}
     for topic, sent in read.lexicon.items():
         if sent.get(name):
-            profile[topic] = profile.get(topic, 0.0) + _taught_weight(sent, name, topic, read.profiles)
+            #: A teaching about a topic the note does not say adds nothing to the
+            #: comparison: it would only swell the profile and thin every note
+            #: the category already holds (corrections lowered accuracy).
+            if topic in read.note_topics:
+                profile[topic] = max(profile.get(topic, 0.0), _taught_weight(sent, name, topic, read.profiles))
             #: The outright vote only where the person's word for this
             #: topic is this category more than any other, and the note
             #: is really about it (a topic the pack accepts for it).
-            if topic in read.strong and sent[name] >= max(sent.values()):
+            if topic in read.strong and sent[name] >= max(sent.values()) and sent[name] >= LEXICON_MAX:
                 taught[topic] = _taught_share(sent, name, topic, read.profiles)
     return taught
 
