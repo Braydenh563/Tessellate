@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 57 | 8 | 0 | 0 | 65 |
+| world-class | 0 | 58 | 7 | 0 | 0 | 65 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 446 | 80 | 2 | 112 | 898 |
+| all | 372 | 447 | 79 | 2 | 112 | 898 |
 
 ## graph
 
@@ -493,7 +493,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
-- [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L691** `chat` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
@@ -529,6 +528,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-710** `world-class` open, M: Full depth-4 reach crawl in light and dark after the 673 palette rows. From reach.js depth-4 crawl. Evidence: scratchpad/ui-sweeps/reach.js; depth 3 timed out at 40 min (L-world-class-673)
 - [ ] **L-world-class-760** `world-class` open, L: Lazy-load the Settings markup out of index.html. From L638 (FE audit leftover, lazy Settings markup). Evidence: frontend/index.html:10251 settings-modal onward is about 369 KB of the 1.23 MB page, parsed at boot; 49 tests name settings-modal; its text-of-record (FE-10) is gone from the repo, so this is built only if the owner asks (L639 splits index.html)
 - [ ] **L-world-class-790** `world-class` open, L: Move the rest of the route modules' queries into src/tessellate/repo/ and lower ROUTE_QUERIES_CAP with each. From L625. Evidence: tests/test_repo_boundaries.py ROUTE_QUERIES_CAP 215; routes_graph.py 32, routes_spaces.py 21, routes_library.py 18, routes_board_library.py 13
+- [ ] **L-world-class-791** `world-class` open, M: Break the import_module cycle groups (two left, the largest 14 modules) by inverting edges with a registry. From L688 (ARCH-10). Evidence: tests/test_import_module_cycles.py MAX_LARGEST_GROUP 14, MAX_GROUPS 2; the 14 run through core.deps, entry.manager, search.engine, ai.provider
 
 ## general
 
