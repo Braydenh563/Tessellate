@@ -16,7 +16,7 @@ from datetime import date
 
 from tessellate.ai import composer_frame, factgraph, composer_versus, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai import recognise_questions
-from tessellate.ai.composer_answer import _Answer
+from tessellate.ai.composer_answer import _RETRY, _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
 from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _list_lead, _list_sentence, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
 from tessellate.ai.composer_read import NoteView, Sentence, _NUMBER_CUE, _cue
@@ -42,7 +42,7 @@ _OPENERS = (
 #: sentence holds one (`_OPENER_NEEDS`); otherwise the plain ones are.
 _OPENERS_BY_SHAPE = {
     "count": ("", "open_figure", "open_notes"),
-    "when": ("", "open_date", "open_notes"),
+    "when": ("", "open_date"),
     "explain": ("", "open_put", "open_notes"),
     "where": ("", "open_where", "open_notes"),
 }
@@ -94,7 +94,10 @@ def _opener_options(out: _Answer, s: Sentence, shape: str, view: NoteView) -> tu
     needs = _OPENER_NEEDS.get(shape)
     if needs is not None and not needs(s.text):
         return _PLAIN_OPENERS
-    return _OPENERS_BY_SHAPE.get(shape, _PLAIN_OPENERS)
+    options = _OPENERS_BY_SHAPE.get(shape, _PLAIN_OPENERS)
+    #: Ask again has one more way in, so a two-option shape ("when") does not land back on the first
+    #: answer's words (L-chat-191); the first ask keeps its pinned options (test_composer_body_paths).
+    return options + ("open_notes",) if _RETRY.get() and "open_notes" not in options else options
 
 
 def _fresh_openers(out: _Answer, options: tuple[str, ...]) -> list[str] | tuple[str, ...]:
