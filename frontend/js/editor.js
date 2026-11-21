@@ -1272,12 +1272,21 @@ function editorFinishFence(textarea, fence) {
 // there is nothing else it could plausibly mean.
 //: The caret's line only (L-documents-26): a token never spans a line break, and
 //: slicing a 130,000-character document up to the caret, twice a key, cost about
-//: 2.4 ms a key at 4x CPU. `start` stays an offset into the whole text.
+//: 2.4 ms a key at 4x CPU. The engine's surface hands over the line itself, so a
+//: key does not join the whole text either. `start` stays an offset into the text.
 function editorTokenAt(textarea, trigger) {
-  const text = textarea.value;
   const caret = textarea.selectionStart;
-  const lineStart = caret > 0 ? text.lastIndexOf("\n", caret - 1) + 1 : 0;
-  const upto = text.slice(lineStart, caret);
+  const doc = textarea.view?.state?.doc;
+  let lineStart, upto;
+  if (doc) {
+    const line = doc.lineAt(caret);
+    lineStart = line.from;
+    upto = line.text.slice(0, caret - line.from);
+  } else {
+    const text = textarea.value;
+    lineStart = caret > 0 ? text.lastIndexOf("\n", caret - 1) + 1 : 0;
+    upto = text.slice(lineStart, caret);
+  }
   const open = upto.lastIndexOf(trigger);
   if (open === -1) return null;
   const fragment = upto.slice(open + trigger.length);

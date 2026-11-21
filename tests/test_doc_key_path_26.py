@@ -143,6 +143,8 @@ def test_the_token_scan_reads_only_the_carets_line():
     body = _function(EDITOR, "function editorTokenAt(", "")
     assert "textarea.value.slice(0, textarea.selectionStart)" not in body
     assert 'lastIndexOf("\\n", caret - 1) + 1' in body
+    # The engine's surface reads the caret's line from the document, never the joined text.
+    assert "doc.lineAt(caret)" in body and body.index("doc.lineAt(caret)") < body.index("textarea.value")
 
 
 @needs_node
@@ -164,12 +166,20 @@ for (let i = 0; i < 3000; i += 1) {{
   let value = "";
   const n = 1 + rnd(12);
   for (let k = 0; k < n; k += 1) value += bits[rnd(bits.length)];
-  const textarea = {{ value, selectionStart: rnd(3) === 0 ? rnd(value.length + 1) : value.length }};
+  const selectionStart = rnd(3) === 0 ? rnd(value.length + 1) : value.length;
+  const textarea = {{ value, selectionStart }};
+  //: The engine's surface: its value would join the text, so reading it is an error.
+  const lineAt = (at) => {{
+    const from = at > 0 ? value.lastIndexOf("\\n", at - 1) + 1 : 0;
+    const end = value.indexOf("\\n", at);
+    return {{ from, text: value.slice(from, end === -1 ? value.length : end) }};
+  }};
+  const engine = {{ get value() {{ throw new Error("joined the text"); }}, selectionStart, view: {{ state: {{ doc: {{ lineAt }} }} }} }};
   for (const trigger of ["/", "[[", "```"]) {{
     checks += 1;
-    const a = JSON.stringify(editorTokenAt(textarea, trigger));
     const b = JSON.stringify(refTokenAt(textarea, trigger));
-    if (a !== b) wrong += 1;
+    if (JSON.stringify(editorTokenAt(textarea, trigger)) !== b) wrong += 1;
+    if (JSON.stringify(editorTokenAt(engine, trigger)) !== b) wrong += 1;
     if (b !== "null") found += 1;
   }}
 }}
