@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard (decision 51) verified already met: a fresh notebook shows 11 of 29 widgets and each holds 1 to 3 controls (1440x900); the 18 others, and the display-only stats, streak and pace, start behind Customise; a test now holds it (L-world-class-121).
+
 - First run asks less before the dashboard: only the welcome and the recovery-key offer; the console, second-backup-folder and update questions wait for the next start and are asked once as before (fresh desktop profile, 3 questions before, 0 after; the sample notebook was already built and is offered from the first steps; L-world-class-118).
 
 - Settings, Preferences: the two switches "New notes are private" and "Mute all but reminders" now fill from the saved preferences; their readers took an argument `renderPrefs` never passed, so every opening threw and skipped the fills after them (L-world-class, found by a sweep).
