@@ -309,6 +309,9 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     //: tour.js is a lazy bundle: load it before reading what it defines.
     const doors = await page.evaluate(async () => {
       await ensureModule("tour");
+      //: Settings' body is a lazy surface (settings-body.js): the replay rows
+      //: and About's button exist only once it is built, as opening it does.
+      surfaceBuild("settings");
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
       const about = document.getElementById("about-take-tour");
