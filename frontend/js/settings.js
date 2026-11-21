@@ -352,7 +352,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: Local, not a top-level function: the shared scope only shrinks (test_global_scope_ratchet).
   const aboutBuildLine = (h) => {
     const commit = h.source_commit ? `Build ${h.source_commit.slice(0, 10)}` : "Build not stamped";
-    const since = new Date(h.started_at).toLocaleString();
+    const since = whenText(h.started_at);
     const folder = h.data_dir_writable ? "the notebook folder takes writes" : "the notebook folder is read-only, so nothing new can be saved";
     return `${commit}, running since ${since}, notebook ${h.data_dir_id}; ${folder}.`;
   };
