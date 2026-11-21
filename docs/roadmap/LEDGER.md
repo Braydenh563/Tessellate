@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 94 | 25 | 0 | 0 | 119 |
+| world-class | 0 | 94 | 24 | 0 | 0 | 118 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 484 | 96 | 2 | 111 | 952 |
+| all | 372 | 484 | 95 | 2 | 111 | 951 |
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -510,7 +510,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
-- [ ] **L699** `world-class` partly, L: Brief 62: no src/tessellate/data, no tests/test_import_time.py; question_noise.py and composer_tables.py hold data inline. From ledger-1112 P9.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
 - [ ] **L701** `world-class` partly, L: 380ms style-and-layout first frame (13k nodes); dashboard.js widget fill callbacks 98-119ms not fixed. From ledger-1112 I8.
 - [ ] **L810** `world-class` open, M: Decide FIT42: ?preview=300 adoption awaiting server-side note search. From OPEN.md:4321. Evidence: Waits on Q9 (server-side note search) decision. Owner decided 2026-11-12: Server search first (Add a local search route over the notebook database, switch the filter box to it, then move the other readers onto previews). Build: routes_entries.py: GET /entries?q= local text search; notes-list.js filter calls it; then migrate allEntries content readers in batches; measure on a 5,000-note notebook.

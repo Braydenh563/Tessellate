@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Word tables as data files (L699, Brief 62): the question-noise tables (slang, small talk, example questions) and the composer's added phrases, synonym groups and word lists moved out of `question_noise.py` and `composer_tables.py` into JSON under `src/tessellate/data`, read at first use (noise tables) or once at import (composer tables) and packaged by `package-data` and both PyInstaller specs; the two modules shrank from 283 KB to 75 KB of source with identical tables, and `tests/test_import_time.py` holds the import to a measured ceiling.
 - Digest on one clock: the last-7-days cutoff reads the user's clock like the rest of the digest, so a fixed test clock (or a reported timezone) no longer empties it (CI 397b3e33).
 - First launch names the models (L671): the once-only line that says the chat model was chosen and why now also names the background and picture models it resolved to, with Change to Settings, Models; shown once per browser (`sayChatModelChosen`, status.js). The Guide's model topic says so. Test: `tests/test_models_api.py`.
 - Word files in CI (L664): nothing to install. The Word writer moved to the browser in Brief 42 and the python-docx extra is retired, so pictures are covered by the vendored-writer check in `tests/test_word_files_b42.py` (ImageRun), the zip bundle test `tests/test_docexport_bundle.py` and the Chromium sweep `scratchpad/ui-sweeps/docs42d.js` (not run in CI).
