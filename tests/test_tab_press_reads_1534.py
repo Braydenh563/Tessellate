@@ -76,7 +76,7 @@ def test_a_dock_with_nothing_folded_is_not_written_to_before_it_is_read():
 
 def test_the_notes_strip_token_is_written_after_the_frame_not_in_the_observers_report():
     body = _body(frontend_text("phone-shell.js"), "function initNotesSubtabHeightToken(")
-    assert 'setTimeout(() => page.style.setProperty("--notes-sticky-top", h))' in body
+    assert "setTimeout(() => sheet.replaceSync(" in body
 
 
 def test_a_sheet_or_the_palette_takes_focus_after_the_first_paint():
