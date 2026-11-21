@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companions made from your own figure (L185): walks, runs after a crouch, a window climb, sits, lying down and a slow 24-picture breath (3.65 s) all draw only pictures the page captures, checked over 6 seeds of far legs and 300 s sweeps at three hours; what the app's others lack (perch pictures, in-app spells) is in the backlog.
 - Companion inspections (L177): the desktop companion peers down over the edge and corner of a window it sits on four times as often as before (0.9% to 3.6% of its picks on a top), and the clock trip, the follow to the cursor and the side climb are pinned by tests.
 - Desk companions that are not Atlas (L151): every row of the right-click Companion picker (you from your name, the chat's persona, your own character, each saved companion) can be chosen and drawn on the desktop; the page captures all 48 frames the overlay needs (54 with the wave swing) from the app's own figure in about 19 s, pinned by a test.
 - Companion landings (L145): thrown while it holds a cup, rod, journal, can, bowl, wand, dumbbell or book, the companion drops it and it lies tipped over at its feet for 2.4 s once it is up, then is put away; on the desktop and in the app (both measured: the prop rests on the feet line within 3 px).
