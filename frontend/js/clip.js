@@ -20,6 +20,24 @@
   const clip = { url: "", title: "", selection: "", html: "" };
   let saved = false;
 
+  //: This window loads no app scripts, so the app's word helpers are not
+  //: here: calling them threw, and the preview never drew.
+  function wordCount(text) {
+    return (String(text).match(/\S+/g) || []).length;
+  }
+  function nounCount(n, one, many = `${one}s`) {
+    return `${n} ${n === 1 ? one : many}`;
+  }
+
+  //: The page's main text for the preview, read inertly (a parsed document
+  //: runs no script and loads nothing) and cut to a short excerpt.
+  function pageText(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    doc.querySelectorAll("script, style, nav, footer, header, aside, noscript").forEach((node) => node.remove());
+    const root = doc.querySelector("article, main") || doc.body;
+    return (root?.textContent || "").replace(/\s+/g, " ").trim();
+  }
+
   //: What the app saved in this browser: the session token, and the space
   //: open there (`activeSpaceId`, spaces-find.js), so a capture lands where
   //: the person is working rather than in the default space.
@@ -48,6 +66,9 @@
       : clip.html
         ? "The page's main text, without its menus and footer."
         : "The address and title only (this page did not send its text).";
+    const kept = clip.selection || (clip.html ? pageText(clip.html) : "");
+    $("clip-excerpt").textContent = kept ? (kept.length > 360 ? `${kept.slice(0, 360)}…` : kept) : "Nothing but the address and title.";
+    $("clip-count").textContent = kept ? `${nounCount(wordCount(kept), "word")} in all.` : "";
     $("clip-save").disabled = !clip.url || saved;
     status(token() ? "Check the title, then save." : "Sign in to Tessellate in this browser first, then clip again.", !token());
     $("clip-open").classList.toggle("hidden", Boolean(token()));

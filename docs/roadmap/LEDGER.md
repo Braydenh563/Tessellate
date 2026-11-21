@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 88 | 18 | 0 | 0 | 106 |
+| world-class | 0 | 88 | 17 | 0 | 0 | 105 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 478 | 89 | 2 | 111 | 939 |
+| all | 372 | 478 | 88 | 2 | 111 | 938 |
 
 ## graph
 
@@ -505,7 +505,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L687** `world-class` partly, L: MCP: add HTTP transport and restricted token/URL setup, drop embedder load at startup, decide trust model. From OPEN.md:723; OPEN.md:1007; INBOX.md:904 B52. Evidence: Resources and prompts built (mcp_server.py:28-30,173); embedder load and stdio-only not confirmed changed
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
-- [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.

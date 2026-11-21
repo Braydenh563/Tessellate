@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Web clipper redesign (LEDGER L692, INBOX B55): Settings, Import & export says it in three numbered steps with a Try it on a sample button, the Web panel menu gains Clip a page from your browser (the palette already had one), and the clip window shows an excerpt and word count of what it will keep. Found on the way: clip.html called the app's `wordCount` and `nounCount`, which that page never loads, so the preview threw before it drew; it has its own now. Measured at 360 and 1280 in both themes: no horizontal scroll, steps 234 and 694 px wide, Save 38 px, no page errors; a posted page showed "9 words in all" with its menu and footer left out (tests/test_web_clipper_redesign_l692.py).
 - Two lints caught up with moved code: the small name mark's size rule is read in `nameMarkGenerated`, and the Library's first-document warm (static files into the HTTP cache) is listed with its reason in the bare-fetch lint.
 - Message wording lint: the "file changed while open" detail for a download write-back is checked at its source in core/sealed_files.py (CI de422974).
 - Capture outbox: the staged-picture strip stops at the next bracket (linear on a wall of brackets) and the held reminder is still stripped from the queued note (CI de422974).
