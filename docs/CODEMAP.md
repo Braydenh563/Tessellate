@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 10971, test files 2837, tests 22815, plan headings 694, app scripts 29, boot scripts 38, script files 348.
+Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 10971, test files 2838, tests 22816, plan headings 694, app scripts 29, boot scripts 38, script files 348.
 
 ## Frontend functions (8844)
 
@@ -28784,7 +28784,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22815)
+## Tests (22816)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30158,6 +30158,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ide_close_keys_export.py | 1 |
 | tests/test_ide_minimap_pref_after_bundle_1111.py | 2 |
 | tests/test_ide_shell_b71.py | 16 |
+| tests/test_ide_shell_sweep.py | 1 |
 | tests/test_idle_restyle_1101.py | 8 |
 | tests/test_idle_style_1103.py | 3 |
 | tests/test_image_layout.py | 10 |
