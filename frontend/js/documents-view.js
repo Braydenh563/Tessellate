@@ -343,16 +343,6 @@ function docCmExtensions(CM) {
   docCmParts.code = new CM.state.Compartment();
   docCmParts.placeholder = new CM.state.Compartment();
   docCmParts.select = new CM.state.Compartment();
-  //: Drawn only while the browser cannot draw it (L342): several ranges, or a
-  //: selection kept while the focus is elsewhere (the find bar's match).
-  //: Otherwise the native caret and selection, in the same colours.
-  const drawn = CM.view.drawSelection();
-  const drawWanted = (sel, focused) => sel.ranges.length > 1 || (!focused && !sel.main.empty);
-  let drawFocused = false;
-  const drawSwap = (state, sel, focused) => {
-    const want = drawWanted(sel, focused);
-    return want === (docCmParts.select.get(state) === drawn) ? null : docCmParts.select.reconfigure(want ? drawn : []);
-  };
   if (!docFindingsEffect) docFindingsEffect = CM.state.StateEffect.define();
   return [
     //: First, so its gutter is the leftmost: the error mark sits outside the
@@ -385,16 +375,7 @@ function docCmExtensions(CM) {
     docCalloutFold(CM),
     CM.view.highlightSpecialChars(),
     CM.commands.history(),
-    docCmParts.select.of([]),
-    CM.state.EditorState.transactionExtender.of((tr) => {
-      if (!tr.selection) return null;
-      const effect = drawSwap(tr.startState, tr.newSelection, drawFocused);
-      return effect ? { effects: effect } : null;
-    }),
-    CM.view.EditorView.focusChangeEffect.of((state, focusing) => {
-      drawFocused = focusing;
-      return drawSwap(state, state.selection, focusing);
-    }),
+    ...docCmParts.drawSelectionWhenNeeded(CM, docCmParts.select),
     CM.view.dropCursor(),
     CM.state.EditorState.allowMultipleSelections.of(true),
     CM.language.indentOnInput(),

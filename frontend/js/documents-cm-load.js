@@ -99,6 +99,31 @@
     placeholder: null,
     //: `drawSelection`, held only for several ranges or an unfocused selection (L342).
     select: null,
+    //: Drawn only while the browser cannot draw it (L342): several ranges, or a
+    //: selection kept while the focus is elsewhere (the find bar's match).
+    //: Otherwise the native caret and selection, in the same colours. `part` is
+    //: the view's own compartment: the document's, a note box's, the split view's.
+    drawSelectionWhenNeeded(CM, part) {
+      const drawn = CM.view.drawSelection();
+      const drawWanted = (sel, focused) => sel.ranges.length > 1 || (!focused && !sel.main.empty);
+      let drawFocused = false;
+      const drawSwap = (state, sel, focused) => {
+        const want = drawWanted(sel, focused);
+        return want === (part.get(state) === drawn) ? null : part.reconfigure(want ? drawn : []);
+      };
+      return [
+        part.of([]),
+        CM.state.EditorState.transactionExtender.of((tr) => {
+          if (!tr.selection) return null;
+          const effect = drawSwap(tr.startState, tr.newSelection, drawFocused);
+          return effect ? { effects: effect } : null;
+        }),
+        CM.view.EditorView.focusChangeEffect.of((state, focusing) => {
+          drawFocused = focusing;
+          return drawSwap(state, state.selection, focusing);
+        }),
+      ];
+    },
     //: **PHP is its own file, fetched on the first .php open** (L-documents-63): the grammar is 28 KB gzipped and
     //: only this one file type wants it, so `php.min.js` extends the bundle's `CM6` the way `vim.min.js` does
     //: (called from `docCmViewLanguage`). Until it lands the file is plain text; then the memo is cleared and the

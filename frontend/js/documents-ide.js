@@ -514,7 +514,8 @@
         CM.view.lineNumbers(),
         CM.view.highlightActiveLine(),
         CM.view.highlightActiveLineGutter(),
-        CM.view.drawSelection(),
+        //: The native caret unless several ranges or an unfocused selection (L342).
+        ...docCmParts.drawSelectionWhenNeeded(CM, new CM.state.Compartment()),
         CM.language.bracketMatching(),
         CM.language.syntaxHighlighting(CM.language.defaultHighlightStyle, { fallback: true }),
         CM.state.EditorState.tabSize.of(main.state.tabSize),

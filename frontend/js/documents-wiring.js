@@ -488,7 +488,8 @@
       docCmLanguageFor(CM, "md"),
       CM.view.highlightSpecialChars(),
       CM.commands.history(),
-      CM.view.drawSelection(),
+      //: The native caret unless several ranges or an unfocused selection (L342).
+      ...docCmParts.drawSelectionWhenNeeded(CM, new CM.state.Compartment()),
       CM.view.dropCursor(),
       CM.language.indentOnInput(),
       CM.language.syntaxHighlighting(CM.language.defaultHighlightStyle, { fallback: true }),
