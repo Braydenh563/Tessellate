@@ -969,8 +969,32 @@
       else if (going) anim.currentTime = rise.currentTime;
       return anim;
     });
-    box.atlasBreath = { look, anims, rise: going ? rise : null, rate: 1 };
+    box.atlasBreath = { look, anims, rise: going ? rise : null, rate: 1, paced: false };
   }
+  //: **On the companion the chest is stepped with the dress** (L-ui-modernisation-201). Composited or not, a running
+  //: `transform` on an SVG group is applied by the main thread on every frame the page draws, and there it lays out and
+  //: repaints the body layer: traced with the script frozen, 9.5 ms a frame with the breath running and 4.7 with it
+  //: held. So while the dress's morph ticks (`atlasRigLower.morph.run`, 100 ms, a frame of its own anyway) the two
+  //: torsos are held and set to the rise's own time on each tick, and every other frame (the tail, the pacer, a
+  //: saccade) leaves the body alone. A tick moves the chest at most 0.05 px on the companion. At rest, off screen or
+  //: carried the morph stops ticking and the breath runs free again from the rise's start, so it never falls behind.
+  atlasBreathFrame.pace = (box, on) => {
+    const breath = box.atlasBreath;
+    if (!breath?.rise) return;
+    if (on) {
+      const t = breath.rise.currentTime;
+      if (t === null) return;
+      for (const anim of breath.anims) {
+        if (!breath.paced) anim.pause();
+        anim.currentTime = t;
+      }
+      breath.paced = true;
+    } else if (breath.paced) {
+      breath.paced = false;
+      const start = breath.rise.startTime;
+      for (const anim of breath.anims) start === null ? anim.play() : (anim.startTime = start);
+    }
+  };
   //: **The breath quickens and eases** (INBOX 1719 b): a walk, a carry or a lively act leaves the figure out of breath and
   //: it eases back over the table's half-life; sleepy it is slower, startled quicker (`atlasBlink.vitals`). The rate is
   //: the animations' playback rate, set only when its 0.05 step changes (`updatePlaybackRate` keeps the phase, so the
@@ -1398,6 +1422,7 @@
       const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !root.hasAttribute("data-atlas-hidden") && !root.hasAttribute("data-atlas-lite") && !box.closest("#nm-buddy.nm-buddy-dragging");
       if (!live) {
         if (m.moved) M.rest(low);
+        atlasBreathFrame.pace(box, false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
         return;
@@ -1405,6 +1430,7 @@
       const now = performance.now();
       //: At rest the paths keep the shape they have; the first input starts them again (`atlasTailCalm.rest`).
       if (atlasTailCalm.rest.sync(box, low.state)) {
+        atlasBreathFrame.pace(box, false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
         return;
@@ -1422,6 +1448,8 @@
       m.targets.forEach((t, i) => {
         if (t.kind === "ribbon" || (m.n + i) % 2) M.draw(t, m.clock, m.gain, m.ang);
       });
+      //: The companion's chest on this tick (`atlasBreathFrame.pace`); the large view, the one thing on screen, runs it free.
+      atlasBreathFrame.pace(box, !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure"));
       m.moved = true;
       m.timer = setTimeout(step, M.tick);
     };
