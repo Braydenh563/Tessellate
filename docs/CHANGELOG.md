@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Backlog: the 116 W34 verify rows that never got a ledger row are in BACKLOG section 22 with their checks (L-general-15).
 - Release: the two WiX steps run only when the repository variable TESSELLATE_MSI is on (off when unset), so the workflow lint passes; the notes test passes the version through env as the step now does.
 - Diagrams: Start from a template lists the templates you use most first (counted per browser), ties in their usual order.
 - Backlog: thinking off and the tool contracts on Ollama (W16 B72, B74) are device checks in BACKLOG; the W5, W16 to W18 and W32 outcomes were traced (L-general-16).

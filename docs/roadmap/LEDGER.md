@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 14 | 1 | 0 | 4 | 15 |
-| all | 502 | 543 | 128 | 2 | 183 | 1173 |
+| general | 0 | 14 | 0 | 0 | 4 | 14 |
+| all | 502 | 543 | 127 | 2 | 183 | 1172 |
 
 ## graph
 
@@ -708,7 +708,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
 - [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
-- [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-17** `general` open, S: Correct stale frontend comments that call built features unbuilt or deferred. From open-work sweep 2026-11-12, frontend/js/whiteboard-map.js:7028. Evidence: Not open work in itself: the topic image is built (whiteboard-map.js:7868-7934, MINDMAP_PLAN.md:328-335). But several frontend comments still state built things are unbuilt or deferred and would read 
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
