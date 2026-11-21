@@ -449,6 +449,7 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("delete_category", r"\b(?:delete|remove) the category\b"),
     ("restore_note", r"\brestore\b|\bfrom the (?:recycle )?bin\b|\bundelete\b"),
     ("delete_document", r"\bdelete the document\b"),
+    ("edit_document", r"\b(?:rewrite|edit|revise|change)\b.*\b(?:paragraph|section|line|sentence)s? (?:of|in) the .*document\b"),
     ("get_document", r"\b(?:read|open|show) the document\b"),
     ("create_document", r"\bwrite (?:a|me a) (?:document|report|essay|write-up)\b"),
     ("search_files", r"\bin my files\b|\b(?:my|the) (?:photos|scans|attachments|pdfs)\b"),

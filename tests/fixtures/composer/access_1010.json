@@ -60,6 +60,7 @@
     "summarize_notes": "summarise my gym notes",
     "list_categories": "list my categories",
     "create_note": "note: buy milk and eggs",
+    "edit_document": "rewrite the second paragraph of the launch plan document",
     "edit_note": "rename the gym note to Strength plan",
     "tag_note": "tag the knife note with kitchen",
     "pin_note": "pin the dentist note",

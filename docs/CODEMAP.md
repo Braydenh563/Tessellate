@@ -14353,7 +14353,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Act` | src/tessellate/ai/act_registry.py:82 |
 | `_listing` | src/tessellate/ai/act_registry.py:358 |
-| `act_topic` | src/tessellate/ai/act_registry.py:483 |
+| `act_topic` | src/tessellate/ai/act_registry.py:484 |
 | `app_verb` | src/tessellate/ai/act_registry.py:260 |
 | `app_verb_line` | src/tessellate/ai/act_registry.py:271 |
 | `ask_line` | src/tessellate/ai/act_registry.py:283 |
