@@ -11,12 +11,13 @@ from tessellate.api import routes_insights
 from tessellate.core import deps
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 def _seed(monkeypatch) -> None:
-    monkeypatch.setattr(routes_insights, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     with deps.get_db().session() as session:
         for _ in range(2):
             manager.create_entry(session, "# Harbor launch date\n\nThe launch is set for the first week of December.")

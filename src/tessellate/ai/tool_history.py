@@ -13,9 +13,11 @@ import functools
 import json
 import threading
 from collections import deque
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy.orm import Session
+
+from tessellate.core import clock
 
 #: How many calls are kept; the oldest fall off.
 KEPT = 50
@@ -44,7 +46,7 @@ def record(name: str, arguments: dict | None, result: object, *, now: datetime |
     failed = isinstance(result, dict) and "error" in result
     said = result["error"] if failed else json.dumps(result, ensure_ascii=False, default=str) if result is not None else ""
     row = {
-        "at": (now or datetime.now(timezone.utc)).isoformat(),
+        "at": (now or clock.utc()).isoformat(),
         "tool": str(name)[:80],
         "arguments": _arguments(arguments),
         "ok": not failed,

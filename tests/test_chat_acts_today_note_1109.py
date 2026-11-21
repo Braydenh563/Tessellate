@@ -20,7 +20,6 @@ BLOCK = "### [[Dentist]]\n\nCheck-up on 11 November at 9."
 
 @pytest.fixture(autouse=True)
 def _clock(monkeypatch):
-
     pin_clock(monkeypatch, NOW)
 
 

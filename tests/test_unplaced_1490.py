@@ -74,7 +74,6 @@ _NOTES = (
 
 @pytest.fixture()
 def notebook(session, monkeypatch):
-
     pin_clock(monkeypatch, NOW)
     for text in _NOTES:
         manager.create_entry(session, text)

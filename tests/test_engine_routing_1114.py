@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 from tessellate.ai import act_registry, commands
 from tessellate.core.database import Entry, WhiteboardObject
-
+from tests._clock import pin_clock
 from tests.test_parity_acts_1110 import card_of, confirm, notebook, stream, undo  # noqa: F401
 
 NOW = datetime(2026, 11, 10, 9, 0)
@@ -19,12 +19,7 @@ NOW = datetime(2026, 11, 10, 9, 0)
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    from tessellate.api import chat_said, chat_turn, routes_chat, routes_insights
-    from tessellate.core import config
-
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    for module in (routes_chat, chat_said, chat_turn, routes_insights):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 @pytest.mark.parametrize("said", ["Remember that I prefer short answers", "remember that i like bullet points", "Remember that I want British spelling."])

@@ -16,17 +16,16 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.ai import composer_voice
-from tessellate.api import routes_insights
-from tessellate.ai import tensions
+from tessellate.ai import composer_voice, tensions
 from tessellate.core.database import DerivedFact, Reminder
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 def _clock(monkeypatch) -> None:
-    monkeypatch.setattr(routes_insights, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _note(session, text: str, when: datetime):

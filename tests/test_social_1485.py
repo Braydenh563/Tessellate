@@ -42,7 +42,6 @@ _NOTES = (
 
 @pytest.fixture()
 def notebook(session, monkeypatch):
-
     pin_clock(monkeypatch, NOW)
     for text in _NOTES:
         manager.create_entry(session, text)
@@ -226,7 +225,6 @@ def test_a_repair_with_nothing_better_asks_what_was_meant(client, notebook, no_w
 
 @pytest.mark.parametrize("tools", [False, True])
 def test_a_hello_links_the_last_note_and_never_puts_you_in_it(client, session, monkeypatch, tools):
-
     pin_clock(monkeypatch, NOW)
     entry = manager.create_entry(session, "# 考え：仕事を済ませてから、練習としてゴルフを数球打った（笑）\n\nゴルフ")
     session.commit()

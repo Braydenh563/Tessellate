@@ -8,16 +8,16 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import tools
-from tessellate.core import config
 from tessellate.core.database import Entity, EntityMention, EntryLink, Reminder
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _note(session, content, when, **kw):

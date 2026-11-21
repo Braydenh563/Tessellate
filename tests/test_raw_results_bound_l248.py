@@ -10,16 +10,14 @@ import json
 from datetime import datetime
 
 from tessellate.ai import composer_money
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 
 
 def test_a_450_note_money_question_sends_at_most_the_scan_cap(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for i in range(450):
         entry = manager.create_entry(session, f"# Coffee {i}\n\nSpent £{i + 1} on coffee.")
         entry.created_at = entry.updated_at = datetime(2026, 10, 1 + i % 28, 9, 0)

@@ -75,6 +75,7 @@ HOLDERS: tuple[tuple[str, str], ...] = (
     ("tessellate.entry.tidy", "utcnow"),
     ("tessellate.repo.bookmarks", "utcnow"),
     ("tessellate.repo.documents", "utcnow"),
+    ("tessellate.repo.goals", "utcnow"),
     ("tessellate.repo.reminders", "utcnow"),
     ("tessellate.search.webstore", "utcnow"),
     ("tests.test_date_field_when", "utcnow"),

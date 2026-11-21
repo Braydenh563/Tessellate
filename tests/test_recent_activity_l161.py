@@ -8,9 +8,8 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from tessellate.ai import activity_recent
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 from tests.test_composer_route_688 import _ask
 
 NOW = datetime(2026, 11, 14, 15, 0, tzinfo=timezone.utc)
@@ -61,8 +60,7 @@ def test_no_notes_says_so(session):
 
 
 def test_the_chat_answers_it_with_no_model(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     _notes(session)
     text = _ask(client, "what did I change today")["text"]
     assert "Harbor launch plan" in text and "Dentist" in text and "Gym plan" not in text

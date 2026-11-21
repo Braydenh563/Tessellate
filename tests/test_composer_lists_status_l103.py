@@ -8,18 +8,17 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import chat_said, chat_turn, routes_chat
 import tests._seed_composer_1110 as seed
 from tessellate.core import clock
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = seed.NOW
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
 
 

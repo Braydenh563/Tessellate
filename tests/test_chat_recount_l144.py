@@ -10,9 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from tests._app_js import app_js_text
-
 from tessellate.ai import composer_digest, composer_voice
+from tests._app_js import app_js_text
+from tests._clock import pin_clock
 
 ROOT = Path(__file__).resolve().parents[1]
 TODAY = date(2026, 7, 17)
@@ -64,9 +64,8 @@ def test_b41_the_dashboard_draws_the_composed_line_with_a_moving_seed():
 
 def test_b23_every_number_in_the_day_digest_links_to_its_list(session):
     """B23: each count line names the phrases that hold its numbers (`links`), and no number is left outside one."""
-    from tests.test_day_digest import NOW, _notebook, _numbers
-
     from tessellate.ai import day_digest
+    from tests.test_day_digest import NOW, _notebook, _numbers
 
     _notebook(session)
     counted = [line for line in day_digest.compose(session, NOW)["lines"] if line["kind"] in ("count", "more")]
@@ -108,10 +107,9 @@ def test_composer_row1_a_remark_names_its_note_and_the_bubble_opens_it(client, s
     """Composer row 1: composed from the notes, rate-limited, never twice, quiet while typing, source one tap away."""
     from datetime import datetime
 
-    from tessellate.api import routes_insights
     from tessellate.entry import manager
 
-    monkeypatch.setattr(routes_insights, "user_now", lambda _config: datetime(2026, 11, 1, 9, 0))
+    pin_clock(monkeypatch, datetime(2026, 11, 1, 9, 0))
     old = manager.create_entry(session, "# Lisbon\n\nBooked the hotel in Alfama for the first week.")
     old.created_at = datetime(2025, 11, 1, 10, 0)
     session.commit()

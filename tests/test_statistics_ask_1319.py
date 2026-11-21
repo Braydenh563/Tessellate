@@ -177,7 +177,6 @@ def test_overdue_and_done_reminders_are_counted_as_asked_not_as_the_open_total(s
 
 
 def test_no_overdue_reminders_is_said_so(seeded, monkeypatch):
-
     pin_clock(monkeypatch, NOW)
     assert _ask(seeded, "how many reminders are overdue").text == "You have no overdue reminders."
 

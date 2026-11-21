@@ -10,20 +10,15 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import library_acts, tools
-from tessellate.api import chat_said, chat_turn, routes_chat, routes_insights
 from tessellate.core.database import Entry, Reminder
 from tessellate.entry import manager
-
+from tests._clock import pin_clock
 from tests.test_parity_acts_1110 import NOW, card_of, confirm, stream, undo  # noqa: F401  (fixed clock fixture is autouse there)
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    from tessellate.core import config
-
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    for module in (routes_chat, chat_said, chat_turn, routes_insights):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _note(session, content, when=None, **kw):
