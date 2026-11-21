@@ -69,10 +69,10 @@ def test_the_recency_pattern_stays_linear_on_long_whitespace():
 
     # CodeQL 445: the same after "what did I add lately" and a run of tabs.
     for hostile in ("wrote last" + "\t" * 20000 + "x", "what\tdid\ti\tadd\tlately" + "\t" * 20000 + "x"):
-        started = time.perf_counter()
+        started = time.process_time()
         is_recency_ask(hostile)  # its 300-character slice drops the "x"
         assert not _RECENCY_ASK.search(hostile)
-        assert time.perf_counter() - started < 0.5
+        assert time.process_time() - started < 0.5
     assert is_recency_ask("what did I write last  ?  ")
     assert is_recency_ask("What have I saved recently?!")
 

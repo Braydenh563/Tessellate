@@ -235,3 +235,73 @@ def test_the_pin_lists_every_module_that_holds_a_clock_by_name():
     assert len(HOLDERS) == len(set(HOLDERS))
     assert not found - set(HOLDERS), f"add to tests/_clock.HOLDERS: {sorted(found - set(HOLDERS))}"
     assert not set(HOLDERS) - found, f"drop from tests/_clock.HOLDERS: {sorted(set(HOLDERS) - found)}"
+
+
+# L-general-70: a wall-time bound fails on a slow or busy runner and passes on
+# a fast one, so it measures the machine, not the code. A budget is CPU time
+# (`time.process_time()`), an op count, or a fake held by an event.
+_WALL = {"perf_counter", "perf_counter_ns", "monotonic", "monotonic_ns", "time", "time_ns"}
+_BOUND = (ast.Lt, ast.LtE, ast.Gt, ast.GtE)
+_WRAPS = {"round", "float", "int", "abs", "max", "min", "sum"}
+
+
+def _wall_read(node: ast.AST, bare: set[str]) -> bool:
+    if not isinstance(node, ast.Call):
+        return False
+    func = node.func
+    if isinstance(func, ast.Attribute):
+        return func.attr in _WALL and getattr(func.value, "id", "") == "time"
+    return isinstance(func, ast.Name) and func.id in bare
+
+
+def _wall_bounds(text: str) -> list[int]:
+    tree = ast.parse(text)
+    bare = {a.asname or a.name for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module == "time"
+            for a in n.names if a.name in _WALL and a.name != "time"}
+    lines = set()
+    for scope in ast.walk(tree):
+        if not isinstance(scope, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        nodes = list(ast.walk(scope))
+        stamps = {t.id for n in nodes if isinstance(n, ast.Assign) and _wall_read(n.value, bare)
+                  for t in n.targets if isinstance(t, ast.Name)}
+        spans: set[str] = set()
+
+        def span(e: ast.AST) -> bool:
+            if isinstance(e, ast.BinOp):
+                if isinstance(e.op, ast.Sub) and any(
+                    _wall_read(x, bare) or (isinstance(x, ast.Name) and x.id in stamps) for x in (e.left, e.right)
+                ):
+                    return True
+                return span(e.left) or span(e.right)
+            if isinstance(e, ast.Name):
+                return e.id in spans
+            if isinstance(e, ast.Call) and isinstance(e.func, ast.Name) and e.func.id in _WRAPS:
+                return any(span(a) for a in e.args)
+            return False
+
+        for _ in range(2):  # a span of a span (ms = elapsed * 1000)
+            for n in nodes:
+                if isinstance(n, (ast.Assign, ast.AnnAssign)) and n.value is not None and span(n.value):
+                    targets = n.targets if isinstance(n, ast.Assign) else [n.target]
+                    spans |= {t.id for t in targets if isinstance(t, ast.Name)}
+        # Only asserted bounds: a poll loop that gives up after a while is a timeout, not a budget.
+        asserted = [c for n in nodes if isinstance(n, ast.Assert) for c in ast.walk(n.test)]
+        lines |= {n.lineno for n in asserted if isinstance(n, ast.Compare) and isinstance(n.ops[0], _BOUND)
+                  and any(span(p) for p in (n.left, *n.comparators))}
+    return sorted(lines)
+
+
+def test_no_test_bounds_wall_time():
+    """No exceptions: time CPU with `time.process_time()`, count operations, or hold a fake on an event."""
+    offenders = [f"{path.name}:{line}" for path, text in _sources() for line in _wall_bounds(text)]
+    assert not offenders, f"wall-time bounds depend on the runner's speed: {offenders}"
+
+
+def test_the_lint_sees_a_wall_bound_and_not_a_cpu_one():
+    assert _wall_bounds("import time\nt = time.perf_counter()\nf()\nassert time.perf_counter() - t < 0.5\n") == [4]
+    assert _wall_bounds("import time\nt = time.monotonic()\ne = time.monotonic() - t\nms = e * 1000\nassert ms < 9\n") == [5]
+    assert _wall_bounds("from time import perf_counter as pc\na = pc()\nassert pc() - a > 1\n") == [3]
+    assert _wall_bounds("import time\nt = time.process_time()\nassert time.process_time() - t < 0.5\n") == []
+    assert _wall_bounds("import time\ndeadline = time.monotonic() + 5\nwhile time.monotonic() < deadline: pass\n") == []
+    assert _wall_bounds("import time\nt = time.monotonic()\nwhile time.monotonic() - t < 5: pass\n") == []

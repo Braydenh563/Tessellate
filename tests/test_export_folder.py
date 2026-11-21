@@ -53,9 +53,9 @@ def test_the_sidecar_carries_every_column_not_left_out(notebook):
 
 def test_the_500_note_notebook_exports_with_every_attachment(notebook):
     session, made = notebook
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     archive, result = _export(session)
-    took = time.perf_counter() - t0
+    took = time.process_time() - t0
     print(f"\nexport of {made['notes']} notes: {took:.2f} s, zip members {len(archive.namelist())}")
     manifest = json.loads(archive.read("index.json"))
     assert manifest["format"] == export_folder.FORMAT

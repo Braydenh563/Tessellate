@@ -17,28 +17,43 @@ from tessellate.core import jobs, model_gate
 
 
 def test_background_waits_for_an_interactive_call_and_then_goes():
-    released = threading.Event()
+    """Held by events, not timed (L-general-70): the yield is still waiting while
+    the chat holds the gate, and goes once it lets go."""
+    inside, release, yielded = threading.Event(), threading.Event(), threading.Event()
 
     def chat() -> None:
         with model_gate.interactive():
-            time.sleep(0.4)
-        released.set()
+            inside.set()
+            release.wait(5)
 
     thread = threading.Thread(target=chat)
     thread.start()
-    time.sleep(0.05)
-    started = time.monotonic()
-    assert model_gate.yield_to_interactive(timeout=5)
-    waited = time.monotonic() - started
-    thread.join()
-    assert released.is_set() and waited >= 0.2
+    assert inside.wait(5)
+    results: list[bool] = []
+    background = threading.Thread(target=lambda: (results.append(model_gate.yield_to_interactive(timeout=5)), yielded.set()))
+    background.start()
+    try:
+        assert not yielded.wait(0.2), "the background call went while the chat held the gate"
+    finally:
+        release.set()
+    thread.join(5)
+    background.join(5)
+    assert yielded.is_set() and results == [True]
 
 
-def test_background_gives_up_waiting_rather_than_starving():
+def test_background_gives_up_waiting_rather_than_starving(monkeypatch):
+    """The give-up is the timeout the gate asks for, under the 2 s budget (L-general-70)."""
+    asked: list[float] = []
+    real = model_gate._condition.wait_for
+
+    def wait_for(predicate, timeout=None):
+        asked.append(timeout)
+        return real(predicate, timeout=timeout)
+
+    monkeypatch.setattr(model_gate._condition, "wait_for", wait_for)
     with model_gate.interactive():
-        started = time.monotonic()
         assert model_gate.yield_to_interactive(timeout=0.2) is False
-        assert time.monotonic() - started < 2
+    assert asked and sum(asked) < 2
 
 
 def test_a_model_lane_job_waits_for_the_chat_turn():

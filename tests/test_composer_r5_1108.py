@@ -42,6 +42,6 @@ def test_r3_6_the_new_count_opener_is_linear():
     from tessellate.ai import composer_overview
 
     for run in ("number of notes about " + "a " * 5000, "count " * 2000 + "notes about x", "the number of " * 800, "total notes on " + " " * 9000):
-        t0 = time.perf_counter()
+        t0 = time.process_time()
         composer_overview.topic(run)
-        assert time.perf_counter() - t0 < 1.0, run[:30]
+        assert time.process_time() - t0 < 1.0, run[:30]

@@ -351,13 +351,20 @@ def test_a_slow_app_window_script_never_holds_the_click(monkeypatch, prefs):
     import tessellate.__main__ as launcher
 
     monkeypatch.setattr(launcher, "_focus_window", lambda window: None)
-    gate = threading.Event()
+    gate, ran = threading.Event(), threading.Event()
+
+    def evaluate_js(script):
+        if gate.wait(30):
+            main.calls.append(("js", script))
+        ran.set()
+
     main = FakeWindow()
-    main.evaluate_js = lambda script: gate.wait(5) and main.calls.append(("js", script))
+    main.evaluate_js = evaluate_js
     companion = launcher._attach_desk_companion(FakeWebview(), main, object())
-    started = time.monotonic()
+    # Held by an event, not timed (L-general-70): the click came back while the
+    # script was still held; a click that waited returns only after the hold ends.
     assert dc.DeskApi(companion).open_app("settings")
-    assert time.monotonic() - started < 0.5
+    assert not ran.is_set()
     gate.set()
     _wait(lambda: any(call[0] == "js" for call in main.calls))
 

@@ -385,13 +385,20 @@ def test_the_jobs_stream_route_ends_when_its_header_session_is_signed_out(client
     and the `X-Auth-Token` header (EventSource cannot send one, so none is
     used), the same source `require_unlock` reads; the per-tick check reads it
     too. The session is signed out once the stream has passed its opening check."""
-    import time
 
     from tessellate.api import routes_auth, routes_tasks
 
     monkeypatch.setattr(routes_tasks, "_STREAM_POLL_SECONDS", 0.02)
     headers = _setup(client)
     real = routes_tasks.list_tasks
+    ticks: list[int] = []
+    still_open = routes_auth.session_still_open
+
+    def checked(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        ticks.append(1)
+        return still_open(*args, **kwargs)
+
+    monkeypatch.setattr(routes_auth, "session_still_open", checked)
 
     def list_then_sign_out() -> dict:
         body = real()
@@ -399,9 +406,10 @@ def test_the_jobs_stream_route_ends_when_its_header_session_is_signed_out(client
         return body
 
     monkeypatch.setattr(routes_tasks, "list_tasks", list_then_sign_out)
-    started = time.monotonic()
     with client.stream("GET", "/jobs/stream?seconds=30", headers=headers) as reply:
         assert reply.status_code == 200
         body = "".join(reply.iter_text())
     assert "event: jobs" in body
-    assert time.monotonic() - started < 10
+    # Counted, not timed (L-general-70): the stream ended within the ticks of
+    # its 10 s budget, not after its 30 s.
+    assert ticks and len(ticks) * routes_tasks._STREAM_POLL_SECONDS < 10, len(ticks)

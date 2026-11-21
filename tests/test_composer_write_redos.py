@@ -31,9 +31,9 @@ PASSES = [cw.sentences, cw.trim, cw.concise, cw.plain, cw.to_bullets, cw.to_pros
 def test_every_pass_is_linear_on_a_long_run_of_tabs(name):
     text = ADVERSARIAL[name]
     for fn in PASSES:
-        started = time.perf_counter()
+        started = time.process_time()
         fn(text)
-        assert time.perf_counter() - started < BOUND_S, fn.__name__
+        assert time.process_time() - started < BOUND_S, fn.__name__
 
 
 def test_the_line_patterns_still_read_headings_bullets_and_checkboxes():

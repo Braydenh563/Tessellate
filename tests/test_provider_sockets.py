@@ -189,17 +189,31 @@ def test_stopping_a_slow_stream_midway_stops_reading_at_once(openai_server, monk
 
     module, url = openai_server
     monkeypatch.setattr(module, "STREAM_DELAY_MS", 300)
+    # Held by an event, not timed (L-general-70): the first piece goes out, and
+    # the server's pause before the second waits on `release`, so a close that
+    # read the rest out could not return while it is held.
+    release = threading.Event()
+    pauses = {"asked": 0, "ended": 0}
+
+    def pause(_seconds: float) -> None:
+        pauses["asked"] += 1
+        if pauses["asked"] > 1:
+            release.wait(30)
+        pauses["ended"] += 1
+
+    clock = type("Clock", (), {"__getattr__": lambda self, name: getattr(time, name), "sleep": staticmethod(pause)})()
+    monkeypatch.setattr(module, "time", clock)
     stream = OpenAICompatClient(url, timeout=10).chat_stream(module.MODEL_ID, ASK)
     first = next(piece for piece in stream if piece.get("content_delta"))
-    started = time.monotonic()
-    stream.close()
-    stopped_after = time.monotonic() - started
+    try:
+        closer = threading.Thread(target=stream.close)
+        closer.start()
+        closer.join(30)
+        assert not closer.is_alive() and pauses["ended"] == 1, pauses
+    finally:
+        release.set()
     assert first["content_delta"]
-    # Seven pieces at 300 ms (2.1 s) are still to come after the first, so a
-    # close that read them out could not return this fast. Timed from the
-    # close, not from the request: a loaded runner's wait for the first piece
-    # (3.5 s on CI, 2026-11-01) is not what this test is about.
-    assert stopped_after < 1.2, stopped_after
+    monkeypatch.setattr(module, "time", time)
     # The server is still healthy for the next request.
     monkeypatch.setattr(module, "STREAM_DELAY_MS", 0)
     again = list(OpenAICompatClient(url, timeout=10).chat_stream(module.MODEL_ID, ASK))

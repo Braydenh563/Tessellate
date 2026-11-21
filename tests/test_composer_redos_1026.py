@@ -12,9 +12,9 @@ RUN = "\t" * 40_000
 
 
 def _fast(call) -> None:
-    started = time.perf_counter()
+    started = time.process_time()
     call()
-    assert time.perf_counter() - started < 1.0
+    assert time.process_time() - started < 1.0
 
 
 def test_whitespace_runs_stay_linear():

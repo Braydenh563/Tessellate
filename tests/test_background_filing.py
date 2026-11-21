@@ -7,6 +7,7 @@ saved just before the app closed came back "pending" with nothing behind it.
 that has already settled does nothing.
 """
 
+import threading
 import time
 
 import pytest
@@ -67,15 +68,21 @@ def test_filing_jobs_are_deduplicated_per_note(monkeypatch):
 def test_a_slow_model_does_not_hold_filing_past_the_deadline(monkeypatch):
     from tessellate.ai import janitor
 
+    # Held by an event, not timed (L-general-70): the deadline fired while the
+    # model was still held.
+    release = threading.Event()
+
     class _Slow:
         def chat(self, model, messages, mode=None):
-            time.sleep(5)
+            release.wait(30)
             return {"content": '{"category": "Late"}'}
 
-    started = time.time()
-    with pytest.raises(TimeoutError):
-        janitor._chat_within_deadline(_Slow(), "m", [], deadline=0.3)
-    assert time.time() - started < 2
+    try:
+        with pytest.raises(TimeoutError):
+            janitor._chat_within_deadline(_Slow(), "m", [], deadline=0.3)
+        assert not release.is_set()
+    finally:
+        release.set()
 
 
 def test_filing_asks_the_model_in_quick_mode():
@@ -292,11 +299,12 @@ def test_a_model_that_stalled_is_not_waited_for_again_note_after_note():
     hung = _Hung()
     with pytest.raises(TimeoutError):
         janitor._chat_within_deadline(hung, "m", [], deadline=0.1)
-    started = time.time()
+    # ModelStalled is raised before any wait (a waited call raises TimeoutError),
+    # and the model was asked once: the five cost no deadline (L-general-70).
     for _ in range(5):
         with pytest.raises(janitor.ModelStalled):
             janitor._chat_within_deadline(hung, "m", [], deadline=0.1)
-    assert time.time() - started < 0.5 and len(calls) == 1
+    assert len(calls) == 1
     #: A caller that chose to wait for the model (Tidy, the warm-up) still does.
     assert issubclass(janitor.ModelStalled, TimeoutError)
 

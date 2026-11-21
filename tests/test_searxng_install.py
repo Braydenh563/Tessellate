@@ -904,19 +904,28 @@ def test_run_streaming_hands_each_line_to_the_callback():
     assert result.stdout == "1\n2\n3\n"
 
 
-def test_run_streaming_times_out_on_a_child_that_goes_quiet_without_exiting():
+def test_run_streaming_times_out_on_a_child_that_goes_quiet_without_exiting(monkeypatch):
     """The actual bug: a child producing no output but still alive used to
     block here forever, because the old deadline check only ran *between*
     lines read from a blocking iterator. Must raise within roughly
     `timeout`, not hang."""
-    start = time.time()
+    # The child's own ending, not a stopwatch (L-general-70): it asked for 60 s,
+    # so one that ended by a signal was cut by the 2 s timeout, not waited out.
+    started: list = []
+    real = searxng_manager.subprocess.Popen
+
+    def popen(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        started.append(real(*args, **kwargs))
+        return started[-1]
+
+    monkeypatch.setattr(searxng_manager.subprocess, "Popen", popen)
     with pytest.raises(searxng_manager.SearxngError, match="took longer than"):
         searxng_manager._run_streaming(
             [sys.executable, "-c", "import time; time.sleep(60)"],
             timeout=2,
             on_line=lambda line: None,
         )
-    assert time.time() - start < 10  # nowhere near the 60s the child asked for
+    assert len(started) == 1 and started[0].wait(10) < 0, "the child ran its 60 s out"
 
 
 def test_the_source_is_a_pinned_commit_not_master():

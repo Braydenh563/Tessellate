@@ -55,12 +55,16 @@ def test_every_windows_desktop_relaunch_waits_for_the_old_copy(monkeypatch):
     assert calls == [[sys.executable, "--desktop", "--restart-after", "4242"]]
 
 
-def test_waiting_ends_when_the_old_copy_is_gone():
+def test_waiting_ends_when_the_old_copy_is_gone(monkeypatch):
     gone = subprocess.Popen([sys.executable, "-c", "pass"])
     gone.wait()
-    started = time.monotonic()
+    # The pauses it took, not a stopwatch (L-general-70): a copy already gone
+    # costs well under the 2 s budget of 0.1 s pauses.
+    paused: list[float] = []
+    clock = type("Clock", (), {"__getattr__": lambda self, name: getattr(time, name), "sleep": staticmethod(paused.append)})()
+    monkeypatch.setattr(entry, "time", clock)
     assert entry._wait_for_exit(gone.pid, timeout=5) is True
-    assert time.monotonic() - started < 2
+    assert sum(paused) < 2
 
 
 def test_the_route_restarts_any_launch_the_launcher_made(client, monkeypatch):

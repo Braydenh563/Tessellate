@@ -402,15 +402,15 @@ def test_an_unanswered_read_keeps_the_last_motion_answer(over):
 
 def test_hiding_the_panel_never_waits_on_its_page(over):
     import threading
-    import time
 
-    release = threading.Event()
+    # Held by an event, not timed (L-general-70): the hide came back while the
+    # page's script was still held.
+    release, ran = threading.Event(), threading.Event()
     over.window = FakeWindow()
-    over.window.evaluate_js = lambda script: release.wait(5)
+    over.window.evaluate_js = lambda script: (release.wait(30), ran.set())
     over.panel_shown = True
-    t0 = time.monotonic()
     over._hide_panel_window()  # noqa: SLF001
-    assert time.monotonic() - t0 < 0.5 and over.panel_shown is False
+    assert not ran.is_set() and over.panel_shown is False
     release.set()
 
 

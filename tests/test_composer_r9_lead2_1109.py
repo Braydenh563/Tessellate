@@ -38,9 +38,9 @@ def test_new_readers_stay_linear_on_a_50k_question():
 
     out = type("O", (), {"lines": [], "parts": [], "grounding": [], "rows": []})()
     for text in ("what is " + "a " * 25_000, "what's my " + " " * 50_000 + "plot number", "why is my " + "x" * 50_000, "q4 " * 17_000, "apples" * 8_000):
-        start = time.perf_counter()
+        start = time.process_time()
         composer_label.answer(out, text, [])
         composer_likeness.set_aside([], text)
         composer_digest_lines._predicate_stems(text)  # noqa: SLF001
         recognise.a_topic_phrase(text, "q4")
-        assert time.perf_counter() - start < 0.5, text[:20]
+        assert time.process_time() - start < 0.5, text[:20]

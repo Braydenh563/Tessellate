@@ -9,7 +9,6 @@ from __future__ import annotations
 import io
 import json
 import threading
-import time
 import zipfile
 
 import pytest
@@ -99,9 +98,7 @@ def _vault(count: int) -> list[tuple[str, bytes]]:
 
 def test_5000_files_list_report_per_100_and_stop_within_2_seconds(app_state, session):
     files = _vault(5000)
-    t0 = time.perf_counter()
     read = app_import.read("obsidian", files, parse_frontmatter=_parse_frontmatter)
-    listed = time.perf_counter() - t0
     assert len(read.notes) == 5000 and read.skipped == []
     steps: list[int] = []
     asked = threading.Event()
@@ -117,13 +114,13 @@ def test_5000_files_list_report_per_100_and_stop_within_2_seconds(app_state, ses
     worker = threading.Thread(target=lambda: out.update(app_import.write(session, "obsidian", read.notes, progress)))
     worker.start()
     assert asked.wait(120), "the import never reached 300 notes"
-    stop_at = time.perf_counter()
+    # Counted, not timed (L-general-70): Stop lands within the report step it
+    # was pressed in (the 2 s budget was about 100 notes on the slowest runner).
+    at_stop = steps[-1]
     assert activity.stop(job.id)[0]
     worker.join(30)
-    landed = time.perf_counter() - stop_at
     activity.finish(job)
-    print(f"\n5,000 files listed in {listed:.2f} s; Stop landed in {landed:.3f} s after {out['imported']} notes")
-    assert landed < 2.0
+    assert not worker.is_alive() and out["imported"] - at_stop <= 100, (at_stop, out)
     assert out["stopped"] is True
     assert steps[:3] == [100, 200, 300]
     kept = session.query(Entry).filter(Entry.source_path.like("obsidian:%")).count()
