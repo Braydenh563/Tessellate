@@ -174,11 +174,11 @@ def _read_private(session, row, path: Path, handed: tuple[str, str] | None) -> N
     try:
         with sealed_files.for_background(path, token) as (copy, check):
             text = _extract(copy, row.filename)
-            check()
             if text:
                 session.refresh(row)
                 if not row.ocr_text:
                     row.ocr_text = text
+                    check()  # immediately before the commit, after the refresh
                     session.commit()
     except sealed_files.SealedError:
         logger.info("a private space's file was left unread: the space closed")

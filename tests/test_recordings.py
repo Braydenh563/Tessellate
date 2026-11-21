@@ -252,3 +252,20 @@ def test_an_enhanced_copy_says_so_and_keeps_its_original(client):
     assert clean["derived"] == "enhanced" and clean["source_id"] == made["id"]
     assert plain["derived"] == ""
     assert odd.status_code == 422
+
+
+def test_a_library_error_in_transcribe_shows_the_fixed_sentence(client, monkeypatch):
+    """A model's or library's own words stay in the log; the person reads the
+    module's sentence (BW review finding, the synchronous route)."""
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+
+    def broken(*_a, **_k):
+        raise RuntimeError("ctranslate2: CUDA_ERROR_OUT_OF_MEMORY at /opt/secret/path")
+
+    monkeypatch.setattr(voice, "transcribe_segments", broken)
+    rid = _make(client)["id"]
+    _chunk(client, rid, WEBM_HEAD, 1000)
+    client.post(f"/recordings/{rid}/finish", json={"duration_ms": 1000})
+    out = client.post(f"/recordings/{rid}/transcribe")
+    assert out.status_code == 503
+    assert out.json()["detail"] == "Couldn't transcribe that recording. Try recording it again."

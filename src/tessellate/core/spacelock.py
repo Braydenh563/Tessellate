@@ -57,9 +57,11 @@ def open_for(token: str | None) -> None:
     now = _now()
     window = idle_minutes() * 60
     with _lock:
-        for old in [k for k, seen in _opened.items() if now - seen > window]:
+        stale = [k for k, seen in _opened.items() if now - seen > window]
+        for old in stale:
             _opened.pop(old, None)
         _opened[token] = now
+    _told_shut(stale)
 
 
 def is_open(token: str | None, *, touch: bool = True) -> bool:
@@ -73,12 +75,13 @@ def is_open(token: str | None, *, touch: bool = True) -> bool:
         if seen is None:
             return False
         now = _now()
-        if now - seen > idle_minutes() * 60:
-            _opened.pop(key, None)
-            return False
-        if touch:
-            _opened[key] = now
-        return True
+        if now - seen <= idle_minutes() * 60:
+            if touch:
+                _opened[key] = now
+            return True
+        _opened.pop(key, None)
+    _told_shut([key])
+    return False
 
 
 def opened(token: str | None) -> bool:
@@ -91,6 +94,14 @@ def opened(token: str | None) -> bool:
 
 #: Told which sessions' doors shut (None: every one), as `vault.ended_hooks`.
 shut_hooks: list[Callable[[list[str] | None], None]] = []
+
+
+def _told_shut(tokens: list[str]) -> None:
+    """The idle timeout shuts a door as a lock does: whatever was handed to
+    these sessions goes too (outside `_lock`, as the hooks may take their own)."""
+    if tokens:
+        for hook in shut_hooks:
+            hook(tokens)
 
 
 def close_for(token: str | None) -> None:
