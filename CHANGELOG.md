@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Notes: on a long notebook the first Notes press lands only the first 240 row placeholders and the rest join in idle chunks (5,000 notes: click to first row 459 to 213ms of main thread, style 139 to 66ms).
+
+- A VS Code extension (`editors/vscode/`, L-world-class-183): sign in to the local server, save a selection or a typed note, search notes and insert a link or the text, and open a note read only. No build step, no telemetry, talks to this computer only; a node test runs its API client against a fake server and `tests/test_vscode_extension.py` fails if a route it calls is renamed. Not run inside VS Code here.
 - Docs: BACKLOG §11's perf leftovers record the 2026-11-21 re-measure at 4x (Settings pane switch floor about 130ms, first Intl call, api() json continuations, the first nameMark draw).
 - Boot: the companion's looks warm in slices (the build is a generator, one part per task, the getter finishing any rest), so `atlasWarmLook` falls from a 37 to 88 ms task (median 64) to 23 to 26 ms at 4x CPU.
 - Optional pip extras are installed within a version range, and embedding model weights are pinned to a Hub commit and a sha256, a mismatch refused and deleted.
