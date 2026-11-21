@@ -166,11 +166,11 @@ def _name(day: date, today: date) -> str:
 
 
 def _long(day: date) -> str:
-    return f"{day:%A} {day.day} {day:%B}"
+    return realise.localised_days(f"{day:%A} {day.day} {day:%B}")
 
 
 def _short(day: date) -> str:
-    return f"{day:%a} {day.day} {day:%b}"
+    return realise.localised_days(f"{day:%a} {day.day} {day:%b}")
 
 
 def _add_months(day: date, n: int) -> date:

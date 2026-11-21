@@ -13,7 +13,7 @@ import functools
 import re
 from datetime import datetime
 
-from tessellate.ai import composer_property, grounding, utilities
+from tessellate.ai import composer_property, grounding, realise, recognise, utilities
 from tessellate.ai.composer_ask import _stem, _words
 from tessellate.ai.composer_body import length_wish
 from tessellate.ai.composer_dialogue import _MORE
@@ -549,7 +549,7 @@ def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next
     next_parts = next_parts or []
     return {
         #: A full-width stop already ends a sentence: no ASCII one follows it (audit 1031 C38).
-        "text": _JA_STOP.sub(r"\1", "".join(part[1] for part in parts)),
+        "text": _JA_STOP.sub(r"\1", realise.parts_text(parts, recognise._reads_month_first(None))),
         "grounding": rows,
         "support": grounding.support(quotes, rows),
         "shape": shape,

@@ -809,12 +809,12 @@ WORDLIST_CAPABILITIES = (
     (
         "question noise real-word check (question_noise.py)",
         ("src/tessellate/ai/question_noise.py",),
-        r"wordlist|en\.txt",
+        r"is_english",
     ),
     (
         "search typo tolerance",
-        ("src/tessellate/api/routes_search.py", "src/tessellate/core/search.py"),
-        r"wordlist|en\.txt",
+        ("src/tessellate/api/routes_search.py", "src/tessellate/core/search.py", "src/tessellate/search/search_manager.py"),
+        r"wordlist|en\.txt|is_english",
     ),
 )
 

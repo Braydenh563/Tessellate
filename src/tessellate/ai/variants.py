@@ -111,6 +111,12 @@ def _english_all() -> frozenset:
         return frozenset(w for w in (line.strip() for line in handle) if len(w) >= 4 and w.isalpha() and w.isascii())
 
 
+def is_english(word: str) -> bool:
+    """`word` (four letters or more) is in the shipped English list; a word of
+    fewer letters, or with the list missing, is never claimed (VC8)."""
+    return word.lower() in _english_all()
+
+
 #: A UK spelling and its US one, by the rule that made the pair: (uk, us, rule). `rule` is the
 #: index into `_RULES` ("ize" 0, "yze" 1, "our" 2, "re" 3 to 5, "ogue" 6, "ence" 7, "ae" 8 and 9),
 #: "ll" for the doubled l, "named" for the pairs no rule makes.

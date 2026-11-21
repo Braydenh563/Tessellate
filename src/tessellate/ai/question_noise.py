@@ -37,7 +37,7 @@ import re
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, composer_aboutme, repair_turn, spelling, typo_context
+from tessellate.ai import act_registry, composer_aboutme, repair_turn, spelling, typo_context, variants
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -2275,6 +2275,13 @@ REAL_WORDS = frozenset(
     loan load lord lard list lost dentist""".split()
 )
 
+def is_real_word(low: str) -> bool:
+    """A word the repair must not "correct": one of the hand-kept real words
+    or any word of the shipped English list (VC8), so "lunch" is never read as
+    "launch" and a rare real word is not bent into a vocabulary one."""
+    return low in REAL_WORDS or variants.is_english(low)
+
+
 def allowance(word: str) -> float:
     """How far a word may be from the one it is read as, by its length: a
     three-letter word one slip, a long word two edits."""
@@ -2299,7 +2306,7 @@ def nearest(word: str, vocabulary, after: str = "") -> str | None:  # noqa: ANN0
     guess, and no guess is made, except "how" against "who", which the next
     word settles)."""
     low = word.lower()
-    if low in vocabulary or low in VOCABULARY or low in REAL_WORDS or not low.isalpha():
+    if low in vocabulary or low in VOCABULARY or is_real_word(low) or not low.isalpha():
         return None
     limit = allowance(low)
     if not limit:
@@ -2341,7 +2348,7 @@ def _split(word: str) -> str | None:
     """"whenis" is "when is", "howmany" is "how many": a run-together word
     whose two halves are an asking word and a vocabulary word."""
     low = word.lower()
-    if len(low) < 5 or low in VOCABULARY or low in REAL_WORDS:
+    if len(low) < 5 or low in VOCABULARY or is_real_word(low):
         return None
     #: The head is an asking word, so only cuts up to the longest one are tried (each cut copies the word).
     for cut in range(2, min(len(low) - 1, max(map(len, ASKING)) + 1)):

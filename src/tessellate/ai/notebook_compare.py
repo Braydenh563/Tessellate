@@ -14,7 +14,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import recognise
+from tessellate.ai import realise, recognise
 from tessellate.core.database import Entry
 
 _CUE = re.compile(r"\b(?:compare|comparison|versus|vs\.?|more|less|fewer|than|against)\b")
@@ -62,5 +62,5 @@ def _busiest(session: Session, stat, grain: str, now: datetime):  # noqa: ANN001
         return None
     key, n = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[0]
     first = datetime.strptime(key + ("-1" if grain == "week" else ""), {"month": "%Y-%m", "week": "%G-W%V-%u", "year": "%Y"}[grain])
-    said = {"month": f"{first:%B %Y}", "week": f"the week of {first.day} {first:%B %Y}", "year": f"{first:%Y}"}[grain]
+    said = {"month": f"{first:%B %Y}", "week": realise.localised_days(f"the week of {first.day} {first:%B %Y}"), "year": f"{first:%Y}"}[grain]
     return stat.StatAnswer("busiest-period", f"You wrote the most in {said}: {stat._plural(n, 'note')}.", [{"label": said, "count": n}])

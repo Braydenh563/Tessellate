@@ -361,7 +361,8 @@ class _Answer:
 
     @property
     def text(self) -> str:
-        return realise.mend_stops("".join(part[1] for part in self.parts))
+        #: A measured day follows the person's date order (decision 43); a quote stays the note's own words.
+        return realise.mend_stops(realise.parts_text(self.parts, rec._reads_month_first(None)))
 
 
 #: The openers that promise the person's words as written: after one, the

@@ -27,6 +27,8 @@ text matches the question, then ranks the then-texts by the same words.
 
 from __future__ import annotations
 
+from tessellate.ai import realise
+
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -177,7 +179,7 @@ def as_of_in(question: str, now: datetime) -> date | None:
 def day_words(day) -> str:  # noqa: ANN001
     """"1 January 2025": the day number by hand, not `%-d`, which is glibc's
     and raises on Windows (agent.py says so where it bit)."""
-    return f"{day.day} {day:%B %Y}"
+    return realise.localised_days(f"{day.day} {day:%B %Y}")
 
 
 # --- then and now -----------------------------------------------------------------

@@ -17,6 +17,8 @@ verdicts written into them (`for_model`), as context, never as the reply
 
 from __future__ import annotations
 
+from tessellate.ai import realise
+
 import json
 from dataclasses import dataclass, field
 from datetime import date
@@ -35,7 +37,7 @@ def norm(text: str) -> str:
 
 
 def day_words(on: date) -> str:
-    return f"{on.day} {_MONTHS[on.month - 1]}"
+    return realise.localised_days(f"{on.day} {_MONTHS[on.month - 1]}")
 
 
 @dataclass(frozen=True)

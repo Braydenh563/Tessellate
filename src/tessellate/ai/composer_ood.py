@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import act_registry
+from tessellate.ai import act_registry, realise, recognise
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.core.lazyre import lazy_compile
 
@@ -112,4 +112,4 @@ def framed(question: str, result: dict, notes: list[dict]) -> dict:
     #: A no-answer still ends on its question back ("Could it be under another name?").
     asks_back = not shown and found == "world" and len(parts) > 1 and str(parts[-1][1]).rstrip().endswith("?")
     parts = [*parts[:-1], ("template", PHRASES["ood_capability"]), ("template", " "), parts[-1]] if asks_back else [*parts, *line]
-    return {**result, "parts": parts, "text": "".join(p[1] for p in parts), "out_of_domain": found}
+    return {**result, "parts": parts, "text": realise.parts_text(parts, recognise._reads_month_first(None)), "out_of_domain": found}
