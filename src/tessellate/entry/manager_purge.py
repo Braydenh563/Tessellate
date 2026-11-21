@@ -27,10 +27,12 @@ from tessellate.core.database import (
     DerivedFact,
     DocumentLink,
     EntryBookmark,
+    EntryCategory,
     EntryDate,
     EntryOpen,
     EntryLink,
     EntryProperty,
+    NoteGroupMember,
     EntryRevision,
     NoteScore,
     Reminder,
@@ -197,6 +199,9 @@ def _delete_entry_dependents(session: Session, ids: list[int]) -> None:
     session.execute(delete(EntryProperty).where(EntryProperty.entry_id.in_(ids)))
     # Section 17 row 5: the day-by-day open counts are about the note.
     session.execute(delete(EntryOpen).where(EntryOpen.entry_id.in_(ids)))
+    # L-world-class-172/173: a note's groups and further categories are about the note.
+    session.execute(delete(EntryCategory).where(EntryCategory.entry_id.in_(ids)))
+    session.execute(delete(NoteGroupMember).where(NoteGroupMember.entry_id.in_(ids)))
     # An eighth, added with the derived facts table (I9): what the app
     # worked out about a note is about the note, so it goes when the note
     # does. Keeping it would also leave the "what the notebook learned"
