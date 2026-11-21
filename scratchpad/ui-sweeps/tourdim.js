@@ -82,9 +82,17 @@ function ok(label, pass, detail) {
       cardHidden: document.getElementById("tour-card").classList.contains("hidden"),
       //: The contract itself, read off the running source, because a browser
       //: with overlay scrollbars cannot demonstrate it by measurement.
-      sizedFromWindow: /innerWidth/.test(tourBlockPanels.toString()),
     };
   });
+
+  //: tour.js is one closure now, so `tourBlockPanels` is not a global to
+  //: `toString()`; the same source is read from disk, its comment lines dropped
+  //: (the function's own comments say "innerWidth" too, and would pass it).
+  const tourSrc = require("fs").readFileSync(require("path").join(__dirname, "..", "..", "frontend", "js", "tour.js"), "utf8");
+  const fnAt = tourSrc.indexOf("function tourBlockPanels(");
+  const fnBody = tourSrc.slice(fnAt, tourSrc.indexOf("\n  }\n", fnAt))
+    .split("\n").filter((line) => !/^\s*\/\//.test(line)).join("\n");
+  out.sizedFromWindow = fnAt > 0 && /innerWidth/.test(fnBody);
 
   //: **Reported, not asserted, and the distinction matters.** If this browser
   //: draws overlay scrollbars the gutter is 0, the two widths agree, and the
@@ -143,8 +151,11 @@ function ok(label, pass, detail) {
         const front = stack.slice(0, at).filter((el) => !el.id.startsWith("tour-"));
         if (front.length && buried.length < 5) buried.push(`${x},${y} under ${front[0].id || front[0].className}`);
         const bg = getComputedStyle(stack[at]).backgroundColor;
+        // `color-mix()` computes to `color(srgb r g b / a)`, not `rgba()`: both read.
         const m = bg.match(/rgba?\(([^)]+)\)/);
-        const a = m ? (m[1].split(",")[3] === undefined ? 1 : parseFloat(m[1].split(",")[3])) : 0;
+        const c = bg.match(/^color\([^)/]*(?:\/\s*([\d.]+%?))?\)$/);
+        const a = m ? (m[1].split(",")[3] === undefined ? 1 : parseFloat(m[1].split(",")[3]))
+          : c ? (c[1] === undefined ? 1 : c[1].endsWith("%") ? parseFloat(c[1]) / 100 : parseFloat(c[1])) : 0;
         if (a < minAlpha) minAlpha = a;
       }
     }
