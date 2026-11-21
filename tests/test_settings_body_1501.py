@@ -57,6 +57,12 @@ def test_the_sections_sit_in_one_template_inside_the_modal_content():
     before = RAW[: TEMPLATE.start()]
     assert 'class="modal-content" tabindex="-1"' in before[-1200:], "the template is the content of the modal"
     assert INDEX.count('id="settings-body-template"') == 1
+    # L-world-class-530: the head and nav are a surface of their own (a script cannot hold a script), so the
+    # body sits after it, named `data-in`, and is moved into the slot in `.modal-content` when the shell is built.
+    shell = re.search(r'<script type="text/x-surface" data-surface="settingsShell">(.*?)</script>', RAW, re.S)
+    assert shell and re.search(r'class="modal-content" tabindex="-1">\s*<template data-surface-slot="settings"></template>', shell.group(1))
+    assert re.match(r'<script[^>]*\bdata-in="settingsShell"', RAW[TEMPLATE.start() :])
+    assert "slot.replaceWith(SURFACES.get(slot.dataset.surfaceSlot).tpl)" in BODY_JS
 
 
 def test_the_template_is_not_the_nav_or_the_search_or_the_close():

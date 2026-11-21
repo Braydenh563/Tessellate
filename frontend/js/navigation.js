@@ -991,8 +991,8 @@ function paintTabHistory() {
   // The settings modal's own copy of these two buttons, see their markup
   // comment for why a second copy exists instead of just raising the status
   // bar's z-index above every modal in the app.
-  const modalBack = $("settings-nav-back");
-  const modalForward = $("settings-nav-forward");
+  const modalBack = document.getElementById("settings-nav-back");
+  const modalForward = document.getElementById("settings-nav-forward");
   if (modalBack && modalForward) {
     modalBack.disabled = back.disabled;
     modalForward.disabled = forward.disabled;
