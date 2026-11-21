@@ -1220,6 +1220,7 @@
 /* Her tail's tip half (atlas.js, `tailWave`, INBOX 554): a box in the
    tail's box, turned about the joint (its origin is set from the tail). */
 .atl-lw-pose > .atl-lw-tip { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: rotate; }
+.atl-lw-pose > .atl-lw-drift { position: absolute; inset: 0; }
 
 /* The lower body's and the tail's pose for what it is doing (atlas.js,
    `atlasLowerState`, INBOX 575): set by the rig, on the compositor. */

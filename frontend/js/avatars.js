@@ -5994,10 +5994,15 @@
     }
     return g || 1;
   };
-  function nameMarkBuddyPropGaps(anims) {
+  //: **A layer's 10Hz step is a gap of 2** (L-ui-modernisation-95): what steps every other beat (`slow`) lets the beat
+  //: sleep through the one between, so the sitting Atlas (two head lags and the coil) wakes 10 times a second, not 20.
+  function nameMarkBuddyPropGaps(anims, slow) {
     const gaps = new WeakMap();
     for (const anim of anims) {
-      if (anim.id !== "atl-prop") continue;
+      if (anim.id !== "atl-prop") {
+        if (slow?.has(anim)) gaps.set(anim, 2);
+        continue;
+      }
       const ticks = Math.round(anim.effect.getTiming().duration / NMB_PROP_STEPS / NMB_TEMPO_MS);
       gaps.set(anim, Math.max(1, Math.min(NMB_PROP_GAP_MAX, ticks)));
     }
@@ -6101,7 +6106,7 @@
       //: whatever animates inside a layer next.)
       //: Not a limb's gesture in a move (`nameMarkBuddyLimbs`): 20Hz, not 10.
       nmbTempo.slow = new WeakSet(nmbTempo.anims.filter((a) => a.id !== "nmb-limb" && a.effect.target.closest("svg.atl-layer")));
-      nmbTempo.gap = nameMarkBuddyPropGaps(nmbTempo.anims);
+      nmbTempo.gap = nameMarkBuddyPropGaps(nmbTempo.anims, nmbTempo.slow);
     }
     //: On the next multiple of the stride, so a gap's beat is the one that runs.
     const stride = nmbTempo.stride;
@@ -6159,6 +6164,7 @@
     //: per animation (measured: 354 layouts a second, interleaved).
     const states = nmbTempo.anims.map((anim) => anim.playState);
     nmbTempo.held = !busy || states.includes("paused");
+    let wrote = 0;
     nmbTempo.anims.forEach((anim, i) => {
       //: **A move that has ended stays ended** (INBOX 669, the owner: "when I
       //: click atlas, it often starts tilting to the left then just snaps
@@ -6174,21 +6180,30 @@
         return;
       }
       if (busy) {
-        if (states[i] === "paused") anim.play();
+        if (states[i] === "paused") {
+          anim.play();
+          wrote += 1;
+        }
         nmbTempo.clock.delete(anim);
       } else if (states[i] !== "paused") {
         anim.pause();
+        wrote += 1;
         nmbTempo.clock.set(anim, anim.currentTime || 0);
       } else if (!still && step > 0) {
         //: At the animation's own rate (a stride's, a manner's).
         const t = (nmbTempo.clock.get(anim) ?? 0) + step * (anim.playbackRate || 1);
         nmbTempo.clock.set(anim, t);
-        if (nameMarkBuddyDue(anim, beat)) anim.currentTime = t;
+        if (nameMarkBuddyDue(anim, beat)) {
+          anim.currentTime = t;
+          wrote += 1;
+        }
       }
     });
     nmbTempo.at = now;
-    //: Drawn once a frame has run and a task after it (the frame's style is resolved by then).
-    if (nmbTempo.anims.length) {
+    //: Drawn once a frame has run and a task after it (the frame's style is resolved by then). Only a beat that wrote
+    //: asks (L-ui-modernisation-95): on an empty beat the look's rAF was a frame of its own, a restyle of every
+    //: running animation of the figure.
+    if (wrote) {
       nmbTempo.wrote = true;
       nmbTempo.drawn = false;
       afterFrames(() => setTimeout(() => (nmbTempo.drawn = true), 0), 1);

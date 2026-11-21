@@ -385,7 +385,7 @@ def test_the_size_handle_shows_only_when_asked_for() -> None:
     assert 'a.effect.target.closest("svg.atl-layer")' in tempo
     # (Each beat asks `nameMarkBuddyDue`, which keeps that rule and gives a prop's loop
     # its own gap: audit 1101, `test_idle_restyle_1101.py`.)
-    assert "if (nameMarkBuddyDue(anim, beat)) anim.currentTime = t;" in tempo
+    assert re.search(r"if \(nameMarkBuddyDue\(anim, beat\)\) \{\s*anim.currentTime = t;", tempo)
     assert "return beat || !nmbTempo.slow.has(anim);" in _fn("nameMarkBuddyDue")
 
 

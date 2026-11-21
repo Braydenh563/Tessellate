@@ -3203,6 +3203,15 @@ function atlasDrawFigure(mood) {
         const [ox, oy] = name === "tail" ? spec.tailSegsNow[0].slice(0, 2) : name.startsWith("neb") ? [31, 52] : spec.lowerPivot || [31, 55.5];
         into.style.transformOrigin = `${ox}px ${oy}px`;
         box.appendChild(into);
+        //: **Her wisps' own drift and curl run on an HTML box** (L-ui-modernisation-95): on the `<svg>` itself a
+        //: `translate` or `rotate` loop runs on the main thread (Chromium composites no independent transform on an
+        //: SVG target), and those eight loops asked for a frame every vsync, each restyling the whole figure.
+        if (["wisps", "wisps-back", "glint-a", "glint-b"].includes(name)) {
+          const drift = document.createElement("span");
+          drift.className = "atl-lw-drift";
+          into.appendChild(drift);
+          into = drift;
+        }
       }
       into.appendChild(svg);
       frag.appendChild(box);
