@@ -10,12 +10,21 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
+
 from tessellate.api import routes_document_story, routes_documents
-from tessellate.core.database import DocumentRevision, utcnow
+from tessellate.core.database import DocumentRevision
+from tests._clock import SUITE_NOW, pin_clock
 
 V0 = "# Plan\n\nAlpha stays.\n\n## Costs\n\nOld budget line.\n"
 V1 = "# Plan\n\nAlpha stays.\n\n## Costs\n\nNew budget line.\nSecond new line.\n"
 V2 = V1 + "\n## Risks\n\nWeather may turn.\n"
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Revisions are aged from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _history(client, versions):
@@ -25,7 +34,7 @@ def _history(client, versions):
         with routes_documents.deps.get_db().session() as session:
             # Age every revision past the quiet window so each edit is its own entry.
             for k, row in enumerate(session.query(DocumentRevision).order_by(DocumentRevision.id)):
-                row.created_at = utcnow() - timedelta(seconds=routes_documents.REVISION_QUIET_SECONDS * (9 - k) + 60)
+                row.created_at = SUITE_NOW - timedelta(seconds=routes_documents.REVISION_QUIET_SECONDS * (9 - k) + 60)
             session.commit()
     return doc["id"]
 
