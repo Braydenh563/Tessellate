@@ -58,10 +58,9 @@ def _pair(source: str, target: str, label: str) -> dict:
 
 #: Every direction the app knows how to ask for. A row reaches the page only
 #: when its three files are in the installed folder (`installed_pairs`), so a
-#: pair the package does not carry never shows in the picker. Only English to
-#: Spanish ships today (`core/extras.py`); the rest wait on pinned downloads
-#: (a LEDGER row), and their file names are the release's pattern, not yet
-#: checked against a downloaded file.
+#: pair the package does not carry never shows in the picker. All eight
+#: directions are pinned downloads (`core/extras.py`), their file names checked
+#: against the downloaded files and each translated once (L-world-class-41).
 PAIRS: tuple[dict, ...] = (
     _pair("en", "es", "English to Spanish"),
     _pair("en", "fr", "English to French"),

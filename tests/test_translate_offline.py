@@ -62,6 +62,11 @@ PAYLOADS = {
     "lex.gz": gzip.compress(b"LEX"),
     "vocab.gz": gzip.compress(b"VOCAB"),
 }
+# The other seven directions (L-world-class-41), each three small gzipped files.
+for _n in range(7):
+    PAYLOADS[f"model{_n}.gz"] = gzip.compress(b"MODEL%d" % _n)
+    PAYLOADS[f"lex{_n}.gz"] = gzip.compress(b"LEX%d" % _n)
+    PAYLOADS[f"vocab{_n}.gz"] = gzip.compress(b"VOCAB%d" % _n)
 
 
 def _install(client, monkeypatch, server) -> Path:
@@ -81,10 +86,9 @@ def test_the_package_is_a_pinned_mpl_download_never_in_the_repo():
     written = {name for d in extra.downloads for _m, name in d.members}
     assert set(translate.ENGINE_FILES) <= written
     assert "LICENSE" in written, "the MPL text travels with the engine"
-    # The registry may name directions the package does not carry yet (L582);
-    # each pair the package does write is a complete, registered row.
+    # Every registered direction is carried (L-world-class-41), each a complete row.
     carried = [p for p in translate.PAIRS if {p["model"], p["lex"], p["vocab"]} <= written]
-    assert [(p["from"], p["to"]) for p in carried] == [("en", "es")]
+    assert carried == list(translate.PAIRS)
     assert not {n for n in written if n.startswith("model.")} - {p["model"] for p in carried}
     assert any(extra.id in bundle.extras for bundle in extras.BUNDLES)
     assert not list((ROOT / "frontend").rglob("*.wasm.translate*"))

@@ -1697,7 +1697,8 @@ HELP_TOPICS.extend(
                 "beside Draft. The local model keeps every fact, name, number and "
                 "the markdown, and leaves code and links alone. It needs a model "
                 "connected. With no model, Translate this in the command palette "
-                "turns a selected passage from English into Spanish on this "
+                "turns a selected passage between English and Spanish, French, German, "
+                "Italian or Portuguese on this "
                 "computer once Translate offline is installed in Settings, Packages."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
