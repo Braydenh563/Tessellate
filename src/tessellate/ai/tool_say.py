@@ -894,6 +894,11 @@ def _skill_saved(result: dict, args: dict) -> Said:
     return f"{verb} the skill “{result.get('name') or args.get('name')}”" + (f", {count_noun(steps, 'step')}." if steps else "."), "", _chips(("Open Skills", SKILLS))
 
 
+def _chats_edited(result: dict, args: dict) -> Said:
+    label = str(result.get("label") or "").split(" ", 1)[-1] if str(result.get("label") or "").startswith("ph:") else str(result.get("label") or "")
+    return (label.rstrip(".") + "." if label else "Changed the chat list."), "", _chips(("Open Chat", CHATS))
+
+
 def _skill_deleted(result: dict, args: dict) -> Said:
     return f"Deleted the skill “{result.get('name') or args.get('name')}”.", "", _chips(("Open Skills", SKILLS))
 
@@ -941,7 +946,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "restore_board_item": _board_write("Put it back on the board"), "restore_link_reasons": _audit_restored, "generate_diagram": _diagram,
     "place_library_item": _placed, "set_reminder": _reminder_set, "complete_reminder": _reminder_done,
     "delete_note": _note_deleted, "restore_note": _note_restored, "save_user_preference": _preference,
-    "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,
+    "edit_chats": _chats_edited, "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,
     "run_skill": _run_skill, "compress_chat": _compress,
 }
 

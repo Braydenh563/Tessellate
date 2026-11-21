@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 2 | 0 | 0 | 0 | 2 |
+| chat | 0 | 0 | 0 | 0 | 0 | 0 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,14 +17,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 365 | 69 | 0 | 125 | 760 |
+| all | 326 | 363 | 69 | 0 | 125 | 758 |
 
 ## graph
 
 ## chat
 
-- [ ] **L-world-class-69** `chat` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
-- [ ] **L-world-class-180** `chat` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 
 ## whiteboard
 

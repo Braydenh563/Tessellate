@@ -75,6 +75,7 @@ CONFIRM_INTENTS = frozenset({
     "delete", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
     "delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember", "counter",
     "board_shape", "board_library", "board_link", "board_move", "board_words", "board_remove", "map_node", "map_link", "make_diagram", "make_document", "make_skill", "check_learned",
+    "chat_sort", "chat_group", "chat_rename", "chat_pin", "chat_folder",
 })
 
 
@@ -214,6 +215,16 @@ _ACTS = (
         "save a skill called Weekly tidy that tidies my notes", ("name", "prompt"), "delete_skill"),
     Act("check_learned", "open", "check what it learned", "Re-reads what the notebook has learned against its notes after you confirm; what no longer holds is retired, and Undo puts it back.",
         "check what you have learned", (), "undo_learned_check"),
+    Act("chat_sort", "sort", "sort the chat list", "Say recent, oldest, name or most messages; the sidebar lists your chats that way after you confirm, and Undo puts the earlier order back.",
+        "sort my chats by name", ("sort",), "edit_chats"),
+    Act("chat_group", "group", "group the chat list", "Say day, week or folder (or ungroup my chats); the sidebar groups your chats that way after you confirm, and Undo puts the earlier grouping back.",
+        "group my chats by week", ("group",), "edit_chats"),
+    Act("chat_rename", "rename", "rename a chat", "Names a saved chat and its new name; it is renamed after you confirm, and Undo puts the old name back.",
+        "rename the chat about Paris to Trip plans", ("chat", "title"), "edit_chats"),
+    Act("chat_pin", "pin", "pin a chat", "Names a saved chat; it is pinned to the top of the list (or unpinned, with unpin) after you confirm, and Undo reverses it.",
+        "pin the chat about Paris", ("chat",), "edit_chats"),
+    Act("chat_folder", "move", "move a chat into a folder", "Names a saved chat and a folder; it is filed there after you confirm (a new name makes the folder), and Undo moves it back.",
+        "move the chat about Paris to the folder Trips", ("chat", "folder"), "edit_chats"),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
     Act("similar", "find", "find similar notes", "Lists the notes closest in meaning to the one named, from the notes.", "find notes similar to the boiler note", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
@@ -308,7 +319,7 @@ _BOARD_INTENTS = frozenset({
 def guide_topic() -> dict:
     """The Guide's topic on acts, generated from the registry."""
     #: The examples alone: each says what it does, and the labelled list outgrew the Guide's reply budget.
-    lines = [f"\"{a.example}\"" for a in _ACTS if a.intent not in _BOARD_INTENTS]
+    lines = [f"\"{a.example}\"" for a in _ACTS if a.intent not in _BOARD_INTENTS and not a.intent.startswith("chat_")]
     return {
         "id": "chat-acts",
         "title": "Things Chat does for you",
@@ -345,6 +356,7 @@ ACT_TOOLS: dict[str, str] = {
     "delete_document": "delete_document", "delete_skill": "delete_skill", "board_card": "add_whiteboard_card", "make_map": "map_from_note", "remember": "save_user_preference", "counter": "create_note",
     "board_shape": "add_board_shape", "board_library": "place_library_item", "board_link": "add_whiteboard_link", "board_move": "move_board_item", "board_words": "edit_board_item", "board_remove": "delete_board_item", "map_node": "add_map_node", "map_link": "link_map_nodes",
     "make_diagram": "generate_diagram", "make_document": "create_document", "make_skill": "save_skill", "check_learned": "check_learned",
+    "chat_sort": "edit_chats", "chat_group": "edit_chats", "chat_rename": "edit_chats", "chat_pin": "edit_chats", "chat_folder": "edit_chats",
     "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "similar": "find_similar_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
@@ -378,6 +390,7 @@ def _listing(nouns: str) -> str:
 TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("read_url", r"https?://"),
     ("web_search", r"\b(?:search|look up|google)\b.*\b(?:the web|online|internet)\b"),
+    ("edit_document", r"\b(?:rewrite|revise|edit) the document\b|\b(?:rewrite|edit|revise|change)\b.*\b(?:paragraph|section|line|sentence)s? (?:of|in) the .*document\b"),
     ("read_text", r"\bread the (?:dates|amounts|numbers|times|units)\b"),
     ("check_answer", r"\bcheck (?:this|that|the|my) (?:answer|draft|reply)\b"),
     ("propose_act", r"\bsuggest (?:something|an act|a change) to do\b"),
@@ -449,7 +462,6 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("delete_category", r"\b(?:delete|remove) the category\b"),
     ("restore_note", r"\brestore\b|\bfrom the (?:recycle )?bin\b|\bundelete\b"),
     ("delete_document", r"\bdelete the document\b"),
-    ("edit_document", r"\b(?:rewrite|edit|revise|change)\b.*\b(?:paragraph|section|line|sentence)s? (?:of|in) the .*document\b"),
     ("get_document", r"\b(?:read|open|show) the document\b"),
     ("create_document", r"\bwrite (?:a|me a) (?:document|report|essay|write-up)\b"),
     ("search_files", r"\bin my files\b|\b(?:my|the) (?:photos|scans|attachments|pdfs)\b"),
@@ -469,6 +481,7 @@ NO_MODEL_READS = frozenset({
 #: how-to that reads as one of these acts keeps its topic first, the act's
 #: own line next; one whose words reached another topic gets the act first.
 ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
+    "chat_sort": ("chat-list",), "chat_group": ("chat-list",), "chat_rename": ("chat-list",), "chat_pin": ("chat-list",), "chat_folder": ("chat-list",),
     "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "reschedule": ("reminders", "tasks"), "archive": ("archive",), "unarchive": ("archive",), "tag_many": ("tags-categories",), "make_board": ("whiteboard",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),

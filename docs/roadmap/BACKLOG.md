@@ -710,6 +710,10 @@ additive.
 
 ## 11. Performance, accuracy and AI efficiency
 
+### Real-model run: several tool calls in one reply (L-world-class-69)
+
+Built on a fake transport only (`tests/test_tool_calls_index_69.py`). Needs a real model: `bash scratchpad/llama-dev.sh serve`, export the two variables it prints, then `.venv/bin/python -m pytest -m evals tests/test_tool_calls_evals.py -s`. For Ollama's native dialect also export `TESSELLATE_EVALS_OLLAMA_URL`. Record the printed "replies with 2+ calls" and "well formed" counts out of 10 for each dialect and model (the 1.5B model chose the right tool 0 of 10 times, WORLD_CLASS_PLAN 779).
+
 ### Cactus whistle and mirage: measured, not adopted (2026-11-14)
 
 On fixtures (L-chat-42, L-chat-45) both lost to the shipped path: whistle WER 9.15% against tiny.en 7.37% and 3.5 times slower, though a sixth of the size; mirage OCR CER 0.425 against RapidOCR 0.172. Needs a real model on a device: whistle on the owner's own voice notes, and mirage photo captions (6/8 subjects on fixtures) on real photos, before either is offered as a small-device extra.

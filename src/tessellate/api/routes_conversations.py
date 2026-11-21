@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
+from tessellate.core import chat_view, deps
 from tessellate.core.conversation_text import conversation_matches
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
 from tessellate.repo import uploads as uploads_repo
@@ -216,6 +216,16 @@ class RenameBody(BaseModel):
 
 class PinBody(BaseModel):
     pinned: bool
+
+
+class FolderBody(BaseModel):
+    #: Blank takes the chat out of its folder.
+    folder: str = Field(default="", max_length=60)
+
+    @field_validator("folder")
+    @classmethod
+    def _trimmed(cls, value: str) -> str:
+        return " ".join(value.split())
 
 
 def _user_message(turn: TurnBody, asked: datetime) -> dict:
@@ -454,6 +464,7 @@ def _summary(conversation: Conversation) -> dict:
         "updated_at": conversation.updated_at.isoformat(),
         "turns": len(messages) // 2,
         "pinned": bool(conversation.pinned),
+        "folder": conversation.folder or "",
         # A line of the first question, so the list says what a chat was
         # about when its title doesn't.
         "preview": first_question[:120],
@@ -570,6 +581,23 @@ def list_conversations(
     return [_summary(c) for c in matched[offset : offset + limit]]
 
 
+class ViewBody(BaseModel):
+    sort: str | None = None
+    group: str | None = None
+    pinned: bool | None = None
+
+
+@router.get("/view")
+def get_chat_view() -> dict:
+    """How the sidebar lists chats (sort, grouping, pinned first): one stored view (`core/chat_view`)."""
+    return chat_view.read(deps.get_config())
+
+
+@router.put("/view")
+def put_chat_view(body: ViewBody) -> dict:
+    return chat_view.write(deps.get_config(), **body.model_dump())
+
+
 @router.put("/{conversation_id}/pin")
 def pin_conversation(
     conversation_id: int, body: PinBody, session: Session = Depends(get_session)
@@ -584,6 +612,22 @@ def pin_conversation(
         update(Conversation)
         .where(Conversation.id == conversation.id)
         .values(pinned=body.pinned, updated_at=conversation.updated_at)
+    )
+    session.commit()
+    session.refresh(conversation)
+    return _summary(conversation)
+
+
+@router.put("/{conversation_id}/folder")
+def folder_conversation(
+    conversation_id: int, body: FolderBody, session: Session = Depends(get_session)
+) -> dict:
+    """Filing a chat is organising, not using it: `updated_at` is passed back as it was (as `pin_conversation`)."""
+    conversation = _existing(session, conversation_id)
+    session.execute(
+        update(Conversation)
+        .where(Conversation.id == conversation.id)
+        .values(folder=body.folder, updated_at=conversation.updated_at)
     )
     session.commit()
     session.refresh(conversation)
@@ -1256,6 +1300,7 @@ def _restore_row(conversation: Conversation) -> dict:
         "title": conversation.title,
         "messages": conversation.messages,
         "pinned": bool(conversation.pinned),
+        "folder": conversation.folder or "",
         "archived_at": iso(conversation.archived_at),
         "created_at": iso(conversation.created_at),
         "updated_at": iso(conversation.updated_at),
@@ -1280,6 +1325,7 @@ class RestoreBody(BaseModel):
     title: str = Field(max_length=120)
     messages: str
     pinned: bool = False
+    folder: str = Field(default="", max_length=60)
     archived_at: datetime | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -1304,7 +1350,7 @@ def restore_conversation(body: RestoreBody, session: Session = Depends(get_sessi
         return when.replace(tzinfo=None) if when else None
 
     conversation = Conversation(
-        id=body.id, title=body.title, messages=body.messages, pinned=body.pinned,
+        id=body.id, title=body.title, messages=body.messages, pinned=body.pinned, folder=body.folder,
         archived_at=plain(body.archived_at),
         created_at=plain(body.created_at) or utcnow(),
         updated_at=plain(body.updated_at) or utcnow(),

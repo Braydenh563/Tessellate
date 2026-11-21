@@ -13,7 +13,8 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import acts, board_acts, commands, help_chat
-from tessellate.core.database import Document, Entry, EntryLink, Reminder, UserPreference, WhiteboardNode, WhiteboardObject, WhiteboardSketch
+from tessellate.core import chat_view
+from tessellate.core.database import Conversation, Document, Entry, EntryLink, Reminder, UserPreference, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.entry import manager
 
 NOW = datetime(2026, 10, 10, 12, 0)
@@ -66,7 +67,9 @@ def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
         #: A suggested preference (remember, L114) is a row that waits for an answer; its Undo drops it.
         tuple(sorted(p.content for p in session.scalars(select(UserPreference)))),
     )
-    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made, surfaces
+    #: The chat acts (L-world-class-180): each chat's name, pin and folder, and the sidebar's stored view.
+    chats = tuple((c.id, c.title, c.pinned, c.folder or "") for c in session.scalars(select(Conversation).order_by(Conversation.id)))
+    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made, surfaces, chats, chat_view.read(deps.get_config())
 
 
 def test_every_act_has_parse_preview_run_and_a_help_line():
@@ -131,6 +134,9 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
 
         made = tools.execute_tool(session, "create_mindmap", {"title": "Trips", "root_text": "Paris"})
         tools.execute_tool(session, "add_map_node", {"board_id": made["board_id"], "text": "Rome", "parent_id": made["root_id"]})
+    if act.intent in ("chat_rename", "chat_pin", "chat_folder"):
+        session.add(Conversation(title="Paris trip planning", messages="[]"))
+        session.commit()
     if act.intent == "to_reminders":
         manager.create_entry(session, "# Action items\n\n- [ ] book the venue\n- [ ] email the caterer\n")
         session.commit()
@@ -183,7 +189,8 @@ def test_the_capability_line_is_the_registry_said():
 
 
 def test_the_guide_topic_is_generated_from_the_registry():
-    body = " ".join(t["body"] for t in help_chat.HELP_TOPICS if t["id"] in ("chat-acts", "chat-acts-boards"))
+    #: The chat-list sentences are in the "chat-list" topic beside the sort menu they drive (L-world-class-180).
+    body = " ".join(t["body"] for t in help_chat.HELP_TOPICS if t["id"] in ("chat-acts", "chat-acts-boards", "chat-list"))
     for act in acts.ACTS.values():
         assert act.example in body
     assert help_chat.topics_for("what can chat do with no model")[0]["id"] == "chat-acts"

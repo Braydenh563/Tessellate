@@ -16,7 +16,7 @@ from tessellate.ai.provider import set_write_tools
 # which skills act rather than answer, one list, so the two can't disagree.
 WRITE_TOOLS = {
     "audit_link_reasons", "restore_link_reasons",
-    "check_learned",
+    "check_learned", "edit_chats",
     "create_note",
     "edit_note",
     "tag_note",
@@ -269,10 +269,10 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ),
     ),
     (
-        ("search_chat_history",),
+        ("search_chat_history", "edit_chats"),
         (
             "we talked", "we discussed", "you said", "earlier", "last time",
-            "previous", "conversation", "chat about", "mentioned before",
+            "previous", "conversation", "chat about", "mentioned before", "my chats", "the chats", "chat list", "sort chats", "group chats", "chats by", "pin the chat", "rename the chat", "chat folder",
         ),
     ),
     (

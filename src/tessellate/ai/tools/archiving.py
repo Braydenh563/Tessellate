@@ -63,7 +63,7 @@ ARCHIVE_SPEC = ToolSpec(
         "type": "object",
         "properties": {
             "note_id": {"type": "integer", "description": "The note's id number"},
-            "note_ids": {"type": "array", "items": {"type": "integer"}, "description": "IDs of several notes (optional)"},
+            "note_ids": {"type": "array", "items": {"type": "integer"}, "description": "IDs of several notes"},
             "archived": {"type": "boolean", "description": "Leave out to archive; false to bring back"},
         },
         "required": [],

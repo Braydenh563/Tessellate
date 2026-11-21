@@ -1842,32 +1842,6 @@ function relativeTime(iso) {
 //: fitting beside a conversation.
 const RECENT_CHATS_SHOWN = 8;
 
-const CHAT_SIDEBAR_SORT_KEY = "chatSidebarSort";
-
-// Pinned notes stay first regardless of sort, that promise (a divider marks
-// the boundary, just below) predates this control and a sort choice
-// shouldn't silently break it. Only the order *within* each of the two
-// groups changes.
-function sortConversations(conversations, mode, limit = Infinity) {
-  const pinned = conversations.filter((c) => c.pinned);
-  const rest = conversations.filter((c) => !c.pinned);
-  const byMode = {
-    recent: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
-    turns: (a, b) => (b.turns || 0) - (a.turns || 0),
-    tokens: (a, b) => (b.tokens || 0) - (a.tokens || 0),
-    alpha: (a, b) => a.title.localeCompare(b.title),
-  }[mode] || null; // "recent" is already the server's own order
-  if (byMode) {
-    pinned.sort(byMode);
-    rest.sort(byMode);
-  }
-  //: The rows the switcher draws (audit 1028 E46): more than five pinned chats
-  //: used to fill all eight rows and push every recent chat out, so the newest
-  //: three always keep a place; the other pinned ones are in the Library.
-  const pinnedShown = pinned.slice(0, Math.max(limit - Math.min(rest.length, 3), 0));
-  return [...pinnedShown, ...rest.slice(0, Math.max(limit - pinnedShown.length, 0))];
-}
-
 async function loadConversationList() {
   //: Placeholders while the list is on its way, and no "no saved chats"
   //: until the answer says so (INBOX 435 (6), skeletons.js).
@@ -1878,11 +1852,15 @@ async function loadConversationList() {
   //: The search box asks the server, which reads titles and message text (E47).
   const term = $("chat-sidebar-search").value.trim();
   const asked = (loadConversationList.n = -~loadConversationList.n); // the newest read owns the list
+  //: The sort and grouping are `chat-order.js`'s (lazy): the server holds the view, so a typed "sort my chats by name" changes it too.
+  const ordering = lazyScript("/js/chat-order.js").then((ok) => ok && ChatOrder.load());
   const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson(`/conversations?q=${encodeURIComponent(term)}`));
   clearSkeletons(list);
+  const view = await ordering;
   if (asked !== loadConversationList.n) return;
   if (!loaded) return list.replaceChildren();
-  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent", term ? 4 * RECENT_CHATS_SHOWN : RECENT_CHATS_SHOWN);
+  if (view && !$("chat-sidebar-view").firstChild) ChatOrder.mount();
+  const conversations = view ? ChatOrder.rows(loaded, view, ChatOrder.limit(term)) : loaded.slice(0, RECENT_CHATS_SHOWN);
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);
@@ -1909,8 +1887,12 @@ async function loadConversationList() {
     }
   }
 
-  let sawUnpinned = false;
+  let sawUnpinned = !!view && view.group !== "none"; // a heading marks each group, so no divider
   for (const conversation of conversations) {
+    if (conversation.heading) {
+      list.appendChild(ChatOrder.groupRow(conversation.heading));
+      continue;
+    }
     // One divider between the pinned block and the rest, so "pinned" reads as
     // a section rather than as an unexplained reordering.
     if (!conversation.pinned && !sawUnpinned && list.children.length) {
@@ -2009,6 +1991,11 @@ async function loadConversationList() {
         chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
         if (chatConv.id === conversation.id) $("chat-title").textContent = next;
         loadConversationList();
+      })
+    );
+    items.push(
+      makeMenuItem("ph:folder Move to folder", "File this chat in a folder", async () => {
+        if (await lazyScript("/js/chat-order.js")) ChatOrder.move(conversation);
       })
     );
     items.push(

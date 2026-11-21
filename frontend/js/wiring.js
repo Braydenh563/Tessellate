@@ -296,14 +296,6 @@ onSurface("chat", () => {
   });
   $("chat-new").addEventListener("click", newChatConversation);
   $("chat-private-toggle").addEventListener("click", chatPrivateToggle);
-  {
-    const sortSelect = $("chat-sidebar-sort");
-    sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";
-    sortSelect.addEventListener("change", () => {
-      prefs.set(CHAT_SIDEBAR_SORT_KEY, sortSelect.value);
-      loadConversationList();
-    });
-  }
   //: E47: search the saved chats. A search field clears itself with its X (and Escape, where
   //: the browser does that) and says `input`, so one listener covers both.
   $("chat-sidebar-search").addEventListener("input", () => {

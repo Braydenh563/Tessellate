@@ -2510,6 +2510,22 @@
     }
    }
   ],
+  "edit_chats": [
+   {
+    "args": {
+     "action": "sort",
+     "sort": "name"
+    },
+    "result": {
+     "view": {
+      "sort": "name",
+      "group": "none",
+      "pinned": true
+     },
+     "label": "ph:sort-descending Chats are by name"
+    }
+   }
+  ],
   "edit_document": [
    {
     "args": {

@@ -10,6 +10,7 @@
     "find_contradictions": "where do my notes contradict each other",
     "audit_link_reasons": "audit the vague link reasons in my graph",
     "check_learned": "check what you learned about me against my notes",
+    "edit_chats": "sort my chats by name",
     "save_user_preference": "remember that I prefer short answers",
     "ask_user": "ask me which one I meant before you choose",
     "search_notes": "what did I write about the boiler",
@@ -139,6 +140,11 @@
     "make_diagram": "draw a diagram of Trips with Paris, Rome and Oslo",
     "make_document": "write a document called Harbor report: Findings for the harbor",
     "make_skill": "save a skill called Weekly tidy that tidies my notes",
-    "check_learned": "check what you have learned"
+    "check_learned": "check what you have learned",
+    "chat_sort": "sort my chats by name",
+    "chat_group": "group my chats by week",
+    "chat_rename": "rename the chat about Paris to Trip plans",
+    "chat_pin": "pin the chat about Paris",
+    "chat_folder": "move the chat about Paris to the folder Trips"
   }
 }

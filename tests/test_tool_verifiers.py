@@ -51,6 +51,7 @@ FALSE_CLAIMS = {
     "restore_link_reasons": ({"log_id": 999_999}, {"restored": 5}),
     "check_learned": ({}, {"retired": 3, "run": "2026-11-01T09:00:00"}),
     "save_skill": ({}, {"name": "never saved"}),
+    "edit_chats": ({}, {"id": 999_999}),
     "archive_note": ({}, {"archived": [999_999], "now_archived": True}),
 }
 

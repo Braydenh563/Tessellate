@@ -4820,10 +4820,8 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   #chat-sidebar {
     --card-pad-y: var(--space-3);
   }
-  /* The select is dressed by `enhanceSelect` (a `.select-shell` wraps it),
-     so the shell is what has to go, not the hidden native control. */
-  #chat-sidebar .chat-sidebar-sort,
-  #chat-sidebar .select-shell:has(> .chat-sidebar-sort),
+  /* The sort and group menu mounts in `.chat-sidebar-view` (chat-order.js). */
+  #chat-sidebar .chat-sidebar-view,
   #chat-sidebar .conv-browse-all {
     display: none;
   }
