@@ -262,13 +262,16 @@ function paintUserMarks() {
     //: both in one were 86 ms at 4x CPU (L-world-class-362).
     const holders = document.querySelectorAll("[data-user-mark]");
     nameMark(seed, +holders[0]?.dataset.userMark || 18, "draw");
-    setTimeout(() => {
-      for (const holder of holders) {
-        const size = +holder.dataset.userMark || 18;
-        //: A face drawn from this name stays; the Settings preview replaces it (B47).
-        if (holder.firstChild?.key !== seed + size) holder.replaceChildren(Object.assign(nameMark(seed, size), { key: seed + size }));
-      }
-    });
+    //: One holder a task (L-world-class-354): the faces together were 65 ms at 4x CPU, median of 5.
+    const drawHolder = (i) => {
+      const holder = holders[i];
+      if (!holder) return;
+      const size = +holder.dataset.userMark || 18;
+      //: A face drawn from this name stays; the Settings preview replaces it (B47).
+      if (holder.firstChild?.key !== seed + size) holder.replaceChildren(Object.assign(nameMark(seed, size), { key: seed + size }));
+      setTimeout(() => drawHolder(i + 1));
+    };
+    setTimeout(() => drawHolder(0));
   });
   const head = document.getElementById("profile-head-name");
   if (head) head.textContent = (prefsCache?.display_name || "").trim() || "Your profile";

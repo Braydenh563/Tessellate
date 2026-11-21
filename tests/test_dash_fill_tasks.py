@@ -71,6 +71,26 @@ def test_the_skeleton_follows_by_the_grids_observer_not_a_timer_read() -> None:
     # The read is in a function the grid's own observer calls, after the frame's layout: it forces nothing.
     assert "ro.follow = () => {" in body and "grid.offsetTop" in body.split("ro.follow = () => {", 1)[1]
     watch = _fn("watchDashWidgets")
-    assert watch.index("dashResizeObserver.follow?.();") < watch.index("if (queued) return;")
+    assert "dashResizeObserver.follow?.();" in watch
     done = _fn("dashFillingSkeletonDone")
     assert "follow = null;" in done and "unobserve(el)" in done
+
+
+def test_sizing_uses_the_observers_heights_and_no_frame_hop() -> None:
+    """L-world-class-620: the sizing callback read every card's rect after the fills had dirtied layout."""
+    watch = _fn("watchDashWidgets")
+    cb = watch.split("new ResizeObserver((entries) => {", 1)[1].split("\n  });", 1)[0]
+    assert "sizeDashWidgets.heights.set(" in cb and "borderBoxSize" in cb
+    assert "getBoundingClientRect" not in cb and "requestAnimationFrame" not in cb
+    sizing = _fn("sizeDashWidgets")
+    assert "known.get(card) ?? card.getBoundingClientRect().height" in sizing
+    assert "sizeDashWidgets.heights = new WeakMap();" in DASH
+
+
+def test_user_marks_are_drawn_one_holder_per_task() -> None:
+    """L-world-class-354: every holder's face was drawn in one timer task (65 ms median at 4x, 5 runs)."""
+    src = (ROOT / "frontend" / "js" / "chat-agent.js").read_text(encoding="utf-8")
+    body = src.split("function paintUserMarks(", 1)[1].split("\n}\n", 1)[0]
+    flat = " ".join(body.split())
+    assert "for (const holder of holders)" not in flat, "all holders in one task"
+    assert "setTimeout(() => drawHolder(i + 1))" in flat or "setTimeout(() => drawFrom(i + 1))" in flat

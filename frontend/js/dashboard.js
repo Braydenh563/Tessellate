@@ -856,7 +856,11 @@ function sizeDashWidgets() {
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
   //: reads go before any write.
-  const heights = cards.map((card) => card.getBoundingClientRect().height);
+  //: A height the grid's observer has already reported is used as it is (L-world-class-620): the rect read here
+  //: laid the page out whole, 49 to 307 ms at 4x on 500 notes, because the fills had dirtied it. A card the
+  //: observer has not reported yet is read.
+  const known = sizeDashWidgets.heights;
+  const heights = cards.map((card) => known.get(card) ?? card.getBoundingClientRect().height);
   if (!heights.some(Boolean)) return;
   const styles = getComputedStyle(grid);
   const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
@@ -868,6 +872,8 @@ function sizeDashWidgets() {
   grid.classList.add("spans-ready");
 }
 
+sizeDashWidgets.heights = new WeakMap();
+
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
 // size rather than only once at render time.
 function watchDashWidgets() {
@@ -877,17 +883,15 @@ function watchDashWidgets() {
     return;
   }
   dashResizeObserver?.disconnect();
-  let queued = false;
-  dashResizeObserver = new ResizeObserver(() => {
+  dashResizeObserver = new ResizeObserver((entries) => {
+    //: The sizes arrive with the entries, after the frame's layout, so sizing here reads nothing back (L-world-class-620).
+    for (const entry of entries) {
+      if (entry.target.classList.contains("dash-widget")) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+    }
     dashResizeObserver.follow?.();
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
-      //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
-      if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
-    });
+    //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
+    //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
+    if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
   });
   //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
   //: with the widgets drawn rather than empty: sizing here as well was a whole-page layout
