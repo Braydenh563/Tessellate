@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 84 | 10 | 0 | 0 | 94 |
+| world-class | 0 | 83 | 10 | 0 | 0 | 93 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 474 | 81 | 2 | 111 | 927 |
+| all | 372 | 473 | 81 | 2 | 111 | 926 |
 
 ## graph
 
@@ -464,7 +464,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## world-class
 
-- [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
 - [ ] **L559** `world-class` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13

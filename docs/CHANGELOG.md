@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lock: nothing is sent to the server after Lock until you sign in again; six dashboard and chat loaders used to fire and fail behind the lock screen (L529).
 - Command palette: "new" lists the create commands first (a row is ranked on its name without its icon token), and the Notes tab's category list is drawn when the tab is opened after notes loaded behind another tab (L499).
 - INBOX 266 (L542): checked, all seven asks were already answered by 2026-10-05; nothing left to assign.
 - Boot and stylesheet recounts (L531, L533): cold, warm and phone-width boots measured (first paint 264, 226 and 219 ms; 678, 22 and 612 KB); decisions 9 to 17 recounted from the stylesheets, and the colour and hover ratchets lowered to the count (189 to 156, 7 to 6).
