@@ -342,9 +342,16 @@ function docGrammarRequest(text) {
   if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
   docGrammarWire.asking = text;
   const asked = performance.now();
+  //: **Findings worked out when first read** (L342): an answer that lands
+  //: while keys keep coming is read only at the pause, and working it out
+  //: on arrival put a whole-document pass (4.3 ms at 4x CPU) on a key.
+  const cached = (lints) => {
+    let findings = null;
+    return { text, linkText: docCheckLinkText(), get findings() { return findings || (findings = docGrammarFindings(lints, text)); } };
+  };
   //: Harper's findings are drawn at once; the merged ones replace them.
   const early = (first) => {
-    docGrammarCache = { text, findings: docGrammarFindings(first, text), linkText: docCheckLinkText() };
+    docGrammarCache = cached(first);
     if ((docProse.typedAt || 0) <= asked) renderDocProse(true);
   };
   docGrammarAsk(text, early).then((lints) => {
@@ -354,7 +361,7 @@ function docGrammarRequest(text) {
     //: prose pass of its own (37 passes in 60 keys at 4x CPU).
     const typed = (docProse.typedAt || 0) > asked;
     if (lints === null) return typed ? undefined : renderDocProse(true);
-    docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
+    docGrammarCache = cached(lints);
     if (!typed) renderDocProse(true);
   });
 }
