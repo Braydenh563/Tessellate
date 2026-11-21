@@ -133,7 +133,7 @@ function editorSurfaceFor(box) {
 //: Fetch the bundle that carries the surface adapters, once, and pick the
 //: interrupted work back up when it lands.
 //:
-//: `retry` is what makes a fast typist's first "/" still open a menu: the
+//: `retry` is what makes a fast typist's first "/" open a menu all the same: the
 //: keystroke that found no adapter is replayed against the surface once there
 //: is one, so the menu opens a moment late rather than not at all. Without it
 //: the first "/" of a session would always be the one that did nothing, which
@@ -303,7 +303,7 @@ const CALLOUT_KINDS = {
   note: { icon: "ph:note", label: "Note", about: "A point worth setting apart" },
   abstract: { icon: "ph:clipboard-text", label: "Summary", about: "The short version, up front", aliases: ["summary", "tldr"] },
   info: { icon: "ph:info", label: "Info", about: "Background the reader may need" },
-  todo: { icon: "ph:check-square", label: "To do", about: "Something still to be done" },
+  "todo": { icon: "ph:check-square", label: "To do", about: "Something still to be done" },
   tip: { icon: "ph:lightbulb", label: "Tip", about: "A better way to do it", aliases: ["hint", "important"] },
   success: { icon: "ph:check-circle", label: "Success", about: "What worked, or what is done", aliases: ["check", "done"] },
   question: { icon: "ph:question", label: "Question", about: "An open question", aliases: ["help", "faq"] },
@@ -386,7 +386,7 @@ function editorFuzzyRank(rows, query) {
 }
 //: What an empty callout body says until something is written in it.
 function calloutHint(kind) {
-  const own = { todo: "Write the task", toggle: "Write what folds away", success: "Write what worked", failure: "Write what failed" };
+  const own = { "todo": "Write the task", toggle: "Write what folds away", success: "Write what worked", failure: "Write what failed" };
   const meta = CALLOUT_KINDS[kind];
   return own[kind] || `Write the ${meta ? meta.label.toLowerCase() : "note"}`;
 }
@@ -430,6 +430,23 @@ function editorNotifyHost(textarea) {
   if (textarea.classList.contains("autogrow")) {
     autoGrow(textarea.el);
   }
+}
+
+//: The slash menu's Web link (INBOX L-mindmap-7, the owner 2026-11-12: inline
+//: syntax). Inside a sentence it is `[text](url)`; on a line of its own that
+//: form is a Link card (CHAT_PLAN decision 12), so there it writes the
+//: CommonMark angle destination `[text](<url>)`, which the card rule skips.
+function editorWebLink(t) {
+  const { selectionStart: s, selectionEnd: e, value } = t;
+  const label = value.slice(s, e) || "link text";
+  const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+  const nl = value.indexOf("\n", e);
+  const lineEnd = nl === -1 ? value.length : nl;
+  const alone = !(value.slice(lineStart, s) + value.slice(e, lineEnd)).trim();
+  const open = alone ? "(<" : "(";
+  const close = alone ? ">)" : ")";
+  const scheme = "https://";
+  editorSplice(t, s, e, `[${label}]${open}${scheme}${close}`, { from: label.length + 2 + open.length, to: label.length + 10 + open.length });
 }
 
 // Replace [start, end) with `text`, then place the caret. `select` picks which
@@ -523,7 +540,7 @@ function editorApplyAction(textarea, action) {
       .map((line) => (line.startsWith(action.line) ? line : action.line + line))
       .join("\n");
     //: An empty line has nothing to select: the caret goes after the
-    //: marker, so "/todo" then typing writes the item (measured on a board
+    //: marker, so the to-do slash item then typing writes the item (measured on a board
     //: text box, 2026-10-10: the selected "- [ ] " was typed over).
     editorSplice(textarea, lineStart, Math.max(lineEnd, end), prefixed, {
       from: target.trim() ? 0 : prefixed.length,
@@ -979,7 +996,7 @@ function editorBlockRows(context) {
   //: text areas as well, like the / menu").
   add({ id: "bookmark-link", group: "Embeds", icon: "ph:bookmark-simple", label: "Bookmark link", about: "Pick a saved bookmark and link it here", keys: "[Title](url)", keywords: ["bookmark", "link", "reference", "url", "web", "saved", "source"], run: (t) => editorInsertBookmarkLink(t) });
   add({ id: "link-card", group: "Embeds", icon: "ph:cursor-click", label: "Link card", about: "A web link drawn as a card you press", keys: "[Title](url)", keywords: ["link", "card", "button", "bookmark", "url", "web", "preview"], run: (t) => editorBlock(t, "[", "Title", "](https://)") });
-  add({ id: "weblink", group: "Embeds", icon: "ph:globe", label: "Web link", about: "A link inside the sentence", keys: "[text](url)", keywords: ["url", "web", "href", "external", "link"], run: (t) => { const { selectionStart: s, selectionEnd: e, value } = t; const label = value.slice(s, e) || "link text"; editorSplice(t, s, e, `[${label}](https://)`, { from: label.length + 3, to: label.length + 11 }); } });
+  add({ id: "weblink", group: "Embeds", icon: "ph:globe", label: "Web link", about: "A link inside the sentence", keys: "[text](url)", keywords: ["url", "web", "href", "external", "link"], run: (t) => editorWebLink(t) });
   if (inDocument) {
     add({ id: "blockref", group: "Embeds", icon: "ph:link-simple", label: "Link to this block", about: "Copies [[Title#^id]] for this paragraph", keys: "#^", keywords: ["block", "reference", "anchor", "paragraph", "permalink", "copy link", "^"], run: (t) => editorApplyNamed(t, "blockref") });
   }
@@ -1219,7 +1236,7 @@ function editorCloseMenu(reason = "") {
   editorMenuState.items = [];
   $("editor-menu")?.classList.add("hidden");
   editorHomeMenu(null);
-  //: **A code fence is never left open.** The language step starts from a
+  //: **A code fence is never left unclosed.** The language step starts from a
   //: written "```", and an unclosed fence turns the rest of the page into
   //: code in every view. Closed any way but by choosing (Escape, a click
   //: elsewhere), the block is finished with whatever language was typed.
@@ -1337,7 +1354,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to follow up about Atlas pr]]` in the note (audit 1029 N19).
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to ask again about Atlas pr]]` in the note (audit 1029 N19).
         .slice(0, 120),
     }))
     .filter((item) => item.value);
@@ -1699,6 +1716,8 @@ function editorRunItem(position) {
   }
 }
 
+//: The `[[` list opens on notes alone and gains documents and files a moment later; an empty first list closes the menu, so the
+//: late arrival reopens it while the token is still under the caret (the Embed row opened it with nothing cached: bare `![[`, R12).
 function editorOpenMenu(textarea, trigger) {
   //: The word list the documents editor draws at the caret gives way.
   if (typeof hideDocComplete === "function") hideDocComplete();
@@ -1707,6 +1726,28 @@ function editorOpenMenu(textarea, trigger) {
   editorLinkBox(textarea, true);
   editorMenuState.trigger = trigger;
   editorMenuState.index = 0;
+  if (trigger === "[[") {
+    const again = () => {
+      if (editorMenuState.open) editorRefreshMenu();
+      else if (editorMenuState.trigger === "[[" && editorMenuState.textarea && editorTokenAt(editorMenuState.textarea, "[[")) editorOpenMenu(editorMenuState.textarea, "[[");
+    };
+    if (editorDocumentCache === null) {
+      editorDocumentCache = [];
+      //: Paged to the end: a document missing from this list is a `[[link]]` the menu cannot offer, silently.
+      apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+        .then((docs) => {
+          editorDocumentCache = Array.isArray(docs) ? docs : [];
+          again();
+        })
+        .catch(() => {
+          editorDocumentCache = [];
+        });
+    }
+    if (editorFileCache === null) {
+      editorFileCache = [];
+      editorLoadFiles().then(again);
+    }
+  }
   const pane = $("editor-menu-preview");
   if (pane) delete pane.dataset.for;
   editorRefreshMenu();
@@ -1811,33 +1852,6 @@ function editorHandleInput(textarea) {
   //: caret by `editorPlaceMenu`.
   for (const trigger of ["/", "[["]) {
     if (editorTokenAt(textarea, trigger)) {
-      if (trigger === "[[") {
-        // Fetch documents once, then redraw, the list opens on notes alone
-        // and gains documents a moment later rather than blocking on a fetch.
-        if (editorDocumentCache === null) {
-          editorDocumentCache = [];
-          //: Paged to the end, same reason as the file cache above: a
-          //: document missing from this list is a `[[link]]` the menu
-          //: cannot offer, silently.
-          apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
-            .then((docs) => {
-              editorDocumentCache = Array.isArray(docs) ? docs : [];
-              if (editorMenuState.open) editorRefreshMenu();
-            })
-            .catch(() => {
-              editorDocumentCache = [];
-            });
-        }
-        //: Files and images the same way: the menu opens on what is already
-        //: in memory and gains the rest a moment later, rather than making
-        //: the first keystroke wait on two requests.
-        if (editorFileCache === null) {
-          editorFileCache = [];
-          editorLoadFiles().then(() => {
-            if (editorMenuState.open) editorRefreshMenu();
-          });
-        }
-      }
       editorOpenMenu(textarea, trigger);
       return;
     }
@@ -1866,7 +1880,7 @@ document.addEventListener(
       //: the bundle lands after the first focus: a "/" typed in that gap
       //: opened the menu on the textarea, and every key after the mount came
       //: from the engine and was ignored here (measured: Tab wrote two
-      //: spaces into the note with the menu still open). Same id, same box:
+      //: spaces into the note with the menu still showing). Same id, same box:
       //: the menu follows it.
       if (!surface || !editorMenuState.textarea || !surface.id || surface.id !== editorMenuState.textarea.id) return;
       editorMenuState.textarea = surface;
@@ -1987,6 +2001,8 @@ const SELECTION_BAR_ACTIONS = [
   { md: "h2", label: "ph:text-h", title: "Heading" },
   { md: "quote", label: "ph:quotes", title: "Quote" },
   { turn: true, label: "ph:swap", title: "Turn into" },
+  //: INBOX 1728: documents only (hidden elsewhere in `selectionBarShow`); opens the two note rows.
+  { note: true, label: "ph:note-pencil", title: "Selection to a note" },
   //: **Not a formatting action, and it says so with a rule beside it.**
   //: REDESIGN.md §R7.1 item 1, quoted from the request: *"able to highlight
   //: text and say something in the chat and the agent gets the context of
@@ -2007,7 +2023,7 @@ const SELECTION_BAR_ACTIONS = [
 const selectionBarState = { textarea: null };
 
 function selectionBarElement() {
-  let bar = $("selection-bar");
+  let bar = document.getElementById("selection-bar");
   if (bar) return bar;
   //: Built once, lazily, rather than sitting in index.html: it belongs to this
   //: file's behaviour, and a hidden bar in the markup would be one more thing
@@ -2037,6 +2053,7 @@ function selectionBarElement() {
     }
     if (action.md) button.dataset.md = action.md;
     if (action.turn) button.dataset.turn = "1";
+    if (action.note) button.dataset.note = "1";
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     setLabel(button, action.label);
@@ -2049,6 +2066,10 @@ function selectionBarElement() {
       if (!textarea) return;
       if (action.turn) {
         if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, button);
+        return;
+      }
+      if (action.note) {
+        docSelectionNoteMenu(textarea, button);
         return;
       }
       if (action.ask) {
@@ -2084,7 +2105,7 @@ function selectionBarElement() {
 
 function selectionBarHide() {
   selectionBarState.textarea = null;
-  $("selection-bar")?.classList.add("hidden");
+  document.getElementById("selection-bar")?.classList.add("hidden");
 }
 
 function selectionBarShow(textarea) {
@@ -2102,6 +2123,8 @@ function selectionBarShow(textarea) {
   //: rewrite in place; the formatting eight and their rule are hidden.
   const code = editorSurfaceKind(textarea) === "document" && editorDocIsCode();
   for (const button of bar.querySelectorAll("[data-md], [data-turn], .selection-bar-rule")) button.hidden = code;
+  const note = bar.querySelector("[data-note]");
+  if (note) note.hidden = editorSurfaceKind(textarea) !== "document" || typeof docSelectionNoteItems !== "function";
   const turn = bar.querySelector("[data-turn]");
   if (turn && !code) turn.hidden = typeof docTurnIntoMenu !== "function";
   //: **Never a second copy of the phone's formatting bar.** Below 600 the
@@ -2551,6 +2574,9 @@ const inlineAiState = {
   instruction: "",
   phase: "idle", // idle | asking | working | review
   controller: null,
+  //: The app's undo-stack entry for the answer in the text (rule 1.8), so the
+  //: bar's Undo, the status bar's Undo and Ctrl+Z are one step, not three.
+  action: null,
 };
 
 //: The bar is one element reused for every invocation, built lazily for the
@@ -2773,23 +2799,31 @@ function inlineAiClose() {
   textarea?.focus();
 }
 
-function inlineAiUndo() {
-  const { textarea, before, start, end } = inlineAiState;
+async function inlineAiUndo() {
+  const { textarea, action } = inlineAiState;
+  inlineAiState.action = null;
   if (!textarea) return inlineAiClose();
-  textarea.value = before;
-  textarea.setSelectionRange(start, end);
-  editorNotifyHost(textarea);
+  if (action && undoStack.at(-1) === action) await performUndo();
+  else if (action && undoStack.includes(action)) {
+    await action.undo();
+    settleUndoFromToast(action);
+  }
   inlineAiClose();
 }
 
 function inlineAiRetry() {
-  const { textarea, before, start, end, instruction } = inlineAiState;
+  const { textarea, before, start, end, instruction, action } = inlineAiState;
   if (!textarea) return;
   //: Put the text back *before* re-asking, or the second answer is written on
-  //: top of the first and the third on top of that.
+  //: top of the first and the third on top of that. The stale stack entry goes
+  //: too: the next answer pushes its own.
   textarea.value = before;
   textarea.setSelectionRange(start, end);
   editorNotifyHost(textarea);
+  const at = undoStack.indexOf(action);
+  if (at !== -1) undoStack.splice(at, 1);
+  inlineAiState.action = null;
+  renderUndoBar();
   inlineAiOpen(textarea, instruction);
 }
 
@@ -2851,6 +2885,14 @@ async function inlineAiSubmit() {
     //: two would drift.
     const to = data.replaced_selection ? end : start;
     editorSplice(textarea, start, to, revised, { from: 0, to: revised.length });
+    //: One stack entry (rule 1.8, decided 2026-11-12 under standing order 3):
+    //: the change is a range swap, so undo and redo are the same swap reversed.
+    const original = before.slice(start, to);
+    inlineAiState.action = pushUndo(
+      "AI edit",
+      () => editorSplice(textarea, start, start + revised.length, original, { from: 0, to: original.length }),
+      () => editorSplice(textarea, start, start + original.length, revised, { from: 0, to: revised.length }),
+    );
     //: The inserted text ends up *selected*. That is the highlight, a
     //: textarea cannot paint a range any other way, and it also means the
     //: next thing typed replaces it, which is what "try it and see" should

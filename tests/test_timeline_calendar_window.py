@@ -12,6 +12,14 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 
 from tessellate.core.database import Entry
+import pytest
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _save(client, content: str) -> dict:
@@ -83,7 +91,7 @@ def test_the_feeds_last_year_range_holds_a_note_by_where_it_sits_like_the_calend
     """OPEN.md: the feed's Last-year range filtered by when a note was written,
     so a note about a day this month written over a year ago showed in the
     calendar and not the feed (TIMELINE_PLAN decision 24)."""
-    soon = (date.today() + timedelta(days=3)).isoformat()
+    soon = (SUITE_LOCAL.date() + timedelta(days=3)).isoformat()
     old = _save(client, f"Renew the licence on {soon}.")
     session.get(Entry, old["id"]).created_at = datetime(2023, 1, 5, 10, 0)
     recent = _save(client, "Written today about nothing in particular.")

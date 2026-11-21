@@ -1056,6 +1056,7 @@
     for (const [name, label, tip, run] of [["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", "Redo, Ctrl+Y", () => S.io.redo()]]) {
       const b = smallButton(name, tip, run);
       b.classList.add("icon-only", "dgm-hist");
+      if (label === "Redo") b.classList.add("dgm-redo");
       b.setAttribute("aria-label", label);
       actions.append(b);
     }

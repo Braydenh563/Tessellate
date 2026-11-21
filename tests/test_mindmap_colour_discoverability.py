@@ -73,3 +73,15 @@ def test_the_maps_own_help_mentions_both_wells() -> None:
     assert "Topic colour" in help_text
     assert "background colour" in help_text
     assert "export" in help_text.lower()
+
+
+def test_palette_names_the_fill_and_background_wells() -> None:
+    """INBOX 431(b): a search for fill, colour or background found neither
+    well; each now has a palette row that clicks the existing control."""
+    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    start = js.index("function mapPaletteCommands() {")
+    body = js[start : js.index("\n}\n", start)]
+    fill = body[body.index("Topic fill colour") - 120 : body.index("Topic fill colour") + 300]
+    assert 'getElementById("wb-map-strip-color")' in fill and "color" in fill
+    bg = body[body.index("Map background colour") - 120 : body.index("Map background colour") + 300]
+    assert 'getElementById("wb-bg-color-picker")' in bg and "fill" in bg

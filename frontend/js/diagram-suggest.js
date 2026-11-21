@@ -93,8 +93,9 @@
   //: that goes with it. Answers once it has landed or been refused. A suggestion of the
   //: pane's own kind lands as blocks (D8; 1546 P4 gave the other kinds the same): on a blank
   //: diagram it becomes the diagram, otherwise its blocks arrive as ghosts. Another kind is
-  //: refused when the diagram has blocks, and replaces a blank one.
-  async function receive(S, h, source, said) {
+  //: refused when the diagram has blocks, and replaces a blank one. `replace` (the template dialog's
+  //: Replace the diagram) treats the pane as blank, so the template becomes the diagram in one undoable commit.
+  async function receive(S, h, source, said, replace = false) {
     S.note.classList.toggle("hidden", !S.plain);
     const kind = diagramModel.builder.kindOf(source);
     const mine = S.k ? S.k.name : "flowchart";
@@ -102,7 +103,7 @@
     const A = kind === "flowchart" ? null : diagramModel.kinds[kind];
     const inc = A ? A.parse(source) : diagramModel.parse(source);
     //: Blank: nothing in the diagram a suggestion could clash with, so it becomes the diagram.
-    const blank = !S.source.trim() || (!S.plain && paneBlank(S));
+    const blank = replace || !S.source.trim() || (!S.plain && paneBlank(S));
     if (inc && kind === mine && !S.plain) {
       if (blank) {
         const keep = S.m.front || [];
@@ -357,11 +358,12 @@
       }
       paint(t);
     };
-    const use = async () => {
+    const use = async (replace = false) => {
       if (made || !chosen) return;
       made = true;
       dialog.close();
-      await receive(S, h, chosen.source, `Started from the ${chosen.name.toLowerCase()} template.`);
+      if (replace === true) await receive(S, h, chosen.source, `Replaced the diagram with the ${chosen.name.toLowerCase()} template.`, true);
+      else await receive(S, h, chosen.source, `Started from the ${chosen.name.toLowerCase()} template.`);
     };
     for (const t of rows) {
       const li = h.el("li");
@@ -402,7 +404,10 @@
     const cancel = smallButton("Cancel", "Close without starting", () => dialog.close());
     const go = smallButton(fill ? "Add its blocks" : "Use this template", "Start from the chosen template", use, false);
     go.classList.add("accent");
-    foot.append(cancel, go);
+    foot.append(cancel);
+    //: A diagram with blocks can also be swapped for the template; Undo (Ctrl+Z) brings the old one back.
+    if (fill && !S.plain) foot.append(smallButton("Replace the diagram", "Swap the diagram for the chosen template; Undo brings it back", () => use(true)));
+    foot.append(go);
     dialog.append(
       dialogHead("Start from a template", () => dialog.close()),
       h.el("p", "muted", fill ? "Your diagram has blocks, so the template's blocks arrive as suggestions to take." : "A starting shape, not a form: every block is yours to change."),
@@ -468,5 +473,91 @@
     return compose(S, h, { thoughts: text.slice(0, 8000) }, "Drafting from your description.");
   }
 
-  diagramModel.suggest = { templates, notes, describe, items };
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+
+  // --- the sheet (R12, owner 2026-11-12) -------------------------------------------------
+  //: `/diagram`, the board's Insert and the builder's "Open an existing diagram" ask here first: the diagrams already made
+  //: (documents of type mmd) and, when `fresh`, "New diagram" first. Answers the document row, `true` for New, or null. The
+  //: dialog of choices (DESIGN.md): a click chooses, Enter, a double click or the one filled button takes it.
+  async function choose({ fresh = true, verb = "Open" } = {}) {
+    let all = typeof docs !== "undefined" && Array.isArray(docs) && docs.length ? docs : null;
+    //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
+    if (!all) all = await apiPagedList("/documents", 200).catch((error) => (toast(`Couldn't load your diagrams: ${error?.message || error}`, "info"), null));
+    if (!all) return null;
+    const rows = [...(fresh ? [{ id: "new", title: "New diagram", hint: "Start with an empty builder", pick: true }] : []), ...all.filter((d) => d.file_type === "mmd").map((d) => ({ id: String(d.id), title: d.title || "Untitled", hint: d.updated_at ? `Changed ${relativeTime(d.updated_at)}` : "", pick: d }))];
+    if (!rows.length) return toast("No diagrams yet. Make one with the blocks and it will be listed here.", "info");
+    return new Promise((resolve) => {
+      const dialog = el("dialog", "card space-dialog doc-ai-history-dialog doc-template-dialog dgm-choose-dialog");
+      dialog.setAttribute("aria-label", "Choose a diagram");
+      const returnFocus = document.activeElement;
+      const list = el("ul", "doc-ai-history-list");
+      list.setAttribute("role", "radiogroup");
+      list.setAttribute("aria-label", "Diagrams");
+      let chosen = null;
+      let answer = null;
+      const mark = (row, focus = false) => {
+        chosen = row;
+        for (const b of list.querySelectorAll(".doc-template-choice")) {
+          const on = b.dataset.id === row.id;
+          b.setAttribute("aria-checked", String(on));
+          b.tabIndex = on ? 0 : -1;
+          if (on && focus) b.focus();
+        }
+      };
+      const use = () => {
+        answer = chosen?.pick ?? null;
+        dialog.close();
+      };
+      for (const row of rows) {
+        const li = el("li");
+        li.setAttribute("role", "presentation");
+        const button = el("button", "ghost doc-template-choice");
+        button.type = "button";
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", "false");
+        button.dataset.id = row.id;
+        const check = el("i", "ph ph-check doc-template-check");
+        check.setAttribute("aria-hidden", "true");
+        button.append(el("strong", "", row.title), el("span", "muted text-sm", row.hint), check);
+        button.addEventListener("click", () => mark(row));
+        button.addEventListener("dblclick", use);
+        li.append(button);
+        list.append(li);
+      }
+      list.addEventListener("keydown", (event) => {
+        const buttons = [...list.querySelectorAll(".doc-template-choice")];
+        const at = buttons.findIndex((b) => b.getAttribute("aria-checked") === "true");
+        const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+        const next = step ? buttons[(at + step + buttons.length) % buttons.length] : event.key === "Home" ? buttons[0] : event.key === "End" ? buttons.at(-1) : null;
+        if (next) {
+          event.preventDefault();
+          mark(rows.find((r) => r.id === next.dataset.id), true);
+        } else if (event.key === "Enter") {
+          event.preventDefault();
+          use();
+        }
+      });
+      const foot = el("div", "row right space-dialog-actions");
+      const go = smallButton(verb, "Use the chosen diagram", use, false);
+      go.classList.add("accent");
+      foot.append(smallButton("Cancel", "Close without choosing", () => dialog.close()), go);
+      dialog.append(dialogHead("Choose a diagram", () => dialog.close()), el("p", "muted", fresh ? "Pick one you made, or start a new one." : "Pick the diagram to open."), list, foot);
+      listFilter(list, { label: "Search your diagrams" });
+      dialog.addEventListener("close", () => {
+        dialog.remove();
+        if (!answer && returnFocus?.isConnected) returnFocus.focus?.();
+        resolve(answer);
+      });
+      document.body.append(dialog);
+      dialog.showModal();
+      mark(rows[0], true);
+    });
+  }
+
+  diagramModel.suggest = { templates, notes, describe, items, choose };
 })();

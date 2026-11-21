@@ -244,6 +244,27 @@ def test_python_input_is_answered_from_the_panels_input_box():
     assert "stdin: String(d.stdin" in run_sandbox.RUN_SANDBOX_PY_HTML
 
 
+def test_python_input_past_the_box_is_asked_mid_run_and_falls_back_without_the_buffer():
+    """L-documents-33: with the page isolated the worker blocks on the panel's
+    answer; Escape (None) is EOFError; without the buffer the Input box message stays."""
+    asked: list[str] = []
+
+    def ask(prompt):
+        asked.append(prompt)
+        return "grace"
+
+    rows = _run_py("n = input('Name? ')\nprint(n.upper())\n", ask=ask)
+    assert asked == ["Name? "] and rows[0] == ("log", "Name? grace", 1, False) and rows[1][1] == "GRACE"
+    gone = _run_py("input('Name? ')\n", ask=lambda prompt: None)
+    assert gone[-1][0] == "error" and "Input box" in gone[-1][1]
+    none = _run_py("input('Name? ')\n")
+    assert none[-1][0] == "error" and "Input box" in none[-1][1]
+    assert "shared ? ask : null" in run_sandbox._PY_WORKER
+    code = _js("documents-code.js")
+    assert 'if (data.t === "input") {' in code and "docRunAsk(String(data.prompt" in code
+    assert 'type: "reply", mmRun: id, value: { line }' in code
+
+
 def test_run_selection_and_run_cell_keep_the_documents_lines():
     """D9: "Run selection" and "Run cell" over `# %%` markers send part of
     the file with its line offset; both are palette commands."""

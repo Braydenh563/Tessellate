@@ -19,18 +19,17 @@ import re
 import pytest
 
 from tessellate.ai import composer, composer_dialogue, composer_talk
-from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.api.chat_request import ChatTurn
 from tessellate.core import clock
 import tests._seed_composer_1110 as seed
+from tests._clock import pin_clock
 
 NOW = seed.NOW
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
 
 

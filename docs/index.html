@@ -781,7 +781,7 @@
             <ul class="ticks">
               <li>Hold Alt and drop one note onto another to link them</li>
               <li>Trace the chain of links between any two notes</li>
-              <li>Force, tree, radial and arc layouts</li>
+              <li>Force, tree, radial, arc, treemap and tessellation layouts</li>
             </ul>
           </div>
           <figure class="frame">
@@ -944,7 +944,7 @@
         <div><dt>Web search</dt><dd><span class="state">off</span>Until you turn it on, and then it sends only your search words.</dd></div>
         <div><dt>Update check</dt><dd><span class="state">off</span>Until you turn it on. Settings, Privacy lists every connection the app has made.</dd></div>
         <div><dt>Private notes</dt><dd><span class="state">encrypted</span>Encrypted at rest with a key from your password, and kept out of search, the graph and every AI tool.</dd></div>
-        <div><dt>No model at all</dt><dd><span class="state">works</span>Notes are filed as Uncategorised, search uses full-text matching with spelling correction, and everything else keeps working.</dd></div>
+        <div><dt>No model at all</dt><dd><span class="state">works</span>Notes are filed by their words, Atlas answers from your notes with citations, search uses full-text matching with spelling correction, and everything else keeps working.</dd></div>
       </dl>
     </div>
   </section>
@@ -992,7 +992,7 @@ cd Tessellate
       <div class="models" id="models">
         <div>
           <h3>Then add a model, or don&rsquo;t.</h3>
-          <p>The notebook works without one. Filing and answers switch on when you add a model, and you can change it any time in Settings, Models.</p>
+          <p>The notebook works without one: it still files by the words you use and answers from your notes with citations. A model files by meaning and writes fuller answers, and you can change it any time in Settings, Models.</p>
           <p>Updating and uninstalling are in the <a href="https://github.com/Braydenh563/Tessellate/blob/main/docs/INSTALL.md#updating">install guide</a>, common problems in <a href="https://github.com/Braydenh563/Tessellate/blob/main/docs/TROUBLESHOOTING.md">troubleshooting</a>.</p>
         </div>
         <div>
@@ -1026,7 +1026,7 @@ cd Tessellate
         </details>
         <details>
           <summary>Does it work without any AI?</summary>
-          <div class="answer"><p>Yes. With no model, notes are filed as Uncategorised, tags are suggested from similar notes, search uses full-text matching with stemming and spelling correction, and documents, boards, mind maps, the graph, the timeline and reminders all keep working.</p></div>
+          <div class="answer"><p>Yes. With no model, notes are filed by the words they share with each category (a note it cannot place waits for you), Atlas answers dates, tasks, reminders and how-to questions with citations, tags are suggested from similar notes, search uses full-text matching with stemming and spelling correction, and documents, boards, mind maps, the graph, the timeline and reminders all keep working.</p></div>
         </details>
         <details>
           <summary>Where are my notes stored?</summary>

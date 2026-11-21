@@ -23,6 +23,27 @@
   gap: var(--space-2);
   margin: 0 0 var(--space-3);
 }
+/* **One row, one control height** (the Library head's recipe, `.library-head`
+   in 07-whiteboard-misc.css): the steps, Add, the Show chip and the span strip
+   are one height with no margin, so `align-items: center` puts every centre
+   on one line. Measured at 1280 before: Add 32px tall at centre 154.1, the
+   strip 36.4px at 150.1 (`.seg`'s own 0.5rem bottom margin and padding), the
+   title 4px low under a heading margin (the owner: "these two elements arent
+   aligned"). `tests/test_timeline_cal_head_align.py` pins it. */
+.timeline-cal-head > :is(button, .seg) {
+  height: var(--control-h);
+  margin: 0;
+}
+.timeline-cal-head > .seg {
+  padding-block: 0;
+}
+.timeline-cal-head > .seg > button {
+  height: 100%;
+  padding-block: 0;
+}
+.timeline-cal-head > .timeline-cal-title {
+  margin: 0;
+}
 .timeline-cal-title {
   margin: 0;
   min-width: 0;

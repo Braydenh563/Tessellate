@@ -12,13 +12,11 @@ import re
 
 import pytest
 
-from tessellate.ai import notebook_stats
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.core.database import Document, Reminder, WhiteboardObject
 from tessellate.entry import manager
 from tests.test_composer_classes_1357 import DOCUMENTS, NOTES, NOT_FOUND, NOW, OBJECTS
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 D = dt.datetime
 
@@ -73,9 +71,7 @@ def _fill(session, work_folder: bool) -> None:
 
 
 def _asker(client, session, monkeypatch, work_folder: bool):  # noqa: ANN001, ANN202
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW.replace(tzinfo=dt.timezone.utc))
+    pin_clock(monkeypatch, NOW)
     _fill(session, work_folder)
     return lambda q: _ask(client, q, notes_only=True, answer_from="notes", history=[])["text"]
 
@@ -197,16 +193,8 @@ W_REPEAT = [
 ]
 
 
-#: Classes still failing, each case a strict xfail until its fix lands (take
-#: the letter out when the class passes).
-OPEN: set[str] = set()
-
-
-def _cases(cls: str, rows: list):  # noqa: ANN202
-    def mark(q: str) -> list:
-        return [pytest.mark.xfail(strict=True, reason="open")] if cls in OPEN or q in OPEN else []
-
-    return [pytest.param(*row, id=row[0], marks=mark(row[0])) for row in rows]
+def _cases(cls: str, rows: list):  # noqa: ANN202, ARG001
+    return [pytest.param(*row, id=row[0]) for row in rows]
 
 
 def _check(said: str, must: str, never: str | None, q: str, cls: str) -> None:

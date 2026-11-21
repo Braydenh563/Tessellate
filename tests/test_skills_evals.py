@@ -194,7 +194,7 @@ def test_no_step_is_ticked_without_its_contract(notebook):
     for index, event in sorted(outcomes.items()):
         spec = specs[index]
         if event["state"] != "done":
-            # Not done is fine, and is half of what the acceptance line asks
+            # An unfinished answer is fine, and is half of what the acceptance line asks
             # for. What is not fine is a step that stops without saying why.
             assert event.get("reason"), (
                 f"step {index + 1} ended as {event['state']} with no reason; "

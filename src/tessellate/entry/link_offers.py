@@ -40,7 +40,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import filetypes
-from tessellate.core.database import Document, Entry
+from tessellate.core.database import Document, Entry, writes
 from tessellate.entry.manager_text import WIKI_LINK, wiki_target
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.vendor.flashtext import KeywordProcessor
@@ -118,7 +118,7 @@ def _version(session: Session) -> tuple:
             Entry.is_deleted.is_(False), Entry.is_private.is_(False)
         )
     ).one()
-    return (tuple(docs), tuple(notes))
+    return (tuple(docs), tuple(notes), writes(Document), writes(Entry))
 
 
 def _collect(session: Session) -> dict[str, list[_Name]]:

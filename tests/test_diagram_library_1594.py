@@ -101,8 +101,8 @@ def test_the_empty_list_and_the_space_under_the_blocks_say_what_to_do_next():
 
 def test_the_dock_is_one_row_at_every_width_because_direction_is_one_button_and_suggest_folds_on_a_phone():
     # 1661 D2 (was: the four direction buttons fold into the more menu on a phone): Direction is one button now, so only Suggest folds.
-    builder = _read("diagram-builder.js")
-    more = builder.split("function more(S) {", 1)[1].split("\n  }\n", 1)[0]
+    # The fold's rows moved to diagram-kindbar.js (builder gzip budget); the builder's more() calls it.
+    more = _read("diagram-kindbar.js").split("function fold(S", 1)[1].split("\n  }\n", 1)[0]
     assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' not in more and "Suggest…" in more
     # Intent moved (DD-2, 1107): one row is the flowchart dock's, so the nowrap is scoped to it; the kinds' docks wrap.
     assert "flex-wrap: nowrap" in CSS.split(".dgm-dock:has(> .dgm-addsplit) {", 1)[1].split("}", 1)[0]

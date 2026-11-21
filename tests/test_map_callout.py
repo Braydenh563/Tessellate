@@ -18,6 +18,10 @@ def _body(src: str, name: str) -> str:
     return src[start : src.index("\n}\n", start)]
 
 
+def _make() -> str:
+    return MAP[MAP.index("wbMapCache.make = function") : MAP.index("wbMapCache.part = function")]
+
+
 def test_a_callout_is_stored_bounded_and_exported(ai_client):
     made = ai_client.post("/whiteboard/boards/import", json={"format": "markdown", "content": "# M\n- Root\n  - Hotel", "name": "Callouts"}).json()
     objs = ai_client.get("/whiteboard/", params={"board_id": made["id"]}).json()["objects"]
@@ -33,8 +37,9 @@ def test_a_callout_is_stored_bounded_and_exported(ai_client):
 
 
 def test_the_callout_is_a_row_of_the_card_painted_from_its_own_data():
-    build = _body(MAP, "function wbBuildMapNode(")
-    assert 'attr("class", "wb-map-callout")' in build
+    made = _make()
+    assert 'callout: "wb-map-callout"' in MAP and 'case "callout":' in made
+    assert "wb-map-callout" not in _body(MAP, "function wbBuildMapNode("), "built on first use, not at birth"
     assert "wbMapPaintExtras(node, d.data || {});" in _body(MAP, "function wbPaintMapNodeStyle(")
     assert ".wb-map-node[data-extras] {\n  flex-wrap: wrap;" in CSS
     assert ".wb-map-callout {\n  position: relative;\n  order: -1;\n  flex: 1 0 100%;" in CSS
@@ -67,8 +72,7 @@ def test_labels_are_trimmed_bounded_and_ride_the_exports_as_one_attribute(ai_cli
 
 
 def test_labels_are_the_cards_last_row_painted_once_per_change():
-    build = _body(MAP, "function wbBuildMapNode(")
-    assert 'attr("class", "wb-map-tags")' in build
+    assert 'tags: "wb-map-tags"' in MAP and 'case "tags":' in _make()
     paint = _body(MAP, "function wbMapPaintExtras(")
     #: Rebuilt only when the list changed: a repaint of the same labels writes nothing.
     assert "tags.dataset.key !== key" in paint and "replaceChildren(" in paint
@@ -99,10 +103,10 @@ def test_a_stamp_press_toggles_yours_and_never_starts_a_drag():
     """INBOX 1493 moved the intent from "adds one more" to a toggle per person
     (`tests/test_map_stamp_toggle.py` pins the toggle itself); the drag guard
     and the stamp set stay."""
-    build = _body(MAP, "function wbBuildMapNode(")
-    tags = build[build.index('attr("class", "wb-map-tags")') :]
+    made = _make()
+    tags = made[made.index('case "tags":') :]
     assert 'event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation()' in tags
-    assert 'wbMapStampSet(wbMapLiveDatum(d), stamp.dataset.stamp, "toggle")' in tags
+    assert 'wbMapStampSet(live(), stamp.dataset.stamp, "toggle")' in tags
     set_ = _body(MAP, "async function wbMapStampSet(")
     assert "wbMapSetExtra(node, { stamps: patch.stamps" in set_ and "count >= 999" in _body(MAP, "function wbMapStampPatch(")
     icons = MAP[MAP.index("const WB_MAP_STAMPS") :][:400]

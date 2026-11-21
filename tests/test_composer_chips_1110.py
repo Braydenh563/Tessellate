@@ -14,9 +14,9 @@ import re
 import pytest
 
 from tessellate.ai import composer_chips
-from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.core import clock
 import tests._seed_composer_1110 as seed
+from tests._clock import pin_clock
 
 NOW = seed.NOW
 GENERIC = {"what did i write this week?", "notebook statistics", "what can you do?"}
@@ -26,8 +26,7 @@ BAD = re.compile(r"the Kyoto\b|finish piranesi|latest on (?:read|badly)\b|Priya 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
 
 
@@ -188,7 +187,7 @@ def test_a_chip_that_acts_only_proposes(client, session):
 
 
 def test_the_day_before_chip_names_what_it_is_for(client, session):
-    """The chip says "about Dentist"; the follow-up must not ask what the reminder is for."""
+    """The chip says "about Dentist"; the next turn must not ask what the reminder is for."""
     seed.seed(session)
     got = _ask(client, "when is my dentist appointment")
     chip = next(c for c in got["chips"] if c.startswith("Remind me"))

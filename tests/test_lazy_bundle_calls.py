@@ -161,6 +161,8 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "wiring.js:docFindInDocuments": "a click on the All documents button in the find bar, which openGlobalFind shows only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
+    "wiring.js:openDocReplace": "a click on the Replace in all button in the find bar, shown only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",
     "editor.js:docTemplateFill": "inside `typeof DOC_TEMPLATES !== \"undefined\"` in editorCommands; DOC_TEMPLATES is defined in documents.js, the same library bundle, so the call runs only once it is in (audit 1102 DX30)",
     "settings-wiring.js:docFileDropBox": "inside `el?.closest?.(\"#doc-editor\")` in fileDropBox: the element exists only while the Documents page, and so the library bundle, is mounted (audit 161 D24)",
@@ -197,6 +199,7 @@ REACHED_AFTER_LOAD = {
     "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
     "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
+    "docSelectionNoteMenu": "the selection bar's note button, which selectionBarShow hides until the library bundle defines docSelectionNoteItems (INBOX 1728)",
     "imageLayout": "appendInlineRun (notes-list.js), called as window.imageLayout?.(): a picture drawn before the library bundle arrives is plain, and image-layout.js lays out what is already on the page when it loads (its sweep), so nothing is lost",
     "mdRunNode": "appendInlineRun, behind a typeof check: a run (INBOX 1403) is written only in a board text box, which is the library bundle; read in a note before that bundle arrives, its words draw plain and are not lost (the grammar and the preview are at boot)",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
@@ -437,9 +440,15 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "documents-csvgrid.js:docSurface": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
+    "documents-csvgrid.js:docCmView": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
+    "documents-csvgrid.js:currentDoc": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
+    "documents-csvgrid.js:docFileType": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
+    "documents-csvgrid.js:docViewState": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "reveal-targets.js:wbToggleNavigator": "the `board-overview` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "reveal-targets.js:wbOpenBoardSearch": "the `board-find` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "whiteboard-format.js:swatchPicker": "wbColourPalettes fills its rows in the .then of ensureModule('categories'), which carries categories-panel.js",
+    "library-links.js:swatchPicker": "swatches() draws its row in the .then of ensureModule('categories'), which carries categories-panel.js",
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
     "settings-prefs.js:nameMark": "the same line is the afterCharacters callback (the profile head preview, moved from settings-panes.js)",

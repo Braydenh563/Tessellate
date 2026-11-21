@@ -59,7 +59,7 @@ def test_a_door_with_nothing_in_hand_asks_for_the_builder_alone():
 def test_the_pieces_that_need_the_library_ask_for_it_when_they_run():
     mermaid = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
     assert "window.wbCommandsLive?.()" in mermaid and "!doc && wbCommandsLive()" not in mermaid
-    assert 'typeof docs !== "undefined" && Array.isArray(docs)' in mermaid
+    #: The `docs` guard moved with the list of diagrams to the sheet in diagram-embed.js (R12, 2026-11-12), asserted below.
     # Done lands on the Library's page and Open an existing diagram loads a document: both fetch the bundle first.
     assert mermaid.count('ensureModule("library")') >= 2
     embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")

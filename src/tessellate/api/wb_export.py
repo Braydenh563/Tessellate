@@ -315,7 +315,7 @@ _FREEMIND_PRIVATE = {
     **{f: f"_{f}" for f in ("boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps")},
     #: Markers (decision 34): neither format has a place for them that the
     #: other reads, so all four ride as private attributes.
-    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "start")},
+    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "due_time", "start")},
 }
 #: OPML 2.0 defines `text`, `type`, `url`, `isComment`, `isBreakpoint`,
 #: `created` and `category` and nothing else, so `url` is the only native
@@ -350,7 +350,7 @@ _OPML_PRIVATE = {
     **{f: f"_{f}" for f in ("boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps")},
     #: Markers (decision 34): neither format has a place for them that the
     #: other reads, so all four ride as private attributes.
-    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "start")},
+    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "due_time", "start")},
 }
 
 
@@ -386,8 +386,10 @@ def _export_opml(
     ET.SubElement(head, "title").text = title
     body = ET.SubElement(opml, "body")
     links_from: dict = {}
+    labels_from: dict = {}
     for link in cross_links or []:
         links_from.setdefault(link.get("from_id"), []).append(link.get("to_id"))
+        labels_from.setdefault(link.get("from_id"), []).append(str(link.get("label") or ""))
     #: A numbered map (decision 17): `_number` on each outline, private like
     #: `_kind` and `_task`, so another reader keeps clean text and this one
     #: reads the map back numbered.
@@ -433,6 +435,10 @@ def _export_opml(
         outgoing = links_from.get(node["id"])
         if outgoing:
             attrs["_links"] = " ".join(_export_node_id(end) for end in outgoing)
+            #: The labels, in the same order, only when one is set (gap 12:
+            #: a labelled link between two roots came home unlabelled).
+            if any(labels_from[node["id"]]):
+                attrs["_link_labels"] = json.dumps(labels_from[node["id"]], ensure_ascii=False)
         return ET.SubElement(parent_element, "outline", attrs)
 
     _export_tree(body, roots, build)

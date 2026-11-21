@@ -197,7 +197,7 @@ function deskFramesStart(names) {
   if (deskFrames.job && !deskFrames.job.done) return "busy";
   const want = Array.isArray(names) && names.length ? DESK_FRAME_SPECS.filter((f) => names.includes(f.name)) : DESK_FRAME_SPECS.slice();
   const { host, clone } = deskFramesBuild();
-  deskFrames.job = { host, clone, todo: want, done: false, result: "", busy: false };
+  deskFrames.job = { host, clone, queue: want, done: false, result: "", busy: false };
   return String(want.length);
 }
 
@@ -219,11 +219,11 @@ function deskFramesNext() {
   }
   if (job.busy) return "wait";
   if (job.done) return JSON.stringify({ done: true });
-  if (!job.todo.length) {
+  if (!job.queue.length) {
     deskFramesEnd(job);
     return JSON.stringify({ done: true });
   }
-  const frame = job.todo.shift();
+  const frame = job.queue.shift();
   job.busy = true;
   const fail = (e) => {
     deskFramesEnd(job);

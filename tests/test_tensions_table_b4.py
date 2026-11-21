@@ -17,6 +17,14 @@ from sqlalchemy import select
 
 from tessellate.ai import facts, tensions
 from tessellate.core.database import AuditLog, DerivedTension, Entry, EntryLink, utcnow
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _note(client, session, text, days_ago):
@@ -35,7 +43,7 @@ def _snapshot(session):
 
 
 def _fixture(client, session):
-    """Four pairs, one per source and state: a scan finding left open, a scan
+    """Four pairs, one per source and state: a scan finding unresolved, a scan
     finding dismissed, a night finding, and a link made by hand."""
     a = _note(client, session, "The launch is in May.", 90)
     b = _note(client, session, "The launch slipped to August.", 10)

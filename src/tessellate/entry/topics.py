@@ -249,3 +249,99 @@ def store_name(stored: list[dict], ids: list[int], name: str) -> list[dict]:
     if name:
         kept.append({"ids": sorted(wanted), "name": name})
     return kept[-NAMES_KEPT:]
+
+
+#: Merges and removals kept (the oldest go first), and the notes a removal may
+#: hold: a notebook's worth, not an unbounded preference.
+MERGES_KEPT = 100
+EXCLUDED_KEPT = 5000
+
+
+def clean_edits(raw: object) -> dict:
+    """The stored edits as `{"merges": [[ids]], "excluded": [ids]}`, whatever
+    was stored: junk, empties and duplicates dropped, lengths capped."""
+    raw = raw if isinstance(raw, dict) else {}
+    merges = []
+    for group in raw.get("merges") or []:
+        ids = sorted({n for n in group if isinstance(n, int)}) if isinstance(group, list) else []
+        if len(ids) >= 2:
+            merges.append(ids)
+    excluded = sorted({n for n in raw.get("excluded") or [] if isinstance(n, int)})
+    return {"merges": merges[-MERGES_KEPT:], "excluded": excluded[-EXCLUDED_KEPT:]}
+
+
+def store_merge(edits: dict, ids: list[int]) -> dict:
+    """The edits with these notes' topics merged. A stored merge sharing a
+    note with `ids` is folded in, so merging a merged topic grows one group."""
+    clean = clean_edits(edits)
+    joined = set(ids)
+    kept = []
+    for group in clean["merges"]:
+        if joined & set(group):
+            joined |= set(group)
+        else:
+            kept.append(group)
+    kept.append(sorted(joined))
+    return clean_edits({"merges": kept, "excluded": clean["excluded"]})
+
+
+def store_remove(edits: dict, ids: list[int]) -> dict:
+    """The edits with these notes taken out of every topic."""
+    clean = clean_edits(edits)
+    return clean_edits({"merges": clean["merges"], "excluded": clean["excluded"] + list(ids)})
+
+
+def _merge_group(found: list[dict], group: set[int]) -> list[dict]:
+    """`found` with the topics mostly inside `group` joined into the biggest."""
+    inside = [t for t in found if t["ids"] and len(group & set(t["ids"])) / len(t["ids"]) >= NAME_MATCH]
+    if len(inside) < 2:
+        return found
+    lead = max(inside, key=lambda t: (t["size"], -t["id"]))
+    joined = dict(lead)
+    joined["ids"] = sorted({n for t in inside for n in t["ids"]})
+    joined["size"] = len(joined["ids"])
+    joined["merged"] = True
+    return [joined if t is lead else t for t in found if t is lead or t not in inside]
+
+
+def apply_edits(found: list[dict], edits: dict | None) -> list[dict]:
+    """`found` with the person's removals and merges laid over: removed notes
+    leave, a topic left under `MIN_TOPIC_NOTES` goes, merged groups join, and
+    ids are positions again. Copies; `found` is a cached value."""
+    clean = clean_edits(edits)
+    if not clean["merges"] and not clean["excluded"]:
+        return found
+    gone = set(clean["excluded"])
+    out = []
+    for topic in found:
+        ids = [n for n in topic["ids"] if n not in gone]
+        if len(ids) >= MIN_TOPIC_NOTES:
+            out.append({**topic, "ids": ids, "size": len(ids)})
+    for group in clean["merges"]:
+        out = _merge_group(out, set(group) - gone)
+    out.sort(key=lambda t: (-t["size"], t["ids"][0]))
+    return [{**topic, "id": position} for position, topic in enumerate(out)]
+
+
+def topic_of(found: list[dict]) -> dict[str, int]:
+    return {str(node): topic["id"] for topic in found for node in topic["ids"]}
+
+
+def with_categories(found: list[dict], category_of: dict[str, str]) -> list[dict]:
+    """Each topic that has a category at least half its notes share gets
+    `category: {name, count}` (ledger L11: the hand-off to filing). A note in no
+    category counts against it. Copies; `found` is a cached value."""
+    out = []
+    for topic in found:
+        tally: dict[str, int] = defaultdict(int)
+        for node in topic["ids"]:
+            name = category_of.get(str(node))
+            if name:
+                tally[name] += 1
+        row = dict(topic)
+        if tally:
+            name, count = max(tally.items(), key=lambda kv: (kv[1], kv[0]))
+            if count * 2 >= topic["size"]:
+                row["category"] = {"name": name, "count": count}
+        out.append(row)
+    return out

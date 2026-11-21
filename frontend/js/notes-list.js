@@ -33,7 +33,8 @@ function foldNoteToolbarForFirstPaint() {
     if (!bar.querySelector(".doc-toolbar-tools") && !event.target.closest("button")) startNewNote();
   });
 }
-foldNoteToolbarForFirstPaint();
+//: The strip is in the Notes surface's template, built on first use, so it is not in the page when this file loads.
+onSurface("notes", foldNoteToolbarForFirstPaint);
 
 //: Read by navigation.js's `hasUnsavedWork` (WORLD_CLASS_PLAN 22.1 item 4).
 //: `editingId` alone says a form is *open*, not that anything in it has
@@ -835,9 +836,12 @@ function safeHref(url) {
 //: applies afterwards; the point of the check here is to leave anything else
 //: (an HTML tag, `<3`, a generic like `Array<T>`) exactly as it was.
 function expandAngleAutolinks(text) {
+  //: Not after `](`: `[text](<url>)` is CommonMark's angle destination, the
+  //: form the slash menu's Web link writes on a line of its own so the lone
+  //: link card rule (CHAT_PLAN decision 12) leaves it an inline link.
   return String(text || "").replace(
-    /<(https?:\/\/[^\s<>]{1,500})>/g,
-    (whole, url) => `[${url}](${url})`,
+    /(\]\()?<(https?:\/\/[^\s<>]{1,500})>/g,
+    (whole, dest, url) => (dest ? whole : `[${url}](${url})`),
   );
 }
 
@@ -987,6 +991,8 @@ function appendInlineRun(element, text, terms, compact, options) {
     } else {
       [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, runSpec, runText] = match;
     }
+    //: `[text](<url>)`, the angle destination expandAngleAutolinks leaves alone.
+    if (linkUrl && /^<[^<>]+>$/.test(linkUrl)) linkUrl = linkUrl.slice(1, -1);
     // Images and links are their own element kinds, not a wrap-in-a-tag like
     // the four above: built and appended directly rather than falling
     // through to the generic `tag`/`node` shape below, since neither one
@@ -1853,8 +1859,9 @@ function windowRows(root, o) {
     for (const name of ROW_WINDOW_CARRY) if (from.classList.contains(name)) to.classList.add(name);
     return to;
   };
+  //: `o.shell` names the shell's tag: a `<tbody>` takes `tr` (L491, the Timeline table).
   const shellFor = (items, i, from) => {
-    const li = document.createElement("li");
+    const li = document.createElement(o.shell || "li");
     li.className = "row-shell";
     li.setAttribute("aria-hidden", "true");
     //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
@@ -2188,6 +2195,17 @@ function setNotesViewMode(mode) {
 const expandedRows = new Set();
 
 onSurface("notes", () => {
+  //: **The open note on card view is the last card clicked or focused**
+  //: (L709, the owner 2026-11-12): it stays open until another card is
+  //: clicked or Notes is left (`switchTab`), and search ranks its linked
+  //: notes higher (`refreshNoteSearchWhy`).
+  const list = $("entry-list");
+  const remember = (event) => {
+    const li = event.target.closest?.("li[data-id]");
+    if (li && list?.contains(li)) list.dataset.lastCard = li.dataset.id;
+  };
+  list?.addEventListener("pointerdown", remember);
+  list?.addEventListener("focusin", remember);
   $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
   $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
   $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
@@ -3621,21 +3639,11 @@ async function renderNotesRail() {
     return;
   }
   rail.hidden = false;
-  //: **The reading column comes first.** The rail's width is set against the
-  //: default sidebar; a sidebar dragged to its widest (24% of the window,
-  //: `applySidebarWidth`) left the list 573px at 1280 with the rail beside
-  //: it (`notesrail.js` with SIDEBAR=wide). So the rail measures the list
-  //: once it is in, in the same task and so before anything is painted, and
-  //: gives way to the note's Connections sheet when the list would be
-  //: narrower than NOTES_RAIL_MIN_READING, exactly as it does below 1280.
-  const list = $("entry-list");
-  if (list && list.getBoundingClientRect().width < NOTES_RAIL_MIN_READING) {
-    rail.hidden = true;
-    rail.dataset.cramped = "1";
-    mark(null);
-    return;
-  }
+  //: The reading column comes first: a list under NOTES_RAIL_MIN_READING (a sidebar dragged wide) takes the rail's
+  //: place for the Connections sheet (the observer in `onSurface("notes")` decides, after layout).
   delete rail.dataset.cramped;
+  //: Observing delivers the list's size at once (and again whenever the rail's width or a sidebar drag moves it).
+  renderNotesRail.ro?.observe($("entry-list"));
   const subject = $("notes-rail-subject");
   subject.textContent = entry.is_private ? "Private note" : entry.title || notePreviewText(entry.content);
   subject.title = subject.textContent;
@@ -3725,18 +3733,23 @@ onSurface("notes", () => {
       next?.focus();
     });
     notesRailWide.addEventListener("change", renderNotesRail);
-    //: A sidebar dragged wider or narrower, or collapsed, changes the room the
-    //: list has, which is what decides whether the rail fits. Observed on the
-    //: sidebar itself rather than on the window, because the window does not
-    //: change when the sidebar is dragged.
+    //: A sidebar dragged or collapsed changes the list's room, which decides whether the rail fits; the window
+    //: does not change then, so the sidebar is observed (and the list, for the rail's own width check).
     if (typeof ResizeObserver === "function" && $("sidebar")) {
       let last = 0;
-      new ResizeObserver((entries) => {
-        const w = Math.round(entries[0].contentRect.width);
-        if (w === last) return;
-        last = w;
-        scheduleNotesRail();
-      }).observe($("sidebar"));
+      renderNotesRail.ro = new ResizeObserver((entries) => {
+        for (const { target, contentRect } of entries) {
+          //: L705: read after layout.
+          if (target.id === "entry-list") {
+            if (target.getBoundingClientRect().width >= NOTES_RAIL_MIN_READING) continue;
+            const rail = $("notes-rail");
+            rail.hidden = true;
+            rail.dataset.cramped = "1";
+            window.notesRailMark?.();
+          } else if (last !== (last = Math.round(contentRect.width))) scheduleNotesRail();
+        }
+      });
+      renderNotesRail.ro.observe($("sidebar"));
     }
     syncNotesRailToggle();
 });

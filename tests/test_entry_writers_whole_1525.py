@@ -36,6 +36,7 @@ ALLOWED = {
     "undo-kit.js:putEach": "pushEntriesPutUndo replays the bodies its callers gave it",
     "quick-note.js:flushNoteOutbox": "sends edits the editor queued from the whole text while offline",
     "quick-note.js:createNoteSafely": "the create path every new note goes through; its callers pass fresh text",
+    "documents-prose.js:docSelectionToNote": "its POST makes a new note from the selection (nothing to lose); the Add to note path reads the note whole first",
     "skills.js:batchPut": "its callers pass flag bodies only ({pinned}, {is_draft}), never content",
     "graph-canvas.js:gcWireSelectionDock": "the undo list holds tag bodies only, built just above it",
     #: Edits of text read whole somewhere this lint cannot follow.

@@ -69,6 +69,8 @@ CSS_FILES = [
     CSS_DIR / "answer-foot-lazy.css",
     #: The chat context pill's popover (usage-ledger.js loads it).
     CSS_DIR / "usage-lazy.css",
+    #: The overdue triage sheet (reminder-triage.js loads it).
+    CSS_DIR / "triage-lazy.css",
     #: The Guide's streamed bubble (help-chat.js loads it).
     CSS_DIR / "help-chat-lazy.css",
     #: The chips under a quick-add field (quickadd.js, CHAT_PLAN decision 50).
@@ -98,6 +100,8 @@ CSS_FILES = [
     #: The ```graph and ```base blocks of a document (`LAZY_MODULES.docGraph`, `LAZY_MODULES.docBase`).
     CSS_DIR / "doc-graph-lazy.css",
     CSS_DIR / "doc-base-lazy.css",
+    #: The csv and tsv grid (`LAZY_MODULES.docCsvGrid`, L328).
+    CSS_DIR / "doc-csv-grid-lazy.css",
     #: The quoted span a source opens at (`LAZY_MODULES.reveal`, Brief 88).
     CSS_DIR / "reveal-lazy.css",
     #: The manual (manual.js loads it, WORLD_CLASS_PLAN 25c).

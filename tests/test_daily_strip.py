@@ -118,3 +118,61 @@ def test_the_strip_is_one_header_with_the_arrows_by_the_month():
     for name in ("ArrowLeft", "ArrowRight", "Home", "End"):
         assert name in keys, name
     assert 'addEventListener("keydown", timelineDayKeys)' in TIMELINE
+
+
+def test_the_strip_says_the_journal_streak():
+    """L495 (D6's "a streak that counts days with a daily note"), reopened
+    2026-11-14: decision 22 had only a session reason. The streak is a quiet
+    line in the strip's head, not a dock control, asked over the endpoint's
+    full window so a long run is not capped at the strip's seven days, and
+    hidden under two days (one day is not a run)."""
+    head = HTML[HTML.index('class="timeline-daystrip-head"') : HTML.index('id="timeline-daystrip-days"')]
+    assert re.search(r'<span id="timeline-streak" class="[^"]*\bhidden\b[^"]*"', head)
+    body = _function(TIMELINE, "async function renderTimelineDayStrip(")
+    assert "/entries/daily?through=${today}&days=366" in body
+    assert 'nounCount(days, "day")} in a row' in body and "days >= 2" in body
+
+
+def test_walking_the_strip_never_asks_the_streak_again():
+    """Review 5907787263: every strip render asked for 366 days. The streak is
+    kept per today and asked again only on a new day or a timeline load
+    (`fresh`) or after a saved note (`tessellate:note-saved`, which the
+    composer's Save sends), run here in node against a counting `apiJson`."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    body = _function(TIMELINE, "async function renderTimelineDayStrip(")
+    listen = 'document.addEventListener("tessellate:note-saved", () => {'
+    saved = TIMELINE[TIMELINE.index(listen) : TIMELINE.index("});", TIMELINE.index(listen)) + 2]
+    saved = saved.replace(listen, "(() => {") + "();"  # the listener's body, run as the save would
+    keep = body[body.index("  if (fresh ||") : body.index("  }\n", body.index("  if (fresh ||")) + 4]
+    script = """
+const timelineRenders = { streak: null };
+const asked = [];
+function apiJson(url) { asked.push(url); return Promise.resolve({ streak: 3 }); }
+function strip(today, fresh) {
+""" + keep + """}
+strip("2026-11-21", false);
+strip("2026-11-21", false);
+strip("2026-11-21", false);
+const walked = asked.length;
+strip("2026-11-21", true);
+const loaded = asked.length;
+strip("2026-11-22", false);
+const day = asked.length;
+strip("2026-11-22", false);
+""" + saved + """
+strip("2026-11-22", false);
+strip("2026-11-22", false);
+console.log(JSON.stringify({ walked, loaded, day, saved: asked.length }));
+"""
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True, timeout=30)
+    #: Walk, save, walk: one more call, not one per step.
+    assert json.loads(out.stdout) == {"walked": 1, "loaded": 2, "day": 3, "saved": 4}
+    assert 'new CustomEvent("tessellate:note-saved"' in _function(frontend_text("capture-ask.js"), "async function saveEntry(")
+    assert "renderTimelineDayStrip({ fresh: true })" in _function(TIMELINE, "async function renderTimeline(")

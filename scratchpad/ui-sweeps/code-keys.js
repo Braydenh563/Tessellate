@@ -32,7 +32,7 @@ const PROSE = "# Title\n\nhello world\n\n- one\n- two\n\n## Second\n\nmore text\
 const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 0;\n}\nconst beta = alpha(2);\nconsole.log(beta);\nfunction messy(){return   1}\n";
 
 (async () => {
-  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, permissions: ["clipboard-read", "clipboard-write"] });
   const errors = [];
   page.on("pageerror", (e) => {
     if (!/about:srcdoc|blob:null/.test(String(e.stack))) errors.push(e.message);
@@ -63,12 +63,13 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
         if (el && !el.classList.contains("hidden")) {
           if (id === "palette-overlay") closePalette();
           else if (id === "finder-overlay") closeFinder();
-          else docIdeCloseKeys();
+          else document.querySelector("#doc-keys-overlay button[aria-label=\"Close\"]")?.click();
         }
       }
       if (docRun) docRunClose();
       DOC_DEBUG.on = false;
-      if (docIde.split) docIdeCloseSplit();
+      //: The split lives in documents-ide.js's closure (no global): the toggle (an export) closes one when its class is on.
+      if (document.querySelector(".doc-split-on")) docIdeToggleSplit();
       if (document.body.classList.contains("doc-focus-mode") && typeof toggleDocFocusMode === "function") toggleDocFocusMode();
       const v = docCmView;
       if (v.state.doc.toString() !== t) v.dispatch({ changes: { from: 0, to: v.state.doc.length, insert: t } });
@@ -101,7 +102,7 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
       tooltips: visible(".cm-tooltip"),
       folds: v.dom.querySelectorAll(".cm-foldPlaceholder").length,
       wrap: v.contentDOM.classList.contains("cm-lineWrapping"),
-      split: Boolean(docIde.split),
+      split: Boolean(document.querySelector(".doc-split-on")),
       breaks: docDebugBreaks().length,
       paused: DOC_DEBUG.on && DOC_DEBUG.stop ? Number(DOC_DEBUG.stop.line) : null,
       debugOn: Boolean(DOC_DEBUG.on),
@@ -126,6 +127,22 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
   //: Each keyed row: the document, the caret (line, column or a word to
   //: select), and what must be true after the key.
   const EXPECT = {
+    underline: { on: "prose", word: "hello", check: (a, b) => b.text.includes("<u>hello</u>") },
+    h4: { on: "prose", line: 10, check: (a, b) => b.text.includes("\n#### more text") },
+    h5: { on: "prose", line: 10, check: (a, b) => b.text.includes("\n##### more text") },
+    h6: { on: "prose", line: 10, check: (a, b) => b.text.includes("\n###### more text") },
+    "move-block-up": { on: "prose", line: 6, check: (a, b) => b.text.indexOf("- two") < b.text.indexOf("- one") },
+    "move-block-down": { on: "prose", line: 5, check: (a, b) => b.text.indexOf("- two") < b.text.indexOf("- one") },
+    link: { on: "prose", word: "hello", check: (a, b) => /\[hello\]\(/.test(b.text) },
+    "insert-emoji": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["shown", "active", "menus", "tooltips"]) },
+    "insert-icon": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["shown", "active", "menus", "tooltips"]) },
+    "insert-symbol": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["shown", "active", "menus", "tooltips"]) },
+    "insert-equation": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["shown", "active", "menus", "tooltips", "text"]) },
+    "insert-calculator": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["shown", "active", "menus", "tooltips"]) },
+    "paste-plain": { on: "prose", line: 3, paste: "PASTED", check: (a, b) => b.text.includes("PASTED") },
+    "replace-here": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["panels", "shown", "active"]) },
+    "goto-line-text": { on: "prose", line: 3, check: (a, b) => changed(a, b, ["panels", "shown", "active"]) },
+    "find-next": { on: "prose", line: 1, query: "text", check: (a, b) => b.head !== a.head },
     save: { on: "prose", line: 3, edit: true, check: (a, b) => saves.n > a.saves },
     find: { on: "prose", line: 3, check: (a, b) => changed(a, b, ["panels", "shown", "active"]) },
     bold: { on: "prose", word: "hello", check: (a, b) => b.text.includes("**hello**") },
@@ -178,7 +195,7 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
       id: li.dataset.command,
       keys: [...li.querySelectorAll("kbd")].map((k) => k.textContent),
     }));
-    docIdeCloseKeys();
+    document.querySelector("#doc-keys-overlay button[aria-label=\"Close\"]")?.click();
     return rows;
   });
   const keyed = sheet.filter((r) => r.keys.length);
@@ -198,6 +215,8 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
         await page.keyboard.type("x");
         await page.waitForTimeout(200);
       }
+      if (want.paste) await page.evaluate((t) => navigator.clipboard.writeText(t), want.paste);
+      if (want.query) await page.evaluate((q) => docCmView.dispatch({ effects: window.CM6.search.setSearchQuery.of(new window.CM6.search.SearchQuery({ search: q })) }), want.query);
       if (want.folded) await page.evaluate(() => docIdeFoldAll(false));
       if (want.breakAt || want.debugAt) {
         await page.evaluate(() => { for (const b of docDebugBreaks()) docDebugToggleAt(docCmView, docCmView.state.doc.line(b.line).from); });
@@ -246,7 +265,8 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
     keyed: [...document.querySelectorAll("#palette-list [role=option]")].filter((r) => /\S/.test(r.querySelector("kbd, .rich-picker-keys, [class*=key]")?.textContent || "")).length,
   }));
   console.log(`palette commands: ${palette.rows} (the editor's ${palette.table}), ${palette.keyed} showing a key`);
-  ok("the palette lists every editor command and nothing else", palette.rows === palette.table && palette.groups.join() === "This document", J(palette));
+  //: The palette draws its first PALETTE_WINDOW (24) rows and more as the lit row nears the end (app-palette.js), so the drawn count is the window, not the table.
+  ok("the palette lists the editor's commands, a window of them, and nothing else", palette.rows === Math.min(palette.table, 24) && palette.groups.join() === "This document", J(palette));
   await page.keyboard.type("run tests");
   await page.waitForTimeout(400);
   const fuzzy = await page.evaluate(() => [...document.querySelectorAll("#palette-list [role=option]")].slice(0, 3).map((r) => r.textContent.slice(0, 60)));

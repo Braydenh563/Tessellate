@@ -84,3 +84,29 @@ def test_no_poll_a_value_written_by_code_still_shows_the_button() -> None:
     wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
     start = wiring.index("function renderCaptureFiles(")
     assert "fieldClearSyncAll()" in wiring[start : wiring.index("\n}\n", start)]
+
+
+def _surface_of(ident: str) -> str | None:
+    """The lazily built surface whose markup holds the id, or None for boot markup.
+
+    The suite reads each surface as a `<template data-surface>` (tests/conftest.py); the page ships a script.
+    """
+    surface = r'<(script|template)[^>]*data-surface="([^"]+)"[^>]*>(.*?)</\1>'
+    for match in re.finditer(surface, HTML, re.S):
+        if f'id="{ident}"' in match.group(3):
+            return match.group(2)
+    return None
+
+
+def test_a_box_in_a_lazy_surface_is_wired_when_that_surface_is_built() -> None:
+    #: Owner regression 2026-11-12: Capture's three buttons never showed. The Notes and Chat
+    #: surfaces are built on first open, after this file loads, so a spec wired at load found no box.
+    table = JS[JS.index("const FIELD_CLEARS") : JS.index("function fieldClearBoxes")]
+    rows = table.split('button: "')[1:]
+    assert len(rows) >= 7
+    for row in rows:
+        button = row.split('"', 1)[0]
+        field = re.search(r'fields: \["([^"]+)"', row).group(1)
+        named = re.search(r'surface: "([^"]+)"', row)
+        assert (named.group(1) if named else None) == _surface_of(field), button
+

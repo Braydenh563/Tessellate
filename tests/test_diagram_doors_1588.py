@@ -56,7 +56,8 @@ def test_there_is_one_opener_and_every_hand_written_door_calls_it():
     # The door's board branch is the board's own opener, not a second dialog.
     assert "return wbEditDiagram();" in mermaid
     interchange = _read("whiteboard-interchange.js")
-    assert "diagramModel.starter" in interchange and "WB_DIAGRAM_SAMPLE" not in interchange
+    #: Intent moved (R12): a new board diagram is an empty builder after the sheet; the starter stays in the door.
+    assert "diagramModel.starter" in mermaid and "WB_DIAGRAM_SAMPLE" not in interchange and '|| ""' in interchange
 
 
 def test_the_chat_box_is_the_target_of_the_chat_row_and_the_board_menu_is_for_maps_too():

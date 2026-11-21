@@ -6,7 +6,7 @@
 // Types into a real markdown document in Chromium, key by key, and asserts the
 // list, the ghost text and the resulting text: `lorem` + Enter, `lorem3` +
 // Tab, `today` alone + Enter and `now` inside a sentence (no list), `table 3x4`,
-// `:thumbsu`, `todo` and the list continuing on Enter, the pairs (`**`, `(`,
+// `:thumbsu`, the to-do item and the list continuing on Enter, the pairs (`**`, `(`,
 // backticks, Backspace), smart quotes off then on, and that a code file gets
 // none of it. tests/test_prose_autofill.py holds the string work to exact
 // output.
@@ -142,7 +142,7 @@ const ok = (n, c, d) => {
   s = await state();
   ok("Enter writes it", s.text === "Nice \u{1F44D}", J(s.text));
 
-  // --- todo, and the list continuing (already the markdown keymap's) ----------------
+  // --- the to-do item, and the list continuing (already the markdown keymap's) ----------------
   await clear();
   await page.keyboard.type("todo");
   await settle();

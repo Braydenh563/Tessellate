@@ -27,7 +27,7 @@ never lost to the smaller stuff.
 The 2026-09-09 to 2026-09-13 batches (110, 111, 114, 174, 176, 177, 180)
 are in HISTORY's "INBOX resolved" with every sub-report marked; the three
 residues they left are owned elsewhere: the graph agent popup redesign
-(GRAPH_PLAN Phase 6), the mind map ring (MINDMAP_PLAN "Decisions made,
+(GRAPH_PLAN Phase 6, built: its "Built, Phase 6" block), the mind map ring (MINDMAP_PLAN "Decisions made,
 2026-09-13 night", the mapux agent), and the second batch's five
 not-reproduced visuals (BACKLOG, "Reported, not reproduced"). Everything
 below is open work from the night of 2026-09-13 and the morning after,

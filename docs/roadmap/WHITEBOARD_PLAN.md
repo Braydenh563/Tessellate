@@ -341,7 +341,9 @@ accessibility, and learnability") are why.
     snap stay per device.
 25. **The object library is independent copies** (section 8.4): a placed item
     becomes ordinary rows that remember `library_ref {id, version}` and never
-    follow later edits. Built-in sets are static JSON shipped with the app,
+    follow later edits (**superseded for icon and emoji stickers** by
+    MINDMAP_PLAN 14.4, 2026-11-12: a copy follows its sticker, see
+    HISTORY "Moved from the plans, 2026-11-12 (mindmap-plan)"). Built-in sets are static JSON shipped with the app,
     drawn fresh (no draw.io stencils; Apache-2.0 features, not code); "Yours"
     holds six kinds (a selection, a custom shape, a style or palette, a
     preset, a branch, a whole board as a template). **BACKLOG 4b is answered

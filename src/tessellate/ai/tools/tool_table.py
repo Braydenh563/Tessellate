@@ -1272,7 +1272,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "complete_reminder",
-            "Mark a reminder done (or not done).",
+            "Mark a reminder done, or open again.",
             {
                 "type": "object",
                 "properties": {

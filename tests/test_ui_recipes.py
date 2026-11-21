@@ -570,7 +570,7 @@ def test_the_tonal_button_keeps_its_edge_and_its_lift() -> None:
 
     Third pass on one report. "control elements and buttons feel more like
     just shapes with text in them, rather than proper official buttons" was
-    answered once with a border and a shadow; a later pass took both off and
+    answered once with a border and a shadow; a pass after took both off and
     raised the fill instead, on a measurement taken in a *toolbar*; the
     report then came back a third time as "all the buttons need to actually
     look like buttons with affordance, not just shapes with text in them".
@@ -1314,7 +1314,7 @@ def test_a_list_row_answers_in_place_rather_than_opening_a_popover() -> None:
     over the 297px panel that asked for it, 70% of the window's height spent on
     one misspelled word, with the sentence being discussed behind both.
 
-    Three halves of the fix, each one a thing a later session could undo
+    Three halves of the fix, each one a thing any session after could undo
     without noticing:
 
     1. the panel's row builder must not reach for the floating menu again;
@@ -1479,7 +1479,7 @@ def test_a_viewport_popup_leaves_the_surfaces_that_can_blur() -> None:
     322` and drew at `1245..1485, 399`, 45px past the right edge of the window
     and 53px from its word.
 
-    Two halves, either of which a later session could drop without seeing
+    Two halves, either of which any session after could drop without seeing
     anything move on a machine with the art switched off:
 
     1. the popup leaves the card while it is open and goes back on the way out;
@@ -2143,7 +2143,7 @@ def test_typing_in_the_lit_control_is_not_a_tour_key() -> None:
 def test_the_tour_is_switched_on_and_its_doors_are_live() -> None:
     """The owner switched the tour off on 2026-09-21 until it was fixed; it is
     on again, and every door reads the one flag rather than being disabled on
-    its own (the About button was the door that got left open last time)."""
+    its own (the About button was the door that was missed last time)."""
     js = TOUR_JS.read_text(encoding="utf-8")
     assert re.search(r"^const TOUR_ENABLED = true;$", js, re.M), "TOUR_ENABLED must be true"
     app = app_js_text()
@@ -3445,7 +3445,7 @@ def test_a_picker_row_never_shrinks_and_its_sources_span_the_dialog() -> None:
     assert "noteLabel(row, 70)" not in _function_body(source, "libraryPickLabel")
 
 
-#: Script-built dialogs that still open on the confirm alert's `confirm-head`
+#: Script-built dialogs that open on the confirm alert's `confirm-head`
 #: (a question and its answers, which DESIGN.md exempts): may only fall. A
 #: dialog that is not a question takes `dialogHead` (selection.js; INBOX 548).
 CONFIRM_HEAD_DIALOGS = {"app.js": 1}
@@ -4740,7 +4740,7 @@ def test_the_ai_skills_dock_holds_one_row() -> None:
     """INBOX 599, the owner, with the AI skills dock in two rows: "can you
     clean up and redesign this top docks??". Measured with `settingsheads.js`:
     90px and two rows at 1100 and 820 before, one row (50px) at 1440, 1280 and
-    1100 after. Three parts, any of which a later session could undo:
+    1100 after. Three parts, any of which any session after could undo:
 
     1. the sort is an icon-and-caret picker (`data-select-icon`) and an icon
        picker in a dock is not held to a worded select's 9rem floor;
@@ -5892,7 +5892,8 @@ def test_file_reading_text_fits_up_to_a_page():
     """The owner: the extracted text in a Files row was quite short."""
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text()
     m = re.search(r"\.library-file-reading-text \{([^}]*)\}", css)
-    assert m and "max-height: min(28rem, 55vh)" in m.group(1)
+    #: INBOX 827 L1: the owner's reading column is up to half the window (was 55vh).
+    assert m and "max-height: min(28rem, 50vh)" in m.group(1)
     shell = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text()
     assert re.search(r"\.library-image-card-fold > \.library-image-reading-body \{\s*max-height: 11rem", shell)
 #: DESIGN.md, "A control that acts on the computer Tessellate runs on". Every
@@ -7810,7 +7811,7 @@ def test_a_rail_opener_never_rides_over_the_strip_above_its_split() -> None:
     after unlock, it had no opener at all."""
     css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     band = css[css.index("@media (min-width: 600px) and (max-width: 819.98px)") :]
-    rule = re.search(r"#tab-library:has\(> #library-view-skills:not\(\.hidden\)\) > #library-subtabs\s*\{([^}]*)\}", band)
+    rule = re.search(r"#tab-library > #library-subtabs:has\(~ #library-view-skills:not\(\.hidden\)\)\s*\{([^}]*)\}", band)
     assert rule and "padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset))" in rule.group(1)
     js = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
     wired = re.search(r"for \(const name of \[([^\]]*)\]\) onSurface\(name, wire\)", js)
@@ -7891,3 +7892,28 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_note_s_provenance_is_one_chip_built_in_the_note_card() -> None:
+    """L-general-13: the origin chip is drawn once, in entry-card.js, from the server's `source_kind`;
+    no second place builds a `source-path` chip, and nothing reads `source_url` to draw its own."""
+    card = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8")
+    assert card.count('"source-path"') == 1
+    assert "entry.source_kind && entry.source_label" in card
+    assert "Imported from ${entry.source_path}" not in card
+    others = [
+        p.name
+        for p in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js")
+        if p.name != "entry-card.js" and '"source-path"' in p.read_text(encoding="utf-8")
+    ]
+    assert others == []
+
+
+def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
+    """L-general-12: Triage opens `openSheet`, never a hand-built overlay, and each act (and the bulk
+    one) joins the undo stack once."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-triage.js").read_text(encoding="utf-8")
+    assert "openSheet({" in js
+    assert 'createElement("dialog")' not in js and "modal-overlay" not in js
+    assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
+    assert ".style." not in js and "style=" not in js

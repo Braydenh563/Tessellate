@@ -62,7 +62,7 @@ def test_both_entry_points_call_it_first():
     The contract is "no statement runs before this one", and the line-based
     version could only check "no *line* comes before it", which is not the
     same claim: it failed the day `_run_server` grew a docstring explaining
-    why its imports are deferred, although nothing had moved. Walking the
+    why its imports sit inside functions, although nothing had moved. Walking the
     function's own body is the stricter reading as well as the more robust
     one, since a docstring is not a statement and a blank line is not the end
     of a function.

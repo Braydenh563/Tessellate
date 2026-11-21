@@ -167,5 +167,25 @@
     return button;
   }
 
-  diagramModel.kindbar = { mount, fresh, historyKey, expand, KINDS, SAMPLE };
+  //: The ... menu's rows for a narrow phone (L-documents-7): 480 px or less, Direction, Redo and Ask leave the dock (diagram-lazy.css).
+  //: 360 px or less, the dock drops the kind button's caret and its side padding to stay one row at 320.
+  const COMPACT = "(max-width: 599.98px), (pointer: coarse)";
+
+  function fold(S, DIRS, suggestMenu) {
+    const narrow = matchMedia("(max-width: 480px)").matches;
+    S.root.classList.toggle("dgm-narrow", narrow);
+    S.root.classList.toggle("dgm-tight", matchMedia("(max-width: 360px)").matches);
+    const ask = narrow && S.pane && (S.steps || S.k) && S.pane.querySelector(".dgm-ai-form");
+    const more = () => S.root.querySelector(".dgm-more button");
+    const rows = [];
+    if (S.suggestBtn && matchMedia(COMPACT).matches) rows.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, more() || S.suggestBtn) });
+    if (narrow) {
+      if (S.dirs) rows.push({ label: "ph:arrows-out-cardinal Direction…", group: "edit", run: () => { const r = (more() || S.root).getBoundingClientRect(); openMenuAtPoint(DIRS.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: () => S.turn(d) })), "Direction", r.right, r.bottom, more()); } });
+      rows.push({ label: "ph:arrow-clockwise Redo", group: "edit", run: () => S.io.redo() });
+      if (ask) rows.push({ label: "ph:sparkle Ask for a change…", group: "edit", run: () => S.root.querySelector(".dgm-askbtn")?.click() });
+    }
+    return { rows, key: (S.io.menu || []).map((row) => row.label).join("|") + (ask ? "|ask" : "") };
+  }
+
+  diagramModel.kindbar = { mount, fresh, historyKey, expand, fold, KINDS, SAMPLE };
 })();

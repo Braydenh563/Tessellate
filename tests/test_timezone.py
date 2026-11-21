@@ -9,6 +9,14 @@ entry timestamps and the agent's prompt.)
 """
 
 from __future__ import annotations
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def test_entry_timestamps_are_marked_as_utc_too(client):
@@ -43,6 +51,14 @@ def test_timezone_preference_drives_the_users_clock(client):
 def test_an_unknown_timezone_is_refused(client):
     """A bad zone name would otherwise sit in preferences failing silently."""
     assert client.put("/preferences", json={"timezone": "Middle/Earth"}).status_code == 422
+
+
+def test_the_name_a_browser_in_india_reports_is_taken_and_kept_as_the_current_one(client):
+    """Chromium reports Kolkata as "Asia/Calcutta", which a system tz database
+    without the legacy links lacks; the whole startup PUT was refused (L914)."""
+    put = client.put("/preferences", json={"timezone": "Asia/Calcutta", "week_start_locale": 0})
+    assert put.status_code == 200
+    assert client.get("/preferences").json()["timezone"] == "Asia/Kolkata"
 
 
 def test_no_timezone_falls_back_to_the_server_clock(client):

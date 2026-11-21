@@ -195,3 +195,33 @@ def test_the_import_makes_the_frames_and_joins_a_subgraph_edge_to_its_frame() ->
     assert 'z = wbStackNewZ("object", { kind })' in (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     assert "frameIds.get(e.from)" in body and 'tKind = ids.has(e.to) ? "sketch" : "object"' in body
     assert "wbMermaidFrameOf" in SOURCE[SOURCE.index("async function wbExportMermaid(") :]
+
+
+def test_the_import_keeps_a_blocks_colour_and_a_connectors() -> None:
+    """L-documents-17: `style X fill:#..,stroke:#..` and the builder's own colour reach the board's shapes.
+
+    A plain `style` line (the model keeps it as a line it cannot place) is read for its fill and
+    stroke, 3 or 6 hex digits; the builder's own `n.fill` hue is the stroke with a light fill; a
+    `linkStyle N stroke:#..` colours that connector. Anything that is not a hex colour is ignored.
+    """
+    src = (
+        "flowchart TD\nA[One] -->|x| B[Two]\nB --> C[Three]\n"
+        "style A fill:#f9f,stroke:#333\nstyle B fill:red\nstyle C stroke:#0a0\nlinkStyle 1 stroke:#ff0000,stroke-width:2px"
+    )
+    look = _run(f"(() => {{ const g = diagramModel.parse({json.dumps(src)}); const l = wbMermaidLayout.look(g); return {{ nodes: Object.fromEntries(l.nodes), edges: Object.fromEntries(l.edges) }}; }})()")
+    assert look["nodes"]["A"] == {"fill": "#ff99ff", "fillOpacity": 1, "color": "#333333"}
+    assert "B" not in look["nodes"], "a named colour is not a hex colour"
+    assert look["nodes"]["C"] == {"color": "#00aa00"}
+    assert look["edges"] == {"1": "#ff0000"}
+
+
+def test_a_builder_hue_is_a_stroke_with_a_light_fill() -> None:
+    src = "flowchart TD\nA[One] --> B[Two]"
+    look = _run(f"(() => {{ const g = diagramModel.parse({json.dumps(src)}); g.nodes[0].fill = '#d84315'; const l = wbMermaidLayout.look(g); return Object.fromEntries(l.nodes); }})()")
+    assert look["A"] == {"color": "#d84315", "fill": "#d84315", "fillOpacity": 0.2}
+
+
+def test_the_import_applies_the_look() -> None:
+    body = SOURCE[SOURCE.index("async function wbImportMermaid(") :]
+    body = body[: body.index("\n}\n")]
+    assert "wbMermaidLayout.look(graph)" in body and "look.nodes.get(n.id)" in body and "look.edges.get(" in body

@@ -835,7 +835,9 @@ def record_dates(session: Session, entry: Entry, now: datetime | None = None) ->
             try:
                 now = user_now(deps.get_config())
             except Exception:  # noqa: BLE001  # no app state (a script, a test)
-                now = datetime.now()
+                # Still through the seam: a raw `datetime.now()` here read the
+                # real day under a pinned test clock (2026-11-21, "the 17th").
+                now = user_now(None)
         #: An imported note's words were written on its own day, not today:
         #: "tomorrow" in a 2024 export is a day in 2024 (CHAT_PLAN section 2,
         #: the import row). `app_import.write` sets that day and calls this
@@ -855,6 +857,7 @@ def record_dates(session: Session, entry: Entry, now: datetime | None = None) ->
                     # every mention a day early west of UTC (UX-02).
                     at=datetime.combine(mention.at, mention.time or datetime.min.time()),
                     precision=mention.precision,
+                    until=datetime.combine(mention.until, datetime.min.time()) if mention.until else None,
                 )
             )
             resolved.append(

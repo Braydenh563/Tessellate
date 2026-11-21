@@ -385,11 +385,14 @@
       return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
     };
     const roomy = () => fig.scrollWidth > fig.clientWidth + 1 || fig.scrollHeight > fig.clientHeight + 1;
+    //: The right button pans too (L-documents-1, as draw.io does): a press that stays put still opens its menu, a drag holds it back.
+    let rightDrag = false;
     fig.addEventListener("pointerdown", (event) => {
       //: A handle, an arrow's end or the name field sits in the figure (diagram-overlay.js): its press is not a pan.
-      if ((event.button && event.button !== 1) || event.target.closest?.(".dgm-overlay > *")) return;
+      if ((event.button && event.button !== 1 && event.button !== 2) || event.target.closest?.(".dgm-overlay > *")) return;
       //: The middle button pans (no autoscroll), as Space and drag does; a plain mouse drag on empty space is the marquee (diagram-canvas.js).
       if (event.button === 1) event.preventDefault();
+      rightDrag = event.button === 2;
       if (!points.size) (travel = 0), (wasted = 0);
       cancelGlide();
       trail = [{ t: event.timeStamp, x: event.clientX, y: event.clientY }];
@@ -415,6 +418,8 @@
         trail.push({ t: event.timeStamp, x: event.clientX, y: event.clientY });
         if (trail.length > 8) trail.shift();
         if (travel > 12 && event.pointerType !== "touch") fig.setPointerCapture?.(event.pointerId);
+        //: A menu that opened on the press (macOS and Linux send `contextmenu` then) goes when the press turns into a pan.
+        if (rightDrag && travel > 12) closeActionMenus();
       } else if (points.size === 1 && image()) {
         wasted += Math.abs(event.clientX - last.x) + Math.abs(event.clientY - last.y);
         if (wasted > 24 && note.classList.contains("hidden")) {
@@ -440,6 +445,13 @@
     };
     fig.addEventListener("pointerup", lift);
     fig.addEventListener("pointercancel", lift);
+    //: Windows sends `contextmenu` on release: after a right drag it is the end of a pan, not a request for a menu.
+    fig.addEventListener("contextmenu", (event) => {
+      if (rightDrag && travel > 12) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
     //: A pan or a pinch is not a press on a block.
     fig.addEventListener("click", (event) => {
       if (travel > 12) event.stopPropagation(), (travel = 0);

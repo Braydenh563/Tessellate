@@ -79,6 +79,15 @@ def test_a_tie_breaks_as_a_reload_paints_notes_then_objects_then_id() -> None:
     assert _keys(state) == ["sketch:3", "sketch:9", "node:2", "node:20", "object:1"]
 
 
+def test_an_item_still_waiting_for_its_id_ties_as_the_newest() -> None:
+    """L-mindmap-13 (2026-11-13): a map topic is made at z 1 like its siblings
+    and holds a negative id until the server answers. By that id it tied below
+    every topic, so each Tab moved all 41 topics' stack rank up by one (41
+    z-index writes before the new topic was typeable) and back again on the
+    answer."""
+    state = {"sketches": [], "nodes": [], "objects": [{"id": 5, "kind": "topic", "z": 1}, {"id": 9, "kind": "topic", "z": 1}, {"id": -1, "kind": "topic", "z": 1}, {"id": -2, "kind": "topic", "z": 1}]}
+    assert _keys(state) == ["object:5", "object:9", "object:-1", "object:-2"]
+
 def test_a_card_over_a_stroke_and_a_stroke_over_a_card() -> None:
     state = {
         "sketches": [{"id": 1, "z": 1}, {"id": 2, "z": 3}],

@@ -32,6 +32,7 @@ from sqlalchemy import (
     TypeDecorator,
     UniqueConstraint,
     event,
+    func,
     inspect as sa_inspect,
     select,
     text as sql_text,
@@ -40,6 +41,7 @@ from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     Session,
+    column_property,
     mapped_column,
     with_loader_criteria,
 )
@@ -64,6 +66,13 @@ def impersonate_workspace(session: Session, workspace_id: str):
 def utcnow() -> datetime:
     """Timezone-aware UTC now (datetime.utcnow is deprecated: plan §4)."""
     return datetime.now(timezone.utc)
+
+
+def stamp() -> datetime:
+    """A row's own time (every `default=` and `onupdate=` below). It reads
+    `utcnow` by name when the row is written, not when the class is built, so
+    a test's pinned clock (`tests/_clock.pin_clock`) stamps rows too."""
+    return utcnow()
 
 
 #: The character every escaped LIKE pattern in this app declares.
@@ -287,6 +296,23 @@ def _forget_private_spaces(session, flush_context, instances):
         session.info.pop(PRIVATE_SPACES, None)
 
 
+#: Flushes that wrote each model, for this process. A cache keyed on
+#: `max(updated_at)` alone serves a stale answer when two writes share a clock
+#: tick (a pinned clock always does), so every such fingerprint carries this.
+_writes: dict[type, int] = {}
+
+
+def writes(model: type) -> int:
+    """How many flushes so far added, changed or deleted a `model` row."""
+    return _writes.get(model, 0)
+
+
+@event.listens_for(Session, "before_flush")
+def _count_writes(session, flush_context, instances):
+    for model in {type(obj) for obj in (*session.new, *session.dirty, *session.deleted)}:
+        _writes[model] = _writes.get(model, 0) + 1
+
+
 def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
     if isinstance(obj, tuple(_SPACE_SEALED)):
         # Before `_set_workspace` has stamped a new row: the request's space.
@@ -422,7 +448,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(100), unique=True)
     password_hash: Mapped[str] = mapped_column(String(200))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class WebPage(Base):
@@ -438,7 +464,7 @@ class WebPage(Base):
     domain: Mapped[str] = mapped_column(String(255), default="")
     text: Mapped[str] = mapped_column(Text, default="")
     links: Mapped[list | None] = mapped_column(JSON, default=None)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, index=True)
 
 
 class Vault(Base):
@@ -454,7 +480,7 @@ class Vault(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     kdf_salt: Mapped[bytes] = mapped_column(LargeBinary(32))
     wrapped_dek: Mapped[bytes] = mapped_column(LargeBinary(128))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     #: The same data key wrapped a second time, by the recovery key (INBOX
     #: 663; crypto.new_recovery_key). Null until one is made. The key itself
     #: is never stored: only its salt and what it wraps, so this row alone
@@ -497,7 +523,7 @@ class Category(Base, WorkspaceMixin):
     #: rename keeps it, a merge keeps the target's and a delete drops it with
     #: no clean-up pass. `_rebuild_categories_unique_constraint` copies it.
     colour: Mapped[str | None] = mapped_column(String(16), default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class Entry(Base, WorkspaceMixin):
@@ -568,7 +594,7 @@ class Entry(Base, WorkspaceMixin):
     last_opened_at: Mapped[datetime | None] = mapped_column(SaDateTime, default=None)
     #: **When a person last changed what the note says**: its text (and so
     #: its title), its tags or its category. Not `updated_at`, which has
-    #: `onupdate=utcnow` and so moves when the note is merely opened (the
+    #: `onupdate=stamp` and so moves when the note is merely opened (the
     #: open bumps `access_count`) or filed by the AI: a list sorted by that
     #: reorders itself on every click. Set by `manager.mark_edited` at each
     #: per-note edit path and nowhere else; never on view, filing, pinning,
@@ -600,9 +626,9 @@ class Entry(Base, WorkspaceMixin):
     # True when the USER chose the category (guided mode or a manual
     # move): the janitor then keeps its hands off during re-filing.
     user_filed: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=utcnow, onupdate=utcnow
+        DateTime, default=stamp, onupdate=stamp
     )
     # Soft delete = recycle bin (adds restore/auto-clear).
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -759,7 +785,7 @@ class Entity(Base):
     # scope cut. `entities.py` still merges exact, case-folded name matches
     # within one pass so the same note doesn't create the same entity twice.
     name: Mapped[str] = mapped_column(String(200))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     #: GRAPH_PLAN KG5: person, place, project, organisation or thing
     #: (`ENTITY_KINDS`); null where nothing said, which every entity found
     #: before this column existed is.
@@ -786,7 +812,7 @@ class EntityMention(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     entity_id: Mapped[int] = mapped_column(ForeignKey("entities.id"))
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 #: Markdown a model puts in a link reason ("The packing list is for the
@@ -954,7 +980,7 @@ class SealedTitle(SealedText):
 #: embedding pass touches bookkeeping) is the app's own and must not move the
 #: time the Library shows. Reported 2026-10-10: "idk why it says just now on
 #: the mindmap when I hadnt been on it". `Entry.updated_at` has
-#: `onupdate=utcnow`, so *any* UPDATE moved it; opening the map's entry from
+#: `onupdate=stamp`, so *any* UPDATE moved it; opening the map's entry from
 #: an Ask result was enough. Boards only: notes have `edited_at` for the same
 #: question, and `lexical_filing` keys its stamps on a note's `updated_at`.
 _BOARD_EDIT_COLUMNS = frozenset(
@@ -986,7 +1012,7 @@ class EntryLink(Base, WorkspaceMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     source_entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"))
     target_entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     # Optional, free text: "why are these connected?" A shared tag or a
     # reply thread says why on its own; a manual or AI-made link often
     # doesn't ("a note about uni and gym might still be related if they're
@@ -1047,7 +1073,7 @@ class RelationType(Base):
     inverse: Mapped[str | None] = mapped_column(String(60), default=None)
     directed: Mapped[bool] = mapped_column(Boolean, default=True)
     colour: Mapped[str | None] = mapped_column(String(16), default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class EntryProperty(Base):
@@ -1085,7 +1111,7 @@ class NoteType(Base):
     colour: Mapped[str | None] = mapped_column(String(16), default=None)
     #: `[{"name": ..., "kind": one of NOTE_FIELD_KINDS}]`, in order.
     fields: Mapped[list | None] = mapped_column(JSON(none_as_null=True), default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 #: The kinds of connection a link can carry, and what each one means.
@@ -1164,7 +1190,7 @@ class EmbeddingRecord(Base):
     embedding: Mapped[bytes] = mapped_column(LargeBinary)
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class ChunkVector(Base):
@@ -1239,7 +1265,7 @@ class StagedEmbedding(Base):
     embedding: Mapped[bytes] = mapped_column(LargeBinary)
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class Attachment(Base, WorkspaceMixin):
@@ -1255,7 +1281,7 @@ class Attachment(Base, WorkspaceMixin):
     stored_name: Mapped[str] = mapped_column(String(80), unique=True)
     mime: Mapped[str] = mapped_column(String(100), default="application/octet-stream")
     size: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     #: What this file *says*, so the AI and the Library can both read it.
     #:
     #: Asked for directly: "the files tab needs vision model and ocr model
@@ -1314,9 +1340,9 @@ class Conversation(Base, WorkspaceMixin):
     # scope. Never implies deletion; added by the auto-migrator, defaulting
     # to NULL (not archived) on every existing row.
     archived_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=utcnow, onupdate=utcnow
+        DateTime, default=stamp, onupdate=stamp
     )
 
 
@@ -1367,7 +1393,7 @@ class AskTurn(Base, WorkspaceMixin):
     # Pinned turns survive "clear history" and sort first: the same shape
     # Conversation.pinned already uses for saved chats.
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class Bookmark(Base, WorkspaceMixin):
@@ -1406,7 +1432,22 @@ class Bookmark(Base, WorkspaceMixin):
     #: usually for. Scalar default so the additive auto-migrator backfills
     #: existing rows to unread.
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    #: The look of the card (INBOX 827 L5). `icon` is "" (the site's own, else its kind's glyph), a Phosphor
+    #: name as "ph:star" or an emoji; `color` is "" or a palette key (`repo/bookmarks.COLORS`). Scalar defaults,
+    #: so the additive auto-migrator backfills "".
+    icon: Mapped[str] = mapped_column(String(80), default="")
+    color: Mapped[str] = mapped_column(String(20), default="")
+    #: What the last fetch found (L3, and the stale-icon bug): the site's own icon as a `data:` address (nothing
+    #: is requested from the site to draw it), a two-line excerpt and the page's text. Written only by
+    #: `POST /bookmarks/{id}/refresh`, which needs the web switch; "" until then.
+    #: Deferred (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
+    #: neither; the list reads the two flags below, worked out in SQL, and the icon has its own route.
+    favicon: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    excerpt: Mapped[str] = mapped_column(String(400), default="")
+    page_text: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
+    has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class EntryBookmark(Base):
@@ -1426,7 +1467,7 @@ class EntryBookmark(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"))
     bookmark_id: Mapped[int] = mapped_column(ForeignKey("bookmarks.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class DocumentBookmark(Base):
@@ -1442,7 +1483,7 @@ class DocumentBookmark(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"))
     bookmark_id: Mapped[int] = mapped_column(ForeignKey("bookmarks.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class Reminder(Base, WorkspaceMixin):
@@ -1474,7 +1515,7 @@ class Reminder(Base, WorkspaceMixin):
     #: goes back to the 31st. Null: the due day is the day. Cleared when the
     #: person moves the due time (Brief 101b).
     repeat_day: Mapped[int | None] = mapped_column(Integer, default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     #: In the recycle bin since then (WORLD_CLASS_PLAN 5 item 10); null is live.
     #: Hidden from every read by `_hide_binned`.
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
@@ -1519,7 +1560,7 @@ class NoteScore(Base, WorkspaceMixin):
     age_days: Mapped[int] = mapped_column(Integer, default=0)
     link_count: Mapped[int] = mapped_column(Integer, default=0)
     access_count: Mapped[int] = mapped_column(Integer, default=0)
-    computed_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    computed_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class DerivedFact(Base):
@@ -1573,7 +1614,7 @@ class DerivedFact(Base):
     #: row, and a blank answer is worse than an honest "no model was involved".
     model: Mapped[str] = mapped_column(String(80), default="local")
     confidence: Mapped[float] = mapped_column(Float, default=0.0)
-    computed_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    computed_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     edited_by_user: Mapped[bool] = mapped_column(Boolean, default=False)
     original_text: Mapped[str | None] = mapped_column(Text, default=None)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
@@ -1645,7 +1686,7 @@ class NightRun(Base):
     __tablename__ = "night_runs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, index=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     #: "manual" (`POST /night/run`) or "scheduled" (`ai/autonomous.py`).
     trigger: Mapped[str] = mapped_column(String(20), default="manual")
@@ -1675,7 +1716,7 @@ class EntryRevision(Base):
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), index=True)
     content: Mapped[str] = mapped_column(Text)
     tags: Mapped[str] = mapped_column(Text, default="[]")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class EntryOpen(Base):
@@ -1718,7 +1759,10 @@ class EntryDate(Base):
     phrase: Mapped[str] = mapped_column(String(60))
     at: Mapped[datetime] = mapped_column(DateTime)
     precision: Mapped[str] = mapped_column(String(10), default="day")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    #: A written range's last day ("3 to 7 March"), precision "range"; the
+    #: calendar draws the note across the days between (decision 13).
+    until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class Document(Base, WorkspaceMixin):
@@ -1763,8 +1807,8 @@ class Document(Base, WorkspaceMixin):
     #: In the recycle bin since then (WORLD_CLASS_PLAN 5 item 10); null is live.
     #: Hidden from every read by `_hide_binned`; a purge is the hard delete.
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class DocumentLink(Base):
@@ -1787,7 +1831,7 @@ class DocumentLink(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"), index=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class DocumentAiEdit(Base):
@@ -1827,7 +1871,7 @@ class DocumentAiEdit(Base):
     selection_excerpt: Mapped[str] = mapped_column(SealedTitle(200), default="")
     before_content: Mapped[str] = mapped_column(SealedText(), default="")
     after_content: Mapped[str] = mapped_column(SealedText(), default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class PageRead(Base):
@@ -1929,7 +1973,7 @@ class PageRead(Base):
     #: Additive with a scalar default, so the auto-migrator backfills every
     #: existing `page_reads` row with `""`, the same treatment `caption` had.
     regions: Mapped[str] = mapped_column(Text, default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 class BinnedReading(Base):
@@ -1962,7 +2006,7 @@ class BinnedReading(Base):
     #: The file's name when it was binned, so the Bin can say what it was a
     #: reading of without a join to a row that may itself be gone.
     label: Mapped[str] = mapped_column(String(300), default="")
-    deleted_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
+    deleted_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, index=True)
 
 
 class Recording(Base, WorkspaceMixin):
@@ -2011,8 +2055,8 @@ class Recording(Base, WorkspaceMixin):
     #: Set when a stale recording was finished by recovery, so the app can
     #: say "Recording recovered" once.
     recovered: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None, index=True)
 
 
@@ -2051,7 +2095,7 @@ class DocumentRevision(Base):
     #: the list, because "who changed this" is the first question a history
     #: answers.
     source: Mapped[str] = mapped_column(String(10), default="edit")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     #: A named version (DOCUMENTS 24 row 4, Google Docs's "Name current
     #: version"): null for an ordinary sitting. A named row is never coalesced
     #: into by the next edit, so the text it names stays the text it names.
@@ -2096,8 +2140,8 @@ class WhiteboardNode(Base, WorkspaceMixin):
     #: walk. A column here because a card has no data blob; a sketch and an
     #: object keep the flag in theirs.
     hidden: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, onupdate=stamp)
 
 
 class WhiteboardSketch(Base, WorkspaceMixin):
@@ -2113,8 +2157,8 @@ class WhiteboardSketch(Base, WorkspaceMixin):
     y: Mapped[float] = mapped_column(Float, default=0.0)
     z: Mapped[int] = mapped_column(Integer, default=0)
     group_id: Mapped[str | None] = mapped_column(String(40), default=None, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, onupdate=stamp)
 
 
 class WhiteboardObject(Base, WorkspaceMixin):
@@ -2176,8 +2220,8 @@ class WhiteboardObject(Base, WorkspaceMixin):
     #: `WhiteboardNode.rotation`.
     rotation: Mapped[float | None] = mapped_column(Float, default=None)
     group_id: Mapped[str | None] = mapped_column(String(40), default=None, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, onupdate=stamp)
 
 
 class BoardLibrary(Base):
@@ -2194,8 +2238,8 @@ class BoardLibrary(Base):
     #: "yours" (the default one), "custom" (made by hand) or "imported".
     kind: Mapped[str] = mapped_column(String(12), default="custom")
     sort: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, onupdate=stamp)
 
 
 class BoardLibraryItem(Base):
@@ -2217,8 +2261,8 @@ class BoardLibraryItem(Base):
     use_count: Mapped[int] = mapped_column(Integer, default=0)
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     version: Mapped[int] = mapped_column(Integer, default=1)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp, onupdate=stamp)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None, index=True)
 
 
@@ -2253,7 +2297,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: What the uploader's own file was called, kept for a readable gallery
     #: label only: never used to resolve a path.
     original_name: Mapped[str] = mapped_column(String(300))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     #: Local OCR text (core/ocr.py), filled in on a background thread after
     #: upload: NULL means "not extracted yet or nothing found", never
     #: distinguished from each other, since neither blocks the upload and a
@@ -2335,7 +2379,7 @@ class JobRun(Base):
     __tablename__ = "job_runs"
 
     kind: Mapped[str] = mapped_column(String(40), primary_key=True)
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     status: Mapped[str] = mapped_column(String(12), default="running")
     result: Mapped[str] = mapped_column(String(400), default="")
@@ -2381,7 +2425,7 @@ class DurableJob(Base):
     heartbeat: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     result: Mapped[str] = mapped_column(String(400), default="")
     error: Mapped[str] = mapped_column(String(400), default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     started_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
 
@@ -2393,7 +2437,7 @@ class UserPreference(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str] = mapped_column(String(500))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     #: True while the *model* has proposed this and the user has not answered.
     #: A proposal is not in the prompt and is not "off", those are different
@@ -2449,7 +2493,7 @@ class AuditLog(Base):
     #: `after` in order, and a diff would need every earlier event to be
     #: present and correct to mean anything at all.
     payload: Mapped[dict | None] = mapped_column(JSON, default=None)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
 
 _SEALED_COLUMNS.update(

@@ -174,3 +174,29 @@ def test_a_line_shows_its_ends_by_a_class_on_its_own_group():
     assert ".wb-map-edge-group:is(:focus-visible, :has(:focus-visible))" not in misc
     js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     assert 'handle.parentNode.classList.toggle("is-shown", on)' in js
+
+
+def test_a_map_node_and_line_do_not_ask_every_ancestor_about_focus():
+    """L-mindmap-13: `.wb-map-node:is(:focus-visible, :has(:focus-visible)) .wb-map-actions` (and the
+    same on a line's group, which can never take focus) made every focus change re-match every
+    action row, grip and line end under each ancestor of the focused topic: Tab to a new topic at
+    390, 6x CPU, 25-30 style recalcs over ~3000 elements, 207-235 ms to editable, 107 after."""
+    css = "".join((ROOT / "frontend" / "css" / n).read_text(encoding="utf-8") for n in ("07-whiteboard-misc.css", "library-lazy.css"))
+    for rule in (r"\.wb-map-node:is\([^)]*:has\(:focus-visible", r"\.wb-map-edge-group:is\([^)]*:has\(:focus-visible"):
+        assert not re.search(rule, css), rule
+    assert ".wb-map-actions:focus-within,\n.wb-map-node:focus-visible .wb-map-actions" in css
+
+
+def test_the_library_strip_asks_about_its_own_siblings_not_the_whole_tab():
+    """L-mindmap-13: `#tab-library:has(> #library-view-whiteboard:not(.hidden) > ...)` made every
+    `hidden` toggle anywhere in the Library (action rows on a Tab to a topic) re-ask the whole
+    tab: 79 'Affected by :has()' recalcs per Tab, 140 to 108 ms to editable at 390, 6x CPU. The
+    same job is done from the strip itself, looking forward at its siblings."""
+    css = "".join(p.read_text(encoding="utf-8") for p in CSS)
+    assert "#tab-library:has(> #library-view-whiteboard" not in css
+    assert "#tab-library:has(> #library-view-skills" not in css
+    assert "#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden))" in css
+    index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    tab = index[index.index('id="tab-library"') :]
+    # The sibling form only works while the strip precedes the views, at the same depth.
+    assert tab.index('id="library-subtabs"') < tab.index('id="library-view-whiteboard"')

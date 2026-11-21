@@ -19,12 +19,22 @@ const vm = require("vm");
 const root = path.resolve(__dirname, "..", "frontend");
 const scenario = JSON.parse(fs.readFileSync(process.argv[2] || 0, "utf8"));
 
+//: `clockStep` (ms a call) swaps the wall clock for a counter, so the untangle budgets
+//: (`workNow`, `UNTANGLE_MS`) buy the same work on a loaded machine as on an idle one.
+let fakeNow = 1e12;
+const clock = scenario.clockStep
+  ? class extends Date {
+      static now() {
+        return (fakeNow += scenario.clockStep);
+      }
+    }
+  : Date;
 const timers = [];
 const sent = [];
 const sandbox = {
   console,
   Math,
-  Date,
+  Date: clock,
   Float32Array,
   Map,
   Set,
@@ -37,7 +47,7 @@ const sandbox = {
   // timer at once and drives every tick itself, so they never need to fire.
   setInterval: () => 0,
   clearInterval: () => {},
-  performance: { now: () => Date.now() },
+  performance: { now: () => clock.now() },
   postMessage: (message) => sent.push(message),
 };
 sandbox.self = sandbox;
@@ -118,4 +128,5 @@ const positions = {};
 scenario.nodes.forEach((n, i) => {
   positions[n.id] = [last[i * 2], last[i * 2 + 1]];
 });
-process.stdout.write(JSON.stringify({ positions, firstAlpha, framed, introTicks, firstIntroAlpha, settled, endedAt }));
+const untangled = vm.runInContext("({ total: untangle.total, gain: untangle.gain, passes: untangle.passes })", sandbox);
+process.stdout.write(JSON.stringify({ untangled, positions, firstAlpha, framed, introTicks, firstIntroAlpha, settled, endedAt }));

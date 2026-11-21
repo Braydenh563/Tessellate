@@ -20,6 +20,14 @@ from sqlalchemy import select
 
 from tessellate.ai import facts, questions
 from tessellate.core.database import AuditLog, DerivedFact, Entry, EntryLink, utcnow
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 TWO = "Plans for the shed. When does the timber arrive this month? Who is fixing the roof on the shed?"
 ANSWER = "The timber is due to arrive this month on the twelfth, the yard rang about it."
@@ -80,7 +88,7 @@ def test_marking_answered_by_hand_writes_a_typed_link(client, session):
     session.commit()
     # Written after the pass: since INBOX 1466 the pass answers "Who is
     # fixing the roof" from this note by itself, and this test is about the
-    # person marking an open question answered.
+    # person marking a question of theirs answered.
     answering = _note(session, "Sam is fixing the roof next week, booked and paid.")
     roof = next(i for i in client.get("/questions").json()["items"] if "roof" in i["text"])
     item = client.post(f"/questions/{roof['id']}", json={"state": "answered", "entry_id": answering.id}).json()

@@ -801,6 +801,10 @@ function enhanceSelect(select) {
   select.classList.add("select-native-hidden");
   select.tabIndex = -1;
   select.setAttribute("aria-hidden", "true");
+  //: `select.focus()` anywhere in the app focused nothing, because the native
+  //: control is out of the tab order; it goes to the opener, which is what a
+  //: person would tab to.
+  select.focus = (options) => opener.focus(options);
 
   //: The name the select already has, wherever it was given: its own
   //: `aria-label`, the element `aria-labelledby` points at, or the `<label
@@ -2288,7 +2292,7 @@ async function loadChatSuggestions() {
   // Re-check after the await in case a message was sent while we waited
   if ($("chat-messages").querySelector(".msg")) return;
 
-  // batch-a.md's "left open" item: `#chat-suggest` is on loan to `.chat-empty`
+  // batch-a.md's last item: `#chat-suggest` is on loan to `.chat-empty`
   // (see the long comment on `openConversation` below) and `newChatConversation`
   // used to wipe `#chat-messages` with a bare `replaceChildren()` without
   // sending it home first, so a "+ New" click while this call was still

@@ -15,9 +15,8 @@ from datetime import date, datetime
 import pytest
 
 from tessellate.ai import composer_plan
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 NOTES = [
@@ -34,10 +33,11 @@ NOTES = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for content in NOTES:
-        manager.create_entry(session, content)
+        entry = manager.create_entry(session, content, dates=False, commit=False)
+        entry.created_at = NOW
+        manager.record_dates(session, entry, now=NOW)
     session.commit()
 
     def go(question: str) -> str:
@@ -109,8 +109,7 @@ def test_an_app_phrase_inside_a_notes_question_is_not_about_the_app(message, rou
 def test_a_thing_done_on_a_day_is_this_years_day(client, session, monkeypatch):
     """"Planted tomatoes on 5 October" in a note of 30 October 2026 was said
     back as 5 October 2027."""
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     manager.create_entry(session, "# Garden\n\nPlanted tomatoes and basil on 5 October. Water every second day.")
     session.commit()
     body = {"question": "when did I plant the tomatoes", "answer_from": "notes", "notes_only": True, "use_tools": False}

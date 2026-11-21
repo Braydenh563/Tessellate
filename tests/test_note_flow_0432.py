@@ -285,6 +285,8 @@ def test_the_selection_bar_does_what_one_notes_menu_does():
     for name in ("batchFavourite", "batchArchive", "batchPublish"):
         assert f"function {name}(" in skills, name
     assert "pushUndo(label, undo, redo)" in _function(skills, "batchEach")
+    #: A refusal partway keeps the Undo for the notes already changed.
+    assert "done.push(id)" in _function(skills, "batchEach") and "could not be changed" in _function(skills, "batchEach")
     assert "fillBatchMore();" in _function(skills, "enterSelectMode")
     assert 'id="batch-more-host"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
@@ -362,9 +364,9 @@ def test_every_note_the_page_creates_is_filed_in_the_background():
     # Scan 2026-10-11: a note created without `defer_filing` is filed before
     # the request returns, so it waits for the model. Against a model that
     # answers in 4 s, a mind map's Tab (a new topic) took 4.7 s and a draft
-    # save 4.8 s, against 0.6 s deferred; against one that never answers the
+    # save 4.8 s, against 0.6 s run after the reply; against one that never answers the
     # request held a database connection until the 180 s wait ended. Capture
-    # and the selection popup already deferred; the rest did not. A create
+    # and the selection popup already ran it after the reply; the rest did not. A create
     # that names its category or parent has nothing to wait for either.
     missing = []
     for path in sorted((FRONTEND / "js").glob("*.js")):

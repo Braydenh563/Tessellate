@@ -112,7 +112,7 @@ def _reject_if_in_the_past(due_at: datetime) -> None:
     a "reminder" that isn't reminding of anything upcoming. A minute of
     slack covers submit latency and clock skew, not a real mistake.
     """
-    now = datetime.now(timezone.utc)
+    now = utcnow()  # the module's one clock, so a test fixes both checks at once
     compare_at = due_at if due_at.tzinfo else due_at.replace(tzinfo=timezone.utc)
     if compare_at < now - timedelta(minutes=1):
         raise HTTPException(
@@ -523,6 +523,7 @@ def list_reminders(
     entry_id: int | None = Query(default=None, description="Only this note's reminders"),
     document_id: int | None = Query(default=None, description="Only this document's reminders"),
     include_done: bool = True,
+    due_within_days: int | None = Query(default=None, ge=0, le=3650, description="Only reminders due within this many days (overdue ones included)"),
     session: Session = Depends(get_session),
 ) -> list[dict]:
     """A page of reminders, soonest first; the frontend groups them.
@@ -539,8 +540,10 @@ def list_reminders(
     the Reminders tab pages on it.
     """
     offset = paging.start(cursor, offset)
+    due_before = utcnow().replace(tzinfo=None) + timedelta(days=due_within_days) if due_within_days is not None else None
     rows, total = reminder_repo.page(
-        session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id, include_done=include_done
+        session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id,
+        include_done=include_done, due_before=due_before,
     )
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
@@ -786,10 +789,14 @@ def complete_reminder(
     in Auckland is Sunday evening in UTC. The answer keeps the time it was
     due, for the undo. `expected_due_at` is the occurrence the person saw: if
     the rule has moved on since (a double-click, a second tab) the answer is
-    409 and nothing rolls, so one occurrence is never skipped."""
+    409 and nothing rolls, so one occurrence is never skipped. The 409 carries
+    the reminder as it is now, so the caller can say where it went."""
     reminder = _writable(session, reminder_id)
     if expected_due_at and not _same_instant(expected_due_at, reminder.due_at):
-        raise HTTPException(status_code=409, detail="That reminder already moved on. Reload to see it.")
+        raise HTTPException(status_code=409, detail={
+            "message": "That reminder already moved on. Reload to see it.",
+            "reminder": _to_out(session, reminder),
+        })
     was = reminder.due_at.isoformat()
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()

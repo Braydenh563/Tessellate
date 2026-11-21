@@ -281,7 +281,7 @@ INI; Emmet (`frontend/vendor/emmet`); Harper grammar in a worker
 (`harper-worker.js`); `documents-code.js` (4,400 lines). Open, for one Opus
 agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
 
-- Languages missing: Visual Basic (`vb`, `vbScript` legacy modes), p5.js (JS
+- Languages missing (Visual Basic built, HISTORY 2026-11-12): p5.js (JS
   plus p5 completions from the vendored `p5.min.js`), PHP stays out (section
   above, the size).
 - Per-language completions and snippets: CSS property values for the property
@@ -309,7 +309,7 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 - Owner, 2026-11-10, diagram builder ("have you integrated the ai into the diagram builder yet??"): built 2026-11-10 (dgai-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgai-1110: the AI in the diagram builder)".
 - Diagram AI left (dgai-1110 remaining list; w17-1110 built the phone Ask button and the Versions grouping): mind maps, timelines and sequence diagrams get Versions but no Ask or Suggestions; real-model output and Ask inside the dialog (a Live figure, a board diagram) unverified.
 - INBOX 1731 (spelling second opinion): built 2026-11-10 (spell-1110), (a) to (e). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (spell-1110: the spelling second opinion)". (f) LanguageTool as an optional download: built 2026-11-10 (lag1726-1110), CHANGELOG line; the real program is unverified.
-- INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Recommendation, taken: two items in the document selection menu and right-click menu, "New note from selection" (the note links back to the document) and "Add to note..." (the note finder, appends the text with a back link); the same in the code editor. Placed: the documents batch of the work order.
+- INBOX 1728 (selection to a note): built 2026-11-12 (notesel-1112). Moved to HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: selection to a note, INBOX 1728)".
 
 ## Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder)
 
@@ -437,14 +437,6 @@ work found and did *not* fix, which is the part that is still open.
   the report comes back, ask which view it was in before touching the code.
 - "redesign and refine the outlines section of the documents tab as well"
   (two screenshots). Done: all five problems in them.
-  **Found while measuring and still open:** `enhanceSelect` (app.js ~18427)
-  rebuilds every `<select>` as a shell with a `<button>` opener and takes the
-  native element out of the tab order, so `select.focus()` anywhere in this
-  app focuses nothing and a `keydown` bound to a select never fires. Two
-  listeners in this batch were written that way before a sweep caught it.
-  The lint exists since 2026-10-04, `tests/test_select_focus.py` (`.focus()`
-  or a key listener on a page `<select>`, directly or through a binding; 0
-  offences, and proved against drift).
   The empty column above References is fixed: both sections carried
   `flex: 1 1 auto`, so with a two-heading document the outline was 312.4px of
   box around 68.3px of content and References 296.5px around 46px, leaving
@@ -522,15 +514,6 @@ candidate list is computed when the menu opens, not during the pass: doing
 it per unknown word per pass measured 29ms on a 276-character document.
 
 **Found while doing this, not fixed.**
-- `scratchpad/ui-sweeps/docviews.js` fails on "the view menu has no
-  line-numbers row" and then throws on a null click. Reproduced against the
-  branch before any of this landed, so it is an older gap in the view menu
-  rather than a regression: either the row goes back or the sweep stops
-  asking for it.
-- The suggestion menu draws the same check icon on every one of its five
-  word rows, so the words read as five identical actions rather than as the
-  answer with the actions underneath. The separating rule is there and it is
-  doing the work on its own. A real spell menu differentiates them by more.
 - The checker still reads only the shape of a sentence. Its/it's, agreement
   and tense are behind "Check with AI", which is a button press rather than
   a pass, for the reason `docProseHeader` records.
@@ -1086,6 +1069,18 @@ row does today.
   panel (stdin is a field), matplotlib and numpy only if the extra ships
   them (measured in Brief 69; not by default), and "Run selection" and
   "Run cell" over `# %%` markers.
+- D10. **JS debugger watches stay evaluated natively and read-only**
+  (standing order 3, 2026-11-12, L313): stepping them in the interpreter
+  would need a nested run on its stack and would drop the read-only view
+  of the frame, so a watch can never change the program it watches.
+- D11. **Comment ratio (D46) stays as built** (standing order 3, 2026-11-12,
+  L329): the row carried no written recommendation, so the shipped ratio is
+  kept and no setting is added.
+- D12. **No separate worker for the prose tools (D45)** (standing order 3,
+  2026-11-12, L329): the Harper worker already runs off the main thread; a
+  second worker is not built. D47 is decided "Keep it": the textarea
+  fallback stays, and only the dead surface aliases (`rect`, `scrollLeft`)
+  were removed.
 
 ### Phases
 
@@ -1135,7 +1130,7 @@ links, Typora for the live view (section 17).
 | 4 | redesign | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): named versions, a Named filter, Changes side by side, restore as one undo step without a confirm | `dochistory76.js`: restore then Ctrl+Z byte-equal at 1440 and 390 | 1, 3 |
 | 5 | optimisation | Cold open 1,743 ms at 1440 and 3,013 ms at 390: fetch the documents bundle on idle after unlock and paint the first screen before the outline and checks | click to painted editor under 800 ms at both widths (25g budget, Brief 53) | 13 |
 | 6 | fix | A save that fails says why and retries itself; a draft survives a reload and a crash | `test_never_lose.py` documents rows green; keystroke to saved under 1 s | 3, 4 |
-| 7 | redesign | The list row: the Actions button beside the title, not over it (8 overlaps at 1440). **Not built, Brief 76: it remakes INBOX 722** (the owner, 2026-10-06: the ⋮ overlays the row and never reserves a column; held by `test_a_rail_rows_title_takes_the_full_width_and_its_menu_overlays_it`); the title already fades under the ⋮ while it shows. Recommendation: keep the overlay and count a row's own ⋮ as no overlap in `deepen72a.js` | overlap 8 to 0; the title's right edge left of the button | 7, 11 |
+| 7 | redesign | Built 2026-11-13 (the recommendation taken): see HISTORY.md, "Moved from the plans, 2026-11-13 (documents-plan: section 1121 row 7)". | | |
 | 8 | expansion | Comments, highlights on pages, link cards with a viewer, the long-form choice at first run (Brief 42 items) | Brief 42's numbers | 6, 13 |
 | 9 | expansion | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): Replace in every document (palette), plain or regex, case, through `POST /documents/contents`, one undo step | `docreplace76.js`: 50 documents, 1 step, one Ctrl+Z restores 50 of 50 | 1, 2 |
 | 10 | expansion | Labelled and linked sections with a local graph (the owner's idea; after 8) | Brief 42's last row | 6 |
@@ -1179,10 +1174,9 @@ lists every command with its shortcut.
 | 5 | expansion | Run, preview, test, debug, consoles: D1 to D9 (Briefs 69 to 71) | section 23's gates | 5, 12 |
 | 6 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 42 remainder" and "DOCUMENTS Brief 71, I3"): 64 commands, 0 without a key or "none"; the keybindings sheet (Ctrl+K Ctrl+S) draws the same table, 34 keys each pressed by `code-keys.js` | 45 commands, 0 without a shortcut or a "none" | 6, 10 |
 | 7 | optimisation | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): `docCodeScan` was 1 to 4 ms; two no-op reconfigures skipped, the findings repainted once, the panels a frame after the text | `deepen72a.js` code open 1440 538 to 240 ms, 390 963 to 649 ms (from the 3,724-word document; load 6 to 7) | 13 |
-| 8 | expansion | A minimap, off by default, one toggle in View (Brief 42's bar) | toggle present; its width remembered | 11 |
 | 9 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 69, I1"): a run past 2 s lists in `/activity` and stops from it | the run lists in `/activity` and stops from it | 5 |
 
-**Briefs.** 42 (rows 3, 4, 8), 69 to 71 (row 5), 73 (row 9), 76 (rows 1, 2,
+**Briefs.** 42 (rows 3, 4; row 8 built), 69 to 71 (row 5), 73 (row 9), 76 (rows 1, 2,
 6, 7, with section 24).
 
 ## Built, the sidebar redesign (INBOX 115), 2026-09-12
@@ -1245,21 +1239,13 @@ Entries are the owner's words, then the recommendation. Bugs come first.
 
 ### Bugs
 
-- "I cant two finger trackpad zoom in or out on documents or images on the ocr workspace?"
-  Recommendation: pinch zoom (ctrl+wheel from a trackpad) on the PDF and OCR viewer and on images; test with a synthetic wheel event at the viewer. No brief carries it; Brief 42 is the nearest document brief.
-- "The note capture subtab formatting toolbar wont open :("
-  Recommendation: reproduce from the Notes Capture subtab, then fix the toolbar's open state and measure it. No brief carries it; Brief 42 is the nearest.
-- "Gemini might have removed the spell checker??" (the owner's words in the Gemini thread: "you removed spellchecker.py")
-  Recommendation: keep src/tessellate/vendor spellchecker.py and make Brief 35 (unused vendoring gone) leave it in, with a test that it loads; writing checks are Brief 42 (DOCUMENTS_PLAN section 21).
-- "I saved a website as a bookmark but the icon didnt change"
-  Recommendation: a saved bookmark takes the site's icon at save time and refreshes it on the next fetch; the link card in Brief 42 shows it. No brief carries the bug itself; Brief 42 (link cards) is the nearest.
+- Built 2026-11-12 (documents-plan: Links tab; INBOX 827 L1 to L6 and the stale bookmark icon): see HISTORY.md, "Moved from the plans, 2026-11-12 (documents-plan: Links tab)" (the bookmark icon bug).
 
 ### Design requests
 
+- The link-card request (icon and colour per bookmark, a viewer): built, see the pointer under Bugs.
 - "on vs code selected lines have their line number bolded, the line subtly bordered and there are also indentation lines on vs code as well"
   Recommendation: match VS Code's selected-line gutter, line border and indent guides in the code editor, measured against the VS Code screenshot set. Also carried by Brief 42 (the code editor to VS Code standard).
-- "also I want a better and more cardlike rendering of links or special liks like bookmarks and maybe even the ability to choose special icons or colours for bookmarked websites."
-  Recommendation: build link cards for bookmarks and embedded links with an icon and colour choice, and a viewer for them. Also carried by Brief 42 (embedded link cards with a viewer).
 - "The document editor and whiteboard and mindmap still have many design issues, functionality bugs, poor usability, lack features, and need improvement."
   Recommendation: audit the document editor against VS Code and wordcraft in DOCUMENTS_PLAN section 21, and take the whiteboard and map rows from Briefs 36. Also carried by Brief 42.
 - "And we should massively improve, expand, refine and better integrate long form note taking."
@@ -1276,9 +1262,8 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 - **VC4, CodeMirror's merge view against a chosen version** (M, rank 4). `@codemirror/merge` is not in `codemirror/package.json`; the version diff is hand-built (`docDiffLcs` to `docDiffHunks`, `documents.js` lines 11260 to 11400). With autosave a diff against "the last save" is moments old, so the use is the chosen version: accept or reject one hunk in the editor. Measure: the bytes `codemirror.min.js` grows by (795,151 now), and rejecting one hunk restores exactly that hunk's lines (a node test on a three-hunk fixture).
 - **VC5, FlashText link offers** (rank 5): built 2026-10-18, see HISTORY.md "OPEN.md rows closed, 2026-10-18 (open-1018)". Tag offers were not built (a document has no tags).
-- **VC6, Harper's own dictionary and the other three dialects** (S, rank 6). The worker uses 3 of 29 `Linter` members; `import_words` and `export_words` take a personal dictionary (names and jargon from the notebook) and `ignore_lints` keeps a dismissed finding dismissed; `Dialect` offers 5 and `docSpellingVariant` passes two (US, UK), leaving Australian, Canadian and Indian. Measure: findings on a fixture of 10 proper nouns drop to 0 with the dictionary loaded; the spelling setting lists five dialects and each flags its own variant of "colour" or "center".
-- **VC7, the `diff` and `dockerFile` modes already in the bundle** (S, rank 7). `legacy modes` 15 of 18 called; `diff`, `dockerFile` and the `sql` factory are bundled and no file type offers them (`core/filetypes.py` lists 26 types, none a diff or a Dockerfile). Zero bytes. Measure: two rows in `FILE_TYPES`, and a `.patch` and a `Dockerfile` highlight in the editor (token classes counted in a Playwright run).
-- **VC13, the lint panel and fold-all in the palette** (S, rank 13). `lint` is 5 of 12 (gutter and next/previous only; `openLintPanel` and `lintKeymap` unused), `language` has `foldAll`, `unfoldAll` and `toggleFold` unused. A list of every problem in a source file is one panel. Measure: the panel lists the same count as the gutter markers on a file with 5 seeded errors; fold-all folds every top-level block of a 200-line fixture.
+- **VC6, Harper's own dictionary and the other three dialects**: built 2026-11-12, see HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)".
+- **VC13, the lint panel and fold-all in the palette**: built 2026-11-12, see HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)".
 - **VC17, Emmet's stylesheet syntaxes** (L, rank 17, lowest). Emmet is fully used (6 of 6 functions) but 4 of its 10 syntaxes are passed (html, css, xml, jsx); scss, sass, stylus, pug, haml and slim need a file type to apply to, and the matching highlight mode (`@codemirror/lang-sass`) is not vendored. Measure: only after a file type exists; an abbreviation `p10` in a `.scss` document expands to `padding: 10px;`.
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
@@ -1291,17 +1276,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-11 (Files, Recordings and Links; libraryup)
 
-- INBOX 827, the owner 2026-10-11, verbatim (screenshots: a file's "Text extracted from this file" box; the empty Recordings tab; a link's details): "it is also a little hard to read and view the extracted text on the file rows in the files subtab and I think that dropdown area is a little poorly designed. can there also be a better empty state and design for the recordings subtab?? also these link details are poorly designed as well and I want to be able to customise link highlights drag links together to form folders, change the icons on them, and more, the whole links/bookmarks tab needs an upgrade"
-
-Decisions made (the Links half extends WORLD_CLASS D9 and Brief 42; do not re-decide):
-- L1. Extracted text: the disclosure is a quiet row (DESIGN "Row actions"), not a bordered button; open, the text sits in a reading column (body size, 1.6 line height, page breaks marked "Page 2"), up to 50vh with a fade, Copy and Open reading as quiet buttons on the disclosure row, and a find box when the text passes one screen.
-- L2. Recordings empty state from DESIGN's empty-state recipe: an icon, one line, Record and Import audio, and a second line saying a meeting's recording and its transcript land here.
-- L3. A link's details: the card shows icon, title, site and a two-line excerpt; the full extract is behind "Show page text" in the L1 reader, never a wall of raw lines; the URL is a quiet copyable chip.
-- L4. Folders: drag a link onto another to make a folder (named "Folder", renamed in place), drag into and out of folders, and New folder in the bar; folders nest one level.
-- L5. Each link and folder takes an icon (the site's own, an app icon or an emoji) and a highlight colour from the palette tokens, from its kebab menu and from the details card.
-- L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5. Import, export and tags built 2026-11-11 (HISTORY.md, F1 graph block).
-
-Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each a commit with a test, measured at 1440 and 390, help moving with it (standing order 13).
+Built 2026-11-12 (documents-plan: Links tab; INBOX 827 L1 to L6 and the stale bookmark icon): see HISTORY.md, "Moved from the plans, 2026-11-12 (documents-plan: Links tab)".
 
 ## Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)
 
@@ -1432,8 +1407,8 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R9c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9c)").
 - **R10 (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R10)").
 
-- **R11 (blind test, 2026-11-04) left:** `/diagram` and Insert open a starter, not an existing diagram (add a "pick an existing diagram" row); Done creates a document silently; first paint blank about 1 s; 27 Tab stops to the first block; 390 px: tap scrolls the toolbar under the header and targets (tabs 28, grips 14x19, swatches 24, Connect 44x40) are under 44 px; chat chip says "Document" and the list "17 words" for a diagram; export items missing from the document's own menu; Boards empty state links only New mind map.
-- **R12 (blind test of 0931c35, fixed: phone toolbar fits one row, empty steps visible at 390, shape menu under its caret, Connect's new block is a box) left:** Done from a document or board opens the starter and saves a separate `Diagram <stamp>` file (decide: empty builder or pick an existing diagram, the R11 first item); the Embed row inserts a bare `![[` with no picker and renders "Nothing called" until reload; board Mermaid import drops block colour and stacks edge labels; a template on a non-empty builder only lists ghost blocks; the first branch off a decision is silent (the prompt is for the second); 390 picture is 47 to 59% zoom with the connect handle over a diamond; Box in the Add menu adds at once; key hints show on touch; the list row truncation at 1440 was not reproduced (rows 105 px, no overflow).
+- **R11 (blind test, 2026-11-04):** built 2026-11-12 and moved to HISTORY.md ("Moved from the plans, 2026-11-12 (documents-plan: R11/R12)"); the rest are LEDGER rows (documents).
+- **R12 (blind test of 0931c35):** owner decided 2026-11-12: `/diagram`, Insert and Done from a document or board list the diagrams made (mmd documents) plus "New diagram" in a dialog of choices; a pick is embedded, New opens the empty builder and Done embeds that file, no silent `Diagram <stamp>` file. Built and moved to HISTORY.md (same heading); the rest are LEDGER rows (documents).
 
 - **R12, R13, R14, R16 (1661 B: find, curve and spacing, both-ways arrows and shapes, edge colour, six templates):** Built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9-1110)"). R15 (a corner minimap) and the head Export: built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9b-1110)").
 
@@ -1471,7 +1446,7 @@ Critique points rejected or changed:
 
 ## Placed from INBOX, 2026-11-04
 
-1679. **Owner, 2026-11-04 16:50Z, verbatim (names Fable for this task):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One Fable agent, read-only deep dive, findings in `diagram-fable-1679.md` (git history), then ranked slices built by Sonnet. Owner, 2026-11-05 00:25Z, verbatim: "also on the mermaid diagram, it is soo much better now, but the left panel still needs a bit of a redesign to be more intuitive to use and understand, also the panning and zoom of the right panel feels really awkward and unresponsive and it needs a bit of usability, an ux polishing". Recommendation (taken): (k) the left panel (the outline and blocks pane) redesigned for first use: one clear purpose line, the tree of boxes and lines read top to bottom with what each row does on hover and focus, add and connect where the eye is, and a blind-tester pass before and after; (l) the picture pane's pan and zoom: wheel and pinch zoom about the pointer, drag to pan with momentum, zoom on every input in one frame (no wait for a re-render; the SVG transforms and redraws after), fit and 100% buttons, keyboard pan and zoom, measured input-to-paint latency (under 16 ms) and zoom steps that feel even. Then, 2026-11-05: "shouldnt these be from the outer box not the text?" (the connect arrows sat on a pill's label; fixed 2026-11-05, the shape is read before the label group) and "like make tools and features more accessible and aparrent, beef it up, are there any missing features?? what if I need to make like a sequence diagram or box certain elements?? it feels very rudimentary and basic". Recommendation (taken): (m) sequence diagrams and groups exist but are hidden behind the kind menu and the Arrange menu: a visible kind switcher (flowchart, sequence, mind map, timeline) at the top of the builder, "Box the picked blocks" on the selection bar and the block menu, every tool labelled where it sits, and a gap audit against Mermaid (class, state, ER, Gantt and pie open in Source only today; styling per block, notes and activations in a sequence, edge labels and link styles, icons) with the gaps built in order of use. **(m) built 2026-11-05:** the visible kind switcher (Flowchart, Sequence, Mind map, Timeline: `diagram-kindbar.js`, a new empty diagram of the kind, Undo brings the old one back), Box this block (block menu) and Box them (selection bar), sequence Parallel, Critical and Break boxes (U, C, B), and nine editor bugs from a fresh-eyes tester (handles scale with the block, `&quot;` drawn as a quote, emptied name, hint and pending line at once, `Add a box`, steps buttons duplicating the foot, + and wheel top, pan with nothing to pan). **Gap audit against Mermaid, still open, in order of use:** (1) flowchart shapes the blocks cannot read (cylinder `[( )]`, subroutine `[[ ]]`, parallelogram `[/ /]`, flag `>]`; such a diagram opens in Source), then `classDef`/`class` styling beyond the fill colour, `click` links and Font Awesome icons; (2) sequence: `autonumber`, `box` around participants, `create`/`destroy`, `rect` highlight colour (all open in Source today); (3) Gantt, pie and state diagrams as block kinds (the three most asked after sequence), then class and ER (Source only); (4) a per-edge label position, curve style and a link `id@` animation; (5) markdown strings and `<br>` line breaks in a name; (6) flowchart sub-direction inside a subgraph.
+1679. **Owner, 2026-11-04 16:50Z, verbatim (owner: never Fable, 2026-11-12):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One read-only deep dive, findings in `diagram-fable-1679.md` (git history; the file name is historical), then ranked slices built by Sonnet. Owner, 2026-11-05 00:25Z, verbatim: "also on the mermaid diagram, it is soo much better now, but the left panel still needs a bit of a redesign to be more intuitive to use and understand, also the panning and zoom of the right panel feels really awkward and unresponsive and it needs a bit of usability, an ux polishing". Recommendation (taken): (k) the left panel (the outline and blocks pane) redesigned for first use: one clear purpose line, the tree of boxes and lines read top to bottom with what each row does on hover and focus, add and connect where the eye is, and a blind-tester pass before and after; (l) the picture pane's pan and zoom: wheel and pinch zoom about the pointer, drag to pan with momentum, zoom on every input in one frame (no wait for a re-render; the SVG transforms and redraws after), fit and 100% buttons, keyboard pan and zoom, measured input-to-paint latency (under 16 ms) and zoom steps that feel even. Then, 2026-11-05: "shouldnt these be from the outer box not the text?" (the connect arrows sat on a pill's label; fixed 2026-11-05, the shape is read before the label group) and "like make tools and features more accessible and aparrent, beef it up, are there any missing features?? what if I need to make like a sequence diagram or box certain elements?? it feels very rudimentary and basic". Recommendation (taken): (m) sequence diagrams and groups exist but are hidden behind the kind menu and the Arrange menu: a visible kind switcher (flowchart, sequence, mind map, timeline) at the top of the builder, "Box the picked blocks" on the selection bar and the block menu, every tool labelled where it sits, and a gap audit against Mermaid (class, state, ER, Gantt and pie open in Source only today; styling per block, notes and activations in a sequence, edge labels and link styles, icons) with the gaps built in order of use. **(m) built 2026-11-05:** the visible kind switcher (Flowchart, Sequence, Mind map, Timeline: `diagram-kindbar.js`, a new empty diagram of the kind, Undo brings the old one back), Box this block (block menu) and Box them (selection bar), sequence Parallel, Critical and Break boxes (U, C, B), and nine editor bugs from a fresh-eyes tester (handles scale with the block, `&quot;` drawn as a quote, emptied name, hint and pending line at once, `Add a box`, steps buttons duplicating the foot, + and wheel top, pan with nothing to pan). **Gap audit against Mermaid, still open, in order of use:** (1) flowchart shapes the blocks cannot read (cylinder `[( )]`, subroutine `[[ ]]`, parallelogram `[/ /]`, flag `>]`; such a diagram opens in Source), then `classDef`/`class` styling beyond the fill colour, `click` links and Font Awesome icons; (2) sequence: `autonumber`, `box` around participants, `create`/`destroy`, `rect` highlight colour (all open in Source today); (3) Gantt, pie and state diagrams as block kinds (the three most asked after sequence), then class and ER (Source only); (4) a per-edge label position, curve style and a link `id@` animation; (5) markdown strings and `<br>` line breaks in a name; (6) flowchart sub-direction inside a subgraph.
 
 ## 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08)
 **Decision 40.** The marker is the style, so the source and the export agree.

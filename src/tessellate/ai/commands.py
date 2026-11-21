@@ -349,14 +349,16 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
             # "Remind me about my trip" with no time is a question as often
             # as a request; a reminder needs the time said.
             return None
-        due, said, words = when.resolve("tomorrow", now), False, rest
+        #: No time said: asked once ("Remind you when?"), never guessed as tomorrow
+        #: at 9 (decisions 48 and 50, the owner's pick 2026-11-12).
+        due, said, words = None, False, rest
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
     words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
     words = _without_dangling(words)
     said_words = _as_typed_case(words.strip(" ,.;:-"), rest)
     words = _cap(words)
-    if not words or due is None:
+    if not words:
         return None
     return {
         "intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now),
@@ -391,7 +393,7 @@ def _reminder_gap(rest: str, parsed: dict | None, now: datetime) -> dict | None:
         return {"intent": "reminder", "text": "", "said": "", "due_at": parsed["due_at"], "time_given": True, "no_subject": rest.strip(" .,")}
     impossible = _impossible_day(rest) if parsed is None else ""
     if impossible:
-        return {"intent": "reminder", "text": rest[:500], "said": rest[:500], "due_at": when.resolve("tomorrow", now), "time_given": False, "impossible": impossible}
+        return {"intent": "reminder", "text": rest[:500], "said": rest[:500], "due_at": None, "time_given": False, "impossible": impossible}
     return None
 
 
@@ -1285,9 +1287,24 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
     return _reminder(f"remind me to {text}", now, locale)
 
 
+#: "lunch with my friend at noon today": an event named with a clock time and no verb. It is a thing to be
+#: reminded of, so it is offered as a reminder rather than searched for in the notes.
+_BARE_EVENT = re.compile(
+    r"^(?:lunch|dinner|breakfast|brunch|coffee|drinks|supper|meeting|appointment|class|lesson|interview|party|session|call|catch-?up|"
+    r"(?:the )?(?:dentist|doctor|gym|haircut))\b[^?]*\b(?:at (?:\d{1,2}(?::\d\d)?\s*(?:am|pm)?|noon|midnight|midday)|\d{1,2}(?::\d\d)?\s*(?:am|pm))\b[^?]*$",
+    re.I,
+)
+
+
+def _bare_event(text: str, now: datetime, locale: str | None) -> dict | None:
+    """An event and its time, said with no verb, is "remind me about" it (the card asks Confirm)."""
+    said = " ".join(text.split()).rstrip(" .!")
+    return _reminder(f"remind me about {said}", now, locale) if _BARE_EVENT.match(said) else None
+
+
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
     for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
+                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), lambda t: _bare_event(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:

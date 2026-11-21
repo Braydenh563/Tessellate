@@ -628,6 +628,10 @@ class WhiteboardObjectData(BaseModel):
     #: and the words over it. Content, like `note`.
     boundary: str | None = Field(default=None, pattern="^(rounded|dashed|cloud)$")
     boundary_label: str | None = Field(default=None, max_length=80)
+    #: **A boundary round a lasso'd set** (MINDMAP_PLAN 12.2 item 1): the ids of
+    #: the topics it encloses, kept on the first of them beside `boundary`. Absent,
+    #: the boundary is the topic's branch, as before.
+    boundary_set: list[int] | None = Field(default=None, max_length=200)
     #: **A summary of a run of siblings** starting here (decision 20): the
     #: words, and how many siblings the run takes, this topic first.
     summary: str | None = Field(default=None, max_length=80)
@@ -675,6 +679,10 @@ class WhiteboardObjectData(BaseModel):
     #: so a topic is due on a day wherever the map is opened. Content, like
     #: the markers; a reminder is made from it on request, never by itself.
     due: str | None = Field(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+    #: **A time on the due day** (LEDGER L371): optional `HH:MM`, a wall-clock
+    #: time like the day itself (no zone), so decision 37's "a day" stands and
+    #: a topic without a time is unchanged. Content, carried as `_due_time`.
+    due_time: str | None = Field(default=None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
     #: **A start day**, beside `due` (the Gantt view draws a bar from one to the
     #: other for a topic that has both). The same shape and the same kind of
     #: field: content, so a look reset keeps it. Which comes first is not
@@ -714,6 +722,15 @@ class WhiteboardObjectData(BaseModel):
     #: only thing that can carry its label is one of its two ends, and the
     #: child is the end that has exactly one incoming edge.
     edge_label: str | None = Field(default=None, max_length=80)
+    #: Where the label sits off the line's middle (dragged), and its look, the
+    #: board connector's four (size, bold, colour, chip). The offsets were
+    #: missing from the model, so a dragged label came back to the middle on reload.
+    edge_label_dx: float | None = Field(default=None, ge=-2000, le=2000)
+    edge_label_dy: float | None = Field(default=None, ge=-2000, le=2000)
+    edge_label_size: int | None = Field(default=None, ge=8, le=72)
+    edge_label_bold: bool | None = None
+    edge_label_color: str | None = Field(default=None, pattern="^#[0-9a-fA-F]{6}$")
+    edge_label_chip: bool | None = None
     #: And how that line is drawn (§12.1 item 4, the link radial). Stored on
     #: the child for the same reason as its label. `curve` is the default and
     #: is what an unset value means, so a map made before these existed draws

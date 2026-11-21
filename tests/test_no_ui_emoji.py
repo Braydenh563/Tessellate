@@ -101,11 +101,6 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     ],
     "frontend/js/documents-prose.js": [
         (
-            "block:const DOC_EMOJI_SOURCE",
-            "the Markdown :shortcode: table (user content: `:fire:` renders an emoji); "
-            "marked unslop-ignore in the file",
-        ),
-        (
             "const PASTE_BULLET",
             "the bullet marks a pasted list arrives with (Word, Docs, web pages), "
             "matched to be stripped; never drawn",

@@ -74,3 +74,18 @@ def test_b19_an_arrow_end_on_a_shape_is_bound_to_it() -> None:
     bound = _function(BOARD, "wbBoundArrowData")
     assert 'type: "link-straight"' in bound and "`${name}Id`" in bound, "the end keeps the shape's id, so it reroutes"
     assert "wbBoundArrowData(sx, sy, x, y," in BOARD, "the Arrow and Line tools call it at draw time"
+
+
+def test_l267_a_branch_export_says_export_this_branch() -> None:
+    """L267: the branch's menu row said "Export this branch" and opened a
+    dialog headed "Export this board". The branch hands its title to the one
+    dialog for that one opening; every other way in keeps the board's."""
+    mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    branch = _function(mapjs, "wbMapExportBranch")
+    assert branch.index('wbExportBoard.title = "Export this branch";') < branch.index("wbExportBoard();")
+    dialog = _function(BOARD, "wbExportBoard")
+    assert 'const title = wbExportBoard.title || "Export this board";' in dialog
+    assert "wbExportBoard.title = null;" in dialog
+    assert 'overlay.setAttribute("aria-label", title);' in dialog
+    assert "dialogHead(title, close)" in dialog
+    assert '"Export this board"' not in dialog.replace('wbExportBoard.title || "Export this board"', "")

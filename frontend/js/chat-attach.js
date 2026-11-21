@@ -585,11 +585,11 @@ function notePickerShape(source) {
       },
       meta: (row) => {
         const when = relativeTime(row.updated_at);
-        return [notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "")];
+        return [notePickerFacts(when && `Edited ${when}`, row.words && row.file_type !== "mmd" ? nounCount(row.words, "word") : "")];
       },
       search: (row) => `${row.title || ""} ${row.preview || ""}`,
       isOn: (row) => attachedDocuments.some((d) => d.id === row.id),
-      add: (row) => attachDocumentToChat(row.id, row.title || "Document"),
+      add: (row) => attachDocumentToChat(row.id, row.title || "Document", row.file_type === "mmd" ? "diagram" : undefined),
       remove: (row) => {
         attachedDocuments = attachedDocuments.filter((d) => d.id !== row.id);
         renderDocumentAttachments();

@@ -196,7 +196,9 @@ async function boot(opts={}) {
     await page.waitForFunction(() => {
       const card = [...document.querySelectorAll('.confirm-overlay')]
         .find((o) => /Check for updates automatically/.test(o.textContent));
-      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made !== false) || document.readyState === 'complete';
+      //: Not `readyState`: the card comes after the page has loaded, and a
+      //: guard that stopped at load let it land over a sweep's first click.
+      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made === true);
       const no = [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
       if (no) no.click();
       return true;

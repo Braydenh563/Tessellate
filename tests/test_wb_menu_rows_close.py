@@ -28,6 +28,7 @@ ACTION_ROWS = (
     "wb-clear-board",
     "wb-add-to-note",
     "wb-map-to-doc",
+    "wb-board-to-doc",
     "wb-copy-link",
     "wb-delete-board",
 )
@@ -65,7 +66,8 @@ def test_the_board_menu_is_section_heads_and_plain_icon_rows_with_delete_last_an
     assert "wb-menu-row" not in menu and "wb-panel-danger" not in menu
     heads = re.findall(r'wb-panel-group-label">([^<]+)<', menu)
     assert heads == ["Boards", "This board", "Help", "Remove"]
-    for button_id in ("wb-export", "wb-board-kind", "wb-add-to-note", "wb-map-to-doc", "wb-map-study", "wb-copy-link", "wb-clear-board", "wb-delete-board"):
+    for button_id in ("wb-export", "wb-board-kind", "wb-add-to-note", "wb-map-to-doc",
+    "wb-board-to-doc", "wb-map-study", "wb-copy-link", "wb-clear-board", "wb-delete-board"):
         assert re.search(rf'<button id="{button_id}"[^>]*class="wb-menu-item', menu), button_id
     rows = re.findall(r'<button[^>]*id="(wb-[a-z-]+)"[^>]*>', menu)
     assert rows[-1] == "wb-delete-board", "what destroys is last"

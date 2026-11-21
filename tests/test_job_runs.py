@@ -23,6 +23,13 @@ from tessellate.core.database import EmbeddingRecord, JobRun
 from tests._app_js import frontend_text
 from tests._pool_wait import pool_idle
 from tests._repo_files import repo_files
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -608,10 +615,10 @@ def test_an_interrupted_run_keeps_when_it_started_and_claims_no_finish_time(clie
     stamped finished at the moment the next start settled it, so the line read
     the start-up time as the run's time. The run's own start is the only time
     anyone knows; there is no finish."""
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     jobruns.begin("reindex")
-    long_ago = datetime.utcnow() - timedelta(days=2)
+    long_ago = SUITE_NOW.replace(tzinfo=None) - timedelta(days=2)
     with deps.get_db().session() as session:
         session.get(JobRun, "reindex").started_at = long_ago
         session.commit()

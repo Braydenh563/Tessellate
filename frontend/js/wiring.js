@@ -541,6 +541,23 @@ function openGlobalFind(opts = {}) {
     return;
   }
   const bar = $("global-find-bar");
+  //: The Documents tab's fallback (the editor engine failed to load) keeps the engine panel's two reach-outs, made on first use
+  //: (not in the page: the boot element cap) and shown on that tab only.
+  let reach = bar.querySelector(".global-find-docs");
+  if (!reach && $("tab-documents")) {
+    reach = Object.assign(document.createElement("span"), { className: "global-find-docs" });
+    const mk = (name, label, title, run) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "ghost small", name, textContent: label, title });
+      b.addEventListener("click", run);
+      return b;
+    };
+    reach.append(
+      mk("all-documents", "All documents", "Find this in every document", () => docFindInDocuments($("global-find-input").value)),
+      mk("replace-in-all", "Replace in all", "Replace this in every document", () => openDocReplace({ find: $("global-find-input").value })),
+    );
+    $("global-find-count").after(reach);
+  }
+  if (reach) reach.hidden = !($("tab-documents") && !$("tab-documents").classList.contains("hidden"));
   bar.classList.remove("hidden");
   const input = $("global-find-input");
   input.focus();
@@ -862,7 +879,7 @@ $("status-task").addEventListener("click", () => window.openActivity?.("running"
 $("status-command").addEventListener("click", () => openPalette());
 $("status-agent")?.addEventListener("click", () => toggleAgentPalette());
 //: settings.js owns the Guide sheet and loads after this file, so the lookup
-//: is deferred to the click rather than taken now. The same shape the phone's
+//: waits for the click rather than running now. The same shape the phone's
 //: More sheet already uses for the same function.
 $("status-guide")?.addEventListener("click", () => {
   toggleHelpChat();
@@ -1040,7 +1057,7 @@ watchFullscreenSurface("ocr", "ocr-workspace", (el) => !el.classList.contains("h
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (!document.getElementById("graph-card")?.classList.contains("graph-fullscreen")) return;
-  if (activeOverlay() || event.helpPopoverSpent) return;
+  if (activeOverlay() || event.helpPopoverSpent || event.overlaySpent) return;
   toggleGraphFullscreen();
 });
 
@@ -1419,7 +1436,7 @@ onSurface("reminders", () => {
   });
   $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
   $("reminders-new")?.addEventListener("click", openReminderCompose);
-  $("reminder-clear-done").addEventListener("click", clearDoneReminders);
+  $("reminder-clear-done").addEventListener("click", () => loadReminders.act("clear"));
   $("reminders-page-size").value = remindersPageSize;
   $("reminders-page-size").addEventListener("change", (e) => {
     remindersPageSize = e.target.value;

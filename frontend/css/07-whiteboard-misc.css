@@ -806,30 +806,18 @@
 #wb-html-layer > .wb-card {
   contain-intrinsic-size: auto 250px auto 44px;
 }
-/* **A long list's rows off screen are not styled either** (INBOX 400).
-   The page's scrollers are plain overflow boxes, so the browser's own
-   on-screen test works here where it could not on the board's transform:
-   `content-visibility: auto` skips style, layout and paint for a row until
-   it comes near the window, and `auto` in the intrinsic size remembers the
-   height it last drew at, so the scrollbar does not jump once a row has
-   been seen. Traced at 500 notes (`scratchpad/ui-sweeps/f2-trace.js`): 1,206
-   of the 1,382 elements in the Notes list were more than a window below the
-   fold, and entering the tab restyled all of them, 61ms; with this, 31ms.
-   The Timeline's feed, 1,946 of 2,116: a 48ms layout became 7ms.
-   Not a row being edited, holding an open disclosure or holding focus:
-   containment clips what a row paints to its own box, and the note editor's
-   toolbar menus and a `<details>` list open past it. The ⋯ menus are not
-   affected, they leave for `<body>` when they open (`wireEscapedActionMenu`).
-   The `:has()` here is anchored on the row, so it only ever looks inside
-   one row. */
-#entry-list > li:not(.row-shell, .list-window-sentinel, :focus-within):not(:has(textarea, details[open], .cm-editor)) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 8.25rem;
-}
-.timeline-feed .timeline-row:not(:focus-within) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 2.6rem;
-}
+/* **The Notes list's rows do not lock either** (L-general-34; they did, INBOX 400).
+   `content-visibility: auto` skipped style, layout and paint for a row off
+   screen, which was worth 61 to 31ms on entering the tab at 500 notes. But
+   `windowRows` already keeps only rows near the window, so the rule's saving
+   went and its cost stayed: scrolling 500 notes at 4x CPU (`scrolltrace.js`
+   SCENE=notes, five runs each) layout took 478 to 575ms with it and 216 to
+   262ms without, raster 1.1 to 1.6s against 0.8 to 1.0s, the layouts a
+   second the same (12 to 23 either way); entering the tab took 977ms of
+   layout and style with it and 818ms without (seven runs). The Timeline's
+   feed was dropped the same way (L492: 38 to 44 layouts a second against
+   6 to 10). The Library's cards keep the rule (`library-lazy.css`): they
+   are not windowed. */
 /* Each list's placeholders are its own rows' shape (`showSkeletons`,
    app.js; the look is `.skeleton`, 02-chat-graph.css): a Library card's
    height in the grid's columns, a Timeline row's in the feed. */
@@ -8655,6 +8643,11 @@ input[type="file"] {
   cursor: inherit;
   user-select: none;
 }
+/* A label Harper flagged (VC12): the documents' grammar double line in the
+   warning ink; the topic menu offers the fix. */
+.wb-map-text[data-grammar] {
+  text-decoration: underline double var(--warn);
+}
 .wb-map-node.wb-text-editing .wb-map-text {
   cursor: text;
   user-select: text;
@@ -8668,6 +8661,11 @@ input[type="file"] {
   border-radius: var(--radius-sm);
   padding: 0 var(--space-1);
   font-size: 0.92em;
+}
+.wb-map-text .wb-map-inline-link {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .wb-map-down .wb-map-collapse {
   right: 50%;
@@ -8713,7 +8711,7 @@ input[type="file"] {
 .wb-map-node:hover .wb-map-actions,
 .wb-map-node.wb-selected .wb-map-actions,
 .wb-map-actions:focus-within,
-.wb-map-node:is(:focus-visible, :has(:focus-visible)) .wb-map-actions {
+.wb-map-node:focus-visible .wb-map-actions {
   opacity: 1;
   pointer-events: auto;
 }
@@ -8763,7 +8761,7 @@ input[type="file"] {
 /* The focus ring is the app's own (every button has it). */
 #whiteboard-container[data-current-tool="select"] .wb-map-node:is(:hover, .wb-selected):not(.wb-in-group) .wb-map-resize-grip,
 .wb-map-resize-grip:focus-visible,
-#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:is(:focus-visible, :has(:focus-visible)), .wb-selected):not(.wb-in-group) .wb-map-resize-grip {
+#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:focus-visible, .wb-selected):not(.wb-in-group) .wb-map-resize-grip {
   display: block;
 }
 /* --- the node edit strip (MINDMAP_PLAN.md §12.1 item 2) ---------------------
@@ -9258,6 +9256,11 @@ input[type="file"] {
   font-size: var(--text-xs);
   text-anchor: middle;
   pointer-events: none;
+}
+/* The chip, as on a board connector's label (`.wb-link-label-chip`). */
+.wb-map-edge-label.wb-map-edge-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
 }
 /* What the strip sets, drawn on the node. Weight and slant sit on the text
    rather than on the node so a node's icon and its count badge keep their own
@@ -10417,8 +10420,8 @@ header#top-bar {
    tab and drops the other six, citing the HIG's own tab-bar guidance, because a
    bar that says where you are is worth more than a bar that names everywhere you
    could go. The same shape, at the other end of the scale, costs one rule and no
-   copy decision (the "Dashboard" to "Home" question the note above defers is
-   still deferred, and still the better answer).
+   copy decision (the "Dashboard" to "Home" question the note above raises
+   stays as it is, and is still the better answer).
    The selected tab takes its own content width and the other six share what is
    left. Measured after, at 320, 360 and 390: the strip fits on one row with no
    sideways scroll at all three, and the caption on the selected tab is whole. */
@@ -12024,4 +12027,19 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 }
 .wb-import-about {
   margin: 0 0 var(--space-2);
+}
+
+/* The brainstorm timer chip (MINDMAP_PLAN gap audit row 5): a small dock over the map's top edge. */
+.wb-map-brainstorm,
+.wb-map-proposal {
+  position: absolute;
+  top: calc(0.5rem + var(--wb-h-topbar) + var(--space-3));
+  left: 50%;
+  transform: translateX(-50%);
+    display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-variant-numeric: tabular-nums;
 }

@@ -281,7 +281,7 @@
     return icon("ph-stack dgm-group-icon");
   }
 
-  //: A connector row: the words go to the block they point at (joins `go`); its ⋯ is a kebab kept off the whole row.
+  //: A connector row: the words go to the block they point at (joins `go`).
   function joinChip(S, edge, index) {
     const line = el("div", "dgm-joinline");
     const chip = el("button", "dgm-join");
@@ -339,7 +339,7 @@
 
   //: A shape, or a group, added after the block `after`, inside the group `into`,
   //: or (neither) after the selection. `edit` opens its label for typing.
-  //: `from` is a block id to connect to the new one, in the same change (Connect to…, A new block).
+  //: `from` is a block id to connect to the new one, in the same change.
   function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = undefined, label = "" } = {}) {
     const m = S.m;
     const sel = after && !into ? after : null;
@@ -347,7 +347,7 @@
     const next = sel ? diagramOps.sisters(m, sel) : null;
     const sisters = next ? next.keys.filter((k) => k[0] === (group ? "g" : "n")) : [];
     const ahead = before !== undefined ? before : sel && sisters.includes(sel) ? sisters[sisters.indexOf(sel) + 1] || null : null;
-    //: Joined after the picked (or last) block, as "in the order the chart flows" says; a drop, a group or an explicit `from` is left as it is.
+    //: Joined after the picked (or last) block; a drop, a group or an explicit `from` is left as it is.
     if (from === undefined) from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null;
     const id = group ? diagramOps.addGroup(m, { parent, before: ahead }) : diagramOps.addNode(m, { shape, text, group: parent, before: ahead });
     if (!id) return say(S, group ? "That group cannot be added." : `A diagram holds at most ${diagramOps.MAX} blocks.`);
@@ -357,7 +357,10 @@
     if (from) diagramOps.join(m, from, id, { label });
     commit(S, `Added ${group ? "a group" : `a ${SHAPE_LABEL[shape].toLowerCase()}`}${sel ? ` after ${nameOf(S, sel)}` : ""}${from ? ` and connected ${titleOf(S, from)} to it` : ""}.`);
     //: List folded: named over the picture (1661 m, edges.js `askNode`).
-    if (edit) (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
+    const name = () => edit && (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
+    //: After a decision the arrow's words are asked first (R12), then the name.
+    const edge = from && !group && edit && m.edges.find((e) => e.from === from && e.to === id);
+    edge && diagramOps.needsLabel(m, edge) ? joins(S, "ask", edge).then(name) : name();
     return key;
   }
 
@@ -524,20 +527,19 @@
   //: exports. They run from diagram-embed.js, fetched on the first press.
   function more(S) {
     const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
-    const fold = [];
-    //: Suggest folds in here on a phone.
-    if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
+    //: Suggest folds in here on a phone; at 480 px or less Direction, Redo and Ask too (diagram-kindbar.js, L-documents-7).
+    const { rows: fold, key } = diagramModel.kindbar.fold(S, DIRS, suggestMenu);
     const mine = S.io.menu || [];
     const menu = kebabMenu([...mine, ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
-    menu.dataset.rows = mine.map((row) => row.label).join("|");
+    menu.dataset.rows = key;
     return menu;
   }
 
-  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt, keeping the Tab stop.
+  //: The host's rows can depend on the diagram: after a redraw that changes them the menu is rebuilt.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
-    if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;
+    if (!old || old.dataset.rows === diagramModel.kindbar.fold(S, DIRS).key) return;
     const next = more(S);
     next.querySelector("button").tabIndex = old.querySelector("button").tabIndex;
     old.replaceWith(next);
@@ -664,7 +666,7 @@
     Object.assign(SHAPE_TEXT, diagramOps.TEXT);
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
-    if (kind === "flowchart" && !(await early).every(Boolean)) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
+    if (!(await early).every(Boolean) && kind === "flowchart") return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
@@ -679,7 +681,7 @@
     }
     if (S && (await ensureModule("diagramAi"))) diagramModel.ai.wire(S, helpers);
     if (S) refreshMore(S);
-    //: A diagram page (its io has the document's key; the dialog's has none) gets Export in its head (embed.headExport).
+    //: A diagram page (its io has a key; the dialog's has none) gets Export in its head.
     if (S && io.key && (await ensureModule("diagramEmbed"))) diagramModel.embed.headExport();
     //: The phone's palette sheet and pinch (diagram-touch.js).
     if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);

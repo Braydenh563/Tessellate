@@ -123,6 +123,8 @@ Object.assign(LAZY_MODULES, {
   docBase: ["/css/doc-base-lazy.css", "/js/documents-base.js"],
   docSynced: ["/js/documents-synced.js"],
   docBoard: ["/js/documents-board.js"],
+  //: The csv and tsv grid, fetched on the first press of Grid (documents-csvgrid.js).
+  docCsvGrid: ["/css/doc-csv-grid-lazy.css", "/js/documents-csvgrid.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({

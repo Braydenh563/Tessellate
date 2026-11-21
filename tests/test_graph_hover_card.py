@@ -16,7 +16,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
@@ -88,7 +88,7 @@ console.log(JSON.stringify(gcHoverCardFacts({ id: "e1", type: "entity", preview:
 def test_the_card_follows_the_pointer_and_the_keyboard_and_the_title_is_gone() -> None:
     frame = _function(CANVAS, "gcHoverCardFrame")
     assert "gcKeyboardId(s)" in frame and "s.hoveredId" in frame
-    assert "gcHoverCardFrame(s)" in _function(CANVAS, "gcDraw")
+    assert "gcHoverCardFrame(s)" in gc_frame(CANVAS)
     # The native tooltip no longer doubles the card for a note on the tab.
     assert "s.canvas.title = node ? gcTooltip(node, s)" not in CANVAS
     card = _function(CANVAS, "gcHoverCardEl")

@@ -23,7 +23,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_fns, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -67,14 +67,17 @@ console.log(JSON.stringify(out));
 
 
 def test_the_tick_handler_snaps_and_the_frame_measures_full_draws() -> None:
-    handler = CANVAS[CANVAS.index('if (message.type === "tick")') : CANVAS.index('} else if (message.type === "frame")')]
+    # The tick branch of the worker's onmessage is `gcOnWorkerTick` (L14 split it out of gcStartWorker).
+    assert re.search(r'if \(message\.type === "tick"\) \{\s*gcOnWorkerTick\(s, message\);', CANVAS)
+    handler = gc_fns(CANVAS, "gcOnWorkerTick", "gcFitOnTick")
     assert re.search(r"s\.gliding = true;\s*\n(?:\s*//.*\n)*\s*if \(gcTickSettles\(s\)\) gcGlideFinish\(s\);", handler)
     # perf3-1031: the snap is `gcTickSettles` now, a costly map or a cooling layout.
     assert "const gcTickSettles = (s) => gcTickSnaps(s) || gcCooling(s);" in CANVAS
     assert "s.layoutRunning = message.running !== false;" in handler
     assert "const costly = s.layoutRunning && gcTickSnaps(s);" in CANVAS
     assert "s.dragNode || costly || s.alpha > 0.03 ? null : gcLineGrid(" in CANVAS
-    assert re.search(r'message\.type === "end"\) \{\n\s*s\.layoutRunning = false;', CANVAS)
+    assert re.search(r'message\.type === "end"\) \{\s*gcOnWorkerEnd\(s\);', CANVAS)  # L14: the end branch's body
+    assert re.search(r"function gcOnWorkerEnd\(s\) \{\n\s*s\.layoutRunning = false;", CANVAS)
     request = _function(CANVAS, "gcRequestDraw")
     assert "const full = s.sceneStale;" in request and "gcNoteDrawCost(s, performance.now() - drawn)" in request
 

@@ -44,3 +44,10 @@ def test_the_head_drags_and_a_dragged_popup_stays_until_closed():
 def test_the_head_is_a_grab_handle_that_touch_does_not_scroll():
     assert "cursor: grab;" in CSS and "touch-action: none;" in CSS
     assert ".graph-popup.graph-popup-away" in CSS
+
+
+def test_an_undragged_popup_also_stands_clear_of_the_floating_chrome():
+    # graph gsweep: at 1440x900 a card beside a right-edge node covered the zoom strip (2250 px2); 0 after.
+    body = _fn("graphPopupFollowSpot")
+    assert '["graph-minimap", "graph-zoom", "graph-legend"]' in body
+    assert "free(spot.left, spot.top)" in body

@@ -145,6 +145,8 @@ OBJECT_CASES = [
     ("note", 12, "#/notes/12"),
     ("chat", 45, "#/chat/45"),
     ("document", 7, "#/docs/7"),
+    # A diagram is a document file (L-documents-10): its tray row and Copy app link open the Documents page.
+    ("diagram", 7, "#/docs/7"),
     ("board", 3, "#/library/board/3"),
     ("map", 3, "#/library/board/3"),
     ("graph", 9, "#/graph/focus/9"),

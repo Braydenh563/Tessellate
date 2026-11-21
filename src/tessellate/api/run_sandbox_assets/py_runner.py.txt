@@ -247,12 +247,16 @@ def _mm_show(value):
     return text if len(text) <= _MM_REPR else text[: _MM_REPR - 3] + "..."
 
 
-#: A container opens one level into this many children (VS Code's tree,
-#: OPEN row 1058); a child's own children are its repr.
+#: A container opens into this many children (VS Code's tree, OPEN row 1058),
+#: and a child that is a container opens in turn, _MM_DEPTH levels down with
+#: fewer rows each level (L312). A value already on the way down (a list
+#: holding itself) stays its repr, so the walk ends.
 _MM_CHILDREN = 50
+_MM_DEEPER = 20
+_MM_DEPTH = 3
 
 
-def _mm_children(value):
+def _mm_children(value, depth=1, path=()):
     import itertools
     import types
 
@@ -267,9 +271,16 @@ def _mm_children(value):
             pairs = ((str(k), v) for k, v in vars(value).items() if not str(k).startswith("__"))
         else:
             return None
-        rows = [{"name": n, "value": _mm_show(v), "type": type(v).__name__}
-                for n, v in itertools.islice(pairs, _MM_CHILDREN)]
-        more = len(value) - _MM_CHILDREN if hasattr(value, "__len__") and not hasattr(value, "__dict__") else 0
+        limit = _MM_CHILDREN if depth == 1 else _MM_DEEPER
+        path = path + (id(value),)
+        rows = []
+        for n, v in itertools.islice(pairs, limit):
+            row = {"name": n, "value": _mm_show(v), "type": type(v).__name__}
+            kids = _mm_children(v, depth + 1, path) if depth < _MM_DEPTH and id(v) not in path else None
+            if kids:
+                row["children"] = kids
+            rows.append(row)
+        more = len(value) - limit if hasattr(value, "__len__") and not hasattr(value, "__dict__") else 0
     except BaseException:  # a container that cannot be walked shows its repr only
         return None
     if more > 0:
@@ -340,7 +351,12 @@ class _MMDebugger(bdb.Bdb):
         watches = []
         for expr in self.watches:
             try:
-                watches.append({"expr": expr, "value": _mm_show(eval(expr, frame.f_globals, frame.f_locals))})
+                shown = eval(expr, frame.f_globals, frame.f_locals)
+                watch = {"expr": expr, "value": _mm_show(shown)}
+                kids = _mm_children(shown)
+                if kids:
+                    watch["children"] = kids
+                watches.append(watch)
             except BaseException as exc:
                 watches.append({"expr": expr, "error": f"{type(exc).__name__}: {exc}"})
         return {

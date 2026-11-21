@@ -8,6 +8,13 @@ import pytest
 from tessellate.ai import composer
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 @pytest.mark.parametrize(("plural", "single"), [("knives", "knife"), ("shelves", "shelf"), ("loaves", "loaf"), ("wives", "wife")])
@@ -60,13 +67,13 @@ def test_how_many_notes_is_answered_with_the_figure(client, session, surface):
 
 
 def test_a_subject_inside_a_window_keeps_the_window(client, session):
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     from tessellate.entry import manager as m
 
     old = m.create_entry(session, "# Sourdough old\n\nStarter fed at night, ready by morning.")
     new = m.create_entry(session, "# Sourdough new\n\nSixth loaf, 78% hydration and a 20 hour cold proof.")
-    today = datetime.now()
+    today = SUITE_LOCAL
     old.created_at = today - timedelta(days=40)
     new.created_at = (today - timedelta(days=today.weekday() + 5)).replace(hour=12)  # last week's Wednesday
     session.commit()
@@ -92,11 +99,11 @@ def test_a_comparison_names_its_two_things_without_the_noun_for_notes(ask, sides
 
 
 def test_reminders_asked_for_a_window_are_that_windows(client, session):
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     from tessellate.core.database import Reminder
 
-    now = datetime.now()
+    now = SUITE_LOCAL
     monday = (now - timedelta(days=now.weekday())).replace(hour=10, minute=0, second=0, microsecond=0)
     session.add_all([Reminder(text="Water the plants", due_at=monday + timedelta(days=1)), Reminder(text="Book the venue", due_at=monday + timedelta(days=20))])
     session.commit()

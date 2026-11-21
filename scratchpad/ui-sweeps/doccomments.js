@@ -336,6 +336,15 @@ const seed = (title, content) => `(async () => {
     const sidebar = document.getElementById("doc-sidebar").getBoundingClientRect();
     const box = input.getBoundingClientRect();
     const focused = document.activeElement === input;
+    // L332: Attach writes the picked link into the field; the form still fits the sidebar.
+    const attachBtn = input.form.querySelector("button[title^='Attach']");
+    const realPick = window.pickLibraryItemDialog;
+    window.pickLibraryItemDialog = async () => ({ kind: "link", label: "Example", row: { url: "https://example.com/a" } });
+    attachBtn?.click();
+    await wait(200);
+    const attachedValue = input.value;
+    const formBox = input.form.getBoundingClientRect();
+    window.pickLibraryItemDialog = realPick;
     input.value = "Will do, thanks";
     input.form.requestSubmit();
     await wait(300);
@@ -345,6 +354,8 @@ const seed = (title, content) => `(async () => {
     return JSON.stringify({
       id,
       bylineBefore,
+      attachedValue,
+      attachFits: !!attachBtn && formBox.right <= sidebar.right + 1,
       focused,
       inputInside: box.left >= sidebar.left && box.right <= sidebar.right,
       inputW: Math.round(box.width),
@@ -358,6 +369,8 @@ const seed = (title, content) => `(async () => {
   console.log("thread -> " + threaded);
   const th = JSON.parse(threaded);
   if (!th.focused) fails.push("Reply did not put the caret in its field");
+  if (th.attachedValue !== "[Example](https://example.com/a) ") fails.push("Attach did not write the link: " + th.attachedValue);
+  if (!th.attachFits) fails.push("the reply form with Attach leaves the sidebar");
   if (!th.inputInside) fails.push("the reply field leaves the sidebar");
   if (th.replied !== 1) fails.push("the reply is not listed under its remark");
   if (th.resolvedOnServer !== 1) fails.push("the resolved thread is not kept on the server");
@@ -387,7 +400,8 @@ const seed = (title, content) => `(async () => {
     await wait(200);
     const shelf = [...document.querySelectorAll("#doc-comments-resolved .doc-comment-item")];
     const shelfInfo = { rows: shelf.length, context: shelf[0]?.querySelector(".doc-comment-context")?.textContent, expanded: toggle.getAttribute("aria-expanded") };
-    shelf[0].querySelector(".doc-comment-action").click();
+    // A resolved row also has Reply (first in the row since resolved threads can be answered); Reopen is the last action.
+    shelf[0].querySelector(".doc-comment-action:last-of-type, [title^=\"Reopen\"]").click();
     await wait(700);
     return JSON.stringify({
       afterReload,

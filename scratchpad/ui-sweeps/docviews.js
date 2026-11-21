@@ -197,6 +197,9 @@ function contrast(a, b) {
       const colours = new Set();
       let styled = 0;
       for (const sp of c.querySelectorAll('span')) {
+        // Bracket pairs are coloured on every code file (a bracket colouriser, not a grammar), so
+        // counting them would call PHP, which is meant to be plain, highlighted.
+        if (sp.classList.contains('cm-bracket-0') || /^cm-bracket-/.test(sp.className)) continue;
         const cs = getComputedStyle(sp);
         if (cs.color !== ink) colours.add(cs.color);
         // A mode can mark a token by weight or slant rather than by colour,

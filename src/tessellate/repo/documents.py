@@ -399,3 +399,33 @@ def revert_ai_edit(session: Session, document: Document, entry: DocumentAiEdit) 
     ))
     document.content = entry.before_content
     document.updated_at = utcnow()
+
+
+def open_link_pairs(session: Session) -> list[tuple[int, int]]:
+    """(document id, note id) for every attachment of a live, non-private
+    document: what a graph `document:N` node is made of. A private document
+    is sealed, so it never lends the map its notes."""
+    query = (
+        select(DocumentLink.document_id, DocumentLink.entry_id)
+        .join(Document, Document.id == DocumentLink.document_id)
+        .where(Document.archived_at.is_(None), Document.deleted_at.is_(None), Document.is_private == False)  # noqa: E712
+    )
+    return list(session.execute(query))
+
+
+def link_fingerprint(session: Session) -> tuple:
+    """What moves when a document is attached, detached, archived or edited:
+    the graph's document layer keys its cache on it."""
+    return (
+        session.scalar(select(func.count(DocumentLink.id))) or 0,
+        session.scalar(select(func.max(DocumentLink.created_at))),
+        session.scalar(select(func.count(Document.id)).where(Document.archived_at.is_(None), Document.deleted_at.is_(None)))
+        or 0,
+        session.scalar(select(func.max(Document.updated_at))),
+    )
+
+
+def any_title(session: Session, document_id: int) -> str | None:
+    """A document's title whatever its state, for a stop on a graph route."""
+    row = session.get(Document, document_id)
+    return row.title if row is not None else None

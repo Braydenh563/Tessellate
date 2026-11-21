@@ -258,7 +258,8 @@ def test_the_drawing_and_hit_test_are_wired():
     assert "gcTess.titleAt(" in CANVAS
     assert "gcTess.fit(" in _function(CANVAS, "gcDrawTreemap")
     assert "gcEllipsize(" not in _function(CANVAS, "gcDrawTreemap")
-    assert "layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges))" in CANVAS
+    # L-world-class-175 added the sliders as a sixth argument; the info still rides fifth.
+    assert "layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges), gcWorkerParams(s))" in CANVAS
 
 
 def test_the_module_adds_one_name_to_the_shared_scope():

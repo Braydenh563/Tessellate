@@ -345,6 +345,20 @@ function docCodeLintSource(CM) {
     const text = docStr(state.doc);
     const unit = type.indent || "  ";
     let found = [];
+    //: What a Run would stop on (sucrase, the TypeScript pass) and the tree called clean: its
+    //: "(line:col)" is the underline (L310). Loaded with the run scripts on the first such check.
+    const sucraseFound = async () => {
+      try {
+        if (!(await ensureModule("run"))) return [];
+        const sucrase = await runVendorScript("/vendor/sucrase/sucrase.min.js", "SUCRASE");
+        sucrase.transform(text, { transforms: ["typescript"], production: true });
+      } catch (error) {
+        const where = /^(.*?)\s*\((\d+):(\d+)\)$/.exec(String(error?.message || ""));
+        if (!where) return [];
+        return [{ ...docDiagnosticRange(state.doc, Number(where[2]), Number(where[3])), severity: "error", source: "TypeScript", message: where[1] }];
+      }
+      return [];
+    };
     if (ext === "json") {
       found = docJsonDiagnostics(state.doc);
       if (found.length) {
@@ -359,6 +373,7 @@ function docCodeLintSource(CM) {
       }
     } else if (DOC_CHECK_TREE.has(ext)) {
       found = docTreeDiagnostics(CM, state);
+      if (!found.length && ext === "ts") found = await sucraseFound();
       if (found.length && !(ext === "js" && docTreeHasJsx(CM, state))) {
         const scanned = docCodeFixes(text, ext, unit);
         if (scanned.length) found = docCodeActions("scan", scanned);
@@ -3360,8 +3375,9 @@ function docDebugView() {
 }
 
 //: A name and its value, as one row: text only, never markup.
-//: A list, a dict or an object opens one level into its children, as VS
-//: Code's Variables tree does (OPEN row 1058); the row is a disclosure then.
+//: A list, a dict or an object opens into its children, and a child that is
+//: one opens in turn (the sandbox sends three levels, L312), as VS Code's
+//: Variables tree does (OPEN row 1058); the row is a disclosure then.
 function docDebugValueRow(name, value, type, error = false, children = null) {
   const li = document.createElement("li");
   li.className = `cm-debug-row${error ? " is-error" : ""}`;
@@ -3383,7 +3399,7 @@ function docDebugValueRow(name, value, type, error = false, children = null) {
   summary.append(n, v);
   const list = document.createElement("ul");
   list.className = "cm-debug-list cm-debug-children";
-  for (const child of children) list.appendChild(docDebugValueRow(String(child.name), String(child.value), String(child.type || "")));
+  for (const child of children) list.appendChild(docDebugValueRow(String(child.name), String(child.value), String(child.type || ""), false, child.children));
   tree.append(summary, list);
   li.appendChild(tree);
   return li;
@@ -3469,7 +3485,7 @@ function docDebugRender() {
   const values = new Map((Array.isArray(stop?.watches) ? stop.watches : []).map((w) => [String(w.expr), w]));
   DOC_DEBUG.watches.forEach((expr, index) => {
     const w = values.get(expr);
-    const row = docDebugValueRow(expr, w ? (w.error ? String(w.error) : String(w.value)) : "not evaluated", "", Boolean(w?.error));
+    const row = docDebugValueRow(expr, w ? (w.error ? String(w.error) : String(w.value)) : "not evaluated", "", Boolean(w?.error), w?.children);
     row.appendChild(docDebugRemoveButton(`Stop watching ${expr}`, () => {
       DOC_DEBUG.watches.splice(index, 1);
       if (DOC_DEBUG.stop) docDebugAct("eval");
@@ -3521,8 +3537,8 @@ const DOC_RUN_EMPTY = {
 //: three lines, the Guide's "Running code" topic at length.
 const DOC_RUN_HELP = [
   "Run sends this file to a sandbox with no network and none of your notes. What it prints and its errors come back in Output; Line N goes to the line.",
-  "JavaScript, TypeScript (types removed, not checked), SQL (a SQLite per run, with any CSV document the query names as a table) and Python (once installed; Input feeds input()) run. HTML, CSS, SVG and p5.js sketches show as a page, a CSV or TSV as a table; Live refreshes it as you type.",
-  "Problems lists every finding the checks underline. Tests lists each test with its time, a failure underlined on its line. Console evaluates a line in what the last run left: Python for a .py file, JavaScript for the rest.",
+  "JavaScript, TypeScript (types removed, not checked), SQL (a SQLite per run, with any CSV document the query names as a table; on a CSV, Query as SQL starts one) and Python (once installed; Input feeds input()) run. HTML, CSS, SVG and p5.js sketches show as a page, a CSV or TSV as a table; Live refreshes it as you type.",
+  "Problems lists every finding the checks underline. Tests lists each test with its time, a failure underlined on its line. Console evaluates a line in what the last run left: Python for a .py file, JavaScript for the rest, in its own worker apart from any page the file shows.",
   "Debug (F5, or the Debug tab's first button) runs JavaScript, TypeScript or Python to the first breakpoint (F9, or click beside a line number; right-click for a condition), then steps: F10 over, F11 in, Shift+F11 out, Shift+F5 stop. The tab shows variables, watches, the call stack and the breakpoints.",
   "The head's buttons are icons; point at one for its name. Ctrl+J shows or hides the panel, Ctrl+Shift+M opens Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; drag the top edge for its height, kept for each tab. A run still going after two seconds is in Activity, where Stop ends it too.",
 ];
@@ -3592,6 +3608,18 @@ function docRunPanel(view) {
   live.classList.add("cm-run-live", "hidden");
   live.setAttribute("aria-pressed", String(docRunLiveOn()));
   const stopButton = button("Stop", "ph-stop", () => docRunStop("Stopped."), "Stop the run");
+  //: A CSV document as a SQL table (L317). The SQL run already loads a CSV document whose name the query uses; this is the
+  //: way to it from the CSV itself: a new SQL document asking for its first rows, run at once.
+  const query = button("Query as SQL", "ph-database", async () => {
+    const table = docSqlTableName(currentDoc?.title);
+    if (!table) return toast("Give the file a name to query it as a table.", "info");
+    const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: `${table} query`, content: `select * from ${table} limit 50;\n`, file_type: "sql" }) });
+    await loadDocuments(made.id);
+    offerCreateUndo(made);
+    docRunCode();
+  }, "Query this table in a new SQL document: its first 50 rows, run now");
+  query.classList.add("cm-run-query");
+  query.classList.toggle("hidden", docFileType().ext !== "csv");
   const clear = button("Clear", "ph-eraser", () => docRunClearTab(), "Clear this tab");
   //: Input (D9): Python's `input()` reads its lines from this box, one
   //: per call. Shown with its button for Python, and opened by itself when
@@ -3645,7 +3673,7 @@ function docRunPanel(view) {
     p.textContent = line;
     helpBody.appendChild(p);
   }
-  actions.append(live, stdinButton, tests, again, stopButton, clear, help, close);
+  actions.append(live, stdinButton, tests, query, again, stopButton, clear, help, close);
   head.append(identity, actions);
   //: Output: the page a file makes over the log of what it printed.
   const body = document.createElement("div");
@@ -3951,7 +3979,9 @@ const DOC_CONSOLE_INTERRUPT_MS = 3000;
 function docConsoleOvertime(seq, lang) {
   if (!docRun || docRun.evalId !== seq) return;
   if (lang !== "python" || docRun.interrupted === seq) {
-    docRunStop("Stopped: the line was still running.");
+    docRunStop(`Stopped after ${DOC_RUN_TIMEOUT_MS / 1000} seconds: the line was still running.`);
+    //: The worker is gone with the names the last run left (L293); what the page holds stays and the console says which is which.
+    docRunRow("info", `Stopped after ${DOC_RUN_TIMEOUT_MS / 1000} seconds. The output above is kept, and so is Problems; the names the last run left are gone. Run the file again to bring them back.`, null, docRun.consoleLog, false);
     return;
   }
   docRun.interrupted = seq;
@@ -6152,7 +6182,8 @@ function docCodeEditing(CM, type) {
       //: The quick fixes at the caret, on the prose menu's own chord, and the
       //: problems one at a time on the prose findings' own keys.
       { key: "Alt-Enter", run: () => docOpenCodeFixes() },
-      { key: "F8", run: CM.lint.nextDiagnostic },
+      ...CM.lint.lintKeymap,
+      { key: "Mod-Alt-.", run: CM.language.toggleFold },
       { key: "Shift-F8", run: CM.lint.previousDiagnostic },
     ]),
   ];

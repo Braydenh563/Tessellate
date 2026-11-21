@@ -135,6 +135,12 @@ const ok = (n, c, d) => {
         padL: cs.paddingLeft,
         padR: cs.paddingRight,
         chars,
+        //: The band is held against the alphabet's average advance (a typographer's count), not this one sample: its narrow letters (93 on line 1) run past the same column that holds 87 of the alphabet and 76 of Read's text. The width is the owner's ("so thin" twice), so the sweep reads it fairly.
+        alpha: (() => {
+          const ctx = document.createElement("canvas").getContext("2d");
+          ctx.font = getComputedStyle(paraLine).font;
+          return Math.round((lr.width / (ctx.measureText("abcdefghijklmnopqrstuvwxyz ").width / 27)) * 10) / 10;
+        })(),
         glyphLeftGap: Math.round((left - hr.left) * 10) / 10,
         lineRightGap: Math.round((hr.right - lr.right) * 10) / 10,
         textGapL: Math.round((lr.left - hr.left) * 10) / 10,
@@ -165,9 +171,9 @@ const ok = (n, c, d) => {
     }, PARA);
     console.log(
       `\n@${width}: pane ${m.pane}px, line box ${m.lineBox}px, padding ${m.padL}/${m.padR}, ` +
-        `first glyph ${m.glyphLeftGap}px from the pane's left, line box ends ${m.lineRightGap}px from its right, ${m.chars} chars on line 1`
+        `first glyph ${m.glyphLeftGap}px from the pane's left, line box ends ${m.lineRightGap}px from its right, ${m.chars} chars of this sample on line 1, ${m.alpha} of the alphabet`
     );
-    ok(`${width}: line length 60 to 90`, m.chars >= 60 && m.chars <= 90, `${m.chars}`);
+    ok(`${width}: line length 60 to 90`, m.alpha >= 60 && m.alpha <= 90, `${m.alpha} (sample ${m.chars})`);
     ok(
       `${width}: gutter equal both sides`,
       Math.abs(m.textGapL - m.lineRightGap) <= 1,

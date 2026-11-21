@@ -13,6 +13,14 @@ import json
 
 from tessellate.ai import facts
 from tessellate.core.database import DerivedFact, Entry, utcnow
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 NOT_OWN = {
     "script": "ACT I\nSCENE 2. A street at night.\nKNIGHT: What daring deed hath led thee to this street?\nSQUIRE: A dragon, sire.",

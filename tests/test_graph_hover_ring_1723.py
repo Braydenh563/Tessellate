@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -37,7 +37,7 @@ def _method(name: str) -> str:
 
 
 def test_a_pointer_hover_takes_no_accent_ring():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     # Only the keyboard's note, the open card's and the search's current hit
     # are ringed; the hovered id alone is not in that test.
     assert "const marked = node.id === gcKeyboardId(s) || node.id === openId || node.id === hl.current;" in draw
@@ -48,7 +48,7 @@ def test_a_pointer_hover_takes_no_accent_ring():
 
 
 def test_the_hover_is_the_nodes_own_halo_and_hairline():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert "gcHoverMark.draw(ctx, hot.node, hot.heat * gcSmooth(hot.node._lit), k, pixelScale);" in draw
     halo = _method("draw")
     # The hairline is the node's colour drawn toward the ink, never the accent.
@@ -68,7 +68,7 @@ def test_the_halo_is_cached_not_built_per_frame():
 
 
 def test_keyboard_focus_keeps_an_offset_accent_ring():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert "ringGap: 3," in _mark() and "ringW: 2," in _mark()
     branch = draw[draw.index("} else if (item.focused) {"):draw.index("} else if (item.matched) {")]
     assert "gcHoverMark.ringGap + gcHoverMark.ringW / 2" in branch
