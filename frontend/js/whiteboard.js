@@ -19862,8 +19862,11 @@ window.currentBoardId = null;
 //: spare (the open's 60ms settle). `list`: a caller that draws first takes
 //: the picker's own round trip as `list.wait` (mapperf phase probe, 500
 //: topics: 30 to 100ms nothing on the canvas reads).
-async function fetchWhiteboardState({ state = null, list = null } = {}) {
+async function fetchWhiteboardState({ state = null, stateFor = null, list = null } = {}) {
   const requestedBoardId = window.currentBoardId ?? null;
+  //: A prefetched answer is used only for the board it was asked for: a
+  //: second open during the first one's settle asks again (PR 224 review).
+  if (state && stateFor !== requestedBoardId) state = null;
   try {
     const url = requestedBoardId ? `/whiteboard/?board_id=${requestedBoardId}` : "/whiteboard/";
     const res = await (state || apiJson(url));
@@ -25818,7 +25821,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   // board and read as "a permanent selection box on my mindmap".
   wbClearSelectionOverlays();
   const listed = {};
-  await fetchWhiteboardState({ state, list: listed });
+  await fetchWhiteboardState({ state, stateFor: id, list: listed });
   wbScheduleRender();
   await wbMigrateBackground();
   wbApplyBackground();

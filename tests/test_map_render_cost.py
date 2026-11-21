@@ -330,3 +330,37 @@ def test_the_board_count_is_written_only_to_the_open_boards_row() -> None:
     still the last board's while that render runs."""
     code = _code("wbSyncBoardCount")
     assert "opt.value !== String(window.currentBoardId)" in code, code
+
+
+def test_a_prefetched_board_is_used_only_for_the_board_it_was_asked_for() -> None:
+    """PR 224 review: a second open during the first one's settle must not draw the first board's answer. Run in node
+    with the fetch's helpers stubbed: a prefetch for board 1 handed to a fetch for board 2 asks for board 2 again."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    fetch = _async_body("fetchWhiteboardState")
+    script = (
+        "const asked = []; let wbState = null; const window = { currentBoardId: 2 };\n"
+        "const apiJson = async (url) => { asked.push(url); return { board: url }; };\n"
+        "const noop = () => {}; const toast = noop; const voiceLine = () => '';\n"
+        "const handler = { get: (t, k) => (k in t ? t[k] : noop) };\n"
+        "with (new Proxy({ window, apiJson, toast, voiceLine, asked }, handler)) {\n"
+        + "async function fetchWhiteboardState("
+        + fetch
+        + "\n(async () => {\n"
+        "  await fetchWhiteboardState({ state: Promise.resolve({ board: 'one' }), stateFor: 1, list: {} });\n"
+        "  const first = wbState;\n"
+        "  await fetchWhiteboardState({ state: Promise.resolve({ board: 'two' }), stateFor: 2, list: {} });\n"
+        "  console.log(JSON.stringify({ asked, first, second: wbState }));\n"
+        "})();\n}\n"
+    )
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout
+    got = json.loads(out)
+    assert got["asked"] == ["/whiteboard/?board_id=2"], got
+    assert got["first"] == {"board": "/whiteboard/?board_id=2"}, got
+    assert got["second"] == {"board": "two"}, got
