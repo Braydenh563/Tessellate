@@ -165,7 +165,8 @@ def test_a_numeric_day_is_spelled_by_the_locale(text, locale, said):
     assert recognise.spell_numeric_days(text, date(2026, 11, 9), locale) == said
 
 
-@pytest.mark.parametrize("locale, day", [("en-GB", "Thursday 12 November"), ("en-US", "Friday 11 December")])
+#: Intent unchanged (12/11 in en-US is 11 December): since L563 an en-US answer words the day month first.
+@pytest.mark.parametrize("locale, day", [("en-GB", "Thursday 12 November"), ("en-US", "Friday December 11")])
 def test_chat_reads_a_numeric_day_in_the_locale_it_carries(client, btask, locale, day):
     events = _stream(client, "what's due on 12/11", locale)
     assert day in "".join(e["delta"] for e in events if e["type"] == "answer")

@@ -533,13 +533,15 @@ def allowance(word: str) -> float:
 _HOW_NEXT = frozenset("many much often long do does did to come can should far old big".split())
 
 
-def nearest(word: str, vocabulary, after: str = "") -> str | None:  # noqa: ANN001
+def nearest(word: str, vocabulary, after: str = "", *, english: bool = True) -> str | None:  # noqa: ANN001
     """The one vocabulary word `word` is a typo of, or None: within its
     allowance, and nearer than any other by a clear margin (a tie is a
     guess, and no guess is made, except "how" against "who", which the next
-    word settles)."""
+    word settles). `english=False` for names: the English list holds names
+    too ("hanna"), so only the hand-kept real words block a name's respelling."""
     low = word.lower()
-    if low in vocabulary or low in VOCABULARY or is_real_word(low) or not low.isalpha():
+    real = is_real_word(low) if english else low in REAL_WORDS
+    if low in vocabulary or low in VOCABULARY or real or not low.isalpha():
         return None
     limit = allowance(low)
     if not limit:

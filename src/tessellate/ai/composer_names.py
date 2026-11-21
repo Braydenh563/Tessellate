@@ -66,7 +66,7 @@ def respell(question: str, names: frozenset[str], fixed: list | None = None) -> 
         word = token.strip("?.!,;:").lower()
         if len(word) < 4 or not word.isalpha() or word in names or not _subject_slot(tokens, i):
             continue
-        chosen = question_noise.nearest(word, names)
+        chosen = question_noise.nearest(word, names, english=False)
         if chosen:
             tokens[i] = token.lower().replace(word, chosen)
             if fixed is not None:
