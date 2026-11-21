@@ -121,7 +121,7 @@ def test_a_new_full_screen_class_must_be_watched():
 
 def test_the_browsers_own_full_screen_is_only_asked_for_by_a_watched_surface():
     callers = [p.name for p in JS.glob("*.js") if "requestFullscreen(" in p.read_text(encoding="utf-8")]
-    assert callers == ["documents.js"], f"a new requestFullscreen caller needs its own flag: {callers}"
+    assert callers == ["documents-focus.js"]  # the same caller, moved out of documents.js (L-documents-117), f"a new requestFullscreen caller needs its own flag: {callers}"
 
 
 def test_every_viewer_overlay_that_covers_the_window_sets_the_flag():

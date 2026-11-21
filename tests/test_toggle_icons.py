@@ -5,11 +5,11 @@ button to toggle smth doesn't change the icon's look". The Documents width,
 dim and typewriter toggles painted a fill and a tooltip only.
 """
 
-from tests._app_js import JS_DIR
+from tests._app_js import documents_text
 
 
 def test_document_reading_toggles_swap_their_glyph():
-    code = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+    code = documents_text()  # moved into the documents pieces (L-documents-117)
     assert "function docToggleIcon(button, on, onIcon, offIcon)" in code
     for pair in (
         '"ph-arrows-in-line-horizontal", "ph-arrows-out-line-horizontal"',

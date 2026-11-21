@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-CSS = Path("frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
+# Moved with the Library bundle (L308).
+CSS = Path("frontend/css/library-lazy.css").read_text(encoding="utf-8")
 
 
 def test_the_recent_heading_keeps_its_own_width():

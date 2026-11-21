@@ -1719,14 +1719,6 @@ summary > .ph-lead,
 .doc-dock {
   --control-h: var(--control-h-lg);
 }
-.doc-dock-identity {
-  --identity-h: var(--control-h-lg);
-}
-.doc-view-cluster {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
 .doc-view-menu > summary {
   width: var(--control-h-lg);
 }
@@ -8722,13 +8714,6 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   white-space: nowrap;
 }
 /* A row of three fills three columns rather than leaving a fourth empty. */
-.wb-export-overlay .seg.wb-export-seg:has(> button:nth-child(3):last-child) {
-  grid-template-columns: repeat(3, 1fr);
-}
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):hover,
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
-}
 /* The same fault in every icon-only button, smaller. Measured by
    scratchpad/ui-sweeps/inkcentre.js (each button photographed at 4x with its
    glyph painted red): 46 distinct icon buttons at 1440, their boxes centred
@@ -8799,14 +8784,6 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 #reminder-presets.doc-dock-menu-list {
   margin: 0;
   gap: 0;
-}
-/* "How to edit" holds four one-word modes (Live, Source, Split, Plain), 113px
-   of content in the 15rem every dock list starts at: a menu twice as wide as
-   anything in it reads as a panel with nothing in it (menus.js, the only
-   menu past 2x). The floor it gets is the width of its longest row plus air,
-   not a new size of its own. */
-.doc-view-menu > .doc-dock-menu-list {
-  min-width: 10rem;
 }
 /* `kebabMenu`'s group hairline, in a menu written in markup (Quick set). */
 .doc-dock-menu-list > .menu-sep {
@@ -9810,11 +9787,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
   --sb-peek-transform: none;
 }
-/* Focus mode opens the documents sidebar whole as its own panel, folded on
-   the page or not; its rows are where they belong there. */
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > * {
-  transform: none;
-}
 /* The rail's sideways name is what the sidebar folded into: it comes in as
    the contents go, rather than being there before they have left. */
 .sidebar-collapsed > .sidebar-rail-name {
@@ -10472,10 +10444,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 }
 /* The one action an empty References section keeps (a quiet "Attach a link"
    with no padding of its own), in a wrap that scrolls. */
-#doc-bookmarks-wrap:has(> .doc-outline:empty) {
-  padding-block: var(--ring-room);
-  margin-top: calc(var(--space-3) - var(--ring-room));
-}
 /* The wrapzoom sweep (2026-11-11, every width and zoom), each ring cut 4px:
    - a sidebar's heading clips for its ellipsis, and the Notes sidebar builds
      its fold caret inside it, flush on three sides (`SIDEBAR_FOLDS`,
@@ -10891,7 +10859,6 @@ html[data-other-device] [data-this-computer="hide"] {
 #space-menu > .list-filter {
   margin: var(--space-1) var(--space-1) var(--space-2);
 }
-
 
 /* **Counts and totals hold still** (WORLD_CLASS_PLAN 7, "Numbers: tabular
    figures"). A number that changes while you watch (a count beside a title, a
