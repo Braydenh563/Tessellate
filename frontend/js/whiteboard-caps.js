@@ -2,6 +2,44 @@
   // whiteboard-caps.js: shape paths and arrow heads, moved out of whiteboard.js (L634).
   // Wrapped: only what other files call goes on `window`; nothing here runs at load.
 
+  //: Every cap kind a line/arrow/link end can wear, asked for directly ("a
+  //: full line/arrow end-cap system... circle/square/multi-line ends,
+  //: independently per end"), the shared arrowhead control only ever grew
+  //: from Arrow-only to Line-and-Arrow, still one shape. Each is its own
+  //: closed subpath appended to the shaft's own `d`, same convention
+  //: `wbArrowHeadPath` already established (a stroked path, no separate SVG
+  //: element, so hit-testing/move/resize/export keep treating the whole
+  //: sketch as the one path they already know how to handle), "arrow" here
+  //: is exactly `wbArrowHeadPath`'s own two-line V, kept for a single call
+  //: site to switch on.
+  //: **The plain ends, drawn closed or open** (INBOX 792, the owner: "there is
+  //: only one actual arrow option for the links"): `arrow` is the open V,
+  //: `triangle` the solid arrowhead, `diamond` and `diamond-filled` the UML
+  //: aggregation and composition marks, `bar` a stop line at the tip. A filled
+  //: end is a closed outline with smaller copies of itself inside it, a stroke's
+  //: width apart: the end stays one more subpath of the shaft's own `d`, so a
+  //: line with a solid head is still one stroked path (hit-testing, move,
+  //: resize and every export read it as before) and no end needs a fill.
+  //: `triangle-open` (UML's inheritance mark) and `circle-filled` were added for
+  //: the owner's "more arrow options" (2026-10-11): the hollow triangle stops the
+  //: shaft at its base like the other hollow ends; the filled circle is rings
+  //: stepping in by a stroke width, the solid ends' own trick.
+  //: The plan's decision E2 (WHITEBOARD_PLAN, INBOX 826) added `stealth` (the
+  //: concave arrow), `cross`, `half-arrow` and `double-arrow`; its "dot" is the
+  //: filled circle already here. E3 added `memorymap`, the signature end.
+  const WB_CAP_KINDS = ["none", "memorymap", "arrow", "triangle", "triangle-open", "stealth", "diamond", "diamond-filled", "bar", "circle", "circle-filled", "square", "multiline", "cross", "half-arrow", "double-arrow", "er-one", "er-one-only", "er-zero-one", "er-many", "er-one-many", "er-zero-many"];
+
+  //: The entity-relationship ends (the features audit W4): what is nearest the
+  //: line's body, then what is at the tip. `null` near: one mark only.
+  const WB_ER_CAPS = {
+    "er-one": [null, "one"],
+    "er-one-only": ["one", "one"],
+    "er-zero-one": ["zero", "one"],
+    "er-many": [null, "many"],
+    "er-one-many": ["one", "many"],
+    "er-zero-many": ["zero", "many"],
+  };
+
   //: Two head-stroke subpaths meeting at `(tipX, tipY)`, angled back from
   //: `approachAngle` (the direction the shaft arrives *from*, in radians), 
   //: factored out so both ends of an arrow can draw one (`currentArrowEndStyle`,
@@ -58,6 +96,11 @@
     const h2y = tipY - headLen * Math.sin(approachAngle + Math.PI / 6);
     return `M ${tipX} ${tipY} L ${h1x} ${h1y} M ${tipX} ${tipY} L ${h2x} ${h2y}`;
   }
+  //: **An end's size** (decision E2): small, medium or large, beside each end
+  //: menu, stored per end as `startCapSize`/`endCapSize` ("s" or "l"; absent
+  //: is medium, so every saved line keeps its look). It scales the end's
+  //: length, never the stroke the solid ends step in by.
+  const WB_CAP_SIZE_SCALE = { s: 0.7, l: 1.45 };
   const WB_SOLID_CAPS = new Set(["triangle", "diamond-filled"]);
   function wbCapScale(size) {
     return WB_CAP_SIZE_SCALE[size] || 1;
@@ -68,6 +111,12 @@
     const keep = (v) => (WB_CAP_SIZE_SCALE[v] ? v : undefined);
     return { startCapSize: keep(caps.startSize), endCapSize: keep(caps.endSize) };
   }
+  //: **A hollow end stops the shaft at its own edge.** An outline diamond,
+  //: circle or square drew the shaft on through its middle to the tip (the
+  //: owner: the shaft shows through the shape). How far back from the tip the
+  //: shape reaches along the line is the inset: the diamond's rear point, the
+  //: circle's and the square's diameter. Solid ends and open marks need none.
+  const WB_HOLLOW_INSET = { diamond: (h) => h * 1.1, "triangle-open": (h) => h, circle: (h) => (h * 2) / 3, square: (h) => (h * 2) / 2.6 };
   function wbHollowInset(kind, headLen) {
     return WB_HOLLOW_INSET[kind]?.(headLen) || 0;
   }
@@ -326,5 +375,5 @@
   }
 
   //: The file's surface: what other files call (L634).
-  Object.assign(window, { wbDragBox, wbEllipseDrawD, wbSnap45, wbClosedShapeD, wbCapSizeFields, wbShaftEnd, wbCapPath, wbShowCapSizes, wbCursorForTool });
+  Object.assign(window, { WB_CAP_KINDS, wbDragBox, wbEllipseDrawD, wbSnap45, wbClosedShapeD, wbCapSizeFields, wbShaftEnd, wbCapPath, wbShowCapSizes, wbCursorForTool });
 })();

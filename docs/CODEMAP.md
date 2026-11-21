@@ -8484,20 +8484,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbArrowHeadPath` | frontend/js/whiteboard-caps.js:54 |
-| `wbCapPath` | frontend/js/whiteboard-caps.js:85 |
-| `wbCapPathMore` | frontend/js/whiteboard-caps.js:218 |
-| `wbCapScale` | frontend/js/whiteboard-caps.js:62 |
-| `wbCapSizeFields` | frontend/js/whiteboard-caps.js:67 |
-| `wbClosedShapeD` | frontend/js/whiteboard-caps.js:46 |
-| `wbCursorForTool` | frontend/js/whiteboard-caps.js:257 |
-| `wbDragBox` | frontend/js/whiteboard-caps.js:14 |
-| `wbEllipseDrawD` | frontend/js/whiteboard-caps.js:28 |
-| `wbFilledTriangle` | frontend/js/whiteboard-caps.js:201 |
-| `wbHollowInset` | frontend/js/whiteboard-caps.js:71 |
-| `wbShaftEnd` | frontend/js/whiteboard-caps.js:77 |
-| `wbShowCapSizes` | frontend/js/whiteboard-caps.js:184 |
-| `wbSnap45` | frontend/js/whiteboard-caps.js:36 |
+| `wbArrowHeadPath` | frontend/js/whiteboard-caps.js:92 |
+| `wbCapPath` | frontend/js/whiteboard-caps.js:134 |
+| `wbCapPathMore` | frontend/js/whiteboard-caps.js:267 |
+| `wbCapScale` | frontend/js/whiteboard-caps.js:105 |
+| `wbCapSizeFields` | frontend/js/whiteboard-caps.js:110 |
+| `wbClosedShapeD` | frontend/js/whiteboard-caps.js:84 |
+| `wbCursorForTool` | frontend/js/whiteboard-caps.js:306 |
+| `wbDragBox` | frontend/js/whiteboard-caps.js:52 |
+| `wbEllipseDrawD` | frontend/js/whiteboard-caps.js:66 |
+| `wbFilledTriangle` | frontend/js/whiteboard-caps.js:250 |
+| `wbHollowInset` | frontend/js/whiteboard-caps.js:120 |
+| `wbShaftEnd` | frontend/js/whiteboard-caps.js:126 |
+| `wbShowCapSizes` | frontend/js/whiteboard-caps.js:233 |
+| `wbSnap45` | frontend/js/whiteboard-caps.js:74 |
 
 ### frontend/js/whiteboard-clipboard.js (31)
 
@@ -10549,21 +10549,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:8005 |
-| `dragging` | frontend/js/whiteboard.js:7419 |
+| `addBoardToNote` | frontend/js/whiteboard.js:7954 |
+| `dragging` | frontend/js/whiteboard.js:7368 |
 | `handleWbZoom` | frontend/js/whiteboard.js:599 |
-| `highlighterBlend` | frontend/js/whiteboard.js:8025 |
-| `initWhiteboard` | frontend/js/whiteboard.js:1980 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:7682 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:7917 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:7786 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:6419 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:6393 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:7842 |
+| `highlighterBlend` | frontend/js/whiteboard.js:7974 |
+| `initWhiteboard` | frontend/js/whiteboard.js:1929 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:7631 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:7866 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:7735 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:6368 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:6342 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:7791 |
 | `wbAlignTol` | frontend/js/whiteboard.js:985 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:446 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:527 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:7661 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:7610 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:509 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:477 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:363 |
@@ -10579,13 +10579,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1022 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:944 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:7646 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:7595 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
-| `wbMultiKey` | frontend/js/whiteboard.js:1456 |
+| `wbMultiKey` | frontend/js/whiteboard.js:1405 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:919 |
 | `wbRefreshHighlighterBlend` | frontend/js/whiteboard.js:1230 |
 | `wbRefreshRaster` | frontend/js/whiteboard.js:910 |
-| `wbRememberBoardView` | frontend/js/whiteboard.js:1558 |
+| `wbRememberBoardView` | frontend/js/whiteboard.js:1507 |
 | `wbRotatedBounds` | frontend/js/whiteboard.js:993 |
 | `wbRoundedPathD` | frontend/js/whiteboard.js:1283 |
 | `wbSaveExpandedNodes` | frontend/js/whiteboard.js:311 |
@@ -10594,8 +10594,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:500 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1145 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1146 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:7609 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:7596 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:7558 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:7545 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:656 |
 | `wbSnap` | frontend/js/whiteboard.js:968 |
 | `wbSnapOn` | frontend/js/whiteboard.js:955 |

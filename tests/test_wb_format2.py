@@ -12,13 +12,15 @@ from pathlib import Path
 
 import pytest
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parents[1]
 INTERCHANGE = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
 
 
 def app_js_text() -> str:
     """The whiteboard's scripts (they load apart from the app's boot scripts, so `tests/_app_js.py` does not hold them)."""
-    return "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "js").glob("whiteboard*.js")))
+    return "\n".join(unwrapped(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "frontend" / "js").glob("whiteboard*.js")))
 
 
 def _node(script: str) -> str:
