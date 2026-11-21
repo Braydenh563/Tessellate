@@ -78,3 +78,15 @@ def test_the_map_view_menu_leaves_out_rows_a_map_can_never_use():
     css = frontend_text("css/07-whiteboard-misc.css")
     rule = css[css.index(".wb-menu-two-col .wb-menu-section") :]
     assert "gap: 0;" in rule[: rule.index("}")]
+
+
+def test_the_map_look_dialog_sets_its_groups_in_two_columns_on_a_wide_screen():
+    """The look dialog grew to 13 selects and 5 switches (1002px tall in one column, scrolling inside a 900px window);
+    each group is one block and the groups run in two columns where the window is wide (maptheme.js)."""
+    js = script_file_text("whiteboard-map.js")
+    assert 'group.className = "wb-map-theme-group"' in js
+    css = frontend_text("css/library-lazy.css")
+    at = css.index(".wb-map-theme-rows:has(> .wb-map-theme-group)")
+    rule = css[at : css.index("}", at)]
+    assert "column-count: 2" in rule
+    assert ".wb-map-theme-group" in css and "break-inside: avoid" in css

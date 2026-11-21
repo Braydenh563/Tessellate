@@ -1283,14 +1283,18 @@ function wbMapThemeDialog() {
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
   const out = [];
-  for (const group of WB_MAP_THEME_GROUPS) {
+  for (const def of WB_MAP_THEME_GROUPS) {
+    //: One block per group, so a wide dialog can run the groups in two columns without cutting one in half.
+    const group = document.createElement("div");
+    group.className = "wb-map-theme-group";
     const head = document.createElement("h4");
     head.className = "setting-subhead";
-    head.textContent = group.label;
-    out.push(head);
-    for (const field of group.fields) {
-      out.push(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
+    head.textContent = def.label;
+    group.appendChild(head);
+    for (const field of def.fields) {
+      group.appendChild(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
     }
+    out.push(group);
   }
   return out;
 }

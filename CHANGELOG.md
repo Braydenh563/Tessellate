@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map look dialog: the four groups run in two columns on a wide screen, 1002px to 676px tall, so it no longer scrolls at 1440x900 (L-general-20).
 - Map View menu: 587px to 431px (Format panel, Connection arrows and Connection points are board-only rows, the stats row sits with the panels, rows no longer carry a 4px gap) (L-general-20).
 - Map fishbone: a tall fishbone's ribs no longer cross a topic box (main topics sit against the spine, causes stack from that edge, rib slant is capped); board menu row wrappers carry their ARIA roles (L-general-20).
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
