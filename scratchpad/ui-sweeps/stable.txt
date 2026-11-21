@@ -61,3 +61,13 @@ phonesidebar 16s
 phonecapture 12s
 tourdim 10s
 toursteps 124s
+companionscroll 30s
+companionbeats 40s
+companionsmooth 112s
+companionmenu 111s
+companionlife 32s
+profilelook 9s
+companionpin 49s
+iconfloor 27s
+companionreact 15s
+companioninteract 25s
