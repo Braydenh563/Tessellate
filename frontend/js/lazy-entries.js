@@ -24,6 +24,14 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-handles.js", //: After whiteboard.js, before the files that follow it: path transforms, end caps and the selection grips; wrapped, names whiteboard.js at run time only (L634).
     "/js/whiteboard-items.js", //: After whiteboard.js, before the files that follow it: painting, fitting, saving and deleting items; wrapped, names whiteboard.js at run time only (L634).
     "/js/whiteboard-drag.js", //: After whiteboard.js, before the files that follow it: the link index and dragging; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-guides.js", //: After whiteboard.js, before the files that follow it: alignment guides, spacing and grid; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-paint.js", //: After whiteboard.js, before the files that follow it: background, cursors, highlighter, votes and timer; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-caps.js", //: After whiteboard.js, before the files that follow it: shape paths and arrow heads; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-groups.js", //: After whiteboard.js, before the files that follow it: groups, item boxes and zoom to fit; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-style.js", //: After whiteboard.js, before the files that follow it: tool settings, copied styles and context menu rows; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-tree.js", //: After whiteboard.js, before the files that follow it: the mind-map tree on a board; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-gesture.js", //: After whiteboard.js, before the files that follow it: gestures, the bin target and drag finishing; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-clipboard.js", //: After whiteboard.js, before the files that follow it: copy, paste and the item grips; wrapped, names whiteboard.js at run time only (L634).
     "/js/whiteboard-instances.js", //: After whiteboard.js: board state per instance (an embed's own state, selection, undo and zoom); wrapped, reads whiteboard.js's `wbZoom` at load.
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.

@@ -97,7 +97,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-14 L-whiteboard-49: the Undo-recorded map commands carved out of whiteboard-map.js into whiteboard-map-record.js and wrapped whole (wbRecorded registry added). Measured 7,163.
 #: 2026-11-14 L-whiteboard-52: the undo and redo stacks, the history swap and the gesture recorder carved out of whiteboard.js into whiteboard-undo.js and wrapped whole; two top-level lets and a const leave the scope and `wbStacks` joins it. Measured 7,153.
 #: 2026-11-21 L634: the board list, the handles, item paint and save, and the drag carved out of whiteboard.js into four wrapped files (whiteboard-boards, -handles, -items, -drag). Measured 7,122.
-GLOBAL_NAMES_CAP = 7122
+#: 2026-11-21 L634: guides, paint, caps, groups, style, tree, gesture and clipboard carved out of whiteboard.js into eight wrapped files. Measured 7,071.
+GLOBAL_NAMES_CAP = 7071
 
 
 @functools.lru_cache(maxsize=None)

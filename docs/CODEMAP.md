@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11001, test files 2852, tests 22869, plan headings 695, app scripts 29, boot scripts 38, script files 352.
+Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11001, test files 2852, tests 22869, plan headings 695, app scripts 29, boot scripts 38, script files 360.
 
 ## Frontend functions (8844)
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:266 |
-| `charactersLost` | frontend/js/lazy-entries.js:275 |
-| `emblemHead` | frontend/js/lazy-entries.js:283 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:312 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:345 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:306 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:333 |
-| `onDomReady` | frontend/js/lazy-entries.js:356 |
-| `plainHead` | frontend/js/lazy-entries.js:289 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:297 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:368 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:387 |
+| `afterCharacters` | frontend/js/lazy-entries.js:274 |
+| `charactersLost` | frontend/js/lazy-entries.js:283 |
+| `emblemHead` | frontend/js/lazy-entries.js:291 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:320 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:353 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:314 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:341 |
+| `onDomReady` | frontend/js/lazy-entries.js:364 |
+| `plainHead` | frontend/js/lazy-entries.js:297 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:305 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:376 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:395 |
 
 ### frontend/js/att-chip.js (7)
 
@@ -8480,6 +8480,61 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbRememberedBoardKind` | frontend/js/whiteboard-boards.js:384 |
 | `wbSyncBoardCount` | frontend/js/whiteboard-boards.js:265 |
 
+### frontend/js/whiteboard-caps.js (14)
+
+| Name | File:line |
+|---|---|
+| `wbArrowHeadPath` | frontend/js/whiteboard-caps.js:54 |
+| `wbCapPath` | frontend/js/whiteboard-caps.js:85 |
+| `wbCapPathMore` | frontend/js/whiteboard-caps.js:218 |
+| `wbCapScale` | frontend/js/whiteboard-caps.js:62 |
+| `wbCapSizeFields` | frontend/js/whiteboard-caps.js:67 |
+| `wbClosedShapeD` | frontend/js/whiteboard-caps.js:46 |
+| `wbCursorForTool` | frontend/js/whiteboard-caps.js:257 |
+| `wbDragBox` | frontend/js/whiteboard-caps.js:14 |
+| `wbEllipseDrawD` | frontend/js/whiteboard-caps.js:28 |
+| `wbFilledTriangle` | frontend/js/whiteboard-caps.js:201 |
+| `wbHollowInset` | frontend/js/whiteboard-caps.js:71 |
+| `wbShaftEnd` | frontend/js/whiteboard-caps.js:77 |
+| `wbShowCapSizes` | frontend/js/whiteboard-caps.js:184 |
+| `wbSnap45` | frontend/js/whiteboard-caps.js:36 |
+
+### frontend/js/whiteboard-clipboard.js (31)
+
+| Name | File:line |
+|---|---|
+| `wbAddBoardToNote` | frontend/js/whiteboard-clipboard.js:340 |
+| `wbArmHandles` | frontend/js/whiteboard-clipboard.js:272 |
+| `wbBinBoard` | frontend/js/whiteboard-clipboard.js:371 |
+| `wbBoardBg` | frontend/js/whiteboard-clipboard.js:152 |
+| `wbBoardBounds` | frontend/js/whiteboard-clipboard.js:438 |
+| `wbClearBoard` | frontend/js/whiteboard-clipboard.js:403 |
+| `wbCopiedLinks` | frontend/js/whiteboard-clipboard.js:62 |
+| `wbCopySelection` | frontend/js/whiteboard-clipboard.js:78 |
+| `wbCopyableSelection` | frontend/js/whiteboard-clipboard.js:21 |
+| `wbDefaultInk` | frontend/js/whiteboard-clipboard.js:148 |
+| `wbDeleteBoard` | frontend/js/whiteboard-clipboard.js:388 |
+| `wbDeleteCurrentBoard` | frontend/js/whiteboard-clipboard.js:354 |
+| `wbEnsureHandles` | frontend/js/whiteboard-clipboard.js:276 |
+| `wbFoldMenuSubmenus` | frontend/js/whiteboard-clipboard.js:592 |
+| `wbForgetLinks` | frontend/js/whiteboard-clipboard.js:197 |
+| `wbIsLinkSketch` | frontend/js/whiteboard-clipboard.js:54 |
+| `wbLinksTouching` | frontend/js/whiteboard-clipboard.js:187 |
+| `wbOnFrame` | frontend/js/whiteboard-clipboard.js:170 |
+| `wbPasteClipboard` | frontend/js/whiteboard-clipboard.js:135 |
+| `wbPlaceBox` | frontend/js/whiteboard-clipboard.js:289 |
+| `wbPlaceCopies` | frontend/js/whiteboard-clipboard.js:107 |
+| `wbPointInSelectionBounds` | frontend/js/whiteboard-clipboard.js:513 |
+| `wbPointerOnBoard` | frontend/js/whiteboard-clipboard.js:5 |
+| `wbRestoreLinks` | frontend/js/whiteboard-clipboard.js:204 |
+| `wbSelectedKeys` | frontend/js/whiteboard-clipboard.js:559 |
+| `wbSelectionBounds` | frontend/js/whiteboard-clipboard.js:489 |
+| `wbSelectionDragOrigin` | frontend/js/whiteboard-clipboard.js:521 |
+| `wbSquareCorner` | frontend/js/whiteboard-clipboard.js:303 |
+| `wbStableDragContainer` | frontend/js/whiteboard-clipboard.js:283 |
+| `wbStampMenuRoles` | frontend/js/whiteboard-clipboard.js:606 |
+| `wbVisibleBounds` | frontend/js/whiteboard-clipboard.js:542 |
+
 ### frontend/js/whiteboard-commands.js (68)
 
 | Name | File:line |
@@ -8942,6 +8997,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSelectFrameAt` | frontend/js/whiteboard-frames.js:326 |
 | `wbTurnAbout` | frontend/js/whiteboard-frames.js:151 |
 
+### frontend/js/whiteboard-gesture.js (23)
+
+| Name | File:line |
+|---|---|
+| `wbAxisLock` | frontend/js/whiteboard-gesture.js:200 |
+| `wbBeginGesture` | frontend/js/whiteboard-gesture.js:7 |
+| `wbBulkUndoEntries` | frontend/js/whiteboard-gesture.js:210 |
+| `wbCancelGesture` | frontend/js/whiteboard-gesture.js:19 |
+| `wbCarryWaypoints` | frontend/js/whiteboard-gesture.js:355 |
+| `wbCreateCopies` | frontend/js/whiteboard-gesture.js:260 |
+| `wbDropCopies` | frontend/js/whiteboard-gesture.js:242 |
+| `wbEndGesture` | frontend/js/whiteboard-gesture.js:12 |
+| `wbFinishDrag` | frontend/js/whiteboard-gesture.js:337 |
+| `wbIsSecondTouch` | frontend/js/whiteboard-gesture.js:45 |
+| `wbPushDragUndo` | frontend/js/whiteboard-gesture.js:329 |
+| `wbRestoreBox` | frontend/js/whiteboard-gesture.js:187 |
+| `wbRestoreMove` | frontend/js/whiteboard-gesture.js:159 |
+| `wbSaveBulkMove` | frontend/js/whiteboard-gesture.js:433 |
+| `wbSaveMapBulkMove` | frontend/js/whiteboard-gesture.js:407 |
+| `wbShiftLinkGeometry` | frontend/js/whiteboard-gesture.js:320 |
+| `wbTouchSlopStep` | frontend/js/whiteboard-gesture.js:32 |
+| `wbTrashDelete` | frontend/js/whiteboard-gesture.js:118 |
+| `wbTrashHide` | frontend/js/whiteboard-gesture.js:94 |
+| `wbTrashSetHot` | frontend/js/whiteboard-gesture.js:87 |
+| `wbTrashTake` | frontend/js/whiteboard-gesture.js:103 |
+| `wbTrashTarget` | frontend/js/whiteboard-gesture.js:49 |
+| `wbWithoutComments` | frontend/js/whiteboard-gesture.js:310 |
+
 ### frontend/js/whiteboard-gif.js (6)
 
 | Name | File:line |
@@ -8952,6 +9035,65 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lzw` | frontend/js/whiteboard-gif.js:34 |
 | `palette` | frontend/js/whiteboard-gif.js:10 |
 | `quantise` | frontend/js/whiteboard-gif.js:24 |
+
+### frontend/js/whiteboard-groups.js (34)
+
+| Name | File:line |
+|---|---|
+| `wbBoardHasFocus` | frontend/js/whiteboard-groups.js:420 |
+| `wbCenterOn` | frontend/js/whiteboard-groups.js:597 |
+| `wbCommonGroupPrefix` | frontend/js/whiteboard-groups.js:19 |
+| `wbContentBounds` | frontend/js/whiteboard-groups.js:253 |
+| `wbFoldNativeScroll` | frontend/js/whiteboard-groups.js:586 |
+| `wbFrameMapOnOpen` | frontend/js/whiteboard-groups.js:480 |
+| `wbFreeArea` | frontend/js/whiteboard-groups.js:276 |
+| `wbGroupButtonState` | frontend/js/whiteboard-groups.js:94 |
+| `wbGroupChain` | frontend/js/whiteboard-groups.js:5 |
+| `wbGroupSelection` | frontend/js/whiteboard-groups.js:59 |
+| `wbItemBBox` | frontend/js/whiteboard-groups.js:161 |
+| `wbItemElIndexed` | frontend/js/whiteboard-groups.js:125 |
+| `wbItemElement` | frontend/js/whiteboard-groups.js:144 |
+| `wbItemsWithGroupPrefix` | frontend/js/whiteboard-groups.js:32 |
+| `wbMapFrameScales` | frontend/js/whiteboard-groups.js:458 |
+| `wbMapOpenTarget` | frontend/js/whiteboard-groups.js:508 |
+| `wbNewGroupId` | frontend/js/whiteboard-groups.js:13 |
+| `wbQueueReveal` | frontend/js/whiteboard-groups.js:628 |
+| `wbRefitIfFitted` | frontend/js/whiteboard-groups.js:314 |
+| `wbRestoreOrFrameBoard` | frontend/js/whiteboard-groups.js:548 |
+| `wbRevealSelection` | frontend/js/whiteboard-groups.js:633 |
+| `wbSameView` | frontend/js/whiteboard-groups.js:308 |
+| `wbShortenGroupIds` | frontend/js/whiteboard-groups.js:45 |
+| `wbSyncGroupButtons` | frontend/js/whiteboard-groups.js:99 |
+| `wbTopGroup` | frontend/js/whiteboard-groups.js:9 |
+| `wbUngroupSelection` | frontend/js/whiteboard-groups.js:107 |
+| `wbViewHoldsBox` | frontend/js/whiteboard-groups.js:541 |
+| `wbViewShowsContent` | frontend/js/whiteboard-groups.js:527 |
+| `wbZoomAnchor` | frontend/js/whiteboard-groups.js:401 |
+| `wbZoomKey` | frontend/js/whiteboard-groups.js:431 |
+| `wbZoomStep` | frontend/js/whiteboard-groups.js:414 |
+| `wbZoomTo100` | frontend/js/whiteboard-groups.js:440 |
+| `wbZoomToFit` | frontend/js/whiteboard-groups.js:326 |
+| `wbZoomToSelection` | frontend/js/whiteboard-groups.js:449 |
+
+### frontend/js/whiteboard-guides.js (15)
+
+| Name | File:line |
+|---|---|
+| `wbAlignGuideColor` | frontend/js/whiteboard-guides.js:378 |
+| `wbAlignGuideGroup` | frontend/js/whiteboard-guides.js:383 |
+| `wbAlignmentGuides` | frontend/js/whiteboard-guides.js:73 |
+| `wbApplyGrid` | frontend/js/whiteboard-guides.js:453 |
+| `wbBoardBackground` | frontend/js/whiteboard-guides.js:467 |
+| `wbBulkGroupBox` | frontend/js/whiteboard-guides.js:28 |
+| `wbClearAlignmentGuides` | frontend/js/whiteboard-guides.js:448 |
+| `wbDragExcludeKeys` | frontend/js/whiteboard-guides.js:68 |
+| `wbDrawOutSnap` | frontend/js/whiteboard-guides.js:349 |
+| `wbGuidedResize` | frontend/js/whiteboard-guides.js:327 |
+| `wbMeasuring` | frontend/js/whiteboard-guides.js:320 |
+| `wbResizeGuides` | frontend/js/whiteboard-guides.js:231 |
+| `wbShowAlignmentGuides` | frontend/js/whiteboard-guides.js:395 |
+| `wbShowSizeReadout` | frontend/js/whiteboard-guides.js:291 |
+| `wbSpacingSeries` | frontend/js/whiteboard-guides.js:189 |
 
 ### frontend/js/whiteboard-handles.js (35)
 
@@ -9941,6 +10083,41 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `view` | frontend/js/whiteboard-options.js:238 |
 | `wire` | frontend/js/whiteboard-options.js:200 |
 
+### frontend/js/whiteboard-paint.js (30)
+
+| Name | File:line |
+|---|---|
+| `wbApplyBackground` | frontend/js/whiteboard-paint.js:15 |
+| `wbClearVotes` | frontend/js/whiteboard-paint.js:232 |
+| `wbCropClip` | frontend/js/whiteboard-paint.js:150 |
+| `wbCropPath` | frontend/js/whiteboard-paint.js:169 |
+| `wbCursorUrl` | frontend/js/whiteboard-paint.js:111 |
+| `wbDashArray` | frontend/js/whiteboard-paint.js:377 |
+| `wbDashPatternOf` | frontend/js/whiteboard-paint.js:410 |
+| `wbExportShadow` | frontend/js/whiteboard-paint.js:363 |
+| `wbHighlighterBlend` | frontend/js/whiteboard-paint.js:134 |
+| `wbHighlighterWidth` | frontend/js/whiteboard-paint.js:121 |
+| `wbMigrateBackground` | frontend/js/whiteboard-paint.js:77 |
+| `wbOpenTimerMenu` | frontend/js/whiteboard-paint.js:347 |
+| `wbPaintVotes` | frontend/js/whiteboard-paint.js:253 |
+| `wbPixel` | frontend/js/whiteboard-paint.js:180 |
+| `wbSetBackground` | frontend/js/whiteboard-paint.js:48 |
+| `wbSetFlowAnimation` | frontend/js/whiteboard-paint.js:391 |
+| `wbSetVotes` | frontend/js/whiteboard-paint.js:207 |
+| `wbShadowCss` | frontend/js/whiteboard-paint.js:354 |
+| `wbShadowOf` | frontend/js/whiteboard-paint.js:142 |
+| `wbSvgVotes` | frontend/js/whiteboard-paint.js:244 |
+| `wbThemeBoardHex` | frontend/js/whiteboard-paint.js:7 |
+| `wbTimerBar` | frontend/js/whiteboard-paint.js:280 |
+| `wbTimerLeft` | frontend/js/whiteboard-paint.js:271 |
+| `wbTimerPaint` | frontend/js/whiteboard-paint.js:320 |
+| `wbTimerStart` | frontend/js/whiteboard-paint.js:310 |
+| `wbTimerStop` | frontend/js/whiteboard-paint.js:339 |
+| `wbTimerText` | frontend/js/whiteboard-paint.js:275 |
+| `wbVoteSelection` | frontend/js/whiteboard-paint.js:221 |
+| `wbVoteTargets` | frontend/js/whiteboard-paint.js:203 |
+| `wbVotesAfter` | frontend/js/whiteboard-paint.js:198 |
+
 ### frontend/js/whiteboard-pdf.js (11)
 
 | Name | File:line |
@@ -10199,6 +10376,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tagsOf` | frontend/js/whiteboard-structure-more.js:16 |
 | `unionOf` | frontend/js/whiteboard-structure-more.js:36 |
 
+### frontend/js/whiteboard-style.js (17)
+
+| Name | File:line |
+|---|---|
+| `wbApplyContextRow` | frontend/js/whiteboard-style.js:206 |
+| `wbContextKindOf` | frontend/js/whiteboard-style.js:175 |
+| `wbContextMoreWrap` | frontend/js/whiteboard-style.js:235 |
+| `wbCopySelectedStyle` | frontend/js/whiteboard-style.js:41 |
+| `wbFillContextBar` | frontend/js/whiteboard-style.js:293 |
+| `wbHideSelectionActions` | frontend/js/whiteboard-style.js:239 |
+| `wbObjectStyleReset` | frontend/js/whiteboard-style.js:125 |
+| `wbParkContextOnRail` | frontend/js/whiteboard-style.js:250 |
+| `wbPasteCopiedStyle` | frontend/js/whiteboard-style.js:65 |
+| `wbPickStyle` | frontend/js/whiteboard-style.js:30 |
+| `wbResetSelectedStyle` | frontend/js/whiteboard-style.js:133 |
+| `wbSelectedSketchOrNull` | frontend/js/whiteboard-style.js:19 |
+| `wbSelectedTextObjectOrNull` | frontend/js/whiteboard-style.js:24 |
+| `wbShowToolSettings` | frontend/js/whiteboard-style.js:5 |
+| `wbSketchStyleReset` | frontend/js/whiteboard-style.js:111 |
+| `wbStickerSize` | frontend/js/whiteboard-style.js:37 |
+| `wbUpdateContextBar` | frontend/js/whiteboard-style.js:281 |
+
 ### frontend/js/whiteboard-templates.js (16)
 
 | Name | File:line |
@@ -10291,6 +10490,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toolsOf` | frontend/js/whiteboard-toolbar.js:24 |
 | `wire` | frontend/js/whiteboard-toolbar.js:39 |
 
+### frontend/js/whiteboard-tree.js (8)
+
+| Name | File:line |
+|---|---|
+| `wbArrangeMindMap` | frontend/js/whiteboard-tree.js:67 |
+| `wbEditNodeText` | frontend/js/whiteboard-tree.js:194 |
+| `wbLinkAdjacency` | frontend/js/whiteboard-tree.js:25 |
+| `wbMindMapAddCard` | frontend/js/whiteboard-tree.js:148 |
+| `wbMindMapAddChild` | frontend/js/whiteboard-tree.js:317 |
+| `wbMindMapAddSibling` | frontend/js/whiteboard-tree.js:345 |
+| `wbMindMapEnsureMap` | frontend/js/whiteboard-tree.js:137 |
+| `wbMindMapSpanningTree` | frontend/js/whiteboard-tree.js:49 |
+
 ### frontend/js/whiteboard-undo.js (13)
 
 | Name | File:line |
@@ -10333,238 +10545,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `useWorkspace` | frontend/js/whiteboard-workspace.js:127 |
 | `workspaceRows` | frontend/js/whiteboard-workspace.js:160 |
 
-### frontend/js/whiteboard.js (228)
+### frontend/js/whiteboard.js (56)
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:11714 |
-| `dragging` | frontend/js/whiteboard.js:11128 |
+| `addBoardToNote` | frontend/js/whiteboard.js:8005 |
+| `dragging` | frontend/js/whiteboard.js:7419 |
 | `handleWbZoom` | frontend/js/whiteboard.js:599 |
-| `highlighterBlend` | frontend/js/whiteboard.js:11734 |
-| `initWhiteboard` | frontend/js/whiteboard.js:5689 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:11391 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:11626 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:11495 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:10128 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:10102 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:11551 |
-| `wbAddBoardToNote` | frontend/js/whiteboard.js:5407 |
-| `wbAlignGuideColor` | frontend/js/whiteboard.js:1501 |
-| `wbAlignGuideGroup` | frontend/js/whiteboard.js:1511 |
+| `highlighterBlend` | frontend/js/whiteboard.js:8025 |
+| `initWhiteboard` | frontend/js/whiteboard.js:1980 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:7682 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:7917 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:7786 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:6419 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:6393 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:7842 |
 | `wbAlignTol` | frontend/js/whiteboard.js:985 |
-| `wbAlignmentGuides` | frontend/js/whiteboard.js:1196 |
-| `wbApplyBackground` | frontend/js/whiteboard.js:1609 |
-| `wbApplyContextRow` | frontend/js/whiteboard.js:3748 |
-| `wbApplyGrid` | frontend/js/whiteboard.js:1581 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:446 |
-| `wbArmHandles` | frontend/js/whiteboard.js:5319 |
-| `wbArrangeMindMap` | frontend/js/whiteboard.js:4048 |
-| `wbArrowHeadPath` | frontend/js/whiteboard.js:2322 |
-| `wbAxisLock` | frontend/js/whiteboard.js:4699 |
-| `wbBeginGesture` | frontend/js/whiteboard.js:4396 |
-| `wbBinBoard` | frontend/js/whiteboard.js:5438 |
-| `wbBoardBackground` | frontend/js/whiteboard.js:1595 |
-| `wbBoardBg` | frontend/js/whiteboard.js:5162 |
-| `wbBoardBounds` | frontend/js/whiteboard.js:5505 |
-| `wbBoardHasFocus` | frontend/js/whiteboard.js:3150 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:527 |
-| `wbBulkGroupBox` | frontend/js/whiteboard.js:1151 |
-| `wbBulkUndoEntries` | frontend/js/whiteboard.js:4709 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:11370 |
-| `wbCancelGesture` | frontend/js/whiteboard.js:4408 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:7661 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:509 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:477 |
-| `wbCapPath` | frontend/js/whiteboard.js:2404 |
-| `wbCapPathMore` | frontend/js/whiteboard.js:2537 |
-| `wbCapScale` | frontend/js/whiteboard.js:2363 |
-| `wbCapSizeFields` | frontend/js/whiteboard.js:2368 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:363 |
-| `wbCarryWaypoints` | frontend/js/whiteboard.js:4854 |
-| `wbCenterOn` | frontend/js/whiteboard.js:3372 |
-| `wbClearAlignmentGuides` | frontend/js/whiteboard.js:1576 |
-| `wbClearBoard` | frontend/js/whiteboard.js:5470 |
 | `wbClearCanvasRectCache` | frontend/js/whiteboard.js:472 |
 | `wbClearGuideBoxCache` | frontend/js/whiteboard.js:1120 |
 | `wbClearSelectionOverlays` | frontend/js/whiteboard.js:255 |
-| `wbClearVotes` | frontend/js/whiteboard.js:1962 |
 | `wbClientToBoard` | frontend/js/whiteboard.js:532 |
-| `wbClosedShapeD` | frontend/js/whiteboard.js:2314 |
-| `wbCommonGroupPrefix` | frontend/js/whiteboard.js:2692 |
 | `wbCompanionHeld` | frontend/js/whiteboard.js:113 |
-| `wbContentBounds` | frontend/js/whiteboard.js:2946 |
-| `wbContextKindOf` | frontend/js/whiteboard.js:3717 |
-| `wbContextMoreWrap` | frontend/js/whiteboard.js:3777 |
-| `wbCopiedLinks` | frontend/js/whiteboard.js:5032 |
-| `wbCopySelectedStyle` | frontend/js/whiteboard.js:3538 |
-| `wbCopySelection` | frontend/js/whiteboard.js:5048 |
-| `wbCopyableSelection` | frontend/js/whiteboard.js:4991 |
-| `wbCreateCopies` | frontend/js/whiteboard.js:4759 |
-| `wbCropClip` | frontend/js/whiteboard.js:1874 |
-| `wbCropPath` | frontend/js/whiteboard.js:1893 |
 | `wbCullNow` | frontend/js/whiteboard.js:739 |
-| `wbCursorForTool` | frontend/js/whiteboard.js:2576 |
-| `wbCursorUrl` | frontend/js/whiteboard.js:1705 |
-| `wbDashArray` | frontend/js/whiteboard.js:2114 |
-| `wbDashPatternOf` | frontend/js/whiteboard.js:2147 |
-| `wbDefaultInk` | frontend/js/whiteboard.js:5153 |
-| `wbDeleteBoard` | frontend/js/whiteboard.js:5455 |
-| `wbDeleteCurrentBoard` | frontend/js/whiteboard.js:5421 |
-| `wbDragBox` | frontend/js/whiteboard.js:2282 |
-| `wbDragExcludeKeys` | frontend/js/whiteboard.js:1191 |
-| `wbDrawOutSnap` | frontend/js/whiteboard.js:1472 |
-| `wbDropCopies` | frontend/js/whiteboard.js:4741 |
-| `wbEditNodeText` | frontend/js/whiteboard.js:4194 |
-| `wbEllipseDrawD` | frontend/js/whiteboard.js:2296 |
-| `wbEndGesture` | frontend/js/whiteboard.js:4401 |
 | `wbEndPanShield` | frontend/js/whiteboard.js:568 |
-| `wbEnsureHandles` | frontend/js/whiteboard.js:5323 |
-| `wbExportShadow` | frontend/js/whiteboard.js:2100 |
-| `wbFillContextBar` | frontend/js/whiteboard.js:3835 |
-| `wbFilledTriangle` | frontend/js/whiteboard.js:2520 |
-| `wbFinishDrag` | frontend/js/whiteboard.js:4836 |
 | `wbFlushZoomFrame` | frontend/js/whiteboard.js:683 |
-| `wbFoldMenuSubmenus` | frontend/js/whiteboard.js:5659 |
-| `wbFoldNativeScroll` | frontend/js/whiteboard.js:3361 |
-| `wbForgetLinks` | frontend/js/whiteboard.js:5207 |
-| `wbFrameMapOnOpen` | frontend/js/whiteboard.js:3227 |
-| `wbFreeArea` | frontend/js/whiteboard.js:2981 |
 | `wbGridType` | frontend/js/whiteboard.js:951 |
-| `wbGroupButtonState` | frontend/js/whiteboard.js:2767 |
-| `wbGroupChain` | frontend/js/whiteboard.js:2678 |
-| `wbGroupSelection` | frontend/js/whiteboard.js:2732 |
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1022 |
-| `wbGuidedResize` | frontend/js/whiteboard.js:1450 |
-| `wbHideSelectionActions` | frontend/js/whiteboard.js:3781 |
-| `wbHighlighterBlend` | frontend/js/whiteboard.js:1817 |
-| `wbHighlighterWidth` | frontend/js/whiteboard.js:1804 |
-| `wbHollowInset` | frontend/js/whiteboard.js:2390 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:944 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbIsLinkSketch` | frontend/js/whiteboard.js:5024 |
-| `wbIsSecondTouch` | frontend/js/whiteboard.js:4470 |
-| `wbItemBBox` | frontend/js/whiteboard.js:2854 |
-| `wbItemElIndexed` | frontend/js/whiteboard.js:2818 |
-| `wbItemElement` | frontend/js/whiteboard.js:2837 |
-| `wbItemsWithGroupPrefix` | frontend/js/whiteboard.js:2705 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:11355 |
-| `wbLinkAdjacency` | frontend/js/whiteboard.js:4006 |
-| `wbLinksTouching` | frontend/js/whiteboard.js:5197 |
-| `wbMapFrameScales` | frontend/js/whiteboard.js:3205 |
-| `wbMapOpenTarget` | frontend/js/whiteboard.js:3255 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:7646 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
-| `wbMeasuring` | frontend/js/whiteboard.js:1443 |
-| `wbMigrateBackground` | frontend/js/whiteboard.js:1671 |
-| `wbMindMapAddCard` | frontend/js/whiteboard.js:4129 |
-| `wbMindMapAddChild` | frontend/js/whiteboard.js:4317 |
-| `wbMindMapAddSibling` | frontend/js/whiteboard.js:4345 |
-| `wbMindMapEnsureMap` | frontend/js/whiteboard.js:4118 |
-| `wbMindMapSpanningTree` | frontend/js/whiteboard.js:4030 |
-| `wbMultiKey` | frontend/js/whiteboard.js:2657 |
-| `wbNewGroupId` | frontend/js/whiteboard.js:2686 |
-| `wbObjectStyleReset` | frontend/js/whiteboard.js:3635 |
-| `wbOnFrame` | frontend/js/whiteboard.js:5180 |
-| `wbOpenTimerMenu` | frontend/js/whiteboard.js:2084 |
-| `wbPaintVotes` | frontend/js/whiteboard.js:1983 |
-| `wbParkContextOnRail` | frontend/js/whiteboard.js:3792 |
-| `wbPasteClipboard` | frontend/js/whiteboard.js:5105 |
-| `wbPasteCopiedStyle` | frontend/js/whiteboard.js:3562 |
-| `wbPickStyle` | frontend/js/whiteboard.js:3527 |
-| `wbPixel` | frontend/js/whiteboard.js:1904 |
-| `wbPlaceBox` | frontend/js/whiteboard.js:5356 |
-| `wbPlaceCopies` | frontend/js/whiteboard.js:5077 |
-| `wbPointInSelectionBounds` | frontend/js/whiteboard.js:5580 |
-| `wbPointerOnBoard` | frontend/js/whiteboard.js:4975 |
+| `wbMultiKey` | frontend/js/whiteboard.js:1456 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:919 |
-| `wbPushDragUndo` | frontend/js/whiteboard.js:4828 |
-| `wbQueueReveal` | frontend/js/whiteboard.js:3405 |
-| `wbRefitIfFitted` | frontend/js/whiteboard.js:3019 |
-| `wbRefreshHighlighterBlend` | frontend/js/whiteboard.js:1829 |
+| `wbRefreshHighlighterBlend` | frontend/js/whiteboard.js:1230 |
 | `wbRefreshRaster` | frontend/js/whiteboard.js:910 |
-| `wbRememberBoardView` | frontend/js/whiteboard.js:3276 |
-| `wbResetSelectedStyle` | frontend/js/whiteboard.js:3643 |
-| `wbResizeGuides` | frontend/js/whiteboard.js:1354 |
-| `wbRestoreBox` | frontend/js/whiteboard.js:4686 |
-| `wbRestoreLinks` | frontend/js/whiteboard.js:5214 |
-| `wbRestoreMove` | frontend/js/whiteboard.js:4658 |
-| `wbRestoreOrFrameBoard` | frontend/js/whiteboard.js:3323 |
-| `wbRevealSelection` | frontend/js/whiteboard.js:3410 |
+| `wbRememberBoardView` | frontend/js/whiteboard.js:1558 |
 | `wbRotatedBounds` | frontend/js/whiteboard.js:993 |
-| `wbRoundedPathD` | frontend/js/whiteboard.js:2161 |
-| `wbSameView` | frontend/js/whiteboard.js:3013 |
-| `wbSaveBulkMove` | frontend/js/whiteboard.js:4932 |
+| `wbRoundedPathD` | frontend/js/whiteboard.js:1283 |
 | `wbSaveExpandedNodes` | frontend/js/whiteboard.js:311 |
-| `wbSaveMapBulkMove` | frontend/js/whiteboard.js:4906 |
 | `wbScheduleCardClampSync` | frontend/js/whiteboard.js:373 |
 | `wbScheduleCull` | frontend/js/whiteboard.js:722 |
 | `wbScreenToBoard` | frontend/js/whiteboard.js:500 |
-| `wbSelectedKeys` | frontend/js/whiteboard.js:5626 |
-| `wbSelectedSketchOrNull` | frontend/js/whiteboard.js:3490 |
-| `wbSelectedTextObjectOrNull` | frontend/js/whiteboard.js:3495 |
-| `wbSelectionBounds` | frontend/js/whiteboard.js:5556 |
-| `wbSelectionDragOrigin` | frontend/js/whiteboard.js:5588 |
-| `wbSetBackground` | frontend/js/whiteboard.js:1642 |
-| `wbSetFlowAnimation` | frontend/js/whiteboard.js:2128 |
-| `wbSetVotes` | frontend/js/whiteboard.js:1937 |
-| `wbShadowCss` | frontend/js/whiteboard.js:2091 |
-| `wbShadowOf` | frontend/js/whiteboard.js:1856 |
-| `wbShaftEnd` | frontend/js/whiteboard.js:2396 |
-| `wbShapeAt` | frontend/js/whiteboard.js:1724 |
-| `wbShapePoly` | frontend/js/whiteboard.js:1725 |
-| `wbShiftLinkGeometry` | frontend/js/whiteboard.js:4819 |
-| `wbShortenGroupIds` | frontend/js/whiteboard.js:2718 |
-| `wbShowAlignmentGuides` | frontend/js/whiteboard.js:1523 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:11318 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:11305 |
-| `wbShowCapSizes` | frontend/js/whiteboard.js:2503 |
-| `wbShowSizeReadout` | frontend/js/whiteboard.js:1414 |
-| `wbShowToolSettings` | frontend/js/whiteboard.js:3476 |
+| `wbShapeAt` | frontend/js/whiteboard.js:1145 |
+| `wbShapePoly` | frontend/js/whiteboard.js:1146 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:7609 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:7596 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:656 |
-| `wbSketchStyleReset` | frontend/js/whiteboard.js:3621 |
 | `wbSnap` | frontend/js/whiteboard.js:968 |
-| `wbSnap45` | frontend/js/whiteboard.js:2304 |
 | `wbSnapOn` | frontend/js/whiteboard.js:955 |
-| `wbSpacingSeries` | frontend/js/whiteboard.js:1312 |
-| `wbSquareCorner` | frontend/js/whiteboard.js:5370 |
-| `wbStableDragContainer` | frontend/js/whiteboard.js:5340 |
-| `wbStampMenuRoles` | frontend/js/whiteboard.js:5673 |
 | `wbStartPanShield` | frontend/js/whiteboard.js:561 |
-| `wbStickerSize` | frontend/js/whiteboard.js:3534 |
-| `wbSvgVotes` | frontend/js/whiteboard.js:1974 |
 | `wbSyncCardClamps` | frontend/js/whiteboard.js:340 |
 | `wbSyncGridToTransform` | frontend/js/whiteboard.js:828 |
-| `wbSyncGroupButtons` | frontend/js/whiteboard.js:2772 |
-| `wbThemeBoardHex` | frontend/js/whiteboard.js:1601 |
-| `wbTimerBar` | frontend/js/whiteboard.js:2017 |
-| `wbTimerLeft` | frontend/js/whiteboard.js:2008 |
-| `wbTimerPaint` | frontend/js/whiteboard.js:2057 |
-| `wbTimerStart` | frontend/js/whiteboard.js:2047 |
-| `wbTimerStop` | frontend/js/whiteboard.js:2076 |
-| `wbTimerText` | frontend/js/whiteboard.js:2012 |
-| `wbTopGroup` | frontend/js/whiteboard.js:2682 |
-| `wbTouchSlopStep` | frontend/js/whiteboard.js:4457 |
 | `wbTrackpadPan` | frontend/js/whiteboard.js:89 |
-| `wbTrashDelete` | frontend/js/whiteboard.js:4617 |
-| `wbTrashHide` | frontend/js/whiteboard.js:4557 |
-| `wbTrashSetHot` | frontend/js/whiteboard.js:4550 |
-| `wbTrashTake` | frontend/js/whiteboard.js:4602 |
-| `wbTrashTarget` | frontend/js/whiteboard.js:4494 |
-| `wbUngroupSelection` | frontend/js/whiteboard.js:2780 |
-| `wbUpdateContextBar` | frontend/js/whiteboard.js:3823 |
-| `wbViewHoldsBox` | frontend/js/whiteboard.js:3316 |
-| `wbViewShowsContent` | frontend/js/whiteboard.js:3302 |
-| `wbVisibleBounds` | frontend/js/whiteboard.js:5609 |
-| `wbVoteSelection` | frontend/js/whiteboard.js:1951 |
-| `wbVoteTargets` | frontend/js/whiteboard.js:1933 |
-| `wbVotesAfter` | frontend/js/whiteboard.js:1928 |
-| `wbWithoutComments` | frontend/js/whiteboard.js:4809 |
-| `wbZoomAnchor` | frontend/js/whiteboard.js:3106 |
 | `wbZoomFilter` | frontend/js/whiteboard.js:126 |
 | `wbZoomFrameWork` | frontend/js/whiteboard.js:612 |
-| `wbZoomKey` | frontend/js/whiteboard.js:3161 |
-| `wbZoomStep` | frontend/js/whiteboard.js:3119 |
-| `wbZoomTo100` | frontend/js/whiteboard.js:3170 |
-| `wbZoomToFit` | frontend/js/whiteboard.js:3031 |
-| `wbZoomToSelection` | frontend/js/whiteboard.js:3179 |
 
 ### frontend/js/writing-desk.js (15)
 

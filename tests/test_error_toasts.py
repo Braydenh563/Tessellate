@@ -212,8 +212,10 @@ EXPECTED = {
         '"That file is empty."',
         '`That outline is ${content.length.toLocaleString()} characters: the limit is ${WB_MAX_IMPORT_CHARS.toLocaleString()}.`',
     ],
-    'whiteboard.js': [
+    'whiteboard-paint.js': [
         '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
+    ],
+    'whiteboard.js': [
         '"The default board cannot change kind. Make a new board to start a mind map."',
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',
@@ -347,7 +349,7 @@ DYNAMIC = {
     #: A failed request is red; the server's own refusal (started or removed false) is a plain notice.
     "settings-packages.js": {'result.failed ? true : result.started ? false : "info"', 'result.failed ? true : result.removed ? false : "info"'},
     "suggestions-inbox.js": {"linked < sure.length"},  # a partial link run
-    "whiteboard.js": {"Boolean(left)"},  # a clear that left items behind
+    "whiteboard-clipboard.js": {"Boolean(left)"},  # a clear that left items behind
     "library.js": {'described?.caption ? false : "info"'},  # no caption written is plain
 }
 

@@ -570,7 +570,7 @@ EXEMPT: dict[str, str] = {
     "chat-edit.js:regenerateFrom": "send: cuts the turns after the question it re-asks, as Regenerate always replaced them; asks first when an answer wrote",
     "chat.js:compressChatContext": "read: asks the model to shorten the chat's context; writes nothing",
     "graph.js:graphPinSave": "inverse: the one door for pin writes; each caller pushes its pin step (graphPinStep) and graphSetPin replays it for Undo and Redo",
-    "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
+    "whiteboard-clipboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
     "whiteboard-map.js:wbMapRestoreRows": "inverse: puts back a deleted branch for the board history's own Undo and Redo",
     #: The note's create step is now pushed before the staged files go (INBOX e2e "Undo takes a new note back"), so the
     #: pictures uploaded first sit inside the step and the files attached after it are the exempt send.
@@ -753,10 +753,10 @@ EXEMPT: dict[str, str] = {
     "whiteboard-map-marks.js:wbMapSummariseBranch": "read: asks the model for a summary",
     "whiteboard-export.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
     "whiteboard-export.js:wbExportBoardFolder": "job: a board export the person asked for, built on the server and saved as a download; it writes and deletes nothing",
-    "whiteboard.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
+    "whiteboard-gesture.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
     "whiteboard-items.js:wbPaintStickyDates": "read: reads dates out of sticky text",
     "whiteboard-items.js:wbSaveManyBatch": "board: low-level board save of a selection in one request; its callers push wbPushUndo, as they did around the per-item saves it replaced",
-    "whiteboard.js:wbSaveMapBulkMove": "board: low-level board save; its callers push wbPushUndo",
+    "whiteboard-gesture.js:wbSaveMapBulkMove": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard-items.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard-items.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard-sketch-text.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
