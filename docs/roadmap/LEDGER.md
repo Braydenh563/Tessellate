@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 77 | 10 | 0 | 0 | 87 |
-| general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 467 | 81 | 2 | 111 | 920 |
+| general | 0 | 34 | 2 | 0 | 4 | 36 |
+| all | 372 | 466 | 81 | 2 | 111 | 919 |
 
 ## graph
 
@@ -543,7 +543,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L702** `general` open, M: Cut math-editor.js onload forced layout (calculator panel). From agent-remaining/lag-1103.md. Evidence: `math-editor.js` onload 224ms (forced layout 187ms) and the mathlive keydown 530ms: the calculator panel belongs to the
 - [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
-- [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
 - [ ] **L705** `general` open, M: Remove remaining forced layouts inside the tab flip (timelineScrollToToday, startArt, renderNotesRail). From agent-remaining/lag-1029.md. Evidence: Still forced inside the flip: `timelineScrollToToday` (timeline.js:2431, 43 ms at 4x), `startArt` > `currentAccentHex` (
 - [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
