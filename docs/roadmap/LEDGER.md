@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 87 | 22 | 0 | 0 | 109 |
+| world-class | 0 | 87 | 20 | 0 | 0 | 107 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 477 | 93 | 2 | 111 | 942 |
+| all | 372 | 477 | 91 | 2 | 111 | 940 |
 
 ## graph
 
@@ -496,12 +496,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
 - [ ] **L669** `world-class` partly, M: Left: one process ledger for every AI and background run. The backups list already says why each backup was made (settings-data.js:334,406 origin_words). From OPEN.md:1786.
-- [ ] **L670** `world-class` partly, M: Confirm all 14 browser-only appearance settings mirror to a second browser. From OPEN.md:2590. Evidence: Decision made (WORLD_CLASS 25f: mirror all except perf); ui-synced mechanism in ai-tools.js:918; completeness unconfirmed
 - [ ] **L672** `world-class` partly, M: Dictation model: installed markers, remove, unsloth Gemma variant licence call. From INBOX.md:904 B61. Evidence: Markers/Remove at settings-packages.js:110,:122; model_manager.py:126 lists a unsloth Gemma 4 GGUF; embedding unsloth variant licence call open
 - [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms). Measured 2026-11-21, fresh notebook, load 5 on 4 cores, median of 5: first open 400 ms (range 307 to 557), pane switches 24 to 112 ms (appearance 112, personas 98, general 78, rest under 60); CPU profile of the open is native parse/style/layout, no script function over 6 ms, surfaceBuild 10 ms, an idle prefetch of settings-controls.js (243 KB) changed nothing (444 vs 422 ms, reverted). Lever left: split the body into one surface per pane and wire the 110 listeners (settings-controls.js, `$(id)?.addEventListener` at load, each of which builds the whole body through `surfaceFind`) per pane with `onSurface`; the body is 4,042 elements of the 5,557 after open.
 - [ ] **L676** `world-class` partly, M: Reduce Dashboard DOM node count at boot and after dialogs (X15). From OPEN.md:4383. Evidence: first paint 1,515 elements on a fresh notebook (2,348 populated, CHANGELOG); Library menus/first chunk fixed earlier; 2026-11-21 leaving the Help pane now empties its topics (about 1,720 nodes; closing Settings while on Help still keeps them) and closing the ? sheet its lists (237), so after Help visited, Settings closed and the sheet opened and closed the page holds 6,790 instead of 8,749. Left: Settings' static body stays built after close (4,042 elements, 5,557 after one open and close; needs the per-pane body of L675), hidden dialogs at boot (lock 93, finder 63, agent monitor 47, settings shell 91 of 1,515), and style recalc from the 2.76 MB eager stylesheet (owner decision).
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
-- [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
