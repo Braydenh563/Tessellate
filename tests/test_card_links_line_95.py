@@ -19,7 +19,7 @@ CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf
 
 
 def _rule(selector_part: str) -> str:
-    for selector, body in re.findall(r"([^{}]+)\{([^{}]*)\}", CSS):
+    for selector, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", CSS):
         if selector.strip().endswith(selector_part):
             return body
     raise AssertionError(f"no rule for {selector_part}")
