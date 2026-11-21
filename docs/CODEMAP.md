@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8550, frontend ids 2805, CSS sections 527, backend routes 729, backend modules 11171, test files 2909, tests 22945, plan headings 688, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8550, frontend ids 2805, CSS sections 527, backend routes 729, backend modules 11173, test files 2911, tests 22949, plan headings 688, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8550)
 
@@ -14263,7 +14263,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11171)
+## Backend modules (11173)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19233,35 +19233,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_at_asking_place` | src/tessellate/ai/question_noise.py:864 |
-| `_context_slip` | src/tessellate/ai/question_noise.py:649 |
-| `_cosine` | src/tessellate/ai/question_noise.py:959 |
-| `_example_grams` | src/tessellate/ai/question_noise.py:969 |
-| `_is_spelt` | src/tessellate/ai/question_noise.py:780 |
-| `_join_asking` | src/tessellate/ai/question_noise.py:693 |
-| `_one_slip_from` | src/tessellate/ai/question_noise.py:931 |
+| `_at_asking_place` | src/tessellate/ai/question_noise.py:865 |
+| `_context_slip` | src/tessellate/ai/question_noise.py:650 |
+| `_cosine` | src/tessellate/ai/question_noise.py:960 |
+| `_example_grams` | src/tessellate/ai/question_noise.py:970 |
+| `_is_spelt` | src/tessellate/ai/question_noise.py:781 |
+| `_join_asking` | src/tessellate/ai/question_noise.py:694 |
+| `_one_slip_from` | src/tessellate/ai/question_noise.py:932 |
 | `_phrase_table` | src/tessellate/ai/question_noise.py:382 |
 | `_rating_words` | src/tessellate/ai/question_noise.py:163 |
-| `_real_word_slips` | src/tessellate/ai/question_noise.py:668 |
-| `_repair_by_speller` | src/tessellate/ai/question_noise.py:842 |
-| `_repair_late_space` | src/tessellate/ai/question_noise.py:729 |
-| `_repair_misspelt` | src/tessellate/ai/question_noise.py:786 |
-| `_repair_slang` | src/tessellate/ai/question_noise.py:749 |
-| `_repair_token` | src/tessellate/ai/question_noise.py:702 |
-| `_report_alternative` | src/tessellate/ai/question_noise.py:757 |
-| `_run_on_reading` | src/tessellate/ai/question_noise.py:810 |
-| `_small_talk_words` | src/tessellate/ai/question_noise.py:594 |
+| `_real_word_slips` | src/tessellate/ai/question_noise.py:669 |
+| `_repair_by_speller` | src/tessellate/ai/question_noise.py:843 |
+| `_repair_late_space` | src/tessellate/ai/question_noise.py:730 |
+| `_repair_misspelt` | src/tessellate/ai/question_noise.py:787 |
+| `_repair_slang` | src/tessellate/ai/question_noise.py:750 |
+| `_repair_token` | src/tessellate/ai/question_noise.py:703 |
+| `_report_alternative` | src/tessellate/ai/question_noise.py:758 |
+| `_run_on_reading` | src/tessellate/ai/question_noise.py:811 |
+| `_small_talk_words` | src/tessellate/ai/question_noise.py:595 |
 | `_social_phrases` | src/tessellate/ai/question_noise.py:395 |
-| `_speller_may_read` | src/tessellate/ai/question_noise.py:774 |
-| `_speller_reading` | src/tessellate/ai/question_noise.py:825 |
+| `_speller_may_read` | src/tessellate/ai/question_noise.py:775 |
+| `_speller_reading` | src/tessellate/ai/question_noise.py:826 |
 | `_split` | src/tessellate/ai/question_noise.py:573 |
 | `_spoken_to_kind` | src/tessellate/ai/question_noise.py:426 |
 | `_strip_stray_tail` | src/tessellate/ai/question_noise.py:106 |
-| `_trigrams` | src/tessellate/ai/question_noise.py:954 |
+| `_trigrams` | src/tessellate/ai/question_noise.py:955 |
 | `_unstretched` | src/tessellate/ai/question_noise.py:232 |
-| `_vector_cosine` | src/tessellate/ai/question_noise.py:977 |
+| `_vector_cosine` | src/tessellate/ai/question_noise.py:978 |
 | `_without_filler` | src/tessellate/ai/question_noise.py:298 |
-| `_word_core` | src/tessellate/ai/question_noise.py:767 |
+| `_word_core` | src/tessellate/ai/question_noise.py:768 |
 | `_word_kinds` | src/tessellate/ai/question_noise.py:415 |
 | `addressed_kind` | src/tessellate/ai/question_noise.py:370 |
 | `allowance` | src/tessellate/ai/question_noise.py:511 |
@@ -19269,19 +19269,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `asks_archived` | src/tessellate/ai/question_noise.py:100 |
 | `asks_how` | src/tessellate/ai/question_noise.py:405 |
 | `asks_identity` | src/tessellate/ai/question_noise.py:351 |
-| `catching_up` | src/tessellate/ai/question_noise.py:1034 |
+| `catching_up` | src/tessellate/ai/question_noise.py:1035 |
 | `destretch` | src/tessellate/ai/question_noise.py:253 |
 | `drop_filler` | src/tessellate/ai/question_noise.py:321 |
 | `filler_subject` | src/tessellate/ai/question_noise.py:292 |
-| `guess_kind` | src/tessellate/ai/question_noise.py:984 |
-| `guided` | src/tessellate/ai/question_noise.py:908 |
+| `guess_kind` | src/tessellate/ai/question_noise.py:985 |
+| `guided` | src/tessellate/ai/question_noise.py:909 |
 | `is_filler` | src/tessellate/ai/question_noise.py:271 |
 | `media_kind` | src/tessellate/ai/question_noise.py:313 |
 | `nearest` | src/tessellate/ai/question_noise.py:529 |
 | `new_notes_as_newest` | src/tessellate/ai/question_noise.py:139 |
-| `repair` | src/tessellate/ai/question_noise.py:615 |
-| `router_words` | src/tessellate/ai/question_noise.py:892 |
-| `slips_only` | src/tessellate/ai/question_noise.py:602 |
+| `repair` | src/tessellate/ai/question_noise.py:616 |
+| `router_words` | src/tessellate/ai/question_noise.py:893 |
+| `slips_only` | src/tessellate/ai/question_noise.py:603 |
 | `social_kind` | src/tessellate/ai/question_noise.py:436 |
 | `strip_strays` | src/tessellate/ai/question_noise.py:148 |
 | `strip_symbols` | src/tessellate/ai/question_noise.py:191 |
@@ -28336,65 +28336,67 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `understand` | src/tessellate/search/query.py:540 |
 | `without_contractions` | src/tessellate/search/query.py:671 |
 
-### src/tessellate/search/search_manager.py (55)
+### src/tessellate/search/search_manager.py (57)
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:995 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1413 |
-| `_candidates` | src/tessellate/search/search_manager.py:1258 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1161 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1217 |
-| `_category_only` | src/tessellate/search/search_manager.py:1211 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1430 |
-| `_corrected_terms` | src/tessellate/search/search_manager.py:271 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1443 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1234 |
-| `_fuse` | src/tessellate/search/search_manager.py:740 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1451 |
-| `_learned_down` | src/tessellate/search/search_manager.py:1639 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1588 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:779 |
-| `_load_later` | src/tessellate/search/search_manager.py:412 |
-| `_match_info` | src/tessellate/search/search_manager.py:1352 |
-| `_meaningful_terms` | src/tessellate/search/search_manager.py:353 |
-| `_named_category` | src/tessellate/search/search_manager.py:1176 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1274 |
-| `_near_words` | src/tessellate/search/search_manager.py:309 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1320 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1298 |
-| `_rank` | src/tessellate/search/search_manager.py:1109 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1122 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:714 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1515 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:581 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:620 |
-| `_substring_entries` | src/tessellate/search/search_manager.py:224 |
-| `_user_today` | src/tessellate/search/search_manager.py:47 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1484 |
-| `_within` | src/tessellate/search/search_manager.py:979 |
-| `_without_private` | src/tessellate/search/search_manager.py:1658 |
-| `_word_for_stem` | src/tessellate/search/search_manager.py:326 |
-| `_written_at` | src/tessellate/search/search_manager.py:938 |
-| `clip_query` | src/tessellate/search/search_manager.py:1507 |
-| `configured_thresholds` | src/tessellate/search/search_manager.py:358 |
-| `day_mentions` | src/tessellate/search/search_manager.py:949 |
-| `direct_before_linked` | src/tessellate/search/search_manager.py:1400 |
-| `entries_between` | src/tessellate/search/search_manager.py:104 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:844 |
-| `in_range` | src/tessellate/search/search_manager.py:910 |
-| `is_exact_term` | src/tessellate/search/search_manager.py:264 |
-| `keyword_search` | src/tessellate/search/search_manager.py:131 |
-| `last_search` | src/tessellate/search/search_manager.py:1104 |
-| `meaning_floor` | src/tessellate/search/search_manager.py:1381 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1117 |
-| `query_vector` | src/tessellate/search/search_manager.py:387 |
-| `recent_entries` | src/tessellate/search/search_manager.py:82 |
-| `retrieve` | src/tessellate/search/search_manager.py:1074 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1042 |
-| `semantic_search` | src/tessellate/search/search_manager.py:476 |
-| `warm` | src/tessellate/search/search_manager.py:447 |
-| `widened_limit` | src/tessellate/search/search_manager.py:1038 |
+| `Retrieval` | src/tessellate/search/search_manager.py:1016 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1434 |
+| `_candidates` | src/tessellate/search/search_manager.py:1279 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1182 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1238 |
+| `_category_only` | src/tessellate/search/search_manager.py:1232 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1451 |
+| `_corrected_terms` | src/tessellate/search/search_manager.py:273 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1464 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1255 |
+| `_fuse` | src/tessellate/search/search_manager.py:761 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1472 |
+| `_learned_down` | src/tessellate/search/search_manager.py:1660 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1609 |
+| `_likeness` | src/tessellate/search/search_manager.py:319 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:800 |
+| `_load_later` | src/tessellate/search/search_manager.py:433 |
+| `_match_info` | src/tessellate/search/search_manager.py:1373 |
+| `_meaningful_terms` | src/tessellate/search/search_manager.py:374 |
+| `_named_category` | src/tessellate/search/search_manager.py:1197 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1295 |
+| `_near_words` | src/tessellate/search/search_manager.py:327 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1341 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1319 |
+| `_rank` | src/tessellate/search/search_manager.py:1130 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1143 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:735 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1536 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:602 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:641 |
+| `_stemmed_forms` | src/tessellate/search/search_manager.py:312 |
+| `_substring_entries` | src/tessellate/search/search_manager.py:225 |
+| `_user_today` | src/tessellate/search/search_manager.py:48 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1505 |
+| `_within` | src/tessellate/search/search_manager.py:1000 |
+| `_without_private` | src/tessellate/search/search_manager.py:1679 |
+| `_word_for_stem` | src/tessellate/search/search_manager.py:345 |
+| `_written_at` | src/tessellate/search/search_manager.py:959 |
+| `clip_query` | src/tessellate/search/search_manager.py:1528 |
+| `configured_thresholds` | src/tessellate/search/search_manager.py:379 |
+| `day_mentions` | src/tessellate/search/search_manager.py:970 |
+| `direct_before_linked` | src/tessellate/search/search_manager.py:1421 |
+| `entries_between` | src/tessellate/search/search_manager.py:105 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:865 |
+| `in_range` | src/tessellate/search/search_manager.py:931 |
+| `is_exact_term` | src/tessellate/search/search_manager.py:266 |
+| `keyword_search` | src/tessellate/search/search_manager.py:132 |
+| `last_search` | src/tessellate/search/search_manager.py:1125 |
+| `meaning_floor` | src/tessellate/search/search_manager.py:1402 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1138 |
+| `query_vector` | src/tessellate/search/search_manager.py:408 |
+| `recent_entries` | src/tessellate/search/search_manager.py:83 |
+| `retrieve` | src/tessellate/search/search_manager.py:1095 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1063 |
+| `semantic_search` | src/tessellate/search/search_manager.py:497 |
+| `warm` | src/tessellate/search/search_manager.py:468 |
+| `widened_limit` | src/tessellate/search/search_manager.py:1059 |
 
 ### src/tessellate/search/searxng_docker.py (8)
 
@@ -28558,7 +28560,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22945)
+## Tests (22949)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30713,6 +30715,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_query_rollups_kg7.py | 4 |
 | tests/test_query_understanding.py | 20 |
 | tests/test_question_noise.py | 32 |
+| tests/test_question_noise_wordlist.py | 2 |
 | tests/test_questions_no_model_1466.py | 17 |
 | tests/test_questions_own.py | 11 |
 | tests/test_questions_spec.py | 9 |
@@ -30872,6 +30875,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_search_suggest_close.py | 4 |
 | tests/test_search_suggest_lists.py | 9 |
 | tests/test_search_surfaces.py | 15 |
+| tests/test_search_wordlist.py | 2 |
 | tests/test_searxng_card_1734.py | 7 |
 | tests/test_searxng_down_1490.py | 9 |
 | tests/test_searxng_down_action_1556.py | 7 |
@@ -31891,14 +31895,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4493 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:593 |
+| Needs hardware | docs/roadmap/LEDGER.md:592 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:586 |
+| Owner calls | docs/roadmap/LEDGER.md:585 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32079,7 +32083,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:721 |
+| Plan session briefs | docs/roadmap/LEDGER.md:720 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32133,25 +32137,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:737 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:821 |
+| chat | docs/roadmap/LEDGER.md:736 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:820 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:761 |
-| general | docs/roadmap/LEDGER.md:558 |
+| documents | docs/roadmap/LEDGER.md:760 |
+| general | docs/roadmap/LEDGER.md:557 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:725 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:833 |
+| graph | docs/roadmap/LEDGER.md:724 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:832 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:773 |
+| mindmap | docs/roadmap/LEDGER.md:772 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:797 |
+| timeline | docs/roadmap/LEDGER.md:796 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:785 |
+| ui-modernisation | docs/roadmap/LEDGER.md:784 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:749 |
+| whiteboard | docs/roadmap/LEDGER.md:748 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:809 |
+| world-class | docs/roadmap/LEDGER.md:808 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |

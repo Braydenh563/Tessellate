@@ -23,6 +23,7 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import recognise, variants
+from tessellate.ai.help_words import one_edit_apart
 from tessellate.ai.note_recency import is_recency_ask
 from tessellate.ai.embeddings import (
     EmbeddingService,
@@ -259,6 +260,7 @@ CORRECT_MIN_LEN = 4
 # difflib ratio floor for treating a vocabulary word as the query word
 # misspelt: 0.8 is roughly one wrong letter in five, two in ten.
 CORRECT_CUTOFF = 0.8
+_ENDINGS = ("ing", "ed", "es", "s", "ly", "er", "ate", "ion")
 
 
 def is_exact_term(term: str) -> bool:
@@ -280,7 +282,8 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     text rather than inventing a match."""
     corrected: list[str] = []
     for term in terms:
-        if len(term) < CORRECT_MIN_LEN or is_exact_term(term):
+        #: A word of the language is not a typo (VC8): "casual" in a notebook that says "causal" is not searched as "causal".
+        if len(term) < CORRECT_MIN_LEN or is_exact_term(term) or term in variants.english():
             corrected.append(term)
             continue
         first = term[0]
@@ -306,6 +309,21 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     return corrected
 
 
+def _stemmed_forms(term: str) -> list[str]:
+    """The typed word as the index would hold it: with an ending off ("gardning" is "gardn" and "ing", one edit
+    from the stem "garden"), and the Porter stem's last "y" as "i" or dropped "e" ("holidai", "receiv")."""
+    bare = [term[: -len(end)] for end in _ENDINGS if term.endswith(end) and len(term) - len(end) >= CORRECT_MIN_LEN]
+    return bare + [w[:-1] + "i" for w in (term, *bare) if w.endswith("y")] + [w[:-1] for w in (term, *bare) if w.endswith("e")]
+
+
+def _likeness(typed: str, whole: bool, word: str) -> float:
+    """How alike a typed form and a vocabulary word are. One slip (a letter wrong, missing, extra or two swapped)
+    is a typo however low the ratio says, so it outranks a word that is merely alike ("libary" and "librari",
+    VC8); the ratio ranks among those."""
+    ratio = difflib.SequenceMatcher(None, typed, word).ratio()
+    return ratio + 1.0 if whole and len(word) >= CORRECT_MIN_LEN and one_edit_apart(typed, word) else ratio
+
+
 def _near_words(term: str, vocabulary: list[str]) -> list[str]:
     """The vocabulary word closest to a misspelt term, as a one-item list.
 
@@ -313,12 +331,13 @@ def _near_words(term: str, vocabulary: list[str]) -> list[str]:
     ("respir" for "respiraton"), so a stem is also compared with the typed
     word cut to just past the stem's length."""
     best, best_ratio = None, CORRECT_CUTOFF
+    bare = [(form, True) for form in _stemmed_forms(term)]
     for word in vocabulary:
         if abs(len(word) - len(term)) > 2 and not (len(word) >= CORRECT_MIN_LEN and len(word) < len(term)):
             continue
-        for typed in {term, term[: len(word) + 1]}:
-            ratio = difflib.SequenceMatcher(None, typed, word).ratio()
-            if ratio >= best_ratio:
+        for typed, whole in ((term, True), (term[: len(word) + 1], False), *bare):
+            ratio = _likeness(typed, whole, word)
+            if ratio > best_ratio or (ratio >= CORRECT_CUTOFF and best is None):
                 best, best_ratio = word, ratio
     return [best] if best else []
 
@@ -326,6 +345,8 @@ def _near_words(term: str, vocabulary: list[str]) -> list[str]:
 def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:
     """A whole word from a note that starts with `stem`, the one
     nearest the typed word; None when no note holds one."""
+    #: Porter writes a last "y" as "i" ("holidai"), which no note spells that way.
+    stem = stem[:-1] if stem.endswith("i") and len(stem) > CORRECT_MIN_LEN else stem
     rows = session.execute(
         text("SELECT content FROM entries WHERE content LIKE :p LIMIT 40"),
         {"p": f"%{stem}%"},
