@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 193 | 60 | 2 | 59 | 429 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 86 | 10 | 0 | 0 | 96 |
 | general | 0 | 30 | 2 | 0 | 6 | 32 |
-| all | 372 | 470 | 81 | 2 | 113 | 923 |
+| all | 372 | 469 | 81 | 2 | 113 | 922 |
 
 ## graph
 
@@ -184,7 +184,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L181** `chat` open, L: More lifelike, diverse companion movement, entrances and deeper behaviour tree. From OPEN.md:1082; OPEN.md:3448; OPEN.md:4341. Evidence: Open-ended owner ask; E5 own activities/wind-spirit travel (218be1f64) landed, rest is judgement
 - [ ] **L183** `chat` partly, L: Brief 34: the 1.5 s debounce, one curve table and the idle rule. The reaction budget is built (26092ac88, `NMB_REACT_BUDGET`, four a minute; browser-measured 0 snaps in 600 s, 21 distinct motions, 35 to 44 ms latency). From OPEN.md:3766; SESSION_BRIEFS.md:154; ledger-1112 P6; OPEN.md:2876. Evidence: Latency bar conflicts with the owner's debounce request.
 - [ ] **L184** `chat` open, L: Atlas motion measured leftovers: laughing end, blend, tail under 1 ms a minute, 390 fps, arm rig. From OPEN.md:1074; OPEN.md:3188; OPEN.md:3763. Evidence: Hand-stepped blend measurements outstanding; needs visual/human review of motion
-- [ ] **L185** `chat` open, L: Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies. From OPEN.md:4419. Evidence: w34-unv2-1111.md marks true; generated-companion behaviour set not complete
 - [ ] **L186** `chat` partly, S: Fix stale-plan line word order and mood (Z7). From OPEN.md:4043. Evidence: 'may still be open' wording fixed (composer_tables.py); quoted plan fragment in composer_digest.py still unfixed.
 - [ ] **L187** `chat` partly, S: Stop verb word becoming a required term; fix footer wording (Z16). From OPEN.md:4044. Evidence: Quoted-figure answers drop footer (d1c5a1265); frame-word list in composer_unfound.py. Verb-as-term case not shown closed.
 - [ ] **L188** `chat` partly, S: Count sentence should count what notes said, not the largest theme (C6). From OPEN.md:4087. Evidence: Rechecked 2026-11-11: small notebook now agrees (eight/eight); 207-note count still disagrees.
