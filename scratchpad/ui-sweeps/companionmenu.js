@@ -8,7 +8,7 @@
 // Env: KIND (atlas), THEME. Exits 1 on a menu outside the window or away
 // from the companion.
 const { boot } = require('./lib.js');
-const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x844@3').split(',');
+const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x844@3').split(',').filter(Boolean);
 (async () => {
   const fails = [];
   let count = 0;
@@ -132,6 +132,11 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       nameMarkBuddyIndexReset();
       const landed = nameMarkBuddyDrop(Math.round(r.left + 140), Math.round(r.top - 80));
       nameMarkBuddyMoveTo(document.getElementById('nm-buddy'), landed, true);
+      // The beat is a real timeout the drop armed: `placeTimer = 1` alone leaves it running, and it took the
+      // companion off its panel to a window bar about a second on, before the menu was opened (L-general-40).
+      clearTimeout(nmb.timer);
+      clearTimeout(nmb.placeTimer);
+      nmb.placeTimer = 1;
       page.scrollTop = 0;
       await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
       page.scrollTop = 60;
@@ -143,6 +148,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       });
       await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
       clearTimeout(nmb.timer);
+      clearTimeout(nmb.placeTimer);
       nmb.placeTimer = 1;
       return { riding: !!nmb.ride };
     });
@@ -184,6 +190,9 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       await ride();
       await page.evaluate(([ddx, ddy]) => { nmb.placeTimer = 0; nameMarkBuddyMoveTo(document.getElementById('nm-buddy'), { kind: 'air', pose: 'float', x: nmb.x + ddx, y: nmb.y + ddy }, false); }, [dx, dy]);
       await page.waitForTimeout(tag === 'mid-walk' ? 180 : 60);
+      // Held where it is: a figure still moving between reading its box and the click lands the click
+      // on the page behind it (1 run in 6 at 1440x900@1.25), which is the sweep's aim, not the menu's.
+      await page.evaluate(() => nmb.anim?.pause?.());
       p = await faceAt();
       await page.mouse.click(p[0], p[1], { button: 'right' });
       await measure(`right-click ${tag}`);

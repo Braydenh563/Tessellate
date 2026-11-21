@@ -4072,7 +4072,7 @@
   function nameMarkBuddyAttention() {
     const boxes = [];
     const el = document.activeElement;
-    if (el && el !== document.body && !el.closest("#nm-buddy, .nm-viewer")) {
+    if (el && el !== document.body && !el.closest("#nm-buddy, .nm-viewer, .pointer-menu-host")) {
       const box = nameMarkBuddyShown(el);
       if (box && box.width * box.height <= NMB_FOCUS_AREA) boxes.push(box);
     }
@@ -11366,11 +11366,26 @@
         drag = null;
         face.dataset.dragged = "1";
         nameMarkBuddyMenu(buddy, at);
+        held = true;
       }, 550);
     });
+    //: The menu opens under the finger, and the click that comes with the lift would land on its first row
+    //: (run, then closed). That one click is swallowed, for a moment after the lift.
+    let held = false;
+    const swallow = (event) => {
+      if (nmb.menu?.contains(event.target)) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    };
     for (const type of ["pointerup", "pointercancel", "pointermove"]) {
       face.addEventListener(type, () => {
         if (type !== "pointermove" || (drag && drag.moved)) clearTimeout(hold);
+        if (type === "pointerup" && held) {
+          held = false;
+          document.addEventListener("click", swallow, { capture: true, once: true });
+          setTimeout(() => document.removeEventListener("click", swallow, true), 600);
+        }
       });
     }
     //: The one-place and four-corner choices this replaces: a place kept for
