@@ -146,6 +146,8 @@ EXEMPT = {
     "wbLibSets": "the board library's shape sets, per notebook",
     "wbSelectedItem": "the selection on an open board, closed with it",
     "wbUndoParents": "the board's own history, closed with it",
+    "wbRenderFrame": "a queued paint's frame handle, not data",
+    "wbRenderQueued": "a flag for a queued paint, not data",
     "autoSessionPending": "sign-in state",
     "lockedByHand": "sign-in state",
     "pinHere": "sign-in state",

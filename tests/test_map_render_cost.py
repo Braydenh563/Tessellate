@@ -290,3 +290,43 @@ def test_a_line_builds_its_grips_only_when_they_can_show() -> None:
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     start = lazy.split("@starting-style")
     assert any(".wb-map-edge-group:hover .wb-map-edge-handle" in part.split("}")[0] for part in start[1:])
+
+
+def _async_body(name: str) -> str:
+    """An `async function`'s text, to the next left-margin function."""
+    match = re.search(rf"^async function {re.escape(name)}\(", WB, re.MULTILINE)
+    assert match, f"{name} is gone; this lint is about its body"
+    rest = WB[match.end() :]
+    end = re.search(r"^(async )?function \w+\(", rest, re.MULTILINE)
+    code = rest[: end.start()] if end else rest
+    return "\n".join(line for line in code.splitlines() if not line.lstrip().startswith("//"))
+
+
+def test_the_open_asks_for_the_board_while_the_canvas_settles() -> None:
+    """The open waited 60ms for the canvas, then asked for the board: at 500
+    topics that is one round trip (50 to 70ms, phase probe) spent after a
+    wait it could have overlapped. The request starts before the wait and the
+    fetch takes its answer."""
+    body = _async_body("openWhiteboardBoard")
+    ask = body.index("apiJson(")
+    assert ask < body.index("setTimeout(resolve, 60)")
+    assert re.search(r"await fetchWhiteboardState\(\{[^}]*state", body), body
+    fetch = _async_body("fetchWhiteboardState")
+    assert re.search(r"await \(state \|\| apiJson\(url\)\)", fetch), fetch
+
+
+def test_the_open_draws_before_the_board_picker_is_rebuilt() -> None:
+    """The picker's list is a third round trip (30 to 100ms) nothing drawn on
+    the canvas reads: the open draws and frames, then waits for it."""
+    body = _async_body("openWhiteboardBoard")
+    assert body.index("wbRestoreOrFrameBoard(") < body.index("await listed.wait"), body
+    fetch = _async_body("fetchWhiteboardState")
+    assert re.search(r"if \(list\) list\.wait = refreshBoardList\(\)", fetch), fetch
+    assert "else await refreshBoardList();" in fetch
+
+
+def test_the_board_count_is_written_only_to_the_open_boards_row() -> None:
+    """With the picker rebuilt after the first render, its selected row is
+    still the last board's while that render runs."""
+    code = _code("wbSyncBoardCount")
+    assert "opt.value !== String(window.currentBoardId)" in code, code

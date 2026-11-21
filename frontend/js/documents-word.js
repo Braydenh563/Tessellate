@@ -439,7 +439,7 @@
   //: A callout's tint and edge in Word, by the colour family the page gives its
   //: kind (fill, then the left edge). Hex without "#", as Word writes it.
   const DOC_WORD_TONES = { blue: ["E3EDFB", "3B6FD4"], green: ["E1F3E6", "2E8B57"], amber: ["FFF2D9", "C98A0B"], red: ["FBE3E3", "C0392B"], grey: ["EEEEEE", "777777"] };
-  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", todo: "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
+  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", "todo": "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
 
   //: `[TOC]` as Word's own contents field over the headings written below it
   //: (three levels, as the page's list shows). Word refreshes the page numbers

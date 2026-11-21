@@ -33,7 +33,8 @@ def test_the_first_steps_state_is_one_shared_in_flight_read():
 
 def test_the_bell_row_names_what_is_left():
     js = _js("first-run.js")
-    assert 'Left: ${todo.join(", ")}' in js
+    # INBOX 1811 renamed the list of unfinished steps (it was `todo`); the row still names what is left.
+    assert 'Left: ${unfinished.join(", ")}' in js
 
 
 def test_a_tag_suggestion_has_short_names_and_titles():

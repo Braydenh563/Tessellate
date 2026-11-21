@@ -19858,11 +19858,15 @@ window.currentBoardId = null;
 //: the question being asked. Never mind "last write wins" with a sequence
 //: number: the board id *is* the identity here, and comparing it means a
 //: re-fetch of the same board still applies normally.
-async function fetchWhiteboardState() {
+//: `state`: the same request, already asked by a caller that had time to
+//: spare (the open's 60ms settle). `list`: a caller that draws first takes
+//: the picker's own round trip as `list.wait` (mapperf phase probe, 500
+//: topics: 30 to 100ms nothing on the canvas reads).
+async function fetchWhiteboardState({ state = null, list = null } = {}) {
   const requestedBoardId = window.currentBoardId ?? null;
   try {
     const url = requestedBoardId ? `/whiteboard/?board_id=${requestedBoardId}` : "/whiteboard/";
-    const res = await apiJson(url);
+    const res = await (state || apiJson(url));
     if ((window.currentBoardId ?? null) !== requestedBoardId) return;
     wbState = res;
     // Before the board list, and awaited: everything that draws a map node
@@ -19877,7 +19881,8 @@ async function fetchWhiteboardState() {
     //: New board kept the board's rail (Notes, Layers, Pages), whose tabs a
     //: map sends back to Library, so only Library answered (INBOX 657).
     wbSyncSidebarKind();
-    await refreshBoardList();
+    if (list) list.wait = refreshBoardList().catch(() => {});
+    else await refreshBoardList();
   } catch (err) {
     toast(voiceLine("failed", { what: "open that board", why: err.message }), true);
   }
@@ -19995,6 +20000,9 @@ function wbBoardCountWords(isMap, nodes, drawings, objects) {
 function wbSyncBoardCount() {
   const opt = document.getElementById("wb-board-select")?.selectedOptions?.[0];
   if (!opt || !window.currentBoardId || !opt.dataset.title) return;
+  //: The picker is rebuilt after an open's first render, so until then its
+  //: selected row is the last board's.
+  if (opt.value !== String(window.currentBoardId)) return;
   const sketches = wbState.sketches || [];
   let links = 0;
   for (const sk of sketches) if (String(sk.data).includes('"type":"link-')) links++;
@@ -25780,6 +25788,11 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
   wbLinkParseCache.clear(); // the next board's sketches are other ids
+  //: Asked now, answered during the settle below (`fetchWhiteboardState`).
+  //: Not for the board already open: its unsaved nudge is written first.
+  const id = boardId ?? null;
+  const state = id === (window.currentBoardId ?? null) ? null : apiJson(id ? `/whiteboard/?board_id=${id}` : "/whiteboard/");
+  state?.catch(() => {});
   //: **What the last board's renders left behind is dropped here** (audit 1028 B39:
   //: render state lived at module level with no reset). A frame queued for the old
   //: board is called off, and the element, size, colour and overview caches are
@@ -25804,7 +25817,8 @@ async function openWhiteboardBoard(boardId, opts = null) {
   // never empties, so without this a stray one followed you from board to
   // board and read as "a permanent selection box on my mindmap".
   wbClearSelectionOverlays();
-  await fetchWhiteboardState();
+  const listed = {};
+  await fetchWhiteboardState({ state, list: listed });
   wbScheduleRender();
   await wbMigrateBackground();
   wbApplyBackground();
@@ -25814,6 +25828,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   //: its real size only exists once it is in the document).
   if (wbIsMap()) renderWhiteboardNow();
   wbRestoreOrFrameBoard(boardId ?? null, Boolean(opts?.restore));
+  await listed.wait;
   //: **A board is a place, so opening one is a navigation.** Asked as part of
   //: "is everythign wired to the nav history and universal undo/redo": it was
   //: not. `switchTab("library")` above records "library", and then opening

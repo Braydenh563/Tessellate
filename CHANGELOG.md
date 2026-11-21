@@ -6,9 +6,12 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
 - Companion: an ear flick gives the ear its own pivot back when it ends, so a later mood's turn of the ear no longer pivots 35 to 47 px elsewhere (L-ui-modernisation-171).
+- Copy: the open-work scan's lowercase to-do names are reworded (INBOX 1811): the capture bar's list button is `capture-bar-list`, a redundant callout ink rule went, queue and step locals are renamed, and typed words (`/todo`, `[!todo]`, saved draft modes) still work.
 
+- Maps open sooner: the board is asked for during the canvas settle and the picker list is rebuilt after the first render, so a 500-topic render starts at about 118ms instead of 185 to 300ms (L-ui-modernisation-61)
 - The desk companion counts each frame's baked lean inside its 4 degree cap: a clamp per pose family keeps torso to hem at 3.84 to 3.95 degrees with the bake (was 4.22 on the stand, 3.22 to 4.40 unbaked across the new frames) (L-ui-modernisation-150)
 - Styles: 85 more Library-only rules moved from the boot sheets to library-lazy.css, computed styles unchanged in light and dark at 1280 and 390 including the board and map views (L-ui-modernisation-51); 98 of 231 stay on the row.
 - The desk companion does something short where it is between two long pastimes, keeps each pastime to its share of the while, and reads a map by day, so no picture fills over 40% of an hour and no pastime over 20% (L-ui-modernisation-99)

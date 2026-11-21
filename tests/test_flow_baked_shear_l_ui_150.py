@@ -1,4 +1,7 @@
-"""L-ui-modernisation-150: the lean a desk frame bakes into its lower body counts inside the follow-through's 4 degrees.
+"""Source text: the shear table is checked against atlas-life.js's own state rows, the one place the app's lower-box shear
+is written down (the browser is not run here); the rest measures the shipped frames.
+
+L-ui-modernisation-150: the lean a desk frame bakes into its lower body counts inside the follow-through's 4 degrees.
 
 The shipped frames carry the app's first arrangement of their pose (decision 7, L-ui-modernisation-57): the lower box
 sheared `0.4 * (skew - rot)` degrees off the torso (atlas-life.js `ATLAS_LOWER_STATES`, row 0). `behaviour.Flow` bends
