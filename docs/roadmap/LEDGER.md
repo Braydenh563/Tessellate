@@ -15,12 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 94 | 28 | 0 | 0 | 122 |
+| world-class | 0 | 94 | 26 | 0 | 0 | 120 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 484 | 99 | 2 | 111 | 955 |
-
-## graph
-
+| all | 372 | 484 | 97 | 2 | 111 | 953 |
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -495,11 +492,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
-- [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
 - [ ] **L669** `world-class` partly, M: Left: one process ledger for every AI and background run. The backups list already says why each backup was made (settings-data.js:334,406 origin_words). From OPEN.md:1786.
 - [ ] **L670** `world-class` partly, M: Confirm all 14 browser-only appearance settings mirror to a second browser. From OPEN.md:2590. Evidence: Decision made (WORLD_CLASS 25f: mirror all except perf); ui-synced mechanism in ai-tools.js:918; completeness unconfirmed
-- [ ] **L671** `world-class` partly, M: Left: first launch says once which chat, background and image models were chosen and why, with Change. The choice is made (model_manager.py:1208, app.py:702); no words shown. From OPEN.md:3498.
 - [ ] **L672** `world-class` partly, M: Dictation model: installed markers, remove, unsloth Gemma variant licence call. From INBOX.md:904 B61. Evidence: Markers/Remove at settings-packages.js:110,:122; model_manager.py:126 lists a unsloth Gemma 4 GGUF; embedding unsloth variant licence call open
 - [ ] **L673** `world-class` partly, M: Left: service worker caching (frontend/sw.js) and the phone Settings nav, unverified. First-run onboarding has tests/test_first_run_472.py and test_first_run_prefs_q25.py. From audit-1031-shell.
 - [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms); first open 964 ms and others need quiet-machine trace.

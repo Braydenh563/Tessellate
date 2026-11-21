@@ -34,6 +34,8 @@ Object.assign(LAZY_MODULES, {
   studio: ["/js/studio.js"],
   //: Sync between computers through a folder, no server (sync-folder.js's header; WORLD_CLASS_PLAN row 36).
   syncFolder: ["/js/sync-folder.js"],
+  //: The start-up model choice, said once (model-chosen.js; L671).
+  modelChosen: ["/js/model-chosen.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).

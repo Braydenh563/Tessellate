@@ -1887,16 +1887,9 @@ let modelStatus = null; // latest /models/status payload
 //: rather than guarding a function that may not exist yet.
 const settingsReadouts = {};
 
-//: **The start-up choice, said once with Change** (the owner, 2026-10-07: on
-//: a fresh install with five models it ran a llama3.2 it did not have). Once
-//: per chosen model in this browser; Settings, Models keeps the why.
-function sayChatModelChosen(status) {
-  const why = status?.chat_model_chosen_why;
-  if (!why) return;
-  const key = `chatModelChosen:${status.chat_model}`;
-  if (prefs.get(key)) return;
-  if (!prefs.set(key, "1")) return;
-  toastAction(`${aiNameNow()} now runs ${status.chat_model}: ${why}.`, "Change", () => openSettingsModal("models", "chat-model-select"));
+//: The start-up choice, said once with Change (model-chosen.js, lazy; L671).
+function sayChatModelChosen(s) {
+  if (s.chat_model_chosen_why) ensureModule("modelChosen").then(() => settingsReadouts.chosen(s));
 }
 // Has the status endpoint ever answered? "We haven't asked yet" and "we asked
 // and got nothing" are both `modelStatus === null`, but they mean opposite

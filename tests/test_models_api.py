@@ -575,7 +575,14 @@ def test_a_start_up_choice_is_said_with_its_reason_until_one_is_picked(client, m
     assert response.status_code == 200
     assert client.get("/models/status").json()["chat_model_chosen_why"] == ""
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
-    assert "sayChatModelChosen(modelStatus);" in js and '"Change"' in js.split("function sayChatModelChosen", 1)[1][:900]
+    assert "sayChatModelChosen(modelStatus);" in js and 'ensureModule("modelChosen")' in js
+    #: L671: the one line names the background and picture models too, from
+    #: fields the status already carries, and is shown once per browser. It
+    #: lives in a lazy file so the boot scripts stay under the gzip ratchet.
+    lazy = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "model-chosen.js").read_text(encoding="utf-8")
+    assert '"Change"' in lazy and "utility_model_resolved" in lazy and "vision_model_resolved" in lazy
+    assert "prefs.get(key)" in lazy and "!" not in lazy.split("toastAction(")[1].split("`")[1].replace("${", "")
+    assert "utility_model_resolved" in client.get("/models/status").json()
 
 
 def test_suggested_shares_the_status_polls_model_list(client, monkeypatch):
