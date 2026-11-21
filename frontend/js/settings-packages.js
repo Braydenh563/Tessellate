@@ -179,9 +179,23 @@
   //: measured). A row whose state is unchanged is kept as it is; the one
   //: installing only has its step text swapped; a changed row replaces itself.
   function packagesRowKey(extra, body) {
-    const { step, ...rest } = extra;
+    const { step, fraction, ...rest } = extra;
     const item = packagesUi.bulkSeen && !body.bulk?.running ? (body.bulk?.items || []).find((row) => row.id === extra.id) : null;
     return JSON.stringify([rest, Boolean(body.running), item]);
+  }
+
+  //: A download knows its bytes, so its bar is a real fraction (0 to 1, from
+  //: `/extras`); pip does not, so a bar with no value stays the moving one.
+  function packagesSetBar(bar, fraction) {
+    if (!bar) return;
+    if (typeof fraction === "number" && fraction >= 0 && fraction <= 1) {
+      bar.max = 1;
+      bar.value = fraction;
+      bar.title = `${Math.round(fraction * 100)}%`;
+    } else {
+      bar.removeAttribute("value");
+      bar.removeAttribute("title");
+    }
   }
 
   function packagesPaintRows(list, body) {
@@ -190,7 +204,10 @@
       const key = packagesRowKey(extra, body);
       const kept = old.get(`extra-row-${extra.id}`);
       if (kept && kept._packagesKey === key) {
-        if (extra.installing) kept.querySelector(".extras-install-progress-text").textContent = extra.step || "Installing…";
+        if (extra.installing) {
+          kept.querySelector(".extras-install-progress-text").textContent = extra.step || "Installing…";
+          packagesSetBar(kept.querySelector(".extras-install-progress-bar"), extra.fraction);
+        }
         const pick = kept.querySelector(".extras-pick");
         if (pick) pick.checked = packagesUi.selected.has(extra.id);
         return kept;
@@ -455,6 +472,7 @@
       text.textContent = extra.step || "Installing…";
       const bar = document.createElement("progress");
       bar.className = "task-progress extras-install-progress-bar";
+      packagesSetBar(bar, extra.fraction);
       busy.append(text, bar);
       actions.appendChild(busy);
     } else if (extra.queued) {

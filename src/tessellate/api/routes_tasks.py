@@ -282,6 +282,15 @@ def _embed_download_rows() -> list[dict]:
     ]
 
 
+def _bulk_progress(bulk: dict, pip) -> float | None:  # noqa: ANN001
+    """Packages done of packages asked, plus the one in hand's own fraction
+    when it is a download that reports one."""
+    if not bulk["total"]:
+        return None
+    inner = pip.fraction if pip.running and pip.fraction is not None else 0.0
+    return min((bulk["done"] + inner) / bulk["total"], 1.0)
+
+
 def _bulk_extra_row(bulk: dict, pip) -> dict:  # noqa: ANN001
     #: A bulk action (INBOX 595) is one row, not one per package: its
     #: label is the whole job, its detail the package in hand, and its
@@ -293,7 +302,7 @@ def _bulk_extra_row(bulk: dict, pip) -> dict:  # noqa: ANN001
         "name": bulk["bundle"] or "bulk",
         "label": extras.bulk_label(bulk["action"], bulk["total"]),
         "detail": f"{bulk['done'] + 1 if now else bulk['done']} of {bulk['total']}. {step}",
-        "progress": bulk["done"] / bulk["total"] if bulk["total"] else None,
+        "progress": _bulk_progress(bulk, pip),
         "log": list(pip.log),
         "started": extras.bulk().started or None,
         #: Each package and where it is (INBOX 696), so the row can
@@ -322,8 +331,9 @@ def _extra_rows() -> list[dict]:
             else "Installing an optional extra",
             "detail": pip.step or "starting pip…",
             # pip does not report a fraction it is worth believing, and a
-            # bar that guesses is worse than one that admits it can't say.
-            "progress": None,
+            # bar that guesses is worse than one that admits it can't say; a
+            # download knows its bytes, so its bar is real (`fraction`).
+            "progress": pip.fraction,
             "log": list(pip.log),
             "started": pip.started or None,
             #: The app began this one itself (search by meaning's

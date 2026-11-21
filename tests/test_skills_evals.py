@@ -424,3 +424,23 @@ def test_the_evals_seam_is_the_only_thing_that_reaches_the_runner():
     # `evals` is a registered marker, so `pytest -m evals` is a selection
     # rather than a typo that silently matches nothing.
     assert "evals:" in (ROOT / "pytest.ini").read_text(encoding="utf-8")
+
+
+def test_the_dev_runner_script_parses_and_offers_the_documented_commands():
+    """Read, never run: the runner needs a binary and a model, so the suite only
+    proves the script is well formed and prints the two variables this file
+    reads (LEDGER L975; the real-model run itself is in BACKLOG)."""
+    import re
+    import shutil
+    import subprocess
+
+    script = ROOT / "scratchpad" / "llama-dev.sh"
+    body = script.read_text(encoding="utf-8")
+    cases = set(re.findall(r"^  (check|fetch|build|serve|env|stop)\)", body, flags=re.M))
+    assert cases == {"check", "fetch", "build", "serve", "env", "stop"}
+    env_fn = body[body.index("cmd_env() {") : body.index("cmd_serve() {")]
+    assert "TESSELLATE_EVALS_URL" in env_fn and "TESSELLATE_EVALS_MODEL" in env_fn
+    assert "will not download a" in body, "the script must never fetch a binary on its own"
+    bash = shutil.which("bash")
+    if bash:
+        subprocess.run([bash, "-n", str(script)], check=True)

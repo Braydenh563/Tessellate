@@ -36,6 +36,8 @@ def list_extras() -> dict:
         #: so Settings can show them under that row (INBOX 1777).
         "last": state.extra_id,
         "step": state.step,
+        #: 0 to 1 for a download with a known size, else None (pip has none).
+        "fraction": state.fraction if state.running else None,
         "outcome": state.outcome,
         "log": list(state.log),
         "bulk": bulk,

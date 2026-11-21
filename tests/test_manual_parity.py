@@ -251,6 +251,9 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
     assert "Dates beside the strip" in text and "Dates beside the strip" in html
+    # L587: the install bar's percentage and that closing the notice keeps the install going.
+    assert "bar with a percentage" in text and "bar with a percentage" in " ".join(html.split())
+    assert "Activity keeps" in text and "Activity keeps" in " ".join(html.split())
 
 
 def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so() -> None:

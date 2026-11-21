@@ -365,8 +365,10 @@ def _open_retrying(url: str, state):
     raise AssertionError("unreachable")
 
 
-def _fetch(download: Download, dest: Path, state, label: str) -> None:
-    """Stream one file to `dest`, hashing as it goes; raise on a mismatch."""
+def _fetch(download: Download, dest: Path, state, label: str, part: tuple[int, int] = (0, 1)) -> None:
+    """Stream one file to `dest`, hashing as it goes; raise on a mismatch.
+    `part` is (files done, files in all) so `state.fraction` runs 0 to 1 over the
+    whole install, not back to 0 at each file."""
     url = effective_url(download)
     if not url_allowed(url):
         raise DownloadFailed("not_allowed")
@@ -389,6 +391,7 @@ def _fetch(download: Download, dest: Path, state, label: str) -> None:
             if now - last > 0.25:
                 last = now
                 state.step = f"Downloading {label}: {_mb(received)} of {_mb(download.size)} MB"
+                state.fraction = (part[0] + received / max(download.size, 1)) / part[1]
     if digest.hexdigest() != download.sha256:
         raise DownloadFailed("checksum")
 
@@ -471,8 +474,9 @@ def install(extra, state) -> None:
                 label = f"{label} ({number} of {len(wanted)})"
             fetched = staging / ".download.part"
             with egress.purpose(f"Downloading {label}: {egress.short(download.url.rsplit('/', 1)[-1])}"):
-                _fetch(download, fetched, state, label)
+                _fetch(download, fetched, state, label, (number - 1, len(wanted)))
             state.step = f"Unpacking {label}"
+            state.fraction = number / len(wanted)
             unpacked = _unpack(download, fetched, staging)
             if download.inspect_imports:
                 state.step = f"Checking {label} for network code"

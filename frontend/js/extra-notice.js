@@ -87,12 +87,20 @@
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  //: Waits for the one install lane to be free (`GET /extras` `running`).
-  async function extraNoticeWaitIdle() {
+  //: What the notice says while its package installs: the percent of a
+  //: download that knows its size, else the plain word (`GET /extras` `fraction`).
+  function extraNoticeProgressText(body) {
+    return typeof body?.fraction === "number" ? `Installing, ${Math.round(body.fraction * 100)}%` : "Installing…";
+  }
+
+  //: Waits for the one install lane to be free (`GET /extras` `running`);
+  //: `onTick(body)` sees each answer so a notice can show the progress.
+  async function extraNoticeWaitIdle(onTick = null) {
     for (let waited = 0; waited < 600; waited += 1) {
       await sleep(1500);
       const body = await apiJson("/extras", { silent: true }).catch(() => null);
       if (body && !body.running) return;
+      if (body && onTick) onTick(body);
     }
   }
 
@@ -188,7 +196,7 @@
         return extraNoticeCheck(host, id, true, needed);
       }
       extraNoticeCheck(host, id, true, needed);
-      if (id !== "searxng") await extraNoticeWaitIdle();
+      if (id !== "searxng") await extraNoticeWaitIdle((body) => { const live = host.querySelector(".ai-offline-text"); if (live && pressed.get(id) === "installing") live.textContent = extraNoticeProgressText(body); });
       const after = await extraNoticeState(id, true);
       if (id === "searxng" || !after.missing) pressed.set(id, "installed");
       else pressed.delete(id);
@@ -202,7 +210,8 @@
     close.className = "ghost small icon-only";
     close.dataset.dismiss = "notice";
     setLabel(close, "ph:x");
-    close.title = "Hide this until the package is installed or removed";
+    //: While it installs the x is the close and the minimise in one: the notice goes, the install stays, and Activity (status bar) shows its progress.
+    close.title = phase === "installing" ? "Hide this notice; the install carries on and Activity shows it" : "Hide this until the package is installed or removed";
     close.setAttribute("aria-label", "Hide this notice until the package is installed or removed");
     close.addEventListener("click", () => {
       //: Closing a finished install ends its Undo; it is not a "never ask".
