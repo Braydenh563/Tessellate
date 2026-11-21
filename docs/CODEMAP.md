@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11384, test files 2979, tests 23219, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8538, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11387, test files 2980, tests 23229, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
 ## Frontend functions (8538)
 
@@ -14223,7 +14223,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11384)
+## Backend modules (11387)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26288,7 +26288,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:115 |
+| `Engine` | src/tessellate/core/overlay/engine.py:116 |
 
 ### src/tessellate/core/overlay/engine_consts.py (10)
 
@@ -26334,6 +26334,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `RoamMixin` | src/tessellate/core/overlay/engine_roam.py:43 |
+
+### src/tessellate/core/overlay/engine_spells.py (1)
+
+| Name | File:line |
+|---|---|
+| `SpellsMixin` | src/tessellate/core/overlay/engine_spells.py:19 |
 
 ### src/tessellate/core/overlay/engine_touch.py (1)
 
@@ -26425,13 +26431,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `top_edges` | src/tessellate/core/overlay/perches.py:32 |
 | `tuck_spots` | src/tessellate/core/overlay/perches.py:82 |
 
-### src/tessellate/core/overlay/presence.py (5)
+### src/tessellate/core/overlay/presence.py (7)
 
 | Name | File:line |
 |---|---|
 | `Spell` | src/tessellate/core/overlay/presence.py:17 |
 | `_span` | src/tessellate/core/overlay/presence.py:29 |
 | `length_of` | src/tessellate/core/overlay/presence.py:64 |
+| `perch_edge_x` | src/tessellate/core/overlay/presence.py:77 |
+| `pick_perch_spell` | src/tessellate/core/overlay/presence.py:87 |
 | `pick_spell` | src/tessellate/core/overlay/presence.py:51 |
 | `spells_for` | src/tessellate/core/overlay/presence.py:46 |
 
@@ -28856,7 +28864,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23219)
+## Tests (23229)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30901,6 +30909,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_perch_1683.py | 8 |
 | tests/test_overlay_perch_hops_1683.py | 2 |
 | tests/test_overlay_perch_small_1697.py | 4 |
+| tests/test_overlay_perch_spells_l152.py | 10 |
 | tests/test_overlay_poof_1108.py | 15 |
 | tests/test_overlay_portal_share_1111.py | 3 |
 | tests/test_overlay_pose_silhouette_1111.py | 1 |
