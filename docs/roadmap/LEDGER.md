@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 2 | 4 | 0 | 0 | 6 |
-| chat | 176 | 207 | 61 | 2 | 59 | 444 |
+| chat | 176 | 206 | 61 | 2 | 59 | 443 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 46 | 1 | 0 | 0 | 47 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 438 | 77 | 2 | 112 | 887 |
+| all | 372 | 437 | 77 | 2 | 112 | 886 |
 
 ## graph
 
@@ -277,7 +277,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 
@@ -536,7 +535,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
-- [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-21** `general` open, S: Add a periodic sweep that clears dangling filing_similar_id values. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1806. Evidence: filing_similar_id is deliberately not a foreign key, and the doc's suggested follow-up, a periodic sweep, was never built or tracked.
 - [ ] **L-general-22** `general` open, S: Correct stale ARCHITECTURE claims on document revisions, MCP, the MSI and immutable caching. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1068. Evidence: Several stale claims in this file contradict the code and need a doc fix. :1068: DocumentRevision exists (database.py:2019, repo/documents.py:313). :1804: the packaged app has no stdio MCP, but `Tesse
@@ -548,6 +546,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
+- [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
 

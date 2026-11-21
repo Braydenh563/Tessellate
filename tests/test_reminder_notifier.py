@@ -11,14 +11,20 @@ from __future__ import annotations
 import os
 import stat
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
 
 from tessellate.core import reminder_notifier as rn
-from tessellate.core.database import utcnow
 from tests._frozen_clock import FIXED_NOW, freeze_reminder_clock
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _row(id_, due, *, done=False, alert=None, text="Dentist"):
@@ -148,16 +154,18 @@ def test_a_reminder_fires_once_with_no_window_and_done_from_it_marks_it_done(cli
     through the route's own code."""
     bin_dir, log = _fake_notify_send(tmp_path, "done")
     monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
-    # Deliberately the real clock: the notifier thread reads its own wall time
-    # and the test waits out a real 1.5 s, so a frozen "now" would never fire.
-    due = utcnow() + timedelta(seconds=1.5)
+    # A pinned clock that runs: the notifier thread reads it, and the test
+    # waits out a real 1.5 s, so a clock standing still would never fire.
+    started = time.monotonic()
+    pin_clock(monkeypatch, lambda: SUITE_NOW + timedelta(seconds=time.monotonic() - started))
+    due = SUITE_NOW + timedelta(seconds=1.5)
     made = client.post("/reminders", json={"text": "Call the dentist", "due_at": due.isoformat()}).json()
     notifier = rn.ReminderNotifier(rn.FiredStore(tmp_path / rn.STORE_NAME), "notify-send").start()
     try:
         deadline = time.monotonic() + 15
         while time.monotonic() < deadline and not client.get("/reminders").json()[0]["done"]:
             time.sleep(0.1)
-        fired_at = datetime.now(timezone.utc)
+        fired_at = SUITE_NOW + timedelta(seconds=time.monotonic() - started)
         time.sleep(1.5)
     finally:
         notifier.stop()

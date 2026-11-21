@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tests._clock import pin_clock
 
 ROOT = Path(__file__).resolve().parent.parent
 STATUS = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
@@ -56,10 +57,9 @@ def test_the_page_fetches_the_list_only_when_the_stamp_moved():
 def test_the_list_can_be_limited_to_a_due_window(client, monkeypatch):
     from datetime import datetime, timezone
 
-    from tessellate.api import routes_reminders
 
     #: A fixed clock (CLAUDE.md section 8): the window counts from this minute.
-    monkeypatch.setattr(routes_reminders, "utcnow", lambda: datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc))
+    pin_clock(monkeypatch, datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc))
     _make(client, "soon", "2026-11-14T09:00:00Z")
     _make(client, "past the window", "2026-12-20T09:00:00Z")
     everything = client.get("/reminders?include_done=false").json()

@@ -11,9 +11,8 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 2, 12, 0)
 SETS = {
@@ -41,8 +40,7 @@ def _ask(client, question: str) -> str:
 
 
 def _seed(session, monkeypatch, which: str) -> None:
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for i, content in enumerate(SETS[which]):
         entry = manager.create_entry(session, content)
         entry.created_at = entry.updated_at = datetime(2026, 10, 20 + i, 9, 0)

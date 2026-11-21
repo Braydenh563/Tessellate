@@ -8,18 +8,17 @@ import re
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import clock, config
+from tessellate.core import clock
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests.test_composer_study_1025 import NOTES, NOW
+from tests._clock import pin_clock
 
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     #: The reply seed reads the day too (`chat_said._reply_seed`); unpinned, the phrasing moved with the real date.
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
     for text, when in NOTES:

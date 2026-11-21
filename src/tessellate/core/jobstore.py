@@ -124,7 +124,11 @@ _MAX_TEXT = 300
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    """`database.utcnow`, read when called (a pinned test clock reaches it);
+    imported here as the rest of this module imports `database`."""
+    from tessellate.core import database
+
+    return database.utcnow()
 
 
 def _clip(text: object) -> str:

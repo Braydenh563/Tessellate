@@ -12,10 +12,9 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 4, 10, 5)
 #: Absolute dates never lead in these answers; 1441 says relative or none.
@@ -36,8 +35,7 @@ ACTIVITIES = [
 
 
 def _seed(session, monkeypatch, notes) -> None:
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for content, when in notes:
         entry = manager.create_entry(session, content, "Hobbies", [])
         entry.created_at = entry.updated_at = datetime.fromisoformat(when)

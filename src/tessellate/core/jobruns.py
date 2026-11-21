@@ -38,6 +38,7 @@ run.
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import contextvars
 import itertools
 import logging
@@ -274,6 +275,11 @@ def history(limit: int = KEEP_ROWS, db=None) -> list[dict]:  # noqa: ANN001
 #: a restart ends the runs, and `mark_interrupted` settles their rows.
 _live: list["Run"] = []
 _live_lock = threading.Lock()
+#: The run whose start last wrote each kind's row. A run that finishes after
+#: a newer one of its kind started leaves the row alone; the start times can
+#: tie (two starts in one clock tick, a coarse clock, a pinned test clock),
+#: so the owner decides, not the times.
+_owners: dict[str, "Run"] = {}
 
 #: The scheduled passes someone pressed Stop on (`core/passes.py` adds and
 #: clears; a pass's own loop reads it between steps). Here, below both, so
@@ -344,7 +350,7 @@ class Run:
         #: run (a pool job's): `/tasks` then adds its lines, not a second row.
         self.listed = False
         self.result = ""
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = clock.utc()
         self._t0 = time.monotonic()
         self._db = db
         self._status = "ok"
@@ -453,6 +459,8 @@ class Run:
         with _live_lock:
             if self not in _live:
                 _live.append(self)
+            if self._db is not None:
+                _owners[self.kind] = self
         _bump()
         #: In the app log under its run id, so Settings, Logs can show this
         #: run's lines (the Logs button filters on "[run-12]").
@@ -512,11 +520,7 @@ class Run:
                 if row is None:
                     row = JobRun(kind=self.kind, started_at=self.started_at)
                     session.add(row)
-                elif (
-                    row.status == "running"
-                    and row.started_at is not None
-                    and row.started_at > self.started_at
-                ):
+                elif row.status == "running" and self._superseded():
                     return  # a newer run is still going and owns the row
                 self._write_ending(row)
                 session.commit()
@@ -524,9 +528,15 @@ class Run:
             logger.debug("could not record the end of %r", self.kind, exc_info=True)
 
 
+    def _superseded(self) -> bool:
+        """True when a newer run of this kind started and has not ended."""
+        with _live_lock:
+            owner = _owners.get(self.kind)
+            return owner is not None and owner is not self and not owner.ended
+
     def _undo_skipped(self, session, row) -> None:  # noqa: ANN001
         """A skipped run was never a run: put the row back as it was."""
-        if row is not None and row.started_at == self.started_at:
+        if row is not None and row.started_at == self.started_at and not self._superseded():
             if self._before is None:
                 session.delete(row)
             else:
@@ -536,7 +546,7 @@ class Run:
 
     def _write_ending(self, row) -> None:  # noqa: ANN001
         row.started_at = self.started_at
-        row.finished_at = datetime.now(timezone.utc)
+        row.finished_at = clock.utc()
         row.status = self._status
         row.result = _clip(self.result) if self._status != "failed" else ""
         row.error = self._error
@@ -664,7 +674,7 @@ def note_finished(
     """
     run = Run(kind, _database(db), ledger=False)
     if isinstance(duration_ms, (int, float)) and duration_ms >= 0:
-        run.started_at = datetime.now(timezone.utc) - timedelta(milliseconds=duration_ms)
+        run.started_at = clock.utc() - timedelta(milliseconds=duration_ms)
         run._t0 = time.monotonic() - duration_ms / 1000
     if outcome == "failed":
         run.fail(detail or "Failed.")

@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from tessellate.api import routes_tidy
 from tests.test_board_library import _save
 from tests.test_meetings_644 import _make as _meeting
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 # Documents' joins, AI panel and history; the AI routes run with no model (the client fixture) and change nothing.
@@ -150,7 +158,7 @@ def test_a_meeting_takes_lines_makes_a_reminder_and_summarises_by_rules(client):
 
 
 def _soon() -> str:
-    return (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    return (SUITE_NOW + timedelta(hours=2)).isoformat()
 
 
 def test_a_document_archives_and_unarchives(client):

@@ -19,7 +19,7 @@ import threading
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Category, Entity, EntityMention, Entry
+from tessellate.core.database import Category, Entity, EntityMention, Entry, writes
 from tessellate.entry import link_wording
 
 _lock = threading.Lock()
@@ -77,8 +77,9 @@ def notes(session: Session, ids: list[int] | None = None) -> dict[int, link_word
 def counts(session: Session) -> link_wording.Counts:
     """The notebook's clue counts, rebuilt only when a note was added,
     removed or edited since the last build."""
-    stamp = tuple(
-        session.execute(select(func.count(Entry.id), func.max(Entry.id), func.max(Entry.updated_at)).where(*_live())).one()
+    stamp = (
+        writes(Entry),
+        *session.execute(select(func.count(Entry.id), func.max(Entry.id), func.max(Entry.updated_at)).where(*_live())).one(),
     )
     key = _scope_key(session)
     with _lock:

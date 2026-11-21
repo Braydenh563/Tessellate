@@ -15,13 +15,13 @@ import logging
 import tempfile
 import threading
 import time
-from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai import captioning, vision_ocr
 from tessellate.api.downloads import unsealed
 from tessellate.core import activity, deps, ocr, pdfpages
@@ -955,7 +955,7 @@ def _remember_page_read(key: tuple[str, int] | None, result: OcrPageReadOut, rea
             #: that. Deleting a reading takes the whole row, so it needs no
             #: invalidation of its own.
             row.regions = ""
-            row.created_at = datetime.now(timezone.utc)
+            row.created_at = clock.utc()
             session.flush()
             rf._reindex_file(session, kind, source_id)
             #: Explicit: `DatabaseManager.session()` hands back a bare Session,

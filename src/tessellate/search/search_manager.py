@@ -17,11 +17,12 @@ import re
 import threading
 from collections import OrderedDict
 from dataclasses import dataclass
-from datetime import datetime, time, timezone
+from datetime import datetime, time
 
 from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai import recognise, variants
 from tessellate.ai.help_words import one_edit_apart
 from tessellate.ai.note_recency import is_recency_ask
@@ -59,7 +60,7 @@ def _user_today(session: Session):
 
         return user_now(deps.get_config()).date()
     except Exception:  # noqa: BLE001  # a script or a test with no app state
-        return datetime.now().date()
+        return clock.wall().date()
 
 # Below this cosine similarity a match is probably noise, hide it. An
 # absolute floor, kept as a sanity check alongside the relative one below
@@ -1138,7 +1139,7 @@ def _rank(
 
 def note_search_mode(mode: str) -> None:
     """Record how a search found its notes (the box's engine calls this too)."""
-    _last_search.update(mode=mode, at=datetime.now(timezone.utc).isoformat())
+    _last_search.update(mode=mode, at=clock.utc().isoformat())
 
 
 def _rank_inner(

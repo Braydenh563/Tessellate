@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
 from tessellate.api.downloads import sealed_aware, unsealed
@@ -1213,7 +1214,7 @@ def save_generated_file(body: SaveFileBody) -> dict:
     # are two files someone may want to compare.
     if target.exists():
         stem, suffix = target.stem, target.suffix
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        stamp = clock.wall().strftime("%Y%m%d-%H%M%S")
         target = _within(exports, f"{stem}-{stamp}{suffix}", typed=True)
     #: A half-written export is worse than no export: it lands in the folder
     #: Settings lists, under the name the person chose, and opens as a

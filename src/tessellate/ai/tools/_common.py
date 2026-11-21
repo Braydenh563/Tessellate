@@ -20,7 +20,7 @@ from typing import Callable
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
+from tessellate.core import clock, deps
 from tessellate.repo import memberships
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import EmbeddingRecord, Entry
@@ -425,7 +425,7 @@ def _since_days(value) -> int | None:
         from tessellate.core.config import user_now as now_for
 
         return when_words.days_since(str(value), now_for(deps.get_config()))
-    days = (datetime.now(tz=when.tzinfo) - when).days
+    days = ((clock.utc().astimezone(when.tzinfo) if when.tzinfo else clock.wall()) - when).days
     return max(0, days)
 
 

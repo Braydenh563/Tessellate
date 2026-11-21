@@ -21,6 +21,14 @@ from datetime import timedelta
 from tessellate.core.database import AuditLog
 from tessellate.entry import manager
 from tessellate.entry import manager_categories, manager_links, manager_purge, manager_wiki
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 WRITE_PREFIXES = (
     "create_", "update_", "soft_delete_", "restore_", "archive_", "unarchive_",

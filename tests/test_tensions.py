@@ -17,12 +17,20 @@ stated rather than implied.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from sqlalchemy import select
 
 from tessellate.ai import tensions
 from tessellate.core.database import Entry, EntryLink
+import pytest
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 # --- Parsing a reply -------------------------------------------------------
@@ -61,7 +69,7 @@ def test_a_reply_that_ignores_the_format_is_not_read_as_a_finding():
 
 
 def _note(session, text, days_ago):
-    entry = Entry(content=text, created_at=datetime.now() - timedelta(days=days_ago))
+    entry = Entry(content=text, created_at=SUITE_LOCAL - timedelta(days=days_ago))
     session.add(entry)
     session.commit()
     return entry

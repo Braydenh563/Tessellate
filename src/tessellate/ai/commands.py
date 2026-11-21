@@ -1289,9 +1289,24 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
     return _reminder(f"remind me to {text}", now, locale)
 
 
+#: "lunch with my friend at noon today": an event named with a clock time and no verb. It is a thing to be
+#: reminded of, so it is offered as a reminder rather than searched for in the notes.
+_BARE_EVENT = re.compile(
+    r"^(?:lunch|dinner|breakfast|brunch|coffee|drinks|supper|meeting|appointment|class|lesson|interview|party|session|call|catch-?up|"
+    r"(?:the )?(?:dentist|doctor|gym|haircut))\b[^?]*\b(?:at (?:\d{1,2}(?::\d\d)?\s*(?:am|pm)?|noon|midnight|midday)|\d{1,2}(?::\d\d)?\s*(?:am|pm))\b[^?]*$",
+    re.I,
+)
+
+
+def _bare_event(text: str, now: datetime, locale: str | None) -> dict | None:
+    """An event and its time, said with no verb, is "remind me about" it (the card asks Confirm)."""
+    said = " ".join(text.split()).rstrip(" .!")
+    return _reminder(f"remind me about {said}", now, locale) if _BARE_EVENT.match(said) else None
+
+
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
     for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
+                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), lambda t: _bare_event(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:

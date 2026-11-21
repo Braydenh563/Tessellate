@@ -10,8 +10,8 @@ from datetime import date, datetime
 import pytest
 
 import tests._seed_r9_1109 as sd
-from tessellate.api import routes_chat
-from tessellate.core import clock, config
+from tessellate.core import clock
+from tests._clock import pin_clock
 
 #: A Wednesday, a Saturday, a month end (a Monday) and a year end (a Thursday).
 DAYS = [date(2026, 11, 11), date(2026, 11, 14), date(2026, 11, 30), date(2026, 12, 31)]
@@ -20,8 +20,7 @@ ASKS = ["what's on today", "what's due this week", "what's new lately", "what di
 
 def _go(client, monkeypatch, day):
     now = datetime(day.year, day.month, day.day, 12, 0)
-    monkeypatch.setattr(config, "user_now", lambda _c: now)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: now)
+    pin_clock(monkeypatch, lambda: now)
     monkeypatch.setattr(clock, "today", lambda: day)
     return lambda q: sd.ask(client, q, notes_only=True)["text"]
 

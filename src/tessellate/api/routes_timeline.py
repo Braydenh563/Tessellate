@@ -810,8 +810,10 @@ def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: AN
 
 #: One model call per span (review 5899369381): the call left running past
 #: SPAN_MODEL_TIMEOUT is reused by the next open of the same span, and its
-#: review is kept, keyed by the span's ends and its newest note, so a note
-#: written into the span asks again. Small: one sheet is open at a time.
+#: review is kept, keyed by the span's ends, what its notes say and today
+#: (review 5907787263: an edited note, or "today" in the prompt moving on,
+#: asks again). A call is dropped from the flights when it lands, read or not.
+#: Small: one sheet is open at a time.
 _SPAN_FLIGHTS: dict[tuple, object] = {}
 _SPAN_SAID: dict[tuple, str] = {}
 _SPAN_KEPT_MAX = 16
@@ -826,7 +828,8 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
 
     from tessellate.core import jobs
 
-    key = (first, last, max((n["id"] for n in notes), default=None))
+    key = _span_key(notes, first, last, now)
+    started = False
     with _SPAN_LOCK:
         if key in _SPAN_SAID:
             return _SPAN_SAID[key]
@@ -834,12 +837,34 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
         if flight is None:
             flight = jobs.future("span digest", _span_said_by_model, notes, first, last, now)
             _SPAN_FLIGHTS[key] = flight
+            started = True
+    if started:
+        #: Outside the lock: a call already done runs its callback here, at once.
+        flight.add_done_callback(lambda done: _span_landed(key, done))
     try:
-        said = flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
+        return flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
     except FutureTimeout:
         return ""
     except Exception as exc:  # noqa: BLE001  # a failed call is the composer's turn
         logging.getLogger(__name__).info("span digest: the model call failed (%s); the composer writes it", exc)
+        return ""
+
+
+def _span_key(notes: list[dict], first, last, now) -> tuple:  # noqa: ANN001
+    """The span's ends, a digest of each note's id, words and category, and today."""
+    import hashlib
+
+    said = hashlib.sha256()
+    for n in notes:
+        said.update(f"{n['id']}\x1f{n['category']}\x1f{n['content']}\x1e".encode())
+    return (first, last, said.hexdigest(), now.date())
+
+
+def _span_landed(key: tuple, flight) -> None:  # noqa: ANN001
+    """A span call is done: off the flights, and its review kept when it said one."""
+    try:
+        said = flight.result() or ""
+    except Exception:  # noqa: BLE001
         said = ""
     with _SPAN_LOCK:
         _SPAN_FLIGHTS.pop(key, None)
@@ -847,7 +872,6 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
             _SPAN_SAID[key] = said
             while len(_SPAN_SAID) > _SPAN_KEPT_MAX:
                 _SPAN_SAID.pop(next(iter(_SPAN_SAID)))
-    return said
 
 
 @router.get("/digest")
