@@ -9,8 +9,9 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 2, 50)
 
@@ -28,7 +29,8 @@ def _stream(client, body: dict) -> str:
 
 @pytest.fixture
 def one_note(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     entry = manager.create_entry(session, "# Lisbon trip\nFlying 14 November. Descale the kettle on Sunday.", category_name="Uncategorised")
     entry.created_at = entry.updated_at = datetime(2026, 10, 30, 1, 0)
     session.commit()

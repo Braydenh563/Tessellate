@@ -15,10 +15,11 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tests import _social_1420 as social
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 27, 12, 0)
 QUESTIONS = [
@@ -35,7 +36,8 @@ GRADED = [*QUESTIONS, "what about conversation starters", "summarise my social n
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     made = []
     for content, category, tags, when, _links in social.NOTES:
         entry = manager.create_entry(session, content, category, tags)

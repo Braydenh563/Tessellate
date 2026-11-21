@@ -15,16 +15,17 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import commands, composer_digest, composer_replies, composer_talk, find_topic
+from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 import tests._seed_1031c as seed_c
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 def _events(client, question, **body):

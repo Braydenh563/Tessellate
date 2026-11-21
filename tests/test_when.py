@@ -14,7 +14,6 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from tessellate.ai import when
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 9, 21, 15, 55, tzinfo=ZoneInfo("Australia/Brisbane"))
 
@@ -86,7 +85,7 @@ def test_the_tool_takes_the_users_words_with_no_model(app_state, session, monkey
     from tessellate.ai import tools
     from tessellate.core.database import Reminder
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda config: NOW)
     result = _tool(session, when="two hours before midnight")
     assert "error" not in result, result
     stored = session.get(Reminder, result["id"]).due_at
@@ -100,14 +99,14 @@ def test_an_iso_time_without_an_offset_is_stored_as_the_users_time(app_state, se
     19:00 for a user at UTC+10."""
     from tessellate.core.database import Reminder
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda config: NOW)
     result = _tool(session, due_at="2026-10-05T09:00")
     stored = session.get(Reminder, result["id"]).due_at
     assert stored.astimezone(NOW.tzinfo).strftime("%Y-%m-%d %H:%M") == "2026-10-05 09:00"
 
 
 def test_a_time_already_past_or_unreadable_is_refused_with_a_reason(app_state, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda config: NOW)
     assert "already passed" in _tool(session, due_at="2026-09-20T09:00")["error"]
     assert "Couldn't read 'whenever'" in _tool(session, when="whenever")["error"]
     assert "`when`" in _tool(session)["error"]
@@ -157,7 +156,7 @@ def test_the_list_tools_take_since_in_words(app_state, session, monkeypatch):
     from tessellate.ai import tools
     from tessellate.ai.tools import _common
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda config: NOW)
     assert _common._since_days("this month") == 20
     assert _common._since_days("7") == 7
     assert _common._since_days("whenever") is None

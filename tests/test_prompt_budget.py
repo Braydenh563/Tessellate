@@ -20,7 +20,6 @@ import pytest
 from tessellate.ai import agent, context, librarian, tools
 from tessellate.ai import agent_policy
 from tessellate.ai import agent_turn
-from tests._clock import pin_clock
 
 # The settings reads (`runtime_options`, the context budget, which tools are on)
 # build the app state, in the repo's own `data/` folder without this.
@@ -244,11 +243,12 @@ def test_the_clock_in_the_prompt_is_stable_across_a_tool_loop(monkeypatch):
     minute is the same string for all of them."""
     from datetime import datetime, timedelta, timezone
 
+    from tessellate.core import config
 
     base = datetime(2026, 7, 28, 18, 55, 10, 123456, tzinfo=timezone.utc)
 
     def system_at(moment):
-        pin_clock(monkeypatch, lambda: moment)
+        monkeypatch.setattr(config, "user_now", lambda _cfg: moment)
         return agent_turn.build_agent_messages("q", [])[0]["content"]
 
     first = system_at(base)

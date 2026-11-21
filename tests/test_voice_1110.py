@@ -18,9 +18,9 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import composer_frame
+from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "composer" / "voice_1110.json").read_text(encoding="utf-8"))
 NOW = datetime.fromisoformat(FIXTURE["now"])
@@ -28,7 +28,8 @@ NOW = datetime.fromisoformat(FIXTURE["now"])
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 def _seed(session) -> None:

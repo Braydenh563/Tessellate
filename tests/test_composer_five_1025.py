@@ -7,10 +7,11 @@ import datetime as dt
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 21, 10, 0, 0)
 BIO = (
@@ -35,7 +36,8 @@ NOTES = [(BIO, dt.datetime(2026, 10, 20, 9), "Lecture notes"), (WW1, dt.datetime
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for text, when, cat in NOTES:
         manager.create_entry(session, text, cat).created_at = when
     session.add(Reminder(text="Exam", due_at=dt.datetime(2026, 11, 12, 9, 0)))

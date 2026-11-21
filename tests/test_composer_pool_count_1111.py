@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from tessellate.api import chat_pool
+from tessellate.api import chat_pool, routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 11, 10, 30)
 
@@ -44,7 +44,8 @@ def _ask(client, question: str) -> str:
 
 @pytest.fixture(autouse=True)
 def clock(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
 
 def test_a_topic_over_the_pool_cap_is_counted_whole(session, client):

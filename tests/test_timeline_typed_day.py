@@ -14,7 +14,6 @@ from __future__ import annotations
 from datetime import datetime
 
 import pytest
-from tests._clock import pin_clock
 
 #: Sunday, so "next tuesday" and "last friday" cross a week boundary.
 NOW = datetime(2026, 10, 18, 12, 0)
@@ -45,7 +44,7 @@ PHRASES = [
 
 @pytest.fixture
 def fixed_clock(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda *_a, **_k: NOW)
 
 
 def test_twenty_typed_phrases_land_on_the_day_they_name(client, fixed_clock):

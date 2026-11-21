@@ -9,8 +9,8 @@ from datetime import datetime
 import pytest
 
 from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 
@@ -28,7 +28,8 @@ def _post(client, question: str, **body) -> str:
 
 @pytest.fixture
 def clock(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
 
 @pytest.mark.parametrize("question", ["undo", "redo", "undo that", "undo the last change"])

@@ -11,10 +11,11 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tests import _courses_1665 as fx
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 4, 10, 5)
 QUESTION = "What have I saved about courses & study?"
@@ -22,7 +23,8 @@ QUESTION = "What have I saved about courses & study?"
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     made = []
     for content, category, tags, when, _links in fx.NOTES:
         entry = manager.create_entry(session, content, category, tags)
@@ -299,7 +301,8 @@ GOLF = [
 
 @pytest.fixture
 def golf(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     made = []
     for content, category, tags, when in GOLF:
         entry = manager.create_entry(session, content, category, tags)

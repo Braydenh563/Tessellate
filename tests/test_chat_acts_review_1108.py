@@ -13,7 +13,6 @@ import pytest
 
 from tessellate.ai import commands, composer_cancel, starter_acts
 from tessellate.core.database import Entry
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 8, 10, 0)
 HEADING = "# 2026-11-08"
@@ -21,8 +20,10 @@ HEADING = "# 2026-11-08"
 
 @pytest.fixture(autouse=True)
 def _clock(monkeypatch):
+    from tessellate.api import routes_chat
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda _config: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _config: NOW)
 
 
 def _events(client, question, **body):

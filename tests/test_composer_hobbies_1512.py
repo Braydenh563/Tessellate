@@ -17,11 +17,12 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tests import _hobbies_1512 as hobbies
 from tests._framed_path import framed_path  # noqa: F401
-from tests._clock import pin_clock
 
 pytestmark = pytest.mark.usefixtures("framed_path")
 
@@ -31,7 +32,8 @@ QUESTION = "Summarise my notes in Hobbies."
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     made = []
     for content, tags, when, _links in hobbies.NOTES:
         entry = manager.create_entry(session, content, "Hobbies", tags)

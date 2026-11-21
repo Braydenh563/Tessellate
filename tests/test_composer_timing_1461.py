@@ -30,10 +30,11 @@ import pytest
 
 from tessellate.ai import composer_frame, insights
 from tessellate.ai import composer_digest_sentences
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests._framed_path import framed_path  # noqa: F401
-from tests._clock import pin_clock
 
 pytestmark = pytest.mark.usefixtures("framed_path")
 
@@ -59,7 +60,8 @@ MORE = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def build(notes, question: str) -> str:  # noqa: ANN001
         for text, when in notes:

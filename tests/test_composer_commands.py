@@ -17,7 +17,6 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import commands
-from tests._clock import pin_clock
 
 #: Tuesday 6 October 2026, 10:00 at UTC+10.
 NOW = datetime(2026, 10, 6, 10, 0, tzinfo=timezone(timedelta(hours=10)))
@@ -219,9 +218,11 @@ def _stream(client, question: str, history: list | None = None) -> list[dict]:
 def test_a_reminder_with_no_time_is_asked_once_and_the_answer_sets_it(client, session, monkeypatch):
     """OPEN-ledger row 461 (decisions 48 and 50): no time said is asked,
     never guessed as tomorrow at 9; the next turn's time fills it."""
+    from tessellate.api import routes_chat
     from tessellate.core.database import Reminder
 
-    pin_clock(monkeypatch, TASKS_NOW)
+    monkeypatch.setattr("tessellate.core.config.user_now", lambda _config: TASKS_NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _config: TASKS_NOW)
 
     asked = _stream(client, "remind me to call the dentist")
     text = "".join(e.get("delta", "") for e in asked if e["type"] == "answer")

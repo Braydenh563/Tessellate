@@ -13,15 +13,15 @@ import datetime as dt
 
 import pytest
 
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 11, 10, 9, 0, 0)
 
 
 @pytest.fixture
 def book(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     notes = [
         ("# Harbor launch plan\n\nShip the mobile app to the public on the 14th.", dt.datetime(2026, 10, 3, 10), "Work"),
         ("# Lisbon trip\n\nThe tram to Belem leaves from Praca da Figueira.", dt.datetime(2026, 10, 20, 18), "Travel"),
@@ -289,7 +289,7 @@ def test_an_edited_note_or_a_new_day_asks_again(book, ai_client, fake_ollama, mo
     fake_ollama.librarian_reply = "Edited review."
     assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Edited review."
     assert len(fake_ollama.chat_calls) == asked + 1
-    pin_clock(monkeypatch, lambda: NOW + dt.timedelta(days=1))
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW + dt.timedelta(days=1))
     fake_ollama.librarian_reply = "Next day review."
     assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Next day review."
     assert len(fake_ollama.chat_calls) == asked + 2

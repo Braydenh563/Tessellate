@@ -9,7 +9,6 @@ import re
 import pytest
 
 from tessellate.ai import composer_calc, composer_study
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 21, 10, 0, 0)
 
@@ -88,8 +87,11 @@ ROUTE = [
 
 @pytest.fixture
 def route_ask(client, monkeypatch):
+    from tessellate.api import routes_chat
+    from tessellate.core import config
     from tests.test_composer_route_688 import _ask
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     return lambda q: _ask(client, q, notes_only=True, answer_from="notes", history=[])["text"]
 
 

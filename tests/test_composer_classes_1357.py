@@ -19,10 +19,11 @@ import re
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.core.database import Document, Reminder, WhiteboardObject
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 21, 10, 0, 0)
 
@@ -58,7 +59,8 @@ _DUMP = os.environ.get("COMPOSER_1357_DUMP")
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for text, category, when, extra in NOTES:
         entry = manager.create_entry(session, text, category)
         entry.created_at = entry.updated_at = when

@@ -15,7 +15,6 @@ import pytest
 
 from tessellate.ai import tools
 from tessellate.entry import manager, timewords
-from tests._clock import pin_clock
 
 # A Tuesday, so weekday arithmetic has something to be wrong about.
 NOW = datetime(2026, 7, 28, 10, 30)
@@ -25,8 +24,9 @@ NOW = datetime(2026, 7, 28, 10, 30)
 def _fixed_now(monkeypatch):
     """The capture hook reads the writer's clock through `config.user_now`;
     pin it to NOW so the saved-note tests do not depend on today's date."""
+    from tessellate.core import config
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _config: NOW)
 
 
 def _first(text: str):

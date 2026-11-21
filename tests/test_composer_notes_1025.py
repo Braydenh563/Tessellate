@@ -7,16 +7,18 @@ import re
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests.test_composer_study_1025 import NOTES, NOW
-from tests._clock import pin_clock
 
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for text, when in NOTES:
         manager.create_entry(session, text, "Uni").created_at = when
     for text, due in (("Hand in the essay", (23, 17)), ("Gym session", (20, 7)), ("Submit essay", (None, 0)), ("Call the landlord", (28, 12))):

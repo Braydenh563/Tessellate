@@ -26,9 +26,10 @@ import pytest
 
 from tessellate.ai import composer_digest_lines
 from tessellate.ai import composer_digest_sentences
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 D = dt.datetime
@@ -78,7 +79,8 @@ def _questions(fam) -> list[str]:  # noqa: ANN001
 
 @pytest.fixture
 def answers(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def build(fam, chat: bool) -> list[tuple[str, str]]:  # noqa: ANN001
         for text, when in _notes(fam):

@@ -11,8 +11,9 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import composer_money
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 
@@ -20,7 +21,8 @@ NOW = datetime(2026, 10, 30, 12, 0)
 @pytest.fixture
 def ask(client, session, monkeypatch):
     def go(question: str, notes: list, now: datetime = NOW) -> str:
-        pin_clock(monkeypatch, lambda: now)
+        monkeypatch.setattr(config, "user_now", lambda _c: now)
+        monkeypatch.setattr(routes_chat, "user_now", lambda _c: now)
         for title, day, body in notes:
             entry = manager.create_entry(session, f"# {title}\n\n{body}" if title else body)
             entry.created_at = entry.updated_at = datetime.fromisoformat(day + "T09:00:00")

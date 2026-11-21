@@ -8,12 +8,14 @@ import json
 import pytest
 
 from tests.test_changed_today_1569 import NOW, _seed
-from tests._clock import pin_clock
+from tessellate.api import routes_chat
+from tessellate.core import config
 
 
 @pytest.fixture
 def ask(client, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def go(question: str = "What changed in my notebook today?") -> str:
         text = ""
@@ -39,7 +41,8 @@ def test_a_starter_reading_is_exempt_from_the_number_check(ask, session):
 
 def test_the_why_trail_names_the_reading_and_what_its_time_measures(client, session, monkeypatch):
     _seed(session, background=3, edited=3, written=1)
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     lines = []
     body = {"question": "What changed in my notebook today?", "answer_from": "notes", "use_tools": False}
     with client.stream("POST", "/chat/stream", json=body) as response:

@@ -20,8 +20,9 @@ import re
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.core.database import Entry
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 
@@ -66,7 +67,8 @@ def _seed(session, notes: dict[int, str] | None = None) -> None:
 
 @pytest.fixture
 def clock(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
 
 def _stream(client, question: str, **body) -> tuple[list, str]:

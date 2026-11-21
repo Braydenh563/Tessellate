@@ -33,7 +33,6 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import fence, librarian
-from tests._clock import pin_clock
 
 
 def _events(client, question, **body):
@@ -58,8 +57,9 @@ _EVENING = datetime(2026, 8, 1, 21, 0)
 def _fixed_clock(monkeypatch):
     """Every test here, not only the greeting's: a Chat greeting is welcomed by
     the part of the day too, and the route words every date from the clock."""
+    from tessellate.api import routes_chat
 
-    pin_clock(monkeypatch, _EVENING)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: _EVENING)
 
 
 @pytest.mark.parametrize("said", ["hey", "hello", "hi there", "good morning", "yo"])

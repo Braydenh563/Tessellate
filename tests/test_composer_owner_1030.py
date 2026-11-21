@@ -12,8 +12,9 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import composer_money
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 NOTES = [
@@ -25,7 +26,8 @@ NOTES = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for title, day, tags, body in NOTES:
         entry = manager.create_entry(session, f"# {title}\n\n{body}" if title else body, tags=tags)
         entry.created_at = entry.updated_at = datetime.fromisoformat(day + "T09:00:00")
@@ -62,7 +64,8 @@ def test_a_choice_the_app_offered_opens_that_note(ai_client, session, fake_ollam
     """INBOX 1455: "Open the note about I had work today..." (a choice under
     "Which note do you mean?") went to the model, which searched for another
     note's words and listed 18 notes. The note the choice names is opened."""
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     work = manager.create_entry(session, "I had work today and a friend was sad so I stayed with her for a bit")
     manager.create_entry(session, "something -> found it during school and thought the website was fun lol something")
     session.commit()

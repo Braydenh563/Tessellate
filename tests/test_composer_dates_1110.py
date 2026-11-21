@@ -12,9 +12,9 @@ import pytest
 
 from tessellate.ai import follow_items
 from tessellate.ai import recognise_questions
+from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests._consent import confirmed
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 SET = [{"question": "remind me to renew passport on 30 November at 9am", "answer": "Got it, I will remind you on 30 November at 9: renew passport."}]
@@ -23,7 +23,8 @@ FACT = [{"question": "when is the dentist check-up", "answer": "Check-up 21 Nove
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 def _events(client, question, **body):

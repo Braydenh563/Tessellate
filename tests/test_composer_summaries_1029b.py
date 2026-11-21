@@ -17,10 +17,11 @@ import re
 import pytest
 
 from tessellate.ai import composer, composer_study, study
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_frames_1029 import FAMILIES, _notes
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 D = dt.datetime
@@ -36,7 +37,8 @@ EXTRA = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for text, when in [*_notes(FAMILIES[0]), *EXTRA]:
         entry = manager.create_entry(session, text, "Personal")
         entry.created_at = entry.updated_at = when

@@ -7,17 +7,19 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tests import _gym_1767 as fx
-from tests._clock import pin_clock
 
 NOW = datetime.fromisoformat(fx.NOW)
 
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     made = []
     for content, category, tags, written, edited, _links in fx.NOTES:
         entry = manager.create_entry(session, content, category, tags)

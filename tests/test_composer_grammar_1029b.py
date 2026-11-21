@@ -21,10 +21,10 @@ from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_empty
 from tessellate.ai import composer_quote
 from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_frames_1029 import FAMILIES, _notes
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 D = dt.datetime
@@ -35,7 +35,8 @@ MODES = pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
 @pytest.fixture
 def book(client, session, monkeypatch):
     """A notebook with `_notes` of a family plus the extra notes, and a way to ask."""
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def build(extra: list[tuple[str, dt.datetime]] = (), fam=FAMILIES[0]):  # noqa: ANN001
         for text, when in [*_notes(fam), *extra]:

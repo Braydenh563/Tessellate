@@ -11,10 +11,9 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import chat_extra
+from tessellate.api import chat_extra, chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tessellate.repo import reminders as reminder_repo
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
@@ -37,8 +36,11 @@ REMINDERS = [
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
+    from tessellate.core import config
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 @pytest.fixture

@@ -11,9 +11,9 @@ import json
 import pytest
 
 from tessellate.ai import composer_extra, composer_study
+from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests.test_parity_1110 import prompt_of, stream
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 11, 10, 10, 0, 0)
 
@@ -73,7 +73,8 @@ def test_a_prose_sentence_with_one_figure_is_not_a_run():
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 def _budgets(session) -> None:

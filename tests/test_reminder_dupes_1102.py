@@ -10,7 +10,6 @@ import pytest
 
 from tessellate.ai import commands, composer_plan, composer_study, tools
 from tessellate.core.database import Reminder
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 2, 9, 0)
 
@@ -50,8 +49,9 @@ def test_a_done_reminder_does_not_block_a_new_one(ai_client, session):
     ],
 )
 def test_the_chat_act_says_it_already_exists_for_the_same_text_and_time(session, monkeypatch, ask):
+    from tessellate.core import config
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda cfg: NOW)
     parsed = commands.parse(ask, NOW)
     assert parsed is not None and parsed.args["intent"] == "reminder", ask
     session.add(Reminder(text=parsed.args["text"], due_at=parsed.args["due_at"]))
@@ -62,8 +62,9 @@ def test_the_chat_act_says_it_already_exists_for_the_same_text_and_time(session,
 
 
 def test_the_chat_act_still_asks_for_the_same_words_at_another_time(session, monkeypatch):
+    from tessellate.core import config
 
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda cfg: NOW)
     parsed = commands.parse("remind me tomorrow at 9am to call the dentist", NOW)
     session.add(Reminder(text=parsed.args["text"], due_at=datetime(2026, 11, 5, 9, 0)))
     session.commit()

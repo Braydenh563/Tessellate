@@ -14,10 +14,11 @@ import pytest
 
 from tessellate.ai import composer, composer_dialogue, note_recency
 from tessellate.ai.composer_ask import subject_terms
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.search import query as query_understanding
 from tessellate.ai.note_recency import is_recency_ask
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 3, 12, 0)
 
@@ -101,7 +102,8 @@ def test_a_topic_in_the_ask_is_still_a_search(ask):
 
 @pytest.fixture
 def notes(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for title, day in (("Ice Breakers", "2026-08-03"), ("Dentist", "2026-10-01"), ("Boiler", "2026-11-03")):
         entry = manager.create_entry(session, f"# {title}\n\nA line about {title.lower()}.")
         entry.created_at = entry.updated_at = datetime.fromisoformat(day + "T09:00:00")
@@ -135,7 +137,8 @@ def test_model_off_lists_the_newest_notes_newest_first_with_dates_and_links(clie
 
 @pytest.mark.parametrize("ask", RECENT)
 def test_model_on_is_handed_the_same_newest_notes(ai_client, fake_ollama, session, monkeypatch, ask):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for title, day in (("Ice Breakers", "2026-08-03"), ("Dentist", "2026-10-01"), ("Boiler", "2026-11-03")):
         entry = manager.create_entry(session, f"# {title}\n\nA line about {title.lower()}.")
         entry.created_at = entry.updated_at = datetime.fromisoformat(day + "T09:00:00")

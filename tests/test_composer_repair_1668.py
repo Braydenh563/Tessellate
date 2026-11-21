@@ -12,9 +12,10 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import intent, question_noise, repair_turn
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 4, 10, 5)
 
@@ -35,7 +36,8 @@ NOT_REPAIRS = [
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st.")
     manager.create_entry(session, "# Commitments\n\nYou do not have the 48-hour extension.")
     session.commit()

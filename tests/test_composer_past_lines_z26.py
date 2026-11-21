@@ -12,9 +12,10 @@ import datetime as dt
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 30, 10, 0, 0)
 WRITTEN = dt.datetime(2026, 10, 27, 9, 0, 0)
@@ -34,7 +35,8 @@ AHEAD = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def build(texts, question: str) -> str:  # noqa: ANN001
         for text in texts:

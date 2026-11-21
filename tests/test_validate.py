@@ -9,7 +9,6 @@ import pytest
 
 from tessellate.ai import composer, validate
 from tests import _composer_eval as E
-from tests._clock import pin_clock
 
 
 @pytest.fixture(scope="module")
@@ -119,6 +118,7 @@ def test_the_model_path_runs_the_same_validators(ai_client, fake_ollama, session
     the notes it was given; a number in none of them is said under it."""
     from datetime import datetime, timezone
 
+    from tessellate.api import routes_chat
     from tessellate.core import deps
     from tessellate.entry import manager
     from tests.test_composer_route_688 import _ask
@@ -131,7 +131,7 @@ def test_the_model_path_runs_the_same_validators(ai_client, fake_ollama, session
     #: the model's unsupported "28th") would falsely back it and the test
     #: would flake. Frozen to a minute that matches no number in the answer.
     frozen = datetime(2026, 10, 13, 16, 27, tzinfo=timezone.utc)
-    pin_clock(monkeypatch, lambda: frozen)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _config: frozen)
     out = _ask(ai_client, "When does Harbor ship?", use_tools=False, answer_from="ai")
     assert ("Heads up" in out["text"]) is flagged, out["text"]
     checks = [c for e in out.get("grounding", []) for c in e.get("checks", [])]

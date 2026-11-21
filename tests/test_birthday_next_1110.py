@@ -9,9 +9,9 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests.test_parity_1110 import prompt_of, stream
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 ASKS = ["whose birthday is next", "who has the next birthday", "when is the next birthday"]
@@ -19,7 +19,8 @@ ASKS = ["whose birthday is next", "who has the next birthday", "when is the next
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 def _notes(session, *contents: str) -> None:

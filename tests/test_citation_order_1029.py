@@ -28,11 +28,12 @@ from pathlib import Path
 
 import pytest
 
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_frames_1029 import FAMILIES, _notes, _questions
 from tests.test_composer_route_688 import _ask
 from tests._app_js import with_pieces
-from tests._clock import pin_clock
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -165,7 +166,8 @@ def test_every_surface_numbers_from_the_sentences_it_marks():
 
 @pytest.fixture
 def composed(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def build(fam, chat: bool):  # noqa: ANN001
         for text, when in _notes(fam):

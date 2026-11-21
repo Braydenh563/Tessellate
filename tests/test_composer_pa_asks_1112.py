@@ -8,15 +8,16 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import composer_names
+from tessellate.api import chat_said, chat_turn, routes_chat
 import tests._seed_fc_1110 as seed
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    for module in (routes_chat, chat_said, chat_turn):
+        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
 
 
 def _ask(client, question, history=None):

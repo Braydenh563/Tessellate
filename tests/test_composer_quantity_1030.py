@@ -12,8 +12,9 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import composer_money
+from tessellate.api import routes_chat
+from tessellate.core import config
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 WALKS = [
@@ -35,7 +36,8 @@ AGENCY = [("Agency hours", "2026-10-20", "Booked 10 hours with the agency. The a
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
     def go(question: str, notes: list) -> str:
         for title, day, body in notes:

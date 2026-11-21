@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 import pytest
 
 from tessellate.entry import manager
-from tests._clock import pin_clock
 
 SUNDAY = datetime(2026, 10, 11, 9, 0, tzinfo=timezone.utc)
 
@@ -34,8 +33,9 @@ def _ask(client, question: str) -> str:
 
 @pytest.fixture()
 def clock(monkeypatch):
+    from tessellate.api import routes_chat
 
-    pin_clock(monkeypatch, SUNDAY)
+    monkeypatch.setattr(routes_chat, "user_now", lambda cfg: SUNDAY)
 
 
 @pytest.fixture()

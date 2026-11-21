@@ -12,11 +12,11 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import reminder_parser, repair_turn
-from tessellate.core import clock
+from tessellate.api import routes_chat
+from tessellate.core import clock, config
 from tessellate.entry import manager
 from tests._consent import confirmed
 from tests.test_composer_route_688 import _ask
-from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 4, 10, 5)
 OFFER = [{"question": "dentist", "answer": "Your check-up is on the 21st. Want me to add a reminder for the dentist?"}]
@@ -26,7 +26,8 @@ INTRO = ("Atlas's assistant", "I read your notes", "I answer from your notes", "
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     # The reply seed carries the day (chat_said._reply_seed), so the real date picked the wording.
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
     manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st.")
@@ -129,7 +130,8 @@ _ABSOLUTE = re.compile(r"\b(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,? \d{1,2} 
 
 
 def _seed(session, monkeypatch, notes) -> None:
-    pin_clock(monkeypatch, NOW)
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     # The reply seed carries the day (chat_said._reply_seed), so the real date picked the wording.
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
     for content, when in notes:
