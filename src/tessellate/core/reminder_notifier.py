@@ -273,8 +273,16 @@ def build_command(
     raise ValueError(f"unknown notifier: {backend}")
 
 
+def _utcnow() -> datetime:
+    # The app's one UTC clock, read at call time (a test pins it); imported
+    # here because this module loads before the database does.
+    from tessellate.core.database import utcnow
+
+    return utcnow()
+
+
 def local_offset_minutes() -> int:
-    offset = datetime.now().astimezone().utcoffset()
+    offset = _utcnow().astimezone().utcoffset()
     return int(offset.total_seconds() // 60) if offset else 0
 
 
@@ -326,7 +334,7 @@ def apply_action(reminder_id: int, action: str) -> None:
                 reminder_id, tz_offset_minutes=local_offset_minutes(), expected_due_at=None, session=session
             )
         elif action == "snooze":
-            when = datetime.now(timezone.utc) + SNOOZE
+            when = _utcnow() + SNOOZE
             rr.update_reminder(reminder_id, rr.ReminderUpdate(due_at=when, done=False), session=session)
     finally:
         session.close()
@@ -374,7 +382,7 @@ class ReminderNotifier:
 
     def tick(self, now: datetime | None = None) -> float:
         """One look: announce what is due, return how long to sleep."""
-        now = now or datetime.now(timezone.utc).replace(tzinfo=None)
+        now = now or _utcnow().replace(tzinfo=None)
         session = self.session_source()
         if session is None:
             return MAX_SLEEP_S

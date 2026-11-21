@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import re
 
+from tessellate.core import clock
 from tessellate.ai import composer_remark
 
 SMALLTALK = "smalltalk"
@@ -54,7 +55,7 @@ _SMALLTALK_PATTERNS = (
     r"who are you|what(?:'?s| is) your name|tell me about yourself",
     r"are you (?:there|awake|ok|okay|alive|real|human|(?:an )?ai|a (?:robot|bot|person|real person))",
     r"nice to meet you|glad to meet you",
-    r"(?:tell|say) (?:me )?(?:a joke|something funny)(?: about (?:the |a |an )?[a-z]+)?|make me laugh|know any jokes",
+    r"(?:tell|say) (?:me )?(?:a joke|something funny)(?: (?:about|on|regarding) [a-z][a-z '-]{0,30})?|make me laugh|know any jokes",
     #: Closers and reactions that are whole turns (stress run 2026-10-30:
     #: "That helped, thank you", "bye for now", "Sorry, wrong chat" were
     #: searched for and answered with a note).
@@ -224,14 +225,13 @@ def classify(message: str) -> str:
 
 
 def _is_act(message: str) -> bool:
-    from datetime import datetime
 
     from tessellate.ai import act_registry
 
     # `commands` registers the typed reader when it loads, and the chat route
     # loads it (through the agent) before any question is classified. Naming it
     # here would make intent, agent and commands one import cycle.
-    act = act_registry.typed_reader(message, datetime.now())
+    act = act_registry.typed_reader(message, clock.wall())
     return bool((act and act["intent"] != "summarise") or act_registry.app_verb(message))
 
 

@@ -21,6 +21,7 @@ from sqlalchemy import select
 from tessellate.core.database import Entry, EntryProperty
 from tessellate.entry import manager, properties as note_properties
 from tests._app_js import frontend_text
+from tests._clock import pin_clock
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -177,9 +178,8 @@ BYLINED = """<html><head><title>Sourdough basics | The Gazette</title>
 def test_a_clip_opens_with_its_site_author_and_dates_as_properties(client, session, monkeypatch):
     from datetime import datetime
 
-    from tessellate.api import routes_webclip
 
-    monkeypatch.setattr(routes_webclip, "user_now", lambda _config: datetime(2026, 11, 11, 8, 0))
+    pin_clock(monkeypatch, datetime(2026, 11, 11, 8, 0))
     note = client.post(
         "/links/clip-page", json={"url": "https://bread.example/s", "title": "Sourdough basics", "html": BYLINED}
     ).json()["entry"]

@@ -11,11 +11,10 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests import _js_scope
+from tests._clock import pin_clock
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = datetime(2026, 10, 30, 9, 0)
@@ -23,8 +22,7 @@ NOW = datetime(2026, 10, 30, 9, 0)
 
 @pytest.fixture()
 def clock(monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _note(session, when: datetime, text: str = "A note") -> None:

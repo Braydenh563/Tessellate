@@ -12,8 +12,8 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import fact_check
-from tessellate.api import routes_chat
 from tessellate.core.database import Entry, Reminder
+from tests._clock import pin_clock
 
 #: A fixed clock (CLAUDE.md section 8), Tuesday 27 October 2026, 9:30.
 NOW = datetime(2026, 10, 27, 9, 30)
@@ -21,7 +21,7 @@ NOW = datetime(2026, 10, 27, 9, 30)
 
 @pytest.fixture(autouse=True)
 def _fixed_clock(monkeypatch):
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _seed(session, last=datetime(2026, 11, 20, 11)) -> None:

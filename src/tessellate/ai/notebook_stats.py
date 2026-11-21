@@ -45,7 +45,7 @@ from sqlalchemy import and_, case, func, select
 from sqlalchemy.orm import Session, aliased
 
 from tessellate.ai import composer_frame, note_recency, plain_words, spelling
-from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
+from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow, writes
 from tessellate.entry import manager
 
 #: How many rows a "top N" answer lists. Ten is a glance; fifty is a report
@@ -1239,8 +1239,8 @@ _PASS_CACHE_MAX = 8
 
 
 def _notes_fingerprint(session: Session) -> tuple:
-    return tuple(
-        session.execute(
+    # `writes(Entry)`: two edits in one clock tick share every column below.
+    return (writes(Entry), *session.execute(
             _visible(
                 select(
                     func.count(Entry.id),

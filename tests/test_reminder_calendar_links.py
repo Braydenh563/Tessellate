@@ -14,10 +14,18 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlsplit
 
 from tessellate.core import vault
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _due(days: int = 1) -> str:
-    return (datetime.now(timezone.utc) + timedelta(days=days)).replace(microsecond=0).isoformat()
+    return (SUITE_NOW + timedelta(days=days)).replace(microsecond=0).isoformat()
 
 
 def _add(client, text: str, **extra) -> dict:

@@ -9,15 +9,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 1 | 0 | 0 | 0 | 1 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| chat | 0 | 2 | 0 | 0 | 0 | 2 |
+| whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 55 | 0 | 69 | 357 |
-| general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 358 | 66 | 0 | 122 | 750 |
+| general | 0 | 25 | 2 | 0 | 5 | 27 |
+| all | 326 | 359 | 66 | 0 | 122 | 751 |
 
 ## graph
 
@@ -25,10 +25,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
 
+- [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
 
 ## whiteboard
 
-- [ ] **L-chat-24** `whiteboard` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there; moved from chat 2026-11-13 (hub: whiteboard owns whiteboard-commands.js).
 - [ ] **L257** `whiteboard` open, S: Stop board preview labels (mapPreview) running over the next shape. From OPEN.md:1239. Evidence: note-cards.js:38 mapPreview draws via mapPreviewDraw; no label-clipping fix found.
 - [ ] **L258** `whiteboard` open, S: Confirm in the app that diagram handles reverse and the connector delete bar work. From OPEN.md:4526. Evidence: Never confirmed in the app; no test cited
 - [ ] **L259** `whiteboard` open, S: Enlarge the shape flyout trigger beyond the 10px caret for finger use. From OPEN.md:659; OPEN.md:2913. Evidence: Flyout built (c9712e1ab) but phone-size target not enlarged; no fix commit
@@ -468,6 +468,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
+- [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
 

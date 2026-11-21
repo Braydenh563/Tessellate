@@ -19,10 +19,17 @@ from tessellate.ai import personal, question_noise, reading
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_smalltalk
 from tessellate.entry import manager
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 #: "the 14th of next month", pinned to the day the note was written (B3).
-_NOW = date.today()
+_NOW = SUITE_LOCAL.date()
 NEXT_14 = f"14 {composer_ask._MONTHS[_NOW.month % 12]}" + (f" {_NOW.year + 1}" if _NOW.month == 12 else "")
 
 
@@ -83,12 +90,9 @@ def test_the_composed_turn_is_saved_with_its_rows(ai_client, session, monkeypatc
     # with its source line and grounding row, which a fixed past date still shows.
     from datetime import datetime
 
-    from tessellate.api import routes_chat
-    from tessellate.core import config
 
     now = datetime(2026, 10, 31, 15, 45)
-    monkeypatch.setattr(config, "user_now", lambda _c: now)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: now)
+    pin_clock(monkeypatch, lambda: now)
     _seed(session, written=datetime(2026, 10, 17, 9))
     _ask(ai_client, "When is the dentist check-up?", notes_only=True, use_tools=False, answer_from="notes")
     turns = ai_client.get("/ask-history").json()["turns"]

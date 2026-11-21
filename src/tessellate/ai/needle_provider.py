@@ -60,10 +60,10 @@ import os
 import sys
 import threading
 import time
-from datetime import datetime
 from collections.abc import Iterator
 from pathlib import Path
 
+from tessellate.core import clock
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import needle_control
 from tessellate.ai.provider import Provider, ProviderError, normalise_tool_calls
@@ -360,7 +360,7 @@ def _said_by_one(name: str, words: str, args: dict | None = None) -> str:
         return "Done."
     #: The composer words the acts it decides itself (`needle_control.confirm`).
     mood = compose.mood_of("", voice=voice_now(), seed=words, intent="act")
-    return needle_control.confirm(name, result, args or {}, mood) or tool_say.say(name, result, args or {}, datetime.now().date())["text"]
+    return needle_control.confirm(name, result, args or {}, mood) or tool_say.say(name, result, args or {}, clock.wall().date())["text"]
 
 
 def _usable_schemas(tools: list[dict] | None) -> list[dict]:
@@ -436,7 +436,7 @@ class NeedleProvider(Provider):
         answer = self._engine().complete(_date_fact(), json.dumps(shown), text)
         raw_calls = _cleaned_calls(_engine_calls(answer), shown, text, strict=not decided)
         if decided:
-            verdict = needle_control.validate(decided, raw_calls, text, datetime.now(), mood)
+            verdict = needle_control.validate(decided, raw_calls, text, clock.wall(), mood)
             raw_calls = [needle_control.call_for(decided, verdict.call)] if verdict.call else []
             return self._reply(verdict.say, raw_calls, started, answer)
         return self._reply("" if raw_calls else needle_control.nothing_fits(mood), raw_calls, started, answer)

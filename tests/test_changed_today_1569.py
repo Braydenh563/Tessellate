@@ -8,9 +8,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 3, 12, 0)
 
@@ -30,8 +29,7 @@ def _seed(session, background: int, edited: int, written: int = 0):
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
     def go(question: str = "What changed in my notebook today?") -> str:
         text = ""

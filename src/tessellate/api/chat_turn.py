@@ -17,6 +17,7 @@ from collections.abc import Iterator
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
 from tessellate.ai import cite_marks, composer_digest_sentences
 from tessellate.ai import composer_dialogue
@@ -32,7 +33,6 @@ from tessellate.api.chat_said import _app_answers, _asks_capability, _cited_titl
 from tessellate.core import deps, private_turn
 from tessellate.core.config import user_now
 from tessellate.core.database import Entry
-from datetime import datetime
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
 from tessellate.repo import visible_notes
@@ -47,7 +47,7 @@ def _detect_intent(question: str, force_notes_intent: bool, *attachments: list) 
     if detected == intent.ABOUT_APP:
         from tessellate.ai import commands
 
-        bare = commands.read(question, datetime.now())
+        bare = commands.read(question, clock.wall())
         if bare and bare.get("intent") in ("new_note", "reminder") and (bare.get("no_subject") or not bare.get("text", bare.get("content"))):
             return intent.ACT
     # `body.answering_agent` (Tier 1 section 4): a reply to the agent's own

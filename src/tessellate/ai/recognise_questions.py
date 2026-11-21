@@ -13,6 +13,8 @@ from datetime import date, datetime, time, timedelta
 
 from tessellate.ai.recognise import recognise, resolve
 from tessellate.ai.recognise_windows import (
+    NUMBER_WORD_PATTERN,
+    number_word_value,
     _DAY_MONTH,
     _ISO_DATE,
     _LATELY,
@@ -308,7 +310,7 @@ def capitalise_names(text: str) -> str:
 _HOW_MANY = r"^(?:how (?:many|long) (?P<unit>days|weeks|months)?|(?:the )?(?:number of |count of )?(?P<bare>days|weeks|months)|countdown)"
 _DAYS_UNTIL = lazy_compile(_HOW_MANY + r"\s*(?:is it |are there |left )?(?:until|till|til|to|before)\s+(?P<what>.+)$", re.I)
 _DAYS_SINCE = lazy_compile(_HOW_MANY + r"\s*(?:has it been |is it |ago was |have passed |)?(?:since)\s+(?P<what>.+)$", re.I)
-_N_UNIT = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten)\s+(days?|weeks?|months?|years?)"
+_N_UNIT = r"(\d{1,3}|a|an|" + NUMBER_WORD_PATTERN + r")\s+(days?|weeks?|months?|years?)"
 #: "what date is it in 3 weeks" and "what is the date in 10 days" (the prefix, the suffix optional), or the bare
 #: "10 days from today" (no prefix, so the suffix is required); a real model run found both read as other questions.
 _DATE_FROM_NOW = lazy_compile(
@@ -349,7 +351,9 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
     if not found:
         return None
     amount, unit, tail = (found.group(1), found.group(2), found.group(3)) if found.group(1) else (found.group(4), found.group(5), found.group(6))
-    return amount, unit, not (tail or "from").startswith("from")
+    spelt = number_word_value(amount)
+    return (str(spelt) if spelt else amount), unit, not (tail or "from").startswith("from")
+
 
 _AGE_OF = lazy_compile(r"^how (?:old|long ago) (?:is|was) (?:the date |the day )?(\S.*\b\d{4})$", re.I)
 
@@ -517,8 +521,8 @@ _EVENT_WINDOW_WORDS = rf"this week|next week|this weekend|next weekend|this mont
 #: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
 _EVENT_TAIL = lazy_compile(rf" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight|{_WEEKDAY_WINDOW}) ?[?.!]*$", re.I)
 #: "are we meeting on Tuesday", "is there a team sync on Wednesday": a meeting word stands where "the plumber" does.
-EVENT_LEAD = (r"(?:(?:is|are|will) (?:the|my|our|a)\b|(?:are we|am i|will we|will i|do we have|do i have|is there|will there be) (?:an? |the |any )?"
-               r"(?:[a-z]+ ){0,2}(?:meeting|meet\w*|call|sync|lunch|dinner|appointment|session|class|visit|interview|catch-?up)\b)")
+EVENT_LEAD = (r"(?:(?:is|are|will) (?:the|my|our|a)\b|(?:are we|am i|will we|will i|do we have|do i have|is there|are there|will there be) (?:an? |the |any )?"
+               r"(?:[a-z]+ ){0,2}(?:meet\w*|(?:call|sync|lunch|dinner|appointment|session|visit|interview|catch-?up)s?|class(?:es)?)\b)")
 _EVENT_ASK = lazy_compile(rf"^\W*{EVENT_LEAD}.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
 _DISTANCE = lazy_compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 

@@ -41,6 +41,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
+from tessellate.core import clock
 from tessellate.core import paths
 
 FORMAT = "memorymap-folder"
@@ -101,7 +102,7 @@ def _restore(obj: object, record: dict, skip: set[str] | dict) -> None:
             # The bin clock restarts at the import: the stamp the export
             # carried is when the row was binned elsewhere, and the startup
             # sweep would purge a row just imported before it could be seen.
-            value = datetime.now(timezone.utc)
+            value = clock.utc()
         setattr(obj, column.name, value)
 
 
@@ -434,7 +435,7 @@ def export(session, uploads_dir: Path, archive: zipfile.ZipFile, progress=None) 
     documents = _write_documents(archive, session, related)
     manifest = {
         "format": FORMAT, "version": VERSION, "app_version": __version__,
-        "exported_at": datetime.now().astimezone().isoformat(),
+        "exported_at": clock.utc().astimezone().isoformat(),
         "counts": {"notes": len(notes), "boards": len(boards), "documents": len(documents),
                    "attachments": sum(len(n["attachments"]) for n in notes), "missing": len(missing)},
         "categories": _categories(session),

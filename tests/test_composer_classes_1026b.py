@@ -12,14 +12,14 @@ import datetime as dt
 
 import pytest
 
-from tessellate.ai import notebook_stats
 from tests.test_composer_classes_1357 import NOT_FOUND, NOW, ask  # noqa: F401
+from tests._clock import pin_clock
 
 
 @pytest.fixture(autouse=True)
 def _stats_clock(monkeypatch):
     """The counts read their windows from the same fixed day."""
-    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW.replace(tzinfo=dt.timezone.utc))
+    pin_clock(monkeypatch, NOW.replace(tzinfo=dt.timezone.utc))
 
 _KIND_MAP = r"(map|Cloud computing)"
 

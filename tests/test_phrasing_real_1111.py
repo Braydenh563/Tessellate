@@ -20,8 +20,8 @@ from pathlib import Path
 import pytest
 
 from tessellate.entry import manager
-from tests._clock import pin_user_now
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "composer"
 FIXTURE = json.loads((_FIXTURES / "phrasing_1111.json").read_text(encoding="utf-8"))
@@ -53,9 +53,9 @@ def _judge(kind: str, text: str) -> str | None:
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    #: Every module, not three named ones (tests/_clock.py): on 2026-11-21 the
+    #: Every clock in every module (tests/_clock.py): on 2026-11-21 the
     #: date filter read the real day, the fixture's "21 November".
-    pin_user_now(monkeypatch, NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 @pytest.fixture
@@ -78,6 +78,7 @@ def test_the_phrasings_name_nobody_and_carry_no_digits():
 
 
 #: Phrase (lower case) -> why the composer cannot honestly answer it yet. Strict: the marker comes off when the phrase passes.
+#: Filed as open work in CHAT_PLAN "Placed from the owner, 2026-10-30" item 3 (all pass; a phrase found failing is added here with its reason).
 XFAIL: dict[str, str] = {}
 
 

@@ -215,6 +215,15 @@ def _fixed_day(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _unpin_clock():
+    """A module imported under `pin_clock` keeps the pinned clock past the test."""
+    yield
+    from tests._clock import unpin_late_imports
+
+    unpin_late_imports()
+
+
+@pytest.fixture(autouse=True)
 def _forget_the_reported_locale():
     """A request's locale is kept in memory for readers that take none (`recognise.note_locale`); a test that
     posted "en-US" must not make the next test's "3/4" month first."""

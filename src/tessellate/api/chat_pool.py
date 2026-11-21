@@ -20,7 +20,7 @@ from tessellate.ai import composer, composer_frame, composer_intent, composer_li
 from tessellate.ai import composer_ask, composer_property, composer_tables
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _file_pictures, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
-from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload, writes
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
@@ -52,10 +52,10 @@ def _glossary(session: Session) -> dict[str, str]:
     """`ai/glossary.learn` over every note (CHAT_PLAN B7): "CC" is Cloud
     Computing because the notes say so, or name it in full beside it."""
     live = Entry.is_deleted == False  # noqa: E712
-    key = session.execute(select(func.count(Entry.id), func.max(Entry.updated_at)).where(live)).one()
-    if _GLOSSARY["key"] != tuple(key):
+    key = (writes(Entry), *session.execute(select(func.count(Entry.id), func.max(Entry.updated_at)).where(live)).one())
+    if _GLOSSARY["key"] != key:
         texts = session.execute(select(Entry.content).where(live)).scalars()
-        _GLOSSARY.update(key=tuple(key), terms=glossary.learn(texts))
+        _GLOSSARY.update(key=key, terms=glossary.learn(texts))
     return _GLOSSARY["terms"]  # type: ignore[return-value]
 
 

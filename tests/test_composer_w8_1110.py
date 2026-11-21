@@ -89,7 +89,7 @@ def test_a_habit_is_not_a_deadline_in_a_week_list(btask):
 
 def test_a_day_with_nothing_says_the_next_one_without_a_stray_stop(btask):
     text = btask("is there anything on Sunday")
-    assert "launch. (" not in text and "The next one is Deadline" in text, text
+    assert "launch. (" not in text and "Coming up after that: Deadline: Monday 16 November 2026 for the launch." in text, text
 
 
 # --- B15 an event question is answered from the notes' own sentences first --------------------------------
@@ -189,7 +189,7 @@ def test_a_month_is_not_a_synonym_of_the_other_months(r5):
 
 def test_before_a_holiday_is_a_window_that_ends_the_day_before(r5):
     text = r5("what is due before Christmas")["text"]
-    assert text.startswith("For Sat 7 Nov to Thu 24 Dec you have four dated items") and "christmas" not in text.lower().replace("christmas", "", 0)[40:], text
+    assert text.startswith("Coming up, Sat 7 Nov to Thu 24 Dec: four dated items.") and "christmas" not in text.lower().replace("christmas", "", 0)[40:], text
 
 
 def test_the_next_two_weeks_and_overdue_read_right(r5):
