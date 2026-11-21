@@ -31,9 +31,9 @@ def test_first_call_is_a_stamp_with_no_ids(client):
 
 
 def test_an_edit_after_the_stamp_comes_back_and_an_old_one_does_not(client, monkeypatch):
-    from tessellate.api import routes_entries
+    from tessellate.entry import listing
 
-    monkeypatch.setattr(routes_entries, "CHANGES_OVERLAP_SECONDS", 0.01)
+    monkeypatch.setattr(listing, "CHANGES_OVERLAP_SECONDS", 0.01)
     old = _note(client, "old note")
     edited = _note(client, "will change")
     time.sleep(0.03)
@@ -56,7 +56,7 @@ def test_the_stamp_overlaps_so_a_late_commit_is_asked_about_again(client, monkey
     same `updated_at` in `stamps`, which the client drops as already seen."""
     from datetime import datetime, timedelta
 
-    from tessellate.api import routes_entries
+    from tessellate.entry import listing
 
     stamp = client.get("/entries/changes").json()["since"]
     note = _note(client, "late")
@@ -64,7 +64,7 @@ def test_the_stamp_overlaps_so_a_late_commit_is_asked_about_again(client, monkey
     # A fixed clock half a second after the write: on the real one a CI runner
     # slower than the two-second overlap between these calls lost the id.
     written = datetime.fromisoformat(first["stamps"][str(note["id"])])
-    monkeypatch.setattr(routes_entries, "utcnow", lambda: written + timedelta(seconds=0.5))
+    monkeypatch.setattr(listing, "utcnow", lambda: written + timedelta(seconds=0.5))
     first = client.get("/entries/changes", params={"since": stamp}).json()
     second = client.get("/entries/changes", params={"since": first["since"]}).json()
     assert note["id"] in second["ids"]
@@ -96,9 +96,9 @@ def test_a_bad_stamp_is_refused_plainly(client):
 
 
 def test_more_than_the_cap_says_more(client, monkeypatch):
-    from tessellate.api import routes_entries
+    from tessellate.entry import listing
 
-    monkeypatch.setattr(routes_entries, "CHANGES_IDS_MAX", 2)
+    monkeypatch.setattr(listing, "CHANGES_IDS_MAX", 2)
     stamp = client.get("/entries/changes").json()["since"]
     time.sleep(0.02)
     for n in range(3):

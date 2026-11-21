@@ -47,7 +47,6 @@ BOUNDED = {
     "/documents/{document_id}/bookmarks": "the bookmarks attached to one document",
     "/documents/{document_id}/revisions": "one document's revisions",
     "/embedding-models": "the embedding models this app offers, and its own install log",
-    "/entries/changes": "ids changed since a stamp, capped at CHANGES_IDS_MAX (60); `more` says to re-read the list",
     "/entries/link-suggestions": "at most twelve suggestions",
     "/entries/most-accessed": "the top five",
     "/entries/{entry_id}/bookmarks": "the bookmarks attached to one note",

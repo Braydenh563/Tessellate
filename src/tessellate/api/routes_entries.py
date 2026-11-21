@@ -11,7 +11,7 @@ import contextlib
 import json
 import logging
 import re
-from datetime import date, datetime, timedelta
+from datetime import date
 from types import SimpleNamespace
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
@@ -53,14 +53,12 @@ from tessellate.core.deps import get_session
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.entry import manager, private_space
-from tessellate.entry import capture, filing_background, manager_wiki, tag_reasons, tag_suggestions
+from tessellate.entry import capture, filing_background, listing, manager_wiki, tag_reasons, tag_suggestions
 from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.entry import service as entry_service
-from tessellate.entry import properties as note_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo.content import NOTES
-from tessellate.search import search_manager
 
 router = APIRouter(prefix="/entries", tags=["entries"])
 
@@ -554,53 +552,10 @@ def improve_writing(body: ImproveBody) -> dict:
     return {"original": text, "improved": improved, "mode": body.mode}
 
 
-#: How many concept matches `?semantic=true` returns. A search result is a
-#: shortlist to read, not a second copy of the notebook.
-SEMANTIC_LIST_LIMIT = 25
 
 
-#: KG7: the table view's columns, and its rows, at most.
-QUERY_COLUMNS_MAX = 8
-QUERY_ROWS_MAX = 500
 
 
-@router.get("/query")
-def query_entries(q: str = "", session: Session = Depends(get_session)) -> dict:
-    """The notes a live query matches (GRAPH_PLAN KG7, `entry/query.py`),
-    newest first, with the table view's columns (the properties they carry,
-    most common first, `type` leading) and rows. The Notes list, the table
-    and the graph all take these ids, so one query is one answer."""
-    from tessellate.entry import query as live_query
-
-    terms = live_query.parse(q)
-    if not terms:
-        return {"ids": [], "columns": [], "rows": [], "structural": False, "rollups": {}}
-    ids = live_query.run(session, q)
-    rows = []
-    counts: dict[str, int] = {}
-    shown = ids[:QUERY_ROWS_MAX]
-    entries = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(shown)))} if shown else {}
-    for entry_id in shown:
-        entry = entries[entry_id]
-        content = manager_text.readable_content(entry)
-        found = {} if entry.is_private else note_properties.split(content)[0]
-        for key in found:
-            counts[key] = counts.get(key, 0) + 1
-        rows.append({
-            "id": entry_id,
-            "title": manager_text.extract_title(content) or manager_text.plain_label(content, 60) or "Untitled note",
-            "properties": found,
-        })
-    columns = sorted(counts, key=lambda k: (k != "type", -counts[k], k))[:QUERY_COLUMNS_MAX]
-    return {
-        "ids": ids,
-        "columns": columns,
-        "rows": rows,
-        "structural": live_query.is_structural(terms),
-        #: The footer's count, sum, min, max, earliest and latest, over every
-        #: match (not only the rows drawn), per column.
-        "rollups": live_query.rollups(session, ids, columns),
-    }
 
 
 #: A page of the plain list, not a hard ceiling on notebook size, the
@@ -617,6 +572,8 @@ ENTRIES_BY_IDS_MAX = 200
 
 #: The most characters `?preview=` may ask for: past it a caller wants the text.
 ENTRIES_PREVIEW_MAX = 2000
+
+
 
 
 
@@ -694,37 +651,10 @@ def list_entries(
             detail=f"Pick one of these board options: {', '.join(manager.BOARD_MODES)}.",
         )
     if semantic and q:
-        from tessellate.core import deps
-
-        # The *complete* id set, deliberately not paginated: `allowed` below
-        # decides which semantic hits are even in scope for this view (bin,
-        # archive, or live), and paginating this fetch would silently drop
-        # legitimate matches that happen to live past the first page. Ids
-        # only, no row bodies, cheap even at real notebook scale, and the
-        # thing the original unbounded-response risk was actually about was
-        # sending full rows over HTTP, not counting ids in-process.
-        scope_ids = manager.entry_id_scope(
-            session, deleted=deleted, archived=archived, boards=boards
-        )
-
-        # Ranked, and returned ranked. The first version rebuilt the result as
-        # `[e for e in entries if e.id in found_ids]`, which is the *notebook's*
-        # order: so the best match could land anywhere in the list and the
-        # feature looked like it was picking notes at random.
-        results = search_manager.semantic_search(
-            session, q, deps.get_embeddings(), limit=SEMANTIC_LIST_LIMIT
-        )
-        if results is None:
-            # No embedding backend ready. Saying so beats silently handing back
-            # the entire notebook as though it were the search result, the
-            # caller can fall back to its own keyword filter.
-            raise HTTPException(
-                status_code=503,
-                detail="Semantic search isn't ready yet: the embedding model is still loading.",
-            )
-        # `semantic_search` already drops anything under MIN_SIMILARITY; a
-        # second threshold here was a different number for the same job.
-        matched = [e for e, _score in results if e.id in scope_ids]
+        try:
+            matched = listing.semantic(session, q, deleted=deleted, archived=archived, boards=boards)
+        except listing.SemanticNotReady as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
         response.headers["X-Total-Count"] = str(len(matched))
         return entry_out.previewed(entry_out.to_out_bulk(session, matched), preview)
 
@@ -739,45 +669,37 @@ def list_entries(
             raise HTTPException(
                 status_code=422, detail="Note ids are read from the notes list only."
             )
-        wanted = [int(part) for part in parts]
-        entries = manager.list_entries(session, boards=boards, ids=wanted)
-        response.headers["X-Total-Count"] = str(manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True))
-        return entry_out.previewed(entry_out.to_out_bulk(session, entries), preview)
-
-    if deleted or archived:
-        # The bin and the archive page by position: both are short, both sort
-        # on a column that can be NULL on rows from before it existed (a
-        # keyset over NULLs needs a second ordering rule), and neither is
-        # written to while somebody scrolls it.
+        entries, total = listing.by_ids(session, [int(part) for part in parts], boards=boards)
+    elif deleted or archived:
         page = paging.resolve(response, offset=offset, limit=limit, cursor=cursor)
-        lister = manager.list_deleted_entries if deleted else manager.list_archived_entries
-        entries = lister(session, limit=limit, offset=page.offset)
-        total = (
-            manager.count_deleted_entries(session)
-            if deleted
-            else manager.count_archived_entries(session)
-        )
+        entries, total = listing.bin_page(session, deleted=deleted, limit=limit, offset=page.offset)
         page.finish(len(entries), total)
     else:
-        # The notes list pages by keyset (B7): a note saved while page one is
-        # on screen cannot push a row of page one onto page two as well.
-        after = paging.read_keyset(cursor, 3) if cursor else None
-        entries = manager.list_entries(
-            session,
-            limit=limit + 1,
-            offset=0 if after else offset,
-            boards=boards,
-            after=after,
-        )
-        more = len(entries) > limit
-        entries = entries[:limit]
-        if more and entries:
-            response.headers[paging.NEXT_CURSOR] = paging.keyset_cursor(
-                manager.list_sort_key(entries[-1])
-            )
-        total = manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True)
+        after_key = paging.read_keyset(cursor, 3) if cursor else None
+        found = listing.notes_page(session, limit=limit, offset=offset, boards=boards, after=after_key)
+        entries, total = found.entries, found.total
+        if found.next_key is not None:
+            response.headers[paging.NEXT_CURSOR] = paging.keyset_cursor(found.next_key)
     response.headers["X-Total-Count"] = str(total)
     return entry_out.previewed(entry_out.to_out_bulk(session, entries), preview)
+
+
+@router.get("/query")
+def query_entries(q: str = "", session: Session = Depends(get_session)) -> dict:
+    """The notes a live query matches, with the table view's columns (`listing.query`)."""
+    return listing.query(session, q)
+
+
+@router.get("/changes")
+def entry_changes(
+    since: str = Query(default="", max_length=40),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Which notes changed since `since`, for another device's live update (`listing.changes`)."""
+    try:
+        return listing.changes(session, since)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Declared before /{entry_id} so "most-accessed" isn't parsed as an id.
@@ -798,59 +720,8 @@ def count_entries(session: Session = Depends(get_session)) -> dict:
     return {"count": manager.count_notes(session)}
 
 
-#: The most ids one `/entries/changes` answer carries; past it, `more` says
-#: re-read the list (a bulk retag or an import touched more than a patch is
-#: worth).
-CHANGES_IDS_MAX = 60
-#: How far behind the newest change the next stamp starts (see below).
-CHANGES_OVERLAP_SECONDS = 2.0
 
 
-@router.get("/changes")
-def entry_changes(
-    since: str = Query(default="", max_length=40),
-    session: Session = Depends(get_session),
-) -> dict:
-    """**Which notes changed since `since`** (INBOX 881, the owner: "what if I
-    make a change on my phone?? does it live update??"). The notes list on
-    another device asks every few seconds and patches those ids in with
-    `refreshEntries`. With no `since` it is only a stamp to ask from next.
-
-    By `updated_at`, which every write moves (an edit, a filing, a bin, an
-    archive, an open too: a refresh of an unchanged row costs one small read
-    and is the price of not missing a change made by a path that forgot
-    `edited_at`). Boards are left out, as the list leaves them out. The stamp
-    sent back is two seconds behind now, so a write whose
-    transaction committed a moment after this read is asked about again
-    rather than missed (and never further back than the newest change, so a
-    change is not sent for ever); the client drops ids it has already seen at
-    the same `updated_at`, which `stamps` carries."""
-    now = utcnow()
-    overlap = timedelta(seconds=CHANGES_OVERLAP_SECONDS)
-    if not since:
-        return {"since": (now - overlap).isoformat(), "ids": [], "stamps": {}, "more": False}
-    try:
-        after = datetime.fromisoformat(since)
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail="That time is not one this app wrote.") from exc
-    if after.tzinfo is None:
-        after = after.replace(tzinfo=now.tzinfo)
-    rows = session.execute(
-        select(Entry.id, Entry.updated_at)
-        .where(Entry.updated_at > after, Entry.is_board.is_(False))
-        .order_by(Entry.updated_at.desc())
-        .limit(CHANGES_IDS_MAX + 1)
-    ).all()
-    more = len(rows) > CHANGES_IDS_MAX
-    rows = rows[:CHANGES_IDS_MAX]
-    newest = max((r.updated_at for r in rows), default=None)
-    stamp = max(after, min(newest, now - overlap) if newest is not None else now - overlap)
-    return {
-        "since": stamp.isoformat(),
-        "ids": [r.id for r in rows],
-        "stamps": {str(r.id): r.updated_at.isoformat() for r in rows},
-        "more": more,
-    }
 
 
 @router.post("/seed-examples")

@@ -16,13 +16,16 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 API = SRC / "api"
 
 #: The services, and what each may not import (the layers above it).
-SERVICES = (SRC / "entry" / "service.py", SRC / "entry" / "capture.py")
+SERVICES = (SRC / "entry" / "service.py", SRC / "entry" / "capture.py", SRC / "entry" / "listing.py")
 _UPWARD = ("tessellate.api", "fastapi", "starlette")
 
 #: Route module -> the route functions already moved behind a service.
 CONVERTED = {
     "routes_entries.py": {
         "create_entry",
+        "list_entries",
+        "entry_changes",
+        "query_entries",
         "daily_journal",
         "daily_note",
         "open_daily_note",
