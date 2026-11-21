@@ -13,10 +13,14 @@ import logging
 from collections.abc import Iterator
 from fastapi import HTTPException
 
-from tessellate.ai import acts, agent, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
+from tessellate.ai import acts, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
+from tessellate.ai.lazy import LazyModule
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
 from tessellate.core import deps
 from tessellate.core.logbuffer import safe_value
+
+agent = LazyModule("tessellate.ai.agent")
+
 
 
 def _starter_read(req: _StreamRequest, model_ready: bool) -> tuple[str, dict] | None:

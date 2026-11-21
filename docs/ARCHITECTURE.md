@@ -1001,7 +1001,7 @@ SQLite via SQLAlchemy 2.0 (`core/database.py`). Main tables:
   hands off), timestamps, and soft-delete (`is_deleted` / `deleted_at`).
   Also on an entry: `suggested_tags` and `discarded_tags` (JSON lists):
   the tags filing offered, shown on the card as "+ tag", and the ones a
-  person refused so no later pass offers them again on that note (`_keep_suggestions`
+  person refused so no pass after it offers them again on that note (`_keep_suggestions`
   in `routes_entries.py` fills the first at filing: the model's tag pass when
   the model filed the note, otherwise `ai/lexical_filing.suggest_tags`, which
   only ever offers tags the person already uses); and `edited_at`, which moves only when a person changes the
@@ -1130,6 +1130,15 @@ properties and types) → `e5a1c8f3b7d2` (locked board items) → `f3c7a9e1d5b8`
 (the bin for documents and reminders) → `c2f8a6d4e9b1` (`entry_opens`) →
 **`b4e8d2a6f1c9`** (`entries.map_topic`, the head). `tests/test_alembic_baseline.py`
 holds it; the stamp step is skipped under pytest.
+
+**Which schema path a change takes (owner 2026-11-12, LEDGER L794: keep both):**
+a new nullable column or one with a constant default goes through the additive
+migrator (`_add_missing_columns`) and needs no migration; a new table comes from
+`create_all`; an index goes in `_ensure_indexes`; anything that renames, drops,
+retypes, adds a constraint or rewrites data gets an Alembic revision in
+`migrations/versions/`, chained onto the single head. A one-off data mend that
+is idempotent may instead run at startup in `DatabaseManager` (as
+`_drop_orphan_links` and `_mend_broken_bar_names` do).
 
 ### Why SQLite holds the notes (a decision, with its limits)
 
@@ -1573,7 +1582,11 @@ the architecture:
   set, the app never starts its own (`ai/captions.py`).
 - `TESSELLATE_MCP_TOKEN`: the token an outside client hands
   `python -m tessellate.mcp_server`; Settings shows it in the snippet, and
-  without it the server reads and changes nothing.
+  without it the server reads and changes nothing. The same server also
+  answers over HTTP at `/mcp` on the app's port (`api/routes_mcp.py`) for a
+  client given its own token in Settings (only its hash is kept,
+  `core/mcp_clients.py`): this computer only unless LAN mode is on, reads
+  only unless the token was made to write (INBOX 1860).
 
 User-facing preferences (chat model, embedding backend, recycle-bin days, answer
 style, optional AI profile, …) live in `data/preferences.json`, managed by
@@ -1739,7 +1752,7 @@ not an import string, and uvicorn cannot fork that); running `uvicorn` against
 the factory directly can, and is the case the check exists for.
 
 More workers is also not the lever for speed here. The slow paths are Ollama
-and embedding. A deferred filing (`defer_filing`) runs both off the request
+and embedding. A background filing (`defer_filing`) runs both off the request
 thread; a plain save and an edit still embed on the request (corrected
 2026-10-05, audit ARCH-02: this line said both were always off it).
 
@@ -1768,7 +1781,7 @@ thread; a plain save and an edit still embed on the request (corrected
 | Add a built-in skill | `skills.BUILTIN_SKILLS`, not `app.js`; name its tools (§7b) |
 | Log something a user or a website typed | `logbuffer.safe_value()` at the call site; `sanitise` only protects the in-app viewer |
 | Work out why SearXNG won't start | `searxng/searxng.log` in the data folder, surfaced in Settings → Web search |
-| Expose a tool to another program | `mcp_server.py`: it lists only non-destructive, enabled tools, so a new destructive tool needs no change there; a tool that writes is offered only once Settings' "Let that app add and change notes" (`mcp_writes_enabled`) is on, and a client without the notebook's `TESSELLATE_MCP_TOKEN` is refused |
+| Expose a tool to another program | `mcp_server.py`: it lists only non-destructive, enabled tools, so a new destructive tool needs no change there; a tool that writes is offered only once Settings' "Let that app add and change notes" (`mcp_writes_enabled`) is on, and a client without the notebook's `TESSELLATE_MCP_TOKEN` is refused; over HTTP (`api/routes_mcp.py`) the per-client token decides writes instead |
 | Add a background job | `core/jobs.enqueue(kind, func, ...)` with a lane in `KIND_LANES`, never a `Thread` of its own; `api/routes_tasks.collect()` already draws what the pool holds, so the panel needs nothing |
 | Show when a job last ran | wrap the job in `with jobruns.job_run("kind") as run:` (`core/jobruns.py`), set `run.result`, and add the kind to `jobruns.KINDS` for its wording; `GET /jobs/last-runs` and Settings → Background tasks (its Background jobs list) pick it up. Never write a `JobRun` row by hand |
 | Change how a note is filed with no model | `ai/lexical_filing.py` (`suggest_categories`, `suggest_tags`); the janitor and `_keep_suggestions` in `routes_entries.py` call it |

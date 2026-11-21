@@ -50,6 +50,21 @@ def test_stats_leave_drafts_out_like_the_notes_list(client):
     assert body["per_day"][-1] == 1
 
 
+def test_stats_name_the_oldest_notes_day(client):
+    """L-world-class-352: Ask's as-of slider spans from the oldest note, so the stats say which day that is."""
+    assert client.get("/insights/stats").json()["oldest_day"] is None
+    _save(client, "fresh note")
+    session = deps.get_db().session()
+    try:
+        old = Entry(content="three weeks back", tags="[]")
+        old.created_at = utcnow() - timedelta(days=21)
+        session.add(old)
+        session.commit()
+    finally:
+        session.close()
+    assert client.get("/insights/stats").json()["oldest_day"] == (utcnow() - timedelta(days=21)).date().isoformat()
+
+
 def test_on_this_day_resurfaces_old_notes(client):
     _save(client, "fresh note")  # today → excluded (too recent)
     session = deps.get_db().session()

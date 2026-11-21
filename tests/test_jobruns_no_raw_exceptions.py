@@ -2,7 +2,7 @@
 
 An exception's text can carry the person's path or a library's wording.
 `run.fail(exc)` and `run.fail(str(exc))` outside `core/jobruns.py` (which
-words an exception itself, `_failure_reason`) put it on the line; this holds
+words an exception itself, `failure_reason`) put it on the line; this holds
 the audited modules to a sentence.
 """
 

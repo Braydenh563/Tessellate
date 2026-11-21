@@ -123,10 +123,58 @@ def test_ocr_media_clears_with_empty_text(ai_client):
     assert response.json()["ocr_text"] == ""
 
 
-def test_ocr_media_refuses_a_pdf(ai_client):
-    upload_id = ai_client.post(
+def _pdf_upload(ai_client):
+    return ai_client.post(
         "/media/upload", files={"file": ("scan.pdf", b"%PDF-1.4", "application/pdf")}
     ).json()["id"]
+
+
+def test_ocr_media_reads_a_pdfs_text_layer(ai_client, monkeypatch):
+    """L631: the 415 'only images' is gone for a PDF; a text layer is used as is."""
+    from tessellate.core import docview
+
+    monkeypatch.setattr(docview, "extract", lambda path: type("V", (), {"text": "from the layer"})())
+    response = ai_client.post(f"/media/{_pdf_upload(ai_client)}/ocr")
+    assert response.status_code == 200
+    assert response.json()["ocr_text"] == "from the layer"
+
+
+def test_ocr_media_reads_a_scanned_pdf_page_by_page(ai_client, monkeypatch):
+    import tessellate.core.ocr as ocr_module
+    from tessellate.core import docview
+
+    monkeypatch.setattr(docview, "extract", lambda path: type("V", (), {"text": ""})())
+    monkeypatch.setattr(pdfpages, "available", lambda: True)
+    monkeypatch.setattr(pdfpages, "render_pages", lambda path: [b"png1", b"png2"])
+    seen = iter(["page one", "page two"])
+    monkeypatch.setattr(ocr_module, "extract_text", lambda path, *a: next(seen))
+    monkeypatch.setattr(ocr_module, "unavailable_reason", lambda *_a, **_k: "")
+    response = ai_client.post(f"/media/{_pdf_upload(ai_client)}/ocr")
+    assert response.status_code == 200
+    assert response.json()["ocr_text"] == "page one\n\npage two"
+
+
+def test_ocr_media_says_so_when_a_scanned_pdf_cannot_be_drawn(ai_client, monkeypatch):
+    from tessellate.core import docview
+
+    monkeypatch.setattr(docview, "extract", lambda path: type("V", (), {"text": ""})())
+    monkeypatch.setattr(pdfpages, "available", lambda: False)
+    response = ai_client.post(f"/media/{_pdf_upload(ai_client)}/ocr")
+    assert response.status_code == 409
+    assert "PDF viewer extra" in response.json()["detail"]
+
+
+def test_ocr_media_still_refuses_other_files(ai_client, monkeypatch):
+    upload_id = ai_client.post(
+        "/media/upload", files={"file": ("a.png", b"\x89PNG\r\n\x1a\n", "image/png")}
+    ).json()["id"]
+    from tessellate.core.database import MediaUpload
+
+    from tessellate.core import deps
+
+    with deps.get_db().session() as session:
+        session.get(MediaUpload, upload_id).filename = "notes.txt"
+        session.commit()
     response = ai_client.post(f"/media/{upload_id}/ocr")
     assert response.status_code == 415
 

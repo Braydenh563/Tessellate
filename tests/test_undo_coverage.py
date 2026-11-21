@@ -66,6 +66,7 @@ NOT_FUNCTION = {
 }
 CALL = re.compile(r"\b(?:api\.upload|api\.stream|apiJson|api|fetch)\(")
 CALLID = re.compile(r"\b([A-Za-z_$][\w$]*)\(")
+PREFS_PUT = re.compile(r"\s*[\"']/preferences[\"']")
 METHOD = re.compile(r"\bmethod\s*:\s*([^,}\n]+)")
 
 
@@ -395,7 +396,12 @@ def analyse():
             near = next(iter(chain_of(fn, c.start())), None)
             hi = near[1] if near else len(m)
             ahead = any(c.start() <= a <= min(hi, c.start() + 1000) for a, _ in arg_spans[fn])
-            raw.append((fn, c.start(), named_i, owner_i, value, reaches(fn, c.start()) or ahead))
+            #: A PUT /preferences passes the wrapper in status.js, which puts every
+            #: change on the stack and in Settings, Recent changes, wherever it is
+            #: made (L-world-class-31); `noHistory` opts a write out of it.
+            call_text = src[c.end():end]
+            choke = bool(PREFS_PUT.match(call_text)) and value in ('"PUT"', "'PUT'") and "noHistory" not in call_text
+            raw.append((fn, c.start(), named_i, owner_i, value, reaches(fn, c.start()) or ahead or choke))
 
     #: Where each name is written, for the helper-callers rule below.
     wanted = {files[r[0]][2][r[2]][2] for r in raw if r[2] is not None and not r[5]}
@@ -504,21 +510,17 @@ EXEMPT: dict[str, str] = {
     "whiteboard-map.js:wbMapSuggestBranches": "read: asks which notes to offer as branches; the add is wbMapAddChosenBranches, one Undo step",
     "settings-controls.js:(anonymous /auth/pin)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:(anonymous /auth/pin/forget)": "auth: sign-in, recovery or lock; no user data",
+    "settings-controls.js:showLanQr": "auth: opens the LAN trust page for a few minutes so a phone can fetch the certificate; no user data",
     "settings-controls.js:makeMaintenanceShortcut": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:openMaintenanceFolder": "read: opens the launcher logs folder; writes nothing",
     "settings-controls.js:setMaintenanceReinstall": "settings: a setting with its own Reset or the settings history",
-    "settings-data.js:saveBackupCopyDir": "settings: a setting with its own Reset or the settings history",
     "tag-suggest.js:noteTagChoices": "read: asks the model for tag suggestions, shown for review",
-    "wiring.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
     "graph.js:graphUnpinAllNow": "inverse: the one door for Unpin all; its callers (Reset, the More menu) offer Undo, which writes the released rows back",
     "lag-watch.js:lagFlush": "telemetry: sends lag reports to this app's own log file; nothing of the person's",
     "chat-docs.js:keepUnreadableChatFile": "send: keeps a dropped file the chat cannot read in Library > Files, which says so in its toast; deleting it there is the way back",
     "documents.js:docDropIfUntouched": "purge: bins only a document never written in, so there is nothing to restore",
-    "wiring.js:toggleWebSearch": "settings: the Web switch is its own on/off and toasts the new state; clicking again undoes it",
     "palette.js:agentCommitFiles": "send: stages files for the popup agent's turn, deleting them again if the send fails",
     "usage-ledger.js:(anonymous /usage)": "telemetry: telemetry or a background warm-up; no user data",
-    "status.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:(anonymous /models/sampling)": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:(anonymous /debug/health/integrity)": "telemetry: telemetry or a background warm-up; no user data",
     "settings-data.js:(anonymous /suggestions/dismissed/clear)": "settings: clears the dismissed-suggestions list, a preference",
     "settings-data.js:dismissedRestore": "settings: restores one dismissed suggestion, a preference; its Undo is settingsClearDone's (offerUndo and Recent changes)",
@@ -530,9 +532,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:(anonymous /tasks/history/clear)": "telemetry: clears the list of finished background tasks",
     "settings-controls.js:(anonymous /tasks/autonomous/last/clear)": "telemetry: clears the last background-run note",
     "settings-controls.js:(anonymous /system/console-mode)": "job: starts or stops work or a model; deletes no user data",
-    "settings-controls.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:(anonymous /files/open-exports-folder)": "job: starts or stops work or a model; deletes no user data",
-    "settings-controls.js:(anonymous /backups/retention)": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:(anonymous /auth/password-on-open)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:(anonymous /auth/lock-all)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:(anonymous /auth/lan-certificate)": "auth: sign-in, recovery or lock; no user data",
@@ -545,7 +545,6 @@ EXEMPT: dict[str, str] = {
     "library.js:(anonymous /audit?entity_type=skill)": "telemetry: clears a skill's run log, not the person's data",
     "library.js:(anonymous ${base}/page-caption?page=${ocrWorks)": "read: reads a page's caption, shown for review",
     "library.js:(anonymous ${base}/ocr-page-read?page=${page}&r)": "read: reads a page's text, shown for review",
-    "documents.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
     "dashboard.js:(anonymous /recordings/recover)": "job: starts or stops work or a model; deletes no user data",
     "app.js:(anonymous path)": "read: the api.upload shorthand itself; each caller is scanned as its own site",
     "whiteboard.js:wbPlaceUploadedImage": "board: the image is placed by wbCreateObject, which pushes the board's create step; the file stays in the Library",
@@ -592,7 +591,6 @@ EXEMPT: dict[str, str] = {
     "ai-tools.js:applyFeatureModel": "settings: a setting with its own Reset or the settings history",
     "chat-tasks.js:renderTasks": "job: starts or stops work or a model; deletes no user data",
     "improve-panel.js:runImprove": "read: reads or asks the model; shows a result, writes nothing",
-    "ai-tools.js:saveUiState": "settings: a setting with its own Reset or the settings history",
     "ai-tools.js:wireReindexButton": "job: starts or stops work or a model; deletes no user data",
     "app-palette.js:openPalette": "telemetry: telemetry or a background warm-up; no user data",
     "app.js:lockNow": "auth: sign-in, recovery or lock; no user data",
@@ -617,22 +615,16 @@ EXEMPT: dict[str, str] = {
     "chat-turn.js:saveFollowups": "telemetry: stores suggested follow-up chips",
     "chat-turn.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
     "chat-turn.js:persist": "send: a chat message, kept by the chat's own turn history (its Undo word case went to `ask` in the E44 split)",
-    "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "web-results.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
     "web-results.js:startSearxng": "job: starts or stops work or a model; deletes no user data",
     "dash-night.js:renderNightCard": "job: starts or stops work or a model; deletes no user data",
-    "dashboard.js:saveDashLayout": "settings: a setting with its own Reset or the settings history",
-    "dashboard.js:saveQuickAccess": "settings: a setting with its own Reset or the settings history",
-    "dashboard.js:saveQuickTints": "settings: a setting with its own Reset or the settings history",
     "dashboard.js:streamDigest": "read: reads or asks the model; shows a result, writes nothing",
-    "dashboard.js:undoActorFrom": "inverse: reverses an actor's changes through /events/undo (existing UNFOLDED entry)",
     "date-field.js:foot": "read: reads or asks the model; shows a result, writes nothing",
     "documents-code.js:docFormatRemoteRefusal": "read: reads or asks the model; shows a result, writes nothing",
     "documents-code.js:docRemoteDiagnostics": "read: reads or asks the model; shows a result, writes nothing",
     "documents-codekit.js:docAssistAsk": "read: reads or asks the model; shows a result, writes nothing",
     "documents-word.js:docWordUploadPicture": "job: a picture inside a Word file being imported goes to the media store; the imported document is the step (Undo bins it)",
     "documents.js:docDesktopFullscreenToggle": "job: starts or stops work or a model; deletes no user data",
-    "documents.js:docDictionaryWrite": "settings: a setting with its own Reset or the settings history",
     "documents.js:docSuggestAnswers": "read: reads or asks the model; shows a result, writes nothing",
     "documents.js:ensureDocumentExists": "board: creates the document being typed into; the editor's history starts there",
     "documents.js:openDocAiHistory": "inverse: reverts an AI edit from its log, which is itself the undo",
@@ -663,7 +655,6 @@ EXEMPT: dict[str, str] = {
     "navigation.js:usageFlush": "telemetry: telemetry or a background warm-up; no user data",
     "entry-card.js:entryItem": "job: stops the background filing pass on a note; the note's category changes are edits with their own Undo",
     "note-history.js:toggleThenAndNow": "read: reads a comparison",
-    "note-history.js:undoSkillRun": "inverse: reverses a skill run's writes after a confirm (existing UNFOLDED entry)",
     "ocr-engine.js:ocrEngineLanguagePicker": "settings: a setting with its own Reset or the settings history",
     "ocr-engine.js:ocrEngineStartInstall": "job: starts or stops work or a model; deletes no user data",
     "onboarding.js:maybeShowConsoleViewIntro": "settings: a setting with its own Reset or the settings history",
@@ -675,23 +666,15 @@ EXEMPT: dict[str, str] = {
     "questions-view.js:initQuestionsView": "job: starts or stops work or a model; deletes no user data",
     "quickadd.js:noteOffersFetch": "read: reads or asks the model; shows a result, writes nothing",
     "reminder-notify.js:showReminderNotification": "telemetry: telemetry or a background warm-up; no user data",
-    "search.js:persistSavedFinds": "settings: a setting with its own Reset or the settings history",
-    "semantic-notice.js:semanticSetAutoInstall": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:addPersona": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:applyBackendChoice": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:applyChatModel": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:applyOcrModel": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:applyUtilityModel": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:applyVisionModel": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:deleteProfile": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:exportFullBackup": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:resetAllFeatureModels": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:restartMemoryMap": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:runEmbeddingFallback": "job: starts or stops work or a model; deletes no user data",
-    "settings-controls.js:saveExportSaveDir": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:saveModelContextWindow": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:saveRunBudget": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:saveWebSearchSettings": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:submit": "auth: sign-in, recovery or lock; no user data",
     "settings-data.js:backupNow": "job: starts or stops work or a model; deletes no user data",
     "settings-data.js:importDirectory": "job: starts or stops work or a model; deletes no user data",
@@ -705,32 +688,14 @@ EXEMPT: dict[str, str] = {
     "settings-models.js:modelUse": "settings: picks the active model",
     "settings-models.js:run": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:changePassword": "auth: sign-in, recovery or lock; no user data",
-    "settings-panes.js:reportTimezone": "settings: a setting with its own Reset or the settings history",
-    "settings-panes.js:savePrefs": "settings: a setting with its own Reset or the settings history",
-    "settings-prefs.js:saveSearchProvider": "settings: a setting with its own Reset or the settings history",
-    "settings-panes.js:setPreference": "settings: a setting with its own Reset or the settings history",
-    "settings-wiring.js:persistSavedSearches": "settings: a setting with its own Reset or the settings history",
     "settings-wiring.js:lockRequest": "auth: sign-in, recovery or lock; no user data",
     "settings.js:clearLogs": "telemetry: telemetry or a background warm-up; no user data",
-    "settings.js:deleteSavedTheme": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:learnedRunNow": "job: starts or stops work or a model; deletes no user data",
-    "settings-controls.js:learnedSetSwitch": "settings: a setting with its own Reset or the settings history",
     "settings.js:renderJobOverview": "job: starts or stops work or a model; deletes no user data",
-    "settings-health.js:renderSamplingRows": "settings: a setting with its own Reset or the settings history",
-    "settings-health.js:save": "settings: a setting with its own Reset or the settings history",
-    "settings.js:saveCurrentLook": "settings: a setting with its own Reset or the settings history",
     "personas-pane.js:renderPersonas": "read: reads or asks the model; shows a result, writes nothing",
-    "personas-pane.js:savePersonaList": "settings: a setting with its own Reset or the settings history",
     "shell-reminders.js:refreshMediaSession": "auth: sign-in, recovery or lock; no user data",
-    "settings-controls.js:onchange": "settings: a setting with its own Reset or the settings history",
     "skills.js:saveFile": "job: writes an export the person asked for to the exports folder, as a download does; it deletes nothing",
-    "skills.js:saveSkillList": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:saveToolSwitch": "settings: a setting with its own Reset or the settings history",
-    "settings-controls.js:saveToolGroup": "settings: a setting with its own Reset or the settings history",
-    "spaces-find.js:saveTemplateList": "settings: a setting with its own Reset or the settings history",
     "status.js:insightSend": "settings: a verdict on an insight, either way reversible by the other verdict",
-    "status.js:setChatMode": "settings: a setting with its own Reset or the settings history",
-    "status.js:toggleNotificationMute": "settings: a setting with its own Reset or the settings history",
     "suggestions-inbox.js:fillReasons": "read: reads or asks the model; shows a result, writes nothing",
     "suggestions-inbox.js:run": "read: reads or asks the model; shows a result, writes nothing",
     "tag-manager.js:drawTurnedDown": "settings: turned-down tag suggestions list, a preference",
@@ -895,3 +860,17 @@ def test_a_history_remap_translates_each_id_once():
         "a second translation of an already translated id duplicates and drops steps"
     )
     assert 'wbRemapSeen.set(made, new Set(["id"]))' in board, "a recreated item's own step is already in the new ids"
+
+
+def test_every_preferences_write_reaches_the_history_wrapper():
+    """The rule above (a PUT /preferences is covered) is true only while the wrapper is."""
+    status = (JS / "status.js").read_text(encoding="utf-8")
+    wrapper = status[status.index("apiJson = async (path, options = {}) => {") :][:900]
+    assert 'options.method === "PUT"' in wrapper and "!options.noHistory" in wrapper
+    assert "settingsOpen()" not in wrapper, "a write made with Settings closed must be kept too"
+    data = (JS / "settings-data.js").read_text(encoding="utf-8")
+    assert "settingsRepaintDock(body)" in data, "an Undo of a dock switch must repaint it"
+    #: A write that opts out has its own Undo, is the Undo's own write, or is a setup step.
+    opted = {p.name for p in JS.glob("*.js") if "noHistory" in p.read_text(encoding="utf-8")}
+    #: Not ai-tools.js: its `ui_state` mirror is how a look change is noted (L-world-class-49).
+    assert opted == {"dashboard.js", "documents-prose.js", "first-run.js", "onboarding.js", "settings-data.js", "status.js"}

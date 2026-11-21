@@ -1400,7 +1400,7 @@ onSurface("chat", initPhoneChatRow);
 //: is a class rather than a second recipe so everything else about a sheet,
 //: the scrim, the tier, the head with its X, Escape and the backdrop press,
 //: stays the one thing it already is.
-function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null, hasWork = null }) {
+function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null, hasWork = null, headless = false }) {
   const overlay = document.createElement("div");
   overlay.className = `modal-overlay sheet-overlay${variant ? ` sheet-${variant}` : ""}`;
   overlay.dataset.sheet = name || "";
@@ -1453,12 +1453,10 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   closeButton.className = "icon-only ghost small dialog-head-btn sheet-close";
   closeButton.setAttribute("aria-label", "Close");
   closeButton.title = "Close (Escape)";
-  const closeIcon = document.createElement("i");
-  closeIcon.className = "ph ph-x";
-  closeIcon.setAttribute("aria-hidden", "true");
-  closeButton.appendChild(closeIcon);
+  setLabel(closeButton, "ph:x");
   head.append(title, closeButton);
-  card.appendChild(head);
+  //: A `<sheet-host>` brings its own `.dialog-head`, so its sheet draws none.
+  if (!headless) card.appendChild(head);
   //: One line of state under the title (the model picker's "Its own model:
   //: granite4.1:3b"): part of the head, in the recipe, so a sheet that needs
   //: it does not hand-build a paragraph with its own margins.
@@ -1625,6 +1623,43 @@ function sheetRow(iconClass, label, run) {
   row.addEventListener("click", run);
   return row;
 }
+
+//: A form, picker or setting popup is a sheet (WORLD_CLASS_PLAN 27.2; L-world-class-131): its
+//: markup stays a `<sheet-host>` in the page, and `showModal()` lifts it into `openSheet`, so the
+//: scrim, Escape and the fade are the recipe's. It keeps the dialog's `open`, `showModal`, `close`
+//: and `close` event, so no caller changed; `data-sheet-kind="panel"` is a history.
+customElements.define("sheet-host", class extends HTMLElement {
+  get open() {
+    return !!this._close;
+  }
+  showModal() {
+    if (this._close) return;
+    const panel = this.dataset.sheetKind === "panel";
+    this._home ??= this.parentNode;
+    this._close = openSheet({
+      label: this.querySelector(".dialog-head-title")?.textContent.trim() || "Dialog",
+      name: this.id,
+      headless: true,
+      variant: panel ? "panel" : "hosted",
+      modal: !panel,
+      build: (card) => {
+        this.hidden = false;
+        card.appendChild(this);
+      },
+      onClose: () => {
+        this._close = null;
+        this.dispatchEvent(new Event("close"));
+      },
+      onGone: () => {
+        this.hidden = true;
+        this._home.append(this);
+      },
+    });
+  }
+  close() {
+    this._close?.();
+  }
+});
 
 // --- More: the three tabs the phone's five-item bar does not show -------------
 // UI_MODERNISATION_PLAN.md Phase 11, item 1; INBOX 1314 for which three. The
@@ -1800,11 +1835,12 @@ initKeyboardInset();
 //: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
 //: An h3 in a fold's summary is that fold's only name, so it stays (audit 1030 Y3).
 function echoSettingsPaneTitle(select) {
-  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
-  if (select.value.includes("#")) return;
-  const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
-  const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
-  if (head && !head.closest("summary") && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+  //: Written only when it changes: a remove and add on every call was two class mutations a key that marked the pane
+  //: stale for the search index (L-world-class-359).
+  const head = !select.value.includes("#") && document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
+  const want = head && !head.closest("summary") && head.textContent.trim().toLowerCase() === select.selectedOptions[0]?.textContent.trim().toLowerCase() && head;
+  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.toggle("jump-echo", h === want);
+  want && want.classList.toggle("jump-echo", true);
 }
 
 function buildSettingsJumpList() {
@@ -1825,13 +1861,9 @@ function buildSettingsJumpList() {
   for (const group of nav.querySelectorAll(":scope > div[role='group']")) {
     const heading = $(group.getAttribute("aria-labelledby"));
     const optgroup = document.createElement("optgroup");
-    optgroup.label = heading ? heading.textContent.trim() : "Sections";
+    optgroup.label = heading?.textContent.trim() || "Sections";
     for (const button of group.querySelectorAll("button[data-section]")) {
-      const option = document.createElement("option");
-      option.value = button.dataset.section;
-      option.textContent = button.textContent.trim();
-      if (button.classList.contains("active")) option.selected = true;
-      optgroup.appendChild(option);
+      optgroup.append(new Option(button.textContent.trim(), button.dataset.section, false, button.classList.contains("active")));
     }
     if (optgroup.children.length) select.appendChild(optgroup);
   }
@@ -1842,6 +1874,7 @@ function buildSettingsJumpList() {
   // place, and a hidden button still answers `.click()`.
   select.addEventListener("change", () => {
     nav.querySelector(`button[data-section="${CSS.escape(select.value)}"]`)?.click();
+    echoSettingsPaneTitle(select);
   });
 
   // And follows them: the section can also change from a search result, from
@@ -1853,7 +1886,6 @@ function buildSettingsJumpList() {
     }
     echoSettingsPaneTitle(select);
   }).observe(nav, { subtree: true, attributes: true, attributeFilter: ["class"] });
-  select.addEventListener("change", () => echoSettingsPaneTitle(select));
 
   // After the search field, which stays: searching the sections' contents and
   // jumping to one by name are different questions (the search field's own
@@ -2304,48 +2336,6 @@ async function clearAppCache() {
 async function forceReloadApp() {
   await clearAppCache();
   location.reload();
-}
-
-//: **The exports folder, as a list in Settings** (INBOX 159: "an area
-//: somewhere maybe in settings to open the exports folder location and access
-//: exported or downloaded files and images"). Fed by `GET /files/exports`,
-//: newest first; each row downloads its file through `GET
-//: /files/exports/{name}`, fetched with the app's own auth header and handed
-//: to the browser as a download, since a bare link cannot carry the token.
-async function renderExportsList() {
-  const list = $("exports-list");
-  const empty = $("exports-empty");
-  if (!list || !empty) return;
-  const body = await apiJson("/files/exports", { silent: true }).catch(() => null);
-  const files = (body && body.files) || [];
-  list.replaceChildren();
-  empty.classList.toggle("hidden", files.length > 0);
-  empty.textContent = body
-    ? `Nothing saved here yet. Downloads go to your browser's downloads; files the app saves land in ${body.path}.`
-    : "The exports folder could not be read.";
-  for (const file of files) {
-    const row = document.createElement("li");
-    row.className = "row exports-row";
-    const name = document.createElement("span");
-    name.className = "exports-name";
-    name.textContent = file.filename;
-    name.title = file.filename;
-    const facts = document.createElement("span");
-    facts.className = "muted text-sm exports-facts";
-    const size = formatFileSize(file.bytes);
-    facts.textContent = `${size} · ${relativeTime(file.modified_at)}`;
-    const get = smallButton("ph:download-simple Download", `Download ${file.filename}`, async () => {
-      try {
-        const response = await api(`/files/exports/${encodeURIComponent(file.filename)}`);
-        downloadBlob(await response.blob(), file.filename);
-      } catch (error) {
-        toast(error.message || `Couldn't fetch ${file.filename}.`, true);
-      }
-    });
-    get.classList.add("ghost");
-    row.append(name, facts, get);
-    list.appendChild(row);
-  }
 }
 
 function toggleAutonomousPanel() {

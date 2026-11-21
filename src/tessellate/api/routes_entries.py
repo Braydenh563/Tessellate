@@ -7,9 +7,10 @@ calls run (plan §4).
 
 from __future__ import annotations
 
+import collections
 import contextlib
 import dataclasses
-import functools
+import hashlib
 import json
 import logging
 import re
@@ -39,6 +40,7 @@ from tessellate.api.edit_conflicts import (
     content_hash,
     entity_tag,
     refuse_if_stale,
+    refuse_if_tags_stale,
     refuse_unless_match,
 )
 from tessellate.api.routes_entries_refs import REFERENCE_SOURCES_MAX, _reference_rows_batch
@@ -280,11 +282,56 @@ def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
 def _reasons_for(content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
     from tessellate.ai import tagging, taxonomy
 
-    hits = taxonomy.topic_hits(tagging.clean(content))
-    return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits)))
+    own = tagging.clean(content)
+    hits = taxonomy.topic_hits(own)
+    note_stems = tagging.stems(tagging.tokens(own))
+    return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits, note_stems, own)))
 
 
-_cached_reasons = functools.lru_cache(maxsize=1024)(_reasons_for)
+#: Rows the reasons cache keeps: more than a whole `GET /entries` page, or a list
+#: read in order evicts each row before the next load reaches it and hits nothing.
+REASONS_CACHE_ROWS = 5200
+
+
+class _ReasonsCache:
+    """`_reasons_for` remembered per (text, tags), keyed by a 16-byte digest of
+    the text so 5,000 rows cost about 3 MB whatever the notes' length (L-world-class-161:
+    the `lru_cache` it replaces held the text itself and was 1,024 rows, so a
+    5,000 page thrashed it). Same `cache_clear` / `cache_info` as `lru_cache`."""
+
+    Info = collections.namedtuple("Info", "hits misses maxsize currsize")
+
+    def __init__(self, maxsize: int) -> None:
+        self._rows: OrderedDict[tuple[bytes, tuple[str, ...]], tuple[tuple[str, str], ...]] = OrderedDict()
+        self._maxsize, self._hits, self._misses = maxsize, 0, 0
+        self._lock = threading.Lock()
+
+    def __call__(self, content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
+        key = (hashlib.blake2b(content.encode("utf-8", "surrogatepass"), digest_size=16).digest(), tags)
+        with self._lock:
+            found = self._rows.get(key)
+            if found is not None:
+                self._rows.move_to_end(key)
+                self._hits += 1
+                return found
+            self._misses += 1
+        value = _reasons_for(content, tags)  # outside the lock: it is the slow part
+        with self._lock:
+            self._rows[key] = value
+            while len(self._rows) > self._maxsize:
+                self._rows.popitem(last=False)
+        return value
+
+    def cache_clear(self) -> None:
+        with self._lock:
+            self._rows.clear()
+            self._hits = self._misses = 0
+
+    def cache_info(self) -> tuple:
+        return self.Info(self._hits, self._misses, self._maxsize, len(self._rows))
+
+
+_cached_reasons = _ReasonsCache(REASONS_CACHE_ROWS)
 
 
 def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  # noqa: ANN001
@@ -399,6 +446,7 @@ def _file_entry_now(
     content: str,
     on_late_llm=None,  # noqa: ANN001
     model_deadline: float | None = None,
+    release_session: bool = False,
 ) -> tuple[str, int, str]:
     """Ask the janitor where a note belongs. Whatever goes wrong in AI land,
     the note still gets saved (plan §4)."""
@@ -411,6 +459,7 @@ def _file_entry_now(
             deps.get_ollama(),
             on_late_llm=on_late_llm,
             model_deadline=model_deadline,
+            release_session=release_session,
         )
     except Exception:
         # `categorise` handles a model that is down on its own (a keyword
@@ -587,7 +636,7 @@ def _mark_filing_failed(entry_id: int) -> None:
 
 
 def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
-    """Decide a deferred note's category after its POST has already returned.
+    """Decide the category of a note filed in the background after its POST has already returned.
 
     Runs on its own daemon thread with its own session, the same shape
     `core/ocr.py`'s `extract_in_background` uses and for the same reason:
@@ -747,6 +796,22 @@ def _queue_embedding(entry) -> None:
     )
 
 
+#: The search model still loading is what the first note waits on
+#: (L-world-class-6), so its activity row says so rather than "Filing a note".
+SEARCH_MODEL_LOADING = "Loading the search model"
+
+
+def _filing_label_now() -> str | None:
+    try:
+        return None if deps.get_embeddings().is_ready() else SEARCH_MODEL_LOADING
+    except Exception:  # noqa: BLE001 - a label must never break the panel
+        logger.debug("filing label: embeddings unreadable", exc_info=True)
+        return None
+
+
+jobs.LIVE_LABELS["file-entry"] = _filing_label_now
+
+
 def _queue_filing(entry) -> None:
     """One filing job per note in flight: the key makes a second call while
     the first is queued or running a no-op, so `filing_status` can ask again
@@ -822,7 +887,7 @@ def _apply_flags(session: Session, entry, body) -> None:  # noqa: ANN001
 
 def _decide_filing(session: Session, body: EntryCreate, parent) -> tuple[str, int, str, bool]:  # noqa: ANN001
     """`(category, confidence, filed_by, defer)` for a new note."""
-    # Deferred only when nothing else already decides the category: with an
+    # Filed in the background only when nothing else already decides the category: with an
     # explicit `category` or a `parent_id` there is no model call to wait
     # for, so deferring would add a round trip and buy nothing.
     defer = body.defer_filing and not body.category and parent is None
@@ -846,7 +911,7 @@ def _decide_filing(session: Session, body: EntryCreate, parent) -> tuple[str, in
         #: request holds a database connection while the model thinks, and the
         #: unbounded wait it had (three minutes) let twenty at once fill the pool.
         category, confidence, filed_by = _file_entry_now(
-            session, body.content, model_deadline=janitor.filing_deadline()
+            session, body.content, model_deadline=janitor.filing_deadline(), release_session=True
         )
     return category, confidence, filed_by, defer
 
@@ -871,7 +936,7 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     """Everything after the commit that must never cost someone their note."""
     if not defer:
         #: Filed already: keep its tag suggestions now, from the notebook's
-        #: own tags (no second model call on the request; a deferred note
+        #: own tags (no second model call on the request; a note filed in the background
         #: gets the model's in the background pass).
         try:
             _keep_suggestions(session, entry, None)
@@ -885,7 +950,7 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # rather than swallowed, so a backend that has stopped working shows up in
     # Settings, Logs instead of quietly shrinking search.
     #
-    # Skipped when filing is deferred: the same background thread does it,
+    # Skipped when filing runs in the background: the same background thread does it,
     # right before the near-duplicate search that depends on it.
     if not defer:
         deps.store_quietly(session, entry)
@@ -1367,7 +1432,7 @@ def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
 
 @router.get("/{entry_id}/filing")
 def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dict:
-    """Where a deferred note ended up, the one thing the composer polls.
+    """Where a note filed in the background ended up, the one thing the composer polls.
 
     Deliberately not `GET /entries/{id}`: that serialises links, documents,
     dates and attachments through four more queries, and a poller running
@@ -2293,6 +2358,13 @@ def update_entry(
             current=lambda: _to_out(session, entry),
             noun="note",
         )
+    refuse_if_tags_stale(
+        base_tags=body.base_tags,
+        current_tags=manager.entry_tags(entry),
+        new_tags=body.tags,
+        current=lambda: _to_out(session, entry),
+        noun="note",
+    )
     content_changed, new_content = _content_change(entry, body)
     tags_changed = body.tags is not None and body.tags != manager.entry_tags(entry)
     #: The note's [[name]] before the edit (a private note is never a target).

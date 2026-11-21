@@ -1190,6 +1190,7 @@ def _named_category(session: Session, query: str):
     try:
         categories = list(session.scalars(select(Category)))
     except Exception:  # noqa: BLE001
+        logger.debug("_named_category: fell back", exc_info=True)
         return None
     for category in sorted(categories, key=lambda c: -len(c.name or "")):
         name = (category.name or "").strip()

@@ -26,7 +26,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+#: The whiteboard blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
+CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
 def _rule(selector_start: str) -> str:

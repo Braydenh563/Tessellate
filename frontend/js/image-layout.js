@@ -341,7 +341,7 @@ async function imageSaveNote(img, id, change) {
     await refreshEntries([id]);
     return content;
   } catch (error) {
-    toast(error.message || "Couldn't change the picture.", true);
+    toast(error.message || voiceLine("failed", { what: "change the picture" }), true);
     return false;
   }
 }

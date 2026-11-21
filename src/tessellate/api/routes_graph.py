@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, derived_pairs as derive_pairs, similar_pairs
 from tessellate.api import bounds
-from tessellate.core import cjk, companion_events
+from tessellate.core import activity, cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import (
     Attachment,
@@ -42,7 +42,6 @@ from tessellate.entry import manager_links
 from tessellate.entry import manager_text
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import graph_layers
-from tessellate.repo import properties as properties_repo
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types
 from tessellate.repo import relations as relations_repo
@@ -791,7 +790,7 @@ _GRAPH_COLUMNS = (
 def _payload_key(session: Session, similarity: bool, include_maps: bool, include_tags: bool) -> tuple:
     """Everything the default `/graph` payload is made of, as one digest.
 
-    GRAPH_PLAN "Still open": the payload at 5,000 notes is 0.7 to 1.0 s warm
+    GRAPH_PLAN (closed): the payload at 5,000 notes is 0.7 to 1.0 s warm
     and 3 MB, and the fingerprint the centrality cache uses (counts and the
     newest edit) misses what moves a node without editing a note: a pin, an
     access count, an attachment, a note put on a map, a link's reason, the
@@ -938,46 +937,6 @@ def _graph_entries(session: Session, include_maps: bool) -> list:
     return entries
 
 
-def _maps_of(session: Session) -> dict[int, list[int]]:
-    # GRAPH_PLAN Phase 5: which mind maps a note is on, from the map nodes'
-    # own data (a note node stores `ref_id`), one query for the whole
-    # payload. `map_ids` is what "has a map" colours by and what the local
-    # pane will list; it is here whether or not maps are drawn as nodes.
-    maps_of: dict[int, list[int]] = {}
-    from tessellate.core.database import WhiteboardObject
-
-    for board_id, raw in session.execute(
-        select(WhiteboardObject.board_id, WhiteboardObject.data).where(
-            WhiteboardObject.kind == "note", WhiteboardObject.board_id.is_not(None)
-        )
-    ):
-        try:
-            ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
-        except (TypeError, ValueError):
-            continue
-        if isinstance(ref_id, int) and board_id is not None:
-            maps_of.setdefault(ref_id, []).append(board_id)
-    return maps_of
-
-
-def _note_types_of(session: Session, node_ids: set[int]) -> dict[int, str]:
-    #: WORLD_CLASS_PLAN row 10 (D5): a note's type, for the "Note type" colour
-    #: rule, read from the properties index KG4 keeps (one query, the `type`
-    #: key's first value per note), never by parsing every note's block. A
-    #: private note has no index rows, so it carries none.
-    #: A note may spell its type in its own case ("type: book"); the node
-    #: carries the type's own name when Note types has it, so "book" and
-    #: "Book" are one colour and one legend row, not two.
-    canonical: dict[str, str] = {}
-    for name in session.scalars(select(NoteType.name)):
-        canonical[name.casefold()] = name
-    type_of: dict[int, str] = {}
-    for entry_id, value in properties_repo.types(session):
-        if entry_id in node_ids and value:
-            type_of.setdefault(entry_id, canonical.get(value.casefold(), value))
-    return type_of
-
-
 def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dict]:
     category_names = manager.bulk_category_names(session, entries)
     # GRAPH_PLAN Phase 3: "colour by" is a rule picker (category, cluster,
@@ -985,11 +944,11 @@ def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dic
     # each rule reads. One query for the file rule rather than a join per
     # node; tags are the column's JSON list, never the raw string.
     with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
-    maps_of = _maps_of(session)
+    maps_of = graph_layers.maps_of(session)
     now = datetime.now(timezone.utc)
     #: Each note's label and word count, read once per version (`_note_texts`).
     labels = _note_texts(entries)
-    type_of = _note_types_of(session, node_ids)
+    type_of = graph_layers.note_types_of(session, node_ids)
     return [
         {
             "id": e.id,
@@ -1747,13 +1706,15 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         lines.append(f"- {text[: topic_finder.SUMMARY_CHARS]}")
     hint = f"They share: {', '.join(body.terms[:5])}.\n" if body.terms else ""
     try:
-        reply = ollama.chat(
-            deps.get_model_manager().utility_model(),
-            [
-                {"role": "system", "content": topic_finder.SUMMARY_SYSTEM},
-                {"role": "user", "content": f"{hint}The notes:\n" + "\n".join(lines)},
-            ],
-        )
+        #: Listed while the model writes, as a Chat answer is (activity contract, rule 5).
+        with activity.track("generation", "Summarising a topic", stoppable=False):
+            reply = ollama.chat(
+                deps.get_model_manager().utility_model(),
+                [
+                    {"role": "system", "content": topic_finder.SUMMARY_SYSTEM},
+                    {"role": "user", "content": f"{hint}The notes:\n" + "\n".join(lines)},
+                ],
+            )
         # Small local models write `&#39;` and `&amp;` (B71, Qwen2.5-1.5B): shown as the characters meant.
         summary = " ".join(html.unescape(str(reply.get("content") or "")).split()).strip("\"' ")
     except Exception:  # noqa: BLE001  # any model failure reads as "no model"

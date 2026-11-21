@@ -99,7 +99,7 @@ def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_setting
     notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
     assert 'id="manage-categories-btn"' in html and 'id="settings-manage-categories"' in html
     assert '$("manage-categories-btn").addEventListener("click", () => openManageCategories());' in wiring
-    assert '$("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
+    assert 'wire("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
     assert "kebabMenu(categoryMenuItems(meta), `Actions for ${category}`, { vertical: true })" in notes
     assert 'data-help-for", "manage-cat-help"' in notes
     # Every change offers undo.
@@ -349,9 +349,10 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
                       "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]
-    settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
+    #: The row is painted by the pane's refresh, which moved to settings-controls.js with the panes (L675).
+    settings = (FRONTEND / "js" / "settings-controls.js").read_text(encoding="utf-8")
     assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
-    assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings
+    assert '$("desktop-companion-row").classList.toggle("hidden", !onThisComputer);' in settings
     note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:600]
     assert "while the desktop app runs" in note
 
@@ -755,3 +756,14 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+
+
+def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_keeps_its_own():
+    """L-world-class-76 (INBOX 1851): only a board, a map and a document keep their undo across a
+    reload (`undo-store.js`); the app's own stack starts empty, and Help says so."""
+    from tessellate.ai import help_chat
+
+    body = next(t for t in help_chat.HELP_TOPICS if t["id"] == "undo-bin")["body"]
+    assert "lasts for the session" in body and "after a reload or a restart it starts empty" in body
+    assert "a board, a mind map and a document keep their last hundred steps" in body
+    assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]

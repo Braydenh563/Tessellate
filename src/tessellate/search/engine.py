@@ -515,6 +515,7 @@ def _backend_id() -> str | None:
         embeddings = deps.get_embeddings()
         return embeddings.backend_id() if embeddings.is_ready() else None
     except Exception:  # noqa: BLE001  # a bare-session script with no app state
+        logger.debug("_backend_id: a bare-session script with no app state", exc_info=True)
         return None
 
 
@@ -1105,7 +1106,7 @@ def _has_attachment_ids(session: Session, entry_ids: list[int]) -> set[int]:
 
 
 #: What each `has:` word is answered from (the decision the retrieval brief
-#: left open: "decide each one's source ... and answer them over the
+#: left undecided: "decide each one's source ... and answer them over the
 #: candidates, never with a join on every save"). `file` and `image` read the
 #: attachment table, `link` a connection either way round, `reminder` a
 #: reminder pointing at the note, and `highlight` the text itself (the marks
@@ -1662,6 +1663,7 @@ def _cosine_scores(session: Session, subject: str, rows: list[dict]) -> dict[int
 
         vector = deps.get_embeddings().embed_text(subject)
     except Exception:  # noqa: BLE001  # an embedding failure must not fail a search
+        logger.debug("_cosine_scores: an embedding failure must not fail a search", exc_info=True)
         return {}
     if vector is None:
         return {}

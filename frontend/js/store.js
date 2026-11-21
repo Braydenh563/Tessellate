@@ -68,3 +68,30 @@ const appState = (() => {
 function publishNotes(list) {
   appState.set("notes", list);
 }
+
+//: **The note slice** (F12, L-world-class-357): the id of the note whose
+//: inline edit form is open, or null. It replaces the `editingId` global:
+//: `setEditingNote` is the one writer (openNoteEditor, the closes, the space
+//: swap), readers use `appState.get("note")` or `appState.subscribe("note", fn)`.
+appState.set("note", null);
+function setEditingNote(id) {
+  if (appState.get("note") !== id) appState.set("note", id);
+}
+
+//: **The reminders slice** (F12, L-world-class-81): the open reminders, whole.
+//: Its one writer is this read, shared: a caller within `maxAgeMs` of the last
+//: one joins it, so the dashboard's three readers, the bell and the lock screen
+//: make one fetch, and the Reminders tab forces a fresh one (`openReminders(0)`).
+//: The tab badge and the due timer subscribe (shell-reminders.js). Only the
+//: newest read sets the slice, so a slow older answer never replaces a newer one.
+//: Done rows are not in it: every reader dropped them anyway.
+const remindersRead = { at: 0, inflight: null };
+function openReminders(maxAgeMs = 2000) {
+  if (remindersRead.inflight && Date.now() - remindersRead.at < maxAgeMs) return remindersRead.inflight;
+  remindersRead.at = Date.now();
+  const read = apiPagedList("/reminders?include_done=false", 200).then((rows) => {
+    if (remindersRead.inflight === read) appState.set("reminders", rows);
+    return rows;
+  });
+  return (remindersRead.inflight = read);
+}

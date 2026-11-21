@@ -47,7 +47,10 @@ const SURFACES = Object.assign(new Map(), {
   fragment(name, entry) {
     if (!entry.frag && entry.tpl) {
       if (entry.tpl.content) entry.frag = entry.tpl.content;
-      else {
+      else if (SURFACES.splitMark(entry)) {
+        SURFACES.parseNext(entry, Infinity);
+        entry.frag = entry.partial;
+      } else {
         const holder = document.createElement("template");
         holder.innerHTML = entry.tpl.text;
         entry.frag = holder.content;
@@ -55,6 +58,26 @@ const SURFACES = Object.assign(new Map(), {
       SURFACES.register(entry.frag, name);
     }
     return entry.frag;
+  },
+
+  //: **A big surface parsed in pieces** (`data-split-at` on its script: each such mark starts a piece, and each
+  //: mark is a place the parser is at the top of the body, so the pieces join to what one parse makes). Settings'
+  //: whole text in one `innerHTML` was a 56 ms task at 4x CPU (L-world-class-361); a piece is one pane. Parses
+  //: pieces until `budget` ms are spent; true once none are left.
+  //: Where a surface's text is cut for `parseNext`: each mark is a place the parser is at the top of the body.
+  splitMark: (entry) => ({ settings: '<section class="settings-section' })[entry.tpl.dataset?.surface],
+
+  parseNext(entry, budget) {
+    const mark = SURFACES.splitMark(entry);
+    entry.pieces ||= entry.tpl.text.split(mark).map((piece, i) => (i ? mark + piece : piece));
+    entry.partial ||= document.createDocumentFragment();
+    const start = performance.now();
+    const holder = document.createElement("template");
+    while (entry.pieces.length && performance.now() - start < budget) {
+      holder.innerHTML = entry.pieces.shift();
+      entry.partial.append(holder.content);
+    }
+    return !entry.pieces.length;
   },
 
   //: Whether the unbuilt surface holds the id: its parsed fragment when it has one, else the ids named in
@@ -82,8 +105,49 @@ const SURFACES = Object.assign(new Map(), {
     const waiting = [...SURFACES].filter(([, entry]) => entry.tpl && !entry.frag && !entry.done && !entry.tpl.content);
     const next = waiting.find(([name]) => name === "settings") ?? waiting[0];
     if (!next) return;
+    //: A split surface is parsed a few ms at a time with the next slot soon; a whole one in this slot.
+    if (SURFACES.splitMark(next[1]) && !SURFACES.parseNext(next[1], 8)) return SURFACES.warmLater(30);
     SURFACES.fragment(next[0], next[1]);
     SURFACES.warmLater(1000);
+  },
+  //: A listener for a control of an unbuilt surface, added when that surface is built instead of building it
+  //: now (L675: each `$` in settings-controls.js built all of Settings). Nested surfaces are asked first.
+  wire(id, ...args) {
+    const live = document.getElementById(id);
+    const hit = !live && SURFACES.owner(id);
+    if (hit) onSurface(hit, () => SURFACES.wire(id, ...args));
+    else live?.addEventListener(...args);
+  },
+  //: The unbuilt surface holding the id, nested ones first (their parent's text holds the same ids), or undefined.
+  owner(id) {
+    return [...SURFACES].sort(([, a]) => (a.parent ? -1 : 0)).find(([name, entry]) => !entry.done && entry.tpl && SURFACES.holds(name, entry, id))?.[0];
+  },
+  //: `apply(element)` now when the control is in the page, else the moment its surface is built, with the last
+  //: `apply` asked for that id. A read of /preferences fills the controls of four panes; each used to build
+  //: the others (visiting Personas built five more panes, 5 to 20 ms each at 4x CPU, L675).
+  fill(id, apply) {
+    const live = document.getElementById(id);
+    if (live) return apply(live);
+    const name = SURFACES.owner(id);
+    if (!name) return;
+    const entry = SURFACES.get(name);
+    (entry.fills ||= new Map()).set(id, apply);
+    entry.flush ||= () => {
+      entry.fills.forEach((run, key) => run(document.getElementById(key)));
+      entry.fills.clear();
+    };
+    onSurface(name, entry.flush);
+  },
+  //: A built surface's nodes moved into a fragment, listeners and typed state with them, for the next
+  //: build to move back (L676: a closed Settings kept up to 12,000 elements in the page).
+  park(name) {
+    const entry = SURFACES.get(name);
+    const host = document.getElementById(name);
+    if (!entry?.done || !host) return;
+    const frag = document.createDocumentFragment();
+    frag.append(...host.childNodes);
+    host.append((entry.tpl = document.createElement("template")));
+    Object.assign(entry, { frag, done: false });
   },
   warmLater(delay) {
     const go = () => SURFACES.warm();
@@ -129,9 +193,9 @@ function surfaceFind(id) {
   return null;
 }
 
-//: Runs `run` now when the surface is built, else the moment it is.
+//: Runs `run` now when the surface is built, else the moment it is; queued once however often it is asked.
 function onSurface(name, run) {
   const entry = SURFACES.get(name);
-  if (entry && !entry.done) entry.after.push(run);
+  if (entry && !entry.done) entry.after.includes(run) || entry.after.push(run);
   else run();
 }

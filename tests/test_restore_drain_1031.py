@@ -100,19 +100,19 @@ def test_an_open_stream_that_holds_no_session_does_not_hold_a_restore(client, mo
     stream (the Tasks panel keeps `/jobs/stream` open a minute) is not a
     request in flight, and a restore under it goes ahead at once (E2E
     first-run restore sat at "Restoring…" for the whole wait, then 409)."""
-    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 2.0)
     _save(client, "kept")
     name = client.post("/backups").json()["name"]
     # The note's filing and the backup run on the pool; a slow runner can still be at them, and a restore
-    # rightly waits for the pool (CI, Python 3.13: 3.5 s). What is timed here is the stream alone.
+    # rightly waits for the pool (CI, Python 3.13: 3.5 s). What is checked here is the stream alone.
     assert pool_idle()
+    # No wait at all: a request still holding a session would refuse the restore (409), so a 200 proves the
+    # stream did not hold it, whatever the runner's speed (a wall-clock bound flaked: 2.24 s, L-world-class-38).
+    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 0.0)
     with client.stream("GET", "/jobs/stream?seconds=5") as stream:
         next(stream.iter_lines())
         assert deps.requests_in_flight() == 0
-        started = time.monotonic()
         restored = client.post("/backups/restore", json={"name": name})
         assert restored.status_code == 200, restored.text
-        assert time.monotonic() - started < 1.5
 
 
 def test_a_long_poll_behind_the_unlock_check_does_not_hold_a_restore(client, monkeypatch):
@@ -121,22 +121,19 @@ def test_a_long_poll_behind_the_unlock_check_does_not_hold_a_restore(client, mon
     not wait it out (it sat at "Restoring…" and was refused, E2E first-run)."""
     from tessellate.api import routes_auth
 
-    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 2.0)
     monkeypatch.setattr(routes_auth, "WATCH_SECONDS", 4.0)
     monkeypatch.setattr(routes_auth, "_require_this_computer", lambda request: None)
     _save(client, "kept")
     name = client.post("/backups").json()["name"]
     # As in the stream test above: the filing and backup may still be on the pool (CI, Python 3.11: 3.5 s),
-    # and a restore rightly waits for it. What is timed here is the long poll alone.
+    # and a restore rightly waits for it. What is checked here is the long poll alone.
     assert pool_idle()
+    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 0.0)  # no wait: a held session would 409
     polled: list[int] = []
     poll = threading.Thread(target=lambda: polled.append(client.get("/auth/lan-watch?since=0").status_code))
     poll.start()
     time.sleep(0.5)
-    started = time.monotonic()
     restored = client.post("/backups/restore", json={"name": name})
-    took = time.monotonic() - started
     poll.join(10)
     assert polled == [200]
     assert restored.status_code == 200, restored.text
-    assert took < 1.5

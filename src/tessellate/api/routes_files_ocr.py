@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, vision_ocr
+from tessellate.api.downloads import unsealed
 from tessellate.core import activity, deps, ocr, pdfpages
 from tessellate.core.database import PageRead
 from tessellate.core.deps import get_session
@@ -626,10 +627,11 @@ def media_ocr_regions(
         else "Text already extracted from this file"
     )
     key = rf._page_read_key(None, upload_id)
-    if suffix == ".pdf":
-        return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
-    #: An image is a one page document, and page 0 is where its regions go.
-    out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
+    with unsealed(path) as path:
+        if suffix == ".pdf":
+            return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
+        #: An image is a one page document, and page 0 is where its regions go.
+        out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
     out.readings = _stored_readings(upload.vision_ocr_text, upload.vision_ocr_model, upload.ocr_text, out.source)
     return out
 
@@ -658,9 +660,10 @@ def attachment_ocr_regions(
         else "Text already extracted from this file"
     )
     key = rf._page_read_key(attachment_id, None)
-    if suffix == ".pdf":
-        return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
-    out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
+    with unsealed(path) as path:
+        if suffix == ".pdf":
+            return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
+        out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
     out.readings = _stored_readings(
         attachment.vision_ocr_text, attachment.vision_ocr_model, attachment.ocr_text, out.source
     )
@@ -865,6 +868,33 @@ def _local_text(path: Path, choice: str = "") -> str:
     in a test, or an older caller, takes the path alone)."""
     with activity.track("ocr", "Reading text from a picture", stoppable=False):
         return ocr.extract_text(path, choice) if choice else ocr.extract_text(path)
+
+
+def _local_pdf_text(path: Path, choice: str = "") -> str:
+    """An uploaded PDF read without a model (L631): its text layer when it has
+    one, else its first pages drawn to pictures and read with the chosen OCR
+    engine. Raises 409 with a plain reason when neither can be done, so the
+    caller never shows an empty panel as if the PDF had no words."""
+    from tessellate.core import docview
+
+    text = (docview.extract(path).text or "").strip()
+    if text:
+        return text
+    if not pdfpages.available():
+        raise HTTPException(
+            status_code=409,
+            detail="This PDF has no text layer, and reading its pages needs the PDF viewer extra. Install it in Settings, then try again.",
+        )
+    if reason := ocr.unavailable_reason(choice):
+        raise HTTPException(status_code=409, detail=reason)
+    out: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="mm-pdfocr-") as scratch:
+        for number, png in enumerate(pdfpages.render_pages(path), start=1):
+            page_path = Path(scratch) / f"page-{number:03d}.png"
+            page_path.write_bytes(png)
+            if page_text := _local_text(page_path, choice).strip():
+                out.append(page_text)
+    return "\n\n".join(out)
 
 
 def _local_region_text(path: Path, choice: str = "") -> str:

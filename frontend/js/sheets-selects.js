@@ -322,8 +322,11 @@ function trackSeparatorValue(handle, panel, min, max, axis = "width") {
     handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
-  write(size() || min);
-  if (typeof ResizeObserver === "function") {
+  //: The observer reports the first size itself, so only a browser without one reads layout here
+  //: (a sync read on the first Chat open forced 13ms of layout inside the press).
+  if (typeof ResizeObserver !== "function") write(size() || min);
+  else {
+    write(min); // a placeholder until the observer's first report (a hidden panel never reports a size)
     new ResizeObserver((entries) => {
       const box = entries[entries.length - 1].borderBoxSize?.[0];
       write((tall ? box?.blockSize : box?.inlineSize) ?? size());
@@ -1103,7 +1106,7 @@ function enhanceAllSelects(root) {
 function dateFieldFace(value, isTime) {
   if (isTime) {
     const [h, m] = value.split(":").map(Number);
-    return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() });
   }
   const day = new Date(`${value}T00:00:00`);
   const year = day.getFullYear() === new Date().getFullYear() ? undefined : "numeric";
@@ -1186,7 +1189,12 @@ function focusSelect(select) {
 // New selects appear whenever a panel renders, so watch for them rather
 // than asking every render path to remember to call this.
 function watchForSelects() {
-  enhanceAllSelects(document);
+  //: **Settings panes wrap their selects as each is shown** (`showSettingsSection`
+  //: calls `enhanceAllSelects` on the pane), not here: the boot pass wrapped 99
+  //: selects, about 50 ms, most in panes nobody opened (WORLD_CLASS_PLAN 19,
+  //: L-world-class-14).
+  for (const select of document.querySelectorAll("select")) if (!select.closest("#settings-modal")) enhanceSelect(select);
+  enhanceAllSelects.stampSwitches?.(document);
   for (const field of document.querySelectorAll('input:is([type="date"], [type="time"])')) enhanceDateField(field);
   annotateSliders(document);
   new MutationObserver((records) => {
@@ -1973,7 +1981,7 @@ async function loadConversationList() {
     if (conversation.tokens) bits.push(`${formatTokens(conversation.tokens)} tok`);
     meta.textContent = bits.join(" · ");
     //: The hover holds the exact time (OPEN #593); the row reads relative.
-    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), ...bits.slice(1)].filter(Boolean).join(" · ");
+    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short", ...clockOptions() }), ...bits.slice(1)].filter(Boolean).join(" · ");
     title.append(name, meta);
     // The title often isn't the subject: show what was actually asked.
     if (conversation.preview && conversation.preview !== conversation.title) {

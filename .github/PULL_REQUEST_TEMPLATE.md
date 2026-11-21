@@ -8,12 +8,14 @@
 
 <!-- Steps a reviewer can follow to see it working. -->
 
-## Checklist
+## Before you open it
 
-- [ ] `pytest` passes locally (the suite is fully offline — no Ollama needed)
-- [ ] `ruff check .` is clean
-- [ ] Docs updated if behaviour changed (README / `docs/ARCHITECTURE.md`)
-- [ ] Stayed offline-first: no new code path sends user data off the machine
+Confirm each of these in the description, or say which one does not apply:
+
+- `pytest` passes locally (the suite is fully offline, so no Ollama is needed).
+- `ruff check .` is clean.
+- The docs follow any change in behaviour (README, `docs/ARCHITECTURE.md`).
+- It stays offline-first: no new code path sends user data off the machine.
 
 ## Notes for the reviewer
 

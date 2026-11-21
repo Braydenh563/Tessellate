@@ -136,6 +136,16 @@ def for_model(notes: list[dict], verdicts: Known, *, id_key: str = "id") -> list
     return out
 
 
+def without_wrong(text: str, note_id, verdicts: Known) -> str:  # noqa: ANN001
+    """A note's text with every sentence the person marked wrong taken out:
+    what filing reads (WORLD_CLASS I7), so a sentence ruled wrong on an
+    evidence card no longer decides where its note, or a note like it, goes."""
+    for owner, sentence in verdicts.wrong:
+        if owner == note_id:
+            text = _replace(text, sentence, "")
+    return text
+
+
 def _replace(content: str, sentence: str, with_text: str | None, after: str = "") -> str:
     """`content` with the sentence matching `sentence` (as `norm` reads it)
     replaced by `with_text`, or kept with `after` added (`with_text` None)."""

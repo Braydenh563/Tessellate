@@ -37,7 +37,7 @@ from tessellate.core.lazyre import lazy_compile
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 
-from tessellate.ai.recognise_units import GLUED_ONLY, NOT_IN_TEXT, SPACED_CAPITALS, CURRENCY_NAMES, UNITS
+from tessellate.ai.recognise_units import COUNT_NUMBER_WORDS, GLUED_ONLY, NOT_IN_TEXT, counted_noun, SPACED_CAPITALS, CURRENCY_NAMES, UNITS
 from tessellate.ai.recognise_windows import (
     _ANCHORED,
     _CALL_LOCALE,
@@ -833,6 +833,8 @@ def _jsonable(kind: str, value: object) -> object:
         return {"start": _jsonable("x", first), "end": _jsonable("x", last), "grain": grain}
     if kind == "money":
         return {"amount": value[0], "currency": value[1]}
+    if kind == "count":
+        return {"amount": value[0], "noun": value[1], "of": value[2]}
     if kind in ("quantity", "temperature"):
         return {"amount": value[0], "unit": value[1], "dimension": value[2] if len(value) > 2 else "temperature"}
     if isinstance(value, datetime):
@@ -884,7 +886,7 @@ def tense_of(low: str) -> str | None:
 
 # Each collector yields candidates (start, end, kind, value, read_as, rank).
 _PRIORITY_OF = {"email": 0, "url": 0, "phone": 0, "recurrence": 1, "alert": 1, "range": 2, "datetime": 3, "date": 4, "time": 5,
-                "money": 6, "temperature": 7, "quantity": 8, "duration": 9, "tag": 10, "person": 10, "place": 10,
+                "money": 6, "temperature": 7, "quantity": 8, "duration": 9, "count": 13, "tag": 10, "person": 10, "place": 10,
                 "ordinal": 11, "number": 12}
 
 _NUMBER = r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?"
@@ -911,10 +913,10 @@ _CLOCK_SRC = r"(?:noon|midday|midnight|(\d{1,2})(?::(\d{2}))?\s?(am|pm|a\.m\.|p\
 _SOURCES: dict[str, object] = {
     "email": r"(?<![\w.+-])[\w.+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+",
     "url": r"\b(?:https?://|www\.)[^\s<>\"')\]]+",
-    "phone": r"(?<![\w+])(?:\+\d{1,3}[ .-]?)?(?:\(\d{2,5}\)[ .-]?)?\d{2,8}(?:[ .-]\d{2,8}){0,4}(?![\w])",
+    "phone": r"(?<![\w+])(?:\+\d{8,15}(?![\w])|(?:\+\d{1,3}[ .-]?)?(?:\(\d{1,5}\)[ .-]?)?\d{2,8}(?:[ .-]\d{2,8}){0,4}(?![\w]))",
     "tag": r"(?<![\w&#/])#([a-z][\w-]{0,40})",
     "at_person": r"(?<![\w.@])@([a-z][\w-]{0,30})",
-    "person": r"\b(?i:with|call|ring|meet|email|text|ask|tell|phone|message|thank)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)?)\b",
+    "person": r"\b(?:(?i:with|call|ring|meet|email|text|ask|tell|phone|message|thank)|(?:Dr|Mr|Mrs|Ms|Miss|Mx|Prof|Professor)\.?)\s+(?!(?:Dr|Mr|Mrs|Ms|Miss|Mx|Prof|Professor)\b)([A-Z][a-z]+(?: [A-Z][a-z]+)?)\b",
     "place": r"\b(?i:in|to|at|from|near|visit|visiting)\s+(?:the\s+)?([A-Z][\w'-]+(?: [A-Z][\w'-]+){0,2})",
     "every": lambda: (
         r"\b(?:every|each)\s+(other\s+)?(?:(\d{1,2}|two|three|four|five|six)\s+)?"
@@ -984,6 +986,11 @@ _SOURCES: dict[str, object] = {
     "money_code": lambda: r"\b(usd|eur|gbp|jpy|aud|cad|nzd|chf|cny|inr|sek|nok|dkk|sgd|hkd|mxn|brl|zar|krw|pln)\s?(" + _NUMBER + r")\b",
     "money_post": lambda: r"(?<![\w.,])(" + _NUMBER + r")\s?(" + _money_names() + r")\b",
     "quantity": lambda: r"(?<![\w.,])(" + _NUMBER + r")(\s?)(" + _unit_names() + r")(?![\w/²³])",
+    #: A counted thing: a number, the plural noun after it, and "of" what ("3 loaves of sourdough").
+    "count": lambda: (
+        r"\b(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?|" + "|".join(sorted(COUNT_NUMBER_WORDS, key=len, reverse=True))
+        + r")\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?"
+    ),
     "degrees": r"(?<![\w.,])(" + _NUMBER + r")\s?(?:degrees|deg|°)(?![\w])(?!\s?(?:c|f|celsius|fahrenheit)\b)",
     "number": r"(?<![\w.,/:])(" + _NUMBER + r")(?![\w%°]|[.,/:]\d)",
     "ordinal": r"\b(\d{1,3})(st|nd|rd|th)\b",
@@ -1466,6 +1473,22 @@ def _duration_cand(start: int, end: int, seconds: float) -> list[tuple]:
     return [(start, end, "duration", span, "", 0)]
 
 
+def _count_cands(raw: str, low: str) -> list[tuple]:
+    """"5 sets", "three loaves of sourdough": a counted noun no unit table holds, value (amount, noun, of what or None)."""
+    out = []
+    for found in _rx("count").finditer(low):
+        noun = found.group(2)
+        if (noun in UNITS and noun not in GLUED_ONLY and noun not in NOT_IN_TEXT) or not counted_noun(noun):
+            continue
+        said = found.group(1)
+        amount = COUNT_NUMBER_WORDS[said] if said in COUNT_NUMBER_WORDS else _figure(said)
+        end, of = found.end(2), None
+        if found.group(3):
+            of, end = raw[found.start(3):found.end(3)], found.end(3)
+        out.append((found.start(), end, "count", (amount, noun, of), "", 0))
+    return out
+
+
 def _measure_cands(raw: str, low: str, locale: str | None) -> list[tuple]:
     out = []
     us = (locale or "").lower() in _FAHRENHEIT
@@ -1513,7 +1536,7 @@ def _contact_cands(raw: str, low: str) -> list[tuple]:
         out.append((found.start(), found.start() + len(text), "url", value, "", 0))
     for found in _rx("phone").finditer(low):
         text = found.group(0)
-        digits = re.sub(r"\D", "", text)
+        digits = re.sub(r"\D", "", text.replace("(0)", ""))  # "+44 (0)20": the (0) is dialled at home only
         lead = text[:1]
         if not 7 <= len(digits) <= 15 or not (lead in "+(0" or len(digits) >= 10):
             continue
@@ -1656,7 +1679,7 @@ def _read_as(kind: str, value: object, note: str) -> str:
         words = "alert " + alert_words(value)
     elif kind == "money":
         words = f"{_num_words(value[0])} {value[1]}"
-    elif kind in ("quantity", "temperature"):
+    elif kind in ("quantity", "temperature", "count"):
         words = f"{_num_words(value[0])} {value[1]}"
     elif kind == "ordinal":
         words = f"number {value} in order"
@@ -1729,13 +1752,13 @@ def class_window(text: str, today: date) -> tuple[date, date, str, int, int] | N
 
 def recognise(
     text: str, *, now: datetime, locale: str | None = None, tense: str | None = None, known: dict | None = None,
-    bare_hours: bool = False,
+    bare_hours: bool = False, counts: bool = False,
 ) -> list[Span]:
     """Every span `text` reads as, left to right (`_recognise`). `locale`
     orders a numeric date, picks the temperature scale and the hemisphere a
     season is read in; none means day first, Celsius and the reported locale."""
     with _in_locale(locale):
-        return _recognise(text, now=now, locale=locale, tense=tense, known=known, bare_hours=bare_hours)
+        return _recognise(text, now=now, locale=locale, tense=tense, known=known, bare_hours=bare_hours, counts=counts)
 
 
 def _settle_overlaps(cands: list[tuple]) -> tuple[list[tuple], list[tuple]]:
@@ -1757,7 +1780,7 @@ def _settle_overlaps(cands: list[tuple]) -> tuple[list[tuple], list[tuple]]:
 
 def _recognise(
     text: str, *, now: datetime, locale: str | None = None, tense: str | None = None, known: dict | None = None,
-    bare_hours: bool = False,
+    bare_hours: bool = False, counts: bool = False,
 ) -> list[Span]:
     """Every span `text` reads as, left to right; the readings of one
     phrase share its offsets, ranked. `tense` ("past", "future") overrides
@@ -1766,7 +1789,8 @@ def _recognise(
     `known` maps phrases the caller knows to their day ({"my birthday":
     date(...)}): a stored date is read, never guessed. `bare_hours` reads
     a bare number after a day as its hour ("friday 9 dentist"), for a
-    reminder's own words only."""
+    reminder's own words only. `counts` also reads counted things ("5 sets", "three loaves of
+    bread") as the `count` kind, for the fact layer; other readers leave it off."""
     raw = str(text or "")
     if not raw.strip():
         return []
@@ -1778,7 +1802,7 @@ def _recognise(
     cands += _dated_class_cands(low, now, tense_given == "past")
     cands += _anchored_cands(low, now, cands) + _date_range_cands(low, cands) + _month_range_cands(low, now, tense)
     cands += _relative_cands(low, now, tense) + _recurrence_cands(low) + _alert_cands(low)
-    cands += _duration_cands(low) + _measure_cands(raw, low, locale)
+    cands += _duration_cands(low) + _measure_cands(raw, low, locale) + (_count_cands(raw, low) if counts else [])
     cands += _contact_cands(raw, low) + _number_cands(low)
     for phrase, day in (known or {}).items():
         for found in re.finditer(r"(?<!\w)" + re.escape(str(phrase).lower()) + r"(?!\w)", low):

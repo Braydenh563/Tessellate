@@ -24,7 +24,8 @@ def _rule(text: str, selector: str) -> str:
 def test_u44_find_panel_labels_sit_on_the_type_scale():
     # CodeMirror sets `& label { font-size: 80% }` (11.776px at 14.72px) on a
     # scoped class; the app's rule has to beat it, so it names .cm-editor.
-    body = _rule((CSS / "library-lazy.css").read_text(), ".doc-editor .cm-editor .cm-panel.cm-search label")
+    # Notes share the find bar since L-world-class-17, hence the `:is()`.
+    body = _rule((CSS / "library-lazy.css").read_text(), ":is(.doc-editor, .note-surface) .cm-editor .cm-panel.cm-search label")
     assert "font-size: var(--text-xs)" in body
 
 
@@ -171,7 +172,7 @@ def test_u40_an_empty_board_ghosts_loose_cards_not_a_mind_map_tree():
 
 def test_s93_a_jump_to_a_note_that_is_not_there_says_so_and_returns_the_address():
     js = (ROOT / "frontend" / "js" / "capture-ask.js").read_text()
-    flash = js[js.index("async function flashEntry(id)") :]
+    flash = js[js.index("async function flashEntry(id") :]
     missing = flash[flash.index("if (!card) {") :][:600]
     assert 'recordTabVisit("notes", "browse", "", { refine: true });' in missing
     assert 'announce("");' in missing and 'toast("No such note.")' in missing

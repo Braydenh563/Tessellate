@@ -39,7 +39,7 @@ def _templates() -> list[dict]:
     fill_start = source.index("function docTemplateFill(")
     fill_end = source.index("\n}\n", fill_start) + 3
     script = (
-        "const docNextName = () => 'Untitled document 1';\n"
+        "const docNextName = () => 'Untitled document 1';\nconst clockOptions = () => ({});\n"
         + source[start:end]
         + source[fill_start:fill_end]
         + "console.log(JSON.stringify(DOC_TEMPLATES.map((t) => ({...t, filled: docTemplateFill(t)}))));"
@@ -943,7 +943,7 @@ def test_a_template_fills_the_time_and_places_the_cursor():
     fill_start = source.index("function docTemplateFill(")
     fill_end = source.index("\n}\n", fill_start) + 3
     script = (
-        "const docNextName = () => 'Untitled document 1';\n"
+        "const docNextName = () => 'Untitled document 1';\nconst clockOptions = () => ({});\n"
         + source[fill_start:fill_end]
         + "const a = docTemplateFill({id:'t', title:'T', content:'# {{title}}\\nAt {{time}}\\n\\n{{cursor}}end'});"
         + "const b = docTemplateFill({id:'t', title:'T', content:'plain'});"

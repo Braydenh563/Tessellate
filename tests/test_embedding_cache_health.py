@@ -177,7 +177,9 @@ def test_with_automatic_installs_off_an_incomplete_cache_is_left_for_reinstall(f
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
     service = _service()
     service._models = types.SimpleNamespace(_config=types.SimpleNamespace(get_preference=lambda key, default=None: False))
-    with pytest.raises(embeddings.EmbeddingCacheBroken, match="Reinstall"):
+    #: The line is one sentence since L-world-class-64 (tests/test_prose_120_64.py); the way to
+    #: reinstall is the download it names, so the test reads that, not the word Reinstall.
+    with pytest.raises(embeddings.EmbeddingCacheBroken, match="allow the download in Settings, Search and index"):
         service._load_builtin_model()
     assert spawned == [] and fetched == []
 

@@ -392,9 +392,9 @@ def test_a_note_filed_inline_waits_for_the_model_no_longer_than_the_wait(client,
     seen = []
     real = routes_entries._file_entry_now
 
-    def spy(session, content, on_late_llm=None, model_deadline=None):
+    def spy(session, content, on_late_llm=None, model_deadline=None, **kwargs):
         seen.append(model_deadline)
-        return real(session, content, on_late_llm=on_late_llm, model_deadline=model_deadline)
+        return real(session, content, on_late_llm=on_late_llm, model_deadline=model_deadline, **kwargs)
 
     monkeypatch.setattr(routes_entries, "_file_entry_now", spy)
     made = client.post("/entries", json={"content": "an inline note, no defer_filing"})
@@ -403,3 +403,29 @@ def test_a_note_filed_inline_waits_for_the_model_no_longer_than_the_wait(client,
 
     assert seen == [janitor.filing_deadline()]
     assert janitor.filing_deadline() < janitor.BLOCKING_MODEL_DEADLINE_SECONDS
+
+
+def test_an_inline_create_holds_no_database_connection_while_the_model_thinks(client, monkeypatch):
+    """L690: a bare POST /entries (MCP, a script, an importer) kept its read
+    transaction, and so its pooled connection, open through the model's wait."""
+    from tessellate.ai import janitor
+
+    during = []
+
+    def spy(ollama, model, messages, **kwargs):
+        during.append(spy.session.in_transaction())
+        return {"content": '{"category": "Garden", "confidence": 90}'}
+
+    real_ask = janitor._ask_llm
+
+    def ask(session, *args, **kwargs):
+        spy.session = session
+        return real_ask(session, *args, **kwargs)
+
+    monkeypatch.setattr(janitor, "_chat_within_deadline", spy)
+    monkeypatch.setattr(janitor, "_ask_llm", ask)
+    monkeypatch.setattr(janitor, "_semantic_match", lambda *a, **k: None, raising=False)
+    monkeypatch.setattr(routes_entries.deps.get_ollama(), "is_running", lambda: True, raising=False)
+    made = client.post("/entries", json={"content": "an inline note about the garden beds"})
+    assert made.status_code == 201
+    assert during == [False]

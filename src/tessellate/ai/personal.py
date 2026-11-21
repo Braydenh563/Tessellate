@@ -27,6 +27,7 @@ from datetime import date, datetime
 
 from tessellate.ai import realise
 from tessellate.core import clock
+from tessellate.core.lazyre import lazy_compile
 
 _REL = (
     r"sister|brother|mum|mom|mother|dad|father|partner|wife|husband|boyfriend|girlfriend|son|daughter|"
@@ -362,7 +363,7 @@ _SELF: tuple[tuple[re.Pattern, str], ...] = (
 
 
 #: "am I a good person": not a thing a notebook can say, and not guessed.
-_JUDGE = re.compile(r"^am i (?:a |an )?(?:good|bad|smart|clever|stupid|dumb|ugly|pretty|attractive|normal|weird|boring|nice|kind|lazy|failure|loser)\b")
+_JUDGE = lazy_compile(r"^am i (?:a |an )?(?:good|bad|smart|clever|stupid|dumb|ugly|pretty|attractive|normal|weird|boring|nice|kind|lazy|failure|loser)\b")
 
 
 def about_me(question: str) -> str | None:
@@ -377,22 +378,22 @@ def about_me(question: str) -> str | None:
     return next((said for pattern, said in _SELF if pattern.search(q)), None)
 
 
-_GENERAL = re.compile(r"^(?:what|who|where|when|why|how|which)(?:'s| is| are| was| were| did| does| do| many| much| far| long| big)?\b")
+_GENERAL = lazy_compile(r"^(?:what|who|where|when|why|how|which)(?:'s| is| are| was| were| did| does| do| many| much| far| long| big)?\b")
 #: "what about knitting", "how about sourdough": a topic put forward (the notes
 #: are looked in and the thing named), not a question about the world.
-_TOPIC_NUDGE = re.compile(r"^(?:(?:and|so|hmm+|um+|well|ok(?:ay)?) )*(?:what|how) about\b")
-_PERSONAL = re.compile(r"\b(?:i|i'm|im|i've|me|my|mine|myself|we|our|us)\b")
+_TOPIC_NUDGE = lazy_compile(r"^(?:(?:and|so|hmm+|um+|well|ok(?:ay)?) )*(?:what|how) about\b")
+_PERSONAL = lazy_compile(r"\b(?:i|i'm|im|i've|me|my|mine|myself|we|our|us)\b")
 #: "the table number", "my booking number": a number only the person's own notes could hold, so a
 #: miss is theirs to hear ("None of your notes give ..."), not "general knowledge".
-_OWN_NUMBER = re.compile(r"\b(?:table|room|seat|booking|reservation|confirmation|reference|flight|ticket|locker|order|account|policy|membership|invoice|tracking)\s+(?:number|no\.?)(?!\w)")
+_OWN_NUMBER = lazy_compile(r"\b(?:table|room|seat|booking|reservation|confirmation|reference|flight|ticket|locker|order|account|policy|membership|invoice|tracking)\s+(?:number|no\.?)(?!\w)")
 #: "Who is Sam": a bare name is someone the notes may name, not the world's
 #: (the engine probe's P1 says "I found nothing about “Sam”").
-_WHO_NAME = re.compile(r"^who(?:'s| is| was) (?!the |a |an )\w+(?: \w+)?[?.]*$")
+_WHO_NAME = lazy_compile(r"^who(?:'s| is| was) (?!the |a |an )\w+(?: \w+)?[?.]*$")
 
 
 #: "how long until the tax return": a countdown to something the notes may date, so a miss says no note
 #: gives the day, never "general knowledge" (the composer's `_until`).
-_COUNTDOWN = re.compile(r"^how (?:long|many (?:days|weeks|months)) (?:is it |is there |left )?(?:until|till|before)\b")
+_COUNTDOWN = lazy_compile(r"^how (?:long|many (?:days|weeks|months)) (?:is it |is there |left )?(?:until|till|before)\b")
 
 
 def general(question: str) -> bool:
@@ -404,7 +405,7 @@ def general(question: str) -> bool:
     return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not _OWN_NUMBER.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 
 
-_OWN_NOTES = re.compile(
+_OWN_NOTES = lazy_compile(
     r"\b(?:my|our|your)\s+(?:\w+\s+){0,2}(?:notes?|notebook|entries|entry)\b|\b(?:notes?|entry) (?:i|we) (?:ever )?(?:wrote|made|took|saved)\b"
     r"|\bi (?:ever )?(?:wrote|made|saved)\b|\bin (?:my|the) notes\b"
     #: The person's own doings ("what did I do last week", the composer's own
@@ -432,7 +433,7 @@ def about_own_notes(question: str) -> bool:
 #: password"); "I" names it only with a verb that reports a fact about them
 #: ("how much do I owe", "how far did I run", "have I been sleeping"). A bare
 #: "how do I install Python" is a how-to the web can answer, so it is not here.
-_OWN_RECORD = re.compile(
+_OWN_RECORD = lazy_compile(
     r"\b(?:my|mine|myself|our|ours)\b"
     r"|\b(?:did|have|had|was|am) (?:i|we)\b"
     r"|\bdo (?:i|we) (?:owe|own|weigh|earn|spend|pay|have)\b"

@@ -38,7 +38,7 @@ async function renderRelatedWhileEditing(li, entry) {
   }
   // The form may have closed (Save/Cancel) or moved on to a different note
   // while this was in flight.
-  if (editingId !== entry.id || !panel.isConnected) return;
+  if (appState.get("note") !== entry.id || !panel.isConnected) return;
   panel.replaceChildren();
   if (!related.length) {
     panel.textContent = "No related notes yet.";
@@ -102,7 +102,7 @@ async function renderNoteBookmarksWhileEditing(li, entry) {
     } catch {
       return;
     }
-    if (editingId !== entry.id || !panel.isConnected) return;
+    if (appState.get("note") !== entry.id || !panel.isConnected) return;
     panel.replaceChildren();
     if (attached.length) {
       const label = document.createElement("span");
@@ -133,7 +133,7 @@ async function renderNoteBookmarksWhileEditing(li, entry) {
           //: Undo puts it back where it was in the list (undo-1005): the
           //: DELETE answers with when it was attached, the order References
           //: are listed in. The panel repaints only while this note is open.
-          const repaint = () => { if (editingId === entry.id && panel.isConnected) refresh(); };
+          const repaint = () => { if (appState.get("note") === entry.id && panel.isConnected) refresh(); };
           const reattach = async () => {
             await apiJson(`/entries/${entry.id}/bookmarks`, { method: "POST", body: JSON.stringify({ bookmark_id: bookmark.id, created_at: gone.created_at }) });
             repaint();
@@ -175,13 +175,13 @@ async function renderNoteBookmarksWhileEditing(li, entry) {
 async function openBookmarkAttachPicker(entry, done) {
   const chosen = await pickLibraryItemDialog("Attach a link", { sources: ["link"] });
   const id = chosen?.row?.id;
-  if (id == null || editingId !== entry.id) return;
+  if (id == null || appState.get("note") !== entry.id) return;
   try {
     await apiJson(`/entries/${entry.id}/bookmarks`, {
       method: "POST",
       body: JSON.stringify({ bookmark_id: Number(id) }),
     });
-    const repaint = () => (editingId === entry.id ? done() : null);
+    const repaint = () => (appState.get("note") === entry.id ? done() : null);
     pushUndo(
       "Attached a link to a note",
       async () => {
@@ -255,7 +255,7 @@ function renderEditForm(li, entry) {
   //: A stable id, because three separate features key off one: the "/" menu
   //: and the `[[` autocomplete (EDITOR_SURFACES in editor.js), the selection
   //: bar, and this form's own toolbar. Safe to be a constant rather than a
-  //: per-note id: `editingId` allows exactly one open edit form at a time.
+  //: per-note id: the note slice (`appState.get("note")`) allows exactly one open edit form at a time.
   textarea.id = "entry-edit-content";
   textarea.className = "note-edit-box";
   textarea.dataset.autocorrect = "";
@@ -471,7 +471,7 @@ function renderEditForm(li, entry) {
             return;
           }
         }
-        editingId = null;
+        setEditingNote(null);
         noteFormDirty = false;
         noteFormDraft = null;
         forgetNoteEditLocally();
@@ -496,12 +496,33 @@ function renderEditForm(li, entry) {
   //: Escape closes the form, asking first when it has changes (INBOX 432:
   //: it did nothing). Bubbling, and only when nothing inside took it first,
   //: so the "/" menu, the [[ list and the editor's own Escape still win.
-  li.addEventListener("keydown", async (event) => {
-    if (event.key !== "Escape" || event.defaultPrevented || editingId !== entry.id) return;
+  const escapeForm = async (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || appState.get("note") !== entry.id) return;
     if (document.querySelector(".action-menu:not(.hidden), #editor-menu:not(.hidden)")) return;
     event.preventDefault();
     if (await noteFormMayClose()) closeNoteForm();
-  });
+  };
+  li.addEventListener("keydown", escapeForm);
+  //: With the caret nowhere (a click on the page's blank, a closed popover
+  //: handing focus to <body>) the key never reaches the form; the page
+  //: takes it for as long as this form is the one on screen.
+  const escapeFromBody = (event) => {
+    if (!li.isConnected) {
+      if (renderEditForm.bodyKeys === escapeFromBody) renderEditForm.bodyKeys = null;
+      return;
+    }
+    if (document.querySelector("dialog[open], .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)")) return;
+    if (event.target === document.body) escapeForm(event);
+    //: Ctrl+S saves this form (L-world-class-102). Capture phase, so the chord is taken before the page's own, which finds nothing to save here.
+    if (event.key.toLowerCase() === "s" && (event.ctrlKey || event.metaKey) && (event.target === document.body || li.contains(event.target))) {
+      event.preventDefault();
+      event.stopPropagation();
+      saveButton.click();
+    }
+  };
+  //: The page has one listener for this (below the function); each render only
+  //: points it at the form now on screen, so re-renders never stack listeners.
+  renderEditForm.bodyKeys = escapeFromBody;
   row.append(
     smallButton("Cancel", "Discard changes", async () => {
       if (await noteFormMayClose()) closeNoteForm();
@@ -619,6 +640,9 @@ ${textarea.value}`));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
 }
+//: The note form's page-level keys (Escape with focus on <body>, Ctrl+S): one
+//: capture listener for the page's life, calling whichever form renderEditForm set.
+document.addEventListener("keydown", (event) => renderEditForm.bodyKeys?.(event), true);
 
 //: Hold an edit the server could not take and close the form on it. False
 //: when it cannot be held (storage full or blocked), so the form stays and
@@ -626,7 +650,7 @@ ${textarea.value}`));
 async function holdNoteEdit(id, body) {
   await ensureModule("quickNote");
   if (!noteEditOutboxAdd(id, body)) return false;
-  editingId = null;
+  setEditingNote(null);
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
@@ -640,10 +664,10 @@ async function holdNoteEdit(id, body) {
 async function closeNoteForm() {
   //: The focus goes back to the note (WCAG 2.4.3): the redraw removes the form
   //: that held it.
-  const back = editingId;
+  const back = appState.get("note");
   const held = document.activeElement;
   const wasInside = !held || held === document.body || Boolean(held.closest?.("#entry-list"));
-  editingId = null;
+  setEditingNote(null);
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
@@ -692,7 +716,7 @@ window.startApp = async function () {
 
 async function offerKeptNoteEdit() {
   const kept = prefs.json(NOTE_EDIT_KEPT, {});
-  if (!Number.isInteger(kept.id) || editingId !== null) return;
+  if (!Number.isInteger(kept.id) || appState.get("note") !== null) return;
   let note = null;
   try {
     note = await apiJson(`/entries/${kept.id}`, { silent: true });

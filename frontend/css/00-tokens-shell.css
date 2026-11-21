@@ -1512,6 +1512,13 @@ button.scroll-row-arrow[data-side="end"] {
 button.scroll-row-arrow[hidden] {
   display: none;
 }
+/* On touch the swipe is the control and the fade says there is more: an arrow there sat over
+   the last chip that shows, covering its middle at 390 (L-world-class-35). Two classes: `button.icon-only`'s flex comes later. */
+@media (hover: none) {
+  button.scroll-row-arrow.icon-only {
+    display: none;
+  }
+}
 #tab-bar.fade-end {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--tab-fade)), transparent 100%);
   mask-image: linear-gradient(to right, #000 calc(100% - var(--tab-fade)), transparent 100%);

@@ -112,7 +112,7 @@ function editAndResend(bubble, text) {
         cut = result;
         if (result.conversation_deleted) chatConv.id = null;
       } catch (error) {
-        toast(`Couldn't edit that: ${error.message}`, true);
+        toast(voiceLine("failed", { what: "edit that", why: error.message }), true);
         return;
       }
     }
@@ -207,7 +207,7 @@ async function regenerateFrom(bubble, opts = {}) {
       });
       chatConv.turns = chatConv.turns.slice(0, turnIndex + 1);
     } catch (error) {
-      return toast(`Couldn't regenerate that: ${error.message}`, true);
+      return toast(voiceLine("failed", { what: "regenerate that", why: error.message }), true);
     }
   }
   //: The question stays; everything after it goes, including this answer.
@@ -252,7 +252,7 @@ function chatTooLong(text, fromBox) {
         }
         sendChatMessage("Summarise this note.", { noteIds: [note.id] });
       } catch (error) {
-        toast(error.message || "Couldn't save that as a note.", true);
+        toast(error.message || voiceLine("failed", { what: "save that as a note" }), true);
       }
     },
   );

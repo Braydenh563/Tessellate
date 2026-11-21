@@ -140,7 +140,7 @@ def test_the_controls_exist_are_wired_and_documented():
     for ident in ("look-export", "look-import", "look-import-file"):
         assert f'id="{ident}"' in INDEX
         assert f'"{ident}"' in CONTROLS
-    assert "exportNow" in CONTROLS[CONTROLS.index('$("look-export")') :][:200]
+    assert "exportNow" in CONTROLS[CONTROLS.index('wire("look-export"') :][:200]
     assert "downloadJson(" in SETTINGS[SETTINGS.index("function exportLook") :][:300]
     more = help_more_text()
     themes = more[more.index('"id": "themes"') :][:4000]

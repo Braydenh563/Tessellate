@@ -292,23 +292,24 @@
     later.classList.add("manage-suggest-later");
     head.appendChild(later);
     box.appendChild(head);
-    const row = (text, title, ...buttons) => {
+    //: Each row's buttons are one `rowActions` (DESIGN.md recipe, L668), the
+    //: aria-label saying what the visible word acts on.
+    const row = (text, title, actions) => {
       const el = document.createElement("div");
       el.className = "manage-suggest-row";
       const names = document.createElement("span");
       names.className = "manage-suggest-names";
       names.textContent = text;
       names.title = title;
-      el.append(names, ...buttons);
+      const wrap = rowActions(actions, `Actions for ${text}`);
+      el.append(names, wrap);
       box.appendChild(el);
     };
     for (const m of merges.slice(0, 4)) {
       const text = `${m.merge.name} into ${m.keep.name}`;
-      const merge = smallButton("ph:arrows-merge Merge", `Fold ${text}`, () =>
-        mergeCategoriesFromPanel([categoryMeta.get(m.merge.name)], categoryMeta.get(m.keep.name))
-      );
-      merge.setAttribute("aria-label", `Merge ${text}`);
-      const no = smallButton("Not these", "Never suggest this pair again", async () => {
+      const merge = { label: "ph:arrows-merge Merge", title: `Fold ${text}`, run: () =>
+        mergeCategoriesFromPanel([categoryMeta.get(m.merge.name)], categoryMeta.get(m.keep.name)) };
+      const no = { label: "Not these", title: "Never suggest this pair again", run: async () => {
         //: The person's own choice: a refusal says so and keeps the row.
         const pair = { a: m.keep.name, b: m.merge.name };
         const ok = await apiJson("/tidy-proposals/dismiss", { method: "POST", body: JSON.stringify(pair) }).then(
@@ -327,13 +328,12 @@
         if (!ok) return;
         state.tidy.merges = state.tidy.merges.filter((x) => x !== m);
         drawCategoryTidy(box, state);
-      });
-      row(text, `${text}: ${m.why}`, merge, no);
+      } };
+      row(text, `${text}: ${m.why}`, [merge, no]);
     }
     for (const c of empty.slice(0, 4)) {
-      const remove = smallButton("ph:trash Remove", `Remove the empty category ${c.name}`, () => deleteCategoryFromPanel(categoryMeta.get(c.name)));
-      remove.setAttribute("aria-label", `Remove ${c.name}`);
-      row(`${c.name} has been empty for ${state.tidy.empty_days || 30} days`, c.name, remove);
+      const remove = { label: "ph:trash Remove", title: `Remove the empty category ${c.name}`, run: () => deleteCategoryFromPanel(categoryMeta.get(c.name)) };
+      row(`${c.name} has been empty for ${state.tidy.empty_days || 30} days`, c.name, [remove]);
     }
   }
 

@@ -109,7 +109,7 @@
     try {
       page = await apiJson(`/whiteboard/history?board_id=${boardId ?? 0}`);
     } catch (error) {
-      toast(error.message || "The board's history could not be read.", true);
+      toast(error.message || voiceLine("failed", { what: "read the board's history" }), true, { retry: wbOpenHistory });
       return;
     }
     if (!page?.moments?.length) {
@@ -484,7 +484,7 @@
       build: (card, close) => {
         card.classList.add("wb-snapshots-card");
         const save = smallButton("ph:camera Save a snapshot…", "Name the board as it is now, to come back to", async () => {
-          const at = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          const at = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
           const name = await promptDialog("Name this snapshot", `Snapshot ${at}`, { confirmLabel: "Save" });
           if (name === null || name === undefined) return;
           try {

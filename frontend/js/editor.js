@@ -1011,7 +1011,7 @@ function editorBlockRows(context) {
   }
   const now = new Date();
   const date = stampDate(now);
-  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
   add({ id: "stamp-date", group: "Advanced", icon: "ph:calendar-blank", label: "Today's date", about: date, keys: "", keywords: ["date", "today", "stamp", "day"], run: (t) => editorApplyAction(t, { insert: date }) });
   add({ id: "stamp-time", group: "Advanced", icon: "ph:clock", label: "Time now", about: time, keys: "", keywords: ["time", "now", "stamp", "clock"], run: (t) => editorApplyAction(t, { insert: time }) });
   add({ id: "stamp-datetime", group: "Advanced", icon: "ph:calendar-dots", label: "Date and time", about: `${date} ${time}`, keys: "", keywords: ["date", "time", "timestamp", "stamp", "now", "log"], run: (t) => editorApplyAction(t, { insert: `${date} ${time}` }) });
@@ -2417,7 +2417,7 @@ async function offerToCreateWikiTarget(name) {
   //: A board reference keeps its bar (it is read just below); any other link
   //: offers to create the note its target names, not `Target|Shown`.
   const wanted = String(wikiLinkTarget(name) || "").trim();
-  if (!wanted) return;
+  if (!wanted || (await noteRecording(0, wanted))) return;
 
   //: **A board reference is not a name that can be created** (INBOX 309).
   //: `[[board:12|House jobs]]` addresses one board by id, and the only
@@ -2469,7 +2469,7 @@ async function offerToCreateWikiTarget(name) {
       openDocument(doc.id);
     }
   } catch (error) {
-    toast(error.message || "Couldn't create that.", true);
+    toast(error.message || voiceLine("failed", { what: "create that" }), true);
   }
 }
 

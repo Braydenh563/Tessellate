@@ -525,9 +525,6 @@ header#top-bar[data-scrolled="1"],
   #tab-documents {
     --sidebar-toggle-size: 2.75rem;
   }
-  #tab-documents #doc-view-seg button {
-    min-height: calc(2.75rem - 0.5rem);
-  }
 }
 /* **The segment grows with its buttons, not past them** (INBOX 568, the
    owner: "the document editor edit/read pill is overflowing at the bottom
@@ -906,6 +903,48 @@ header#top-bar[data-scrolled="1"],
   .sheet-card:not(.sheet-card-corner) {
     max-width: 34rem;
     margin-inline: auto;
+  }
+}
+/* **A popup that is a form, a picker or a setting** (`<sheet-host>`, phone-shell.js;
+   WORLD_CLASS_PLAN 27.2). The host keeps the markup the `<dialog>` had and sits inside
+   the sheet's card, so the card is the box and the host only lays its content out:
+   no second background, margin or inset from the window. The card takes the width the
+   host names (`width: min(44rem, ...)` on its own class) and no more than the window;
+   below 600 the sheet is the window's width and the host's width gives way to it. */
+sheet-host {
+  display: block;
+}
+sheet-host[hidden] {
+  display: none;
+}
+.sheet-card.sheet-card-hosted,
+.sheet-card.sheet-card-panel {
+  width: fit-content;
+  max-width: 100%;
+  /* A form or a picker, not a glance: its Save is at the foot, so it gets the modal
+     card's own height (measured: 66dvh scrolled six of the thirteen at 390). */
+  max-height: 88dvh;
+  overflow-y: auto;
+}
+.sheet-overlay.sheet-hosted,
+.sheet-overlay.sheet-panel {
+  justify-content: center;
+}
+.sheet-card > sheet-host.space-dialog {
+  min-width: min(26rem, 100%);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  background: none;
+}
+@media (max-width: 599.98px) {
+  .sheet-card.sheet-card-hosted,
+  .sheet-card.sheet-card-panel {
+    width: 100%;
+  }
+  .sheet-card > sheet-host.space-dialog {
+    width: auto;
+    min-width: 0;
   }
 }
 /* The title row: the name on the left, the one visible way out on the right
@@ -2307,6 +2346,13 @@ header#top-bar[data-scrolled="1"],
   #tab-graph:has(.dock-fab) .graph-zoom {
     bottom: calc(var(--target-min) + var(--space-5));
   }
+  /* The zoom strip is a row now (L-world-class-351) and takes most of a
+     phone's width, so the legend stands on a line of its own above it, the
+     strip's height (a target, two `--space-1` and its edge) and a step up. */
+  #tab-graph:has(.dock-fab) .graph-legend-row {
+    bottom: calc(var(--target-min) * 2 + var(--space-5) + var(--space-1) * 2 + 2px + var(--space-2));
+    max-width: calc(100% - var(--space-3) * 2);
+  }
 }
 /* --- the Documents editor on a phone (INBOX 430) -----------------------------
    "On phone, the Documents editor's lower half is blank or cut off; rework
@@ -2334,7 +2380,6 @@ header#top-bar[data-scrolled="1"],
   #tab-documents .doc-back-label,
   #tab-documents .doc-ai-label,
   #tab-documents .doc-dock-status,
-  #tab-documents .doc-actions > .doc-toolbar-sep,
   #tab-documents .doc-hint,
   #tab-documents #doc-caret {
     display: none;
@@ -2359,8 +2404,15 @@ header#top-bar[data-scrolled="1"],
   #tab-documents .doc-view-cluster {
     gap: var(--space-1);
   }
+  /* Edit and Read are targets like the back and kebab beside them (measured
+     37.1x36 against 44x44): the well drops its padding so 44 fits inside it. */
+  #tab-documents #doc-view-seg {
+    padding: 0;
+  }
   #tab-documents #doc-view-seg > button {
     padding-inline: var(--space-1) var(--space-2);
+    min-height: var(--target-min);
+    min-width: var(--target-min);
   }
   #tab-documents .doc-statusbar {
     overflow: hidden;
@@ -2765,6 +2817,12 @@ header#top-bar[data-scrolled="1"],
   }
   .entry-meta.note-meta:not(.is-measuring) > .chip.is-icon {
     aspect-ratio: auto;
+    min-width: var(--target-min);
+  }
+  /* The "+N" is the same: a 24px chip's finger overhang ran 10px past its box
+     sideways (overlap.js, 390, L-world-class-36); the floor puts the target in
+     the box, as for the icons above. */
+  .entry-meta.note-meta > .note-meta-more {
     min-width: var(--target-min);
   }
   button.manage-cat-count {

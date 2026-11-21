@@ -120,7 +120,7 @@ def _with_neighbours(session: Session, question: str, entries: list, scope: str 
 
 def _with_open(session: Session, question: str, entries: list) -> list:
     """For "what do I need to buy" and "what's left", the notes that hold
-    something still open: an unticked box, "still to" or "need to", and, for
+    something unfinished: an unticked box, "still to" or "need to", and, for
     buying, the shopping notes by tag or category. Search by the words of the
     question ("buy") finds none of them."""
     clauses = [Entry.content.like("%- [ ]%"), Entry.content.like("%still to %"), Entry.content.like("%need to %")]

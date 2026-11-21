@@ -487,7 +487,7 @@
   async function choose({ fresh = true, verb = "Open" } = {}) {
     let all = typeof docs !== "undefined" && Array.isArray(docs) && docs.length ? docs : null;
     //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
-    if (!all) all = await apiPagedList("/documents", 200).catch((error) => (toast(`Couldn't load your diagrams: ${error?.message || error}`, "info"), null));
+    if (!all) all = await apiPagedList("/documents", 200).catch((error) => (toast(voiceLine("failed", { what: "load your diagrams", why: error?.message || error }), "info"), null));
     if (!all) return null;
     const rows = [...(fresh ? [{ id: "new", title: "New diagram", hint: "Start with an empty builder", pick: true }] : []), ...all.filter((d) => d.file_type === "mmd").map((d) => ({ id: String(d.id), title: d.title || "Untitled", hint: d.updated_at ? `Changed ${relativeTime(d.updated_at)}` : "", pick: d }))];
     if (!rows.length) return toast("No diagrams yet. Make one with the blocks and it will be listed here.", "info");

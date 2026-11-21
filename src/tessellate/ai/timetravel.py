@@ -27,6 +27,7 @@ text matches the question, then ranks the then-texts by the same words.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -207,3 +208,62 @@ def then_and_now(then_text: str, now_text: str) -> dict:
         if j not in used and sentence not in then:
             changed.append({"kind": "new", "then": None, "now": j})
     return {"then": then, "now": now, "changed": changed}
+
+
+def stored_claims(session: Session, entry_ids: list[int]) -> dict[tuple[int, str], object]:
+    """The night shift's claim rows for these notes, by note and sentence as
+    compared (`verdicts.norm`): how a sentence read from a note finds the row
+    that says which model made it a claim, and when (the claims route and an
+    entity page's claims, B4)."""
+    from tessellate.ai import verdicts
+    from tessellate.core.database import DerivedFact
+
+    if not entry_ids:
+        return {}
+    rows = session.scalars(select(DerivedFact).where(DerivedFact.entry_id.in_(entry_ids), DerivedFact.kind == "claim"))
+    return {(row.entry_id, verdicts.norm(row.text)): row for row in rows}
+
+
+def claim_span(content: str, sentence: str, start: int = 0) -> tuple[int, int] | None:
+    """Where a claim stands in its note: `claims` collapses spacing, so the
+    words are found with any run of space between them."""
+    words = sentence.split()
+    if not words:
+        return None
+    match = re.compile(r"\s+".join(map(re.escape, words))).search(content, start)
+    return match.span() if match else None
+
+
+#: How many dated changes an entity page lists: the newest say what is true now.
+CHANGES_MAX = 30
+
+
+def _version_changes(entry: Entry, before: str, after: str, at: datetime, keep) -> list[dict]:  # noqa: ANN001
+    diff = then_and_now(before, after)
+    rows = []
+    for change in diff["changed"]:
+        then = diff["then"][change["then"]] if change["then"] is not None else None
+        now = diff["now"][change["now"]] if change["now"] is not None else None
+        if keep(then or "") or keep(now or ""):
+            rows.append({"kind": change["kind"], "entry_id": entry.id, "then": then, "now": now, "at": at.isoformat()})
+    return rows
+
+
+def changes_over_time(session: Session, entries: list[Entry], keep, clean=lambda text: text) -> list[dict]:  # noqa: ANN001
+    """What changed in these notes' claims, version by version (B4, "what
+    changed about X"): `then_and_now` over each pair of kept versions, oldest
+    first, each change dated by the edit that made it and kept when `keep`
+    says either side is about the thing. Newest first. `clean` takes out of
+    each version what is not prose (an entity page's task lines), before the
+    pairing, so a task is not read as a claim revised. A private or binned
+    note's history is not read, as time travel never reads it."""
+    readable = [e for e in entries if not e.is_private and not e.is_deleted]
+    history = _revisions(session, [e.id for e in readable])
+    rows: list[dict] = []
+    for entry in readable:
+        revisions = history.get(entry.id, [])
+        versions = [clean(r.content or "") for r in revisions] + [clean(entry.content or "")]
+        for index, revision in enumerate(revisions):
+            rows += _version_changes(entry, versions[index], versions[index + 1], revision.created_at, keep)
+    rows.sort(key=lambda r: r["at"], reverse=True)
+    return rows[:CHANGES_MAX]

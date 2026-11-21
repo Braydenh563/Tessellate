@@ -34,6 +34,8 @@ says which of the three it is.
 
 from __future__ import annotations
 
+import functools
+
 import re
 import sys
 from pathlib import Path
@@ -161,6 +163,7 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "markdown.js:boardEmbedFill": "inside `fill`, which boardEmbedElement first runs from `ensureModule(\"boardEmbed\").then` and later only from that fill's own walk (2026-11-14)",
     "wiring.js:docFindInDocuments": "a click on the All documents button in the find bar, which openGlobalFind shows only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:openDocReplace": "a click on the Replace in all button in the find bar, shown only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",
@@ -185,7 +188,6 @@ REACHED_AFTER_LOAD = {
     "settings-panes.js:atlasAvatar": "a palette row's optional face: typeof-guarded, and the row's icon is the designed fallback (face null)",
     "settings-panes.js:ownNameMarkStyle": "the save payload: without the bundle the look controls were never mounted, so there is no change to send and undefined omits the field",
     "settings-wiring.js:improveReady": "a click on .improve-mode, which is inside #improve-overlay; that is hidden until openImprove (improve-panel.js:18) shows it",
-    "settings.js:nameMarkBuddyMotion": "inside the afterCharacters callback (settings.js, the About motion line)",
     "settings.js:bgArtSeedText": "bgArtRefreshSeed returns early unless bgArtSeedUsed is defined, and that is declared in bg-art.js",
     "settings.js:bgArtHalt": "halts what bgArtRun mounted, and bgArtRun runs only once bg-art.js is in (startBgArt's typeof gate)",
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
@@ -204,7 +206,7 @@ REACHED_AFTER_LOAD = {
     "mdRunNode": "appendInlineRun, behind a typeof check: a run (INBOX 1403) is written only in a board text box, which is the library bundle; read in a note before that bundle arrives, its words draw plain and are not lost (the grammar and the preview are at boot)",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
     "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",
-    "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
+    "findSettings": "settingsUi, called by paletteSettingRows only once ensureModule('settingsUi') has resolved (paletteGen.settings)",
     "linkCancel": "settings-wiring's Escape handler, only while `linkSource !== null`, which beginOrCompleteLink (the same notePanels bundle) alone sets",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
@@ -440,6 +442,7 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "settings-controls.js:nameMarkBuddyMotion": "inside the afterCharacters callback (refreshAboutPane, the About motion line, moved from settings.js with the pane refresh, L675), so avatars.js is in",
     "documents-csvgrid.js:docSurface": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:docCmView": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:currentDoc": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
@@ -1037,13 +1040,22 @@ class _ShadowIndex:
         return any(start <= offset <= end for start, end in self.text) or any(start <= offset < end and name in names for start, end, names in self.scopes)
 
 
+@functools.lru_cache(maxsize=None)
+def _shadow_index(text: str) -> "_ShadowIndex":
+    """One scope index per distinct file text: the lint runs six times in this
+    module (the probes copy the frontend), and tokenising every file each time
+    was most of the gate's staged lints (L545: 85 of 211 s)."""
+    return _ShadowIndex(text)
+
+
 def _globals_of(path: Path) -> set[str]:
     """What loading a file puts in the page's global scope: its top-level functions and consts, and its window exports.
     A name bound inside a function or block is not carried to the files loaded with it."""
     return set().union(*_top_level_bindings(path))
 
 
-def _top_level_data(source: str) -> set[str]:
+@functools.lru_cache(maxsize=None)
+def _top_level_data(source: str) -> frozenset[str]:
     """Names a file's top level binds with const/let/class: `const a = 1, b = 2` chains and destructuring included."""
     tokens = _js_tokens(source)
     names: set[str] = set()
@@ -1057,7 +1069,7 @@ def _top_level_data(source: str) -> set[str]:
             names |= _binding_names(tokens, i + 1)
         elif depth == 0 and kind == "id" and text == "class" and i + 1 < len(tokens) and tokens[i + 1][0] == "id":
             names.add(tokens[i + 1][1])
-    return names
+    return frozenset(names)
 
 
 def _top_level_bindings(path: Path) -> tuple[set[str], set[str]]:
@@ -1193,7 +1205,7 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
         # A file's own globals; a local of the same name is the shadow index's business, not "any binding anywhere".
         own = _globals_of(FRONTEND / "js" / file_name)
         lines = text.split("\n")
-        shadow = _ShadowIndex(text)
+        shadow = _shadow_index(text)
         line_at = 0
         for number, line in enumerate(lines, 1):
             line_at += len(lines[number - 2]) + 1 if number > 1 else 0

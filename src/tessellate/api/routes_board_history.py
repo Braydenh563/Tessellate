@@ -166,6 +166,51 @@ def _is_delete(row: AuditLog) -> bool:
     return row.action == "deleted" or after == events.DELETED
 
 
+def _state_before_log(kind: str, first: AuditLog, row_now: object) -> tuple[bool, dict] | None:
+    """Whether an item was there before its log began, and as what: as its
+    first event's `before` says, or failing that as it is now (the nearest
+    thing known). None when it was there and nothing says how."""
+    if first.action == "created":
+        return False, {}
+    before = (first.payload or {}).get("before")
+    if isinstance(before, dict):
+        return True, dict(before)
+    if row_now is not None:
+        return True, _state_of(kind, row_now)
+    return None
+
+
+def _replay(rows: list[AuditLog], event_id: int, present: bool, state: dict) -> tuple[bool, dict, bool]:
+    """One item's log played up to `event_id`: whether it is there, its
+    state, and whether a compacted run hides it."""
+    unknown = False
+    for row in rows:
+        if row.id > event_id:
+            break
+        payload = row.payload or {}
+        if events.is_compacted(row):
+            unknown = True
+            if row.action == "created":
+                present = True
+            elif _is_delete(row):
+                present = False
+            continue
+        if _is_delete(row):
+            present, state, unknown = False, {}, False
+            continue
+        after = payload.get("after")
+        if isinstance(after, dict):
+            #: A `created` starts the row afresh: SQLite hands a deleted
+            #: row's id to the next row made (no AUTOINCREMENT), so one
+            #: id's log can hold two items, the second starting here.
+            if payload.get(events.COMPACTED) or row.action == "created":
+                state, unknown = dict(after), False
+            else:
+                state.update(after)
+            present = True
+    return present, state, unknown
+
+
 def _states_at(
     board_id: int | None, current: dict[str, object], logs: dict[str, list[AuditLog]], event_id: int
 ) -> tuple[dict[str, dict], bool]:
@@ -182,44 +227,10 @@ def _states_at(
             if row_now is not None:
                 states[key] = _state_of(kind, row_now)
             continue
-        first = rows[0]
-        present = first.action != "created"
-        state: dict = {}
-        unknown = False
-        if present:
-            #: There before its log began: as its first event's `before` says,
-            #: or failing that as it is now (the nearest thing known).
-            before = (first.payload or {}).get("before")
-            if isinstance(before, dict):
-                state = dict(before)
-            elif row_now is not None:
-                state = _state_of(kind, row_now)
-            else:
-                continue
-        for row in rows:
-            if row.id > event_id:
-                break
-            payload = row.payload or {}
-            if events.is_compacted(row):
-                unknown = True
-                if row.action == "created":
-                    present = True
-                elif _is_delete(row):
-                    present = False
-                continue
-            if _is_delete(row):
-                present, state, unknown = False, {}, False
-                continue
-            after = payload.get("after")
-            if isinstance(after, dict):
-                #: A `created` starts the row afresh: SQLite hands a deleted
-                #: row's id to the next row made (no AUTOINCREMENT), so one
-                #: id's log can hold two items, the second starting here.
-                if payload.get(events.COMPACTED) or row.action == "created":
-                    state, unknown = dict(after), False
-                else:
-                    state.update(after)
-                present = True
+        start = _state_before_log(kind, rows[0], row_now)
+        if start is None:
+            continue
+        present, state, unknown = _replay(rows, event_id, *start)
         if not present:
             continue
         if unknown:

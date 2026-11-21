@@ -10906,7 +10906,7 @@ function wbMapDueWords(due, start = null, time = null) {
   const [h, m] = time.split(":").map(Number);
   const at = new Date(end.day);
   at.setHours(h, m);
-  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`, past: at < now };
+  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })}`, past: at < now };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it

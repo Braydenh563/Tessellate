@@ -62,6 +62,34 @@ def then_and_now(entry_id: int, as_of: date = Query(...), session: Session = Dep
     return out
 
 
+@router.get("/{entry_id}/claims")
+def claims_as_of(entry_id: int, as_of: date | None = Query(default=None), session: Session = Depends(get_session)) -> dict:
+    """This note's claims as they stood at the end of `as_of`, or now (I5).
+    The revision is resolved at the date, as then-and-now resolves it; a
+    claim the night shift stored for the note is named by its fact id, and
+    one the person marked wrong (I7) says so."""
+    from tessellate.ai import timetravel, verdicts
+    from tessellate.core.config import user_now
+
+    entry = _existing_entry(session, entry_id)
+    if entry.is_private:
+        raise HTTPException(status_code=403, detail="This note is private, so its claims are not listed.")
+    text, revision_id, exact = entry.content or "", None, True
+    if as_of is not None:
+        zone = user_now(deps.get_config()).tzinfo
+        then = timetravel.text_as_of(session, entry, timetravel.end_of_day(as_of, zone))
+        if then is None:
+            raise HTTPException(status_code=404, detail=f"This note did not exist on {timetravel.day_words(as_of)}.")
+        text, revision_id, exact = then.text, then.revision_id, then.exact
+    stored = timetravel.stored_claims(session, [entry.id])
+    known = verdicts.known(session)
+    claims = []
+    for c in timetravel.claims(text):
+        row = stored.get((entry.id, verdicts.norm(c)))
+        claims.append({"text": c, "fact_id": row.id if row else None, "wrong": known.is_wrong(entry.id, c)})
+    return {"as_of": as_of.isoformat() if as_of else None, "revision_id": revision_id, "exact": exact, "claims": claims}
+
+
 class ThenTextBody(BaseModel):
     #: A version of the note the reader is looking at (a History row's text).
     then: str = Field(max_length=200_000)

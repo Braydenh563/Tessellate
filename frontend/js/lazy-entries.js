@@ -10,6 +10,7 @@ Object.assign(LAZY_MODULES, {
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
+    "/js/whiteboard-map-marks.js", //: After whiteboard-map-more.js: joins its `wbMapLazy` table (stamps, stickers, affinity, boundary).
     "/js/whiteboard.js",
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
@@ -33,6 +34,8 @@ Object.assign(LAZY_MODULES, {
   studio: ["/js/studio.js"],
   //: Sync between computers through a folder, no server (sync-folder.js's header; WORLD_CLASS_PLAN row 36).
   syncFolder: ["/js/sync-folder.js"],
+  //: The start-up model choice, said once (model-chosen.js; L671).
+  modelChosen: ["/js/model-chosen.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
@@ -50,7 +53,9 @@ Object.assign(LAZY_MODULES, {
   //: Every popup panel draggable by its head and resizable from its corner (INBOX 1427): see panel-movable.js.
   panelMovable: ["/css/panel-movable-lazy.css", "/js/panel-movable.js"],
   //: The activity panel and the run folds it shares with Settings, Tasks (task-steps.js).
-  activity: ["/js/task-steps.js", "/js/activity-panel.js"],
+  activity: ["/css/agent-runs-lazy.css", "/js/task-steps.js", "/js/activity-panel.js"],
+  //: The Connections sheet (connections.js) and the rows the Notes column shares; its own stylesheet rides with it.
+  connections: ["/css/connections-lazy.css", "/js/connections.js"],
   //: Settings, Tasks (chat-tasks.js), About's health block (settings-health.js), Personas (personas-pane.js).
   settingsPanes: ["/js/task-steps.js", "/js/chat-tasks.js", "/js/settings-health.js", "/js/personas-pane.js"],
   //: Improve (improve-panel.js) and a note's re-check and attach actions (lightbox-actions.js).
@@ -98,6 +103,8 @@ Object.assign(LAZY_MODULES, {
   entryCard: ["/js/entry-card.js"],
   //: The bar a table in a reply or a note wears (table-block.js): the table render (navigation.js) swaps it in when it arrives.
   tableBlock: ["/js/table-block.js"],
+  //: A `![[board]]` card's fill (board-embed.js): `boardEmbedElement` (markdown.js) waits for it.
+  boardEmbed: ["/js/board-embed.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -111,7 +118,7 @@ Object.assign(LAZY_MODULES, {
   //: The failed-load state (load-failed.js's header).
   loadFailed: ["/js/load-failed.js"],
   //: The generated faces, the companion and Atlas (see "The characters" below).
-  characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
+  characters: ["/css/characters-lazy.css", "/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
   //: What a person does to the companion on purpose: the Settings controls, Show or
   //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
   companionSettings: ["/js/companion-settings.js"],
@@ -148,13 +155,13 @@ installStandIns({
   libraryPick: ["pickLibraryItemDialog", "pickMediaDialog"],
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu", "openModelOffer"],
   featureModelSheet: ["openFeatureModelSheet"],
-  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine", "renderBackupsWidget"],
   dashArt: ["renderArtWidget"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation", "showAskAsOf"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
@@ -318,8 +325,12 @@ function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
   const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
+  //: Calm is asked again in an idle slot, just before the file: a file's eval
+  //: is 50 to 200 ms at 4x CPU, and one that started as a pane opened landed
+  //: inside its first show (graph.js in Settings -> Data, L-world-class-355).
+  const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 0));
   const warmNext = () =>
-    Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
+    Date.now() < calmAt ? setTimeout(warmNext, 600) : idle(() => (Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600))));
   const warm = (event) => {
     //: Typing the password is not the person arriving: the lock screen is over
     //: the page until they are in.
@@ -327,7 +338,8 @@ function warmLibraryAfterInput() {
     calmAt || setTimeout(warmNext);
     calmAt = Date.now() + 2500;
   };
-  for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, warm, { capture: true, passive: true });
+  //: `click` too: a screen reader's activation is a click with no pointerdown.
+  for (const type of ["pointerdown", "keydown", "click"]) window.addEventListener(type, warm, { capture: true, passive: true });
 }
 warmLibraryAfterInput();
 

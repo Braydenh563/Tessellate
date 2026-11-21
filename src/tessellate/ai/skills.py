@@ -37,6 +37,7 @@ tool names handed in by the caller rather than importing the registry, because
 from __future__ import annotations
 
 import json
+import logging
 import re
 import threading
 from pathlib import Path
@@ -1726,7 +1727,7 @@ BUILTIN_SKILLS: list[dict] = [
     # aimed at *building* a skill instead of *thinking through* an idea.
     {
         "name": "Build a skill",
-        "description": "Interviews you about a job you do often, then saves it as a real skill, with steps and an actual tool allowlist, not just a saved sentence.",
+        "description": "Interviews you about a job you do often, then saves it as a real skill with steps and a tool allowlist.",
         "when_to_use": "when something you keep asking the AI to do by hand should become a one-click skill instead",
         "prompt": "Help me turn {{task}} into a saved skill.",
         "steps": [
@@ -1820,6 +1821,7 @@ def small_class(config) -> bool:
 
         return deps.get_model_manager().chat_model_is_small() is True
     except Exception:  # noqa: BLE001  # a label is not worth failing the list over
+        logging.getLogger(__name__).debug("small_class: a label is not worth failing the list over", exc_info=True)
         return False
 
 

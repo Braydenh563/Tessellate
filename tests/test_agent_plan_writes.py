@@ -90,7 +90,7 @@ def test_step_ones_write_can_be_undone_when_the_run_stops_at_step_two(ai_client,
     events = _events(ai_client, "Tidy up", plan={"goal": "Tidy up", "steps": ["Edit the harbor note", "Say what you did"]})
     first = next(e for e in events if e["type"] == "step" and e["state"] == "done")
     undo = first["changes"][0]["undo"]
-    ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "arguments": undo["arguments"]})
+    ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "arguments": undo["arguments"], "sig": undo["sig"]})
     assert ai_client.get(f"/entries/{harbor}").json()["content"] == before
 
 

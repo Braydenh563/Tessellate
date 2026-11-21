@@ -556,6 +556,17 @@ def describe(config: ConfigManager, port: int | None = None) -> dict:
     }
 
 
+def trust_urls(config: ConfigManager, port: int | None = None) -> list[str]:
+    """The plain-http `/lan/trust` address beside each https one the app shows
+    (what the QR code in Settings opens; a phone has no trust yet, so https
+    would be the very warning the page exists to end)."""
+    return [
+        f"http://{a[len('https://'):]}/lan/trust"
+        for a in describe(config, port).get("addresses") or []
+        if a.startswith("https://")
+    ]
+
+
 def order_addresses(addresses: list[str], network) -> list[str]:  # noqa: ANN001  # a netid.Network or None
     """The address on the network's own interface first, virtual adapters
     out, IPv4 before IPv6. Never empties the list: the primary is kept even
@@ -575,3 +586,4 @@ def _any_address() -> bool:
 
 
 lantrust.online_probe = _any_address
+lantrust.addresses_probe = lambda: lan_addresses(include_v6=True)

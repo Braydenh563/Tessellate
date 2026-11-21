@@ -24,7 +24,7 @@ shape now, this one:
     ## Notes
     ## Decisions
     ## Action items
-    - [ ] Send the deck @Sam by Friday
+    `- [ ] Send the deck @Sam by Friday`
 
 **An action item is a task line** (`- [ ]`), which the editor already draws
 as a checkbox and the Dashboard's Outstanding widget already lists. Its owner
@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import re
 
+from tessellate.entry import meetings_cues
 from tessellate.entry import properties as note_properties
 
 MEETING_TYPE = "Meeting"
@@ -321,7 +322,7 @@ def reminder_text(item: dict) -> str:
 # Summarise used to answer 503 with no model, so "Find the decisions and
 # action items" was a dead control on every machine without one. These rules
 # read what a minute-taker reads: a sentence saying decided or agreed is a
-# decision, and one marked Action or TODO, or a person committing to a task,
+# decision, and one marked Action or To-do, or a person committing to a task,
 # is an action item. The day and the name are read by `ai/recognise.py`
 # (the one reader of dates); nothing here parses a date word. The model,
 # when there is one, rewrites the same list in its own words
@@ -337,7 +338,7 @@ _DECISION_WORDS = re.compile(
     re.I,
 )
 #: A person taking a task on: "Sam will", "Priya to book", "Alex needs to".
-#: A bare "Alex updates" counts only under an Action or TODO mark.
+#: A bare "Alex updates" counts only under an Action or To-do mark.
 _COMMIT = r"(?:will|'ll|to|needs to|need to|is going to|has to|must|should|agreed to|offered to)\b"
 _SUBJECT = re.compile(r"^@?([A-Z][a-z]+)(?:[ \t]+[A-Z][a-z]+)?[ \t]+" + _COMMIT)
 _MARKED_SUBJECT = re.compile(r"^@?([A-Z][a-z]+)\b")
@@ -405,21 +406,33 @@ def _as_owned(text: str, owner: str | None) -> str:
     return f"{text} @{owner}"
 
 
+def _is_decision(text: str) -> bool:
+    said = _DECISION_WORDS.search(text) or meetings_cues.DECIDED.search(text)
+    return bool(said and not (_UNDECIDED.search(text) or meetings_cues.UNDECIDED.search(text)))
+
+
+def _named_commit(text: str, names: set[str]) -> bool:
+    """An attendee taking a task on in another language ("Marta va a enviar"): the
+    name must be one of the meeting's, because a modal alone is a common word."""
+    said = meetings_cues.SUBJECT.match(text)
+    return bool(said and said.group(1).lower() in names)
+
+
 def _read_line(line: str, now, names: set[str]) -> tuple[str, dict] | None:  # noqa: ANN001
     from tessellate.ai.recognise import recognise
 
-    marked = bool(_ACTION_MARK.match(line))
-    text = _ACTION_MARK.sub("", line).rstrip(" .")
+    marked = bool(_ACTION_MARK.match(line) or meetings_cues.MARK.match(line))
+    text = meetings_cues.MARK.sub("", _ACTION_MARK.sub("", line)).rstrip(" .")
     #: A question asks, and a declined task is nobody's: neither is minuted.
     if not marked and (line.rstrip().endswith("?") or _NOT_COMMITTING.match(text.lstrip("@"))):
         return None
     spans = recognise(text, now=now, tense="future")
     owner = _owner_of(text, marked, spans, names)
-    if marked or (owner and _SUBJECT.match(text.lstrip("@"))):
+    if marked or (owner and (_SUBJECT.match(text.lstrip("@")) or _named_commit(text, names))):
         due = next((s for s in spans if s.kind in {"date", "datetime"} and s.rank == 0), None)
         item = {"text": _as_owned(text, owner), "quote": line, "owner": owner, "due": due.read_as if due else None}
         return "actions", {**item, "verbatim": True}
-    if _DECISION_WORDS.search(text) and not _UNDECIDED.search(text):
+    if _is_decision(text):
         return "decisions", {"text": text, "quote": line, "verbatim": True}
     return None
 

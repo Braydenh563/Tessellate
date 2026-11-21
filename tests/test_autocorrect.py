@@ -36,6 +36,13 @@ SERVED = {
     "entry-content", "entry-title", "quick-note-text", "chat-input", "question",
     "graph-new-content", "graph-new-note-title", "graph-popup-content",
     "draft-text", "draft-thoughts", "doc-title", "reminder-magic", "reminder-text",
+    #: The other single-line prose inputs (L-world-class-1): the capture card (its own body carries it),
+    #: the help chat, the editor's ask and rewrite lines, the draft refine
+    #: line, a bookmark's title and note, a memory and the skill and
+    #: template descriptions.
+    "help-chat-input", "doc-assist-question", "doc-ai-instruction",
+    "draft-instruction", "bookmark-title-input", "bookmark-note-input", "memory-new",
+    "skill-description", "template-description",
 }
 
 
@@ -52,6 +59,8 @@ def test_the_prose_boxes_carry_it():
     assert set(_tagged()) == SERVED
     edit = (JS / "note-edit-panels.js").read_text(encoding="utf-8")
     assert edit.count("dataset.autocorrect") == 2
+    #: A reminder's edit form builds its text input in script.
+    assert "dataset.autocorrect" in (JS / "reminder-edit.js").read_text(encoding="utf-8")
 
 
 def test_never_in_code_links_tags_or_search():

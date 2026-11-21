@@ -114,7 +114,9 @@ class _Count(HTMLParser):
 #: `<template data-surface="board">` (1,741 elements, built when a board opens)
 #: took it to 3,782; the OCR workspace's card (`data-surface="ocr"`, 130) to 3,652;
 #: the keyboard shortcuts sheet's card (`data-surface="shortcuts"`, 83) to 3,569.
-BOOT_ELEMENTS_CAP = 3_569
+#: 2026-11-13 (L621): measured 1,054 with the meeting recorder's card a surface too
+#: (`data-surface="meeting"`, 61); the tab panes had gone to surfaces meanwhile.
+BOOT_ELEMENTS_CAP = 1_054
 
 
 def test_the_boot_document_does_not_grow():

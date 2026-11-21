@@ -305,7 +305,7 @@ docExportHtmlDocument.icons = async (root, clone) => {
     copies[at].replaceWith(glyph);
   });
   if (!copies.length) return "";
-  const font = await (await fetch("/vendor/phosphor/Phosphor.woff2")).blob();
+  const font = await (await fetch("/vendor/phosphor/Phosphor-full.woff2")).blob();
   const url = await new Promise((resolve) => Object.assign(new FileReader(), { onload: (e) => resolve(e.target.result) }).readAsDataURL(font));
   return `@font-face{font-family:"Phosphor";src:url(${url}) format("woff2")}.doc-export-icon{font-family:"Phosphor";font-style:normal;line-height:1}`;
 };

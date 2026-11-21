@@ -41,7 +41,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
-from tessellate.core import paths
+from tessellate.core import paths, sealed_files
 
 FORMAT = "memorymap-folder"
 VERSION = 1
@@ -115,6 +115,12 @@ def _sha1_file(path: Path) -> str | None:
     if not path.is_file():
         return None
     digest = hashlib.sha1()  # noqa: S324  # an identity check, not security
+    if sealed_files.is_sealed(path):
+        try:
+            digest.update(sealed_files.read(path))
+        except sealed_files.SealedError:
+            return None
+        return digest.hexdigest()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
@@ -360,9 +366,17 @@ def _write_note(archive: zipfile.ZipFile, record: dict, uploads_dir: Path, store
     for attachment in record["attachments"]:
         path = uploads_dir / stored[(record["id"], attachment["file"])]
         member = f"{base}/{attachment['file']}"
-        if path.is_file():
+        if path.is_file() and not sealed_files.is_sealed(path):
             archive.write(path, member)
             files.append(member)
+        elif path.is_file():
+            # An open private space the person chose to export: its notes
+            # go out readable, so its files do too (L-world-class-52).
+            try:
+                archive.writestr(member, sealed_files.read(path))
+                files.append(member)
+            except sealed_files.SealedError:
+                missing.append(member)
         else:
             missing.append(member)
     return {"id": record["id"], "md": f"{base}.md", "sidecar": f"{base}.json", "attachments": files}, missing
@@ -669,7 +683,8 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
 def _fresh_bin_period(entry) -> None:  # noqa: ANN001
     """A binned note that came in already past the bin's days would be purged
     at the next start, so an import would lose what it just made: it gets a
-    full period from now instead (a note still inside its days keeps its date)."""
+    full period from now instead. `_restore` already restarts every stamp, so this
+    is the guard for a record whose `deleted_at` was missing or unreadable."""
     if not entry.is_deleted:
         return
     from tessellate.core import deps

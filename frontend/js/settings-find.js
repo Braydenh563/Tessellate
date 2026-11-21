@@ -116,6 +116,43 @@
   //: "dark" and "theme" find the same setting, "chnage pasword" finds the
   //: password. The rule is meaning.js's (`meaningAlts`, in this bundle); the
   //: rows' own words are its vocabulary, so a slip of a label reads as it.
+  //: **The index is read before the first key, a pane per idle slot.** The first letter typed in the search box
+  //: scanned all twenty-two panes and tokenized their text in one go (172 ms of 763 over nine keys at 4x CPU,
+  //: scratchpad/ui-sweeps/handlerlag.js). Focusing the box starts the same reading, one pane at a time; a pane that
+  //: changes is dropped from the cache by `settingsSectionText`'s observer and read again as before.
+  function settingRowsWarm() {
+    //: The topics are drawn here, in an idle slot, and not by the first query: that draw changed the Help pane
+    //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
+    const topics = document.getElementById("help-topics");
+    if (topics && (!topics.firstElementChild || topics.dataset.dropping)) renderHelpTopics();
+    //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
+    const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !settingRowsScan.panes.has(p));
+    if (!pane) return;
+    const rows = settingRowsScan.pane(pane);
+    settingRowsScan.panes.set(pane, rows);
+    //: The vocabulary too (`settingVocab`): left to the first key it was 15 to 20 ms of that key at 4x.
+    settingVocab(rows);
+    for (const row of rows) meaningMissing([], row.haystack);
+    meaningMissing([], settingsSectionText(pane));
+    if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
+    else setTimeout(settingRowsWarm, 50);
+  }
+  //: Started when Settings opens and when the box is focused, and again (`settingRowsWarmSoon`, called by the
+  //: pane observer in settings.js) a moment after a pane changes, so a key after a visit to a pane finds the rows
+  //: read (L-world-class-359: the first key scanned the panes the visits had changed, 63 of 133 ms at 4x CPU).
+  function settingRowsWarmSoon(wait = 150) {
+    //: Not pushed back by each change: a pane that keeps changing would never be read.
+    if (settingRowsWarmSoon.timer && wait) return;
+    clearTimeout(settingRowsWarmSoon.timer);
+    settingRowsWarmSoon.timer = setTimeout(() => {
+      settingRowsWarmSoon.timer = 0;
+      settingRowsWarm();
+    }, wait);
+  }
+  //: Delegated, not bound: the Settings body may be parsed after this file
+  //: loads (idle parse), so the box need not exist yet.
+  document.addEventListener("focusin", (e) => e.target?.id === "settings-search" && settingRowsWarmSoon(0));
+
   let settingVocabCache = null;
   //: Each row's words are added once, not on every key (perf audit 1108 P4: `meaningWords` over every row was
   //: 37 to 63 ms a key at 4x); a row that is gone leaves its words, which only widens a typo's reach a little.
@@ -161,7 +198,7 @@
     //: or more ("what the ai remembers about me" is a memory question first).
     //: A help topic is held by meaning in its title and keywords only: its
     //: body names half the app. The words as typed still reach the body.
-    const said = (row) => (row.keys ? `${row.text} ${row.keys}` : row.haystack);
+    const said = (row) => (row.keys ? (row.said ??= `${row.text} ${row.keys}`) : row.haystack);
     const plain = (row) => words.every((w) => row.haystack.includes(w));
     const pick = (miss) => rows.filter((row) => meaningMissing(alts, said(row)) <= miss);
     let found = pick(0);
@@ -275,6 +312,8 @@
     if (!list) return 0;
     list.replaceChildren();
     const found = query.trim().length >= 2 ? findSettings(query) : [];
+    //: filterSettings opens the first one's pane from this list rather than searching again.
+    renderSettingResults.found = found;
     for (const row of found) list.appendChild(settingResultItem(row));
     list.classList.toggle("hidden", !found.length);
     settingNearAdd(query, found);
@@ -609,6 +648,16 @@
   //: Called when a section opens: build now, again once its async content has
   //: arrived, and keep it current while the pane changes.
   function settingsIndexWatchSection(name) {
+    //: Leaving Help drops its 1,770 topic nodes; the next Help view or search draws them again (L676). Not while
+    //: a search is typed: its results point at those rows.
+    //: `getElementById`, not `$`: an unbuilt Help has no topics to drop, and `$` built the pane at every first open (L675).
+    const help = document.getElementById("help-topics");
+    if (name !== "help" && helpTopicsLoad && help && !$("settings-search").value) {
+      helpTopicsLoad = null;
+      //: Empty, or still emptying (`data-dropping`), is the "not drawn" mark; renderHelpTopics fills it. Not a
+      //: hand-set aria-busy (test_spinner_recipe): the static one is only for the first load.
+      helpTopicsDrop(help);
+    }
     //: Each row's changed marker and reset (WORLD_CLASS_PLAN 25f), a file of its own.
     lazyScript("/js/settings-rows.js").then((ok) => ok && settingRowsWatch(name));
     settingsIndexWatch?.disconnect();
@@ -644,6 +693,25 @@
   // load; a failed fetch is tried again on the next open.
 
   let helpTopicsLoad = null;
+
+  //: Leaving Help empties its topics a slice of rows per timer: all 1,770 nodes in one `replaceChildren` were a
+  //: 220 to 350 ms task at 4x CPU, landing on the next pane's switch (L675). Rows, then their groups; a visit
+  //: back first draws a fresh set, and the old nodes are already off the page or on their way.
+  const HELP_DROP_SLICE = 60;
+  function helpTopicsDrop(box) {
+    box.dataset.dropping = "1";
+    const groups = [...box.children];
+    const rows = groups.flatMap((group) => [...group.children]);
+    const step = () => {
+      for (const row of rows.splice(0, HELP_DROP_SLICE)) row.remove();
+      if (rows.length) setTimeout(step);
+      else {
+        groups.forEach((group) => group.remove());
+        if (!helpTopicsLoad) delete box.dataset.dropping;
+      }
+    };
+    setTimeout(step);
+  }
 
   function helpTopicLink(link) {
     const button = document.createElement("button");
@@ -953,6 +1021,7 @@
         }
         box.replaceChildren(...parts);
         box.removeAttribute("aria-busy");
+        delete box.dataset.dropping;
         //: One capture listener for the hundred folds: `toggle` does not bubble.
         box.addEventListener("toggle", (event) => {
           const topic = event.target;
@@ -973,5 +1042,7 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: One property of the scan object, not a global of its own (the global-name cap).
+  settingRowsScan.warmSoon = settingRowsWarmSoon;
   Object.assign(window, { findSettings, openSettingRow, renderCredits, renderHelpTopics, renderSettingResults, settingQueryAlts, settingResultsKey, settingRowIsTopic, settingRowText, settingRowsScan, settingsIndexWatchSection });
 })();

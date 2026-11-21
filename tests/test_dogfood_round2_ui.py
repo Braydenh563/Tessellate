@@ -78,7 +78,10 @@ def test_chat_with_no_model_does_not_name_one_or_send_you_to_notes_ask():
 def test_settings_search_opens_the_first_match():
     # 18: "phone" listed results while the pane stayed on Models.
     src = (JS / "settings.js").read_text()
-    assert "findSettings(query, 1)[0]?.section" in src
+    # The first row of the list already drawn, not a second search (L-world-class-359: 24 of 60 ms of a key at 4x).
+    assert "renderSettingResults.found[0]?.section" in src
+    assert "findSettings(query, 1)" not in src
+    assert "renderSettingResults.found = found;" in (JS / "settings-find.js").read_text()
 
 
 def test_chat_hint_is_left_off_a_one_row_box_in_a_narrow_window():

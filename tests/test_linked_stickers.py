@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MORE = (ROOT / "frontend" / "js" / "whiteboard-map-more.js").read_text(encoding="utf-8")
+MORE = (ROOT / "frontend" / "js" / "whiteboard-map-marks.js").read_text(encoding="utf-8")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 PLAN = (ROOT / "docs" / "roadmap" / "WHITEBOARD_PLAN.md").read_text(encoding="utf-8")

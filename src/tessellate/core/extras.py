@@ -1562,6 +1562,39 @@ def _remove_from_frozen_target(extra: Extra, target: Path) -> None:
         _state.step = f"{extra.label} was not installed, so there was nothing to remove."
 
 
+def _shared_with_others(names: list[str], leaving: set[str]) -> set[str]:
+    """Which of `names` another installed project needs (canonical names).
+
+    `pdfpages` lists Pillow, and in a source install Pillow is also fastembed's
+    and RapidOCR's own requirement: Undo on the notice removed it from under
+    them (L667, a real install and Undo in a scratch venv). Optional-extra
+    requirements (`; extra == ...`) do not count as needing it."""
+    from importlib import metadata
+
+    wanted = {_canonical(name) for name in names}
+    shared: set[str] = set()
+    for dist in metadata.distributions():
+        if _canonical(str(dist.metadata.get("Name") or "")) in leaving:
+            continue
+        for requirement in dist.requires or []:
+            head, _, marker = requirement.partition(";")
+            if "extra ==" in marker:
+                continue
+            if _canonical(_requirement_name(head.strip())) in wanted:
+                shared.add(_canonical(_requirement_name(head.strip())))
+    return shared
+
+
+def _removable_names(extra: Extra) -> list[str]:
+    """The entry's packages pip may remove: not those another project needs (logged)."""
+    names = [_requirement_name(package) for package in extra.packages]
+    shared = _shared_with_others(names, {_canonical(name) for name in names})
+    for name in names:
+        if _canonical(name) in shared:
+            _state.log.append(f"Kept {name}: another package needs it.")
+    return [name for name in names if _canonical(name) not in shared]
+
+
 def _run_uninstall(extra: Extra) -> None:
     """pip uninstall, with the same bookkeeping the install has.
 
@@ -1580,13 +1613,12 @@ def _run_uninstall(extra: Extra) -> None:
             _state.outcome = "failed"
             _state.step = NO_PYTHON_FOUND_MESSAGE
             return
-        command = [
-            *pip_base,
-            "uninstall",
-            "-y",
-            "--disable-pip-version-check",
-            *(_requirement_name(package) for package in extra.packages),
-        ]
+        names = _removable_names(extra)
+        if not names:
+            _state.outcome = "completed"
+            _state.step = f"{extra.label} removed: what it added is shared, so it stays."
+            return
+        command = [*pip_base, "uninstall", "-y", "--disable-pip-version-check", *names]
         _state.step = f"pip uninstall {' '.join(extra.packages)}"
         process = subprocess.Popen(  # noqa: S603  # fixed args from the allowlist, no shell
             command,
@@ -2301,7 +2333,7 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     while any process has it mapped in, so pip can spawn, run, and still fail
     to actually replace those files; the failure then surfaces as a cryptic
     pip error in the install log rather than as this sentence. POSIX allows
-    replacing a file that is still open elsewhere, which is why this was
+    replacing a file that another process holds open, which is why this was
     never seen from this sandbox.
 
     Only "voice" holds a native model like this today, the other extras

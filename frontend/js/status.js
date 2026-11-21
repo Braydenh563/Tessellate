@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that notification setting.", true);
+    toast(error.message || voiceLine("failed", { what: "save that notification setting" }), true);
   }
   renderAgentActivityMode();
 });
@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+      toast(voiceLine("failed", { what: "go back to the space it was made in" }), "info", { retry: backThenRun });
     };
   }
   if (!record) return () => run();
@@ -1154,11 +1154,11 @@ const VOICE = {
 //: `toLocaleString()` printed seconds on version lists, notes' hovers and run
 //: logs while the Timeline and the reminders printed none, and 12 or 24 hours
 //: follows the locale's own rule everywhere.
-const WHEN_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 function whenText(value = new Date()) {
   const moment = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(moment.getTime()) ? "" : WHEN_FORMAT.format(moment);
+  return Number.isNaN(moment.getTime()) ? "" : whenText.format.format(moment);
 }
+whenText.format = clockOptions.formatter({ dateStyle: "medium", timeStyle: "short" });
 
 function toastName(text, fallback = "it", limit = 48) {
   const flat = String(text || "").replace(/\s+/g, " ").trim();
@@ -1172,7 +1172,7 @@ function voiceLine(key, slots = {}) {
   return shape.replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : String(slots[name] ?? "")));
 }
 
-function toast(message, isError = false, { exempt = false, action = null } = {}) {
+function toast(message, isError = false, { exempt = false, retry, action = retry && ["Try again", retry] } = {}) {
   //: A read dropped by a space switch (app.js, the request helper) is nothing to report.
   if (isError && String(message).endsWith("Space changed.")) return;
   if (isError === "info" || (isError === true && [...toast.refused].some((m) => String(message).includes(m)))) {
@@ -1383,14 +1383,16 @@ const SERVER_DOWN_RETRY_MIN_MS = 3000;
 const SERVER_DOWN_RETRY_MAX_MS = 30000;
 let serverDownRetryDelay = SERVER_DOWN_RETRY_MIN_MS;
 
+//: Answers the banner's words, which `api()` also gives a write it refuses while this is up (L-world-class-99).
 function showServerDownBanner() {
-  if (serverDownNote && serverDownNote.isConnected) return; // already up
+  const message = "Can't reach Tessellate. Retrying…";
+  if (serverDownNote && serverDownNote.isConnected) return message; // already up
   const box = $("toast-box");
   const note = document.createElement("div");
   note.className = "toast error server-down-toast";
   const text = document.createElement("span");
   text.className = "toast-msg";
-  text.textContent = "Can't reach Tessellate. Retrying…";
+  text.textContent = message;
   const button = document.createElement("button");
   button.className = "small toast-action";
   button.textContent = "Retry";
@@ -1398,6 +1400,7 @@ function showServerDownBanner() {
   note.append(text, toastActions(button), toastCloseButton(note, null));
   toastStack(box, () => box.appendChild(note));
   serverDownNote = note;
+  return message;
 }
 
 function noteServerDown() {
@@ -1703,7 +1706,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || `Couldn't undo “${action.label}”.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo “${action.label}”` }), true);
   }
   renderUndoBar();
 }
@@ -1724,7 +1727,7 @@ async function performRedoNow() {
     toast(`Redone: ${action.label}`);
   } catch (error) {
     redoStack.push(action);
-    toast(error.message || "Couldn't redo that.", true);
+    toast(error.message || voiceLine("failed", { what: "redo that" }), true);
   }
   renderUndoBar();
 }
@@ -1859,7 +1862,7 @@ async function loadMostUsed() {
     //: A picture's markdown is not words: cut at 25 characters it showed as a
     //: raw `![Sketch...` (dog3-1026 row 15).
     const flat = stripFrontmatter(entry.content)
-      .replace(/!\[[^\]\n]*\]\([^)\n]*\)/g, "")
+      .replace(/!\[[^\]\n]{0,99}\]\([^)\n]{0,999}\)/g, "")
       .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
       .trim() || "Picture";
     const { text: sliced, truncated } = safeMdSlice(flat, 25);
@@ -1884,16 +1887,9 @@ let modelStatus = null; // latest /models/status payload
 //: rather than guarding a function that may not exist yet.
 const settingsReadouts = {};
 
-//: **The start-up choice, said once with Change** (the owner, 2026-10-07: on
-//: a fresh install with five models it ran a llama3.2 it did not have). Once
-//: per chosen model in this browser; Settings, Models keeps the why.
-function sayChatModelChosen(status) {
-  const why = status?.chat_model_chosen_why;
-  if (!why) return;
-  const key = `chatModelChosen:${status.chat_model}`;
-  if (prefs.get(key)) return;
-  if (!prefs.set(key, "1")) return;
-  toastAction(`${aiNameNow()} now runs ${status.chat_model}: ${why}.`, "Change", () => openSettingsModal("models", "chat-model-select"));
+//: The start-up choice, said once with Change (model-chosen.js, lazy; L671).
+function sayChatModelChosen(s) {
+  if (s.chat_model_chosen_why) ensureModule("modelChosen").then(() => settingsReadouts.chosen(s));
 }
 // Has the status endpoint ever answered? "We haven't asked yet" and "we asked
 // and got nothing" are both `modelStatus === null`, but they mean opposite
@@ -1951,11 +1947,10 @@ function settingsOpen() {
 // change, so no control has to remember: every `/preferences` answer passes the
 // wrapper below (the last one kept as text, so a PUT can be diffed against it),
 // and ai-tools.js reports a look key. All the rest (the diff, the list, the
-// Undo) is the lazy settings-data.js, loaded only when a change is made while
-// Settings is open: the boot scripts are at their gzip cap, and `apiJson` is
+// Undo) is the lazy settings-data.js, loaded on the first change: the boot scripts are at their gzip cap, and `apiJson` is
 // wrapped here rather than edited at its twenty callers.
 let settingsPrefsLast = null;
-//: `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
+//: A write with `noHistory` keeps its own Undo or is a setup step. `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
 //: not noted again.
 let settingsHistoryBusy = false;
 {
@@ -1965,7 +1960,7 @@ let settingsHistoryBusy = false;
     if (path === "/preferences") {
       const was = settingsPrefsLast;
       settingsPrefsLast = JSON.stringify(data);
-      if (was && options.method === "PUT" && !settingsHistoryBusy && settingsOpen()) {
+      if (was && options.method === "PUT" && !settingsHistoryBusy && !options.noHistory) {
         ensureModule("settingsData").then(() => settingsPrefsSeen(JSON.parse(was), data));
       }
     }
@@ -2129,12 +2124,11 @@ const AI_OFFLINE_HINT = "Connect a model in Settings";
 //:
 //: **Off means no model can answer, not only no server** (ledger 1521;
 //: INBOX 778: a reachable server with no chat model installed answers
-//: nothing). `model_ready` is the server's own verdict; the Needle engine
-//: (`tools_engine`) answers without one, so it keeps the gate open.
+//: nothing). The server folds the clauses (runner down, `model_ready`, the
+//: Needle `tools_engine` exemption) into one `ai_off` field (L643).
 function aiIsOff() {
-  if (!modelStatus) return false;
-  if (modelStatus.ollama_running === false) return true;
-  return modelStatus.model_ready === false && !modelStatus.tools_engine;
+  //: The server's one verdict (`ai_off`, routes_models.py); before the first poll, not off.
+  return modelStatus?.ai_off === true;
 }
 
 //: **Why this restores rather than enables.** The status poll runs this every
@@ -2656,11 +2650,10 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
   if (title && rest) title = `${title}: ${rest}`;
   //: The same words again change nothing: the Undo and Redo pair repaints on every document keystroke, and rebuilding the buttons cost
   //: style and layout work a bare editor does not pay (L323: UpdateLayoutTree 7.7 ms a key at 4x, 2.3 bare). The last paint is kept on the
-  //: function, not a new global, and dropped if the button's children were replaced from outside.
-  const seen = (paintStatusItem.last ||= new WeakMap());
+  //: button (`paintSig`), not a new global, and dropped if the button's children were replaced from outside.
   const sig = [icon, value, label, title, tone].join("\u0001");
-  if (seen.get(button) === sig && button.firstChild) return;
-  seen.set(button, sig);
+  if (button.paintSig === sig && button.firstChild) return;
+  button.paintSig = sig;
   button.replaceChildren();
   if (icon) {
     const glyph = document.createElement("span");
@@ -2955,10 +2948,6 @@ async function setChatMode(mode) {
   }).catch(() => {});
 }
 
-function backendLabel(status) {
-  return status?.provider === "openai" ? "The model server" : "Ollama";
-}
-
 // True while the user is mid-edit, so a status poll doesn't overwrite the
 // address they are halfway through typing. The polling that keeps this screen
 // live is the reason: without it, a five-second refresh eats every third
@@ -2995,7 +2984,7 @@ function renderSettings() {
   // Name the backend that actually answered. Saying "Ollama not detected"
   // when the app was pointed at LM Studio sends people to install the wrong
   // thing (§6).
-  const backend = backendLabel(status);
+  const backend = status?.provider === "openai" ? "The model server" : "Ollama";
   //: The dot is the line's class, as on the search engine line under it,
   //: not a typed "●"/"○" beside a CSS dot: two alphabets for one signal.
   //: Section 21 row 12: an address the person typed that nothing answers is
@@ -3022,13 +3011,68 @@ function renderSettings() {
   }
   //: K13: with no model, the line says what answers instead (ai/composer.py).
   if (aiIsOff()) {
-    ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
-  }
+    ollamaLine.title = "Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.";
+  } else ollamaLine.title = "";
   renderBackendPicker(status);
   //: The one-time question before search by meaning is downloaded
   //: (semantic-notice.js, lazy): opened while the server says it is owed,
   //: closed once it is answered.
   if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved);
+  //: Search and index's half is drawn with that pane, now when it is built and at its build if not (L675).
+  onSurface("settings-searchindex", renderSettings.index);
+  // The "install Ollama" advice only helps someone who chose Ollama.
+  $("ollama-help").classList.toggle(
+    "hidden",
+    status.ollama_running || status.provider !== "ollama"
+  );
+  $("models-config").classList.toggle("hidden", !status.ollama_running);
+  // Downloads are an Ollama capability. Every other backend is handed a model
+  // that is already on disk, so the panel hides rather than offering a button
+  // that cannot work. With Ollama simply not running (audit 1028 E38) the
+  // cards stay: choosing a model for this computer needs no backend, and
+  // each Download waits with the reason on it.
+  $("suggested-box").classList.toggle("hidden", status.supports_pull === false);
+
+  //: Always, not only while a backend answers: the rows come from saved
+  //: settings, and a person with the server down still needs to see and clear
+  //: an override (WORLD_CLASS_PLAN 20, "Still open").
+  renderFeatureModels(status);
+  settingsReadouts.smallModel?.();
+  if (status.ollama_running) {
+    renderChatModelPicker(status);
+    renderUtilityModelPicker(status);
+    renderVisionModelPicker(status);
+  renderOcrModelPicker(status);
+    //: Background tasks' picker, with that pane (L675).
+    onSurface("settings-tasks", renderSettings.tasks);
+    //: Both live in the lazy `settingsUi` file: one check that it has loaded
+    //: covers the two (it has whenever Settings is open, the only time this runs).
+    if (typeof renderSuggested === "function") {
+      renderInstalledModels(status);
+      renderSuggested(status);
+    }
+    renderModelSpec(status.chat_model);
+  } else {
+    $("installed-box").classList.add("hidden");
+    $("model-spec").classList.add("hidden");
+    $("model-spec-health").classList.add("hidden");
+    //: The cards draw with no backend too (audit 1028 E38): what fits this
+    //: computer needs none. `window.` because the file is lazy, as above.
+    if (status.supports_pull !== false) window.renderSuggested?.(status);
+  }
+}
+
+renderSettings.tasks = () => modelStatus?.ollama_running && renderAutonomousModelPicker(modelStatus);
+
+//: The search engine's picker, the reindex box, the engine's error line and its one-click fix, in Search and index.
+renderSettings.index = () => {
+  const status = modelStatus;
+  if (!status) return;
+  // The search engine is always adjustable: its recommended option is the
+  // built-in one, which needs no Ollama. Only the Ollama half of it depends
+  // on Ollama being up.
+  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
+  renderReindex(status);
   const embeddingError = $("embedding-error");
   embeddingError.classList.toggle("hidden", !status.embedding_error);
   //: A missing optional package arrives as a sentence the backend wrote for
@@ -3038,14 +3082,11 @@ function renderSettings() {
   //: the owner's report was exactly that case ("no nomic-embed-text
   //: suggested") and the button below only exists while it is.
   //: The notice recipe's icon first (section 21 rows 1 and 2), then the line.
+  embeddingError.title = "";
   const say = (text) => setLabel(embeddingError, `ph:warning ${text}`);
   if (status.embedding_error && /^Search by meaning/.test(status.embedding_error)) {
-    say(
-      `${withoutEndStop(status.embedding_error)}. ` +
-      (status.ollama_running
-        ? `Or switch the search engine to ${EMBEDDING_FALLBACK_MODEL} below: smaller, and offline.`
-        : `Or start Ollama and pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`)
-    );
+    say(`${withoutEndStop(status.embedding_error)}.`);
+    embeddingError.title = `Or ${status.ollama_running ? "" : "start Ollama and "}pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`;
   } else if (status.embedding_error) {
     say(
       `Search engine problem: ${status.embedding_error}: semantic search is ` +
@@ -3071,51 +3112,7 @@ function renderSettings() {
   );
   stagePrimary("embedding-apply", "embedding-error-fix", !fixRow.classList.contains("hidden"));
   renderSearchEngineHealth(status);
-  // The "install Ollama" advice only helps someone who chose Ollama.
-  $("ollama-help").classList.toggle(
-    "hidden",
-    status.ollama_running || status.provider !== "ollama"
-  );
-  $("models-config").classList.toggle("hidden", !status.ollama_running);
-  // Downloads are an Ollama capability. Every other backend is handed a model
-  // that is already on disk, so the panel hides rather than offering a button
-  // that cannot work. With Ollama simply not running (audit 1028 E38) the
-  // cards stay: choosing a model for this computer needs no backend, and
-  // each Download waits with the reason on it.
-  $("suggested-box").classList.toggle("hidden", status.supports_pull === false);
-
-  // The search engine is always adjustable: its recommended option is the
-  // built-in one, which needs no Ollama. Only the Ollama half of it depends
-  // on Ollama being up.
-  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
-  //: Always, not only while a backend answers: the rows come from saved
-  //: settings, and a person with the server down still needs to see and clear
-  //: an override (WORLD_CLASS_PLAN 20, "Still open").
-  renderFeatureModels(status);
-  settingsReadouts.smallModel?.();
-  if (status.ollama_running) {
-    renderChatModelPicker(status);
-    renderUtilityModelPicker(status);
-    renderVisionModelPicker(status);
-  renderOcrModelPicker(status);
-    renderAutonomousModelPicker(status);
-    //: Both live in the lazy `settingsUi` file: one check that it has loaded
-    //: covers the two (it has whenever Settings is open, the only time this runs).
-    if (typeof renderSuggested === "function") {
-      renderInstalledModels(status);
-      renderSuggested(status);
-    }
-    renderModelSpec(status.chat_model);
-  } else {
-    $("installed-box").classList.add("hidden");
-    $("model-spec").classList.add("hidden");
-    $("model-spec-health").classList.add("hidden");
-    //: The cards draw with no backend too (audit 1028 E38): what fits this
-    //: computer needs none. `window.` because the file is lazy, as above.
-    if (status.supports_pull !== false) window.renderSuggested?.(status);
-  }
-  renderReindex(status);
-}
+};
 
 // GET /tasks, once per status poll, feeding everything that wants to know what
 // is running: the status bar's job slot, the Background tasks panel when it is
@@ -3233,8 +3230,15 @@ const QUIET_TASK_KINDS = new Set([
   "job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup",
 ]);
 
+//: **A watched run that outlived its page** (L514): a transcription (or any
+//: run its own surface watches) still running on the first poll after a
+//: reload has no page watching it any more, so its ending is announced like
+//: any other job's rather than passing in silence. Its start is not news.
+//: (`polled` is a property, not a global: tests/test_global_scope_ratchet.py.)
 function noticeTaskTransitions(running, history) {
   const now = new Map(running.map((task) => [taskKey(task), task]));
+  const firstPoll = !noticeTaskTransitions.polled;
+  noticeTaskTransitions.polled = true;
 
   //: A running job's row keeps its fraction and its own status line up to
   //: date. It is the same run list the chat's skill runs land in, an
@@ -3252,6 +3256,7 @@ function noticeTaskTransitions(running, history) {
   for (const [key, task] of now) {
     if (seenRunningTasks.has(key)) continue;
     seenRunningTasks.set(key, task);
+    if (task.watched && firstPoll) task.orphaned = true;
     //: A chat answer, a transcription: the person is watching it where they
     //: started it. The status bar and Running jobs list it; nothing announces it.
     if (task.watched) continue;
@@ -3288,7 +3293,7 @@ function noticeTaskTransitions(running, history) {
     seenRunningTasks.delete(key);
     const row = backgroundRunRows.get(key);
     backgroundRunRows.delete(key);
-    if (task.watched) continue;
+    if (task.watched && !task.orphaned) continue;
     // The outcome comes from the server's own history, on this same payload, 
     // "it stopped appearing in the running list" is true of a job that died as
     // much as one that succeeded, and a cheerful toast over a failure is how

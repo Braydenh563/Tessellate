@@ -164,7 +164,15 @@ async function spaceDeleteSubmit() {
       }
     }
     const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "?purge=1";
-    const gone = await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
+    //: A locked private space answers 423: ask for the password, then send it again (L697).
+    const send = () => api(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
+    let answered = await send();
+    if (answered.status === 423 && (await privateSpaces("unlock"))) answered = await send();
+    if (!answered.ok) {
+      const said = await answered.json().catch(() => ({}));
+      throw new Error(said.detail?.detail || said.detail || "Couldn't delete that space.");
+    }
+    const gone = await answered.json();
     //: The moved notes by id (`refreshEntries` reads the notebook whole
     //: if it cannot patch them in safely).
     if (moveTo) await refreshEntries(gone?.restore?.moved?.entries || []);

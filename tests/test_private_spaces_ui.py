@@ -21,8 +21,8 @@ LAZY = (JS / "private-spaces.js").read_text(encoding="utf-8")
 
 
 def _dialog(dialog_id: str) -> str:
-    start = INDEX.index(f'<dialog id="{dialog_id}"')
-    return INDEX[start : INDEX.index("</dialog>", start)]
+    start = INDEX.index(f'<sheet-host id="{dialog_id}"')
+    return INDEX[start : INDEX.index("</sheet-host>", start)]
 
 
 def test_new_space_and_edit_space_carry_a_private_switch_with_help():
@@ -105,3 +105,13 @@ def test_the_idle_lock_is_noticed_from_an_open_state():
     assert "state.status = { ...(state.status || {}), open: true };" in LAZY
     assert 'toastAction("Private spaces locked.", "Unlock", unlock)' in LAZY
     assert "setInterval" not in LAZY
+
+
+def test_deleting_a_locked_space_asks_for_the_password_and_sends_again():
+    """L697: the 423 used to land as a bare message with no way to unlock."""
+    text = (JS / "batch-space.js").read_text(encoding="utf-8")
+    start = text.index("async function spaceDeleteSubmit")
+    body = text[start : text.index("\n}\n", start)]
+    assert "answered.status === 423" in body
+    assert 'privateSpaces("unlock")' in body
+    assert '(await privateSpaces("unlock"))) answered = await send();' in body

@@ -20,7 +20,6 @@ that one note.
 from __future__ import annotations
 
 import json
-import re
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -32,7 +31,7 @@ from tessellate.entry import manager_text
 # Same shape routes_whiteboard.py's own MEDIA_URL_RE validates on the way in, 
 # kept independent (not imported) since this only ever reads, never resolves
 # a path from user input.
-_MEDIA_NAME_RE = re.compile(r"/media/([A-Za-z0-9][A-Za-z0-9._-]{0,119})")
+_MEDIA_NAME_RE = manager_text.MEDIA_NAME_RE
 
 
 def referenced_names(text: str) -> set[str]:
@@ -54,7 +53,7 @@ def _could_name_a_file(column):
     (the performance pass, 2026-10-03). SQLite's LIKE folds ASCII case, so
     this keeps a superset of what the regex reads. Ciphertext is kept too: a
     private note's stored text is `mmenc1:...`, which says nothing until it is
-    opened, and the pass below must still open it, or note that it could not.
+    opened, and the pass below must open it, or note that it could not.
     """
     from tessellate.core import crypto
 
@@ -121,7 +120,7 @@ def _conversation_referenced_ids(session: Session) -> set[int]:
     whiteboard content. Without this, `find_orphaned_media` would call
     every image ever attached to a chat message "orphaned", sent or not,
     and `delete_orphaned_media` would delete its file out from under a
-    conversation someone can still open and read.
+    conversation someone can open and read.
     """
     ids: set[int] = set()
     for conversation in session.scalars(select(Conversation)):

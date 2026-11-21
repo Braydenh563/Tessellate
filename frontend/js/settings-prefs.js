@@ -8,10 +8,41 @@
 // `prefsCache`, `savePrefs`, `markPrefsDirty` and `markPrefsSaved` stay in
 // settings-panes.js because the status bar and the palette also use them.
 
+//: What a pane's control shows of the saved preferences: [id, property, value]. A value of undefined leaves it alone.
+//: Each is filled by `SURFACES.fill`, so reading the preferences for one pane builds none of the others (L675).
+const PREFS_FILLS = [
+  ["pref-display-name", "value", () => prefsCache.display_name || ""],
+  ["pref-semantic-auto-install", "checked", () => prefsCache.semantic_auto_install ?? false],
+  ["pref-bin-days", "value", () => prefsCache.recycle_bin_days],
+  ["pref-chat-retention", "value", () => prefsCache.conversation_retention_days ?? 0],
+  ["pref-search-min-sim", "value", () => prefsCache.search_min_similarity],
+  ["pref-search-z-margin", "value", () => prefsCache.search_relative_z_margin],
+  ["pref-style", "value", () => prefsCache.communication_style],
+  ["pref-voice", "value", () => prefsCache.composer_voice],
+  ["pref-week-start", "value", () => prefsCache.week_start || "auto"],
+  ["pref-season-hemisphere", "value", () => prefsCache.season_hemisphere || "auto"],
+  ["pref-birthday", "value", () => prefsCache.birthday || ""],
+  ["pref-date-order", "value", () => prefsCache.date_order || "auto"],
+  ["pref-time-format", "value", () => prefsCache.time_format || "auto"],
+  ["pref-before-includes-day", "checked", () => prefsCache.before_includes_day === true],
+  ["pref-insight", "value", () => prefsCache.insight_level || "one"],
+  ["pref-profile", "value", () => prefsCache.user_profile],
+  ["pref-profile-enabled", "checked", () => prefsCache.profile_enabled],
+  ["account-idle-ttl", "value", () => prefsCache.session_idle_ttl_minutes || undefined],
+  ["account-private-idle", "value", () => prefsCache.private_space_idle_minutes],
+  ["pref-new-notes-private", "checked", (p) => Boolean(p.new_notes_private)],
+  ["pref-notif-mute-except-reminders", "checked", (p) => Boolean(p.notifications_muted_except_reminders)],
+  ["pref-smart-punctuation", "checked", () => prefsCache.smart_punctuation === true],
+  ["pref-autocorrect", "checked", () => prefsCache.autocorrect !== false],
+  ["pref-link-offers", "checked", () => prefsCache.link_offers !== false],
+  ["pref-check-link-text", "checked", () => prefsCache.check_link_text === true],
+  ["prefs-status", "textContent", () => ""],
+];
+
 async function renderPrefs() {
   //: The optional-package notices for what this pane's switches use (extra-notice.js).
-  extraNoticeMount($("xn-documents"), "documents", { fresh: true });
-  extraNoticeMount($("xn-semantic"), "semantic");
+  SURFACES.fill("xn-documents", (el) => extraNoticeMount(el, "documents", { fresh: true }));
+  SURFACES.fill("xn-semantic", (el) => extraNoticeMount(el, "semantic"));
   //: **A change still waiting for its quiet save is written first.** Profile
   //: and General save 700 ms after the last change (`markPrefsDirty`); opening
   //: either, or Search and index or Personas, lands here, and the GET below
@@ -21,43 +52,18 @@ async function renderPrefs() {
   if (prefsDirty) await savePrefs({ quiet: true });
   if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
   prefsCache = await apiJson("/preferences");
-  $("pref-display-name").value = prefsCache.display_name || "";
-  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
+  for (const [id, prop, read] of PREFS_FILLS) {
+    SURFACES.fill(id, (el) => {
+      const value = read();
+      if (value !== undefined) el[prop] = value;
+      if (id === "pref-profile") updateProfileCount();
+    });
+  }
   //: The saved look, and its controls (avatars.js, once it is in).
   const savedLook = prefsCache.avatar_style || {};
-  afterCharacters(() => {
-    setOwnNameMarkStyle(savedLook);
-    mountProfileLook();
-  });
-  $("pref-bin-days").value = prefsCache.recycle_bin_days;
-  $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
-  $("pref-search-min-sim").value = prefsCache.search_min_similarity;
-  $("pref-search-z-margin").value = prefsCache.search_relative_z_margin;
-  $("pref-style").value = prefsCache.communication_style;
-  $("pref-voice").value = prefsCache.composer_voice;
-  $("pref-week-start").value = prefsCache.week_start || "auto";
-  $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
-  $("pref-birthday").value = prefsCache.birthday || "";
-  $("pref-date-order").value = prefsCache.date_order || "auto";
-  $("pref-before-includes-day").checked = prefsCache.before_includes_day === true;
-  $("pref-insight").value = prefsCache.insight_level || "one";
-  $("pref-profile").value = prefsCache.user_profile;
-  $("pref-profile-enabled").checked = prefsCache.profile_enabled;
+  afterCharacters(() => setOwnNameMarkStyle(savedLook));
+  SURFACES.fill("profile-look-parts", () => afterCharacters(mountProfileLook));
   paintUserMarks();
-  updateProfileCount();
-  if (prefsCache.session_idle_ttl_minutes) {
-    $("account-idle-ttl").value = prefsCache.session_idle_ttl_minutes;
-  }
-  $("account-private-idle").value = prefsCache.private_space_idle_minutes;
-  $("pref-new-notes-private").checked = Boolean(prefsCache.new_notes_private);
-  $("pref-notif-mute-except-reminders").checked = Boolean(
-    prefsCache.notifications_muted_except_reminders
-  );
-  $("pref-smart-punctuation").checked = prefsCache.smart_punctuation === true;
-  $("pref-autocorrect").checked = prefsCache.autocorrect !== false;
-  $("pref-link-offers").checked = prefsCache.link_offers !== false;
-  $("pref-check-link-text").checked = prefsCache.check_link_text === true;
-  $("prefs-status").textContent = "";
   //: The fields now hold what the server holds, so nothing is unsaved: this
   //: also covers the reopen, since `showSettingsSection` re-renders.
   markPrefsSaved();
@@ -100,6 +106,7 @@ function renderAutonomousSettings() {
   $("pref-auto-tag").checked = prefsCache.auto_tag_enabled ?? true;
   $("pref-auto-link").checked = prefsCache.auto_link_enabled ?? true;
   $("pref-auto-dedupe").checked = prefsCache.auto_dedupe_enabled ?? true;
+  $("pref-learned-audit").checked = prefsCache.learned_audit_enabled ?? true;
   $("pref-auto-stale-review").checked = Boolean(prefsCache.auto_stale_review_enabled);
   $("pref-auto-capture").checked = Boolean(prefsCache.auto_capture_enabled);
   $("pref-mcp-writes").checked = Boolean(prefsCache.mcp_writes_enabled);
@@ -178,21 +185,17 @@ const PREFS_FIELD_IDS = [
 ];
 
 function wirePrefsDirtyMarks() {
-  for (const id of PREFS_FIELD_IDS) {
-    const el = $(id);
-    if (!el) continue;
-    el.addEventListener("input", markPrefsDirty);
-    el.addEventListener("change", markPrefsDirty);
-  }
+  //: Each field's pane is built on its first visit (L675), so its marks wait for it.
+  for (const id of PREFS_FIELD_IDS) for (const type of ["input", "change"]) SURFACES.wire(id, type, markPrefsDirty);
   //: The profile head previews the name as it is typed; the rest of the app's
   //: marks wait for the save, since that is when the name is real.
-  $("pref-display-name")?.addEventListener("input", (e) => {
+  SURFACES.wire("pref-display-name", "input", (e) => {
     const typed = e.target.value.trim();
     afterCharacters(() => $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56)));
     const head = $("profile-head-name");
     if (head) head.textContent = typed || "Your profile";
   });
-  $("pref-profile")?.addEventListener("input", updateProfileCount);
+  SURFACES.wire("pref-profile", "input", updateProfileCount);
 }
 
 //: Moved from ai-tools.js (boot gzip). Called by settings-models.js's status render and the backend radio
@@ -248,4 +251,21 @@ function syncEmbeddingPickerState(offline) {
   apply.title = usingOllama
     ? "Re-read every note with this model"
     : "Switch to the built-in model and re-read every note with it";
+}
+
+//: The profile box's count (moved from settings-panes.js, L611: its callers are here).
+//: The prompt reads the first 600 characters of About me
+//: (`librarian.PROFILE_ABOUT_CAP_CHARS`); the box stops there, and the count
+//: says how much is left. A profile saved before the cap may be longer, and
+//: then the line says which part Atlas reads rather than hiding the rest.
+const PROFILE_ABOUT_CAP = 600;
+
+function updateProfileCount() {
+  const line = $("pref-profile-count");
+  const box = $("pref-profile");
+  if (!line || !box) return;
+  const used = box.value.length;
+  line.textContent = used > PROFILE_ABOUT_CAP
+    ? `${used} characters; Atlas reads the first ${PROFILE_ABOUT_CAP}.`
+    : `${used} of ${PROFILE_ABOUT_CAP} characters.`;
 }

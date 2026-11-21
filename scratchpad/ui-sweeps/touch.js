@@ -93,7 +93,7 @@ const SURFACES = [
   // the watch's remove and its field are all there to measure. ONLY=Debug.
   { tab: 'library', label: 'Debug tab', sel: '.cm-run-panel', wait: 7000, byName: true,
     openFn: "(async () => { switchTab('documents'); await new Promise((r) => setTimeout(r, 1200)); const d = await apiJson('/documents', { method: 'POST', body: JSON.stringify({ title: 'touch-debug.js', content: 'function f(n) {\\n  return n * 2;\\n}\\nvar x = f(1);\\n', file_type: 'js' }) }); await loadDocuments(d.id); await new Promise((r) => setTimeout(r, 800)); docDebugToggleAt(docCmView, docCmView.state.doc.line(2).from); DOC_DEBUG.watches.push('n'); await docRunCode({ mode: 'debug' }); })()" },
-  ...['general', 'models', 'appearance', 'preferences', 'data', 'privacy', 'account'].map((section) => ({
+  ...['general', 'models', 'searchindex', 'tools', 'appearance', 'preferences', 'data', 'privacy', 'account'].map((section) => ({
     tab: 'notes', label: `Settings ${section}`, sel: `#settings-modal #settings-${section}`,
     //: The first open loads settings-controls.js and the section's own bundle;
     //: 900 ms was not always enough, and a section still loading measured as "did
@@ -102,7 +102,7 @@ const SURFACES = [
     openFn: `openSettingsModal('${section}')`, wait: 4000, close: '#settings-close' })),
 ];
 
-(async () => {
+async function main() {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
@@ -127,17 +127,30 @@ const SURFACES = [
 
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#lock-password', { state: 'visible', timeout: 20000 });
-  await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(2500);
+  await page.fill('#lock-password', PW); await page.click('#lock-submit');
+  //: Wait for the lock to go, not a fixed 2.5 s (L605/L606): on a loaded machine the unlock took longer, the next click met a dialog, and the 30 s default timeout killed the run.
+  await page.waitForSelector('#lock-password', { state: 'hidden', timeout: 20000 }).catch(() => {});
   //: The opening curtain (lib.js, INBOX 577): the lock stays up, "Opening…",
   //: while the first tab draws; read as a failed unlock, the field was
   //: filled again as it faded and the fill timed out (qa-1005, light 390).
   await page.waitForFunction(() => !document.documentElement.classList.contains('shell-curtain')
     && !document.querySelector('#lock-overlay.lock-leaving'), null, { timeout: 15000, polling: 100 }).catch(() => {});
   if (await page.$('#lock-password') && await page.isVisible('#lock-password')) {
-    await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(2500);
+    await page.fill('#lock-password', PW); await page.click('#lock-submit');
+    await page.waitForSelector('#lock-password', { state: 'hidden', timeout: 20000 }).catch(() => {});
   }
   await page.evaluate(() => { const o = document.getElementById('onboarding-overlay'); if (o) o.classList.add('hidden'); });
+  //: A fresh data dir offers "Search by meaning" in a toast over the bottom of the screen, which read as 9 covered controls in Settings; answer it (No) once, as a person would. A confirm dialog left open after unlock is named in the output and closed, so it cannot intercept the first click.
+  await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) })).catch(() => {});
+  //: The offer arrives on a status poll, so give it a moment, then close what is on screen.
+  await page.waitForSelector('.semantic-install-toast', { timeout: 4000 }).catch(() => {});
+  await page.evaluate(() => { document.querySelectorAll('.semantic-install-toast .toast-close, .semantic-install-toast button:last-child').forEach((b) => b.click()); });
+  for (const dlg of await page.$$('.confirm-overlay:not(.hidden)')) {
+    console.log(`note: a confirm dialog was open after unlock and was closed: ${(await dlg.innerText()).replace(/\s+/g, ' ').slice(0, 120)}`);
+    await page.keyboard.press('Escape');
+  }
   await page.waitForTimeout(800);
+  page.setDefaultTimeout(10000);
 
   const media = await page.evaluate(() => ({
     hoverNone: matchMedia('(hover: none)').matches,
@@ -400,4 +413,5 @@ const SURFACES = [
   console.log(failures ? `FAIL: ${failures} findings` : 'PASS: 0 findings');
   await browser.close();
   process.exit(failures ? 1 : 0);
-})();
+}
+main().catch((e) => { console.log(`FAIL: the run stopped: ${String(e.message || e).split('\n')[0].slice(0, 200)}`); process.exit(1); });

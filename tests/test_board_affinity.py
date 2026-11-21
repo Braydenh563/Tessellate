@@ -120,7 +120,7 @@ def test_the_board_draws_one_frame_per_accepted_group_in_one_undo_step():
     sticky, and for the ticked ones moves the stickies and makes the frames
     inside one `wbRecordGesture`. affinity1112.js measures it live."""
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    more = (js / "whiteboard-map-more.js").read_text(encoding="utf-8")
+    more = (js / "whiteboard-map-marks.js").read_text(encoding="utf-8")
     body = more[more.index("async function wbAffinityRun()") :]
     body = body[: body.index("\n  }\n")]
     assert "/affinity`" in body and "wbRecordGesture(" in body

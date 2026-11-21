@@ -520,6 +520,51 @@ def test_uninstall_on_a_packaged_build_needs_no_python(client, monkeypatch):
     assert state.step != extras.NO_PYTHON_FOUND_MESSAGE
 
 
+def test_undo_keeps_a_package_another_one_needs(client, monkeypatch):
+    """L667: a real install then Undo of the PDF pages package removed Pillow,
+    which fastembed and RapidOCR require, from the scratch venv. A source
+    install's uninstall names only the entry's own packages, minus any that
+    another installed project requires."""
+    commands = []
+
+    class _Pip:
+        def __init__(self, command, **kwargs):
+            commands.append(command)
+            self.stdout = []
+
+        def wait(self):
+            return 0
+
+    monkeypatch.setattr(extras, "frozen_extras_dir", lambda: None)
+    monkeypatch.setattr(extras, "_pip_base_command", lambda: ["pip"])
+    monkeypatch.setattr(extras.subprocess, "Popen", _Pip)
+    monkeypatch.setattr(extras, "_shared_with_others", lambda names, leaving: {"pillow"})
+
+    extras._run_uninstall(extras.EXTRAS_BY_ID["pdfpages"])
+
+    assert commands and "pypdfium2" in commands[0] and "Pillow" not in commands[0]
+    assert "Kept Pillow: another package needs it." in extras.current().log
+    assert extras.current().outcome == "completed"
+
+
+def test_shared_with_others_reads_installed_requirements(monkeypatch):
+    class _Dist:
+        def __init__(self, name, requires):
+            self.metadata = {"Name": name}
+            self.requires = requires
+
+    dists = [
+        _Dist("fastembed", ["pillow>=10", "numpy"]),
+        _Dist("pypdfium2", ["Pillow"]),
+        _Dist("other", ['pillow; extra == "images"']),
+    ]
+    from importlib import metadata
+
+    monkeypatch.setattr(metadata, "distributions", lambda *a, **k: dists)
+    assert extras._shared_with_others(["pypdfium2", "Pillow"], {"pypdfium2", "pillow"}) == {"pillow"}
+    assert extras._shared_with_others(["Pillow"], {"pillow", "fastembed", "pypdfium2"}) == set()
+
+
 class _SucceedingPip:
     """A `pip install` that exits 0 with a boring, realistic transcript."""
 

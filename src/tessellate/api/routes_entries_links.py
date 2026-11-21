@@ -28,6 +28,7 @@ from tessellate.api.routes_entries import (
     _stored_connections,
     _to_out,
 )
+from tessellate.api.routes_entities import names_in_note
 from tessellate.api.routes_entries_refs import _reference_rows
 from tessellate.api.schemas import EntryOut
 from tessellate.core import deps
@@ -75,6 +76,8 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
         "documents": documents,
         "boards": boards,
         "files": files,
+        #: B4: the names it says, each opening its person or project page.
+        "names": names_in_note(session, entry),
         "total": len(outgoing) + len(incoming) + len(documents) + len(boards) + len(files),
     }
 

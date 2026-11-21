@@ -28,7 +28,7 @@ from tessellate.ai import captioning, composer_digest_sentences, composer_talk, 
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
 from tessellate.api.schemas import EntryOut, TurnFrame
-from tessellate.core import activity, deps
+from tessellate.core import activity, deps, sealed_files
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import categories as categories_repo
 from tessellate.search import query as search_query
@@ -70,12 +70,12 @@ def _linked_labels(answer: str) -> list[str]:
 class ChatTurn(BaseModel):
     question: str = Field(max_length=bounds.TURN_TEXT_MAX)
     answer: str = Field(max_length=bounds.TURN_TEXT_MAX)
-    #: The notes the answer named, by title, for a spoken follow-up such as
+    #: The notes the answer named, by title, for a spoken follow-on such as
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
     objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
     #: The label of an act's card this turn left waiting for Confirm, sent by
-    #: the page only while the card is still open, so "cancel" can drop it
+    #: the page only while the card is showing, so "cancel" can drop it
     #: (`composer_cancel`, CHAT_PLAN X17).
     pending_act: str | None = Field(default=None, max_length=300)
     #: The frame the answer was sent with, echoed back; absent from an older page.
@@ -149,7 +149,7 @@ class ChatRequest(BaseModel):
     #: The browser's locale (`navigator.language`), so a bare "3/4" in a
     #: question reads in the asker's date order.
     locale: str | None = Field(default=None, max_length=35)
-    # Prior turns for follow-up context (Round 1); the server clips this.
+    # Prior turns for follow-on context (Round 1); the server clips this.
     history: list[ChatTurn] = Field(default_factory=list, max_length=bounds.HISTORY_MAX_TURNS)
     # Persona name; None → the active persona preference.
     persona: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
@@ -278,7 +278,7 @@ class ChatRequest(BaseModel):
     # was already doing that, plus however many unrelated notes the
     # instruction text itself happened to match.
     attached_notes_only: bool = False
-    #: "questions": answer from the notes that still hold an open question
+    #: "questions": answer from the notes that hold a question with no answer yet
     #: (WORLD_CLASS_PLAN I3, row 7: "what am I still undecided about?"), and
     #: only from them. Resolved into `note_ids` and `attached_notes_only` by
     #: `_apply_scope` before anything reads either.
@@ -304,6 +304,9 @@ class ChatRequest(BaseModel):
     #: Ask box's "From your notes" under an AI answer): read-only, so it is
     #: not saved as a second turn in Ask history, and always the composed one.
     peek: bool = False
+    #: One id per send (E70, L682): a repeated POST with the same id gets the first turn's
+    #: result back instead of a second run (`ai/turn_once.py`). A "Try again" is a new send, so a new id.
+    turn_id: str | None = Field(default=None, min_length=8, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")
     #: "Try again" on the same question (CHAT_PLAN decision 34): the how-many-
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
@@ -343,7 +346,7 @@ def _check_refs(session: Session, body: ChatRequest) -> None:
 def _apply_scope(session: Session, body: ChatRequest) -> None:
     """Turn a scope into the closed set of notes it means.
 
-    With no open question anywhere the turn falls back to ordinary
+    With no unanswered question anywhere the turn falls back to ordinary
     retrieval: an Ask over an empty set would answer from nothing, and the
     Ask box says beforehand that there are none (`askScopeQuestions`).
     """
@@ -598,8 +601,8 @@ def _resolve_chat_images(session: Session, media_ids: list[int]) -> list[tuple[M
         if upload is None:
             continue
         try:
-            data = (media_dir / upload.filename).read_bytes()
-        except OSError:
+            data = sealed_files.read(media_dir / upload.filename)
+        except (OSError, sealed_files.SealedError):
             continue
         if len(data) > MAX_CHAT_IMAGE_BYTES:
             continue
@@ -622,6 +625,16 @@ def _chat_model_sees_images(model_manager, ollama) -> bool:
     if not callable(supports):
         return False
     return supports(model_manager.chat_model(), "vision") is True
+
+
+def _caption_of(upload, media_dir) -> str | None:  # noqa: ANN001
+    """A picture's caption, read from a plain copy when it is sealed; none
+    when its space is locked or the file is damaged."""
+    try:
+        with sealed_files.readable(media_dir / upload.filename) as plain:
+            return captioning.caption_and_store(upload.id, plain)
+    except sealed_files.SealedError:
+        return None
 
 
 def _image_caption_context(
@@ -650,9 +663,7 @@ def _image_caption_context(
     media_dir = deps.get_config().data_dir / "media"
     lines = []
     for upload, _uri in images:
-        caption = upload.caption or captioning.caption_and_store(
-            upload.id, media_dir / upload.filename
-        )
+        caption = upload.caption or _caption_of(upload, media_dir)
         if caption:
             lines.append(f"- {caption}")
     if not lines:
@@ -934,3 +945,6 @@ class ToolExecuteBody(BaseModel):
     #: Posted as name "batch" it used to answer 404, so such a change had an
     #: Undo button that could never undo.
     steps: list[dict] = Field(default_factory=list, max_length=bounds.BATCH_STEPS_MAX)
+    #: The server's tag on an Undo or redo it handed out (`consent_store.sign_call`): sent back
+    #: unchanged, and a call whose name, arguments or steps no longer match it is refused (L566).
+    sig: str | None = Field(default=None, max_length=80)

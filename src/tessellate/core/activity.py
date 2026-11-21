@@ -145,6 +145,7 @@ class Job:
             try:
                 self.on_stop()
             except Exception:  # noqa: BLE001  # a failed stop is a message, not a 500
+                logging.getLogger(__name__).debug("request_stop: a failed stop is a message, not a 500", exc_info=True)
                 return True, "Asked it to stop; it will end at its next step."
         return True, f"Stopping {self.label.lower()}."
 
@@ -255,7 +256,11 @@ def track(
         raise
     except Exception as exc:
         if job.run is not None:
-            job.run.fail(str(exc) or type(exc).__name__)
+            from tessellate.core import jobruns
+
+            #: The worded reason, never `str(exc)`: an OSError's carries the
+            #: person's own path and an errno onto a screen line (L505).
+            job.run.fail(jobruns.failure_reason(exc))
         raise
     finally:
         finish(job)

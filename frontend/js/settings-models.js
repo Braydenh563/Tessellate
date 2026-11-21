@@ -161,6 +161,22 @@
       span.title = "An estimate for a normal conversation length.";
       facts.push(span);
     }
+    //: The licence the Hub card states (INBOX 1851): a re-upload is not assumed open.
+    if (model.licence) {
+      const span = document.createElement("span");
+      if (model.licence_url) {
+        const link = document.createElement("a");
+        link.href = model.licence_url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = `${model.licence} licence`;
+        link.title = "Open the model card, where the licence is stated.";
+        span.appendChild(link);
+      } else {
+        span.textContent = `${model.licence} licence`;
+      }
+      facts.push(span);
+    }
     const line = document.createElement("p");
     line.className = "library-file-meta model-card-facts";
     facts.forEach((fact, i) => {
@@ -284,7 +300,7 @@
         //: The shared helper: it falls back where the clipboard API is absent
         //: (the desktop window over plain http), as every copy path does.
         if (await copyToClipboard(model.name)) toast("Copied the name.");
-        else toast("Couldn't copy it from here.", "info");
+        else toast(voiceLine("failed", { what: "copy it from here" }), "info");
       },
     });
     if (state.installed) {
@@ -657,7 +673,7 @@
       ? ` ${nounCount(hw.models_installed, "model")} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
       : "";
     const fixed = hw.override ? " You corrected these numbers." : "";
-    return `This computer: ${parts.join(", ")}.${here}${fixed} Each card says whether a model fits.`;
+    return `This computer: ${parts.join(", ")}.${here}${fixed}`;
   }
 
   function paintModelHardware() {
@@ -708,19 +724,19 @@
     try {
       await putModelHardware(body);
     } catch (error) {
-      toast(error.message || "Couldn't save the hardware override.", true);
+      toast(error.message || voiceLine("failed", { what: "save the hardware override" }), true);
       return;
     }
     openModelHardwareForm(false);
     offerUndo("Memory correction", "Memory saved.", () => putModelHardware(before), () => putModelHardware(body));
   }
 
-  $("suggested-hardware-edit")?.addEventListener("click", () => {
+  SURFACES.wire("suggested-hardware-edit", "click", () => {
     openModelHardwareForm($("suggested-hardware-form").classList.contains("hidden"));
   });
-  $("hardware-cancel")?.addEventListener("click", () => openModelHardwareForm(false));
-  $("hardware-reset")?.addEventListener("click", () => saveModelHardware({}));
-  $("suggested-hardware-form")?.addEventListener("submit", (event) => {
+  SURFACES.wire("hardware-cancel", "click", () => openModelHardwareForm(false));
+  SURFACES.wire("hardware-reset", "click", () => saveModelHardware({}));
+  SURFACES.wire("suggested-hardware-form", "submit", (event) => {
     event.preventDefault();
     const ram = parseFloat($("hardware-ram").value);
     const vram = parseFloat($("hardware-vram").value);
@@ -802,14 +818,14 @@
     if (modelLastStatus) renderSuggested(modelLastStatus);
   }
 
-  $("custom-model-check")?.addEventListener("click", checkCustomModel);
-  $("custom-model-name")?.addEventListener("keydown", (event) => {
+  SURFACES.wire("custom-model-check", "click", checkCustomModel);
+  SURFACES.wire("custom-model-name", "keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       checkCustomModel();
     }
   });
-  $("custom-model-name")?.addEventListener("input", () => {
+  SURFACES.wire("custom-model-name", "input", () => {
     //: A new name is a new question: the old answer's card goes.
     if (modelCustom) {
       modelCustom = null;
@@ -817,7 +833,7 @@
       if (modelLastStatus) renderSuggested(modelLastStatus);
     }
   });
-  $("suggested-hide-big")?.addEventListener("change", (event) => {
+  SURFACES.wire("suggested-hide-big", "change", (event) => {
     try {
       prefs.set("hideBigModels", event.target.checked ? "1" : "0");
     } catch (error) {

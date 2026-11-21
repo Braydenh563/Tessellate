@@ -563,6 +563,46 @@ def _rows_category_names(session, _level: str) -> list[dict]:  # noqa: ANN001
             f"Rename to {topic}",
             [],
         ))
+    return rows + _rows_own_titles(session, ids, taken, {r["id"] for r in rows}, profiles)
+
+
+def _rows_own_titles(session, ids: dict[str, int], taken: set[str], offered: set[str], profiles: dict) -> list[dict]:  # noqa: ANN001
+    """A second source for a rename (L513): the word the person's own note
+    titles in a category share ("Trip" in "Trip to Lisbon", "Trip budget"),
+    when `RENAME_SHARE` of its notes' titles carry it and the name does not."""
+    from collections import Counter
+
+    from tessellate.ai import composer_frame, study
+
+    rows = []
+    for name, (count, _profile, _own) in sorted(profiles.items(), key=lambda kv: kv[0].casefold()):
+        if count < RENAME_MIN_NOTES or f"rename:{ids[name]}" in offered:
+            continue
+        titles = [composer_frame.note_title(c) for c in session.scalars(
+            select(Entry.content).where(Entry.category_id == ids[name], Entry.is_deleted == False))]  # noqa: E712
+        titles = [t for t in titles if t]
+        held: Counter = Counter()
+        shown: dict[str, Counter] = {}
+        for title in titles:
+            seen = set()
+            for word in re.findall(r"[A-Za-z][A-Za-z'’-]{2,}", title):
+                for stem in study.content_stems(word):
+                    shown.setdefault(stem, Counter())[word.casefold()] += 1
+                    seen.add(stem)
+            held.update(seen)
+        if len(titles) < RENAME_MIN_NOTES or not held:
+            continue
+        stem, hits = held.most_common(1)[0]
+        word = shown[stem].most_common(1)[0][0].capitalize()
+        if hits / len(titles) < RENAME_SHARE or stem in study.content_stems(name) or word.casefold() in taken:
+            continue
+        rows.append(_row(
+            f"rename:{ids[name]}",
+            f"Rename {name} to {word}?",
+            f"{hits} of its {len(titles)} note titles say {word}",
+            f"Rename to {word}",
+            [],
+        ))
     return rows
 
 

@@ -40,6 +40,7 @@ import logging
 import os
 import re
 import sys
+from contextvars import ContextVar
 from typing import TextIO
 
 from tessellate.ai import tools
@@ -64,11 +65,38 @@ SERVER_VERSION = "0.1.0"
 CHAT_ONLY = frozenset({"get_app_navigation", "search_chat_history"})
 
 
+#: The HTTP client a request came from (`routes_mcp`, INBOX 1860): its name and
+#: whether its token may change notes. Per request, so two clients at once never
+#: see each other's; unset over stdio, where the Settings switch and
+#: `initialize`'s client name decide.
+_caller: ContextVar[dict | None] = ContextVar("mcp_caller", default=None)
+
+
 def writes_allowed() -> bool:
     """Whether an outside client may change notes. Off until the person turns
     it on (audit 1028 K13): a prompt-injected client could otherwise edit notes
-    silently, and the activity panel is the only trace."""
+    silently, and the activity panel is the only trace. Over HTTP the token
+    decides: it was made able to write, or it was not."""
+    caller = _caller.get()
+    if caller is not None:
+        return bool(caller.get("writes"))
     return bool(deps.get_config().get_preference("mcp_writes_enabled", False))
+
+
+def _who() -> str:
+    caller = _caller.get()
+    if caller is not None:
+        return caller.get("name") or "mcp client"
+    return _client["name"] or "mcp client"
+
+
+def handle_as(caller: dict, message) -> dict | None:  # noqa: ANN001  # any JSON value
+    """`handle_request` for one HTTP client (`{"name", "writes"}`)."""
+    mark = _caller.set(caller)
+    try:
+        return handle_request(message)
+    finally:
+        _caller.reset(mark)
 
 
 def offered_tools() -> list[tools.ToolSpec]:
@@ -159,7 +187,7 @@ def _run_tool(name: str, arguments: dict) -> dict:
     """One offered tool, run against a fresh session, its plain result."""
     session = deps.get_db().session()
     try:
-        return tools.execute_tool(session, name, arguments, agent=_client["name"] or "mcp client")
+        return tools.execute_tool(session, name, arguments, agent=_who())
     finally:
         session.close()
 
@@ -318,9 +346,7 @@ def _call_tool(name: str, arguments: dict) -> dict:
         }
     session = deps.get_db().session()
     try:
-        result = tools.execute_tool(
-            session, name, arguments or {}, agent=_client["name"] or "mcp client"
-        )
+        result = tools.execute_tool(session, name, arguments or {}, agent=_who())
     finally:
         session.close()
     result = _clean_label(result)
@@ -340,7 +366,8 @@ class _Refused(Exception):
 def _initialize(message: dict) -> dict:
     params = message.get("params") or {}
     info = params.get("clientInfo") or {}
-    _client["name"] = str(info.get("name") or "") if isinstance(info, dict) else ""
+    if _caller.get() is None:  # an HTTP client is named by its token, not here
+        _client["name"] = str(info.get("name") or "") if isinstance(info, dict) else ""
     asked = params.get("protocolVersion")
     if asked in SUPPORTED_PROTOCOLS:
         version = asked

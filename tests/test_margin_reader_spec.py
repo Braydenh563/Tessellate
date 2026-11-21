@@ -96,7 +96,7 @@ def test_a_date_becomes_a_date_card_with_a_parsed_time(client):
 def test_with_the_model_down_it_never_waits_on_the_model(client, monkeypatch):
     """`judge` with the model down answers from the notebook and never waits.
 
-    Proved by what is called, not by the wall clock (L-world-class-25: 3.39 s
+    Proved by what is called, not by the wall clock (L-world-class-199: 3.39 s
     on a loaded CI runner against a 1.5 s bound, with the probe itself 2 us):
     one reachability probe, no chat, no retry. The measured number is in the
     CHANGELOG.

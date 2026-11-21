@@ -546,6 +546,11 @@ function renderWebPanelMenu(engine) {
     title: "Choose the engine and manage SearXNG in Settings",
     run: () => openSettingsModal("websearch"),
   });
+  items.push({
+    label: "ph:bookmark-simple Clip a page from your browser",
+    title: "Keep a page you are reading elsewhere as a note: Settings, Import & export, Web clipper",
+    run: () => openSettingsModal("data", "web-clip-box"),
+  });
   if (hasHistory) {
     items.push({
       label: "ph:clock-counter-clockwise Clear recent searches",
@@ -693,7 +698,7 @@ async function citeWebPage(pageOrResult) {
     try {
       page = await apiJson(`/websearch/read?url=${encodeURIComponent(page.url)}`);
     } catch (error) {
-      toast(error.message || "Couldn't read that page.", true);
+      toast(error.message || voiceLine("failed", { what: "read that page" }), true);
       return;
     }
   }
@@ -1192,7 +1197,7 @@ async function compressChatContext() {
     });
     showCompressReview(result, covered);
   } catch (error) {
-    toast(error?.message || "Couldn't summarise this conversation.");
+    toast(error?.message || voiceLine("failed", { what: "summarise this conversation" }));
   } finally {
     setBusy(button, false);
   }

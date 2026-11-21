@@ -38,7 +38,7 @@ from tessellate.core import clock
 from tessellate.core.lazyre import lazy_compile
 
 #: **How much of a question anything reads** (audit 1031 AI9, HR7): the one
-#: number the search, the warm, the finder routes, the follow-up route and the
+#: number the search, the warm, the finder routes, the follow-on route and the
 #: page's `QUESTION_CAP` (chat.js, a test holds them equal) all use. A 20,000
 #: character query took 2,233 ms to search over 160 notes; the rest of a long
 #: question is context for the model, which still gets all of it.

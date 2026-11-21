@@ -517,12 +517,18 @@
     const next = () => requestAnimationFrame(step);
     setTimeout(next, first ? 5000 : 0);
   }
+  //: The corner figure under a modal or the lock (`data-cover`, avatars.js); not its large view.
+  function atlasCornerCovered(box) {
+    return !!box.closest("#nm-buddy") && nameMarkBuddyBehindCover();
+  }
   function atlasTailFrame(tail, now) {
     tail.raf = 0;
     const { box, spec } = tail;
     if (!box.isConnected) return;
     //: `data-atlas-hidden`: a hidden window, or the app locked (atlas.js).
-    const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !document.documentElement.hasAttribute("data-atlas-hidden");
+    //: Nor behind a dialog (`nameMarkBuddyBehindCover`): the corner figure is drawn at opacity 0 there,
+    //: yet its tail went on writing about 140 attributes a second with Settings open; the cover lifting wakes it.
+    const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !document.documentElement.hasAttribute("data-atlas-hidden") && !atlasCornerCovered(box);
     //: The rings' and the planets' loops run and rest with it (`atlasRingLoops`).
     //: And hold while it is carried or thrown, as its CSS loops do there
     //: (atlas-lazy.css, B87a): drawn every frame then, each one restyles.
@@ -1367,7 +1373,7 @@
       const box = rig.box;
       if (!box.isConnected) return;
       const root = document.documentElement;
-      const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !root.hasAttribute("data-atlas-hidden") && !root.hasAttribute("data-atlas-lite") && !box.closest("#nm-buddy.nm-buddy-dragging");
+      const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !root.hasAttribute("data-atlas-hidden") && !root.hasAttribute("data-atlas-lite") && !box.closest("#nm-buddy.nm-buddy-dragging") && !atlasCornerCovered(box);
       if (!live) {
         if (m.moved) M.rest(low);
         m.at = 0;

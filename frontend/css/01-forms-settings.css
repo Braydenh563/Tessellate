@@ -6130,6 +6130,15 @@ select {
     min-height: var(--target-min);
   }
 }
+/* The clipper's three steps (Settings, Import & export): a plain numbered list
+   on the muted ink, so the order is the first thing the section says. */
+.web-clip-steps {
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--muted);
+  display: grid;
+  gap: var(--space-1);
+}
 /* The clip window (clip.html): one card, centred, on the app's tokens. */
 .clip-page {
   min-height: 100vh;
@@ -6164,6 +6173,18 @@ select {
 .clip-source {
   margin: 0;
   overflow-wrap: anywhere;
+}
+/* What the window will keep: a short excerpt in a quiet box, so the person
+   sees the text before pressing Save. */
+.clip-excerpt {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  max-height: 9rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+  font-size: var(--text-sm);
 }
 /* Capture from anywhere (row 27): the command for this install, wrapping
    rather than widening the group when its path is long. */

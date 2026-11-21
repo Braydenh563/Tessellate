@@ -70,7 +70,7 @@ async function importChatDocuments(files) {
       //: `/media/upload`, the Library's own store, which takes PDFs, and
       //: the user is told where it went and why the text is missing.
       const kept = await keepUnreadableChatFile(file, error);
-      if (!kept) toast(error.message || `Couldn't read "${file.name}".`, true);
+      if (!kept) toast(error.message || voiceLine("failed", { what: `read "${file.name}"` }), true);
     }
   }
   if (!made.length) return;

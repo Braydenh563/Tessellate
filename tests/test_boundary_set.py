@@ -10,7 +10,7 @@ import pytest
 from tessellate.api.wb_model import WhiteboardObjectData
 
 ROOT = Path(__file__).resolve().parents[1]
-MORE = (ROOT / "frontend" / "js" / "whiteboard-map-more.js").read_text(encoding="utf-8")
+MORE = (ROOT / "frontend" / "js" / "whiteboard-map-marks.js").read_text(encoding="utf-8")
 MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")

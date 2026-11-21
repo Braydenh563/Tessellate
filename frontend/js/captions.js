@@ -86,7 +86,7 @@
         return;
       }
       //: The two lines the dock shows are translated at once; older ones are not.
-      Object.assign(captionTranslate, { on: true, pair: status.pairs[0], out: captionRun.lines.slice(0, -2).map(() => ""), busy: false });
+      Object.assign(captionTranslate, { on: true, pair: status.pairs.find((p) => `${p.from}-${p.to}` === prefs.get("translate-pair")) || status.pairs[0], out: captionRun.lines.slice(0, -2).map(() => ""), busy: false });
     }
     button.setAttribute("aria-pressed", String(captionTranslate.on));
     $("captions-dock").classList.toggle("is-translating", captionTranslate.on);
@@ -133,6 +133,7 @@
     const translated = $("captions-translated");
     translated.textContent = captionTranslate.on ? captionTranslatedText() : "";
     translated.classList.toggle("hidden", !captionTranslate.on);
+    if (captionTranslate.on) translated.lang = captionTranslate.pair.to;
   }
 
   async function captionSendNext() {
@@ -233,15 +234,28 @@
     Object.assign(captionRun, { id: started.id, stream, lines: [], running: "", model: started.model, elapsed: 0, pending: [], timing: [], firstAudioAt: 0, shared: !!opts.stream, into: opts.into || null, save: opts.save !== false, held: false });
     Object.assign(captionRun.carry, { acc: 0, n: 0, pos: 0 });
     const ctx = new AudioContext();
-    const source = ctx.createMediaStreamSource(stream);
-    //: ScriptProcessor is deprecated but runs in every engine without a second
-    //: file or a blob: worker the CSP would have to allow.
-    const node = ctx.createScriptProcessor(4096, 1, 1);
-    node.onaudioprocess = (e) => {
+    //: The tap is an AudioWorklet (L580), loaded as a module from the app's own
+    //: origin, which `script-src 'self'` allows, so the policy has no blob: or
+    //: data: URL to permit. It sends 4096-sample blocks, as ScriptProcessor did.
+    let node;
+    try {
+      await ctx.audioWorklet.addModule("/js/caption-tap-worker.js");
+      node = new AudioWorkletNode(ctx, "caption-tap", { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
+    } catch (error) {
+      ctx.close().catch(() => {});
+      if (!opts.stream) stream.getTracks().forEach((t) => t.stop());
+      apiJson(`/voice/captions/${started.id}/stop`, { method: "POST", body: JSON.stringify({ save: false }), silent: true }).catch((e) => console.warn("The caption take was not stopped:", e.message));
+      const why = `Live captions couldn't start the microphone tap. ${error.message || ""}`.trim();
+      if (opts.quiet) return why;
+      toast(why, "info");
+      return false;
+    }
+    node.port.onmessage = (e) => {
       if (captionRun.held) return;
       if (!captionRun.firstAudioAt) captionRun.firstAudioAt = performance.now();
-      captionRun.pending.push(captionDecimate(e.inputBuffer.getChannelData(0), ctx.sampleRate));
+      captionRun.pending.push(captionDecimate(e.data, ctx.sampleRate));
     };
+    const source = ctx.createMediaStreamSource(stream);
     const mute = ctx.createGain();
     mute.gain.value = 0;
     source.connect(node);
@@ -270,7 +284,7 @@
   function captionRelease() {
     clearInterval(captionRun.tick);
     if (!captionRun.shared) captionRun.stream?.getTracks().forEach((t) => t.stop());
-    if (captionRun.node) captionRun.node.onaudioprocess = null;
+    if (captionRun.node) captionRun.node.port.onmessage = null;
     captionRun.ctx?.close().catch(() => {});
     Object.assign(captionRun, { stream: null, ctx: null, node: null, tick: 0, pending: [], shared: false, held: false });
   }
@@ -302,7 +316,7 @@
         () => flashEntry(done.entry_id)
       );
     } catch (error) {
-      toast(error.message || "Couldn't save the captions.", true);
+      toast(error.message || voiceLine("failed", { what: "save the captions" }), true);
     }
   }
 

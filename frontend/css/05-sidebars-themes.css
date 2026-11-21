@@ -4608,6 +4608,34 @@ html[data-chrome="native"] #top-bar #brand-logo {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The caret position and the two buttons whose words are labels give way
+   after the counts do, each with an ellipsis, so the file type slot keeps
+   its place and the bar never reaches past its box (L-world-class-36:
+   80px over at 320 to 820). */
+.doc-statusbar > #doc-caret,
+.doc-statusbar > .doc-statusbar-button {
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.doc-statusbar > #doc-caret {
+  flex-shrink: 8;
+  text-overflow: ellipsis;
+}
+#doc-counts {
+  flex-shrink: 4;
+}
+@media (max-width: 599.98px) {
+  .doc-statusbar > .doc-statusbar-button {
+    flex-shrink: 1;
+  }
+}
+.doc-statusbar-button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .doc-statusbar-spacer {
   flex: 1 1 auto;
 }
@@ -4919,39 +4947,39 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-radius: var(--radius-pill);
   background: var(--muted);
 }
-.doc-finding-dot-spelling {
+.doc-finding-dot[data-kind="spelling"] {
   background: var(--error);
 }
-.doc-finding-dot-style {
+.doc-finding-dot[data-kind="style"] {
   background: var(--accent);
 }
-.doc-finding-dot-repeat {
+.doc-finding-dot[data-kind="repeat"] {
   background: var(--muted);
 }
-.doc-finding-dot-grammar {
+.doc-finding-dot[data-kind="grammar"] {
   background: var(--warn);
 }
 /* Accessibility: the accent as a ring, so it is not read as a style note's
    filled accent dot. */
-.doc-finding-dot-access {
+.doc-finding-dot[data-kind="access"] {
   background: transparent;
   box-shadow: inset 0 0 0 2px var(--accent);
 }
 /* Check with AI: the accent at half strength, the dotted underline's own ink,
    so it is neither a style note's solid accent nor accessibility's ring. */
-.doc-finding-dot-ai {
+.doc-finding-dot[data-kind="ai"] {
   background: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 /* Claim check: the warning ink for a claim no note backs; one a note supports
    gets a quiet one. */
-.doc-finding-dot-claim {
+.doc-finding-dot[data-kind="claim"] {
   background: var(--warn);
 }
-.doc-finding-dot-backed {
+.doc-finding-dot[data-kind="backed"] {
   background: var(--muted);
 }
 /* A link offer: the accent as a short bar, the thin underline's own shape. */
-.doc-finding-dot-link {
+.doc-finding-dot[data-kind="link"] {
   border-radius: 0;
   height: var(--space-1);
   background: var(--accent);

@@ -34,7 +34,7 @@ def test_the_button_is_in_settings_data_and_has_one_handler():
     data = INDEX[INDEX.index('id="settings-data"') : INDEX.index('id="settings-account"')]
     assert data.count('id="clear-app-cache"') == 1
     assert INDEX.count('id="clear-app-cache"') == 1
-    assert SHELL.count('$("clear-app-cache")') == 1
+    assert SHELL.count('wire("clear-app-cache"') == 1
     assert 'data-help-for="app-cache-help"' in data and 'id="app-cache-help"' in data
 
 
@@ -47,7 +47,7 @@ def test_clearing_forgets_all_three_and_the_reload_button_shares_it():
 
 
 def test_the_click_says_so_then_reloads():
-    handler = SHELL[SHELL.index('$("clear-app-cache")') :]
+    handler = SHELL[SHELL.index('wire("clear-app-cache"') :]
     handler = handler[: handler.index("});")]
     assert "App cache cleared. Reloading." in handler
     assert re.search(r"setTimeout\(\(\) => location\.reload\(\), \d+\)", handler)
@@ -77,7 +77,7 @@ ROWS = {
 def test_each_clear_names_its_button_and_the_line_that_says_how_much() -> None:
     for button, line in ROWS.items():
         assert f'id="{button}"' in INDEX and f'id="{line}"' in INDEX, button
-        assert f'$("{button}")' in DATA and f'"{line}"' in DATA, f"{button} is not wired or painted"
+        assert f'SURFACES.wire("{button}"' in DATA and f'"{line}"' in DATA, f"{button} is not wired or painted"
     assert 'id="clear-help"' in INDEX and 'data-help-for="clear-help"' in INDEX, "help is data-help-for"
 
 

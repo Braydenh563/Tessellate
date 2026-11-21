@@ -214,7 +214,7 @@ async function openImportReport(id) {
   try {
     report = await apiJson(`/import/reports/${encodeURIComponent(id)}`);
   } catch (error) {
-    toastAction(`Couldn't open the report: ${error.message}`, "Try again", () => openImportReport(id));
+    toastAction(voiceLine("failed", { what: "open the report", why: error.message }), "Try again", () => openImportReport(id));
     return;
   }
   const when = whenText(report.finished_at);

@@ -75,3 +75,66 @@ def test_the_notes_list_follows_the_cursor() -> None:
     body = body[: body.index("\n}\n")]
     assert 'response.headers.get("X-Next-Cursor")' in body
     assert "&offset=" not in body
+
+
+#: The second slice, `reminders` (F12, L-world-class-81): the open reminders,
+#: whole. One shared read (`openReminders`) sets it; the tab badge and the due
+#: timer subscribe; the dashboard, the bell and the lock screen read it rather
+#: than each keeping its own fetch of `/reminders`.
+def test_open_reminders_is_one_shared_read_that_sets_the_slice() -> None:
+    store = JS / "store.js"
+    script = f"""
+let calls = 0;
+const pending = [];
+globalThis.apiPagedList = (path) => {{ calls++; return new Promise((resolve) => pending.push([path, resolve])); }};
+eval(require("fs").readFileSync({str(store)!r}, "utf8") + "; globalThis.appState = appState; globalThis.openReminders = openReminders; globalThis.remindersRead = remindersRead;");
+(async () => {{
+  const out = [];
+  const seen = [];
+  appState.subscribe("reminders", (rows) => seen.push(rows.length));
+  const a = openReminders();
+  const b = openReminders();
+  out.push(String(a === b) + ":" + calls + ":" + pending[0][0]);
+  // A forced read while the first is in flight: the older answer must not win.
+  const c = openReminders(0);
+  pending[1][1]([1, 2, 3]);
+  await c;
+  pending[0][1]([1]);
+  await a;
+  out.push(seen.join(",") + ":" + appState.get("reminders").length);
+  out.push(String(await openReminders()) + ":" + calls);
+  remindersRead.inflight = null;
+  openReminders();
+  out.push(String(calls));
+  console.log(out.join("|"));
+}})();
+"""
+    assert _node(script).split("|") == [
+        "true:1:/reminders?include_done=false",
+        "3:3",
+        "1,2,3:2",
+        "3",
+    ]
+
+
+def test_no_surface_keeps_its_own_copy_of_the_open_reminders() -> None:
+    def body(name: str, head: str) -> str:
+        text = (JS / name).read_text(encoding="utf-8")
+        part = text[text.index(head) :]
+        return part[: part.index("\n}\n")]
+
+    dash = (JS / "dashboard.js").read_text(encoding="utf-8")
+    assert "dashRemindersInflight" not in dash and 'apiPagedList("/reminders' not in dash
+    assert dash.count("openReminders()") >= 3
+    load = body("shell-reminders.js", "async function loadReminders()")
+    assert "openReminders(0)" in load and 'apiPagedList("/reminders' not in load
+    # The badge and the due timer follow the slice instead of being fed by hand.
+    assert "armReminderTimer(" not in load and "updateReminderBadge(" not in load
+    shell = (JS / "shell-reminders.js").read_text(encoding="utf-8")
+    assert 'appState.subscribe("reminders"' in shell
+    bell = body("notifications.js", "async function openNotifications(")
+    assert 'apiJson("/reminders"' not in bell and "openReminders()" in bell
+    tools = (JS / "utility-tools.js").read_text(encoding="utf-8")
+    assert '"/reminders?include_done=false"' not in tools and "openReminders()" in tools
+    swap = (JS / "space-swap.js").read_text(encoding="utf-8")
+    assert "remindersRead.inflight = null" in swap

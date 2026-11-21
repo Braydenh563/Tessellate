@@ -25,31 +25,32 @@ from tessellate.ai import composer_compose as compose
 from tessellate.ai import note_rank, reminder_parser
 from tessellate.ai.composer_ask import rephrase
 from tessellate.ai.composer_study import Ctx, Reply, pick
+from tessellate.core.lazyre import lazy_compile
 
-_SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
-_DONE = re.compile(r"^\s*[-*+]\s+\[[xX]\]")
+_SENTENCE = lazy_compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
+_DONE = lazy_compile(r"^\s*[-*+]\s+\[[xX]\]")
 #: Only these verbs of a sentence make it a thing to do or attend; "Went to
 #: Lisbon on 3 June" in an old note never lands in a future window anyway.
 MAX_ITEMS = 14
 
 _LEAD = r"(?:(?:please|pls|can you|could you|hey|ok|okay|so|and|right)[, ]+)*"
-_DUE = re.compile(
+_DUE = lazy_compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are| do i have| have i got| have i)?|which|any|anything|show me|show|list|tell me|give me|do i have|have i got|i need to know|check)?\W*"
     r"(?:\w+\W+){0,6}?(?:due|deadlines?|coming up|upcoming|on my plate|happening|scheduled|ahead|on the calendar|on the horizon|to hand in|to submit|to do)\b", re.I)
 #: "what's on", "am I busy": only a question when a time window is also named (`window`).
-_BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does|what am i (?:doing|up to)|what are we (?:doing|up to)|(?:do|have) (?:i|we) (?:have|got) (?:anything|something)|is there (?:anything|something))\b", re.I)
+_BUSY = lazy_compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does|what am i (?:doing|up to)|what are we (?:doing|up to)|(?:do|have) (?:i|we) (?:have|got) (?:anything|something)|is there (?:anything|something))\b", re.I)
 #: "what is overdue", "anything overdue", "show me overdue reminders": the
 #: overdue reminders alone, never every reminder. Each optional part opens with
 #: its own word, so the match is linear.
-_OVERDUE = re.compile(
+_OVERDUE = lazy_compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are)?|which|anything|any|show me|show|list|tell me|give me|do i have|have i got|is there anything|is anything)?"
     r"(?: what(?:'s|’s| is| are)?)?(?: (?:the|my|any|all|every))*(?: (?:reminders?|tasks?|items?|things?))?(?: (?:that|which))?(?: (?:is|are))?(?: now)? ?(?:overdue|past due)"
     r"(?: (?:reminders?|tasks?|items?|things?))?(?: for me)?\W*$", re.I)
 #: "what have I got on", "what's on": the agenda with no day named (R9-8).
-_BARE_ON = re.compile(rf"^{_LEAD}what(?:'s|’s| is)? (?:(?:do )?i (?:have|got)|have i got|am i doing) on\W*$|^{_LEAD}what(?:'s|’s) on\W*$", re.I)
+_BARE_ON = lazy_compile(rf"^{_LEAD}what(?:'s|’s| is)? (?:(?:do )?i (?:have|got)|have i got|am i doing) on\W*$|^{_LEAD}what(?:'s|’s) on\W*$", re.I)
 #: What the dated list can be narrowed to: "any birthdays coming up" (R9-8).
 _KINDS = {"birthday": "birthday", "appointment": "appointment", "meeting": "meeting", "event": "event", "booking": "booking", "trip": "trip", "holiday": "holiday"}
-_PLAN = re.compile(
+_PLAN = lazy_compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
     #: "spread these over the week", "how should I spread my tasks this week" (audit 1030 Z57).
@@ -59,11 +60,11 @@ _PLAN = re.compile(
     rf"^{_LEAD}(?:give me |show me )?(?:an? )?(?:agenda|schedule|plan|timetable) for (?P<g>.+)$|"
     #: "make a study plan": no model writes it, so the notes' own dated items are laid out (F13 g).
     rf"^{_LEAD}(?:(?:can|could) you )?(?:make|create|build|write|draft|put together|give|get)(?: me)? (?:an? |my )?(?:study|revision|exam) (?:plan|schedule|timetable)(?P<st>.*)$", re.I)
-_UNTIL = re.compile(
+_UNTIL = lazy_compile(
     r"^(?:so |and |hey |ok |okay )*(?:how (?:long|many days|many weeks|much time|far)(?: is it| is there| do i have| have i got| have we got| left)?(?: until| till| to| before| left until| left till)"
     r"|(?:days|weeks) (?:until|till|to|before|left until)|countdown (?:to|until|for)|time (?:until|till|left until|left before)|how soon is|how close is)\s+(?:my |the |our |this )?(?P<t>.+?)\W*$", re.I)
 
-_LEFT = re.compile(
+_LEFT = lazy_compile(
     rf"^{_LEAD}(?:what(?:'s| is| do i have| have i got| have i| else)?\s+(?:still\s+)?(?:left|outstanding|open|unfinished|incomplete|remaining|pending|undone)(?:\s+to\s+do)?"
     r"|what(?:'s| is)?\s+(?:left\s+)?(?:on\s+)?(?:my\s+)?(?:to-?do|todo)(?:\s+list)?"
     #: "what's still to do" (INBOX 1357, class I: it listed the newest notes).
@@ -73,32 +74,32 @@ _LEFT = re.compile(
     #: "what tasks do I have", "what needs doing", "my tasks" (R9-8).
     r"|what\s+(?:tasks?|to-?dos?|chores|jobs)\s+(?:do i have|have i got|are there|are open|are left)(?:\s+(?:open|left|outstanding|to do))?"
     r"|what\s+needs\s+(?:doing|to be done|done)|(?:show|list)\s+(?:me\s+)?my\s+(?:tasks|to-?dos)|my\s+(?:tasks|to-?dos))\W*$", re.I)
-_WHEN_IS = re.compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
+_WHEN_IS = lazy_compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
 #: The other ways to ask when a thing is: "what date is my exam", "when do I
 #: have my exam", "what day is the lab".
-_WHEN_IS_ALT = re.compile(
+_WHEN_IS_ALT = lazy_compile(
     rf"^{_LEAD}(?:what (?:date|day|time)(?:'s| is| are| was)(?: it)?(?: for)?|when (?:do|did|will|shall) (?:i|we) (?:have|sit|take|do)|when am i (?:sitting|having|taking|doing))"
     r"\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
 #: "What's my next exam", "exam date", "my exam day": the same ask as "when
 #: is my exam" (composer5); a reminder must name the subject, else the notes'
 #: reader answers.
 #: "when do the bins go out": the reminder names the thing; a reminder-only ask (audit 2 G3).
-_WHEN_DO = re.compile(rf"^{_LEAD}when (?:do|does|will|shall) (?:the |my |our )(?P<t>.+?)\W*$", re.I)
-_WHEN_IS_NEXT = re.compile(
+_WHEN_DO = lazy_compile(rf"^{_LEAD}when (?:do|does|will|shall) (?:the |my |our )(?P<t>.+?)\W*$", re.I)
+_WHEN_IS_NEXT = lazy_compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are) (?:my |the |our )?next\s+(?P<t>.+?)"
     r"|(?:my |the |our )?(?P<t2>\S.*?) (?:date|day|deadline|time))\W*$", re.I)
 #: "the next 7 days", "next two weeks", "the coming month", "the rest of this
 #: week": a span in units. Every part is a fixed word, so the match is linear.
 _UNIT_N = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "twelve": 12, "few": 3, "couple of": 2}
-_SPAN_WORDS = re.compile(
+_SPAN_WORDS = lazy_compile(
     r"\b(?P<the>the )?(?P<lead>next|coming|following|upcoming) (?:(?P<n>\d{1,2}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|few|couple of) )?(?P<unit>day|week|month)s?\b"
     r"|\b(?:the )?rest of (?:the|this) week\b", re.I)
 #: "before December", "by 15 November", "until Friday": the word and what follows.
-_BOUND = re.compile(r"\b(before|by|until|till)\b", re.I)
-_PAST_SAID = re.compile(r"\b(?:was|were|did|had|happened|wrote|made|went|saw|doing|done|been)\b", re.I)
+_BOUND = lazy_compile(r"\b(before|by|until|till)\b", re.I)
+_PAST_SAID = lazy_compile(r"\b(?:was|were|did|had|happened|wrote|made|went|saw|doing|done|been)\b", re.I)
 #: "What do I have on the 17th", "what am I doing on the 17th" ask of days to
 #: come, the present tense of a plan (2026-10-30 sweep: read as 17 October).
-_AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|deadlines?|remind(?:er|ers|me)?)\b|"
+_AHEAD_SAID = lazy_compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|deadlines?|remind(?:er|ers|me)?)\b|"
                          r"\b(?:am i|are we) (?:doing|up to)\b|\b(?:do i|do we) have\b|\bhave (?:i|we) got\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
@@ -301,19 +302,19 @@ def _sentence_day(sentence: str, anchor: datetime) -> date | None:
     return None
 
 
-_PRONOUN_LEAD = re.compile(r"(?:he|she|it) (?=(?:is|was|will|has)\b)", re.I)
-_WEEKDAY_ONLY = re.compile(r"^(?:on |this |next )?(?:mon|tues|wednes|thurs|fri|satur|sun)day$", re.I)
+_PRONOUN_LEAD = lazy_compile(r"(?:he|she|it) (?=(?:is|was|will|has)\b)", re.I)
+_WEEKDAY_ONLY = lazy_compile(r"^(?:on |this |next )?(?:mon|tues|wednes|thurs|fri|satur|sun)day$", re.I)
 
 
 #: Where a line written without full stops runs one thing into the next:
 #: "landlord called back, plumber is coming thursday between 8 and 10".
-_CLAUSE_SPLIT = re.compile(r"(,\s+|\s+and\s+|(?<=[.!?])\s+(?=[a-z]))")
+_CLAUSE_SPLIT = lazy_compile(r"(,\s+|\s+and\s+|(?<=[.!?])\s+(?=[a-z]))")
 #: A clause with a verb of its own is a thing that can be dated apart from
 #: its neighbours; "Tuesday" or "3pm" after a comma, or the 10 of "between 8
 #: and 10", is a detail of the last one.
-_HAS_VERB = re.compile(r"\b(?:is|are|was|were|will|has|have|had|am|be|need|needs|needed|want|wants|must|should|got|get|gets|due|booked)\b|\b[a-z]{3,}(?:ed|ing)\b", re.I)
+_HAS_VERB = lazy_compile(r"\b(?:is|are|was|were|will|has|have|had|am|be|need|needs|needed|want|wants|must|should|got|get|gets|due|booked)\b|\b[a-z]{3,}(?:ed|ing)\b", re.I)
 #: A feeling ("feeling pretty tired today") says how the writer is, not what is to be done, even when "today" dates it.
-_MOOD = re.compile(r"^\W*(?:i(?:'|’)?m |i am |im )?(?:feeling|feel|felt|so|really|very|pretty)\b", re.I)
+_MOOD = lazy_compile(r"^\W*(?:i(?:'|’)?m |i am |im )?(?:feeling|feel|felt|so|really|very|pretty)\b", re.I)
 
 
 def _clauses(sentence: str) -> list[str]:
@@ -910,7 +911,7 @@ def _written_from(text: str, today: date) -> bool:
 #: "what do I know about tomorrow": a day that has not come holds no notes
 #: written then; what the notebook knows of it is what is on it. Only a day
 #: named relative to now, never a holiday or a month (those are topics, C3).
-_KNOW_AHEAD = re.compile(
+_KNOW_AHEAD = lazy_compile(
     rf"^{_LEAD}(?:what do i know|what can you tell me|tell me|anything|what have i got|what is there|what(?:'s|’s) there|what do my notes have|"
     r"what (?:do|does) my (?:notes?|notebook|diary|journal) (?:say|tell me|show|have))\s+"
     r"(?:about|on|for|regarding)\s+(?:the )?" + recognise.AHEAD_DAY_WORDS + r"\W*$", re.I)
@@ -928,7 +929,7 @@ def _asks_due(text: str, today: date) -> bool:
 
 
 #: "what is in my todo" names the note called Todo (R3-8), not the next two weeks' dated items.
-_IN_TODO = re.compile(r"^(?:what(?:'s|’s| is| are)?|show me|read me)\s+(?:in|inside)\s+(?:my |the |our )?(?:to-?do|todo|to do)(?:\s+(?:list|note))?\W*$", re.I)
+_IN_TODO = lazy_compile(r"^(?:what(?:'s|’s| is| are)?|show me|read me)\s+(?:in|inside)\s+(?:my |the |our )?(?:to-?do|todo|to do)(?:\s+(?:list|note))?\W*$", re.I)
 
 
 def answer(ctx: Ctx) -> Reply | None:

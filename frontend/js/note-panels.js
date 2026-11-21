@@ -322,7 +322,7 @@ function similarNoteRow(entry, other, onLinked) {
       onLinked?.();
     } catch (error) {
       relChip.removeAttribute("aria-disabled");
-      toast(error.message || "Couldn't link those notes.", true);
+      toast(error.message || voiceLine("failed", { what: "link those notes" }), true);
     }
   };
   const relChip = chip("", "link entry-related-chip", linkIt);

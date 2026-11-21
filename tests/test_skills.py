@@ -615,7 +615,7 @@ def test_what_changed_comes_back_as_a_list_with_a_way_to_undo_it(
     # And the undo actually undoes it, through the endpoint the UI uses.
     ai_client.post(
         "/chat/tools/execute",
-        json={"name": change["undo"]["tool"], "arguments": change["undo"]["arguments"]},
+        json={"name": change["undo"]["tool"], "arguments": change["undo"]["arguments"], "sig": change["undo"]["sig"]},
     )
     assert ai_client.get(f"/entries/{note['id']}").json()["tags"] == []
 

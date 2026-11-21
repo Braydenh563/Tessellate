@@ -34,7 +34,7 @@ console.log(JSON.stringify({
 
 def test_the_button_is_wired_applies_through_a_saved_look_and_can_be_undone():
     assert 'id="look-surprise"' in INDEX
-    assert "surpriseNow" in CONTROLS[CONTROLS.index('$("look-surprise")') :][:200]
+    assert "surpriseNow" in CONTROLS[CONTROLS.index('wire("look-surprise"') :][:200]
     body = SETTINGS[SETTINGS.index("function surpriseNow") :][:1200]
     assert "applySavedTheme(" in body and "changeLookWithUndo(" in body
     assert "density" in body

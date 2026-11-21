@@ -19,28 +19,29 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import meaning
+from tessellate.core.lazyre import lazy_compile
 
 _BOX = re.compile(r"^(?P<lead>[ \t]*(?:[-*+]|\d+[.)])[ \t]+)\[ \][ \t]+(?P<item>\S.*?)[ \t]*$", re.MULTILINE)
 _LISTS = r"(?:to-?do|todo|to do|tasks?)"
 #: "to my to-do list", "on the task list", "onto my tasks"
-_ON_LIST = re.compile(rf"\s(?:to|on|onto|in|into)\s+(?:my |the |our )?{_LISTS}(?: list)?\b[ :,]*", re.IGNORECASE)
-_NEW_TASK = re.compile(
+_ON_LIST = lazy_compile(rf"\s(?:to|on|onto|in|into)\s+(?:my |the |our )?{_LISTS}(?: list)?\b[ :,]*", re.IGNORECASE)
+_NEW_TASK = lazy_compile(
     rf"^(?:(?:add|create|make|set up|start|put down)\s+(?:a |an |another |one more |my )?(?:new )?|new\s+){_LISTS}(?: item)?\b[ :,\-]*(?P<body>.*)$",
     re.IGNORECASE,
 )
-_LABELLED = re.compile(rf"^{_LISTS}\s*:\s*(?P<body>.+)$", re.IGNORECASE)
+_LABELLED = lazy_compile(rf"^{_LISTS}\s*:\s*(?P<body>.+)$", re.IGNORECASE)
 _PLACE_VERBS = ("add ", "put ", "pop ", "stick ", "throw ", "write ", "pencil ")
 _NOT_A_TASK_BODY = ("list", "lists", "manager", "app", "view", "page", "board", "feature", "tab", "widget")
 #: Words that open the sentence, left out of the task's own words.
 _LEAD_TO = ("to ", "that ", "for me to ")
 
 _DONE_WORD = r"(?:done|complete|completed|finished|ticked|checked|ticked off|checked off|crossed off|sorted|packed|bought|booked|paid|sent|handled|got)"
-_DONE_TAIL = re.compile(rf"(?<!\s)\s+(?:as |to be )?{_DONE_WORD}$", re.IGNORECASE)
-_OFF_TAIL = re.compile(r"\s+off(?:\s+(?:of\s+)?(?:my |the |this |that )?(?:list|checklist|to-?do list|todo list|task list|tasks))?$", re.IGNORECASE)
-_ON_LIST_TAIL = re.compile(r"\s+(?:on|from|in)\s+(?:my |the )?(?:list|checklist|to-?do list|todo list|task list)$", re.IGNORECASE)
-_ARTICLE = re.compile(r"^(?:the |my |our |this |that |a |an |your )+", re.IGNORECASE)
-_LEAD_KIND = re.compile(r"^(?:(?P<kind>reminder|task|to-?do|todo|check-?list item|list item|item)\s*(?:to |for |called |named |about |:)?\s*)", re.IGNORECASE)
-_TAIL_KIND = re.compile(r"(?<!\s)\s+(?P<kind>reminder|task|to-?do|todo|check-?list item|check-?list|list item|item)s?$", re.IGNORECASE)
+_DONE_TAIL = lazy_compile(rf"(?<!\s)\s+(?:as |to be )?{_DONE_WORD}$", re.IGNORECASE)
+_OFF_TAIL = lazy_compile(r"\s+off(?:\s+(?:of\s+)?(?:my |the |this |that )?(?:list|checklist|to-?do list|todo list|task list|tasks))?$", re.IGNORECASE)
+_ON_LIST_TAIL = lazy_compile(r"\s+(?:on|from|in)\s+(?:my |the )?(?:list|checklist|to-?do list|todo list|task list)$", re.IGNORECASE)
+_ARTICLE = lazy_compile(r"^(?:the |my |our |this |that |a |an |your )+", re.IGNORECASE)
+_LEAD_KIND = lazy_compile(r"^(?:(?P<kind>reminder|task|to-?do|todo|check-?list item|list item|item)\s*(?:to |for |called |named |about |:)?\s*)", re.IGNORECASE)
+_TAIL_KIND = lazy_compile(r"(?<!\s)\s+(?P<kind>reminder|task|to-?do|todo|check-?list item|check-?list|list item|item)s?$", re.IGNORECASE)
 
 _STOP = frozenset("the a an my our of and or to in on for with about this that it please".split())
 _KIND_WORDS = frozenset("task tasks reminder reminders todo item items checklist".split())
@@ -104,7 +105,7 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
 
 
 #: "make a checklist note of milk, eggs and bread": the kind of list, then what it holds.
-_CHECKLIST_NOTE = re.compile(
+_CHECKLIST_NOTE = lazy_compile(
     r"^(?:make|create|start|write|build|set up|add)(?: me)? (?:a |an |the )?(?:new )?"
     r"(?P<kind>check-?list|to-?do list|todo list|shopping list|grocery list|packing list)(?: note)?"
     r"(?:\s+(?:called|named|titled)\s+(?P<name>.+?))?\s*(?P<join>of|for|with|containing|including|:)\s*(?P<items>.+)$",
@@ -121,7 +122,7 @@ def _checklist_items(said: str) -> list[str]:
 
 
 _CHECKLIST_TITLES = {"checklist": "Checklist", "todolist": "Todo list", "shoppinglist": "Shopping list", "grocerylist": "Grocery list", "packinglist": "Packing list"}
-_FOR_PLACE = re.compile(r"^(?:the |my |our |a |an )?(?P<place>[^:]{1,40}?)\s*:\s*(?P<items>.+)$", re.IGNORECASE)
+_FOR_PLACE = lazy_compile(r"^(?:the |my |our |a |an )?(?P<place>[^:]{1,40}?)\s*:\s*(?P<items>.+)$", re.IGNORECASE)
 
 
 def _checklist_title_items(found: re.Match) -> tuple[str, str]:
@@ -136,7 +137,7 @@ def _checklist_title_items(found: re.Match) -> tuple[str, str]:
     return title[:1].upper() + title[1:], said
 
 
-_SUBJECT_ONLY = re.compile(r"^(?:the |my |our |a |an )?(?P<subject>[\w'’-]+(?: [\w'’-]+){0,3})$")
+_SUBJECT_ONLY = lazy_compile(r"^(?:the |my |our |a |an )?(?P<subject>[\w'’-]+(?: [\w'’-]+){0,3})$")
 
 
 def _subject_checklist(found: re.Match, said: str) -> dict | None:
@@ -234,7 +235,7 @@ _DONE_LEADS = ("finish ", "i finished ", "i've finished ", "i have finished ", "
 
 #: "I've booked the car service" (R9-12): a deed that names an open task is that task ticked.
 #: Only verbs a task starts with, so "I've seen the film" is no act.
-_DEED = re.compile(r"^i(?:'ve|’ve| have)\s+(?P<verb>[a-z]+)\s+(?P<rest>.+)$", re.IGNORECASE)
+_DEED = lazy_compile(r"^i(?:'ve|’ve| have)\s+(?P<verb>[a-z]+)\s+(?P<rest>.+)$", re.IGNORECASE)
 _DEED_VERBS = {
     "booked": "book", "called": "call", "paid": "pay", "emailed": "email", "sent": "send", "bought": "buy", "renewed": "renew",
     "cleaned": "clean", "fixed": "fix", "ordered": "order", "posted": "post", "returned": "return", "submitted": "submit",
@@ -270,9 +271,9 @@ def read_complete(text: str) -> dict | None:
     return _task_found("complete", about, said)
 
 
-_UNTICK = re.compile(r"^(?:please )?(?:un-?tick|un-?check|un-?cross|un-?strike|un-?complete|re-?open)\s+(?P<rest>.+)$", re.IGNORECASE)
+_UNTICK = lazy_compile(r"^(?:please )?(?:un-?tick|un-?check|un-?cross|un-?strike|un-?complete|re-?open)\s+(?P<rest>.+)$", re.IGNORECASE)
 _NOT_DONE = r"(?:not (?:done|finished|complete|completed|ticked|checked|crossed off)|undone|incomplete|unfinished|unticked|unchecked|open|still open|outstanding|to-?do)"
-_MARK_UNDONE = re.compile(rf"^(?:mark|set|flag)\s+(?P<rest>.+?)\s+(?:as |to be |back to |back as )?{_NOT_DONE}$", re.IGNORECASE)
+_MARK_UNDONE = lazy_compile(rf"^(?:mark|set|flag)\s+(?P<rest>.+?)\s+(?:as |to be |back to |back as )?{_NOT_DONE}$", re.IGNORECASE)
 
 
 def read_uncomplete(text: str) -> dict | None:
@@ -321,13 +322,13 @@ def _task_found(intent: str, about: str, said: str | None) -> dict | None:
     return found
 
 
-_CANCEL = re.compile(r"^(?:cancel|delete|remove|scrap|bin|trash|drop|take)\s+(?P<rest>.+)$", re.IGNORECASE)
+_CANCEL = lazy_compile(r"^(?:cancel|delete|remove|scrap|bin|trash|drop|take)\s+(?P<rest>.+)$", re.IGNORECASE)
 #: "buy milk from my tasks", "buy milk off the to-do list"
-_OFF_LIST = re.compile(
+_OFF_LIST = lazy_compile(
     r"\s+(?:off|from|out of|on)\s+(?:of\s+)?(?:my |the |our )?(?:task list|to-?do list|todo list|tasks|to-?dos|list|checklist)$", re.IGNORECASE
 )
 #: Words after the name that make it a note or something else, not a task.
-_NOT_TASK_TAIL = re.compile(r"\s(?:notes?|tags?|categor(?:y|ies)|documents?|boards?|maps?|meetings?)$", re.IGNORECASE)
+_NOT_TASK_TAIL = lazy_compile(r"\s(?:notes?|tags?|categor(?:y|ies)|documents?|boards?|maps?|meetings?)$", re.IGNORECASE)
 
 
 _CANCEL_LEADS = ("get rid of ", "never mind ", "clear ")
@@ -369,8 +370,8 @@ def read_cancel(text: str) -> dict | None:
     return _task_found("cancel", about, said)
 
 
-_SNOOZE = re.compile(r"^(?P<verb>snooze|postpone|delay|defer|reschedule|push(?: back)?|move)\s+(?P<rest>.+)$", re.IGNORECASE)
-_UNTIL = re.compile(r"\s(?:until|till|til|to|for|by)\s", re.IGNORECASE)
+_SNOOZE = lazy_compile(r"^(?P<verb>snooze|postpone|delay|defer|reschedule|push(?: back)?|move)\s+(?P<rest>.+)$", re.IGNORECASE)
+_UNTIL = lazy_compile(r"\s(?:until|till|til|to|for|by)\s", re.IGNORECASE)
 
 
 def _snooze_split(rest: str, resolve) -> tuple[str, str, object]:  # noqa: ANN001
@@ -470,7 +471,7 @@ def _ask(items: list[dict], about: str, partial: bool) -> str:
 #: "<item> on|in|from the <note> (note|list)": the item and the note it is on.
 #: Read on whitespace squashed to single spaces: words joined by one space
 #: leave no two ways to split a run of blanks, so the match stays linear.
-_ON_NOTE = re.compile(r"^(?P<item>\S+(?: \S+)*?) (?:on|in|from|off) (?:my|the) (?P<note>\S+(?: \S+)*?)(?: (?:note|list|checklist))?$", re.IGNORECASE)
+_ON_NOTE = lazy_compile(r"^(?P<item>\S+(?: \S+)*?) (?:on|in|from|off) (?:my|the) (?P<note>\S+(?: \S+)*?)(?: (?:note|list|checklist))?$", re.IGNORECASE)
 
 
 def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:  # noqa: ANN001
@@ -559,8 +560,8 @@ def _match(items: list[dict], about: str, kind: str | None = None, what: str = "
 # --- planning -----------------------------------------------------------------------------------
 
 
-_ON_NOTE_TAIL = re.compile(r" on the .+$")
-_NAME_SPLIT = re.compile(r"\s*(?:,|;|&|\band\b|\bthen\b|\bplus\b|\balso\b)\s*", re.IGNORECASE)
+_ON_NOTE_TAIL = lazy_compile(r" on the .+$")
+_NAME_SPLIT = lazy_compile(r"\s*(?:,|;|&|\band\b|\bthen\b|\bplus\b|\balso\b)\s*", re.IGNORECASE)
 
 
 def _names_in(about: str) -> list[str]:
@@ -737,7 +738,7 @@ def undo_step(name: str, args: dict) -> dict | None:
 
 
 #: A note a "todo" is added to: its title, as a person names the list.
-_TODO_TITLE = re.compile(r"^(?:my |the )?(?:to-?do|to do|tasks?|check-?list)(?: list)?s?$", re.IGNORECASE)
+_TODO_TITLE = lazy_compile(r"^(?:my |the )?(?:to-?do|to do|tasks?|check-?list)(?: list)?s?$", re.IGNORECASE)
 
 
 def todo_note(session: Session):  # noqa: ANN201
@@ -774,10 +775,10 @@ def plan_task_line(session: Session, parsed: dict, card, title, confirm) -> dict
 
 
 _ORDINAL_WORDS = {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10, "last": -1}
-_ORDINAL_NAME = re.compile(
+_ORDINAL_NAME = lazy_compile(
     rf"^(?:the |number |no\.? |#)*(?P<nth>{'|'.join(_ORDINAL_WORDS)}|\d{{1,2}}(?:st|nd|rd|th)?)(?: (?:one|item|task|thing|line))?$", re.IGNORECASE
 )
-_LIST_LINE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(?P<item>\S.*?)\s*$", re.MULTILINE)
+_LIST_LINE = lazy_compile(r"^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(?P<item>\S.*?)\s*$", re.MULTILINE)
 
 
 NO_LIST = "I do not have a list in front of me to count from. Name the task, like: tick buy stamps."
@@ -805,8 +806,8 @@ def items_in(answer: str) -> list[str]:
     """Every list item the answer showed, in order, parsed once."""
     items = []
     for line in _LIST_LINE.finditer(answer or ""):
-        text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line.group("item"))
-        text = re.sub(r"[*_`]+|\s*\[[^\]]*\]\s*$", "", text)
+        text = re.sub(r"\[([^\]]{1,300})\]\([^)]{0,1000}\)", r"\1", line.group("item"))
+        text = re.sub(r"[*_`]+|\s*\[[^\]]{0,300}\]\s*$", "", text)
         text = re.split(r"\s+\(|:\s", text, maxsplit=1)[0].strip(" .;")
         if text:
             items.append(text)

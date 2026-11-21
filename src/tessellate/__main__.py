@@ -428,6 +428,7 @@ def _bootloader_splash():
     try:
         import pyi_splash  # type: ignore[import-not-found]
     except Exception:  # noqa: BLE001  # ImportError, or the module's own failure
+        logger.debug("_bootloader_splash: ImportError, or the module's own failure", exc_info=True)
         return None
     return pyi_splash
 
@@ -779,8 +780,9 @@ def _boot_and_swap(window) -> None:
     from tessellate.core import instance_lock
 
     instance_lock.set_focus_handler(lambda: _bring_forward(window))
-    server = threading.Thread(target=_run_server, daemon=True)
-    server.start()
+    from tessellate.core import jobs
+
+    jobs.thread("desktop-server", _run_server)
     if _wait_for_server_with_progress(window):
         # Tick the step this process owns *before* the swap, not after: after
         # the swap this page no longer exists. The step is genuinely over at
@@ -794,7 +796,7 @@ def _boot_and_swap(window) -> None:
         # other splash loading screen in the main window"): the list a person
         # watches finish is the launcher's splash (`scripts/splash.ps1`), or on
         # a packaged build the bootloader's (`_close_bootloader_splash`). A
-        # later pass added a 1.5s sleep here for packaged builds; it only made
+        # a follow-on change added a 1.5s sleep here for packaged builds; it only made
         # every launch 1.5s slower, and the missing splash it was aimed at is
         # the pre-Python one, which this page cannot be.
         _mark_start_step_done(window)
@@ -919,6 +921,28 @@ def _pythonw_path() -> Path | None:
     return candidate if candidate.is_file() else None
 
 
+#: The flags start.bat understands; any other app flag is not carried through it.
+_BAT_FLAGS = ("--desktop", "--no-browser")
+
+
+def _launcher_bat() -> Path | None:
+    """`start.bat` beside this source checkout, when Windows should restart
+    through it (L968: Restart now ran `python -m tessellate` directly, so the
+    venv check, repair and update that start.bat does on every start were
+    skipped). None for the packaged exe (it has no .bat) and off Windows."""
+    if sys.platform != "win32" or getattr(sys, "frozen", False):
+        return None
+    candidate = Path(__file__).resolve().parents[2] / "start.bat"
+    return candidate if candidate.is_file() else None
+
+
+def _launcher_argv(bat: Path, args: list[str], restart_after: int | None) -> list[str]:
+    """`cmd /c start.bat <flags it knows> --restart-after PID`."""
+    keep = [a for a in args if a in _BAT_FLAGS]
+    after = ["--restart-after", str(restart_after)] if restart_after else []
+    return ["cmd", "/c", str(bat), *keep, *after]
+
+
 def _spawn_desktop(hidden: bool, restart_after: int | None = None):
     """Start a fresh `memorymap --desktop` process in the given console
     mode, independent of whatever process/window is calling this, the one
@@ -949,6 +973,18 @@ def _spawn_desktop(hidden: bool, restart_after: int | None = None):
                 creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
                 close_fds=True,
                 cwd=os.getcwd(),
+            )
+        bat = _launcher_bat()
+        if bat is not None:
+            # Through start.bat like any start; its own preference handling
+            # hides the console (exit code 42 hand-off), so no flag per mode.
+            CREATE_NO_WINDOW = 0x08000000
+            CREATE_NEW_CONSOLE = 0x00000010
+            return subprocess.Popen(
+                _launcher_argv(bat, ["--desktop"], restart_after),
+                creationflags=CREATE_NO_WINDOW if hidden else CREATE_NEW_CONSOLE,
+                close_fds=True,
+                cwd=str(bat.parent),
             )
         if hidden:
             pythonw = _pythonw_path()
@@ -1028,6 +1064,9 @@ def _relaunch_argv() -> list[str]:
         if arg in _NOT_CARRIED or arg.startswith("--restart-after="):
             continue
         rest.append(arg)
+    bat = _launcher_bat()
+    if bat is not None:
+        return _launcher_argv(bat, rest, os.getpid())
     head = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, "-m", "tessellate"]
     return [*head, *rest, "--restart-after", str(os.getpid())]
 
@@ -1254,6 +1293,7 @@ def _window_class_name(hwnd: int) -> str:
         ctypes.windll.user32.GetClassNameW(hwnd, buf, 256)
         return buf.value or "?"
     except Exception:  # noqa: BLE001  # a diagnostic label for a log line; "?" is the answer
+        logger.debug("_window_class_name: a diagnostic label for a log line; '?' is the answer", exc_info=True)
         return "?"
 
 
@@ -1327,8 +1367,9 @@ def _stop_background_work() -> None:
 
     desk_companion.shutdown()
     try:
-        from tessellate.core import jobs
+        from tessellate.core import background, jobs
 
+        background.stop_all()
         jobs.stop_all()
     except Exception as exc:  # noqa: BLE001  # best effort on the way out
         logger.warning("couldn't stop background work before exiting: %s", exc)
@@ -1799,12 +1840,20 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     storage = resolved_data_dir() / "webview"
     storage.mkdir(parents=True, exist_ok=True)
     try:
-        webview.start(  # blocks until the window closes; daemon dies with us
-            _boot_and_swap,  # runs on its own thread once the window is open
-            window,
-            private_mode=False,
-            storage_path=str(storage),
-            **(({"icon": _icon}) if _icon else {}),
+        from tessellate.core.window_teardown import run_window
+
+        run_window(
+            lambda: webview.start(  # blocks until the window closes; daemon dies with us
+                _boot_and_swap,  # runs on its own thread once the window is open
+                window,
+                private_mode=False,
+                storage_path=str(storage),
+                **(({"icon": _icon}) if _icon else {}),
+            ),
+            # A restart's new copy that hit WebView2's benign teardown error
+            # starts its window again (L-world-class-117).
+            restarting="--restart-after" in sys.argv,
+            relaunch=lambda: _spawn_detached(_relaunch_argv()),
         )
     except TypeError:
         # An older pywebview without one of the keyword arguments above
@@ -2352,7 +2401,9 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-    threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread("tray-icon", lambda: _run_tray_loop(icon))
     return icon
 
 
@@ -2445,6 +2496,7 @@ def _password_exists(db) -> bool:  # noqa: ANN001  # a DatabaseManager
         with db.session() as session:
             return session.scalar(select(User.id).limit(1)) is not None
     except Exception:  # noqa: BLE001  # an unreadable DB: the safe answer is "no"
+        logger.debug("_password_exists: an unreadable DB: the safe answer is 'no'", exc_info=True)
         return False
 
 

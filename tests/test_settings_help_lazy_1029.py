@@ -32,8 +32,39 @@ def test_showing_help_draws_them() -> None:
 
 def test_the_first_search_draws_them_and_asks_again() -> None:
     find = _body("filterSettings")
-    warm = find.index('$("help-topics")?.hasAttribute("aria-busy")')
-    # Before the matching, and only until they are drawn (the drawing clears aria-busy
-    # on success and on failure, so a failed fetch cannot loop).
+    warm = find.index("(!topics.firstElementChild || topics.dataset.dropping)")
+    # Before the matching, and only until they are drawn: an empty box is the mark (the drawing
+    # fills it on success and writes a line on failure, so a failed fetch cannot loop). Leaving
+    # Help empties it again (L676) instead of setting aria-busy by hand (test_spinner_recipe).
     assert warm < find.index("let matches = 0")
     assert "filterSettings(query)" in find[warm : find.index("let matches = 0")]
+
+
+def test_leaving_help_and_closing_the_sheet_release_their_nodes() -> None:
+    """L676: after Help was visited and the ? sheet opened and closed the page kept
+    1,770 Help nodes and 240 shortcut rows. Both are drawn again on the next open:
+    leaving the Help pane empties its topics (not while a search is typed, whose
+    results point at them) and `closeShortcuts` dispatches `sheet-closed`, which
+    the lazy reveal file answers by emptying the sheet's lists."""
+    root = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    find = (root / "settings-find.js").read_text(encoding="utf-8")
+    watch = find[find.index("function settingsIndexWatchSection(name)") :]
+    watch = watch[: watch.index("lazyScript(")]
+    for needle in (
+        'name !== "help" && helpTopicsLoad',
+        '!$("settings-search").value',
+        "helpTopicsLoad = null;",
+        "helpTopicsDrop(help);",
+    ):
+        assert needle in watch
+    # Marked by emptiness (or `data-dropping` while the slices run), not a hand-set aria-busy.
+    assert 'setAttribute("aria-busy"' not in watch
+    wiring = (root / "settings-wiring.js").read_text(encoding="utf-8")
+    close = wiring[wiring.index("function closeShortcuts()") :]
+    assert 'document.dispatchEvent(new Event("sheet-closed"));' in close[: close.index("\n}\n")]
+    reveal = (root / "reveal-targets.js").read_text(encoding="utf-8")
+    assert 'document.addEventListener("sheet-closed"' in reveal
+    assert 'overlay.querySelectorAll(".shortcut-list")' in reveal and "list.replaceChildren()" in reveal
+    html = (root.parent / "index.html").read_text(encoding="utf-8")
+    sheet = html[html.index('id="shortcuts-overlay"') :]
+    assert sheet.count('class="shortcut-list"') >= 4, "every list the sheet draws is inside the overlay"

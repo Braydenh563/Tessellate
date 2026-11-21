@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from tessellate.core.database import Category, EmbeddingRecord, Entry
 from tessellate.entry.cleantext import is_blank, name_key
-from tessellate.entry.manager import UNCATEGORISED, category_label, category_space, get_or_create_category, log_action, note_filter
+from tessellate.entry.manager import BROKEN_BAR, UNCATEGORISED, category_label, category_space, get_or_create_category, log_action, note_filter
 
 
 # --- category management (rename / delete) -----------------------------------
@@ -163,3 +163,15 @@ def _reassign(session: Session, from_id: int, to_id: int) -> int:
     for entry in entries:
         entry.category_id = to_id
     return len(entries)
+
+
+def mend_broken_bar_names(session) -> int:
+    """A category saved with a broken bar for "&" before `category_label`
+    mended it (LEDGER L803) is renamed once; a clash merges, as a rename
+    does. A clean notebook matches nothing. Returns how many were mended."""
+    hit = session.query(Category.id, Category.name).filter(Category.name.contains(BROKEN_BAR)).all()
+    for category_id, name in hit:
+        rename_category(session, category_id, name)
+    if hit:
+        session.commit()
+    return len(hit)

@@ -21,7 +21,7 @@ def test_the_three_forms_carry_the_toggle_and_send_its_ask():
     js = app_js_text()
     html = INDEX.read_text(encoding="utf-8")
     assert 'id="quick-note-private"' in html and 'id="entry-private"' in html
-    assert 'createNoteSafely({ content, tags: slots?.tags || [], ...createNoteSafely.lock.ask($("quick-note-private")) })' in js
+    assert 'createNoteSafely({ content, tags: slots?.tags || [], ...createNoteSafely.lock.ask($("quick-note-private")) }, { heldReminder })' in js
     assert "Object.assign(body, captureCard.lockAsk())" in js
     assert "captureCard.lockSync()" in js
     # the Capture page: both saves (and so the offline copy, which is the same payload), the draft key, its reset

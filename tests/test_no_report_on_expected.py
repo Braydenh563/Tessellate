@@ -55,13 +55,14 @@ def test_a_package_action_the_server_refuses_is_a_notice_and_a_failed_request_is
     assert text.count("failed: true, message: e.message") == 1
 
 
-def test_a_held_quick_note_says_its_reminder_was_not_set():
+def test_a_held_quick_note_says_what_happens_to_its_reminder():
     # OPEN.md: a reminder chip on a note saved while the server is away was
-    # dropped without a word; the note is kept, and now the toast says so.
+    # dropped without a word. L497 moved the intent on: the reminder is now
+    # held with the note and set when it goes in, and the toast says that.
     body = _function(_js_scope.unwrapped((JS / "quick-note.js").read_text(encoding="utf-8")), "async function saveQuickNote(")
     queued = body[body.index("if (result.queued) {") :]
     queued = queued[: queued.index("return;")]
-    assert "slots?.due" in queued and "Its reminder was not set" in queued
+    assert "heldReminder ?" in queued and "Its reminder is set then too." in queued
 
 
 def test_a_silent_write_refused_by_a_restarted_server_shows_the_lock_screen():

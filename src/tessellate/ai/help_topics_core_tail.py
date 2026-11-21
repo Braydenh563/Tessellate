@@ -1307,10 +1307,10 @@ TAIL_TOPICS.extend(
                 "connection",
             ),
             "body": (
-                "Click the map, then the arrow keys move between notes, N steps "
+                "Click the map; the arrow keys move between notes, N steps "
                 "to the next connected note, Enter or Space opens one, + and - zoom, 0 fits the whole "
-                "map, Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
-                "drop); double-click it to pin it, again to free. Hold Alt and drop one note onto another to link "
+                "map (Ctrl too), Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
+                "drop); double-click to pin it, again to free. Hold Alt and drop one note onto another to link "
                 "them, double-click empty space to add a note (Private seals it; ? says more), hover a note for its dates, links "
                 "and properties, point at a line to light it and click it to see what it is, its reason and "
                 "how sure, the two notes, and for a link Edit reason, Two-way (no arrow) and Remove, and "
@@ -1539,14 +1539,27 @@ TAIL_TOPICS.extend(
                 "aliases",
                 "merge names",
                 "named together",
+                "person page",
+                "project page",
+                "open items",
+                "claims",
+                "what changed about",
+                "found by",
             ),
             "body": (
                 "Atlas notes the people, places, projects, organisations and things "
                 "your notes name, with a kind for each. Show, Entities on the Graph "
                 "draws them; two named together in two notes or more are joined. "
-                "Click one, or open People and things from the command palette, for "
-                "its page: every note that names it with the sentence, what it is "
-                "named with, and the dates its notes mention. Its ⋯ sets the Kind, "
+                "Click one, open People and things from the command palette, or "
+                "a name under a note's Connections, People and projects it names, "
+                "for its page: Open items (a project's unticked tasks and "
+                "reminders, or the tasks that name a person), Claims (each sentence "
+                "in its notes that names it, with its note and who found it; click "
+                "one to open the note at that sentence), What changed (the claims "
+                "about it an edit added, changed or dropped, with the day), a Timeline of its "
+                "notes by month, every note that names it with the sentence, "
+                "Linked notes (joined to its notes without naming it), what it is "
+                "named with, and the dates its notes mention. The line under its name says which model found it, and when. Its ⋯ sets the Kind, "
                 "Renames it, edits Other names (the names it also goes by) and "
                 "Merges it into another, moving every mention; Undo in the toast, "
                 "or Ctrl+Z, splits the two back as they were. Suggestions, Names "

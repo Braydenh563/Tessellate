@@ -91,3 +91,49 @@ def test_the_upgrade_steps_skip_when_the_repository_has_no_release():
     ):
         block = FLOW[FLOW.index(f"- name: {name}") :].split("shell:")[0]
         assert "steps.previous.outputs.found == 'true'" in block, name
+
+
+def _startup_time():
+    spec = importlib.util.spec_from_file_location("startup_time", ROOT / "packaging" / "startup_time.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_startup_time_counts_seconds_to_the_first_200():
+    st = _startup_time()
+    now = [0.0]
+    codes = iter([0, 0, 503, 200])
+
+    def sleep(seconds):
+        now[0] += 1.5
+
+    seconds = st.seconds_to_health(
+        "http://x", clock=lambda: now[0], sleep=sleep, fetch=lambda url: next(codes)
+    )
+    assert seconds == 4.5
+    assert st.summary_line(seconds) == "Frozen Windows startup: 4.5 s to the first 200 from /health"
+
+
+def test_startup_time_gives_up_past_the_limit_and_the_summary_is_written(tmp_path):
+    st = _startup_time()
+    now = [0.0]
+
+    def sleep(seconds):
+        now[0] += 10
+
+    assert st.seconds_to_health("http://x", 30, clock=lambda: now[0], sleep=sleep, fetch=lambda u: 0) is None
+    out = tmp_path / "summary.md"
+    original = st.seconds_to_health
+    st.seconds_to_health = lambda base, limit: 2.0
+    try:
+        assert st.main(["--base", "http://x", "--summary", str(out)]) == 0
+    finally:
+        st.seconds_to_health = original
+    assert out.read_text(encoding="utf-8") == "Frozen Windows startup: 2.0 s to the first 200 from /health\n"
+
+
+def test_the_workflow_records_startup_with_no_failing_threshold():
+    block = FLOW[FLOW.index("- name: Record the frozen app's startup time") :].split("- name:", 2)[1]
+    assert "packaging/startup_time.py" in block and "GITHUB_STEP_SUMMARY" in block
+    assert "|| true" in block

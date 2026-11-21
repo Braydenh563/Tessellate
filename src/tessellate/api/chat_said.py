@@ -1,6 +1,6 @@
 """What the composed answer (no model) says around its quotes: counted and
 filed leads, the stats panel, the app's own answers, the no-notes line, the
-rows remembered for a follow-up, and what the answer cites.
+rows remembered for a follow-on, and what the answer cites.
 
 Moved whole from `routes_chat.py` (audit AR3, gods-1101): the code is
 unchanged, and `routes_chat` re-exports every name here that anything
@@ -349,6 +349,7 @@ def _in_notes(session: Session):  # noqa: ANN202
             ).first()
             return found is not None or session.scalar(select(Entity.id).where(func.lower(Entity.name) == word).limit(1)) is not None
         except Exception:  # noqa: BLE001  # no index yet: nothing is known
+            logging.getLogger(__name__).debug("holds: no index yet: nothing is known", exc_info=True)
             return False
 
     return holds

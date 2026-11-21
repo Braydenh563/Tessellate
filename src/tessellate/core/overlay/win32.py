@@ -638,6 +638,7 @@ def _cloaked(w: Any, hwnd: Any) -> bool:
     try:
         return dwm(hwnd, DWMWA_CLOAKED, ctypes.byref(flag), ctypes.sizeof(flag)) == 0 and bool(flag.value)
     except Exception:  # noqa: BLE001
+        logger.debug("_cloaked: fell back", exc_info=True)
         return False
 
 

@@ -410,3 +410,60 @@ def test_closing_the_vault_never_writes_a_sealed_row_in_the_clear(signed_in):
         session.close()
     assert "written while locked" not in _db_text()
     assert crypto.PREFIX in _db_text()
+
+
+def _add_space_rows(client, space):
+    """One bookmark, recording, library picture and note file written inside the space."""
+    from tessellate.core.database import Attachment, Bookmark, MediaUpload, Recording
+
+    session = deps.get_db().session()
+    try:
+        session.info["workspace_id"] = space
+        scope = vault.request_scope(client.headers["X-Auth-Token"])
+        scope.__enter__()
+        entry_id = client.post("/entries", json={"content": "host note"}, headers=_in(client, space)).json()["id"]
+        session.add_all(
+            [
+                Bookmark(url="https://example.com/" + SECRET.replace(" ", "-"), title=SECRET, note=SECRET),
+                Recording(title=SECRET, segments=json.dumps([{"start": 0, "end": 1, "text": SECRET}])),
+                MediaUpload(filename="p.png", original_name="p.png", ocr_text=SECRET, caption=SECRET, vision_ocr_text=SECRET),
+                Attachment(entry_id=entry_id, filename="a.pdf", stored_name="stored-a", ocr_text=SECRET, caption=SECRET),
+            ]
+        )
+        session.commit()
+    finally:
+        scope.__exit__(None, None, None)
+        session.close()
+
+
+def test_bookmarks_recordings_and_files_made_in_a_private_space_are_sealed(signed_in):
+    """L697: what the space owns outright goes in encrypted, and reads back plain while unlocked."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import Attachment, Bookmark, MediaUpload, Recording, impersonate_workspace
+
+    client = signed_in
+    space = _space(client)
+    _unlock(client)
+    _add_space_rows(client, space)
+    assert "boathouse" not in _db_text()
+    session = deps.get_db().session()
+    try:
+        with vault.request_scope(client.headers["X-Auth-Token"]), impersonate_workspace(session, ""):
+            assert session.scalars(select(Bookmark)).first().title == SECRET
+            assert session.scalars(select(Recording)).first().title == SECRET
+            assert session.scalars(select(MediaUpload)).first().ocr_text == SECRET
+            assert session.scalars(select(Attachment)).first().caption == SECRET
+    finally:
+        session.close()
+
+
+def test_rows_already_in_a_space_are_sealed_when_it_becomes_private(signed_in):
+    client = signed_in
+    space = _space(client, private=False)
+    _add_space_rows(client, space)
+    assert "boathouse" in _db_text()
+    _unlock(client)
+    made = client.put(f"/spaces/{space}/private", json={"private": True})
+    assert made.status_code == 200, made.text
+    assert "boathouse" not in _db_text()

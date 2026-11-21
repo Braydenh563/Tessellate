@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import logging
 import re
 
 from tessellate.core.lazyre import lazy_compile
@@ -65,6 +66,38 @@ RATES: dict[str, float] = {
     "CNY": 7.19, "INR": 85.5, "SEK": 9.6, "NOK": 10.1, "DKK": 6.56, "SGD": 1.29, "HKD": 7.85, "MXN": 19.2,
     "BRL": 5.6, "ZAR": 17.9, "KRW": 1370.0, "PLN": 3.75,
 }
+#: The table the reader set in Settings, Search and index (decision 43,
+#: L519), kept as this preference: `{"date": "2026-10-01", "rates": {"EUR":
+#: 0.9, ...}}`. A code it leaves out keeps the built-in rate; USD stays 1.
+RATES_PREFERENCE = "currency_rates"
+
+
+def saved_rates(saved: object) -> tuple[dict[str, float], date]:
+    """The table to answer with: what was saved over the built-in one, or
+    the built-in one when nothing (or nothing readable) was saved."""
+    if not isinstance(saved, dict):
+        return RATES, RATES_DATE
+    try:
+        when = date.fromisoformat(str(saved.get("date") or ""))
+    except ValueError:
+        return RATES, RATES_DATE
+    given = saved.get("rates") if isinstance(saved.get("rates"), dict) else {}
+    rates = dict(RATES)
+    for code, value in given.items():
+        if code in RATES and code != "USD" and isinstance(value, int | float) and 0 < value < 1e9:
+            rates[code] = float(value)
+    return rates, when
+
+
+def current_rates() -> tuple[dict[str, float], date]:
+    """The table in use: the open notebook's saved one, or the built-in one
+    (no notebook open, as in a test of this module alone)."""
+    from tessellate.core import deps
+
+    config = deps.peek_config()
+    return saved_rates(config.get_preference(RATES_PREFERENCE, None) if config else None)
+
+
 _CURRENCY_NAMES = recognise_units.CURRENCY_NAMES
 _MONEY_NAMES = "|".join(sorted((re.escape(n) for n in _CURRENCY_NAMES), key=len, reverse=True))
 def _compile_money() -> tuple:
@@ -612,6 +645,7 @@ def _zone_cities() -> dict[str, str]:
     try:
         zones = available_timezones()
     except Exception:  # noqa: BLE001  # no zone database: only the table's places are read
+        logging.getLogger(__name__).debug("_zone_cities: no zone database: only the table's places are read", exc_info=True)
         return {}
     return {z.rsplit("/", 1)[-1].replace("_", " ").lower(): z for z in sorted(zones) if "/" in z}
 
@@ -778,6 +812,7 @@ def web_on() -> bool:
     try:
         return bool(config and config.get_preference("web_search_enabled", False))
     except Exception:  # noqa: BLE001  # no readable setting yet: off
+        logging.getLogger(__name__).debug("web_on: no readable setting yet: off", exc_info=True)
         return False
 
 
@@ -871,7 +906,7 @@ _ANSWERERS = {
     "percent": _answer_percent,
     "clock": lambda ask: _clock(ask.text, ask.now),
     "units": lambda ask: _convert(ask.text),
-    "currency": lambda ask: _currency(ask.text, ask.rates or RATES, ask.rates_date or RATES_DATE),
+    "currency": lambda ask: _currency(ask.text, *((ask.rates, ask.rates_date or RATES_DATE) if ask.rates else current_rates())),
     "dates": lambda ask: _between_answer(*b) if (b := _between(ask.text, ask.now.date())) else _dates(ask.text, ask.now),
     "chance": _answer_chance,
     "translate": lambda ask: [("phrase", "utility_translate")],

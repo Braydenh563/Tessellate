@@ -261,7 +261,7 @@ The owner's words, moved here from INBOX whole:
      22px/700 solid pill, 17px/700 tinted, 13.6px/400 (`mc1-maplevels.js`
      13/13); per-level looks, Redefine and copy/paste style (`mc1-maplook.js`
      13/13); a topic's icon from 1,530 Phosphor icons or 476 emoji
-     (`mc1-iconpicker.js` 12/12). Still open, so this stays: Illustrator's
+     (`mc1-iconpicker.js` 12/12). Filed as L-world-class-170, so this stays: Illustrator's
      linked symbols, Photoshop's layer effects, Miro's reactions and the
      whiteboard half of the research (MINDMAP_PLAN §14.4).
 

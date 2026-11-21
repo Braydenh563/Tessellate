@@ -259,7 +259,8 @@ class DatabaseManager(IndexesMixin):
                 boards = search_index.reconcile_boards(session)
                 late = search_index.reconcile_sources(session)
                 private_files = search_index.reconcile_private_files(session)
-                if boards or late or private_files:
+                note_files = search_index.reconcile_note_files(session)
+                if boards or late or private_files or note_files:
                     session.commit()
             return
         # Only on the one startup that creates the table: every write after

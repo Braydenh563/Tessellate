@@ -872,10 +872,10 @@ def brief(
         if view is not None:
             views[i] = view
     candidates = list(views.values())
-    pool = sorted(_score(shape, terms, candidates), key=lambda s: (-s.score, s.rank, s.order))[:MEANING_POOL]
+    pool = sorted(_score(shape, terms, candidates, carrier=True), key=lambda s: (-s.score, s.rank, s.order))[:MEANING_POOL]
     chosen = select(
         shape, terms, candidates,
-        limit=BRIEF_POINTS,
+        limit=BRIEF_POINTS, carrier=True,
         meaning=_Meaning(pool, embed, {_stem(t) for t in terms}),
         per_note=BRIEF_PER_NOTE,
     )

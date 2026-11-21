@@ -161,7 +161,8 @@ HELP_TOPICS: list[dict] = [
             "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
             "beside its note and follows it as you pan and zoom; drag its title to "
             "put it somewhere else and it stays there until you close it. A hub's lines "
-            "run straight and faint until you point at it."
+            "run straight and faint until you point at it. The corner strip zooms out, "
+            "in and fits; Ctrl+Plus (or Ctrl+=) zooms in, Ctrl+- out and Ctrl+0 fits."
         ),
         "badge": {"label": "Graph", "tab": "graph"},
     },
@@ -190,8 +191,9 @@ HELP_TOPICS: list[dict] = [
             "on them; the desktop app notifies with its window closed. If the "
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
-            "Remind me is on a note's, a document's and a board's ⋯ "
-            "menu too (and in a document, the / menu's Remind me about this), and the reminder's row opens what it is about. "
+            "Remind me is on a note's, document's, board's and file's ⋯ "
+            "menu too (and in a document, the / menu's Remind me about this), and the reminder's row opens what it is about; "
+            "right-click a row, or hold it on a phone, for its ⋯ menu. "
             "Select words in a note and Set a reminder in the selection menu "
             "reads a reminder out of them, linked to that note. When you tell "
             'the chat you need to do something on a day ("I need to call the '
@@ -511,7 +513,8 @@ HELP_TOPICS: list[dict] = [
             "green open, amber closed on this network, plain off; press it (or "
             "Alt+L) for the switch, the address and the trusted networks. The offline "
             "badge, the power-saver badge and the running-job slot appear only "
-            "when there is something to say. Settings, Appearance, Status "
+            "when there is something to say; hover or press the first two (or Tab "
+            "to one and press Enter) to read what they mean. Settings, Appearance, Status "
             "bar chooses which of the rest to show."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},
@@ -544,7 +547,7 @@ HELP_TOPICS: list[dict] = [
             "document, Ctrl+D today's note, Ctrl+Shift+V paste what you copied as a "
             "new note, Ctrl+Shift+R record a meeting, Alt+L the other devices panel, "
             "Ctrl+Shift+K the quick sketch pad, Ctrl+Shift+B the whiteboard. "
-            "Writing: Ctrl+S save, Ctrl+/ the blocks and commands menu (in a "
+            "Writing: Ctrl+S save (it says so when a tab has nothing to save), Ctrl+/ the blocks and commands menu (in a "
             "document it comments the line instead), Ctrl+J Atlas writes at the "
             "cursor, Ctrl+Shift+E actions for the selected text (a right-click on the selection brings its popup back). AI: "
             "Ctrl+Shift+A the popup agent, Ctrl+Shift+H ask Atlas about the app, "
@@ -770,11 +773,13 @@ HELP_TOPICS: list[dict] = [
             "open board or mind map has its own, an open document has its own, and "
             "both are kept while you switch away and back; everywhere else it is the "
             "app's (notes, tags, categories, links, files, bookmarks, renames, "
-            "settings, chats, pins and the rest). Four things have no Undo, "
+            "settings, chats, pins and the rest), and that one lasts for the session: "
+            "after a reload or a restart it starts empty, while a board, a mind map "
+            "and a document keep their last hundred steps. Four things have no Undo, "
             "on purpose: Delete for good and Empty bin, which ask first; sending a "
             "chat message (the chat keeps its own history); asking the model "
             "something (it changes nothing until you accept); and sign-in, lock and "
-            "background work. Inside a text box Ctrl+Z undoes your typing."
+            "background work. Inside a text box, in a dialog too, Ctrl+Z undoes your typing, and Escape puts an Undo notice away (Ctrl+Z still undoes it)."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -809,9 +814,8 @@ HELP_TOPICS: list[dict] = [
             "Enhance on save there cuts rumble and "
             "evens the loudness, keeping the original until the transcript is "
             "saved. With Live captions installed the words appear as you speak. "
-            "With the Voice notes add-on it transcribes in the background (a "
-            "notification says when it is done; Stop ends it) and the "
-            "transcript is offered to save; saved, the recorder shows its "
+            "With the Voice notes add-on it transcribes in the background "
+            "and the transcript is offered to save; saved, the recorder shows its "
             "first lines with Open. "
             "Library, Recordings searches names and transcripts (a hit plays from its line), Import audio keeps a file; "
             "play at 0.5 to 2x with a playhead and the time; drag the waveform to "
@@ -820,9 +824,9 @@ HELP_TOPICS: list[dict] = [
             "play from it; a line's copy button copies it, Shift-click picks a run of "
             "lines, and the transcript's more menu copies the picked lines or all of "
             "them, with or without times) and downloads them as SRT or VTT subtitles; with "
-            "the Speakers bundle (Settings, Packages) a transcript labels who speaks by voice, as Speaker 1, 2 and so on (Label speakers by voice does an old one); "
+            "the Speakers bundle (Settings, Packages) a transcript labels who speaks by voice, as Speaker 1, 2 and so on; "
             "with only the AI on, turns are labelled from what is said. Rename a speaker names a label for good. "
-            "In a document, ![[a recording's name]] plays it there. "
+            "In a note or document, ![[name]] plays a recording and [[name]] opens it. A saved transcript keeps each line's time. "
             "Read aloud plays an answer back to you; its item turns to Stop "
             "reading while it speaks, and Settings, General, Read aloud sets the speed (0.75x to 1.5x)."
         ),
@@ -931,8 +935,8 @@ HELP_TOPICS: list[dict] = [
             "answers how-to questions about Tessellate itself from the app's "
             "own help: where a feature lives, what a setting does, which tab "
             "to be on. It answers on the utility model in Settings, Models "
-            "while smart model routing is on, on the chat model while that is "
-            "off, and Settings, Models can give the guide a model of its "
+            "whether smart model routing is on or off, and Settings, Models "
+            "can give the guide a model of its "
             "own. With no model running it still answers from the help: "
             "Atlas's answer is put together for your question, and the From "
             "the help tab above it shows the topic word for word. "
@@ -1046,7 +1050,7 @@ HELP_TOPICS: list[dict] = [
             "reads what is on screen; its menu reads every page or a range like "
             "1-5. Ask sends the page to the chat as a chip on your next "
             "message. A read keeps running if you "
-            "close the window: it shows in Settings, Background tasks and can "
+            "close the window: it shows in Settings, Background tasks (a range read counts pages as it goes) and can "
             "be stopped from there or from the workspace, and every page that "
             "has been read is remembered, so reopening the document shows the "
             "text again rather than starting over."
@@ -1386,7 +1390,7 @@ HELP_TOPICS.extend(
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
                 "them (a note dropped or pasted from the Tray into Your thoughts is added "
-                "as one), and press Draft. The draft stays in the box to edit; save it "
+                "as one), and press Draft (the pill in the bar names the model; press it to pick another). The draft stays in the box to edit; save it "
                 "as a note when it reads right. Which model writes is set on the "
                 "same row, or in Settings, Models. With no model Atlas does it by "
                 "rule, marked From your words, and offers only what that does well: tidy and "
@@ -1517,13 +1521,13 @@ HELP_TOPICS.extend(
                 "link properties",
             ),
             "body": (
-                "Link one note to another by typing [[ and the start of its title, "
-                "then picking it from the list. The link shows on both notes as a "
+                "Link one note to another by typing [[ and picking its title "
+                "from the list. Hover or focus a [[link]] to preview its note. The link shows on both notes as a "
                 "connection, with a menu to add a reason, open or remove it. Atlas "
                 "also suggests links as you write, and every note's menu has Link "
-                "to. The Graph draws all of them. A note's menu also has Copy wiki "
+                "to. The Graph draws them all. A note's menu also has Copy wiki "
                 "link (a [[link]] for another note) and Copy app link (an address "
-                "that opens the note in the app). Delete the [[name]] and its link "
+                "that opens the note). Delete the [[name]] and its link "
                 "goes with it; rename a note and a toast offers to rename the "
                 "[[links]] other notes have to it. A note's Connections show the "
                 'sentence each linking note says it in, and "Mentioned, not '
@@ -1592,8 +1596,8 @@ HELP_TOPICS.extend(
                 "the recent searches in every search box, the saved previews, the "
                 "Guide's conversation and the suggestions you dismissed, each with "
                 "an Undo for ten seconds. Under the dismissed suggestions, Review them "
-                "one by one lists each with its own Restore, which offers just that one again. Every setting you change is undoable too, from "
-                "the toast and from Recent changes in the same section (the last twenty)."
+                "one by one lists each with its own Restore, which offers just that one again. Every setting you change, here or from a switch in the dock, is undoable too, from "
+                "the toast, Ctrl+Z and Recent changes in the same section (the last twenty)."
             ),
             "badge": {"label": "Models", "section": "models"},
         },

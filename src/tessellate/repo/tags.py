@@ -71,13 +71,13 @@ def _ensure_tag_cache_reset_registered() -> None:
     # already imports `deps` inside `record_dates` for the same reason.
     #
     # `importlib.import_module` rather than a plain `from ... import deps`
-    # statement even here, deferred as it already is: CodeQL's
+    # statement even here, lazy as it already is: CodeQL's
     # py/cyclic-import (three "Note"-severity alerts against this exact
     # shape, this file, closed together) flags the *import statement*
     # itself as beginning a cycle in the module dependency graph, it has
     # no way to know the statement only ever runs after startup, so
     # function-local didn't clear it. `importlib` performs the identical
-    # deferred lookup with no `import` statement for that static check to
+    # lazy lookup with no `import` statement for that static check to
     # see, which is why `ai/vision_ocr.py` already uses it for this same
     # module.
     if _tag_cache.reset_registered:

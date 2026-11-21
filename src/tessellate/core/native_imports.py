@@ -189,27 +189,47 @@ def _elf(data: bytes) -> tuple[set[str], set[str]]:
 # --- PE ----------------------------------------------------------------------
 
 
+def _pe_layout(data: bytes) -> tuple[int, int, list[tuple[int, int, int]]]:
+    """Where the data directories start, the thunk width, and each section
+    as (virtual address, size, file offset)."""
+    pe_off, = struct.unpack_from("<I", data, 0x3C)
+    if data[pe_off : pe_off + 4] != b"PE\0\0":
+        raise NotANativeLibrary("no PE signature")
+    _machine, nsec, _ts, _sym, _nsym, opt_size, _chars = struct.unpack_from("<HHIIIHH", data, pe_off + 4)
+    opt = pe_off + 24
+    magic, = struct.unpack_from("<H", data, opt)
+    if magic == 0x20B:
+        dirs, thunk = opt + 112, 8
+    elif magic == 0x10B:
+        dirs, thunk = opt + 96, 4
+    else:
+        raise NotANativeLibrary("unknown PE optional header")
+    sect_base = opt + opt_size
+    sections = []
+    for i in range(nsec):
+        _n, vsize, vaddr, rawsize, rawptr = struct.unpack_from("<8sIIII", data, sect_base + i * 40)
+        sections.append((vaddr, max(vsize, rawsize), rawptr))
+    return dirs, thunk, sections
+
+
+def _pe_thunk_names(data: bytes, cursor: int, thunk: int, to_off) -> list[str]:  # noqa: ANN001
+    """The names one import thunk table imports by name (ordinals skipped)."""
+    names = []
+    while cursor >= 0 and cursor + thunk <= len(data):
+        value = int.from_bytes(data[cursor : cursor + thunk], "little")
+        if value == 0:
+            break
+        if not value >> (thunk * 8 - 1):
+            hint = to_off(value & 0x7FFFFFFF)
+            if hint >= 0:
+                names.append(_cstr(data, hint + 2))
+        cursor += thunk
+    return names
+
+
 def _pe(data: bytes) -> tuple[set[str], set[str]]:
     try:
-        pe_off, = struct.unpack_from("<I", data, 0x3C)
-        if data[pe_off : pe_off + 4] != b"PE\0\0":
-            raise NotANativeLibrary("no PE signature")
-        _machine, nsec, _ts, _sym, _nsym, opt_size, _chars = struct.unpack_from("<HHIIIHH", data, pe_off + 4)
-        opt = pe_off + 24
-        magic, = struct.unpack_from("<H", data, opt)
-        if magic == 0x20B:
-            dirs = opt + 112
-            thunk = 8
-        elif magic == 0x10B:
-            dirs = opt + 96
-            thunk = 4
-        else:
-            raise NotANativeLibrary("unknown PE optional header")
-        sect_base = opt + opt_size
-        sections = []
-        for i in range(nsec):
-            _n, vsize, vaddr, rawsize, rawptr = struct.unpack_from("<8sIIII", data, sect_base + i * 40)
-            sections.append((vaddr, max(vsize, rawsize), rawptr))
+        dirs, thunk, sections = _pe_layout(data)
 
         def to_off(rva: int) -> int:
             for vaddr, size, rawptr in sections:
@@ -233,17 +253,7 @@ def _pe(data: bytes) -> tuple[set[str], set[str]]:
                 name_off = to_off(fields[name_field])
                 if name_off >= 0:
                     libraries.add(_cstr(data, name_off))
-                cursor = to_off(fields[thunk_field])
-                while cursor >= 0 and cursor + thunk <= len(data):
-                    value = int.from_bytes(data[cursor : cursor + thunk], "little")
-                    if value == 0:
-                        break
-                    ordinal = value >> (thunk * 8 - 1)
-                    if not ordinal:
-                        hint = to_off(value & 0x7FFFFFFF)
-                        if hint >= 0:
-                            symbols.add(_cstr(data, hint + 2))
-                    cursor += thunk
+                symbols.update(_pe_thunk_names(data, to_off(fields[thunk_field]), thunk, to_off))
                 off += entry
 
         imports = directory(1)

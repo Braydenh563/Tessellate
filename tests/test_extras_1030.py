@@ -177,10 +177,11 @@ def test_a_timer_arms_a_one_shot_at_its_end():
     """Y6: only the one-second interval noticed the end, and a hidden tab runs
     it about once a minute, so "Time is up" came up to a minute late."""
     script = (
-        "const utilityTick = { id: 0, end: 0 }; const armed = [];"
+        "const utilityTick = { id: 0, end: 0, on: false }; const armed = [];"
+        "const secondTick = { add() {}, remove() {} };"
         "let utilityClocks = [{kind: 'timer', end: 1000 + 90000}, {kind: 'timer', end: 1000 + 30000}, {kind: 'stopwatch', start: 0}];"
         "Date.now = () => 1000; function paintUtilityChip() {}"
-        "globalThis.setInterval = () => 7; globalThis.clearInterval = () => {}; globalThis.clearTimeout = () => {};"
+        "globalThis.clearTimeout = () => {};"
         "globalThis.setTimeout = (fn, ms) => { armed.push(ms); return 9; };"
         + _js_function("frontend/js/utility-tools.js", "utilityEnsureTick")
         + "utilityEnsureTick(); utilityClocks = [{kind: 'stopwatch', start: 0}]; utilityEnsureTick();"
@@ -231,3 +232,12 @@ def test_y16_the_library_preload_waits_when_the_browser_saves_data():
     line = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
     assert '"library"' not in line  # not at boot
     assert line.rstrip().endswith(".forEach(ensureModule), 3000);")
+
+
+def test_the_clock_chip_rides_the_one_second_tick():
+    """L-world-class-93: the status chip's clocks join `secondTick` (prefs.js)
+    instead of a timer of their own; the four one-second clocks are one wake."""
+    src = (ROOT / "frontend/js/utility-tools.js").read_text(encoding="utf-8")
+    assert "setInterval(" not in src
+    assert "secondTick.add(paintUtilityChip)" in src
+    assert "secondTick.remove(paintUtilityChip)" in src

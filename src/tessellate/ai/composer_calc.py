@@ -32,6 +32,7 @@ from tessellate.ai import recognise_questions
 from tessellate.core import cjk
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, topic_notes
+from tessellate.core.lazyre import lazy_compile
 
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
 _LEAD = r"^(?:(?:so|ok|okay|hey|please|pls|can you|could you|quick question|tell me)[, ]+)*"
@@ -41,28 +42,28 @@ _PCT_OF_WHAT = re.compile(rf"{_LEAD}(?:what|how much)(?:'s| is)? (?:percent(?:ag
                           rf"{_LEAD}{_NUM}\s*/\s*{_NUM} as a (?:percent(?:age)?|%)\W*$", re.I)
 _PCT_CHANGE = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:the )?(?:percent(?:age)?|%)(?: (?:change|increase|decrease|difference|rise|drop|growth))? (?:change )?(?:from|between) {_NUM} (?:to|and) {_NUM}\W*$|"
                          rf"{_LEAD}(?:how much)? (?:percent(?:age)? )?(?:did|has|have) .{{0,30}}?(?:go|gone|grow|grown|rise|risen|fall|fallen|drop|dropped|change|changed|increase|increased|decrease|decreased) from {_NUM} to {_NUM}\W*$", re.I)
-_DISCOUNT = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:{_NUM}\s*%\s*(?:off|discount(?:ed)?(?: from| on| off)?)\s*(?:of |on |from )?\$?£?€?{_NUM}|{_NUM} with (?:a )?{_NUM}\s*%\s*(?:off|discount)|"
+_DISCOUNT = lazy_compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:{_NUM}\s*%\s*(?:off|discount(?:ed)?(?: from| on| off)?)\s*(?:of |on |from )?\$?£?€?{_NUM}|{_NUM} with (?:a )?{_NUM}\s*%\s*(?:off|discount)|"
                        rf"\$?£?€?{_NUM}\s*(?:minus|less|-)\s*{_NUM}\s*%|(?:take|knock|reduce|discount)\s*{_NUM}\s*%\s*(?:off|from|of)\s*\$?£?€?{_NUM})\W*$", re.I)
-_RISE = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:(?:add|plus|increase|raise)\s*{_NUM}\s*%\s*(?:to|on|onto)\s*\$?£?€?{_NUM}|\$?£?€?{_NUM}\s*(?:plus|\+|with)\s*{_NUM}\s*%|\$?£?€?{_NUM} increased by {_NUM}\s*%|increase \$?£?€?{_NUM} by {_NUM}\s*%)\W*$", re.I)
+_RISE = lazy_compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:(?:add|plus|increase|raise)\s*{_NUM}\s*%\s*(?:to|on|onto)\s*\$?£?€?{_NUM}|\$?£?€?{_NUM}\s*(?:plus|\+|with)\s*{_NUM}\s*%|\$?£?€?{_NUM} increased by {_NUM}\s*%|increase \$?£?€?{_NUM} by {_NUM}\s*%)\W*$", re.I)
 _TIP = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:a |the )?{_NUM}\s*%\s*tip (?:on|for|of)\s*\$?£?€?{_NUM}\W*$|{_LEAD}tip (?:of )?{_NUM}\s*%\s*(?:on|for)\s*\$?£?€?{_NUM}\W*$", re.I)
 _SPLIT = re.compile(rf"{_LEAD}(?:split|divide|share)\s*\$?£?€?{_NUM}\s*(?:between|among|by|across|into|over)\s*(\d+)(?: people| ways)?\W*$|{_LEAD}\$?£?€?{_NUM}\s*(?:split|divided|shared)\s*(?:between|among|by|across)\s*(\d+)(?: people| ways)?\W*$", re.I)
 _NEED = re.compile(
     rf"{_LEAD}(?:what|how much|how many|which)\b.*\b(?:need|require|have to (?:get|score|make)|must (?:get|score))\b.*?(?:to (?:get|reach|pass with|score|make|finish with|end with|hit)|for|so that i (?:get|have|end up with))\s*{_NUM}\s*%?\s*(?:overall|in total|total|for the (?:module|unit|course|class)|in the (?:module|unit|course|class)|final|on average)?"
     rf".*?(?:if|when|given|with|and)\s+(?:i(?:'ve| have| got| scored)?|my\b.*?\bis|so far)?\s*(?:got|scored|have|on|of|is)?\s*{_NUM}\s*%?\s*(?:so far|already)?.*?(?:worth|weighted|weighting|counts? for|which is|being|is)\s*{_NUM}\s*%", re.I)
 
-_DAYQ = re.compile(
+_DAYQ = lazy_compile(
     rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)\b(?: of the week)?"
     #: A date or day wanted, not a question that merely starts "what date(s) ...": "what dates do I have in
     #: December" asks for the notes' dates (round 3, R3-5).
     rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?!\s*(?:do|does|did|have|has|are|am|can|could|i|we|you|there)\b)(?P<rest>.+?)\W*$", re.I)
-_BETWEEN = re.compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
-_COUNTDOWN = re.compile(
+_BETWEEN = lazy_compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
+_COUNTDOWN = lazy_compile(
     rf"{_LEAD}(?:how (?:many|much) (?P<u>days|weeks|months|sleeps)(?: (?:are there|is there|do i have|have i got|are left|is left|left|to go|remain|remaining))?|how long|(?P<u2>days|weeks|months|sleeps)(?: left| to go)?)"
     r"\s+(?:until|till|'til|before|to|to go until|left until|left till)\s+(?P<d>.+?)\W*$", re.I)
-_OFFSET_Q = re.compile(rf"{_LEAD}(?:what(?:'s| is| was)|when is|when was) (?P<rest>(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) .+?)\W*$", re.I)
-_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|(?:the )?word count|(?:the )?reading time|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
-_QUOTED = re.compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
-_DEFINE = re.compile(
+_OFFSET_Q = lazy_compile(rf"{_LEAD}(?:what(?:'s| is| was)|when is|when was) (?P<rest>(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) .+?)\W*$", re.I)
+_WORDS = lazy_compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|(?:the )?word count|(?:the )?reading time|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
+_QUOTED = lazy_compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
+_DEFINE = lazy_compile(
     rf"{_LEAD}(?:define\s+(?P<c>.+)|what does (?P<a>.+?) mean|(?:what(?:'s| is| are) (?:the )?(?:meaning|definition) of|meaning of|definition of)\s+(?P<d>.+)|"
     rf"what(?:'s| is| are) (?:a |an |the )?(?P<b>.+)|what do you mean by (?P<e>.+)|explain (?P<f>.+))$", re.I)
 
@@ -167,7 +168,7 @@ def _offset_reply(moved: dict, today: date) -> Reply:
 
 
 #: "14 March", "March 14th", "14 March 2027": a plain calendar date, whose weekday is asked.
-_PLAIN_DATE = re.compile(r"^(?:\d{1,2}(?:st|nd|rd|th)?\s+[a-z]{3,9}|[a-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?)(?P<year>,?\s+\d{4})?$", re.I)
+_PLAIN_DATE = lazy_compile(r"^(?:\d{1,2}(?:st|nd|rd|th)?\s+[a-z]{3,9}|[a-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?)(?P<year>,?\s+\d{4})?$", re.I)
 
 
 def _weekday_of(rest: str, target: date, today: date) -> Reply:

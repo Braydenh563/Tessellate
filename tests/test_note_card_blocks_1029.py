@@ -78,7 +78,7 @@ def test_the_card_prose_changes_skip_a_fence() -> None:
     fill = cards[cards.index("const fillContent = () => renderNoteText(") :]
     fill = fill[: fill.index("fillContent();")]
     # The strip is passed to renderNoteText as the prose step, after the terms, not run over the whole note first.
-    assert fill.index("searchHighlightTerms()") < fill.index("{1,6}[ \\t]+/gm")
+    assert fill.index("searchHighlightTerms(") < fill.index("{1,6}[ \\t]+/gm")
     text = _decl("notes-list.js", "renderNoteText")
     assert "prose(" in text
     assert "terms, prose)" in text  # a column keeps the same step

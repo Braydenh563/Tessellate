@@ -2,7 +2,7 @@
 
 Playwright scripts that drive the running app and **measure** it. They are here
 rather than in a session's scratch directory because both of the bugs that
-prompted them were invisible to reading the source, and the next session should
+prompted them were invisible to reading the source, and someone returning should
 not have to rewrite the probe before it can look.
 
 CLAUDE.md's standing rule is the reason these exist: *measure and look before

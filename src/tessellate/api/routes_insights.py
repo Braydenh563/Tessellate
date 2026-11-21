@@ -41,9 +41,14 @@ def stats(session: Session = Depends(get_session)) -> dict:
     # both out (a board is an Entry row, MINDMAP_PLAN §2), and the owner asked
     # "do I have 29, 30 or 31 notes?" when this said one number and the list
     # another. Measured again after boards: dashboard 75, list 40.
-    total = session.scalar(
-        select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-    )
+    #: The count and the oldest day in one statement (same filter): Ask's as-of
+    #: slider spans from the oldest note (L-world-class-352), inside the route's
+    #: statement budget (tests/test_perf_budget.py).
+    total, oldest = session.execute(
+        select(func.count(Entry.id), func.min(Entry.created_at)).where(
+            Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
+        )
+    ).one()
     by_category = categories_repo.note_counts(
         session, Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
     )
@@ -70,6 +75,7 @@ def stats(session: Session = Depends(get_session)) -> dict:
 
     return {
         "total_entries": total or 0,
+        "oldest_day": oldest.date().isoformat() if oldest else None,
         "categories": [{"name": name, "count": count} for name, count in by_category],
         "per_day": per_day,
         "days": ACTIVITY_DAYS,
@@ -503,7 +509,11 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     asked = [today.isoformat(), (today - timedelta(days=1)).isoformat()]
     counts = {
         date.fromisoformat(d): n
-        for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
+        for d, n in session.execute(
+            #: The range lets `ix_entries_created_order` serve the day filter, which on its own
+            #: is `date()` of every note's column: a SCAN of the table at 5,000 notes (L-world-class-125).
+            select(day, func.count()).where(*shown, Entry.created_at >= datetime.combine(today - timedelta(days=1), datetime.min.time()), day.in_(asked)).group_by(day)
+        ).all()
     }
     notes = voice.as_notes(session, rows)
     line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
@@ -784,7 +794,12 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    cutoff = utcnow() - timedelta(days=7)
+    # The user's clock, not `utcnow()`: the digest's other halves (the
+    # question's date, the composed week) read `user_now`, and a cutoff on a
+    # second clock disagreed with them (CI went red once the fixed test clock
+    # was more than 7 days behind the real one).
+    now = user_now(deps.get_config())
+    cutoff = (now if now.tzinfo is None else now.astimezone(timezone.utc).replace(tzinfo=None)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't

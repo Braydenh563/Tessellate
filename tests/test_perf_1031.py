@@ -128,7 +128,8 @@ def test_render_functions_do_not_add_page_level_listeners():
             for line in fn.group(0).splitlines():
                 if re.search(r"\b(document|window)\.addEventListener\(", line) and "once" not in line:
                     found.append(f"{path.name}:{fn.group(1)}")
-    assert found == ["documents.js:mountDocToolbarControls"], found
+    #: Ratcheted down (L-world-class-323): the Documents toolbar key moved to module level.
+    assert found == [], found
 
 
 def test_link_offers_wait_two_seconds_in_the_middle_of_a_sentence():

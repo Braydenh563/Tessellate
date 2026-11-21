@@ -148,6 +148,8 @@ onSurface("notes", () => {
 });
 
 function showSettingsSection(name) {
+  //: Each pane is a surface of its own, built on its first visit (L675).
+  surfaceBuild(`settings-${name}`);
   //: The companion's one-time nudge (avatars.js) may show when Appearance
   //: is first opened.
   if (name === "appearance") nameMarkBuddyHint(true);
@@ -206,10 +208,25 @@ function showSettingsSection(name) {
   if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
-  if (name === "tools") renderToolSettings();
+  if (name === "tools") {
+    renderToolSettings();
+    //: `#pref-mcp-writes` sits in Tools and was filled only by
+    //: `renderAutonomousSettings`, so Tools opened first showed it unchecked
+    //: over a preference that was on (L523, the Models case below over again).
+    apiJson("/preferences")
+      .then((prefs) => {
+        prefsCache = prefs;
+        $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
+      })
+      .catch(() => {});
+  }
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
-  if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
+  if (name === "learned") {
+    //: The scheduled-check switch (L584) is filled by `renderAutonomousSettings` too, for Learned opened first.
+    if (prefsCache) $("pref-learned-audit").checked = prefsCache.learned_audit_enabled ?? true;
+    ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
+  }
   if (name === "tasks") {
     renderAutonomousReview().catch(() => {});
     apiJson("/preferences")
@@ -247,19 +264,27 @@ function showSettingsSection(name) {
   }
   if (name === "account") renderAccount().catch(() => {});
   if (name === "privacy") renderPrivacyReceipt().catch(() => {});
+  //: After the pane has painted: the first show of Data loaded and ran three lazy files and read layout, 195 ms
+  //: of the arrow key at 4x CPU (scratchpad/ui-sweeps/handlerlag.js); the pane's rows fill a frame later.
   if (name === "data") {
-    ensureModule("webClip");
-    ensureModule("appImport");
-    renderBackups();
-    renderBackupRetention();
-    ensureModule("settingsData").then(() => {
-      renderSettingsClear();
-      renderSettingsHistory();
+    afterFrames(() => {
+      if (currentSettingsSection !== "data") return;
+      ensureModule("webClip");
+      ensureModule("appImport");
+      renderBackups();
+      renderBackupRetention();
+      ensureModule("settingsData").then(() => {
+        renderSettingsClear();
+        renderSettingsHistory();
+      });
     });
   }
   if (name === "tasks") renderTasks(); // fill it in now, then poll
   if (name === "extras") renderExtras();
-  if (name === "searchindex") renderEmbedChoices();
+  if (name === "searchindex") {
+    renderEmbedChoices();
+    showSettingsSection.loadCurrencyRates();
+  }
   //: The Atlas row's starter chips, with the chat's bundle (help-chat.js).
   if (name === "help") renderAtlasStarters();
   //: Settings, About, Maintenance: settings-controls.js, the window's lazy file.
@@ -288,10 +313,6 @@ function setSettingsPeek(on) {
     button.setAttribute("aria-pressed", String(!!on));
     button.classList.toggle("is-on", !!on);
   }
-}
-
-function settingsPeekIsOn() {
-  return $("settings-modal").classList.contains("peeking");
 }
 
 function updatePeekAvailability(section) {
@@ -328,6 +349,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     await ensureModule("settingsControls");
   }
   $("settings-modal").classList.remove("hidden");
+  //: The window's own selects outside a pane; each pane wraps its own when shown (L-world-class-14).
+  for (const select of $("settings-modal").querySelectorAll("select")) if (!select.closest(".settings-section")) enhanceSelect(select);
   // Runs on open rather than once at load: several sections are built
   // lazily, and a pass that ran before they existed would leave exactly the
   // rows a user is most likely to be reading uncollapsed. Idempotent, so
@@ -341,98 +364,20 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: A frame on: focusing a button in a window just un-hidden lays the whole window out inside
   //: the press (60ms style + 12 layout at 4x), and the reads after it laid out a second time.
   afterFrames(() => $("settings-close").focus(), 1);
-  //: The version alone: "46 entries loaded" was a debugging line (the
-  //: client's cache size, drafts included) sitting beside the Health
-  //: section's own count of the same thing, and the two disagreed.
-  const aboutHealth = await apiJson("/health").catch(() => null);
-  //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
-  const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
-  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
-  //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
-  afterCharacters(() => {
-    const { mode, reason } = nameMarkBuddyMotion();
-    const word = { full: "moves freely", fades: "fades only", still: "stays still" }[mode];
-    $("about-motion").textContent = `Companion motion: ${word}${reason && NMB_MOTION_WHY[reason] ? `. ${NMB_MOTION_WHY[reason]}` : "."}`;
-  });
-  $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
-  $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
-  $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
-  $("pref-update-channel-main").checked = prefsCache?.update_channel === "main";
-  $("pref-update-beta").checked = prefsCache?.update_beta === true;
-  $("update-check-status").textContent = "";
-  $("update-version-select").classList.add("hidden");
-  $("update-install-version").classList.add("hidden");
-  $("update-version-status").textContent = "";
-  const isDesktop = await desktopShell();
-  $("desktop-console-row").classList.toggle("hidden", !isDesktop);
-  $("desktop-console-hint").classList.toggle("hidden", !isDesktop);
-  // Desktop-only for the same reason the console row is: there is no tray in
-  // a browser tab, and a setting whose effect is unreachable reads as broken.
-  $("desktop-tray-row")?.classList.toggle("hidden", !isDesktop);
-  $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
-  $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
-  //: The companion's switch is a stored preference the desktop app reads, so it is set from
-  //: any tab on this computer, not only from the desktop window (the owner, 2026-11-04: "the
-  //: atlas desktop comnpanion toggle is gone??", INBOX 1631). Another device has no say in
-  //: what this computer's desktop shows, so it has no row. Outside the desktop window a line
-  //: says when it takes effect. Built here, not in index.html, so the boot document's
-  //: element count (tests/test_boot_diet3.py) and the shared scope's name count do not grow.
-  const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;
-  $("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);
-  const companionHelp = $("desktop-companion-help");
-  let companionNote = document.getElementById("desktop-companion-note");
-  if (isDesktop || !onThisComputer || !companionHelp) companionNote?.remove();
-  else if (!companionNote) {
-    companionNote = document.createElement("p");
-    companionNote.id = "desktop-companion-note";
-    companionNote.className = "muted";
-    companionNote.textContent = "The companion shows on the desktop while the desktop app runs with its window minimised or in the tray; set it here or there.";
-    companionHelp.after(companionNote);
-  }
-  // Same reasoning as the tray/console rows above: /system/restart can only
-  // ever do something in the packaged desktop app on Windows specifically
-  // (the one platform _spawn_desktop knows how to relaunch), not desktop in
-  // general: but this app's own convention (the console row just above)
-  // is to gate on desktop-ness alone and let the backend's own platform
-  // check be the final word, so a browser tab never even offers the button
-  // while a desktop build on macOS/Linux still can, and finds out only
-  // when it actually tries, rather than a client-side guess going stale
-  // the moment this app ships a real relaunch for those platforms too.
-  $("about-restart-row").classList.toggle("hidden", !isDesktop);
-  $("open-exports-row").classList.toggle("hidden", !isDesktop);
-  $("export-save-dir-row").classList.toggle("hidden", !isDesktop);
-  //: The exports list is for every shell, not only the desktop: on a browser
-  //: tab it is the only way back to a file the app saved (INBOX 159).
-  renderExportsList();
-  if (isDesktop) $("pref-export-dir").value = prefsCache?.export_save_dir || "";
-  if (isDesktop) {
-    $("pref-show-console").checked = Boolean(prefsCache?.show_console_on_startup);
-    // Defaults to on, and `?? true` rather than `Boolean(...)` matters: an
-    // install that has never touched this has no stored value, and Boolean()
-    // of undefined would render the default as off.
-    $("pref-close-to-tray").checked = prefsCache?.close_to_tray ?? true;
-    //: Off unless chosen: a second launch brings the open window forward.
-    $("pref-new-window-on-launch").checked = Boolean(prefsCache?.new_window_on_launch);
-    //: Off unless chosen: the corner companion only shows once it is turned on.
-    $("pref-desktop-companion").checked = Boolean(prefsCache?.desktop_companion);
-  }
-  // Rebuilt each open rather than once at startup: the list reflects saved
-  // preferences, and those can change from another window or a restore.
-  renderStatusBarSettings();
+  //: What a pane shows that can change while the window is closed is read per pane, now for a built pane and
+  //: at its build for the rest (settings-controls.js; L675: reading it here built About, Data and Appearance).
+  openSettingsModal.refresh();
   //: The setting search's results, each long section's index and the model
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
-  if (typeof renderCredits === "function") renderCredits();
+  //: The search rows are read in idle slots from here, so the first key finds them (settings-find.js).
+  window.settingRowsScan?.warmSoon?.(1500);
+  if (typeof renderCredits === "function") onSurface("settings-help", renderCredits);
   showSettingsSection(section);
-  // Re-read every open, not cached: the panel shows what the *currently
-  // selected* model recommends, and changing the chat model is the most likely
-  // reason to come back here.
-  loadSamplingSettings();
   if (!suggestedCatalog) {
     suggestedCatalog = await apiJson("/models/suggested").catch(() => null);
   }
-  loadChangelog();
   //: The Models pane opens on the page's own "Checking the models…" and
   //: `renderSettings` only ran once the refresh below answered, so a status
   //: already known (the poll has run since boot) is painted at once, and one
@@ -501,6 +446,21 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     });
   }
 }
+
+//: **"Learned: manage"** (WORLD_CLASS_PLAN I9): the small link every invention's
+//: own surface carries (the morning card, a margin card, the question list,
+//: Rediscover) into Settings, What it learned, kept to `kind` when the surface
+//: has one, so a wrong fact is fixed where it is met. The list is already
+//: filtered by `#learned-kind`; setting it and firing `change` is all it takes.
+openSettingsModal.learnedLink = function learnedLink(kind = "") {
+  return smallButton("ph:sliders-horizontal Learned: manage", "Open what Atlas learned, to fix or remove a fact", async () => {
+    await openSettingsModal("learned");
+    const filter = $("learned-kind");
+    if (!filter) return;
+    filter.value = kind;
+    filter.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+};
 
 // CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words
@@ -624,7 +584,6 @@ function paintIntegrity(check) {
 // classes on elements inside this very subtree, and observing those would
 // make every filter pass invalidate the cache it had just filled.
 let settingsTextCache = new WeakMap();
-let settingsTextCacheStale = false;
 let settingsTextObserver = null;
 
 function settingsSectionText(section) {
@@ -632,20 +591,19 @@ function settingsSectionText(section) {
     const modal = $("settings-modal");
     if (modal) {
       settingsTextObserver = new MutationObserver((records) => {
-        // One flag rather than a per-section diff: working out which
-        // sections a mutation touched costs more than re-reading the one
-        // section the next search actually asks about.
         //: A pane's findable rows (settings-find.js `settingRowsScan`, INBOX 1620) go stale with the
         //: pane, by the same records; a pane's own hidden flip, which every search makes, is neither.
+        //: Only the pane a change is in: the results list and the count are outside every pane, and dropping all
+        //: 22 panes' text on each key made the next key read them all again (L-world-class-359).
         for (const rec of records) {
           const at = rec.target.nodeType === 1 ? rec.target : rec.target.parentElement;
-          if (rec.type === "attributes") {
-            if (at?.classList.contains("settings-section")) continue;
-          } else {
-            settingsTextCacheStale = true;
-          }
+          if (rec.type === "attributes" && at?.classList.contains("settings-section")) continue;
           const pane = at?.closest(".settings-section");
-          if (pane) window.settingRowsScan?.panes.delete(pane);
+          //: An attribute changes no text (the rows below still go stale with it).
+          if (rec.type === "attributes");
+          else if (pane) settingsTextCache.delete(pane);
+          else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();
+          if (pane && window.settingRowsScan?.panes.delete(pane)) window.settingRowsScan?.warmSoon?.();
         }
       });
       settingsTextObserver.observe(modal, {
@@ -658,10 +616,6 @@ function settingsSectionText(section) {
     }
   }
   if (!section) return "";
-  if (settingsTextCacheStale) {
-    settingsTextCache = new WeakMap();
-    settingsTextCacheStale = false;
-  }
   const cached = settingsTextCache.get(section);
   if (cached !== undefined) return cached;
   const text = (section.textContent || "").toLowerCase();
@@ -684,8 +638,11 @@ function filterSettings(term) {
     return;
   }
 
+  //: Every pane is searched, so a query builds the ones not yet visited (L675).
+  for (const name of SETTINGS_SECTIONS) surfaceBuild(`settings-${name}`);
   //: The topics are findable settings too: draw them on the first query, then ask again.
-  if ($("help-topics")?.hasAttribute("aria-busy")) {
+  const topics = document.getElementById("help-topics");
+  if (topics && (!topics.firstElementChild || topics.dataset.dropping)) {
     window.renderHelpTopics?.()?.then(() => {
       if ($("settings-search").value.trim().toLowerCase() === query) filterSettings(query);
     });
@@ -725,8 +682,16 @@ function filterSettings(term) {
       : "Nothing matches that";
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
-  const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
-  if (first && first !== currentSettingsSection) showSettingsSection(first);
+  const first = settingsFound ? renderSettingResults.found[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
+  //: After the typing pauses, not on every key: building the matched pane (Appearance reads the page's styles) was
+  //: 100 to 190 ms of the key that changed the match at 4x CPU, and a fast "dark mode" switched panes twice on the way
+  //: (scratchpad/ui-sweeps/handlerlag.js). The result list and the nav filter above are already on screen.
+  clearTimeout(filterSettings.showTimer);
+  if (first && first !== currentSettingsSection) {
+    filterSettings.showTimer = setTimeout(function showFirstSettingsMatch() {
+      if (first !== currentSettingsSection && $("settings-search").value.trim().toLowerCase() === query) showSettingsSection(first);
+    }, 160);
+  }
 }
 
 function closeSettingsModal() {
@@ -805,7 +770,7 @@ function renderLogGap(stats) {
     return;
   }
   const since = stats.dropped_since
-    ? ` The oldest record still kept is from ${new Date(stats.dropped_since).toLocaleTimeString()}.`
+    ? ` The oldest record still kept is from ${new Date(stats.dropped_since).toLocaleTimeString(undefined, clockOptions())}.`
     : "";
   note.textContent =
     `${stats.dropped.toLocaleString()} earlier record${stats.dropped === 1 ? "" : "s"} ` +
@@ -865,7 +830,7 @@ function logRow(record) {
 
   const when = document.createElement("span");
   when.className = "when";
-  when.textContent = new Date(record.time).toLocaleTimeString();
+  when.textContent = new Date(record.time).toLocaleTimeString(undefined, clockOptions());
 
   const level = document.createElement("span");
   level.className = "what";
@@ -1022,7 +987,7 @@ function renderLogList() {
 //, message", level padded like uvicorn's own default formatter pads
 // "INFO:"/"WARNING:"/"ERROR:" so a column of mixed levels still lines up.
 function logTerminalParts(record) {
-  const when = new Date(record.time).toLocaleTimeString();
+  const when = new Date(record.time).toLocaleTimeString(undefined, clockOptions());
   const level = `${record.level}:`.padEnd(9);
   const body = record.logger ? `${record.logger}: ${record.message}` : record.message;
   return [`${when} ${level}`, body];
@@ -1078,7 +1043,9 @@ function renderActiveLogView() {
   else renderLogList();
 }
 function setLogLive(state, detail) {
-  const pill = $("log-live");
+  //: Not built until Logs is visited (L675); its markup starts paused.
+  const pill = document.getElementById("log-live");
+  if (!pill) return;
   setLabel(pill, detail);
   pill.dataset.state = state;
 }
@@ -1261,7 +1228,7 @@ async function clearLogs() {
     const cleared = await api("/logs", { method: "DELETE" }).then(
       () => true,
       (error) => {
-        toast(error.message || "Couldn't clear the server log.", true);
+        toast(error.message || voiceLine("failed", { what: "clear the server log" }), true);
         return false;
       }
     );
@@ -1287,7 +1254,7 @@ async function downloadSupportBundle() {
     await saveFile("tessellate-support-bundle.zip", await response.blob());
     toast("Support bundle saved. Have a look inside before you send it.");
   } catch (error) {
-    toast(error.message || "Couldn't build the support bundle.", true);
+    toast(error.message || voiceLine("failed", { what: "build the support bundle" }), true);
   } finally {
     setBusy(button, false);
   }
@@ -1496,10 +1463,6 @@ function applyEffectiveAccent() {
   else delete root.dataset.accent;
   if (custom) return applyCustomAccent(custom); // a picked hex wins outright
   applyCustomAccent(preset ? preset.swatch : null);
-}
-
-function contrastOn() {
-  return prefs.get("contrast", null) === "on";
 }
 
 // --- Wave O: expanded appearance controls -------------------------------------------
@@ -2272,7 +2235,7 @@ function savedThemeCard(theme) {
   // every neutral around it. Anything the saved look does not carry falls back
   // to the live theme, which is also what applying it would do.
   const named = (ACCENTS || []).find((a) => a.name === values.accent);
-  const accent = values["accent-custom"] || named?.swatch || cssVarNow("--accent");
+  const accent = values["accent-custom"] || named?.swatch || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
   const dark = (values.theme || document.documentElement.dataset.theme || "dark") !== "light";
   const page = dark ? "#12141c" : "#f5f6f9";
   const surface = dark ? "#1b1f2b" : "#ffffff";
@@ -2317,12 +2280,6 @@ function savedThemeCard(theme) {
 
   card.append(preview, foot);
   return card;
-}
-
-//: One resolved custom property, for building a preview out of the live theme
-//: when a saved look predates a given key.
-function cssVarNow(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "";
 }
 
 // "#rrggbb" -> "r, g, b" so a custom colour can drive rgba() softs.
@@ -2536,8 +2493,14 @@ DENSITY_SHORT.addEventListener("change", () => {
 //: changes the font (`applyAppearance`, below). Here and not in app.js, whose
 //: gzipped size is a ratchet; nothing calls it before this file loads.
 //: Re-measured only when the font or the loaded faces change (INBOX 1415).
-const labelOptics = { key: "" };
+//: **Not before the first frame** (L-world-class-354): the probe's
+//: getBoundingClientRect was the document's first full layout, forced inside
+//: this file's eval (75 of its 99 ms at 4x CPU). Until the first frame has
+//: painted a call does nothing; the frame's own layout is then done, and the
+//: probe costs only itself.
+const labelOptics = { key: "", booted: false };
 function measureLabelOptics() {
+  if (!labelOptics.booted) return;
   const key = `${document.documentElement.dataset.font}${document.fonts?.size}${document.fonts?.status}`;
   if (key === labelOptics.key) return;
   labelOptics.key = key;
@@ -2573,7 +2536,10 @@ function measureLabelOptics() {
   document.documentElement.style.setProperty("--ph-cap-dy", String(Math.round(dy * 1000) / 1000));
 }
 
-measureLabelOptics();
+afterFrames(() => setTimeout(function labelOpticsFirst() {
+  labelOptics.booted = true;
+  measureLabelOptics();
+}, 0), 1);
 document.fonts?.ready?.then(measureLabelOptics);
 
 //: Zoom alone, so a keypress writes one property (INBOX 1415).
@@ -2848,7 +2814,15 @@ function renderAppearance() {
     //: Default is no accent at all, the palette's own: the swatch shows
     //: that, not a fixed hex (owner, 2026-10-12: "the selected one should
     //: match the default colour").
-    button.style.background = accent.name === "indigo" ? themeDefaultAccent() || accent.swatch : accent.swatch;
+    //: The default swatch's colour is a page-wide style read with the accent
+    //: lifted; inside the first show it settled the style of the pane the
+    //: press had just shown (90 of 250 ms at 4x CPU, L-world-class-355). So
+    //: the last colour read (or the stock one) now, the theme's own a frame on.
+    button.style.background = accent.swatch;
+    if (accent.name === "indigo") {
+      button.style.background = themeDefaultAccent.kept?.value || accent.swatch;
+      afterFrames(() => setTimeout(() => (button.style.background = themeDefaultAccent() || accent.swatch)), 1);
+    }
     button.title = accent.label;
     button.setAttribute("aria-label", `${accent.label} accent`);
     // A custom colour wins, so no preset shows as active while it's set.
@@ -2872,7 +2846,7 @@ function renderAppearance() {
     const showing = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
     if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
   }), 1);
-  $("contrast-toggle").checked = contrastOn();
+  $("contrast-toggle").checked = prefs.get("contrast", null) === "on";
   _segActive("motion-seg", "motionChoice", MOTION.choice(appearancePref("motion")));
   for (const b of document.querySelectorAll("#motion-seg button")) b.setAttribute("aria-pressed", String(b.classList.contains("active")));
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
@@ -3420,8 +3394,8 @@ document.addEventListener("motionchange", () => {
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
-$("settings-close").addEventListener("click", closeSettingsModal);
-$("settings-peek").addEventListener("click", () => setSettingsPeek(!settingsPeekIsOn()));
+$("settings-close").addEventListener("click", () => closeSettingsModal());
+$("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 
 
 wireBackdropClose($("settings-modal"), () => closeSettingsModal()); // backdrop click
@@ -3992,7 +3966,8 @@ async function refreshJobRuns() {
 // the ones that have never run included, so the absence of a job reads as
 // "not run yet" rather than "this app cannot do that".
 function renderJobOverview() {
-  const list = $("job-runs-list");
+  //: Background tasks is built on its first visit (L675), and showing it fetches these again.
+  const list = document.getElementById("job-runs-list");
   if (!list || !jobRunsList) return;
   const reports = jobRunsList.map((run) => run.report || "").join();
   if (list.children.length === jobRunsList.length && list.dataset.reports === reports) return;
@@ -4051,3 +4026,78 @@ document.addEventListener("click", (event) => {
     }
   }
 });
+
+// --- currency rates (decision 43, L519) ----------------------------------------
+//: The dated table currency answers use, as "EUR 0.88" lines: read from and
+//: saved to `/utilities/rates`. Undo puts the table that was there back.
+//: One IIFE hung on `showSettingsSection`, so the shared scope does not grow.
+(() => {
+  function currencyRatesText(rates) {
+    return Object.entries(rates).filter(([code]) => code !== "USD").map(([code, rate]) => `${code} ${rate}`).join("\n");
+  }
+
+  function currencyRatesPaint(body) {
+    $("currency-rates-date").value = body.date;
+    $("currency-rates-text").value = currencyRatesText(body.rates);
+    $("currency-rates-status").textContent = body.built_in ? `The built-in table, dated ${body.date}.` : `Your table, dated ${body.date}.`;
+  }
+
+  //: "EUR 0.88" or "EUR: 0.88" per line; answers `{ rates }` or `{ error }`.
+  function currencyRatesParse(text) {
+    const rates = {};
+    for (const raw of text.split("\n")) {
+      const line = raw.trim();
+      if (!line) continue;
+      const match = line.match(/^([A-Za-z]{3})\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)$/);
+      if (!match || Number(match[2]) <= 0) return { error: `Write each line as a code and a rate above 0, like EUR 0.88: "${line}".` };
+      rates[match[1].toUpperCase()] = Number(match[2]);
+    }
+    return { rates };
+  }
+
+  async function loadCurrencyRates() {
+    if (!$("currency-rates-group")) return;
+    if (!$("currency-rates-group").dataset.wired) {
+      $("currency-rates-group").dataset.wired = "1";
+      $("currency-rates-save").addEventListener("click", () => saveCurrencyRates());
+      $("currency-rates-reset").addEventListener("click", () => saveCurrencyRates({ reset: true }));
+    }
+    try {
+      currencyRatesPaint(await apiJson("/utilities/rates", { silent: true }));
+    } catch (error) {
+      $("currency-rates-status").textContent = `Couldn't load the rates: ${error.message}`;
+    }
+  }
+
+  async function writeCurrencyRates(table) {
+    const body = table
+      ? await apiJson("/utilities/rates", { method: "PUT", body: JSON.stringify(table) })
+      : await apiJson("/utilities/rates", { method: "DELETE" });
+    currencyRatesPaint(body);
+    return body;
+  }
+
+  async function saveCurrencyRates({ reset = false } = {}) {
+    const status = $("currency-rates-status");
+    const parsed = reset ? { rates: null } : currencyRatesParse($("currency-rates-text").value);
+    if (parsed.error) {
+      status.textContent = parsed.error;
+      return;
+    }
+    if (!reset && !$("currency-rates-date").value) {
+      status.textContent = "Say the date these rates are from.";
+      return;
+    }
+    try {
+      const before = await apiJson("/utilities/rates", { silent: true });
+      const after = reset ? null : { date: $("currency-rates-date").value, rates: parsed.rates };
+      await writeCurrencyRates(after);
+      const was = before.built_in ? null : { date: before.date, rates: before.rates };
+      offerUndo(reset ? "Use the built-in rates" : "Save currency rates", reset ? "Currency rates are the built-in table." : "Saved the currency rates.", () => writeCurrencyRates(was), () => writeCurrencyRates(after));
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  }
+
+  showSettingsSection.loadCurrencyRates = loadCurrencyRates;
+})();

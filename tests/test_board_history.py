@@ -229,7 +229,8 @@ def test_history_is_the_presenting_mode_with_its_own_bar() -> None:
 
     root = Path(__file__).resolve().parents[1]
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
-    css = (root / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    #: The whiteboard blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
+    css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     js = (root / "frontend" / "js" / "whiteboard-history.js").read_text(encoding="utf-8")
     bar = re.search(r'<div id="wb-history-bar"[^>]*>', html).group(0)
     assert "whiteboard-floating-panel" in bar and "wb-present-bar" in bar and 'role="toolbar"' in bar

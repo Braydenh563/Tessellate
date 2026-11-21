@@ -50,7 +50,7 @@ def test_quick_note_is_a_shortcut_and_a_palette_row():
     assert "quickNote: () => openQuickNote()," in code
     assert 'chord: "quickNote", act: () => openQuickNote()' in code
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    assert '<dialog id="quick-note" class="card space-dialog quick-note-dialog"' in html
+    assert '<sheet-host id="quick-note" class="space-dialog quick-note-dialog"' in html
     assert 'id="note-outbox-notice"' in html
     # A modal dialog sits above the lock screen: a lock closes it (measured,
     # open=false after lockNow, the words back on the next open).

@@ -28,10 +28,12 @@
   //: The body these listeners wire is built here if nothing asked for a control
   //: first (settings-body.js; INBOX 1501): every `$` below finds its element.
   surfaceBuild("settings");
+  //: The panes are surfaces of their own (L675): a control's listener waits for its pane to be built.
+  const wire = (id) => ({ addEventListener: (...args) => SURFACES.wire(id, ...args) });
 
   // ---- from skills.js ----
 
-  $("small-model-mode")?.addEventListener("change", async () => {
+  wire("small-model-mode").addEventListener("change", async () => {
     const select = $("small-model-mode");
     const status = $("small-model-mode-status");
     if (status) status.textContent = "Saving…";
@@ -57,15 +59,15 @@
           : "Decided per run from the chat model's name.";
   });
 
-  $("run-budget-tokens")?.addEventListener("change", saveRunBudget);
+  wire("run-budget-tokens").addEventListener("change", saveRunBudget);
 
-  $("run-budget-seconds")?.addEventListener("change", saveRunBudget);
+  wire("run-budget-seconds").addEventListener("change", saveRunBudget);
 
-  $("tool-filter")?.addEventListener("input", applyToolFilter);
+  wire("tool-filter").addEventListener("input", applyToolFilter);
 
   // ---- from settings-panes.js ----
 
-  $("account-allow-lan")?.addEventListener("change", async (event) => {
+  wire("account-allow-lan").addEventListener("change", async (event) => {
     const box = event.target;
     const wanted = box.checked;
     box.checked = !wanted; // the server's answer decides what it shows
@@ -126,13 +128,13 @@
     }
   }
 
-  $("account-lan-restart")?.addEventListener("click", () => restartMemoryMap({ confirm: false }));
+  wire("account-lan-restart").addEventListener("click", () => restartMemoryMap({ confirm: false }));
 
-  $("account-lan-download")?.addEventListener("click", () => {
+  wire("account-lan-download").addEventListener("click", () => {
     window.location.assign("/auth/lan-certificate.pem");
   });
 
-  $("account-lan-regenerate")?.addEventListener("click", async () => {
+  wire("account-lan-regenerate").addEventListener("click", async () => {
     const ok = await confirmDialog(
       "Regenerate the certificate?\n\nEvery device that opened the app before warns once more, " +
         "with the new fingerprint to compare.",
@@ -143,13 +145,13 @@
       renderLanState(await apiJson("/auth/lan-certificate", { method: "POST" }));
       toast("New certificate made. Compare its fingerprint on the other device.");
     } catch (error) {
-      toast(error.message || "Couldn't make a new certificate.", true);
+      toast(error.message || voiceLine("failed", { what: "make a new certificate" }), true);
     }
   });
 
-  $("privacy-refresh")?.addEventListener("click", () => renderPrivacyReceipt().catch(() => {}));
+  wire("privacy-refresh").addEventListener("click", () => renderPrivacyReceipt().catch(() => {}));
 
-  $("backup-retention")?.addEventListener("change", async (e) => {
+  wire("backup-retention").addEventListener("change", async (e) => {
     const status = $("backup-retention-status");
     const keep = Number(e.target.value);
     try {
@@ -160,6 +162,15 @@
       status.textContent = result.removed
         ? `Saved: removed ${result.removed} old backup${result.removed === 1 ? "" : "s"}.`
         : "Saved.";
+      //: The number is a setting, so Ctrl+Z puts it back (L694); backups already removed stay removed.
+      const was = Number(e.target.dataset.keep);
+      e.target.dataset.keep = String(keep);
+      if (was && was !== keep) {
+        pushRequestUndo("Backups to keep", "/backups/retention", "PUT", { keep: was }, { keep }, () => {
+          renderBackups();
+          return renderBackupRetention();
+        });
+      }
       renderBackups();
     } catch (error) {
       status.textContent = error.message;
@@ -169,14 +180,14 @@
 
   // ---- from ai-tools.js ----
 
-  $("embedding-error-fix").addEventListener("click", runEmbeddingFallback);
+  wire("embedding-error-fix").addEventListener("click", runEmbeddingFallback);
 
   // ---- from phone-shell.js ----
 
-  $("account-change").addEventListener("click", changePassword);
+  wire("account-change").addEventListener("click", changePassword);
   // Enter anywhere in the change-password form submits it.
   for (const id of ["account-current", "account-new", "account-confirm"]) {
-    $(id).addEventListener("keydown", (e) => {
+    wire(id).addEventListener("keydown", (e) => {
       if (e.key === "Enter") changePassword();
     });
   }
@@ -242,7 +253,7 @@
   //: here, then the password on the lock card in prompt mode, like the
   //: recovery key. The server checks the digits again and keeps the PIN in the
   //: OS store (core/pinstore.py).
-  $("account-pin-set").addEventListener("click", async () => {
+  wire("account-pin-set").addEventListener("click", async () => {
     const status = $("account-pin-status");
     status.classList.remove("error");
     const pin = $("account-pin-new").value;
@@ -273,7 +284,7 @@
 
   //: "Forget PIN": the password too (removing it is a change to how this
   //: computer opens the notebook).
-  $("account-pin-forget").addEventListener("click", async () => {
+  wire("account-pin-forget").addEventListener("click", async () => {
     const status = $("account-pin-status");
     status.classList.remove("error");
     status.textContent = "";
@@ -300,7 +311,7 @@
   //: The password is asked on the lock card in prompt mode (DESIGN.md's recipe
   //: for one action's password; tests/test_lock_boundary.py), which carries the
   //: throttle, the error line under the field and the purge.
-  $("account-rekey").addEventListener("click", async () => {
+  wire("account-rekey").addEventListener("click", async () => {
     const status = $("account-rekey-status");
     status.classList.remove("error");
     status.textContent = "";
@@ -338,11 +349,11 @@
   });
 
   //: Settings, Account and security: "Make a recovery key" / "Replace it" (INBOX 663).
-  $("account-recovery-make").addEventListener("click", () => makeRecoveryKey());
+  wire("account-recovery-make").addEventListener("click", () => makeRecoveryKey());
 
   //: "Ask for a password when the app opens". Off needs the current password,
   //: asked through the lock screen's card; on needs nothing.
-  $("account-password-on-open").addEventListener("change", async (e) => {
+  wire("account-password-on-open").addEventListener("change", async (e) => {
     const box = e.target;
     const wanted = box.checked;
     box.checked = !wanted; // the server's answer decides what it shows
@@ -378,14 +389,14 @@
     renderAccount().catch(() => {});
   });
 
-  $("account-idle-ttl").addEventListener("change", (e) => {
+  wire("account-idle-ttl").addEventListener("change", (e) => {
     setPreference("session_idle_ttl_minutes", Number(e.target.value));
   });
-  $("account-private-idle").addEventListener("change", (e) => {
+  wire("account-private-idle").addEventListener("change", (e) => {
     setPreference("private_space_idle_minutes", Number(e.target.value));
   });
 
-  $("account-lock-all").addEventListener("click", async () => {
+  wire("account-lock-all").addEventListener("click", async () => {
     //: With "Ask for a password when the app opens" off, this computer gets
     //: back in without one (only other devices and private notes need it).
     const back = autoSessionOffered
@@ -397,7 +408,7 @@
     location.reload();
   });
 
-  $("local-only-ai").addEventListener("change", async (e) => {
+  wire("local-only-ai").addEventListener("change", async (e) => {
     const on = e.target.checked;
     await apiJson("/preferences", {
       method: "PUT",
@@ -414,40 +425,40 @@
     refreshModelStatus();
   });
 
-  $("task-history-clear").addEventListener("click", async () => {
+  wire("task-history-clear").addEventListener("click", async () => {
     await apiJson("/tasks/history/clear", { method: "POST" }).catch((e) =>
       toast(e.message, true)
     );
     renderTasks();
   });
 
-  $("app-quit").addEventListener("click", quitApp);
+  wire("app-quit").addEventListener("click", quitApp);
 
   // Web search saves on change rather than behind a Save button: there are two
   // controls, and a checkbox that needs a second click elsewhere to take effect
   // is the shape of "this control does nothing" that keeps getting reported.
-  $("pref-web-search").addEventListener("change", saveWebSearchSettings);
+  wire("pref-web-search").addEventListener("change", saveWebSearchSettings);
 
-  $("pref-searxng").addEventListener("change", saveWebSearchSettings);
+  wire("pref-searxng").addEventListener("change", saveWebSearchSettings);
 
-  $("pref-web-store").addEventListener("change", (e) => setPreference("web_store_enabled", e.target.checked));
-  $("web-store-clear").addEventListener("click", async () => {
+  wire("pref-web-store").addEventListener("change", (e) => setPreference("web_store_enabled", e.target.checked));
+  wire("web-store-clear").addEventListener("click", async () => {
     let done;
     try {
       done = await apiJson("/websearch/stored", { method: "DELETE" });
     } catch (error) {
-      return toast(`Couldn't clear the kept pages: ${error.message}`, "info");
+      return toast(voiceLine("failed", { what: "clear the kept pages", why: error.message }), "info");
     }
     toast(`Cleared ${done.cleared} kept page${done.cleared === 1 ? "" : "s"}.`, "info");
   });
 
-  $("pref-update-check").addEventListener("change", (e) =>
+  wire("pref-update-check").addEventListener("change", (e) =>
     setPreference("update_check_enabled", e.target.checked)
   );
 
-  $("update-check-now").addEventListener("click", () => checkForUpdate());
+  wire("update-check-now").addEventListener("click", () => checkForUpdate());
 
-  $("update-apply-now").addEventListener("click", async () => {
+  wire("update-apply-now").addEventListener("click", async () => {
     const button = $("update-apply-now");
     const status = $("update-check-status");
     button.disabled = true;
@@ -463,24 +474,24 @@
       // button stuck disabled over a real network error someone can just
       // retry once they're back online.
       button.disabled = false;
-      toast((status && status.textContent) || "Couldn't apply the update.", true);
+      toast((status && status.textContent) || voiceLine("failed", { what: "apply the update" }), true, { action: ["Try again", () => button.click()] });
     }
   });
 
-  $("pref-update-bar").addEventListener("change", (e) => {
+  wire("pref-update-bar").addEventListener("change", (e) => {
     if (!e.target.checked) document.querySelector(".update-bar")?.remove();
     return setPreference("show_update_bar", e.target.checked);
   });
 
-  $("pref-auto-update").addEventListener("change", (e) =>
+  wire("pref-auto-update").addEventListener("change", (e) =>
     setPreference("auto_update_enabled", e.target.checked)
   );
 
-  $("pref-update-channel-main").addEventListener("change", (e) =>
+  wire("pref-update-channel-main").addEventListener("change", (e) =>
     setPreference("update_channel", e.target.checked ? "main" : "stable")
   );
 
-  $("pref-update-beta").addEventListener("change", (e) =>
+  wire("pref-update-beta").addEventListener("change", (e) =>
     setPreference("update_beta", e.target.checked)
   );
 
@@ -488,7 +499,7 @@
   // not on every Settings open, so leaving this tab open doesn't mean
   // repeated GitHub calls, same restraint as the rest of this app's opt-in
   // network features.
-  $("update-show-versions").addEventListener("click", async () => {
+  wire("update-show-versions").addEventListener("click", async () => {
     const select = $("update-version-select");
     const installBtn = $("update-install-version");
     const status = $("update-version-status");
@@ -521,7 +532,7 @@
     status.textContent = result.releases.length ? "" : "No installable releases found.";
   });
 
-  $("update-install-version").addEventListener("click", async () => {
+  wire("update-install-version").addEventListener("click", async () => {
     const select = $("update-version-select");
     const button = $("update-install-version");
     const status = $("update-version-status");
@@ -545,7 +556,7 @@
     if (!ok) {
       button.disabled = false;
       select.disabled = false;
-      toast(status.textContent || "Couldn't install that version.", true);
+      toast(status.textContent || voiceLine("failed", { what: "install that version" }), true, { action: ["Try again", () => button.click()] });
     }
   });
 
@@ -554,7 +565,7 @@
   // from Settings as well as the tray). /system/console-mode saves the same
   // preference and, in the desktop app on Windows, restarts the whole
   // process into the new console mode right after responding.
-  $("pref-show-console").addEventListener("change", async (e) => {
+  wire("pref-show-console").addEventListener("change", async (e) => {
     const checked = e.target.checked;
     try {
       const result = await apiJson("/system/console-mode", {
@@ -569,25 +580,25 @@
       );
     } catch (error) {
       e.target.checked = !checked; // the change didn't take: don't leave the switch lying
-      toast(error.message || "Couldn't switch view.", true);
+      toast(error.message || voiceLine("failed", { what: "switch view" }), true);
     }
   });
 
   //: Settings, Data: the same clearing with a word first, and a beat so the toast
   //: is read before the page goes.
-  $("clear-app-cache")?.addEventListener("click", async (event) => {
+  wire("clear-app-cache").addEventListener("click", async (event) => {
     event.currentTarget.disabled = true;
     await clearAppCache();
     toast("App cache cleared. Reloading.");
     setTimeout(() => location.reload(), 900);
   });
 
-  $("about-force-reload")?.addEventListener("click", forceReloadApp);
+  wire("about-force-reload").addEventListener("click", forceReloadApp);
 
   //: `restartMemoryMap` (settings-panes.js): one restart mechanism shared with
   //: the LAN switch's own "Restart now" toast action, rather than two copies
   //: of "ask, restart, or say why not" drifting apart.
-  $("about-restart")?.addEventListener("click", () => restartMemoryMap());
+  wire("about-restart").addEventListener("click", () => restartMemoryMap());
 
   // Takes effect on the next close, not on a restart, the handler reads the
   // preference each time the window is closed rather than at launch, precisely
@@ -595,7 +606,7 @@
   //: Read by the launcher on the next launch, before any window opens, so this
   //: is not a "restart to apply" switch either: it decides what the *next*
   //: double-click does.
-  $("pref-new-window-on-launch")?.addEventListener("change", (e) => {
+  wire("pref-new-window-on-launch").addEventListener("change", (e) => {
     const checked = e.target.checked;
     setPreference("new_window_on_launch", checked);
     toast(
@@ -605,7 +616,7 @@
     );
   });
 
-  $("pref-close-to-tray")?.addEventListener("change", (e) => {
+  wire("pref-close-to-tray").addEventListener("change", (e) => {
     const checked = e.target.checked;
     setPreference("close_to_tray", checked);
     toast(
@@ -615,30 +626,30 @@
     );
   });
 
-  $("pref-desktop-companion")?.addEventListener("change", (e) => {
+  wire("pref-desktop-companion").addEventListener("change", (e) => {
     const checked = e.target.checked;
     setPreference("desktop_companion", checked);
     toast(checked ? "Your companion will sit in the corner while the window is minimised or in the tray." : "The desktop companion is off.");
   });
 
-  $("exports-refresh")?.addEventListener("click", renderExportsList);
+  wire("exports-refresh").addEventListener("click", renderExportsList);
 
-  $("open-exports-folder").addEventListener("click", async () => {
+  wire("open-exports-folder").addEventListener("click", async () => {
     try {
       const result = await apiJson("/files/open-exports-folder", { method: "POST" });
       toast(`Opened ${result.path}`);
     } catch (error) {
-      toast(error.message || "Couldn't open the exports folder.", true);
+      toast(error.message || voiceLine("failed", { what: "open the exports folder" }), true);
     }
   });
 
-  $("pref-export-dir").addEventListener("blur", saveExportSaveDir);
+  wire("pref-export-dir").addEventListener("blur", saveExportSaveDir);
 
-  $("pref-export-dir").addEventListener("keydown", (event) => {
+  wire("pref-export-dir").addEventListener("keydown", (event) => {
     if (event.key === "Enter") $("pref-export-dir").blur();
   });
 
-  $("pref-export-dir-reset").addEventListener("click", () => {
+  wire("pref-export-dir-reset").addEventListener("click", () => {
     $("pref-export-dir").value = "";
     saveExportSaveDir();
   });
@@ -649,26 +660,27 @@
   // (a fresh page load landing straight on Background tasks, say), and its
   // stale/default DOM values would silently overwrite whatever was really
   // saved the moment any one of these checkboxes changed.
-  $("pref-autonomous-tasks").addEventListener("change", (e) => {
+  wire("pref-autonomous-tasks").addEventListener("change", (e) => {
     toggleAutonomousPanel();
     setPreference("autonomous_tasks_enabled", e.target.checked);
   });
 
-  $("pref-background-filing").addEventListener("change", (e) =>
+  wire("pref-background-filing").addEventListener("change", (e) =>
     setPreference("background_filing", e.target.checked)
   );
 
-  $("pref-semantic-auto-install").addEventListener("change", (e) =>
+  wire("pref-semantic-auto-install").addEventListener("change", (e) =>
     setPreference("semantic_auto_install", e.target.checked)
   );
-  $("pref-warm-search-model").addEventListener("change", (e) =>
+  wire("pref-warm-search-model").addEventListener("change", (e) =>
     setPreference("warm_search_model_at_launch", e.target.checked)
   );
-  $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
-  $("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
-  $("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));
-  $("pref-birthday").addEventListener("change", (e) => setPreference("birthday", e.target.value));
-  $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
+  wire("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
+  wire("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
+  wire("pref-time-format").addEventListener("change", (e) => setPreference("time_format", e.target.value));
+  wire("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));
+  wire("pref-birthday").addEventListener("change", (e) => setPreference("birthday", e.target.value));
+  wire("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
   //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
   //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.
   const VOICE_SAMPLES = {
@@ -680,45 +692,45 @@
   function showVoiceSample(voice) {
     $("pref-voice-sample").textContent = VOICE_SAMPLES[voice] || VOICE_SAMPLES.natural;
   }
-  $("pref-voice").addEventListener("change", (e) => {
+  wire("pref-voice").addEventListener("change", (e) => {
     setPreference("composer_voice", e.target.value);
     showVoiceSample(e.target.value);
   });
-  showVoiceSample($("pref-voice").value);
+  onSurface("settings-personas", () => showVoiceSample($("pref-voice").value));
   //: Decision 73: what an answer volunteers past itself.
-  $("pref-insight").addEventListener("change", (e) => setPreference("insight_level", e.target.value));
+  wire("pref-insight").addEventListener("change", (e) => setPreference("insight_level", e.target.value));
 
   //: Clamped here as the backend clamps it (5 to 60), so a typed 100 saves
   //: as 60 rather than being refused by the preferences schema.
-  $("pref-filing-wait").addEventListener("change", (e) => {
+  wire("pref-filing-wait").addEventListener("change", (e) => {
     const seconds = Math.max(5, Math.min(60, Math.round(Number(e.target.value) || 15)));
     e.target.value = seconds;
     setPreference("filing_wait_seconds", seconds);
   });
 
-  $("pref-filing-wait-reset").addEventListener("click", () => {
+  wire("pref-filing-wait-reset").addEventListener("click", () => {
     $("pref-filing-wait").value = 15;
     setPreference("filing_wait_seconds", 15);
   });
 
   //: Section 17 row 3: the filing style reaches the filing prompt.
-  $("pref-filing-style").addEventListener("change", (e) => setPreference("filing_style", e.target.value));
+  wire("pref-filing-style").addEventListener("change", (e) => setPreference("filing_style", e.target.value));
 
-  $("pref-ai-first-filing").addEventListener("change", (e) =>
+  wire("pref-ai-first-filing").addEventListener("change", (e) =>
     setPreference("ai_first_filing", e.target.checked)
   );
 
   //: WORLD_CLASS 23, decision 6: sensitive notes file by their words only when on.
-  $("pref-auto-file-sensitive").addEventListener("change", (e) =>
+  wire("pref-auto-file-sensitive").addEventListener("change", (e) =>
     setPreference("auto_file_sensitive", e.target.checked)
   );
 
-  $("pref-ask-when-unsure").addEventListener("change", (e) =>
+  wire("pref-ask-when-unsure").addEventListener("change", (e) =>
     setPreference("ask_when_unsure", e.target.checked)
   );
 
   //: INBOX 1695 (Q30): a new note is sealed from its first write; off by default.
-  $("pref-new-notes-private").addEventListener("change", (e) =>
+  wire("pref-new-notes-private").addEventListener("change", (e) =>
     setPreference("new_notes_private", e.target.checked).then(() => {
       //: The Capture page's Private follows the setting until it is pressed (its draft key).
       if (!prefs.has("captureDraftPrivate")) createNoteSafely.lock?.sync($("entry-private"));
@@ -726,7 +738,7 @@
   );
 
   //: INBOX 1695 (d): seal every ordinary note. The confirm says what private costs.
-  $("account-make-all-private").addEventListener("click", async () => {
+  wire("account-make-all-private").addEventListener("click", async () => {
     const status = $("account-make-all-status");
     status.classList.remove("error");
     status.textContent = "";
@@ -748,39 +760,43 @@
     }
   });
 
-  $("pref-auto-caption-images").addEventListener("change", (e) =>
+  wire("pref-auto-caption-images").addEventListener("change", (e) =>
     setPreference("auto_caption_images", e.target.checked)
   );
 
-  $("pref-auto-read-image-text").addEventListener("change", (e) =>
+  wire("pref-auto-read-image-text").addEventListener("change", (e) =>
     setPreference("auto_read_image_text", e.target.checked)
   );
 
-  $("pref-auto-tag").addEventListener("change", (e) =>
+  wire("pref-auto-tag").addEventListener("change", (e) =>
     setPreference("auto_tag_enabled", e.target.checked)
   );
 
-  $("pref-auto-link").addEventListener("change", (e) =>
+  wire("pref-auto-link").addEventListener("change", (e) =>
     setPreference("auto_link_enabled", e.target.checked)
   );
 
-  $("pref-auto-dedupe").addEventListener("change", (e) =>
+  wire("pref-auto-dedupe").addEventListener("change", (e) =>
     setPreference("auto_dedupe_enabled", e.target.checked)
   );
 
-  $("pref-auto-stale-review").addEventListener("change", (e) =>
+  wire("pref-learned-audit").addEventListener("change", (e) =>
+    setPreference("learned_audit_enabled", e.target.checked)
+  );
+
+  wire("pref-auto-stale-review").addEventListener("change", (e) =>
     setPreference("auto_stale_review_enabled", e.target.checked)
   );
 
-  $("pref-mcp-writes").addEventListener("change", (e) =>
+  wire("pref-mcp-writes").addEventListener("change", (e) =>
     setPreference("mcp_writes_enabled", e.target.checked)
   );
 
-  $("pref-auto-capture").addEventListener("change", (e) =>
+  wire("pref-auto-capture").addEventListener("change", (e) =>
     setPreference("auto_capture_enabled", e.target.checked)
   );
 
-  $("pref-battery-mode").addEventListener("change", (e) => {
+  wire("pref-battery-mode").addEventListener("change", (e) => {
     setPreference("battery_efficient_mode", e.target.checked);
     $("power-saver-indicator")?.classList.toggle("hidden", !e.target.checked);
     //: `prefsCache` is what `batteryModeOn` reads, and `setPreference` writes
@@ -793,37 +809,37 @@
     renderDashboard();
   });
 
-  $("pref-autonomous-interval").addEventListener("change", (e) =>
+  wire("pref-autonomous-interval").addEventListener("change", (e) =>
     setPreference("autonomous_tasks_interval_hours", Number(e.target.value) || 6)
   );
 
-  $("pref-autonomous-model").addEventListener("change", (e) =>
+  wire("pref-autonomous-model").addEventListener("change", (e) =>
     setPreference("autonomous_tasks_model", e.target.value.trim())
   );
 
   //: The switch changes which model background jobs run on, so the line under
   //: the utility picker (INBOX 277) is re-read once the preference has landed
   //: rather than left describing the old state until the next poll.
-  $("pref-smart-model-routing").addEventListener("change", async (e) => {
+  wire("pref-smart-model-routing").addEventListener("change", async (e) => {
     await setPreference("smart_model_routing_enabled", e.target.checked);
     refreshModelStatus();
   });
 
-  $("memory-add")?.addEventListener("click", addMemoryByHand);
+  wire("memory-add").addEventListener("click", addMemoryByHand);
 
-  $("memory-new")?.addEventListener("keydown", (e) => {
+  wire("memory-new").addEventListener("keydown", (e) => {
     // Enter saves. Typing a one-line rule and having to reach for the mouse is
     // the kind of small friction that stops people using a feature at all.
     if (e.key === "Enter") { e.preventDefault(); addMemoryByHand(); }
   });
 
-  $("autonomous-review-clear")?.addEventListener("click", async () => {
+  wire("autonomous-review-clear").addEventListener("click", async () => {
     const ok = await api("/tasks/autonomous/last/clear", { method: "POST" }).then(() => true, () => false);
     if (!ok) toast("The last review was not cleared. Try again.", true, { action: ["Try again", () => $("autonomous-review-clear")?.click()] });
     renderAutonomousReview();
   });
 
-  $("autonomous-trigger").addEventListener("click", () => {
+  wire("autonomous-trigger").addEventListener("click", () => {
     api("/tasks/trigger-autonomous", { method: "POST" })
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
@@ -840,13 +856,13 @@
   });
 
   //: The dictation size select is wired in settings-packages.js (voiceModelsWire), which paints it.
-  $("voice-skip-silence").addEventListener("change", (e) =>
+  wire("voice-skip-silence").addEventListener("change", (e) =>
     setPreference("voice_skip_silence", e.target.checked)
   );
   //: Read aloud's speed (E71), kept on this device; `speakText` reads it each time.
-  $("pref-read-aloud-voice").value = prefs.get("read-aloud-voice", "browser");
+  onSurface("settings-general", () => ($("pref-read-aloud-voice").value = prefs.get("read-aloud-voice", "browser")));
   //: The natural voice (studio.js) is chosen only where it is installed; otherwise the way to it is named.
-  $("pref-read-aloud-voice").addEventListener("change", async (e) => {
+  wire("pref-read-aloud-voice").addEventListener("change", async (e) => {
     const ready = e.target.value !== "natural" || (await apiJson("/voice/status", { silent: true }).catch(() => null))?.speak?.available;
     if (!ready) {
       e.target.value = "browser";
@@ -857,28 +873,30 @@
   //: The browser voice (L333): this computer's own voices, filled when the browser has listed them (it
   //: lists late, so again on `voiceschanged`). Kept on this device by name; `speakText` and the document's
   //: read aloud look it up each time and fall back to Automatic when the voice is gone.
-  const voiceName = $("pref-read-aloud-voice-name");
-  const fillVoices = () => {
-    const voices = ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter((v) => v.localService !== false);
-    voiceName.replaceChildren(new Option("Automatic", ""), ...voices.map((v) => new Option(`${v.name} (${v.lang})`, v.name)));
-    voiceName.value = prefs.get("read-aloud-voice-name", "");
-  };
-  fillVoices();
-  if ("speechSynthesis" in window) speechSynthesis.addEventListener("voiceschanged", fillVoices);
-  voiceName.addEventListener("change", (e) => prefs.set("read-aloud-voice-name", e.target.value));
-  $("pref-read-aloud-rate").value = prefs.get("read-aloud-rate", "1");
-  $("pref-read-aloud-rate").addEventListener("change", (e) => prefs.set("read-aloud-rate", e.target.value));
-  $("voice-language-select").addEventListener("change", (e) =>
+  onSurface("settings-general", () => {
+    const voiceName = $("pref-read-aloud-voice-name");
+    const fillVoices = () => {
+      const voices = ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter((v) => v.localService !== false);
+      voiceName.replaceChildren(new Option("Automatic", ""), ...voices.map((v) => new Option(`${v.name} (${v.lang})`, v.name)));
+      voiceName.value = prefs.get("read-aloud-voice-name", "");
+    };
+    fillVoices();
+    if ("speechSynthesis" in window) speechSynthesis.addEventListener("voiceschanged", fillVoices);
+    voiceName.addEventListener("change", (e) => prefs.set("read-aloud-voice-name", e.target.value));
+    $("pref-read-aloud-rate").value = prefs.get("read-aloud-rate", "1");
+  });
+  wire("pref-read-aloud-rate").addEventListener("change", (e) => prefs.set("read-aloud-rate", e.target.value));
+  wire("voice-language-select").addEventListener("change", (e) =>
     setPreference("voice_language", e.target.value)
   );
   //: On change, not on input: one save when the field is left, not one a key.
-  $("voice-vocabulary").addEventListener("change", (e) =>
+  wire("voice-vocabulary").addEventListener("change", (e) =>
     setPreference("voice_vocabulary", e.target.value.trim())
   );
 
   // ---- from wiring.js ----
 
-  $("dashboard-persona-select").addEventListener("change", async () => {
+  wire("dashboard-persona-select").addEventListener("change", async () => {
     const persona = $("dashboard-persona-select").value;
     //: Set before the save, not after it: the mark and the dashboard's face
     //: read it, and a second change while the first save was in flight was
@@ -895,7 +913,7 @@
     toast(persona ? `Dashboard greeting now speaks as ${persona}.` : "Dashboard greeting back to matching Chat.");
   });
 
-  $("dashboard-greeting-regenerate")?.addEventListener("click", async () => {
+  wire("dashboard-greeting-regenerate").addEventListener("click", async () => {
     const btn = $("dashboard-greeting-regenerate");
     const status = $("dashboard-greeting-status");
     btn.disabled = true;
@@ -910,25 +928,25 @@
     setTimeout(() => { if (status) status.textContent = ""; }, 3000);
   });
 
-  $("persona-add").addEventListener("click", addPersona);
+  wire("persona-add").addEventListener("click", addPersona);
 
-  $("skill-add").addEventListener("click", addSkill);
+  wire("skill-add").addEventListener("click", addSkill);
 
-  $("skill-cancel").addEventListener("click", stopEditingSkill);
+  wire("skill-cancel").addEventListener("click", stopEditingSkill);
 
-  $("skill-verify-expect").addEventListener("change", syncSkillVerifyRow);
+  wire("skill-verify-expect").addEventListener("change", syncSkillVerifyRow);
 
-  $("settings-manage-categories").addEventListener("click", () => openManageCategories());
+  wire("settings-manage-categories").addEventListener("click", () => openManageCategories());
 
-  $("settings-manage-tags").addEventListener("click", () => openTagsSheet());
+  wire("settings-manage-tags").addEventListener("click", () => openTagsSheet());
 
-  $("skill-export").addEventListener("click", () =>
+  wire("skill-export").addEventListener("click", () =>
     downloadJson("tessellate-skills.json", {
       skills: (prefsCache && prefsCache.skills) || [],
     })
   );
 
-  $("skill-import").addEventListener("click", () =>
+  wire("skill-import").addEventListener("click", () =>
     pickJsonFile("skill-import-file", async (data) => {
       const merged = mergeNamedPrompts((prefsCache && prefsCache.skills) || [], data.skills);
       if (!merged) return toast("No skills found in that file.", "info");
@@ -943,13 +961,13 @@
     })
   );
 
-  $("persona-export").addEventListener("click", () =>
+  wire("persona-export").addEventListener("click", () =>
     downloadJson("tessellate-personas.json", {
       personas: (prefsCache && prefsCache.personas) || [],
     })
   );
 
-  $("persona-import").addEventListener("click", () =>
+  wire("persona-import").addEventListener("click", () =>
     pickJsonFile("persona-import-file", async (data) => {
       const merged = mergeNamedPrompts(
         (prefsCache && prefsCache.personas) || [],
@@ -964,7 +982,7 @@
   // Start the user's own engine with the app. See the markup for why this is the
   // answer to "web search keeps disabling itself", it was the container going
   // away, not the setting.
-  $("searxng-autostart").addEventListener("change", async (event) => {
+  wire("searxng-autostart").addEventListener("change", async (event) => {
     const on = event.target.checked;
     prefsCache = await apiJson("/preferences", {
       method: "PUT",
@@ -982,28 +1000,28 @@
 
   // ---- from settings-wiring.js ----
 
-  $("find-duplicates").addEventListener("click", findDuplicates);
+  wire("find-duplicates").addEventListener("click", findDuplicates);
 
-  $("duplicate-threshold").addEventListener("input", (e) => {
+  wire("duplicate-threshold").addEventListener("input", (e) => {
     $("duplicate-threshold-value").textContent = `${e.target.value}%`;
   });
 
   // From Help, go to the Settings section rather than swapping one dialog for
   // another: "how do I change a shortcut?" should end somewhere you can find
   // again, not in an overlay with no address.
-  $("about-shortcuts").addEventListener("click", () => showSettingsSection("shortcuts"));
+  wire("about-shortcuts").addEventListener("click", () => showSettingsSection("shortcuts"));
 
-  $("shortcuts-reset-settings").addEventListener("click", resetShortcuts);
+  wire("shortcuts-reset-settings").addEventListener("click", resetShortcuts);
 
-  $("prefs-save").addEventListener("click", () => savePrefs());
+  wire("prefs-save").addEventListener("click", () => savePrefs());
 
-  $("pref-search-reset").addEventListener("click", () => {
+  wire("pref-search-reset").addEventListener("click", () => {
     $("pref-search-min-sim").value = 0.25;
     $("pref-search-z-margin").value = 0.5;
     savePrefs();
   });
 
-  $("searxng-reinstall").addEventListener("click", async () => {
+  wire("searxng-reinstall").addEventListener("click", async () => {
     if (
       !(await confirmDialog(
         "Delete the SearXNG install and set it up again from scratch?\n\n" +
@@ -1026,7 +1044,7 @@
     refreshSearxngHost();
   });
 
-  $("searxng-start").addEventListener("click", async () => {
+  wire("searxng-start").addEventListener("click", async () => {
     const status = $("searxng-host-status");
     status.classList.remove("error");
     //: "Give it a minute" only before the first run (the owner, 2026-10-10:
@@ -1046,7 +1064,7 @@
     refreshSearxngHost();
   });
 
-  $("searxng-stop").addEventListener("click", async () => {
+  wire("searxng-stop").addEventListener("click", async () => {
     const status = $("searxng-host-status");
     status.classList.remove("error");
     status.textContent = "Stopping…";
@@ -1063,7 +1081,7 @@
   });
 
   // Find a running SearXNG so the user never has to work out the wiring.
-  $("searxng-detect").addEventListener("click", async () => {
+  wire("searxng-detect").addEventListener("click", async () => {
     const status = $("searxng-status");
     const typed = $("pref-searxng").value.trim();
     status.classList.remove("error");
@@ -1082,17 +1100,17 @@
     }
   });
 
-  $("profile-delete").addEventListener("click", deleteProfile);
+  wire("profile-delete").addEventListener("click", deleteProfile);
 
-  $("export-json").addEventListener("click", () => downloadExport("json"));
+  wire("export-json").addEventListener("click", () => downloadExport("json"));
 
-  $("export-csv").addEventListener("click", () => downloadExport("csv"));
+  wire("export-csv").addEventListener("click", () => downloadExport("csv"));
 
-  $("chat-model-apply").addEventListener("click", applyChatModel);
+  wire("chat-model-apply").addEventListener("click", applyChatModel);
 
   //: Stop the model (WORLD_CLASS_PLAN 28.1 rule 5): the server stops every
   //: answer, then asks the backend to unload it, and says what it did.
-  $("chat-model-stop").addEventListener("click", async () => {
+  wire("chat-model-stop").addEventListener("click", async () => {
     const result = await apiJson("/activity/model/stop", { method: "POST" }).catch((e) => ({ detail: e.message }));
     $("chat-model-note").textContent = result.detail || "";
   });
@@ -1100,15 +1118,15 @@
   //: `change`, not `input`: a number box fires `change` when the value is
   //: committed (Enter, or focus leaving), which is the moment somebody means it.
   //: `input` would PUT once per keystroke while they type 16384.
-  $("model-context-window")?.addEventListener("change", saveModelContextWindow);
+  wire("model-context-window").addEventListener("change", saveModelContextWindow);
 
-  $("llm-provider-apply").addEventListener("click", applyBackendChoice);
+  wire("llm-provider-apply").addEventListener("click", applyBackendChoice);
 
   // Mark the fields dirty on any edit so the five-second status poll stops
   // rewriting them underneath the person typing an address into them.
-  $("llm-base-url").addEventListener("input", () => (backendFieldsDirty = true));
+  wire("llm-base-url").addEventListener("input", () => (backendFieldsDirty = true));
 
-  $("llm-provider-select").addEventListener("change", () => {
+  wire("llm-provider-select").addEventListener("change", () => {
     backendFieldsDirty = true;
     // Switching the dropdown should re-suggest that backend's usual address
     // rather than leave the other one's sitting there looking authoritative.
@@ -1117,29 +1135,29 @@
     $("llm-base-url").placeholder = defaults[$("llm-provider-select").value] || "Default address";
   });
 
-  $("utility-model-apply").addEventListener("click", applyUtilityModel);
+  wire("utility-model-apply").addEventListener("click", applyUtilityModel);
 
-  $("feature-models-reset").addEventListener("click", resetAllFeatureModels);
+  wire("feature-models-reset").addEventListener("click", resetAllFeatureModels);
 
-  $("vision-model-apply").addEventListener("click", applyVisionModel);
+  wire("vision-model-apply").addEventListener("click", applyVisionModel);
 
-  $("ocr-model-apply")?.addEventListener("click", applyOcrModel);
+  wire("ocr-model-apply").addEventListener("click", applyOcrModel);
 
-  $("embedding-apply").addEventListener("click", applyEmbeddingBackend);
+  wire("embedding-apply").addEventListener("click", applyEmbeddingBackend);
 
-  $("utility-model-select").addEventListener(
+  wire("utility-model-select").addEventListener(
     "change",
     () => ($("utility-model-select").dataset.userChosen = "1")
   );
 
-  $("vision-model-select").addEventListener(
+  wire("vision-model-select").addEventListener(
     "change",
     () => ($("vision-model-select").dataset.userChosen = "1")
   );
 
-  $("settings-nav-back")?.addEventListener("click", () => stepTabHistory(-1));
+  wire("settings-nav-back").addEventListener("click", () => stepTabHistory(-1));
 
-  $("settings-nav-forward")?.addEventListener("click", () => stepTabHistory(1));
+  wire("settings-nav-forward").addEventListener("click", () => stepTabHistory(1));
 
   // Two buttons, two behaviours, each the one its own words name. Settings →
   // Help has "Replay the welcome" and Settings, About has "Take tour again";
@@ -1150,7 +1168,7 @@
   // same thing: the card is five slides about what Tessellate is, the tour is
   // anchored cards on the real controls. So the welcome button opens the
   // welcome and the tour button opens the tour.
-  $("show-guide-btn")?.addEventListener("click", () => {
+  wire("show-guide-btn").addEventListener("click", () => {
     closeSettingsModal();
     openOnboarding();
   });
@@ -1158,12 +1176,12 @@
   //: The owner, 2026-10-26: "if I hide this getting started button, is there a
   //: way to get it to show again in settings?" Customise and the palette could;
   //: Settings now can too.
-  $("show-get-started-btn")?.addEventListener("click", () => {
+  wire("show-get-started-btn").addEventListener("click", () => {
     closeSettingsModal();
     lazyScript("/js/first-run.js").then(() => getStartedShow());
   });
 
-  $("about-take-tour")?.addEventListener("click", () => {
+  wire("about-take-tour").addEventListener("click", () => {
     if (typeof TOUR_ENABLED !== "undefined" && !TOUR_ENABLED) return;
     closeSettingsModal();
     // A frame later, for the same reason tour.js's own replay strip waits: the
@@ -1175,41 +1193,52 @@
     });
   });
 
-  $("export-md").addEventListener("click", () => downloadExport("markdown"));
+  wire("export-md").addEventListener("click", () => downloadExport("markdown"));
   //: The whole notebook as a folder (WORLD_CLASS 25b): notes, attachments,
   //: documents and boards, which From a Tessellate folder reads back whole.
-  $("export-folder").addEventListener("click", async () => saveFile("tessellate-notebook.zip", await (await api("/export/folder")).blob()));
+  wire("export-folder").addEventListener("click", async () => saveFile("tessellate-notebook.zip", await (await api("/export/folder")).blob()));
 
   //: One step (INBOX 464 (18)): the button opens its picker and choosing
   //: starts the import. The folder picker posts through the same function,
   //: the only difference is which input it reads, so `importMarkdown` takes
   //: the id rather than growing a second copy of the upload/report sequence.
-  $("import-md").addEventListener("click", () => $("import-md-files").click());
+  wire("import-md").addEventListener("click", () => $("import-md-files").click());
 
-  $("import-md-files").addEventListener("change", () => importMarkdown());
+  wire("import-md-files").addEventListener("change", () => importMarkdown());
 
-  $("import-md-folder-btn").addEventListener("click", () => $("import-md-folder").click());
+  wire("import-md-folder-btn").addEventListener("click", () => $("import-md-folder").click());
 
-  $("import-md-folder").addEventListener("change", () => importMarkdown("import-md-folder"));
+  wire("import-md-folder").addEventListener("change", () => importMarkdown("import-md-folder"));
 
-  $("import-dir")?.addEventListener("click", importDirectory);
+  wire("import-dir").addEventListener("click", importDirectory);
 
-  $("export-backup-zip")?.addEventListener("click", () =>
-    exportFullBackup().catch((error) => toast(error.message || "Couldn't save the backup.", true))
+  wire("export-backup-zip").addEventListener("click", () =>
+    exportFullBackup().catch((error) => toast(error.message || voiceLine("failed", { what: "save the backup" }), true))
   );
 
-  $("restore-bundle")?.addEventListener("click", () => $("restore-bundle-file").click());
+  wire("restore-bundle").addEventListener("click", () => $("restore-bundle-file").click());
 
-  $("restore-bundle-file")?.addEventListener("change", () => restoreFullBackup());
+  wire("restore-bundle-file").addEventListener("change", () => restoreFullBackup());
 
-  $("import-document").addEventListener("click", () => $("import-document-file").click());
+  wire("import-document").addEventListener("click", () => $("import-document-file").click());
 
-  $("import-document-file").addEventListener("change", () => importDocument());
+  wire("import-document-file").addEventListener("change", () => importDocument());
 
-  $("backup-now").addEventListener("click", backupNow);
+  //: A control whose backend is not installed is not drawn (WORLD_CLASS_PLAN B7, `GET /capabilities`):
+  //: the document importer needs the markitdown extra, and a button that fails on its first press is
+  //: worse than none. Only an explicit `installed: false` hides it; a failed read leaves it as it is.
+  onSurface("settings-data", () => {
+    apiJson("/capabilities", { silent: true })
+      .then((caps) => {
+        if (caps?.features?.office_import?.installed === false) $("import-document").closest(".fold-help-wrap")?.classList.add("hidden");
+      })
+      .catch(() => {});
+  });
 
-  $("pref-hide-offline-notice").checked = aiOfflineNoticeHidden();
-  $("pref-hide-offline-notice").addEventListener("change", (event) => {
+  wire("backup-now").addEventListener("click", backupNow);
+
+  onSurface("settings-models", () => ($("pref-hide-offline-notice").checked = aiOfflineNoticeHidden()));
+  wire("pref-hide-offline-notice").addEventListener("change", (event) => {
     try {
       prefs.set("hideOfflineNotice", event.target.checked ? "on" : "off");
     } catch {
@@ -1218,7 +1247,7 @@
     syncModelGatedControls();
   });
 
-  $("pref-single-keys").addEventListener("change", (event) => {
+  wire("pref-single-keys").addEventListener("change", (event) => {
     try {
       prefs.set("singleKeys", event.target.checked ? "on" : "off");
     } catch {
@@ -1228,13 +1257,13 @@
 
   // ---- from spaces-find.js ----
 
-  $("template-add")?.addEventListener("click", addTemplate);
+  wire("template-add").addEventListener("click", addTemplate);
 
   //: **Draft with Atlas** (INBOX 430): the body written from the name and the
   //: line; pressed again it asks for a different take on what is in the box,
   //: and the result is only ever put in the box, never saved, so Add is still
   //: the person's decision.
-  $("template-draft")?.addEventListener("click", async () => {
+  wire("template-draft").addEventListener("click", async () => {
     const name = $("template-name").value.trim();
     const status = $("template-status");
     status.classList.remove("error");
@@ -1267,7 +1296,7 @@
     }
   });
 
-  $("template-cancel")?.addEventListener("click", stopEditingTemplate);
+  wire("template-cancel").addEventListener("click", stopEditingTemplate);
 
   // ---- from settings-wiring.js (search-boot-1005) ----
   //
@@ -1453,7 +1482,7 @@
       renderModelSpec(modelContextModel);
       toast(value ? `${modelContextModel} will run at ${value.toLocaleString()} tokens.` : `${modelContextModel} is back on auto.`);
     } catch (e) {
-      toast(e.message || "Couldn't save that window.", true);
+      toast(e.message || voiceLine("failed", { what: "save that window" }), true);
     }
   }
 
@@ -1548,7 +1577,7 @@
       toast(`Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now.`);
       setStatus("");
     } catch (error) {
-      toast(error.message || `Couldn't switch to ${EMBEDDING_FALLBACK_MODEL}.`, true);
+      toast(error.message || voiceLine("failed", { what: `switch to ${EMBEDDING_FALLBACK_MODEL}` }), true);
       setStatus("");
     } finally {
       embeddingFallbackRunning = false;
@@ -1570,7 +1599,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't reset those models.", true);
+      toast(error.message || voiceLine("failed", { what: "reset those models" }), true);
     }
   }
 
@@ -1605,7 +1634,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't set that model.", true);
+      toast(error.message || voiceLine("failed", { what: "set that model" }), true);
     }
   }
 
@@ -1776,7 +1805,7 @@
         toast("Restart isn't available in this build, close and reopen Tessellate by hand.", "info");
       }
     } catch (error) {
-      toast(error.message || "Couldn't restart.", true);
+      toast(error.message || voiceLine("failed", { what: "restart" }), true);
     }
   }
 
@@ -1845,7 +1874,7 @@
       toast(value ? `Exports will now be saved to ${prefsCache.export_save_dir}` : "Exports will save to the default location.");
     } catch (error) {
       input.value = prefsCache?.export_save_dir || "";
-      toast(error.message || "Couldn't save that folder.", true);
+      toast(error.message || voiceLine("failed", { what: "save that folder" }), true);
     }
   }
 
@@ -2308,6 +2337,78 @@
     const text = JSON.stringify({ mcpServers: { tessellate: mcp.config } }, null, 2);
     pre.textContent = text;
     copy.onclick = () => copyToClipboard(text, copy);
+    renderMcpClients();
+  }
+
+  //: The apps given a link (INBOX 1860, routes_mcp.py): one row each with when it was
+  //: last used and Revoke (`rowActions`); Make a link shows the token once.
+  async function renderMcpClients() {
+    const list = $("mcp-client-list");
+    if (!list) return;
+    $("mcp-client-create").onclick = makeMcpLink;
+    const { clients = [] } = await apiJson("/mcp-clients").catch(() => ({}));
+    list.replaceChildren(...clients.map(mcpClientRow));
+  }
+
+  async function makeMcpLink() {
+    const field = $("mcp-client-name");
+    try {
+      const made = await apiJson("/mcp-clients", {
+        method: "POST",
+        body: JSON.stringify({ name: field.value.trim() || "An app", writes: $("mcp-client-writes").checked }),
+      });
+      const text = JSON.stringify({ mcpServers: { tessellate: { type: "http", url: `${location.origin}/mcp`, headers: { Authorization: `Bearer ${made.token}` } } } }, null, 2);
+      $("mcp-client-snippet").textContent = text;
+      $("mcp-client-copy").onclick = () => copyToClipboard(text, $("mcp-client-copy"));
+      $("mcp-client-made").classList.remove("hidden");
+      field.value = "";
+      renderMcpClients();
+      const id = made.client.id;
+      offerUndo("Make a link", `Link made for ${made.client.name}.`, () => mcpLinkSet(id, false), () => mcpLinkSet(id, true));
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+
+  function mcpClientRow(client) {
+    const li = document.createElement("li");
+    const row = document.createElement("div");
+    row.className = "entry-meta";
+    const name = document.createElement("strong");
+    name.textContent = client.name;
+    const facts = document.createElement("span");
+    facts.className = "muted";
+    const used = client.last_used ? `last used ${relativeTime(new Date(client.last_used * 1000).toISOString())}` : "not used yet";
+    facts.textContent = `${client.writes ? "Reads and changes notes" : "Reads only"}, ${used}`;
+    const actions = rowActions([{
+      label: "Revoke",
+      title: "Stop this app's link working",
+      danger: true,
+      run: () => revokeMcpLink(client),
+    }], `${client.name} link actions`);
+    row.append(name, facts, actions);
+    li.append(row);
+    return li;
+  }
+
+  async function revokeMcpLink(client) {
+    if (!(await confirmDialog(`Revoke ${client.name}'s link? That app stops reading the notebook at once.`))) return;
+    try {
+      await mcpLinkSet(client.id, false);
+    } catch (error) {
+      toast(error.message, true);
+      return;
+    }
+    $("mcp-client-made").classList.add("hidden");
+    offerUndo("Revoke a link", `${client.name}'s link revoked.`, () => mcpLinkSet(client.id, true), () => mcpLinkSet(client.id, false));
+  }
+
+  //: Revoke (live false) or bring back (live true) one link; the pair are each other's
+  //: Undo and Redo. A revoked row is kept for an hour (mcp_clients.RESTORE_WINDOW).
+  async function mcpLinkSet(id, live) {
+    const path = `/mcp-clients/${encodeURIComponent(id)}`;
+    await apiJson(live ? `${path}/restore` : path, { method: live ? "POST" : "DELETE" });
+    renderMcpClients();
   }
 
   //: The network pane's state line and certificate facts, lazy with the listeners that
@@ -2369,16 +2470,19 @@
     lanQrShown: "",
     themePreviewTimer: 0,
   };
-  async function showLanQr(holder, address, button, open) {
+  async function showLanQr(holder, address, button, open, caption = "Point the phone's camera at it to open this address.") {
     holder.querySelector(".lan-qr")?.remove();
+    holder.querySelectorAll("[data-lan-qr]").forEach((other) => other.setAttribute("aria-expanded", "false"));
     button.setAttribute("aria-expanded", String(open));
     settingsControlState.lanQrShown = open ? address : "";
     if (!open) return;
     let blob;
     try {
+      //: The trust page answers only while this window is open (core/lanserve.py).
+      if (address.startsWith("http://")) await api("/auth/lan-trust-page", { method: "POST", silent: true });
       blob = await (await api(`/privacy/lan-qr.svg?address=${encodeURIComponent(address)}`, { silent: true })).blob();
     } catch (error) {
-      toast(`Couldn't draw the QR code: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "draw the QR code", why: error.message }), true);
       button.setAttribute("aria-expanded", "false");
       settingsControlState.lanQrShown = "";
       return;
@@ -2390,10 +2494,10 @@
     img.src = URL.createObjectURL(blob);
     img.alt = `QR code for ${address}`;
     img.addEventListener("load", () => URL.revokeObjectURL(img.src), { once: true });
-    const caption = document.createElement("figcaption");
-    caption.className = "muted text-sm";
-    caption.textContent = "Point the phone's camera at it to open this address.";
-    figure.append(img, caption);
+    const note = document.createElement("figcaption");
+    note.className = "muted text-sm";
+    note.textContent = caption;
+    figure.append(img, note);
     holder.querySelector(".lan-address-main")?.after(figure);
   }
 
@@ -2419,9 +2523,23 @@
     const qr = smallButton("ph:qr-code QR code", "Show a QR code the phone's camera opens", () =>
       showLanQr(holder, first, qr, qr.getAttribute("aria-expanded") !== "true"));
     qr.setAttribute("aria-expanded", "false");
+    qr.dataset.lanQr = "address";
     main.append(value, copy, qr);
+    //: Brief 40: a QR code to the plain-http `/lan/trust` page, where the phone
+    //: installs the certificate once and every later visit has no warning.
+    const trustUrl = (state.trust_urls || [])[0];
+    let trustQr = null;
+    if (trustUrl) {
+      trustQr = smallButton("ph:certificate Phone setup QR code", "Show a QR code to the page where a phone installs this notebook's certificate", () =>
+        showLanQr(holder, trustUrl, trustQr, trustQr.getAttribute("aria-expanded") !== "true",
+          "Point the phone's camera at it: the page has the certificate and the steps. It answers for fifteen minutes."));
+      trustQr.setAttribute("aria-expanded", "false");
+      trustQr.dataset.lanQr = "trust";
+      main.append(trustQr);
+    }
     holder.appendChild(main);
     if (settingsControlState.lanQrShown === first) showLanQr(holder, first, qr, true);
+    else if (trustQr && settingsControlState.lanQrShown === trustUrl) trustQr.click();
     if (!rest.length) return;
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -2519,6 +2637,12 @@
     trust.classList.toggle("hidden", !state.allow_lan);
     $("account-lan-ask").checked = state.ask_new_devices !== false;
     $("account-lan-any").checked = state.any_network === true;
+    $("account-lan-plain").checked = state.plain_http === true;
+    //: Brief 40: "connection was lost" with a number beside it.
+    const refused = state.failed_handshakes || 0;
+    $("account-lan-handshakes").textContent = refused
+      ? `${refused} secure connection${refused === 1 ? "" : "s"} refused by a device since the app started. A phone that has not installed the certificate does this.`
+      : "";
     const pending = state.pending || [];
     $("account-lan-pending-wrap").classList.toggle("hidden", !pending.length);
     $("account-lan-pending").replaceChildren(
@@ -2617,7 +2741,7 @@
     if (!looser(wanted)) return lanCall("/auth/lan-options", { method: "POST", body: JSON.stringify({ name, enabled: wanted }) });
     let reply = null;
     const done = await askPasswordPrompt({
-      title: name === "any_network" ? "Allow on any network" : "Stop asking about new devices",
+      title: name === "any_network" ? "Allow on any network" : name === "plain_http" ? "Allow plain http" : "Stop asking about new devices",
       message: "Enter your password to change how other devices get in.",
       submitLabel: "Change",
       submit: async (password) => {
@@ -2632,10 +2756,11 @@
     if (done && reply) renderLanState(reply);
   }
 
-  $("account-lan-ask")?.addEventListener("change", (event) => setLanOption(event.target, "ask_new_devices", (on) => !on));
-  $("account-lan-any")?.addEventListener("change", (event) => setLanOption(event.target, "any_network", (on) => on));
+  wire("account-lan-ask").addEventListener("change", (event) => setLanOption(event.target, "ask_new_devices", (on) => !on));
+  wire("account-lan-any").addEventListener("change", (event) => setLanOption(event.target, "any_network", (on) => on));
+  wire("account-lan-plain").addEventListener("change", (event) => setLanOption(event.target, "plain_http", (on) => on));
 
-  $("account-lan-allow-here")?.addEventListener("click", () => lanAllowHere(renderLanState));
+  wire("account-lan-allow-here").addEventListener("click", () => lanAllowHere(renderLanState));
 
   //: Allow on this network (`/auth/lan-networks/allow`), password first:
   //: Settings' button, and the status bar panel's Trust this network for a
@@ -2714,7 +2839,7 @@
     }
   }
 
-  $("account-names-save")?.addEventListener("click", saveAddressNames);
+  wire("account-names-save").addEventListener("click", saveAddressNames);
 
   async function renderLanAccess() {
     if (!$("account-allow-lan")) return;
@@ -2744,7 +2869,7 @@
       try {
         await apply(data);
       } catch (error) {
-        toast(error?.message || "Couldn't import that file.", "info");
+        toast(error?.message || voiceLine("failed", { what: "import that file" }), "info");
       }
     };
     input.click();
@@ -2765,8 +2890,10 @@
   }
   //: Settings, General, Microphone (UI_MODERNISATION V2): drawn by the
   //: recorder's bundle, so the two copies are one set of controls.
-  ensureModule("meetings").then((ok) => {
-    if (ok && $("mic-settings-controls")) micControlsInto($("mic-settings-controls"));
+  onSurface("settings-general", () => {
+    ensureModule("meetings").then((ok) => {
+      if (ok && $("mic-settings-controls")) micControlsInto($("mic-settings-controls"));
+    });
   });
 
   //: Moved from navigation.js (boot) on 2026-10-11 for the boot scripts' gzip
@@ -2927,7 +3054,7 @@
             await apiJson(`/memory/${pref.id}/answer`, {
               method: "POST",
               body: JSON.stringify({ accept }),
-            }).catch((error) => toast(error.message || "Couldn't save that answer.", true));
+            }).catch((error) => toast(error.message || voiceLine("failed", { what: "save that answer" }), true));
             renderMemorySettings();
           };
           const yes = document.createElement("button");
@@ -2955,7 +3082,7 @@
           const flipped = await apiJson(`/memory/${pref.id}`, {
             method: "PATCH",
             body: JSON.stringify({ active: !pref.active }),
-          }).catch((error) => toast(error.message || "Couldn't change that.", true));
+          }).catch((error) => toast(error.message || voiceLine("failed", { what: "change that" }), true));
           if (flipped) {
             pushRequestUndo(pref.active ? "Turned a memory off" : "Turned a memory on", `/memory/${pref.id}`, "PATCH", { active: pref.active }, { active: !pref.active }, () => renderMemorySettings());
           }
@@ -2991,7 +3118,7 @@
               }
             );
           } catch (error) {
-            toast(error.message || "Couldn't forget that.", true);
+            toast(error.message || voiceLine("failed", { what: "forget that" }), true);
           }
           renderMemorySettings();
         });
@@ -3073,7 +3200,7 @@
       const result = await apiJson("/system/doctor");
       box.replaceChildren(...result.rows.map(maintenanceDoctorRow));
       box.classList.remove("hidden");
-      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
       const worth = result.rows.filter((row) => row.status === "warn").length;
       maintenanceSay(
         result.failed
@@ -3186,14 +3313,14 @@
     footer.querySelector("button:last-child")?.focus();
   }
 
-  $("maintenance-doctor")?.addEventListener("click", runMaintenanceDoctor);
-  $("maintenance-reinstall")?.addEventListener("click", () => setMaintenanceReinstall(true));
-  $("maintenance-reinstall-cancel")?.addEventListener("click", () => setMaintenanceReinstall(false));
+  wire("maintenance-doctor").addEventListener("click", runMaintenanceDoctor);
+  wire("maintenance-reinstall").addEventListener("click", () => setMaintenanceReinstall(true));
+  wire("maintenance-reinstall-cancel").addEventListener("click", () => setMaintenanceReinstall(false));
   //: One restart mechanism (`restartMemoryMap`, `#about-restart`'s).
-  $("maintenance-restart")?.addEventListener("click", () => restartMemoryMap());
-  $("maintenance-logs")?.addEventListener("click", openMaintenanceFolder);
-  $("maintenance-shortcut")?.addEventListener("click", makeMaintenanceShortcut);
-  $("maintenance-uninstall")?.addEventListener("click", openUninstallSteps);
+  wire("maintenance-restart").addEventListener("click", () => restartMemoryMap());
+  wire("maintenance-logs").addEventListener("click", openMaintenanceFolder);
+  wire("maintenance-shortcut").addEventListener("click", makeMaintenanceShortcut);
+  wire("maintenance-uninstall").addEventListener("click", openUninstallSteps);
   //: Settings, Appearance, Themes (ledger 1451, 1452; INBOX 1300 C21, the
   //: owner: "if the eye preview buttons are there on the themes then the hover
   //: preview doesn't need to be a thing ... make sure that the preview ...
@@ -3296,6 +3423,10 @@
     const close = closeSettingsModal;
     closeSettingsModal = function closeSettingsModalEndingPreview() {
       if (settingsControlState.themeHold) releaseThemeHold();
+      //: Closed, the window keeps no pane in the page (L676): a moment on, each built pane is parked.
+      setTimeout(() => {
+        if ($("settings-modal").classList.contains("hidden")) for (const name of SETTINGS_SECTIONS) SURFACES.park(`settings-${name}`);
+      }, 600);
       return close();
     };
     const show = showSettingsSection;
@@ -3303,15 +3434,17 @@
       if (settingsControlState.themeHold && name !== currentSettingsSection) releaseThemeHold();
       return show(name);
     };
+    //: settings.js hangs helpers on the function (`showSettingsSection.loadCurrencyRates`) and calls them through the global name, which is now this wrapper: copy them over or opening Search and index throws.
+    Object.assign(showSettingsSection, show);
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && settingsControlState.themeHold) releaseThemeHold();
     });
     //: Capture: a card chosen ends the preview before its own click applies it.
-    $("theme-presets")?.addEventListener("click", (event) => {
+    wire("theme-presets").addEventListener("click", (event) => {
       if (settingsControlState.themeHold && !event.target.closest?.(".theme-eye")) releaseThemeHold();
     }, true);
   })();
-  $("theme-surprise")?.addEventListener("click", () => {
+  wire("theme-surprise").addEventListener("click", () => {
     const active = activeThemePreset();
     const names = Object.keys(THEME_PRESETS).filter((n) => n !== active);
     const pick = names[Math.floor(Math.random() * names.length)];
@@ -3335,7 +3468,7 @@
     filter.focus({ preventScroll: true });
   }
 
-  $("logs-empty-clear").addEventListener("click", () => {
+  wire("logs-empty-clear").addEventListener("click", () => {
     settingsLook.logFilterFromRun = false;
     $("log-filter").value = "";
     $("log-level").value = "all";
@@ -3352,7 +3485,7 @@
   //: Auto means stays in the option's title and the row's own words.
   function renderAutoChoices() {
     const word = (id, resolved, meaning) => {
-      const option = $(id)?.querySelector('option[value="auto"]');
+      const option = document.getElementById(id)?.querySelector('option[value="auto"]');
       if (!option) return;
       const text = `Auto (${resolved})`;
       if (option.textContent !== text) option.textContent = text;
@@ -3376,7 +3509,7 @@
   //: answer is `chat_model_small` (True, False, or None for "the name has no
   //: size in it", which the runner treats as off).
   function renderSmallModelAuto() {
-    const option = $("small-model-mode")?.querySelector('option[value="auto"]');
+    const option = document.getElementById("small-model-mode")?.querySelector('option[value="auto"]');
     if (!option || typeof modelStatus === "undefined" || !modelStatus) return;
     const small = modelStatus.chat_model_small;
     const text = `Auto (${small === true ? "on" : "off"} now)`;
@@ -3580,9 +3713,9 @@
     }
   }
 
-  //: This file arrives after the first Appearance render, so label once now.
-  renderAutoChoices();
-  renderSmallModelAuto();
+  //: Labelled once each pane is built: the words read only built panes, so a status poll builds none (L675).
+  onSurface("settings-appearance", renderAutoChoices);
+  onSurface("settings-tools", renderSmallModelAuto);
 
   async function renderAccount() {
     const facts = $("account-facts");
@@ -3793,7 +3926,7 @@
       });
     } catch (error) {
       check.checked = !check.checked;
-      toast(error.message || "Couldn't save that tool setting. Try again.", true);
+      toast(error.message || voiceLine("failed", { what: "save that tool setting" }), true);
       return;
     }
     // The "N of 51 on" count is only true until someone flips one.
@@ -3838,7 +3971,7 @@
         body: JSON.stringify({ disabled_tools: [...next] }),
       });
     } catch (error) {
-      toast(error.message || "Couldn't save those tool settings. Try again.", true);
+      toast(error.message || voiceLine("failed", { what: "save those tool settings" }), true);
       return;
     }
     for (const check of boxes) check.checked = turnOn;
@@ -3957,7 +4090,7 @@
   // body at load, which would have built the 2,700-node body at every boot. They
   // run here, with the first open, after the body exists, in the order they ran.
 
-  $("health-integrity-check")?.addEventListener("click", async () => {
+  wire("health-integrity-check").addEventListener("click", async () => {
     const button = $("health-integrity-check");
     setLabel(button, "ph:spin Checking");
     try {
@@ -3970,36 +4103,38 @@
 
   //: The one switch for every box's suggestions (Brief 86, CHAT_PLAN decision
   //: 69), kept on this device: absent reads as on.
-  $("pref-search-suggest")?.addEventListener("change", (event) => {
+  wire("pref-search-suggest").addEventListener("change", (event) => {
     prefs.set("searchSuggest", event.target.checked ? "on" : "off");
     toast(event.target.checked ? "Search boxes suggest as you type." : "Search boxes no longer suggest.");
   });
-  $("bg-art-toggle").addEventListener("change", (e) => {
+  wire("bg-art-toggle").addEventListener("change", (e) => {
     toggleBgArt(e.target.checked);
     renderAppearance(); // enable/disable the style + intensity rows
   });
-  $("contrast-toggle").addEventListener("change", (e) => applyContrast(e.target.checked));
+  wire("contrast-toggle").addEventListener("change", (e) => applyContrast(e.target.checked));
 
   // Wave O: expanded appearance controls.
-  for (const b of document.querySelectorAll("#theme-seg button")) {
-    b.addEventListener("click", () => {
-      applyThemeChoice(b.dataset.themeChoice);
-      renderAppearance();
-    });
-  }
-  for (const b of document.querySelectorAll("#fontsize-seg button")) {
-    b.addEventListener("click", () => {
-      prefs.set("fontsize", b.dataset.fontsize);
-      applyAppearance();
-      renderAppearance();
-    });
-  }
-  $("font-seg").addEventListener("change", (e) => {
+  onSurface("settings-appearance", () => {
+    for (const b of document.querySelectorAll("#theme-seg button")) {
+      b.addEventListener("click", () => {
+        applyThemeChoice(b.dataset.themeChoice);
+        renderAppearance();
+      });
+    }
+    for (const b of document.querySelectorAll("#fontsize-seg button")) {
+      b.addEventListener("click", () => {
+        prefs.set("fontsize", b.dataset.fontsize);
+        applyAppearance();
+        renderAppearance();
+      });
+    }
+  });
+  wire("font-seg").addEventListener("change", (e) => {
     prefs.set("font", e.target.value);
     applyAppearance();
     renderAppearance();
   });
-  $("density-seg").addEventListener("change", (e) => {
+  wire("density-seg").addEventListener("change", (e) => {
     //: Auto is no choice at all: the window's height decides.
     if (e.target.value === "auto") prefs.remove("density");
     else prefs.set("density", e.target.value);
@@ -4007,19 +4142,19 @@
     renderAppearance();
   });
   for (const key of ["read-leading", "read-measure"]) {
-    $(key).addEventListener("change", (e) => {
+    wire(key).addEventListener("change", (e) => {
       prefs.set(key, e.target.value);
       applyAppearance();
       renderAppearance();
     });
   }
-  $("perf-mode").addEventListener("change", (e) => {
+  wire("perf-mode").addEventListener("change", (e) => {
     prefs.set("perf", e.target.value);
     applyAppearance();
     renderAppearance();
   });
 
-  $("glass-toggle").addEventListener("change", (e) => {
+  wire("glass-toggle").addEventListener("change", (e) => {
     const turningOn = e.target.checked && appearancePref("glass") !== "on";
     prefs.set("glass", e.target.checked ? "on" : "off");
     // Asked for directly: switching glassmorphism on from off also turns the
@@ -4029,7 +4164,7 @@
     applyAppearance();
     renderAppearance();
   });
-  $("page-wash-toggle")?.addEventListener("change", (e) => {
+  wire("page-wash-toggle").addEventListener("change", (e) => {
     prefs.set("page-wash", e.target.checked ? "on" : "off");
     applyAppearance();
   });
@@ -4041,51 +4176,53 @@
     for (const [key] of wake) prefs.set(key, "on");
     if (wake.length) renderAppearance();
   }
-  $("glass-sheen-toggle").addEventListener("change", (e) => {
+  wire("glass-sheen-toggle").addEventListener("change", (e) => {
     prefs.set("glass-sheen", e.target.checked ? "on" : "off");
     if (e.target.checked) glassWake();
     applyAppearance();
     renderGlassRows();
   });
-  $("glass-controls-toggle").addEventListener("change", (e) => {
+  wire("glass-controls-toggle").addEventListener("change", (e) => {
     prefs.set("glass-controls", e.target.checked ? "on" : "off");
     if (e.target.checked) glassWake();
     applyAppearance();
   });
-  $("glass-sheen-strength").addEventListener("input", (e) => {
+  wire("glass-sheen-strength").addEventListener("input", (e) => {
     prefs.set("glass-sheen-strength", e.target.value);
     $("glass-sheen-strength-value").textContent = `${e.target.value}%`;
     glassWake(true);
     applyAppearance();
   });
-  for (const btn of document.querySelectorAll("#motion-seg button")) {
-    btn.addEventListener("click", () => {
-      const off = btn.dataset.motionChoice === "off";
-      prefs.set("motion", btn.dataset.motionChoice);
-      // The background-art picker has its own "Moving" override (see
-      // startBgArt()'s comment). Choosing Off here is a direct, explicit ask
-      // for stillness, and "Moving" silently surviving it read as the two
-      // settings being unrelated: Off selects "Still"; leaving Off only clears
-      // that if we set it, so an independent "Moving" choice isn't clobbered.
-      if (off) {
-        prefs.set("bg-motion", "still");
-      } else if (appearancePref("bg-motion") === "still") {
-        prefs.set("bg-motion", "auto");
-      }
-      if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
-      applyAppearance();
-      renderAppearance();
-      if (reducedMotionWanted()) stopBgArt(); // a still UI shouldn't keep the art running
-      else if (bgArtOn()) startBgArt();
-      renderBrandLogo(); // start/stop the emblem's rotation to match
-    });
-  }
+  onSurface("settings-appearance", () => {
+    for (const btn of document.querySelectorAll("#motion-seg button")) {
+      btn.addEventListener("click", () => {
+        const off = btn.dataset.motionChoice === "off";
+        prefs.set("motion", btn.dataset.motionChoice);
+        // The background-art picker has its own "Moving" override (see
+        // startBgArt()'s comment). Choosing Off here is a direct, explicit ask
+        // for stillness, and "Moving" silently surviving it read as the two
+        // settings being unrelated: Off selects "Still"; leaving Off only clears
+        // that if we set it, so an independent "Moving" choice isn't clobbered.
+        if (off) {
+          prefs.set("bg-motion", "still");
+        } else if (appearancePref("bg-motion") === "still") {
+          prefs.set("bg-motion", "auto");
+        }
+        if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
+        applyAppearance();
+        renderAppearance();
+        if (reducedMotionWanted()) stopBgArt(); // a still UI shouldn't keep the art running
+        else if (bgArtOn()) startBgArt();
+        renderBrandLogo(); // start/stop the emblem's rotation to match
+      });
+    }
+  });
 
-  $("ui-motion-toggle").addEventListener("change", (e) => {
+  wire("ui-motion-toggle").addEventListener("change", (e) => {
     prefs.set("ui-motion", e.target.checked ? "on" : "off");
     applyAppearance();
   });
-  $("bg-intensity").addEventListener("input", (e) => {
+  wire("bg-intensity").addEventListener("input", (e) => {
     prefs.set("bg-intensity", e.target.value);
     $("bg-intensity-value").textContent = `${e.target.value}%`;
     // Using it while the art is off turns the art on (`.dependent-off`, settings.js).
@@ -4097,18 +4234,18 @@
     startBgArt(); // intensity also drives particle density
   });
   // Corner rounding + glass blur: live sliders over CSS custom properties.
-  $("radius-slider").addEventListener("input", (e) => {
+  wire("radius-slider").addEventListener("input", (e) => {
     prefs.set("radius", e.target.value);
     $("radius-value").textContent = `${e.target.value}px`;
     applyAppearance();
   });
-  $("glass-blur").addEventListener("input", (e) => {
+  wire("glass-blur").addEventListener("input", (e) => {
     prefs.set("glass-blur", e.target.value);
     $("glass-blur-value").textContent = `${e.target.value}px`;
     glassWake();
     applyAppearance();
   });
-  $("glass-opacity").addEventListener("input", (e) => {
+  wire("glass-opacity").addEventListener("input", (e) => {
     prefs.set("glass-opacity", e.target.value);
     $("glass-opacity-value").textContent = `${e.target.value}%`;
     glassWake();
@@ -4117,18 +4254,20 @@
   // All four routes go through app.js's setZoom, so the slider, the buttons, the
   // Ctrl+/- shortcut and the command palette cannot disagree about the range,
   // the step, or where the value is stored.
-  $("zoom-slider").addEventListener("input", (e) => setZoom(Number(e.target.value)));
-  $("zoom-in")?.addEventListener("click", () => nudgeZoom(1));
-  $("zoom-out")?.addEventListener("click", () => nudgeZoom(-1));
-  $("zoom-reset")?.addEventListener("click", () => setZoom(100));
-  for (const btn of document.querySelectorAll("#border-style-seg button")) {
-    btn.addEventListener("click", () => {
-      prefs.set("border-style", btn.dataset.borderChoice);
-      applyAppearance();
-      renderAppearance();
-    });
-  }
-  $("shadow-intensity").addEventListener("input", (e) => {
+  wire("zoom-slider").addEventListener("input", (e) => setZoom(Number(e.target.value)));
+  wire("zoom-in").addEventListener("click", () => nudgeZoom(1));
+  wire("zoom-out").addEventListener("click", () => nudgeZoom(-1));
+  wire("zoom-reset").addEventListener("click", () => setZoom(100));
+  onSurface("settings-appearance", () => {
+    for (const btn of document.querySelectorAll("#border-style-seg button")) {
+      btn.addEventListener("click", () => {
+        prefs.set("border-style", btn.dataset.borderChoice);
+        applyAppearance();
+        renderAppearance();
+      });
+    }
+  });
+  wire("shadow-intensity").addEventListener("input", (e) => {
     prefs.set("shadow-intensity", e.target.value);
     $("shadow-intensity-value").textContent = `${e.target.value}%`;
     applyAppearance();
@@ -4145,7 +4284,7 @@
     if (bgArtOn()) startBgArt();
     renderBrandLogo();
   }
-  $("accent-custom").addEventListener("input", (e) => {
+  wire("accent-custom").addEventListener("input", (e) => {
     const pick = e.target.value;
     const dark = resolvedTheme() === "dark";
     const tone = accentTone(pick, dark);
@@ -4158,13 +4297,13 @@
     $("accent-offer-use").dataset.tone = tone;
     $("accent-offer").classList.remove("hidden");
   });
-  $("accent-offer-use").addEventListener("click", (e) => {
+  wire("accent-offer-use").addEventListener("click", (e) => {
     const tone = e.currentTarget.dataset.tone;
     if (!tone) return;
     $("accent-custom").value = tone;
     setCustomAccent(tone);
   });
-  $("accent-custom-clear").addEventListener("click", () => {
+  wire("accent-custom-clear").addEventListener("click", () => {
     $("accent-offer").classList.add("hidden");
     prefs.remove("accent-custom");
     applyCustomAccent(null);
@@ -4172,31 +4311,31 @@
     if (bgArtOn()) startBgArt();
     renderBrandLogo();
   });
-  $("page-bg-custom").addEventListener("input", (e) => {
+  wire("page-bg-custom").addEventListener("input", (e) => {
     prefs.set("page-bg", e.target.value);
     applyPageBackground(e.target.value);
   });
-  $("page-bg-clear").addEventListener("click", () => {
+  wire("page-bg-clear").addEventListener("click", () => {
     prefs.remove("page-bg");
     prefs.remove("page-bg-dark");
     applyPageBackground(null);
     renderAppearance();
   });
   // Background art style.
-  $("bg-art-style").closest("details")?.addEventListener("toggle", renderBgStyleGrid);
-  $("avatar-follow").addEventListener("change", (e) => {
+  onSurface("settings-appearance", () => $("bg-art-style").closest("details")?.addEventListener("toggle", renderBgStyleGrid));
+  wire("avatar-follow").addEventListener("change", (e) => {
     const value = e.target.checked ? "on" : "off";
     prefs.set("avatar-follow", value);
     document.documentElement.dataset.avatarFollow = value;
   });
-  $("avatar-buddy").addEventListener("change", (e) => {
+  wire("avatar-buddy").addEventListener("change", (e) => {
     prefs.set("avatar-buddy", e.target.value);
     mountBuddyCustom();
     syncNameMarkBuddy();
     nameMarkBuddySizeSelect();
   });
-  $("avatar-buddy-size").addEventListener("change", (e) => nameMarkBuddySetSize(Number(e.target.value)));
-  $("avatar-buddy-motion").addEventListener("change", (e) => {
+  wire("avatar-buddy-size").addEventListener("change", (e) => nameMarkBuddySetSize(Number(e.target.value)));
+  wire("avatar-buddy-motion").addEventListener("change", (e) => {
     try {
       prefs.set("avatar-buddy-motion", e.target.value);
     } catch (err) {
@@ -4205,110 +4344,112 @@
     nameMarkBuddyMotionApply();
   });
   //: Motion at rest (atlas-life.js, `atlasTailCalm.rest.holds`): read once a second, so the choice is taken up within a second.
-  $("avatar-buddy-rest").addEventListener("change", (e) => {
+  wire("avatar-buddy-rest").addEventListener("change", (e) => {
     try {
       prefs.set("avatar-buddy-rest", e.target.value);
     } catch (err) {
       // For this visit only.
     }
   });
-  $("avatar-buddy-actions").addEventListener("change", (e) => {
+  wire("avatar-buddy-actions").addEventListener("change", (e) => {
     try {
       prefs.set("avatar-buddy-actions", e.target.value);
     } catch (err) {
       // This visit only.
     }
   });
-  try {
-    $("avatar-buddy-actions").value = prefs.get("avatar-buddy-actions", null) || "fewer";
-  } catch (err) {
-    $("avatar-buddy-actions").value = "fewer";
-  }
-  $("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());
-  $("atlas-style").addEventListener("change", (e) => {
+  onSurface("settings-appearance", () => {
+    try {
+      $("avatar-buddy-actions").value = prefs.get("avatar-buddy-actions", null) || "fewer";
+    } catch (err) {
+      $("avatar-buddy-actions").value = "fewer";
+    }
+  });
+  wire("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());
+  wire("atlas-style").addEventListener("change", (e) => {
     prefs.set("atlas-style", e.target.value);
     atlasRepaint();
   });
-  $("assistant-avatar").addEventListener("change", (e) => {
+  wire("assistant-avatar").addEventListener("change", (e) => {
     prefs.set("assistant-avatar", e.target.value);
     repaintAssistantAvatars();
   });
-  $("atlas-look").addEventListener("change", (e) => {
+  wire("atlas-look").addEventListener("change", (e) => {
     prefs.set("atlas-look", e.target.value);
     atlasRepaint();
   });
-  $("face-look").addEventListener("change", (e) => {
+  wire("face-look").addEventListener("change", (e) => {
     prefs.set("face-look", e.target.value);
     nameMarkRepaintAll();
     //: An Atlas on Auto takes its look from here (`atlasLook`).
     atlasRepaint();
   });
-  $("dash-mark").addEventListener("change", (e) => {
+  wire("dash-mark").addEventListener("change", (e) => {
     prefs.set("dash-mark", e.target.value);
     paintDashEmblem();
   });
-  $("avatar-motion").addEventListener("change", (e) => {
+  wire("avatar-motion").addEventListener("change", (e) => {
     prefs.set("avatar-motion", e.target.value);
     document.documentElement.dataset.avatarMotion = e.target.value;
   });
-  $("progress-motion").addEventListener("change", (e) => {
+  wire("progress-motion").addEventListener("change", (e) => {
     prefs.set("progress-motion", e.target.value);
     document.documentElement.dataset.progressMotion = e.target.value;
     document.documentElement.toggleAttribute("data-progress-chosen", e.target.value === "always");
     renderProgressMotionHint();
   });
-  $("pref-show-thinking-words")?.addEventListener("change", (e) => {
+  wire("pref-show-thinking-words").addEventListener("change", (e) => {
     prefs.set("show-thinking-words", e.target.checked ? "on" : "off");
   });
-  $("bg-motion").addEventListener("change", (e) => {
+  wire("bg-motion").addEventListener("change", (e) => {
     prefs.set("bg-motion", e.target.value);
     // Still vs moving is decided in setup, so the sketch has to be rebuilt.
     if (bgArtOn()) startBgArt();
   });
   // Custom CSS (advanced).
-  $("custom-css-apply").addEventListener("click", () => {
+  wire("custom-css-apply").addEventListener("click", () => {
     const css = $("custom-css").value;
     prefs.set("custom-css", css);
     applyCustomCss(css);
     $("custom-css-status").textContent = "Applied.";
   });
-  $("custom-css-clear").addEventListener("click", () => {
+  wire("custom-css-clear").addEventListener("click", () => {
     prefs.remove("custom-css");
     $("custom-css").value = "";
     applyCustomCss("");
     $("custom-css-status").textContent = "Cleared.";
   });
-  $("appearance-reset").addEventListener("click", resetAppearance);
-  $("theme-reset").addEventListener("click", resetThemeOnly);
+  wire("appearance-reset").addEventListener("click", resetAppearance);
+  wire("theme-reset").addEventListener("click", resetThemeOnly);
 
-  $("theme-clear-overrides").addEventListener("click", clearManualOverrides);
+  wire("theme-clear-overrides").addEventListener("click", clearManualOverrides);
 
-  $("harmony-apply").addEventListener("click", applyHarmony);
-  $("custom-theme-save").addEventListener("click", () => {
+  wire("harmony-apply").addEventListener("click", applyHarmony);
+  wire("custom-theme-save").addEventListener("click", () => {
     saveCurrentLook().catch((error) => toast(error.message, true));
   });
-  $("custom-theme-name").addEventListener("keydown", (e) => {
+  wire("custom-theme-name").addEventListener("keydown", (e) => {
     if (e.key === "Enter") $("custom-theme-save").click();
   });
-  $("look-surprise").addEventListener("click", () => settingsLook.lookFile.surpriseNow());
-  $("look-export").addEventListener("click", () => settingsLook.lookFile.exportNow());
-  $("look-import").addEventListener("click", () => pickJsonFile("look-import-file", (data) => settingsLook.lookFile.importNow(data)));
+  wire("look-surprise").addEventListener("click", () => settingsLook.lookFile.surpriseNow());
+  wire("look-export").addEventListener("click", () => settingsLook.lookFile.exportNow());
+  wire("look-import").addEventListener("click", () => pickJsonFile("look-import-file", (data) => settingsLook.lookFile.importNow(data)));
 
-  $("log-source").addEventListener("change", renderActiveLogView);
-  $("log-level").addEventListener("change", renderActiveLogView);
-  $("log-requests").addEventListener("change", renderActiveLogView);
+  wire("log-source").addEventListener("change", renderActiveLogView);
+  wire("log-level").addEventListener("change", renderActiveLogView);
+  wire("log-requests").addEventListener("change", renderActiveLogView);
 
-  $("log-filter").addEventListener("input", (event) => {
+  wire("log-filter").addEventListener("input", (event) => {
     if (event.isTrusted) settingsLook.logFilterFromRun = false;
     clearTimeout(logFilterDebounceTimeout);
     logFilterDebounceTimeout = setTimeout(renderActiveLogView, 150);
   });
-  $("logs-copy").addEventListener("click", copyLogs);
-  $("logs-clear").addEventListener("click", clearLogs);
-  $("logs-bundle").addEventListener("click", downloadSupportBundle);
-  $("logs-email-bundle").addEventListener("click", () => emailSupportReport(""));
+  wire("logs-copy").addEventListener("click", copyLogs);
+  wire("logs-clear").addEventListener("click", clearLogs);
+  wire("logs-bundle").addEventListener("click", downloadSupportBundle);
+  wire("logs-email-bundle").addEventListener("click", () => emailSupportReport(""));
 
-  $("log-follow").addEventListener("change", (event) => {
+  wire("log-follow").addEventListener("change", (event) => {
     logFollowPinned = event.target.checked;
     if (event.target.checked) scrollLogToBottom();
   });
@@ -4336,7 +4477,7 @@
   //: reading `scrollHeight` right after laid the whole list out: 120ms in the handler at 4x).
   for (const id of ["log-list", "log-terminal"]) {
     let queued = false;
-    $(id).addEventListener("scroll", () => {
+    wire(id).addEventListener("scroll", () => {
       if (queued || !$("log-follow").checked) return;
       queued = true;
       afterFrames(() => setTimeout(() => {
@@ -4349,12 +4490,12 @@
 
   //: Reading up draws the next window of older records at once (INBOX 1608); they are held in
   //: memory for the session, so the list never has to ask for them twice.
-  $("log-list").addEventListener("scroll", (event) => {
+  wire("log-list").addEventListener("scroll", (event) => {
     const list = event.currentTarget;
     if (list.scrollTop < 80) list.querySelector(":scope > li:first-child > button")?.click();
   });
   //: Re-reads the server's records now: for when Follow is off, or the stream is reconnecting.
-  $("logs-refresh").addEventListener("click", async () => {
+  wire("logs-refresh").addEventListener("click", async () => {
     const button = $("logs-refresh");
     setBusy(button, true);
     await renderLogs();
@@ -4362,48 +4503,51 @@
     toast("Log refreshed.");
   });
 
-  for (const button of document.querySelectorAll("#log-view-toggle button")) {
-    button.addEventListener("click", () => {
-      logView = button.dataset.view;
-      prefs.set("logView", logView);
-      for (const b of document.querySelectorAll("#log-view-toggle button")) {
-        b.classList.toggle("active", b === button);
-      }
-      $("log-list").classList.toggle("hidden", logView !== "list");
-      $("log-terminal").classList.toggle("hidden", logView !== "terminal");
-      $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
-      renderActiveLogView();
-      scrollLogToBottom();
-    });
-    // The markup hardcodes "List" as the active button; a returning visitor
-    // whose last choice (localStorage) was "terminal" needs that reflected
-    // here too, not just in which container renders.
-    button.classList.toggle("active", button.dataset.view === logView);
-  }
-  $("log-list").classList.toggle("hidden", logView !== "list");
-  $("log-terminal").classList.toggle("hidden", logView !== "terminal");
-  $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
+  onSurface("settings-logs", () => {
+    for (const button of document.querySelectorAll("#log-view-toggle button")) {
+      button.addEventListener("click", () => {
+        logView = button.dataset.view;
+        prefs.set("logView", logView);
+        for (const b of document.querySelectorAll("#log-view-toggle button")) {
+          b.classList.toggle("active", b === button);
+        }
+        $("log-list").classList.toggle("hidden", logView !== "list");
+        $("log-terminal").classList.toggle("hidden", logView !== "terminal");
+        $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
+        renderActiveLogView();
+        scrollLogToBottom();
+      });
+      // The markup hardcodes "List" as the active button; a returning visitor
+      // whose last choice (localStorage) was "terminal" needs that reflected
+      // here too, not just in which container renders.
+      button.classList.toggle("active", button.dataset.view === logView);
+    }
+    $("log-list").classList.toggle("hidden", logView !== "list");
+    $("log-terminal").classList.toggle("hidden", logView !== "terminal");
+    $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
+  });
 
-  $("sampling-reset")?.addEventListener("click", async () => {
+  wire("sampling-reset").addEventListener("click", async () => {
+    const was = { ...(samplingState?.overrides || {}) };
     try {
       await apiJson("/models/sampling", {
         method: "PUT",
         body: JSON.stringify({ overrides: {} }),
       });
+      if (Object.keys(was).length) pushRequestUndo("Reset the sampling settings", "/models/sampling", "PUT", { overrides: was }, { overrides: {} }, loadSamplingSettings);
       toast("Back to what each model recommends.");
     } catch {
-      toast("Couldn't reset those settings.", true);
+      toast(voiceLine("failed", { what: "reset those settings" }), true, { action: ["Reload them", loadSamplingSettings] });
     }
     await loadSamplingSettings();
   });
 
   //: The persona hint's "(Atlas)" follows the name too.
-  {
-    const hint = document.getElementById("persona-placeholder-hint");
-    if (hint) hint.textContent = `Write {ai_name} where the name should go and it is replaced with ${AI_NAME}. Optional.`;
-  }
+  onSurface("settings-personas", () => {
+    $("persona-placeholder-hint").textContent = `Write {ai_name} where the name should go and it is replaced with ${AI_NAME}. Optional.`;
+  });
 
-  $("atlas-open")?.addEventListener("click", () => openHelpChat());
+  wire("atlas-open").addEventListener("click", () => openHelpChat());
 
   // =============================================================================
   // What it learned (WORLD_CLASS_PLAN I9)
@@ -4452,6 +4596,9 @@
   const LEARNED_KIND_COPY = {
     claim: "Claim",
     question: "Open question",
+    date: "Date",
+    entity: "Name",
+    duplicate: "Repeated note",
     //: The person's own word (decision 60, B31, B32).
     confirmed: "Confirmed by you",
     pinned: "Pinned as true",
@@ -4573,10 +4720,15 @@
 
   async function learnedSetSwitch(name, value) {
     try {
+      //: Undo sends back the one switch (the master only masks the other seven in the reply, it does not store them off) (L694).
+      const before = await apiJson("/learned/switches", { silent: true }).catch(() => null);
       await apiJson("/learned/switches", {
         method: "PUT",
         body: JSON.stringify({ [name]: value }),
       });
+      if (before && Boolean(before[name]) !== Boolean(value)) {
+        pushRequestUndo("Learning switch", "/learned/switches", "PUT", { [name]: before[name] }, { [name]: value }, renderLearnedSwitches);
+      }
     } catch (error) {
       toast(error.message, true);
     }
@@ -4983,33 +5135,35 @@
     await renderLearnedFromYou();
   }
 
-  wireLearnedSection();
+  onSurface("settings-learned", wireLearnedSection);
 
   wirePrefsDirtyMarks();
 
   // Mark a picker as "user has a pending choice" so the status poll stops
   // resetting it (Wave N bug fix).
   for (const id of ["chat-model-select", "embedding-model-select"]) {
-    $(id).addEventListener("change", () => ($(id).dataset.userChosen = "1"));
+    wire(id).addEventListener("change", () => ($(id).dataset.userChosen = "1"));
   }
-  for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
-    radio.addEventListener("change", () => {
-      $("embedding-model-select").dataset.userChosen = "1";
-      // The radio itself needs the latch too: the choice isn't saved until
-      // "Apply & re-index", and without this the next status poll put the old
-      // backend back the instant focus left the radio.
-      radio.dataset.userChosen = "1";
-      //: The picker's enabled state follows the radio immediately rather than
-      //: waiting for the next status poll: choosing Ollama and finding the
-      //: model list still greyed for a second reads as the choice not having
-      //: taken. It says which backend is *selected*, which is the question the
-      //: control is about; whether it is applied is what Apply is for.
-      syncEmbeddingPickerState();
-      if (radio.checked && radio.value === "fastembed") applyEmbeddingBackend();
-    });
-  }
+  onSurface("settings-searchindex", () => {
+    for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
+      radio.addEventListener("change", () => {
+        $("embedding-model-select").dataset.userChosen = "1";
+        // The radio itself needs the latch too: the choice isn't saved until
+        // "Apply & re-index", and without this the next status poll put the old
+        // backend back the instant focus left the radio.
+        radio.dataset.userChosen = "1";
+        //: The picker's enabled state follows the radio immediately rather than
+        //: waiting for the next status poll: choosing Ollama and finding the
+        //: model list still greyed for a second reads as the choice not having
+        //: taken. It says which backend is *selected*, which is the question the
+        //: control is about; whether it is applied is what Apply is for.
+        syncEmbeddingPickerState();
+        if (radio.checked && radio.value === "fastembed") applyEmbeddingBackend();
+      });
+    }
+  });
 
-  $("about-install")?.addEventListener("click", async () => {
+  wire("about-install").addEventListener("click", async () => {
     const offered = installPrompt.event;
     if (!offered) return;
     installPrompt.event = null; // the event can be used once
@@ -5018,14 +5172,16 @@
     renderInstallRow();
   });
 
-  $("pref-single-keys").checked = singleKeysOn();
+  onSurface("settings-shortcuts", () => ($("pref-single-keys").checked = singleKeysOn()));
 
-  for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
-    button.addEventListener("click", () => {
-      privacyRange = button.dataset.range;
-      renderPrivacyRange();
-    });
-  }
+  onSurface("settings-privacy", () => {
+    for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
+      button.addEventListener("click", () => {
+        privacyRange = button.dataset.range;
+        renderPrivacyRange();
+      });
+    }
+  });
 
 
   // ---- Check what it learned (CHAT_PLAN decision 68) ----
@@ -5082,6 +5238,38 @@
       const note = document.createElement("p");
       note.className = "muted learned-meta learned-flag";
       note.textContent = `Check this: ${reason}`;
+      //: Keep it (L584): the flag goes and no later check raises it again.
+      const keep = document.createElement("button");
+      keep.type = "button";
+      keep.className = "ghost small";
+      keep.textContent = "Keep it";
+      keep.title = "This one stands: clear the flag and do not flag it again";
+      keep.addEventListener("click", async () => {
+        keep.disabled = true;
+        const body = JSON.stringify({ fact_id: Number(li.dataset.factId) });
+        const post = (path) => apiJson(path, { method: "POST", body });
+        const refresh = () => learnedCheckRefresh().then(renderLearnedList);
+        try {
+          await post("/learned/audit/keep");
+          offerUndo(
+            "Keep a flagged item",
+            "Kept. It will not be flagged again.",
+            async () => {
+              await post("/learned/audit/unkeep");
+              await refresh();
+            },
+            async () => {
+              await post("/learned/audit/keep");
+              await refresh();
+            }
+          );
+          await learnedCheckRefresh();
+          li.querySelector(".learned-flag")?.remove();
+        } catch {
+          keep.disabled = false;
+        }
+      });
+      note.append(" ", keep);
       li.appendChild(note);
     }
   }
@@ -5153,8 +5341,8 @@
     await refresh();
   }
 
-  $("learned-check")?.addEventListener("click", learnedCheckRun);
-  $("learned-check-undo")?.addEventListener("click", learnedCheckPutBack);
+  wire("learned-check").addEventListener("click", learnedCheckRun);
+  wire("learned-check-undo").addEventListener("click", learnedCheckPutBack);
   //: The list is drawn on every filter, page and edit (`renderLearnedList`, a
   //: boot file that cannot know this one): the draw is wrapped, so the marks
   //: follow it, and the first draw reads what the last check did (a scheduled
@@ -5400,5 +5588,105 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  // ---- read on every open, per pane (moved from openSettingsModal, L675) ----
+  //
+  // Each reads what can change while the window is closed. `openSettingsModal.refresh` runs it now for a pane
+  // that is built and at the build for one that is not, so an open builds only the pane it shows (reading
+  // these there built About, Data and Appearance on every first open). `onSurface` queues a function once.
+  async function refreshAboutPane() {
+    //: The version alone: "46 entries loaded" was a debugging line (the
+    //: client's cache size, drafts included) sitting beside the Health
+    //: section's own count of the same thing, and the two disagreed.
+    const aboutHealth = await apiJson("/health").catch(() => null);
+    //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
+    const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
+    $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
+    //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
+    afterCharacters(() => {
+      const { mode, reason } = nameMarkBuddyMotion();
+      const word = { full: "moves freely", fades: "fades only", still: "stays still" }[mode];
+      $("about-motion").textContent = `Companion motion: ${word}${reason && NMB_MOTION_WHY[reason] ? `. ${NMB_MOTION_WHY[reason]}` : "."}`;
+    });
+    $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
+    $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
+    $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
+    $("pref-update-channel-main").checked = prefsCache?.update_channel === "main";
+    $("pref-update-beta").checked = prefsCache?.update_beta === true;
+    $("update-check-status").textContent = "";
+    $("update-version-select").classList.add("hidden");
+    $("update-install-version").classList.add("hidden");
+    $("update-version-status").textContent = "";
+    refreshAboutDesktop(await desktopShell());
+  }
+
+  function refreshAboutDesktop(isDesktop) {
+    for (const id of ["desktop-console-row", "desktop-console-hint", "desktop-tray-row", "desktop-tray-hint", "desktop-advanced-fold", "about-restart-row"]) {
+      // Desktop-only: there is no console or tray in a browser tab, and a setting whose effect is
+      // unreachable reads as broken. The restart row the same: /system/restart can only ever do something
+      // in the packaged desktop app on Windows (the one platform _spawn_desktop knows how to relaunch), but
+      // the gate is desktop-ness alone and the backend's own platform check is the final word, so a browser
+      // tab never offers the button while a desktop build on macOS or Linux finds out when it tries.
+      $(id).classList.toggle("hidden", !isDesktop);
+    }
+    if (!isDesktop) return;
+    $("pref-show-console").checked = Boolean(prefsCache?.show_console_on_startup);
+    // Defaults to on, and `?? true` rather than `Boolean(...)` matters: an
+    // install that has never touched this has no stored value, and Boolean()
+    // of undefined would render the default as off.
+    $("pref-close-to-tray").checked = prefsCache?.close_to_tray ?? true;
+    //: Off unless chosen: a second launch brings the open window forward.
+    $("pref-new-window-on-launch").checked = Boolean(prefsCache?.new_window_on_launch);
+  }
+
+  //: The companion's switch is a stored preference the desktop app reads, so it is set from
+  //: any tab on this computer, not only from the desktop window (the owner, 2026-11-04: "the
+  //: atlas desktop comnpanion toggle is gone??", INBOX 1631). Another device has no say in
+  //: what this computer's desktop shows, so it has no row. Outside the desktop window a line
+  //: says when it takes effect. Built here, not in index.html, so the boot document's
+  //: element count (tests/test_boot_diet3.py) and the shared scope's name count do not grow.
+  async function refreshCompanionRow() {
+    const isDesktop = await desktopShell();
+    //: Off unless chosen: the corner companion only shows once it is turned on.
+    if (isDesktop) $("pref-desktop-companion").checked = Boolean(prefsCache?.desktop_companion);
+    const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;
+    $("desktop-companion-row").classList.toggle("hidden", !onThisComputer);
+    const companionHelp = $("desktop-companion-help");
+    let companionNote = document.getElementById("desktop-companion-note");
+    if (isDesktop || !onThisComputer) return companionNote?.remove();
+    if (companionNote) return;
+    companionNote = document.createElement("p");
+    companionNote.id = "desktop-companion-note";
+    companionNote.className = "muted";
+    companionNote.textContent = "The companion shows on the desktop while the desktop app runs with its window minimised or in the tray; set it here or there.";
+    companionHelp.after(companionNote);
+  }
+
+  async function refreshExportsPane() {
+    const isDesktop = await desktopShell();
+    $("open-exports-row").classList.toggle("hidden", !isDesktop);
+    $("export-save-dir-row").classList.toggle("hidden", !isDesktop);
+    //: The exports list is for every shell, not only the desktop: on a browser
+    //: tab it is the only way back to a file the app saved (INBOX 159).
+    renderExportsList();
+    if (isDesktop) $("pref-export-dir").value = prefsCache?.export_save_dir || "";
+  }
+
+  const OPEN_REFRESH = [
+    ["settings-about", refreshAboutPane],
+    ["settings-appearance", refreshCompanionRow],
+    ["settings-data", refreshExportsPane],
+    // Rebuilt each open rather than once at startup: the list reflects saved
+    // preferences, and those can change from another window or a restore.
+    ["settings-appearance", renderStatusBarSettings],
+    // Re-read every open, not cached: the panel shows what the *currently
+    // selected* model recommends, and changing the chat model is the most likely
+    // reason to come back here.
+    ["settings-models", loadSamplingSettings],
+    ["settings-about", loadChangelog],
+  ];
+  openSettingsModal.refresh = () => {
+    for (const [pane, run] of OPEN_REFRESH) onSurface(pane, run);
+  };
+
   Object.assign(window, { SETTINGS_CONTROLS_READY, ensureSettingsFoldAll, lanAllowHere, lanEmptyRow, lanNetworkRows, lanSwitch, lanTrustNetwork, openTaskLog, refreshSearxngHost, releaseThemeHold, renderAccount, renderAutonomousReview, renderFeatureModelRows, renderLanAccess, renderLanAddresses, renderLanState, renderLearned, renderMaintenance, renderMemorySettings, renderSkillSettings, renderStatusBarSettings, renderToolSettings, settingsControlState });
 })();

@@ -37,7 +37,7 @@ from tessellate.core import paths
 
 FOLDER = "undo-bin"
 #: How long a deleted thing can still be brought back. Long enough for a
-#: session left open over a weekend, short enough that the bin never becomes a
+#: session kept running over a weekend, short enough that the bin never becomes a
 #: second copy of the notebook.
 KEEP_DAYS = 14
 _TOKEN = re.compile(r"^[0-9a-f]{32}$")

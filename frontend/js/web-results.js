@@ -214,7 +214,7 @@
       );
       return true;
     } catch (error) {
-      toast(error.message || "Couldn't save that bookmark.", true);
+      toast(error.message || voiceLine("failed", { what: "save that bookmark" }), true);
     }
   }
 

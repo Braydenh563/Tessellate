@@ -2,7 +2,7 @@
 
 The row stayed after an undo (a second press said "Already undone"). The feed
 now names, on a `restored` event, the events it reversed (`undid`), and the
-widget's `activityUndoStarts` leaves an actor out once everything it did in
+widget's `activityActorStarts` leaves an actor out once everything it did in
 the list is named there.
 """
 
@@ -25,11 +25,11 @@ AI = "system:librarian"
 
 def _starts(items: list[dict]) -> dict:
     source = (JS_DIR / "dashboard.js").read_text(encoding="utf-8")
-    match = re.search(r"^function activityUndoStarts\(items\) \{.*?^\}", source, re.S | re.M)
-    assert match, "activityUndoStarts is gone from the dashboard script"
+    match = re.search(r"^function activityActorStarts\(items\) \{.*?^\}", source, re.S | re.M)
+    assert match, "activityActorStarts is gone from the dashboard script"
     script = (
         match.group(0)
-        + f"\nprocess.stdout.write(JSON.stringify([...activityUndoStarts({json.dumps(items)})]));"
+        + f"\nprocess.stdout.write(JSON.stringify([...activityActorStarts({json.dumps(items)})]));"
     )
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
     return dict(json.loads(out))
@@ -72,3 +72,19 @@ def test_the_feed_names_the_events_a_restore_reversed(client, session):
     changed = [item["id"] for item in feed if item["actor"] == AI]
     assert restored[0]["undid"] == changed
     assert all("undid" not in item for item in feed if item["action"] != "restored")
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_redo_brings_the_row_back_l805():
+    items = [
+        _item(3, AI),
+        _item(5, "user", "restored", undid=[3]),
+        _item(6, "user", "redone", redid=[5]),
+    ]
+    assert _starts(items) == {AI: 3}
+
+
+def test_both_ai_undos_join_the_stack_with_a_redo_l805():
+    for name, marker in (("dashboard.js", "Undid what ${name} changed"), ("note-history.js", "Undid this run")):
+        source = (JS_DIR / name).read_text(encoding="utf-8")
+        assert marker in source and '"/events/redo"' in source, name

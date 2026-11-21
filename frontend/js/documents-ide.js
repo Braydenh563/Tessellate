@@ -137,7 +137,7 @@
     try {
       entries = await apiJson(`/documents/${currentDoc.id}/revisions`);
     } catch (error) {
-      toast(`Couldn't read this document's history: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "read this document's history", why: error.message }), true);
       return false;
     }
     const other = { label: "ph:files Another document…", title: "Compare this file with one of your other documents", run: () => docIdeCompareOther() };
@@ -178,7 +178,7 @@
     try {
       docs = (await apiJson("/documents?limit=30")).filter((d) => d.id !== mine);
     } catch (error) {
-      toast(`Couldn't list your documents: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "list your documents", why: error.message }), true);
       return false;
     }
     const items = docs.length

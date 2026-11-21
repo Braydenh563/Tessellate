@@ -17,7 +17,7 @@ the case. Read-only: no repo edits except your one findings file.
    touch emulation.
 3. Skip what `docs/roadmap/LEDGER.md`,
    `docs/roadmap/INBOX.md` and the plans already hold, unless it is still
-   broken on this head (then say "still open, re-verified").
+   broken on this head (then say "re-verified, unfixed").
 
 ## Lenses (every one, every surface)
 

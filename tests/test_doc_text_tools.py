@@ -114,7 +114,11 @@ def test_text_size_and_line_spacing_are_menu_rows_with_prose_only_css():
     # A code file keeps its own metrics: every size and spacing rule excludes it (six: large, xlarge, xxlarge, small, compact, relaxed; D28 added two).
     rules = re.findall(r"#tab-documents\.doc-(?:size|spacing)-\w+ [^{]*\{", css)
     assert len(rules) == 6 and all(":not(.doc-content-code)" in r for r in rules)
-    assert "!important" not in css[css.index("Text size and line spacing for prose") :]
+    #: The prose block runs to the next file the CSS took in: the OCR rules moved in
+    #: after it (L-world-class-71) carry their own, unrelated `!important`.
+    prose = css[css.index("Text size and line spacing for prose") :]
+    prose = prose.split("moved from 07-whiteboard-misc.css (L-world-class-71)")[0]
+    assert "!important" not in prose
 
 
 def test_copy_as_formatted_text_writes_html_and_markdown_and_is_a_prose_command():

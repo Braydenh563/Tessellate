@@ -69,18 +69,8 @@ function fillModelSelect(select, names, extraFirst, savedValue) {
   select.dataset.sig = signature;
   const previous = select.value; // preserve a live selection across a rebuild
   select.replaceChildren();
-  for (const extra of extras) {
-    const option = document.createElement("option");
-    option.value = extra.value;
-    option.textContent = extra.label;
-    select.appendChild(option);
-  }
-  for (const name of names) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
-  }
+  for (const extra of extras) select.append(new Option(extra.label, extra.value));
+  for (const name of names) select.append(new Option(name, name));
   // Prefer the value already showing; else the saved preference.
   const values = [...select.options].map((o) => o.value);
   const match =
@@ -213,9 +203,11 @@ function renderChatActiveModelBadge() {
 //: `position: fixed` (see the stylesheet's own note on why `absolute` put it
 //: off the bottom of the screen), so nothing positions it but this.
 function placeChatModelPanel() {
-  const panel = $("chat-model-panel");
+  //: Not `$`: this runs on every scroll, and asking for an id of the unbuilt Chat tab built it (L675, L-world-class-360).
+  const panel = document.getElementById("chat-model-panel");
+  if (!panel || panel.classList.contains("hidden")) return;
   const badge = $("chat-active-model");
-  if (!panel || !badge || panel.classList.contains("hidden")) return;
+  if (!badge) return;
   const margin = 8;
   panel.style.left = "0px";
   panel.style.top = "0px";
@@ -374,7 +366,7 @@ async function applyFeatureModel(key, name) {
     );
     refreshModelStatus();
   } catch (error) {
-    toast(error.message || "Couldn't set that model.", true);
+    toast(error.message || voiceLine("failed", { what: "set that model" }), true);
     refreshModelStatus();
   }
 }
@@ -428,6 +420,7 @@ const FEATURE_MODEL_SELECTS = [
 ];
 
 function syncFeatureModelSelects() {
+  syncFeatureModelSelects.pills?.();
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
     const select = document.getElementById(id);
     if (!select) continue;
@@ -486,6 +479,10 @@ function syncFeatureModelSelects() {
       : `${row.label} runs on ${row.inherits}, inherited. The same setting as Settings, Models.`;
   }
 }
+
+//: The dock pills (the owner, 2026-11-12: "Yes, a dock pill") are painted and wired by feature-model-sheet.js,
+//: fetched when either surface is built (the pills live in those lazy surfaces).
+for (const surface of ["notes", "documents"]) onSurface(surface, () => ensureModule("featureModelSheet"));
 
 function wireFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {

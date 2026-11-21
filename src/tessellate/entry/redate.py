@@ -62,7 +62,7 @@ def _reread(session, entry: Entry) -> bool:
 
 
 def run(chunk: int = CHUNK) -> dict:
-    """Read the dates of every note not done yet, in chunks, committing and
+    """Read the dates of every note not yet dated, in chunks, committing and
     recording the cursor after each. Returns {"notes", "changed", "done"}."""
     config = deps.get_config()
     cursor = int(config.get_preference(CURSOR_KEY, 0) or 0)

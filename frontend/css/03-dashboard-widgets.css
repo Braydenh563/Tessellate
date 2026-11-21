@@ -78,17 +78,6 @@
   margin: 0;
 }
 
-.inbox-row-actions {
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.inbox-row-actions > .chip {
-  margin-inline-end: auto;
-}
-
 /* GRAPH_PLAN KG3: a link's kind on its chip, quiet, before the note's name. */
 .link-kind {
   color: var(--muted);
@@ -3496,9 +3485,11 @@ button.answer-figure-open {
 }
 
 /* Zoom controls as one floating pill. */
+/* A row, the board's pill and order (L-world-class-351): one zoom control on
+   every canvas, not a stack here and a pill there. */
 .graph-zoom {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   /* The padding, gap and overflow are set below, with the reason. */
   /* The floating-control recipe (see `.scroll-top`): card fill, glass edge,
      glass shadow, the button radius. The buttons inside are plain, the
@@ -4737,7 +4728,15 @@ button.answer-figure-open {
   padding-block: 0;
 }
 
-/* Recent activity's "Undo what Atlas did" under its list (activityUndoControl,
+/* Time travel's slider (H8): days back from today, drawn right to left so the
+   past is leftward and today is the right end. */
+.ask-scope .ask-as-of-slider {
+  direction: rtl;
+  width: 10rem;
+  max-width: 100%;
+}
+
+/* Recent activity's "Undo what Atlas did" under its list (activityActorRow,
    dashboard.js): a quiet row, separated from the rows it acts on. */
 .activity-undo {
   margin-top: var(--space-2);

@@ -12,7 +12,7 @@
 //: The manual and Statistics are places too (INBOX 1335): overlays that push an
 //: entry on open, as Settings does; their own close steps back off it.
 const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
-//: They read as `#/Manual` and `#/Statistics` while open (B43), and a pasted one
+//: They read as `#/manual` and `#/statistics` while open (B43), and a pasted one
 //: opens them at load: both are routes in router.js (`ROUTE_TABS`, `routeEntry`,
 //: `routerRestore`), so they hold in the first seconds, before this file loads.
 const routerBack = { swallow: 0, timer: 0 };
@@ -64,6 +64,12 @@ function routerCloseTopOverlay() {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     return true;
   }
+  //: The graph's note panel is a sheet at a phone and floats on a desktop; Back left it open on the hidden map (L593).
+  const popup = document.getElementById("graph-popup");
+  if (popup && popup.offsetParent !== null && !popup.classList.contains("hidden")) {
+    call("closeGraphPopup");
+    return true;
+  }
   const closers = [
     ["sketch-overlay", "closeSketch"],
     ["palette-overlay", "closePalette"],
@@ -104,7 +110,7 @@ function routerBackHook(event) {
     window.clearTimeout(routerBack.timer);
     return true;
   }
-  if (typeof settingsModalOpen === "function" && settingsModalOpen()) return false;
+  //: Settings has an entry of its own and is not in the closer table, so an overlay over it (a sheet, a dialog) takes this Back first and Settings stays (L-world-class-75: it used to close under the sheet).
   //: The manual and Statistics have entries of their own, as Settings does.
   if (OVERLAY_TABS[tabHistory.stack[tabHistory.index]?.tab]) return false;
   const navId = event.state && event.state.navId;
@@ -129,10 +135,20 @@ function routerBackHook(event) {
 function routerSettle() {
   if (!/^#\/settings/.test(location.hash)) return;
   const tab = prefs.get("activeTab", null) || "dashboard";
-  const before = tabHistory.stack[tabHistory.index - 1];
+  //: Past every Settings entry, not one: each pane visited inside Settings is
+  //: an entry, so stepping off one left Back reopening Settings (wc-109, 421 j).
+  let under = tabHistory.index;
+  while (under > 0 && tabHistory.stack[under]?.tab === "settings") under -= 1;
+  const before = under < tabHistory.index ? tabHistory.stack[under] : null;
+  const steps = tabHistory.index - under;
   //: Only onto an entry this page wrote: a Settings opened straight from its
   //: address has the browser's blank page under it (CI e2e, d04186d).
-  if (tabHistory.index > 0 && before && before.tab === tab && history.state?.depth > 0 && routerGo(-1)) return;
+  if (before && before.tab === tab && history.state?.depth >= steps && routerGo(-steps)) return;
+  //: A stack walking on its own (`edited`): the same step, without the browser.
+  if (before && before.tab === tab && tabHistory.edited) {
+    goToTabHistory(under);
+    return;
+  }
   const entry = { tab, section: null };
   try {
     history.replaceState(history.state, "", `${location.pathname}${location.search}${routeHash(entry)}`);

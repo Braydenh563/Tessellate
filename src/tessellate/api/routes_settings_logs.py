@@ -139,7 +139,7 @@ def clear_server_logs() -> dict:
 # reconnect, and how often it looks for new records. The cap is not a
 # limitation to work around, EventSource reconnects on its own and resends
 # Last-Event-ID, so the handover is seamless, and a stream that lives forever
-# is a resource nothing ever reclaims when a tab is left open for a week.
+# is a resource nothing ever reclaims when a tab stays up for a week.
 LOG_STREAM_SECONDS = 10 * 60
 LOG_STREAM_POLL = 0.7
 LOG_STREAM_HEARTBEAT = 15
@@ -194,7 +194,7 @@ async def stream_server_logs(request: Request, after: int = 0) -> StreamingRespo
                 last_sent = now
             if now - started > LOG_STREAM_SECONDS:
                 # Hand back to the client's own reconnect rather than holding a
-                # connection open forever for a tab left open all week.
+                # connection open forever for a tab that stays up all week.
                 yield json.dumps({"type": "reconnect", "cursor": cursor}) + "\n"
                 return
             if now - last_sent > LOG_STREAM_HEARTBEAT:
