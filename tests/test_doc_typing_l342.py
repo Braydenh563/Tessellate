@@ -336,3 +336,205 @@ def test_the_grammar_worker_sends_spelling_lints_as_spans_only():
     assert re.search(r"if \(DOC_GRAMMAR_SKIP_KINDS\.has\(lint\.kind\)\) continue;", findings)
     # Nothing reads a spelling lint's words before that skip.
     assert findings.index("DOC_GRAMMAR_SKIP_KINDS") < findings.index("lint.message")
+
+
+def _live_patch_harness(text: str, keys: list, at: int) -> dict:
+    """Keys typed at `at` in Live: how many the plugin patched, and where the patched set
+    differs from a fresh plugin's on the same state (the dx1 harness, one place)."""
+    import re
+
+    from tests import test_doc_typing_dx1 as dx1
+
+    helpers = "\n".join(dx1._function(dx1.DOCS, h) for h in ("function docLiveSpanTouched(", "function docLiveRevealSame("))
+    anchor = re.search(r"^docLiveSpanTouched\.anchorIn = .*$", dx1.DOCS, re.M).group(0)
+    fence = "function docPairInput() {}\n" + PROSE[PROSE.index("docPairInput.fenceParts = ") :].split("\n};\n")[0] + "\n};"
+    helpers = fence + "\n" + dx1._function((JS / "markdown.js").read_text(encoding="utf-8"), "function mdMathBlockFrom(") + "\n" + helpers
+    stubs = dx1._STUBS.replace("function mdTocEntries() { return []; }", "function mdTocEntries(t) { return [...t.matchAll(/^#+ (.*)$/gm)].map((m) => ({ text: m[1], level: 1 })); }")
+    return dx1._node(
+        dx1._LOAD
+        + 'vm.runInContext(read("js/documents-props.js"), ctx);\n'
+        + f"vm.runInContext({json.dumps(helpers + chr(10) + anchor + stubs)}, ctx);\n"
+        + 'vm.runInContext(read("js/documents-cm.js"), ctx);\n'
+        + f"ctx.DOC = {json.dumps(text)}; ctx.KEYS = {json.dumps(keys)}; ctx.AT = {at};\n"
+        + """
+const out = vm.runInContext(`(() => {
+  const CM = CM6, P = docLivePlugin(CM);
+  const md = CM.markdown.markdown({ base: CM.markdown.markdownLanguage });
+  const dom = { closest: () => ({}), querySelector: () => null };
+  const viewOf = (state) => ({ state, hasFocus: true, visibleRanges: [{ from: 0, to: state.doc.length }], viewport: { from: 0, to: state.doc.length }, dom, contentDOM: dom });
+  const snap = (set) => { const o = []; for (const it = set.iter(); it.value; it.next()) o.push([it.from, it.to, it.value]); return o; };
+  const same = (a, b) => a.length === b.length && a.every(([f, t, v]) => b.some(([f2, t2, v2]) => f2 === f && t2 === t && (v2 === v || v2.eq(v))));
+  let state = CM.state.EditorState.create({ doc: DOC, extensions: [md], selection: { anchor: AT } });
+  const inst = P.create(viewOf(state));
+  let patched = 0, at = AT;
+  const bad = [];
+  const pt = inst.patch;
+  inst.patch = function (u) { const r = pt.call(this, u); if (r) patched += 1; return r; };
+  for (const k of KEYS) {
+    const tr = state.update({ changes: { from: at, insert: k }, selection: { anchor: at + k.length } });
+    at += k.length;
+    inst.update({ startState: state, state: tr.state, changes: tr.changes, transactions: [tr], docChanged: true, selectionSet: true, viewportChanged: true, focusChanged: false, view: viewOf(tr.state) });
+    state = tr.state;
+    if (!same(snap(inst.decorations), snap(P.create(viewOf(state)).decorations))) bad.push(k);
+  }
+  return { patched, bad };
+})()`, ctx);
+console.log(JSON.stringify(out));
+"""
+    )
+
+
+_HEAD_DOC = "# Big document\n\n\n\n## Section 0\n\nword1 word2 word3\n\n\n# Other\n\nlast words\n"
+
+
+@needs_node
+def test_keys_at_a_headings_start_patch_the_live_set_and_match_a_rebuild():
+    """The gate types at Ctrl+Home, before the H1's `#`: each of those keys rebuilt every visible
+    line (the patch took paragraphs only). Now the heading's lines are patched, the line turning
+    into a paragraph included, and the set equals a full rebuild after every key."""
+    keys = list(" the quick")
+    got = _live_patch_harness(_HEAD_DOC, keys, 0)
+    assert got["bad"] == [], got
+    assert got["patched"] == len(keys), got
+    inside = _live_patch_harness(_HEAD_DOC, list("ab #"), _HEAD_DOC.index("Section"))
+    assert inside["bad"] == [] and inside["patched"] == 4, inside
+    level = _live_patch_harness(_HEAD_DOC, ["#", "x", " "], _HEAD_DOC.index("# Other"))
+    assert level["bad"] == [], level
+
+
+@needs_node
+def test_a_heading_edit_with_a_contents_block_in_view_rebuilds():
+    text = "[TOC]\n\n" + _HEAD_DOC
+    got = _live_patch_harness(text, list("ab"), text.index("Section"))
+    assert got["bad"] == [] and got["patched"] == 0, got
+    para = _live_patch_harness(text, list("ab"), text.index("word2"))
+    assert para["bad"] == [] and para["patched"] == 2, para
+
+
+@needs_node
+def test_the_word_list_and_the_block_grip_write_their_class_only_on_a_change():
+    """`classList.add` and `remove` write the attribute even when nothing changes (the spec's
+    update steps), so each key restyled `#doc-complete-list`, `doc-block-handle` and
+    `doc-block-drop` for a class they already had."""
+    from tests._app_js import documents_text
+
+    src = documents_text()
+    fake = _FAKE_DOM.replace(
+        "add: (c) => this.cls.add(c), remove: (c) => this.cls.delete(c)",
+        "add: (c) => { writes += 1; this.cls.add(c); }, remove: (c) => { writes += 1; this.cls.delete(c); }",
+    ).replace("const hideDocComplete = () => { docCompleteMatches = []; };\n", "const docReturnFromViewport = () => {};\n")
+    script = fake + _function(src, "function hideDocComplete(") + _function(src, "function renderDocComplete(") + """
+const box = { kind: "textarea", id: 1, selection: () => ({ from: 0 }) };
+const out = {};
+list.cls.add("hidden");
+writes = 0;
+hideDocComplete(); hideDocComplete();
+out.hiddenTwice = writes;
+rows = [{ word: "quick", typed: 2 }];
+renderDocComplete(box);
+const opened = writes;
+renderDocComplete(box);
+out.shownAgain = writes - opened;
+out.shown = !list.cls.has("hidden");
+writes = 0;
+rows = [];
+renderDocComplete(box); renderDocComplete(box);
+out.closedTwice = writes;
+out.hidden = list.cls.has("hidden");
+console.log(JSON.stringify(out));
+process.exit(0);
+"""
+    out = _node(script)
+    assert out["hiddenTwice"] == 0 and out["shownAgain"] == 0 and out["shown"], out
+    assert out["closedTwice"] == 1 and out["hidden"], out
+    grip = (JS / "documents-live-table.js").read_text(encoding="utf-8")
+    assert 'if (!this.el.classList.contains("hidden")) this.el.classList.add("hidden");' in grip
+    assert 'if (!this.mark.classList.contains("hidden")) this.mark.classList.add("hidden");' in grip
+    assert 'if (this.el.classList.contains("is-dragging")) this.el.classList.remove("is-dragging");' in grip
+
+
+@needs_node
+def test_a_harper_answer_for_text_typed_past_skips_the_languagetool_merge():
+    """The merge splits and walks the whole text on the key the answer lands; for text already
+    typed past the pause asks again, so it is skipped, and that text is not taken as answered."""
+    script = (
+        """
+let docGrammarCache = { text: null, findings: [] };
+const docGrammarWire = { asking: null };
+const docProse = { typedAt: 0 };
+let merged = 0, harper;
+const docGrammarEnabled = () => true, docCheckLinkText = () => "", docGrammarFindings = (l) => l;
+const renderDocProse = () => {};
+const docSpellingVariant = () => "us", docProseDismissed = () => [], prefsCache = null, DOC_GRAMMAR_SKIP_KINDS = [];
+const docGrammarSend = () => new Promise((r) => { harper = r; });
+const docSpell = { languageTool: async (lints) => { merged += 1; return lints.concat([{ lt: 1 }]); } };
+"""
+        + _function(PROSE, "function docGrammarAsk(")
+        + _function(PROSE, "function docGrammarRequest(")
+        + """
+(async () => {
+  const out = {};
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  docGrammarRequest("one two");
+  docProse.typedAt = performance.now() + 1;
+  harper([{ start: 0 }]);
+  await tick(); await tick();
+  out.typed = { merged, n: docGrammarCache.findings.length, partial: docGrammarCache.partial };
+  docProse.typedAt = 0;
+  docGrammarRequest("one two");
+  out.askedAgain = docGrammarWire.asking === "one two";
+  harper([{ start: 0 }]);
+  await tick(); await tick();
+  out.paused = { merged, n: docGrammarCache.findings.length, partial: docGrammarCache.partial };
+  docGrammarRequest("one two");
+  out.answered = docGrammarWire.asking === null;
+  console.log(JSON.stringify(out));
+})();
+"""
+    )
+    got = _node(script)
+    assert got["typed"] == {"merged": 0, "n": 1, "partial": True}, got
+    assert got["askedAgain"], got
+    assert got["paused"] == {"merged": 1, "n": 2, "partial": False}, got
+    assert got["answered"], got
+
+
+@needs_node
+def test_a_lifted_popup_comes_and_goes_inside_a_hidden_holder_not_among_the_cards_children():
+    """Taken out of `.card.doc-main` or put back, the word list restyled the card's subtree
+    (310 elements, 19.5 ms at 4x CPU on the key that opened it after a pause). It is put in a
+    hidden holder when the file loads, so no move on a key touches the card's children."""
+    panel = (JS / "documents-suggest-panel.js").read_text(encoding="utf-8")
+    start = panel.index("  const docLiftedHome = new WeakMap();")
+    tail = '  for (const id of ["doc-complete-list", "doc-suggest-menu"]) docLiftNest(document.getElementById(id));\n'
+    end = panel.index(tail, start) + len(tail)
+    script = """
+let cardWrites = 0;
+class N {
+  constructor(tag) { this.tag = tag; this.kids = []; this.parentNode = null; this.hidden = false; this.id = tag; }
+  get parentElement() { return this.parentNode; }
+  _put(i, ...ns) { for (const n of ns) { if (n.parentNode) n.parentNode._drop(n); n.parentNode = this; } this.kids.splice(i, 0, ...ns); if (this === card) cardWrites += 1; }
+  _drop(n) { this.kids.splice(this.kids.indexOf(n), 1); n.parentNode = null; if (this === card) cardWrites += 1; }
+  append(...ns) { this._put(this.kids.length, ...ns); }
+  appendChild(n) { this.append(n); return n; }
+  replaceWith(n) { const p = this.parentNode, i = p.kids.indexOf(this); p._drop(this); p._put(i, n); }
+}
+const card = new N("section"), list = new N("ul"), before = new N("p"), after = new N("p");
+const document = { createComment: () => new N("#comment"), createElement: (t) => new N(t), body: new N("body"), getElementById: (id) => (id === "doc-complete-list" ? list : null) };
+card.append(before, list, after);
+cardWrites = 0;
+""" + panel[start:end] + """
+const out = {};
+out.first = cardWrites;
+const nest = list.parentNode;
+out.nest = { hidden: nest.hidden, at: card.kids.indexOf(nest), kids: card.kids.length };
+cardWrites = 0;
+for (let i = 0; i < 3; i += 1) { docLiftToViewport(list); out.lifted = list.parentNode === document.body; docReturnFromViewport(list); }
+out.later = cardWrites;
+out.home = list.parentNode === nest && nest.kids.length === 1;
+console.log(JSON.stringify(out));
+"""
+    got = _node(script)
+    assert got["nest"] == {"hidden": True, "at": 1, "kids": 3}, got
+    assert got["lifted"] and got["home"], got
+    assert got["later"] == 0 and got["first"] > 0, got

@@ -1,5 +1,5 @@
 // documents-suggest-panel.js: the spelling variants, the dictionary reads, and where the suggestions panel sits.
-// Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
+// Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load but putting the two popups in their holders.
 (() => {
   //: State that moved here from documents.js (L-documents-118).
   //: Built once from the pairs above, in whichever direction the setting names.
@@ -454,8 +454,23 @@
   //: and a viewport popup has no business being a descendant of a surface that
   //: can be blurred, transformed or scaled at any time.
   const docLiftedHome = new WeakMap();
+  //: **Home in a hidden holder of its own** (L342): a popup taken out of `.card.doc-main` or put
+  //: back restyled the card's whole subtree through its children's sibling rules (310 elements,
+  //: 19.5 ms at 4x CPU, on the key that opened the word list after a pause, typegate.js). So each
+  //: popup sits in a `hidden` div of its own, put there when this file loads, off the keys; its
+  //: moves come and go inside it and leave the card's children as they are.
+  const docLiftNests = new WeakSet();
+  function docLiftNest(el) {
+    if (!el?.parentNode || el.parentNode === document.body || docLiftNests.has(el.parentNode)) return;
+    const nest = document.createElement("div");
+    nest.hidden = true;
+    docLiftNests.add(nest);
+    el.replaceWith(nest);
+    nest.append(el);
+  }
   function docLiftToViewport(el) {
     if (!el || el.parentElement === document.body) return el;
+    docLiftNest(el);
     const home = document.createComment(`${el.id || "popup"} while it is open`);
     el.replaceWith(home);
     docLiftedHome.set(el, home);
@@ -468,6 +483,7 @@
     home.replaceWith(el);
     docLiftedHome.delete(el);
   }
+  for (const id of ["doc-complete-list", "doc-suggest-menu"]) docLiftNest(document.getElementById(id));
   //: **Ask for a viewport position, then check the popup landed there.** The
   //: belt to the braces above: body itself can carry a transform (a page
   //: animation, a future shell), and one ancestor with a filter anywhere in the

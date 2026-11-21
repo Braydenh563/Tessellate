@@ -270,7 +270,7 @@ def test_the_completion_list_goes_home_on_a_pause_not_on_each_key():
     """A move in or out of `.doc-main` restyled the card's subtree through its
     `:has()` rules; the list is hidden at once and moved back after a pause."""
     hide = _function(PROSE_CHECK, "  function hideDocComplete(", "  ")
-    assert 'list?.classList.add("hidden");' in hide
+    assert 'if (list && !list.classList.contains("hidden")) list.classList.add("hidden");' in hide
     assert "hideDocComplete.home = setTimeout(" in hide
     assert 'if (list?.classList.contains("hidden")) docReturnFromViewport(list);' in hide
     render = _function(PROSE_CHECK, "  function renderDocComplete(", "  ")

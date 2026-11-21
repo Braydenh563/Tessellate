@@ -302,7 +302,7 @@ def test_overlapping_matches_are_one_underline_and_the_cold_start_wait_is_shown_
 def test_harper_findings_are_drawn_before_languagetool_answers():
     text = (ROOT / "frontend/js/documents-prose.js").read_text()
     assert "if (early && lints !== null) early(lints);" in text
-    assert "docGrammarAsk(text, early).then" in text
+    assert "docGrammarAsk(text, early, typedPast).then" in text
 
 
 def test_the_note_editor_and_whiteboard_draw_harper_first_too():

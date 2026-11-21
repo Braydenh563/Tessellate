@@ -188,7 +188,9 @@
         hide() {
           this.unit = null;
           this.seen = -1;
-          this.el.classList.add("hidden");
+          //: Written only on a change (L342): `classList` writes the attribute even when the class
+          //: is already there, and `update` calls this and `end` on every key.
+          if (!this.el.classList.contains("hidden")) this.el.classList.add("hidden");
         }
 
         //: The block under the pointer. Recomputed only when the pointer changes
@@ -310,8 +312,8 @@
         end() {
           this.press = null;
           this.plan = null;
-          this.el.classList.remove("is-dragging");
-          this.mark.classList.add("hidden");
+          if (this.el.classList.contains("is-dragging")) this.el.classList.remove("is-dragging");
+          if (!this.mark.classList.contains("hidden")) this.mark.classList.add("hidden");
         }
       },
     );

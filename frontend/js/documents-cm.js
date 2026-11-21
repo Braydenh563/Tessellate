@@ -1859,14 +1859,24 @@
     //: quote is out: a callout's kind is its first line), the block after it is unmoved, and
     //: the lines hold no table row, no `$$` and no frontmatter. Anything else is null, and
     //: the plugin rebuilds as before. `tests/test_doc_typing_dx1.py` compares the two.
-    const PATCH_LEAF = new Set(["Paragraph", "Task"]);
+    //: An ATX heading too (L342): the gate's keys at the H1's start rebuilt every visible line, 60 to
+    //: 80 ms raw against 30. A heading's words reach outside its line only through a `[TOC]` widget
+    //: (declined below) and, when the line stops or starts being a heading, the gap classes of the
+    //: blank lines round it, so then the region takes in the blank run above as well.
+    const PATCH_LEAF = new Set(["Paragraph", "Task", "ATXHeading1", "ATXHeading2", "ATXHeading3", "ATXHeading4", "ATXHeading5", "ATXHeading6"]);
+    const isHeading = (name) => name.startsWith("ATXHeading");
     const PATCH_UNDER = new Set(["Document", "BulletList", "OrderedList", "ListItem"]);
-    const patchLeaf = (tree, from, to) => {
+    //: `from` steps over spaces first: a block starts at its first non-space, so a space typed at a
+    //: line's very start (the gate's first key, before the H1's `#`) sits outside the block it indents.
+    const patchLeaf = (tree, doc, from, to) => {
       if (tree.length < to) return null;
+      const end = doc.lineAt(from).to;
+      let at = from;
+      while (at < end && (doc.sliceString(at, at + 1) === " " || doc.sliceString(at, at + 1) === "\t")) at += 1;
       for (const side of [1, -1]) {
-        for (let node = tree.resolveInner(from, side); node; node = node.parent) {
+        for (let node = tree.resolveInner(at, side); node; node = node.parent) {
           if (PATCH_LEAF.has(node.name)) {
-            if (node.from > from || node.to < to) break;
+            if (node.from > at || node.to < to) break;
             const chain = [];
             for (let up = node.parent; up; up = up.parent) {
               if (!PATCH_UNDER.has(up.name)) return null;
@@ -1889,17 +1899,28 @@
         toB = Math.max(toB, tb);
       });
       if (broken || toA < 0) return null;
-      const was = patchLeaf(syntaxTree(startState), fromA, toA);
-      const now = was && patchLeaf(syntaxTree(state), fromB, toB);
-      if (!now || was.node.name !== now.node.name || was.chain.length !== now.chain.length) return null;
-      const same = (a, b) => a.name === b.name && changes.mapPos(a.from, -1) === b.from && changes.mapPos(a.to, 1) === b.to;
+      const was = patchLeaf(syntaxTree(startState), startState.doc, fromA, toA);
+      const now = was && patchLeaf(syntaxTree(state), state.doc, fromB, toB);
+      if (!now || was.chain.length !== now.chain.length) return null;
+      const retyped = was.node.name !== now.node.name;
+      const heading = isHeading(was.node.name) || isHeading(now.node.name);
+      //: A paragraph that becomes a heading (or the other way) only at the top level: a list item's
+      //: bullet and a task's box are drawn from the item's first block.
+      if (retyped && (!heading || now.chain.length !== 1)) return null;
+      //: The leaf's start may map either side of a key typed right at it: into the block, or before
+      //: it as the indent that moved it.
+      const same = (a, b) => (a.name === b.name || (a === was.node && retyped))
+        && (changes.mapPos(a.from, -1) === b.from || (a === was.node && changes.mapPos(a.from, 1) === b.from))
+        && changes.mapPos(a.to, 1) === b.to;
       if (!same(was.node, now.node) || was.chain.some((a, i) => !same(a, now.chain[i]))) return null;
       const top = (hit) => (hit.chain.length > 1 ? hit.chain[hit.chain.length - 2] : hit.node);
       const nextA = top(was).nextSibling;
       const nextB = top(now).nextSibling;
       if (!nextA !== !nextB || (nextA && !same(nextA, nextB))) return null;
       const doc = state.doc;
-      const first = Math.max(1, doc.lineAt(now.node.from).number - 1);
+      let first = Math.max(1, doc.lineAt(now.node.from).number - 1);
+      if (retyped) while (first > 1 && !doc.line(first).text.trim() && !doc.line(first - 1).text.trim()) first -= 1;
+      if (heading && view.visibleRanges.some((r) => /\[toc\]/i.test(doc.sliceString(r.from, r.to)))) return null;
       const last = Math.min(doc.lines, doc.lineAt(now.node.to).number + 1);
       const region = { from: doc.line(first).from, to: doc.line(last).to };
       const old = { from: startState.doc.line(first).from, to: startState.doc.line(last).to };

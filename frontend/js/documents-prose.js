@@ -98,13 +98,16 @@ async function docGrammarWhy() {
 //: One lint of `text`, or null when there is no checker. `ignored` is the grammar
 //: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
 //: `early` is given Harper's lints the moment they are in, before LanguageTool
-//: (which may be starting Java, 12.3 s cold) has answered.
-function docGrammarAsk(text, early) {
+//: (which may be starting Java, 12.3 s cold) has answered. `stale`, when it says the text has
+//: been typed past by the time Harper answers, keeps LanguageTool out of it (L342): its merge
+//: splits and walks the whole text on whichever key the answer lands, for findings the pause
+//: replaces anyway. Harper's lints come back alone.
+function docGrammarAsk(text, early, stale) {
   const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [], bare: [...DOC_GRAMMAR_SKIP_KINDS] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => {
     if (early && lints !== null) early(lints);
-    return docSpell.languageTool(lints, text);
+    return stale && stale() ? lints : docSpell.languageTool(lints, text);
   });
 }
 
@@ -339,29 +342,31 @@ function docProseRemap(findings, from, to) {
 //: on the first document opened (or typed into) with grammar on.
 function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
-  if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
+  if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText() && !docGrammarCache.partial)) return;
   docGrammarWire.asking = text;
   const asked = performance.now();
   //: **Findings worked out when first read** (L342): an answer that lands
   //: while keys keep coming is read only at the pause, and working it out
   //: on arrival put a whole-document pass (4.3 ms at 4x CPU) on a key.
-  const cached = (lints) => {
+  //: `partial`: Harper's alone, so the same text is asked again (typed past, then typed back).
+  const cached = (lints, partial) => {
     let findings = null;
-    return { text, linkText: docCheckLinkText(), get findings() { return findings || (findings = docGrammarFindings(lints, text)); } };
+    return { text, linkText: docCheckLinkText(), partial, get findings() { return findings || (findings = docGrammarFindings(lints, text)); } };
   };
+  const typedPast = () => (docProse.typedAt || 0) > asked;
   //: Harper's findings are drawn at once; the merged ones replace them.
   const early = (first) => {
-    docGrammarCache = cached(first);
-    if ((docProse.typedAt || 0) <= asked) renderDocProse(true);
+    docGrammarCache = cached(first, true);
+    if (!typedPast()) renderDocProse(true);
   };
-  docGrammarAsk(text, early).then((lints) => {
+  docGrammarAsk(text, early, typedPast).then((lints) => {
     docGrammarWire.asking = null;
     //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
     //: here asked again, so while keys kept coming every answer started a
     //: prose pass of its own (37 passes in 60 keys at 4x CPU).
-    const typed = (docProse.typedAt || 0) > asked;
+    const typed = typedPast();
     if (lints === null) return typed ? undefined : renderDocProse(true);
-    docGrammarCache = cached(lints);
+    docGrammarCache = cached(lints, typed);
     if (!typed) renderDocProse(true);
   });
 }
