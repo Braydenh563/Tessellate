@@ -72,7 +72,7 @@ HANDLERS: dict[str, str] = {
     "vision": "tessellate.ai.vision_ocr:vision_ocr_and_store",
     "vision-pdf": "tessellate.ai.vision_ocr:pdf_vision_ocr_and_store",
     "document": "tessellate.ai.docreader:read_document_and_store",
-    "file-entry": "tessellate.api.routes_entries:_file_entry_in_background",
+    "file-entry": "tessellate.entry.filing_background:_file_entry_in_background",
     #: Resumes where it stopped: staged vectors for the same target are kept.
     "embed-switch": "tessellate.core.embedswitch:run",
     #: Tidy's link reason pass (INBOX 691): idempotent, a named link no
@@ -90,6 +90,12 @@ HANDLERS: dict[str, str] = {
     #: A chosen folder of notes. Its runner skips a file by path and text
     #: hash, so a resumed job finishes the folder rather than doubling it.
     "import": "tessellate.api.routes_settings_transfer:_run_directory_import",
+}
+
+#: Handler targets that moved: a job row saved under the old dotted name
+#: still resolves to the new one. `resolve` and `durable_kind` read this.
+RENAMED_TARGETS: dict[str, str] = {
+    "tessellate.api.routes_entries:_file_entry_in_background": "tessellate.entry.filing_background:_file_entry_in_background",
 }
 
 #: A lease lasts this long without a heartbeat. Long enough that a busy
@@ -209,7 +215,7 @@ def decode_payload(text: str) -> tuple[tuple, dict]:
 def register(kind: str, target: str) -> None:
     """Name a handler for `kind`. For a script or a test; the app's own
     kinds are the table above."""
-    HANDLERS[kind] = target
+    HANDLERS[kind] = RENAMED_TARGETS.get(target, target)
 
 
 def _dotted(func: object) -> str:
@@ -219,13 +225,13 @@ def _dotted(func: object) -> str:
 def durable_kind(kind: str, func: object) -> bool:
     """True when `func` is the handler named for `kind`, so a resumed row
     would run the same code the pool was handed."""
-    target = HANDLERS.get(kind)
+    target = RENAMED_TARGETS.get(HANDLERS.get(kind) or "", HANDLERS.get(kind))
     return bool(target) and _dotted(func) == target
 
 
 def resolve(kind: str):  # noqa: ANN201
     """The handler function for `kind`, imported by name."""
-    target = HANDLERS.get(kind)
+    target = RENAMED_TARGETS.get(HANDLERS.get(kind) or "", HANDLERS.get(kind))
     if not target or ":" not in target:
         raise LookupError(f"no handler for {kind!r}")
     module_name, _, attr = target.partition(":")

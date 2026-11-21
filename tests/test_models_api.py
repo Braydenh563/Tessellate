@@ -470,9 +470,9 @@ def test_a_launch_with_a_stand_in_note_retries_its_filing(client, monkeypatch):
 
     queued: list[str] = []
     monkeypatch.setattr(jobs, "enqueue", lambda kind, *a, **k: queued.append(kind))
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
 
-    monkeypatch.setattr(routes_entries, "stand_ins_waiting", lambda: 2)
+    monkeypatch.setattr(filing_background, "stand_ins_waiting", lambda: 2)
     monkeypatch.setattr(deps.get_ollama().__class__, "is_running", lambda self: True, raising=False)
     client.post("/models/warm-filing")
     assert queued == ["warm-filing", "file-entry"]

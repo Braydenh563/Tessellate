@@ -403,7 +403,7 @@ def warm_filing() -> dict:
     warm-up on the cpu lane so a note saved meanwhile is not queued behind
     it, the retry on the model lane with the filing it belongs to."""
     from tessellate.ai import janitor
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
     from tessellate.core import jobs
 
     #: The graphics card is read by starting a program (up to 3s, cached five
@@ -429,8 +429,8 @@ def warm_filing() -> dict:
     #: Only when a note is waiting: queued unconditionally, a launch with no
     #: notes still showed "Filing a note" in Activity and in the bell (scan
     #: 2026-10-11, one more row per page load).
-    if routes_entries.stand_ins_waiting():
-        jobs.enqueue("file-entry", routes_entries.retry_stand_ins, dedupe_key="retry-stand-ins")
+    if filing_background.stand_ins_waiting():
+        jobs.enqueue("file-entry", filing_background.retry_stand_ins, dedupe_key="retry-stand-ins")
     return {"status": "ok"}
 
 def _embedding_coverage(session: Session) -> dict:

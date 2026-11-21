@@ -3,7 +3,7 @@
 The owner: "I want the deterministic engine to be better for when suggesting
 tags, both for popup suggestions, when using the 'tag and file with atlas',
 and also when making a note". The three paths are the note card's kept
-suggestions (`routes_entries._keep_suggestions`), Tag and file with Atlas
+suggestions (`tag_suggestions.keep_suggestions`), Tag and file with Atlas
 (`/entries/{id}/reevaluate`, and the batch act `starter_acts._tag_untagged`)
 and Capture while typing (`/entries/suggest-tags`); each asks `suggest`.
 
