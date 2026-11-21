@@ -389,3 +389,19 @@ def test_a_long_release_section_is_cut_under_githubs_body_cap(tmp_path):
     assert body.splitlines()[-1].endswith("enough to be long"), "cut mid-line"
     assert "- old" not in notes
 
+
+
+def test_only_the_jobs_that_write_the_release_may_write_contents() -> None:
+    """zizmor's excessive-permissions: the workflow reads, and each job that
+    creates or uploads to the Release asks for write itself. Text, not YAML:
+    PyYAML is not a dependency."""
+    import re
+
+    text = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    head, jobs = text.split("\njobs:\n", 1)
+    assert re.search(r"^permissions:\n  contents: read$", head, re.M)
+    for job in re.split(r"\n(?=  [a-z0-9-]+:\n)", jobs):
+        name = job.strip().split(":", 1)[0]
+        uploads = "action-gh-release@" in job
+        writes = bool(re.search(r"^    permissions:\n      contents: write$", job, re.M))
+        assert uploads == writes, name
