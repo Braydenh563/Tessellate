@@ -783,16 +783,12 @@ def digest_question(session: Session) -> str:
     return DIGEST_QUESTION.format(today=_long_date(today)) + digest_structure_note(session) + review_digest.reminder_note(session, today)
 
 
-def _week_ago() -> datetime:
-    """Seven days before now on the app's one user clock (`user_now`), naive UTC as the
-    columns are: the review it gates (`review_digest.week`) reads the same clock, and on
-    the server's own clock the two disagreed about which week it was."""
-    now = user_now(deps.get_config())
-    return (now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now) - timedelta(days=7)
-
-
 def _digest_notes(session: Session) -> list[dict]:
-    cutoff = _week_ago()
+    #: The user's clock, as the review it gates (`review_digest.week`) reads:
+    #: on the server's own clock the two disagreed about which week it was,
+    #: and "Nothing was saved" stood in for a week that had notes.
+    now = user_now(deps.get_config())
+    cutoff = (now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't
@@ -845,7 +841,7 @@ def digest_structure_note(session: Session) -> str:
     background job on a utility model, and §11a's budget applies here as much
     as anywhere.
     """
-    cutoff = _week_ago()
+    cutoff = utcnow() - timedelta(days=7)
     fresh = list(
         session.scalars(
             select(Entry).where(

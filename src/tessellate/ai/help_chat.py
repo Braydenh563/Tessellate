@@ -44,11 +44,11 @@ from __future__ import annotations
 
 import functools
 import math
-from datetime import datetime
 import re
 from collections import Counter
 from collections.abc import Iterator
 
+from tessellate.core import clock
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
 from tessellate.ai import act_registry, guide_lead, help_words, presets
@@ -361,7 +361,7 @@ def _act_of(question: str) -> tuple[str, bool] | None:
         return None
     if act_registry.reader is None:
         return None
-    got = act_registry.reader(inner, now=datetime.now())
+    got = act_registry.reader(inner, now=clock.wall())
     if got.intent in act_registry.ACTS and got.intent not in ("navigate", "open", "find"):
         return got.intent, True
     first = inner.split()[0].lower()

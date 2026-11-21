@@ -86,9 +86,26 @@ def _task_body(text: str) -> tuple[str, str] | None:
     return head, text[found.end():].strip()
 
 
+_LIST_SAID = r"(?:my |the )?(?:to-?do|todo|to do) list"
+#: "on my to do list, i need cleaning added" and "i need cleaning added to my to do list" (L-timeline-10): the
+#: verb comes last, so the sentence is said again in the order `_task_body` reads.
+_ADDED_LAST = re.compile(
+    rf"^(?:on {_LIST_SAID},? (?:i need|i want|please|can you|could you)?\s*(?P<a>[a-z][a-z' -]{{0,60}}?) (?:added|put on)"
+    rf"|(?:i need|i want|please|can you|could you)\s*(?P<b>[a-z][a-z' -]{{0,60}}?) (?:added|put) (?:to|on) {_LIST_SAID})[ ?.!]*$",
+    re.IGNORECASE,
+)
+
+
+def _verb_first(text: str) -> str:
+    """"add cleaning to my to do list" for a sentence that says the verb last, else `text`."""
+    found = _ADDED_LAST.match(" ".join((text or "").split()))
+    return f"add {found.group('a') or found.group('b')} to my to do list" if found else text
+
+
 def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     """The task a sentence adds, as the reminder it becomes (`reminder` is
     `commands._reminder` bound to the clock) with `task: True`, or None."""
+    asked, text = text, _verb_first(text)
     body = _task_body(text)
     if body is None:
         return None
@@ -100,7 +117,7 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     if not found:
         return None
     #: "to my todo" names a list, so a task without a time is a line on it (R3-33).
-    return {**found, "task": True, "asked": text, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
+    return {**found, "task": True, "asked": asked, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
 
 
 #: "make a checklist note of milk, eggs and bread": the kind of list, then what it holds.

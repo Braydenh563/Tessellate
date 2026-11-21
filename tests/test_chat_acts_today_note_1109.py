@@ -10,6 +10,7 @@ import json
 from datetime import datetime
 
 import pytest
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 9, 10, 0)
 HEADING = "# 2026-11-09"
@@ -19,10 +20,8 @@ BLOCK = "### [[Dentist]]\n\nCheck-up on 11 November at 9."
 
 @pytest.fixture(autouse=True)
 def _clock(monkeypatch):
-    from tessellate.api import routes_chat
 
-    monkeypatch.setattr("tessellate.core.config.user_now", lambda _config: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _events(client, question, **body):

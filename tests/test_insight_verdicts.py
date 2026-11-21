@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 from datetime import timedelta
+import pytest
 
 from sqlalchemy import select
 
@@ -18,6 +19,13 @@ from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests.test_insights import GOLF, TODAY
 from tests._app_js import with_pieces
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 RUNS = 20
 

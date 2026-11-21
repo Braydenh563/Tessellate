@@ -11,8 +11,8 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import commands, composer_chat, composer_suggest, composer_talk
-from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 NOTES = [
@@ -30,8 +30,7 @@ LINKED = [{"question": "what do I know about anna", "answer": "Anna's birthday i
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 @pytest.fixture
@@ -183,3 +182,16 @@ def test_no_chip_when_no_note_has_the_subject(client, notebook):
 def test_give_me_the_short_version_with_nothing_to_shorten():
     got = composer_suggest.unknown_action("give me the short version", [])
     assert got and "short" in got["text"].lower() and "not sure how to do that" not in got["text"], got
+
+
+def test_a_source_question_after_a_doubt_names_the_answers_note_once_quoted():
+    """Whichever line answered "really?", the note behind the answer before it
+    is still the source, and its name is quoted once, not ““Dentist””."""
+    from tessellate.ai import composer_chat
+
+    answer = {"question": "when is the dentist check-up", "answer": "Check-up 21 November, from your Dentist note."}
+    for line in composer_chat._SURE_LINES:
+        doubt = {"question": "really?", "answer": line.format(names="“Dentist”", note="note")}
+        assert composer_chat._sources([answer, doubt]) == ["Dentist"], line
+    said = composer_chat._react("where did you get that", [answer, {"question": "really?", "answer": composer_chat._SURE_LINES[1].format(names="“Dentist”", note="note")}], "seed")
+    assert "“Dentist”" in said and "““" not in said, said

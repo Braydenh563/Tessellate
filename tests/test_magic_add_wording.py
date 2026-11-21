@@ -13,6 +13,13 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import reminder_parser
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 @pytest.mark.parametrize(
@@ -35,7 +42,7 @@ def test_magic_add_reads_the_slips_and_saves_the_task(client, typed, text, day):
     assert body["text"] == text, body
     if day is not None:
         due = datetime.fromisoformat(body["due_at"].replace("Z", "+00:00"))
-        assert (due.date() - datetime.now(due.tzinfo).date()).days == day, body["due_at"]
+        assert (due.date() - SUITE_NOW.astimezone(due.tzinfo).date()).days == day, body["due_at"]
 
 
 @pytest.mark.parametrize("kept", ["Call Sam", "Sam's birthday party", "Book the MOT for the Golf", "Renew passport"])

@@ -11,6 +11,14 @@ refused with words, and the undo puts back the exact time.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _iso(moment: datetime) -> str:
@@ -18,7 +26,7 @@ def _iso(moment: datetime) -> str:
 
 
 def _make(client, **extra) -> dict:
-    due = datetime.now(timezone.utc) + timedelta(days=1)
+    due = SUITE_NOW + timedelta(days=1)
     body = {"text": "Water the plants", "due_at": _iso(due), "priority": "high", "recurring": "weekly", **extra}
     response = client.post("/reminders", json=body)
     assert response.status_code == 201, response.text
@@ -39,7 +47,7 @@ def test_a_drop_moves_the_due_time_and_nothing_else(client):
 
 def test_a_drop_into_the_past_is_refused_with_words(client):
     made = _make(client)
-    past = datetime.now(timezone.utc) - timedelta(days=2)
+    past = SUITE_NOW - timedelta(days=2)
     response = client.put(f"/reminders/{made['id']}", json={"due_at": _iso(past)})
     assert response.status_code == 422
     assert "past" in response.json()["detail"]
@@ -49,9 +57,9 @@ def test_a_drop_into_the_past_is_refused_with_words(client):
 
 def test_the_undo_puts_back_the_exact_time_even_once_it_is_past(client):
     made = _make(client)
-    client.put(f"/reminders/{made['id']}", json={"due_at": _iso(datetime.now(timezone.utc) + timedelta(days=5))})
+    client.put(f"/reminders/{made['id']}", json={"due_at": _iso(SUITE_NOW + timedelta(days=5))})
     # The undo of a drag made on an overdue reminder sends a time already gone.
-    gone = datetime.now(timezone.utc) - timedelta(hours=3)
+    gone = SUITE_NOW - timedelta(hours=3)
     response = client.put(f"/reminders/{made['id']}", json={"due_at": _iso(gone), "restore": True})
     assert response.status_code == 200
     back = client.put(f"/reminders/{made['id']}", json={"due_at": made["due_at"], "restore": True}).json()
@@ -60,7 +68,7 @@ def test_the_undo_puts_back_the_exact_time_even_once_it_is_past(client):
 
 def test_the_timeline_row_follows_the_move(client):
     made = _make(client)
-    new = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=9)
+    new = SUITE_NOW.replace(microsecond=0) + timedelta(days=9)
     client.put(f"/reminders/{made['id']}", json={"due_at": _iso(new)})
     start = (new - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
     end = (new + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")

@@ -12,13 +12,13 @@ from __future__ import annotations
 import functools
 import os
 import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
 
+from tessellate.core import clock
 from tessellate.core.subproc import NO_WINDOW
 
 #: When this process started, to the second. Module-level so every call agrees.
-STARTED_AT = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+STARTED_AT = clock.utc().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 _PACKAGE = Path(__file__).resolve().parent.parent
 _STAMP_FILES = (_PACKAGE / "SOURCE_COMMIT", _PACKAGE.parent.parent / "SOURCE_COMMIT")

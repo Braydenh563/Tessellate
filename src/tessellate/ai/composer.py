@@ -96,7 +96,7 @@ from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _body, _compar
 from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
-from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
+from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, stray_reply, window_said
 from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
 
 
@@ -638,15 +638,12 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
     broad = _is_broad(shape, question)
     meaning = _meaning_maker(shape, views_list, embed)(terms)
     wish = length_wish(question)
-    chosen = select(
-        shape, terms, views_list,
-        limit=BROAD_NOTES if broad else FULL_POINTS if wish == "full" else MAX_POINTS,
-        meaning=meaning,
-        per_note=1 if broad else MAX_PER_NOTE,
-        said=said,
-    )
+    limit = BROAD_NOTES if broad else FULL_POINTS if wish == "full" else MAX_POINTS
+    chosen = select(shape, terms, views_list, limit=limit, meaning=meaning, per_note=1 if broad else MAX_PER_NOTE, said=said)
     if not chosen:
         chosen, terms = _by_the_day(p, shape, terms, views_list, said)
+    if stray := stray_reply(out, question, shape, terms, views_list, unsure, voice, chosen=chosen, said=said):
+        return stray
     if not chosen:
         if _bare_title(out, terms, views_list) is not None:
             return _result(out.parts, shape, out.rows)

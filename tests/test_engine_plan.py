@@ -16,6 +16,13 @@ from tessellate.core import deps
 from tessellate.core.config import user_now
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 SEED = json.loads((Path(__file__).parent / "fixtures" / "composer" / "phase6_seed.json").read_text(encoding="utf-8"))
 TODAY = date.fromisoformat(SEED["today"])

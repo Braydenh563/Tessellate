@@ -12,6 +12,14 @@ from datetime import timedelta
 from tessellate.ai import voice
 from tessellate.core import deps, recordings
 from tessellate.core.database import Recording, utcnow
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 WEBM_HEAD = b"\x1a\x45\xdf\xa3" + b"\x00" * 60
 

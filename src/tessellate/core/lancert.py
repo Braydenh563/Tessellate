@@ -88,7 +88,11 @@ class CertInfo:
 
 
 def _now() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    """`database.utcnow`, read when called, so a pinned test clock dates the
+    certificate too."""
+    from tessellate.core import database
+
+    return database.utcnow()
 
 
 def paths(data_dir: Path) -> tuple[Path, Path]:

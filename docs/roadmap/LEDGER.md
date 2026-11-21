@@ -9,14 +9,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 196 | 63 | 2 | 59 | 435 |
+| chat | 176 | 195 | 63 | 2 | 59 | 434 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 0 | 2 | 1 | 0 | 0 | 3 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 0 | 0 | 0 | 1 | 0 |
+| general | 0 | 1 | 0 | 0 | 1 | 1 |
 | all | 406 | 428 | 127 | 2 | 163 | 961 |
 
 ## graph
@@ -281,7 +281,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-26** `chat` partly, M: Choose the model by task complexity, not only by caller. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: routing is by caller. Verify in code first.
 - [ ] **L-chat-27** `chat` partly, M: Add a research mode that plans several web searches. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: web_search and read_url exist, with SearXNG. Verify in code first.
 - [ ] **L-chat-28** `chat` open, M: Group saved chats (by model or folder), with an agent tool and skill to manage them. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; sorting is built (sortConversations), grouping is not. Verify in code first.
-- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 
@@ -598,6 +597,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
+- [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
 
