@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
+| world-class | 130 | 180 | 58 | 0 | 73 | 368 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 472 | 520 | 125 | 2 | 173 | 1117 |
+| all | 472 | 521 | 125 | 2 | 174 | 1118 |
 
 ## graph
 
@@ -478,7 +478,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L551** `world-class` open, S: Update p5 API list in vendor_use.py from 1.9.4 to 1.11.13. From OPEN.md:3587. Evidence: scratchpad/vendor_use.py:15 still says pinned to 1.9.4; regenerate
 - [ ] **L552** `world-class` open, S: Flake: test_composer_age_today_e17 fails only after other tests. From a28x-1102.md Left. Evidence: No later fix commit found; order dependence noted
 - [ ] **L553** `world-class` open, S: 1662 key lint misses key.toLowerCase() === 'x' and switch(e.key). From a30c-1102.md Still open small. Evidence: No lint test matching toLowerCase() === in tests/test_key*.py
-- [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
 - [ ] **L556** `world-class` open, S: test_consent_1110 reads the real clock; use a fixed clock. From sm-1111.md Found. Evidence: tests/test_consent_1110.py still reads clock; standing rule says fixed clock
 - [ ] **L557** `world-class` open, S: test_static_compression ratchet red (250664 vs 250450). From w34-gap3-1111.md Found. Evidence: Source: red on base; not re-run (read-only)
@@ -658,6 +657,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 - [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
 - [ ] **L-world-class-394** `world-class` open, S: On a 360x740 phone, opening Settings with no meaning-search model shows the 'Search by meaning needs a one-time download of about 130 MB' toast at 341x173px (top 503, bottom 676), still up after 10 s, over the lower quarter of every section until dismissed. From L-world-class-177, 2026-11-14. Evidence: scratchpad/ui-sweeps/settings-phone-177.js before its toast removal line; 0 bad with the toast gone
+- [ ] **L-world-class-412** `world-class` open, M: Bring 39 stale sweep scripts up to date (private or lazy names, output paths, timeouts, exit codes). From L554 run, 2026-11-21. Evidence: SP r3 logs: nameMarkBuddyTick/Wander/Obstacles/Choose/Pet/KeepUp/Stride, NMB_SLEEP_MS, emblemSeed are closure-private or gone; tourRun, tourContext, pickNotesDialog, wbPresentSteps, gcCurvedLinks are lazy-bundle names called before their bundle; EISDIR or undefined path in computeddump, libtlscroll, companionsmooth, wrapzoom-docs; null element in graphcoldlayout, stripground; timeouts in toolpop, wbaudit, exportcolours, unsavedback, wbrail; exit 1 with no FAIL line in companionacts, companionemotes, companiongaze, napgait, perchtext, peekdown, thinkingwords, toggles681, viewerclash
+- [ ] **L-world-class-413** `world-class` open, L: Triage the 17 sweeps whose FAIL lines may be real bugs: reproduce each, fix or retire its stated check. From L554 run, 2026-11-21. Evidence: SP r3 logs: mapmorezoom (More box 42 to 56px off the drawn wedge), toolgrid (448.72px), verify1011 (206, 210, 218, 192/238), laptopfold (1093: 3 whole cards for 4), anchorsmotion (graph surface 99 to 205px from its anchor), connlabel (button not shown), companionmenulow (keyboard menu 40px gap), viewerpose (arm 131 degrees at 300ms), iphone1011 (notes foot 752), ux1005-tabstops, chatheads, profilelook, clickarm, companiontabswitch, atlasaura, atlasmoodfx, atlasmo1005-viewerlife (bare FAIL)
 
 ## general
 
@@ -872,6 +873,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-general-38** `general` blocked-hardware, S: Measure ocrScheduleFitDock's forced layout with the real Tesseract engine. From L708, 2026-11-21. Evidence: ocrScheduleFitDock (library.js:7682) fits the dock by measuring (one frame, halving, memoised key already built); its forced layout with a real Tesseract page open cannot be traced without the engine and a scanned page. Check: open the OCR dialog on a scan at 390 px, CPU 4, stack-category trace, forced layouts under ocrFitDock.
+- [ ] **L-world-class-414** `world-class` blocked-hardware, S: Run pywarm and personamarks where the Pyodide extra and a model server are installed. From L554 run, 2026-11-21. Evidence: pywarm: the Pyodide extra is not installed here; personamarks: the model server isn't running
 
 ## Plan session briefs
 
