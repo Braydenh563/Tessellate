@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
-| mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
+| mindmap | 0 | 1 | 0 | 0 | 0 | 1 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 14 | 0 | 0 | 4 | 14 |
-| all | 502 | 543 | 127 | 2 | 183 | 1172 |
+| all | 502 | 544 | 127 | 2 | 183 | 1173 |
 
 ## graph
 
@@ -341,6 +341,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 
 ## mindmap
+- [ ] **L-mindmap-17** `mindmap` open, L: Map drag and zoom are over their CPU budgets at every size: translate the dragged branch as a layer, move edges by transform, so mapperf.js passes. From agent B, L-general-20 mapperf (CPU measure). Evidence: mapperf.js now measures per-input-step main-thread CPU (CDP ThreadTime). At 50/200/500 topics: drag median 33/92/247ms (budget 17), worst zoom frame 62/132/477ms (budget 50), branch drag with 300 links 40 to 93ms at 50 topics (budget: not double). Profile of a 200-topic branch drag: 1.3s of 2.7s is forced style recalc (wbEdgePanTick getBoundingClientRect flushes it), ribbons rebuilt per move (wbMapRibbonD + wbMapSmoothThrough, 27ms a step) though both ends moved by the same delta. Fix is to translate the dragged branch as one layer and to translate, not rebuild, edges whose ends move together.
 
 ## ui-modernisation
 
