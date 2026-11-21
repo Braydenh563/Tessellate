@@ -584,6 +584,19 @@ ENTRIES_PREVIEW_MAX = 2000
 
 
 
+def _note_ids(ids: str, aside: bool) -> list[int]:
+    """`?ids=` as numbers (FE-05): at most ENTRIES_BY_IDS_MAX, and only from the notes list."""
+    parts = [part.strip() for part in ids.split(",") if part.strip()]
+    if not all(part.isdigit() for part in parts) or len(parts) > ENTRIES_BY_IDS_MAX:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Ask for up to {ENTRIES_BY_IDS_MAX} note ids, as numbers.",
+        )
+    if aside:
+        raise HTTPException(status_code=422, detail="Note ids are read from the notes list only.")
+    return [int(part) for part in parts]
+
+
 @router.get("", response_model=list[EntryOut])
 def list_entries(
     response: Response,
@@ -659,17 +672,10 @@ def list_entries(
         return entry_out.previewed(entry_out.to_out_bulk(session, matched), preview)
 
     if ids:
-        parts = [part.strip() for part in ids.split(",") if part.strip()]
-        if not all(part.isdigit() for part in parts) or len(parts) > ENTRIES_BY_IDS_MAX:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Ask for up to {ENTRIES_BY_IDS_MAX} note ids, as numbers.",
-            )
-        if deleted or archived:
-            raise HTTPException(
-                status_code=422, detail="Note ids are read from the notes list only."
-            )
-        entries, total = listing.by_ids(session, [int(part) for part in parts], boards=boards)
+        entries, total = listing.by_ids(session, _note_ids(ids, deleted or archived), boards=boards)
+    elif q and not (deleted or archived) and (found_text := listing.text_match(session, q, boards=boards, offset=offset, limit=limit)) is not None:
+        #: The filter box's literal match over whole bodies, in list order and paged (L810).
+        entries, total = found_text
     elif deleted or archived:
         page = paging.resolve(response, offset=offset, limit=limit, cursor=cursor)
         entries, total = listing.bin_page(session, deleted=deleted, limit=limit, offset=page.offset)

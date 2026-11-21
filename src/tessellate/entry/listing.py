@@ -75,6 +75,19 @@ def by_ids(session: Session, wanted: list[int], *, boards: str) -> tuple[list, i
     return entries, manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True)
 
 
+def text_match(session: Session, q: str, *, boards: str, offset: int, limit: int) -> tuple[list, int] | None:
+    """The filter box's literal text match over whole bodies, in list order and
+    paged (L810): one page of the matches and how many there are. None when
+    `q` names no term, so the plain list answers."""
+    from tessellate.search import engine
+
+    found = engine.match_ids(session, q)
+    if found is None:
+        return None
+    matched = manager.list_entries(session, boards=boards, ids=found)
+    return matched[offset : offset + limit], len(matched)
+
+
 def bin_page(session: Session, *, deleted: bool, limit: int, offset: int) -> tuple[list, int]:
     """One page of the bin (`deleted`) or the archive, and its size.
 
