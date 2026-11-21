@@ -16,13 +16,9 @@ from tessellate.ai.provider import set_write_tools
 # which skills act rather than answer, one list, so the two can't disagree.
 WRITE_TOOLS = {
     "audit_link_reasons", "restore_link_reasons",
-    "check_learned", "edit_chats",
-    "create_note",
-    "edit_note",
-    "tag_note",
-    "pin_note", "archive_note",
-    "link_notes",
-    "unlink_notes",
+    "check_learned", "edit_chats", "edit_goals",
+    "create_note", "edit_note", "tag_note",
+    "pin_note", "archive_note", "link_notes", "unlink_notes",
     # `find_similar_notes` is NOT here, though it was added to this set once.
     # It only reads. Listing a read here has three consequences, all wrong: the
     # agent's "you claimed you saved it" net counts the turn as having written
@@ -275,6 +271,7 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
             "previous", "conversation", "chat about", "mentioned before", "my chats", "the chats", "chat list", "sort chats", "group chats", "chats by", "pin the chat", "rename the chat", "chat folder",
         ),
     ),
+    (("list_goals", "edit_goals"), ("goal", "my lists", "the list", "a list", "checklist", "shopping list", "packing list", "progress")),
     (
         ("list_skills", "run_skill", "save_skill", "delete_skill"),
         ("skill", "shortcut", "what can you do", "your tools", "which tool", "what tools", "list the tools", "capabilities"),

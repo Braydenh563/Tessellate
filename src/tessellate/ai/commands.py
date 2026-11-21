@@ -76,7 +76,7 @@ def __getattr__(name: str) -> str:
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
      "pin_note", "archive_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
-     "delete_document", "restore_document", "create_document", "edit_document", "edit_chats", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme", "save_user_preference", "drop_preference",
+     "delete_document", "restore_document", "create_document", "edit_document", "edit_chats", "edit_goals", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme", "save_user_preference", "drop_preference",
      "add_board_shape", "place_library_item", "add_whiteboard_link", "move_board_item", "edit_board_item", "add_map_node", "link_map_nodes", "generate_diagram", "check_learned", "drop_board_link", "drop_map_node", "undo_learned_check", "restore_link_reasons"}
 )
 

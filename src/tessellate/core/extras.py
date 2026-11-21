@@ -357,6 +357,9 @@ _VOICE_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-ar
 #: The voice, from rhasspy/piper-voices at a commit (never `main`); both files are kept as named.
 _PIPER_VOICES = "https://huggingface.co/rhasspy/piper-voices/resolve/cf910fb59f1d79ab3b625a63993a108751c6c25d/"
 NATURAL_VOICE_VERSION = "ljspeech-medium-cf910fb"
+#: Silero VAD v5.1.2 at its commit (raw files keep a path, so no `main`).
+_SILERO = "https://raw.githubusercontent.com/snakers4/silero-vad/6478567951ae5c9979ad7b234185b5515f4be7a1/"
+VAD_MODEL_VERSION = "silero-v5.1.2-6478567"
 
 
 @dataclass(frozen=True)
@@ -1026,6 +1029,44 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    #: **Speech detection (Brief 87, L691).** Silero VAD (MIT) read straight through onnxruntime: no
+    #: torch, no `silero-vad` wheel. The model is one file from snakers4/silero-vad at the commit the
+    #: v5.1.2 tag names (never `master`). **To change it:** take the new file at one commit, write its
+    #: `sha256sum` and byte size, and bump the version.
+    Extra(
+        id="vad",
+        label="Speech detection, engine (onnxruntime)",
+        short_label="Speech detection engine",
+        enables="Finds where speech is in a recording, on this computer. Needs the model below as "
+        "well; the Speech detection bundle installs both.",
+        packages=("onnxruntime",),
+        module="onnxruntime",
+        size="~24 MB, nothing if the natural voice or OCR already brought it",
+        licence="MIT",
+    ),
+    Extra(
+        id="vad-model",
+        label="Speech detection, model (Silero VAD)",
+        short_label="Speech detection model",
+        enables="The small model that tells speech from silence and noise. It is read from this "
+        "computer's data folder; nothing is sent anywhere after the download.",
+        packages=("Silero VAD v5.1.2",),
+        module="",
+        size="~2.3 MB download",
+        caveat="Trained on many languages; very quiet speech and music can be missed or kept.",
+        kind="download",
+        version=VAD_MODEL_VERSION,
+        licence="MIT",
+        downloads=(
+            Download(
+                url=_SILERO + "src/silero_vad/data/silero_vad.onnx",
+                sha256="2623a2953f6ff3d2c1e61740c6cdb7168133479b267dfef114a4a3cc5bdd788f",
+                size=2327524,
+                unpack="file",
+                members=(("", "silero_vad.onnx"),),
+            ),
+        ),
+    ),
 )
 
 
@@ -1115,6 +1156,12 @@ BUNDLES: tuple[Bundle, ...] = (
         label="Natural voice",
         about="Read aloud and audio overviews in a natural voice, made on this computer.",
         extras=("naturalvoice", "naturalvoice-voice"),
+    ),
+    Bundle(
+        id="vad",
+        label="Speech detection",
+        about="Find where speech is in a recording, on this computer.",
+        extras=("vad", "vad-model"),
     ),
     Bundle(
         id="desktop",

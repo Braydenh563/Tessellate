@@ -29,6 +29,7 @@ from tessellate.ai.tools.tool_path import _path_between
 from tessellate.ai.tools.tool_read import _calculate, _check_answer, _count_notes, _find_similar_notes, _get_current_time, _get_note_tool, _list_categories, _list_notes, _list_tags, _notebook_overview, _notebook_structure, _propose_act, _read_text, _related_notes, _search_help, _search_notes, _summarize_notes
 from tessellate.ai.tools.tool_write import _complete_reminder, _create_note, _delete_note, _delete_tag, _edit_note, _link_notes, _list_reminders, _pin_note, _rename_tag, _restore_note, _set_reminder, _tag_note, _unlink_notes, link_type_description
 from tessellate.ai.tools.tool_chats import EDIT_CHATS
+from tessellate.ai.tools.tool_goals import EDIT_GOALS, LIST_GOALS
 from tessellate.ai.tools.tool_skills import _delete_skill, _search_chat_history, _verify_block
 from tessellate.ai.tools.tool_web import _read_url, _web_search
 
@@ -210,7 +211,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "audit_link_reasons",
-            "Audits vague graph link reasons (like 'similar in meaning') and rewrites them by deducing a specific reason based on both notes.",
+            "Rewrite vague link reasons ('similar in meaning') as a specific one from both notes.",
             {
                 "type": "object",
                 "properties": {
@@ -225,7 +226,7 @@ TOOLS: dict[str, ToolSpec] = {
             # Saying so in the description matters as much as the code, a
             # model told it has *saved* something will act as though the rule
             # is already in force.
-            "Suggest a standing preference for the user to accept. Use it when they state a rule or style. It does NOT take effect until they accept.",
+            "Suggest a standing preference for the user to accept. Use it when they state a rule or style.",
             {
                 "type": "object",
                 "properties": {
@@ -242,8 +243,7 @@ TOOLS: dict[str, ToolSpec] = {
             # being misused (stop after asking; don't ask what you could look
             # up) are worth their space; nothing else here is.
             "Ask which of 2-6 options the user meant, when the request is "
-            "ambiguous. Your turn ENDS; their reply comes next. Don't ask "
-            "permission or what search_notes could tell you.",
+            "ambiguous. Your turn ENDS; their reply comes next.",
             {
                 "type": "object",
                 "properties": {
@@ -274,9 +274,8 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "related_notes",
-            "A note's connections: what it links to, what replies to it, what shares its "
-            "tags, each with HOW and how far. include_suggestions adds notes that READ alike, "
-            "never linked: guesses.",
+            "A note's connections (links, replies, shared tags) with HOW and how far. "
+            "include_suggestions adds notes that READ alike: guesses.",
             {
                 "type": "object",
                 "properties": {
@@ -296,7 +295,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "path_between",
-            "For 'how are these two notes related?': the chain joining them, each step a link, reply or shared tag. For one note's surroundings, use related_notes.",
+            "For 'how are these two notes related?': the chain joining them, each step a link, reply or shared tag.",
             {
                 "type": "object",
                 "properties": {
@@ -312,9 +311,8 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "notebook_structure",
-            "The notebook's SHAPE, not its filing: which notes cluster, the best-connected "
-            "hubs, and notes connected to nothing. Use it before reorganising or linking; "
-            "list_categories describes filing.",
+            "The notebook's SHAPE, not its filing: clusters, hubs and notes connected to "
+            "nothing. Use it before reorganising or linking.",
             {"type": "object", "properties": {}},
             _notebook_structure,
         ),
@@ -331,8 +329,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_notes",
             "Walk notes, newest first, by category, tag, age or untagged "
-            "('tag my untagged notes'); while has_more, call again with next_offset. "
-            "search_notes finds something specific.",
+            "('tag my untagged notes'); while has_more, call again with next_offset.",
             {
                 "type": "object",
                 "properties": {
@@ -396,7 +393,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "notebook_overview",
-            "Categories, tags and the total note count in one call: use it, not list_categories + list_tags + count_notes, for the overall shape.",
+            "Categories, tags and the total note count in one call.",
             {"type": "object", "properties": {}},
             _notebook_overview,
         ),
@@ -419,7 +416,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "search_files",
             "Search the user's uploaded files (photos, scans, PDFs, attachments) by name, "
-            "caption or the text read from them. Use it for anything about a picture or file.",
+            "caption or the text read from them.",
             {
                 "type": "object",
                 "properties": {
@@ -486,7 +483,7 @@ TOOLS: dict[str, ToolSpec] = {
         EDIT_DOCUMENT_SPEC,
         ToolSpec(
             "get_document",
-            "Read one document in full, by id, after list_documents (previews only). For a long one, pass query for its relevant paragraphs.",
+            "Read one document in full, by id, after list_documents (previews only).",
             {
                 "type": "object",
                 "properties": {
@@ -503,7 +500,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "read_whiteboard",
-            "Read a whiteboard: its cards, text boxes, image count and which cards link. Use it for 'what's on my board?' or before adding.",
+            "Read a whiteboard: its cards, text boxes, image count and which cards link.",
             {
                 "type": "object",
                 "properties": {
@@ -565,8 +562,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "generate_diagram",
             "Place a tree of notes on a board in one call. A node is a new note ('title') "
-            "or an existing one ('note_id') with a 'ref'; children name it as "
-            "'parent_ref'; the root has none, or card:<id>. No x/y. "
+            "or an existing one ('note_id') with a 'ref'; children use 'parent_ref'; the root has none. No x/y. "
             f"Up to {MAX_DIAGRAM_NODES} nodes.",
             {
                 "type": "object",
@@ -607,8 +603,8 @@ TOOLS: dict[str, ToolSpec] = {
         # thing they never ask the model for is a coordinate.
         ToolSpec(
             "read_mindmap",
-            "Read a mindmap as an indented outline: each node's id, kind and the note or "
-            "document it stands for. Use it before adding. Needs board_id (search_whiteboard).",
+            "A mindmap as an outline with each node's id and kind. Use it before adding. "
+            "Needs board_id (search_whiteboard).",
             {
                 "type": "object",
                 "properties": {
@@ -642,8 +638,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "map_from_note",
             "A mind map from one note in one call ('turn this note into a map'): title the "
-            "centre, headings and lists the branches. Use it, not create_mindmap plus "
-            "add_map_node.",
+            "centre, headings and lists the branches.",
             {
                 "type": "object",
                 "properties": {
@@ -814,7 +809,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "search_chat_history",
-            "Search earlier conversations, from other days too. Use it when they mention something 'we talked about' not in this thread.",
+            "Search earlier conversations. Use it when they mention something 'we talked about' not in this thread.",
             {
                 "type": "object",
                 "properties": {
@@ -832,7 +827,7 @@ TOOLS: dict[str, ToolSpec] = {
             #: And the tools (O10, BACKLOG "A tool to list the tools, and the
             #: skills"): folded in here, not a tool of its own, because every
             #: schema must fit a 32k window untrimmed and a new tool tipped it.
-            "List the user's saved skills: jobs you can start with run_skill. Each says when_to_use and whether it changes notes. tools:true lists your tools; tool: one's details.",
+            "The user's saved skills (start one with run_skill), each with when_to_use. tools:true lists your tools; tool: one's details.",
             {"type": "object", "properties": {"tools": {"type": "boolean"}, "tool": {"type": "string"}}},
             _list_skills,
         ),
@@ -842,9 +837,7 @@ TOOLS: dict[str, ToolSpec] = {
             # skills are in play. The two facts that stop it being misused, 
             # the turn ends, and a skill is not a substitute for doing the
             # thing: are worth their characters; nothing else here is.
-            "Start one of the user's saved skills, by name from list_skills. "
-            "Your turn ENDS and the run takes over, step by step. Use it for "
-            "a job a skill describes, not a one-off.",
+            "Start a saved skill by name from list_skills. Your turn ENDS and the run takes over.",
             {
                 "type": "object",
                 "properties": {
@@ -869,7 +862,7 @@ TOOLS: dict[str, ToolSpec] = {
             # several parts") and the consequence (the turn ends and the steps
             # run one at a time). Everything else is in the validator's errors,
             # which only cost characters when the model gets it wrong.
-            "Plan a job with several parts, as 2-6 short steps. Your turn ENDS and the steps then run one at a time. Use it for one instruction over many notes.",
+            "Plan a job with several parts as 2-6 short steps. Your turn ENDS; the steps then run one at a time.",
             {
                 "type": "object",
                 "properties": {
@@ -893,8 +886,8 @@ TOOLS: dict[str, ToolSpec] = {
             # Offered by cue, not in CORE_TOOLS (§34's "the registry should
             # stop growing", this only needs to be on the wire for the rare
             # turn that's actually about the chat getting long).
-            "Summarise the older part of this chat to free context. Your turn ENDS: the user "
-            "edits the summary first. Only when asked to shorten the chat.",
+            "Summarise the older chat to free context. Your turn ENDS; the user edits the "
+            "summary first. Only when asked.",
             {"type": "object", "properties": {}},
             _compress_chat,
             ends_turn=True,
@@ -966,6 +959,8 @@ TOOLS: dict[str, ToolSpec] = {
             destructive=True,
         ),
         EDIT_CHATS,
+        LIST_GOALS,
+        EDIT_GOALS,
         ToolSpec(
             "search_help",
             #: Short on purpose: every tool's schema must fit a 32k window
@@ -986,7 +981,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "calculate",
-            "Work out a sum, percentage, unit or currency conversion, or count of days. Use it for every number; say the result and how it was read.",
+            "Work out a sum, percentage, unit or currency conversion, or count of days. Use it for every number.",
             {"type": "object", "properties": {"question": {"type": "string", "description": "e.g. 15% of 240, 5 km in miles, days until 25 December"}},
              "required": ["question"]},
             _calculate,
@@ -994,7 +989,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "read_text",
             "The dates, times, durations, amounts and units in a text exactly as the app "
-            "reads them, each with how it was read. Use it, not your own date arithmetic.",
+            "reads them, each with how it was read.",
             {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]},
             _read_text,
         ),
@@ -1009,9 +1004,8 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "propose_act",
-            "Propose one change in the user's words (\"remind me to call Sam on "
-            "Friday at 9\", \"pin the dentist note\"): the app shows a card and "
-            "the user confirms. Use it when unsure; then stop.",
+            "Propose one change in the user's words (\"pin the dentist note\"): the app "
+            "shows a card to confirm. Use it when unsure; then stop.",
             {"type": "object", "properties": {"sentence": {"type": "string"}}, "required": ["sentence"]},
             _propose_act,
             ends_turn=True,

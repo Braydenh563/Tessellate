@@ -41,6 +41,7 @@ SKILLS = "#/library/skills"
 FILES = "#/library/files"
 DOCUMENTS = "#/docs"
 CHATS = "#/chat"
+GOALS = "#/notes/goals"
 
 
 def note_at(note_id: object) -> str:
@@ -899,6 +900,20 @@ def _chats_edited(result: dict, args: dict) -> Said:
     return (label.rstrip(".") + "." if label else "Changed the chat list."), "", _chips(("Open Chat", CHATS))
 
 
+def _goals_edited(result: dict, args: dict) -> Said:
+    label = str(result.get("label") or "")
+    label = label.split(" ", 1)[-1] if label.startswith("ph:") else label
+    return (label.rstrip(".") + "." if label else "Changed your goals."), "", _chips(("Open Goals", GOALS))
+
+
+def _goals_listed(result: dict, args: dict) -> Said:
+    rows = [g for g in result.get("goals") or [] if isinstance(g, dict)]
+    if not rows:
+        return "You have no goals or lists yet.", "", _chips(("Open Goals", GOALS))
+    lines = [f"- {g.get('title')}: {g.get('progress')} done" + (f", by {g['target']}" if g.get("target") else "") for g in rows]
+    return f"Your goals and lists ({len(rows)}):", "\n".join(lines), _chips(("Open Goals", GOALS))
+
+
 def _skill_deleted(result: dict, args: dict) -> Said:
     return f"Deleted the skill “{result.get('name') or args.get('name')}”.", "", _chips(("Open Skills", SKILLS))
 
@@ -946,7 +961,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "restore_board_item": _board_write("Put it back on the board"), "restore_link_reasons": _audit_restored, "generate_diagram": _diagram,
     "place_library_item": _placed, "set_reminder": _reminder_set, "complete_reminder": _reminder_done,
     "delete_note": _note_deleted, "restore_note": _note_restored, "save_user_preference": _preference,
-    "edit_chats": _chats_edited, "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,
+    "edit_chats": _chats_edited, "edit_goals": _goals_edited, "list_goals": _goals_listed, "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,
     "run_skill": _run_skill, "compress_chat": _compress,
 }
 
@@ -957,7 +972,7 @@ _SCREENS = {
     "skill": ("Skills", SKILLS), "file": ("Files", FILES), "link": ("the graph", GRAPH), "path": ("the graph", GRAPH),
     "related": ("the graph", GRAPH), "chat": ("Chat", CHATS), "help": ("Help", settings_at("help")),
     "web": ("Settings, Web search", settings_at("websearch")), "url": ("Settings, Web search", settings_at("websearch")),
-    "preference": ("What it remembers", settings_at("memory")),
+    "goal": ("Goals", GOALS), "preference": ("What it remembers", settings_at("memory")),
 }
 #: The argument names an error may quote, as words.
 _ARG_WORDS = {

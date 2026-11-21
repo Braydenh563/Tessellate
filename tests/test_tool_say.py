@@ -135,10 +135,10 @@ def test_a_scoped_count_is_not_said_as_no_notes():
 #: per item"). Every tool is in one family; each family is checked below.
 FAMILIES = {
     "find": {"search_notes", "list_notes", "find_similar_notes", "related_notes", "search_whiteboard", "search_files", "search_chat_history", "web_search", "path_between"},
-    "counts": {"count_notes", "list_tags", "list_categories", "list_documents", "list_skills", "list_reminders", "list_library", "notebook_overview", "notebook_structure", "find_stale_notes", "count_month_figures", "get_person_page", "summarize_notes"},
+    "counts": {"list_goals", "count_notes", "list_tags", "list_categories", "list_documents", "list_skills", "list_reminders", "list_library", "notebook_overview", "notebook_structure", "find_stale_notes", "count_month_figures", "get_person_page", "summarize_notes"},
     "read": {"get_note", "get_document", "read_file", "read_url", "read_text", "read_whiteboard", "read_mindmap", "search_help", "get_current_time", "calculate", "check_answer", "find_contradictions"},
     "notes": {"create_note", "edit_note", "delete_note", "restore_note", "pin_note", "archive_note", "tag_note", "link_notes", "unlink_notes", "audit_link_reasons", "restore_link_reasons", "check_learned", "move_notes"},
-    "filing": {"edit_chats", "create_category", "rename_category", "delete_category", "merge_categories", "rename_tag", "delete_tag"},
+    "filing": {"edit_chats", "edit_goals", "create_category", "rename_category", "delete_category", "merge_categories", "rename_tag", "delete_tag"},
     "documents": {"create_document", "edit_document", "delete_document"},
     "boards": {"add_board_shape", "add_whiteboard_card", "add_whiteboard_link", "delete_board_item", "edit_board_item", "move_board_item", "restore_board_item", "place_library_item", "generate_diagram", "create_mindmap", "map_from_note", "add_map_node", "link_map_nodes"},
     "reminders": {"set_reminder", "complete_reminder"},

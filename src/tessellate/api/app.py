@@ -45,6 +45,7 @@ from tessellate.api import (
     routes_capabilities,
     routes_auth,
     routes_bookmarks,
+    routes_goals,
     routes_categories,
     routes_chat,
     routes_conversations,
@@ -1603,6 +1604,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     # `routes_reminders.act_from_notification` and tests/test_every_route_is_locked.py.
     (routes_reminders.open_router, OPEN),
     (routes_bookmarks.router, LOCKED),
+    (routes_goals.router, LOCKED),
     (routes_voice.router, LOCKED),
     (routes_studio.router, LOCKED),
     (routes_folder_sync.router, LOCKED),

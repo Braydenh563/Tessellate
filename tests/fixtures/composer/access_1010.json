@@ -11,6 +11,8 @@
     "audit_link_reasons": "audit the vague link reasons in my graph",
     "check_learned": "check what you learned about me against my notes",
     "edit_chats": "sort my chats by name",
+    "list_goals": "how far am I on my goals",
+    "edit_goals": "make a goal called Learn Spanish",
     "save_user_preference": "remember that I prefer short answers",
     "ask_user": "ask me which one I meant before you choose",
     "search_notes": "what did I write about the boiler",

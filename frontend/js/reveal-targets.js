@@ -199,6 +199,7 @@ const REVEAL_TARGETS = {
   "notes-ask": { tab: "notes", open: () => showNotesSection("ask"), el: "question", focus: true },
   //: UX-08: the bin is the Library with its own "Include the bin" ticked.
   "notes-questions": { tab: "notes", open: () => showNotesSection("questions"), el: "questions", flash: false },
+  "notes-goals": { tab: "notes", open: () => showNotesSection("goals"), el: "goals", flash: false },
   "library-bin": {
     tab: "library",
     //: The bin itself, not the Library home with a box ticked (audit 1031

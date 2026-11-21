@@ -1433,6 +1433,34 @@ class Bookmark(Base, WorkspaceMixin):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class Goal(Base):
+    """A goal or a list (Brief 98): a titled set of ticked-off items with its progress. `kind` is "goal" (may carry a
+    `target_date`, and is marked achieved with `done_at`) or "list" (a shopping or packing list). Its own small
+    tables, not notes: a list's items are ticked and counted, which a note's text cannot be without parsing it.
+    A new table, so `create_all` builds it: no migration, as `jobs`."""
+
+    __tablename__ = "goals"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(200))
+    kind: Mapped[str] = mapped_column(String(8), default="goal")
+    target_date: Mapped[str] = mapped_column(String(10), default="")
+    done_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class GoalItem(Base):
+    """One line of a goal or list; `done_at` is set when it is ticked. Deleted with its goal."""
+
+    __tablename__ = "goal_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    goal_id: Mapped[int] = mapped_column(ForeignKey("goals.id", ondelete="CASCADE"), index=True)
+    text: Mapped[str] = mapped_column(String(300))
+    done_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
 class EntryBookmark(Base):
     """A note referencing a saved bookmark, so it shows up in that note's
     own References alongside its [[wiki links]] to other notes (asked for

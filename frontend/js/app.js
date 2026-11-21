@@ -1542,6 +1542,8 @@ const LAZY_MODULES = {
   askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js", "/js/ask-browser.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
+  //: Notes, Goals (goals-view.js, Brief 98), loaded by showNotesSection.
+  goalsView: ["/css/goals-lazy.css", "/js/goals-view.js"],
   settingsData: ["/js/settings-data.js"],
   settingsUi: ["/js/meaning.js", "/js/settings-find.js", "/js/settings-models.js"],
   tagSuggest: ["/js/tag-suggest.js"],
