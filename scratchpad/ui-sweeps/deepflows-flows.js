@@ -982,7 +982,10 @@ flows.find = async (env) => {
   await env.overflow('find results');
   env.at('open a result');
   await env.page.locator('#finder-results').getByText('Alpha project', { exact: false }).first().click();
-  await env.wait(1200);
+  //: The result opens on Notes, and after a slow tab switch the list can land
+  //: late and close a menu opened before it: wait for the note's row itself.
+  await env.page.waitForFunction(() => document.body.dataset.tab === 'notes' && [...document.querySelectorAll('#entry-list > li')].some((li) => li.offsetParent && /Alpha project/.test(li.textContent)), null, { timeout: 8000 });
+  await env.wait(400);
   if (await env.page.isVisible('#finder-overlay')) throw new Error('opening a result left Find open');
   env.at('Escape closes Find');
   await openFind(env);
