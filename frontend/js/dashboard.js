@@ -839,7 +839,6 @@ function renderNameNudge(greetingEl) {
 // inside a row instead of being stretched to match the tallest one.
 
 let dashResizeObserver = null;
-
 //: **Three passes, not one per card** (INBOX 400). Written per card, the
 //: loop set a card's span, read its height and set it again, so every card
 //: after the first read a layout the previous card had just dirtied: one
@@ -874,17 +873,34 @@ function sizeDashWidgets() {
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
   //: reads go before any write.
-  const heights = cards.map((card) => card.getBoundingClientRect().height);
+  //: **The observer's sizes first** (L-world-class-620): a card's border box as `watchDashWidgets`'s
+  //: ResizeObserver last delivered it, measured by the frame's own layout, so the call reads no layout of
+  //: its own; the rect read after the fills had dirtied it was 49 to 307ms at 4x. A card the observer has
+  //: not reported yet (or reported hidden, 0px) is read. One the fills change after it is reported fires
+  //: the observer again, which sizes it again a frame on, while the grid is still fading in from 0.
+  const heights = cards.map((card) => sizeDashWidgets.heights.get(card) || card.getBoundingClientRect().height);
   if (!heights.some(Boolean)) return;
-  const styles = getComputedStyle(grid);
-  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
-  const rowGap = Number.parseFloat(styles.rowGap) || 0;
-  const cardGap = Number.parseFloat(styles.columnGap) || 16;
+  //: The grid's unit and gaps as the observer last read them, where style was clean; read here
+  //: after the fills, `getComputedStyle` was the forced style pass (45 to 119ms at 4x, 5,000 notes).
+  const { rowUnit, rowGap, cardGap } = sizeDashWidgets.metrics || sizeDashWidgets.read(grid);
   cards.forEach((card, i) => {
     card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
 }
+
+//: State on the function, not three more shared names (the global-scope ratchet): each card's border box as
+//: the observer last delivered it, and the grid's unit and gaps as read where style was clean.
+sizeDashWidgets.heights = new WeakMap();
+sizeDashWidgets.metrics = null;
+sizeDashWidgets.read = (grid) => {
+  const styles = getComputedStyle(grid);
+  return {
+    rowUnit: Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1,
+    rowGap: Number.parseFloat(styles.rowGap) || 0,
+    cardGap: Number.parseFloat(styles.columnGap) || 16,
+  };
+};
 
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
 // size rather than only once at render time.
@@ -896,7 +912,11 @@ function watchDashWidgets() {
   }
   dashResizeObserver?.disconnect();
   let queued = false;
-  dashResizeObserver = new ResizeObserver(() => {
+  dashResizeObserver = new ResizeObserver((entries) => {
+    //: First, before anything here writes: in an observer callback style and layout are clean, so this
+    //: read is free. A resize or a density change resizes the cards, so it is read again then.
+    sizeDashWidgets.metrics = sizeDashWidgets.read(grid);
+    for (const entry of entries) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.target.getBoundingClientRect().height);
     dashResizeObserver.follow?.();
     if (queued) return;
     queued = true;
