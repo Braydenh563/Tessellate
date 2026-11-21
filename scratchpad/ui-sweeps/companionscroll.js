@@ -26,7 +26,7 @@ const SHOT = process.env.SHOT || '';
       }
     }, 16 - have);
   }
-  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate((t) => revealTab(t), process.env.TAB || 'notes');
   await page.waitForTimeout(1000);

@@ -15,8 +15,8 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
   for (const size of SIZES) {
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
-    const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr || 1), ...(w < 600 ? { isMobile: true, hasTouch: true } : {}) });
-    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    const { browser, page } = await boot({ timerFns: true, viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr || 1), ...(w < 600 ? { isMobile: true, hasTouch: true } : {}) });
+    await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
     const spots = await page.evaluate(() => {
@@ -77,9 +77,12 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
         const before = [nmb.x, nmb.y];
         if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
         nmb.lastInput = Date.now();
-        nameMarkBuddyTick();
-        nameMarkBuddyBeat();
-        nameMarkBuddyCheck();
+        nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
+        nameMarkBuddyQueuePlace(); clearTimeout(nmb.placeTimer); nmb.placeTimer = 0;
+        // Private to avatars.js (one closure): boot's timerFns kept the callbacks the two calls above armed.
+        window.__timerFns.nameMarkBuddyTick(true);
+        window.__timerFns.nameMarkBuddyBeat();
+        queueNameMarkBuddyCheck();
         await new Promise((r) => setTimeout(r, 2500));
         const f = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect();
         const m = nmb.menu && !nmb.menu.classList.contains('hidden') ? nmb.menu.getBoundingClientRect() : null;
@@ -104,8 +107,8 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
   for (const size of HARD) {
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
-    const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr), hasTouch: true });
-    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    const { browser, page } = await boot({ timerFns: true, viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr), hasTouch: true });
+    await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.theme = 'dark'; });
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
@@ -120,7 +123,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       };
     });
     // On a dashboard panel that scrolls, the page scrolled a little.
-    const ride = async () => page.evaluate(() => {
+    const ride = async () => page.evaluate(async () => {
       const page = document.getElementById('tab-dashboard');
       page.scrollTop = 0;
       const panel = [...page.querySelectorAll('.card, .dash-widget, .dash-quicklinks')].find((el) => { const r = el.getBoundingClientRect(); return r.width > 250 && r.top > 250 && r.top < innerHeight - 250; });
@@ -129,7 +132,16 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       nameMarkBuddyIndexReset();
       const landed = nameMarkBuddyDrop(Math.round(r.left + 140), Math.round(r.top - 80));
       nameMarkBuddyMoveTo(document.getElementById('nm-buddy'), landed, true);
+      page.scrollTop = 0;
+      await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
       page.scrollTop = 60;
+      // Until the scroll has ended: a menu opened while one is still under way is closed by it (menus.js
+      // closeActionMenusOnScroll), which is the page doing what it does, not the companion's menu.
+      await new Promise((res) => {
+        const t = setTimeout(res, 1200);
+        page.addEventListener('scrollend', () => { clearTimeout(t); res(); }, { once: true });
+      });
+      await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
       clearTimeout(nmb.timer);
       nmb.placeTimer = 1;
       return { riding: !!nmb.ride };

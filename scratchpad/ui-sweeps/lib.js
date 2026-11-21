@@ -97,6 +97,19 @@ async function boot(opts={}) {
   // FONT=mono (or any `#font-seg` value) sweeps that Appearance font, so
   // touch.js, docks.js and every sweep on this boot can run the font matrix
   // (fontmatrix.js) the way errors.js does.
+  // `timerFns: true` keeps the companion's private timer callbacks (avatars.js is one closure, so nameMarkBuddyTick and
+  // nameMarkBuddyBeat are not globals) in `window.__timerFns`, for a sweep that forces a tick or a beat now. Only
+  // named callbacks of those two, passed on to the real setTimeout unchanged.
+  if (opts.timerFns) {
+    await ctx.addInitScript(() => {
+      const real = window.setTimeout;
+      window.__timerFns = {};
+      window.setTimeout = function (fn, ...rest) {
+        if (typeof fn === 'function' && /^nameMarkBuddy(Tick|Beat)$/.test(fn.name)) window.__timerFns[fn.name] = fn;
+        return real.call(this, fn, ...rest);
+      };
+    });
+  }
   await ctx.addInitScript((font) => {
     try {
       if (font) localStorage.setItem('font', font);

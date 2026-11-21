@@ -13,9 +13,9 @@
 // Env: KIND (me), SIZES. Exits 1 on any move of its own.
 const { boot, PW } = require('./lib.js');
 (async () => {
-  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  const { browser, page } = await boot({ timerFns: true, viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate(() => revealTab('dashboard'));
   await page.waitForTimeout(3000);
@@ -85,16 +85,25 @@ const { boot, PW } = require('./lib.js');
     const was = nmb.lastInput;
     nmb.lastInput = Date.now() - 3.5 * 60 * 1000;
     nmb.placedAt = 0;
+    // Private to avatars.js (one closure): arming them lets boot's timerFns keep the callbacks.
+    nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
+    // Pinned, queueing a beat is refused: lift the pin for the one synchronous call that arms it, then put it back.
+    const pinnedWas = nmb.pinned; const placeWas = nmb.placeTimer;
+    nmb.pinned = false; nmb.placeTimer = 0;
+    nameMarkBuddyQueuePlace(); clearTimeout(nmb.placeTimer);
+    nmb.pinned = pinnedWas; nmb.placeTimer = placeWas;
     for (let i = 0; i < 6; i += 1) {
       nmb.lastAct = '';
       nmb.cool = {};
-      nameMarkBuddyTick();
+      window.__timerFns.nameMarkBuddyTick(true);
     }
-    nameMarkBuddyBeat();
-    nameMarkBuddyCheck();
+    window.__timerFns.nameMarkBuddyBeat();
+    queueNameMarkBuddyCheck();
     if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
     if (typeof nameMarkBuddyChatErrand === 'function') nameMarkBuddyChatErrand();
-    nameMarkBuddySeen(false);
+    // nameMarkBuddySeen(false) is private to avatars.js: its two effects, from the public nmb.
+    nmb.outOfSight = true;
+    if (!nmb.away) nmb.lonelyTouch(true);
     nameMarkBuddyQueuePlace();
     nameMarkBuddyCue('cheer');
     nameMarkBuddyCue('bell');
@@ -128,7 +137,10 @@ const { boot, PW } = require('./lib.js');
       const b = document.getElementById('nm-buddy');
       localStorage.removeItem('nm-buddy-spots');
       nmb.pinned = false;
-      nameMarkBuddyMoveTo(b, { kind: 'air', pose: 'float', x: px, y: py }, !w);
+      // A place in open air is dropped onto the nearest perch when it is restored (nameMarkBuddyRestore), so the
+      // pin is made where it would land, as the panel pin above is.
+      nameMarkBuddyIndexReset();
+      nameMarkBuddyMoveTo(b, nameMarkBuddyDrop(px, py), !w);
     }, [x, y, walk]);
     await page.waitForTimeout(walk ? 120 : 200);
     const f = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
@@ -138,7 +150,9 @@ const { boot, PW } = require('./lib.js');
     await page.waitForTimeout(200);
     return { drawn, pinned: await where() };
   };
-  const corner = (await pinAt(1440 - 100, 900 - 150, false)).pinned;
+  // 140px from the right and bottom edges: inside the 160px a corner pin keeps its distance from, and short of the
+  // figure's own clamp (a larger figure than the sweep was written for put 1340 past it).
+  const corner = (await pinAt(1440 - 140, 900 - 140, false)).pinned;
   await page.setViewportSize({ width: 1100, height: 760 });
   await page.waitForTimeout(1500);
   const cornerSmall = await where();

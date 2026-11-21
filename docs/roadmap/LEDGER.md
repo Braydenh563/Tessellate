@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 14 | 0 | 0 | 4 | 14 |
-| all | 502 | 543 | 127 | 2 | 183 | 1172 |
+| general | 0 | 17 | 0 | 0 | 4 | 17 |
+| all | 502 | 546 | 127 | 2 | 183 | 1175 |
 
 ## graph
 
@@ -712,6 +712,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
+- [ ] **L-general-37** `general` open, M: companionscroll sweep: decide the one-frame follow lag (fix the follow or state the budget), then keep it green twice. From scratchpad/ui-sweeps/companionscroll.js (L-general-20 sweep pass). Evidence: avatars.js follow loop ~5800: the buddy trails the page by one drawn frame by design (INBOX 1766/1741); the sweep reads 7.6px at the end of the transform return against its 2px budget
+- [ ] **L-general-38** `general` open, M: companionmenu sweep: mid-poof and long-press open no menu in the hard sizes; find whether the app or the sweep is wrong. From scratchpad/ui-sweeps/companionmenu.js (L-general-20 sweep pass). Evidence: companionmenu.js hard sizes: mid-poof and long-press give no menu, 5 to 6 failures per run
+- [ ] **L-general-39** `general` open, M: perchall sweep: Library perch choice puts the buddy on the window bar while a panel is free. From scratchpad/ui-sweeps/perchall.js (L-general-20 sweep pass). Evidence: perchall.js Library: 12 failures, window bar chosen while a panel was free, dock at y=55
 
 ## Owner calls
 

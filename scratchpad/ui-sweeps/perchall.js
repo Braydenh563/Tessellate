@@ -53,7 +53,9 @@ async function measure(page) {
     const b = buddy.getBoundingClientRect();
     const pose = buddy.dataset.pose || nmb.pose;
     const legs = buddy.dataset.legs || nmb.legs || "";
-    const [cx, line] = nameMarkBuddyOrigin(b.left, b.top, pose);
+    // nameMarkBuddyOrigin is private to avatars.js (one closure); its three lines, from the constants it exports.
+    const origin = (x, y, p) => [x + NMB_W / 2, y + (p === "hang" ? NMB_GRIP : p === "float" ? NMB_H / 2 : p === "sit" ? NMB_SEAT : NMB_FEET - 1)];
+    const [cx, line] = origin(b.left, b.top, pose);
     const name = (el) => (el ? `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}${el.classList.length ? `.${[...el.classList].slice(0, 2).join(".")}` : ""}` : "-");
     const glue = nmb.glue?.el;
     let claim = null;
@@ -94,7 +96,7 @@ async function measure(page) {
       }
       if (paint) break;
     }
-    const shape = nameMarkBuddyShape(b.left, b.top, pose, legs);
+    const shape = nmb.measure.shape(b.left, b.top, pose, legs);
     const over = [];
     const sel = "button, a[href], input:not([type='hidden']), select, textarea, [role='tab'], [role='button']";
     for (const el of document.querySelectorAll(sel)) {
@@ -125,11 +127,11 @@ async function measure(page) {
     if (["bar", "hang", "corner"].includes(nmb.perch)) {
       const tab = nameMarkBuddyTab();
       nameMarkBuddyIndexReset();
-      const ob = nameMarkBuddyObstacles(tab);
-      for (const p of nameMarkBuddyPerches(tab)) {
+      const ob = nmb.measure.obstacles(tab);
+      for (const p of nmb.measure.perches(tab)) {
         if (["bar", "hang"].includes(p.kind) || p.y < 0 || p.y + NMB_H > innerHeight) continue;
-        if (nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
-        if (nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
+        if (nmb.measure.hits(p.x, p.y, p.pose, ob, p.legs) || nmb.measure.covers(p.x, p.y, p.pose, p.legs)) continue;
+        if (nmb.measure.wordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
         free = `${p.kind} ${name(p.edge.el)} at ${p.x},${Math.round(p.y)}`;
         break;
       }
@@ -163,9 +165,11 @@ function verdict(r, label = "") {
   const opts = { viewport: { width: W, height: H } };
   if (phone) Object.assign(opts, { hasTouch: true, isMobile: true });
   const { browser, page } = await boot(opts);
-  await page.evaluate((k) => {
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
+    // Settings' body is built on demand and its listeners arrive with settingsControls (settings-body.js).
+    await ensureModule("settingsControls");
+    const b = $("avatar-buddy");
     b.value = k;
     b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");
