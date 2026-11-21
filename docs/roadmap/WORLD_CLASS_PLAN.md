@@ -453,8 +453,10 @@ Gate: Phase 9 numbers.
 
 **Built 2026-09-20; the dossier (measured before, target, gate, the
 built table and its not-verified list) moved to HISTORY.md, "Moved from the plans, 2026-09-24".** State
-2026-09-24: nothing open but its two not-verified lines (Stop mid-pass, a
-real model's thinking stream), LEDGER L-world-class-65; section 20's model pill in the
+2026-11-21: both not-verified lines are now verified (Stop mid-pass on a slow stand-in and on
+llama-cpp-python with Qwen2.5-1.5B and Qwen3-0.6B; the thinking stream from a stand-in's
+`reasoning_content` and from Qwen3's inline think tags; `tests/test_writing_desk_stop.py`,
+L-world-class-65). What a model's output is worth stays in BACKLOG; section 20's model pill in the
 desk's dock is built (section 20, decision (1) of 2026-11-12).
 
 ---

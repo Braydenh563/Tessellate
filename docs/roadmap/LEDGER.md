@@ -18,6 +18,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | world-class | 0 | 62 | 10 | 0 | 0 | 72 |
 | general | 0 | 32 | 2 | 0 | 5 | 34 |
 | all | 372 | 449 | 81 | 2 | 112 | 902 |
+| world-class | 0 | 65 | 10 | 0 | 0 | 75 |
+| general | 0 | 30 | 2 | 0 | 5 | 32 |
+| all | 372 | 450 | 81 | 2 | 112 | 903 |
 
 ## graph
 
@@ -499,7 +502,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
-- [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
 - [ ] **L-world-class-105** `world-class` open, S: Re-measure 22.3: card padding and body size at laptop widths, section-head weight, one Phosphor weight lint, the toast corner at 1093x614. From WORLD_CLASS_PLAN.md:2294. Evidence: WORLD_CLASS_PLAN.md:2294 '22.3 not re-measured'
