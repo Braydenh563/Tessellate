@@ -83,11 +83,13 @@ def test_correctly_spelt_queries_are_unchanged(notebook, session):
 
 
 def test_the_list_loads_once_and_fast():
-    variants._english_all.cache_clear()
-    began = time.perf_counter()
-    first = variants._english_all()
-    cold = (time.perf_counter() - began) * 1000
-    began = time.perf_counter()
+    #: Best of three cold loads: a busy machine adds noise, never speed.
+    colds = []
+    for _ in range(3):
+        variants._english_all.cache_clear()
+        began = time.perf_counter()
+        first = variants._english_all()
+        colds.append((time.perf_counter() - began) * 1000)
     assert variants._english_all() is first
-    print(f"LISTMS {cold:.1f}")
-    assert cold < 50
+    print(f"LISTMS {min(colds):.1f}")
+    assert min(colds) < 50

@@ -17,7 +17,7 @@ import calendar
 import re
 from datetime import datetime, timedelta
 
-from tessellate.ai import phrasing, recognise
+from tessellate.ai import phrasing, realise, recognise
 from tessellate.ai import recognise_questions
 
 Reading = tuple[str | None, str | None]
@@ -43,7 +43,7 @@ _DATED_UNTITLED = (
 
 
 def _day(at: datetime, now: datetime) -> str:
-    return f"{at.day} {calendar.month_name[at.month]}" + ("" if at.year == now.year else f" {at.year}")
+    return realise.localised_days(f"{at.day} {calendar.month_name[at.month]}" + ("" if at.year == now.year else f" {at.year}"))
 
 
 def _clock(at: datetime) -> str:

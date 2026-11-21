@@ -27,7 +27,7 @@ import re
 from collections.abc import Callable
 from datetime import date, datetime
 
-from tessellate.ai import note_recency, recognise
+from tessellate.ai import note_recency, realise, recognise
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.realise import count_noun, cut_title, join_items, named_lead
 
@@ -132,7 +132,7 @@ def _when(raw: object) -> str:
     except ValueError:
         return ""
     clock = f"{moment.hour % 12 or 12}{f':{moment.minute:02d}' if moment.minute else ''}{'am' if moment.hour < 12 else 'pm'}"
-    return f"{moment.strftime('%A')} {moment.day} {moment.strftime('%B')} at {clock}"
+    return realise.localised_days(f"{moment.strftime('%A')} {moment.day} {moment.strftime('%B')} at {clock}")
 
 
 def _plain(label: object) -> str:

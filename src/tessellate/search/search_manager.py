@@ -342,7 +342,7 @@ def _one_edit_words(term: str, vocabulary: list[str]) -> list[str]:
     found: list[str] = []
     for word in vocabulary:
         forms = (word, word + "e", word[:-1] + "y" if word.endswith("i") else word)
-        found += [form for form in forms if abs(len(form) - len(term)) <= 1 and _one_edit(term, form)]
+        found += [form for form in forms if abs(len(form) - len(term)) <= 1 and _one_edit(term, form, swap_only=len(term) < 5)]
     #: A swap or a changed letter (same length) before a dropped or added one: "tlie" is "tile", not "tie".
     #: A word the notes hold before a stem made into a word ("tile", not "thie" from the stem "thi").
     held = set(vocabulary)
@@ -350,13 +350,22 @@ def _one_edit_words(term: str, vocabulary: list[str]) -> list[str]:
     return found[:1]
 
 
-def _one_edit(a: str, b: str) -> bool:
-    """Optimal string alignment distance of one: a swap of neighbours counts as one edit."""
+def _swapped(a: str, b: str, diff: list[int]) -> bool:
+    """The two differing places are neighbours holding each other's letter."""
+    return len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
+
+
+def _one_edit(a: str, b: str, swap_only: bool = False) -> bool:
+    """Optimal string alignment distance of one: a swap of neighbours counts as one edit.
+    `swap_only`: a short word may only be a swap ("paer" is "pear"); a changed letter
+    ("paas" is "saas") is another short word or an acronym."""
     if a == b:
         return False
     if len(a) == len(b):
         diff = [i for i in range(len(a)) if a[i] != b[i]]
-        return len(diff) == 1 or (len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]])
+        return _swapped(a, b, diff) or (len(diff) == 1 and not swap_only)
+    if swap_only:
+        return False
     short, long = (a, b) if len(a) < len(b) else (b, a)
     i = next((k for k in range(len(short)) if short[k] != long[k]), len(short))
     return short[i:] == long[i + 1 :]

@@ -10,6 +10,8 @@ as in `ai/filters.resolve`.
 
 from __future__ import annotations
 
+from tessellate.ai import realise
+
 import re
 from datetime import datetime, timezone
 from typing import NamedTuple
@@ -88,7 +90,7 @@ def _which(ask: Ask) -> str:
 def date_in_words(made: datetime, zone=None) -> str:  # noqa: ANN001
     made = made if made.tzinfo else made.replace(tzinfo=timezone.utc)
     made = made.astimezone(zone)
-    return f"{made.day} {made.strftime('%B %Y')}"
+    return realise.localised_days(f"{made.day} {made.strftime('%B %Y')}")
 
 
 def say(session: Session, ask: Ask, zone=None, linked: bool = True) -> tuple[str, int | None]:  # noqa: ANN001

@@ -260,8 +260,8 @@ def relative_day(day: date, today: date) -> str:
     if 14 <= delta <= 34:
         return f"{count_word(weeks_gone(delta))} weeks ago"
     if day.year == today.year:
-        return f"on {day.day} {_MONTHS[day.month - 1]}"
-    return f"on {day.day} {_MONTHS[day.month - 1]} {day.year}"
+        return localised_days(f"on {day.day} {_MONTHS[day.month - 1]}")
+    return localised_days(f"on {day.day} {_MONTHS[day.month - 1]} {day.year}")
 
 
 _IRREGULAR_PLURALS = {"day": "days", "week": "weeks", "person": "people", "child": "children", "entry": "entries", "copy": "copies"}
@@ -381,7 +381,7 @@ _STOP_AFTER_STOP = lazy_compile(r"([?!])\.(?!\.)")
 _COMMA_AFTER_STOP = lazy_compile(r"([?!]),(\s+)(\w)")
 
 
-_DAY_FIRST = re.compile(r"\b(\d{1,2}) (" + "|".join(_MONTHS) + r")(?: (\d{4}))?\b")
+_DAY_FIRST = re.compile(r"\b(\d{1,2}) (" + "|".join(_MONTHS) + "|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec" + r")(?: (\d{4}))?\b")
 
 
 def month_first_days(text: str) -> str:
@@ -389,6 +389,14 @@ def month_first_days(text: str) -> str:
     (CHAT_PLAN decision 43). Only a day the app measured goes through here; a
     note's own words are never reordered."""
     return _DAY_FIRST.sub(lambda m: f"{m.group(2)} {m.group(1)}" + (f", {m.group(3)}" if m.group(3) else ""), text)
+
+
+def localised_days(text: str) -> str:
+    """`text` with its days said the way the person's date order reads them: month
+    first for en-US or Settings, Dates like 3/4 mean, Month first; day first otherwise."""
+    from tessellate.ai import recognise
+
+    return month_first_days(text) if recognise._reads_month_first(None) else text
 
 
 def parts_text(parts: list[tuple], month_first: bool) -> str:
