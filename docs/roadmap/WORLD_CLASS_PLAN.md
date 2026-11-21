@@ -568,7 +568,7 @@ per-claim citations and "what changed about X" possible. Gate: rebuild from
 scratch on the fixture is deterministic; every derived row cites its
 source event.
 
-**State 2026-10-05:** typed links (KG3: `LINK_TYPES` plus a person's own relation types, with inverses), the derived tensions table, its rebuild determinism and the Tensions widget are built (HISTORY, "row 18: the derived tensions table"). Person and project pages are built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (I7 wrong on a card, B4 person and project pages, I5 claims as of)"). Left: per-claim citations, "what changed about X" and the computed-by stamp, LEDGER L-world-class-25.
+**State 2026-10-05:** typed links (KG3: `LINK_TYPES` plus a person's own relation types, with inverses), the derived tensions table, its rebuild determinism and the Tensions widget are built (HISTORY, "row 18: the derived tensions table"). Person and project pages are built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (I7 wrong on a card, B4 person and project pages, I5 claims as of)"). Per-claim citations, "what changed about X" and the computed-by stamp are built 2026-11-21 (HISTORY.md, LEDGER L-world-class-25).
 
 **Decisions made, 2026-10-05 (recommendations taken):** (1) B4's link
 vocabulary is the one KG3 built, not a second one: refers-to is a wiki-origin

@@ -152,6 +152,9 @@ def entity_page(entity_id: int, session: Session = Depends(get_session)) -> dict
         "open_items": _open_items(session, entity, notes, names),
         "timeline": _timeline(notes),
         "links": _linked_notes(session, notes, visible),
+        "claims": _claims(session, notes, names),
+        "changes": _changes(session, notes, names),
+        "found_by": _found_by(entity),
         "first_seen": min(seen).isoformat() if seen else None,
         "last_seen": max(seen).isoformat() if seen else None,
     }
@@ -213,6 +216,75 @@ def _timeline(notes: dict) -> list[dict]:
         }
         for month, rows in sorted(months.items(), reverse=True)[:PAGE_MONTHS]
     ]
+
+
+#: B4: a page's claims, newest note first. A name in two hundred notes has
+#: said what matters in the newest forty; the rest are under Mentioned in.
+PAGE_CLAIMS = 40
+
+
+def _prose(text: str) -> str:
+    """The note without its task lines: a task is an open item, listed above
+    the claims, not a thing the note says about its subject."""
+    return "\n".join(line for line in text.splitlines() if not _TASK.match(line))
+
+
+def _found_by(entity: Entity) -> dict:
+    """B4's stamp on the entity row: the model that found the name (null for
+    one found before models were kept) and when."""
+    return {"model": entity.model, "at": entity.created_at.isoformat() if entity.created_at else None}
+
+
+def _claim_row(entry: Entry, title: str, sentence: str, span: tuple[int, int] | None, fact) -> dict:  # noqa: ANN001
+    start, end = span or (0, 0)
+    return {
+        "entry_id": entry.id,
+        "title": title,
+        "text": sentence,
+        "span_start": start,
+        "span_end": end,
+        "fact_id": fact.id if fact else None,
+        # The stamp (B4): the night shift's row says who made it a claim and
+        # when; a sentence read from the note now needed no model at all.
+        "model": fact.model if fact else "local",
+        "computed_at": fact.computed_at.isoformat() if fact and fact.computed_at else None,
+    }
+
+
+def _claims(session: Session, notes: dict, names: list[str]) -> list[dict]:
+    """Each sentence in its notes that names it, cited to its note and span
+    (B4, per-claim citations). One the person marked wrong (I7), or whose
+    stored claim they deleted, is not said again here."""
+    from tessellate.ai import timetravel, verdicts
+
+    stored = timetravel.stored_claims(session, list(notes))
+    known = verdicts.known(session)
+    rows: list[dict] = []
+    for entry in sorted(notes.values(), key=lambda e: e.created_at, reverse=True):
+        content, cursor = entry.content or "", 0
+        title = plain_label(content, 60) or "Untitled note"
+        for sentence in timetravel.claims(_prose(content)):
+            span = timetravel.claim_span(content, sentence, cursor)
+            cursor = span[1] if span else cursor
+            fact = stored.get((entry.id, verdicts.norm(sentence)))
+            if not _names_line(sentence, names) or known.is_wrong(entry.id, sentence) or (fact and fact.deleted_at):
+                continue
+            rows.append(_claim_row(entry, title, sentence, span, fact))
+            if len(rows) >= PAGE_CLAIMS:
+                return rows
+    return rows
+
+
+def _changes(session: Session, notes: dict, names: list[str]) -> list[dict]:
+    """What changed about it: its notes' claims that name it, added, revised
+    or dropped edit by edit (`timetravel.changes_over_time`, the same
+    comparison a note's History draws)."""
+    from tessellate.ai import timetravel
+
+    rows = timetravel.changes_over_time(session, list(notes.values()), lambda s: bool(s) and _names_line(s, names), _prose)
+    for row in rows:
+        row["title"] = plain_label(notes[row["entry_id"]].content or "", 60) or "Untitled note"
+    return rows
 
 
 def _linked_notes(session: Session, notes: dict, visible: set[int]) -> list[dict]:

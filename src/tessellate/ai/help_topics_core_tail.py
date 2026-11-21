@@ -1542,6 +1542,9 @@ TAIL_TOPICS.extend(
                 "person page",
                 "project page",
                 "open items",
+                "claims",
+                "what changed about",
+                "found by",
             ),
             "body": (
                 "Atlas notes the people, places, projects, organisations and things "
@@ -1550,10 +1553,13 @@ TAIL_TOPICS.extend(
                 "Click one, open People and things from the command palette, or "
                 "a name under a note's Connections, People and projects it names, "
                 "for its page: Open items (a project's unticked tasks and "
-                "reminders, or the tasks that name a person), a Timeline of its "
+                "reminders, or the tasks that name a person), Claims (each sentence "
+                "in its notes that names it, with its note and who found it; click "
+                "one to open the note at that sentence), What changed (the claims "
+                "about it an edit added, changed or dropped, with the day), a Timeline of its "
                 "notes by month, every note that names it with the sentence, "
                 "Linked notes (joined to its notes without naming it), what it is "
-                "named with, and the dates its notes mention. Its ⋯ sets the Kind, "
+                "named with, and the dates its notes mention. The line under its name says which model found it, and when. Its ⋯ sets the Kind, "
                 "Renames it, edits Other names (the names it also goes by) and "
                 "Merges it into another, moving every mention; Undo in the toast, "
                 "or Ctrl+Z, splits the two back as they were. Suggestions, Names "

@@ -68,11 +68,8 @@ def claims_as_of(entry_id: int, as_of: date | None = Query(default=None), sessio
     The revision is resolved at the date, as then-and-now resolves it; a
     claim the night shift stored for the note is named by its fact id, and
     one the person marked wrong (I7) says so."""
-    from sqlalchemy import select
-
     from tessellate.ai import timetravel, verdicts
     from tessellate.core.config import user_now
-    from tessellate.core.database import DerivedFact
 
     entry = _existing_entry(session, entry_id)
     if entry.is_private:
@@ -84,15 +81,12 @@ def claims_as_of(entry_id: int, as_of: date | None = Query(default=None), sessio
         if then is None:
             raise HTTPException(status_code=404, detail=f"This note did not exist on {timetravel.day_words(as_of)}.")
         text, revision_id, exact = then.text, then.revision_id, then.exact
-    stored = {
-        verdicts.norm(row.text): row.id
-        for row in session.scalars(select(DerivedFact).where(DerivedFact.entry_id == entry.id, DerivedFact.kind == "claim"))
-    }
+    stored = timetravel.stored_claims(session, [entry.id])
     known = verdicts.known(session)
-    claims = [
-        {"text": c, "fact_id": stored.get(verdicts.norm(c)), "wrong": known.is_wrong(entry.id, c)}
-        for c in timetravel.claims(text)
-    ]
+    claims = []
+    for c in timetravel.claims(text):
+        row = stored.get((entry.id, verdicts.norm(c)))
+        claims.append({"text": c, "fact_id": row.id if row else None, "wrong": known.is_wrong(entry.id, c)})
     return {"as_of": as_of.isoformat() if as_of else None, "revision_id": revision_id, "exact": exact, "claims": claims}
 
 
