@@ -292,6 +292,17 @@
   //: ever opened: it binds the board's handlers through `on`, so an embed made
   //: without waiting for it would be a board that cannot be edited (L-whiteboard-63).
   let embedBoardInit = null;
+  let embedHints = 0;
+  //: A board's title for an embed's accessible name: the boards list, shared by embeds made together and read again when a board is missing from it.
+  let embedTitles = null;
+  async function embedTitle(boardId) {
+    if (boardId == null) return "";
+    embedTitles ??= apiPagedList("/whiteboard/boards", 200, { silent: true }).catch(() => (embedTitles = null));
+    const rows = await embedTitles;
+    const found = rows?.find((row) => row.id === boardId);
+    if (!found) embedTitles = null; //: A board made or renamed since the read: ask again next time.
+    return found?.title?.trim() || "";
+  }
   async function createEmbed(host, boardId, opts = {}) {
     const editable = opts.editable === true;
     //: Only a real promise is kept, and a failed one is dropped, so the next embed tries again (L-whiteboard-75).
@@ -303,14 +314,28 @@
     const box = document.createElement("div");
     box.className = editable ? "whiteboard-container wb-embed" : "whiteboard-container wb-embed wb-embed-readonly";
     box.tabIndex = 0;
-    box.setAttribute("role", "application");
+    //: **An embed is named and roled by what it can do** (L-whiteboard-72): a read-only one is a group
+    //: (pan and zoom only), an editable one an application that points at a hidden keyboard hint.
+    box.setAttribute("role", editable ? "application" : "group");
     box.setAttribute("aria-roledescription", "canvas");
-    box.setAttribute("aria-label", "Board");
+    box.setAttribute("aria-label", opts.title || "Board");
     embedSkeleton(box);
     host.append(box);
+    //: The hint sits beside the box in the host, not inside it: the box's children are the board's layers only.
+    let hint = null;
+    if (editable) {
+      hint = document.createElement("span");
+      hint.className = "visually-hidden";
+      hint.id = `wb-embed-hint-${++embedHints}`;
+      hint.textContent = "Tab moves through the items, the arrow keys move what is selected, and a letter picks a tool.";
+      host.append(hint);
+      box.setAttribute("aria-describedby", hint.id);
+    }
     const inst = mountInstance(box, boardId, editable);
     box.setAttribute("data-wb-embed", String(inst.key));
     inst.destroyed = false;
+    //: The title is looked up after the mount, so a slow list never holds the board back; "Board" stays until it lands.
+    if (!opts.title) embedTitle(boardId).then((title) => { if (title && !inst.destroyed) box.setAttribute("aria-label", title); });
 
     async function reloadEmbed() {
       const url = boardId ? `/whiteboard/?board_id=${boardId}` : "/whiteboard/";
@@ -332,6 +357,7 @@
       unmountInstance(inst);
       inst.changeFns.clear();
       box.remove();
+      hint?.remove();
     }
 
     inst.reload = reloadEmbed;

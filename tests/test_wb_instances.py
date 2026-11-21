@@ -1229,3 +1229,42 @@ def test_the_router_returns_at_once_with_only_the_page_board():
     body = src[at : src.index("\n  }\n", at)]
     first = [line.strip() for line in body.splitlines()[1:] if line.strip() and not line.strip().startswith("//")][0]
     assert first == "if (list.length === 1) return;"
+
+
+def test_an_embed_is_named_from_its_board_and_roled_by_what_it_can_do():
+    """L-whiteboard-72: an editable embed is an application naming its board and pointing at a
+    visually hidden keyboard hint; a read-only one is a group with no hint; "Board" is the fallback."""
+    out = _run("""
+let listed = 0;
+server[6] = server[5];
+globalThis.apiPagedList = async () => { listed += 1; return [{ id: 5, title: "Launch plan" }, { id: 6, title: "  " }]; };
+(async () => {
+const attrs = (e) => ({ role: e.attrs.role, label: e.attrs["aria-label"], describedby: e.attrs["aria-describedby"] ?? null });
+const h1 = fakeEl("div", "h1");
+const edit = await window.wbInstance.create(h1, 5, { editable: true });
+const read = await window.wbInstance.create(fakeEl("div", "h2"), 5, {});
+const blank = await window.wbInstance.create(fakeEl("div", "h3"), 6, {});
+const given = await window.wbInstance.create(fakeEl("div", "h4"), 5, { title: "Roadmap" });
+await new Promise((r) => setTimeout(r, 5));
+const boxes = I.list.slice(1).map((i) => i.container);
+const hint = (h) => h.children.find((c) => c.className === "visually-hidden");
+out.edit = attrs(boxes[0]);
+out.read = attrs(boxes[1]);
+out.blank = attrs(boxes[2]);
+out.given = attrs(boxes[3]);
+out.hint = { id: hint(h1).id, text: hint(h1).textContent };
+out.readHint = !!hint(boxes[1].parent);
+edit.destroy();
+out.hintGone = !hint(h1);
+out.listed = listed;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["edit"]["role"] == "application" and out["edit"]["label"] == "Launch plan"
+    assert out["hint"]["id"] == out["edit"]["describedby"]
+    assert out["hint"]["text"].endswith("a letter picks a tool.")
+    assert out["read"] == {"role": "group", "label": "Launch plan", "describedby": None} and not out["readHint"]
+    assert out["blank"]["label"] == "Board"
+    assert out["given"]["label"] == "Roadmap" and out["hintGone"]
+    assert out["listed"] <= 3  # a missing board asks again, a found one shares the read
