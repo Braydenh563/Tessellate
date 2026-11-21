@@ -25228,22 +25228,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `wait_until_answering` | src/tessellate/core/instance_lock.py:300 |
 | `write_lock` | src/tessellate/core/instance_lock.py:99 |
 
-### src/tessellate/core/jobruns.py (38)
+### src/tessellate/core/jobruns.py (31)
 
 | Name | File:line |
 |---|---|
 | `Run` | src/tessellate/core/jobruns.py:386 |
 | `_bump` | src/tessellate/core/jobruns.py:208 |
-| `_calling` | src/tessellate/core/jobruns.py:900 |
 | `_clip` | src/tessellate/core/jobruns.py:117 |
 | `_database` | src/tessellate/core/jobruns.py:150 |
 | `_forget_logged` | src/tessellate/core/jobruns.py:295 |
 | `_logged_now` | src/tessellate/core/jobruns.py:254 |
-| `_named` | src/tessellate/core/jobruns.py:909 |
-| `_open_call` | src/tessellate/core/jobruns.py:916 |
 | `_persist` | src/tessellate/core/jobruns.py:261 |
-| `_purpose` | src/tessellate/core/jobruns.py:880 |
-| `_seconds` | src/tessellate/core/jobruns.py:892 |
 | `active` | src/tessellate/core/jobruns.py:865 |
 | `begin` | src/tessellate/core/jobruns.py:692 |
 | `bound` | src/tessellate/core/jobruns.py:855 |
@@ -25261,8 +25256,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `live` | src/tessellate/core/jobruns.py:367 |
 | `mark_interrupted` | src/tessellate/core/jobruns.py:752 |
 | `merged_history` | src/tessellate/core/jobruns.py:661 |
-| `model_call` | src/tessellate/core/jobruns.py:929 |
-| `model_stream` | src/tessellate/core/jobruns.py:966 |
 | `note_finished` | src/tessellate/core/jobruns.py:724 |
 | `origin_now` | src/tessellate/core/jobruns.py:217 |
 | `peek_database` | src/tessellate/core/jobruns.py:154 |
@@ -25270,6 +25263,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `started_by` | src/tessellate/core/jobruns.py:228 |
 | `version` | src/tessellate/core/jobruns.py:213 |
 | `why_now` | src/tessellate/core/jobruns.py:222 |
+
+### src/tessellate/core/jobruns_calls.py (7)
+
+| Name | File:line |
+|---|---|
+| `_calling` | src/tessellate/core/jobruns_calls.py:34 |
+| `_named` | src/tessellate/core/jobruns_calls.py:43 |
+| `_open_call` | src/tessellate/core/jobruns_calls.py:50 |
+| `_purpose` | src/tessellate/core/jobruns_calls.py:14 |
+| `_seconds` | src/tessellate/core/jobruns_calls.py:26 |
+| `model_call` | src/tessellate/core/jobruns_calls.py:63 |
+| `model_stream` | src/tessellate/core/jobruns_calls.py:100 |
 
 ### src/tessellate/core/jobs.py (30)
 
