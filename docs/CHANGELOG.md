@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents typing (L-documents-26): the "/" menu and `[[` picker look for their token on the caret's line instead of slicing the whole text up to the caret twice a key (about 2.4 ms a key in a 20k-word document at 4x CPU); `test_doc_key_path_26.py` checks it against the old scan over 9,000 cases.
 - Documents typing (L-documents-26): the caret readout redraws on a pause instead of inside each key (layouts 3.3 to 2.4 a key, paints 3.4 to 2.7 in a 20k-word document at 4x CPU), the columns, fence, mermaid and suggestion decorations check only the edited lines for their markers instead of the whole text, and the outline rows go in through one fragment (23.6 to 16 ms a pass); `test_doc_key_path_26.py` pins them.
 - Documents: the Library bundle served as one script is reverted. It failed the frozen Windows app's smoke (404) and let one failing file stop the rest; the Library files load one by one again (L-documents-119 closed as obsolete, L-documents-83 and 106 stay open).
 - Diagram overview frame: its move is throttled to one per 48 ms with a trailing settle and the frame is its own layer, so a 90-move pan at 1440 and 4x CPU costs p50 about 8.4 ms (was about 12) and 15 ms less raster; p95 about 28 ms (was about 35, load 8 to 10), the remainder is the picture's own raster (L-documents-102).

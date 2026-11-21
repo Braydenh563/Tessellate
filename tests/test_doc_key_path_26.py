@@ -111,3 +111,72 @@ console.log(JSON.stringify(out));
     assert got["wrong"] == 0
     # The whole text is read only where the state before already held a match.
     assert got["wholeReads"] <= got["mayRead"] < 400, got
+
+
+EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
+
+#: The scan as it was before the caret's line bounded it: the reference the
+#: bounded one must agree with.
+_TOKEN_AT_WHOLE_TEXT = """
+function refTokenAt(textarea, trigger) {
+  const upto = textarea.value.slice(0, textarea.selectionStart);
+  const open = upto.lastIndexOf(trigger);
+  if (open === -1) return null;
+  const fragment = upto.slice(open + trigger.length);
+  if (fragment.includes("\\n")) return null;
+  if (trigger === "[[" && upto.slice(open).includes("]]")) return null;
+  if (trigger === "/") {
+    const before = open === 0 ? "\\n" : upto[open - 1];
+    if (!/\\s/.test(before)) return null;
+    if (/\\s/.test(fragment) && !editorTokenAt.phrase(textarea, fragment)) return null;
+  }
+  if (trigger === "```") {
+    if (open > 0 && upto[open - 1] !== "\\n") return null;
+    if (/\\s/.test(fragment)) return null;
+  }
+  return { start: open, fragment };
+}
+"""
+
+
+def test_the_token_scan_reads_only_the_carets_line():
+    body = _function(EDITOR, "function editorTokenAt(", "")
+    assert "textarea.value.slice(0, textarea.selectionStart)" not in body
+    assert 'lastIndexOf("\\n", caret - 1) + 1' in body
+
+
+@needs_node
+def test_the_bounded_token_scan_matches_the_whole_text_scan():
+    """The "/" menu, the `[[` picker and the fence finisher ask for the token
+    before the caret on every typed key; a token never spans a line break, so
+    the caret's line answers the same as the whole 130,000-character text. A
+    seeded run of 3,000 texts and carets, three triggers each."""
+    body = _function(EDITOR, "function editorTokenAt(", "")
+    script = f"""
+{body}
+editorTokenAt.phrase = (t, fragment) => fragment.length % 2 === 0;
+{_TOKEN_AT_WHOLE_TEXT}
+let seed = 11;
+const rnd = (n) => {{ seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; }};
+const bits = ["/", "[[", "]]", "```", "\\n", " ", "a", "js", "x/y", "[", "]", "`"];
+let wrong = 0, checks = 0, found = 0;
+for (let i = 0; i < 3000; i += 1) {{
+  let value = "";
+  const n = 1 + rnd(12);
+  for (let k = 0; k < n; k += 1) value += bits[rnd(bits.length)];
+  const textarea = {{ value, selectionStart: rnd(3) === 0 ? rnd(value.length + 1) : value.length }};
+  for (const trigger of ["/", "[[", "```"]) {{
+    checks += 1;
+    const a = JSON.stringify(editorTokenAt(textarea, trigger));
+    const b = JSON.stringify(refTokenAt(textarea, trigger));
+    if (a !== b) wrong += 1;
+    if (b !== "null") found += 1;
+  }}
+}}
+console.log(JSON.stringify({{ wrong, checks, found }}));
+"""
+    res = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
+    got = json.loads(res.stdout)
+    assert got["checks"] == 9000
+    assert got["wrong"] == 0, got
+    assert got["found"] > 300, got
