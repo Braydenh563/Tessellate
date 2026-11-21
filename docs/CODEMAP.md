@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8588, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11541, test files 3031, tests 23480, plan headings 696, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8588, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11542, test files 3031, tests 23480, plan headings 696, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8588)
 
@@ -14343,7 +14343,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11541)
+## Backend modules (11542)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17016,7 +17016,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `answer` | src/tessellate/ai/composer_quick.py:17 |
 
-### src/tessellate/ai/composer_quote.py (21)
+### src/tessellate/ai/composer_quote.py (22)
 
 | Name | File:line |
 |---|---|
@@ -17041,6 +17041,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_with_context` | src/tessellate/ai/composer_quote.py:63 |
 | `_your_kind` | src/tessellate/ai/composer_quote.py:227 |
 | `decap` | src/tessellate/ai/composer_quote.py:323 |
+| `gap_before` | src/tessellate/ai/composer_quote.py:334 |
 
 ### src/tessellate/ai/composer_read.py (35)
 
