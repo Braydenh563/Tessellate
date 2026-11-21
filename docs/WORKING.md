@@ -249,8 +249,9 @@ here is new" is a fact rather than a guess.
 
 - **Do not install torch or `sentence-transformers`.** Set up by hand:
   `python3 -m venv .venv && .venv/bin/pip install fastapi "uvicorn[standard]" SQLAlchemy alembic python-dotenv requests numpy "fsspec[http]" bcrypt cryptography python-multipart pytest pytest-xdist httpx ruff defusedxml`
-- The suite is about 12,500 tests, all green: under 9 minutes with
-  `python -m pytest -n auto tests/` on four cores, about 25 serial. When to
+- The suite collects 52,983 tests (`pytest --collect-only -q`, measured
+  2026-11-21); the old "under 9 minutes with `python -m pytest -n auto
+  tests/` on four cores, about 25 serial" was timed at about 12,500. When to
   run it is standing order 5a. `PYTHONPATH=src` is needed to run the app.
 - `scripts/gate.sh` is the merge gate in one command: the lint set,
   `node --check`, ruff. `--changed` adds the tests that name files changed

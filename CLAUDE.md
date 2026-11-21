@@ -119,8 +119,8 @@ Run targeted tests against the base branch first.
 ## 7. Working here
 
 - No torch or `sentence-transformers`; the venv recipe is in WORKING.md.
-  `PYTHONPATH=src` to run the app. The suite is about 9,000 tests, under 9
-  minutes with `-n auto`.
+  `PYTHONPATH=src` to run the app. The suite collects 52,983 tests (measured
+  2026-11-21); time it with `-n auto` before quoting one.
 - `scripts/gate.sh` (`--changed`, `--staged`, `--full`, `--sweeps`) is the
   merge gate; `node --check` after JS edits.
 - The app's code is 29 classic scripts sharing one global scope (index.html
