@@ -29,7 +29,9 @@ def test_the_bars_the_boxes_read_are_the_bars_watched_for_a_size_change() -> Non
     start = AV.index("const barSizes = new ResizeObserver(")
     block = AV[start : AV.index("\n  }\n", start)]
     assert "nmb.covers = null" in block
-    assert "NAME_MARK_BUDDY_NEVER_COVER" in block  # every control the sweep keeps a box for
+    # Every element, not only the controls the sweep keeps a box for: a control
+    # moved by a word beside it growing keeps its own size (#status-nav-history).
+    assert 'bar.querySelectorAll("*")' in block
     for bar in bar_ids:
         assert f'"{bar}"' in block, bar
 

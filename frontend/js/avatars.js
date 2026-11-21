@@ -7862,7 +7862,9 @@
   //: **The window's bars are read too, so they are watched too** (L-general-44): the status bar's
   //: Agent and Guide buttons are 0 by 0 until status.js fills them, and a sweep kept from before the
   //: fill let the companion perch over them (perchall, 3 of 6 runs). A size change, not a mutation:
-  //: a status word rewritten at the same width needs no new sweep.
+  //: a status word rewritten at the same width needs no new sweep. Every element in a bar, not only
+  //: its controls: a control keeps its size when a word beside it grows and only moves (perchall,
+  //: #status-nav-history, 1 of 6 with the controls alone).
   if (globalThis.ResizeObserver) {
     const barSizes = new ResizeObserver(() => { nmb.covers = null; });
     const watchBars = () => {
@@ -7870,7 +7872,7 @@
         const bar = document.getElementById(id);
         if (!bar) continue;
         barSizes.observe(bar);
-        for (const el of bar.querySelectorAll(NAME_MARK_BUDDY_NEVER_COVER)) barSizes.observe(el);
+        for (const el of bar.querySelectorAll("*")) barSizes.observe(el);
       }
     };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watchBars);
