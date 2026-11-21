@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 92 | 8 | 0 | 0 | 100 |
+| world-class | 0 | 93 | 8 | 0 | 0 | 101 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 470 | 79 | 2 | 112 | 921 |
+| all | 372 | 471 | 79 | 2 | 112 | 922 |
 
 ## graph
 
@@ -521,7 +521,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
-- [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
 - [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14
@@ -553,6 +552,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-394** `world-class` open, S: On a 360x740 phone, opening Settings with no meaning-search model shows the 'Search by meaning needs a one-time download of about 130 MB' toast at 341x173px (top 503, bottom 676), still up after 10 s, over the lower quarter of every section until dismissed. From L-world-class-177, 2026-11-14. Evidence: scratchpad/ui-sweeps/settings-phone-177.js before its toast removal line; 0 bad with the toast gone
 - [ ] **L-world-class-670** `world-class` open, M: Seal a private space's files as they are written by a background thread, an import and the live-caption spool. From L-world-class-381. Evidence: tests/test_sealed_readers.py PLAIN_WRITES: recording_make.save_generated, export_folder.write and _write_attachments, routes_import.import_app, captions.begin write a private space's file plain until the next unlock seals it; deleting a private space into an ordinary one carries the sealed bytes as they are
 - [ ] **L-world-class-671** `world-class` open, M: Read a private space's library pictures (Tesseract) in the background. From L-world-class-381. Evidence: core/media_process.py:110 skips a sealed picture; ocr, captioning and vision_ocr take a path on their own threads; the AI reads a private space only from a chat inside it (SECURITY.md T10), so only Tesseract may borrow the session (sealed_files.for_background)
+- [ ] **L-world-class-672** `world-class` open, S: Mind map: Ctrl+Z in a just-added topic whose text is untouched removes the topic. From WORLD_CLASS_PLAN.md 28.1 row 1 (L-world-class-132). Evidence: undo.js 2026-11-21: mind map 'Add the first topic' and 'Add a top-level topic' not undone by Ctrl+Z, the new topic's editor has focus and a text field keeps its own Ctrl+Z (status.js surfaceHistory); the board stack holds the step (Escape then Ctrl+Z works)
+- [ ] **L-world-class-673** `world-class` open, S: Rule 2 to its bar: palette commands for the board's Layers, Rename space and Chat's web switch, reach.js matching help popovers to their topic, a complete crawl. From WORLD_CLASS_PLAN.md 28.1 row 2 (L-world-class-132). Evidence: reach.js 2026-11-21 to depth 2 (depth 3 timed out at 40 min on the shared box): 23 of 91 without a palette command; most are the matcher's (help popovers, Statistics, the tour, Settings, Skills); real: the board's Layers panel, Rename space, Chat's browse-the-web switch; then a full depth-4 crawl in light and dark
 
 ## general
 
