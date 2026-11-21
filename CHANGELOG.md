@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The assistant can browse (L-world-class-182): five tools beside web search, `browser_open`, `browser_read`, `browser_follow`, `browser_find` and `browser_back`, open a page in the Web panel, read it, follow a link the page has, find text on it and go back. They use the same fetch path, address checks and web switch as `read_url`, hide while web search is off, park for a confirm once a turn has read outside text, fence page text as data, and reach MCP clients as open-world tools.
 - Notes: on a long notebook the first Notes press lands only the first 240 row placeholders and the rest join in idle chunks (5,000 notes: click to first row 459 to 213ms of main thread, style 139 to 66ms).
 
 - A VS Code extension (`editors/vscode/`, L-world-class-183): sign in to the local server, save a selection or a typed note, search notes and insert a link or the text, and open a note read only. No build step, no telemetry, talks to this computer only; a node test runs its API client against a fake server and `tests/test_vscode_extension.py` fails if a route it calls is renamed. Not run inside VS Code here.

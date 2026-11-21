@@ -626,6 +626,15 @@ def _read_url(result: dict, args: dict) -> Said:
     return lead, _quoted(str(result.get("text") or ""), 700), ""
 
 
+def _found(result: dict, args: dict) -> Said:
+    query = str(args.get("text") or result.get("query") or "")
+    rows = [_quoted(str(m.get("text") or ""), 160) for m in (result.get("matches") or [])[:5] if isinstance(m, dict)]
+    n = int(result.get("count") or 0)
+    if not n:
+        return f"Nothing on the open page says “{query}”.", "", ""
+    return f"The open page says “{query}” {count_noun(n, 'time')}.", "\n\n".join(rows), ""
+
+
 # --- writing -------------------------------------------------------------------
 
 
@@ -866,7 +875,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "get_document": _get_document, "list_reminders": _reminders, "list_skills": _skills, "search_help": _help,
     "search_chat_history": _chat_history, "search_files": _files, "read_file": _read_file, "read_text": _read_text,
     "read_whiteboard": _whiteboard, "search_whiteboard": _search_board, "read_mindmap": _mindmap,
-    "list_library": _library, "check_answer": _check, "propose_act": _propose, "web_search": _web, "read_url": _read_url,
+    "list_library": _library, "check_answer": _check, "propose_act": _propose, "web_search": _web, "read_url": _read_url, "browser_open": _read_url, "browser_read": _read_url, "browser_follow": _read_url, "browser_back": _read_url, "browser_find": _found,
     "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned,
     "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit, "check_learned": _learned_checked,
     "create_category": _category, "rename_category": _category, "merge_categories": _category, "delete_category": _category,
@@ -910,7 +919,7 @@ def _screen(tool: str) -> tuple[str, str]:
 def _error(tool: str, message: str, args: dict) -> Said:
     text = re.sub(rf"^{re.escape(tool)}:\s*", "", str(message or "")).strip()
     if re.search(r"turned off in Settings|is disabled in Settings", text):
-        what = "Web search" if tool in ("web_search", "read_url") else "That tool"
+        what = "Web search" if tool in ("web_search", "read_url") or tool.startswith("browser_") else "That tool"
         return f"{what} is turned off.", "Turn it on in Settings, Tools it can use, then ask again.", _chips(("Open Settings, Tools it can use", settings_at("tools")))
     if re.search(r"starts a run rather|answered by the person|hands the summary", text):
         return SAYERS[tool]({}, args) if tool in SAYERS else ("That needs you to take the next step.", "", "")

@@ -77,6 +77,20 @@ def outside_seen() -> contextvars.ContextVar[list[bool] | None]:
     return _OUTSIDE
 
 
+#: The tools that reach the internet: hidden until the web switch is on, grouped
+#: "online" in Settings, Tools, and open-world to an MCP client.
+ONLINE_TOOLS = frozenset({
+    "web_search", "read_url",
+    "browser_open", "browser_read", "browser_follow", "browser_find", "browser_back",
+})
+
+#: Their confirm sentences (merged into `tool_run`'s table).
+BROWSER_CONFIRMS = {
+    "browser_open": lambda a: f"Open {a.get('url', 'a web page')} in the panel",
+    "browser_follow": lambda a: f"Follow link {a.get('link', '?')} on the open page",
+}
+
+
 class ToolError(ValueError):
     """A failure a tool means to explain, in words written for a reader.
 

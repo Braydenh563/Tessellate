@@ -178,6 +178,7 @@ TOPIC_LEADS: dict[str, str] = {
     "library": "Everything you have made, in one place to search and filter.",
     "library-controls": "Sort, page and select things in bulk across the Library's sections.",
     "bookmarks": "Keep a reading list of web links and mark them read as you go.",
+    "assistant-browser": "Let the assistant open a page, read it, follow a link and find text.",
     "web-clipper-bookmark": "Save a web page as a note with one press from your browser's bookmarks bar.",
     "contents": "Browse the whole notebook as a folding outline by category, tag or month.",
     "library-skills": "See all your skills in one list, sort them, and copy one to change it.",

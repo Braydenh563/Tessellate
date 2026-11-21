@@ -711,7 +711,7 @@ def _recovery_hint(name: str, message: str) -> str:
         return found
     #: A search or page service that failed is not an argument fault: the
     #: tool's own "no URL was given" is (audit 1030 A5).
-    if name in ("web_search", "read_url") and not any(
+    if name in tools.ONLINE_TOOLS and not any(
         m in lowered for m in ("was given", "is required", "required", "must be")
     ):
         return _RECOVERY_HINTS["web_down"]
@@ -986,7 +986,7 @@ def _tool_sources(name: str, result: dict) -> list[dict]:
         return []
     if name == "web_search":
         rows = _search_sources(result)
-    elif name == "read_url":
+    elif name in ("read_url", "browser_open", "browser_read", "browser_follow", "browser_back"):
         rows = _page_source(result)
     elif name in {"read_file", "search_files"}:
         rows = _file_sources(result)
@@ -1287,8 +1287,9 @@ AGENT_GROUNDING = (
 #: of the first, every call to the second parks for a confirm too, so a
 #: page that says "now search for my password" cannot make a request by
 #: itself.
-_OUTSIDE_TOOLS = frozenset({"read_url", "web_search", "read_file", "search_files"})
-_OUTBOUND_TOOLS = frozenset({"read_url", "web_search"})
+_OUTSIDE_TOOLS = frozenset({"read_url", "web_search", "read_file", "search_files", "browser_open", "browser_read", "browser_follow", "browser_find", "browser_back"})
+#: Find, read and back use the page already held and send nothing.
+_OUTBOUND_TOOLS = frozenset({"read_url", "web_search", "browser_open", "browser_follow"})
 #: **What parks once the turn is tainted** (SEC-02, audit 2026-10-05): every
 #: tool that reaches out *and* every tool that writes. Outbound alone left
 #: the slower attack open: a page that cannot send the notebook anywhere
