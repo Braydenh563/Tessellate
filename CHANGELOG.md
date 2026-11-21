@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents cold open: measured, no code change. 1440 median 743 to 799 ms on a quiet box and 1,045 to 1,088 at load 2 to 3.5; an early CodeMirror script from the warm file gave no gain (L-documents-83 and 106 stay open with the profile).
 - Documents: documents.js is 493 lines (was 1,698): its last top-level lets are inside the pieces that own them, its load-time wiring runs from those pieces, and the Library bundle's piece order follows what each reads at load (L-documents-118); no behaviour change, the editor opens, types and saves with no page error.
 - Documents: the Library bundle served as one script is reverted. It failed the frozen Windows app's smoke (404) and let one failing file stop the rest; the Library files load one by one again (L-documents-119 closed as obsolete, L-documents-83 and 106 stay open).
 - Diagram overview frame: its move is throttled to one per 48 ms with a trailing settle and the frame is its own layer, so a 90-move pan at 1440 and 4x CPU costs p50 about 8.4 ms (was about 12) and 15 ms less raster; p95 about 28 ms (was about 35, load 8 to 10), the remainder is the picture's own raster (L-documents-102).
