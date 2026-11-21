@@ -88,9 +88,9 @@ SPUN_KEEP = 6
 #: The sat figure with its eyes shut (INBOX 1670, 16:40Z: a sit had no blink). Not a shipped file: derived at
 #: load from `sit` with closed lids drawn over its eyes, so the frame set and its byte budget do not move.
 #: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
-#: the sit is a few px off it, found by matching the box.
+#: the sit is a few px off it, found by matching the box (re-found on the pose-arranged stand, L-ui-modernisation-152).
 LID_FRAME = "sitblink"
-LID_EYES = {"masculine": (110, 109, 155, 125), "feminine": (112, 110, 157, 126)}
+LID_EYES = {"masculine": (107, 110, 152, 126), "feminine": (108, 110, 153, 126)}
 LID_REACH = 6
 LID_INK = (44, 42, 112)
 DERIVED_FRAMES = (*SPIN_FRAMES, LID_FRAME)

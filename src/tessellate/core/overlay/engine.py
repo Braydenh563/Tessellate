@@ -1999,6 +1999,12 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
         frame = self._frame(now)
         x, y, _clip = self._display(frame)
         left, top, right, bottom = self._box(frame, self.facing < 0)
+        if frame.startswith("idle"):
+            # the idle cycle sways through the stand's reach at its wrap and leaves on a trip from the stand: a figure an idle
+            # frame keeps 1 px clear was over the caret's margin as it set off (L-ui-modernisation-152, the pose-arranged
+            # idle sways 9 px at 96 dpi)
+            s_left, s_top, s_right, s_bottom = self._box("stand", self.facing < 0)
+            left, top, right, bottom = min(left, s_left), min(top, s_top), max(right, s_right), max(bottom, s_bottom)
         room = SPELL_ROOM * self.size[1] if self.state == "act" and extras.props.spec_of(self.act) is not None else 0.0
         keep = tv.padded(self.caret, tv.CARET_MARGIN * k + room)
         if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):

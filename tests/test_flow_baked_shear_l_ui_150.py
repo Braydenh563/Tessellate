@@ -21,32 +21,37 @@ from tessellate.core.overlay import behaviour as bh, sprites
 
 ROOT = Path(__file__).resolve().parents[1]
 LIFE = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
-#: The lower state the app gives each frame family while the desk captures it (`atlasLowerState` on the frame's pose
-#: and classes, read from the capture's DOM dump).
+#: The lower state the app gives each frame family while the desk captures it (`atlasRigLower.spell` on the frame's pose
+#: and classes, read from the rig's `lower.state` after each frame's takes, 2026-11-14): asleep a lie is a curl, a
+#: meditation coils, the desk's wave is no act of the app's (idle), and held hangs from the grip (L-ui-modernisation-170).
 STATE = {
     "stand": "idle", "blink": "idle", "look": "idle", "idle": "idle", "walk": "idle", "hop": "idle", "land": "idle",
-    "card": "idle", "sit": "sit", "meditate": "sit", "sleep": "lie", "hang_sloth": "lie", "held": "walk",
+    "card": "idle", "sit": "sit", "meditate": "coil", "sleep": "curl", "hang_sloth": "curl", "held": "hang",
     "fall": "startle", "tumble": "startle", "dangle": "dangle", "kick": "dangle", "hang": "hang", "lean": "lean",
-    "back_float": "drift", "wave": "gesture",
+    "back_float": "drift", "wave": "idle",
 }
+#: The row a family takes when it is not the first: the drift act's drawn variant (`data-variant` 2) names its own.
+ROW = {"back_float": 2}
 FRAMES = tuple(n for n in (*sprites.FRAME_NAMES, *sprites.EXTRA_FRAMES) if not n.startswith("spin"))
 
 
-def _row0(state: str) -> list[float]:
-    m = re.search(rf"\b{state}: \{{ ms: \d+, ease: \"[^\"]+\", v: \[\[([^\]]+)\]", LIFE)
+def _row(state: str, k: int = 0) -> list[float]:
+    m = re.search(rf"\b{state}: \{{ ms: \d+, ease: \"[^\"]+\", v: \[(\[[^\]]+\](?:, \[[^\]]+\])*)\]", LIFE)
     assert m, state
-    return [float(x) for x in m.group(1).split(",")]
+    rows = re.findall(r"\[([^\]]+)\]", m.group(1))
+    return [float(x) for x in rows[k].split(",")]
 
 
 def test_source_text_the_table_is_the_apps_first_row() -> None:
     """Source text: the shear is the app's own (`skewX((skew - rot) * way * 0.4)` on the lower boxes), row 0 of the
-    frame's state, so a retuned row in atlas-life.js has to move the table with it."""
+    frame's state (the drift act's own variant for back_float), so a retuned row in atlas-life.js has to move the table
+    with it, sign included."""
     assert "go(el, `skewX(${atlasFix((skew - rot) * way * 0.4)}deg)" in LIFE
     table = {r[0]: r[1] for r in bh.FLOW_BAKED}
     assert set(table) == set(STATE)
     for prefix, state in STATE.items():
-        rot, _sx, _sy, skew, _tail = _row0(state)
-        assert abs(table[prefix]) == pytest.approx(abs(0.4 * (skew - rot)), abs=0.01), prefix
+        rot, _sx, _sy, skew, _tail = _row(state, ROW.get(prefix, 0))
+        assert table[prefix] == pytest.approx(0.4 * (skew - rot), abs=0.01), prefix
 
 
 def test_every_shipped_frame_has_a_row_and_the_longest_prefix_names_it() -> None:
@@ -108,10 +113,6 @@ def _family(frame: str) -> str:
     return f"{bh.flow_baked(frame)}|{pose}"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="L-ui-modernisation-150 and 152: passes on the re-rendered pose-arranged frames; the shipped frames are the old render",
-)
 @pytest.mark.parametrize("look", ["masculine", "feminine"])
 def test_the_baked_lean_and_the_flow_stay_inside_four_degrees(look: str) -> None:
     """On every shipped frame, either way the figure faces: toward the frame's own lean the streams take what is left of
@@ -121,8 +122,6 @@ def test_the_baked_lean_and_the_flow_stay_inside_four_degrees(look: str) -> None
     for frame in FRAMES:
         rep = first.setdefault(_family(frame), frame)
         baked = abs(bh.flow_baked(frame)[0])
-        if baked >= bh.FLOW_LEAN:
-            continue  # past 4 by itself (`held`): the test below, and L-ui-modernisation-170 for the frame
         for side in (1.0, -1.0):
             toward = _angle(look, frame, *_lean(rep, side, True))
             away = _angle(look, frame, *_lean(rep, side, False))
@@ -131,9 +130,12 @@ def test_the_baked_lean_and_the_flow_stay_inside_four_degrees(look: str) -> None
     assert not bad, bad
 
 
-def test_a_frame_that_bakes_past_four_takes_no_lean_toward_it() -> None:
-    """`held` (the walk state's row: 6 degrees) is past the join's 4 by itself: the streams lean only away from it."""
-    assert abs(bh.flow_baked("held")[0]) > bh.FLOW_LEAN
-    for side in (1.0, -1.0):
-        tip, mid, _rise = _lean("held", side, True)
-        assert tip <= 0.0 and mid <= 0.0, (side, tip, mid)
+def test_no_frame_bakes_the_whole_four_degrees() -> None:
+    """Source text: a frame that bakes the join's whole 4 leaves the streams no lean toward it at all (the flow's
+    arrangements halve). L-ui-modernisation-170: `held` took the walk state's row (6 degrees); held up by a hand it hangs
+    now (1.4). The curl's first row sheared 4.0; asleep it is 3.2 now (L-ui-modernisation-150)."""
+    assert all(abs(b) < bh.FLOW_LEAN for _p, b, _l in bh.FLOW_BAKED), bh.FLOW_BAKED
+    for frame in ("held", "sleep", "hang_sloth"):
+        for side in (1.0, -1.0):
+            tip, _mid, _rise = _lean(frame, side, True)
+            assert tip > 0.0, (frame, side, tip)
