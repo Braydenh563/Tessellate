@@ -2208,80 +2208,25 @@ renderToolConfirm.saved = (handles, { acts }) => {
 };
 
 // A destructive tool call parked for approval (Wave G). Nothing has
-// happened yet: Confirm actually runs it via /chat/tools/execute.
+// happened yet: Allow (tool-consent.js) runs it through the server's guard.
 function renderToolConfirm(holder, event) {
   //: An act's card lives with the composer's page code (ask-compose.js).
   if (event.type === "act") return ensureModule("askCompose").then(() => renderActCard(holder, event));
   if (event.state === "cancelled" || event.state === "done") return void holder.appendChild(toolChip(event.state === "done" ? `ph:check-circle ${event.summary || event.label || event.name}` : "ph:x Cancelled: nothing was changed."));
   const card = document.createElement("div");
   card.className = "tool-confirm";
-  //: Open until Confirm or Cancel settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
+  //: Open until Allow or Decline settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
   card.dataset.pendingAct = card.dataset.askedAct = event.label || event.name;
   card.consentId = event.consent_id || "";
-  const text = document.createElement("p");
-  setLabel(text, `ph:warning Atlas wants to: ${event.label || event.name}`);
-  
-  const contentArea = document.createElement("div");
-  
-  if (event.name === "edit_note" && event.arguments?.content) {
-    // async fetch for diff
-    apiJson(`/entries/${event.arguments.note_id}`).then(res => {
-      const oldContent = res.content || "";
-      const newContent = event.arguments.content;
-      if (oldContent !== newContent) {
-        //: DOM nodes, not an innerHTML template (SEC-16): a note's own text
-        //: goes in as text, so no escaping has to be remembered.
-        const viewer = document.createElement("div");
-        viewer.className = "diff-viewer";
-        const removed = document.createElement("div");
-        removed.className = "diff-removed";
-        removed.textContent = `- ${oldContent}`;
-        const added = document.createElement("div");
-        added.className = "diff-added";
-        added.textContent = `+ ${newContent}`;
-        viewer.append(removed, added);
-        contentArea.replaceChildren(viewer);
-      }
-    }).catch(() => {});
-  }
-
-  const row = document.createElement("div");
-  row.className = "row";
-  row.appendChild(
-    smallButton(
-      "Confirm",
-      "Run this action",
-      async () => {
-        try {
-          const result = await apiJson("/chat/tools/execute", {
-            method: "POST",
-            body: JSON.stringify({ name: event.name, arguments: event.arguments, consent_id: event.consent_id || null }),
-          });
-          chatHistoryToSend.settle(card, event, "done");
-          card.replaceWith(toolChip(`ph:check-circle ${result.label || event.label || event.name}`));
-          toast("Done: check Activity for the audit trail.");
-          refreshAfterToolChanges();
-        } catch (error) {
-          toast(error.message, true);
-        }
-      },
-      false
-    )
-  );
-  row.appendChild(
-    smallButton("Cancel", "Don't do this", () => {
-      chatHistoryToSend.settle(card, event, "cancelled");
-      card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
-    })
-  );
-  card.append(text, contentArea, row);
-  if (event.state === "expired") {
-    for (const button of row.querySelectorAll("button")) button.disabled = true;
-    contentArea.textContent = event.notice;
-    delete card.dataset.pendingAct;
-  }
   holder.appendChild(card);
   chatScrollToEnd();
+  //: The asking itself (what, why, the three answers, the suggested edit) is
+  //: tool-consent.js, fetched with the first card. A failed fetch leaves the card's sentence and
+  //: a typed yes or no, which `chatHistoryToSend` still carries.
+  return lazyScript("/js/tool-consent.js").then((loaded) => {
+    if (loaded) return drawToolConsent(card, event);
+    setLabel(card.appendChild(document.createElement("p")), `ph:warning Atlas wants to: ${event.label || event.name}. Type yes or no.`);
+  });
 }
 
 //: "open settings", "go to the graph" (decision 38): the place, opened.

@@ -4243,8 +4243,7 @@ if (typeof registerCharacter === "function") {
 //: The avatar hosts in the markup are dressed once the page is parsed;
 //: atlas.js loads at the end of the body, so the document is usually ready
 //: already.
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => atlasDressMarks());
-else atlasDressMarks();
+onDomReady(() => atlasDressMarks());
 
 //: A task of its own, so the files' parse and this are two long tasks, not one;
 //: and then one task a job, in call order (INBOX 1657: all seven in one task

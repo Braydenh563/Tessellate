@@ -7957,8 +7957,7 @@
     const watch = () => {
       for (const page of document.querySelectorAll(".tab-page")) views.observe(page, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden"], attributeOldValue: true, characterData: true });
     };
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch);
-    else watch();
+    onDomReady(watch);
   }
   document.addEventListener("click", (event) => {
     if (event.target?.closest?.(".tab-page [role='tab']")) setTimeout(nameMarkBuddyViewChanged, 300);

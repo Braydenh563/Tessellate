@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, cite_marks, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, help_surface, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, cite_marks, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, help_surface, composer_versus, grounding, phrasing, realise, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -155,7 +155,7 @@ def _multi(question: str, parts: list[str], notes: list[dict], **kwargs) -> dict
                 seen.add((row["note_id"], row["start"]))
                 rows.append(row)
         nexts += [p for p in answer["next_parts"] if p not in nexts]
-    text = "".join(piece[1] for piece in pieces)
+    text = realise.parts_text(pieces, rec._reads_month_first(None))
     return {
         "text": text,
         "grounding": rows,
@@ -431,7 +431,7 @@ def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: l
     if not fixed:
         return result
     parts = [*composer_ack.acknowledge(repaired, voice=voice, seed=seed, history=history, previous=previous), *result["parts"]]
-    return {**result, "parts": parts, "text": "".join(part[1] for part in parts)}
+    return {**result, "parts": parts, "text": realise.parts_text(parts, rec._reads_month_first(None))}
 
 
 def _answer_turn(question: str, notes: list[dict], **kwargs) -> dict:

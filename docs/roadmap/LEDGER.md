@@ -9,24 +9,22 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 4 | 0 | 0 | 0 | 4 |
+| chat | 0 | 2 | 0 | 0 | 0 | 2 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 366 | 69 | 0 | 125 | 761 |
+| all | 326 | 365 | 69 | 0 | 125 | 760 |
 
 ## graph
 
 ## chat
 
-- [ ] **L563** `chat` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
 - [ ] **L565** `chat` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
-- [ ] **L-world-class-135** `chat` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
-- [ ] **L-world-class-181** `chat` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L563** `chat` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
 
 ## whiteboard
 
@@ -89,6 +87,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
+- [ ] **L-documents-41** `documents` open, M: Agent document edit as insert/delete marks inside the open document editor, accept or reject per hunk there. From L-world-class-181 follow-up. Evidence: the chat card's suggestion (tool-consent.js) covers an agent edit; an open document editor shows no marks
 
 ## mindmap
 

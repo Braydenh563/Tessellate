@@ -27,7 +27,7 @@ import re
 from datetime import date, datetime, time
 from pathlib import Path
 
-from tessellate.ai import arithmetic, recognise, study, utilities
+from tessellate.ai import arithmetic, realise, recognise, study, utilities
 from tessellate.ai import recognise_questions
 from tessellate.core import cjk
 from tessellate.ai import composer_compose as compose
@@ -146,7 +146,7 @@ def _needed(match: re.Match) -> Reply | None:
 # --- dates ------------------------------------------------------------------------------
 
 def _long(day: date) -> str:
-    return f"{day:%A} {day.day} {day:%B %Y}"
+    return realise.localised_days(f"{day:%A} {day.day} {day:%B %Y}")
 
 
 def _resolve(phrase: str, today: date) -> date | None:
@@ -178,7 +178,7 @@ def _weekday_of(rest: str, target: date, today: date) -> Reply:
     said = f"That {'was' if target < today else 'is'} {_long(target)}."
     if _PLAIN_DATE.match(rest).group("year"):
         return Reply(said)
-    return Reply(f"{said}\n\n_Read as the {'last' if target < today else 'next'} {target.day} {target:%B}._")
+    return Reply(realise.localised_days(f"{said}\n\n_Read as the {'last' if target < today else 'next'} {target.day} {target:%B}._"))
 
 
 def _day_question(text: str, today: date) -> Reply | None:

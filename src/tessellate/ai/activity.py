@@ -187,7 +187,7 @@ def _day_words(day: date, today: date) -> str:
     if day == today - timedelta(days=1):
         return "Yesterday"
     label = f"{day:%a} {day.day} {day:%b}"
-    return label if day.year == today.year else f"{label} {day.year}"
+    return realise.localised_days(label if day.year == today.year else f"{label} {day.year}")
 
 
 def _title_of(content: str) -> str:
@@ -358,7 +358,7 @@ def _span(start: date, end: date, today: date) -> str:
 
 
 def _say_day(day: date, today: date) -> str:
-    return f"{day.day} {day:%B}" if day.year == today.year else f"{day.day} {day:%B %Y}"
+    return realise.localised_days(f"{day.day} {day:%B}" if day.year == today.year else f"{day.day} {day:%B %Y}")
 
 
 _DOING_WORDS = {"made": "made", "edited": "edited", "binned": "binned", "done": "ticked off"}

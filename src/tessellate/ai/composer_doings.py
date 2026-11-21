@@ -169,7 +169,7 @@ def _times(n: int) -> str:
 
 
 def _days_said(done: list[Done]) -> str:
-    said = [f"{d.day.day} {d.day:%B}" + (f" ({d.km:g} km)" if d.km else "") + (f" ({_times(d.times)})" if d.times > 1 else "") for d in done]
+    said = [realise.localised_days(f"{d.day.day} {d.day:%B}") + (f" ({d.km:g} km)" if d.km else "") + (f" ({_times(d.times)})" if d.times > 1 else "") for d in done]
     return said[0] if len(said) == 1 else ", ".join(said[:-1]) + " and " + said[-1]
 
 
@@ -254,7 +254,7 @@ def first(text: str, views: list, today: date) -> tuple[str, Done] | None:
     said = f"{found.group('v')}{found.group('r')}".rstrip()
     did = f"started {'to ' if ' to ' in q[:28] else ''}{said}" if began else f"first {_forms(verb)[1]}{found.group('r')}".rstrip()
     km = f" ({oldest.km:g} km)" if oldest.km else ""
-    return f"You {did} on {oldest.day.day} {oldest.day:%B}{km}.", oldest
+    return realise.localised_days(f"You {did} on {oldest.day.day} {oldest.day:%B}{km}."), oldest
 
 
 def answer(out, text: str, views: list, today: date) -> bool:  # noqa: ANN001

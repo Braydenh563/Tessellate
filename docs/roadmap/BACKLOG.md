@@ -1105,12 +1105,15 @@ written: `create_document`, `related_notes`, `find_similar_notes`,
 (the allowlisted setting), `unlink_notes`, and `create_category`,
 `rename_category`, `merge_categories` and `delete_category` (name-based, not
 id-based, since the model has never seen an id; see HISTORY.md for the three
-decisions behind the shape). **Still absent: `edit_document`, `move_notes`
+decisions behind the shape). `edit_document` built 2026-11-21 (L-world-class-181): a change that parks, its card a
+per-hunk suggestion. **Unverified with a real model:** whether a 3B to 8B model sends the whole new text in
+`content` (the tool refuses an empty one) and reads the document first; measure with `pytest -m evals` and a
+"change X to Y in my trip plan" case (0 runs so far). **Still absent: `move_notes`
 (bulk re-file), `merge_notes`, `export_notes`, `add_event` / `list_events`
 (§10) and `delete_reminder` (§21, the undo for a reminder change).
 (needs Opus)**: each new tool moves the README's tool count, the help topics
-and the schema budget together, and `merge_notes` and `edit_document` are
-destructive, so each wants its own confirm design.
+and the schema budget together, and `merge_notes` is
+destructive, so it wants its own confirm design.
 **Next:** checked 2026-10-05, the registry is 58 tools and none of these six exists. `merge_notes` and `move_notes` are WORLD_CLASS_PLAN B5's "pre/post conditions" example (both ids live; the category exists), so they belong to the harness agent; `add_event`/`list_events` need the `events` table (section 10); `delete_reminder` is two schemas and the Undo for `set_reminder` (`ai/tools/__init__.py:1556`). Each one moves `tests/test_readme_freshness.py`'s tool count.
 
 > ~~**⚠ The prompt budget is now the binding constraint on this section.**~~

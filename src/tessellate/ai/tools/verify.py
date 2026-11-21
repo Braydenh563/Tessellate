@@ -84,6 +84,16 @@ def _document_deleted(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _document_edited(session: Session, args: dict, result: dict) -> str | None:
+    """The text saved is the text the call (or its narrowed press) sent."""
+    document = _row(session, Document, result.get("id") or args.get("document_id"))
+    if document is None:
+        return f"no document with id {args.get('document_id')}"
+    if result.get("changed") and document.content != str(args.get("content") or ""):
+        return f"document {document.id} does not hold the text the edit sent"
+    return None
+
+
 def _card_placed(session: Session, args: dict, result: dict) -> str | None:
     card = _row(session, WhiteboardNode, result.get("card_id"))
     if card is None:
@@ -254,6 +264,7 @@ def _chats_edited(session: Session, args: dict, result: dict) -> str | None:
 #: the two tables apart.
 VERIFIERS: dict[str, Verifier] = {
     "create_document": _document_created,
+    "edit_document": _document_edited,
     "delete_document": _document_deleted,
     "add_whiteboard_card": _card_placed,
     "add_whiteboard_link": _link_drawn,

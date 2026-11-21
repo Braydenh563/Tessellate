@@ -8,6 +8,8 @@ own quoted words are never touched."""
 
 from __future__ import annotations
 
+from tessellate.ai import realise
+
 import re
 from datetime import date
 
@@ -26,7 +28,7 @@ _FOR_GYM = lazy_compile(r"(\b(?:done|did|do|doing|trained)\b[^“”]*?) for (?:
 
 def _day_said(written: date, today: date) -> str:
     year = f" {written.year}" if written.year != today.year else ""
-    return f"{written.day} {written.strftime('%B')}{year}"
+    return realise.localised_days(f"{written.day} {written.strftime('%B')}{year}")
 
 
 def _unstale(body: str) -> str:

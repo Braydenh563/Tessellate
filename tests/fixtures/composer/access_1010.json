@@ -28,6 +28,7 @@
     "create_document": "write a document about the garden plan",
     "delete_document": "delete the document called old report",
     "get_document": "read the document called garden plan",
+    "edit_document": "rewrite the document called garden plan",
     "read_whiteboard": "what is on the planning whiteboard",
     "search_whiteboard": "search my whiteboards for budget",
     "add_whiteboard_card": "put the gym note on the planning whiteboard",

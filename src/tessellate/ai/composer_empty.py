@@ -13,7 +13,7 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec, recognise_windows
+from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, realise, recognise as rec, recognise_windows
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
 from tessellate.ai.composer_help import _result
@@ -225,7 +225,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
         return EMPTY_NOTEBOOK if voice in ("natural", "professional") else lead
 
     def day(d: date) -> str:
-        return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
+        return realise.localised_days(f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}")
 
     if window and window[0] > last:
         ago = (today - last).days

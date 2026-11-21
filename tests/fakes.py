@@ -87,6 +87,9 @@ class FakeOllama:
         self.tool_script: list[list[dict]] = []
         self.tool_rounds: list[list[dict]] = []  # messages seen per round
         self.text_tool_reply: str | None = None  # a call the model wrote as text
+        #: Rounds left before the model goes away mid-turn (L565): None never;
+        #: 0 means the next chat_tools round raises, as an unloaded model does.
+        self.unload_after: int | None = None
         # Token counts, as both chat_stream and chat_tools report them.
         self.stats = {
             "prompt_tokens": 120,
@@ -177,6 +180,11 @@ class FakeOllama:
             raise OllamaError("Ollama is not running (fake)")
         if not self.supports_tools:
             raise ToolsUnsupportedError(f"'{model}' can't use tools (fake)")
+        if self.unload_after is not None:
+            if self.unload_after <= 0:
+                self.running = False
+                raise OllamaError(f"model '{model}' was unloaded (fake)")
+            self.unload_after -= 1
         self.tool_rounds.append(messages)
         if self.tool_script:
             calls = self.tool_script.pop(0)
@@ -215,6 +223,15 @@ class FakeOllama:
             "raw_tool_calls": [],
             "stats": dict(self.stats, model=model),
         }
+
+    def calls(self, *rounds: tuple[str, dict] | list[tuple[str, dict]]) -> "FakeOllama":
+        """Queue what "the model" calls, one round per argument: a (name,
+        arguments) pair, or a list of pairs for several calls in one round. Any
+        tool, the destructive ones included (L565: `delete_note`, `delete_tag`)."""
+        for one in rounds:
+            pairs = one if isinstance(one, list) else [one]
+            self.tool_script.append([{"name": name, "arguments": dict(arguments)} for name, arguments in pairs])
+        return self
 
     def chat_tools_stream(
         self,

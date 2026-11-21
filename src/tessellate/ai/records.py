@@ -21,7 +21,7 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import notebook_stats
+from tessellate.ai import notebook_stats, realise
 from tessellate.ai.composer_ask import month_name
 from tessellate.ai.composer_answer import _NUMBER_WORDS
 from tessellate.ai.recognise import recognise, window
@@ -97,7 +97,7 @@ def _day_words(day: date, today: date) -> str:
     if day == today - timedelta(days=1):
         return "yesterday"
     month = month_name(day.month)
-    return f"on {day.day} {month}" if day.year == today.year else f"on {day.day} {month} {day.year}"
+    return realise.localised_days(f"on {day.day} {month}" if day.year == today.year else f"on {day.day} {month} {day.year}")
 
 
 def _at(when: datetime, today: date) -> str:
@@ -147,7 +147,7 @@ def _span_of(question: str, now: datetime) -> tuple[datetime, datetime, str] | N
         return span[0], span[1], phrase
     #: A weekday or "3 days ago" is said as the day it meant.
     day = span[0].date()
-    return span[0], span[1], f"on {day:%A} {day.day} {month_name(day.month)}"
+    return span[0], span[1], realise.localised_days(f"on {day:%A} {day.day} {month_name(day.month)}")
 
 
 def _time_phrase(question: str, now: datetime) -> str | None:

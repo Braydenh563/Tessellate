@@ -308,6 +308,7 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
         # The vocabulary holds porter stems ("lectur"), which no one wrote; the
         # correction offered, and searched, is a word a note really uses.
         real = _word_for_stem(session, close[0], term) if close else None
+        real = real or (_one_edit_words(term, vocabulary) or [None])[0]
         corrected.append(real or term)
     return corrected
 
@@ -327,6 +328,47 @@ def _near_words(term: str, vocabulary: list[str]) -> list[str]:
             if ratio >= best_ratio:
                 best, best_ratio = word, ratio
     return [best] if best else []
+
+
+def _one_edit_words(term: str, vocabulary: list[str]) -> list[str]:
+    """VC8: a word the shipped English list does not hold, one edit (a swap, a
+    dropped, added or changed letter) from a word the notes use, is a typo of
+    it, however low difflib's ratio is on a short word. A word the list holds
+    is a word ("tame" is not "time"), and is left as typed. The nearest of
+    the candidates, as a word (the vocabulary's porter stems, "librari", are
+    given back as "library"); the search stems it again."""
+    if variants.is_english(term):
+        return []
+    found: list[str] = []
+    for word in vocabulary:
+        forms = (word, word + "e", word[:-1] + "y" if word.endswith("i") else word)
+        found += [form for form in forms if abs(len(form) - len(term)) <= 1 and _one_edit(term, form, swap_only=len(term) < 5)]
+    #: A swap or a changed letter (same length) before a dropped or added one: "tlie" is "tile", not "tie".
+    #: A word the notes hold before a stem made into a word ("tile", not "thie" from the stem "thi").
+    held = set(vocabulary)
+    found.sort(key=lambda form: (len(form) != len(term), form not in held, -difflib.SequenceMatcher(None, term, form).ratio()))
+    return found[:1]
+
+
+def _swapped(a: str, b: str, diff: list[int]) -> bool:
+    """The two differing places are neighbours holding each other's letter."""
+    return len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
+
+
+def _one_edit(a: str, b: str, swap_only: bool = False) -> bool:
+    """Optimal string alignment distance of one: a swap of neighbours counts as one edit.
+    `swap_only`: a short word may only be a swap ("paer" is "pear"); a changed letter
+    ("paas" is "saas") is another short word or an acronym."""
+    if a == b:
+        return False
+    if len(a) == len(b):
+        diff = [i for i in range(len(a)) if a[i] != b[i]]
+        return _swapped(a, b, diff) or (len(diff) == 1 and not swap_only)
+    if swap_only:
+        return False
+    short, long = (a, b) if len(a) < len(b) else (b, a)
+    i = next((k for k in range(len(short)) if short[k] != long[k]), len(short))
+    return short[i:] == long[i + 1 :]
 
 
 def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:

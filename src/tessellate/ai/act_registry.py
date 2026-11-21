@@ -390,6 +390,7 @@ def _listing(nouns: str) -> str:
 TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("read_url", r"https?://"),
     ("web_search", r"\b(?:search|look up|google)\b.*\b(?:the web|online|internet)\b"),
+    ("edit_document", r"\b(?:rewrite|revise|edit) the document\b"),
     ("read_text", r"\bread the (?:dates|amounts|numbers|times|units)\b"),
     ("check_answer", r"\bcheck (?:this|that|the|my) (?:answer|draft|reply)\b"),
     ("propose_act", r"\bsuggest (?:something|an act|a change) to do\b"),
