@@ -49,6 +49,7 @@ function docReplacePattern() {
 
 //: `carry` is the find panel's query (D33: one entry point): its words, replacement and three options become the dialog's.
 async function docReplaceOpen(carry = null) {
+  surfaceBuild("docReplace");
   if (docDirty) await saveDocument({ silent: true });
   const dialog = $("doc-replace-dialog");
   if (!dialog) return;
@@ -208,14 +209,17 @@ async function runDocReplace() {
   );
 }
 
-for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case", "doc-replace-word"]) {
-  $(id)?.addEventListener(id === "doc-replace-find" ? "input" : "change", () => {
-    clearTimeout(docReplace.timer);
-    docReplace.timer = setTimeout(renderDocReplace, 250);
+//: The dialog's fields are wired when its surface is built (its first open, L-world-class-530).
+onSurface("docReplace", () => {
+  for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case", "doc-replace-word"]) {
+    $(id)?.addEventListener(id === "doc-replace-find" ? "input" : "change", () => {
+      clearTimeout(docReplace.timer);
+      docReplace.timer = setTimeout(renderDocReplace, 250);
+    });
+  }
+  $("doc-replace-run")?.addEventListener("click", runDocReplace);
+  $("doc-replace-with")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !$("doc-replace-run").disabled) runDocReplace();
   });
-}
-$("doc-replace-run")?.addEventListener("click", runDocReplace);
-$("doc-replace-dialog")?.addEventListener("close", () => { docReplace.pool = null; });
-$("doc-replace-with")?.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !$("doc-replace-run").disabled) runDocReplace();
 });
+$("doc-replace-dialog")?.addEventListener("close", () => { docReplace.pool = null; });

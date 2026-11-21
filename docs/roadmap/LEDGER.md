@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 91 | 9 | 0 | 0 | 100 |
+| world-class | 0 | 91 | 8 | 0 | 0 | 99 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 481 | 80 | 2 | 111 | 933 |
+| all | 372 | 481 | 79 | 2 | 111 | 932 |
 
 ## graph
 
@@ -493,7 +493,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L636** `world-class` open, L: Sweep coverage: open board/map, graph popup at 390, print dialog, lightbox, confirm, looks, contrast, forced colours. From OPEN.md:1244; OPEN.md:3503. Evidence: No sweeps listed for these surfaces; print dialog also not automatable.
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
-- [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
@@ -522,7 +521,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
-- [ ] **L-world-class-530** `world-class` open, M: Build the hidden dialogs from templates on first open: lock 93 elements, Find anything 63, the agent monitor 47 and the Settings shell 91 are in the page at boot (1,515 at first paint after L675). Needs a DESIGN.md recipe and lint first (order 11: none covers a dialog built on open), then `document.getElementById` reads in search.js (about 20) and router-overlays.js through `$` or `surfaceBuild("finder")`; the lock overlay stays, it is the first thing a locked boot shows. From L676. Evidence: `grep -c 'finder-' frontend/js/search.js`; counts from the L676 brief, paint from `setperf.js`.
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
@@ -550,6 +548,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-571** `world-class` open, L: Free about 4 KB gzipped from boot (lazy web panel) before splitting status.js, notes-list.js, chat.js. From L698; frontend/js/chat.js, status.js, notes-list.js. Evidence: Measured 2026-11-21: boot gzip total 249,722 of cap 250,450 (headroom 728 B); one tail split of chat.js (chat-progress.js, 506 lines) cost +1,087 B gzipped (29,195 to 30,282) and tripped tests/test_static_compression.py at 250,809; each split costs about 1 KB, so status.js, notes-list.js and chat.js cannot be split as boot scripts without moving about 4 KB gzipped out of boot first. Lazy seams checked: chat.js 367-765 web panel (callers wiring.js, web-results.js, chat-turn.js; state read at runtime by boot files), status.js 3181-3371 background-task notices. index.html now 16,747 (other agent). Per-file lists to update with a split: tests/_app_js.py MOVED_OUT, tests/wake_sources_seed.json, tests/test_undo_coverage.py EXEMPT key, tests/test_spinner_recipe.py:340
 - [ ] **L-world-class-620** `world-class` open, M: Grid-sizing callbacks over 50 ms: read card heights from ResizeObserver entries instead of getBoundingClientRect after the fills dirty layout. From frontend/js/dashboard.js watchDashWidgets rAF and settle afterFrames callbacks. Evidence: sizeDashWidgets 49-307 ms at 4x, 500 notes (forced layout of the filled grid; LoAF user-callback)
+- [ ] **L-world-class-630** `world-class` open, S: The Settings shell (its head and `#settings-nav`, about 91 elements) stays in the page at boot while its body is already a surface; moving it needs the recorded decision in tests/test_settings_body_1501.py ("the nav ... is part of the shell and is never lazy: it is what a deep link lands in before the body exists") remade first, and test_help_settings_paths and test_settings_ia parse `<nav id="settings-nav">` from the live page. From L-world-class-530. Evidence: `grep -n 'never lazy' tests/test_settings_body_1501.py`; the other dialogs that row named are surfaces (index.html 1,009 to 749 live elements).
 
 ## general
 
