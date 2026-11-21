@@ -1218,9 +1218,11 @@ def test_the_lower_body_takes_a_pose_for_what_it_is_doing():
         assert len(set(variants)) == len(variants), (state, "two variants alike")
         if state not in ("idle", "think", "sad"):
             assert 250 <= int(row.group(1)) <= 600, (state, "a change of state takes 300 to 600ms")
+    # L-chat-273: a pose names its curve in `NMB_CURVE` (avatars.js) instead of a literal; the overshoot rule reads the named curve.
     def curve(state):
-        found = re.search(rf'  {state}: \{{ ms: [0-9]+, ease: "cubic-bezier\(([^)]+)\)"', table)
-        return [float(v) for v in found.group(1).split(",")]
+        name = re.search(rf'  {state}: \{{ ms: [0-9]+, ease: "(\w+)"', table).group(1)
+        found = re.search(rf'\n\s*{name}: "cubic-bezier\(([^)]+)\)",', AVATARS)
+        return [float(v) for v in found.group(1).split(",")] if found else [0.42, 0, 0.58, 1]  # inOut
 
     assert curve("happy")[1] > 1 and curve("startle")[1] > 1, "a bouncy flick and a snap overshoot, then settle"
     assert curve("think")[1] <= 1, "a slow curl does not"
@@ -1234,7 +1236,7 @@ def test_the_lower_body_takes_a_pose_for_what_it_is_doing():
     # reduced motion sets the pose with none.
     for part in ("low.boxes", "low.wisps", "low.tails", "low.hair", "low.neb"):
         assert f"for (const el of {part}) go(el," in rig, part
-    assert 'el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${spec.ease} ${lag}ms` : "none";' in rig
+    assert 'el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${NMB_CURVE[spec.ease]} ${lag}ms` : "none";' in rig
     for state in ("idle", "walk", "sit", "lie", "gesture", "think", "happy", "sad", "startle"):
         assert f"{state}: [" in ATLAS[ATLAS.index("const ATLAS_HAIR_STATES"):ATLAS.index("function atlasRigLowerAttach(")], state
     assert ".atl-lw > .atl-lw-pose { position: absolute;" in CSS

@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 28 | 3 | 0 | 0 | 31 |
+| chat | 0 | 27 | 3 | 0 | 0 | 30 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 399 | 72 | 0 | 124 | 797 |
+| all | 326 | 398 | 72 | 0 | 124 | 796 |
 
 ## graph
 
@@ -30,7 +30,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L742** `chat` open, M: Atlas wisps and nebula: constant layered motion, more body wrap and texture (owner call). From OPEN.md:4405; OPEN.md:1076; OPEN.md:1077. Evidence: Look/feel call; w34-unv2-1111.md owner-call; w34-gap4-1111.md:17 Owner decided 2026-11-12: Redraw, rest setting rules (Wisps wrap behind the body and the lower body gets texture; motion still pauses at rest per 'Motion at rest'). Build: atlas.js feminine wisp paths split into back and front layers, lower-body texture layer; motion stays gated by atlasTailCalm.rest; desk frames re-rendered. Progress 2026-11-14: her wisps already wrap (back runs on both ribbons) and the held-at-rest list now includes the wisp and glint loops (test_every_endless_atlas_loop_holds_at_rest_l742). Left: a lower-body texture layer (a stipple of stars under .atl-lw-lower, drawn in atlas.js beside the dress dust) for both looks, a back-wisp pair for the masculine trail, then python scripts/render_desk_frames.py for both looks and the L150 seam check; each needs a rendered look at 6x to judge. Progress 2026-11-14b (atlas-3): drawing built and committed in the app (float state and lean in atlas-life.js, masculine back wisps in atlas.js, tests in test_atlas_draw_rows.py). NOT closed: the desk frames were re-rendered once (render_desk_frames.py, canvases 283x309 masculine and 301x311 feminine against 290x308 and 269x308) and 16 overlay tests then failed on the moved geometry (feminine LID_EYES box now about 3.5 px left and 1 px lower; bob idle range 1.08 against 0.9; mouth patch, gaze step, nebula veil, parity, seams, rest, ride, plus load crashes), so the frames were reverted to the committed set. Next step: re-render on a quiet machine, re-register LID_EYES in sprites.py and the canvas anchors with each intent change written in its test comment, run the overlay tests with -n 2, then close. Progress 2026-11-21: the stipple is built (42e67d1, tests/test_atlas_stipple_l742.py: one tile of seven specks per look inside `.atl-lw-lower`, 45 by 55 px feminine and 25 by 56 masculine at opacity 0.5, no loop of its own). Left, and only this: the desk frame re-render and the L150 seam check, which is L173's step (same render, same 16 overlay tests); not attempted here: it needs a quiet machine and a LID_EYES and canvas re-registration in sprites.py.
 - [ ] **L-chat-237** `chat` partly, S: 1691 background tasks run in Quick mode (BACKGROUND_MODE): meeting_summary.py:162 has no mode; real-model before and after not run. From CHAT_PLAN.md:1874. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/presets.py:145-192; reminder_parser.py:153, speakers.py:78, skill_runner.py:679, entities.py:90, drafter.py:537, captioning.py:150, passive_capture.py:203, tensions.py:238
 - [ ] **L-chat-258** `chat` open, S: audit_link_reasons by sentence: needs a real model to rewrite reasons and an inverse (audit-log row revert); run with scratchpad/llama-dev.sh serve then pytest -m evals. From L-chat-60 split 2026-11-14. Evidence: src/tessellate/ai/tools/tool_learn.py:105, audit_link_reasons rewrites link reasons with a model and has no Undo
-- [ ] **L-chat-273** `chat` open, S: Fold the lower body's per-pose spring curves into NMB_CURVE (a visual judgement: merging 18 springs changes how each pose lands). From L183 close 2026-11-14. Evidence: frontend/js/atlas-life.js:979 ATLAS_LOWER_STATES, 18 per-pose spring curves (ease:) outside NMB_CURVE
 - [ ] **L-chat-274** `chat` open, S: A model's wrong write call for an act sentence the registry reads exactly parks the wrong card. From L114 run 2026-11-14. Evidence: tests/test_chat_model_evals.py parity: 'Make a board called Launch' the 1.5B called add_board_shape (a frame) and its own card was parked; the registry reads it as create_mindmap kind board. agent_turn.unrun_act_events only fires when no tool ran
 - [ ] **L-chat-275** `chat` open, S: The reading pick guesses on ambiguous questions (decision 45 stands): give pick the dialogue or ask. From L822 run 2026-11-14. Evidence: tests/test_chat_model_evals.py readings test: of 8 questions (4 ambiguous by construction) the 1.5B named a number on 7 and said none on 1; 4 of 7 fit. api/chat_pick.py gives it no history
 

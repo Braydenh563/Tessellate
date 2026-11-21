@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas's lower body (L-chat-273): its 18 per-pose spring curves are five named curves in the companion's one curve table; every pose settles within 10% of before (tail tip at 1x), the faint sub-px overshoots of the mild springs and 12% of the glad flick's are the moves.
 - CI: the digest's empty-week check reads the person's clock, as the week it guards does; two tool-offer tests and the real-phrasing fixture pin their clocks and readers (PR 230).
 - Companions made from your own figure (L185): walks, runs after a crouch, a window climb, sits, lying down and a slow 24-picture breath (3.65 s) all draw only pictures the page captures, checked over 6 seeds of far legs and 300 s sweeps at three hours; what the app's others lack (perch pictures, in-app spells) is in the backlog.
 - Companion inspections (L177): the desktop companion peers down over the edge and corner of a window it sits on four times as often as before (0.9% to 3.6% of its picks on a top), and the clock trip, the follow to the cursor and the side climb are pinned by tests.

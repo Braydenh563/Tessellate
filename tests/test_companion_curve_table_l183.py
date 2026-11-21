@@ -29,10 +29,17 @@ def test_every_companion_ease_names_the_one_table() -> None:
         src = (JS / f"{name}.js").read_text(encoding="utf-8")
         assert not re.findall(r"easing: *[\"'`]", src), f"{name}.js eases through a literal, not NMB_CURVE"
         used |= set(re.findall(r"NMB_CURVE\.(\w+)", src))
+    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    lower = life[life.index("const ATLAS_LOWER_STATES = {") : life.index("const ATLAS_HAIR_STATES")]
+    poses = re.findall(r'^    \w+: \{ ms: \d+, ease: "(\w+)"', lower, re.M)
+    assert len(poses) >= 30 and "cubic-bezier" not in lower, "every lower-body pose names its curve (L-chat-273)"
+    used |= set(poses)
     table = _table()
     assert used <= set(table), f"names missing from the table: {used - set(table)}"
     curves = {v for k, v in table.items() if k != "blend"}
-    assert len(curves) == len(table) - 1 <= 13, "one curve per name, and no more than the 13 built"
+    # L-chat-273 moved the bound's intent: the lower body's 18 pose springs, which L183 left outside the table, are
+    # now in it as 5 names (31 distinct companion curves before, 18 now). The bound is the new total, never more.
+    assert len(curves) == len(table) - 1 <= 18, "one curve per name, and no more than the 13 built plus the 5 lower springs"
     assert table["settle"] == '"cubic-bezier(0.4, 0, 0.2, 1)"', "settle is the --ease-in-out token"
     assert 120 <= int(table["blend"]) <= 400, "a joint eases into an act over 120 to 400 ms (Brief 34)"
 

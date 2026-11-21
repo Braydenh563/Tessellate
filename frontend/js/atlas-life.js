@@ -977,7 +977,7 @@
   //: which wrap the dress) and both tails take a pose per state, on top of
   //: the pose's own CSS: each variant is [turn about the hips, width, length,
   //: lean (skew), the tail's turn], in degrees and scales; `ms` and `ease`
-  //: are the change's time and curve (a curve past 1 overshoots and settles,
+  //: are the change's time and its curve's name in `NMB_CURVE` (a curve past 1 overshoots and settles,
   //: a flick or a snap; an ease in and out is a slow curl). A walk's turns and lean take
   //: the way it goes (it trails behind and stretches). One variant is picked
   //: at random as a state begins, and at rest a new one every 8 to 14
@@ -988,57 +988,57 @@
   //: (and the CSS 42 more lying down); it turns at most 4 now, about the join,
   //: and takes its width from the torso there, so the two read as one chain.
   const ATLAS_LOWER_STATES = {
-    idle: { ms: 900, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[-2.5, 1, 1, 2, -5], [2, 1, 1.02, -2, 4], [3.5, 0.98, 1, 1, 7], [-1, 1.02, 0.99, -3, -2]] },
-    walk: { ms: 450, ease: "cubic-bezier(0.34, 1.3, 0.64, 1)", v: [[-9, 0.94, 1.08, 6, -12], [-7, 0.95, 1.1, 8, -9], [-11, 0.93, 1.06, 4, -15]] },
-    sit: { ms: 550, ease: "cubic-bezier(0.34, 1.25, 0.6, 1)", v: [[3, 1.1, 0.86, -3, -14], [-3, 1.08, 0.88, 3, 14], [2, 1.12, 0.84, -2, -10]] },
-    lie: { ms: 600, ease: "cubic-bezier(0.4, 1.15, 0.6, 1)", v: [[3, 1, 0.86, -3, 24], [2, 1.02, 0.9, -2, 30], [4, 0.99, 0.88, -4, 19]] },
-    gesture: { ms: 350, ease: "cubic-bezier(0.3, 1.6, 0.6, 1)", v: [[-5, 0.98, 0.95, 4, 9], [-3, 1, 0.94, 6, 12], [-6, 0.97, 0.96, 3, 7]] },
-    think: { ms: 900, ease: "cubic-bezier(0.45, 0, 0.55, 1)", v: [[6, 1, 0.97, -4, 12], [4, 0.99, 0.96, -6, 16], [-3, 1, 0.98, 3, 9]] },
-    happy: { ms: 380, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-6, 1.02, 0.94, 5, -10], [5, 1.02, 0.95, -5, -14], [-4, 1.03, 0.93, 3, -8]] },
-    sad: { ms: 800, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1.5, 0.96, 1.07, -1, 16], [-1.5, 0.97, 1.06, 1, 20], [0.5, 0.95, 1.08, -2, 24]] },
-    startle: { ms: 260, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
+    idle: { ms: 900, ease: "settle", v: [[-2.5, 1, 1, 2, -5], [2, 1, 1.02, -2, 4], [3.5, 0.98, 1, 1, 7], [-1, 1.02, 0.99, -3, -2]] },
+    walk: { ms: 450, ease: "spring", v: [[-9, 0.94, 1.08, 6, -12], [-7, 0.95, 1.1, 8, -9], [-11, 0.93, 1.06, 4, -15]] },
+    sit: { ms: 550, ease: "spring", v: [[3, 1.1, 0.86, -3, -14], [-3, 1.08, 0.88, 3, 14], [2, 1.12, 0.84, -2, -10]] },
+    lie: { ms: 600, ease: "spring", v: [[3, 1, 0.86, -3, 24], [2, 1.02, 0.9, -2, 30], [4, 0.99, 0.88, -4, 19]] },
+    gesture: { ms: 350, ease: "flick", v: [[-5, 0.98, 0.95, 4, 9], [-3, 1, 0.94, 6, 12], [-6, 0.97, 0.96, 3, 7]] },
+    think: { ms: 900, ease: "inOut", v: [[6, 1, 0.97, -4, 12], [4, 0.99, 0.96, -6, 16], [-3, 1, 0.98, 3, 9]] },
+    happy: { ms: 380, ease: "pop", v: [[-6, 1.02, 0.94, 5, -10], [5, 1.02, 0.95, -5, -14], [-4, 1.03, 0.93, 3, -8]] },
+    sad: { ms: 800, ease: "inOut", v: [[1.5, 0.96, 1.07, -1, 16], [-1.5, 0.97, 1.06, 1, 20], [0.5, 0.95, 1.08, -2, 24]] },
+    startle: { ms: 260, ease: "snap", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
     //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
     //: up"): the lower body curls and droops, a slow ease, shorter and wider
     //: than a lie, the tail wrapped round (a turn well past a lie's).
-    curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
+    curl: { ms: 1600, ease: "inOut", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
     //: INBOX 1681 (the owner: "crouching down ... lounging ... gliding ... hanging"): a squat folds the
     //: lower body short and wide, a lounge lays it out to one side, a glide trails it long and thin behind
     //: the lean, a drift lets it hang loose and slow, a hang lets it swing from the hips. The act's own
     //: variant (`data-variant`) picks the row, so the body and the lower body agree; the turn stays
     //: within 4 degrees (INBOX 615 and 619) and the lean, the tail and the stretch do the posing.
-    crouch: { ms: 700, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -3, -16], [-3, 1.1, 0.74, 4, 12], [1.5, 1.18, 0.66, -2, -22]] },
-    lounge: { ms: 900, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3.5, 1.06, 0.84, -4, 26], [-2, 1.1, 0.8, 2, -20], [2, 1.04, 0.88, -3, 16]] },
-    glide: { ms: 800, ease: "cubic-bezier(0.3, 0.9, 0.5, 1)", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
-    drift: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
-    hang: { ms: 700, ease: "cubic-bezier(0.34, 1.2, 0.6, 1)", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
+    crouch: { ms: 700, ease: "spring", v: [[2, 1.14, 0.7, -3, -16], [-3, 1.1, 0.74, 4, 12], [1.5, 1.18, 0.66, -2, -22]] },
+    lounge: { ms: 900, ease: "spring", v: [[3.5, 1.06, 0.84, -4, 26], [-2, 1.1, 0.8, 2, -20], [2, 1.04, 0.88, -3, 16]] },
+    glide: { ms: 800, ease: "glide", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
+    drift: { ms: 1400, ease: "inOut", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
+    hang: { ms: 700, ease: "spring", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
     //: E6 (companion-asks B1, B3: "the lower body follows the pose"): leaning on a wall or edge (the weight on one
     //: hip, the hem pulled to the other side), legs over an edge (the hem let straight down, long, a slow swing), a
     //: kick of them (quick, the hem thrown out), a swing from a bar (the hem a pendulum, wide turns of the tail) and a
     //: sloth hang (limp and long, barely moving). The act or pose names the row; the turn stays inside the 4 degrees.
     //: L173: `dress` is the dress's own [shear gain, stretch gain] (else 0.4 and 0.5, below): a lean's hem sweeps to one side (every row the same way, so no blend of two comes back to upright) and a
     //: float's trails long, each 6 px or more past a standing idle's box.
-    lean: { ms: 650, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", dress: [1, 0.5], v: [[3, 1.1, 0.96, 18, 14], [-3, 1.1, 0.95, 14, -12], [2, 1.12, 0.97, 20, 18]] },
+    lean: { ms: 650, ease: "spring", dress: [1, 0.5], v: [[3, 1.1, 0.96, 18, 14], [-3, 1.1, 0.95, 14, -12], [2, 1.12, 0.97, 20, 18]] },
     //: L173 (the owner's call under standing order 3): a float, hovering, trails a longer, narrower hem than standing idle (a fifth
     //: narrower, a fifth longer: 6 px or more past it each way), slow and loose.
-    float: { ms: 1200, ease: "cubic-bezier(0.45, 0, 0.35, 1)", dress: [0.4, 1], v: [[2, 0.84, 1.22, 6, -20], [-2.5, 0.82, 1.26, -6, 18], [3, 0.86, 1.2, 5, -26]] },
-    dangle: { ms: 900, ease: "cubic-bezier(0.45, 0.1, 0.4, 1)", v: [[1.5, 1.04, 1.08, -3, 12], [-2, 1.05, 1.12, 4, -10], [2.5, 1.03, 1.1, -2, 16]] },
-    kick: { ms: 320, ease: "cubic-bezier(0.2, 1.9, 0.4, 1)", v: [[-3.5, 1.02, 1.05, 9, -22], [3, 1.03, 1.03, -9, 24], [-2, 1.02, 1.06, 7, -18]] },
-    swing: { ms: 520, ease: "cubic-bezier(0.34, 1.3, 0.6, 1)", v: [[3, 0.96, 1.1, 8, 24], [-3, 0.95, 1.12, -8, -26], [2, 0.97, 1.09, 6, 20]] },
-    sloth: { ms: 1500, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1, 1.02, 1.14, -1, 26], [-1.5, 1.03, 1.16, 1, -22], [1.5, 1.02, 1.12, -2, 30]] },
+    float: { ms: 1200, ease: "inOut", dress: [0.4, 1], v: [[2, 0.84, 1.22, 6, -20], [-2.5, 0.82, 1.26, -6, 18], [3, 0.86, 1.2, 5, -26]] },
+    dangle: { ms: 900, ease: "inOut", v: [[1.5, 1.04, 1.08, -3, 12], [-2, 1.05, 1.12, 4, -10], [2.5, 1.03, 1.1, -2, 16]] },
+    kick: { ms: 320, ease: "snap", v: [[-3.5, 1.02, 1.05, 9, -22], [3, 1.03, 1.03, -9, 24], [-2, 1.02, 1.06, 7, -18]] },
+    swing: { ms: 520, ease: "sway", v: [[3, 0.96, 1.1, 8, 24], [-3, 0.95, 1.12, -8, -26], [2, 0.97, 1.09, 6, 20]] },
+    sloth: { ms: 1500, ease: "inOut", v: [[1, 1.02, 1.14, -1, 26], [-1.5, 1.03, 1.16, 1, -22], [1.5, 1.02, 1.12, -2, 30]] },
     //: atlascat-1108 C5 (`atlasRigLower.spell` says when): a gust lifts the hem on a fast glide, the legs tucked under
     //: cross-legged, a slow ripple root to hem in a calm spell, a quick flutter when excited, spread flat after a
     //: long sit, a playful kick of the hem when glad, a spiral that unwinds after a twirl, and heavy when tired.
-    billow: { ms: 380, ease: "cubic-bezier(0.25, 1.7, 0.5, 1)", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
-    coil: { ms: 800, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -2, 20], [-2, 1.16, 0.68, 2, -18], [1.5, 1.12, 0.72, -3, 26]] },
-    ripple_calm: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.55, 1)", v: [[1.5, 1, 1.03, -3, 8], [-2, 1.02, 1.01, 3, -10], [2.5, 1, 1.04, -2, 12]] },
-    flutter: { ms: 300, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-3, 1.03, 0.97, 6, -16], [3, 1.03, 0.96, -6, 18], [-2, 1.04, 0.97, 4, -12]] },
-    pool: { ms: 1200, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3, 1.18, 0.62, -3, 30], [-3, 1.2, 0.6, 3, -28], [2, 1.16, 0.64, -2, 24]] },
-    hem_kick: { ms: 320, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-3.5, 1.02, 0.96, 8, -22], [3, 1.03, 0.95, -9, 24], [-2, 1.02, 0.97, 6, -18]] },
-    spiral: { ms: 700, ease: "cubic-bezier(0.3, 1.3, 0.5, 1)", v: [[3.8, 0.96, 1.02, 10, 34], [-3.8, 0.95, 1.04, -12, -40], [3, 0.97, 1, 8, 28]] },
+    billow: { ms: 380, ease: "pop", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
+    coil: { ms: 800, ease: "spring", v: [[2, 1.14, 0.7, -2, 20], [-2, 1.16, 0.68, 2, -18], [1.5, 1.12, 0.72, -3, 26]] },
+    ripple_calm: { ms: 1400, ease: "inOut", v: [[1.5, 1, 1.03, -3, 8], [-2, 1.02, 1.01, 3, -10], [2.5, 1, 1.04, -2, 12]] },
+    flutter: { ms: 300, ease: "pop", v: [[-3, 1.03, 0.97, 6, -16], [3, 1.03, 0.96, -6, 18], [-2, 1.04, 0.97, 4, -12]] },
+    pool: { ms: 1200, ease: "spring", v: [[3, 1.18, 0.62, -3, 30], [-3, 1.2, 0.6, 3, -28], [2, 1.16, 0.64, -2, 24]] },
+    hem_kick: { ms: 320, ease: "snap", v: [[-3.5, 1.02, 0.96, 8, -22], [3, 1.03, 0.95, -9, 24], [-2, 1.02, 0.97, 6, -18]] },
+    spiral: { ms: 700, ease: "sway", v: [[3.8, 0.96, 1.02, 10, 34], [-3.8, 0.95, 1.04, -12, -40], [3, 0.97, 1, 8, 28]] },
     //: atlascat-1108 D5 (`lower.fall`): falling free (a throw's descent, `nmb-falling`), the hem streams up above it,
     //: long and thin, thrown about; fast to take and never at rest.
-    fall: { ms: 240, ease: "cubic-bezier(0.2, 1.9, 0.4, 1)", v: [[-2, 0.88, 1.24, 7, -46], [2.5, 0.86, 1.28, -7, -50], [-3, 0.9, 1.22, 9, -42]] },
-    heavy: { ms: 1100, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1, 1.04, 1.1, -1, 20], [-1, 1.05, 1.12, 1, 24], [1.5, 1.03, 1.09, -1, 16]] },
+    fall: { ms: 240, ease: "snap", v: [[-2, 0.88, 1.24, 7, -46], [2.5, 0.86, 1.28, -7, -50], [-3, 0.9, 1.22, 9, -42]] },
+    heavy: { ms: 1100, ease: "inOut", v: [[1, 1.04, 1.1, -1, 20], [-1, 1.05, 1.12, 1, 24], [1.5, 1.03, 1.09, -1, 16]] },
   };
   //: The hair's turn about the crown and the nebula stream's [turn, width,
   //: height] about the figure's middle, per state (INBOX 575, the owner:
@@ -1514,7 +1514,7 @@
     low.shown = key;
     atlasRigLower.flow(rig, state, live);
     const go = (el, transform, lag = 0) => {
-      el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${spec.ease} ${lag}ms` : "none";
+      el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${NMB_CURVE[spec.ease]} ${lag}ms` : "none";
       el.style.transform = transform;
     };
     //: The lower body's own box shears about the join rather than turning
