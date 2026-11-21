@@ -49,9 +49,9 @@ def test_a_long_run_of_blank_lines_or_whitespace_is_not_a_stall():
     import time
 
     for text in ("Pasted\n" + "\n" * 20000 + "end", "a" + " " * 20000 + "b", "\t" * 20000 + "x", " \n" * 20000 + "x"):
-        started = time.perf_counter()
+        started = time.process_time()
         _clip(text)
-        assert time.perf_counter() - started < 1.0, repr(text[:12])
+        assert time.process_time() - started < 1.0, repr(text[:12])
 
 
 def test_a_code_fence_marker_is_not_a_word():

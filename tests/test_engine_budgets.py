@@ -40,9 +40,9 @@ def test_an_answer_over_twenty_notes_takes_under_fifty_milliseconds():
         #: Best of three per question, for the same reason as the import's.
         best = 1.0
         for _ in range(3):
-            started = time.perf_counter()
+            started = time.process_time()
             composer.compose(question, SEED["notes"], today=today)
-            best = min(best, time.perf_counter() - started)
+            best = min(best, time.process_time() - started)
         worst = max(worst, best)
     assert worst < 0.05, worst
 

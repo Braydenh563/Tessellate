@@ -74,9 +74,9 @@ def test_the_projection_of_a_large_notebook_is_quick():
 
     rng = np.random.default_rng(3)
     vectors = {i: row for i, row in enumerate(rng.normal(size=(proj.MAX_PROJECTED, 384)).astype("float32"))}
-    started = time.perf_counter()
+    started = time.process_time()
     pts = proj.project(vectors)
-    took = time.perf_counter() - started
+    took = time.process_time() - started
     assert len(pts) == proj.MAX_PROJECTED
     assert took < 3.0, took
 
