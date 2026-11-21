@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: Atlas's glow in the large view is centred on the masculine look as it is on the feminine one, no longer sitting to one side of the standing figure.
 - Board: a mind map exported as a picture wraps each topic's words at the size they are drawn, so a large central title is no longer cut off, and a topic shows its branch bar only where the board does.
 - Board: on a phone, the shape kind menu in the Tools sheet opens below its button and is no longer cut off by the sheet.
 - Sweeps: the 135 unrun browser sweeps were run (L554): 77 pass; the 58 that fail are LEDGER rows L-world-class-412 (39 out of date), 413 (17 to reproduce) and 414 (2 need the Pyodide extra or a model); companion sweeps load Settings' listeners first

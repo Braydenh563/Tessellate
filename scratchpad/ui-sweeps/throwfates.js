@@ -96,6 +96,8 @@ async function pass(buddyKind, reduced) {
       if (r.fate === want) found = { seed, ...r };
     }
     out.seen[want] = { found, tally };
+    // One line per fate as it ends, so a run cut short still says how far it got.
+    console.log(`${found ? 'found' : 'MISSING'} ${buddyKind}${reduced ? ' reduced' : ''} ${want}: ${JSON.stringify(tally)}`);
   }
   // At rest, nothing of the throw runs: no flight, and the page's frames
   // over a second counted against the same second before any throw.

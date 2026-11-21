@@ -35,7 +35,11 @@ fs.mkdirSync(OUT, { recursive: true });
       buddy.querySelector('.nm-buddy-face').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
     });
     await page.waitForTimeout(1400);
-    const m = await page.evaluate(() => {
+    // Six readings 250ms apart, averaged: a hanging figure bobs, and one frame read 2.6 to 6.3% off by when it fell.
+    const reads = [];
+    for (let k = 0; k < 6; k += 1) {
+      if (k) await page.waitForTimeout(250);
+      reads.push(await page.evaluate(() => {
       const buddy = document.getElementById('nm-buddy');
       for (const a of document.querySelector('.nm-viewer-card').getAnimations({ subtree: true })) { a.pause(); a.currentTime = 1500; }
       const glow = (el) => el.closest('.atl-aura, .atl-band-haze, .atl-ear-glow, .atl-core-glow, .atl-const-glow, .atl-fx, .atl-tail-glow, defs, title, .nmb-hold, .atl-seeds, .nm-say, .atl-orbit, .atl-orbiter');
@@ -52,7 +56,10 @@ fs.mkdirSync(OUT, { recursive: true });
       const card = document.querySelector('.nm-viewer-card').getBoundingClientRect();
       const blobs = buddy.querySelectorAll('.atl-band-haze .atl-band-cloud').length;
       return { fig: [l, t, r, b].map(Math.round), aura: a ? [a.left + a.width / 2, a.top + a.height / 2, a.width, a.height].map(Math.round) : null, card: [card.left, card.top, card.width, card.height].map(Math.round), blobs };
-    });
+      }));
+    }
+    const avg = (key) => reads[0][key] && reads[0][key].map((_, j) => Math.round(reads.reduce((t, r) => t + r[key][j], 0) / reads.length));
+    const m = { ...reads[reads.length - 1], fig: avg('fig'), aura: reads.every((r) => r.aura) ? avg('aura') : null };
     const fw = m.fig[2] - m.fig[0];
     const fh = m.fig[3] - m.fig[1];
     const off = m.aura ? [Math.abs(m.aura[0] - (m.fig[0] + fw / 2)) / fw, Math.abs(m.aura[1] - (m.fig[1] + fh / 2)) / fh] : [1, 1];
@@ -70,7 +77,11 @@ fs.mkdirSync(OUT, { recursive: true });
       const pts = [];
       for (let x = inset; x < img.width - inset; x += 4) pts.push([x, inset], [x, img.height - inset]);
       for (let y = inset; y < img.height - inset; y += 4) pts.push([inset, y], [img.width - inset, y]);
+      // Clear of the corners: the card is rounded and carries a resize grip
+      // bottom right, neither of them glow (40 device px, 20 at 2x).
+      const corner = 40;
       for (const [x, y] of pts) {
+        if ((x < corner || x > img.width - corner) && (y < corner || y > img.height - corner)) continue;
         const p = px(x, y);
         worst = Math.max(worst, Math.max(...[0, 1, 2].map((k) => Math.abs(p[k] - ref[k]))));
       }
