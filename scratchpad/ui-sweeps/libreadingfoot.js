@@ -16,16 +16,8 @@
 //   BASE=http://127.0.0.1:8991 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     NODE_PATH=/opt/node22/lib/node_modules SCRATCH=/tmp/claude-0 \
 //     timeout 115 node libreadingfoot.js
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { boot } = require('./lib.js');
+const { boot, seedLibtextIfEmpty } = require('./lib.js');
 
-// Self-seeding, so it passes on a fresh data dir: the uploads through
-// seed-libtext.js, then the readings (a caption, a vision reading, fourteen
-// page reads per file) straight into the database with seed-libtext.py, which
-// needs the data dir: DATA, or TESSELLATE_DATA_DIR when that is what served it.
-const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
-const ROOT = path.resolve(__dirname, '..', '..');
 
 let failures = 0;
 const check = (label, ok, detail) => {
@@ -74,15 +66,7 @@ async function openLibrary(page, subtab) {
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 950 } });
-  const rows = await page.evaluate(async () => {
-    const r = await apiJson('/media');
-    return (Array.isArray(r) ? r : r.items || r.media || r.files || []).length;
-  });
-  if (!rows) {
-    if (!DATA) throw new Error('empty library and no DATA (the data dir) to seed the readings into');
-    execFileSync('node', [path.join(__dirname, 'seed-libtext.js')], { stdio: 'inherit', env: process.env });
-    execFileSync(path.join(ROOT, '.venv', 'bin', 'python'), [path.join(__dirname, 'seed-libtext.py'), path.join(DATA, 'tessellate.db')], { stdio: 'inherit' });
-  }
+  await seedLibtextIfEmpty(page);
 
   // --- (3) the Files sub-tab's reading block ------------------------------
   await openLibrary(page, 'file');

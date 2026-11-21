@@ -283,4 +283,24 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// A fresh library holds nothing to measure, so a sweep about the Library's readings seeds
+// it itself: the uploads through seed-libtext.js, then the readings (a caption, a vision
+// reading, fourteen page reads a file) straight into the database with seed-libtext.py,
+// which needs the data dir (DATA, or TESSELLATE_DATA_DIR when that is what served it).
+// Only when the library is empty, so a second run on the same dir adds nothing.
+async function seedLibtextIfEmpty(page) {
+  const path = require('path');
+  const { execFileSync } = require('child_process');
+  const rows = await page.evaluate(async () => {
+    const r = await apiJson('/media');
+    return (Array.isArray(r) ? r : r.items || r.media || r.files || []).length;
+  });
+  if (rows) return false;
+  const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
+  if (!DATA) throw new Error('empty library and no DATA (the data dir) to seed the readings into');
+  execFileSync('node', [path.join(__dirname, 'seed-libtext.js')], {stdio: 'inherit', env: process.env});
+  execFileSync(path.join(__dirname, '..', '..', '.venv', 'bin', 'python'),
+    [path.join(__dirname, 'seed-libtext.py'), path.join(DATA, 'tessellate.db')], {stdio: 'inherit'});
+  return true;
+}
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, seedLibtextIfEmpty};
