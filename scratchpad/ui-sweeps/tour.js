@@ -423,9 +423,8 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       await page.waitForTimeout(500);
       await page.evaluate(() => showSettingsSection("help"));
       await page.waitForTimeout(300);
-      await page.evaluate(() =>
-        [...document.querySelectorAll("#tour-replay-buttons button")].find((b) => b.textContent === "Start the tour").click()
-      );
+      //: Start the tour is its own button above the section rows (`#tour-start-btn`), as the doors check reads it.
+      await page.evaluate(() => document.getElementById("tour-start-btn").click());
       await page.waitForTimeout(300);
       const whole = await walk(page, `${label} start the tour`, phone);
       await sectionReport(page, `${label} start the tour`, whole);
