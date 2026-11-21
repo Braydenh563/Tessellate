@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Security: PDFium (page counts and page pictures) and markitdown (Word and Office import, the document viewer) now parse in one reused child process with a deadline, a 2 GB address-space limit and a per-job processor limit on POSIX; a hang, a memory blow-up or a crash costs that child, and an import stopped at a limit says so. A warm call adds about 0.3 to 0.5 ms; a cold child is 117 ms with pypdfium2 and 687 ms with markitdown (L-world-class-321; Pillow and OCR are L-world-class-625).
 - Boot: the web panel's drawing (open and close, the head's menu, engine dot, recents, Ask about page, Cite in chat) moved from chat.js to the lazy web-results.js, so boot falls by about 3.4 KB gzipped (chat.js 29,124 to 25,677; the script ratchet was 144 B over, now about 3.2 KB under), the panel fetches its code on the first open, and app.js keeps stand-ins for the nine entry points (L-world-class-571).
 - Docs: three measured perf leftovers (Settings pane style and layout, microbes garbage, boot tasks still over 50ms at 4x) moved from LEDGER to BACKLOG §11 with their numbers (L-world-class-622, 623, 624).
 - Model-call tracing moved from jobruns.py (1015 lines) to jobruns_calls.py (149), so jobruns.py is 877 lines, under its 973 cap (L624).

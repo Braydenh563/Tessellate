@@ -68,6 +68,7 @@ SOURCES: tuple[Source, ...] = (
     Source("core/syntaxcheck.py", raises=("ValueError",), functions=("check",)),
     Source("ai/insights.py", raises=("ValueError",), functions=("confirm", "dismiss")),
     Source("core/webclip.py", raises=("ClipRefused",)),
+    Source("core/parse_sandbox.py", consts=("TOO_LONG", "TOO_BIG", "CRASHED", "UNREADABLE")),
     Source(
         "core/security.py",
         raises=("UnsafeUrl",),
@@ -372,6 +373,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_bookmarks.py", "str(exc)"): "ClipRefused from core/webclip.py, checked in SOURCES",
     ("routes_webclip.py", "IMAGE_WEB_OFF"): "a constant in routes_webclip.py (a topic picture from a link), checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
+    ("routes_settings_transfer.py", "str(exc)"): "ParseRefused from core/parse_sandbox.py, its sentences checked in SOURCES",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
     ("routes_chat_meta.py", "why"): "ai/consent_store.py refusal_for_press, fixed sentences checked in SOURCES",
     ("routes_websearch.py", "str(exc)"): "WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py)",

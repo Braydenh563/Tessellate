@@ -2628,6 +2628,14 @@ def _capture() -> int:
 
 
 def main() -> None:
+    # A packaged build has no `-m`: `core/parse_sandbox.py` starts this same
+    # exe with `--parse-child` to read an untrusted file, and it must reach the
+    # child's loop before any launcher work (no window, no instance lock).
+    if sys.argv[1:2] == ["--parse-child"]:
+        from tessellate.core import parse_child
+
+        parse_child.main()
+        return
     _ensure_std_streams()
     parser = argparse.ArgumentParser(prog="tessellate", description="Tessellate")
     parser.add_argument(

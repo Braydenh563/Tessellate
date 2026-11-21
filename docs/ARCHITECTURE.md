@@ -333,6 +333,9 @@ Tessellate/
 │   │   ├── atomic_io.py     # temp-file + fsync + rename for preferences.json
 │   │   ├── logbuffer.py     # in-memory log capture + safe_value()
 │   │   ├── subproc.py       # spawn a child process without a console
+│   │   ├── parse_sandbox.py · parse_child.py · parse_jobs.py # untrusted
+│   │   │                    #   PDFs and Office files parsed in one reused
+│   │   │                    #   child with a deadline and rlimits (T19)
 │   │   ├── quit_hook.py · window_hook.py # how the launcher quits the app and
 │   │   │                    #   toggles full screen for the desktop window
 │   │   ├── launch_status.py # the launcher's status file, parsed
@@ -1755,6 +1758,10 @@ More workers is also not the lever for speed here. The slow paths are Ollama
 and embedding. A background filing (`defer_filing`) runs both off the request
 thread; a plain save and an edit still embed on the request (corrected
 2026-10-05, audit ARCH-02: this line said both were always off it).
+
+A child that holds none of §3's singletons is not a second worker: the
+captions helper and the parse sandbox's child (`core/parse_sandbox.py`,
+SECURITY.md T19) are handed a file path or audio and give back plain data.
 
 ## 14. Where to look when you want to…
 
