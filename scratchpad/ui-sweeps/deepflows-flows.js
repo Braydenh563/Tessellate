@@ -762,9 +762,8 @@ const activeTab = (env) => env.js(() => [...document.querySelectorAll('.tab-page
 
 async function openPaletteUi(env) {
   if (!env.phone) await env.page.keyboard.press('Control+k');
-  //: A phone has no Ctrl+K and no status bar, and nothing in its menus opens the command
-  //: palette (the top bar's Find opens "Find anything", the search): a finding to report,
-  //: so the flow opens it by its function there to cover the rest of it.
+  //: A phone has no Ctrl+K and no status bar; its way in is the More sheet's "Commands" row,
+  //: so the flow opens it by its function there and covers the palette itself.
   else await env.js(() => openPalette());
   await env.page.waitForSelector('#palette-overlay:not(.hidden)', { timeout: 4000 });
   await env.wait(500);
@@ -962,10 +961,28 @@ async function openFind(env) {
     // are showing, open it, and wait for the Find row itself (a real condition).
     const find = env.page.locator('[role="menuitem"]:visible', { hasText: /^Find/ }).first();
     await env.page.waitForFunction(() => ![...document.querySelectorAll('[role="menuitem"]')].some((e) => e.offsetParent), null, { timeout: 5000 });
+    if (process.env.FINDTRACE) {
+      // Evidence only: what the DOM does around the App menu tap (prefix FT).
+      await env.js(() => {
+        window.__ft = [];
+        const t0 = performance.now();
+        const closer = window.closeActionMenus;
+        window.closeActionMenus = function () {
+          window.__ft.push(Math.round(performance.now() - t0) + ' CLOSE ' + new Error().stack.split('\n').slice(2, 5).join(' < '));
+          return closer.apply(this, arguments);
+        };
+        const d = (n) => (n.nodeType === 1 ? (n.id || n.className || n.tagName).toString().slice(0, 50) : '#text');
+        new MutationObserver((rs) => rs.forEach((r) => window.__ft.push([Math.round(performance.now() - t0), r.type, d(r.target), r.attributeName || '', [...r.addedNodes].map(d).join('|'), [...r.removedNodes].map(d).join('|')].join(' ')))).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden', 'aria-expanded', 'data-sheet'] });
+      });
+    }
     await env.page.locator('button[aria-label="App menu"]:visible').first().tap();
     if (process.env.PROBE) { await env.wait(1200); console.log('PROBE-MENU', JSON.stringify(await env.js(() => ({ items: [...document.querySelectorAll('[role=menuitem]')].filter((e) => e.offsetParent).map((e) => e.textContent.trim().slice(0, 24)), sheets: [...document.querySelectorAll('.sheet-overlay, [role=dialog]')].filter((e) => e.offsetParent).map((e) => (e.dataset.sheet || e.id || e.className).slice(0, 40)), tab: document.body.dataset.tab, appmenu: [...document.querySelectorAll('button[aria-label="App menu"]')].map((b) => [b.offsetParent ? 'vis' : 'hid', b.getAttribute('aria-expanded')]) })))); }
-    await find.waitFor({ state: 'visible', timeout: 8000 });
-    await find.tap();
+    try {
+      await find.waitFor({ state: 'visible', timeout: 8000 });
+      await find.tap({ timeout: 8000 });
+    } finally {
+      if (process.env.FINDTRACE) console.log('FT-LOG\n' + (await env.js(() => (window.__ft || []).join('\n'))));
+    }
   } else await env.page.click('#status-find');
   await env.page.waitForSelector('#finder-overlay:not(.hidden)', { timeout: 4000 });
   await env.wait(500);

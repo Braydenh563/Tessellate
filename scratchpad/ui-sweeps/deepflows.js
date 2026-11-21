@@ -28,8 +28,9 @@
 //   select      Select mode: tick two notes (a tap does not open a page), batch Tags
 //   views       every Library view, the Create sheet, Timeline and Reminders modes
 //   find        Find anything (the status bar, or the top bar's More on a phone)
-// A phone has no way to open the command palette (Find is the search), so the
-// palette flow opens it by its function at 390: reported, not fixed.
+// A phone opens the command palette from the tab bar's More sheet ("Commands");
+// the palette flow opens it by its function at 390, so the flow covers the palette
+// itself and not the way in.
 //
 // What fails a flow, besides the flow's own assertions:
 //   - a `pageerror` or a `console.error` while it ran;

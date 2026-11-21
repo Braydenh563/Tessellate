@@ -1223,6 +1223,11 @@ const PHONE_ACTION_SHEET = "(max-width: 599.98px)";
 
 function openKebabSheet(menu, opener, label) {
   closeActionMenus();
+  //: A scroll already on its way (the list settling after a note opened) would
+  //: reach `closeActionMenusOnScroll` and empty this sheet 100ms after it opened
+  //: (traced in deepflows' Find at 390): stamped like `openActionMenu`, which
+  //: gives a menu 200ms of grace from such a scroll.
+  window._menuOpenedAt = performance.now();
   const home = menu.parentElement;
   let closeSheet = null;
   let sheetCard = null;
