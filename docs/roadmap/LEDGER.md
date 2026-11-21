@@ -9,20 +9,30 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 1 | 0 | 0 | 0 | 1 |
+| chat | 0 | 7 | 1 | 0 | 3 | 8 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
+| world-class | 130 | 172 | 57 | 0 | 69 | 359 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 363 | 69 | 0 | 125 | 758 |
+| all | 326 | 364 | 69 | 0 | 125 | 759 |
 
 ## graph
 
 ## chat
 
+- [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
+- [ ] **L974** `chat` blocked-hardware, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model
+- [ ] **L975** `chat` blocked-hardware, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine
+- [ ] **L691** `chat` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
+- [ ] **L559** `chat` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
+- [ ] **L560** `chat` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
+- [ ] **L587** `chat` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
+- [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
+- [ ] **L915** `chat` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
+- [ ] **L627** `chat` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L-documents-41** `chat` open, M: Agent document edit as insert/delete marks inside the open document editor, accept or reject per hunk there. From L-world-class-181 follow-up. Evidence: the chat card's suggestion (tool-consent.js) covers an agent edit; an open document editor shows no marks
 
 
@@ -274,8 +284,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L556** `world-class` open, S: test_consent_1110 reads the real clock; use a fixed clock. From sm-1111.md Found. Evidence: tests/test_consent_1110.py still reads clock; standing rule says fixed clock
 - [ ] **L557** `world-class` open, S: test_static_compression ratchet red (250664 vs 250450). From w34-gap3-1111.md Found. Evidence: Source: red on base; not re-run (read-only)
 - [ ] **L558** `world-class` open, M: Voice: move failure toasts in the 112 other JS files holding their own strings. From OPEN.md:1259. Evidence: Row left: surface by surface (decision 55); only library.js, whiteboard.js, whiteboard-map.js moved.
-- [ ] **L559** `world-class` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
-- [ ] **L560** `world-class` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
 - [ ] **L561** `world-class` open, M: Condense HANDOVER (over 300 lines) and create NEXT_FABLE_WINDOW.md (Brief 14). From OPEN.md:3594. Evidence: HANDOVER.md is 599 lines (lint cap 600); docs/roadmap/NEXT_FABLE* does not exist
 - [ ] **L562** `world-class` open, M: Make chat search hits open the matching turn, not only the chat. From OPEN.md:3737. Evidence: search/index.py:935 _conversation_row builds one row per conversation
 - [ ] **L564** `world-class` open, M: Fold picture captions into their note for the composer and keyword search. From OPEN.md:3642. Evidence: search/index.py:851 caption+OCR+vision one body per picture row; not folded into its note's row
@@ -299,7 +307,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L584** `world-class` open, M: Finish A68 learned-audit leftovers: per-flag Keep it and the Settings switch. From OPEN.md:4309. Evidence: W34 true (part), w34-L2r-1111.md; remainder unbuilt.
 - [ ] **L585** `world-class` open, M: Build live sync between two open windows (only a spaces-find storage listener exists). From OPEN.md:691; OPEN.md:2575. Evidence: Only spaces-find.js:573 storage listener; no general cross-window sync
 - [ ] **L586** `world-class` open, M: Give timer, stopwatch and Count words utilities a data-help-for popover. From OPEN.md:694. Evidence: utility-tools.js exists; palette-row-only utilities lack own help surface, not confirmed fixed
-- [ ] **L587** `world-class` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L588** `world-class` open, M: Settings import should merge skills/personas/templates; verify the desktop save path. From OPEN.md:961; OPEN.md:2591. Evidence: Merge fixed: routes_settings.py:1300 _MERGED_LISTS (row 558); desktop save dialog still needs the Windows desktop
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
 - [ ] **L590** `world-class` open, M: Clear dismissed suggestions must clear per-note 'Not suggested' tags; fix lagging Undo toast and top-bar theme button. From OPEN.md:1674; OPEN.md:2498. Evidence: settings-data.js:951 now clears ids, tensions and note_tags; top-bar theme button in Recent changes and Undo toast lag not shown fixed
@@ -339,9 +346,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L624** `world-class` open, L: Split files over the 800-line bar (avatars.js, routes_chat.py and others). From OPEN.md:4511. Evidence: avatars.js, routes_chat.py and others still over; splits deferred
 - [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)
 - [ ] **L626** `world-class` open, L: Apply the tag: filter before the 200 keyword candidates cut in search/engine.py. From OPEN.md:867; OPEN.md:3738. Evidence: search/engine.py:1339-1345 filters rows after retrieval
-- [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
-- [ ] **L629** `world-class` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L630** `world-class` open, L: Re-run ocrflow.js against new .ocr-engine host and #ocr-more dock-menu section. From OPEN.md:838; OPEN.md:3534. Evidence: ocrflow.js:29,41 vs index.html:9732 hidden dock-menu section; not re-run
 - [ ] **L631** `world-class` open, L: Allow reading of uploaded PDF documents outside the app (ocr_media 415). From OPEN.md:1449; OPEN.md:2424. Evidence: routes_files.py:~2125 ocr_media still 415 'Only images can be read this way' for non-image suffixes
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
@@ -400,7 +405,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L689** `world-class` partly, L: Make filing against a never-answering model non-serial for a 20-note burst. From OPEN.md:1715. Evidence: Commit c26b090b4/902ffcbcc: late answer replaces stand-in, wait is a preference; serial burst of 20 not shown fixed
 - [ ] **L690** `world-class` partly, L: Release the DB session on bare POST /entries while waiting on the model. From OPEN.md:1716. Evidence: UI paths send defer_filing (capture-ask.js:666,770; ask-compose.js:571); routes_entries.py:828 bare POST /entries still waits holding the session
-- [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L693** `world-class` partly, L: Add the missing palette rows (Notifications unread, Atlas files it, Draw keep note, Chat About, Library Boards) and the remaining destinations without a palette command. From OPEN.md:1086; OPEN.md:3704; OPEN.md:3705. Evidence: No Notifications unread row in app-palette.js; heuristic word-match rows not added
 - [ ] **L694** `world-class` partly, L: Make Settings switches and choices undoable with Ctrl+Z (most write functions lack pushUndo). From OPEN.md:1774; OPEN.md:3690. Evidence: pushUndo now appears 8 times across settings*.js (was 1); 48 write functions not all covered
@@ -521,7 +525,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L907** `ui-modernisation` blocked-hardware, M: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark. From audit-1031-ux.md. Evidence: Screen reader and forced-colours need human/OS; theme data-mode case not re-driven
 - [ ] **L908** `ui-modernisation` blocked-hardware, S: Reproduce dashboard scroll jump (426 u) with owner's preferences. From OPEN.md:2310. Evidence: Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
-- [ ] **L915** `world-class` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
 - [ ] **L916** `world-class` blocked-hardware, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model
 - [ ] **L917** `world-class` blocked-hardware, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed)
 - [ ] **L918** `world-class` blocked-hardware, S: Run CHAT evals gate on a 3B model. From OPEN.md:616. Evidence: Needs real-model run (pytest -m evals, scratchpad/llama-dev.sh)
@@ -580,8 +583,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L971** `world-class` blocked-hardware, M: Boot forced layout, canvas pointerout, most-accessed render (1667i) blocked. From OPEN.md:4326. Evidence: W34 unverifiable here (needs owner's real browser trace), w34-fix2-1111.md.
 - [ ] **L972** `world-class` blocked-hardware, S: Load-dependent X11 test race (1683s/U16). From OPEN.md:4342. Evidence: Needs X11 desktop/loaded box to reproduce; ledger open.
 - [ ] **L973** `world-class` blocked-hardware, S: Smoke step traceback check reads whole output. From OPEN.md:698. Evidence: Windows CI smoke behaviour; needs a Windows run to see a benign traceback
-- [ ] **L974** `world-class` blocked-hardware, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model
-- [ ] **L975** `world-class` blocked-hardware, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine
 - [ ] **L976** `world-class` blocked-hardware, L: Check text metrics and wrap sweep beyond Chromium. From OPEN.md:826; OPEN.md:3426. Evidence: Needs Firefox/WebKit real runs
 - [ ] **L977** `world-class` blocked-hardware, M: Chromium only: no second browser, no real touch device. From OPEN.md:1344; OPEN.md:3373. Evidence: Needs real touch hardware and other browsers; gcWorldFor constant reasoned only.
 - [ ] **L978** `world-class` blocked-hardware, L: Measure real 384-dim embeddings and hybrid ranking at 5,000 notes. From OPEN.md:1690; OPEN.md:3740. Evidence: Needs the real bge-small model (no torch here); measure_engine.py removed to git history
