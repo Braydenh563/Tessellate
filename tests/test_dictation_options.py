@@ -113,3 +113,14 @@ def test_settings_has_the_three_controls_and_help_names_them():
     text = re.sub(r'"\s*\n\s*"', "", help_more_text())
     assert "Skip silence before transcribing" in text
     assert "Words to expect" in text
+
+
+def test_the_dictation_options_are_filled_whether_or_not_the_package_is_installed():
+    """The three rows are on screen with faster-whisper absent (only the size
+    picker is hidden), so they must read the saved values then too: the skip
+    switch ships on, and showed off (the HTML default) over a saved on, so its
+    first press "turned on" a switch that already was (deepflows sweep)."""
+    js = Path("frontend/js/settings-packages.js").read_text(encoding="utf-8")
+    for line in js.splitlines():
+        if '$("voice-skip-silence").checked' in line or '$("voice-language-select").value' in line:
+            assert line.startswith("    ") and not line.startswith("     "), f"inside a branch: {line.strip()}"

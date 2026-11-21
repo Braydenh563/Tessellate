@@ -28,8 +28,9 @@
 //   select      Select mode: tick two notes (a tap does not open a page), batch Tags
 //   views       every Library view, the Create sheet, Timeline and Reminders modes
 //   find        Find anything (the status bar, or the top bar's More on a phone)
-// A phone has no way to open the command palette (Find is the search), so the
-// palette flow opens it by its function at 390: reported, not fixed.
+// A phone opens the command palette from the tab bar's More sheet ("Commands");
+// the palette flow opens it by its function at 390, so the flow covers the palette
+// itself and not the way in.
 //
 // What fails a flow, besides the flow's own assertions:
 //   - a `pageerror` or a `console.error` while it ran;
@@ -125,6 +126,9 @@ async function main() {
         if (/^Failed to load resource/.test(t)) return;
         note(`console: ${t}`);
       });
+      //: LOGPUT=preferences prints each write to a URL containing that word (what a
+      //: switch sent, and what overwrote it).
+      if (process.env.LOGPUT) page.on('request', (r) => { if (r.method() !== 'GET' && r.url().includes(process.env.LOGPUT)) console.log(`       > ${current} ${r.method()} ${r.url().replace(/^https?:\/\/[^/]+/, '')} ${(r.postData() || '').slice(0, 160)}`); });
       page.on('response', (r) => {
         const s = r.status();
         if (s < 400) return;
@@ -174,7 +178,7 @@ async function main() {
           await flows[name](env);
           await env.overflow('end');
         } catch (e) {
-          problem = `${stepAt ? `[${stepAt}] ` : ''}${String(e.message || e).split('\n')[0].slice(0, 240)}`;
+          problem = `${stepAt ? `[${stepAt}] ` : ''}${(process.env.TRACE ? String(e.message || e) : String(e.message || e).split('\n')[0].slice(0, 240))}`;
         }
         const errs = [...new Set(bag)];
         const failed = Boolean(problem) || errs.length > 0;

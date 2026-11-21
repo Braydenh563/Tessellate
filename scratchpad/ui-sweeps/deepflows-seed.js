@@ -28,6 +28,9 @@ const PW = 'testpassword123';
     : await j('/auth/unlock', 'POST', { password: PW });
   const t = auth.token;
   const post = (p, b) => j(p, 'POST', b, t);
+  //: Answer the ask-once "Download search by meaning?" question (No thanks): its toast
+  //: stays up until answered and, on a phone, sits over the middle of Settings.
+  await j('/preferences', 'PUT', { semantic_auto_install: false }, t);
 
   const titles = ['Alpha project', 'Beta review', 'Gamma ideas', 'Delta budget', 'Epsilon travel',
     'Zeta recipes', 'Eta reading', 'Theta fitness', 'Iota garden', 'Kappa finance'];

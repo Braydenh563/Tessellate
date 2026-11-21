@@ -29,6 +29,9 @@ below). Versioning is `0.x` while the app stabilises.
 - Companion: a long-press that opens its menu no longer presses the menu's first row when the finger lifts, and the focus left on a menu's one-pixel anchor no longer makes it ghost itself (companionmenu sweep, L-general-40).
 - Touch: under a coarse pointer or a narrow window, the icon-only header buttons, privacy chip, capture-bar buttons and the board's new-board menu keep a 44px target (desktop sizes unchanged).
 - Companion: a long note whose list row is clipped still makes it put its reading glasses on (it counts the server's words, not the clipped text).
+- Settings: two quick presses on Tools switches (or a group's Turn all) save in order, so the second no longer drops the first's change.
+- Phone: a ⋯ action sheet (the App menu included) is no longer closed by a scroll already on its way when it opens.
+- Settings: Tools now reads the saved "Let that app add and change notes" switch on open, and Packages fills the dictation options (skip silence, language, words) whether or not faster-whisper is installed; both showed their HTML default (off) over a saved on. deepflows.js follows the moved UI (App menu, bin switch, More sheet, aria-label suffixes) and passes 68/68 (L-general-20).
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
 - CLAUDE.md and WORKING.md give the measured test count, 52,983.

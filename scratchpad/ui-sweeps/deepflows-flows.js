@@ -72,7 +72,7 @@ async function createNote(env, text) {
 //: Open the row's "More actions" menu and press the item whose text contains `label`.
 async function rowMenu(env, id, label, group = null) {
   await openRow(env, id);
-  await actionsOf(env, id).locator('button[aria-label="More actions"]').first().click();
+  await actionsOf(env, id).locator('button[aria-label^="More actions"]').first().click();
   await env.wait(250);
   if (group) {
     await env.page.locator('[role="menuitem"]:visible', { hasText: new RegExp(`^\\s*${group}\\s*›?\\s*$`) }).first().click();
@@ -84,6 +84,22 @@ async function rowMenu(env, id, label, group = null) {
   await env.wait(500);
 }
 
+//: The list re-renders after a write (a new link, a save), which replaces the
+//: row's element; acting on it mid-render detaches it. Wait until the same
+//: element has stood for 300ms before scrolling to it.
+async function settledRow(env, id) {
+  const sel = rowSel(id);
+  await env.page.waitForFunction((s) => {
+    const el = document.querySelector(s);
+    const w = window.__dfSettle || (window.__dfSettle = {});
+    const now = performance.now();
+    if (!el) { w[s] = null; return false; }
+    if (!w[s] || w[s].el !== el) { w[s] = { el, at: now }; return false; }
+    return now - w[s].at >= 300;
+  }, sel, { timeout: 5000, polling: 100 });
+  return env.page.locator(sel);
+}
+
 //: Make a row's actions reachable. Desktop: click the card. Phone: the tap
 //: opens the note as a page, whose actions are in the thumb bar.
 async function openRow(env, id) {
@@ -92,15 +108,15 @@ async function openRow(env, id) {
     const open = await env.page.$('.sheet-overlay[data-sheet="note"] .sheet-title, .sheet-overlay[data-sheet="note"] h2');
     if (open && !(await env.page.locator('.sheet-overlay[data-sheet="note"] .note-page-list > li').first().getAttribute('data-id').then((v) => v === String(id), () => false))) await closeNotePage(env);
     if (await env.page.$('.sheet-overlay[data-sheet="note"] .note-page-bar')) return;
-    const li = env.page.locator(rowSel(id));
+    const li = await settledRow(env, id);
     await li.scrollIntoViewIfNeeded();
     await li.locator('.entry-content').first().tap({ position: { x: 20, y: 8 } });
     await env.page.waitForSelector('.sheet-overlay[data-sheet="note"] .note-page-bar', { timeout: 4000 });
     return;
   }
-  const li = env.page.locator(rowSel(id));
+  const li = await settledRow(env, id);
   await li.scrollIntoViewIfNeeded();
-  if (!(await li.locator('button[aria-label="More actions"]').first().isVisible().catch(() => false))) {
+  if (!(await li.locator('button[aria-label^="More actions"]').first().isVisible().catch(() => false))) {
     await li.locator('.entry-content').first().click({ position: { x: 20, y: 8 } });
     await env.wait(500);
   }
@@ -118,7 +134,7 @@ flows.note = async (env) => {
   await env.overflow('list with the new note');
   env.at('open the row and press Edit');
   await openRow(env, made.id);
-  await actionsOf(env, made.id).locator('button[aria-label="Edit this entry"]').first().click();
+  await actionsOf(env, made.id).locator('button[aria-label^="Edit this entry"]').first().click();
   await env.wait(800);
   await env.overflow('edit form');
   env.at('type into the edit form');
@@ -168,13 +184,13 @@ flows.note = async (env) => {
   await env.js(async (id) => { await api(`/entries/${id}`, { method: 'DELETE' }); }, made.id);
   await env.js(() => switchTab('library'));
   await env.wait(1200);
-  //: The list is still loading for a moment after the tab opens, and a press
-  //: on a chip while it redraws can be lost: press until the Bin chip is on.
-  for (let tries = 0; tries < 6; tries++) {
-    await env.page.locator('#tab-library .library-chip', { hasText: /^Bin\s*\d/ }).first().click();
-    await env.wait(700);
-    if (await env.page.locator('#tab-library .library-chip.active', { hasText: /^Bin/ }).count()) break;
-  }
+  //: The bin is a switch in the Filter menu ("Include the bin"), not a chip.
+  //: Open the menu and tick it, then the binned note is in the grid.
+  await env.page.locator('#tab-library summary', { hasText: 'Filter' }).first().click();
+  if (!(await env.page.isChecked('#library-show-binned'))) await env.page.locator('label:has(#library-show-binned)').click();
+  await env.wait(600);
+  await env.page.locator('#tab-library summary', { hasText: 'Filter' }).first().click(); // close the menu
+  await env.wait(500);
   await env.page.locator(`#tab-library button[aria-label^="Actions for ${text.slice(0, 30)}"]`).first().click();
   await env.page.locator('[role="menuitem"]:visible', { hasText: 'Restore' }).first().click();
   await env.wait(1200);
@@ -231,38 +247,31 @@ flows.link = async (env) => {
   for (const n of [a, b, c]) await env.js(async (id) => { await api(`/entries/${id}`, { method: 'DELETE' }); await api(`/entries/${id}/purge`, { method: 'DELETE' }); }, n.id);
 };
 
-//: Where a graph node, or the middle of a link, is on the screen. Read from the
-//: canvas's own state (`gcTab`, graph-canvas.js) so the click goes through the
-//: same hit-test a person's does.
+//: Where graph nodes, and the middle of links, are on the screen, best first.
+//: Read from the canvas's own state (`gcTab`, graph-canvas.js). The hit-test
+//: functions are private to that file's closure (the surface ratchet), so the
+//: flow does not call them: it clicks each candidate, as a person would, and
+//: keeps the first that does what a click on a node or a link should.
 const graphPoints = () => {
   const s = gcTab;
   const r = s.canvas.getBoundingClientRect();
   const t = s.transform || d3.zoomIdentity;
   const onScreen = ([x, y]) => x > r.left + 20 && x < r.right - 20 && y > r.top + 20 && y < r.bottom - 20;
   const screen = (x, y) => { const p = t.apply([x, y]); return [r.left + p[0], r.top + p[1]]; };
-  const world = ([sx, sy]) => t.invert([sx - r.left, sy - r.top]);
   const nodes = s.nodes.filter((n) => Number.isFinite(n.x) && onScreen(screen(n.x, n.y)) && (n.degree || 0) > 0)
-    .sort((a, b) => (b.degree || 0) - (a.degree || 0));
-  let node = null;
-  for (const n of nodes) {
-    const [sx, sy] = screen(n.x, n.y);
-    const w = world([sx, sy]);
-    if (gcNodeAtWorld(w[0], w[1], s) === n) { node = { id: n.id, x: sx, y: sy, preview: n.preview }; break; }
-  }
-  let link = null;
+    .sort((a, b) => (b.degree || 0) - (a.degree || 0)).slice(0, 12)
+    .map((n) => { const [x, y] = screen(n.x, n.y); return { id: n.id, x, y, preview: n.preview }; });
+  //: A link's middle, and two spots either side of it (a bowed link passes near them).
+  const links = [];
   for (const e of s.edges) {
     if (e.kind !== 'link' || !e.source || !e.target || !Number.isFinite(e.source.x)) continue;
     const a = e.source; const b = e.target;
-    const curved = !s.tree && gcCurvedLinks(s);
-    let mx = (a.x + b.x) / 2; let my = (a.y + b.y) / 2;
-    if (curved) { const c = gcBowPoint(a, b); mx = 0.25 * a.x + 0.5 * c.x + 0.25 * b.x; my = 0.25 * a.y + 0.5 * c.y + 0.25 * b.y; }
-    const sp = screen(mx, my);
-    if (!onScreen(sp)) continue;
-    const w = world(sp);
-    if (gcNodeAtWorld(w[0], w[1], s)) continue;
-    if (gcEdgeAtWorld(w[0], w[1], s) === e) { link = { x: sp[0], y: sp[1], a: a.id, b: b.id }; break; }
+    for (const f of [0.5, 0.35, 0.65]) {
+      const sp = screen(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+      if (onScreen(sp)) links.push({ x: sp[0], y: sp[1], a: a.id, b: b.id });
+    }
   }
-  return { node, link, total: s.nodes.length, edges: s.edges.length };
+  return { nodes, links: links.slice(0, 60), total: s.nodes.length, edges: s.edges.length };
 };
 
 flows.graph = async (env) => {
@@ -273,21 +282,30 @@ flows.graph = async (env) => {
   await env.wait(3000); // let the layout settle
   await env.overflow('graph');
   let pts = await env.js(graphPoints);
-  if (!pts.node) throw new Error(`no clickable node among ${pts.total}`);
+  if (!pts.nodes.length) throw new Error(`no node on screen among ${pts.total}`);
   env.at('click a node');
-  await env.page.mouse.click(pts.node.x, pts.node.y);
-  await env.wait(900);
-  const popup = await env.js(() => typeof graphPopupId !== 'undefined' ? graphPopupId : null);
-  if (popup == null) throw new Error(`clicking node ${pts.node.id} (${pts.node.preview}) opened no popup`);
+  let popup = null;
+  for (const n of pts.nodes) {
+    await env.page.mouse.click(n.x, n.y);
+    await env.wait(700);
+    popup = await env.js(() => typeof graphPopupId !== 'undefined' ? graphPopupId : null);
+    if (popup != null) break;
+  }
+  if (popup == null) throw new Error(`clicking ${pts.nodes.length} nodes (${pts.nodes[0].preview} first) opened no popup`);
   await env.overflow('node popup');
   await env.page.keyboard.press('Escape');
   await env.wait(500);
   pts = await env.js(graphPoints);
-  if (!pts.link) throw new Error(`no clickable link among ${pts.edges} edges`);
+  if (!pts.links.length) throw new Error(`no link middle on screen among ${pts.edges} edges`);
   env.at('click a link');
-  await env.page.mouse.click(pts.link.x, pts.link.y);
-  await env.wait(700);
-  if (!(await env.page.$('#graph-link-peek'))) throw new Error('clicking a link opened no peek');
+  let peek = false;
+  for (const l of pts.links) {
+    await env.page.mouse.click(l.x, l.y);
+    await env.wait(500);
+    if (await env.page.$('#graph-link-peek')) { peek = true; break; }
+    await env.page.keyboard.press('Escape');
+  }
+  if (!peek) throw new Error(`clicking ${pts.links.length} link spots opened no peek`);
   await env.overflow('link peek');
   await env.page.keyboard.press('Escape');
   await env.wait(300);
@@ -542,12 +560,23 @@ async function reloadApp(env) {
 //: Settings sections, in nav order, from the nav itself.
 const settingsSections = (env) => env.js(() => [...document.querySelectorAll('#settings-nav button[data-section]')].map((b) => b.dataset.section));
 
+//: Every press of a switch raises a toast, and a phone stacks them into a "+N more"
+//: button over the middle of Settings: put them away before looking for a switch under them.
+async function clearToasts(env) {
+  await env.js(() => document.querySelectorAll('.toast').forEach((t) => dismissToast(t)));
+  await env.wait(500);
+}
+
 //: Go to a section the way the screen offers it: the nav on a desktop, the
 //: "Jump to a settings section" menu on a phone.
 async function goSettings(env, name) {
   if (env.phone) await env.page.selectOption('#settings-jump', name);
   else await env.page.locator(`#settings-nav button[data-section="${name}"]`).click();
   await env.wait(450);
+  //: Packages draws its rows from the server and then hides the controls of
+  //: what is not installed (the voice options): before that, the raw HTML is
+  //: on screen, and a switch read or pressed then is not the real one.
+  if (name === 'extras' && !(await until(env, () => document.querySelector('#settings-modal .extras-row') !== null, null, 10000))) throw new Error('the Packages list never drew');
   //: A section that loads its values from the server (Profile, General) shows
   //: the form's defaults until the answer lands. Wait until what the switches
   //: say stops changing, or a run reads defaults as the notebook's own state
@@ -572,17 +601,22 @@ async function openSettingsByGear(env) {
 //: What the sweep leaves alone, and why: turning these changes how the app is
 //: reached or what it does to the machine, not how it looks or behaves for the
 //: person at the screen.
-const SETTINGS_SKIP = /password when the app opens|other devices on this network|newer version|Update automatically|newest changes|SearXNG|autonomous optimization/i;
+//: Simple mode hides sections of Settings itself and the Graph, Timeline and Reminders tabs, so a run that
+//: turned it on could not go back to read the other switches (the nav buttons are display:none).
+const SETTINGS_SKIP = /pref-simple-mode|password when the app opens|other devices on this network|newer version|Update automatically|newest changes|SearXNG|autonomous optimization/i;
 
 //: Every switch visible in the current section: its index, label and state.
 const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#settings-modal input[type="checkbox"]')]
   .map((c, i) => ({ c, i }))
   .filter(({ c }) => {
     if (c.disabled) return false;
+    //: A row's selection tick (Packages) picks it for the bar's actions: it is not a setting and is not kept.
+    if (c.classList.contains('select-check')) return false;
     const label = c.closest('label') || c;
     //: Reachable the way a person reaches it: it has a box, and what is at its
     //: middle is it (a switch in a closed fold, or under another panel, is not).
-    label.scrollIntoView({ block: 'nearest' });
+    //: 'center', not 'nearest': a row scrolled in from above lands under the section's sticky heading and fails the hit test below.
+    label.scrollIntoView({ block: 'center' });
     const r = label.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const hit = document.elementFromPoint(r.x + Math.min(r.width / 2, 120), r.y + r.height / 2);
@@ -591,7 +625,7 @@ const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#setti
   .map(({ c, i }) => ({
     i,
     id: c.id || '',
-    label: ((c.closest('label') || c.parentElement).textContent || '').trim().replace(/\s+/g, ' ').slice(0, 70),
+    label: ((c.closest('label') || c.parentElement).textContent || '').trim().replace(/\s+/g, ' ').replace(/ \(\d+ [a-z ]+\)$/, '').slice(0, 70), // a count in the words ("(3 hidden)") moves with the state
     on: c.checked,
   }))
   //: `i` is the index among every checkbox in the modal, and it moves when a
@@ -618,9 +652,14 @@ async function putBack(env, sections, toggled) {
     if (!mine.length) continue;
     await goSettings(env, section);
     for (const t of mine) {
-      const here = await switchesHere(env);
-      const sw = findSw(here, t);
-      if (!sw) throw new Error(`cannot find "${t.label.slice(0, 40)}" in ${section} to put it back`);
+      //: A master switch put back redraws its list a moment later (the tools list
+      //: is disabled while "use tools" is off): wait for the switch to be there.
+      let sw = null;
+      for (let tries = 0; tries < 12 && !sw; tries++) {
+        sw = findSw(await switchesHere(env), t);
+        if (!sw) { await clearToasts(env); await env.wait(250); }
+      }
+      if (!sw) throw new Error(`cannot find "${t.label.slice(0, 40)}" in ${section} to put it back; in ${section} now: ${JSON.stringify((await switchesHere(env)).map((x) => x.label.slice(0, 25)))}; pressed here: ${JSON.stringify(mine.map((x) => x.label.slice(0, 25)))}`);
       if (sw.on !== t.was) { await clickSwitch(env, sw.i); await env.wait(120); }
     }
   }
@@ -629,6 +668,10 @@ async function putBack(env, sections, toggled) {
 //: A failed run still puts the notebook back as it found it.
 flows.settings = async (env) => {
   const toggled = [];
+  //: Web search asks whether Docker is up through a probe with a 0.25 s budget and
+  //: answers 503 "Still checking" on the first slow one (routes_websearch.py,
+  //: STATUS_BUDGET); every caller treats that as "no answer yet".
+  env.expect(503, '/websearch/searxng/status');
   try {
     await settingsBody(env, toggled);
   } catch (e) {
@@ -711,7 +754,7 @@ async function settingsBody(env, toggled) {
   }
   env.info(`settings: ${toggled.length} switches pressed, ${skipped.length} left alone (${skipped.slice(0, 8).join('; ')})`);
   if (lost.length || stuck.length) {
-    throw new Error(`${lost.length} did not persist: ${lost.slice(0, 6).join(' | ')}${stuck.length ? `; ${stuck.length} would not go back: ${stuck.slice(0, 4).join(' | ')}` : ''}`);
+    throw new Error(`${lost.length} did not persist: ${lost.slice(0, 30).join(' | ')}${stuck.length ? `; ${stuck.length} would not go back: ${stuck.slice(0, 4).join(' | ')}` : ''}`);
   }
 }
 
@@ -719,9 +762,8 @@ const activeTab = (env) => env.js(() => [...document.querySelectorAll('.tab-page
 
 async function openPaletteUi(env) {
   if (!env.phone) await env.page.keyboard.press('Control+k');
-  //: A phone has no Ctrl+K and no status bar, and nothing in its menus opens the command
-  //: palette (the top bar's Find opens "Find anything", the search): a finding to report,
-  //: so the flow opens it by its function there to cover the rest of it.
+  //: A phone has no Ctrl+K and no status bar; its way in is the More sheet's "Commands" row,
+  //: so the flow opens it by its function there and covers the palette itself.
   else await env.js(() => openPalette());
   await env.page.waitForSelector('#palette-overlay:not(.hidden)', { timeout: 4000 });
   await env.wait(500);
@@ -764,7 +806,7 @@ flows.palette = async (env) => {
 
 flows.tabs = async (env) => {
   const names = ['dashboard', 'notes', 'chat', 'graph', 'library', 'timeline', 'reminders'];
-  const moreLabel = { dashboard: 'Dashboard', timeline: 'Timeline', reminders: 'Reminders' };
+  const moreLabel = { graph: 'Graph', timeline: 'Timeline', reminders: 'Reminders' };
   if (env.phone) {
     const dock = await env.js(() => { const d = document.getElementById('phone-tab-dock').getBoundingClientRect(); return { bottom: d.bottom, h: innerHeight }; });
     if (Math.abs(dock.bottom - dock.h) > 1.5) throw new Error(`the tab bar is not pinned to the bottom: ends at ${dock.bottom} of ${dock.h}`);
@@ -780,8 +822,9 @@ flows.tabs = async (env) => {
       } else await button.click();
     } else if (env.phone && moreLabel[name]) {
       await env.page.locator('#phone-more-btn').tap();
-      await env.page.waitForSelector('.sheet-overlay', { timeout: 3000 });
-      await env.page.locator('.sheet-overlay button', { hasText: moreLabel[name] }).first().tap();
+      const row = env.page.locator('.sheet-overlay button', { hasText: moreLabel[name] }).first();
+      await row.waitFor({ state: 'visible', timeout: 3000 });
+      await row.tap();
       await env.wait(500);
     } else throw new Error(`no way to reach ${name}`);
     await env.wait(900);
@@ -914,8 +957,32 @@ flows.views = async (env) => {
 //: Find anything: the notebook-wide search, by the way a person reaches it on this screen.
 async function openFind(env) {
   if (env.phone) {
-    await env.page.locator('button[aria-label="More"]:visible').first().tap();
-    await env.page.locator('[role="menuitem"]:visible', { hasText: /^Find/ }).first().tap();
+    // The sheet may still be animating out from the last use: wait until no menu rows
+    // are showing, open it, and wait for the Find row itself (a real condition).
+    const find = env.page.locator('[role="menuitem"]:visible', { hasText: /^Find/ }).first();
+    await env.page.waitForFunction(() => ![...document.querySelectorAll('[role="menuitem"]')].some((e) => e.offsetParent), null, { timeout: 5000 });
+    if (process.env.FINDTRACE) {
+      // Evidence only: what the DOM does around the App menu tap (prefix FT).
+      await env.js(() => {
+        window.__ft = [];
+        const t0 = performance.now();
+        const closer = window.closeActionMenus;
+        window.closeActionMenus = function () {
+          window.__ft.push(Math.round(performance.now() - t0) + ' CLOSE ' + new Error().stack.split('\n').slice(2, 5).join(' < '));
+          return closer.apply(this, arguments);
+        };
+        const d = (n) => (n.nodeType === 1 ? (n.id || n.className || n.tagName).toString().slice(0, 50) : '#text');
+        new MutationObserver((rs) => rs.forEach((r) => window.__ft.push([Math.round(performance.now() - t0), r.type, d(r.target), r.attributeName || '', [...r.addedNodes].map(d).join('|'), [...r.removedNodes].map(d).join('|')].join(' ')))).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden', 'aria-expanded', 'data-sheet'] });
+      });
+    }
+    await env.page.locator('button[aria-label="App menu"]:visible').first().tap();
+    if (process.env.PROBE) { await env.wait(1200); console.log('PROBE-MENU', JSON.stringify(await env.js(() => ({ items: [...document.querySelectorAll('[role=menuitem]')].filter((e) => e.offsetParent).map((e) => e.textContent.trim().slice(0, 24)), sheets: [...document.querySelectorAll('.sheet-overlay, [role=dialog]')].filter((e) => e.offsetParent).map((e) => (e.dataset.sheet || e.id || e.className).slice(0, 40)), tab: document.body.dataset.tab, appmenu: [...document.querySelectorAll('button[aria-label="App menu"]')].map((b) => [b.offsetParent ? 'vis' : 'hid', b.getAttribute('aria-expanded')]) })))); }
+    try {
+      await find.waitFor({ state: 'visible', timeout: 8000 });
+      await find.tap({ timeout: 8000 });
+    } finally {
+      if (process.env.FINDTRACE) console.log('FT-LOG\n' + (await env.js(() => (window.__ft || []).join('\n'))));
+    }
   } else await env.page.click('#status-find');
   await env.page.waitForSelector('#finder-overlay:not(.hidden)', { timeout: 4000 });
   await env.wait(500);
@@ -933,7 +1000,10 @@ flows.find = async (env) => {
   await env.overflow('find results');
   env.at('open a result');
   await env.page.locator('#finder-results').getByText('Alpha project', { exact: false }).first().click();
-  await env.wait(1200);
+  //: The result opens on Notes, and after a slow tab switch the list can land
+  //: late and close a menu opened before it: wait for the note's row itself.
+  await env.page.waitForFunction(() => document.body.dataset.tab === 'notes' && [...document.querySelectorAll('#entry-list > li')].some((li) => li.offsetParent && /Alpha project/.test(li.textContent)), null, { timeout: 8000 });
+  await env.wait(400);
   if (await env.page.isVisible('#finder-overlay')) throw new Error('opening a result left Find open');
   env.at('Escape closes Find');
   await openFind(env);
