@@ -3,6 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: A background job starting and finishing, said out loud (status-tasks.js, out of status.js; L698). Nobody reads a return value.
+  statusTasks: ["/js/status-tasks.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
   webPanel: ["/js/web-panel.js"],
   //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
@@ -148,6 +150,7 @@ window.toggleWebPanel = function toggleWebPanelStandIn(show, ...rest) {
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
   //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
+  statusTasks: ["noticeTaskTransitions"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).
   //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)
