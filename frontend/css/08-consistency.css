@@ -60,7 +60,11 @@
    (0,1,1) and to `.wb-board-menu button` (0,1,1) - both of which are real
    rules doing a real job elsewhere in their own file. Pairing the shell
    class with the row class makes every declaration here 0,2,0, which wins
-   without any `!important` and without touching the rules it outranks. */
+   without any `!important` and without touching the rules it outranks.
+   A dock menu's switch row (`.dock-menu-check`) is a row too: on its own
+   padding it stood at 34.9px with an 8px inset in Logs and 33.2px in the
+   Timeline's Options, against 34.5px and 12.8px for the buttons beside it
+   (world-class menus.js at 1440). */
 :is(
   .action-menu,
   .select-menu,
@@ -75,7 +79,8 @@
   .library-image-menu-item,
   .action-menu-item,
   .wb-menu-item,
-  .select-option
+  .select-option,
+  .dock-menu-check
 ) {
   display: flex;
   align-items: center;
@@ -112,6 +117,18 @@
   text-align: left;
   cursor: pointer;
 }
+/* A value field's list (the board's zoom percent) is as wide as its values: under the
+   menu's 12.5rem floor it stood 200px wide for 80px of "150%" (menus.js at 1440). */
+.action-menu.value-field-list {
+  min-width: 0;
+}
+/* Its switch keeps the row's end, as a `.doc-dock-menu-check` switch does,
+   so its icon and words start on the buttons' columns: led by the switch,
+   Logs' labels began 34.5px in, the buttons' 21.7px (menus.js at 1440). */
+:is(.doc-dock-menu-list, .action-menu) .dock-menu-check > input[type="checkbox"] {
+  order: 1;
+  margin-inline-start: auto;
+}
 /* Under a finger the row's floor is the finger's (DESIGN.md, "Hit targets"):
    measured at 390 in a touch context, the reminders' Quick set rows stood at
    36px, the control height above, under the 44px every `button.small` beside
@@ -131,7 +148,8 @@
     .library-image-menu-item,
     .action-menu-item,
     .wb-menu-item,
-    .select-option
+    .select-option,
+    .dock-menu-check
   ) {
     min-height: var(--target-min);
   }
@@ -244,6 +262,13 @@
 .menu-item > .menu-item-words {
   display: flex;
   align-items: center;
+  /* A submenu row wraps its icon and words in this span, so the row's own
+     gap and the lead margin zeroing below never reached them: its words sat
+     0.9px left of every other row's (menu-rows.js, L-world-class-107). */
+  gap: var(--space-2);
+}
+.menu-item > .menu-item-words > .ph-lead {
+  margin-inline-end: 0;
 }
 .menu-item .ph-text {
   min-width: 0;
@@ -8473,8 +8498,10 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    of the note link border and the meatball button". Measured: a 28x24 button
    (the touch target floor widened it) in a 25px-high pill, 1px from the top,
    2.2px from the bottom and 5px from the right. With a mouse it is a round
-   button two pixels inside the pill on every side, centred; a finger keeps
-   the 28px target (the pill grows around it there). */
+   button the pill's inner height, concentric with its end: 0px from the
+   border above, below and to the right (L-world-class-107 measured 0, 0
+   and 2 with a 2px end margin, the fill off the cap's curve); a finger
+   keeps the 28px target (the pill grows around it there). */
 @media (pointer: fine) {
   #entry-list .link-connection > .menu-wrap {
     display: inline-flex;
@@ -8485,7 +8512,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
     height: 1.5rem;
     min-width: 0;
     min-height: 0;
-    margin-inline-end: 2px;
+    margin-inline-end: 0;
   }
 }
 /* --- A note's time: the same corner on every card --- */
@@ -8813,8 +8840,14 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 }
 :is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
   :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
-:is(.action-menu, .doc-dock-menu-list)
-  .menu-item > span:first-child > .ph:first-child {
+:is(.action-menu, .doc-dock-menu-list, .wb-board-menu)
+  .menu-item > span:first-child > .ph:first-child,
+:is(.action-menu, .doc-dock-menu-list) .dock-menu-check > .ph-lead {
+  /* A switch row's icon follows its input in the markup (drawn at the end),
+     so it is not a first child: at its own 15.6px its words began 3.9px left
+     of the buttons' (menus.js at 1440, Logs and Timeline). The board's
+     menus are a shell of their own: their group rows (Diagram, Shapes and
+     icons) kept a 15.6px icon, words 4px left of the plain rows'. */
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
      where a width means nothing until the box is a block of its own. */

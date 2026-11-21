@@ -13,7 +13,7 @@ Each test pins one finding as it was measured in Chromium:
 import re
 from pathlib import Path
 
-from tests._app_js import with_pieces
+from tests._app_js import with_pieces, frontend_text
 from tests._css_paths import css_text
 from tests import _js_scope
 
@@ -23,7 +23,7 @@ CSS = FRONTEND / "css"
 
 
 def _read(name: str) -> str:
-    text = (FRONTEND / ("js/" + name if name.endswith(".js") else name)).read_text(encoding="utf-8")
+    text = frontend_text(name) if name.startswith("whiteboard") else (FRONTEND / ("js/" + name if name.endswith(".js") else name)).read_text(encoding="utf-8")
     #: documents.js and its CodeMirror view glue (documents-view.js, D21) are one file to these checks.
     return text + _read("documents-view.js") if name == "documents.js" else text
 

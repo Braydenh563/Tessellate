@@ -56,6 +56,7 @@ LIBRARY_KEYS = {
     "Mermaid": "mermaid",
     "MathLive": "mathlive",
     "docx": "docx",
+    "perfect-freehand": "perfectfreehand",
     "draw.io stencils": "stencils",
     #: A download extra (Settings, Packages), not vendored JS: the engine, its
     #: model and the parts compiled into its WASM are one capability, counted once.
@@ -902,6 +903,16 @@ def mammoth_report(scripts: dict[str, str]) -> Report:
     return Report("mammoth", "Mammoth", list(MAMMOTH_API), called, {}, ["read in documents-word.js, a .docx brought into the Library"])
 
 
+#: perfect-freehand's exports (window.perfectFreehand); the whiteboard's ink calls getStroke (whiteboard-ink-more.js).
+PERFECT_FREEHAND_API = ["getStroke", "getStrokePoints", "getStrokeOutlinePoints"]
+
+
+def perfectfreehand_report(scripts: dict[str, str]) -> Report:
+    text = scripts.get("whiteboard-ink-more.js", "")
+    called = [name for name in PERFECT_FREEHAND_API if re.search(rf"\.{name}\b", text)]
+    return Report("perfectfreehand", "perfect-freehand", list(PERFECT_FREEHAND_API), called, {}, ["read in whiteboard-ink-more.js, the smoothed pen"])
+
+
 #: Mermaid's public API (mermaid.esm default export), read in mermaid-frame.js.
 MERMAID_API = [
     "initialize", "render", "parse", "run", "init", "detectType", "registerExternalDiagrams",
@@ -1122,6 +1133,7 @@ def collect() -> dict[str, Report]:
         mermaid_report(scripts),
         mathlive_report(),
         docx_report(scripts),
+        perfectfreehand_report(scripts),
         translate_report(scripts),
     ]
     return {r.key: r for r in reports}

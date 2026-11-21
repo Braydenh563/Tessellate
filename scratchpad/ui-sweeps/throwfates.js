@@ -7,7 +7,7 @@
 // ledge's end and caught it (grab); slid off its end and caught on (slip,
 // K12). For each it
 // measures the moment (the class seen, the slide, the x range), where it
-// ended (pose, inside the window, over no control: `nameMarkBuddyHits`),
+// ended (pose, inside the window, over no control: `nmb.sweep.nameMarkBuddyHits`),
 // that its frame loop has stopped, and the companion's box size. Then one
 // real-pointer flick (the lazy file arrives with the carry) and, with
 // REDUCED=1 or always as a second pass, Reduce motion: no moments at all.
@@ -20,7 +20,7 @@ async function pass(buddyKind, reduced) {
   const { browser, page } = await boot(opts);
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
-  await page.evaluate((kind) => { const b = document.getElementById('avatar-buddy'); if (b) { b.value = kind; b.dispatchEvent(new Event('change', { bubbles: true })); } }, buddyKind);
+  await page.evaluate((kind) => { const b = $('avatar-buddy'); if (b) { b.value = kind; b.dispatchEvent(new Event('change', { bubbles: true })); } }, buddyKind);
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); revealTab('dashboard'); });
   await page.waitForTimeout(2500);
   // A real flick first: the lazy file arrives with the carry.
@@ -58,7 +58,7 @@ async function pass(buddyKind, reduced) {
         nmb.flight?.stop();
         nmb.act && nameMarkBuddyAct('');
         nameMarkBuddyMoveTo(buddy, { kind: 'yours', pose: 'float', legs: '', x: cfg.x, y: cfg.y }, true);
-        companionThrowSeed.seed = sd;
+        nameMarkBuddyThrow.sweep.companionThrowSeed.seed = sd;
         nameMarkBuddyIndexReset();
         const w = nameMarkBuddyWorld(nameMarkBuddyTab());
         if (cfg.solo) w.ledges = w.ledges.filter((l) => Math.round(l.y) === cfg.solo && l.right < cfg.x && l.right > cfg.x - 40);
@@ -83,7 +83,7 @@ async function pass(buddyKind, reduced) {
         cancelAnimationFrame(raf); mo.disconnect();
         const tab = nameMarkBuddyTab();
         const spot = nmb.spot || {};
-        const hits = nameMarkBuddyHits(nmb.x, nmb.y, spot.pose, nameMarkBuddyYoursObstacles(nameMarkBuddyObstacles(tab), spot), spot.legs);
+        const hits = nmb.sweep.nameMarkBuddyHits(nmb.x, nmb.y, spot.pose, nmb.sweep.nameMarkBuddyYoursObstacles(nmb.sweep.nameMarkBuddyObstacles(tab), spot), spot.legs);
         const ys = rec.splatYs;
         return {
           fate: nmb.thrown?.fate, classes: [...rec.classes], restMs, flightOff: !nmb.flight,
@@ -96,6 +96,8 @@ async function pass(buddyKind, reduced) {
       if (r.fate === want) found = { seed, ...r };
     }
     out.seen[want] = { found, tally };
+    // One line per fate as it ends, so a run cut short still says how far it got.
+    console.log(`${found ? 'found' : 'MISSING'} ${buddyKind}${reduced ? ' reduced' : ''} ${want}: ${JSON.stringify(tally)}`);
   }
   // At rest, nothing of the throw runs: no flight, and the page's frames
   // over a second counted against the same second before any throw.

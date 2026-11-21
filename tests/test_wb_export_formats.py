@@ -4,11 +4,12 @@ formats and the clipboard are rows in the same format list, sharing the PNG's
 size and ground. The file bytes and the clipboard are checked in a browser
 (the sweep named in HISTORY); this holds the shape of the code."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

@@ -11,7 +11,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(([k, look]) => { if (look) localStorage.setItem('atlas-look', look); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, [process.env.KIND || 'atlas', process.env.LOOK || '']);
+  await page.evaluate(([k, look]) => { if (look) localStorage.setItem('atlas-look', look); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, [process.env.KIND || 'atlas', process.env.LOOK || '']);
   await page.waitForTimeout(4000);
   const rows = [];
   const bad = [];

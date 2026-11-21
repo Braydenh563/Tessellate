@@ -15,7 +15,7 @@ const { boot, PW } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate(() => revealTab('dashboard'));
   await page.waitForTimeout(3000);
@@ -33,7 +33,8 @@ const { boot, PW } = require('./lib.js');
   if (setup.error) { console.log(setup.error); await browser.close(); process.exitCode = 1; return; }
   const face = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
   await page.mouse.click(face[0], face[1], { button: 'right' });
-  await page.waitForTimeout(250);
+  // The menu is lazy (companion-menu.js): it is there once its file has come.
+  await page.waitForFunction(() => nmb.menu && [...nmb.menu.querySelectorAll('button')].some((b) => /Stay here/.test(b.textContent)), null, { timeout: 15000 });
   await page.evaluate(() => [...nmb.menu.querySelectorAll('button')].find((b) => /Stay here/.test(b.textContent)).click());
   await page.waitForTimeout(300);
   const where = () => page.evaluate(() => {
@@ -88,13 +89,13 @@ const { boot, PW } = require('./lib.js');
     for (let i = 0; i < 6; i += 1) {
       nmb.lastAct = '';
       nmb.cool = {};
-      nameMarkBuddyTick();
+      nmb.sweep.nameMarkBuddyTick();
     }
-    nameMarkBuddyBeat();
-    nameMarkBuddyCheck();
-    if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
-    if (typeof nameMarkBuddyChatErrand === 'function') nameMarkBuddyChatErrand();
-    nameMarkBuddySeen(false);
+    nmb.sweep.nameMarkBuddyBeat();
+    nmb.sweep.nameMarkBuddyCheck();
+    if (typeof nmb.sweep.nameMarkBuddyBellErrand === 'function') nmb.sweep.nameMarkBuddyBellErrand();
+    if (typeof nmb.sweep.nameMarkBuddyChatErrand === 'function') nmb.sweep.nameMarkBuddyChatErrand();
+    nmb.sweep.nameMarkBuddySeen(false);
     nameMarkBuddyQueuePlace();
     nameMarkBuddyCue('cheer');
     nameMarkBuddyCue('bell');
@@ -134,11 +135,19 @@ const { boot, PW } = require('./lib.js');
     const f = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
     const drawn = await page.evaluate(() => { const r = document.getElementById('nm-buddy').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top)]; });
     await page.mouse.click(f[0], f[1], { button: 'right' });
+    // The menu is lazy (companion-menu.js): it is there once its file has come.
+    await page.waitForFunction(() => nmb.menu && [...nmb.menu.querySelectorAll('button')].some((b) => /Stay here/.test(b.textContent)), null, { timeout: 15000 });
     await page.evaluate(() => [...nmb.menu.querySelectorAll('button')].find((b) => /Stay here/.test(b.textContent)).click());
     await page.waitForTimeout(200);
     return { drawn, pinned: await where() };
   };
-  const corner = (await pinAt(1440 - 100, 900 - 150, false)).pinned;
+  await pinAt(1440 - 100, 900 - 150, false);
+  // A place pinned in open air is dropped onto the perch under it the next time
+  // it is placed (INBOX 1640, the owner: it always ends on a perch), so the
+  // corner it keeps is that perch's: one refit at this size first.
+  await page.evaluate(() => dispatchEvent(new Event('resize')));
+  await page.waitForTimeout(1500);
+  const corner = await where();
   await page.setViewportSize({ width: 1100, height: 760 });
   await page.waitForTimeout(1500);
   const cornerSmall = await where();

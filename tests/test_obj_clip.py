@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._objmove_node import JS, needs_node, run
 
 FILES = ["obj-ref.js", "obj-clip.js"]
@@ -92,5 +93,5 @@ def test_the_menu_hook_and_the_script_are_wired() -> None:
     assert "window.objKebabRows?.(menu);" in menus
     ref = (JS / "obj-ref.js").read_text(encoding="utf-8")
     assert '"/js/obj-clip.js"' in ref
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert "async function wbPlaceNote(entryId, at)" in board and "wbPlaceNote(entryId, at);" in board

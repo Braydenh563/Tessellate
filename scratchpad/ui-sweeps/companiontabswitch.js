@@ -20,7 +20,7 @@ const { boot } = require("./lib.js");
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, reducedMotion: process.env.MOTION === "reduce" ? "reduce" : "no-preference" });
-  await page.evaluate(() => { localStorage.removeItem("nm-buddy-spots"); const b = document.getElementById("avatar-buddy"); b.value = "atlas"; b.dispatchEvent(new Event("change", { bubbles: true })); });
+  await page.evaluate(() => { localStorage.removeItem("nm-buddy-spots"); const b = $("avatar-buddy"); b.value = "atlas"; b.dispatchEvent(new Event("change", { bubbles: true })); });
   await page.evaluate(() => switchTab("dashboard"));
   await page.waitForTimeout(3500);
   const state = () => page.evaluate(() => {
@@ -38,12 +38,12 @@ const { boot } = require("./lib.js");
     if (t) { t.checked = false; t.dispatchEvent(new Event("change", { bubbles: true })); }
     const perf = document.getElementById("perf-mode");
     if (perf && perf.value !== mode) { perf.value = mode; perf.dispatchEvent(new Event("change", { bubbles: true })); }
-    const move = document.getElementById("avatar-buddy-motion");
+    const move = $("avatar-buddy-motion");
     move.value = MOVE || "follow";
     move.dispatchEvent(new Event("change", { bubbles: true }));
   }, [process.env.PERF || "off", process.env.MOVE || ""]);
   await page.waitForTimeout(600);
-  const why = await page.evaluate(() => document.getElementById("avatar-buddy-motion-why").textContent);
+  const why = await page.evaluate(() => $("avatar-buddy-motion-why").textContent);
   console.log("hint:", JSON.stringify(why));
   console.log("motion:", JSON.stringify(await page.evaluate(() => ({ pm: appearancePref("motion"), perf: appearancePref("perf"), small: smallMachine(), less: lessTransparencyWanted(), still: nameMarkBuddyStill(), noTravel: nameMarkBuddyNoTravel(), avatar: document.documentElement.dataset.avatarMotion, motion: document.documentElement.dataset.motion }))));
   const before = await state();

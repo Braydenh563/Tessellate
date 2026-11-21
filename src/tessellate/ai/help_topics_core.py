@@ -326,11 +326,11 @@ HELP_TOPICS: list[dict] = [
         ),
         "body": (
             "The whiteboard (Library, Boards & maps) is a pannable canvas for "
-            "freehand sketches and note cards together. Hover (or focus) a Library tile to see a larger preview beside the sidebar; Escape or starting a drag hides it. Freehand sketches also "
+            "freehand sketches and note cards together. Hover or focus a Library tile for a larger preview (Escape hides it). Freehand sketches also "
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Share and save, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
-            "after the board, a zip with its notes, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
+            "after the board (PDF: A4 or Letter, per frame or tiled), a zip with its notes, or Copy image (also in Ctrl+K) puts the picture on the clipboard, and Copy as SVG in Ctrl+K puts the SVG there as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
             "In the command palette over a board, say what to do with the "
             'selection (or the whole board): "arrange as a grid of 3", '

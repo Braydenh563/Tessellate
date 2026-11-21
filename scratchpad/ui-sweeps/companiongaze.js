@@ -16,7 +16,7 @@ const KIND = process.env.KIND || 'atlas';
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   // The setting on, by its own switch (the owner: "it doesnt follow the
   // mouse movement if i have it turned on either").
   await page.evaluate(() => { const f = document.getElementById('avatar-follow'); f.checked = true; f.dispatchEvent(new Event('change', { bubbles: true })); });
@@ -72,5 +72,7 @@ const KIND = process.env.KIND || 'atlas';
   // Within reach it looks the pointer's way; at 400px it has let go and
   // drifted back to looking ahead.
   const wrong = rows.filter((r) => (Math.abs(r.d) >= 60 && Math.abs(r.d) < 400 && Math.sign(r.ex) !== Math.sign(r.d)) || (Math.abs(r.d) === 400 && r.attend));
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((wrong.length || changes < 5 || woke.asleep) ? 'FAIL companiongaze: a measure above is out of bounds' : 'PASS companiongaze');
   process.exit(wrong.length || changes < 5 || woke.asleep ? 1 : 0);
 })();

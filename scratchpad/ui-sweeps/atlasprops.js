@@ -10,7 +10,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(4000);
   const rows = await page.evaluate(() => {
     const lum = (c) => { const m = c.match(/[\d.]+/g); if (!m) return null; const [r, g, b] = m.slice(0, 3).map((v) => { v = v / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };

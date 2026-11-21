@@ -7,7 +7,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   const fails = [];
@@ -36,7 +36,7 @@ const { boot } = require('./lib.js');
   const away = await page.evaluate(async () => {
     nmb.lastInput = Date.now() - 4 * 60 * 1000;
     nmb.lastAct = '';
-    nameMarkBuddyTick();
+    nmb.sweep.nameMarkBuddyTick();
     const sleepy = document.getElementById('nm-buddy').dataset.expr || '';
     if (nmb.act) nameMarkBuddyAct('');
     nmb.lastInput = Date.now() - 4 * 60 * 1000;
@@ -51,7 +51,7 @@ const { boot } = require('./lib.js');
     clearTimeout(nmb.exprTimer);
     nmb.exprTimer = 0;
     nameMarkBuddyExpress('');
-    nameMarkBuddyDrift();
+    nmb.sweep.nameMarkBuddyDrift();
     return document.getElementById('nm-buddy').dataset.expr || '';
   });
   if (!drift) fails.push('drift: no change');
@@ -60,7 +60,7 @@ const { boot } = require('./lib.js');
   // a cached picture. A face never drawn (dramatic) is reported, not judged.
   const cost = await page.evaluate(() => {
     const t = (e) => { const a = performance.now(); nameMarkBuddyExpress(e, 0); return performance.now() - a; };
-    const events = NMB_EXPR_EVENTS.map(t);
+    const events = nmb.sweep.NMB_EXPR_EVENTS.map(t);
     t('');
     const fresh = t('dramatic');
     t('');
@@ -116,8 +116,8 @@ const { boot } = require('./lib.js');
   if (grip.shown !== '1') fails.push(`grip on hover: ${grip.shown}`);
   await page.evaluate(() => openSettingsModal('appearance'));
   await page.waitForTimeout(500);
-  size.select = await page.evaluate(() => { const s = document.getElementById('avatar-buddy-size'); return s.options[s.selectedIndex]?.textContent || ''; });
-  await page.evaluate(() => { const s = document.getElementById('avatar-buddy-size'); s.value = '1'; s.dispatchEvent(new Event('change', { bubbles: true })); });
+  size.select = await page.evaluate(() => { const s = $('avatar-buddy-size'); return s.options[s.selectedIndex]?.textContent || ''; });
+  await page.evaluate(() => { const s = $('avatar-buddy-size'); s.value = '1'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(250);
   size.back = await rect();

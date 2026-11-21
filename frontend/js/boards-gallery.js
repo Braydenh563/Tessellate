@@ -348,7 +348,7 @@ function drawLibraryBoardsGallery(listed) {
             const next = await promptDialog("Rename this board", board.title);
             if (next) await renameBoardWithUndo(next);
           }),
-          //: L348: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
+          //: L348, L280: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
           makeMenuItem("ph:sparkle Suggest a name", "A name from what is on this board", async () => {
             const got = await apiJson(`/whiteboard/boards/${board.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
             if (got?.title && got.title !== board.title) await renameBoardWithUndo(got.title);

@@ -142,7 +142,7 @@ class Listener:
             #: INBOX 867: only on a network the person allowed. Elsewhere the
             #: port is not bound until "Allow on this network"; the accept
             #: loop opens and closes it as that changes.
-            return lancert.ensure(data_dir), lantrust.refresh(data_dir)
+            return lancert.ensure(data_dir), lantrust.refresh(data_dir, fresh=True)
 
         info, trust = await loop.run_in_executor(None, prepare)
         self.fingerprint = info.fingerprint

@@ -9,6 +9,7 @@ shape's own group, so the board's export, which clones each group, carries
 them with it and the picture keeps what the board shows. Pure functions run
 in node here; the app measures the rest."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -19,7 +20,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_the_style_tab_has_the_rows():

@@ -14,7 +14,7 @@ const KIND = process.env.KIND || 'atlas';
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.waitForTimeout(5000);
   const out = await page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');
@@ -56,5 +56,7 @@ const KIND = process.env.KIND || 'atlas';
   });
   console.log(JSON.stringify({ kind: KIND, vw: VW, ...out }));
   await browser.close();
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((out.peekShown > out.full / 2 || out.peekShown < 8 || out.maxFrameJump > 12) ? 'FAIL peekdown: a measure above is out of bounds' : 'PASS peekdown');
   process.exit(out.peekShown > out.full / 2 || out.peekShown < 8 || out.maxFrameJump > 12 ? 1 : 0);
 })();

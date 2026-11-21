@@ -6,9 +6,9 @@ dropped and the board framed) is the one that already guarded the session copy, 
 Driven in Chromium 2026-11-10: pan and zoom a board, reload, open it again (numbers in the remaining file).
 """
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_the_view_is_written_to_prefs_when_the_board_is_left_and_the_page_hidden():

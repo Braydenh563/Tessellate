@@ -15,6 +15,7 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -85,7 +86,7 @@ def test_every_write_tool_names_its_manual_path():
 def test_every_named_manual_path_still_exists():
     gone = []
     for tool, (name, proof, where) in MANUAL.items():
-        text = (FRONTEND / "js" / name).read_text(encoding="utf-8")
+        text = frontend_text(name)
         if proof not in text:
             gone.append(f"{tool}: {where} ({name} no longer has {proof!r})")
     assert not gone, "Manual paths that went missing:\n  " + "\n  ".join(gone)
@@ -743,6 +744,19 @@ def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the
     assert "Alt+= and Alt+- show one more or one less level" in text
     assert "Build up branch by branch shows the centre, then each branch a level at a time" in text
     assert "End shows the whole map to take it apart" in text
+
+
+def test_the_format_panels_connection_point_rows_are_in_the_guide_in_the_controls_words() -> None:
+    """L-whiteboard-13: Format, Position and size lists a shape's connection points (pick, On outline, nudge, add, remove); the
+    Guide says so in the words the rows carry, and the rows are in the page."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Format, Position and size lists a shape's connection points" in str(t["body"]))
+    for words in ("On outline", "nudge it by pixels", "add one or remove the chosen one", "one Undo step", "draw.io file's points"):
+        assert words in body, words
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    for words in ("Connection point", "On outline", "Add a connection point", "Remove the chosen connection point", "Nudge"):
+        assert words in html, words
 
 
 def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:

@@ -42,7 +42,7 @@
     }
     //: The copy, the layer and the move are three Undo entries as the board makes them; they are bundled into the
     //: one step the person took (a batch replays them back to front).
-    const mark = wbUndoStack.length;
+    const mark = wbStacks.undo.length;
     clearWbSelection();
     for (const [kind, item] of items) wbMultiSelection.add(wbMultiKey(kind, item.id));
     await wbDuplicateSelection();
@@ -51,7 +51,7 @@
       const copy = { id: `l${Date.now().toString(36)}`, name: `${layer.name} copy`.slice(0, 60), hidden: false, locked: false };
       if (await wbSaveNamedLayers([...(wbState.layers || []), copy], { said: `Layer ${copy.name} added.` })) moved = await wbMoveSelectionToLayer(copy.id);
     }
-    const steps = wbUndoStack.splice(mark);
+    const steps = wbStacks.undo.splice(mark);
     if (steps.length) wbPushUndo(steps.length === 1 ? steps[0] : { action: "batch", entries: steps });
     return moved;
   }

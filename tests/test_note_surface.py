@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
@@ -164,7 +164,7 @@ def test_the_board_card_keeps_its_contract_on_the_engine() -> None:
     keys the engine runs first, and listeners on the card's content element.
     `scratchpad/ui-sweeps/wbcardeditor.js` drives all four."""
     assert "wb-card-editor" in _table_ids()
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     body = wb.split("function wbEditNodeText(", 1)[1].split("\nfunction ", 1)[0]
     assert 'box.id = "wb-card-editor"' in body
     assert "box.noteSurfaceKeys" in body and 'key: "Enter"' in body and 'key: "Escape"' in body

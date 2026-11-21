@@ -11,6 +11,7 @@ Three classes, each tested where it lives:
   colour field opens, and the native dialog is gone from it.
 The browser half (gaps, hit sizes, contrast) is the sweep named in the plan."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -21,7 +22,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
