@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 33 | 2 | 0 | 4 | 35 |
-| all | 502 | 562 | 129 | 2 | 183 | 1193 |
+| general | 0 | 32 | 2 | 0 | 4 | 34 |
+| all | 502 | 561 | 129 | 2 | 183 | 1192 |
 
 ## graph
 
@@ -708,7 +708,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text
 - [ ] **L-general-4** `general` open, M: Add frontend/vendor/PROVENANCE.json (path, sha256, size, version, upstream URL, licence, notice) with a test that recomputes the hashes. From ANALYSIS.md:4262. Evidence: frontend/vendor/PROVENANCE.json does not exist; no doc holds the item
 - [ ] **L-general-5** `general` open, S: Add a Docker HEALTHCHECK on /health, hadolint in CI, and a static test for the Dockerfile (context, chown, dockerignore, healthcheck). From ANALYSIS.md:4351. Evidence: docker/Dockerfile has mkdir/chown (line 32) and compose context '..' but no HEALTHCHECK; no hadolint anywhere in .github or docker; no docker static test
-- [ ] **L-general-6** `general` open, S: Put a running-build stamp (source_commit, started_at, data dir id) and data_dir_writable in /health and Settings > About. From ANALYSIS.md:4352. Evidence: grep source_commit src returns nothing; app.py:1734 health() returns status/app/version/desktop only
 - [ ] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule
 - [ ] **L-general-8** `general` open, S: Add `python -m tessellate tool NAME --json` over mcp_server.offered_tools() and a SKILL.md intent-router snippet on Settings' MCP row. From ANALYSIS.md:4353. Evidence: __main__.py argparse has no `tool` subcommand; renderMcpSnippet in settings-controls.js has no SKILL.md
 - [ ] **L-general-9** `general` open, S: Make new source-text tests carry a docstring saying why behaviour cannot be asserted, and have gate.sh print the source-text test count. From ANALYSIS.md:4355. Evidence: grep read_text scripts/gate.sh returns nothing; 54% of test files read file text per the review

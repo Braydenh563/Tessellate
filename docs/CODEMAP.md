@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10884, test files 2774, tests 22295, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8496, frontend ids 2781, CSS sections 524, backend routes 712, backend modules 10888, test files 2774, tests 22301, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
-## Frontend functions (8495)
+## Frontend functions (8496)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1635,130 +1635,131 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncAgentOpenNoteToggle` | frontend/js/palette.js:336 |
 | `toggleAgentPalette` | frontend/js/palette.js:422 |
 
-### frontend/js/settings.js (120)
+### frontend/js/settings.js (121)
 
 | Name | File:line |
 |---|---|
-| `_segActive` | frontend/js/settings.js:2739 |
-| `accentInk` | frontend/js/settings.js:2361 |
-| `accentTone` | frontend/js/settings.js:2365 |
-| `activeAccent` | frontend/js/settings.js:1414 |
-| `activeLogContainer` | frontend/js/settings.js:938 |
-| `activePalette` | frontend/js/settings.js:3110 |
-| `activeThemePreset` | frontend/js/settings.js:1770 |
-| `appearancePref` | frontend/js/settings.js:1787 |
-| `applyAccent` | frontend/js/settings.js:1450 |
-| `applyAppearance` | frontend/js/settings.js:2584 |
-| `applyCustomAccent` | frontend/js/settings.js:2389 |
-| `applyCustomCss` | frontend/js/settings.js:2433 |
-| `applyCustomCssLegacy` | frontend/js/settings.js:2456 |
-| `applyEffectiveAccent` | frontend/js/settings.js:1486 |
-| `applyPageBackground` | frontend/js/settings.js:2406 |
-| `applyResolvedMode` | frontend/js/settings.js:2685 |
-| `applySavedTheme` | frontend/js/settings.js:2205 |
-| `applyThemeChoice` | frontend/js/settings.js:2707 |
-| `applyThemePreset` | frontend/js/settings.js:1807 |
-| `applyZoomVar` | frontend/js/settings.js:2580 |
-| `bgArtOn` | frontend/js/settings.js:3207 |
-| `bgArtRefreshSeed` | frontend/js/settings.js:3201 |
-| `bgArtStyle` | frontend/js/settings.js:3319 |
-| `bgLuma` | frontend/js/settings.js:2347 |
-| `browserLogRecords` | frontend/js/settings.js:816 |
-| `bumpLogErrorBadge` | frontend/js/settings.js:1088 |
-| `clearLogs` | frontend/js/settings.js:1257 |
-| `closeLogs` | frontend/js/settings.js:1226 |
-| `closeSettingsModal` | frontend/js/settings.js:732 |
-| `collapseLongSettingHints` | frontend/js/settings.js:3637 |
-| `contrastOn` | frontend/js/settings.js:1501 |
-| `cssVarNow` | frontend/js/settings.js:2324 |
-| `currentAccentHex` | frontend/js/settings.js:1431 |
-| `currentLookValues` | frontend/js/settings.js:1958 |
-| `currentPageBackground` | frontend/js/settings.js:2417 |
-| `deleteSavedTheme` | frontend/js/settings.js:2222 |
-| `downloadSupportBundle` | frontend/js/settings.js:1280 |
-| `effectiveDensity` | frontend/js/settings.js:2508 |
-| `effectiveTheme` | frontend/js/settings.js:2647 |
-| `ensureSettingsPaneTitle` | frontend/js/settings.js:74 |
-| `filterSettings` | frontend/js/settings.js:672 |
-| `focusSettingsHeading` | frontend/js/settings.js:3445 |
-| `focusSettingsPane` | frontend/js/settings.js:3437 |
-| `harmonyScheme` | frontend/js/settings.js:1909 |
-| `hexRatio` | frontend/js/settings.js:2352 |
-| `hexToHsl` | frontend/js/settings.js:1861 |
-| `hexToRgbParts` | frontend/js/settings.js:2329 |
-| `hslToHex` | frontend/js/settings.js:1882 |
-| `jobDurationWords` | frontend/js/settings.js:3904 |
-| `jobRunLine` | frontend/js/settings.js:3915 |
-| `lessTransparencyWanted` | frontend/js/settings.js:2480 |
-| `loadChangelog` | frontend/js/settings.js:527 |
-| `loadSamplingSettings` | frontend/js/settings.js:3603 |
-| `logLevelRank` | frontend/js/settings.js:790 |
-| `logMatchesFilters` | frontend/js/settings.js:838 |
-| `logRecordText` | frontend/js/settings.js:931 |
-| `logRow` | frontend/js/settings.js:860 |
-| `logTerminalParts` | frontend/js/settings.js:1024 |
-| `logTerminalRow` | frontend/js/settings.js:1031 |
-| `logTerminalTraceRow` | frontend/js/settings.js:1054 |
-| `manualOverrides` | frontend/js/settings.js:1844 |
-| `measureLabelOptics` | frontend/js/settings.js:2540 |
-| `noticePerfMode` | frontend/js/settings.js:3564 |
-| `openSettingsModal` | frontend/js/settings.js:309 |
-| `paintIntegrity` | frontend/js/settings.js:576 |
-| `paintJobLine` | frontend/js/settings.js:3947 |
-| `perfModeOn` | frontend/js/settings.js:2486 |
-| `perfModeReason` | frontend/js/settings.js:2495 |
-| `placeFoldHelp` | frontend/js/settings.js:3846 |
-| `refreshJobRuns` | frontend/js/settings.js:3963 |
-| `renderActiveLogView` | frontend/js/settings.js:1076 |
-| `renderAppearance` | frontend/js/settings.js:2841 |
-| `renderBgMotionHint` | frontend/js/settings.js:2996 |
-| `renderBgStyleGrid` | frontend/js/settings.js:3240 |
-| `renderBgStyleHint` | frontend/js/settings.js:2977 |
-| `renderCopyLogsLabel` | frontend/js/settings.js:1238 |
-| `renderCustomThemes` | frontend/js/settings.js:2233 |
-| `renderGlassRows` | frontend/js/settings.js:2828 |
-| `renderJobOverview` | frontend/js/settings.js:3994 |
-| `renderLogErrorBadge` | frontend/js/settings.js:1094 |
-| `renderLogGap` | frontend/js/settings.js:800 |
-| `renderLogList` | frontend/js/settings.js:983 |
-| `renderLogSharedUI` | frontend/js/settings.js:949 |
-| `renderLogTerminal` | frontend/js/settings.js:1061 |
-| `renderLogs` | frontend/js/settings.js:1194 |
-| `renderPaletteGrid` | frontend/js/settings.js:3117 |
-| `renderProgressMotionHint` | frontend/js/settings.js:2960 |
-| `renderThemePresets` | frontend/js/settings.js:2745 |
-| `renderThemeToggle` | frontend/js/settings.js:2675 |
-| `repaintThemeAtOnce` | frontend/js/settings.js:1325 |
-| `resetAppearance` | frontend/js/settings.js:3169 |
-| `resolvedTheme` | frontend/js/settings.js:2658 |
-| `saveCurrentLook` | frontend/js/settings.js:2178 |
-| `savedThemeCard` | frontend/js/settings.js:2267 |
-| `savedThemes` | frontend/js/settings.js:2173 |
-| `scheduleThemeArt` | frontend/js/settings.js:1341 |
-| `scrollLogToBottom` | frontend/js/settings.js:942 |
-| `serverLogRecord` | frontend/js/settings.js:825 |
-| `setLogLive` | frontend/js/settings.js:1080 |
-| `setSettingsPeek` | frontend/js/settings.js:281 |
-| `settingsFoldState` | frontend/js/settings.js:3794 |
-| `settingsPeekIsOn` | frontend/js/settings.js:293 |
-| `settingsScroller` | frontend/js/settings.js:103 |
-| `settingsSectionText` | frontend/js/settings.js:630 |
-| `showSettingsSection` | frontend/js/settings.js:150 |
-| `smallMachine` | frontend/js/settings.js:2473 |
-| `sortLogRecords` | frontend/js/settings.js:829 |
-| `startBgArt` | frontend/js/settings.js:3324 |
-| `startLogStream` | frontend/js/settings.js:1124 |
-| `stopBgArt` | frontend/js/settings.js:3211 |
-| `stopLogStream` | frontend/js/settings.js:1183 |
-| `taskLogButton` | frontend/js/settings.js:3543 |
-| `themeDefaultAccent` | frontend/js/settings.js:2804 |
-| `themeSwatch` | frontend/js/settings.js:1755 |
-| `themeValue` | frontend/js/settings.js:1780 |
-| `toggleBgArt` | frontend/js/settings.js:3393 |
-| `toggleTheme` | frontend/js/settings.js:1353 |
-| `updatePeekAvailability` | frontend/js/settings.js:297 |
-| `wireFoldHelps` | frontend/js/settings.js:3859 |
-| `wireSettingsFolds` | frontend/js/settings.js:3803 |
+| `_segActive` | frontend/js/settings.js:2749 |
+| `aboutBuildLine` | frontend/js/settings.js:75 |
+| `accentInk` | frontend/js/settings.js:2371 |
+| `accentTone` | frontend/js/settings.js:2375 |
+| `activeAccent` | frontend/js/settings.js:1424 |
+| `activeLogContainer` | frontend/js/settings.js:948 |
+| `activePalette` | frontend/js/settings.js:3120 |
+| `activeThemePreset` | frontend/js/settings.js:1780 |
+| `appearancePref` | frontend/js/settings.js:1797 |
+| `applyAccent` | frontend/js/settings.js:1460 |
+| `applyAppearance` | frontend/js/settings.js:2594 |
+| `applyCustomAccent` | frontend/js/settings.js:2399 |
+| `applyCustomCss` | frontend/js/settings.js:2443 |
+| `applyCustomCssLegacy` | frontend/js/settings.js:2466 |
+| `applyEffectiveAccent` | frontend/js/settings.js:1496 |
+| `applyPageBackground` | frontend/js/settings.js:2416 |
+| `applyResolvedMode` | frontend/js/settings.js:2695 |
+| `applySavedTheme` | frontend/js/settings.js:2215 |
+| `applyThemeChoice` | frontend/js/settings.js:2717 |
+| `applyThemePreset` | frontend/js/settings.js:1817 |
+| `applyZoomVar` | frontend/js/settings.js:2590 |
+| `bgArtOn` | frontend/js/settings.js:3217 |
+| `bgArtRefreshSeed` | frontend/js/settings.js:3211 |
+| `bgArtStyle` | frontend/js/settings.js:3329 |
+| `bgLuma` | frontend/js/settings.js:2357 |
+| `browserLogRecords` | frontend/js/settings.js:826 |
+| `bumpLogErrorBadge` | frontend/js/settings.js:1098 |
+| `clearLogs` | frontend/js/settings.js:1267 |
+| `closeLogs` | frontend/js/settings.js:1236 |
+| `closeSettingsModal` | frontend/js/settings.js:742 |
+| `collapseLongSettingHints` | frontend/js/settings.js:3647 |
+| `contrastOn` | frontend/js/settings.js:1511 |
+| `cssVarNow` | frontend/js/settings.js:2334 |
+| `currentAccentHex` | frontend/js/settings.js:1441 |
+| `currentLookValues` | frontend/js/settings.js:1968 |
+| `currentPageBackground` | frontend/js/settings.js:2427 |
+| `deleteSavedTheme` | frontend/js/settings.js:2232 |
+| `downloadSupportBundle` | frontend/js/settings.js:1290 |
+| `effectiveDensity` | frontend/js/settings.js:2518 |
+| `effectiveTheme` | frontend/js/settings.js:2657 |
+| `ensureSettingsPaneTitle` | frontend/js/settings.js:82 |
+| `filterSettings` | frontend/js/settings.js:682 |
+| `focusSettingsHeading` | frontend/js/settings.js:3455 |
+| `focusSettingsPane` | frontend/js/settings.js:3447 |
+| `harmonyScheme` | frontend/js/settings.js:1919 |
+| `hexRatio` | frontend/js/settings.js:2362 |
+| `hexToHsl` | frontend/js/settings.js:1871 |
+| `hexToRgbParts` | frontend/js/settings.js:2339 |
+| `hslToHex` | frontend/js/settings.js:1892 |
+| `jobDurationWords` | frontend/js/settings.js:3914 |
+| `jobRunLine` | frontend/js/settings.js:3925 |
+| `lessTransparencyWanted` | frontend/js/settings.js:2490 |
+| `loadChangelog` | frontend/js/settings.js:537 |
+| `loadSamplingSettings` | frontend/js/settings.js:3613 |
+| `logLevelRank` | frontend/js/settings.js:800 |
+| `logMatchesFilters` | frontend/js/settings.js:848 |
+| `logRecordText` | frontend/js/settings.js:941 |
+| `logRow` | frontend/js/settings.js:870 |
+| `logTerminalParts` | frontend/js/settings.js:1034 |
+| `logTerminalRow` | frontend/js/settings.js:1041 |
+| `logTerminalTraceRow` | frontend/js/settings.js:1064 |
+| `manualOverrides` | frontend/js/settings.js:1854 |
+| `measureLabelOptics` | frontend/js/settings.js:2550 |
+| `noticePerfMode` | frontend/js/settings.js:3574 |
+| `openSettingsModal` | frontend/js/settings.js:317 |
+| `paintIntegrity` | frontend/js/settings.js:586 |
+| `paintJobLine` | frontend/js/settings.js:3957 |
+| `perfModeOn` | frontend/js/settings.js:2496 |
+| `perfModeReason` | frontend/js/settings.js:2505 |
+| `placeFoldHelp` | frontend/js/settings.js:3856 |
+| `refreshJobRuns` | frontend/js/settings.js:3973 |
+| `renderActiveLogView` | frontend/js/settings.js:1086 |
+| `renderAppearance` | frontend/js/settings.js:2851 |
+| `renderBgMotionHint` | frontend/js/settings.js:3006 |
+| `renderBgStyleGrid` | frontend/js/settings.js:3250 |
+| `renderBgStyleHint` | frontend/js/settings.js:2987 |
+| `renderCopyLogsLabel` | frontend/js/settings.js:1248 |
+| `renderCustomThemes` | frontend/js/settings.js:2243 |
+| `renderGlassRows` | frontend/js/settings.js:2838 |
+| `renderJobOverview` | frontend/js/settings.js:4004 |
+| `renderLogErrorBadge` | frontend/js/settings.js:1104 |
+| `renderLogGap` | frontend/js/settings.js:810 |
+| `renderLogList` | frontend/js/settings.js:993 |
+| `renderLogSharedUI` | frontend/js/settings.js:959 |
+| `renderLogTerminal` | frontend/js/settings.js:1071 |
+| `renderLogs` | frontend/js/settings.js:1204 |
+| `renderPaletteGrid` | frontend/js/settings.js:3127 |
+| `renderProgressMotionHint` | frontend/js/settings.js:2970 |
+| `renderThemePresets` | frontend/js/settings.js:2755 |
+| `renderThemeToggle` | frontend/js/settings.js:2685 |
+| `repaintThemeAtOnce` | frontend/js/settings.js:1335 |
+| `resetAppearance` | frontend/js/settings.js:3179 |
+| `resolvedTheme` | frontend/js/settings.js:2668 |
+| `saveCurrentLook` | frontend/js/settings.js:2188 |
+| `savedThemeCard` | frontend/js/settings.js:2277 |
+| `savedThemes` | frontend/js/settings.js:2183 |
+| `scheduleThemeArt` | frontend/js/settings.js:1351 |
+| `scrollLogToBottom` | frontend/js/settings.js:952 |
+| `serverLogRecord` | frontend/js/settings.js:835 |
+| `setLogLive` | frontend/js/settings.js:1090 |
+| `setSettingsPeek` | frontend/js/settings.js:289 |
+| `settingsFoldState` | frontend/js/settings.js:3804 |
+| `settingsPeekIsOn` | frontend/js/settings.js:301 |
+| `settingsScroller` | frontend/js/settings.js:111 |
+| `settingsSectionText` | frontend/js/settings.js:640 |
+| `showSettingsSection` | frontend/js/settings.js:158 |
+| `smallMachine` | frontend/js/settings.js:2483 |
+| `sortLogRecords` | frontend/js/settings.js:839 |
+| `startBgArt` | frontend/js/settings.js:3334 |
+| `startLogStream` | frontend/js/settings.js:1134 |
+| `stopBgArt` | frontend/js/settings.js:3221 |
+| `stopLogStream` | frontend/js/settings.js:1193 |
+| `taskLogButton` | frontend/js/settings.js:3553 |
+| `themeDefaultAccent` | frontend/js/settings.js:2814 |
+| `themeSwatch` | frontend/js/settings.js:1765 |
+| `themeValue` | frontend/js/settings.js:1790 |
+| `toggleBgArt` | frontend/js/settings.js:3403 |
+| `toggleTheme` | frontend/js/settings.js:1363 |
+| `updatePeekAvailability` | frontend/js/settings.js:305 |
+| `wireFoldHelps` | frontend/js/settings.js:3869 |
+| `wireSettingsFolds` | frontend/js/settings.js:3813 |
 
 ### frontend/js/account-recovery.js (20)
 
@@ -10003,24 +10004,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openReminders` | frontend/sw.js:181 |
 | `storable` | frontend/sw.js:65 |
 
-## Frontend ids (2780)
+## Frontend ids (2781)
 
 Every `id="..."` in `frontend/index.html`, sorted by id.
 
 | Id | File:line |
 |---|---|
+| `about-build` | frontend/index.html:15389 |
 | `about-emblem` | frontend/index.html:15380 |
-| `about-force-reload` | frontend/index.html:15401 |
-| `about-github` | frontend/index.html:15390 |
-| `about-install` | frontend/index.html:15411 |
-| `about-install-help` | frontend/index.html:15419 |
-| `about-install-note` | frontend/index.html:15412 |
-| `about-install-row` | frontend/index.html:15410 |
-| `about-motion` | frontend/index.html:15392 |
-| `about-restart` | frontend/index.html:15400 |
-| `about-restart-row` | frontend/index.html:15399 |
-| `about-shortcuts` | frontend/index.html:15828 |
-| `about-take-tour` | frontend/index.html:15809 |
+| `about-force-reload` | frontend/index.html:15402 |
+| `about-github` | frontend/index.html:15391 |
+| `about-install` | frontend/index.html:15412 |
+| `about-install-help` | frontend/index.html:15420 |
+| `about-install-note` | frontend/index.html:15413 |
+| `about-install-row` | frontend/index.html:15411 |
+| `about-motion` | frontend/index.html:15393 |
+| `about-restart` | frontend/index.html:15401 |
+| `about-restart-row` | frontend/index.html:15400 |
+| `about-shortcuts` | frontend/index.html:15829 |
+| `about-take-tour` | frontend/index.html:15810 |
 | `about-version` | frontend/index.html:15388 |
 | `accent-custom` | frontend/index.html:11978 |
 | `accent-custom-clear` | frontend/index.html:11979 |
@@ -10255,13 +10257,13 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `bg-motion-row` | frontend/index.html:12672 |
 | `bg-style-hint` | frontend/index.html:12664 |
 | `bg-style-row` | frontend/index.html:12658 |
-| `binned-body` | frontend/index.html:15979 |
-| `binned-card` | frontend/index.html:15970 |
-| `binned-close` | frontend/index.html:15974 |
-| `binned-meta` | frontend/index.html:15978 |
-| `binned-overlay` | frontend/index.html:15968 |
-| `binned-purge` | frontend/index.html:15982 |
-| `binned-restore` | frontend/index.html:15981 |
+| `binned-body` | frontend/index.html:15980 |
+| `binned-card` | frontend/index.html:15971 |
+| `binned-close` | frontend/index.html:15975 |
+| `binned-meta` | frontend/index.html:15979 |
+| `binned-overlay` | frontend/index.html:15969 |
+| `binned-purge` | frontend/index.html:15983 |
+| `binned-restore` | frontend/index.html:15982 |
 | `bookmark-add` | frontend/index.html:9165 |
 | `bookmark-count` | frontend/index.html:9193 |
 | `bookmark-empty` | frontend/index.html:9195 |
@@ -10324,8 +10326,8 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `capture-space-hint` | frontend/index.html:1850 |
 | `category-list` | frontend/index.html:1498 |
 | `change-password-help` | frontend/index.html:14818 |
-| `changelog-body` | frontend/index.html:15802 |
-| `changelog-fold` | frontend/index.html:15800 |
+| `changelog-body` | frontend/index.html:15803 |
+| `changelog-fold` | frontend/index.html:15801 |
 | `chat-actions-menu` | frontend/index.html:3007 |
 | `chat-active-model` | frontend/index.html:2886 |
 | `chat-agent-hint` | frontend/index.html:3268 |
@@ -10424,14 +10426,14 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `command-palette-use-note-text` | frontend/index.html:763 |
 | `composer-insight-help` | frontend/index.html:11190 |
 | `composer-voice-help` | frontend/index.html:11165 |
-| `connections-card` | frontend/index.html:15940 |
-| `connections-close` | frontend/index.html:15946 |
-| `connections-dock` | frontend/index.html:15944 |
-| `connections-list` | frontend/index.html:15952 |
-| `connections-overlay` | frontend/index.html:15938 |
-| `connections-status` | frontend/index.html:15951 |
-| `connections-subject` | frontend/index.html:15950 |
-| `connections-title` | frontend/index.html:15942 |
+| `connections-card` | frontend/index.html:15941 |
+| `connections-close` | frontend/index.html:15947 |
+| `connections-dock` | frontend/index.html:15945 |
+| `connections-list` | frontend/index.html:15953 |
+| `connections-overlay` | frontend/index.html:15939 |
+| `connections-status` | frontend/index.html:15952 |
+| `connections-subject` | frontend/index.html:15951 |
+| `connections-title` | frontend/index.html:15943 |
 | `contents-collapse` | frontend/index.html:9307 |
 | `contents-empty` | frontend/index.html:9325 |
 | `contents-expand` | frontend/index.html:9305 |
@@ -10496,13 +10498,13 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `dashboard-persona-mark` | frontend/index.html:11213 |
 | `dashboard-persona-select` | frontend/index.html:11214 |
 | `density-seg` | frontend/index.html:12073 |
-| `desktop-advanced-fold` | frontend/index.html:15788 |
+| `desktop-advanced-fold` | frontend/index.html:15789 |
 | `desktop-companion-help` | frontend/index.html:12528 |
 | `desktop-companion-row` | frontend/index.html:12514 |
-| `desktop-console-hint` | frontend/index.html:15754 |
-| `desktop-console-row` | frontend/index.html:15750 |
-| `desktop-tray-hint` | frontend/index.html:15774 |
-| `desktop-tray-row` | frontend/index.html:15770 |
+| `desktop-console-hint` | frontend/index.html:15755 |
+| `desktop-console-row` | frontend/index.html:15751 |
+| `desktop-tray-hint` | frontend/index.html:15775 |
+| `desktop-tray-row` | frontend/index.html:15771 |
 | `dismissed-list` | frontend/index.html:14465 |
 | `dismissed-toggle` | frontend/index.html:14464 |
 | `doc-ai` | frontend/index.html:5205 |
@@ -10768,9 +10770,9 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `duplicate-threshold` | frontend/index.html:14098 |
 | `duplicate-threshold-value` | frontend/index.html:14100 |
 | `duplicates-help` | frontend/index.html:14087 |
-| `editor-menu` | frontend/index.html:16458 |
-| `editor-menu-list` | frontend/index.html:16459 |
-| `editor-menu-preview` | frontend/index.html:16461 |
+| `editor-menu` | frontend/index.html:16459 |
+| `editor-menu-list` | frontend/index.html:16460 |
+| `editor-menu-preview` | frontend/index.html:16462 |
 | `embed-choices` | frontend/index.html:10988 |
 | `embed-choices-cache` | frontend/index.html:10990 |
 | `embed-choices-status` | frontend/index.html:10989 |
@@ -10847,12 +10849,12 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `feature-models-list` | frontend/index.html:10645 |
 | `feature-models-reset` | frontend/index.html:10647 |
 | `feature-models-reset-note` | frontend/index.html:10650 |
-| `features-card` | frontend/index.html:16340 |
-| `features-close` | frontend/index.html:16344 |
-| `features-count` | frontend/index.html:16356 |
-| `features-list` | frontend/index.html:16357 |
-| `features-overlay` | frontend/index.html:16338 |
-| `features-search` | frontend/index.html:16353 |
+| `features-card` | frontend/index.html:16341 |
+| `features-close` | frontend/index.html:16345 |
+| `features-count` | frontend/index.html:16357 |
+| `features-list` | frontend/index.html:16358 |
+| `features-overlay` | frontend/index.html:16339 |
+| `features-search` | frontend/index.html:16354 |
 | `find-duplicates` | frontend/index.html:14096 |
 | `finder-close` | frontend/index.html:824 |
 | `finder-filters` | frontend/index.html:874 |
@@ -10881,12 +10883,12 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `glass-sheen-strength-value` | frontend/index.html:12269 |
 | `glass-sheen-toggle` | frontend/index.html:12247 |
 | `glass-toggle` | frontend/index.html:12231 |
-| `global-find-bar` | frontend/index.html:15849 |
-| `global-find-close` | frontend/index.html:15854 |
-| `global-find-count` | frontend/index.html:15851 |
-| `global-find-input` | frontend/index.html:15850 |
-| `global-find-next` | frontend/index.html:15853 |
-| `global-find-prev` | frontend/index.html:15852 |
+| `global-find-bar` | frontend/index.html:15850 |
+| `global-find-close` | frontend/index.html:15855 |
+| `global-find-count` | frontend/index.html:15852 |
+| `global-find-input` | frontend/index.html:15851 |
+| `global-find-next` | frontend/index.html:15854 |
+| `global-find-prev` | frontend/index.html:15853 |
 | `graph-add-node` | frontend/index.html:4081 |
 | `graph-arrows` | frontend/index.html:4506 |
 | `graph-attachments` | frontend/index.html:4453 |
@@ -11069,18 +11071,18 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `harmony-base` | frontend/index.html:12017 |
 | `harmony-kind` | frontend/index.html:12019 |
 | `harmony-note` | frontend/index.html:12027 |
-| `health-checked` | frontend/index.html:15471 |
-| `health-counts` | frontend/index.html:15518 |
-| `health-data-dir` | frontend/index.html:15484 |
-| `health-db-size` | frontend/index.html:15501 |
-| `health-group` | frontend/index.html:15469 |
-| `health-integrity` | frontend/index.html:15493 |
-| `health-integrity-check` | frontend/index.html:15492 |
-| `health-jobs` | frontend/index.html:15525 |
-| `health-last-backup` | frontend/index.html:15477 |
-| `health-last-error` | frontend/index.html:15553 |
-| `health-latency` | frontend/index.html:15546 |
-| `health-search` | frontend/index.html:15539 |
+| `health-checked` | frontend/index.html:15472 |
+| `health-counts` | frontend/index.html:15519 |
+| `health-data-dir` | frontend/index.html:15485 |
+| `health-db-size` | frontend/index.html:15502 |
+| `health-group` | frontend/index.html:15470 |
+| `health-integrity` | frontend/index.html:15494 |
+| `health-integrity-check` | frontend/index.html:15493 |
+| `health-jobs` | frontend/index.html:15526 |
+| `health-last-backup` | frontend/index.html:15478 |
+| `health-last-error` | frontend/index.html:15554 |
+| `health-latency` | frontend/index.html:15547 |
+| `health-search` | frontend/index.html:15540 |
 | `help-chat-empty` | frontend/index.html:594 |
 | `help-chat-form` | frontend/index.html:609 |
 | `help-chat-group` | frontend/index.html:560 |
@@ -11096,12 +11098,12 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `help-search-status` | frontend/index.html:15306 |
 | `help-topics` | frontend/index.html:15325 |
 | `hide-offline-notice-wrap` | frontend/index.html:10445 |
-| `history-card` | frontend/index.html:15912 |
-| `history-close` | frontend/index.html:15916 |
-| `history-list` | frontend/index.html:15921 |
-| `history-overlay` | frontend/index.html:15910 |
-| `history-status` | frontend/index.html:15920 |
-| `hud` | frontend/index.html:15864 |
+| `history-card` | frontend/index.html:15913 |
+| `history-close` | frontend/index.html:15917 |
+| `history-list` | frontend/index.html:15922 |
+| `history-overlay` | frontend/index.html:15911 |
+| `history-status` | frontend/index.html:15921 |
+| `hud` | frontend/index.html:15865 |
 | `import-app-box` | frontend/index.html:14212 |
 | `import-app-help` | frontend/index.html:14218 |
 | `import-app-status` | frontend/index.html:14257 |
@@ -11127,19 +11129,19 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `import-notion-file` | frontend/index.html:14241 |
 | `import-obsidian` | frontend/index.html:14246 |
 | `import-obsidian-file` | frontend/index.html:14244 |
-| `improve-apply` | frontend/index.html:16160 |
+| `improve-apply` | frontend/index.html:16161 |
 | `improve-btn` | frontend/index.html:1808 |
-| `improve-card` | frontend/index.html:16126 |
-| `improve-close` | frontend/index.html:16130 |
-| `improve-custom-go` | frontend/index.html:16143 |
-| `improve-custom-input` | frontend/index.html:16141 |
-| `improve-custom-row` | frontend/index.html:16140 |
-| `improve-modes` | frontend/index.html:16134 |
-| `improve-original` | frontend/index.html:16148 |
-| `improve-overlay` | frontend/index.html:16125 |
-| `improve-result` | frontend/index.html:16152 |
-| `improve-retry` | frontend/index.html:16159 |
-| `improve-status` | frontend/index.html:16155 |
+| `improve-card` | frontend/index.html:16127 |
+| `improve-close` | frontend/index.html:16131 |
+| `improve-custom-go` | frontend/index.html:16144 |
+| `improve-custom-input` | frontend/index.html:16142 |
+| `improve-custom-row` | frontend/index.html:16141 |
+| `improve-modes` | frontend/index.html:16135 |
+| `improve-original` | frontend/index.html:16149 |
+| `improve-overlay` | frontend/index.html:16126 |
+| `improve-result` | frontend/index.html:16153 |
+| `improve-retry` | frontend/index.html:16160 |
+| `improve-status` | frontend/index.html:16156 |
 | `installed-box` | frontend/index.html:10717 |
 | `installed-list` | frontend/index.html:10720 |
 | `integrity-notice` | frontend/index.html:14318 |
@@ -11284,7 +11286,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `library-view-skills` | frontend/index.html:6542 |
 | `library-view-whiteboard` | frontend/index.html:6663 |
 | `link-suggest-btn` | frontend/index.html:4655 |
-| `live-region` | frontend/index.html:15867 |
+| `live-region` | frontend/index.html:15868 |
 | `llm-base-url` | frontend/index.html:10424 |
 | `llm-privacy-warning` | frontend/index.html:10461 |
 | `llm-provider-apply` | frontend/index.html:10425 |
@@ -11365,20 +11367,20 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `look-import` | frontend/index.html:11913 |
 | `look-import-file` | frontend/index.html:11915 |
 | `look-surprise` | frontend/index.html:11946 |
-| `maintenance-actions` | frontend/index.html:15593 |
-| `maintenance-doctor` | frontend/index.html:15594 |
-| `maintenance-doctor-rows` | frontend/index.html:15606 |
-| `maintenance-group` | frontend/index.html:15564 |
-| `maintenance-help` | frontend/index.html:15574 |
-| `maintenance-logs` | frontend/index.html:15596 |
-| `maintenance-reinstall` | frontend/index.html:15595 |
-| `maintenance-reinstall-cancel` | frontend/index.html:15603 |
-| `maintenance-reinstall-note` | frontend/index.html:15601 |
-| `maintenance-reinstall-row` | frontend/index.html:15600 |
-| `maintenance-restart` | frontend/index.html:15602 |
-| `maintenance-shortcut` | frontend/index.html:15597 |
-| `maintenance-status` | frontend/index.html:15605 |
-| `maintenance-uninstall` | frontend/index.html:15598 |
+| `maintenance-actions` | frontend/index.html:15594 |
+| `maintenance-doctor` | frontend/index.html:15595 |
+| `maintenance-doctor-rows` | frontend/index.html:15607 |
+| `maintenance-group` | frontend/index.html:15565 |
+| `maintenance-help` | frontend/index.html:15575 |
+| `maintenance-logs` | frontend/index.html:15597 |
+| `maintenance-reinstall` | frontend/index.html:15596 |
+| `maintenance-reinstall-cancel` | frontend/index.html:15604 |
+| `maintenance-reinstall-note` | frontend/index.html:15602 |
+| `maintenance-reinstall-row` | frontend/index.html:15601 |
+| `maintenance-restart` | frontend/index.html:15603 |
+| `maintenance-shortcut` | frontend/index.html:15598 |
+| `maintenance-status` | frontend/index.html:15606 |
+| `maintenance-uninstall` | frontend/index.html:15599 |
 | `manage-categories-btn` | frontend/index.html:1496 |
 | `manage-categories-foot` | frontend/index.html:1502 |
 | `mcp-config-copy` | frontend/index.html:11833 |
@@ -11386,37 +11388,37 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `mcp-config-help` | frontend/index.html:11811 |
 | `mcp-config-note` | frontend/index.html:11831 |
 | `mcp-config-snippet` | frontend/index.html:11830 |
-| `meeting-captions` | frontend/index.html:16259 |
-| `meeting-card` | frontend/index.html:16183 |
-| `meeting-close` | frontend/index.html:16201 |
-| `meeting-controls` | frontend/index.html:16252 |
-| `meeting-copy` | frontend/index.html:16322 |
-| `meeting-discard` | frontend/index.html:16323 |
-| `meeting-discard-take` | frontend/index.html:16262 |
-| `meeting-done` | frontend/index.html:16327 |
-| `meeting-done-again` | frontend/index.html:16331 |
-| `meeting-done-lines` | frontend/index.html:16328 |
-| `meeting-done-open` | frontend/index.html:16330 |
-| `meeting-help` | frontend/index.html:16206 |
-| `meeting-live` | frontend/index.html:16283 |
-| `meeting-marker` | frontend/index.html:16256 |
-| `meeting-mic` | frontend/index.html:16240 |
-| `meeting-mic-controls` | frontend/index.html:16242 |
-| `meeting-mic-name` | frontend/index.html:16241 |
-| `meeting-overlay` | frontend/index.html:16181 |
-| `meeting-pause` | frontend/index.html:16254 |
-| `meeting-progress` | frontend/index.html:16287 |
-| `meeting-record` | frontend/index.html:16253 |
-| `meeting-save` | frontend/index.html:16311 |
-| `meeting-save-doc` | frontend/index.html:16317 |
-| `meeting-save-row` | frontend/index.html:16307 |
-| `meeting-stage` | frontend/index.html:16251 |
-| `meeting-status` | frontend/index.html:16292 |
-| `meeting-stop-transcribe` | frontend/index.html:16290 |
-| `meeting-timer` | frontend/index.html:16257 |
-| `meeting-title` | frontend/index.html:16235 |
-| `meeting-transcript` | frontend/index.html:16297 |
-| `meeting-wave` | frontend/index.html:16279 |
+| `meeting-captions` | frontend/index.html:16260 |
+| `meeting-card` | frontend/index.html:16184 |
+| `meeting-close` | frontend/index.html:16202 |
+| `meeting-controls` | frontend/index.html:16253 |
+| `meeting-copy` | frontend/index.html:16323 |
+| `meeting-discard` | frontend/index.html:16324 |
+| `meeting-discard-take` | frontend/index.html:16263 |
+| `meeting-done` | frontend/index.html:16328 |
+| `meeting-done-again` | frontend/index.html:16332 |
+| `meeting-done-lines` | frontend/index.html:16329 |
+| `meeting-done-open` | frontend/index.html:16331 |
+| `meeting-help` | frontend/index.html:16207 |
+| `meeting-live` | frontend/index.html:16284 |
+| `meeting-marker` | frontend/index.html:16257 |
+| `meeting-mic` | frontend/index.html:16241 |
+| `meeting-mic-controls` | frontend/index.html:16243 |
+| `meeting-mic-name` | frontend/index.html:16242 |
+| `meeting-overlay` | frontend/index.html:16182 |
+| `meeting-pause` | frontend/index.html:16255 |
+| `meeting-progress` | frontend/index.html:16288 |
+| `meeting-record` | frontend/index.html:16254 |
+| `meeting-save` | frontend/index.html:16312 |
+| `meeting-save-doc` | frontend/index.html:16318 |
+| `meeting-save-row` | frontend/index.html:16308 |
+| `meeting-stage` | frontend/index.html:16252 |
+| `meeting-status` | frontend/index.html:16293 |
+| `meeting-stop-transcribe` | frontend/index.html:16291 |
+| `meeting-timer` | frontend/index.html:16258 |
+| `meeting-title` | frontend/index.html:16236 |
+| `meeting-transcript` | frontend/index.html:16298 |
+| `meeting-wave` | frontend/index.html:16280 |
 | `memory-add` | frontend/index.html:11504 |
 | `memory-budget` | frontend/index.html:11496 |
 | `memory-empty` | frontend/index.html:11508 |
@@ -11580,19 +11582,19 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `offline-indicator` | frontend/index.html:9512 |
 | `ollama-help` | frontend/index.html:10385 |
 | `ollama-status` | frontend/index.html:10370 |
-| `onboarding-actions` | frontend/index.html:16375 |
-| `onboarding-atlas` | frontend/index.html:16367 |
-| `onboarding-back` | frontend/index.html:16381 |
-| `onboarding-card` | frontend/index.html:16364 |
-| `onboarding-dots` | frontend/index.html:16377 |
-| `onboarding-emblem` | frontend/index.html:16366 |
-| `onboarding-icon` | frontend/index.html:16368 |
-| `onboarding-next` | frontend/index.html:16382 |
-| `onboarding-overlay` | frontend/index.html:16362 |
-| `onboarding-skip` | frontend/index.html:16379 |
-| `onboarding-slide` | frontend/index.html:16365 |
-| `onboarding-text` | frontend/index.html:16370 |
-| `onboarding-title` | frontend/index.html:16369 |
+| `onboarding-actions` | frontend/index.html:16376 |
+| `onboarding-atlas` | frontend/index.html:16368 |
+| `onboarding-back` | frontend/index.html:16382 |
+| `onboarding-card` | frontend/index.html:16365 |
+| `onboarding-dots` | frontend/index.html:16378 |
+| `onboarding-emblem` | frontend/index.html:16367 |
+| `onboarding-icon` | frontend/index.html:16369 |
+| `onboarding-next` | frontend/index.html:16383 |
+| `onboarding-overlay` | frontend/index.html:16363 |
+| `onboarding-skip` | frontend/index.html:16380 |
+| `onboarding-slide` | frontend/index.html:16366 |
+| `onboarding-text` | frontend/index.html:16371 |
+| `onboarding-title` | frontend/index.html:16370 |
 | `open-exports-folder` | frontend/index.html:13920 |
 | `open-exports-row` | frontend/index.html:13919 |
 | `packages-embed-link` | frontend/index.html:12919 |
@@ -11602,15 +11604,15 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `page-bg-custom` | frontend/index.html:11999 |
 | `page-wash-row` | frontend/index.html:12238 |
 | `page-wash-toggle` | frontend/index.html:12239 |
-| `palette-card` | frontend/index.html:15870 |
-| `palette-close` | frontend/index.html:15876 |
-| `palette-count` | frontend/index.html:15879 |
+| `palette-card` | frontend/index.html:15871 |
+| `palette-close` | frontend/index.html:15877 |
+| `palette-count` | frontend/index.html:15880 |
 | `palette-grid` | frontend/index.html:11943 |
-| `palette-help` | frontend/index.html:15896 |
-| `palette-input` | frontend/index.html:15873 |
-| `palette-list` | frontend/index.html:15881 |
-| `palette-overlay` | frontend/index.html:15869 |
-| `palette-preview` | frontend/index.html:15882 |
+| `palette-help` | frontend/index.html:15897 |
+| `palette-input` | frontend/index.html:15874 |
+| `palette-list` | frontend/index.html:15882 |
+| `palette-overlay` | frontend/index.html:15870 |
+| `palette-preview` | frontend/index.html:15883 |
 | `panel-push-row` | frontend/index.html:12374 |
 | `panel-push-toggle` | frontend/index.html:12375 |
 | `panel-restore-row` | frontend/index.html:12382 |
@@ -11648,7 +11650,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `pref-auto-read-image-text` | frontend/index.html:13755 |
 | `pref-auto-stale-review` | frontend/index.html:13773 |
 | `pref-auto-tag` | frontend/index.html:13761 |
-| `pref-auto-update` | frontend/index.html:15654 |
+| `pref-auto-update` | frontend/index.html:15655 |
 | `pref-autocorrect` | frontend/index.html:13231 |
 | `pref-autonomous-interval` | frontend/index.html:13798 |
 | `pref-autonomous-model` | frontend/index.html:13801 |
@@ -11662,7 +11664,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `pref-birthday` | frontend/index.html:13149 |
 | `pref-chat-retention` | frontend/index.html:13168 |
 | `pref-check-link-text` | frontend/index.html:13226 |
-| `pref-close-to-tray` | frontend/index.html:15771 |
+| `pref-close-to-tray` | frontend/index.html:15772 |
 | `pref-date-order` | frontend/index.html:13141 |
 | `pref-desktop-companion` | frontend/index.html:12515 |
 | `pref-display-name` | frontend/index.html:13074 |
@@ -11680,7 +11682,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `pref-link-offers` | frontend/index.html:13217 |
 | `pref-mcp-writes` | frontend/index.html:11826 |
 | `pref-new-notes-private` | frontend/index.html:14958 |
-| `pref-new-window-on-launch` | frontend/index.html:15791 |
+| `pref-new-window-on-launch` | frontend/index.html:15792 |
 | `pref-notif-mute-except-reminders` | frontend/index.html:13186 |
 | `pref-profile` | frontend/index.html:13089 |
 | `pref-profile-count` | frontend/index.html:13091 |
@@ -11695,17 +11697,17 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `pref-searxng` | frontend/index.html:13441 |
 | `pref-season-hemisphere` | frontend/index.html:13153 |
 | `pref-semantic-auto-install` | frontend/index.html:10928 |
-| `pref-show-console` | frontend/index.html:15751 |
+| `pref-show-console` | frontend/index.html:15752 |
 | `pref-show-thinking-words` | frontend/index.html:12333 |
 | `pref-simple-mode` | frontend/index.html:13332 |
 | `pref-single-keys` | frontend/index.html:12934 |
 | `pref-smart-model-routing` | frontend/index.html:10541 |
 | `pref-smart-punctuation` | frontend/index.html:13212 |
 | `pref-style` | frontend/index.html:11141 |
-| `pref-update-bar` | frontend/index.html:15630 |
-| `pref-update-beta` | frontend/index.html:15684 |
-| `pref-update-channel-main` | frontend/index.html:15680 |
-| `pref-update-check` | frontend/index.html:15626 |
+| `pref-update-bar` | frontend/index.html:15631 |
+| `pref-update-beta` | frontend/index.html:15685 |
+| `pref-update-channel-main` | frontend/index.html:15681 |
+| `pref-update-check` | frontend/index.html:15627 |
 | `pref-voice` | frontend/index.html:11149 |
 | `pref-voice-sample` | frontend/index.html:11156 |
 | `pref-warm-search-model` | frontend/index.html:13738 |
@@ -11867,10 +11869,10 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `run-budget-seconds` | frontend/index.html:11774 |
 | `run-budget-status` | frontend/index.html:11777 |
 | `run-budget-tokens` | frontend/index.html:11766 |
-| `running-copies-group` | frontend/index.html:15444 |
-| `running-copies-help` | frontend/index.html:15454 |
-| `running-copies-list` | frontend/index.html:15466 |
-| `running-copies-note` | frontend/index.html:15447 |
+| `running-copies-group` | frontend/index.html:15445 |
+| `running-copies-help` | frontend/index.html:15455 |
+| `running-copies-list` | frontend/index.html:15467 |
+| `running-copies-note` | frontend/index.html:15448 |
 | `sampling-box` | frontend/index.html:10691 |
 | `sampling-help` | frontend/index.html:10699 |
 | `sampling-model` | frontend/index.html:10706 |
@@ -11969,21 +11971,21 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `settings-websearch` | frontend/index.html:13376 |
 | `shadow-intensity` | frontend/index.html:12164 |
 | `shadow-intensity-value` | frontend/index.html:12166 |
-| `shortcut-head-whiteboard` | frontend/index.html:16070 |
-| `shortcut-list` | frontend/index.html:16021 |
-| `shortcut-list-documents` | frontend/index.html:16066 |
-| `shortcut-list-documents-note` | frontend/index.html:16067 |
+| `shortcut-head-whiteboard` | frontend/index.html:16071 |
+| `shortcut-list` | frontend/index.html:16022 |
+| `shortcut-list-documents` | frontend/index.html:16067 |
+| `shortcut-list-documents-note` | frontend/index.html:16068 |
 | `shortcut-list-settings` | frontend/index.html:12931 |
-| `shortcut-list-tools` | frontend/index.html:16059 |
-| `shortcut-list-whiteboard` | frontend/index.html:16075 |
-| `shortcut-list-whiteboard-note` | frontend/index.html:16076 |
-| `shortcut-status` | frontend/index.html:16022 |
+| `shortcut-list-tools` | frontend/index.html:16060 |
+| `shortcut-list-whiteboard` | frontend/index.html:16076 |
+| `shortcut-list-whiteboard-note` | frontend/index.html:16077 |
+| `shortcut-status` | frontend/index.html:16023 |
 | `shortcut-status-settings` | frontend/index.html:12932 |
-| `shortcuts-card` | frontend/index.html:16012 |
-| `shortcuts-close` | frontend/index.html:16016 |
-| `shortcuts-overlay` | frontend/index.html:16008 |
-| `shortcuts-overlay-always-help` | frontend/index.html:16036 |
-| `shortcuts-reset` | frontend/index.html:16024 |
+| `shortcuts-card` | frontend/index.html:16013 |
+| `shortcuts-close` | frontend/index.html:16017 |
+| `shortcuts-overlay` | frontend/index.html:16009 |
+| `shortcuts-overlay-always-help` | frontend/index.html:16037 |
+| `shortcuts-reset` | frontend/index.html:16025 |
 | `shortcuts-reset-settings` | frontend/index.html:12938 |
 | `show-get-started-btn` | frontend/index.html:15290 |
 | `show-guide-btn` | frontend/index.html:15289 |
@@ -11992,8 +11994,8 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `simple-mode-box` | frontend/index.html:13322 |
 | `simple-mode-help` | frontend/index.html:13335 |
 | `sketch-btn` | frontend/index.html:1803 |
-| `sketch-card` | frontend/index.html:16169 |
-| `sketch-overlay` | frontend/index.html:16168 |
+| `sketch-card` | frontend/index.html:16170 |
+| `sketch-overlay` | frontend/index.html:16169 |
 | `skill-add` | frontend/index.html:11394 |
 | `skill-add-fold` | frontend/index.html:11294 |
 | `skill-cancel` | frontend/index.html:11395 |
@@ -12007,13 +12009,13 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `skill-manual-toggle` | frontend/index.html:3454 |
 | `skill-name` | frontend/index.html:11296 |
 | `skill-prompt` | frontend/index.html:11299 |
-| `skill-run-cancel` | frontend/index.html:15996 |
-| `skill-run-card` | frontend/index.html:15992 |
-| `skill-run-description` | frontend/index.html:16000 |
-| `skill-run-fields` | frontend/index.html:16001 |
-| `skill-run-go` | frontend/index.html:16003 |
-| `skill-run-overlay` | frontend/index.html:15990 |
-| `skill-run-title` | frontend/index.html:15994 |
+| `skill-run-cancel` | frontend/index.html:15997 |
+| `skill-run-card` | frontend/index.html:15993 |
+| `skill-run-description` | frontend/index.html:16001 |
+| `skill-run-fields` | frontend/index.html:16002 |
+| `skill-run-go` | frontend/index.html:16004 |
+| `skill-run-overlay` | frontend/index.html:15991 |
+| `skill-run-title` | frontend/index.html:15995 |
 | `skill-share` | frontend/index.html:11399 |
 | `skill-status` | frontend/index.html:11396 |
 | `skill-steps` | frontend/index.html:11304 |
@@ -12100,8 +12102,8 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `status-undo` | frontend/index.html:9595 |
 | `statusbar-help` | frontend/index.html:12727 |
 | `stop-btn` | frontend/index.html:2286 |
-| `storage-bar` | frontend/index.html:15509 |
-| `storage-legend` | frontend/index.html:15510 |
+| `storage-bar` | frontend/index.html:15510 |
+| `storage-legend` | frontend/index.html:15511 |
 | `storage-space-notice` | frontend/index.html:14317 |
 | `suggested-box` | frontend/index.html:10767 |
 | `suggested-hardware` | frontend/index.html:10778 |
@@ -12234,7 +12236,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `timeline-view-seg` | frontend/index.html:3677 |
 | `timeline-view-table` | frontend/index.html:3679 |
 | `timeline-year` | frontend/index.html:3821 |
-| `toast-box` | frontend/index.html:15858 |
+| `toast-box` | frontend/index.html:15859 |
 | `tool-count` | frontend/index.html:11793 |
 | `tool-filter` | frontend/index.html:11791 |
 | `tool-filter-empty` | frontend/index.html:11796 |
@@ -12244,36 +12246,36 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `tool-list` | frontend/index.html:11795 |
 | `tools-toggle` | frontend/index.html:3298 |
 | `top-bar` | frontend/index.html:128 |
-| `tour-back` | frontend/index.html:16444 |
-| `tour-block` | frontend/index.html:16419 |
-| `tour-block-bottom` | frontend/index.html:16422 |
-| `tour-block-left` | frontend/index.html:16423 |
-| `tour-block-right` | frontend/index.html:16421 |
-| `tour-block-top` | frontend/index.html:16420 |
-| `tour-card` | frontend/index.html:16429 |
-| `tour-close` | frontend/index.html:16435 |
-| `tour-count` | frontend/index.html:16434 |
-| `tour-next` | frontend/index.html:16445 |
+| `tour-back` | frontend/index.html:16445 |
+| `tour-block` | frontend/index.html:16420 |
+| `tour-block-bottom` | frontend/index.html:16423 |
+| `tour-block-left` | frontend/index.html:16424 |
+| `tour-block-right` | frontend/index.html:16422 |
+| `tour-block-top` | frontend/index.html:16421 |
+| `tour-card` | frontend/index.html:16430 |
+| `tour-close` | frontend/index.html:16436 |
+| `tour-count` | frontend/index.html:16435 |
+| `tour-next` | frontend/index.html:16446 |
 | `tour-replay-buttons` | frontend/index.html:15294 |
-| `tour-section` | frontend/index.html:16432 |
-| `tour-skip` | frontend/index.html:16442 |
-| `tour-spot` | frontend/index.html:16425 |
+| `tour-section` | frontend/index.html:16433 |
+| `tour-skip` | frontend/index.html:16443 |
+| `tour-spot` | frontend/index.html:16426 |
 | `tour-start-btn` | frontend/index.html:15288 |
-| `tour-text` | frontend/index.html:16440 |
-| `tour-title` | frontend/index.html:16439 |
+| `tour-text` | frontend/index.html:16441 |
+| `tour-title` | frontend/index.html:16440 |
 | `ui-motion-row` | frontend/index.html:12356 |
 | `ui-motion-toggle` | frontend/index.html:12357 |
 | `undo-history-menu` | frontend/index.html:9634 |
-| `update-apply-now` | frontend/index.html:15641 |
-| `update-channel-help` | frontend/index.html:15696 |
-| `update-check-now` | frontend/index.html:15634 |
-| `update-check-row` | frontend/index.html:15633 |
-| `update-check-status` | frontend/index.html:15642 |
-| `update-install-version` | frontend/index.html:15736 |
-| `update-show-versions` | frontend/index.html:15734 |
-| `update-version-row` | frontend/index.html:15733 |
-| `update-version-select` | frontend/index.html:15735 |
-| `update-version-status` | frontend/index.html:15738 |
+| `update-apply-now` | frontend/index.html:15642 |
+| `update-channel-help` | frontend/index.html:15697 |
+| `update-check-now` | frontend/index.html:15635 |
+| `update-check-row` | frontend/index.html:15634 |
+| `update-check-status` | frontend/index.html:15643 |
+| `update-install-version` | frontend/index.html:15737 |
+| `update-show-versions` | frontend/index.html:15735 |
+| `update-version-row` | frontend/index.html:15734 |
+| `update-version-select` | frontend/index.html:15736 |
+| `update-version-status` | frontend/index.html:15739 |
 | `usage-box` | frontend/index.html:13345 |
 | `usage-clear` | frontend/index.html:13368 |
 | `usage-help` | frontend/index.html:13355 |
@@ -12495,15 +12497,15 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `wb-guide-color-center` | frontend/index.html:8057 |
 | `wb-guide-color-edge` | frontend/index.html:8056 |
 | `wb-guide-color-spacing` | frontend/index.html:8058 |
-| `wb-help-about` | frontend/index.html:16107 |
+| `wb-help-about` | frontend/index.html:16108 |
 | `wb-help-btn` | frontend/index.html:7313 |
-| `wb-help-card` | frontend/index.html:16096 |
-| `wb-help-close` | frontend/index.html:16103 |
-| `wb-help-none` | frontend/index.html:16119 |
-| `wb-help-overlay` | frontend/index.html:16094 |
-| `wb-help-search` | frontend/index.html:16115 |
-| `wb-help-sections` | frontend/index.html:16118 |
-| `wb-help-title` | frontend/index.html:16098 |
+| `wb-help-card` | frontend/index.html:16097 |
+| `wb-help-close` | frontend/index.html:16104 |
+| `wb-help-none` | frontend/index.html:16120 |
+| `wb-help-overlay` | frontend/index.html:16095 |
+| `wb-help-search` | frontend/index.html:16116 |
+| `wb-help-sections` | frontend/index.html:16119 |
+| `wb-help-title` | frontend/index.html:16099 |
 | `wb-history-bar` | frontend/index.html:7732 |
 | `wb-history-end` | frontend/index.html:7738 |
 | `wb-history-restore` | frontend/index.html:7736 |
@@ -13515,7 +13517,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1769 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1792 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1807 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:1973 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:408 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1058 |
@@ -13662,7 +13664,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:997 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:1005 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1755 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1766 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:401 |
@@ -14124,7 +14126,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10884)
+## Backend modules (10888)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20989,7 +20991,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `asset_hash` | src/tessellate/api/app.py:235 |
 | `asset_stamps` | src/tessellate/api/app.py:264 |
 | `clear_static_cache` | src/tessellate/api/app.py:580 |
-| `create_app` | src/tessellate/api/app.py:1828 |
+| `create_app` | src/tessellate/api/app.py:1843 |
 | `out_of_space_body` | src/tessellate/api/app.py:1163 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:202 |
 | `served_index_html` | src/tessellate/api/app.py:309 |
@@ -24082,6 +24084,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stored_fp` | src/tessellate/core/board_thumbs.py:72 |
 | `thumb_dir` | src/tessellate/core/board_thumbs.py:28 |
 | `valid_fp` | src/tessellate/core/board_thumbs.py:37 |
+
+### src/tessellate/core/build_stamp.py (4)
+
+| Name | File:line |
+|---|---|
+| `_git_dir` | src/tessellate/core/build_stamp.py:20 |
+| `_head_commit` | src/tessellate/core/build_stamp.py:32 |
+| `data_dir_writable` | src/tessellate/core/build_stamp.py:68 |
+| `source_commit` | src/tessellate/core/build_stamp.py:53 |
 
 ### src/tessellate/core/cjk.py (2)
 
@@ -28037,7 +28048,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22295)
+## Tests (22301)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29012,7 +29023,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dock_menu_closed_hidden.py | 2 |
 | tests/test_dock_menu_switch_1110.py | 2 |
 | tests/test_docker_env.py | 7 |
-| tests/test_docker_files.py | 4 |
+| tests/test_docker_files.py | 7 |
 | tests/test_docs_1102_dx.py | 6 |
 | tests/test_docs_1102_dx20.py | 1 |
 | tests/test_docs_1102_dx21.py | 3 |
@@ -29366,7 +29377,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_has_invalidation.py | 8 |
 | tests/test_headings_1029b.py | 2 |
 | tests/test_health_dir_cache.py | 3 |
-| tests/test_health_page.py | 3 |
+| tests/test_health_page.py | 6 |
 | tests/test_heatmap_end_1578.py | 2 |
 | tests/test_hello_ui.py | 6 |
 | tests/test_hello_unlock.py | 28 |
@@ -31237,14 +31248,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:744 |
+| Needs hardware | docs/roadmap/LEDGER.md:743 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:737 |
+| Owner calls | docs/roadmap/LEDGER.md:736 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31424,7 +31435,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:932 |
+| Plan session briefs | docs/roadmap/LEDGER.md:931 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31478,25 +31489,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:948 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1032 |
+| chat | docs/roadmap/LEDGER.md:947 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1031 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:972 |
+| documents | docs/roadmap/LEDGER.md:971 |
 | general | docs/roadmap/LEDGER.md:699 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:936 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1044 |
+| graph | docs/roadmap/LEDGER.md:935 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1043 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:984 |
+| mindmap | docs/roadmap/LEDGER.md:983 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:1008 |
+| timeline | docs/roadmap/LEDGER.md:1007 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:996 |
+| ui-modernisation | docs/roadmap/LEDGER.md:995 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:960 |
+| whiteboard | docs/roadmap/LEDGER.md:959 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:1020 |
+| world-class | docs/roadmap/LEDGER.md:1019 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

@@ -71,6 +71,14 @@ document.getElementById("settings-nav")?.addEventListener("keydown", (event) => 
 });
 let settingsNavWalking = false;
 
+//: One sentence for About's build line from `/health` (L-general-6).
+function aboutBuildLine(h) {
+  const commit = h.source_commit ? `Build ${h.source_commit.slice(0, 10)}` : "Build not stamped";
+  const since = new Date(h.started_at).toLocaleString();
+  const folder = h.data_dir_writable ? "the notebook folder takes writes" : "the notebook folder is read-only, so nothing new can be saved";
+  return `${commit}, running since ${since}, notebook ${h.data_dir_id}; ${folder}.`;
+}
+
 function ensureSettingsPaneTitle(box, name) {
   //: Not "any `.help-head` child": Background tasks ends on one (Quit
   //: Tessellate), which used to count as its title and left the pane with none.
@@ -348,6 +356,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
   const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
   $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
+  //: The running build (L-general-6): which commit, since when, and whether the notebook folder takes writes.
+  $("about-build").textContent = aboutHealth?.started_at ? aboutBuildLine(aboutHealth) : "";
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
