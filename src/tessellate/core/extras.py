@@ -1146,6 +1146,11 @@ class InstallState:
     running: bool = False
     extra_id: str = ""
     step: str = ""
+    #: How far a download has got, 0 to 1 over all its files, or None while
+    #: nothing can say (pip reports no fraction worth believing). Set by
+    #: `extra_downloads._fetch`; read by `/extras` and `/tasks` so the
+    #: installer shows a real bar, not a spinner, when there is one.
+    fraction: float | None = None
     log: list[str] = field(default_factory=list)
     started: float = 0.0
     outcome: str = ""  # "" while running, then completed | failed
@@ -1292,6 +1297,7 @@ def _status_row(extra: Extra) -> dict:
         "installed": is_installed(extra),
         "installing": _state.running and _state.extra_id == extra.id,
         "step": _state.step if _state.running and _state.extra_id == extra.id else "",
+        "fraction": _state.fraction if _state.running and _state.extra_id == extra.id else None,
     }
 
 
@@ -1946,6 +1952,7 @@ def _claim(extra: Extra, step: str) -> None:
     _state.extra_id = extra.id
     _state.outcome = ""
     _state.step = step
+    _state.fraction = None
     _state.log = []
     _state.started = time.time()
     _state.cancelled = False

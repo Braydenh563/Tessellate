@@ -9,15 +9,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 7 | 1 | 0 | 3 | 8 |
+| chat | 0 | 3 | 1 | 0 | 0 | 4 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 172 | 57 | 0 | 69 | 359 |
+| world-class | 130 | 172 | 55 | 0 | 69 | 357 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 364 | 69 | 0 | 125 | 759 |
+| all | 326 | 360 | 67 | 0 | 122 | 753 |
 
 ## graph
 
@@ -25,15 +25,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L-world-class-770** `chat` open, M: Split chat.js into cohesive classic scripts, index.html order kept, app_js_text and CODEMAP fresh, ratchets held. From L639/L698 (hub 2026-11-21; world-class fffd0c47f, not yet fetched). Evidence: frontend/js/chat.js 1639 lines
 - [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
-- [ ] **L974** `chat` blocked-hardware, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model
-- [ ] **L975** `chat` blocked-hardware, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine
 - [ ] **L691** `chat` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
-- [ ] **L559** `chat` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
-- [ ] **L560** `chat` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
-- [ ] **L587** `chat` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
-- [ ] **L915** `chat` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
-- [ ] **L627** `chat` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 
 
 ## whiteboard
@@ -375,7 +368,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L657** `world-class` partly, M: Add duplicates, entities and dates as fact kinds in ai/facts.py. From OPEN.md:1226. Evidence: Tensions built (ai/facts.py:1197 _pair_passes); duplicates/entities/dates kinds not present.
 - [ ] **L658** `world-class` partly, M: Add a stop step to night shift, backup, resurfacing and embeddings backfill. From OPEN.md:1697; OPEN.md:3538. Evidence: core/passes.py:95,201 stop_requested only checked in maintenance; backfill loop and others have no stop step
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
-- [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L661** `world-class` partly, M: Make Library boards and mind maps filter return boards, not only note cards. From OPEN.md:1120; OPEN.md:3749. Evidence: library.js:383 handles is_board entries; libraryPhrase filter result not confirmed to include boards
 - [ ] **L662** `world-class` partly, M: Add a meeting-aware card preview (when, who, open actions) instead of raw headings. From OPEN.md:3563. Evidence: note-cards.js:322 detects meetings, but no when/who/open-actions preview found
 - [ ] **L663** `world-class` partly, M: Wire the 30 context rules and 50 acceptance fixtures into decide. From OPEN.md:3618. Evidence: taxonomy.py:441 context_rules(), memorymap_context_rules.json and tests/fixtures/taxonomy/context_acceptance_fixtures.json exist; wiring into decide not confirmed
@@ -412,7 +404,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L696** `world-class` partly, L: Add undo paths to write functions (whiteboard 14/43, map 7/25, graph 9/21, library 9/30, dashboard 1/9, timeline 1/5). From OPEN.md:3694. Evidence: Counts from measure-writes.py (script absent from scratchpad now); undo gaps remain on most surfaces
 - [ ] **L697** `world-class` partly, L: Recordings, bookmarks, files in a private space not sealed; deleting a locked space shows 423 message, no unlock prompt. From ledger-1112 P20.
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
-- [ ] **L699** `world-class` partly, L: Brief 62: no src/tessellate/data, no tests/test_import_time.py; question_noise.py and composer_tables.py hold data inline. From ledger-1112 P9.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
 - [ ] **L701** `world-class` partly, L: 380ms style-and-layout first frame (13k nodes); dashboard.js widget fill callbacks 98-119ms not fixed. From ledger-1112 I8.
 - [ ] **L-world-class-1** `world-class` open, M: Run the Harper autocorrect on reminders, magic add and the other single-line app inputs. From INBOX 904 B04. Evidence: Harper runs in the note boxes (autocorrect.js); no harper hook on reminders or magic add

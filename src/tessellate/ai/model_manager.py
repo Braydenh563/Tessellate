@@ -1136,6 +1136,20 @@ def _check_room(client: OllamaClient, wanted: int) -> None:
         raise OllamaError(f"Not enough free space: free up {diskspace.human_bytes(short)} and try again.")
 
 
+#: Called with a model's name once its download has finished. The API layer
+#: registers the filing model's warm-up here (`routes_models._warm_after_pull`):
+#: `janitor` imports this module, so this module cannot import it back.
+AFTER_PULL: list = []
+
+
+def same_model_name(a: str, b: str) -> bool:
+    """`llama3.2` and `llama3.2:latest` are one model, as Ollama resolves them."""
+    def bare(name: str) -> str:
+        return name[: -len(":latest")] if name.endswith(":latest") else name
+
+    return bool(a) and bare(a) == bare(b)
+
+
 def _run_pull(client: OllamaClient, name: str, job: Job) -> None:
     started = time.monotonic()
     try:
@@ -1166,6 +1180,11 @@ def _run_pull(client: OllamaClient, name: str, job: Job) -> None:
             name=name,
             duration_ms=(time.monotonic() - started) * 1000,
         )
+        for hook in AFTER_PULL:
+            try:
+                hook(name)
+            except Exception:  # noqa: BLE001  # a warm-up that fails must not turn a finished download into an error
+                logging.getLogger("tessellate.models").info("after-pull hook failed for %s", name, exc_info=True)
     except OllamaError as exc:
         # Surface the failure so the UI can offer a retry, never leave
         # a half-download looking installed (§6.5).

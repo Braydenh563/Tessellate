@@ -381,6 +381,20 @@ def _builtin_embedding_install_state() -> dict:
         return {"builtin_embedding_installed": True, "builtin_embedding_installing": False}
 
 
+def _warm_after_pull(name: str) -> None:
+    """A finished download of the model filing will use is loaded at once, so
+    the first note after a fresh install's pull is not the one that waits for
+    the cold load (the launch warm-up ran before the model existed)."""
+    from tessellate.ai import janitor
+
+    manager = deps.get_model_manager()
+    if jobs.same_model_name(name, manager.utility_model()):
+        bgpool.enqueue("warm-filing", janitor.warm_filing_model, manager, deps.get_ollama(), dedupe_key="warm-filing")
+
+
+jobs.AFTER_PULL.append(_warm_after_pull)
+
+
 @router.post("/warm-filing")
 def warm_filing() -> dict:
     """Load the filing model and re-ask for notes left as stand-ins when the
