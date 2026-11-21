@@ -6,6 +6,7 @@ offered the web tools, unless the person said "search the web for".
 
 from __future__ import annotations
 
+import threading
 from types import SimpleNamespace
 
 import pytest
@@ -91,22 +92,27 @@ def test_unreadable_pages_fall_back_to_the_result_snippets(client, session, monk
 
 
 def test_pages_are_read_in_parallel_under_one_deadline(monkeypatch):
-    import time
 
     from tessellate.search import websearch
 
 
     monkeypatch.setattr(routes_chat, "WEB_PAGES_DEADLINE", 0.5)
 
+    # Held by an event, not timed (L-general-70): the pages came back while
+    # every fetch was still held, so the turn did not wait for them.
+    release = threading.Event()
+
     def slow(url):
-        time.sleep(2)
+        release.wait(30)
         return {"url": url, "text": "late"}
 
     monkeypatch.setattr(websearch, "fetch_readable_cached", slow)
     hits = [{"title": f"T{i}", "url": f"https://e.org/{i}", "snippet": f"snippet {i}"} for i in range(3)]
-    started = time.monotonic()
-    pages = routes_chat._web_pages(websearch, hits)
-    assert time.monotonic() - started < 1.5
+    try:
+        pages = routes_chat._web_pages(websearch, hits)
+        assert not release.is_set()
+    finally:
+        release.set()
     assert [p["snippet"] for p in pages] == ["snippet 0", "snippet 1", "snippet 2"]
 
 
