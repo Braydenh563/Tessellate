@@ -42,6 +42,7 @@ from tessellate.api import (
     asset_strip,
     routes_ask_history,
     routes_capabilities,
+    routes_mcp,
     routes_auth,
     routes_bookmarks,
     routes_categories,
@@ -1646,6 +1647,10 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_debug.router, LOCKED),
     (routes_privacy.router, LOCKED),
     (routes_capabilities.router, LOCKED),
+    #: INBOX 1860: making and revoking the tool server's tokens is a Settings act,
+    #: behind the lock; `/mcp` itself checks its own bearer token instead.
+    (routes_mcp.router, LOCKED),
+    (routes_mcp.open_router, OPEN),
     (routes_read.router, LOCKED),
     (routes_spelling.router, LOCKED),
     (routes_statistics.router, LOCKED),

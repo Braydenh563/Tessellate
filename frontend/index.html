@@ -11885,6 +11885,13 @@ Link to another note with [[its first few words]]."></textarea>
                   another app, and private notes are never shown. The packaged
                   app starts the same server with its --mcp option.
                 </p>
+                <p>
+                  Make a link gives one app an address and its own token, for
+                  a client that connects over HTTP. The link works only on this
+                  computer unless LAN mode is on, reads only unless you ticked
+                  the box, and stops at once when you press Revoke. Each row
+                  says when that app last used it.
+                </p>
               </div>
               <label class="check-row">
                 <input type="checkbox" id="pref-mcp-writes">
@@ -11896,6 +11903,27 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row">
                 <button type="button" id="mcp-config-copy" class="ghost small"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
               </div>
+              <!-- INBOX 1860: a link and a token per app, for a client that connects
+                   over HTTP instead of starting the server itself. -->
+              <p class="muted">Or give an app a link: each one gets its own token, which you can revoke.</p>
+              <div class="row field-row">
+                <label for="mcp-client-name" class="muted">App</label>
+                <input id="mcp-client-name" type="text" maxlength="60" placeholder="Claude Desktop">
+                <button type="button" id="mcp-client-create" class="ghost small"><i class="ph ph-link ph-lead" aria-hidden="true"></i> Make a link</button>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="mcp-client-writes">
+                <span>This app can add and change notes
+                  <small class="muted">Off: it can only read.</small></span>
+              </label>
+              <div id="mcp-client-made" class="hidden">
+                <p class="muted">Copy this now. The token is shown only once.</p>
+                <pre id="mcp-client-snippet" class="code-block"></pre>
+                <div class="row">
+                  <button type="button" id="mcp-client-copy" class="ghost small"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
+                </div>
+              </div>
+              <ul id="mcp-client-list" class="entry-list" aria-label="Apps with a link"></ul>
             </div>
           </template>
           </section>

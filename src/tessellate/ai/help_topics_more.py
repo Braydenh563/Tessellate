@@ -333,13 +333,15 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
+            "mcp link", "connect claude", "revoke a token",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
-            "with a Copy button; that client can also read your notes (never "
+            "app: a snippet to paste into an MCP client such as Claude Desktop; "
+            "it can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. "
+            "you tick Let that app add and change notes. Make a link gives an "
+            "app its own token, shown once, to revoke. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "

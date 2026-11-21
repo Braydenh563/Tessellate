@@ -15,12 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 88 | 14 | 0 | 0 | 102 |
+| world-class | 0 | 89 | 13 | 0 | 0 | 102 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 478 | 85 | 2 | 111 | 935 |
-
-## graph
-
+| all | 372 | 479 | 84 | 2 | 111 | 935 |
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -499,7 +496,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
-- [ ] **L687** `world-class` partly, L: MCP: add HTTP transport and restricted token/URL setup, drop embedder load at startup, decide trust model. From OPEN.md:723; OPEN.md:1007; INBOX.md:904 B52. Evidence: Resources and prompts built (mcp_server.py:28-30,173); embedder load and stdio-only not confirmed changed
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
@@ -552,6 +548,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-280** `world-class` open, M: First paint sits at 300 to 330 ms against the 300 ms line: find what the first frame waits for (844 KB of HTML with every surface template, 22 stylesheets) and trim it. From WORLD_CLASS_PLAN.md:1823 (L-world-class-90 measured). Evidence: first paint median 301 / 332 ms in two 5-run cold loads at 1440x900 (range 246 to 456; 300 line); html 844 KB decoded (163 KB gz), 22 render-blocking css 1,024 KB decoded (195 KB gz); defer on every boot script gave no gain (7 pairs, 408 to 390 ms median); the lock screen paints after 34 to 53 of 85 resources
 - [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
+- [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 
 ## general
 
