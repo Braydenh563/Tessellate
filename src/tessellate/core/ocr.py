@@ -434,10 +434,47 @@ def _rapidocr_lines(image_path: Path) -> list[tuple[list, str, float]] | None:
     object with `boxes`, `txts` and `scores`. Both are read."""
     try:
         reader = _rapidocr_reader()
-        out = reader(str(image_path))
     except Exception:
         logger.warning("RapidOCR failed for %s", image_path.name, exc_info=True)
         return None
+    prepared = _rapidocr_prepared(image_path)
+    if prepared is not None:
+        array, scale = prepared
+        try:
+            lines = _rapidocr_read(reader(array))
+        except Exception:  # noqa: BLE001  # the plain read below is the old behaviour
+            logger.info("RapidOCR prepared read failed for %s", image_path.name, exc_info=True)
+            lines = []
+        if lines:
+            return [([[x / scale, y / scale] for x, y in box], text, score) for box, text, score in lines]
+    try:
+        return _rapidocr_read(reader(str(image_path)))
+    except Exception:
+        logger.warning("RapidOCR failed for %s", image_path.name, exc_info=True)
+        return None
+
+
+def _rapidocr_prepared(image_path: Path):
+    """`(grey array, scale)` for RapidOCR (L703: a dark ground inverted, small
+    text enlarged, as Tesseract's read gets), or None to read the file as it
+    is: the picture needs neither, or Pillow or numpy is missing or fails.
+    A preparation fault costs the improvement, never the read."""
+    try:
+        import numpy  # noqa: PLC0415  # RapidOCR's own dependency, imported where it is used
+        from PIL import Image  # noqa: PLC0415
+
+        with Image.open(image_path) as img:
+            prepared = ocr_prep.prepare_for_detector(img)
+        if prepared is None:
+            return None
+        return numpy.asarray(prepared.image), prepared.scale
+    except Exception:  # noqa: BLE001
+        logger.info("RapidOCR preparation skipped for %s", image_path.name, exc_info=True)
+        return None
+
+
+def _rapidocr_read(out) -> list[tuple[list, str, float]]:
+    """One RapidOCR call's result as `(box, text, score)` lines."""
     if isinstance(out, tuple):
         out = out[0]
     if out is None:
