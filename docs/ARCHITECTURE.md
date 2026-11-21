@@ -294,6 +294,8 @@ Tessellate/
 │   │   ├── ocr.py           # local Tesseract OCR; `engine_status` reports
 │   │   │                    #   program, Python part, version and language
 │   │   ├── pdfpages.py      # a PDF page -> a PNG (optional `pdfpages` extra)
+│   │   ├── parse_guard.py   # uploads parsed in a child process with a time
+│   │   │                    #   and memory limit (SECURITY.md T19)
 │   │   ├── docview.py       # any file -> its text (the viewer + import path)
 │   │   ├── docmeta.py       # a document's frontmatter, read for the list
 │   │   ├── docexport.py     # a document's markdown -> a file to hand on

@@ -23,7 +23,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate import __version__
-from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
+from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, parse_guard, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
@@ -710,6 +710,18 @@ def import_document(file: UploadFile, session: Session = Depends(get_session)) -
         saved.flush()
         try:
             text = importer.convert_to_markdown(Path(saved.name))
+        except parse_guard.ParseStopped as exc:
+            #: The reader's child hung, crashed or ran out of memory on this
+            #: file (L-world-class-321); which one is in the log.
+            name = logbuffer.safe_value(file.filename or "that file", 80)
+            jobruns.note_finished(
+                "import", "failed", f"Couldn't read {name}. Reading it was stopped: it may be damaged."
+            )
+            raise HTTPException(
+                status_code=422,
+                detail="Reading that file was stopped because it took too long, needed too much "
+                "memory or broke the reader. It may be damaged.",
+            ) from exc
         except Exception as exc:  # a file markitdown can't parse must not 500
             #: Background jobs shows this row to a person, so it is a plain
             #: sentence with the file's name; the converter's own words (a

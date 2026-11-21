@@ -198,6 +198,14 @@ def _own_run_folder(tmp_path, monkeypatch):
     monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
 
 
+@pytest.fixture(autouse=True)
+def _parse_in_place(monkeypatch):
+    """The app reads uploads in a child process (core/parse_guard.py); the
+    suite's fake parsers live in `sys.modules`, which a child cannot see, so
+    they run in place. tests/test_parse_guard.py clears this to test the child."""
+    monkeypatch.setenv("TESSELLATE_PARSE_INLINE", "1")
+
+
 #: The suite's fixed day (a Saturday, the same day `_frozen_clock.FIXED_NOW` uses).
 SUITE_DAY = date(2026, 8, 1)
 

@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 from collections.abc import Callable
 from pathlib import Path
 
-from tessellate.core import extra_downloads, jobs, languagetool_files, ocr
+from tessellate.core import extra_downloads, jobs, languagetool_files, ocr, parse_guard
 from tessellate.core.extra_downloads import Download
 from tessellate.core.subproc import NO_WINDOW
 
@@ -1901,6 +1901,9 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             _state.step = f"{extra.label} installed: restart Tessellate to use it."
         if code == 0:
             activate_frozen_extras()
+            # The readers' children started with the old sys.path and PATH:
+            # the next file starts fresh ones that see the new package.
+            parse_guard.stop_all()
     except (OSError, subprocess.SubprocessError):
         # See `_run_uninstall`'s except block: same CodeQL
         # `py/stack-trace-exposure` shape, same fix: full detail to the log,

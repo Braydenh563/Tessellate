@@ -35,6 +35,7 @@ import time
 from collections import OrderedDict
 from pathlib import Path
 
+from tessellate.core import parse_guard
 from tessellate.core.deps import register_cache_reset
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,12 @@ def page_count(path: Path) -> int:
     """How many pages, or 0 if it cannot be read at all."""
     if not available():
         return 0
+    return _count_pages(path)
+
+
+@parse_guard.isolated("pdf", timeout=60, on_stop=int)
+def _count_pages(path: Path) -> int:
+    """`page_count`'s pdfium half, in the reader's child (L-world-class-321)."""
     try:
         import pypdfium2 as pdfium
 
@@ -168,6 +175,12 @@ def render_pages(path: Path, limit: int = MAX_PAGES) -> list[bytes]:
     """
     if not available():
         return []
+    return _render_all(path, limit)
+
+
+@parse_guard.isolated("pdf", timeout=180, on_stop=list)
+def _render_all(path: Path, limit: int) -> list[bytes]:
+    """`render_pages`'s pdfium half, in the reader's child (L-world-class-321)."""
     try:
         import pypdfium2 as pdfium
     except ImportError:
@@ -288,10 +301,6 @@ def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
     if not available() or safe_index < 0:
         return None
     try:
-        import pypdfium2 as pdfium
-    except ImportError:
-        return None
-    try:
         stat = path.stat()
         key = (str(path), stat.st_mtime_ns, stat.st_size, safe_index, bool(thumb))
     except OSError:
@@ -300,6 +309,17 @@ def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
         hit = _cache_get(key)
         if hit is not None:
             return hit
+    png = _draw_page(path, safe_index, bool(thumb))
+    if png is not None and key is not None:
+        _cache_put(key, png)
+    return png
+
+
+@parse_guard.isolated("pdf", timeout=60, on_stop=lambda: None)
+def _draw_page(path: Path, safe_index: int, thumb: bool) -> bytes | None:
+    """`render_page`'s pdfium half, in the reader's child (L-world-class-321);
+    the cache stays in the server, so a page seen again costs no round trip."""
+    import pypdfium2 as pdfium
 
     # The document is closed INSIDE the lock. It used to be closed in an
     # outer `finally`, after the `with` had released the lock, so one thread
@@ -324,8 +344,6 @@ def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
                     )
                 finally:
                     page.close()
-                if png is not None and key is not None:
-                    _cache_put(key, png)
                 return png
             finally:
                 try:
