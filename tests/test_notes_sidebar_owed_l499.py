@@ -30,4 +30,6 @@ def test_a_hidden_tab_owes_the_sidebar_and_a_draw_pays_it():
 def test_both_payers_read_the_sidebar_debt():
     js = app_js_text()
     assert re.search(r'dataset\.stale \|\| window\.notesSidebarOwed\)\) renderSidebar\(\)', _body(js, "renderEntries"))
-    assert 'name === "notes" && ($("entry-list").dataset.stale || window.notesSidebarOwed)) renderEntries()' in js
+    #: The reveal pays the list's debt with a draw, and the sidebar's alone with the sidebar (L603).
+    assert 'name === "notes" && $("entry-list").dataset.stale) renderEntries()' in js
+    assert 'name === "notes" && window.notesSidebarOwed) renderSidebar()' in js

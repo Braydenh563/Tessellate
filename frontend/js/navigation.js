@@ -861,7 +861,10 @@ function revealTab(name) {
   }
   scheduleUndoBar();
   if (name === "notes") window.initNotesSubtabHeightToken?.();
-  if (name === "notes" && ($("entry-list").dataset.stale || window.notesSidebarOwed)) renderEntries();
+  //: An empty `data-stale` is a draw the Notes press put after the paint (phone-shell.js): drawing
+  //: it here too built 4,998 rows inside the press and again two frames on (L603, 210 and 63ms).
+  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  else if (name === "notes" && window.notesSidebarOwed) renderSidebar();
   //: The companion finds its perch on the tab it is now on (avatars.js).
   window.nameMarkBuddyTabChanged?.();
   // When the strip is narrow enough to scroll, the tab you just chose is the

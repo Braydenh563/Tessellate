@@ -2150,7 +2150,10 @@ function dashFillingSkeletonDone(outline) {
     dashResizeObserver.above = [];
   }
   outline.style.opacity = "0";
-  setTimeout(() => outline.remove(), 260);
+  //: Hidden, not removed: the outline is a child of `body`, and taking a child of `body` out
+  //: restyled the whole page through its sibling rules (L603: 6,267 elements, 106ms at 1x,
+  //: just after the first Notes press). The next fill removes it, when it shows another.
+  setTimeout(() => { outline.style.display = "none"; }, 260);
 }
 
 // --- widget picker modal ------------------------------------------------------------

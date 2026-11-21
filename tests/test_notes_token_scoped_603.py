@@ -5,7 +5,7 @@ elements, 83 to 117ms at 1x on a loaded host, 5,000 notes)."""
 
 from pathlib import Path
 
-from tests._app_js import frontend_text
+from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,3 +38,23 @@ def test_the_selectbar_reads_it_on_itself():
     css = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text(encoding="utf-8")
     assert "#tab-notes .selectbar {\n  --selectbar-top: var(--notes-sticky-top);" in css
     assert "#tab-notes {\n  --selectbar-top" not in css
+
+
+def _fn(js: str, name: str) -> str:
+    start = js.index(f"function {name}(")
+    return js[start : js.index("\n}\n", start)]
+
+
+def test_the_first_notes_press_draws_the_list_once():
+    """The press defers the draw past the paint with an empty `data-stale`; the reveal
+    drew it again inside the press when the sidebar was owed (210 then 63ms at 5k)."""
+    body = _fn(app_js_text(), "revealTab")
+    assert 'name === "notes" && $("entry-list").dataset.stale) renderEntries()' in body
+    assert "window.notesSidebarOwed)) renderEntries()" not in body
+
+
+def test_the_dashboard_outline_is_hidden_not_taken_out_of_body():
+    """Removing a child of `body` restyled all 6,267 elements (106ms) just after the press."""
+    body = _fn(frontend_text("dashboard.js"), "dashFillingSkeletonDone")
+    assert "outline.remove()" not in body
+    assert 'outline.style.display = "none"' in body

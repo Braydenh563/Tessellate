@@ -187,7 +187,7 @@
     //: half the page can read without a test is its own first paint. Built
     //: here, not in index.html, for the same element cap as the row above.
     function speedRow() {
-      if ($("health-speed-run")) return;
+      if (document.getElementById("health-speed-run")) return;
       const after = $("health-selfcheck-run")?.closest(".setting-row");
       if (!after) return;
       const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
@@ -195,16 +195,13 @@
       const label = make("div", { className: "setting-label" });
       label.append(make("span", { textContent: "Speed" }), make("small", { className: "muted", textContent: "This notebook against the times the app is held to." }));
       const control = make("span", { className: "setting-control row" });
-      control.append(
-        make("button", { type: "button", id: "health-speed-run", className: "ghost small", textContent: "Check now" }),
-        make("span", { id: "health-speed", className: "muted", textContent: "Not checked yet" }),
-      );
-      row.append(label, control, make("ul", { id: "health-speed-list", className: "muted health-missing hidden" }));
+      const run = make("button", { type: "button", id: "health-speed-run", className: "ghost small", textContent: "Check now" });
+      const line = make("span", { id: "health-speed", className: "muted", textContent: "Not checked yet" });
+      const list = make("ul", { id: "health-speed-list", className: "muted health-missing hidden" });
+      control.append(run, line);
+      row.append(label, control, list);
       after.after(row);
-      const run = $("health-speed-run");
       run.onclick = async () => {
-        const line = $("health-speed");
-        const list = $("health-speed-list");
         setLabel(run, "ph:spin Checking");
         try {
           const { budgets = [] } = await apiJson("/models/bench/budgets?live=true");
