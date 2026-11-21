@@ -395,9 +395,12 @@ function fillEntryMenu(menu, entry) {
     menu.appendChild(buildMenuGroupButton("ph:sparkle Atlas", aiItems));
     menu.appendChild(rule());
   }
-  menu.appendChild(buildMenuItemButton(select));
-  menu.appendChild(buildMenuItemButton(move));
-  menu.appendChild(buildMenuGroupButton("ph:link Connect", [connections, ...(headings ? [headings] : []), ...connect]));
+  //: A row found by its label may be missing (renamed, or not offered for
+  //: this note): it is skipped rather than throwing, which left the whole
+  //: menu empty (review 5907752577).
+  if (select) menu.appendChild(buildMenuItemButton(select));
+  if (move) menu.appendChild(buildMenuItemButton(move));
+  menu.appendChild(buildMenuGroupButton("ph:link Connect", [connections, headings, ...connect].filter(Boolean)));
   menu.appendChild(buildMenuGroupButton("ph:plus Add", addItems));
   menu.appendChild(rule());
   menu.appendChild(buildMenuGroupButton("ph:export Share and export", [...share, ...shareLinks]));

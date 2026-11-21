@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Review fixes: a board past 16 MB exports as a folder (uploads, not JSON); a batch act that fails partway keeps Undo for the notes changed and counts the rest; bulk property Undo restores only its key; a missing note menu row is skipped; the pie drops non-positive rows itself.
 - Open-work sweep of the shared files: IDEAS.md's list checked against the app (all built or in BACKLOG), stale "still open" notes in the docs, frontend and sweeps written as built, and `open_scan` reads an HTML attribute value as data.
 - Library: the selection bar's More menu sets tags, a category or a property on the notes ticked, with the Notes bar's own dialogs and Undo (L-world-class-392).
 - The timeline draws a thread as a branching line: a note that continues another branches off beside it, and its Continues button, which never appeared before, now does (L-world-class-176).

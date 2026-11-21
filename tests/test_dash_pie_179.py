@@ -61,3 +61,10 @@ def test_the_category_mix_widget_is_on_the_dashboard_and_findable():
     assert 'kind: "pie"' in body and "drawAskChart(host" in body and "categoryDotColour(name)" in body
     assert '"widget-mix"' in frontend_text("reveal-targets.js")
     assert 'reveal: "widget-mix"' in frontend_text("app-features.js")
+
+
+def test_the_pie_drawer_drops_non_positive_rows_itself():
+    """Review 5907752577: only drawAskChart filtered through askChartPieRows."""
+    js = frontend_text("ask-chart.js")
+    start = js.index("function askChartPieSvg(chart, width) {")
+    assert "const rows = chart.rows.filter((row) => row.value > 0);" in js[start : start + 300]

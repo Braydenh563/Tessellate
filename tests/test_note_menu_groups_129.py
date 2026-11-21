@@ -33,3 +33,11 @@ def test_share_holds_who_reads_it_and_where_it_goes():
     for word in ("Add to a document", "Add to a board or map", "Expand into a document", "Copy wiki link"):
         assert f'"{word}"' in share
     assert "[select, move, headings, connections].includes(item)" in TEXT
+
+
+def test_a_missing_row_is_skipped_not_thrown():
+    """Review 5907752577: rows are found by label, so a renamed one was
+    `undefined` and `buildMenuItemButton(undefined)` threw, emptying the menu."""
+    body = _assembly()
+    assert "if (select) menu.appendChild(" in body and "if (move) menu.appendChild(" in body
+    assert "[connections, headings, ...connect].filter(Boolean)" in body

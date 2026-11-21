@@ -125,7 +125,9 @@
   }
 
   function askChartPieSvg(chart, width) {
-    const rows = chart.rows;
+    //: Filtered here too, so a caller that skips `askChartPieRows` cannot
+    //: draw a zero or negative slice (review 5907752577).
+    const rows = chart.rows.filter((row) => row.value > 0);
     const whole = rows.reduce((sum, row) => sum + row.value, 0) || 1;
     //: The legend keeps 130 units for "Category 20%": a narrow card takes the
     //: room from the pie, never from the names (measured: a 322-unit card cut
