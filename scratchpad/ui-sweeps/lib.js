@@ -186,6 +186,15 @@ async function boot(opts={}) {
     if (got !== want) console.log('BOOT-WARN: data-theme is', JSON.stringify(got), 'not', want);
   }
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
+  //: **Settings' listeners load on its first open** (the `settingsControls` bundle), so a sweep
+  //: that sets a Settings control and fires its `change` without opening Settings changed
+  //: nothing: 39 companion sweeps found no `#nm-buddy` (L554). Loaded here only for a sweep
+  //: whose text drives a Settings control that way, so every other boot stays as it was.
+  {
+    let text = '';
+    try { text = require('fs').readFileSync(require.main.filename, 'utf8'); } catch {}
+    if (/\$\('avatar-buddy/.test(text)) await page.evaluate(() => typeof ensureModule === 'function' && ensureModule('settingsControls')).catch(() => {});
+  }
   await page.waitForTimeout(800);
   //: **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked
   //: "Check for updates automatically?" after unlock, a dialog that would sit
