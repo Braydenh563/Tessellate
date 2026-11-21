@@ -25,6 +25,14 @@ const SHOT = process.env.SHOT || '';
         await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: `Scroll probe note ${i}. A line of words so the card has a body to it, and a second sentence for height.` }) });
       }
     }, 16 - have);
+    // The app polls for changes made elsewhere (/entries/changes, about every 10s) and re-renders the list when it
+    // finds them: notes this run just made would replace the card the buddy is glued to mid-run on a fresh data dir
+    // (a 390px jump when it was lost). Load the page again, so it has them from the start.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    if (await page.isVisible('#lock-password')) { await page.fill('#lock-password', 'testpassword123'); await page.click('#lock-submit'); }
+    await page.waitForFunction(() => typeof revealTab === 'function' && typeof ensureModule === 'function', null, { timeout: 20000 });
+    await page.waitForTimeout(1500);
   }
   await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));

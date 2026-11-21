@@ -45,7 +45,19 @@ const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x84
           return { W: innerWidth, H: innerHeight, face: [f.left, f.top, f.right, f.bottom].map(Math.round), menu: menu ? [menu.left, menu.top, menu.right, menu.bottom].map(Math.round) : null, focusIn: !!(nmb.menu && nmb.menu.contains(document.activeElement)) };
         });
         const tag = `${size} at ${x},${y} by ${how}`;
-        if (!m.menu) { fails.push(`${tag}: no menu`); continue; }
+        if (!m.menu) {
+          // What the click met, so a miss names its cause (the figure ghosted, a panel over it, or moved on).
+          const why = await page.evaluate(([fx, fy]) => {
+            const b = document.getElementById('nm-buddy');
+            const f = b.querySelector('.nm-buddy-face');
+            const r = f.getBoundingClientRect();
+            const e = document.elementFromPoint(fx, fy);
+            const a = document.activeElement;
+            return { clicked: [Math.round(fx), Math.round(fy)], face: [r.left, r.top, r.width, r.height].map(Math.round), top: e && `${e.tagName}.${String(e.className).slice(0, 30)}#${e.id}`, cls: b.className, pe: `${getComputedStyle(b).pointerEvents}/${getComputedStyle(f).pointerEvents}`, op: getComputedStyle(b).opacity, act: a && `${a.tagName}.${String(a.className).slice(0, 30)}#${a.id}` };
+          }, [face.x, face.y]);
+          fails.push(`${tag}: no menu ${JSON.stringify(why)}`);
+          continue;
+        }
         const [ml, mt, mr, mb] = m.menu;
         const [fl, ft, fr, fb] = m.face;
         const inside = ml >= 7 && mt >= 7 && mr <= m.W - 7 && mb <= m.H - 7;
