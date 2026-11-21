@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 59 | 10 | 0 | 0 | 69 |
+| world-class | 0 | 58 | 10 | 0 | 0 | 68 |
 | general | 0 | 28 | 2 | 0 | 6 | 30 |
-| all | 372 | 440 | 81 | 2 | 113 | 893 |
+| all | 372 | 439 | 81 | 2 | 113 | 892 |
 
 ## graph
 
@@ -499,7 +499,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
-- [ ] **L-world-class-105** `world-class` open, S: Re-measure 22.3: card padding and body size at laptop widths, section-head weight, one Phosphor weight lint, the toast corner at 1093x614. From WORLD_CLASS_PLAN.md:2294. Evidence: WORLD_CLASS_PLAN.md:2294 '22.3 not re-measured'
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
 - [ ] **L-world-class-108** `world-class` open, S: Verify 391's agent items: mind maps in Find anything, digest filler, activity panel alignment, image filter, a closed panel's finished answer. From WORLD_CLASS_PLAN.md:2415. Evidence: WORLD_CLASS_PLAN.md:2415 lists them as 'agents running', with no result recorded

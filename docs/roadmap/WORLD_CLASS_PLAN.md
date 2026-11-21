@@ -2008,7 +2008,6 @@ Checked item by item 2026-11-12; the built ones moved to HISTORY.md, "Moved from
 - Every destructive action has an Undo toast: built (LEDGER L694 and L696 done, HISTORY.md).
 - Right-click works on every card and row with a hold on touch: 38 `contextmenu` sites, not every card. LEDGER L-world-class-103.
 - The status bar's "!" says what it means on hover and click: only the AI status glyph is seen (`status.js:2484`); not checked for the rest. LEDGER L-world-class-104.
-- 22.3 not re-measured: card padding and body size at laptop widths (`tests/test_density_height.py` covers controls only), Settings section-head weight, one Phosphor weight app-wide (no lint found), the toast corner at 1093x614. LEDGER L-world-class-105.
 
 ### 22.4 The devibecode programme: one surface at a time, every skill
 
