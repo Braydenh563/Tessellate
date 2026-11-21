@@ -6,7 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- CI: the UI sweeps run as four balanced jobs (about 20 minutes each, 46 sweeps), with the whole font matrix (15 shards of two cells) and errors.js in two width pairs; `gate.sh --sweeps` runs the same shards (L-general-20).
+- CI: the UI sweeps run as four balanced jobs (about 20 minutes each, 59 sweeps), with the whole font matrix (15 shards of two cells) and errors.js in two width pairs; `gate.sh --sweeps` runs the same shards (L-general-20).
 - Layout: in a wide font at 390px the capture notice's Install button keeps its word and the documents status bar's goal and findings labels give way before the type picker (L-general-43).
 - Boot size: the chat list and opening a chat load on first use (chat-list.js), so the boot scripts gzip to 247,568 bytes, 2,882 under the cap.
 - Notes: a clipped or imported note's source chip now says its kind in its tooltip and label (Clipped from URL, Imported from file); extracted-from-document and transcribed-from-audio are not recorded on the note, so they have no chip (L-general-13).
