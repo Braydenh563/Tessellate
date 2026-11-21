@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Message wording lint: the "file changed while open" detail for a download write-back is checked at its source in core/sealed_files.py (CI de422974).
 - Capture outbox: the staged-picture strip stops at the next bracket (linear on a wall of brackets) and the held reminder is still stripped from the queued note (CI de422974).
 - Egress lint per call site (L659, trust rule 5 and the where-your-data-went list): `tests/test_egress_sites.py` reads every function that opens a connection (requests, urllib, http.client, httpx, sockets, the model hub) and fails one that is neither under `egress.labelled` / `egress.purpose` nor listed with its reason (loopback, or a labelled caller). Of 30 unnamed sites, the model-server send (`provider_http._send`), the update signature fetch and the SearXNG probe are now labelled, so a model server on another address is named on the receipt; 11 loopback or labelled-caller sites are listed.
 - Service worker and phone Settings verified in the running app (L673), no defect: with the server stopped a reload answers the cached offline page in 1.5 s and a stamped script still serves from cache, a new worker version replaces the old cache, and at 390x844 the jump list reaches all 21 Settings panes with no sideways overflow and Close returns to the app.
