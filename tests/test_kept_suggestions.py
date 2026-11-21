@@ -11,11 +11,19 @@ from tessellate.ai import tagging
 
 
 def _settled(client, entry_id, timeout=10.0):
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        if client.get(f"/entries/{entry_id}/filing").json()["filing_state"] != "pending":
+    """Until the whole filing job is done. `filing_state` settles first and
+    the tag suggestions are kept after it (`_embed_and_tidy`), so a wait on
+    the state alone read `suggested_tags` as [] on a busy runner (CI, py3.11
+    leg 1, 2026-11-14)."""
+    from tessellate.core import jobs
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        state = client.get(f"/entries/{entry_id}/filing").json()["filing_state"]
+        if state != "pending" and not jobs.in_flight(("file-entry", entry_id)):
             return
         time.sleep(0.05)
+    raise AssertionError(f"filing of note {entry_id} did not finish in {timeout}s")
 
 
 def _seed(client):
@@ -54,6 +62,21 @@ def test_filing_keeps_the_suggestions_on_the_note(client):
     _settled(client, created["id"])
     note = client.get(f"/entries/{created['id']}").json()
     assert "gym" in note["suggested_tags"]
+
+
+def test_the_wait_covers_suggestions_kept_after_the_state_settles(client, monkeypatch):
+    """The CI race, made certain: suggestions kept a moment after
+    `filing_state` settles are still there when the wait returns."""
+    from tessellate.api import routes_entries
+
+    keep = routes_entries._keep_suggestions
+
+    def slow_keep(*args, **kwargs):
+        time.sleep(0.5)
+        return keep(*args, **kwargs)
+
+    monkeypatch.setattr(routes_entries, "_keep_suggestions", slow_keep)
+    test_filing_keeps_the_suggestions_on_the_note(client)
 
 
 def test_taking_and_discarding_a_suggestion(client):
