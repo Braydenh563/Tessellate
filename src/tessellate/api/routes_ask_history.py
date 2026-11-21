@@ -15,12 +15,12 @@ from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, Field
 
 from tessellate.api import paging
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps, undo_bin
-from tessellate.core.database import LIKE_ESCAPE, AskTurn, Entry, like_escape
+from tessellate.core.database import AskTurn
 from tessellate.core.deps import get_session
+from tessellate.repo import ask_history as ask_history_repo
 from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry import manager
 
@@ -59,23 +59,11 @@ def list_ask_history(
     uses for the Chat tab's own saved list, for the same reason: the thread
     you keep coming back to shouldn't sink under a week of one-offs."""
     offset = paging.start(cursor, offset)
-    query = select(AskTurn)
-    if pinned_only:
-        query = query.where(AskTurn.pinned == True)  # noqa: E712
-    term = q.strip()
-    if term:
-        like = f"%{like_escape(term)}%"
-        query = query.where(
-            AskTurn.question.ilike(like, escape=LIKE_ESCAPE)
-            | AskTurn.answer.ilike(like, escape=LIKE_ESCAPE)
-        )
-    ordered = query.order_by(AskTurn.pinned.desc(), AskTurn.created_at.desc())
-    total = session.scalar(select(func.count()).select_from(ordered.subquery()))
-    rows = session.scalars(ordered.limit(limit).offset(offset)).all()
-    paging.finish(response, offset, limit, total or 0)
+    total, rows = ask_history_repo.page(session, pinned_only, q.strip(), limit, offset)
+    paging.finish(response, offset, limit, total)
     return {
         "turns": [_summary(t) for t in rows],
-        "total": total or 0,
+        "total": total,
         "offset": offset,
         "limit": limit,
     }
@@ -84,8 +72,7 @@ def list_ask_history(
 @router.get("/stats")
 def ask_history_stats(session: Session = Depends(get_session)) -> dict:
     """A one-line header for the panel: how much is here to browse."""
-    total = session.scalar(select(func.count(AskTurn.id))) or 0
-    pinned = session.scalar(select(func.count(AskTurn.id)).where(AskTurn.pinned == True)) or 0  # noqa: E712
+    total, pinned = ask_history_repo.counts(session)
     return {"total": total, "pinned": pinned}
 
 
@@ -105,11 +92,7 @@ def get_ask_turn(turn_id: int, session: Session = Depends(get_session)) -> dict:
     ids = json.loads(turn.raw_result_ids or "[]")
     entries = []
     if ids:
-        found = {
-            e.id: e
-            for e in session.scalars(select(Entry).where(Entry.id.in_(ids)))
-            if not e.is_deleted and not e.is_private
-        }
+        found = ask_history_repo.visible_notes(session, ids)
         # Preserve the order the answer originally showed them in.
         entries = [found[i] for i in ids if i in found]
     return {
@@ -164,11 +147,7 @@ def _live_grounding(session: Session, turn: AskTurn) -> list[dict]:
     wanted = {row.get("note_id") for row in rows if isinstance(row.get("note_id"), int)}
     if not wanted:
         return []
-    live = {
-        e.id
-        for e in session.scalars(select(Entry).where(Entry.id.in_(wanted)))
-        if not e.is_deleted and not e.is_private
-    }
+    live = set(ask_history_repo.visible_notes(session, wanted))
     return [row for row in rows if row.get("note_id") in live]
 
 
@@ -204,10 +183,7 @@ def clear_ask_history(
     """Wipe the browsable history. Pinned turns survive by default, the
     same asymmetry a "clear all" next to a pin button always needs, or
     pinning something means nothing the next time this button is pressed."""
-    query = select(AskTurn)
-    if keep_pinned:
-        query = query.where(AskTurn.pinned == False)  # noqa: E712
-    rows = session.scalars(query).all()
+    rows = ask_history_repo.clearable(session, keep_pinned)
     snapshot = [undo_bin.row_dict(row) for row in rows]
     for row in rows:
         session.delete(row)

@@ -25,8 +25,8 @@ from sqlalchemy.orm import Session
 from tessellate.ai import captioning, vision_ocr
 from tessellate.api.downloads import unsealed
 from tessellate.core import activity, deps, ocr, pdfpages
-from tessellate.core.database import PageRead
 from tessellate.core.deps import get_session
+from tessellate.repo import page_reads as page_reads_repo
 
 logger = logging.getLogger(__name__)
 
@@ -285,16 +285,7 @@ def _stored_regions(key: tuple[str, int] | None, page: int) -> OcrRegionsOut | N
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead.regions)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
-        blob = (row[0] if row else "") or ""
+            blob = page_reads_repo.regions_blob(session, kind, source_id, page)
         if not blob.strip():
             return None
         stored = json.loads(blob)
@@ -332,21 +323,10 @@ def _remember_regions(key: tuple[str, int] | None, page: int, out: OcrRegionsOut
     try:
         body = out.model_dump(exclude={"pages", "page"})
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
-            if row is None:
-                #: A page looked at but never read is a real state: the row
-                #: carries the regions and an empty `text`, which is what keeps
-                #: "N pages read" honest. See `PageRead.regions`.
-                row = PageRead(kind=kind, source_id=source_id, page=int(page))
-                session.add(row)
+            #: A page looked at but never read is a real state: the row carries
+            #: the regions and an empty `text`, which is what keeps "N pages
+            #: read" honest. See `PageRead.regions`.
+            row = page_reads_repo.find_or_add(session, kind, source_id, page)
             row.regions = json.dumps(body)
             session.commit()
     except Exception:  # noqa: BLE001 - a cache write must never fail a read
@@ -368,15 +348,7 @@ def _forget_regions(
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
+            row = page_reads_repo.find(session, kind, source_id, page)
             if row is not None and row.regions:
                 if only_source and f'"source": "{only_source}' not in row.regions:
                     return
@@ -932,18 +904,7 @@ def _remember_page_read(key: tuple[str, int] | None, result: OcrPageReadOut, rea
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(result.page),
-                )
-                .one_or_none()
-            )
-            if row is None:
-                row = PageRead(kind=kind, source_id=source_id, page=int(result.page))
-                session.add(row)
+            row = page_reads_repo.find_or_add(session, kind, source_id, result.page)
             row.reader = reader
             row.model = result.model or ""
             row.text = result.text
@@ -1002,21 +963,10 @@ def _remember_page_caption(key: tuple[str, int] | None, page: int, caption: str,
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
-            if row is None:
-                #: A page described but never read is a real state, the whole
-                #: point of this being its own column, so the row is created
-                #: here rather than requiring a reading to exist first.
-                row = PageRead(kind=kind, source_id=source_id, page=int(page))
-                session.add(row)
+            #: A page described but never read is a real state, the whole point
+            #: of this being its own column, so the row is created here rather
+            #: than requiring a reading to exist first.
+            row = page_reads_repo.find_or_add(session, kind, source_id, page)
             row.caption = caption.strip()
             row.caption_model = model or ""
             session.flush()
@@ -1049,12 +999,7 @@ def _page_read_text_map(kind: str, ids: list[int]) -> dict[int, str]:
         return {}
     try:
         with deps.get_db().session() as session:
-            rows = (
-                session.query(PageRead)
-                .filter(PageRead.kind == kind, PageRead.source_id.in_(ids))
-                .order_by(PageRead.source_id.asc(), PageRead.page.asc())
-                .all()
-            )
+            rows = page_reads_repo.for_sources(session, kind, ids)
     except Exception:  # noqa: BLE001 - an unreadable cache is an empty one
         logger.debug("could not load stored page readings for a list", exc_info=True)
         return {}
@@ -1086,11 +1031,7 @@ def _page_read_count_map(kind: str, ids: list[int]) -> dict[int, int]:
         return {}
     try:
         with deps.get_db().session() as session:
-            rows = (
-                session.query(PageRead.source_id, PageRead.text)
-                .filter(PageRead.kind == kind, PageRead.source_id.in_(ids))
-                .all()
-            )
+            rows = page_reads_repo.source_and_texts(session, kind, ids)
     except Exception:  # noqa: BLE001 - an unreadable cache is an empty one
         logger.debug("could not count stored page readings for a list", exc_info=True)
         return {}
@@ -1129,12 +1070,7 @@ def _stored_page_reads(key: tuple[str, int] | None) -> list[OcrPageReadOut]:
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            rows = (
-                session.query(PageRead)
-                .filter(PageRead.kind == kind, PageRead.source_id == source_id)
-                .order_by(PageRead.page.asc())
-                .all()
-            )
+            rows = page_reads_repo.for_source(session, kind, source_id)
             pages = [
                 OcrPageReadOut(
                     page=row.page,
