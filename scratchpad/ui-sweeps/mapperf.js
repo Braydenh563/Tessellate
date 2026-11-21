@@ -102,7 +102,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(700);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function" && typeof window.wbFormatSyncSoon === "function", null, { timeout: 30000 });
   await page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
@@ -110,29 +110,45 @@ const r1 = (x) => Math.round(x * 10) / 10;
   });
   await page.waitForTimeout(500);
 
-  // The rAF frame recorder, installed once and driven per gesture.
-  await page.evaluate(() => {
-    window.__frames = [];
-    window.__rafOn = false;
-    window.__startFrames = () => {
-      window.__frames = [];
-      window.__rafOn = true;
-      let last = performance.now();
-      const tick = (t) => {
-        if (!window.__rafOn) return;
-        window.__frames.push(t - last);
-        last = t;
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-    window.__stopFrames = () => {
-      window.__rafOn = false;
-      // The first delta is the gap from installing the loop to its first
-      // callback, which is not a frame the gesture produced.
-      return window.__frames.slice(1);
-    };
-  });
+  // **Frame cost is main-thread CPU time, not the gap between frames.** A
+  // wall-clock rAF gap includes whatever else the machine is doing (a second
+  // browser, a build, a throttled software compositor), so on a shared box the
+  // same build read 33 to 480ms on one run and a third of that on the next.
+  // `Performance.getMetrics` `ThreadTime` is the renderer main thread's own CPU
+  // time: it does not move when the process is preempted or waits on vsync, and
+  // it does move when the app does more work. Each gesture step is one input
+  // event followed by two rAFs (so the frame the event caused has been
+  // produced), and the step's cost is the ThreadTime delta across it. The
+  // budgets below are unchanged; only what is compared against them is.
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Performance.enable");
+  const cpuNow = async () => {
+    const { metrics } = await cdp.send("Performance.getMetrics");
+    const get = (name) => (metrics.find((m) => m.name === name) || { value: 0 }).value;
+    // ThreadTime where the browser reports it, the task total where it does not.
+    return (get("ThreadTime") || get("TaskDuration")) * 1000;
+  };
+  const oneFrame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  let steps = null;
+  let lastCpu = 0;
+  const startFrames = async () => { steps = []; lastCpu = await cpuNow(); };
+  const stopFrames = () => { const out = steps || []; steps = null; return out; };
+  // Called after each input event: wait for its frame, then book the CPU spent.
+  const stepDone = async () => {
+    await oneFrame();
+    const now = await cpuNow();
+    if (steps) steps.push(now - lastCpu);
+    lastCpu = now;
+  };
+  //: A deliberate slowdown for proving the measure still bites (SLOW=zoom|drag,
+  //: milliseconds in SLOW_MS): a busy loop on the main thread inside the page's
+  //: own wheel or pointermove listener. Off unless asked for.
+  if (process.env.SLOW) {
+    await page.evaluate(([kind, ms]) => {
+      const burn = () => { const t = performance.now(); while (performance.now() - t < ms) {} };
+      window.addEventListener(kind === "zoom" ? "wheel" : "pointermove", burn, true);
+    }, [process.env.SLOW, Number(process.env.SLOW_MS || 80)]);
+  }
 
   const table = [];
 
@@ -149,6 +165,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
     check(`${n}: import made a map`, board && board.id, `object_count ${board && board.object_count}`);
 
     // 2. Open it, and time to the painted frame.
+    const cpuOpen0 = await cpuNow();
     const open = await page.evaluate(async ([id, want]) => {
       const t0 = performance.now();
       await openWhiteboardBoard(id);
@@ -168,7 +185,12 @@ const r1 = (x) => Math.round(x * 10) / 10;
         objects: (wbState.objects || []).length,
       };
     }, [board.id, n]);
-    check(`${n}: opened and painted`, open.drawn >= n, `${r1(open.ms)}ms, ${open.drawn} nodes drawn of ${open.objects}`);
+    // The open is its CPU, not its wall clock: the wall clock includes the
+    // state fetch and the machine's other work; the main thread's own time
+    // is what the app's code costs.
+    open.wall = open.ms;
+    open.ms = (await cpuNow()) - cpuOpen0;
+    check(`${n}: opened and painted`, open.drawn >= n, `${r1(open.ms)}ms of main-thread CPU (${r1(open.wall)}ms wall), ${open.drawn} nodes drawn of ${open.objects}`);
 
     // 3. The costs inside one map action, each on its own.
     //
@@ -220,15 +242,16 @@ const r1 = (x) => Math.round(x * 10) / 10;
     });
     await page.click('#wb-tool-group button[data-tool="pan"]');
     await page.waitForTimeout(300);
-    await page.evaluate(() => window.__startFrames());
+    await startFrames();
     await page.mouse.move(canvas.x - 250, canvas.y);
     await page.mouse.down();
     for (let i = 1; i <= 30; i++) {
       await page.mouse.move(canvas.x - 250 + i * 12, canvas.y + Math.sin(i / 4) * 40);
-      await page.waitForTimeout(8);
+      await stepDone();
     }
     await page.mouse.up();
-    const panFrames = await page.evaluate(() => window.__stopFrames());
+    await stepDone();
+    const panFrames = stopFrames();
     await page.click('#wb-tool-group button[data-tool="select"]');
     await page.waitForTimeout(300);
 
@@ -262,16 +285,16 @@ const r1 = (x) => Math.round(x * 10) / 10;
     });
     await page.mouse.move(canvas.x, canvas.y);
     await page.keyboard.down("Control");
-    await page.evaluate(() => window.__startFrames());
+    await startFrames();
     for (let i = 0; i < 6; i++) {
       await page.mouse.wheel(0, 12);
-      await page.waitForTimeout(16);
+      await stepDone();
     }
     for (let i = 0; i < 6; i++) {
       await page.mouse.wheel(0, -12);
-      await page.waitForTimeout(16);
+      await stepDone();
     }
-    const zoomFrames = await page.evaluate(() => window.__stopFrames());
+    const zoomFrames = stopFrames();
     await page.keyboard.up("Control");
     const zoomAfter = await page.evaluate(() => d3.zoomTransform(document.getElementById("whiteboard-container")).k);
     // A gesture that changed nothing measured nothing: without this the two
@@ -305,15 +328,16 @@ const r1 = (x) => Math.round(x * 10) / 10;
     });
     let dragFrames = [];
     if (node) {
-      await page.evaluate(() => window.__startFrames());
+      await startFrames();
       await page.mouse.move(node.x, node.y);
       await page.mouse.down();
       for (let i = 1; i <= 25; i++) {
         await page.mouse.move(node.x + i * 6, node.y + i * 3);
-        await page.waitForTimeout(8);
+        await stepDone();
       }
       await page.mouse.up();
-      dragFrames = await page.evaluate(() => window.__stopFrames());
+      await stepDone();
+      dragFrames = stopFrames();
       await page.waitForTimeout(500);
     }
     check(`${n}: a node was on screen to drag`, Boolean(node), node ? "" : "none inside the canvas");
@@ -373,15 +397,16 @@ const r1 = (x) => Math.round(x * 10) / 10;
         return o ? { x: o.x, y: o.y } : null;
       }, id);
       const before = await at(pt.id);
-      await page.evaluate(() => window.__startFrames());
+      await startFrames();
       await page.mouse.move(pt.x, pt.y);
       await page.mouse.down();
       for (let i = 1; i <= 25; i++) {
         await page.mouse.move(pt.x + i * 6, pt.y + i * 3);
-        await page.waitForTimeout(8);
+        await stepDone();
       }
       await page.mouse.up();
-      const frames = await page.evaluate(() => window.__stopFrames());
+      await stepDone();
+      const frames = stopFrames();
       await page.waitForTimeout(400);
       const after = await at(pt.id);
       const moved = before && after ? Math.round(Math.hypot(after.x - before.x, after.y - before.y)) : 0;

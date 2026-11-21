@@ -27,7 +27,7 @@ const CEILING = 450;
   await page.evaluate(() => switchTab("library"));
   await page.waitForTimeout(700);
   await page.evaluate(() => document.querySelector('#library-subtabs [data-target="library-view-whiteboard"]')?.click());
-  await page.waitForFunction(() => typeof window.initWhiteboard === "function", null, { timeout: 30000 });
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function" && typeof window.wbFormatSyncSoon === "function", null, { timeout: 30000 });
   await page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);

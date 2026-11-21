@@ -47,7 +47,7 @@ const show = (o) => console.log("    " + JSON.stringify(o));
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(700);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function" && typeof window.wbFormatSyncSoon === "function", null, { timeout: 30000 });
   await page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
@@ -314,10 +314,11 @@ const show = (o) => console.log("    " + JSON.stringify(o));
   //: Ten topic fields in three groups, and since §13e's remainder the map's
   //: own two (branch colours and font) in a fourth, first; since §14 the
   //: hierarchy select above them (decision 39), a tenth select; and since
-  //: then the scope select ("whose look the rows set") and spacing: twelve
-  //: selects (listed in `labels`) and three switches.
-  check("fifteen fields in four named groups, from the recipe index's own rows",
-    dialog.selects === 12 && dialog.checks === 3 && dialog.heads.length === 4,
+  //: then the scope select ("whose look the rows set") and spacing, and
+  //: the map's rainbow and legend switches: thirteen selects (listed in
+  //: `labels`) and five switches, eighteen fields in four named groups.
+  check("eighteen fields in four named groups, from the recipe index's own rows",
+    dialog.selects === 13 && dialog.checks === 5 && dialog.heads.length === 4,
     `${dialog.selects} selects, ${dialog.checks} switches, ${(dialog.heads || []).join(" | ")}`);
   check("and it fits without scrolling at this size",
     !dialog.overflows && dialog.viewMenuClosed,

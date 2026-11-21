@@ -1705,6 +1705,29 @@ body.printing-doc #doc-preview p,
   flex-direction: column;
   gap: var(--space-2);
 }
+/* A group is one block: its head and its rows stay together. Where the window
+   is wide the dialog widens and the groups run in two columns, which takes the
+   look dialog from 1002px to under the 900px window's card (maptheme.js). */
+.wb-map-theme-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  break-inside: avoid;
+}
+.wb-map-theme-group .setting-subhead {
+  margin: 0 0 var(--space-1);
+}
+@media (min-width: 900px) {
+  .wb-info-card:has(.wb-map-theme-group) {
+    width: min(46rem, calc(100vw - var(--space-8) * 2));
+  }
+  .wb-map-theme-rows:has(> .wb-map-theme-group) {
+    display: block;
+    column-count: 2;
+    column-gap: var(--space-6);
+  }
+}
 .wb-map-theme-row > select {
   width: min(11rem, 45vw);
 }

@@ -62,3 +62,31 @@ def test_the_menu_rows_the_rule_and_the_bundle_agree():
     assert "#library-view-whiteboard.wb-hide-ports #wb-anchor-hints" in rule and "display: none;" in rule and "!important" not in rule
     assert "/js/whiteboard-hints.js" in frontend_text("lazy-entries.js")
     assert _js_scope.is_wrapped(script_file_text("whiteboard-hints.js")) and _js_scope.global_names(script_file_text("whiteboard-hints.js")) == set()
+
+
+def test_the_map_view_menu_leaves_out_rows_a_map_can_never_use():
+    """A map has no arrow grips, no join dots and no Format panel, so the View menu's rows for them are board-only
+    (the mapviewmenu sweep holds a map's menu to 450px; 587px measured with them)."""
+    html = frontend_text("index.html")
+    menu = html[html.index('id="wb-view-menu"') : html.index('id="wb-bg-image-input"')]
+    for needle in ('data-wb-cmd="format-panel"', 'id="wb-view-grips"', 'id="wb-view-ports"'):
+        at = menu.index(needle)
+        tag = menu[menu.rindex("<", 0, at) : menu.index(">", at)]
+        if "<input" in tag:
+            tag = menu[menu.rindex("<label", 0, at) : at]
+        assert 'data-wb-surface="board"' in tag, needle
+    css = frontend_text("css/07-whiteboard-misc.css")
+    rule = css[css.index(".wb-menu-two-col .wb-menu-section") :]
+    assert "gap: 0;" in rule[: rule.index("}")]
+
+
+def test_the_map_look_dialog_sets_its_groups_in_two_columns_on_a_wide_screen():
+    """The look dialog grew to 13 selects and 5 switches (1002px tall in one column, scrolling inside a 900px window);
+    each group is one block and the groups run in two columns where the window is wide (maptheme.js)."""
+    js = script_file_text("whiteboard-map.js")
+    assert 'group.className = "wb-map-theme-group"' in js
+    css = frontend_text("css/library-lazy.css")
+    at = css.index(".wb-map-theme-rows:has(> .wb-map-theme-group)")
+    rule = css[at : css.index("}", at)]
+    assert "column-count: 2" in rule
+    assert ".wb-map-theme-group" in css and "break-inside: avoid" in css

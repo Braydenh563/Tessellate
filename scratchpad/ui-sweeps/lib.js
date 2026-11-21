@@ -1,3 +1,44 @@
+// The two questions a fresh data dir asks after unlock, answered the moment they
+// are drawn, on every document the context loads (an init script, so it is there
+// before the app is). `boot` calls it; a sweep that makes its own context calls
+// it before its first page.
+//
+// **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked
+// "Check for updates automatically?" after unlock, a dialog that would sit
+// over every click a sweep makes. It is answered "Don't check" here (nothing
+// touches the network either way); UPDATE_ASK=1 leaves it for a sweep that
+// measures the dialog itself.
+//
+// **By watching for the card, not by waiting for it** (L-general-20). The
+// card comes behind the first-run queue, and when is not a number a sweep can
+// know: 6 s on one fresh dir, and past 60 s on another, where it then arrived
+// seconds after the first tab press, over that sweep's next click. A wait of
+// any length either costs a minute on every boot or gives up too soon; an
+// observer answers it the moment it is drawn, on every document a sweep loads
+// or reloads (an init script, so it is there before the app is).
+async function quietFirstRun(ctx) {
+  if (!process.env.UPDATE_ASK) {
+    await ctx.addInitScript(() => {
+      const answer = () => {
+        const card = [...document.querySelectorAll('.confirm-overlay')]
+          .find((o) => /Check for updates automatically/.test(o.textContent));
+        const no = card && [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
+        if (no) no.click();
+      };
+      new MutationObserver(answer).observe(document, { childList: true, subtree: true });
+    });
+  }
+  //: The recovery-key dialog too (RECOVERY_ASK=1 keeps it): it queues behind the
+  //: first-run turns like the update question, and one that opened after boot's
+  //: one look sat over graphphone's whole run on a fresh dir.
+  if (!process.env.RECOVERY_ASK) {
+    await ctx.addInitScript(() => {
+      const close = () => { const d = document.getElementById('recovery-key-dialog'); if (d && d.open) d.close(); };
+      new MutationObserver(close).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['open'] });
+    });
+  }
+}
+
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const OUT = (process.env.SCRATCH||'.') + '/shots';
 require('fs').mkdirSync(OUT,{recursive:true});
@@ -128,6 +169,7 @@ async function boot(opts={}) {
     const body = require('fs').readFileSync(file, 'utf8');
     await ctx.route(`**/css/${name}*`, (route) => route.fulfill({ body, contentType: 'text/css' }));
   }
+  await quietFirstRun(ctx);
   const page = await ctx.newPage();
   //: SLOW=1 (a loaded machine, load past 30): every wait and the boot get
   //: four times as long, so a sweep measures rather than times out.
@@ -187,28 +229,6 @@ async function boot(opts={}) {
   }
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
   await page.waitForTimeout(800);
-  //: **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked
-  //: "Check for updates automatically?" after unlock, a dialog that would sit
-  //: over every click a sweep makes. Answered "Don't check" here (nothing
-  //: touches the network either way); UPDATE_ASK=1 leaves it for a sweep
-  //: that measures the dialog itself.
-  if (!process.env.UPDATE_ASK) {
-    await page.waitForFunction(() => {
-      const card = [...document.querySelectorAll('.confirm-overlay')]
-        .find((o) => /Check for updates automatically/.test(o.textContent));
-      //: Not `readyState`: the card comes after the page has loaded, and a
-      //: guard that stopped at load let it land over a sweep's first click.
-      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made === true);
-      const no = [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
-      if (no) no.click();
-      return true;
-    }, null, {timeout: 4000, polling: 200}).catch(() => {});
-  }
-  //: A fresh data dir shows the recovery-key dialog after the first password;
-  //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
-  if (!process.env.RECOVERY_ASK) {
-    await page.evaluate(() => { const d = document.getElementById('recovery-key-dialog'); if (d && d.open) d.close(); });
-  }
   //: `signIn` says which way it came in: 'lock' or 'app' (sign-in off).
   return {browser, ctx, page, OUT, signIn: way};
 }
@@ -275,4 +295,4 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};

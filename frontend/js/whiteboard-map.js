@@ -1283,14 +1283,18 @@ function wbMapThemeDialog() {
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
   const out = [];
-  for (const group of WB_MAP_THEME_GROUPS) {
+  for (const def of WB_MAP_THEME_GROUPS) {
+    //: One block per group, so a wide dialog can run the groups in two columns without cutting one in half.
+    const group = document.createElement("div");
+    group.className = "wb-map-theme-group";
     const head = document.createElement("h4");
     head.className = "setting-subhead";
-    head.textContent = group.label;
-    out.push(head);
-    for (const field of group.fields) {
-      out.push(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
+    head.textContent = def.label;
+    group.appendChild(head);
+    for (const field of def.fields) {
+      group.appendChild(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
     }
+    out.push(group);
   }
   return out;
 }
@@ -3928,7 +3932,9 @@ function wbMapEdgePathD(parent, child, layout) {
   //: moves its turn to it. An unbent line is the same string it always was.
   const w = wbMapEdgeWaypoint(a, child);
   if (a.rib && !w.bent) {
-    const slant = Math.abs(a.y2 - a.y1) * 0.5;
+    //: The slant spans no more than the gap beside its column: a tall column
+    //: would otherwise send the rib on a long diagonal over the nearer columns.
+    const slant = Math.min(Math.abs(a.y2 - a.y1) * 0.5, wbMapGapDepth());
     const foot = a.right ? Math.max(a.x1, a.x2 - slant) : Math.min(a.x1, a.x2 + slant);
     return `M${a.x1} ${a.y1} L${foot} ${a.y1} L${a.x2} ${a.y2}`;
   }
@@ -6305,16 +6311,19 @@ function wbMapColumnPositions(index, layout) {
   };
   //: Rows from `y` down, or up from `y` (each row's bottom at the cursor),
   //: nearest first either way, so a branch reads away from its topic.
-  const stack = (rows, x, y, up) => {
+  //: `flush` lays the rows against a right edge instead of a left one (the
+  //: fishbone's column), each indented leftward from it.
+  const stack = (rows, x, y, up, flush = null) => {
     let cursor = y;
     for (const r of rows) {
       const s = size(r.o);
+      const at = flush == null ? x + r.depth * WB_MAP_INDENT : flush - r.depth * WB_MAP_INDENT - s.w;
       if (up) {
         cursor -= s.h;
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at, y: cursor });
         cursor -= gapB;
       } else {
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at, y: cursor });
         cursor += s.h + gapB;
       }
     }
@@ -6366,15 +6375,20 @@ function wbMapColumnPositions(index, layout) {
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));
       const x = right - w;
+      //: The column is flush right, the main topic and its causes alike: the
+      //: rib meets the main at its spine-side corner, which is then the column's
+      //: right edge, so the rib passes no cause of its own, and the gap beside the
+      //: column (`gapD`, to the next pair's) is clear for it to run in.
+      const edge = x + w;
       pair.forEach((b, side) => {
         const tall = b.ks.h + (b.rows.length ? gapB + b.ext.h : 0);
         if (side === 0) {
           const y = spine - gapD - tall;
-          positions.set(b.kid.id, { x, y });
-          stack(b.rows, x, y + b.ks.h + gapB, false);
+          positions.set(b.kid.id, { x: edge - b.ks.w, y });
+          stack(b.rows, x, y + b.ks.h + gapB, false, edge);
         } else {
-          stack(b.rows, x, spine + gapD, false);
-          positions.set(b.kid.id, { x, y: spine + gapD + tall - b.ks.h });
+          stack(b.rows, x, spine + gapD, false, edge);
+          positions.set(b.kid.id, { x: edge - b.ks.w, y: spine + gapD + tall - b.ks.h });
           bottom = Math.max(bottom, spine + gapD + tall);
         }
       });

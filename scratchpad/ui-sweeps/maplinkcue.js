@@ -29,11 +29,8 @@ function ok(label, good, detail) {
   await page.waitForTimeout(500);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", "Link cue sweep");
-  await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
+  // New mind map makes an untitled map at once, its root topic open for typing.
+  await page.evaluate(() => document.getElementById("library-boards-new-map").click());
   await page.waitForTimeout(2500);
   await page.keyboard.press("Escape");
 
@@ -43,7 +40,9 @@ function ok(label, good, detail) {
     const b = await wbMapCreateNode({ parentId: root.id, text: "Branch B" });
     await wbMapTidy({ quiet: true });
     const loose = await wbMapCreateNode({ text: "Loose idea" });
-    loose.x = a.x + 420;
+    // Near enough that its centre sits inside the canvas and clear of the edge auto-pan band (56px);
+    // +420 put it past the right edge once topics were 200px wide (found by L-general-20).
+    loose.x = a.x + 250;
     loose.y = a.y + 40;
     loose.data = { ...loose.data, pinned: true };
     await wbSaveObject(loose);
