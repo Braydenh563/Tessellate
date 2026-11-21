@@ -274,10 +274,10 @@ def test_a_long_run_of_stray_keys_is_stripped_in_linear_time():
 
     from tessellate.ai.question_noise import strip_strays
 
-    began = time.perf_counter()
+    began = time.process_time()
     assert strip_strays("x" + "\\" * 50000 + "y").endswith("y")
     assert strip_strays("why" + "/" * 50000 + "z").endswith("z")
-    assert time.perf_counter() - began < 0.5
+    assert time.process_time() - began < 0.5
     assert strip_strays("gaming mouse?\\") == "gaming mouse?"
     assert strip_strays("why?/") == "why?"
     assert strip_strays("a :\\") == "a :\\"
