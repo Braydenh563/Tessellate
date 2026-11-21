@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Guide finds every Help topic by its own title (L-world-class-420): 51 titles phrased for the list now carry that title as a keyword (`ai/help_title_keywords.py`), and the title-miss ratchet is 0 (was 51); no topic body changed.
 - The English word list now settles typos in two places (VC8, L-world-class-135): search no longer corrects a real word the notes never use ("casual" for "causal": 19 of 30 such queries showed a wrong note, now 0) and corrects a one-slip misspelling the old similarity floor missed (recall at 10 on 30 misspelt queries 16 to 30); question repair no longer splits a listed word in two ("topics" read as "to pictures": 88 of 91,185 listed words changed, now 73, the rest slang and US spellings). Loading the list costs 65 ms once, on the first typo.
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.
