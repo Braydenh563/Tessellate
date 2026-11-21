@@ -573,7 +573,12 @@ def _settle_filed_entry(session, entry, entry_id: int, late, category, confidenc
 
 def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
     """Embed the settled note, look for a near duplicate, keep tag
-    suggestions and run Tidy's automatic reviews."""
+    suggestions and run Tidy's automatic reviews.
+
+    Off the request path only: Tidy's reviews run inline here, so the one
+    caller is the filing job's worker (`_file_entry_in_background`, jobstore
+    "file-entry"); a route calling this would hold its request for them
+    (`tests/test_kept_suggestions.py`)."""
     deps.store_quietly(session, entry)
     duplicate = _find_near_duplicate(session, entry)
     if duplicate is not None:

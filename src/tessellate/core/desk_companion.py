@@ -2177,11 +2177,15 @@ def tray_marshal(icon: Any, post: "Callable[..., Any] | None" = None) -> "Callab
     handlers = getattr(icon, "_message_handlers", None)
     if not isinstance(handlers, dict):
         return update
-    handlers[WM_TRAY_MENU] = lambda wparam, lparam: update()
     if post is None:
-        from pystray._util import win32  # noqa: PLC0415 - Windows only, pystray is optional
-
+        #: Private to pystray (pinned in the desktop extra); a pystray that
+        #: moves it gets the plain call, as on the backends that marshal.
+        try:
+            from pystray._util import win32  # noqa: PLC0415 - Windows only, pystray is optional
+        except ImportError:
+            return update
         post = win32.PostMessage
+    handlers[WM_TRAY_MENU] = lambda wparam, lparam: update()
 
     def refresh() -> None:
         #: None until the tray runs; its first menu is built then anyway.

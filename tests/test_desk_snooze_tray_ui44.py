@@ -101,3 +101,28 @@ def test_a_backend_that_marshals_itself_is_called_directly():
     icon = Gtk()
     assert dc.tray_marshal(icon) == icon.update_menu
     assert dc.tray_marshal(None) is None
+
+
+def test_a_pystray_without_its_win32_helper_is_called_directly(monkeypatch):
+    # PR 224 review: `pystray._util.win32` is private; a pystray that moves it must not break the tray.
+    # Its menu handlers stay untouched and the plain `update_menu` is handed back, as on other backends.
+    import builtins
+
+    real = builtins.__import__
+
+    def no_private(name, *args, **kwargs):
+        if name.startswith("pystray"):
+            raise ImportError(name)
+        return real(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_private)
+    icon = _WinIcon()
+    assert dc.tray_marshal(icon) == icon.update_menu
+    assert dc.WM_TRAY_MENU not in icon._message_handlers
+
+
+def test_the_desktop_extra_pins_the_pystray_whose_internals_the_tray_reads():
+    from pathlib import Path
+
+    project = (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8")
+    assert '"pystray>=0.19,<0.20"' in project
