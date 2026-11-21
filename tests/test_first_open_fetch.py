@@ -15,7 +15,15 @@ def test_the_librarys_first_arrival_fetches_the_rest_of_the_bundle_and_the_edito
     assert "lazyAssetStamp(file)" in tail  # the cache key lazyScript will ask for
     assert 'priority: "low"' in tail
     assert "requestIdleCallback" in tail
-    assert "lazyScript" not in tail.split("if (!navigator", 1)[1]  # fetched, never run here
+    assert "lazyScript" not in tail.split("if (!navigator", 1)[1]  # the fetch itself runs nothing
+
+
+def test_the_editor_is_evaluated_in_a_later_idle_slot_once_the_bundle_is_in():
+    # Why this test was added: the first step only filled the cache; the evaluation (documents.js, then the
+    # editor's 80 ms) still landed on the click, so the second step runs it in idle, after the bytes.
+    tail = _tail()
+    assert tail.index("fetch(") < tail.index('ensureModule("library")') < tail.index("warmDocumentEngine()")
+    assert "Promise.all" in tail  # after every fetch has settled, so evaluation never competes with the network
 
 
 def test_it_keeps_the_paced_warms_gate():

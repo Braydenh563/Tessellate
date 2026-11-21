@@ -13413,8 +13413,11 @@ function noteAnyImage(entry) {
 //: The paced warm's gate: four cores or more, no data saving.
 if (!navigator.connection?.saveData && (navigator.hardwareConcurrency || 2) >= 4) {
   (window.requestIdleCallback || setTimeout)(() => {
-    for (const file of [...LAZY_MODULES.library, "/vendor/codemirror/codemirror.min.js"]) {
-      if (!file.endsWith(".css")) fetch(file + (file.startsWith("/js/") ? lazyAssetStamp(file) : ""), { priority: "low" }).catch(() => 0);
-    }
+    const bytes = [...LAZY_MODULES.library, "/vendor/codemirror/codemirror.min.js"].filter((file) => !file.endsWith(".css"));
+    //: Then, once every file has settled, the evaluation in a later idle slot: the editor's 80 ms and the documents file's 130 ms
+    //: stop landing on the first open (documents.js `warmDocumentEngine` keeps its own phone and data-saving guard).
+    Promise.all(bytes.map((file) => fetch(file + (file.startsWith("/js/") ? lazyAssetStamp(file) : ""), { priority: "low" }).catch(() => 0))).then(() =>
+      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => warmDocumentEngine())), 1000)
+    );
   });
 }
