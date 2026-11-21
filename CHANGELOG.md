@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas at rest: the tail's 400 ms beat ends once the figure rests and input, a class or a mood wakes it; the chest holds its phase through the rest; tail functions 45.7 to 0.73 ms a minute idle with Motion at rest still (L184).
 - Chat acts: an Undo's drop steps take only a link or a childless map node, never from a private board, and a node's links go with it; a binned note's card is not offered by name; `/spelling/check` caps each word at 64 characters (PR 230 review).
 - CI fixes: the composer lint mirror re-places on window resize (no new ResizeObserver), the no-model line names reminders again, the composer imports cold in 0.075 s (help_chat loads on first help question; was 0.113 s), one assert-with-request rewritten (cap 226 held).
 

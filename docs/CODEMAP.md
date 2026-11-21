@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8538, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11384, test files 2979, tests 23219, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8538, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11384, test files 2980, tests 23222, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
 ## Frontend functions (8538)
 
@@ -2105,24 +2105,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:904 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:915 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:816 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:844 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1462 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1437 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:827 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:855 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1474 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1449 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:621 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:742 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:630 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:753 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:145 |
 | `atlasTailFrame` | frontend/js/atlas-life.js:520 |
 | `atlasTailKit` | frontend/js/atlas-life.js:256 |
 | `atlasTailPick` | frontend/js/atlas-life.js:457 |
-| `atlasTailRest` | frontend/js/atlas-life.js:705 |
+| `atlasTailRest` | frontend/js/atlas-life.js:716 |
 | `atlasTailShape` | frontend/js/atlas-life.js:223 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:720 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:731 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -3151,40 +3151,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
-| `announceSaved` | frontend/js/desk-companion.js:411 |
+| `announceSaved` | frontend/js/desk-companion.js:413 |
 | `ask` | frontend/js/desk-companion.js:58 |
 | `call` | frontend/js/desk-companion.js:48 |
-| `cardHeight` | frontend/js/desk-companion.js:164 |
-| `companionRows` | frontend/js/desk-companion.js:225 |
-| `createNote` | frontend/js/desk-companion.js:401 |
-| `deskApiJson` | frontend/js/desk-companion.js:391 |
-| `deskClip` | frontend/js/desk-companion.js:430 |
+| `cardHeight` | frontend/js/desk-companion.js:166 |
+| `companionRows` | frontend/js/desk-companion.js:227 |
+| `createNote` | frontend/js/desk-companion.js:403 |
+| `deskApiJson` | frontend/js/desk-companion.js:393 |
+| `deskClip` | frontend/js/desk-companion.js:432 |
 | `draw` | frontend/js/desk-companion.js:76 |
-| `figure` | frontend/js/desk-companion.js:206 |
-| `fit` | frontend/js/desk-companion.js:124 |
-| `groups` | frontend/js/desk-companion.js:222 |
-| `hideRow` | frontend/js/desk-companion.js:242 |
-| `hitRow` | frontend/js/desk-companion.js:446 |
+| `figure` | frontend/js/desk-companion.js:208 |
+| `fit` | frontend/js/desk-companion.js:126 |
+| `groups` | frontend/js/desk-companion.js:224 |
+| `hideRow` | frontend/js/desk-companion.js:244 |
+| `hitRow` | frontend/js/desk-companion.js:448 |
 | `host` | frontend/js/desk-companion.js:57 |
-| `item` | frontend/js/desk-companion.js:179 |
-| `keepOpen` | frontend/js/desk-companion.js:333 |
-| `leave` | frontend/js/desk-companion.js:347 |
-| `note` | frontend/js/desk-companion.js:199 |
-| `noteStatus` | frontend/js/desk-companion.js:374 |
-| `openCompanion` | frontend/js/desk-companion.js:307 |
-| `openMenu` | frontend/js/desk-companion.js:246 |
-| `openNoteCard` | frontend/js/desk-companion.js:379 |
-| `openPanel` | frontend/js/desk-companion.js:356 |
-| `panelHeight` | frontend/js/desk-companion.js:143 |
-| `plain` | frontend/js/desk-companion.js:439 |
+| `item` | frontend/js/desk-companion.js:181 |
+| `keepOpen` | frontend/js/desk-companion.js:335 |
+| `leave` | frontend/js/desk-companion.js:349 |
+| `note` | frontend/js/desk-companion.js:201 |
+| `noteStatus` | frontend/js/desk-companion.js:376 |
+| `openCompanion` | frontend/js/desk-companion.js:309 |
+| `openMenu` | frontend/js/desk-companion.js:248 |
+| `openNoteCard` | frontend/js/desk-companion.js:381 |
+| `openPanel` | frontend/js/desk-companion.js:358 |
+| `panelHeight` | frontend/js/desk-companion.js:145 |
+| `plain` | frontend/js/desk-companion.js:441 |
 | `probe` | frontend/js/desk-companion.js:89 |
-| `rest` | frontend/js/desk-companion.js:363 |
-| `runSearch` | frontend/js/desk-companion.js:485 |
-| `searchEmpty` | frontend/js/desk-companion.js:473 |
+| `rest` | frontend/js/desk-companion.js:365 |
+| `runSearch` | frontend/js/desk-companion.js:487 |
+| `searchEmpty` | frontend/js/desk-companion.js:475 |
 | `seed` | frontend/js/desk-companion.js:68 |
-| `separator` | frontend/js/desk-companion.js:193 |
+| `separator` | frontend/js/desk-companion.js:195 |
 | `show` | frontend/js/desk-companion.js:106 |
-| `toggle` | frontend/js/desk-companion.js:215 |
+| `toggle` | frontend/js/desk-companion.js:217 |
 | `token` | frontend/js/desk-companion.js:45 |
 
 ### frontend/js/desk-frames.js (12)
@@ -28856,7 +28856,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23219)
+## Tests (23222)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28993,6 +28993,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |
+| tests/test_atlas_rest_beat_l184.py | 3 |
 | tests/test_atlas_rest_faces.py | 6 |
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_rig_undefined_0_1111.py | 3 |

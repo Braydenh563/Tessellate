@@ -108,6 +108,8 @@
     if (state === "note" && next !== "note") window.discardCaptureStage?.();
     state = next;
     document.body.dataset.state = next;
+    //: Out of its rest the figure's stopped beat starts again (L184, atlas-life.js).
+    if (next !== "rest") window.atlasTailCalm?.rest.stir?.();
     document.body.dataset.size = SIZES[next].join("x");
     for (const id of new Set(Object.values(PANELS))) $(id).classList.toggle("hidden", PANELS[next] !== id);
     $("desk-pet").setAttribute("aria-expanded", String(next === "menu" || next === "context"));
