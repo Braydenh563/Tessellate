@@ -333,15 +333,10 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
-            "mcp link", "connect claude", "revoke a token",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop; "
-            "it can also read your notes (never "
-            "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. Make a link gives an "
-            "app its own token, shown once, to revoke. "
+            "Use these tools from another app, at the end of this section, is "
+            "its own topic. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
@@ -2010,7 +2005,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
@@ -2630,6 +2625,23 @@ MORE_TOPICS.append({
     ),
 })
 TOPIC_META["find-a-place"] = {"title": "Finding where something is", "path": "Notes tab, Ask your notebook"}
+#: Moved out of tools-setting whole when the scope and OAuth rows came (L-world-class-560): that topic sat at the reply budget.
+MORE_TOPICS.append({
+    "id": "mcp-links",
+    "title": "Use your notes from another app",
+    "keywords": ("mcp", "mcp link", "connect claude", "claude desktop", "claude.ai", "revoke a token", "oauth", "another app", "tool server", "docker"),
+    "badge": {"label": "Tools it can use", "section": "tools"},
+    "body": (
+        "Settings, Tools it can use, Use these tools from another app: a snippet to paste into an MCP client such as "
+        "Claude Desktop, which can then read your notes (never a private one) and use your skills as prompts. It reads "
+        "only until you tick Let that app add and change notes; deleting is never offered. Make a link gives an app an "
+        "address and its own token, shown once, to revoke; Categories and Tags limit it to those notes only, so it cannot "
+        "search, read or change any other. An app such as claude.ai can sign in with OAuth instead: its page waits, the "
+        "sign-in shows under Waiting to sign in with a short code, and you press Approve on this computer. The link works "
+        "only on this computer unless LAN mode is on, and nothing is sent anywhere else."
+    ),
+})
+TOPIC_META["mcp-links"] = {"title": "Use your notes from another app", "path": "Settings, Tools it can use, Use these tools from another app", "target": "mcp-config-group"}
 MORE_TOPICS.append({
     "id": "nicknames",
     "title": "Calling Atlas by any name",

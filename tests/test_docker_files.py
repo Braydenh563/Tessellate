@@ -44,3 +44,13 @@ def test_the_data_and_model_folders_belong_to_the_user_the_app_runs_as():
 
 def test_the_proxy_host_variable_is_offered_in_compose():
     assert "TESSELLATE_ALLOWED_HOSTS" in COMPOSE
+
+
+def test_the_tool_server_trusts_the_bridge_only_with_a_loopback_publish():
+    """L-world-class-560: /mcp and its OAuth sign-in answer the Docker host
+    because the port is published on the host's loopback; the switch that says
+    so sits beside that mapping, and nowhere opens the port wider."""
+    assert 'TESSELLATE_PUBLISHED_ON_LOOPBACK: "1"' in COMPOSE
+    ports = re.findall(r'-\s*"([^"]+:\d+)"', COMPOSE)
+    assert ports and all(port.startswith("127.0.0.1:") for port in ports)
+    assert "TESSELLATE_PUBLISHED_ON_LOOPBACK" in (ROOT / "docs" / "DOCKER.md").read_text(encoding="utf-8")
