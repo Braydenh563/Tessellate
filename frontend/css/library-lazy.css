@@ -1440,6 +1440,398 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
 }
 }
 
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+/* Had no styling at all before, a plain inline button between the image
+   and caption, not the corner overlay a delete control on a tile usually
+   is anywhere else in this app. Hover/focus-revealed so a grid of images
+   doesn't carry a permanent row of trash-can icons; the buttons themselves
+   stay in the DOM (not display:none) so they're still keyboard-reachable
+   without hovering.
+   Edit and delete are laid out as a flex pair sharing one absolutely-
+   positioned wrapper, rather than each button computing its own `right`
+   offset independently. Two buttons each doing their own math (delete at
+   `right: var(--space-2)`, edit at `right: calc(var(--space-2) + 2.2rem)`)
+   silently assumed a button was exactly 2.2rem wide, it wasn't quite,
+   at every density/zoom this app's own settings allow, so edit's right
+   edge sat a few pixels *under* delete. Delete, later in paint order,
+   covered it: edit's own border was there the whole time, just hidden
+   under the button next to it. Reported as "the border only goes around
+   the delete button". `gap` can't get this wrong: it measures the real
+   rendered width of whatever's actually in the row. */
+.library-image-actions {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  /* Above `.library-file-page`, which is `position: absolute; inset: 0;
+     z-index: 1` and therefore covered this row completely on any file with a
+     rendered first page: measured on the Files sub-tab: four of nine tiles
+     had a kebab in the DOM at opacity 0.6 with a PDF page painted on top of
+     it, which is a control that exists and cannot be clicked. */
+  z-index: 2;
+  /* `left` as well as `right`, and wrapping: reported live as *"the popup
+     buttons for uploaded images sometimes get cut off in different window
+     resolutions and sizes"*, with a screenshot showing the row running off the
+     tile's left edge.
+     The row holds up to FIVE buttons (edit, delete, caption, OCR, vision-OCR)
+     and the grid above it is `minmax(11rem, 1fr)`, so a tile is 11rem wide at
+     the narrow end while the row needs roughly 14. Anchored only by `right`, a
+     flex row that cannot fit grows leftwards past the tile's own edge, and
+     `.library-image-tile` sets `overflow: hidden`, so the overflow is not
+     merely ugly: the leftmost button is clipped away and cannot be clicked at
+     all. Which button that is depends on how many the image has, which is why
+     it looked intermittent.
+     Setting both edges gives the row the tile's real width to work in, and
+     `flex-wrap` spends it downwards: a second row of buttons over the image,
+     which is always reachable, instead of sideways into the clip. */
+  left: var(--space-2);
+  justify-content: flex-end;
+  /* See the visibility rule further down: this used to be 0, so the kebab did
+     not exist until the pointer found it. */
+  opacity: 0.6;
+}
+
+.library-image-actions:where(:not(.row)) {
+  display: flex;
+  column-gap: var(--space-2);
+}
+
+@media (max-width: 599.98px) {
+.library-image-actions:where(:not(.row)) {
+  flex-wrap: wrap;
+}
+}
+
+@media (min-width: 600px) {
+.library-image-actions {
+  flex-wrap: wrap;
+}
+}
+
+.library-image-actions:where(:not(.row, :is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.library-image-actions:where(:not(:where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay).hidden > *, :where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) > *)) {
+  transition: opacity var(--ui-base) var(--ease-out);
+}
+
+/* The two blocks that moved inside the fold were written as sections of the
+   card's outside: a rule above the usage chips, an inset on the byline. In
+   here the fold's own padding and gap already separate them, and a hairline
+   across a disclosure body reads as a second panel. */
+.library-image-reading-body > .library-image-usage:where(:not(.library-file-facts > .library-image-usage, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+  margin-right: 0;
+  margin-left: 0;
+  padding-top: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+}
+
+.library-image-reading-body > .library-image-usage:where(:not(.help-body > *:last-child, .library-file-facts > .library-image-usage, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-bottom: 0;
+}
+
+.library-image-reading-body > .library-image-usage:where(:not(.library-file-facts > .library-image-usage, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-top-width: 0;
+  border-top-style: none;
+}
+
+.library-image-reading-body > .library-image-usage:where(:not(.card .card, .library-file-facts > .library-image-usage, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  border-top-color: currentcolor;
+}
+
+/* from 02-chat-graph.css (L-ui-modernisation-51) */
+#wb-canvas-view.wb-entering:where(:not(#nm-buddy .nmb-emote > *, :is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar, .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup).hidden)) {
+  opacity: 0;
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+/* The sidebars' grip as a flex item between the text and the column rather
+   than absolutely placed inside a box that scrolls, where it would scroll away
+   with the list. Gone with the panel when the panel is closed. */
+.doc-prose-resize.sidebar-resize {
+  flex: 0 0 var(--space-3);
+}
+
+.doc-prose-resize.sidebar-resize:where(:not(.dgm-split-handle.sidebar-resize)) {
+  position: static;
+}
+
+.doc-prose-resize.sidebar-resize:where(:not(.dgm-split-handle.sidebar-resize, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  height: auto;
+}
+
+.doc-prose-resize.sidebar-resize:where(:not(.dgm-split-handle.sidebar-resize)) {
+  align-self: stretch;
+}
+
+.doc-suggest-item {
+  display: flex;
+  align-items: center;
+  /* A menu row reads down its left edge, the way `.menu-item` does. These
+     inherited the shell's `justify-content: center` from the base button and
+     measured their icons at 29, 30 and 31px from the row's left edge
+     depending on how long the label was: nine rows, no column, nothing for
+     the eye to run down. */
+  justify-content: flex-start;
+  width: 100%;
+  padding-right: var(--space-2);
+  padding-left: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.doc-suggest-item:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+}
+
+@media (forced-colors: active) {
+.doc-suggest-item:where(:not(:disabled)) {
+  color: var(--ink);
+}
+}
+
+@media (forced-colors: none) {
+.doc-suggest-item {
+  color: var(--ink);
+}
+}
+
+/* Remove shows on the row under the pointer or with focus in it; on a touch
+   screen, where nothing hovers, it is always there. */
+.doc-dictionary-remove {
+  opacity: 0;
+}
+
+.doc-dictionary-remove:where(:not(:where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay).hidden > *, :where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) > *)) {
+  transition: opacity var(--ui-fast) var(--ease-out);
+}
+
+/* **How far along a section is, on its outline row** (DOCUMENTS_PLAN Phase 3
+   item 2, "task lists with progress in the outline"). Pushed to the right
+   edge of the row rather than sat after the words: the headings are what the
+   eye runs down, and a count that moves with the length of each title is a
+   count you have to hunt for. `margin-left: auto` is what does it, against
+   the `inline-flex` the bare `button` rule gives every one of these rows, the
+   same property the outline's own alignment comment explains. */
+.outline-tasks {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  flex: 0 0 auto;
+  font-size: var(--text-sm);
+  /* The digits hold one width, so a column of counts does not jitter as the
+     numbers change under the caret. */
+  font-variant-numeric: tabular-nums;
+}
+
+@media (forced-colors: active) {
+.outline-tasks:where(:not(:disabled)) {
+  color: var(--muted);
+}
+}
+
+@media (forced-colors: none) {
+.outline-tasks {
+  color: var(--muted);
+}
+}
+
+/* from 06-timeline-dialogs.css (L-ui-modernisation-51) */
+/* **One selection recipe for every kind** (WHITEBOARD_PLAN.md decision 6:
+   "eight handles, rotate stem on top, the bounding box at `--accent` 1px; a
+   note's inner card no longer draws its own outline").
+   Measured before it: a card and a text box wore a 2px accent outline, and a
+   sketch wore a dashed 35%-opacity stroke along its own path and no box at
+   all, so the same click read as two different kinds of thing. The box is a
+   real rect now (`.wb-sketch-selection-box`, drawn by `wbRenderSketchHandles`)
+   and both are 1px. */
+@media (forced-colors: active) {
+.node-card.wb-selected:where(:not(.wb-map-text:focus-visible, :is(.search-field, .chat-composer):focus-within)) {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+}
+
+@media (forced-colors: none) {
+.node-card.wb-selected:where(:not(.wb-map-text:focus-visible)) {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+}
+
+@media (forced-colors: active) {
+.wb-object.wb-selected:where(:not(.wb-map-text:focus-visible, .wb-object-text .wb-text-content, :is(.search-field, .chat-composer):focus-within)) {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+}
+
+@media (forced-colors: none) {
+.wb-object.wb-selected:where(:not(.wb-map-text:focus-visible, .wb-object-text .wb-text-content)) {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
+   box's own shadow, so nothing needs a blur. */
+.wb-crop-frame {
+  pointer-events: none;
+}
+
+.wb-crop-frame:where(:not(.wb-html-layer)) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+/* A link's own two endpoints, round, not the square resize handles above,
+   so the two read as a different kind of control (reattach/detach an end,
+   not resize a shape). */
+.wb-link-endpoint-handle {
+  fill: var(--card);
+  stroke: var(--accent);
+  stroke-width: 2px;
+  cursor: crosshair;
+  /* The overlay SVG root is `pointer-events: none` (it must never block a
+     card underneath it): each handle opts back in individually. */
+  pointer-events: auto;
+}
+
+/* The bend point on a selected link, a sibling of the endpoint handles,
+   filled with the accent so it reads as "the curve's own control", not a
+   third endpoint. Same pointer-events opt-in, for the same reason. */
+.wb-link-bend-handle {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 2px;
+  cursor: move;
+  pointer-events: auto;
+}
+
+/* The rename field takes the picker's place (renameCurrentBoard), so it must
+   not be taller than the picker: with the page's input margin (9.6px under
+   it) the bar grew 10px and the whole header dropped 5px while a board was
+   renamed (dog3 item 19). */
+.wb-topbar .wb-name-field {
+  align-self: stretch;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.wb-topbar .wb-name-field:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+  padding-block: 0;
+}
+
+.wb-topbar .wb-name-field:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  height: auto;
+}
+
+/* **A topic whose body is a picture** (MINDMAP_PLAN.md §12.1 item 2's fourth).
+   The plan asked for a second node shape rather than a label with a thumbnail
+   beside it, and this is where that happens: the body turns from a row into a
+   column, the picture takes the node's full width, and the label becomes the
+   caption under it. The node's own padding tightens so the picture reads as
+   the card's content rather than as something sitting inside a text box.
+   `data-body`, not a class, for the reason `data-shape` and `data-align` are
+   attributes: one of a set of exclusive layouts, and the absence of it is the
+   label-only node every map has always drawn. */
+.wb-map-node[data-body="picture"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  padding-top: var(--space-2);
+  padding-right: var(--space-2);
+  padding-bottom: var(--space-2);
+  padding-left: var(--space-2);
+}
+
+.wb-map-node[data-body="picture"]:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  /* A picture node is as tall as its picture; the floor a one-word topic
+     needs would only add a band of empty card under a short one. */
+  min-height: 0;
+}
+
+/* An eye or lock the layer decides: shown, but quiet, since a press does not
+   change it. */
+.wb-layer-row .is-by-layer:where(:not(:is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .sp-menu).hidden)) {
+  opacity: 0.55;
+}
+
+.wb-layer-row .is-by-layer:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  cursor: default;
+}
+
+/* An elbow's bends (Phase B, W4): a placed bend is the bend grip's filled
+   dot; the grip that adds one is a hollow ring, quieter, so the two read as
+   "this is a bend" and "a bend can go here". A connector label's grip is a
+   small square on the label. */
+.wb-link-waypoint-handle {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 2px;
+  cursor: move;
+  pointer-events: auto;
+}
+
+.wb-link-waypoint-add {
+  fill: var(--card);
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+  cursor: copy;
+  pointer-events: auto;
+}
+
+/* Clone and connect: an arrow a little outside each side of the one
+   selected shape, the accent's, quiet until the pointer is on it. */
+.wb-clone-grip {
+  fill: var(--accent);
+  fill-opacity: 0.55;
+  stroke: var(--card);
+  stroke-width: 1px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.wb-clone-grip:where(:not(:where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay).hidden > *, :where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) > *)) {
+  transition: fill-opacity var(--motion-fast) var(--ease-out);
+}
+
+/* from 09-editor.css (L-ui-modernisation-51) */
+/* The chip's own remove button, and the row's: the app's icon-only ghost, at
+   the size a chip can carry. */
+.doc-prop-btn {
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  line-height: 1;
+  background: none;
+  border: 0;
+}
+
+@media (forced-colors: active) {
+.doc-prop-btn:where(:not(:disabled)) {
+  color: var(--muted);
+}
+}
+
+@media (forced-colors: none) {
+.doc-prop-btn {
+  color: var(--muted);
+}
+}
+
 /* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
    name only the Library bundle's own classes (in no other script, page or server file), in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 /* --- moved from the boot sheets for L-ui-modernisation-47 (the same test as L459, boot order kept) --- */

@@ -4662,15 +4662,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-panel:has(.doc-prose-row[aria-current]) {
   max-height: min(24vh, 15rem);
 }
-/* The sidebars' grip as a flex item between the text and the column rather
-   than absolutely placed inside a box that scrolls, where it would scroll away
-   with the list. Gone with the panel when the panel is closed. */
-.doc-prose-resize.sidebar-resize {
-  position: static;
-  flex: 0 0 var(--space-3);
-  height: auto;
-  align-self: stretch;
-}
 
 /* The row is the jump. A finding you have to hunt for after reading about it
    is a finding that cost you more than it saved. */
@@ -4870,27 +4861,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-sm);
 }
 
-.doc-suggest-item {
-  display: flex;
-  align-items: center;
-  /* A menu row reads down its left edge, the way `.menu-item` does. These
-     inherited the shell's `justify-content: center` from the base button and
-     measured their icons at 29, 30 and 31px from the row's left edge
-     depending on how long the label was: nine rows, no column, nothing for
-     the eye to run down. */
-  justify-content: flex-start;
-  width: 100%;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--ink);
-  font: inherit;
-  font-size: var(--text-sm);
-  text-align: left;
-  cursor: pointer;
-}
-
 /* **The writing dictionary as a settings sheet** (INBOX 410: "ugly and needs a
    proper professional modern redesign"). One column: the head (title, the count
    as muted text, the '?', close), a line, one field that finds and adds, a
@@ -4954,12 +4924,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-bottom: 1px solid var(--divider);
 }
 
-/* Remove shows on the row under the pointer or with focus in it; on a touch
-   screen, where nothing hovers, it is always there. */
-.doc-dictionary-remove {
-  opacity: 0;
-  transition: opacity var(--ui-fast) var(--ease-out);
-}
 .doc-dictionary-row:hover .doc-dictionary-remove,
 .doc-dictionary-row:focus-within .doc-dictionary-remove {
   opacity: 1;
@@ -5410,24 +5374,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    points at the grid. */
 .chat-grid > .chat-half {
   min-width: 0;
-}
-
-/* **How far along a section is, on its outline row** (DOCUMENTS_PLAN Phase 3
-   item 2, "task lists with progress in the outline"). Pushed to the right
-   edge of the row rather than sat after the words: the headings are what the
-   eye runs down, and a count that moves with the length of each title is a
-   count you have to hunt for. `margin-left: auto` is what does it, against
-   the `inline-flex` the bare `button` rule gives every one of these rows, the
-   same property the outline's own alignment comment explains. */
-.outline-tasks {
-  margin-left: auto;
-  padding-left: var(--space-2);
-  flex: 0 0 auto;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  /* The digits hold one width, so a column of counts does not jitter as the
-     numbers change under the caret. */
-  font-variant-numeric: tabular-nums;
 }
 
 /* --- the phone header fits inside the phone -------------------------------

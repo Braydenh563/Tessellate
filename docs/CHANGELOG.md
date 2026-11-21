@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
+- Styles: 18 more Library-only rules moved from the boot sheets to library-lazy.css (nested, unknown-order and media-list competitors included), computed styles unchanged in light and dark at 1280, 900, 700 and 390 including the board and map views (L-ui-modernisation-51); 80 of 231 stay on the row.
 - Companion: the flow's ribbon and rise above the waist start at 0.45 of the half width (`FLOW_TORSO_CORE`), not the core's 0.3, so the feminine stand's torso keeps its pixels (core diff 20 to 3 of 255, masculine 16 to 5; L-ui-modernisation-200).
 - Tests: 14 fixed-clock tests that read the real date (past 2026-11-21) now pin it: the digest window and its structure note count back from `user_now` (`routes_insights._week_ago`), and three fixtures patch `config.user_now` too and write their notes on the pinned day.
 - Companion: the desk frames are re-rendered pose-arranged (decision 7): each bakes its pose's first lower row, the capture pins the pacer so two takes agree on 126 of 126 frames, held hangs from the grip (1.4 degrees, was 6), the curl sleeps at 3.2, and the follow-through stays within 3.77 to 3.95 degrees in all (L-ui-modernisation-57, 150, 151, 152, 170).

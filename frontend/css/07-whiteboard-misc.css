@@ -16,14 +16,6 @@
 /* A picture fills its box and keeps its aspect (K16/K19): without this it drew
    at its natural size, so a pasted image shrunk to the view overflowed a
    smaller selection box and a resize changed the box but not the picture. */
-/* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
-   box's own shadow, so nothing needs a blur. */
-.wb-crop-frame {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  pointer-events: none;
-}
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press
@@ -296,18 +288,6 @@
   transition:
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
-}
-/* A link's own two endpoints, round, not the square resize handles above,
-   so the two read as a different kind of control (reattach/detach an end,
-   not resize a shape). */
-.wb-link-endpoint-handle {
-  fill: var(--card);
-  stroke: var(--accent);
-  stroke-width: 2px;
-  cursor: crosshair;
-  /* The overlay SVG root is `pointer-events: none` (it must never block a
-     card underneath it): each handle opts back in individually. */
-  pointer-events: auto;
 }
 
 /* ======================= SIDEBAR COLLAPSE & PEEK ======================= */
@@ -7487,16 +7467,6 @@ button.connection-row:is(:hover, :focus-visible) {
   opacity: 0.5;
 }
 
-/* The bend point on a selected link, a sibling of the endpoint handles,
-   filled with the accent so it reads as "the curve's own control", not a
-   third endpoint. Same pointer-events opt-in, for the same reason. */
-.wb-link-bend-handle {
-  fill: var(--accent);
-  stroke: var(--card);
-  stroke-width: 2px;
-  cursor: move;
-  pointer-events: auto;
-}
 /* ======================================================================
    Whiteboard chrome, restructured: one top bar, a centred tool dock, a
    zoom cluster, and a right-hand drawer for properties.
@@ -8117,18 +8087,6 @@ button.connection-row:is(:hover, :focus-visible) {
   .wb-topbar-right {
     flex-shrink: 0;
   }
-}
-/* The rename field takes the picker's place (renameCurrentBoard), so it must
-   not be taller than the picker: with the page's input margin (9.6px under
-   it) the bar grew 10px and the whole header dropped 5px while a board was
-   renamed (dog3 item 19). */
-.wb-topbar .wb-name-field {
-  margin: 0;
-  padding-block: 0;
-  height: auto;
-  align-self: stretch;
-  min-width: 0;
-  max-width: 100%;
 }
 /* The map's chip is one short word; the picker beside it gives way first. */
 .wb-topbar #wb-map-chip {
@@ -9387,21 +9345,6 @@ input[type="file"] {
    An em is measured against the node's own size, so the glyph now grows and
    shrinks with the label it belongs to. The ratio is the one the token gave
    at the default size, so a node nobody has resized looks exactly as it did. */
-/* **A topic whose body is a picture** (MINDMAP_PLAN.md §12.1 item 2's fourth).
-   The plan asked for a second node shape rather than a label with a thumbnail
-   beside it, and this is where that happens: the body turns from a row into a
-   column, the picture takes the node's full width, and the label becomes the
-   caption under it. The node's own padding tightens so the picture reads as
-   the card's content rather than as something sitting inside a text box.
-   `data-body`, not a class, for the reason `data-shape` and `data-align` are
-   attributes: one of a set of exclusive layouts, and the absence of it is the
-   label-only node every map has always drawn. */
-.wb-map-node[data-body="picture"] {
-  padding: var(--space-2);
-  /* A picture node is as tall as its picture; the floor a one-word topic
-     needs would only add a band of empty card under a short one. */
-  min-height: 0;
-}
 .wb-map-text {
   min-width: 0;
   flex: 1 1 auto;
@@ -15481,12 +15424,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
     flex: 1;
   }
 }
-/* An eye or lock the layer decides: shown, but quiet, since a press does not
-   change it. */
-.wb-layer-row .is-by-layer {
-  opacity: 0.55;
-  cursor: default;
-}
 /* The template gallery's name field: its word over the field, as every
    dialog field is, with the focus ring's reach added to the gap (INBOX 715:
    "name text clashes with border"; `.space-dialog label` above is a block,
@@ -15498,35 +15435,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 
 :where(.space-dialog) {
   width: min(34rem, calc(100vw - var(--space-8) * 2));
-}
-/* An elbow's bends (Phase B, W4): a placed bend is the bend grip's filled
-   dot; the grip that adds one is a hollow ring, quieter, so the two read as
-   "this is a bend" and "a bend can go here". A connector label's grip is a
-   small square on the label. */
-.wb-link-waypoint-handle {
-  fill: var(--accent);
-  stroke: var(--card);
-  stroke-width: 2px;
-  cursor: move;
-  pointer-events: auto;
-}
-.wb-link-waypoint-add {
-  fill: var(--card);
-  stroke: var(--accent);
-  stroke-width: 1.5px;
-  cursor: copy;
-  pointer-events: auto;
-}
-/* Clone and connect: an arrow a little outside each side of the one
-   selected shape, the accent's, quiet until the pointer is on it. */
-.wb-clone-grip {
-  fill: var(--accent);
-  fill-opacity: 0.55;
-  stroke: var(--card);
-  stroke-width: 1px;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: fill-opacity var(--motion-fast) var(--ease-out);
 }
 
 /* Pages (decision 22): the frames in presentation order, on the Layers

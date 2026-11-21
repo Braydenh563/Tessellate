@@ -2346,58 +2346,6 @@ button.scroll-row-arrow[hidden] {
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
 }
-/* Had no styling at all before, a plain inline button between the image
-   and caption, not the corner overlay a delete control on a tile usually
-   is anywhere else in this app. Hover/focus-revealed so a grid of images
-   doesn't carry a permanent row of trash-can icons; the buttons themselves
-   stay in the DOM (not display:none) so they're still keyboard-reachable
-   without hovering.
-   Edit and delete are laid out as a flex pair sharing one absolutely-
-   positioned wrapper, rather than each button computing its own `right`
-   offset independently. Two buttons each doing their own math (delete at
-   `right: var(--space-2)`, edit at `right: calc(var(--space-2) + 2.2rem)`)
-   silently assumed a button was exactly 2.2rem wide, it wasn't quite,
-   at every density/zoom this app's own settings allow, so edit's right
-   edge sat a few pixels *under* delete. Delete, later in paint order,
-   covered it: edit's own border was there the whole time, just hidden
-   under the button next to it. Reported as "the border only goes around
-   the delete button". `gap` can't get this wrong: it measures the real
-   rendered width of whatever's actually in the row. */
-.library-image-actions {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  /* Above `.library-file-page`, which is `position: absolute; inset: 0;
-     z-index: 1` and therefore covered this row completely on any file with a
-     rendered first page: measured on the Files sub-tab: four of nine tiles
-     had a kebab in the DOM at opacity 0.6 with a PDF page painted on top of
-     it, which is a control that exists and cannot be clicked. */
-  z-index: 2;
-  /* `left` as well as `right`, and wrapping: reported live as *"the popup
-     buttons for uploaded images sometimes get cut off in different window
-     resolutions and sizes"*, with a screenshot showing the row running off the
-     tile's left edge.
-     The row holds up to FIVE buttons (edit, delete, caption, OCR, vision-OCR)
-     and the grid above it is `minmax(11rem, 1fr)`, so a tile is 11rem wide at
-     the narrow end while the row needs roughly 14. Anchored only by `right`, a
-     flex row that cannot fit grows leftwards past the tile's own edge, and
-     `.library-image-tile` sets `overflow: hidden`, so the overflow is not
-     merely ugly: the leftmost button is clipped away and cannot be clicked at
-     all. Which button that is depends on how many the image has, which is why
-     it looked intermittent.
-     Setting both edges gives the row the tile's real width to work in, and
-     `flex-wrap` spends it downwards: a second row of buttons over the image,
-     which is always reachable, instead of sideways into the clip. */
-  left: var(--space-2);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  /* See the visibility rule further down: this used to be 0, so the kebab did
-     not exist until the pointer found it. */
-  opacity: 0.6;
-  transition: opacity var(--ui-base) var(--ease-out);
-}
 .library-image-menu-list {
   /* **Fixed, not absolute**: see the long note above `placeMenu` in
      library.js. Two ancestors of this menu clip horizontally
@@ -2652,15 +2600,6 @@ button.scroll-row-arrow[hidden] {
    off/on with a "Show more"/"Show less" button for a caption long enough to
    need one. */
 
-/* The two blocks that moved inside the fold were written as sections of the
-   card's outside: a rule above the usage chips, an inset on the byline. In
-   here the fold's own padding and gap already separate them, and a hairline
-   across a disclosure body reads as a second panel. */
-.library-image-reading-body > .library-image-usage {
-  margin: 0;
-  padding: 0;
-  border-top: 0;
-}
 /* A transcription has no length limit and a grid row is as tall as its
    tallest card, so one opened reading of a dense page would otherwise set the
    height of every card beside it. It scrolls at about a card's worth instead.

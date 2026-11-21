@@ -3258,19 +3258,6 @@
   z-index: 100;
   box-shadow: var(--shadow-lg);
 }
-/* **One selection recipe for every kind** (WHITEBOARD_PLAN.md decision 6:
-   "eight handles, rotate stem on top, the bounding box at `--accent` 1px; a
-   note's inner card no longer draws its own outline").
-   Measured before it: a card and a text box wore a 2px accent outline, and a
-   sketch wore a dashed 35%-opacity stroke along its own path and no box at
-   all, so the same click read as two different kinds of thing. The box is a
-   real rect now (`.wb-sketch-selection-box`, drawn by `wbRenderSketchHandles`)
-   and both are 1px. */
-.node-card.wb-selected,
-.wb-object.wb-selected {
-  outline: 1px solid var(--accent);
-  outline-offset: 2px;
-}
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id
    /entry.thumb_url/entry.attachments at all: libraryCard() (library.js) and
@@ -3804,7 +3791,6 @@ aside[data-resizable="1"] {
 .timeline-monthday:disabled {
   opacity: 0.35;
 }
-
 
 /* The journal streak (L495): quiet text at the end of the strip's head. */
 .timeline-streak {

@@ -329,18 +329,6 @@
   display: none;
 }
 
-/* The chip's own remove button, and the row's: the app's icon-only ghost, at
-   the size a chip can carry. */
-.doc-prop-btn {
-  padding: 0;
-  min-width: 0;
-  min-height: 0;
-  line-height: 1;
-  color: var(--muted);
-  background: none;
-  border: 0;
-}
-
 /* =============================================================================
    Columns and image options (DOCUMENTS_PLAN Phase 3 item 5)
    =============================================================================

@@ -995,9 +995,6 @@ details.tool-chip[open] > .tool-chip-body {
 #wb-canvas-view {
   transition: opacity var(--ui-slow) var(--ease-out);
 }
-#wb-canvas-view.wb-entering {
-  opacity: 0;
-}
 /* Fullscreen mode for the graph map.
    **Reported directly: square corners.** This used to be `top/left: 0`,
    `100vw x 100vh` and `border-radius: 0 !important`, a true edge-to-edge
