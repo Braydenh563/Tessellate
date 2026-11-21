@@ -19905,7 +19905,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `SkillError` | src/tessellate/ai/skills.py:171 |
 | `_check_placeholders` | src/tessellate/ai/skills.py:552 |
-| `_checked_folder_skill` | src/tessellate/ai/skills.py:1874 |
+| `_checked_folder_skill` | src/tessellate/ai/skills.py:1911 |
 | `_clean_inputs` | src/tessellate/ai/skills.py:526 |
 | `_clean_tools` | src/tessellate/ai/skills.py:498 |
 | `_declared_blocks` | src/tessellate/ai/skills.py:623 |
@@ -19917,25 +19917,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_verify_args` | src/tessellate/ai/skills.py:340 |
 | `ad_hoc_plan` | src/tessellate/ai/skills.py:663 |
 | `budget_caps` | src/tessellate/ai/skills.py:636 |
-| `builtins` | src/tessellate/ai/skills.py:1837 |
-| `catalog` | src/tessellate/ai/skills.py:1849 |
+| `builtins` | src/tessellate/ai/skills.py:1874 |
+| `catalog` | src/tessellate/ai/skills.py:1886 |
 | `contract_nudge` | src/tessellate/ai/skills.py:408 |
 | `fill` | src/tessellate/ai/skills.py:698 |
-| `find` | src/tessellate/ai/skills.py:1912 |
-| `folder_skills` | src/tessellate/ai/skills.py:1882 |
-| `held_back_reason` | src/tessellate/ai/skills.py:1828 |
+| `find` | src/tessellate/ai/skills.py:1949 |
+| `folder_skills` | src/tessellate/ai/skills.py:1919 |
+| `held_back_reason` | src/tessellate/ai/skills.py:1865 |
 | `input_values` | src/tessellate/ai/skills.py:725 |
 | `is_action` | src/tessellate/ai/skills.py:658 |
-| `larger_model_reason` | src/tessellate/ai/skills.py:1794 |
-| `measured_rates` | src/tessellate/ai/skills.py:1785 |
+| `larger_model_reason` | src/tessellate/ai/skills.py:1831 |
+| `measured_rates` | src/tessellate/ai/skills.py:1822 |
 | `missing_inputs` | src/tessellate/ai/skills.py:714 |
 | `normalise` | src/tessellate/ai/skills.py:567 |
 | `run_instruction` | src/tessellate/ai/skills.py:736 |
-| `small_class` | src/tessellate/ai/skills.py:1811 |
+| `small_class` | src/tessellate/ai/skills.py:1848 |
 | `state_line` | src/tessellate/ai/skills.py:462 |
 | `step_instruction` | src/tessellate/ai/skills.py:783 |
 | `step_specs` | src/tessellate/ai/skills.py:383 |
-| `stored` | src/tessellate/ai/skills.py:1844 |
+| `stored` | src/tessellate/ai/skills.py:1881 |
 | `verify_spec` | src/tessellate/ai/skills.py:275 |
 
 ### src/tessellate/ai/slash.py (15)
