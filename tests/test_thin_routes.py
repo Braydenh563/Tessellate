@@ -21,6 +21,7 @@ SERVICES = (
     SRC / "entry" / "capture.py",
     SRC / "entry" / "listing.py",
     SRC / "entry" / "assist.py",
+    SRC / "entry" / "editing.py",
 )
 _UPWARD = ("tessellate.api", "fastapi", "starlette")
 
@@ -46,6 +47,7 @@ CONVERTED = {
         "answer_suggested_tags",
         "add_context",
         "improve_writing",
+        "update_entry",
     },
     "routes_entries_links.py": {"entry_connections"},
 }
@@ -76,6 +78,12 @@ MOVED_OUT = {
     "_cheer_note_count",
     "_find_near_duplicate",
     "_discard_tags",
+    "_content_change",
+    "_after_content_edit",
+    "_wiki_rename",
+    "_apply_flags",
+    "_stored_form",
+    "_readable",
 }
 
 #: The ORM verbs and statement builders a route body may not call itself.
