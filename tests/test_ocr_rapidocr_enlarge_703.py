@@ -7,20 +7,25 @@ from pathlib import Path
 import pytest
 
 PIL = pytest.importorskip("PIL")
-from PIL import Image, ImageDraw  # noqa: E402
+from PIL import Image, ImageDraw, ImageFont  # noqa: E402
 
 from tessellate.core import ocr  # noqa: E402
 
 
 def _page(tmp_path: Path, text_px: int) -> Path:
+    """Three lines of real glyphs `text_px` high. Solid blocks will not do: `ocr_prep` measures text by
+    the edges between rows, and a filled box has edges only at its top and bottom (`tests/test_ocr_prep_1568.py`)."""
     path = tmp_path / f"page{text_px}.png"
     image = Image.new("RGB", (40 * text_px, 6 * text_px), "white")
     draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default(size=text_px)
     for row in range(3):
-        top = text_px + row * 2 * text_px
-        for col in range(12):
-            left = text_px + col * 3 * text_px
-            draw.rectangle([left, top, left + 2 * text_px, top + text_px - 1], fill="black")
+        draw.text(
+            (text_px, text_px + row * 2 * text_px),
+            "Quarterly budget review notes",
+            fill="black",
+            font=font,
+        )
     image.save(path)
     return path
 
@@ -51,7 +56,7 @@ def test_small_text_is_enlarged_and_boxes_come_back_to_the_page(tmp_path, reader
 
 
 def test_big_text_is_read_from_the_file_as_before(tmp_path, reader):
-    path = _page(tmp_path, 40)
+    path = _page(tmp_path, 64)
     ocr._rapidocr_lines(path)
     assert reader.seen == [str(path)]
 

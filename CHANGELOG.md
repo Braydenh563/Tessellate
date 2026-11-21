@@ -6,7 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- CI: the OCR clean-up tests (`tests/test_ocr_prep_1568.py`) run in the PDF job, which has Pillow; the main test job skipped them.
+- CI: the test job installs Pillow, so the 46 test files that need it (desk companion frames, OCR clean-up) run instead of skipping; the RapidOCR enlargement test now draws real glyphs, which the text measure can read (L703).
 - Desk companion: a companion made from a name is checked to walk, run, climb, crouch, sit and lie with the frames it captured (L185).
 - Chat agent: a small model's tool call written with a doubled opening brace is still run; a real-model check of the browser tools is in `pytest -m evals` (L-world-class-630).
 - Top bar: one row again from 820px; from 820 to 875px it had wrapped to two rows (100px) after the Local chip joined it (L-world-class-106).

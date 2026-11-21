@@ -64,11 +64,14 @@ jobs:
         with:
           node-version: "22"
 
+      # Pillow is an optional extra for people, a test dependency here: 46 test files (the desk companion's
+      # frames, the OCR clean-up) skip without it, so without this they never ran in CI.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
+          pip install Pillow
 
       # --durations=0 with a one-second floor names every slow test; the junit file is summed by test file below,
       # so one run shows the whole tail and not only the fifteen slowest (OPEN W24).
@@ -134,7 +137,6 @@ jobs:
             tests/test_ocr_model.py \
             tests/test_ocr_page.py \
             tests/test_ocr_pdf_regions.py \
-            tests/test_ocr_prep_1568.py \
             tests/test_ocr_regions.py \
             tests/test_page_captions.py
 
