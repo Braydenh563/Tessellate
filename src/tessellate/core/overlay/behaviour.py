@@ -714,14 +714,14 @@ FLOW_MID = 0.35
 #: back with its speed (a stream trails what moves it), `FLOW_MAX` px at most a spring. What it adds to the view is capped
 #: by angle (L-ui-modernisation-103: the 6 px clamp bent the streams to 7.2 to 7.7 degrees): a strand's steepest chord off
 #: the waist, the larger of its tip and its first lead (`4 * mid - tip`, the warp's quadratic), stays under `FLOW_LEAN`
-#: degrees at `FLOW_LEAN_DEG` degrees a px (the stand frame, feminine worst: measured at most 0.533).
+#: degrees at `FLOW_LEAN_DEG` degrees a px (the stand frame, feminine worst: measured at most 0.541 since the ribbon starts further out, L-ui-modernisation-200).
 FLOW_STIFF = (34.0, 62.0)
 FLOW_DAMP = 0.4
 FLOW_KICK = 0.18
 FLOW_STREAM = 0.012
 FLOW_MAX = 6.0
 FLOW_LEAN = 4.0
-FLOW_LEAN_DEG = 0.54
+FLOW_LEAN_DEG = 0.55
 #: Reduced motion: a slow drift only, this share of the sway at this multiple of the periods.
 FLOW_CALM_AMP = 0.5
 FLOW_CALM_SLOW = 2.6

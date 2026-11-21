@@ -775,6 +775,11 @@ FLOW_FIELDS = 5
 TAIL_Q = 8.0  # `behaviour.TAIL_Q`: steps a px in a tail view
 FLOW_WAIST = 0.5
 FLOW_CORE = (0.3, 0.6)
+#: Where the ribbon and the rise (the terms that act above the waist) start to take a corner: further out than the core,
+#: since a mesh cell is a strand wide and its bilinear pass spreads a free corner's move over the whole cell, so a corner
+#: at 0.43 of the half width (the feminine stand's, 25 px from the core's edge) moved a pixel inside the core by 20 of 255
+#: where the test allows 16 (L-ui-modernisation-200). Full by 0.70 so the outer strands keep their ribbon.
+FLOW_TORSO_CORE = (0.45, 0.70)
 #: The ribbon is a share of the strand's lead, so it was 0.8 at `FLOW_TIP` 2.2 and is 0.5 at 3.5: the same px, since above the
 #: waist it bends the torso's edge (test_flow_1683's torso check, 15 of 255 at 2.2, 24 at 3.5 with 0.8, 16 with 0.5;
 #: L-ui-modernisation-100).
@@ -808,9 +813,9 @@ def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box
             near = [flow[k * FLOW_FIELDS:(k + 1) * FLOW_FIELDS] for k in (j - 1, j) if 0 <= k < bands]
             tip, middle, rise = (sum(n[f] for n in near) / len(near) / FLOW_Q * scale for f in range(3))
             lead, curve = 4 * middle - tip, 2 * tip - 4 * middle  # v(u) = lead u + curve u^2: 0, middle, tip at 0, 1/2, 1
-            free = _smooth((abs(x - mid) / half - FLOW_CORE[0]) / (FLOW_CORE[1] - FLOW_CORE[0]))
-            ribbon = FLOW_RIBBON * free * (1 - u) * (lead / 2 + curve / 4)
-            dy = rise * u + 0.3 * rise * free * (1 - u)
+            top_free = _smooth((abs(x - mid) / half - FLOW_TORSO_CORE[0]) / (FLOW_TORSO_CORE[1] - FLOW_TORSO_CORE[0]))
+            ribbon = FLOW_RIBBON * top_free * (1 - u) * (lead / 2 + curve / 4)
+            dy = rise * u + 0.3 * rise * top_free * (1 - u)
             dx = lead * u + curve * u * u + ribbon if below else ribbon
             if room is not None:
                 dx, dy = max(-room[0], min(room[1], dx)), min(dy, room[2])
