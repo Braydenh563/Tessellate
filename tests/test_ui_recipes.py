@@ -7937,3 +7937,17 @@ def test_the_agent_asks_in_one_card_and_a_suggested_edit_is_the_document_diff() 
     body = body[: body.index("\n}\n")]
     assert 'lazyScript("/js/tool-consent.js")' in body and "smallButton(" not in body
     assert ".style." not in consent and "style=" not in consent
+
+
+def test_an_agent_edit_in_the_open_document_is_the_card_s_press() -> None:
+    """L-documents-41: the in-editor review draws the card's own hunks with the suggestion mode's
+    marks, and never saves on its own: every way out of it is the card's Allow or Decline."""
+    js_dir = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    review = (js_dir / "doc-agent-review.js").read_text(encoding="utf-8")
+    consent = (js_dir / "tool-consent.js").read_text(encoding="utf-8")
+    assert 'ins.className = "cm-suggest-ins"' in review and 'class: "cm-suggest-del"' in review
+    assert "docRenderDiff(" not in review and "docDiffLines(" not in review
+    assert "/chat/tools/execute\", {" not in review.split("saved(result, ran)")[0]
+    assert "if (all === false) onReject();\n      else onAccept();" in review
+    assert "onAccept: () => allow(false), onReject: decline" in consent
+    assert "CM.state.EditorState.readOnly.from(f" in review

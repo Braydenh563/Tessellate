@@ -89,6 +89,8 @@ CSS_FILES = [
     CSS_DIR / "chip-bar-lazy.css",
     #: The sidebar's group headings (chat-order.js, L-world-class-180).
     CSS_DIR / "chat-order-lazy.css",
+    #: An agent edit marked in the open document (doc-agent-review.js, L-documents-41).
+    CSS_DIR / "doc-agent-review-lazy.css",
     #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
     CSS_DIR / "model-menu-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
