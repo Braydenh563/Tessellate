@@ -819,6 +819,10 @@
    rows near the window exist, and a row locking and unlocking as it crossed
    the edge was a layout a frame: 38 to 44 layouts a second while scrolling,
    6 to 10 without, entry unchanged (430 nodes, 6 to 15ms of layout).
+   Kept here on measurement (L-general-34, 1,000 notes, 1440 wide, wheel
+   scroll): 17 to 24 layouts a second with it and 3 to 4 without, under a
+   layout a frame, 22 to 31ms of layout a second against 5 to 20; entering
+   the tab restyled 40 to 108ms with it against 45 to 209ms without.
    Not a row being edited, holding an open disclosure or holding focus:
    containment clips what a row paints to its own box, and the note editor's
    toolbar menus and a `<details>` list open past it. The ⋯ menus are not
