@@ -191,7 +191,7 @@ def _annotations(spec: tools.ToolSpec) -> dict:
     return {
         "readOnlyHint": _is_read_only(spec),
         "destructiveHint": bool(spec.destructive),
-        "openWorldHint": spec.name in ("web_search", "read_url"),
+        "openWorldHint": spec.name in tools.ONLINE_TOOLS,
     }
 
 

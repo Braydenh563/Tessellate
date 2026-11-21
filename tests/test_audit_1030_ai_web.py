@@ -29,7 +29,7 @@ WORLD = [
 @pytest.mark.parametrize("question", OWN)
 def test_own_record_questions_stay_off_the_web(question):
     assert personal.about_own_record(question)
-    assert tools.web_barred(question) == {"web_search", "read_url"}
+    assert tools.web_barred(question) == set(tools.ONLINE_TOOLS)
 
 
 @pytest.mark.parametrize("question", WORLD)

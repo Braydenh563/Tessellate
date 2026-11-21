@@ -30,7 +30,7 @@ imports them all and re-exports every name that anything else reads, so
 from __future__ import annotations
 
 from . import _common, contracts, verify  # noqa: F401
-from ._common import DOCUMENT_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, ToolError, ToolSpec, _READ_MORE  # noqa: F401
+from ._common import DOCUMENT_CHARS, MAX_LIST_LIMIT, ONLINE_TOOLS, PREVIEW_CHARS, ToolError, ToolSpec, _READ_MORE  # noqa: F401
 from .whiteboard import MAX_DIAGRAM_NODES  # noqa: F401
 from tessellate.entry import manager  # noqa: F401
 from . import files, whiteboard  # noqa: F401

@@ -8,7 +8,7 @@ The code is `src/tessellate/mcp_server.py`.
 
 Three things, all over standard input and output:
 
-- **Tools:** the app's own tool registry, minus any tool that is destructive (the `delete_*` tools and `merge_categories`), interactive (`ask_user`, `make_plan`, `run_skill`, `compress_chat`), or chat-only (`get_app_navigation`, `search_chat_history`). A tool you switched off in Settings, Tools is hidden too, and `web_search` and `read_url` appear only if you enabled them.
+- **Tools:** the app's own tool registry, minus any tool that is destructive (the `delete_*` tools and `merge_categories`), interactive (`ask_user`, `make_plan`, `run_skill`, `compress_chat`), or chat-only (`get_app_navigation`, `search_chat_history`). A tool you switched off in Settings, Tools is hidden too, and `web_search`, `read_url` and the browser tools (`browser_open`, `browser_read`, `browser_follow`, `browser_find`, `browser_back`) appear only if you enabled web search.
 - **Resources:** each note as `memorymap://note/<id>` (markdown). Private notes are never served.
 - **Prompts:** your saved skills, filled in the way a skill run fills them. A prompt is text for the client's model; it runs nothing.
 
@@ -157,7 +157,7 @@ The running app also answers MCP at `/mcp` on its own port (streamable HTTP, JSO
 - **A token, not the password.** The server refuses every request (except `ping`) from a process that does not pass this notebook's token as `TESSELLATE_MCP_TOKEN`, so being able to start a program as you is no longer enough to read notes through it. The server does not ask for the app password. The trust boundary is still your operating system account, since anyone who can run a process as you can open the notebook's database file, so do not add the snippet to a client you do not trust.
 - **The stdio server is not part of the web app**, so LAN mode and a container's published port do not expose it; the HTTP route above has its own per-app tokens.
 - **What a client can do:** read and search notes, documents, files, boards and reminders. Only after you tick **Let that app add and change notes** can it make the non-destructive writes in the table above (create and edit notes, tags, links, reminders, boards, skills); with it off a client cannot change anything, even if a note's text tells its model to. Writes are recorded in Library, Activity under the client's own name (for example "Claude Desktop").
-- **What it cannot do:** delete anything (no `delete_*` tool, no `merge_categories`), read private notes, run a skill, or reach the internet unless you switched `web_search` or `read_url` on. A tool you disable in Settings, Tools disappears from the client on its next start.
+- **What it cannot do:** delete anything (no `delete_*` tool, no `merge_categories`), read private notes, run a skill, or reach the internet unless you switched web search on, which also offers `web_search`, `read_url` and the browser tools. A tool you disable in Settings, Tools disappears from the client on its next start.
 - **Notes are data.** A note's text goes to the client's model. If the client is a hosted service, that is the one place your notes leave the machine, and it is your choice of client, not Tessellate's. See [PRIVACY.md](PRIVACY.md).
 
 ## Troubleshooting

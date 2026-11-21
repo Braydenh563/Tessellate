@@ -14,7 +14,6 @@ import tessellate.ai.tools._common as _common
 import tessellate.ai.tools.contracts as contracts
 import tessellate.ai.tools.verify as verify
 from tessellate.ai.tools.tool_coerce import _coerce, _describe_param
-
 from sqlalchemy.orm import Session
 from tessellate.core import activity, deps, events
 from tessellate.entry import manager
@@ -46,6 +45,7 @@ _CONFIRM_LABELS = {
     "set_reminder": lambda a: "Set a repeating reminder" if str(a.get("recurring") or "none").lower() in ("daily", "weekly", "monthly") else "Set a reminder",
     "read_url": lambda a: f"Open {a.get('url', 'a web page')}",
     "web_search": lambda a: f"Search the web for “{a.get('query', '?')}”",
+    **_common.BROWSER_CONFIRMS,
 }
 
 

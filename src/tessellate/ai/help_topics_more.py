@@ -1189,6 +1189,27 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Web clipper", "section": "data", "target": "web-clip-box"},
     },
     {
+        "id": "assistant-browser",
+        "keywords": (
+            "browse the web", "browse a page", "open a page for me", "browser tools", "follow a link",
+            "find text on a page", "go back a page", "assistant browser", "browser mcp", "read a page for me",
+        ),
+        "body": (
+            "In Agent mode, with web search on (Settings, Web search), the assistant can "
+            "browse beside searching: it opens a page in the Web panel, reads it as text, "
+            "follows one of its links, finds words on it and goes back. The page it reads "
+            "is the page you see in the panel. Opening and following send a request, "
+            "so they use the same switch, the same address checks and the same "
+            "confirm as a web search: once a page has been read in a turn, "
+            "each further open or follow waits for you on a card. Reading, finding and "
+            "going back use the page already held and send nothing. A page is someone "
+            "else's words: Atlas reads it as data and never follows instructions in it. "
+            "An MCP client you connected sees the same tools while web search is on. "
+            "By hand, the reader has the page's links, Find in this page and Results."
+        ),
+        "badge": {"label": "Web search", "section": "websearch"},
+    },
+    {
         "id": "import-apps",
         "keywords": (
             "import from notion", "notion", "evernote", "enex", "apple notes", "obsidian vault",
@@ -1779,6 +1800,7 @@ TOPIC_META: dict[str, dict] = {
     "running-copies": {"title": "Running copies", "path": "Settings, About, Running copies", "target": "running-copies-group"},
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
+    "assistant-browser": {"title": "Browse the web with the assistant", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
     "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after (the app's Undo lasts for the session)"},
     "autonomous": {"title": "Autonomous background AI", "path": "Settings, Background tasks"},
@@ -2005,7 +2027,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch", "assistant-browser",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
