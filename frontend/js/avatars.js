@@ -5235,6 +5235,7 @@
     nmb.ly = r ? y - r.top + nmb.place.client(r.el).st : y;
     buddy.style.transform = `translate(${nmb.lx}px, ${nmb.ly}px)`;
     if (nmb.menuPlace && nameMarkBuddyMenuOpen()) nmb.menuPlace();
+    nameMarkBuddyPointer.mark();
   }
 
   //: The lean of a carried or flying companion, against the pull: the body by
@@ -10661,9 +10662,11 @@
   //: layout is read: its own place is in `nmb`.
   document.addEventListener("pointermove", (event) => {
     nmb.pointer = [event.clientX, event.clientY];
+    nmb.mouse = event.pointerType === "mouse";
     const now = Date.now();
     if (now - nmb.lastInput > 1000) nameMarkBuddyAwake();
     if (!document.getElementById("nm-buddy")) return;
+    nameMarkBuddyPointer.mark();
     //: At most ten a second, and the last move of a burst is never lost: a
     //: pointer that stops inside the burst is looked at a moment later.
     if (now - nmb.shyAt < 100) {
@@ -10686,6 +10689,38 @@
     nameMarkBuddyShy(now);
     nameMarkBuddyRoomSoon(px, py);
   }
+
+  //: **Out of hit testing while the mouse is far** (L-ui-modernisation-201).
+  //: After each frame that lays out, the browser hit-tests the page at the
+  //: pointer for hover and the cursor, and a wheel hit-tests its target; over
+  //: the companion's hundred layers that cost 16 ms/s idle and 1.7 ms a wheel
+  //: step (A/B, pointer still on the page). A mouse further than `farPx` from
+  //: its box marks it `data-nmb-far` (characters-lazy.css: no pointer events),
+  //: looked at on each move (the browser sends a mouse's moves once a frame)
+  //: from `nmb` alone, written only when it changes, so the mouse is near and
+  //: it answers again before it can be reached. Never while it rides a
+  //: scroll area (its place there goes stale), with its menu open, or for a
+  //: touch or a pen, which hit-test where they land.
+  nameMarkBuddyPointer.farPx = 24;
+  nameMarkBuddyPointer.away = (px, py) => {
+    if (!Number.isFinite(nmb.x) || !Number.isFinite(nmb.y) || nmb.ride || nameMarkBuddyMenuOpen()) return false;
+    const s = nmb.scale || 1;
+    const m = nameMarkBuddyPointer.farPx;
+    return px < nmb.x - m || py < nmb.y - m || px > nmb.x + NMB_W * s + m || py > nmb.y + NMB_H * s + m;
+  };
+  nameMarkBuddyPointer.mark = () => {
+    const buddy = document.getElementById("nm-buddy");
+    if (!buddy) return;
+    const far = !!nmb.pointer && nmb.mouse === true && nameMarkBuddyPointer.away(nmb.pointer[0], nmb.pointer[1]);
+    if (buddy.hasAttribute("data-nmb-far") !== far) buddy.toggleAttribute("data-nmb-far", far);
+  };
+  document.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "mouse") {
+      nmb.mouse = false;
+      nameMarkBuddyPointer.mark();
+    }
+  }, { passive: true, capture: true });
+  //: End of the far hit test.
 
   //: **Room for what you reach for** (INBOX 1463, the owner: "a non intrusive
   //: companion"). The pointer within its trait's `room` of it, not on it (on
