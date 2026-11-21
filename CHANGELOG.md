@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: while a panel moves, the follow loop reads its place in the frame (reads before writes) and asks about a just-started transition at every look, so a panel eased by a transform no longer outruns it (companionscroll sweep: glue error 6.2px to 0.5px; L-general-37).
 - Sweeps: perchall no longer counts a Library tab's own dock or card as a free perch: a resting companion keeps to the window's perches by the INBOX 1674 decision (L-general-41).
 - Companion: a long-press that opens its menu no longer presses the menu's first row when the finger lifts, and the focus left on a menu's one-pixel anchor no longer makes it ghost itself (companionmenu sweep, L-general-40).
 - Touch: under a coarse pointer or a narrow window, the icon-only header buttons, privacy chip, capture-bar buttons and the board's new-board menu keep a 44px target (desktop sizes unchanged).

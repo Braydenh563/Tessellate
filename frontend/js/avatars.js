@@ -5759,7 +5759,7 @@
     nmbFollow.until = Math.max(nmbFollow.until, performance.now() + ms);
     if (!nmbFollow.frame && !nmbFollow.timer) nameMarkBuddyFollowFrame.ask();
   }
-  //: **The follow loop looks in a task after a drawn frame, never in a frame callback** (INBOX 1766, the owner's lag
+  //: **At rest, the follow loop looks in a task after a drawn frame, not in a frame callback** (INBOX 1766, the owner's lag
   //: log on a documents page: `nameMarkBuddyKeepUp 110ms (forced layout 109ms)`). A frame callback runs after every
   //: writer since the last draw and its first box read paid for all of it. The turn asks for a frame (`stage` "raf"),
   //: and that frame's callback only hands over to a timer (`stage` "task"), which runs once the frame has drawn: the
@@ -5768,6 +5768,14 @@
   nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk() {
     nmbFollow.stage = "raf";
     nmbFollow.frame = requestAnimationFrame(function nameMarkBuddyFollowTurn() {
+      //: **While its panel moves, the look is in the frame** (L-general-37, companionscroll.js): a card moved by a
+      //: transform animation is drawn with that frame's value, and a look in the task after it paints the
+      //: companion one frame behind (7.6px at the end of a 0.6s return against a 2px budget). Every read
+      //: (`nameMarkBuddyFollowFrame`'s animation question, the box) comes before its first write.
+      if (nmbFollow.moving) {
+        nameMarkBuddyFollowFrame(performance.now());
+        return;
+      }
       nmbFollow.stage = "task";
       nmbFollow.frame = setTimeout(function nameMarkBuddyFollowTask() {
         nameMarkBuddyFollowFrame(performance.now());
@@ -5814,7 +5822,9 @@
       //: transition starts with an event (`nmbFollow.animAt`), so with none in the last 2.5 s and
       //: the panel not already moving, there is nothing for it to find. **Before the frame writes**
       //: (INBOX 1591): the follow below moves the buddy, and a read after that settled style twice.
-      if (now - nmbFollow.movingAt > 120) {
+      //: **Just after a start event it asks at every look** (L-general-37): a transform transition is
+      //: `pending` for its first frame or two, so one answer of "no" (cached 120ms) let the loop nap while the card moved.
+      if (now - nmbFollow.movingAt > 120 || (!nmbFollow.moving && now - nmbFollow.animAt < NMB_START_MS)) {
         nmbFollow.movingAt = now;
         nmbFollow.moving = !!nmb.glue && (nmbFollow.moving || now - nmbFollow.animAt < 2500) && nameMarkBuddyPanelMoving(nmb.glue.el);
       }
@@ -5865,6 +5875,7 @@
   //: every panel beside it). An endless one on an ancestor is followed while
   //: it runs, since the panel really does move every frame; an endless one
   //: elsewhere (a spinner, a shimmer) is not, so an idle page stays idle.
+  const NMB_START_MS = 300;
   const NMB_PLACES = /^(transform|translate|scale|rotate|offset|inset|top|left|right|bottom|margin|padding|width|height|min-|max-|flex|grid|gap|border-width|font-size|all)/;
   const NMB_LAYOUT = /^(inset|top|left|right|bottom|margin|padding|width|height|min-|max-|flex|grid|gap|border-width|font-size|all)/;
   function nameMarkBuddyAnimProps(anim) {
@@ -5889,7 +5900,7 @@
     if (!el?.isConnected || typeof document.getAnimations !== "function") return false;
     const at = performance.now();
     const pm = nmbFollow.pm;
-    if (pm.el === el && at - pm.at < 120 && pm.at >= nmbFollow.animAt) return pm.val;
+    if (pm.el === el && at - pm.at < 120 && pm.at >= nmbFollow.animAt && (pm.val || at - nmbFollow.animAt >= NMB_START_MS)) return pm.val;
     pm.el = el;
     pm.at = at;
     pm.val = false;

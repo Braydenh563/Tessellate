@@ -130,8 +130,9 @@ const SHOT = process.env.SHOT || '';
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, -120); await page.waitForTimeout(30); }
   await page.waitForTimeout(2500);
   const awayBack = await page.evaluate((n) => ({ moves: window.__moves.length - n, outOfSight: !!nmb.outOfSight }), awayFrom);
-  // A long scroll that takes the card out of sight and leaves it there:
-  // on its own beat, once the page is still, it comes to a perch in sight.
+  // A long scroll that takes the card out of sight and leaves it there: it
+  // stays with its panel and is not re-placed (INBOX 1673, standing: a move
+  // nobody sees was a poof; the beat is owed and taken when it is seen).
   for (let i = 0; i < 12; i += 1) { await page.mouse.wheel(0, 120); await page.waitForTimeout(30); }
   await page.waitForTimeout(5500);
   const gone = await page.evaluate((n) => ({ moves: window.__moves.length - n, outOfSight: !!nmb.outOfSight }), awayFrom);
@@ -185,7 +186,7 @@ const SHOT = process.env.SHOT || '';
   await browser.close();
   // Riding (a ScrollTimeline): out of sight with its panel, still there
   // when it comes back, and in sight again on its own beat if it does not.
-  const rideBad = away.riding && (away.outOfSight !== away.shouldBeOut || awayBack.moves !== 0 || awayBack.outOfSight || gone.outOfSight || (away.shouldBeOut && gone.moves < 1));
+  const rideBad = away.riding && (away.outOfSight !== away.shouldBeOut || awayBack.moves !== 0 || awayBack.outOfSight || (away.shouldBeOut && (!gone.outOfSight || gone.moves !== 0)));
   const bad = summary.poofMs > 420 || summary.glueErrorPx > 2 || summary.maxJumpPx > 45 || summary.minOpacity < 1 || rideBad;
   console.log(bad ? 'FAIL' : 'PASS');
   process.exitCode = bad ? 1 : 0;
