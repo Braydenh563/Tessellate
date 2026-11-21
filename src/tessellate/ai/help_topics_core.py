@@ -173,7 +173,8 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
-            "Done. To add, make or set a reminder, go to the top of the Reminders tab: type it in plain words on the "
+            "Done. Overdue has Triage: keep, drop or reschedule each, or all at once (Undo restores). Ticking off a "
+            "reminder from a note asks how it went and adds that line to the note (Skip adds nothing). To add, make or set a reminder, go to the top of the Reminders tab: type it in plain words on the "
             'Magic add line and press the sparkle (hedges such as "probably '
             'around 7pm" are read as the time, and a place like "when I get '
             'home" is left out of the title), or fill in Remind me to, the '

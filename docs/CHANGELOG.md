@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders: ticking off a reminder that came from a note asks for a one-line outcome (Skip adds nothing) and appends it to that note, with Undo (L-general-10).
+- Reminders: the Overdue group has a Triage sheet to keep, drop (to the bin) or reschedule each late reminder, with Reschedule all and Drop all as one Undo (L-general-12).
+- Notes: one provenance chip on every note that came from outside, from the server's new `source_kind` and `source_label` (clipped from a site, imported from a file or app, extracted from a document, transcribed from audio); a note typed by hand has none (L-general-13).
 - Review fixes: a board past 16 MB exports as a folder (uploads, not JSON); a batch act that fails partway keeps Undo for the notes changed and counts the rest; bulk property Undo restores only its key; a missing note menu row is skipped; the pie drops non-positive rows itself.
 - Open-work sweep of the shared files: IDEAS.md's list checked against the app (all built or in BACKLOG), stale "still open" notes in the docs, frontend and sweeps written as built, and `open_scan` reads an HTML attribute value as data.
 - Library: the selection bar's More menu sets tags, a category or a property on the notes ticked, with the Notes bar's own dialogs and Undo (L-world-class-392).

@@ -7892,3 +7892,28 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_note_s_provenance_is_one_chip_built_in_the_note_card() -> None:
+    """L-general-13: the origin chip is drawn once, in entry-card.js, from the server's `source_kind`;
+    no second place builds a `source-path` chip, and nothing reads `source_url` to draw its own."""
+    card = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8")
+    assert card.count('"source-path"') == 1
+    assert "entry.source_kind && entry.source_label" in card
+    assert "Imported from ${entry.source_path}" not in card
+    others = [
+        p.name
+        for p in (Path(__file__).resolve().parents[1] / "frontend" / "js").glob("*.js")
+        if p.name != "entry-card.js" and '"source-path"' in p.read_text(encoding="utf-8")
+    ]
+    assert others == []
+
+
+def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
+    """L-general-12: Triage opens `openSheet`, never a hand-built overlay, and each act (and the bulk
+    one) joins the undo stack once."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-triage.js").read_text(encoding="utf-8")
+    assert "openSheet({" in js
+    assert 'createElement("dialog")' not in js and "modal-overlay" not in js
+    assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
+    assert ".style." not in js and "style=" not in js
