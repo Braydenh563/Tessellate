@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 59 | 8 | 0 | 0 | 67 |
+| world-class | 0 | 57 | 8 | 0 | 0 | 65 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 448 | 80 | 2 | 112 | 900 |
+| all | 372 | 446 | 80 | 2 | 112 | 898 |
 
 ## graph
 
@@ -478,7 +478,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L565** `chat` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L585** `world-class` open, M: Build live sync between two open windows (only a spaces-find storage listener exists). From OPEN.md:691; OPEN.md:2575. Evidence: Only spaces-find.js:573 storage listener; no general cross-window sync
 - [ ] **L587** `chat` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
-- [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
@@ -491,7 +490,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
 - [ ] **L634** `world-class` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
 - [ ] **L636** `world-class` open, L: Sweep coverage: open board/map, graph popup at 390, print dialog, lightbox, confirm, looks, contrast, forced colours. From OPEN.md:1244; OPEN.md:3503. Evidence: No sweeps listed for these surfaces; print dialog also not automatable.
-- [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
@@ -503,7 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
 - [ ] **L810** `world-class` open, M: Decide FIT42: ?preview=300 adoption awaiting server-side note search. From OPEN.md:4321. Evidence: Waits on Q9 (server-side note search) decision. Owner decided 2026-11-12: Server search first (Add a local search route over the notebook database, switch the filter box to it, then move the other readers onto previews). Build: routes_entries.py: GET /entries?q= local text search; notes-list.js filter calls it; then migrate allEntries content readers in batches; measure on a 5,000-note notebook.
 - [ ] **L795** `world-class` open, M: Decide whether to remove routes only tests use. From OPEN.md:4213. Evidence: Ledger owner call: removing public routes changes the interface. Owner decided 2026-11-12: Remove, one by one (Each route with no app, MCP or doc caller is deleted with its tests after a grep; fewer paths to secure). Build: Script listing routes with no frontend/js, mcp_server or docs reference; delete each with its tests, CODEMAP regenerated, CHANGELOG line.
-- [ ] **L785** `world-class` open, M: Decide manual pictures only where needed, as WebP (1612c). From OPEN.md:4328. Evidence: W34 owner-call, w34-fix2-1111.md. Owner decided 2026-11-12: Add a few pictures. Build: Image field in help topic rendering (ai/help_topics_core.py, help_chat.py), sweep step writing WebP under frontend assets, a manual-parity lint for the image list.
 - [ ] **L787** `world-class` open, S: Decide docs/CHANGELOG, CONTRIBUTING, SECURITY mirrors nothing reads. From OPEN.md:739. Evidence: Mirrors identical to root (diff clean); tests/test_brand_name.py:78 and scripts/gate.sh:153 still use them; keep or retire is a decision Owner decided 2026-11-12: Retire the copies. Build: Delete docs/CHANGELOG.md, docs/CONTRIBUTING.md, docs/SECURITY.md; update tests/test_brand_name.py:78-82, test_docs_site.py mirror check, scripts/gate.sh:153, scripts/rebrand.py:49, scratchpad/changelog_union.py, database.py:193 comment.
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
@@ -531,6 +528,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-670** `world-class` open, M: Seal a private space's files as they are written by a background thread, an import and the live-caption spool. From L-world-class-381. Evidence: tests/test_sealed_readers.py PLAIN_WRITES: recording_make.save_generated, export_folder.write and _write_attachments, routes_import.import_app, captions.begin write a private space's file plain until the next unlock seals it; deleting a private space into an ordinary one carries the sealed bytes as they are
 - [ ] **L-world-class-671** `world-class` open, M: Read a private space's library pictures (Tesseract) in the background. From L-world-class-381. Evidence: core/media_process.py:110 skips a sealed picture; ocr, captioning and vision_ocr take a path on their own threads; the AI reads a private space only from a chat inside it (SECURITY.md T10), so only Tesseract may borrow the session (sealed_files.for_background)
 - [ ] **L-world-class-710** `world-class` open, M: Full depth-4 reach crawl in light and dark after the 673 palette rows. From reach.js depth-4 crawl. Evidence: scratchpad/ui-sweeps/reach.js; depth 3 timed out at 40 min (L-world-class-673)
+- [ ] **L-world-class-760** `world-class` open, L: Lazy-load the Settings markup out of index.html. From L638 (FE audit leftover, lazy Settings markup). Evidence: frontend/index.html:10251 settings-modal onward is about 369 KB of the 1.23 MB page, parsed at boot; 49 tests name settings-modal; its text-of-record (FE-10) is gone from the repo, so this is built only if the owner asks (L639 splits index.html)
 
 ## general
 

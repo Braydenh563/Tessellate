@@ -63,6 +63,11 @@
     const body = document.createElement("p");
     body.textContent = topic.body;
     article.appendChild(body);
+    //: A topic's picture (`help_images.py`, L-world-class-785); the size is given so the page does not jump.
+    if (topic.image) {
+      const { src, alt, width, height } = topic.image;
+      article.appendChild(Object.assign(document.createElement("img"), { className: "manual-picture", src, alt, width, height, loading: "lazy", decoding: "async" }));
+    }
     //: The same `data-goto-*` button Settings, Help and the Guide's chips are:
     //: settings.js's document listener follows it; the manual closes first.
     if (topic.link && (topic.link.tab || topic.link.section)) {

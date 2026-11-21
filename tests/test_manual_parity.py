@@ -767,3 +767,26 @@ def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_ke
     assert "lasts for the session" in body and "after a reload or a restart it starts empty" in body
     assert "a board, a mind map and a document keep their last hundred steps" in body
     assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]
+
+
+def test_the_manual_pictures_are_few_small_and_each_on_disk_for_a_real_topic():
+    """L-world-class-785 (the owner: "add a few pictures"): three to five WebP files, each for a
+    topic the Guide has, each with alt text, each small enough that the boot and the first
+    Settings open never pay for them (they load lazily, only when a topic is drawn)."""
+    from tessellate.ai.help_chat import HELP_TOPICS, help_listing
+    from tessellate.ai.help_images import HELP_IMAGES
+
+    assert 3 <= len(HELP_IMAGES) <= 5
+    ids = {topic["id"] for topic in HELP_TOPICS}
+    files = [entry["file"] for entry in HELP_IMAGES.values()]
+    assert len(set(files)) == len(files)
+    folder = FRONTEND / "img" / "help"
+    for topic_id, entry in HELP_IMAGES.items():
+        assert topic_id in ids, f"{topic_id}: no such help topic"
+        assert len(entry["alt"]) >= 20 and not entry["alt"].endswith("!"), f"{topic_id}: alt text"
+        path = folder / entry["file"]
+        assert path.read_bytes()[8:12] == b"WEBP", f"{path} is not WebP"
+        assert path.stat().st_size <= 30_000, f"{path} is over 30 KB: lower the quality in help-images.py"
+    assert {p.name for p in folder.iterdir()} == set(files), "a picture on disk the list does not name"
+    drawn = {t["id"] for g in help_listing()["groups"] for t in g["topics"] if t["image"]}
+    assert drawn == set(HELP_IMAGES), "the manual's listing must carry every picture"
