@@ -102,7 +102,10 @@ def test_the_ask_box_says_where_acts_are_done(client, session):
 def test_with_a_model_in_agent_mode_the_agent_takes_the_act(ai_client, fake_ollama, session):
     _seed(session)
     out = _ask(ai_client, "delete the boiler note", use_tools=True)
-    assert "act" not in out
+    #: Intent moved (L114, 2026-11-14): the agent still takes the act first (its own answer is there). The one card is the
+    #: registry's, drawn after a model turn that made no call (`unrun_act_events`), waiting for Confirm; it never runs unasked.
+    assert out["answer"] and len(out["act"]) == 1
+    assert [s["name"] for s in out["act"][0]["steps"]] == ["delete_note"]
 
 
 def test_the_capability_line_names_only_what_runs():

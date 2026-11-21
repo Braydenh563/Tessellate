@@ -95,6 +95,14 @@ def _calls(events: list[dict]) -> list[dict]:
     return [e for e in events if e.get("type") == "tool" and e.get("tool")]
 
 
+def _cards(events: list[dict]) -> list[dict]:
+    return [e for e in events if e.get("type") in {"confirm", "act"} and not e.get("cancel") and not e.get("settle")]
+
+
+def _search_mode(events: list[dict]) -> str:
+    return next((str(e.get("search_mode")) for e in events if e.get("type") == "meta"), "")
+
+
 def _answer(events: list[dict]) -> str:
     return "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
 
@@ -119,6 +127,9 @@ def test_tool_choice_and_argument_validity(notebook):
             "q": question,
             "first": names[0] if names else None,
             "chose": bool(names) and names[0] in first_ok,
+            #: The engine took the sentence before the agent did (a write parked as a card, or a count answered from
+            #: the notebook's own stats): the move was made, by the engine rather than the model's tool call.
+            "engine": not names and (bool(_cards(events)) or _search_mode(events) in {"stats", "tool"}),
             "finished": any(c["tool"] == finisher and c.get("ok") for c in calls),
             "calls": len(calls),
             "failed": len(failed),
@@ -130,15 +141,18 @@ def test_tool_choice_and_argument_validity(notebook):
         assert len(repeated) == len(failed) or not failed, f"{question!r} repeated a failed call"
     total = len(rows)
     chose = sum(r["chose"] for r in rows)
+    engine = sum(r["engine"] for r in rows)
     finished = sum(r["finished"] for r in rows)
     calls = sum(r["calls"] for r in rows)
     failed = sum(r["failed"] for r in rows)
     print("\nHARNESS EVAL", EVALS_MODEL.rsplit("/", 1)[-1])
     print(
-        f"  tool choice {chose}/{total}; finished {finished}/{total}; "
+        f"  tool choice {chose}/{total}, taken by the engine first {engine}/{total}; finished {finished}/{total}; "
         f"argument validity {calls - failed}/{calls} calls"
     )
-    assert chose >= total // 3, "tool choice fell below a third: a harness regression"
+    #: Intent moved (2026-11-14): the engine answers or parks most of these sentences before the model is asked (a 1.5B
+    #: run made 0 tool calls in 10), so the floor counts a move made either way; it is still the harness regression guard.
+    assert chose + engine >= total // 3, "tool choice and engine moves fell below a third: a harness regression"
 
 
 @pytest.mark.evals

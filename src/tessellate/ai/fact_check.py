@@ -134,7 +134,21 @@ def _noun_after(tokens: list[str], i: int) -> str | None:
 
 def _dated(tokens: list[str], i: int) -> bool:
     """Whether the figure at `i` is a date, a time or a place by its
-    neighbours ("at 9", "2 Nov", "Mon 2", "9 o'clock")."""
+    neighbours ("at 9", "2 Nov", "Mon 2", "9 o'clock"), or one end of a span of days
+    whose other end is ("9 to 11 December", "December 9 to 11": L-chat-240)."""
+    if _dated_here(tokens, i):
+        return True
+    before = tokens[i - 1] if i else ""
+    after = tokens[i + 1] if i + 1 < len(tokens) else ""
+    return (before in _SPAN_WORDS and i >= 2 and _dated_here(tokens, i - 2)) or (
+        after in _SPAN_WORDS and i + 2 < len(tokens) and _dated_here(tokens, i + 2)
+    )
+
+
+_SPAN_WORDS = frozenset({"to", "until", "through"})
+
+
+def _dated_here(tokens: list[str], i: int) -> bool:
     before = tokens[i - 1] if i else ""
     after = tokens[i + 1] if i + 1 < len(tokens) else ""
     return before in _BEFORE_TIME or before in _MONTHS or before in _WEEKDAYS or after in _MONTHS or after in _CLOCK

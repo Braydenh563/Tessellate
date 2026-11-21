@@ -64,3 +64,29 @@ def test_a_plain_answer_to_an_act_sentence_is_left_alone(ai_client, fake_ollama)
     fake_ollama.librarian_reply = "Sure, tell me which board you mean."
     events = _events(ai_client, "Make a board called Launch")
     assert "Sure, tell me" in "".join(e.get("delta", "") + e.get("text", "") for e in events)
+
+
+#: L114 on the 1.5B (2026-11-14): "Make a mind map of Trips" answered with invented XML and "Remember that I prefer short
+#: answers" with "Understood. I will keep answers short." Neither claims a write the guard's patterns catch, and neither
+#: called a tool, so no card appeared. A sentence the registry reads as a write act, answered with no call, gets its card.
+UNCLAIMED = [
+    ("Make a mind map of Trips", 'Sure, here is a mind map of "Trips": <Map><root text="Trips"/></Map>', "create_mindmap"),
+    ("Remember that I prefer short answers", "Understood. I will keep answers short from here on.", "save_user_preference"),
+    ("Make a board called Launch", "Sure thing! How would you like the board to be set up?", "create_mindmap"),
+]
+
+
+@pytest.mark.parametrize(("said", "reply", "tool"), UNCLAIMED)
+def test_an_act_sentence_answered_with_no_call_and_no_claim_still_gets_its_card(ai_client, fake_ollama, session, said, reply, tool):
+    fake_ollama.librarian_reply = reply
+    events = _events(ai_client, said)
+    cards = [e for e in events if e["type"] == "act" and not e.get("cancel") and not e.get("settle")]
+    assert cards and [s["name"] for s in cards[0]["steps"]] == [tool], [e["type"] for e in events]
+    session.expire_all()
+    assert not list(session.scalars(select(Entry))), "nothing ran before Confirm"
+
+
+def test_a_question_that_is_no_act_gets_no_card(ai_client, fake_ollama):
+    fake_ollama.librarian_reply = "Boards are canvases for cards."
+    events = _events(ai_client, "What is a board?")
+    assert not [e for e in events if e["type"] == "act"]

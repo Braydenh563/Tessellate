@@ -1146,19 +1146,23 @@ def _whole_card(session: Session, asked: str, now) -> dict:  # noqa: ANN001
 CLAIMED_ACT_LINE = "That is not done yet. Confirm the card below and it will be."
 
 
-def claimed_act_events(session: Session, state: _TurnState, called_any: bool, answer: str, now) -> list[dict]:  # noqa: ANN001
-    """**A claimed act with no call is the act's own card** (L114, qwen2.5-1.5b: "Make a board
-    called Launch" answered "I've created a new board", no tool call). When the sentence is an act
-    the registry reads (the reader the no-model path uses) and the reply claims a write nothing
-    ran, the card waits for Confirm in place of the claim: [answer_final, card]. [] otherwise."""
+def unrun_act_events(session: Session, state: _TurnState, called_any: bool, answer: str, now) -> list[dict]:  # noqa: ANN001
+    """**An act sentence the model did not run is the act's own card** (L114, qwen2.5-1.5b: "Make a
+    board called Launch" answered "I've created a new board" with no call; "Make a mind map of Trips"
+    answered with invented XML; "Remember that I prefer short answers" with "Understood"). When the
+    sentence is an act the registry reads (the reader the no-model path uses) and no tool ran, the card
+    waits for Confirm: a reply that claims a write is replaced ([answer_final, card]), any other reply
+    stays and the card follows it. [] otherwise."""
     from tessellate.ai import act_registry
 
     if called_any or state.did_write or not state.asked or act_registry.proposer is None:
         return []
-    if not (unsupported_claims(answer, state.ran_writes | state.implied) or claims_a_write(answer)):
-        return []
     card = (act_registry.propose(session, state.asked, now) or {}).get("card")
-    return [{"type": "answer_final", "text": CLAIMED_ACT_LINE}, card] if card else []
+    if not card:
+        return []
+    if unsupported_claims(answer, state.ran_writes | state.implied) or claims_a_write(answer):
+        return [{"type": "answer_final", "text": CLAIMED_ACT_LINE}, card]
+    return [card]
 
 
 def all_it_names(session: Session, state: _TurnState, name: str, arguments: dict, now) -> tuple[dict, list[dict]] | None:  # noqa: ANN001

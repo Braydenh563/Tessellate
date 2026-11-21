@@ -63,7 +63,7 @@ from tessellate.ai.agent_policy import (
     unsupported_claims,
 )
 from tessellate.ai.agent_turn import (
-    claimed_act_events,
+    unrun_act_events,
     AWAITING_CONFIRMATION,
     all_it_names,
     from_outside as _from_outside,
@@ -983,7 +983,7 @@ def _settle_answer(session: Session, state: _TurnState, loop: _Loop, card: _Turn
     # It has usually streamed already; send it only if the tool-call gate held it back.
     if not reply.get("streamed") and answer:
         yield {"type": "answer", "delta": answer}
-    if acted := claimed_act_events(session, state, loop.called_any, answer, plan_now()):
+    if acted := unrun_act_events(session, state, loop.called_any, answer, plan_now()):
         yield from acted
         yield from card.end_round(TURN_ROW_ANSWER)
         return True
