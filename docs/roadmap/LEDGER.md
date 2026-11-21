@@ -9,19 +9,27 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 0 | 0 | 0 | 0 | 0 |
+| chat | 0 | 7 | 0 | 0 | 0 | 7 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
+| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 364 | 69 | 0 | 125 | 759 |
+| all | 326 | 369 | 69 | 0 | 125 | 764 |
 
 ## graph
 
 ## chat
+
+- [ ] **L563** `chat` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
+- [ ] **L565** `chat` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
+- [ ] **L-world-class-69** `chat` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
+- [ ] **L-world-class-135** `chat` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
+- [ ] **L-world-class-180** `chat` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-181** `chat` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-420** `chat` open, M: Give the 51 Help topics the Guide cannot find by title a keyword each, then lower GUIDE_MISSES_BY_TITLE to 0. From L-world-class-114. Evidence: tests/test_ui_recipes.py GUIDE_MISSES_BY_TITLE = 51
 
 ## whiteboard
 
@@ -275,9 +283,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L560** `world-class` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
 - [ ] **L561** `world-class` open, M: Condense HANDOVER (over 300 lines) and create NEXT_FABLE_WINDOW.md (Brief 14). From OPEN.md:3594. Evidence: HANDOVER.md is 599 lines (lint cap 600); docs/roadmap/NEXT_FABLE* does not exist
 - [ ] **L562** `world-class` open, M: Make chat search hits open the matching turn, not only the chat. From OPEN.md:3737. Evidence: search/index.py:935 _conversation_row builds one row per conversation
-- [ ] **L563** `world-class` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
 - [ ] **L564** `world-class` open, M: Fold picture captions into their note for the composer and keyword search. From OPEN.md:3642. Evidence: search/index.py:851 caption+OCR+vision one body per picture row; not folded into its note's row
-- [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L566** `world-class` open, M: Sign parked tool calls so /chat/tools/execute stops running client-supplied args. From OPEN.md:4499. Evidence: routes_chat.py:2434 execute_confirmed_tool; signing the parked call needs composer_*.py to sign what it parks
 - [ ] **L567** `world-class` open, M: Move the remaining 13 thread modules onto core/jobs.py and verify second device and calendar app. From OPEN.md:611; OPEN.md:2998. Evidence: tests/test_flaw_class_lints.py:11 ratchet still lists Thread( outside core/jobs.py
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
