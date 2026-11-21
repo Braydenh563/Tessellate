@@ -121,8 +121,12 @@ def test_the_wisps_drift_box_holds_each_drawing_and_moves_with_its_loops() -> No
         assert f".atl-lw-pose-{name} > .atl-lw-drift {{ animation: atl-lw-drift" in lazy
         assert f".atl-lw-pose-{name} > .atl-lw-drift {{ transform-origin: 31px 55.5px; }}" in lazy
     # Paused wherever the drawing's own loops were: lite, away, carried, off and hidden.
-    pause = re.search(r"((?:[^{}]*\.atl-lw-drift,?\s*)+)\{ animation-play-state: paused !important; \}", lazy)
-    assert pause and pause.group(1).count(".atl-lw-drift") == 5
+    # A plain scan, not a regex: a nested repeat here backtracks exponentially (CodeQL).
+    selectors = [
+        chunk.rsplit("}", 1)[-1]
+        for chunk in lazy.split("{ animation-play-state: paused !important; }")[:-1]
+    ]
+    assert any(sel.count(".atl-lw-drift") == 5 for sel in selectors)
 
 
 # --- L-ui-modernisation-201: the lids' layers, unseen but for a blink -------------------------
