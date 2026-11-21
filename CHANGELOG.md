@@ -6,7 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- Timeline: the span review is kept by what its notes say and today, and a model call leaves the flights when it lands, read or not; the strip keeps the 366-day streak per today, asked again only on a new day or a timeline load (review 5907787263).
+- Timeline: the span review is kept by what its notes say and today, and a model call leaves the flights when it lands, read or not; the strip keeps the 366-day streak per today, asked again only on a new day, a timeline load or a saved note (review 5907787263).
 - Composer: the booking pattern takes one space between words, so a long run of tabs cannot backtrack (CodeQL polynomial regex); NUMBER_WORD_PATTERN is listed in recognise_windows' __all__ (CodeQL unused global).
 - Chat with no model: every real phrasing passes (L-timeline-9). "When is the meeting with my boss" says no note names the boss instead of quoting Meeting with Priya; "i want to book tickets" reads book as reserve; "share my meeting schedule", "go over my meeting schedule" and "what meetings are coming up" list the dated items ahead, led by "No meeting is dated ahead" when none is; "on my to do list, i need cleaning added" adds the task (L-timeline-10, 11, 2026-11-14).
 - Chat: with no model, an empty day names the thing asked ("No call is written for tomorrow.", not "No meeting"), and plural asks ("do I have calls tomorrow", "are there interviews on Friday") get the same yes or no verdict as singular ones (L-timeline-12, 13, 2026-11-14).
