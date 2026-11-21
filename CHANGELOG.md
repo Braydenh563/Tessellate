@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tab flips lay out less (L705, 4x CPU, medians): the timeline's scroll to today takes 1 forced layout instead of 2, the notes rail's width check runs after layout (15.5 ms forced to 0), and the dashboard's constellation starts at its last width instead of reading it (17.6 ms to 2.9 ms).
 - Opening the equation editor no longer reads layout on its first draw, and the palette groups below the fold are not laid out until they come near: the script's load task fell from 294 to 138 ms and its forced layout from 362 to 279 ms (4x CPU, median of 7, same run; L702).
 - Review fixes: a board past 16 MB exports as a folder (uploads, not JSON); a batch act that fails partway keeps Undo for the notes changed and counts the rest; bulk property Undo restores only its key; a missing note menu row is skipped; the pie drops non-positive rows itself.
 - Open-work sweep of the shared files: IDEAS.md's list checked against the app (all built or in BACKLOG), stale "still open" notes in the docs, frontend and sweeps written as built, and `open_scan` reads an HTML attribute value as data.

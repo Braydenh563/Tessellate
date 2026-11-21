@@ -92,7 +92,11 @@ def test_the_rail_gives_way_before_the_list_drops_under_600():
     and re-decides when the sidebar is resized."""
     assert "const NOTES_RAIL_MIN_READING = 600;" in LIST_JS
     body = LIST_JS.split("async function renderNotesRail(")[1].split("\n}\n")[0]
-    assert "NOTES_RAIL_MIN_READING" in body and "getBoundingClientRect().width" in body
+    assert 'renderNotesRail.ro?.observe($("entry-list"))' in body
+    # L705: the measure moved into a resize observer (it runs after layout), so the render forces none.
+    assert "getBoundingClientRect" not in body
+    watcher = LIST_JS.split("renderNotesRail.ro = new ResizeObserver(")[1].split("\n      });\n")[0]
+    assert "NOTES_RAIL_MIN_READING" in watcher and "getBoundingClientRect().width" in watcher
     assert "new ResizeObserver(" in LIST_JS and '.observe($("sidebar"))' in LIST_JS
 
 

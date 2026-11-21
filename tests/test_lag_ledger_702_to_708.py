@@ -47,3 +47,25 @@ def test_l702_palette_groups_below_the_fold_skip_layout() -> None:
     assert "contain-intrinsic-size" in rule.group(1)
 
 
+
+
+def test_l705_timeline_scroll_to_today_lays_out_once():
+    body = _fn((JS / "timeline.js").read_text(), "function timelineScrollToToday")
+    assert "window.innerHeight" in body
+    assert "box.clientHeight;" not in body.split("feed.style.paddingBottom")[0]
+
+
+def test_l705_notes_rail_measures_after_layout():
+    text = (JS / "notes-list.js").read_text()
+    render = _fn(text, "async function renderNotesRail")
+    assert 'renderNotesRail.ro?.observe($("entry-list"))' in render
+    assert "getBoundingClientRect" not in render
+    assert "ResizeObserver" in text
+
+
+def test_l705_art_sketch_starts_without_a_layout_read():
+    text = (JS / "dash-art.js").read_text()
+    setup = _fn(text, "p.setup = () =>")
+    assert "clientWidth" not in setup
+    assert "artLastWidth" in setup
+    assert "artLastWidth = next" in text
