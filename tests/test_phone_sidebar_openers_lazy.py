@@ -20,7 +20,7 @@ def _surface_of(element_id: str) -> str:
     another script template (the Library holds the board)."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     starts = [(m.start(), m.group(1)) for m in re.finditer(r'<(?:script type="text/x-surface"|template) data-surface="([^"]+)"', html)]
-    for hit in re.finditer(rf'<aside[^>]*\bid="{re.escape(element_id)}"', html):
+    for hit in re.finditer(rf'<\w+[^>]*\bid="{re.escape(element_id)}"', html):
         before = [name for pos, name in starts if pos < hit.start()]
         if before:
             return before[-1]
@@ -47,3 +47,14 @@ def test_each_sidebar_is_wired_for_resize_and_its_toggle_when_its_surface_is_bui
     for aside in re.findall(r'"([^"]+)"', ids):
         surface = _surface_of(aside)
         assert surface in listed, f"#{aside} (surface {surface}) is never wired once it is built"
+
+
+def test_each_floating_action_floats_when_its_surface_is_built():
+    """`floatPrimaryActions` looks its buttons up when it runs, so a button in a
+    lazy surface (New note, New document) stayed in the dock on a phone."""
+    src = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
+    ids = re.findall(r'"([a-z-]+)"', re.search(r"const FAB_IDS = \[(.*?)\];", src, re.S).group(1))
+    listed = set(re.findall(r'"([a-zA-Z]+)"', re.search(r"for \(const name of \[([^\]]*)\]\) onSurface\(name, \(\) => floatPrimaryActions", src).group(1)))
+    for button in ids:
+        surface = _surface_of(button)
+        assert surface in listed, f"#{button} (surface {surface}) never floats once it is built"
