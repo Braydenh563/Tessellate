@@ -207,7 +207,7 @@ REACHED_AFTER_LOAD = {
     "mdRunNode": "appendInlineRun, behind a typeof check: a run (INBOX 1403) is written only in a board text box, which is the library bundle; read in a note before that bundle arrives, its words draw plain and are not lost (the grammar and the preview are at boot)",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
     "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",
-    "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
+    "findSettings": "settingsUi, called by paletteSettingRows only once ensureModule('settingsUi') has resolved (paletteGen.settings)",
     "linkCancel": "settings-wiring's Escape handler, only while `linkSource !== null`, which beginOrCompleteLink (the same notePanels bundle) alone sets",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
