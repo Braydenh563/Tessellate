@@ -1026,7 +1026,7 @@ function openMenuAtPoint(items, ariaLabel, x, y, returnFocus = null) {
   //: `scratchpad/ui-sweeps/graphphone.js`): `openActionMenu` focuses the
   //: first row, and while a touch gesture is still in flight Chromium takes
   //: it straight back out again (a `focusin` on the row followed immediately
-  //: by a `focusout` to nothing, with the menu still open and visible). The
+  //: by a `focusout` to nothing, with the menu still showing and visible). The
   //: cost is not cosmetic: Escape is bound on the menu, so a menu opened by a
   //: hold could not be closed by the keyboard, and the same press with the
   //: finger lifted first focuses perfectly. A frame later the same call

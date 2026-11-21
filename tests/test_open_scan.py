@@ -108,3 +108,14 @@ def test_a_python_literal_is_copy_and_a_docstring_comment_or_strict_xfail_is_not
     )
     monkeypatch.setattr(open_scan, "ROOT", tmp_path)
     assert [i for _, i, _ in open_scan.hits(["src/m.py"])] == [2, 4, 6]
+
+
+def test_an_html_attribute_value_is_data_and_an_html_comment_is_not(tmp_path, monkeypatch):
+    """A button's `data-mode="todo"` is the to-do mode's name, not a marker;
+    the same word in an HTML comment is still a hit."""
+    page = tmp_path / "frontend" / "index.html"
+    page.parent.mkdir(parents=True)
+    page.write_text('<button data-mode="todo" title="Write a to-do list"></button>\n<!-- TODO wire this -->\n', encoding="utf-8")
+    monkeypatch.setattr(open_scan, "ROOT", tmp_path)
+    assert [i for _, i, _ in open_scan.hits(["frontend/index.html"])] == [2]
+

@@ -9,6 +9,14 @@ from datetime import datetime, timedelta, timezone
 
 from tessellate.ai import greeting_compose as gc
 from tessellate.ai.greeting_compose import NotebookFacts
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ZONE = timezone(timedelta(hours=8))
 
@@ -53,7 +61,7 @@ def test_facts_come_from_the_notes(session):
     uni = Category(name="university")
     session.add(uni)
     session.flush()
-    now = datetime.now(ZONE).replace(hour=20)
+    now = SUITE_NOW.astimezone(ZONE).replace(hour=20)
     base = now.astimezone(timezone.utc).replace(tzinfo=None)
     for back in (0, 0, 1, 2):
         session.add(Entry(content=f"note {back}", category_id=uni.id, created_at=base - timedelta(days=back)))

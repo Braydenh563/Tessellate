@@ -28,6 +28,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate import __version__
 from tessellate.api import routes_tasks
 from tessellate.core import deps, jobs, logbuffer, selfcheck, taskhistory
@@ -249,7 +250,6 @@ def _queue_dir_walk(path: Path) -> None:
 def _trust(config, error_lines: list[dict]) -> dict:  # noqa: ANN001
     """Rule 14's fields (WORLD_CLASS_PLAN 28.1), each present and dated:
     when it was last true, or None where it never was."""
-    from datetime import datetime, timezone
 
     from tessellate.core import backup
 
@@ -260,7 +260,7 @@ def _trust(config, error_lines: list[dict]) -> dict:  # noqa: ANN001
     last_error = error_lines[-1] if error_lines else None
     data_dir_bytes, data_dir_partial = _data_dir_size(Path(config.data_dir))
     return {
-        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "checked_at": clock.utc().isoformat(),
         "last_backup": {"at": newest["created_at"], "name": newest["name"]} if newest else {"at": None, "name": ""},
         "last_error": {"at": last_error.get("time"), "line": str(last_error.get("message", ""))[:300]} if last_error else {"at": None, "line": ""},
         "running": routes_tasks.activity_rows(),
@@ -285,7 +285,6 @@ def self_check(session: Session = Depends(get_session)) -> dict:
 def integrity_check(session: Session = Depends(get_session)) -> dict:
     """The integrity check in one click: SQLite's own `integrity_check` and
     the search index's rows per kind beside the notebook's own counts."""
-    from datetime import datetime, timezone
 
     from sqlalchemy import text
 
@@ -300,7 +299,7 @@ def integrity_check(session: Session = Depends(get_session)) -> dict:
         select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_board == False, Entry.is_draft == False)  # noqa: E712
     ) or 0
     result = {
-        "at": datetime.now(timezone.utc).isoformat(),
+        "at": clock.utc().isoformat(),
         "ok": rows == ["ok"],
         "result": "ok" if rows == ["ok"] else "; ".join(rows[:5]),
         "index": {"notes": notes, **{str(k): v for k, v in (index.items() if isinstance(index, dict) else [])}},

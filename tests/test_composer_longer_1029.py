@@ -9,9 +9,8 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 29, 12, 0)
 NOTES = [
@@ -23,8 +22,7 @@ NOTES = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for content in NOTES:
         manager.create_entry(session, content)
     session.commit()
@@ -71,8 +69,7 @@ def test_which_note_is_longer_is_the_same_ask(ask, question):
 def test_a_side_named_in_full_is_that_note_alone(client, session, monkeypatch):
     """"running log" is the Running log, not also the Running plan that
     shares a word, so the lengths are said (2026-10-30 sweep)."""
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for content in ("# Running log\n\nRan 5 km on Sunday along the river. Knee felt fine.",
                     "# Running plan\n\nBuild to 10 km by December, three runs a week.",
                     "# Baking\n\nSourdough loaf at 230C for 40 minutes. Try rye next."):

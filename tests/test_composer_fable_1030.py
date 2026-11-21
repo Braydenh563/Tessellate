@@ -12,8 +12,8 @@ import pytest
 from tessellate.ai import composer_digest
 from tessellate.ai import composer_digest_sentences
 from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 12, 0)
 
@@ -26,8 +26,7 @@ def _note(session, title: str, day: str, body: str, tags: list[str] | None = Non
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
     def go(question: str) -> dict:
         text, rows = "", []
@@ -204,8 +203,7 @@ def test_f8_tell_me_more_does_not_answer_the_earlier_question_again(client, sess
     instead of answering up to three earlier questions over every note again."""
     _note(session, "Harbor launch plan", "2026-10-01", "Ship the mobile app to the public on 14 November. Beta feedback closed first.")
     _note(session, "Dentist", "2026-10-02", "Check-up booked for the 21st. Ask about the night guard.")
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     asked = []
     real = composer_digest.answer
     monkeypatch.setattr(routes_chat.composer_digest, "answer", lambda q, *a, **k: asked.append(q) or real(q, *a, **k))
@@ -239,8 +237,7 @@ def test_f6_money_with_a_model_on_is_written_from_the_engines_sum(ai_client, fak
     """Model on: the sum is the engine's, handed over as facts; the model's
     prose with a figure the engine did not give is refused and the engine's
     own answer stands. Model off: the same sum."""
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     _spending(session)
     fake_ollama.librarian_reply = "Altogether you spent $999 on three things."
     text = ""
@@ -259,8 +256,7 @@ def test_f6_money_with_a_model_on_is_written_from_the_engines_sum(ai_client, fak
     "Is renewing the library membership still on my list?",
 ])
 def test_f6_a_checklist_answer_with_a_model_on_hands_the_model_the_engines_line(ai_client, fake_ollama, session, monkeypatch, question):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     _note(session, "Admin bits", "2026-10-20", "- [ ] Renew library membership - due 28 October.\n- [ ] Back up laptop - due 2 November.")
     _note(session, "Membership sorted", "2026-10-29", "Renewed my library membership today.")
     fake_ollama.librarian_reply = "Yes, that one is sorted."

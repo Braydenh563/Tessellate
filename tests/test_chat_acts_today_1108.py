@@ -12,6 +12,7 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import starter_acts
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 8, 10, 0)
 HEADING = "# 2026-11-08"
@@ -19,10 +20,8 @@ HEADING = "# 2026-11-08"
 
 @pytest.fixture(autouse=True)
 def _clock(monkeypatch):
-    from tessellate.api import routes_chat
 
-    monkeypatch.setattr("tessellate.core.config.user_now", lambda _config: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _events(client, question, **body):
@@ -68,10 +67,10 @@ def test_it_appends_a_bullet_after_confirm_and_undo_puts_it_back(client):
     card = _card(client, "add buy milk to today's note")
     assert card and not card.get("done") and card["label"] == "Add “Buy milk” to the end of today's note"
     assert client.get(f"/entries/{note}").json()["content"].endswith("- call the bank"), "nothing writes on read"
-    done = _confirm(client, card)
-    assert done["ok"]
+    outcome = _confirm(client, card)
+    assert outcome["ok"]
     assert client.get(f"/entries/{note}").json()["content"] == f"{HEADING}\n\n- call the bank\n- Buy milk"
-    client.post("/chat/command/run", json={"steps": done["undo"]})
+    client.post("/chat/command/run", json={"steps": outcome["undo"]})
     assert client.get(f"/entries/{note}").json()["content"] == f"{HEADING}\n\n- call the bank"
 
 
@@ -84,8 +83,8 @@ def test_a_note_edited_since_the_card_was_made_is_not_overwritten(client):
     note = _today(client)
     card = _card(client, "add buy milk to today's note")
     client.put(f"/entries/{note}", json={"content": f"{HEADING}\n\n- call the bank\n- written meanwhile"})
-    done = _confirm(client, card)
-    assert not done["ok"] and "changed since the card was made" in done["summary"]
+    outcome = _confirm(client, card)
+    assert not outcome["ok"] and "changed since the card was made" in outcome["summary"]
     assert client.get(f"/entries/{note}").json()["content"].endswith("- written meanwhile")
 
 

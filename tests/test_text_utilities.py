@@ -12,13 +12,20 @@ import os
 import re
 import shutil
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 from tessellate.ai import utilities
 from tessellate.core import cjk
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/utilities/counts_1010.md"
@@ -98,7 +105,7 @@ def test_a_window_in_the_documents_search_is_a_window(client, session):
 
     token = client.post("/auth/setup", json={"password": "first-pass"}).json()["token"]
     headers = {"X-Auth-Token": token}
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    now = SUITE_NOW.replace(tzinfo=None)
     #: Q24 (the owner): "last week" is the previous Monday to Sunday, so the two recent documents sit inside that week
     #: whatever day the suite runs on.
     last_monday = datetime.combine((now - timedelta(days=now.weekday() + 7)).date(), datetime.min.time()).replace(hour=12)

@@ -2,7 +2,7 @@
 connections" named untitled notes by a cut phrase ("here are some
 refined"), doubled an article ("the the The Complete Social Skills
 Guide"), kept a title's colon ("the Ice Breakers:"), let markdown through
-("the Follow-Up**"), said a heading as a sentence ("After making an initial
+(a heading name with its closing **), said a heading as a sentence ("After making an initial
 connection."), clipped a diary sentence into a wrong meaning ("I had work
 today and a friend") and put the citation before an emoticon ("bit9 :(")."""
 
@@ -15,11 +15,10 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tests import _social_1420 as social
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 27, 12, 0)
 QUESTIONS = [
@@ -36,8 +35,7 @@ GRADED = [*QUESTIONS, "what about conversation starters", "summarise my social n
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     made = []
     for content, category, tags, when, _links in social.NOTES:
         entry = manager.create_entry(session, content, category, tags)
@@ -197,7 +195,7 @@ def test_untitled_uni_notes_are_named_by_what_they_are_about(question):
     from tessellate.ai import composer_digest
 
     text = composer_digest.answer(question, social.uni_notes(), today=social.TODAY)["text"]
-    #: Four notes with some loosely related are woven now (1743 follow-up): the untitled note is its clause, a long one clipped.
+    #: Four notes with some loosely related are woven now (1743, second note): the untitled note is its clause, a long one clipped.
     assert "you had three lectures for cloud computing" in text, text
     #: Never an opening cut mid-phrase, never "you noted that you had noted".
     assert "uni days this week are Tuesday," not in text and "your uni days this week are Tuesday" not in text.split("\n\n")[1], text
