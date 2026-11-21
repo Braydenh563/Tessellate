@@ -1481,7 +1481,16 @@ function dashContinueNote(entries) {
       .filter((value) => Number.isFinite(value));
     return Math.max(0, ...times);
   };
-  return [...entries].filter((entry) => entry && !entry.is_draft).sort((a, b) => touched(b) - touched(a))[0] || null;
+  //: One pass for the latest, not a sort (L-world-class-354): the comparator parsed six dates per compare, 86ms
+  //: at 4x CPU at dashboard boot on 5,000 notes (CPU profile). The first of equal times wins, as the stable sort did.
+  let best = null;
+  let bestTime = -1;
+  for (const entry of entries) {
+    if (!entry || entry.is_draft) continue;
+    const time = touched(entry);
+    if (time > bestTime) (best = entry), (bestTime = time);
+  }
+  return best;
 }
 
 const DASH_VIEW_LABELS = { full: "Full", compact: "Compact", focused: "Focused" };
@@ -2717,9 +2726,11 @@ async function renderMostLinkedWidget(body) {
 async function renderRecentNotesWidget(body) {
   //: Not a map's topics (UX-06): a map of forty listed forty one-word rows.
   const entries = (await dashEntries()).filter((e) => !e.map_topic);
-  const newest = [...entries].sort(
-    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-  );
+  //: Each date parsed once, not twice per compare (L-world-class-354: 33ms at 4x on 5,000 notes, CPU profile).
+  const newest = entries
+    .map((entry) => [new Date(entry.created_at).getTime(), entry])
+    .sort((a, b) => b[0] - a[0])
+    .map(([, entry]) => entry);
   miniEntryList(body, newest.slice(0, 6), "Your newest notes will appear here.", { label: "ph:plus New note", run: "capture" });
 }
 
