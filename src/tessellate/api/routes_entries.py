@@ -1117,6 +1117,36 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     return rows
 
 
+def _filtered_list(
+    session: Session, response: Response, q: str, ids: str, aside: bool, boards: str, offset: int, limit: int, preview: int
+) -> list[EntryOut] | None:
+    """The two ways to ask for part of the notes list: `?ids=` (just these notes, FE-05) and `?q=` (the filter box's
+    literal text match over whole bodies, in list order and paged, L810). None when neither names anything, so the
+    plain list answers; a `q` that names no term keeps the plain list."""
+    if ids:
+        parts = [part.strip() for part in ids.split(",") if part.strip()]
+        if not all(part.isdigit() for part in parts) or len(parts) > ENTRIES_BY_IDS_MAX:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Ask for up to {ENTRIES_BY_IDS_MAX} note ids, as numbers.",
+            )
+        if aside:
+            raise HTTPException(
+                status_code=422, detail="Note ids are read from the notes list only."
+            )
+        entries = manager.list_entries(session, boards=boards, ids=[int(part) for part in parts])
+        response.headers["X-Total-Count"] = str(manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True))
+        return _previewed(_to_out_bulk(session, entries), preview)
+    from tessellate.search import engine
+
+    found = None if aside else engine.match_ids(session, q)
+    if found is None:
+        return None
+    matched = manager.list_entries(session, boards=boards, ids=found)
+    response.headers["X-Total-Count"] = str(len(matched))
+    return _previewed(_to_out_bulk(session, matched[offset : offset + limit]), preview)
+
+
 @router.get("", response_model=list[EntryOut])
 def list_entries(
     response: Response,
@@ -1218,21 +1248,10 @@ def list_entries(
         response.headers["X-Total-Count"] = str(len(matched))
         return _previewed(_to_out_bulk(session, matched), preview)
 
-    if ids:
-        parts = [part.strip() for part in ids.split(",") if part.strip()]
-        if not all(part.isdigit() for part in parts) or len(parts) > ENTRIES_BY_IDS_MAX:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Ask for up to {ENTRIES_BY_IDS_MAX} note ids, as numbers.",
-            )
-        if deleted or archived:
-            raise HTTPException(
-                status_code=422, detail="Note ids are read from the notes list only."
-            )
-        wanted = [int(part) for part in parts]
-        entries = manager.list_entries(session, boards=boards, ids=wanted)
-        response.headers["X-Total-Count"] = str(manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True))
-        return _previewed(_to_out_bulk(session, entries), preview)
+    if q or ids:
+        listed = _filtered_list(session, response, q, ids, deleted or archived, boards, offset, limit, preview)
+        if listed is not None:
+            return listed
 
     if deleted or archived:
         # The bin and the archive page by position: both are short, both sort

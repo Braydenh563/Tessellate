@@ -487,7 +487,7 @@ function fetchDashGraph() {
 async function dashEntries() {
   if (entriesEverLoaded) return allEntries;
   const notes = await appState.when("notes", 8000);
-  return notes || apiJson("/entries", { cacheMs: 4000 });
+  return notes || apiJson("/entries?preview=300", { cacheMs: 4000 });
 }
 
 //: **The sub line is composed and rotates** (INBOX 1300, the owner: "Maybe the

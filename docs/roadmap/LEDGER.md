@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 68 | 9 | 0 | 0 | 77 |
+| world-class | 0 | 66 | 9 | 0 | 0 | 75 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 448 | 80 | 2 | 112 | 900 |
+| all | 372 | 446 | 80 | 2 | 112 | 898 |
 
 ## graph
 
@@ -501,8 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
-- [ ] **L810** `world-class` open, M: Decide FIT42: ?preview=300 adoption awaiting server-side note search. From OPEN.md:4321. Evidence: Waits on Q9 (server-side note search) decision. Owner decided 2026-11-12: Server search first (Add a local search route over the notebook database, switch the filter box to it, then move the other readers onto previews). Build: routes_entries.py: GET /entries?q= local text search; notes-list.js filter calls it; then migrate allEntries content readers in batches; measure on a 5,000-note notebook.
-- [ ] **L795** `world-class` open, M: Decide whether to remove routes only tests use. From OPEN.md:4213. Evidence: Ledger owner call: removing public routes changes the interface. Owner decided 2026-11-12: Remove, one by one (Each route with no app, MCP or doc caller is deleted with its tests after a grep; fewer paths to secure). Build: Script listing routes with no frontend/js, mcp_server or docs reference; delete each with its tests, CODEMAP regenerated, CHANGELOG line.
 - [ ] **L785** `world-class` open, M: Decide manual pictures only where needed, as WebP (1612c). From OPEN.md:4328. Evidence: W34 owner-call, w34-fix2-1111.md. Owner decided 2026-11-12: Add a few pictures. Build: Image field in help topic rendering (ai/help_topics_core.py, help_chat.py), sweep step writing WebP under frontend assets, a manual-parity lint for the image list.
 - [ ] **L787** `world-class` open, S: Decide docs/CHANGELOG, CONTRIBUTING, SECURITY mirrors nothing reads. From OPEN.md:739. Evidence: Mirrors identical to root (diff clean); tests/test_brand_name.py:78 and scripts/gate.sh:153 still use them; keep or retire is a decision Owner decided 2026-11-12: Retire the copies. Build: Delete docs/CHANGELOG.md, docs/CONTRIBUTING.md, docs/SECURITY.md; update tests/test_brand_name.py:78-82, test_docs_site.py mirror check, scripts/gate.sh:153, scripts/rebrand.py:49, scratchpad/changelog_union.py, database.py:193 comment.
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
