@@ -82,10 +82,12 @@ const BUSY = Number(process.env.BUSY || 12);
   for (let i = 0; i < 40; i += 1) { await page.mouse.wheel(0, -(8 + (i % 9))); await page.waitForTimeout(16); }
   await page.waitForTimeout(300);
   current = 'smooth';
-  await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: 260, behavior: 'smooth' }); });
-  await page.waitForTimeout(900);
-  await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: -260, behavior: 'smooth' }); });
-  await page.waitForTimeout(900);
+  for (let rep = 0; rep < 3; rep += 1) {
+    await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: 260, behavior: 'smooth' }); });
+    await page.waitForTimeout(900);
+    await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: -260, behavior: 'smooth' }); });
+    await page.waitForTimeout(900);
+  }
   current = 'flick';
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, 40); await page.waitForTimeout(16); }
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, -40); await page.waitForTimeout(16); }
