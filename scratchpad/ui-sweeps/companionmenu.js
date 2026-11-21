@@ -19,6 +19,18 @@ const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x84
     await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
+    // What a missed click saw, for its failure line: the page's contextmenu events and every menu close, with times.
+    await page.evaluate(() => {
+      window.__menuCloses = [];
+      window.__ctx = [];
+      const orig = window.closeActionMenus;
+      window.closeActionMenus = function (...a) {
+        window.__menuCloses.push(`${Math.round(performance.now())} ${new Error().stack.split('\n').slice(2, 4).map((l) => l.trim().split(' ')[1]).join('<')}`);
+        if (window.__menuCloses.length > 6) window.__menuCloses.shift();
+        return orig.apply(this, a);
+      };
+      for (const t of ['pointerdown', 'pointerup', 'contextmenu']) document.addEventListener(t, (e) => { window.__ctx.push(`${Math.round(performance.now())} ${t}${e.button != null ? e.button : ''} ${e.target.tagName}.${String(e.target.className).slice(0, 20)}`); if (window.__ctx.length > 8) window.__ctx.shift(); }, true);
+    });
     const spots = await page.evaluate(() => {
       const W = innerWidth; const H = innerHeight;
       return [[4, 60], [W - 68, 60], [4, H - 130], [W - 68, H - 130], [Math.round(W / 2 - 32), Math.round(H / 2 - 46)], [W - 68, Math.round(H / 2)], [Math.round(W / 2), H - 130]];
@@ -53,7 +65,7 @@ const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x84
             const r = f.getBoundingClientRect();
             const e = document.elementFromPoint(fx, fy);
             const a = document.activeElement;
-            return { clicked: [Math.round(fx), Math.round(fy)], face: [r.left, r.top, r.width, r.height].map(Math.round), top: e && `${e.tagName}.${String(e.className).slice(0, 30)}#${e.id}`, cls: b.className, pe: `${getComputedStyle(b).pointerEvents}/${getComputedStyle(f).pointerEvents}`, op: getComputedStyle(b).opacity, act: a && `${a.tagName}.${String(a.className).slice(0, 30)}#${a.id}` };
+            return { clicked: [Math.round(fx), Math.round(fy)], face: [r.left, r.top, r.width, r.height].map(Math.round), top: e && `${e.tagName}.${String(e.className).slice(0, 30)}#${e.id}`, cls: b.className, pe: `${getComputedStyle(b).pointerEvents}/${getComputedStyle(f).pointerEvents}`, op: getComputedStyle(b).opacity, act: a && `${a.tagName}.${String(a.className).slice(0, 30)}#${a.id}`, closes: window.__menuCloses, ctx: window.__ctx, now: Math.round(performance.now()) };
           }, [face.x, face.y]);
           fails.push(`${tag}: no menu ${JSON.stringify(why)}`);
           continue;

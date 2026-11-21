@@ -64,14 +64,21 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'on'; });
   await page.mouse.move(100, 100);
   // Tossed: a fast pull to the right and let go at speed.
+  // Each throw draws its own bounce, grip and air (Math.random): the same pull came down on the far side of the window
+  // in one run and on the sidebar's edge in the next (a hard landing carries it over the other way, by roll). The sweep's seed (companion-throw.js) makes the flight one flight: seed 1 comes down on the status bar, to the right.
+  await page.evaluate(async (seed) => { await ensureModule('companionThrow'); companionThrowSeed.seed = seed; }, Number(process.env.SEED || 1));
   await put(300, 420);
   f = await faceMid();
   await page.mouse.move(f[0], f[1]);
   await page.mouse.down();
-  // The let-go is read from the pointer's last 80ms and is null when it had stopped 100ms before: no wait after the last
-  // move, or a loaded machine's round trip (the app saw 100ms+ on a four-core box running other sweeps) read as a slow drop.
-  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(f[0] + i * 30, f[1] - i * 6); if (i < 6) await page.waitForTimeout(12); }
-  await page.mouse.up();
+  // The let-go speed is read from the input's own time (event.timeStamp), so the pull is sent with its own clock: 12ms a
+  // step however loaded the machine is (a round trip of 12ms is 40 to 100 on a four-core box running other sweeps, which
+  // read the same pull as a slow one, or as stopped before the release, and came down as a drop).
+  const cdp = await page.context().newCDPSession(page);
+  const t0 = Date.now() / 1000;
+  const send = (type, x, y, i) => cdp.send('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: type === 'mouseMoved' ? 0 : 1, timestamp: t0 + i * 0.012 });
+  for (let i = 1; i <= 6; i += 1) await send('mouseMoved', f[0] + i * 30, f[1] - i * 6, i);
+  await send('mouseReleased', f[0] + 180, f[1] - 36, 7);
   await page.waitForTimeout(150);
   const flying = await page.evaluate(() => ({ thrown: nmb.thrown || null, running: !!nmb.flight }));
   if (process.env.SCRATCH) await page.screenshot({ path: `${process.env.SCRATCH}/toss-midflight.png`, clip: { x: 250, y: 200, width: 900, height: 450 } });

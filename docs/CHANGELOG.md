@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: companioninteract's toss is one flight (the sweep seeds the throw's rolls through the exported companionThrowSeed) and is sent with its own clock, so a loaded machine no longer reads it as a drop; companionmenu names what a missed click saw.
 - Sweeps: companionscroll no longer expects a figure that left its panel in sight to stay out of sight (INBOX 1673), companionsmooth loads the page again after making its notes (the change poll replaced its probe card on a fresh data dir), and companioninteract lets go straight after its last move (a loaded machine's round trip read as a slow drop).
 - Companion: while a panel moves, the follow loop reads its place in the frame (reads before writes) and asks about a just-started transition at every look, so a panel eased by a transform no longer outruns it (companionscroll sweep: glue error 6.2px to 0.5px; L-general-37).
 - Sweeps: perchall no longer counts a Library tab's own dock or card as a free perch: a resting companion keeps to the window's perches by the INBOX 1674 decision (L-general-41).
