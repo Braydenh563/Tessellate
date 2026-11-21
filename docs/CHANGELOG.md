@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Folder round trip verified in a real browser (L979, `scratchpad/ui-sweeps/folder5000.js`): the export dropped every note's space, so three spaces came back as one; each note's sidecar now names its space (name, icon) and the import finds or makes it by name (21 notes: 5, 6, 7, 3 per space before and after). A 5,000-file folder was refused whole (500 files a request, 1,000 in the multipart reader); `importMarkdown` now sends batches of 500: 5,000 notes in 41 s, paths kept, 5 long tasks of 205 to 252 ms in the import and one of 1.1 s in the preview (L-world-class-870). Private notes stay sealed and read after unlock; a locked import shows the 409 words. Pinned by `tests/test_folder_roundtrip.py` and `tests/test_import_folder_batches.py`.
 - README: an OCR workspace screenshot, a real Tesseract read of a stand-up page at 96 percent, retaken by `readmeshots.js` (`ONLY=ocr`), which fails unless the read matches the page (L917, L900).
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.
