@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings, Account: the private-by-default and mute-except-reminders switches show what is saved again; opening the pane threw before.
 - Command palette: a browser tool run by the palette's agent opens its page in the Web panel, as in Chat (L-world-class-629).
 - VS Code extension: sign in with a tool server token, which does not idle out and keeps to the categories and tags it was made for (L-world-class-627).
 - Translate offline: English to Spanish installs no longer download again; French, German, Italian, Portuguese and Spanish to English are a package each (L-world-class-628).

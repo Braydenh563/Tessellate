@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8553, frontend ids 2808, CSS sections 527, backend routes 740, backend modules 11272, test files 2914, tests 23002, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8553, frontend ids 2808, CSS sections 527, backend routes 740, backend modules 11272, test files 2916, tests 23004, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8553)
 
@@ -28705,7 +28705,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23002)
+## Tests (23004)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28959,6 +28959,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
 | tests/test_browser_tools.py | 18 |
+| tests/test_browser_tools_evals.py | 1 |
 | tests/test_buddy_grip_cursor_1107.py | 1 |
 | tests/test_budgets.py | 6 |
 | tests/test_bundle_says_why_no_install_l518.py | 2 |
@@ -30812,6 +30813,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_pr189_security.py | 7 |
 | tests/test_preferences_api.py | 27 |
 | tests/test_preferences_roundtrip.py | 5 |
+| tests/test_prefs_fills_take_no_argument.py | 1 |
 | tests/test_prefs_module.py | 6 |
 | tests/test_prefs_pending_save_survives_pane_switch.py | 3 |
 | tests/test_prefs_writes_ratchet.py | 2 |

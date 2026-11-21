@@ -27,7 +27,7 @@ def test_check_reads_the_live_budgets_and_this_page_paint():
 def test_copy_is_plain():
     body = JS[JS.index("function speedRow()"):JS.index("speedRow();")]
     assert "!" not in body.replace("!==", "").replace("!=", "").replace("(!", "").replace(" !", "")
-    assert "\u2014" not in body
+    assert chr(0x2014) not in body
 
 
 def test_guide_topic_names_the_row():
