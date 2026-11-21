@@ -15,11 +15,10 @@ from datetime import date, datetime, timedelta
 import pytest
 
 from tessellate.ai import composer_story, librarian
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 from tests import _courses_1665 as fx
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 11, 10, 30)
 QUESTIONS = [
@@ -33,8 +32,7 @@ QUESTIONS = [
 
 @pytest.fixture
 def notebook(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     made = []
     for content, category, tags, when, _links in fx.NOTES:
         entry = manager.create_entry(session, content, category, tags)
@@ -213,8 +211,7 @@ def test_four_notes_a_frame_would_pad_are_an_overview_not_the_lines():
 
 
 def test_twenty_notes_are_told_in_short_paragraphs_with_no_filler(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     things = ["tomatoes", "carrots", "beans", "roses", "leeks", "peas"]
     _fill(session, [
         (f"I tended the {things[i % 6]} bed number {i}", "Garden", ["soil"] if i % 3 == 0 else ["seeds"] if i % 3 == 1 else [], f"2026-{3 + i // 5:02d}-{1 + (i % 5) * 5:02d}T09:00")
