@@ -3,8 +3,7 @@
 > **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [LEDGER.md](LEDGER.md) (every open item outside the plans; licence: AGPL-3.0) · [HISTORY.md](HISTORY.md) (already built).
 
 Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This
-file is the **standing backlog**: everything that is still work, numbered as it
-always was, so every §-reference elsewhere still resolves.
+file is the **standing backlog**: everything that is still work, numbered as it always was, so every §-reference elsewhere still resolves.
 
 The live list: what to do next, and the two sections of freshly reported work
 (§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans
@@ -939,6 +938,7 @@ size/risk call (M, take the idea, measure it on a small model before
 trusting it).
 
 - **L-world-class-230 (moved from LEDGER 2026-11-21, parked for an owner call):** App import, the route build. Lazy router host: register route modules at their first request, not at import. Profiled under cProfile on create_app (wc-slice, 2026-11-21): 728 route decorators make 1,732 FastAPI ModelFields, each building a pydantic TypeAdapter; that is 1.2 s of the 2.4 s profiled route build (create_model_field, fastapi/utils.py:58), about 825 ms of the 2.06 s import unprofiled (L-world-class-150). Two ways, both the owner's call: (1) a lazy router host that imports a router module on its first request, which changes what /openapi.json and route listings show before first use and touches the auth gates, the route-listing tests and CODEMAP routes; (2) patching FastAPI internals to defer or share the ModelField builds, which every FastAPI upgrade can break. Neither is taken without the owner.
+- **L-world-class-95 rest (moved from LEDGER 2026-11-21, parked for an owner call):** Laptop fold, four whole note cards at 1093x614@1.25. Built: links share the details line in card view (two pills), laptopfold 2 whole and 3 in part. Chrome measured on the showcase: top bar 0 to 44, sub-tabs 56 to 92, browse card 99, dock 112 to 154, capture bar 166 to 210, first card 222, status bar from 577; cards 89 to 186px with 6px gaps, the 165 and 186px ones are 3-line previews (compact, owner INBOX 473). Four whole 111px cards need 462px; 355px is there (222 to 577). Sub-tabs into the dock do not fit one row (tabs 421px, the dock row 825px with 773 used, 52px slack; icon-only tabs still 180px); a section switcher in the dock identity (a caret menu at 700px of height or less) saves 43px, to 398, still short, and hides a visible tab strip. The status bar is one 37px row already (x12 to 1081), so trimming it to four items gains nothing alone. Options: (ii) at 700px of height or less in card view, hide the capture bar behind its button and float the status cluster, a start near 123 and a floor of 614, which fits four; (iii) the owner relaxes the gate to three whole cards while 3-line previews stay (INBOX 473). The owner's call.
 
 ---
 

@@ -6,7 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- Notes: in card view a linked note shows two link pills before "+N more links", and they share the details line when both fit (111px instead of 141px a card at 1093x614) (L-world-class-95, in progress).
+- Notes: in card view a linked note shows two link pills before "+N more links", and they share the details line when both fit (111px instead of 141px a card at 1093x614) (L-world-class-95; the four-card laptop fold is an owner call in BACKLOG).
 - Agent: the chat turn and each skill step run as small named stages that can be tested one at a time; behaviour is unchanged (L-world-class-124).
 - Duplicates: the review on 5,000 alike notes takes 4.8 s instead of 70 s and 613 MB instead of 2.1 GB (L-world-class-410).
 - Handler lag: re-measured at 1x and 4x CPU, five runs each; tab presses (13 to 69 ms at 4x), chat hover (2 to 8 ms) and every 1x item are under 100 ms; Settings pane switches at 4x are the one open item (L-world-class-355).
