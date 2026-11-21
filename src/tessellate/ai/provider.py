@@ -44,7 +44,7 @@ import re
 from collections.abc import Callable
 from urllib.parse import urlparse
 
-from tessellate.core import jobruns
+from tessellate.core import jobruns_calls
 
 
 #: Returns the user's stored sampling overrides, installed by the app's own
@@ -392,10 +392,10 @@ class Provider:
         new backend or a new caller cannot make a model call nobody sees."""
         super().__init_subclass__(**kwargs)
         for attr, wrap in (
-            ("chat", jobruns.model_call),
-            ("chat_tools", jobruns.model_call),
-            ("chat_stream", jobruns.model_stream),
-            ("chat_tools_stream", jobruns.model_stream),
+            ("chat", jobruns_calls.model_call),
+            ("chat_tools", jobruns_calls.model_call),
+            ("chat_stream", jobruns_calls.model_stream),
+            ("chat_tools_stream", jobruns_calls.model_stream),
         ):
             method = cls.__dict__.get(attr)
             if callable(method) and not getattr(method, "ledgered", False):

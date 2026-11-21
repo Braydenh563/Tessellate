@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Docs: three measured perf leftovers (Settings pane style and layout, microbes garbage, boot tasks still over 50ms at 4x) moved from LEDGER to BACKLOG §11 with their numbers (L-world-class-622, 623, 624).
+- Model-call tracing moved from jobruns.py (1015 lines) to jobruns_calls.py (149), so jobruns.py is 877 lines, under its 973 cap (L624).
 - OCR: RapidOCR reads small text enlarged to the size it reads best, and nothing else is done to the picture; over nine rendered pages the mean similarity went 0.853 to 0.876 (7px text 0.816 to 0.936, a dark ground 0.942 to 1.000), where Tesseract's full preparation read worse at 0.805 (L703).
 - Dashboard boot at 4x CPU on 5,000 notes: board miniatures draw in 12ms slices (map-preview load task 92 to 48ms median), and Continue and recent notes stop parsing dates inside a sort (dashContinueNote 97 to 10ms); scripts with a median long task over 50ms 10 to 3 (L-world-class-354).
 - Dashboard: card heights for the grid's spans come from its ResizeObserver, so sizing reads no layout or style after the widgets fill (45 to 119ms of forced style at 4x on 5,000 notes before, 0 after; spans within 1px at 700, 1093 and 1440) (L-world-class-620).
