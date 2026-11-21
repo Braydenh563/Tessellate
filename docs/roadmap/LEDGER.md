@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 83 | 9 | 0 | 0 | 92 |
+| world-class | 0 | 81 | 9 | 0 | 0 | 90 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 461 | 80 | 2 | 112 | 913 |
+| all | 372 | 459 | 80 | 2 | 112 | 911 |
 
 ## graph
 
@@ -518,7 +518,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
-- [ ] **L-world-class-180** `world-class` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
@@ -538,7 +537,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-631** `world-class` open, L: Split notes-list.js (3,780), status.js (3,241) once index.html has element room for the script tags. From L698, L639; tests/test_boot_diet3.py:122. Evidence: Measured 2026-11-21 after 318122a33 and 95061e80e: boot gzip headroom is now about 6 KB (652,408 to 646,261 level-6 sum), so the gzip cap allows the splits, but index.html parses 749 elements against BOOT_ELEMENTS_CAP 749: each new boot script tag adds one, so 4 notes-list.js script tags gave 753 and failed. Tried notes-list.js cut at 547, 1770, 2889, 3541 (notes-text, notes-render, notes-load, notes-rail; 1227, 1122, 655, 244 lines): also about 20 tests read notes-list.js directly and need path updates, and wake_sources_seed.json needs notes-render/notes-rail entries. status.js (3,241) cuts at 813, 1360, 1882, 2608; chat.js (1,336) cut at 1168 (chat-progress.js).
 - [ ] **L-world-class-690** `world-class` open, S: Cap the parse child's memory on Windows with a job object (JOB_OBJECT_LIMIT_PROCESS_MEMORY), as RLIMIT_AS does on Linux. From L-world-class-321. Evidence: src/tessellate/core/parse_guard.py _limit_memory: RLIMIT_AS on POSIX only; on Windows a crafted file can still allocate without bound in the child (the child dies, not the server, but the machine can page)
 - [ ] **L-world-class-691** `world-class` open, M: Install each pip extra from a hashed lock (--require-hashes), without moving a base package. From SECURITY.md, Threat model T23 (L-world-class-320). Evidence: core/extras.py _run_install hands pip names plus EXTRA_BOUNDS constraints, no --require-hashes. A hash lock needs every transitive dependency pinned per platform and Python (uv pip compile --universal --generate-hashes against requirements.txt's constraints), and pinning base packages that requirements.txt only ranges would let an extra install move numpy or tokenizers under the running app. Check: a lock per extra whose base-package pins equal the installed versions, pip install --require-hashes --no-deps from it in a scratch venv and in the frozen --target build.
-- [ ] **L-world-class-660** `world-class` open, M: Chats: group-by control, agent tool and skill to manage chat order (rest of L-world-class-180). From L-world-class-180. Evidence: Sorts exist (#chat-sidebar-sort: recent, most turns, most tokens, A-Z; sortConversations in sheets-selects.js:1859). Not built: a group-by (day, project, pinned), an agent tool to sort, group and pin chats, and the skill.
 - [ ] **L-world-class-692** `world-class` open, S: Folder import restores a note's groups and extra categories from its sidecar. From L-world-class-172/173. Evidence: folder-export sidecar exports groups and also_in but import ignores them
 - [ ] **L-world-class-693** `world-class` open, S: Find box and server search understand group:. From L-world-class-172. Evidence: group: filters only client-side in the Notes box
 - [ ] **L-world-class-694** `world-class` open, S: Manage categories counts notes that are also in a category. From L-world-class-173. Evidence: Manage categories counts only primary categories

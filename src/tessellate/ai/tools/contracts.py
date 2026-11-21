@@ -39,7 +39,7 @@ from typing import Callable
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Category, Entry, EntryLink, Reminder
+from tessellate.core.database import Category, Conversation, Entry, EntryLink, Reminder
 from tessellate.entry import manager
 from tessellate.entry import manager_categories
 from tessellate.repo import tags as tags_repo
@@ -222,6 +222,11 @@ def _post_tags(session: Session, args: dict, result: dict) -> str | None:
 
 
 def _post_pinned(session: Session, args: dict, result: dict) -> str | None:
+    if args.get("chat_id") is not None:
+        chat = session.get(Conversation, int(args["chat_id"]))
+        if chat is None or bool(chat.pinned) != bool(args.get("pinned", True)):
+            return f"chat #{args['chat_id']} is not {'pinned' if args.get('pinned', True) else 'unpinned'}"
+        return None
     entry = _entry(session, args.get("note_id"))
     wanted = bool(args.get("pinned", True))
     if entry is not None and bool(entry.pinned) != wanted:

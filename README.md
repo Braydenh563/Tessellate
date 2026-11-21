@@ -167,7 +167,7 @@ Open a section for the detail.
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
-- 22 built-in skills (and your own) run multi-step jobs as a visible
+- 23 built-in skills (and your own) run multi-step jobs as a visible
   checklist. Small models are first-class: a small-model mode gives a 4B model
   one step and one tool at a time.
 - A command palette (`Ctrl`/`Cmd`+`K`) runs any command or goes to any place

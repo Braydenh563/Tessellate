@@ -671,6 +671,25 @@
      "created_at": "2026-10-11T16:00:00+00:00",
      "label": "ph:star Added to Favourites: note #3"
     }
+   },
+   {
+    "args": {
+     "chat_id": 7
+    },
+    "fake": true,
+    "result": {
+     "id": 7,
+     "title": "Trip plan",
+     "pinned": true,
+     "label": "ph:push-pin Pinned chat: Trip plan",
+     "undo": {
+      "tool": "pin_note",
+      "arguments": {
+       "chat_id": 7,
+       "pinned": false
+      }
+     }
+    }
    }
   ],
   "link_notes": [
@@ -1452,6 +1471,37 @@
      ],
      "found": 1,
      "label": "ph:chat-circle Searched past chats for “harbor”"
+    }
+   },
+   {
+    "args": {
+     "sort": "turns"
+    },
+    "fake": true,
+    "result": {
+     "total": 2,
+     "shown": 2,
+     "sort": "turns",
+     "group_by": "none",
+     "chats": [
+      {
+       "id": 7,
+       "title": "Trip plan",
+       "pinned": true,
+       "updated_at": "2026-11-20T09:00:00+00:00",
+       "turns": 12,
+       "tokens": 50
+      },
+      {
+       "id": 9,
+       "title": "Tax questions",
+       "pinned": false,
+       "updated_at": "2026-11-21T08:00:00+00:00",
+       "turns": 2,
+       "tokens": 10
+      }
+     ],
+     "label": "ph:chats Listed 2 chats, turns"
     }
    }
   ],

@@ -258,8 +258,6 @@ async function openEntryHistory(entry) {
 }
 
 
-const THEN_NOW_WORDS = { revised: "Changed", dropped: "No longer says", new: "Says now", contradicts: "Contradicts then" };
-
 //: One row's then-and-now block, opened under the row and closed by the same
 //: button. The row's own version against the note now (`POST
 //: /entries/{id}/then-and-now`, by text, so two edits on one day are still
@@ -300,13 +298,15 @@ async function toggleThenAndNow(entry, thenText, row, button) {
     block.append(same);
     return;
   }
+  //: Local, not a global (test_global_scope_ratchet).
+  const words = { revised: "Changed", dropped: "No longer says", new: "Says now", contradicts: "Contradicts then" };
   for (const change of changes) {
     const item = document.createElement("div");
     item.className = `then-now-row then-now-${change.kind}`;
     const kind = document.createElement("span");
     kind.className = "chip";
     const word = change.judgement === "contradicts" ? "contradicts" : change.kind;
-    chipWords(kind, THEN_NOW_WORDS[word] || change.kind);
+    chipWords(kind, words[word] || change.kind);
     item.append(kind);
     if (change.then !== null && change.then !== undefined) {
       const then = document.createElement("p");
