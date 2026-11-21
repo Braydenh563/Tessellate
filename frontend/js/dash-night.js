@@ -13,6 +13,11 @@
     return [read, when, stopped].filter(Boolean).join(" · ");
   }
 
+  const NIGHT_ACCEPT = {
+    date: { icon: "ph:bell", title: "Remind me on this date", undo: "Made a reminder", done: "Reminder made", fail: "make that reminder" },
+    duplicate: { icon: "ph:arrows-merge", title: "Merge into the earlier note", undo: "Merged a repeated note", done: "Merged into the earlier note", fail: "merge those notes" },
+  };
+
   function nightFactRow(fact, onGone) {
     const li = document.createElement("li");
     li.className = "night-fact";
@@ -72,6 +77,35 @@
         }
       });
       actions.append(keep);
+    }
+    //: Accept a date (a reminder that day) or a duplicate (Tidy's merge into the earlier note), by rule, no model.
+    const act = NIGHT_ACCEPT[fact.kind];
+    if (act) {
+      const accept = document.createElement("button");
+      accept.type = "button";
+      accept.className = "ghost small icon-only";
+      accept.title = act.title;
+      accept.setAttribute("aria-label", act.title);
+      setLabel(accept, act.icon);
+      accept.addEventListener("click", async () => {
+        accept.disabled = true;
+        try {
+          let done = await apiJson(`/learned/${fact.id}/accept`, { method: "POST" });
+          const back = () => api(done.kind === "merge" ? `/tidy/undo/${done.undo_id}` : `/reminders/${done.reminder_id}`, { method: done.kind === "merge" ? "POST" : "DELETE" });
+          pushUndo(
+            act.undo,
+            async () => { await back(); await api(`/learned/${fact.id}/restore`, { method: "POST" }); renderDashboard({ refresh: true }); },
+            async () => { done = await apiJson(`/learned/${fact.id}/accept`, { method: "POST" }); renderDashboard({ refresh: true }); }
+          );
+          toast(act.done);
+          li.remove();
+          onGone();
+        } catch (error) {
+          accept.disabled = false;
+          toast(error.message || voiceLine("failed", { what: act.fail }), true);
+        }
+      });
+      actions.append(accept);
     }
     const open = document.createElement("button");
     open.type = "button";

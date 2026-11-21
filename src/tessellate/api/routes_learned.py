@@ -418,6 +418,26 @@ def reset_fact(fact_id: int, session: Session = Depends(get_session)) -> dict:
     return facts.as_json(row)
 
 
+@router.post("/{fact_id}/accept")
+def accept_fact(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Act on a date (a reminder that day) or a duplicate (Tidy's merge); the fact then leaves
+    the list, and `/restore` plus the returned undo (a reminder id, a Tidy undo id) is the way back."""
+    from tessellate.ai import facts_accept
+
+    row = facts.visible(session, fact_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="That learned fact could not be found.")
+    if row.kind not in facts_accept.ACCEPTABLE:
+        raise HTTPException(status_code=422, detail="Only a date or a duplicate can be accepted.")
+    try:
+        done = facts_accept.accept(session, row, utcnow())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    facts.remove(session, row)
+    session.commit()
+    return done
+
+
 @router.delete("/{fact_id}", status_code=204)
 def delete_fact(fact_id: int, session: Session = Depends(get_session)) -> Response:
     """Delete a fact, and remember that it was deleted.
