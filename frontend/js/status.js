@@ -1765,7 +1765,8 @@ function paintUndoDoor(button, verb, surface, stack) {
   if (surface) {
     const can = redo ? surface.canRedo?.() : surface.canUndo?.();
     const where = surface.where === "board" ? "on this board" : "in this document";
-    button.disabled = !can;
+    //: Written only on a change (L342): a same-value write still re-checks the bar's `:has()` rules.
+    if (button.disabled === !!can) button.disabled = !can;
     paintStatusItem(button.id, {
       icon,
       title: can ? `${Verb} the last change ${where}` : `Nothing to ${verb} ${where}`,
@@ -1774,7 +1775,7 @@ function paintUndoDoor(button, verb, surface, stack) {
     return;
   }
   const top = stack[stack.length - 1];
-  button.disabled = !top;
+  if (button.disabled === !!top) button.disabled = !top;
   paintStatusItem(button.id, {
     icon,
     title: top ? `${Verb}: ${top.label}` : `Nothing to ${verb}`,

@@ -314,6 +314,9 @@
     const proxy = event.target.closest("[data-click-proxy]")?.dataset.clickProxy;
     if (proxy) setTimeout(() => (document.getElementById(proxy) || document.querySelector(proxy))?.click());
   });
+  //: The card's `.card:has(details.dock-menu[open])`, as a class (07-whiteboard-misc.css says why).
+  const viewMenu = document.getElementById("doc-view-menu");
+  viewMenu?.addEventListener("toggle", () => viewMenu.closest(".card")?.classList.toggle("doc-view-menu-open", viewMenu.open));
   document.addEventListener("click", (event) => {
     const menu = document.getElementById("doc-dock-menu");
     if (!menu?.open) return;
