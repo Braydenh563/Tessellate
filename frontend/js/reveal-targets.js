@@ -817,6 +817,13 @@ function openShortcuts() {
   $("shortcuts-close").focus();
 }
 
+//: Closed, the sheet's lists were 240 idle nodes; `openShortcuts` draws them again (L676). `closeShortcuts`
+//: announces `sheet-closed` on every path that closes the sheet (the router's and the tour's go through it).
+document.addEventListener("sheet-closed", () => {
+  const overlay = $("shortcuts-overlay");
+  if (overlay.classList.contains("hidden")) for (const list of overlay.querySelectorAll(".shortcut-list")) list.replaceChildren();
+});
+
 //: Moved from settings-panes.js; the boot keeps a stand-in that loads this file.
 const revealTimers = new WeakMap();
 
