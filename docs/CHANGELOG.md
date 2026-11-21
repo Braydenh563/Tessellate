@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: a UI sweeps job runs the 32 sweeps that pass twice on a fresh notebook (scripts/ci_sweeps.sh, L-general-20).
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
 - CLAUDE.md and WORKING.md give the measured test count, 52,983.
