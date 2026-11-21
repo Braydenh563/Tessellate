@@ -4,8 +4,7 @@
 //
 // Lazy (app.js `LAZY_MODULES.goalsView`, with goals-lazy.css), like the
 // Questions view: nothing here runs until the Goals sub-tab is shown, which
-// calls `openGoalsView` through its stand-in
-// (`LAZY_ENTRY_POINTS`). The agent's `edit_goals` tool writes the same rows.
+// hears `goals:show`, which `showNotesSection` fires after `ensureModule("goalsView")`. The agent's `edit_goals` tool writes the same rows.
 
 (() => {
   const goalsView = { kind: "", state: "open", ready: false, seq: 0 };
@@ -80,6 +79,7 @@
   function itemRow(goal, item) {
     const li = document.createElement("li");
     li.className = "goal-item";
+    li.dataset.item = item.id;
     const label = document.createElement("label");
     const box = document.createElement("input");
     box.type = "checkbox";
@@ -106,7 +106,7 @@
       const text = field.value.trim();
       if (!text) return;
       field.value = "";
-      change(() => send(`/${goal.id}/items`, "POST", { text }), "add that").then(() => $("goals-list").querySelector(`[data-goal="${goal.id}"] .goal-add input`)?.focus());
+      change(() => send(`/${goal.id}/items`, "POST", { text }), "add that");
     });
     return form;
   }
@@ -161,8 +161,14 @@
       return;
     }
     if (seq !== goalsView.seq) return;
-    //: A tick keeps the typing place: the add line the person was in is refocused by its caller, the scroll stays.
+    //: The list is rebuilt, so the control the person was on (a tick box, an add line) is found again by its goal and item and refocused.
+    const held = document.activeElement;
+    const spot = held && list.contains(held) ? { goal: held.closest("[data-goal]")?.dataset.goal, item: held.closest("[data-item]")?.dataset.item, add: !!held.closest(".goal-add") } : null;
     list.replaceChildren(...reply.goals.map(goalCard));
+    if (spot) {
+      const card = list.querySelector(`[data-goal="${spot.goal}"]`);
+      (spot.add ? card?.querySelector(".goal-add input") : card?.querySelector(`[data-item="${spot.item}"] input`))?.focus();
+    }
     if (!reply.goals.length) list.appendChild(emptyState(finished ? "done" : goalsView.kind));
     const counts = reply.counts || {};
     for (const option of $("goals-show").options) {
@@ -192,11 +198,9 @@
     $("goals-new-list").addEventListener("click", () => makeOne("list"));
   }
 
-  //: One export: it starts the view once and re-reads the list each time it is shown.
-  function openGoalsView() {
+  //: No global at all: `showNotesSection` loads this module (`ensureModule`) and then fires `goals:show`, each time the sub-tab is shown.
+  document.addEventListener("goals:show", () => {
     initGoalsView();
-    return loadGoals();
-  }
-
-  Object.assign(window, { openGoalsView });
+    loadGoals();
+  });
 })();

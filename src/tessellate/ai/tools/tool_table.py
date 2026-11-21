@@ -225,7 +225,7 @@ TOOLS: dict[str, ToolSpec] = {
             # Saying so in the description matters as much as the code, a
             # model told it has *saved* something will act as though the rule
             # is already in force.
-            "Suggest a standing preference for the user to accept. Use it when they state a rule or style. It does NOT take effect until they accept.",
+            "Suggest a standing preference for the user to accept. Use it when they state a rule or style.",
             {
                 "type": "object",
                 "properties": {
@@ -242,8 +242,7 @@ TOOLS: dict[str, ToolSpec] = {
             # being misused (stop after asking; don't ask what you could look
             # up) are worth their space; nothing else here is.
             "Ask which of 2-6 options the user meant, when the request is "
-            "ambiguous. Your turn ENDS; their reply comes next. Don't ask "
-            "permission or what search_notes could tell you.",
+            "ambiguous. Your turn ENDS; their reply comes next.",
             {
                 "type": "object",
                 "properties": {
@@ -295,7 +294,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "path_between",
-            "For 'how are these two notes related?': the chain joining them, each step a link, reply or shared tag. For one note's surroundings, use related_notes.",
+            "For 'how are these two notes related?': the chain joining them, each step a link, reply or shared tag.",
             {
                 "type": "object",
                 "properties": {
@@ -329,8 +328,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "list_notes",
             "Walk notes, newest first, by category, tag, age or untagged "
-            "('tag my untagged notes'); while has_more, call again with next_offset. "
-            "search_notes finds something specific.",
+            "('tag my untagged notes'); while has_more, call again with next_offset.",
             {
                 "type": "object",
                 "properties": {
@@ -394,7 +392,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "notebook_overview",
-            "Categories, tags and the total note count in one call: use it, not list_categories + list_tags + count_notes, for the overall shape.",
+            "Categories, tags and the total note count in one call.",
             {"type": "object", "properties": {}},
             _notebook_overview,
         ),
@@ -417,7 +415,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "search_files",
             "Search the user's uploaded files (photos, scans, PDFs, attachments) by name, "
-            "caption or the text read from them. Use it for anything about a picture or file.",
+            "caption or the text read from them.",
             {
                 "type": "object",
                 "properties": {
@@ -484,7 +482,7 @@ TOOLS: dict[str, ToolSpec] = {
         EDIT_DOCUMENT_SPEC,
         ToolSpec(
             "get_document",
-            "Read one document in full, by id, after list_documents (previews only). For a long one, pass query for its relevant paragraphs.",
+            "Read one document in full, by id, after list_documents (previews only).",
             {
                 "type": "object",
                 "properties": {
@@ -501,7 +499,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "read_whiteboard",
-            "Read a whiteboard: its cards, text boxes, image count and which cards link. Use it for 'what's on my board?' or before adding.",
+            "Read a whiteboard: its cards, text boxes, image count and which cards link.",
             {
                 "type": "object",
                 "properties": {
@@ -639,8 +637,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "map_from_note",
             "A mind map from one note in one call ('turn this note into a map'): title the "
-            "centre, headings and lists the branches. Use it, not create_mindmap plus "
-            "add_map_node.",
+            "centre, headings and lists the branches.",
             {
                 "type": "object",
                 "properties": {
@@ -811,7 +808,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "search_chat_history",
-            "Search earlier conversations, from other days too. Use it when they mention something 'we talked about' not in this thread.",
+            "Search earlier conversations. Use it when they mention something 'we talked about' not in this thread.",
             {
                 "type": "object",
                 "properties": {
@@ -983,7 +980,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "calculate",
-            "Work out a sum, percentage, unit or currency conversion, or count of days. Use it for every number; say the result and how it was read.",
+            "Work out a sum, percentage, unit or currency conversion, or count of days. Use it for every number.",
             {"type": "object", "properties": {"question": {"type": "string", "description": "e.g. 15% of 240, 5 km in miles, days until 25 December"}},
              "required": ["question"]},
             _calculate,
@@ -991,7 +988,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "read_text",
             "The dates, times, durations, amounts and units in a text exactly as the app "
-            "reads them, each with how it was read. Use it, not your own date arithmetic.",
+            "reads them, each with how it was read.",
             {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]},
             _read_text,
         ),

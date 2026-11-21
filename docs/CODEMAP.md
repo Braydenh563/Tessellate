@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8580, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11502, test files 3021, tests 23429, plan headings 697, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8579, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11502, test files 3022, tests 23430, plan headings 697, app scripts 29, boot scripts 38, script files 312.
 
-## Frontend functions (8580)
+## Frontend functions (8579)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -52,7 +52,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1914 |
+| `installStandIns` | frontend/js/app.js:1913 |
 | `lazyAssetStamp` | frontend/js/app.js:1699 |
 | `lazyScript` | frontend/js/app.js:1721 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
@@ -5293,23 +5293,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openChatModelPanel` | frontend/js/gesture-kit.js:55 |
 | `toggleDictation` | frontend/js/gesture-kit.js:367 |
 
-### frontend/js/goals-view.js (13)
+### frontend/js/goals-view.js (12)
 
 | Name | File:line |
 |---|---|
 | `addLine` | frontend/js/goals-view.js:95 |
-| `change` | frontend/js/goals-view.js:30 |
+| `change` | frontend/js/goals-view.js:29 |
 | `emptyState` | frontend/js/goals-view.js:138 |
 | `goalCard` | frontend/js/goals-view.js:114 |
-| `goalMenu` | frontend/js/goals-view.js:39 |
-| `initGoalsView` | frontend/js/goals-view.js:182 |
-| `itemRow` | frontend/js/goals-view.js:80 |
+| `goalMenu` | frontend/js/goals-view.js:38 |
+| `initGoalsView` | frontend/js/goals-view.js:188 |
+| `itemRow` | frontend/js/goals-view.js:79 |
 | `loadGoals` | frontend/js/goals-view.js:151 |
-| `makeOne` | frontend/js/goals-view.js:175 |
-| `openGoalsView` | frontend/js/goals-view.js:196 |
-| `removeGoal` | frontend/js/goals-view.js:60 |
-| `send` | frontend/js/goals-view.js:20 |
-| `targetWords` | frontend/js/goals-view.js:24 |
+| `makeOne` | frontend/js/goals-view.js:181 |
+| `removeGoal` | frontend/js/goals-view.js:59 |
+| `send` | frontend/js/goals-view.js:19 |
+| `targetWords` | frontend/js/goals-view.js:23 |
 
 ### frontend/js/graph-canvas.js (210)
 
@@ -21445,13 +21444,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_describe_tool` | src/tessellate/ai/tools/tool_table.py:62 |
-| `_example_value` | src/tessellate/ai/tools/tool_table.py:1440 |
-| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1420 |
+| `_example_value` | src/tessellate/ai/tools/tool_table.py:1437 |
+| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1417 |
 | `_list_skills` | src/tessellate/ai/tools/tool_table.py:75 |
 | `_list_tools` | src/tessellate/ai/tools/tool_table.py:45 |
 | `_save_skill` | src/tessellate/ai/tools/tool_table.py:124 |
 | `_tool_group` | src/tessellate/ai/tools/tool_table.py:36 |
-| `call_example` | src/tessellate/ai/tools/tool_table.py:1388 |
+| `call_example` | src/tessellate/ai/tools/tool_table.py:1385 |
 
 ### src/tessellate/ai/tools/tool_turn.py (13)
 
@@ -29110,7 +29109,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23429)
+## Tests (23430)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30438,6 +30437,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_global_scope_ratchet.py | 6 |
 | tests/test_glossary_b7.py | 7 |
 | tests/test_goals_api_98.py | 10 |
+| tests/test_goals_focus_98.py | 1 |
 | tests/test_goals_lists_l254.py | 2 |
 | tests/test_gold_answers.py | 33 |
 | tests/test_grammar_classes_1026.py | 14 |
@@ -32562,14 +32562,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4484 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4384 |
-| Needs hardware | docs/roadmap/LEDGER.md:484 |
+| Needs hardware | docs/roadmap/LEDGER.md:482 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:480 |
+| Owner calls | docs/roadmap/LEDGER.md:478 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4273 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32751,7 +32751,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1850 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:614 |
+| Plan session briefs | docs/roadmap/LEDGER.md:612 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Real-model run: several tool calls in one reply (L-world-class-69) | docs/roadmap/BACKLOG.md:713 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2664 |
@@ -32806,25 +32806,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:630 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:714 |
+| chat | docs/roadmap/LEDGER.md:628 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:712 |
 | documents | docs/roadmap/LEDGER.md:75 |
-| documents | docs/roadmap/LEDGER.md:654 |
-| general | docs/roadmap/LEDGER.md:451 |
+| documents | docs/roadmap/LEDGER.md:652 |
+| general | docs/roadmap/LEDGER.md:449 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:618 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:726 |
+| graph | docs/roadmap/LEDGER.md:616 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:724 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4393 |
 | mindmap | docs/roadmap/LEDGER.md:91 |
-| mindmap | docs/roadmap/LEDGER.md:666 |
+| mindmap | docs/roadmap/LEDGER.md:664 |
 | timeline | docs/roadmap/LEDGER.md:211 |
-| timeline | docs/roadmap/LEDGER.md:690 |
+| timeline | docs/roadmap/LEDGER.md:688 |
 | ui-modernisation | docs/roadmap/LEDGER.md:94 |
-| ui-modernisation | docs/roadmap/LEDGER.md:678 |
+| ui-modernisation | docs/roadmap/LEDGER.md:676 |
 | whiteboard | docs/roadmap/LEDGER.md:29 |
-| whiteboard | docs/roadmap/LEDGER.md:642 |
+| whiteboard | docs/roadmap/LEDGER.md:640 |
 | world-class | docs/roadmap/LEDGER.md:213 |
-| world-class | docs/roadmap/LEDGER.md:702 |
+| world-class | docs/roadmap/LEDGER.md:700 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2834 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2885 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2992 |

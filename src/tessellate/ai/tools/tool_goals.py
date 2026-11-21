@@ -89,14 +89,14 @@ def _edit_goals(session: Session, args: dict) -> dict:
 
 LIST_GOALS = ToolSpec(
     "list_goals",
-    "Goals and lists with their items and progress.",
+    "Goals and lists with progress.",
     {"type": "object", "properties": {}},
     _list_goals,
 )
 
 EDIT_GOALS = ToolSpec(
     "edit_goals",
-    "Make a goal or list, add, tick or remove its items, finish or delete it.",
+    "Make or change a goal or list and its items.",
     {
         "type": "object",
         "properties": {

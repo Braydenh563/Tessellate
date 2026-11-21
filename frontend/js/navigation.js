@@ -2314,7 +2314,7 @@ function showNotesSection(name, { focus = false } = {}) {
   }
   //: Goals (Brief 98) re-reads too: the agent may have ticked an item in Chat.
   if (name === "goals") {
-    openGoalsView();
+    ensureModule("goalsView").then((ok) => ok && document.dispatchEvent(new Event("goals:show")));
   }
   const wanted = NOTES_SECTIONS.includes(name) ? name : "browse";
   // A sub-tab move is a navigation, so it becomes a history step too. Recorded
