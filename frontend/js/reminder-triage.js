@@ -30,7 +30,7 @@
       });
       return true;
     } catch (e) {
-      toast(e.message || "Could not add the outcome to the note.", true);
+      toast(e.message || "Couldn't add the outcome to the note.", true);
       return false;
     }
   }

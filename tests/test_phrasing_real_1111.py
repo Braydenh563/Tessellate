@@ -19,8 +19,8 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
+from tests._clock import pin_user_now
 from tests.test_composer_route_688 import _ask
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "composer"
@@ -53,8 +53,9 @@ def _judge(kind: str, text: str) -> str | None:
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    #: Every module, not three named ones (tests/_clock.py): on 2026-11-21 the
+    #: date filter read the real day, the fixture's "21 November".
+    pin_user_now(monkeypatch, NOW)
 
 
 @pytest.fixture
