@@ -1009,8 +1009,12 @@ async function loadReminders() {
     count.className = "group-count";
     count.textContent = items.length;
     heading.append(text, count);
-    //: Overdue piles up: one menu moves the lot on, ticks it off or bins it (L-general-12).
-    if (label === "Overdue" && items.length > 1) heading.append(loadReminders.overdueTriage(items));
+    if (label === "Overdue") {
+      const triage = smallButton("ph:funnel Triage", "Keep, drop or reschedule each", () =>
+        loadReminders.act("triage", items)
+      );
+      heading.appendChild(triage);
+    }
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
@@ -1029,25 +1033,6 @@ async function loadReminders() {
   if (!groups.Done.length) donePagination.classList.add("hidden");
 }
 
-//: The Overdue heading's bulk menu (L-general-12). Leaving one where it is
-//: is "still matters"; the menu is for the rest. Each choice is one PUT per
-//: reminder and one Undo for the whole batch; Delete asks first.
-loadReminders.overdueTriage = function (items) {
-  //: The handlers are in the lazy reminder-edit.js (`loadReminders.overdueRun`): only a press needs them.
-  const go = (choice) => () =>
-    lazyScript("/js/reminder-edit.js")
-      .then(() => loadReminders.overdueRun(choice, items))
-      .catch((e) => toast(e.message || "Couldn't load the reminder tools.", true, { action: ["Try again", go(choice)] }));
-  return kebabMenu(
-    [
-      { label: "ph:sun-horizon Move all to tomorrow 9am", run: go("tomorrow"), group: "move" },
-      { label: "ph:calendar-dots Move all to next Monday 9am", run: go("monday"), group: "move" },
-      { label: "ph:check-circle Mark all done", run: go("done"), group: "done" },
-      { label: "ph:trash Delete all", run: go("bin"), group: "remove", danger: true },
-    ],
-    "Triage overdue reminders"
-  );
-};
 
 function paginateDoneReminders(items) {
   const bar = $("reminders-done-pagination");
@@ -1098,46 +1083,10 @@ function updateReminderBadge(reminders) {
   badge.title = `${nounCount(due, "reminder")} due`;
 }
 
-async function clearDoneReminders() {
-  //: To the end, or this clears the first page's done rows and reports that
-  //: count as if it were all of them.
-  const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Couldn't load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
-  const done = all.filter((r) => r.done);
-  if (!done.length) return;
-  if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
-    return;
-  }
-  //: One Undo for the lot (INBOX 537): they go to the recycle bin and come
-  //: back from it (WORLD_CLASS_PLAN 5 item 10).
-  //: Every delete is tried; how many failed is said once (audit 2026-10-05,
-  //: FE-12), where a silent catch let them come back unexplained, with a Try
-  //: again for just those rows.
-  const drop = async (rows = done) => {
-    const results = await Promise.all(
-      rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
-    );
-    const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't delete ${left.length} of the reminders.`, true, { action: ["Try again", () => drop(left)] });
-    loadReminders();
-  };
-  const remake = async (rows = done) => {
-    const results = await Promise.all(
-      rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
-    );
-    const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't bring back ${left.length} of the reminders.`, true, { action: ["Try again", () => remake(left)] });
-    loadReminders();
-  };
-  await drop();
-  const action = pushUndo(`Cleared ${done.length} completed reminders`, remake, drop);
-  toastAction(`Cleared ${done.length} completed reminder${done.length === 1 ? "" : "s"}.`, "Undo", async () => {
-    settleUndoFromToast(action);
-    await remake().catch((e) => toast(e.message, true));
-  });
-}
-
 let editingReminderId = null;
+
+//: Lazy acts (reminder-triage.js) arrive as events, so the file adds no global names.
+loadReminders.act = (name, detail) => lazyScript("/js/reminder-triage.js").then(() => document.dispatchEvent(new CustomEvent(`reminders:${name}`, { detail })));
 
 function reminderItem(reminder, label) {
   const li = document.createElement("li");
@@ -1166,20 +1115,28 @@ function reminderItem(reminder, label) {
   checkbox.style.width = "auto";
   checkbox.addEventListener("change", async () => {
     const before = { due_at: reminder.due_at, done: reminder.done };
-    //: A repeating one rolls on to its next time (the lazy reminder-edit.js, `completeRepeat`).
+    //: Completing a repeating reminder rolls it on to its next time, read
+    //: by the server from the rule (every weekday, the last Friday of the
+    //: month) in this person's own days; its undo puts the due time back.
     if (checkbox.checked && reminder.recurring && reminder.recurring !== "none") {
-      await lazyScript("/js/reminder-edit.js");
-      return loadReminders.completeRepeat(reminder, before);
+      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}&expected_due_at=${encodeURIComponent(reminder.due_at)}`, { method: "POST" }).catch(() => null);
+      //: A 409 means another tab or press already rolled this occurrence: show the new time, roll nothing.
+      if (!rolled) { loadReminders(); return; }
+      const put = (body) => async () => {
+        await apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+        loadReminders();
+      };
+      pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
+      loadReminders();
+      toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+      reminder.entry_id && loadReminders.act("outcome", reminder);
+      return;
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
-    if (checkbox.checked) atlasOn("done");
-    //: What came of it, one line written into the note it is about (L-general-10): offered, never asked.
-    if (checkbox.checked && reminder.entry_id && reminder.target_kind === "note") {
-      //: The prompt is in the lazy reminder-edit.js: only a press needs it (boot scripts' cap).
-      toastAction("Reminder done.", "Add outcome", () =>
-        lazyScript("/js/reminder-edit.js").then(() => loadReminders.outcomeAsk(reminder))
-      );
+    if (checkbox.checked) {
+      atlasOn("done");
+      reminder.entry_id && loadReminders.act("outcome", reminder);
     }
   });
   row.appendChild(checkbox);

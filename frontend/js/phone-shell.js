@@ -895,8 +895,12 @@ function mountPhoneSidebarOpeners() {
   }
 }
 
-//: Each dock is in the page only once its surface is built, so the opener is
-//: mounted as each one arrives (Notes and Chat were left without one).
+//: Each opener's dock lives in a surface built on first open, not at boot
+//: (chat's toolbar was not in the page, so a phone's chat had no way to its
+//: conversations and the tour dropped that card: 4 planned, 3 shown at
+//: 390x844). The mount skips a dock that has its opener, so it runs again for
+//: every surface that holds one.
+mountPhoneSidebarOpeners();
 for (const surface of ["notes", "chat", "documents", "library"]) onSurface(surface, mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it

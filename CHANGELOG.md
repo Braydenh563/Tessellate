@@ -6,6 +6,40 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tour: a step rings its control only once its entrance fade ends, toasts step aside for the lit control, and the tour sweeps drive the tour through `openTour.inspect()` again; all three pass, 520 of 520 steps in tour.js (L-general-14).
+- Top bar: from 820 to 1199 the header holds the centred 44px tab strip, which had run 2px past its top and bottom (measured at 1184; now 4 to 52 in a 56px header).
+- Phone: chat's Conversations button is back (its toolbar is built on first open, after the openers were mounted), and the board tour's Notes card points at View, which opens the sidebar below 600.
+- Frontend comments that still called built features unbuilt or deferred are corrected (L-general-17).
+- Reminders: ticking off a reminder that came from a note asks for a one-line outcome (Skip adds nothing) and appends it to that note, with Undo (L-general-10).
+- Reminders: the Overdue group has a Triage sheet to keep, drop (to the bin) or reschedule each late reminder, with Reschedule all and Drop all as one Undo (L-general-12).
+- Notes: one provenance chip on every note that came from outside, from the server's new `source_kind` and `source_label` (clipped from a site, imported from a file or app, extracted from a document, transcribed from audio); a note typed by hand has none (L-general-13).
+- The Notes list's rows no longer use `content-visibility`: scrolling 500 notes at 4x CPU, layout took 216 to 262 ms without it against 478 to 575 ms with it (L-general-34).
+- The companion's look at the pointer (L706) was measured at 4x CPU: a write is 0.4 to 1.1 ms, and the style flush after it is the same as with no write at all, so the 109 ms row is closed with a pin that keeps the write off the companion itself.
+- Tab flips lay out less (L705, 4x CPU, medians): the timeline's scroll to today takes 1 forced layout instead of 2, the notes rail's width check runs after layout (15.5 ms forced to 0), and the dashboard's constellation starts at its last width instead of reading it (17.6 ms to 2.9 ms).
+- Opening the equation editor no longer reads layout on its first draw, and the palette groups below the fold are not laid out until they come near: the script's load task fell from 294 to 138 ms and its forced layout from 362 to 279 ms (4x CPU, median of 7, same run; L702).
+- Review fixes: a board past 16 MB exports as a folder (uploads, not JSON); a batch act that fails partway keeps Undo for the notes changed and counts the rest; bulk property Undo restores only its key; a missing note menu row is skipped; the pie drops non-positive rows itself.
+- Open-work sweep of the shared files: IDEAS.md's list checked against the app (all built or in BACKLOG), stale "still open" notes in the docs, frontend and sweeps written as built, and `open_scan` reads an HTML attribute value as data.
+- Library: the selection bar's More menu sets tags, a category or a property on the notes ticked, with the Notes bar's own dialogs and Undo (L-world-class-392).
+- The timeline draws a thread as a branching line: a note that continues another branches off beside it, and its Continues button, which never appeared before, now does (L-world-class-176).
+- A board or map exports as a folder with its notes: one zip holding the picture as SVG and PNG and every note on it as Markdown (L-world-class-130).
+- The selection bar's ... menu sets or removes one property on every selected note, with one Undo (L-world-class-128).
+- A note's edit box finds and replaces inside the note: Ctrl+F and Ctrl+H open the document editor's search panel (L-world-class-127).
+- Background art pauses 5 seconds after the window loses focus, not 30 (L-world-class-111).
+- Companion: the 20-second calm pause sets its class on each Atlas figure instead of the whole page, which halves the at-rest restyle (L-world-class-126; graph and companion at rest measured 0 long tasks in 3 s at 1x).
+- Graph: Gravity and Spread now shape the Tree and Radial layouts, and Spread the Arc; Link force and the other layouts stay dimmed with their reason (L-world-class-175).
+- Note menu: grouped Atlas, structure, share and export, then archive and bin, eight rows at the top instead of ten (L-world-class-129, decision 64).
+- Dashboard: a Category mix widget draws the category counts as a pie, through the chart recipe's new pie kind; a slice opens its notes (L-world-class-179).
+- Dashboard: the Reminders widget draws its text as inline Markdown, and note rows drop a task's box with its bullet; 0 raw bold, link or box tokens across 35 widgets (L-world-class-178).
+- Shortcuts sheet: the "t then" rows are drawn from the chord tables, so all 17 keys show (10 were typed by hand) (L-world-class-120).
+- Site: the page now says what the README says: with no model notes file by their words and Atlas answers with citations; all six graph layouts named (L-world-class-187).
+- Status dot: a test drives both red paths (server stops answering, search model fails) through the real state function (L-world-class-184).
+- Filing: a test pins that "ai is cool" is never filed or offered under Sketches on the words path (L-world-class-186).
+- Tests: the board affinity timeout test holds the model on an event until the answer is back, so the words rule can only come from the timeout (a 0.9 s bound failed at 2.1 s on CI, 2026-11-14).
+- open_scan hits in tests/test_[a-c]* swept from 211 to 2: comments reworded, names changed, dead strict-xfail machinery with empty OPEN sets removed; tests/test_open_scan_tests_ac.py allows only strict xfails naming an open LEDGER row (L-graph-19).
+- Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
+- Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
+- Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
+- Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
 - Tests: the tab lag and companion idle budgets are guarded in CPU time (main-thread task CPU after a repeat tab click, p50 of five, cap 50 ms; renderer on-CPU ms a second from /proc), which a busy runner cannot skew (`tests-e2e/budget-measure.js`, `specs/budgets.spec.js`, `scratchpad/ui-sweeps/companioncpu.js`); every tab passes on a repeat visit (notes 30, library 45, graph 38, timeline 32, chat 14, reminders 17, dashboard 25 ms), Atlas idle is +476 ms/s over off against 120 and stays a strict expected failure (L-ui-modernisation-95).
 - Tests: the map's perf budgets are held in CPU time (`tests-e2e/specs/map-budgets.spec.js`, run by the CI budgets-alone step): per-task CPU from a CDP trace at CPU throttle 4, median of 3, so a loaded runner cannot skew them; medians at 50, 200, 500 topics: open to painted 247, 316, 687ms of 1000, worst pan task 9.7, 8.5, 12.6ms and zoom 13.2, 14.8, 39.3ms of 50, 300 links within 2x of a plain branch drag; no code change needed (L-ui-modernisation-61 and -97).
@@ -265,13 +299,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Documents, Debug: class getters and setters and private members (#x fields, methods and accessors) are now lowered for the stepper, each stepped against node's output; an object literal's accessor and `#x in o` are still named (L-documents-37). The claim-check linear-time test proves linearity by growth ratio, not a wall bound (L-documents-45).
 - Documents: the dictionary sheet, the links panel's rows, the word popup with Translate, Discuss in chat and the AI review, and Copy link to block are four lazy pieces (documents.js 16,769 to 16,199 lines, 261,826 to 254,407 gzipped bytes); the attach-a-bookmark picker no longer leaves an Escape listener on the page each time it is reopened (L327).
 - Documents: Format for code files (js-beautify's loader, the re-indent, the HTML and JSON formatters) and the candidate rows of a finding's answers are two more lazy pieces, `documents-code-format.js` and `documents-suggest.js`, fetched on the first Format and the first opened row (L327): documents-code.js 6,547 to 5,965 lines (92,704 to 86,117 gzipped bytes), documents.js 16,199 to 16,037 (254,407 to 252,197).
-- Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
 - Tests: the data folder self-check test counts its work (at most 5 queries, 2 directory listings, no file check per attachment) instead of timing it (a 50 ms bound failed at 140.6 ms on CI, 2026-11-14).
 - Tests: the background warm-up test checks order, not time: the load is held open by an event until the request has returned (a 50 ms bound failed at 74 ms on CI, 2026-11-14).
-- Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
-- Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
-- Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
-- Tests: the board affinity timeout test holds the model on an event until the answer is back, so the words rule can only come from the timeout (a 0.9 s bound failed at 2.1 s on CI, 2026-11-14).
 - Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
 - Mind map: Topics from a recording (a topic's menu) turns a transcribed recording into topics under it, one per transcript line, as one Undo step; voice-to-map was reopened from the plan's out-of-scope list, which now cites its sources.
@@ -283,6 +312,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Board stack order: an item still waiting for its id ties as the newest, so a new map topic no longer moves every sibling's z-index up by one and back on the server's answer (41 writes per Tab, now 0).
 - Map: a topic still waiting for its id colours as the newest branch, not the oldest, so Tab on a root no longer shifts every later branch one colour along until the server answers (41 of 41 topics repainted, now 1; Tab-to-editable median at 390 and 6x about 85 to 67 ms).
 - Map: Tab on a topic draws the objects layer only (`wbMapCache.renderAdd`; the whole render stays as the fallback for an expanded fold, a drawn line, a live search or the outline), the new topic is made editable before the measure read, and the editor opens before the selection chrome; Tab to editable at 390, 6x, 41 topics, three alternating pairs, median of 9: 104/99/102 ms to 73/101/85 (the target of 50 is not met; warm repeats run 50-70 ms).
+- Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
 - Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.

@@ -260,13 +260,6 @@ class SimilarOut(BaseModel):
     similarity: float
 
 
-class RecordingRefOut(BaseModel):
-    """The recording a note was transcribed from (L-general-13)."""
-
-    id: int
-    title: str
-
-
 class DocumentRefOut(BaseModel):
     """Just enough of a document to name it and open it."""
 
@@ -364,9 +357,10 @@ class EntryOut(BaseModel):
     #: "" for one written here. The Contents index groups on it, and the
     #: wiki-link resolver matches its filename, see `Entry.source_path`.
     source_path: str = ""
-    #: The recording this note holds the transcript of (`Recording.entry_id`),
-    #: so its card can say "Transcribed from" (L-general-13).
-    recording: RecordingRefOut | None = None
+    #: "url", "document", "file" or "audio" for a note that came from outside,
+    #: "" for one typed by hand, and its words (`entry/provenance.py`).
+    source_kind: str = ""
+    source_label: str = ""
     #: Which space this note is filed in. Added for INBOX 1a/38: notes
     #: carried this on the row (`Entry.workspace_id`) all along, but nothing
     #: sent it to the frontend, so a note card had no way to say which space

@@ -6,7 +6,6 @@ nothing runs in the cloud.
 
 from __future__ import annotations
 
-import threading
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
@@ -802,50 +801,6 @@ def complete_reminder(
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()
     return {**_to_out(session, reminder), "was_due_at": was}
-
-
-class OutcomeBody(BaseModel):
-    text: Annotated[str, Field(min_length=1, max_length=500)]
-
-    @field_validator("text")
-    @classmethod
-    def _words(cls, value: str) -> str:
-        value = " ".join(value.split())
-        if not value:
-            raise ValueError("Write what came of it.")
-        return value
-
-
-@router.post("/{reminder_id}/outcome")
-def reminder_outcome(
-    reminder_id: int, body: OutcomeBody, response: Response, session: Session = Depends(get_session)
-) -> dict:
-    """What came of a reminder, one line at the end of the note it is about
-    (L-general-10), so the note keeps the result and not only the task. Goes
-    through `update_entry`, so a private note needs its space unlocked and
-    the edit is in the note's history like any other."""
-    from tessellate.api import routes_entries
-    from tessellate.api.edit_conflicts import content_hash
-    from tessellate.api.schemas import EntryUpdate
-
-    reminder = _writable(session, reminder_id)
-    line = f"Outcome of {' '.join(reminder.text.split())}: {body.text}"
-    #: Read and written under one lock, from a fresh read (review): two
-    #: outcomes at once both read the old text and the second save dropped
-    #: the first's line. `base_hash` also refuses an ordinary edit that lands
-    #: between the read and the write, rather than overwriting it.
-    with _outcome_lock:
-        session.expire_all()
-        entry = reminder_repo.its_note(session, reminder)
-        if entry is None or entry.is_deleted or entry.is_board:
-            raise HTTPException(status_code=400, detail="This reminder is not about a note.")
-        content = readable_content(entry).rstrip()
-        update = EntryUpdate(content=f"{content}\n\n{line}", base_hash=content_hash(readable_content(entry)))
-        routes_entries.update_entry(entry.id, update, response, session, None)
-    return {"entry_id": entry.id, "line": line}
-
-
-_outcome_lock = threading.Lock()
 
 
 @router.get("/{reminder_id}/brief")

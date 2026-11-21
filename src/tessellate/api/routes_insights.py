@@ -784,9 +784,11 @@ def digest_question(session: Session) -> str:
 
 
 def _week_ago() -> datetime:
-    """Seven days before now on the app's one user clock (`user_now`), in UTC:
-    the digest's window must move with the clock a test pins, not the real one."""
-    return (user_now(deps.get_config()) - timedelta(days=7)).astimezone(timezone.utc)
+    """Seven days before now on the app's one user clock (`user_now`), naive UTC as the
+    columns are: the review it gates (`review_digest.week`) reads the same clock, and on
+    the server's own clock the two disagreed about which week it was."""
+    now = user_now(deps.get_config())
+    return (now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now) - timedelta(days=7)
 
 
 def _digest_notes(session: Session) -> list[dict]:

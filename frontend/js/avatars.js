@@ -7578,9 +7578,17 @@
   const NMB_IDLE_MARK_MS = 120000;
   const nmbClock = { timer: 0, inputAt: Date.now() };
   //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 07-whiteboard-misc.css).
+  //: **On each figure, not on `<html>`** (L-world-class-126, the at-rest long
+  //: task): the class on the root restyled the whole page to pause 73 loops,
+  //: 26 to 41 ms at 1x and 130 to 250 ms at 4x CPU, once every calm; on the
+  //: figure it restyles the figure alone. The DOM is touched only when the
+  //: state changes, so a pointermove that finds it awake costs a timer.
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
-    document.documentElement.classList.toggle("is-calm", on);
+    if (on !== nmbClock.isCalm) {
+      nmbClock.isCalm = on;
+      for (const box of document.querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on);
+    }
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };
   nmbClock.setCalm(false);

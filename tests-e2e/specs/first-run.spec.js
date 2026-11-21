@@ -155,7 +155,7 @@ test("a private note is encrypted, kept out of search, and readable again after 
   const word = `quokkaberry${Date.now() % 100000}`;
   const id = await captureNote(page, `My locker code is 4417, the ${word} one`);
   const row = await noteRow(page, id);
-  await menuItem(page, row, "Make private");
+  await menuItem(page, row, "Make private", "Share and export");
   await confirm(page);
   await expect.poll(async () => (await api(page, `/entries/${id}`)).is_private).toBe(true);
 

@@ -6690,7 +6690,7 @@
     s.tree =
       s.layoutKind === "force"
         ? null
-        : layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges));
+        : layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges), gcWorkerParams(s));
 
     // A note already on screen keeps the spot it had settled into, so a legend
     // toggle or a slider change does not replay the whole "explode outward"

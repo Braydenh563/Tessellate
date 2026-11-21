@@ -94,9 +94,9 @@ def test_a_rename_touching_a_binned_note_undoes_exactly(client, session):
     client.delete(f"/entries/{binned}")
     before = (_tags(session, live), _tags(session, binned))
     card, _ = _card(client, "rename the tag gym to fitness")
-    done = _run(client, card["steps"])
-    assert done["ok"] and "fitness" in _tags(session, live) and "fitness" in _tags(session, binned)
-    _run(client, done["undo"])
+    outcome = _run(client, card["steps"])
+    assert outcome["ok"] and "fitness" in _tags(session, live) and "fitness" in _tags(session, binned)
+    _run(client, outcome["undo"])
     assert sorted(json.loads(_tags(session, live))) == sorted(json.loads(before[0]))
     assert sorted(json.loads(_tags(session, binned))) == sorted(json.loads(before[1]))
 
@@ -113,13 +113,13 @@ def test_the_confirm_route_runs_the_same_checks_as_the_planner(client, session):
     _note(client, "# S\n\nx", tags=["gym"])
     secret = _note(client, "# Secret\n\nx", tags=["fitness"])
     _seal(session, secret)
-    done = _run(client, [{"name": "rename_tag", "arguments": {"old": "gym", "new": "fitness"}}])
-    assert not done["ok"]
+    outcome = _run(client, [{"name": "rename_tag", "arguments": {"old": "gym", "new": "fitness"}}])
+    assert not outcome["ok"]
     assert json.loads(_tags(session, secret)) == ["fitness"]
     a = _note(client, "# A\n\nx", category="Work")
     _note(client, "# B\n\nx", category="Job")
-    done = _run(client, [{"name": "rename_category", "arguments": {"old": "Work", "new": "Job"}}])
-    assert not done["ok"] and client.get(f"/entries/{a}").json()["category"] == "Work"
+    outcome = _run(client, [{"name": "rename_category", "arguments": {"old": "Work", "new": "Job"}}])
+    assert not outcome["ok"] and client.get(f"/entries/{a}").json()["category"] == "Work"
 
 
 def test_the_command_route_is_behind_the_apps_origin_check(client):
@@ -249,8 +249,8 @@ def test_restore_leaves_a_binned_board_to_the_bin_view(client, session):
     client.delete(f"/entries/{board}")
     card, events = _card(client, "restore the kitchen plan from the bin")
     assert card is None and "nothing in the bin" in _text(events)
-    done = _run(client, [{"name": "restore_note", "arguments": {"note_id": board}}])
-    assert not done["ok"]
+    outcome = _run(client, [{"name": "restore_note", "arguments": {"note_id": board}}])
+    assert not outcome["ok"]
     session.expire_all()
     assert session.get(Entry, board).is_deleted
 
@@ -273,10 +273,10 @@ def _today(client, body="- call the bank"):
 def test_undo_of_add_to_today_refuses_when_the_note_changed_since(client):
     note = _today(client)
     card, _ = _card(client, "add buy milk to today's note")
-    done = _run(client, card["steps"])
+    outcome = _run(client, card["steps"])
     typed = client.get(f"/entries/{note}").json()["content"] + "\n- typed later by hand"
     client.put(f"/entries/{note}", json={"content": typed})
-    undone = _run(client, done["undo"])
+    undone = _run(client, outcome["undo"])
     assert not undone["ok"] and "changed" in undone["summary"].lower()
     assert client.get(f"/entries/{note}").json()["content"] == typed, "the text typed after the act is kept"
 
@@ -284,8 +284,8 @@ def test_undo_of_add_to_today_refuses_when_the_note_changed_since(client):
 def test_undo_of_add_to_today_still_works_when_nothing_changed(client):
     note = _today(client)
     card, _ = _card(client, "add buy milk to today's note")
-    done = _run(client, card["steps"])
-    assert _run(client, done["undo"])["ok"]
+    outcome = _run(client, card["steps"])
+    assert _run(client, outcome["undo"])["ok"]
     assert client.get(f"/entries/{note}").json()["content"] == f"{HEADING}\n\n- call the bank"
 
 
@@ -356,8 +356,8 @@ def _js(name):
 def _node(script):
     import subprocess
 
-    done = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True, timeout=30)
-    return json.loads(done.stdout)
+    outcome = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True, timeout=30)
+    return json.loads(outcome.stdout)
 
 
 def test_the_page_closes_only_the_card_the_reply_names():

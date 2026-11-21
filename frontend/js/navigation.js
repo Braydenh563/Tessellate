@@ -691,7 +691,7 @@ function renderMarkdown(container, text, depth = 0) {
       }
       const li = document.createElement("li");
       let itemText = entry.text;
-      // GFM task list: "- [ ] open" / "- [x] done" → a real checkbox.
+      // GFM task list: "- [ ] item" / "- [x] done" → a real checkbox.
       const task = itemText.match(/^\[([ xX])\]\s+(.*)$/);
       if (task) {
         li.className = "md-task";
@@ -823,7 +823,7 @@ function revealTab(name) {
   // and restored when that was reversed, the real fix for "documents feel
   // inaccessible" was giving them their own section in the Library instead of
   // leaving them inside a catch-all view called "Documents" that showed
-  // everything. Worth the note so the next reader does not re-derive it.
+  // everything. Worth the note so nobody has to re-derive it.
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -1534,7 +1534,7 @@ document.addEventListener(
   true
 );
 
-//: **The arrow keys, in every menu that is not made by `kebabMenu`.**
+//: **The arrow keys, in every menu `kebabMenu` does not make.**
 //: `wireMenuKeyboard` gives a built menu ↑, ↓, Home and End once the focus is
 //: inside it, and nothing gave any of that to the two other shapes: a
 //: `details` dock menu (twenty-odd of them, every ⋯ and Options in every dock)

@@ -521,7 +521,7 @@ function entryItem(entry, options = {}) {
   //: note card: `.entry-meta` alone is also the chip row of the skills, the
   //: personas and the extras in Settings, which that styling flattened.
   meta.className = "entry-meta note-meta";
-  // A note saved with filing postponed is in its holding category, not its
+  // A note saved with filing put off is in its holding category, not its
   // real one, and saying "Uncategorised" for the second or two before the
   // background pass lands reads as the AI having failed. Say what is
   // actually happening instead.
@@ -826,19 +826,6 @@ function entryItem(entry, options = {}) {
     meta.appendChild(mark);
   }
 
-  // Where a web-reader clipping came from (BACKLOG §65's "source as
-  // metadata"). Opens the real page, the note's own body already has the
-  // same link inline, this is the at-a-glance version.
-  if (entry.source_url) {
-    const sourceChip = chip(
-      `ph:globe ${entry.source_title || entry.source_url}`,
-      "tag",
-      () => window.open(safeHref(entry.source_url), "_blank", "noopener,noreferrer")
-    );
-    sourceChip.title = `Open the source: ${entry.source_url}`;
-    meta.appendChild(sourceChip);
-  }
-
   // What this note's own "tomorrow" meant on the day it was written (§10A).
   // A chip rather than a mark inside the text: `renderNoteText` already
   // layers wiki links, inline markdown and filter highlighting through each
@@ -1016,21 +1003,17 @@ function entryItem(entry, options = {}) {
       "This is a draft, click to publish it as a proper note. It stays where it is either way; only the Drafts filter changes.";
     meta.insertBefore(draftChip, meta.firstChild);
   }
-  //: **Where an imported note came from**: the file name its `[[links]]`
-  //: use. A chip, because the importer must not rewrite the file.
-  //: L-general-13: a document's sections say "Extracted from", a vault's files "Imported from".
-  if (entry.source_path) {
-    const extracted = /\.(pdf|docx?|odt|rtf|pptx?|epub)$/i.test(entry.source_path);
-    const fileChip = chip(`${extracted ? "ph:file-text" : "ph:file-md"} ${entry.source_path.split("/").pop()}`, "source-path");
-    fileChip.title = `${extracted ? "Extracted from" : "Imported from"} ${entry.source_path}`;
-    meta.insertBefore(fileChip, date);
-  }
-  //: A recording's transcript note names its recording, and opens it (L-general-13).
-  if (entry.recording) {
-    const rec = entry.recording;
-    const recChip = chip(`ph:microphone ${rec.title}`, "source-path", () => ensureModule("meetings").then(() => openRecordings(rec.id)));
-    recChip.title = `Transcribed from the recording “${rec.title}”`;
-    meta.insertBefore(recChip, date);
+  //: **Where the note came from, one chip, built here** (L-general-13): the server's
+  //: `source_kind` (a clipped page, an imported file, a section of a document,
+  //: a transcribed recording) and its words; a note typed by hand has none.
+  //: A clipped page's chip still opens the page (BACKLOG §65).
+  if (entry.source_kind && entry.source_label) {
+    const icon = { url: "globe", document: "file-text", file: "file-arrow-down", audio: "waveform" }[entry.source_kind] || "file";
+    const open = entry.source_kind === "url" && entry.source_url ? () => window.open(safeHref(entry.source_url), "_blank", "noopener,noreferrer") : null;
+    const provenance = chip(`ph:${icon} ${entry.source_label}`, "source-path", open);
+    provenance.dataset.sourceKind = entry.source_kind;
+    provenance.title = open ? `Open the source: ${entry.source_url}` : entry.source_path || entry.source_label;
+    meta.insertBefore(provenance, date);
   }
   li.appendChild(meta);
   noteMetaFit.observe(meta);

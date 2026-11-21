@@ -39,9 +39,6 @@ const ROOT = path.resolve(__dirname, "../..");
 const SHOTS = (process.env.SCRATCH || "/tmp") + "/tour-shots";
 require("fs").mkdirSync(SHOTS, { recursive: true });
 
-//: Seconds since the sweep began, printed at each phase so a slow one is named, not guessed.
-const T0 = Date.now();
-const lap = (what) => console.log(`lap ${((Date.now() - T0) / 1000).toFixed(1)}s ${what}`);
 const failures = [];
 let stepsPassed = 0;
 let stepsSeen = 0;
@@ -49,38 +46,6 @@ function check(ok, line) {
   if (!ok) failures.push(line);
   console.log(`${ok ? "ok  " : "FAIL"}  ${line}`);
   return ok;
-}
-
-//: Waits on the state a step needs, not on a guess at how long it takes (the sweep ran past 400 s
-//: on fixed sleeps). `frames` is two animation frames: what a placement needs once the state is true.
-const frames = (page) => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
-async function goTab(page, tab) {
-  await page.evaluate((t) => switchTab(t), tab);
-  await page.waitForFunction((t) => openTour.inspect.activeTab() === t, tab, { timeout: 8000 });
-  await frames(page);
-}
-// The tour is closed and its three layers are hidden (a miss shows up in the check that follows).
-async function closed(page) {
-  await page
-    .waitForFunction(
-      () => !openTour.inspect.run && ["tour-card", "tour-spot", "tour-block"].every((id) => document.getElementById(id).classList.contains("hidden")),
-      null,
-      { timeout: 3000 }
-    )
-    .catch(() => {});
-  await frames(page);
-}
-// Settings at its Help panel, built on first open (the replay rows, Start the tour, About's button).
-async function openHelp(page) {
-  await page.evaluate(() => openSettingsModal());
-  await page.waitForFunction(() => typeof showSettingsSection === "function" && document.getElementById("settings-nav"), null, { timeout: 8000 });
-  await page.evaluate(() => showSettingsSection("help"));
-  await page.waitForFunction(
-    () => document.getElementById("tour-start-btn") && document.querySelector('#settings-nav button.active[data-section="help"]'),
-    null,
-    { timeout: 8000 }
-  );
-  await frames(page);
 }
 
 // One step, from outside. Everything the step's pass or fail depends on.
@@ -91,7 +56,7 @@ const STEP_PROBE = () => {
   const vh = document.documentElement.clientHeight;
   const c = card.getBoundingClientRect();
   const s = spot.getBoundingClientRect();
-  const el = openTour.inspect.run.el;
+  const el = openTour.inspect().run.el;
   const t = el ? el.getBoundingClientRect() : { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
   const overlapW = Math.min(c.right, t.right) - Math.max(c.left, t.left);
   const overlapH = Math.min(c.bottom, t.bottom) - Math.max(c.top, t.top);
@@ -117,20 +82,20 @@ const STEP_PROBE = () => {
     }
   }
   const style = el ? getComputedStyle(el) : null;
-  const step = openTour.inspect.run.step;
+  const step = openTour.inspect().run.step;
   const notesShown = step.notes
     ? !document.getElementById(step.notes)?.classList.contains("hidden")
     : true;
   return {
     target: step.target,
     shownTarget: el ? (el.id ? `#${el.id}` : el.className) : "none",
-    alt: Boolean(openTour.inspect.run.alt),
+    alt: Boolean(openTour.inspect().run.alt),
     counter: document.getElementById("tour-count").textContent,
     section: document.getElementById("tour-section").textContent,
     title: document.getElementById("tour-title").textContent,
     text: document.getElementById("tour-text").textContent,
     side: card.dataset.side,
-    stranded: Boolean(openTour.inspect.run.stranded),
+    stranded: Boolean(openTour.inspect().run.stranded),
     card: [Math.round(c.left), Math.round(c.top), Math.round(c.width), Math.round(c.height)],
     spot: [Math.round(s.left), Math.round(s.top), Math.round(s.width), Math.round(s.height)],
     anchor: [Math.round(t.left), Math.round(t.top), Math.round(t.width), Math.round(t.height)],
@@ -161,19 +126,20 @@ const STEP_PROBE = () => {
       document.getElementById("tour-text").scrollHeight > document.getElementById("tour-text").clientHeight + 1 ||
       card.scrollHeight > card.clientHeight + 1,
     focus: document.activeElement ? document.activeElement.id : "",
-    index: openTour.inspect.run.index,
-    total: openTour.inspect.run.steps.length,
+    index: openTour.inspect().run.index,
+    total: openTour.inspect().run.steps.length,
     wantTab: step.tab || "",
-    tab: openTour.inspect.activeTab(),
+    //: The tab bar's pressed tab, as tour.js's own `tourActiveTab` reads it (that is inside the lazy bundle now).
+    tab: document.querySelector('#tab-bar [role="tab"].active')?.dataset?.tab || prefs.get("activeTab", null) || "",
     notesShown,
     busy: card.getAttribute("aria-busy") === "true",
     // Chaining (the owner, 2026-09-23): the count is per section, and the
     // last card of a section offers the next one by name.
-    sectionId: (openTour.inspect.run.steps[openTour.inspect.run.index] || step).sectionId,
-    sectionAt: openTour.inspect.place(openTour.inspect.run).at,
-    sectionTotal: openTour.inspect.place(openTour.inspect.run).total,
-    nextSection: openTour.inspect.place(openTour.inspect.run).next,
-    last: openTour.inspect.run.index >= openTour.inspect.run.steps.length - 1,
+    sectionId: (openTour.inspect().run.steps[openTour.inspect().run.index] || step).sectionId,
+    sectionAt: openTour.inspect().place(openTour.inspect().run).at,
+    sectionTotal: openTour.inspect().place(openTour.inspect().run).total,
+    nextSection: openTour.inspect().place(openTour.inspect().run).next,
+    last: openTour.inspect().run.index >= openTour.inspect().run.steps.length - 1,
     nextText: document.getElementById("tour-next").textContent,
     skipText: document.getElementById("tour-skip").textContent,
     wantSettings: step.settings || "",
@@ -197,12 +163,11 @@ const STEP_PROBE = () => {
 // drawn), then a frame more for the placement.
 async function settled(page) {
   await page.waitForFunction(
-    () => !openTour.inspect.run || document.getElementById("tour-card").getAttribute("aria-busy") !== "true",
+    () => !openTour.inspect().run || document.getElementById("tour-card").getAttribute("aria-busy") !== "true",
     null,
     { timeout: 8000 }
   );
-  //: Two frames for the placement, not a fixed 120 ms: the card has no transition on its box.
-  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+  await page.waitForTimeout(120);
 }
 
 // Every check a step must pass. Returns whether all did.
@@ -250,9 +215,9 @@ function judge(label, m, phone) {
 async function walk(page, label, phone, { oneSection = false } = {}) {
   const seen = [];
   for (let guard = 0; guard < 90; guard += 1) {
-    if (!(await page.evaluate(() => !!openTour.inspect.run))) break;
+    if (!(await page.evaluate(() => !!openTour.inspect().run))) break;
     await settled(page);
-    if (!(await page.evaluate(() => !!openTour.inspect.run))) break;
+    if (!(await page.evaluate(() => !!openTour.inspect().run))) break;
     const m = await page.evaluate(STEP_PROBE);
     seen.push(m);
     console.log(
@@ -262,16 +227,15 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
     judge(label, m, phone);
     if (oneSection && m.nextSection) {
       await page.click("#tour-skip");
-      await closed(page);
+      await page.waitForTimeout(200);
       check(
-        await page.evaluate(() => !openTour.inspect.run && localStorage.getItem("tourDone") === "1"),
+        await page.evaluate(() => !openTour.inspect().run && localStorage.getItem("tourDone") === "1"),
         `${label} Finish at the end of ${m.section} ends the tour`
       );
       break;
     }
-    //: No wait after the press: the click runs `openTour.inspect.tourNext`, which sets the card busy before it
-    //: returns, and `settled` at the top of the loop waits for that flag to clear.
     await page.click("#tour-next");
+    await page.waitForTimeout(150);
   }
   // Per section: the total never changes, and it is the number of cards shown.
   const bySection = new Map();
@@ -287,7 +251,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
     );
   }
   // Sections are played in table order, each once, with no jump back.
-  const table = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
+  const table = await page.evaluate(async () => { await lazyScript("/js/tour.js"); return openTour.inspect().sections.map((s) => s.id); });
   const order = [...bySection.keys()];
   check(
     seen.every((m, i) => i === 0 || table.indexOf(m.sectionId) >= table.indexOf(seen[i - 1].sectionId)),
@@ -295,7 +259,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
   );
   if (!oneSection) {
     check(
-      await page.evaluate(() => !openTour.inspect.run && document.getElementById("tour-card").classList.contains("hidden")),
+      await page.evaluate(() => !openTour.inspect().run && document.getElementById("tour-card").classList.contains("hidden")),
       `${label} Done closes the tour`
     );
   }
@@ -306,7 +270,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
 // one side of a breakpoint), against what a walk showed.
 async function sectionReport(page, label, seen) {
   const planned = await page.evaluate(() =>
-    openTour.inspect.sections.map((s) => ({
+    openTour.inspect().sections.map((s) => ({
       id: s.id,
       targets: s.steps.filter((x) => !x.media || window.matchMedia(x.media).matches).map((x) => x.target),
     }))
@@ -342,36 +306,36 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
 
-    //: tour.js is lazy: until it loads, openTour and TOUR_ENABLED are app.js stand-ins.
-    await page.evaluate(() => ensureModule("tour"));
     // --- every door is live --------------------------------------------------
-    // Settings is built when it is first opened, so its Help panel (the replay rows, the
-    // "Start the tour" button, About's button) is opened first, as a person would reach it.
-    await openHelp(page);
-    const doors = await page.evaluate(() => {
+    //: tour.js is a lazy bundle: load it before reading what it defines.
+    const doors = await page.evaluate(async () => {
+      await ensureModule("tour");
+      //: Settings' body is a lazy surface (settings-body.js): the replay rows
+      //: and About's button exist only once it is built, as opening it does.
+      surfaceBuild("settings");
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
       const about = document.getElementById("about-take-tour");
+      const startBtn = document.getElementById("tour-start-btn");
       return {
         enabled: typeof TOUR_ENABLED !== "undefined" && TOUR_ENABLED,
         replay: replay.length,
-        startDisabled: (document.getElementById("tour-start-btn") || { disabled: true }).disabled,
         replayDisabled: replay.filter((b) => b.disabled).length,
         about: Boolean(about),
         aboutDisabled: Boolean(about && about.disabled),
+        start: Boolean(startBtn && !startBtn.disabled),
       };
     });
     console.log(`${label} doors: ${JSON.stringify(doors)}`);
     check(doors.enabled, `${label} TOUR_ENABLED is on`);
-    const sectionCount = await page.evaluate(() => openTour.inspect.sections.length);
+    const sectionCount = await page.evaluate(() => openTour.inspect().sections.length);
     check(
-      // One row per section, and "Start the tour" is its own button above them (INBOX 804).
-      doors.replay === sectionCount && doors.replayDisabled === 0 && !doors.startDisabled,
-      `${label} the ${sectionCount} replay rows and the start button are live (${doors.replay})`
+      //: One row per section; the whole-tour button is `#tour-start-btn`, in
+      //: the row above the list since INBOX 804, checked on its own below.
+      doors.replay === sectionCount && doors.replayDisabled === 0 && doors.start,
+      `${label} the ${sectionCount} section rows and Start the tour are live (${doors.replay}, start ${doors.start})`
     );
     check(doors.about && !doors.aboutDisabled, `${label} About's take-the-tour button is live`);
-    await page.evaluate(() => closeSettingsModal());
-    await page.waitForFunction(() => !settingsModalOpen(), null, { timeout: 8000 });
 
     // What the notebook holds before any tour runs: the tour may open a
     // board or a map, and must never make one (or anything else).
@@ -387,34 +351,35 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.evaluate(() => {
       localStorage.removeItem("onboardingDone");
       localStorage.removeItem("tourDone");
+      switchTab("dashboard");
     });
-    await goTab(page, "dashboard");
-    // showOnboarding, not openOnboarding: the latter now queues the welcome behind the first-run turns (firstRunTurn)
-    // and waits for a clear screen, so the sweep's next click waited on a card that had not been drawn.
-    await page.evaluate(() => showOnboarding());
-    await page.waitForSelector("#onboarding-next", { state: "visible" });
+    await page.waitForTimeout(700);
+    //: Not awaited: `openOnboarding` on a first run resolves when the welcome
+    //: closes (`firstRunTurn`), so returning it hung the sweep for good.
+    await page.evaluate(() => { openOnboarding(); });
+    await page.waitForTimeout(400);
     const slides = await page.evaluate(() => ONBOARDING_SLIDES.length);
     for (let slide = 0; slide < slides - 1; slide += 1) {
       await page.click("#onboarding-next");
-      await frames(page);
+      await page.waitForTimeout(250);
     }
     check(
       (await page.textContent("#onboarding-next")).trim() === "Start the tour",
       `${label} the welcome's last button says Start the tour`
     );
     await page.click("#onboarding-next");
-    await page.waitForFunction(() => !!openTour.inspect.run, null, { timeout: 8000 }).catch(() => {});
-    check(await page.evaluate(() => !!openTour.inspect.run), `${label} the welcome's last button starts the tour`);
+    await page.waitForTimeout(300);
+    check(await page.evaluate(() => !!openTour.inspect().run), `${label} the welcome's last button starts the tour`);
     // The welcome hands over to the basics, and the basics chain on through
     // every section to the end.
     const fromWelcome = await walk(page, `${label} welcome`, phone);
     await sectionReport(page, `${label} welcome`, fromWelcome);
 
-    lap("welcome walk done");
     // --- every section on its own, ending with Finish -------------------------
-    const sections = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
+    const sections = await page.evaluate(() => openTour.inspect().sections.map((s) => s.id));
     for (const section of sections) {
-      await goTab(page, "dashboard");
+      await page.evaluate(() => switchTab("dashboard"));
+      await page.waitForTimeout(300);
       await page.evaluate((id) => openTour(id), section);
       const one = await walk(page, `${label} ${section}`, phone, { oneSection: section !== sections[sections.length - 1] });
       if (one.length) {
@@ -422,7 +387,6 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       }
     }
 
-    lap("sections on their own done");
     // --- Next: <section> goes straight on; Back comes straight back ----------
     await page.evaluate(() => openTour("notes"));
     await settled(page);
@@ -449,16 +413,19 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       back.sectionId === "notes" && back.target === boundary.target,
       `${label} Back from Chat's first card returns to Notes' last (${back.section} ${back.counter})`
     );
-    await page.evaluate(() => openTour.inspect.close(false));
+    await page.evaluate(() => openTour.inspect().close(false));
 
     // --- the whole tour from Settings' Start the tour -------------------------
     if (process.env.FULL !== "0") {
-      await goTab(page, "reminders");
-      await openHelp(page);
-      await page.evaluate(() =>
-        document.getElementById("tour-start-btn").click()
-      );
-      await page.waitForFunction(() => !!openTour.inspect.run, null, { timeout: 8000 });
+      await page.evaluate(() => switchTab("reminders"));
+      await page.waitForTimeout(400);
+      await page.evaluate(() => openSettingsModal());
+      await page.waitForTimeout(500);
+      await page.evaluate(() => showSettingsSection("help"));
+      await page.waitForTimeout(300);
+      //: Start the tour is its own button above the section rows (`#tour-start-btn`), as the doors check reads it.
+      await page.evaluate(() => document.getElementById("tour-start-btn").click());
+      await page.waitForTimeout(300);
       const whole = await walk(page, `${label} start the tour`, phone);
       await sectionReport(page, `${label} start the tour`, whole);
       check(
@@ -471,7 +438,6 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       `${label} finishing is remembered (tourDone)`
     );
 
-    lap("start-the-tour walk done");
     // --- with an overlay open, the tour closes it first ----------------------
     for (const opener of ["openHelpChat()", "openPalette()", "openFeatures()", "openShortcuts()"]) {
       await page.evaluate((src) => new Function(src)(), opener);
@@ -479,21 +445,17 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       await page.evaluate(() => openTour("basics"));
       await settled(page);
       const m = await page.evaluate(STEP_PROBE);
-      //: A sheet is closed when it has left, and its exit animation is still running two frames after the
-      //: tour closed it (390, the Atlas guide: `sheet-leaving`). Waited for; one that never leaves still fails below.
-      const openDialogs = () =>
+      const open = await page.evaluate(() =>
         [...document.querySelectorAll('[role="dialog"][aria-modal="true"]')]
           .filter((el) => el.id !== "tour-card" && !el.classList.contains("hidden") && el.getClientRects().length)
-          .map((el) => el.id || el.className);
-      await page.waitForFunction(`(${openDialogs})().length === 0`, null, { timeout: 2000 }).catch(() => {});
-      const open = await page.evaluate(openDialogs);
+          .map((el) => el.id || el.className)
+      );
       judge(`${label} over ${opener}`, m, phone);
       check(open.length === 0, `${label} ${opener} was closed by the tour (${JSON.stringify(open)})`);
-      await page.evaluate(() => openTour.inspect.close(false));
+      await page.evaluate(() => openTour.inspect().close(false));
       await page.waitForTimeout(200);
     }
 
-    lap("overlays done");
     // --- a resize across the phone breakpoint, mid-step ----------------------
     if (!phone) {
       await page.evaluate(() => openTour("basics"));
@@ -513,7 +475,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       const wide = await page.evaluate(STEP_PROBE);
       check(wide.shownTarget === "#settings-btn" && !wide.alt, `${label} back at ${width} it points at the gear again`);
       check(wide.cardInside && wide.overlap === 0 && wide.spotCovers, `${label} back at ${width} the card and cut-out follow`);
-      await page.evaluate(() => openTour.inspect.close(false));
+      await page.evaluate(() => openTour.inspect().close(false));
     }
 
     // --- typing in the lit control is typing ---------------------------------
@@ -524,7 +486,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.keyboard.press("ArrowLeft");
     await page.keyboard.press("Enter");
     const typed = await page.evaluate(() => ({
-      index: openTour.inspect.run && openTour.inspect.run.index,
+      index: openTour.inspect().run && openTour.inspect().run.index,
       value: document.getElementById("entry-content").value,
     }));
     check(typed.index === 0 && typed.value === "a\nb", `${label} arrows and Enter in the lit box edit it (${JSON.stringify(typed)})`);
@@ -534,25 +496,26 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     });
     await page.keyboard.press("ArrowRight");
     await settled(page);
-    check(await page.evaluate(() => openTour.inspect.run && openTour.inspect.run.index === 1), `${label} ArrowRight on the card moves the tour on`);
+    check(await page.evaluate(() => openTour.inspect().run && openTour.inspect().run.index === 1), `${label} ArrowRight on the card moves the tour on`);
     await page.keyboard.press("Escape");
-    await closed(page);
-    check(await page.evaluate(() => !openTour.inspect.run), `${label} Escape ends the tour`);
+    await page.waitForTimeout(200);
+    check(await page.evaluate(() => !openTour.inspect().run), `${label} Escape ends the tour`);
 
     // --- Next twice while a tab loads ----------------------------------------
-    await goTab(page, "dashboard");
+    await page.evaluate(() => switchTab("dashboard"));
+    await page.waitForTimeout(300);
     await page.evaluate(() => openTour("notes"));
     await settled(page);
     await page.evaluate(() => {
-      openTour.inspect.next();
-      openTour.inspect.next();
+      openTour.inspect().next();
+      openTour.inspect().next();
     });
     await settled(page);
     await page.waitForTimeout(400);
     const twice = await page.evaluate(STEP_PROBE);
     check(twice.index === 2 && twice.counter === `3 of ${twice.sectionTotal}`, `${label} two quick Nexts land on step 3 once (${twice.counter})`);
     judge(`${label} after two quick Nexts`, twice, phone);
-    await page.evaluate(() => openTour.inspect.close(false));
+    await page.evaluate(() => openTour.inspect().close(false));
 
     // --- Back, Skip, the X, the Tab trap, focus handed back -------------------
     await page.evaluate(() => openTour("basics"));
@@ -571,13 +534,13 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await settled(page);
     await page.click("#tour-back");
     await settled(page);
-    check(await page.evaluate(() => openTour.inspect.run.index === 1), `${label} Back goes one step back`);
+    check(await page.evaluate(() => openTour.inspect().run.index === 1), `${label} Back goes one step back`);
     await page.click("#tour-skip");
-    await closed(page);
+    await page.waitForTimeout(200);
     check(
       await page.evaluate(
         () =>
-          !openTour.inspect.run &&
+          !openTour.inspect().run &&
           ["tour-card", "tour-spot", "tour-block"].every((id) => document.getElementById(id).classList.contains("hidden"))
       ),
       `${label} Skip closes the tour and its dim`
@@ -588,8 +551,8 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     });
     await settled(page);
     await page.click("#tour-close");
-    await closed(page);
-    const afterClose = await page.evaluate(() => ({ open: !!openTour.inspect.run, focus: document.activeElement?.id }));
+    await page.waitForTimeout(200);
+    const afterClose = await page.evaluate(() => ({ open: !!openTour.inspect().run, focus: document.activeElement?.id }));
     check(!afterClose.open && afterClose.focus === "space-switcher-btn", `${label} the X closes it and focus returns to the opener (${afterClose.focus})`);
 
     // --- a control hidden for good is left out before the count --------------
@@ -597,20 +560,21 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       const el = document.getElementById("space-switcher-btn");
       el.style.display = "none";
       openTour("basics");
-      const first = openTour.inspect.run.steps.filter((x) => x.sectionId === "basics").length;
+      const first = openTour.inspect().run.steps.filter((x) => x.sectionId === "basics").length;
       el.style.display = "";
       return first;
     });
     await settled(page);
-    await page.evaluate(() => openTour.inspect.close(false));
+    await page.evaluate(() => openTour.inspect().close(false));
     check(hidden === 3, `${label} a hidden chrome control is left out before the count (3, got ${hidden})`);
 
     // --- a notebook with no mind map: pointed at New mind map, nothing made --
     await page.evaluate(() => {
-      window.__tourNeedsMap = openTour.inspect.needs.map;
-      openTour.inspect.needs.map = () => false;
+      window.__tourNeedsMap = openTour.inspect().needs.map;
+      openTour.inspect().needs.map = () => false;
+      switchTab("dashboard");
     });
-    await goTab(page, "dashboard");
+    await page.waitForTimeout(300);
     await page.evaluate(() => openTour("maps"));
     await settled(page);
     const noMap = await page.evaluate(STEP_PROBE);
@@ -620,15 +584,15 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       `${label} with no map, Mind maps is one card on New mind map (${noMap.counter}, ${noMap.shownTarget}, ${noMap.wbFace})`
     );
     await page.evaluate(() => {
-      openTour.inspect.close(false);
-      openTour.inspect.needs.map = window.__tourNeedsMap;
+      openTour.inspect().close(false);
+      openTour.inspect().needs.map = window.__tourNeedsMap;
     });
     const after = await holdings();
     check(after === before, `${label} the tours made nothing (before ${before}, after ${after})`);
 
-    lap("no-map done");
     // --- the dim is on the page and not on the lit control -------------------
-    await goTab(page, "dashboard");
+    await page.evaluate(() => switchTab("dashboard"));
+    await page.waitForTimeout(500);
     const points = await page.evaluate(() => {
       const bar = document.getElementById("space-switcher-btn").getBoundingClientRect();
       return {
@@ -649,7 +613,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       points.dim[1] = cardBox.top > height / 2 ? Math.round(cardBox.top / 2) : Math.round((cardBox.bottom + height) / 2);
     }
     await page.screenshot({ path: dimmed });
-    await page.evaluate(() => openTour.inspect.close(false));
+    await page.evaluate(() => openTour.inspect().close(false));
     const pixel = (file, [x, y]) =>
       execFileSync("python3", [path.join(ROOT, "scratchpad/pngpixel.py"), file, String(Math.round(x * scale)), String(Math.round(y * scale))], {
         encoding: "utf-8",
@@ -666,23 +630,25 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     check(d1 <= d0 * 0.8, `${label} the page around it is dimmed (${d0} -> ${d1})`);
 
     // --- the replay strip plays one section, with Settings out of the way ----
-    await openHelp(page);
+    await page.evaluate(() => openSettingsModal());
+    await page.waitForTimeout(500);
+    await page.evaluate(() => showSettingsSection("help"));
+    await page.waitForTimeout(300);
     await page.evaluate(() =>
       [...document.querySelectorAll("#tour-replay-buttons button")].find((b) => b.querySelector(".tour-row-name")?.textContent === "Graph").click()
     );
-    await page.waitForFunction(() => !!openTour.inspect.run, null, { timeout: 8000 });
+    await page.waitForTimeout(300);
     await settled(page);
     const fromSettings = await page.evaluate(() => ({
-      open: !!openTour.inspect.run,
+      open: !!openTour.inspect().run,
       settingsOpen: !document.getElementById("settings-modal").classList.contains("hidden"),
       section: document.getElementById("tour-section").textContent,
     }));
     check(fromSettings.open && fromSettings.section === "Graph", `${label} a section button plays that section`);
     check(!fromSettings.settingsOpen, `${label} the settings modal is out of the way first`);
     judge(`${label} from Settings`, await page.evaluate(STEP_PROBE), phone);
-    await page.evaluate(() => openTour.inspect.close(false));
+    await page.evaluate(() => openTour.inspect().close(false));
 
-    lap("replay strip done");
     // --- the card's text as rendered ------------------------------------------
     await page.evaluate(() => openTour("basics"));
     await settled(page);
@@ -696,7 +662,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       }
       return out;
     });
-    await page.evaluate(() => openTour.inspect.close(false));
+    await page.evaluate(() => openTour.inspect().close(false));
     const ink = {};
     for (const [id, box] of Object.entries(inkBoxes)) {
       ink[id] = Number(

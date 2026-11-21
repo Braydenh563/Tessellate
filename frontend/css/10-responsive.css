@@ -145,6 +145,15 @@
   #tab-bar .tab-label {
     font-size: var(--text-xs);
   }
+  /* The header holds the 44px strip in every mode. Centred, the strip is
+     absolutely placed and adds no height, so the header stayed at its 44px
+     row and the 48px strip ran 2px past its top and bottom (measured at 1184:
+     strip -2 to 46 in a 44px header; the tour's ring on it left the window).
+     This is the height the strip gives the header when it is in the flow
+     (56px at 1000), so the two modes are one height. */
+  header#top-bar {
+    min-height: calc(max(2.75rem, 44px) + 4px + 2 * var(--header-pad-y) + 1px);
+  }
 }
 /* A count on a tab is a badge on its glyph, not a word beside it, wherever the
    strip is narrow enough to care (everything below 1100: band 2's icons, band

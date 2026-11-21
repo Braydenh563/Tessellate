@@ -3,7 +3,7 @@
 // for. Written for WORLD_CLASS_PLAN's "Audit, 2026-09-13 night" rows A1 and
 // A2 (per-tab module loading, and boot fetching more than it shows), and
 // kept because both rows are ratchets: the numbers here are the only way to
-// tell a lazily loaded module from a deleted one.
+// tell a lazy module from a deleted one.
 //
 //   BASE=http://127.0.0.1:8804 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     node scratchpad/ui-sweeps/boottime.js

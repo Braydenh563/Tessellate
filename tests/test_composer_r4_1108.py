@@ -1,5 +1,5 @@
 """Composer round 4, 2026-11-08: the rows of audits 1107 (D, E, R3) that were
-still open or partly open when the answers were re-asked on the head. Every
+unfixed or partly fixed when the answers were re-asked on the head. Every
 question runs through the digest then the composer, as the route does; no
 model, fixed clock (`_seed_r2_1107.TODAY`)."""
 

@@ -113,6 +113,25 @@
   width: 1px;
   background: var(--divider);
 }
+/* **An off-shoot** (L-world-class-176): a row that continues a loaded note
+   steps right by one --space-5 and an elbow runs from the spine to its mark,
+   so a thread reads as a branching line. The elbow starts on the spine's
+   centre and ends at the mark's left edge, both from the same calc. */
+.timeline-feed .timeline-row[data-branch="1"] {
+  margin-left: var(--space-5);
+}
+.timeline-feed .timeline-row[data-branch="1"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(var(--space-3) + 1px + (var(--timeline-mark) / 2) - 0.5px - var(--space-5));
+  width: calc(var(--space-5) + 0.5px - (var(--timeline-mark) / 2));
+  height: 50%;
+  border-left: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+  border-bottom-left-radius: var(--radius-sm);
+  pointer-events: none;
+}
 /* The row, in both views: one list-row step (`--row-h`, DESIGN.md's recipe
    index) and one thing to press. A table row wears this class too, because the
    keyboard, the tab order and "open in place" are the same behaviour in both
@@ -756,11 +775,14 @@
   color: var(--muted);
   font-size: var(--text-base);
 }
-/* Gravity/Spread under a tree layout, where they have nothing to act on.
+/* A Physics control under a layout it has nothing to act on (Link force and
+   the toggles under Tree, Radial and Arc; every slider under the rest).
    Dimmed rather than hidden: a control that vanishes reads as a bug, while
    one that is visibly unavailable teaches what it belongs to. The labels are
    dimmed with it: greying the slider alone leaves the words looking live. */
-.graph-physics.is-disabled {
+.graph-physics.is-disabled,
+.graph-physics.is-partial .graph-toggle-grid,
+.graph-physics .graph-option-row:has(> input:disabled) {
   opacity: 0.45;
 }
 .graph-physics.is-disabled label,

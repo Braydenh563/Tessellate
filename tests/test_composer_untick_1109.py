@@ -1,4 +1,4 @@
-"""Untick by chat, no model (composer-r6 E7): "untick X", "mark X not done" and
+"""Untick by chat, no model (composer-r6 E7): untick X, mark X undone and
 "undo that" after a tick reopen a ticked reminder or checklist line at once,
 with Undo. Fake transport throughout."""
 

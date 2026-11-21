@@ -133,7 +133,7 @@ function editorSurfaceFor(box) {
 //: Fetch the bundle that carries the surface adapters, once, and pick the
 //: interrupted work back up when it lands.
 //:
-//: `retry` is what makes a fast typist's first "/" open a menu: the
+//: `retry` is what makes a fast typist's first "/" open a menu all the same: the
 //: keystroke that found no adapter is replayed against the surface once there
 //: is one, so the menu opens a moment late rather than not at all. Without it
 //: the first "/" of a session would always be the one that did nothing, which
@@ -542,7 +542,7 @@ function editorApplyAction(textarea, action) {
       .map((line) => (line.startsWith(action.line) ? line : action.line + line))
       .join("\n");
     //: An empty line has nothing to select: the caret goes after the
-    //: marker, so the to-do command then typing writes the item (measured on a board
+    //: marker, so the to-do slash item then typing writes the item (measured on a board
     //: text box, 2026-10-10: the selected "- [ ] " was typed over).
     editorSplice(textarea, lineStart, Math.max(lineEnd, end), prefixed, {
       from: target.trim() ? 0 : prefixed.length,
@@ -1356,7 +1356,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left an unclosed `[[Atlas project line 183: remember to ...` in the note (audit 1029 N19).
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to ask again about Atlas pr]]` in the note (audit 1029 N19).
         .slice(0, 120),
     }))
     .filter((item) => item.value);
@@ -1882,7 +1882,7 @@ document.addEventListener(
       //: the bundle lands after the first focus: a "/" typed in that gap
       //: opened the menu on the textarea, and every key after the mount came
       //: from the engine and was ignored here (measured: Tab wrote two
-      //: spaces into the note with the menu showing). Same id, same box:
+      //: spaces into the note with the menu still showing). Same id, same box:
       //: the menu follows it.
       if (!surface || !editorMenuState.textarea || !surface.id || surface.id !== editorMenuState.textarea.id) return;
       editorMenuState.textarea = surface;

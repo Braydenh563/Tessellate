@@ -456,7 +456,6 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
-    "reminder-edit.js:(anonymous /reminders/${reminder.id}/outcome)": "send: appends one line to the note through update_entry, so the note's History keeps the text before it",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
@@ -746,6 +745,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard-history.js:build": "board: board snapshot list, the board's version history",
     "whiteboard-history.js:wbSnapshotRow": "board: board snapshot list, the board's version history",
     "whiteboard-map.js:wbMapSummariseBranch": "read: asks the model for a summary",
+    "whiteboard.js:wbExportBoardFolder": "job: a board export the person asked for, built on the server and saved as a download; it writes and deletes nothing",
     "whiteboard.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
     "whiteboard.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
     "whiteboard.js:wbPaintStickyDates": "read: reads dates out of sticky text",

@@ -291,14 +291,11 @@ FAULTS = {
         'status.textContent || "Couldn\'t install that version."': "the install step failed; the text is the step's own error",
         'wentAway ? "The app hasn\'t come back yet. Start it again by hand." : "The app didn\'t restart. Close and reopen it by hand."': "the restart did not happen or the app did not return; Try again restarts it",
     },
-    'reminder-edit.js': {
-        "`Couldn't change ${left.length} of ${list.length} overdue reminders.`": 'a bulk overdue change partly failed (it offers Try again for the rest)',
-    },
     'settings-health.js': {
         '"Couldn\'t save that setting."': 'saving a setting failed',
         '"Couldn\'t reset that setting."': 'resetting a setting failed',
     },
-    'shell-reminders.js': {
+    'reminder-triage.js': {
         '"Couldn\'t load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',

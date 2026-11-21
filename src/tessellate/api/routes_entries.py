@@ -73,6 +73,7 @@ from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
+from tessellate.entry import provenance
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
 from tessellate.repo import content as content_repo
@@ -111,7 +112,7 @@ def _to_out(
     documents: list | None = None,
     links: list | None = None,
     attachments: list | None = None,
-    recordings: dict | None = None,
+    transcribed: bool | None = None,
 ) -> EntryOut:
     # Decrypted here if private and the vault is open, every read of a
     # note's text goes through this one helper.
@@ -130,6 +131,12 @@ def _to_out(
     resolved_links = manager_links.links_for_entry(session, entry) if links is None else links
     resolved_attachments = (
         manager_purge.attachments_for(session, entry) if attachments is None else attachments
+    )
+    #: Where the note came from (`entry/provenance.py`); the audio check is one query unless a list pre-fetched it.
+    source_kind, source_label = provenance.source_kind(
+        getattr(entry, "source_url", None),
+        getattr(entry, "source_path", None),
+        bool(provenance.transcribed_ids(session, [entry.id])) if transcribed is None and entry.id else bool(transcribed),
     )
     return EntryOut(
         id=entry.id,
@@ -164,7 +171,8 @@ def _to_out(
         source_url=getattr(entry, "source_url", None),
         source_title=getattr(entry, "source_title", None),
         source_path=getattr(entry, "source_path", "") or "",
-        recording=(recordings_for(session, [entry.id]) if recordings is None else recordings).get(entry.id),
+        source_kind=source_kind,
+        source_label=source_label,
         is_board=bool(getattr(entry, "is_board", False)),
         board_kind=getattr(entry, "board_kind", None),
         map_topic=bool(getattr(entry, "map_topic", False)),
@@ -344,7 +352,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
     documents_by_id = manager.documents_for_entries_bulk(session, ids)
     links_by_id = manager.links_for_entries_bulk(session, ids)
     attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
-    recordings_by_id = recordings_for(session, ids)
+    heard = provenance.transcribed_ids(session, ids)
     return [
         _to_out(
             session,
@@ -354,27 +362,10 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
             documents=documents_by_id.get(e.id, []),
             links=links_by_id.get(e.id, []),
             attachments=attachments_by_id.get(e.id, []),
-            recordings=recordings_by_id,
+            transcribed=e.id in heard,
         )
         for e in entries
     ]
-
-
-def recordings_for(session: Session, ids: list[int]) -> dict:
-    """{note id: RecordingRefOut} for the notes that hold a recording's
-    transcript, one query for a page; the binned recordings are left out."""
-    from tessellate.api.schemas import RecordingRefOut
-    from tessellate.core.database import Recording
-
-    if not ids:
-        return {}
-    rows = (
-        session.query(Recording.entry_id, Recording.id, Recording.title)
-        .filter(Recording.entry_id.in_(ids), Recording.deleted_at.is_(None))
-        .order_by(Recording.id)
-        .all()
-    )
-    return {entry_id: RecordingRefOut(id=rid, title=title or "Recording") for entry_id, rid, title in rows}
 
 
 def _find_near_duplicate(session: Session, entry) -> SimilarOut | None:  # noqa: ANN001

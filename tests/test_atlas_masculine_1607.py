@@ -152,7 +152,7 @@ def test_his_happy_and_determined_read_from_calm():
 
 
 def test_his_confused_tilts_the_other_way_from_curious():
-    # 1607 d, the coordinator's follow-up: curious and confused were his
+    # 1607 d, the coordinator's second note: curious and confused were his
     # closest pair (11.7 to 11.9 at 40/72/120 px, mean grey difference on
     # busts), both heads tilted the same way (-10 and -8 degrees). His
     # confused tilts 9 the other way: 37.3, 32.6 to 34.4 and 58.5 to 62.1

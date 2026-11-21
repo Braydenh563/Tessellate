@@ -38,7 +38,9 @@ def test_connect_holds_links_and_places_and_add_holds_what_attaches():
 def test_a_private_note_still_gets_no_model_acts_but_keeps_the_group_for_what_stays_local():
     ai = _group("aiItems")
     assert "...(entry.is_private ? [] : [" in ai
-    assert "if (aiItems.length) menu.appendChild(buildMenuGroupButton(\"ph:sparkle AI actions\", aiItems))" in TEXT
+    # Decision 64 (L-world-class-129) renamed the group "Atlas": the intent, that a private
+    # note keeps the group only when something local is left in it, is unchanged.
+    assert "if (aiItems.length) {\n    menu.appendChild(buildMenuGroupButton(\"ph:sparkle Atlas\", aiItems));" in TEXT
 
 
 def test_a_source_card_does_not_say_the_title_twice():

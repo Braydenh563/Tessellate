@@ -51,10 +51,12 @@ def test_a_step_on_a_control_a_phone_hides_is_left_out_by_media_not_dropped_mid_
     """Source text: ui-modernisation 60. At 390 wide `#wb-add-note` is
     display:none (07-whiteboard-misc.css, max-width 599.98px), so the step
     was planned, counted 4, then dropped mid-run and the counter read 4/4/3.
-    The step names the breakpoint instead, as the map's Add a topic step does,
-    and its words use the button's own name, Sidebar."""
+    The step carries the phone's way in, View's sidebar switch, as `or` with
+    its own words (the base's fix, kept over a media rule that left the step
+    out on a phone), and its words use the button's own name, Sidebar."""
     block = _step_block("#wb-add-note")
-    assert 'media: "(min-width: 600px)"' in block
+    assert "or: '#wb-topbar [aria-controls=\"wb-view-menu\"]'" in block
+    assert "orText:" in block
     assert "Sidebar" in block and "Notes opens" not in block
 
 

@@ -286,6 +286,8 @@ def test_the_selection_bar_does_what_one_notes_menu_does():
     for name in ("batchFavourite", "batchArchive", "batchPublish"):
         assert f"function {name}(" in skills, name
     assert "pushUndo(label, undo, redo)" in _function(skills, "batchEach")
+    #: A refusal partway keeps the Undo for the notes already changed.
+    assert "done.push(id)" in _function(skills, "batchEach") and "could not be changed" in _function(skills, "batchEach")
     assert "fillBatchMore();" in _function(skills, "enterSelectMode")
     assert 'id="batch-more-host"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
