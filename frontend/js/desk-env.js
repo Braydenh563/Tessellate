@@ -7,6 +7,13 @@
 // (app.js, settings.js, settings-panes.js) and this page is never loaded with
 // them: the global-scope lints read every file as one scope.
 
+//: "When the page is ready", as lazy-entries.js has it. The drawing files wire through it (053abbe6, 43966f87); this
+//: page does not load that file, so avatars.js threw at its first call, never reached its exports and no figure was drawn.
+window.onDomReady = (fn) => {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+  else queueMicrotask(fn);
+};
+
 //: A script or stylesheet on demand, as app.js's `lazyScript` does it (the
 //: rig and tail files Atlas loads when a figure mounts).
 const deskFileLoads = new Map();
