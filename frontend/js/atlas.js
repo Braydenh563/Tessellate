@@ -3127,10 +3127,12 @@ function atlasDrawFigure(mood) {
   //: frame. The box (`.atl-lw-root`, the same 64 by 92 at the same place)
   //: runs the same keyframes on the compositor; the nebula's lean and pose
   //: turn move to it with its drift, so they compose in the order they did.
+  //: Whole class names, not a template, so the unused-CSS lint can find them.
+  const loopBoxClass = { front: "atl-lw-root-front", lower: "atl-lw-root-lower", neb: "atl-lw-root-neb", "neb-front": "atl-lw-root-neb-front" };
   const loopBox = (name, svg) => {
-    if (!["front", "lower", "neb", "neb-front"].includes(name)) return svg;
+    if (!Object.hasOwn(loopBoxClass, name)) return svg;
     const box = document.createElement("span");
-    box.className = `atl-lw-root atl-lw-root-${name}`;
+    box.className = `atl-lw-root ${loopBoxClass[name]}`;
     box.dataset.atlasLook = look;
     box.appendChild(svg);
     return box;
