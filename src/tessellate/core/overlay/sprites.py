@@ -86,9 +86,11 @@ SPUN_KEEP = 6
 #: The sat figure with its eyes shut (INBOX 1670, 16:40Z: a sit had no blink). Not a shipped file: derived at
 #: load from `sit` with closed lids drawn over its eyes, so the frame set and its byte budget do not move.
 #: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
-#: the sit is a few px off it, found by matching the box.
+#: the sit is a few px off it, found by matching the box. Re-registered on each desk re-render (L173 and L742, 2026-11-21:
+#: the old boxes matched on the new stand, eyes widened 10 px, at (0, 0) masculine (err 4.6) and (+2, +1) feminine
+#: (err 12.0); her standing family was captured twice, the first take under load having swung its tail).
 LID_FRAME = "sitblink"
-LID_EYES = {"masculine": (111, 109, 156, 125), "feminine": (111, 108, 156, 124)}
+LID_EYES = {"masculine": (111, 109, 156, 125), "feminine": (113, 109, 158, 125)}
 LID_REACH = 6
 LID_INK = (44, 42, 112)
 DERIVED_FRAMES = (*SPIN_FRAMES, LID_FRAME)

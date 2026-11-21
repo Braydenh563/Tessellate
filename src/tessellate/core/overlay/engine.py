@@ -2023,7 +2023,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Spe
         k = self._scale()
         frame = self._frame(now)
         x, y, _clip = self._display(frame)
-        left, top, right, bottom = self._box(frame, self.facing < 0)
+        a, b = self._box(frame, False), self._box(frame, True)  # both facings: a turn to leave (L173's trails) stays clear
+        left, top, right, bottom = min(a[0], b[0]), min(a[1], b[1]), max(a[2], b[2]), max(a[3], b[3])
         room = SPELL_ROOM * self.size[1] if self.state == "act" and extras.props.spec_of(self.act) is not None else 0.0
         keep = tv.padded(self.caret, tv.CARET_MARGIN * k + room)
         if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):

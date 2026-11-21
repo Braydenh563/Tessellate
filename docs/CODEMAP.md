@@ -26523,31 +26523,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:111 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:261 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:948 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:217 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:877 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:836 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:825 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:788 |
-| `_star` | src/tessellate/core/overlay/sprites.py:942 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:896 |
-| `capped_pose` | src/tessellate/core/overlay/sprites.py:145 |
-| `captured_root` | src/tessellate/core/overlay/sprites.py:182 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:206 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:126 |
-| `effect` | src/tessellate/core/overlay/sprites.py:1015 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:793 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:190 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:935 |
-| `graded` | src/tessellate/core/overlay/sprites.py:239 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:197 |
-| `mix` | src/tessellate/core/overlay/sprites.py:916 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:223 |
-| `squashed` | src/tessellate/core/overlay/sprites.py:992 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:872 |
-| `tapered` | src/tessellate/core/overlay/sprites.py:161 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:113 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:263 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:950 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:219 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:879 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:838 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:827 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:790 |
+| `_star` | src/tessellate/core/overlay/sprites.py:944 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:898 |
+| `capped_pose` | src/tessellate/core/overlay/sprites.py:147 |
+| `captured_root` | src/tessellate/core/overlay/sprites.py:184 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:208 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:128 |
+| `effect` | src/tessellate/core/overlay/sprites.py:1017 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:795 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:192 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:937 |
+| `graded` | src/tessellate/core/overlay/sprites.py:241 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:199 |
+| `mix` | src/tessellate/core/overlay/sprites.py:918 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:225 |
+| `squashed` | src/tessellate/core/overlay/sprites.py:994 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:874 |
+| `tapered` | src/tessellate/core/overlay/sprites.py:163 |
 
 ### src/tessellate/core/overlay/standing.py (1)
 
