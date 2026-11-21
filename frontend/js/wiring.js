@@ -879,7 +879,7 @@ $("status-task").addEventListener("click", () => window.openActivity?.("running"
 $("status-command").addEventListener("click", () => openPalette());
 $("status-agent")?.addEventListener("click", () => toggleAgentPalette());
 //: settings.js owns the Guide sheet and loads after this file, so the lookup
-//: is deferred to the click rather than taken now. The same shape the phone's
+//: waits for the click rather than running now. The same shape the phone's
 //: More sheet already uses for the same function.
 $("status-guide")?.addEventListener("click", () => {
   toggleHelpChat();
@@ -1436,7 +1436,7 @@ onSurface("reminders", () => {
   });
   $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
   $("reminders-new")?.addEventListener("click", openReminderCompose);
-  $("reminder-clear-done").addEventListener("click", clearDoneReminders);
+  $("reminder-clear-done").addEventListener("click", () => loadReminders.act("clear"));
   $("reminders-page-size").value = remindersPageSize;
   $("reminders-page-size").addEventListener("change", (e) => {
     remindersPageSize = e.target.value;

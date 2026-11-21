@@ -83,7 +83,7 @@ def test_a_composed_answer_ends_with_a_next_step_from_recent_work(client, sessio
     #: The next step names a note the answer used, never the newest note when
     #: that is about something else (composer5, item 1).
     assert "Harbor launch plan" not in text
-    #: The next step is the follow-up chips (INBOX 1466), not a last line.
+    #: The next step is the next-step chips (INBOX 1466), not a last line.
     assert any("Dentist" in chip for chip in out["grounding"][0]["next"])
     assert "Next, I can" not in text
 

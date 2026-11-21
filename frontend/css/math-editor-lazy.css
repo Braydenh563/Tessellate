@@ -73,6 +73,10 @@
 
 .math-editor-grid {
   grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
+  /* Over a hundred drawn tiles: the groups below the fold are not laid out until they come near (first layout of the
+     pane 330ms at 4x). The heads stay outside, so the jump row's measuring and a jump still land. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 0 auto 9rem;
 }
 
 /* Structures draw a whole formula, so each tile is as wide as its formula (INBOX 1579: a fixed 4.5rem column clipped the
