@@ -1895,7 +1895,8 @@ function buildSettingsJumpList() {
   (count || search || nav.firstElementChild)?.after(select);
 }
 
-buildSettingsJumpList();
+//: Settings' nav is built on the window's first open (settings.js): the list goes in then.
+onSurface("settingsShell", buildSettingsJumpList);
 
 // --- the floating primary action ----------------------------------------------
 // UI_MODERNISATION_PLAN.md Phase 9, band 4.

@@ -34,7 +34,9 @@ const SURFACES = Object.assign(new Map(), {
   register(root, parent) {
     for (const tpl of root.querySelectorAll?.("script[data-surface], template[data-surface]") ?? []) {
       const name = tpl.dataset.surface;
-      const entry = SURFACES.get(name) ?? { after: [], parent, done: false };
+      //: `data-in`: a surface kept outside its parent's text (a script cannot hold a script) and moved
+      //: into the parent's `<template data-surface-slot>` when the parent is built (Settings' body).
+      const entry = SURFACES.get(name) ?? { after: [], parent: parent ?? tpl.dataset.in, done: false };
       entry.tpl = tpl;
       SURFACES.set(name, entry);
       for (const nested of (tpl.dataset.nests ?? "").split(" ")) {
@@ -169,6 +171,7 @@ function surfaceBuild(name) {
   entry.tpl = entry.frag = null;
   const host = tpl.parentNode;
   tpl.replaceWith(frag);
+  for (const slot of host.querySelectorAll?.("template[data-surface-slot]") ?? []) slot.replaceWith(SURFACES.get(slot.dataset.surfaceSlot).tpl);
   // The sweeps the page ran over every element at boot, now over the ones that
   // just arrived: help popovers, closed dock-menu lists, tooltip chords.
   window.initHelpToggles?.(host);

@@ -115,6 +115,12 @@ SURFACES = {
         ("setAgentMonitorVisible",),
         ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-more", "activity-list"),
     ),
+    "settingsShell": (
+        "settings-modal",
+        ("<boot>",),
+        ("openSettingsModal",),
+        ("settings-close", "settings-search", "settings-nav", "settings-results", "settings-nav-back", "settings-peek", "settings-guide-btn"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -250,7 +256,7 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
     """A load-time block (and the top-level functions it calls) may not name an id, or select a class,
     that exists only in the surface's template: the selector finds nothing and the wiring is silently
     dropped (row 21 review: the board's More menu and colour wells)."""
-    _, globs, _, _ = SURFACES[name]
+    _, globs, openers, _ = SURFACES[name]
     _, body = _template(name)
     ids = _ids(body)
     classes = _template_only_classes(name)
@@ -263,7 +269,10 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
                 continue
             if (path.name, name) in INSIDE_FUNCTIONS:
                 continue
-            reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
+            # An opener builds the surface before it reads it (held by the test above), so a handler
+            # that calls one does not reach the unbuilt template through it.
+            called = set(re.findall(r"\b(\w+)\(", block)) - set(openers)
+            reached = block + "".join(functions.get(f, "") for f in called)
             if head.startswith("onSurface("):
                 # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
                 # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.

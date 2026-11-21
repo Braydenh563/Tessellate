@@ -10230,6 +10230,9 @@ Link to another note with [[its first few words]]."></textarea>
   <!-- ======================= SETTINGS MODAL ================================ -->
   <div id="settings-modal" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Settings">
+  <!-- The window's head and nav are a surface too (L-world-class-530), built on the first open; its
+       body, after it, is moved into the slot in `.modal-content` when it is (a script cannot hold a script). -->
+  <script type="text/x-surface" data-surface="settingsShell">
     <div class="card modal-card">
       <!-- The dialog head every popup wears (DESIGN.md, "A dialog's head";
            INBOX 479): its utilities were 28px beside a 32px Close. -->
@@ -10371,16 +10374,21 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </nav>
         <div class="modal-content" tabindex="-1">
-          <!-- The folder sheet's passphrase field lives here, outside the lazy Settings body (the palette
-               opens the sheet before Settings is built): every password field is declared in this file
+          <template data-surface-slot="settings"></template>
+        </div>
+      </div>
+    </div>
+  </script>
+          <!-- The folder sheet's passphrase field lives here, outside the lazy Settings shell and body (the
+               palette opens the sheet before Settings is built): every password field is declared in this file
                (tests/test_lock_boundary.py). -->
           <template id="sync-folder-passphrase">
             <input type="password" autocomplete="off" placeholder="The same on every computer" aria-label="Sync passphrase">
           </template>
-          <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
+          <!-- Built on the first open, or the first lookup of one of its ids (`surfaceBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
           <script type="text/x-surface" id="settings-body-template" data-surface="settings"
-            data-nests="settings-models settings-searchindex settings-personas settings-skills settings-templates settings-memory settings-learned settings-tools settings-appearance settings-extras settings-shortcuts settings-preferences settings-general settings-websearch settings-tasks settings-data settings-account settings-privacy settings-logs settings-help settings-about">
+            data-nests="settings-models settings-searchindex settings-personas settings-skills settings-templates settings-memory settings-learned settings-tools settings-appearance settings-extras settings-shortcuts settings-preferences settings-general settings-websearch settings-tasks settings-data settings-account settings-privacy settings-logs settings-help settings-about" data-in="settingsShell">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -15980,9 +15988,6 @@ Link to another note with [[its first few words]]."></textarea>
           </section>
 
           </script>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- **Find, everywhere.** Asked for directly: "add a ctrl+f or equivalent
