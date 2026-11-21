@@ -660,14 +660,16 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "health", "is my notebook ok", "integrity", "integrity check", "corrupt",
             "corruption", "last backup", "last error", "data folder size", "how big",
-            "is it healthy", "check the database",
+            "is it healthy", "check the database", "speed", "slow", "how fast", "speed budget",
         ),
         "body": (
             "Settings, About, Health says how the notebook is, each line dated: "
             "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), what "
             "is running now, the last error in the log, and Integrity, whose "
             "Check now has the database check itself and counts the search index "
-            "beside your notes. The palette's Health goes straight there. The "
+            "beside your notes. Speed's Check now times this notebook's searches, "
+            "lists, boards and documents against the limits the app is held to, "
+            "with this page's first paint. The palette's Health goes straight there. The "
             "app also gives the notebook file a quick check each time it starts, "
             "and if that fails it says so and points to the newest backup in "
             "Settings, Import & export."

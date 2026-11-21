@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8542, frontend ids 2804, CSS sections 527, backend routes 730, backend modules 11175, test files 2902, tests 22908, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8542, frontend ids 2804, CSS sections 527, backend routes 730, backend modules 11175, test files 2903, tests 22912, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8542)
 
@@ -7621,7 +7621,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `renderHealthBlock` | frontend/js/settings-health.js:4 |
-| `renderSamplingRows` | frontend/js/settings-health.js:233 |
+| `renderSamplingRows` | frontend/js/settings-health.js:285 |
 
 ### frontend/js/settings-models.js (34)
 
@@ -18190,8 +18190,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2609 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2762 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2611 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2764 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -28548,7 +28548,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22908)
+## Tests (22912)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29921,6 +29921,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_headings_1029b.py | 2 |
 | tests/test_health_dir_cache.py | 3 |
 | tests/test_health_page.py | 3 |
+| tests/test_health_speed_budgets_603.py | 4 |
 | tests/test_heatmap_end_1578.py | 2 |
 | tests/test_hello_ui.py | 6 |
 | tests/test_hello_unlock.py | 28 |

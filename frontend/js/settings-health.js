@@ -181,6 +181,58 @@
       list.classList.toggle("hidden", !missing.count);
     }
     paintSelfCheck(trust.self_check);
+    //: The speed budgets (WORLD_CLASS_PLAN decision 54, L603): the times the
+    //: app is held to, beside this notebook's own. The server half is timed
+    //: live over loopback by `/models/bench/budgets?live=true`; the browser
+    //: half the page can read without a test is its own first paint. Built
+    //: here, not in index.html, for the same element cap as the row above.
+    function speedRow() {
+      if ($("health-speed-run")) return;
+      const after = $("health-selfcheck-run")?.closest(".setting-row");
+      if (!after) return;
+      const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+      const row = make("div", { className: "setting-row setting-row-stack" });
+      const label = make("div", { className: "setting-label" });
+      label.append(make("span", { textContent: "Speed" }), make("small", { className: "muted", textContent: "This notebook against the times the app is held to." }));
+      const control = make("span", { className: "setting-control row" });
+      control.append(
+        make("button", { type: "button", id: "health-speed-run", className: "ghost small", textContent: "Check now" }),
+        make("span", { id: "health-speed", className: "muted", textContent: "Not checked yet" }),
+      );
+      row.append(label, control, make("ul", { id: "health-speed-list", className: "muted health-missing hidden" }));
+      after.after(row);
+      const run = $("health-speed-run");
+      run.onclick = async () => {
+        const line = $("health-speed");
+        const list = $("health-speed-list");
+        setLabel(run, "ph:spin Checking");
+        try {
+          const { budgets = [] } = await apiJson("/models/bench/budgets?live=true");
+          const items = [];
+          const over = [];
+          const paint = performance.getEntriesByName("first-contentful-paint")[0];
+          const first = budgets.find((budget) => budget.key === "first_paint");
+          if (paint && first) {
+            const ms = Math.round(paint.startTime);
+            if (ms > first.cap_ms) over.push(first.label);
+            items.push(`${first.label}: ${ms} ms on this page, held to ${first.cap_ms} ms${ms > first.cap_ms ? ", over" : ""}`);
+          }
+          for (const budget of budgets) {
+            if (budget.live_ms == null) continue;
+            if (!budget.live_within) over.push(`${budget.label}, server part`);
+            items.push(`${budget.label}, server part: ${budget.live_ms} ms, held to ${budget.server_cap_ms} ms${budget.live_within ? "" : ", over"}`);
+          }
+          list.replaceChildren(...items.map((text) => make("li", { textContent: text })));
+          list.classList.toggle("hidden", !items.length);
+          line.textContent = over.length ? `Over the limit: ${over.join("; ")}.` : "Everything is inside its limit.";
+        } catch (e) {
+          line.textContent = "Not checked";
+          toast(`The speed check could not run: ${e.message}`, true, { action: ["Try again", () => run.click()] });
+        }
+        setLabel(run, "Check now");
+      };
+    }
+    speedRow();
     const run = $("health-selfcheck-run");
     if (run) {
       run.onclick = async () => {
