@@ -105,6 +105,7 @@ TOPIC_LEADS: dict[str, str] = {
     "memory": "Review and forget the facts and preferences Atlas has picked up from you.",
     "learned": "See what Atlas worked out by itself from reading your notes.",
     "open-questions": "Find the questions your notes asked in passing and mark them answered or dropped.",
+    "goals-lists": "Track each goal or list as a card with its items and a bar for how far along it is.",
     # Documents and code
     "documents": "Write longer pieces and code in a full editor that renders as you type.",
     "documents-controls": "Format, find and move text in a document with keys, without reaching for the toolbar.",
