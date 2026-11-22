@@ -1,12 +1,12 @@
 // The Map of meaning reads as a map (owner, 2026-11-22), at 1440 and 1920, with 33 and then 500 notes.
 //   BASE=http://127.0.0.1:8879 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/graph-meaning-map.js
-// Seeds three topics (cooking, cycling, tax) from _meaning_notes.json, a few [[links]], then more of the
+// Seeds three topics (cooking, cycling, tax) from tests/fixtures/meaning_notes.json, a few [[links]], then more of the
 // same topics up to 500 (1440 measures 33 then 500 notes; 1920 the 500 already seeded). Prints, per size: the mean drawn distance between same-topic pairs over
 // different-topic pairs (ratio), cluster names, dot labels, overlaps (name plate vs dot label, plate
 // vs plate), the faint lines drawn, the last frame's ms, and console errors. PASS needs ratio < 0.7.
 const { boot } = require('./lib.js');
 const fs = require('fs');
-const NOTES = JSON.parse(fs.readFileSync(`${__dirname}/_meaning_notes.json`, 'utf8'));
+const NOTES = JSON.parse(fs.readFileSync(`${__dirname}/../../tests/fixtures/meaning_notes.json`, 'utf8'));
 let failed = 0;
 const say = (ok, name, detail) => { if (!ok) failed += 1; console.log(`${ok ? 'PASS' : 'FAIL'} ${name}: ${detail}`); };
 

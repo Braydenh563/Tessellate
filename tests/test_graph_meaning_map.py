@@ -14,7 +14,7 @@ import numpy as np
 from tessellate.api import meaning_map, routes_graph_projection as proj
 
 ROOT = Path(__file__).resolve().parents[1]
-NOTES = json.loads((ROOT / "scratchpad" / "ui-sweeps" / "_meaning_notes.json").read_text())
+NOTES = json.loads((ROOT / "tests" / "fixtures" / "meaning_notes.json").read_text())
 
 
 def _fixture():
