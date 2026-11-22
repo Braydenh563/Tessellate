@@ -1,4 +1,6 @@
-"""Each Settings page's "On this page" list folds away (the owner: "I cant
+"""Source text: the fold is markup and CSS rules whose behaviour needs a browser; the sweep below drives it.
+
+Each Settings page's "On this page" list folds away (the owner: "I cant
 collapse the sections below each settings page in the settings sidebar").
 
 The list under the open page's link could only shrink to the link being read
