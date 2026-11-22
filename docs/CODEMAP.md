@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9049, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11071, test files 2899, tests 23209, plan headings 695, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9050, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11071, test files 2899, tests 23209, plan headings 695, app scripts 29, boot scripts 38, script files 402.
 
-## Frontend functions (9049)
+## Frontend functions (9050)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7509,17 +7509,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listenToReminderWorker` | frontend/js/reminder-notify.js:26 |
 | `showReminderNotification` | frontend/js/reminder-notify.js:36 |
 
-### frontend/js/reminder-triage.js (8)
+### frontend/js/reminder-triage.js (9)
 
 | Name | File:line |
 |---|---|
 | `binReminder` | frontend/js/reminder-triage.js:61 |
-| `clearDoneReminders` | frontend/js/reminder-triage.js:219 |
+| `clearDoneReminders` | frontend/js/reminder-triage.js:225 |
 | `dayValue` | frontend/js/reminder-triage.js:50 |
-| `openReminderTriage` | frontend/js/reminder-triage.js:64 |
+| `openReminderTriage` | frontend/js/reminder-triage.js:78 |
 | `putReminder` | frontend/js/reminder-triage.js:59 |
 | `reminderOutcomePrompt` | frontend/js/reminder-triage.js:10 |
 | `triageDueFor` | frontend/js/reminder-triage.js:53 |
+| `triageRowText` | frontend/js/reminder-triage.js:65 |
 | `unbinReminder` | frontend/js/reminder-triage.js:62 |
 
 ### frontend/js/reply-kit.js (42)

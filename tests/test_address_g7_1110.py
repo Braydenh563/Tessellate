@@ -94,9 +94,9 @@ def test_dashboard_name_is_decided_by_the_server():
 def test_the_greeting_route_sends_the_flag(client, monkeypatch):
     # A fixed clock and a fresh day: the first of the day and the one-in-three both read the date,
     # and an earlier test on the real day left `_LAST` holding it (failed on Dependabot's PRs).
-    from tessellate.api import routes_insights
+    from tests._clock import pin_clock
 
-    monkeypatch.setattr(routes_insights, "user_now", lambda config=None: datetime(2026, 3, 2, 9, 0))
+    pin_clock(monkeypatch, datetime(2026, 3, 2, 9, 0))
     monkeypatch.setitem(address._LAST, "day", None)
     monkeypatch.setitem(address._LAST, "named", False)
     _name("Alex")

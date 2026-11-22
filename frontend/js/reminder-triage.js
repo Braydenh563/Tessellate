@@ -61,6 +61,20 @@
   const binReminder = (id) => apiJson(`/reminders/${id}`, { method: "DELETE" });
   const unbinReminder = (id) => apiJson(`/reminders/${id}/restore`, { method: "POST" });
 
+  //: A row's name and due time: no state of the sheet, so it lives outside `openReminderTriage`.
+  function triageRowText(reminder) {
+    const text = document.createElement("div");
+    text.className = "triage-text";
+    const name = document.createElement("span");
+    name.className = "triage-name";
+    name.textContent = reminder.text;
+    const when = document.createElement("span");
+    when.className = "muted triage-when";
+    when.textContent = `Due ${relativeWhen(reminder.due_at)}`;
+    text.append(name, when);
+    return text;
+  }
+
   async function openReminderTriage(reminders) {
     lazyScript("/css/triage-lazy.css");
     const rows = (reminders || []).filter((r) => !r.done);
@@ -130,15 +144,7 @@
       const li = document.createElement("li");
       li.className = "triage-row";
       li.dataset.id = reminder.id;
-      const text = document.createElement("div");
-      text.className = "triage-text";
-      const name = document.createElement("span");
-      name.className = "triage-name";
-      name.textContent = reminder.text;
-      const when = document.createElement("span");
-      when.className = "muted triage-when";
-      when.textContent = `Due ${relativeWhen(reminder.due_at)}`;
-      text.append(name, when);
+      const text = triageRowText(reminder);
       const acts = document.createElement("span");
       acts.className = "row triage-acts";
       const keep = smallButton("Still matters", "Keep this reminder as it is", () => {
