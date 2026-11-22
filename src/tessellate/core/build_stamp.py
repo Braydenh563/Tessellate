@@ -7,12 +7,13 @@ from __future__ import annotations
 
 import os
 import re
-from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
 
+from tessellate.core import clock
+
 #: When this process started serving, UTC, to the second.
-STARTED_AT = datetime.now(timezone.utc).isoformat(timespec="seconds")
+STARTED_AT = clock.utc().isoformat(timespec="seconds")
 _ROOT = Path(__file__).resolve().parents[3]
 _SHA = re.compile(r"^[0-9a-f]{40}$")
 

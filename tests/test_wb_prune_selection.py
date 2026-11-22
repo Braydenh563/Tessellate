@@ -46,4 +46,9 @@ def test_a_valid_selection_is_left_alone_and_costs_no_repaint():
 
 def test_every_render_prunes_first():
     start = WB.index("function renderWhiteboard() {")
-    assert WB[start : start + 80].split("\n")[1].strip() == "wbPruneSelection();"
+    body = WB[start : start + 600].split("\n")[1:]
+    code = [line.strip() for line in body if line.strip() and not line.strip().startswith("//")]
+    #: Only a dragged map branch's layer is undone before it (fa3279628): the render
+    #: places every topic again, so the layer comes off before anything else runs.
+    assert code[0] == "if (wbMapDragLayer.live) wbMapDragLayer.close();"
+    assert code[1] == "wbPruneSelection();"
