@@ -386,7 +386,10 @@ def test_every_note_the_page_creates_is_filed_in_the_background():
 def test_the_new_note_box_has_live_source_read_with_live_by_default():
     """L-documents-53: the capture strip's three-way switch; Read is not remembered; the edit box keeps Source only."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    seg = html[html.index('id="entry-view-seg"') : html.index('id="entry-content"')]
+    # The capture text now sits above the bar (L-ui-modernisation-39), so the switch
+    # is read up to its own closing tag rather than up to the textarea.
+    start = html.index('id="entry-view-seg"')
+    seg = html[start : html.index("</div>", start)]
     assert [seg.count(f'data-note-view="{v}"') for v in ("live", "source", "read")] == [1, 1, 1]
     assert 'data-note-view="live" aria-label="Live" aria-pressed="true"' in seg, "Live is the default"
     assert 'id="entry-read"' in html

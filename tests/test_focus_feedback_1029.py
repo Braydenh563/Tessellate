@@ -55,8 +55,10 @@ def test_every_way_out_of_link_mode_goes_through_the_one_cancel():
     begin = _body(panels, "function beginOrCompleteLink(")
     assert begin.count("linkCancel()") >= 2
     wiring = frontend_text("settings-wiring.js")
-    assert 'e.key === "Escape" && linkSource !== null' in wiring
-    esc = wiring[wiring.index('e.key === "Escape" && linkSource !== null'):][:120]
+    # The keydown arrow's size split (b1f829d5) folded the two Escape lines into one
+    # block; the check is the same: Escape with a link source cancels through linkCancel.
+    at = wiring.index('if (e.key === "Escape") { closeActionMenus(); if (linkSource !== null)')
+    esc = wiring[at:][:120]
     assert "linkCancel()" in esc and "linkSource = null" not in esc
 
 
