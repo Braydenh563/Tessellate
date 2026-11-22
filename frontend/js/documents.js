@@ -8800,6 +8800,12 @@ const NOTE_SURFACES = {
 //: element -> view. Weak, because the edit form's textarea is thrown away and
 //: rebuilt on every edit and a strong map would hold every one of them.
 const noteSurfaceViews = new WeakMap();
+//: `.live`: the views still alive, which a WeakMap cannot list. CodeMirror hangs
+//: `resize`, `scroll` and `selectionchange` listeners on `window` and `document`
+//: until `destroy()`, so a view whose box was thrown away stays reachable from
+//: there with its whole editor: 362 nodes and 104 listeners per note opened
+//: (L-world-class-24). A property, not a new global (the scope ratchet's cap).
+noteSurfaceViews.live = new Set();
 let noteSurfaceMirroring = false;
 
 //: The surface for a note editor, given its textarea or any node inside its
@@ -9332,7 +9338,18 @@ async function mountNoteSurface(host, options = {}) {
     selection: { anchor: from, head: to },
     extensions: noteSurfaceExtensions(CM, host, settings),
   });
+  //: Views whose editor left the page are destroyed first (see `noteSurfaceViews.live`).
+  for (const gone of noteSurfaceViews.live) {
+    if (gone.dom.isConnected) continue;
+    noteSurfaceViews.live.delete(gone);
+    try {
+      gone.destroy();
+    } catch (error) {
+      //: A view that cannot be torn down is no worse off than before.
+    }
+  }
   const view = new CM.view.EditorView({ state, parent: wrap });
+  noteSurfaceViews.live.add(view);
   //: The same guard the document's own host carries: the app binds single
   //: characters as global shortcuts ("/" focuses search), and a
   //: contenteditable is not a textarea, so nothing else stops them. Measured

@@ -23,11 +23,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Qu
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+from tessellate.api import bounds
 from tessellate.core import activity, deps, jobruns
 from tessellate.core.deps import get_session
 from tessellate.entry import app_import, export_folder, import_report, manager
 
-router = APIRouter(tags=["import"])
+router = APIRouter(tags=["import"], route_class=bounds.FolderUploadRoute)
 
 #: Files in one request: a vault picked as a folder is many files.
 MAX_FILES = 5000
