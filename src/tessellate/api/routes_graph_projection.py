@@ -86,15 +86,12 @@ def build(session: Session, backend: str, limit: int) -> dict:
     """The picture: points, the faint ties between near notes, the named
     clusters, and what placed them (`model`, or the notes' `words` when no
     embedding model has made a vector yet)."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import Entry
     from tessellate.repo import graph_layers
 
     vectors = routes_graph._note_vectors(session, backend)
     source = "model"
     wanted = graph_layers.vector_note_ids(session)
-    texts = dict(session.execute(select(Entry.id, Entry.content).where(Entry.id.in_(wanted))).all()) if wanted else {}
+    texts = graph_layers.texts_of(session, wanted) if wanted else {}
     if not vectors:
         source = "words"
         vectors = meaning_map.word_vectors(dict(sorted(texts.items())[:MAX_PROJECTED * 2]))

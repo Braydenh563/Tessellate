@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Graph routes hold no raw queries: the 32 in the graph routes (and the projection's one) moved into the graph layers repository, and the route-queries ratchet fell from 35 to 0 and the ORM-call ratchet from 330 to 284.
 - Graph help panel back under its 1000-character budget: the hover card's switches and the layouts' descriptions moved behind Options' own help.
 - Graph Trace panel: a route step is a chip, an arrow in the muted ink (3.5:1 light, 10:1 dark; 1.2:1 and a 10% hairline before) and the next chip, the reason on its tooltip and for screen readers; Generate from path rests as the secondary button (ink on the quiet fill, not white on pale glass) with 6.4px gaps around its words and a 12px chevron that turns open and stays still under reduced motion.
 - Suggest links: the note icon in each option row takes the label grammar's `ph-lead`, so it lands on the title's cap-height centre in any UI font (0.63 px off in Segoe UI's metrics before, 0.03 px after).
