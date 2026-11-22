@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 62 | 2 | 59 | 432 |
-| whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
+| whiteboard | 0 | 1 | 1 | 0 | 0 | 2 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 0 | 0 | 0 | 0 | 0 | 0 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 1 | 0 | 0 | 1 | 1 |
-| all | 306 | 372 | 121 | 2 | 132 | 799 |
+| all | 306 | 373 | 121 | 2 | 132 | 800 |
 
 ## graph
 
@@ -282,6 +282,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 - [ ] **L-whiteboard-78** `whiteboard` partly, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only Progress 2026-11-22: the ratchet is built (tests/test_js_function_size.py, 146 bodies seeded over 150 lines). Left: the five closures, split so every new piece is under 150 lines (about 40 carves; tool: scratchpad carve2/extract.js with SRC and HOST).
+- [ ] **L-whiteboard-79** `whiteboard` open, M: First zoom after the atlas-lazy sheet lands mid-session restyles the whole document (57 @property rules register late); register them at boot or scope them. From PR 224 map 500 profile, 2026-11-22. Evidence: invalidationTracking trace: 77 PropertyRegistration invalidations on the root, 250 to 333ms restyle at 4x
 
 ## documents
 
