@@ -6,7 +6,10 @@ one way: this file reads `tool_read`'s preview width, never the other way round.
 
 from __future__ import annotations
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
+from tessellate.core import mcp_scope
+from tessellate.core.database import Entry
 from tessellate.ai.tools._common import ToolError, _clip, _readable, _require_note
 from tessellate.ai.tools.tool_read import GRAPH_PREVIEW_CHARS
 from tessellate.entry import manager, paths
@@ -32,7 +35,9 @@ def _path_between(session: Session, args: dict) -> dict:
     """
     source = _require_note(session, args, "note_id")
     target = _require_note(session, args, "other_note_id")
-    index = paths.build(session, include_private=False)
+    scoped = mcp_scope.current.get()
+    #: A scoped token's graph holds only its own notes, so no route runs through one outside it.
+    index = paths.build(session, include_private=False) if scoped is None else paths.build(session, entries=[e for e in session.scalars(select(Entry).where(Entry.id.in_(scoped)))])
 
     if source.id == target.id:
         raise ToolError("Those are the same note, pick two different ones.")

@@ -1,6 +1,6 @@
 import re
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
@@ -82,6 +82,29 @@ def space_counts(space_id: str, session: Session = Depends(get_session)):
     """What deleting this space would take with it, for the confirm dialog."""
     deps.get_or_404(session, Space, space_id, "That space could not be found.")
     return space_repo.counts(session, space_id)
+
+
+@router.get("/spaces/{space_id}/summary")
+def space_summary(space_id: str, session: Session = Depends(get_session)):
+    """What the space holds now (notes, documents, boards; the bin not counted), for the dashboard's line."""
+    deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    return space_repo.shown(session, space_id)
+
+
+@router.get("/spaces/{space_id}/export")
+def export_space(space_id: str, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
+    """One space as a notebook folder zip (L-world-class-22): its notes,
+    documents and boards and nothing from any other space, the same files
+    as Settings' folder export. A locked private space is refused (its notes
+    cannot be read); an open one leaves readable, as every export does."""
+    from tessellate.api.routes_import import folder_zip
+
+    space = deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    if space.id in (session.info.get("sealed_workspaces") or ()):
+        raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+    name = paths.slug(space.name, 40, ascii_only=True, fallback="space")
+    with impersonate_workspace(session, space.id):
+        return folder_zip(session, background_tasks, f"tessellate-{name}.zip", f"folder, space {space.id}")
 
 
 @router.post("/spaces", response_model=SpaceResponse)
@@ -340,8 +363,8 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
     its category's *name*: categories are per space, so the target's category
     of that name is used, made when it has none. What hangs off the note in
     its old space comes with it (its files, its reminders, its fade score),
-    and so do links whose both ends moved; a link to a note left behind stays
-    where it was, as a space's delete leaves one. `from` is each note's old
+    and so do links whose both ends moved; a link to a note left behind is kept
+    and shows on both notes, its chip naming the other space. `from` is each note's old
     space, which is what an Undo sends back.
     """
     from tessellate.entry import moving

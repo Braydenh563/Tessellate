@@ -92,3 +92,15 @@ def test_the_board_shape_tool_opens_from_the_keyboard() -> None:
         "Escape in the shapes must close them itself: wireMenuKeyboard closes "
         "action menus only, and it stops the key"
     )
+
+
+def test_a_submenu_row_is_walked_past_not_opened() -> None:
+    """L-world-class-107: the delegated walker took "Atlas ›" (a menuitem with
+    `aria-haspopup="menu"`) for a closed menu button, opened its flyout and
+    put the focus back on it after `wireMenuKeyboard` had moved to the next
+    row, so the first ArrowDown in every note's ⋯ menu did nothing (menus.js,
+    26 findings at 1440 and 1024)."""
+    assert ":not([role='menuitem'])\")" in APP, (
+        "a submenu row is an opener to the delegated walker again: the first "
+        "ArrowDown on it opens the flyout and the focus stays put"
+    )

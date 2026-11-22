@@ -73,7 +73,10 @@ def test_the_mermaid_draw_gives_the_loop_a_turn_between_its_steps():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    draw = _body((root / "frontend" / "js" / "mermaid-frame.js").read_text(encoding="utf-8"), "async function mermaidFrameDraw(")
+    from tests._js_scope import unwrapped
+
+    #: The frame's script is wrapped whole (global-scope ratchet), so it is read unwrapped.
+    draw = _body(unwrapped((root / "frontend" / "js" / "mermaid-frame.js").read_text(encoding="utf-8")), "async function mermaidFrameDraw(")
     assert draw.count("await mermaidFrameYield()") >= 2
     assert draw.index("await mermaidFrameYield()") < draw.index("mermaid.render(") < draw.rindex("await mermaidFrameYield()")
     # L-documents-112: render parses itself, so a separate parse only doubled the work.

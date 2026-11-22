@@ -37,6 +37,18 @@ def counts(session: Session, space_id: str) -> dict[str, int]:
     return {"notes": notes, "documents": documents}
 
 
+def shown(session: Session, space_id: str) -> dict[str, int]:
+    """What the space shows, for the dashboard's own line: saved notes, documents and
+    boards, none of them counting the bin (`counts` is what a delete would take, the
+    bin and the boards' companion notes included)."""
+    with impersonate_workspace(session, "all"):
+        def entries(board: bool) -> int:
+            return session.query(func.count(Entry.id)).filter(
+                Entry.workspace_id == space_id, Entry.is_board.is_(board), Entry.is_deleted.is_(False)
+            ).scalar() or 0
+
+        documents = session.query(func.count(Document.id)).filter(Document.workspace_id == space_id).scalar() or 0
+        return {"notes": entries(False), "documents": documents, "boards": entries(True)}
 def detach_references(session: Session, table, ids: list, depth: int = 0) -> None:  # noqa: ANN001
     """Clear every foreign key that points at `ids` in `table`: set a nullable
     one to NULL, delete the row holding a required one (and, for that row,

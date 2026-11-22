@@ -13,74 +13,79 @@
 // (INBOX 784). So the excerpt skips a line equal to the title, a line that is
 // only a picture, and a line it has already shown.
 
-const NOTE_PICK_LINES = 3;
-const NOTE_PICK_LINE_CHARS = 120;
-const NOTE_PICK_IMAGE = /!\[[^\]\n]{0,200}\]\(([^)\s\n]{1,500})(?:\s[^)\n]{0,300})?\)/;
+(() => {
+  const NOTE_PICK_LINES = 3;
+  const NOTE_PICK_LINE_CHARS = 120;
+  const NOTE_PICK_IMAGE = /!\[[^\]\n]{0,200}\]\(([^)\s\n]{1,500})(?:\s[^)\n]{0,300})?\)/;
 
-function notePickText(line) {
-  return notePreviewText(line.replace(new RegExp(NOTE_PICK_IMAGE.source, "g"), "")).replace(/\s+/g, " ").trim();
-}
-
-//: The lines an excerpt shows: `[]` for a note that is its title and a picture.
-function notePickExcerpt(content) {
-  const lines = stripFrontmatter(content || "").split("\n");
-  const title = notePickText(lines.find((line) => notePickText(line)) || "").toLowerCase();
-  const seen = new Set([title]);
-  const out = [];
-  for (const line of lines) {
-    const text = notePickText(line);
-    const key = text.toLowerCase();
-    if (!text || seen.has(key)) continue;
-    seen.add(key);
-    out.push(text.length > NOTE_PICK_LINE_CHARS ? `${text.slice(0, NOTE_PICK_LINE_CHARS - 1)}…` : text);
-    if (out.length >= NOTE_PICK_LINES) break;
+  function notePickText(line) {
+    return notePreviewText(line.replace(new RegExp(NOTE_PICK_IMAGE.source, "g"), "")).replace(/\s+/g, " ").trim();
   }
-  return out;
-}
 
-//: The note's first picture, drawn the way its card draws one: an inline
-//: image through `mediaSrc`, else an attached one through
-//: `attachmentObjectUrl`. Null when it has none.
-function notePickThumb(entry) {
-  const img = document.createElement("img");
-  img.className = "attachment-thumb";
-  img.alt = "";
-  const inline = String(entry.content || "").match(NOTE_PICK_IMAGE);
-  //: Not a picture at another address: the page refuses it, and asking logs a CSP error (audit 1029 row 45).
-  if (inline && isRenderableUrl(inline[1]) && !isRemoteImage(inline[1])) {
-    img.src = mediaSrc(inline[1]);
+  //: The lines an excerpt shows: `[]` for a note that is its title and a picture.
+  function notePickExcerpt(content) {
+    const lines = stripFrontmatter(content || "").split("\n");
+    const title = notePickText(lines.find((line) => notePickText(line)) || "").toLowerCase();
+    const seen = new Set([title]);
+    const out = [];
+    for (const line of lines) {
+      const text = notePickText(line);
+      const key = text.toLowerCase();
+      if (!text || seen.has(key)) continue;
+      seen.add(key);
+      out.push(text.length > NOTE_PICK_LINE_CHARS ? `${text.slice(0, NOTE_PICK_LINE_CHARS - 1)}…` : text);
+      if (out.length >= NOTE_PICK_LINES) break;
+    }
+    return out;
+  }
+
+  //: The note's first picture, drawn the way its card draws one: an inline
+  //: image through `mediaSrc`, else an attached one through
+  //: `attachmentObjectUrl`. Null when it has none.
+  function notePickThumb(entry) {
+    const img = document.createElement("img");
+    img.className = "attachment-thumb";
+    img.alt = "";
+    const inline = String(entry.content || "").match(NOTE_PICK_IMAGE);
+    //: Not a picture at another address: the page refuses it, and asking logs a CSP error (audit 1029 row 45).
+    if (inline && isRenderableUrl(inline[1]) && !isRemoteImage(inline[1])) {
+      img.src = mediaSrc(inline[1]);
+      return img;
+    }
+    const attached = (entry.attachments || []).find((a) => a.is_image);
+    //: A list row holds 300 characters (INBOX 1525), so a picture past them is read from the whole note.
+    if (!inline && !attached && entry.content_truncated) {
+      fullEntry(entry.id).then((whole) => {
+        const later = String(whole.content || "").match(NOTE_PICK_IMAGE);
+        if (later && isRenderableUrl(later[1]) && !isRemoteImage(later[1])) img.src = mediaSrc(later[1]);
+        else img.remove();
+      }, () => img.remove());
+      return img;
+    }
+    if (!attached) return null;
+    attachmentObjectUrl(attached).then((url) => (img.src = url)).catch(() => img.remove());
     return img;
   }
-  const attached = (entry.attachments || []).find((a) => a.is_image);
-  //: A list row holds 300 characters (INBOX 1525), so a picture past them is read from the whole note.
-  if (!inline && !attached && entry.content_truncated) {
-    fullEntry(entry.id).then((whole) => {
-      const later = String(whole.content || "").match(NOTE_PICK_IMAGE);
-      if (later && isRenderableUrl(later[1]) && !isRemoteImage(later[1])) img.src = mediaSrc(later[1]);
-      else img.remove();
-    }, () => img.remove());
-    return img;
-  }
-  if (!attached) return null;
-  attachmentObjectUrl(attached).then((url) => (img.src = url)).catch(() => img.remove());
-  return img;
-}
 
-function richPickerNote(pane, item) {
-  const sample = document.createElement("div");
-  //: The picture first: the pane fades out at its foot, which is a kinder
-  //: place for a line of text to end than a picture's lower edge.
-  const thumb = notePickThumb(item.entry);
-  if (thumb) sample.appendChild(thumb);
-  for (const text of notePickExcerpt(item.entry.content)) {
-    const p = document.createElement("p");
-    p.textContent = text;
-    sample.appendChild(p);
+  function richPickerNote(pane, item) {
+    const sample = document.createElement("div");
+    //: The picture first: the pane fades out at its foot, which is a kinder
+    //: place for a line of text to end than a picture's lower edge.
+    const thumb = notePickThumb(item.entry);
+    if (thumb) sample.appendChild(thumb);
+    for (const text of notePickExcerpt(item.entry.content)) {
+      const p = document.createElement("p");
+      p.textContent = text;
+      sample.appendChild(p);
+    }
+    //: A quick arrow through the list asks for several before the first file
+    //: lands: only the row the pane is still on draws.
+    if (!sample.childElementCount || pane.dataset.for !== item.id) return;
+    sample.classList.add("rich-picker-sample");
+    sample.inert = true;
+    pane.appendChild(sample);
   }
-  //: A quick arrow through the list asks for several before the first file
-  //: lands: only the row the pane is still on draws.
-  if (!sample.childElementCount || pane.dataset.for !== item.id) return;
-  sample.classList.add("rich-picker-sample");
-  sample.inert = true;
-  pane.appendChild(sample);
-}
+
+  //: The file's whole surface: what other files call (ranked row 37a).
+  Object.assign(window, { richPickerNote });
+})();

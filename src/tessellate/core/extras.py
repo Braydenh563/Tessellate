@@ -528,8 +528,22 @@ _TRANSLATE_PAIRS = {
     )),
 }
 
-#: The packages beside the engine's own Spanish: (lang, name), both directions each.
-_TRANSLATE_LANGUAGES = (("fr", "French"), ("de", "German"), ("it", "Italian"), ("pt", "Portuguese"))
+#: Which package carries each direction (L-world-class-628). English to Spanish
+#: rides in `translate` with the engine, at the version installs already have;
+#: Spanish back into English and each other language is a package of its own,
+#: so nobody downloads a language they did not ask for, and adding one never
+#: bumps the base package's version. Rows: (lang, name, pairs).
+_TRANSLATE_LANGUAGES = (
+    ("es", "Spanish", ("es-en",)),
+    ("fr", "French", ("en-fr", "fr-en")),
+    ("de", "German", ("en-de", "de-en")),
+    ("it", "Italian", ("en-it", "it-en")),
+    ("pt", "Portuguese", ("en-pt", "pt-en")),
+)
+TRANSLATE_PAIR_EXTRA: dict[str, str] = {
+    "en-es": "translate",
+    **{pair: f"translate-{lang}" for lang, _n, pairs in _TRANSLATE_LANGUAGES for pair in pairs},
+}
 
 
 def _translate_pair_downloads(*pairs: str) -> tuple[Download, ...]:
@@ -551,29 +565,37 @@ def _translate_megabytes(*pairs: str) -> int:
 
 
 def _translate_language_extras() -> tuple[Extra, ...]:
-    """One package per language, both directions, beside the engine
-    (`translate`): the owner's rule for spelling lists (D30, optional
-    per-language downloads) applied to the translator, so nobody downloads
-    200 MB for one language (INBOX 1863)."""
-    return tuple(
-        Extra(
-            id=f"translate-{lang}",
-            label=f"Translate offline: {name} (Bergamot)",
-            short_label=f"{name} translation",
-            enables=f"Translate this between English and {name}, both ways, on this "
-            "computer, with no model and nothing sent anywhere.",
-            packages=(f"en-{lang} model", f"{lang}-en model"),
-            module="",
-            size=f"~{_translate_megabytes(f'en-{lang}', f'{lang}-en')} MB download, 74 MB on disk",
-            caveat="Needs Translate offline (the engine) as well. A small on-device "
-            "model: good for the gist and a first draft, not for legal or medical text.",
-            kind="download",
-            version=f"{lang}-1",
-            licence="MPL-2.0",
-            downloads=_translate_pair_downloads(f"en-{lang}", f"{lang}-en"),
+    """One package per language beside the engine (`translate`): the owner's
+    rule for spelling lists (D30, optional per-language downloads) applied to
+    the translator, so nobody downloads 200 MB for one language (INBOX 1863).
+    Spanish carries only its way back into English: the other way is the
+    engine's own (L-world-class-628)."""
+    out = []
+    for lang, name, pairs in _TRANSLATE_LANGUAGES:
+        both = len(pairs) > 1
+        out.append(
+            Extra(
+                id=f"translate-{lang}",
+                label=f"Translate offline: {name} (Bergamot)",
+                short_label=f"{name} translation",
+                enables=(
+                    f"Translate this between English and {name}, both ways, on this "
+                    if both
+                    else f"Translate this from {name} into English, on this "
+                )
+                + "computer, with no model and nothing sent anywhere.",
+                packages=tuple(f"{pair} model" for pair in pairs),
+                module="",
+                size=f"~{_translate_megabytes(*pairs)} MB download" + (", 74 MB on disk" if both else ""),
+                caveat="Needs Translate offline (the engine) as well. A small on-device "
+                "model: good for the gist and a first draft, not for legal or medical text.",
+                kind="download",
+                version=f"{lang}-1",
+                licence="MPL-2.0",
+                downloads=_translate_pair_downloads(*pairs),
+            )
         )
-        for lang, name in _TRANSLATE_LANGUAGES
-    )
+    return tuple(out)
 
 
 #: The allowlist. Adding an entry here is the only way to make something
@@ -908,9 +930,9 @@ EXTRAS: tuple[Extra, ...] = (
     #: **The offline translator (WORLD_CLASS 28.5 row 10, Brief 83).** The
     #: owner, 2026-10-10: "What about ai free translations?" Bergamot, the
     #: engine behind Firefox's translations (marian-nmt compiled to
-    #: WebAssembly), and English and Spanish both ways; French, German,
-    #: Italian and Portuguese are packages of their own beside it
-    #: (`_translate_language_extras`, L-world-class-41). The engine
+    #: WebAssembly), and English to Spanish; Spanish back into English, French,
+    #: German, Italian and Portuguese are packages of their own beside it
+    #: (`_translate_language_extras`, L-world-class-41, L-world-class-628). The engine
     #: runs in a Web Worker in the page (`frontend/js/translate-worker.js`)
     #: under the app's own policy, which already allows WebAssembly for the
     #: grammar checker; these files are served from the data dir by
@@ -928,20 +950,27 @@ EXTRAS: tuple[Extra, ...] = (
     #: **To bump:** the engine is `@browsermt/bergamot-translator` on npm
     #: (`npm view @browsermt/bergamot-translator dist`, then `sha256sum` the
     #: tarball); the pairs are `_TRANSLATE_PAIRS`, which says how to add one.
+    #: A new pair goes in a language package, never here: bumping this
+    #: version makes every English to Spanish install download again.
     Extra(
         id="translate",
-        label="Translate offline (Bergamot, English and Spanish)",
+        label="Translate offline (Bergamot, English to Spanish)",
         short_label="the translator",
         enables="Translate this, in the command palette: a passage of a note, "
-        "a document or a reading turned into Spanish, or Spanish into English, "
-        "on this computer in about a second, with no model and nothing sent anywhere.",
-        packages=("bergamot-translator 0.4.9", "en-es model", "es-en model"),
+        "a document or a reading turned from English into Spanish (or another "
+        "language, or back, with its translation package) on this computer in "
+        "about a second, with no model and nothing sent anywhere.",
+        packages=("bergamot-translator 0.4.9", "en-es model"),
         module="",
-        size="~54 MB download, 79 MB on disk",
+        size="~27 MB download, 42 MB on disk",
         caveat="A small on-device model: good for the gist and a first draft, "
-        "not for legal or medical text. Other languages are packages of their own.",
+        "not for legal or medical text. English to Spanish; Spanish back into "
+        "English, French, German, Italian and Portuguese are translation "
+        "packages of their own (More translation languages).",
         kind="download",
-        version="0.4.9-es-2",
+        #: Kept at the English to Spanish version so an install from before the
+        #: language packages still counts (L-world-class-628).
+        version="0.4.9-enes-1",
         licence="MPL-2.0",
         downloads=(
             Download(
@@ -962,7 +991,7 @@ EXTRAS: tuple[Extra, ...] = (
                 unpack="file",
                 members=(("", "LICENSE"),),
             ),
-            *_translate_pair_downloads("en-es", "es-en"),
+            *_translate_pair_downloads("en-es"),
         ),
     ),
     *_translate_language_extras(),
@@ -1255,8 +1284,14 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="languages",
         label="Languages",
-        about="Translate a passage between English and Spanish, French, German, Italian or Portuguese, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
-        extras=("translate", "translate-fr", "translate-de", "translate-it", "translate-pt", "languagetool", "spell-fr", "spell-de", "spell-es"),
+        about="Translate a passage into Spanish, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
+        extras=("translate", "languagetool", "spell-fr", "spell-de", "spell-es"),
+    ),
+    Bundle(
+        id="translate-languages",
+        label="More translation languages",
+        about="French, German, Italian and Portuguese with English, and Spanish back to English, for Translate this.",
+        extras=("translate", *(f"translate-{lang}" for lang, _n, _p in _TRANSLATE_LANGUAGES)),
     ),
     Bundle(
         id="code",

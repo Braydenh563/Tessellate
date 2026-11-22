@@ -521,6 +521,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard-map-marks.js:wbMapSuggestBranches": "read: asks which notes to offer as branches; the add is wbMapAddChosenBranches, one Undo step",
     "settings-controls.js:(anonymous /auth/pin)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:(anonymous /auth/pin/forget)": "auth: sign-in, recovery or lock; no user data",
+    "settings-controls.js:mcpSignInRow": "auth: approves or refuses an outside app's sign-in; the grant it makes is revoked from the list, with its own Undo",
     "settings-controls.js:showLanQr": "auth: opens the LAN trust page for a few minutes so a phone can fetch the certificate; no user data",
     "settings-controls.js:makeMaintenanceShortcut": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:openMaintenanceFolder": "read: opens the launcher logs folder; writes nothing",

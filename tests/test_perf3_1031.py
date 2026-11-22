@@ -23,7 +23,7 @@ def _body(text: str, start: str, end: str) -> str:
 GROWN = r"""
 const notesViewMode = "cards";
 const list = { childElementCount: 0, lastElementChild: null };
-const noteWindow = { win: {}, list, mode: "cards", items: null };
+const noteWindow = { win: { flush() {} }, list, mode: "cards", items: null };
 %(source)s
 const note = (id) => ({ id });
 const pair = (id, depth = 0) => [note(id), depth];

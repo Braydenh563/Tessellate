@@ -69,7 +69,9 @@ def test_other_front_matter_and_the_look_stay_and_a_flow_mapping_config_is_refus
 
 
 def test_the_menu_offers_the_two_levels_that_are_not_on_and_says_why_it_is_dagre():
-    assert "...spacingRows()," in EMBED and "const now = spacingOf(history[at]);" in EMBED
-    for words in ("Compact spacing", "Roomy spacing", "Normal spacing"):
+    # The stated intent moved: Compact and Roomy are radio rows of the Spacing submenu; pressing the chosen one goes back to normal.
+    assert "items: spacingRows()" in EMBED and "const now = spacingOf(history[at]);" in EMBED
+    assert 'level === now ? "normal" : level' in EMBED
+    for words in ("Compact", "Roomy", "usual distance"):
         assert words in EMBED
     assert "has no spacing setting" in EMBED

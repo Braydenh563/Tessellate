@@ -27,6 +27,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPExcepti
 from fastapi.responses import FileResponse
 from fastapi.routing import APIRoute
 from sqlalchemy.orm import Session
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.formparsers import MultiPartException
 
 from tessellate.core import activity, deps, jobruns
 from tessellate.core.deps import get_session
@@ -60,7 +62,13 @@ class _ManyFilesRoute(APIRoute):
 
         async def handle(request: Request) -> Response:
             if request.headers.get("content-type", "").startswith("multipart/form-data"):
-                await request.form(max_files=MAX_FILES + 1)
+                #: More than one over is refused by the parser: still in the import's words, not a bare 400.
+                try:
+                    await request.form(max_files=MAX_FILES + 1)
+                except (MultiPartException, StarletteHTTPException) as exc:
+                    if "files" not in str(getattr(exc, "detail", None) or getattr(exc, "message", exc)).lower():
+                        raise
+                    raise HTTPException(status_code=422, detail=f"More files at once than one import takes ({MAX_FILES}).") from exc
             return await handler(request)
 
         return handle
@@ -277,6 +285,10 @@ def import_report_page(report_id: str) -> dict:
 
 @router.get("/export/folder")
 def export_notebook_folder(background_tasks: BackgroundTasks, session: Session = Depends(get_session)) -> FileResponse:
+    return folder_zip(session, background_tasks, "tessellate-notebook.zip", "folder")
+
+
+def folder_zip(session: Session, background_tasks: BackgroundTasks, filename: str, detail: str) -> FileResponse:
     """The whole notebook as a markdown folder in a zip (WORLD_CLASS 25b):
     every note with its sidecar and attachments, documents, boards and an
     `index.json`. Written to a temporary file, not memory, because the
@@ -290,6 +302,6 @@ def export_notebook_folder(background_tasks: BackgroundTasks, session: Session =
         counts = done.manifest["counts"]
         run.result = f"exported {counts['notes']} notes, {counts['attachments']} attachments" + (
             f", {counts['missing']} attachment files missing" if counts["missing"] else "")
-    manager.log_action(session, "exported", "data", detail="folder")
+    manager.log_action(session, "exported", "data", detail=detail)
     session.commit()
-    return FileResponse(tmp_path, media_type="application/zip", filename="tessellate-notebook.zip", background=background_tasks)
+    return FileResponse(tmp_path, media_type="application/zip", filename=filename, background=background_tasks)

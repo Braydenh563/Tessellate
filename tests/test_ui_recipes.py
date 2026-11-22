@@ -2311,7 +2311,7 @@ def test_the_row_swipe_presses_the_rows_own_actions():
     see."""
     app = app_js_text()
     start = app.index("function initRowSwipe(list, actions)")
-    body = app[start : app.index("// --- the note page", start)]
+    body = app[start : app.index("//: The sheet's head already says", start)]
     assert '".favourite-btn"' in body
     assert "binNoteWithUndo(" in body
     assert 'input[type="checkbox"]' in body, "the reminder swipe presses the row's own Done"
@@ -4177,7 +4177,8 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     assert "paintAssistantAvatar(holder, 20)" in chat[chat.index("function paintAssistantHeads") :][:200]
     #: `assistantHeadRow` moved to help-chat.js (lazy) with its only callers (Brief 101a).
     assert "paintAssistantAvatar(avatar, 20)" in js["help-chat.js"][js["help-chat.js"].index("function assistantHeadRow") :][:600]
-    assert "paintAssistantHeads()" in js["navigation.js"], "a section change fills the static heads"
+    #: The section just shown, not every section (L603): a hidden one fills its own when shown.
+    assert "paintAssistantHeads($(wanted) || document)" in js["navigation.js"], "a section change fills the static heads"
     guide = js["help-chat.js"]
     assert guide.count("assistantHeadRow(GUIDE_NAME)") == 4, "a guide row, its pending row, the streamed one and the revealed one each open with the head"
     #: The setting: a default, a control, a live repaint and a reset.
@@ -5733,7 +5734,7 @@ def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in frontend_text(p.name)}
-    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js"):  # note-cards.js name site moved to entry-menu.js (L611)
+    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-gestures.js"):  # note-cards.js name site moved to entry-menu.js (L611)
         assert name in used, name
 
 
@@ -6880,8 +6881,10 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
     responsive = css["10-responsive.css"]
     assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
-    assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
-    delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
+    # No `:not(.hidden)` on the menu (2026-11-21): it made every `hidden` toggle restyle a
+    # whole subtree (test_css_invalidation), and a shown menu starts its rows' animations anyway.
+    assert ".action-menu > :nth-child(-n + 8)" in responsive
+    delays = re.findall(r"\.action-menu > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
     assert [int(n) for n, _ in delays] == list(range(2, 9)), "rows 2 to 8 each have a step of delay, and nothing past 8"
     assert all("var(--ui-step)" in d for _, d in delays)
     for frames in ("ui-grow", "ui-row"):
@@ -7998,10 +8001,12 @@ def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
 
 
 def test_the_optional_package_notice_keeps_its_action_whole() -> None:
-    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings)."""
+    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings).
+    The unshrinking action is now the package notice's action group, the install
+    button and the close together (2026-11-22, the close never wraps alone)."""
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
-    assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
+    assert re.search(r"\.notice > \.notice-end \{[^}]*flex: none;", css)
 
 
 def test_the_more_tags_chip_keeps_its_finger_target_inside_its_box() -> None:
@@ -8285,3 +8290,14 @@ def test_no_stylesheet_declares_the_weight_650() -> None:
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
     assert not hits, f"declare 600, not 650: {hits}"
+
+
+def test_a_submenu_row_carries_current_like_a_top_level_row_and_a_settings_menu_uses_it() -> None:
+    """A radio or checkbox in a flyout is the row's `current` (`aria-current`), drawn by the one chosen-row rule, never a hand-drawn tick;
+    the diagram builder's ... menu (Spacing, Lines, Look) is the first user (DESIGN.md "A menu behind a button")."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "A submenu row takes `current` too" in design
+    menus = (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    assert 'item.current) button.setAttribute("aria-current", "true")' in menus.split("function buildMenuItemButton(", 1)[1].split("\n}\n", 1)[0]
+    embed = (ROOT / "frontend" / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    assert "current: level === now" in embed and "current: hand" in embed

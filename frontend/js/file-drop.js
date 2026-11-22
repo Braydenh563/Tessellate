@@ -13,177 +13,179 @@
 // the Notes tab, .md and .txt become notes.
 // While it works the drop veil (DESIGN.md "A drop target") says so.
 
-const FILE_DROP_MEDIA = /\.(png|jpe?g|gif|webp|avif|bmp|ico|pdf)$/i;
-//: A drag that stops sending `dragover` for this long is over (a drag that
-//: left the window sends no `dragleave` to `document` in every engine).
-const FILE_DROP_QUIET_MS = 400;
+(() => {
+  const FILE_DROP_MEDIA = /\.(png|jpe?g|gif|webp|avif|bmp|ico|pdf)$/i;
+  //: A drag that stops sending `dragover` for this long is over (a drag that
+  //: left the window sends no `dragleave` to `document` in every engine).
+  const FILE_DROP_QUIET_MS = 400;
 
-//: `note` takes, on the Notes tab, the files that become notes (S71) through the Obsidian reader.
-const fileDrop = { armed: false, veil: null, label: null, timer: 0, busy: false, note: /\.(md|markdown|txt)$/i };
+  //: `note` takes, on the Notes tab, the files that become notes (S71) through the Obsidian reader.
+  const fileDrop = { armed: false, veil: null, label: null, timer: 0, busy: false, note: /\.(md|markdown|txt)$/i };
 
-function fileDragHasFiles(event) {
-  return Array.from(event.dataTransfer?.types || []).includes("Files");
-}
-
-function fileDropLocked() {
-  const lock = document.getElementById("lock-overlay");
-  return Boolean(lock && !lock.classList.contains("hidden"));
-}
-
-function fileDropVeil() {
-  if (!fileDrop.veil) {
-    const veil = document.createElement("div");
-    veil.className = "drop-veil";
-    //: A manual popover: the top layer puts it over every dock and sheet
-    //: without a z-index of its own (DESIGN.md, the stylesheet's grammar:
-    //: no new literal layer).
-    veil.popover = "manual";
-    veil.setAttribute("role", "status");
-    veil.setAttribute("aria-live", "polite");
-    const card = document.createElement("div");
-    card.className = "drop-veil-card";
-    const icon = document.createElement("i");
-    icon.className = "ph ph-upload-simple";
-    icon.setAttribute("aria-hidden", "true");
-    const label = document.createElement("span");
-    card.append(icon, label);
-    veil.appendChild(card);
-    document.body.appendChild(veil);
-    Object.assign(fileDrop, { veil, label });
+  function fileDragHasFiles(event) {
+    return Array.from(event.dataTransfer?.types || []).includes("Files");
   }
-  return fileDrop.veil;
-}
 
-function fileDropShow(text) {
-  const veil = fileDropVeil();
-  if (!veil.matches(":popover-open")) veil.showPopover();
-  fileDrop.label.textContent = text;
-}
-
-function fileDropHide() {
-  clearTimeout(fileDrop.timer);
-  if (fileDrop.veil?.matches(":popover-open")) fileDrop.veil.hidePopover();
-}
-
-fileDrop.onNotes = function () {
-  return !document.getElementById("tab-notes")?.classList.contains("hidden");
-};
-
-fileDrop.prompt = function () {
-  return fileDrop.onNotes() ? "Drop notes or files to add them" : "Drop files to add them to your Library";
-};
-
-//: Markdown and text files become notes, one undo step for the lot
-//: (the same reader and Undo as Settings > Data's Obsidian import).
-fileDrop.toNotes = async function (files) {
-  const form = new FormData();
-  for (const file of files) form.append("files", file, file.name);
-  try {
-    const body = await (await api.upload("/import/app?source=obsidian", form)).json();
-    if (body.ids?.length && (await ensureModule("settingsData"))) undoImport(body, null);
-    else toast(body.found ? "Those notes were already here." : "No notes in what you dropped.");
-    refreshEntries(body.ids || []).catch(() => {});
-  } catch (error) {
-    toast(error.message || voiceLine("failed", { what: "add those notes" }), true);
+  function fileDropLocked() {
+    const lock = document.getElementById("lock-overlay");
+    return Boolean(lock && !lock.classList.contains("hidden"));
   }
-};
 
-function fileDropOver(event) {
-  if (!fileDragHasFiles(event) || fileDrop.busy || fileDropLocked()) return;
-  if (event.defaultPrevented) {
-    fileDropHide();
-    return;
+  function fileDropVeil() {
+    if (!fileDrop.veil) {
+      const veil = document.createElement("div");
+      veil.className = "drop-veil";
+      //: A manual popover: the top layer puts it over every dock and sheet
+      //: without a z-index of its own (DESIGN.md, the stylesheet's grammar:
+      //: no new literal layer).
+      veil.popover = "manual";
+      veil.setAttribute("role", "status");
+      veil.setAttribute("aria-live", "polite");
+      const card = document.createElement("div");
+      card.className = "drop-veil-card";
+      const icon = document.createElement("i");
+      icon.className = "ph ph-upload-simple";
+      icon.setAttribute("aria-hidden", "true");
+      const label = document.createElement("span");
+      card.append(icon, label);
+      veil.appendChild(card);
+      document.body.appendChild(veil);
+      Object.assign(fileDrop, { veil, label });
+    }
+    return fileDrop.veil;
   }
-  event.preventDefault();
-  event.dataTransfer.dropEffect = "copy";
-  fileDropShow(fileDrop.prompt());
-  clearTimeout(fileDrop.timer);
-  fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS);
-}
 
-function fileDropArm() {
-  if (fileDrop.armed) return;
-  fileDrop.armed = true;
-  document.addEventListener("dragover", fileDropOver);
-  document.addEventListener("dragend", fileDropHide);
-  document.addEventListener("drop", (event) => {
-    if (!fileDragHasFiles(event) || event.defaultPrevented || fileDropLocked()) {
+  function fileDropShow(text) {
+    const veil = fileDropVeil();
+    if (!veil.matches(":popover-open")) veil.showPopover();
+    fileDrop.label.textContent = text;
+  }
+
+  function fileDropHide() {
+    clearTimeout(fileDrop.timer);
+    if (fileDrop.veil?.matches(":popover-open")) fileDrop.veil.hidePopover();
+  }
+
+  fileDrop.onNotes = function () {
+    return !document.getElementById("tab-notes")?.classList.contains("hidden");
+  };
+
+  fileDrop.prompt = function () {
+    return fileDrop.onNotes() ? "Drop notes or files to add them" : "Drop files to add them to your Library";
+  };
+
+  //: Markdown and text files become notes, one undo step for the lot
+  //: (the same reader and Undo as Settings > Data's Obsidian import).
+  fileDrop.toNotes = async function (files) {
+    const form = new FormData();
+    for (const file of files) form.append("files", file, file.name);
+    try {
+      const body = await (await api.upload("/import/app?source=obsidian", form)).json();
+      if (body.ids?.length && (await ensureModule("settingsData"))) undoImport(body, null);
+      else toast(body.found ? "Those notes were already here." : "No notes in what you dropped.");
+      refreshEntries(body.ids || []).catch(() => {});
+    } catch (error) {
+      toast(error.message || voiceLine("failed", { what: "add those notes" }), true);
+    }
+  };
+
+  function fileDropOver(event) {
+    if (!fileDragHasFiles(event) || fileDrop.busy || fileDropLocked()) return;
+    if (event.defaultPrevented) {
       fileDropHide();
       return;
     }
     event.preventDefault();
-    fileDropImport(Array.from(event.dataTransfer.files));
-  });
-}
-
-//: Called when this file arrives, by its last line. The dragenter that loaded it
-//: is already past, so the veil is raised here and the quiet timer takes it
-//: down again if the drag was over.
-function fileDropEnter() {
-  fileDropArm();
-  if (fileDrop.busy || fileDropLocked()) return;
-  fileDropShow(fileDrop.prompt());
-  clearTimeout(fileDrop.timer);
-  fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS * 2);
-}
-
-//: Opens Library on one of its two file sub-tabs (the bell's stored `go.media`
-//: does the same, notifications.js).
-async function showLibraryMedia(kind) {
-  await switchTab("library");
-  document.querySelector(`#library-subtabs [data-media-kind="${kind}"]`)?.click();
-}
-
-async function fileDropImport(files) {
-  if (!files.length) {
-    fileDropHide();
-    return;
+    event.dataTransfer.dropEffect = "copy";
+    fileDropShow(fileDrop.prompt());
+    clearTimeout(fileDrop.timer);
+    fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS);
   }
-  fileDrop.busy = true;
-  clearTimeout(fileDrop.timer);
-  fileDropShow(files.length === 1 ? "Adding 1 file…" : `Adding ${files.length} files…`);
-  const media = files.filter((file) => FILE_DROP_MEDIA.test(file.name));
-  const asNotes = fileDrop.onNotes() ? files.filter((file) => fileDrop.note.test(file.name)) : [];
-  const other = files.filter((file) => !FILE_DROP_MEDIA.test(file.name) && !asNotes.includes(file));
-  let added = 0;
-  const lands = new Set();
-  try {
-    for (const file of media) {
-      const form = new FormData();
-      form.append("file", file);
-      //: The upload is the commit, as the Library's own button (library.js).
-      form.append("direct", "true");
-      try {
-        const made = await (await api.upload("/media/upload", form)).json().catch(() => null);
-        pushUploadUndo(`Added “${file.name}”`, "/media", made, () => (typeof renderLibraryImagesGallery === "function" ? renderLibraryImagesGallery() : undefined));
-        added++;
-        lands.add(/\.pdf$/i.test(file.name) ? "files" : "images");
-      } catch (error) {
-        toast(`${file.name}: ${error.message}`, true);
+
+  function fileDropArm() {
+    if (fileDrop.armed) return;
+    fileDrop.armed = true;
+    document.addEventListener("dragover", fileDropOver);
+    document.addEventListener("dragend", fileDropHide);
+    document.addEventListener("drop", (event) => {
+      if (!fileDragHasFiles(event) || event.defaultPrevented || fileDropLocked()) {
+        fileDropHide();
+        return;
       }
-    }
-    if (added) {
-      //: A PDF lives under Library > Files, a picture under Images: the notice
-      //: and its bell row both open the sub-tab the drop actually filled.
-      const where = lands.size === 1 && lands.has("files") ? "files" : "images";
-      const noun = where === "files" ? ["PDF", "PDFs"] : ["picture or PDF", "pictures or PDFs"];
-      toastAction(
-        `Added ${added} ${noun[added === 1 ? 0 : 1]} to your Library.`,
-        "Show",
-        () => showLibraryMedia(where),
-        { go: { tab: "library", media: where } },
-      );
-      if (typeof renderLibraryImagesGallery === "function") renderLibraryImagesGallery();
-    }
-    if (asNotes.length) await fileDrop.toNotes(asNotes);
-    if (other.length) {
-      await ensureModule("libraryList");
-      await importLibraryDocuments(other);
-    }
-  } finally {
-    fileDrop.busy = false;
-    fileDropHide();
+      event.preventDefault();
+      fileDropImport(Array.from(event.dataTransfer.files));
+    });
   }
-}
 
-fileDropEnter();
+  //: Called when this file arrives, by its last line. The dragenter that loaded it
+  //: is already past, so the veil is raised here and the quiet timer takes it
+  //: down again if the drag was over.
+  function fileDropEnter() {
+    fileDropArm();
+    if (fileDrop.busy || fileDropLocked()) return;
+    fileDropShow(fileDrop.prompt());
+    clearTimeout(fileDrop.timer);
+    fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS * 2);
+  }
+
+  //: Opens Library on one of its two file sub-tabs (the bell's stored `go.media`
+  //: does the same, notifications.js).
+  async function showLibraryMedia(kind) {
+    await switchTab("library");
+    document.querySelector(`#library-subtabs [data-media-kind="${kind}"]`)?.click();
+  }
+
+  async function fileDropImport(files) {
+    if (!files.length) {
+      fileDropHide();
+      return;
+    }
+    fileDrop.busy = true;
+    clearTimeout(fileDrop.timer);
+    fileDropShow(files.length === 1 ? "Adding 1 file…" : `Adding ${files.length} files…`);
+    const media = files.filter((file) => FILE_DROP_MEDIA.test(file.name));
+    const asNotes = fileDrop.onNotes() ? files.filter((file) => fileDrop.note.test(file.name)) : [];
+    const other = files.filter((file) => !FILE_DROP_MEDIA.test(file.name) && !asNotes.includes(file));
+    let added = 0;
+    const lands = new Set();
+    try {
+      for (const file of media) {
+        const form = new FormData();
+        form.append("file", file);
+        //: The upload is the commit, as the Library's own button (library.js).
+        form.append("direct", "true");
+        try {
+          const made = await (await api.upload("/media/upload", form)).json().catch(() => null);
+          pushUploadUndo(`Added “${file.name}”`, "/media", made, () => (typeof renderLibraryImagesGallery === "function" ? renderLibraryImagesGallery() : undefined));
+          added++;
+          lands.add(/\.pdf$/i.test(file.name) ? "files" : "images");
+        } catch (error) {
+          toast(`${file.name}: ${error.message}`, true);
+        }
+      }
+      if (added) {
+        //: A PDF lives under Library > Files, a picture under Images: the notice
+        //: and its bell row both open the sub-tab the drop actually filled.
+        const where = lands.size === 1 && lands.has("files") ? "files" : "images";
+        const noun = where === "files" ? ["PDF", "PDFs"] : ["picture or PDF", "pictures or PDFs"];
+        toastAction(
+          `Added ${added} ${noun[added === 1 ? 0 : 1]} to your Library.`,
+          "Show",
+          () => showLibraryMedia(where),
+          { go: { tab: "library", media: where } },
+        );
+        if (typeof renderLibraryImagesGallery === "function") renderLibraryImagesGallery();
+      }
+      if (asNotes.length) await fileDrop.toNotes(asNotes);
+      if (other.length) {
+        await ensureModule("libraryList");
+        await importLibraryDocuments(other);
+      }
+    } finally {
+      fileDrop.busy = false;
+      fileDropHide();
+    }
+  }
+
+  fileDropEnter();
+})();

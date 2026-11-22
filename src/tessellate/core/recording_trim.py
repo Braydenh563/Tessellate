@@ -52,7 +52,13 @@ def _cut_wav(path: Path, start_ms: int, end_ms: int) -> bytes:
                 raise TrimError(NEEDS_ADDON)
             first = min(audio.getnframes(), start_ms * rate // 1000)
             audio.setpos(first)
-            data = audio.readframes(max(0, end_ms * rate // 1000 - first))
+            want = max(0, min(audio.getnframes(), end_ms * rate // 1000) - first)
+            data = audio.readframes(want)
+            #: A cut-off file (a crash mid-take) keeps the header's length: the
+            #: frames past the break are not there, so the span is refused rather
+            #: than written shorter than it says (ported from L685).
+            if len(data) < want * width * channels:
+                raise TrimError("That recording is shorter than its header says.")
     except (wave.Error, EOFError) as exc:
         raise TrimError("That recording's audio couldn't be read.") from exc
     samples = array.array("h")

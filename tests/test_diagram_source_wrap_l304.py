@@ -17,7 +17,8 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 
 def test_menu_has_a_wrap_row_that_flips_the_fields_wrap():
     assert '"ph:text-align-left Wrap long lines"' in EMBED
-    assert '"ph:arrows-out-line-horizontal Stop wrapping"' in EMBED
+    # The stated intent moved: one checkbox row in the Look submenu, `current` while folded, replaces the flip-label pair.
+    assert 'current: field.getAttribute("wrap") !== "off"' in EMBED
     assert re.search(r'field\.setAttribute\("wrap", on \? "soft" : "off"\)', EMBED)
     assert 'srcwrap.classList.toggle("is-wrapped", on)' in EMBED
     assert 'prefs.set("dgm-source-wrap"' in EMBED
@@ -32,4 +33,4 @@ def test_the_guide_names_the_row():
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-lines"))
-    assert "Wrap long lines, in the ... menu" in body
+    assert "Wrap long lines, under Look in the ... menu" in body

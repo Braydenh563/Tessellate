@@ -23,6 +23,7 @@ enforces.
 
 from __future__ import annotations
 
+import json
 import random
 import sys
 import tempfile
@@ -34,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sqlalchemy import select  # noqa: E402
 
 from tessellate.ai.embeddings import vector_to_bytes  # noqa: E402
+from tessellate.ai import wiring  # noqa: E402,F401
 from tessellate.core import deps  # noqa: E402
 from tessellate.core.database import Category, EmbeddingRecord, Entry  # noqa: E402
 
@@ -248,7 +250,7 @@ def main() -> None:
         )
         timed(
             "routes_graph.graph() (GET /graph, no similarity)",
-            lambda: routes_graph.graph(similarity=False, session=session)["nodes"],
+            lambda: _body(routes_graph.graph(similarity=False, session=session))["nodes"],
         )
         # O(n^2) by the route's own comment ("it's personal-notebook scale") —
         # already ~1s at 500 notes, so a literal run at 50k would take hours.
@@ -258,7 +260,7 @@ def main() -> None:
         if n <= 5000:
             timed(
                 "routes_graph.graph(similarity=True) (GET /graph?similarity=true, O(n^2))",
-                lambda: routes_graph.graph(similarity=True, session=session)["edges"],
+                lambda: _body(routes_graph.graph(similarity=True, session=session))["edges"],
             )
         else:
             print(
@@ -281,6 +283,11 @@ def main() -> None:
         )
         session.close()
         deps.reset_app_state()
+
+
+def _body(response) -> dict:  # noqa: ANN001
+    """`/graph` answers with a cached, already-encoded Response, not a dict."""
+    return json.loads(response.body)
 
 
 if __name__ == "__main__":

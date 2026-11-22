@@ -503,8 +503,25 @@ const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
+  //: "Client work: 12 notes, 2 documents, 1 board" for the open space, from
+  //: `GET /spaces/{id}/summary`.
+  const dashSpaceLine = async (id) => {
+    if (!spacesCache.length) await loadSpaces().catch(() => {});
+    const name = spacesCache.find((s) => s.id === id)?.name;
+    if (!name) return null;
+    const counts = await apiJson(`/spaces/${encodeURIComponent(id)}/summary`, { silent: true });
+    const part = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+    const held = [part(counts.notes || 0, "note"), part(counts.documents || 0, "document")];
+    if (counts.boards) held.push(part(counts.boards, "board"));
+    return `${name}: ${held.join(", ")}`;
+  };
   dashLine.bucket = dashLineDraw();
-  const [stats, reminders, patterns, composed] = await Promise.all([
+  //: A space's own line (L-world-class-22): its name and what it holds, one
+  //: fact in this line (no new box, so the first widget stays where it was).
+  //: Not in "All spaces", which is no one space.
+  const spaceId = activeSpaceId();
+  const spaceLine = spaceId === SPACE_ALL ? Promise.resolve(null) : dashSpaceLine(spaceId).catch(() => null);
+  const [stats, reminders, patterns, composed, space] = await Promise.all([
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
@@ -515,10 +532,12 @@ async function renderDashSubmessage() {
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
     dashTodayLine(dashLine.bucket).catch(() => ""),
+    spaceLine,
   ]);
   const bits = [];
+  if (space) bits.push(["space", space]);
   if (composed) bits.push(["notes", composed]);
-  else if (stats) {
+  else if (stats && !space) {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }
@@ -1448,7 +1467,16 @@ function dashContinueNote(entries) {
       .filter((value) => Number.isFinite(value));
     return Math.max(0, ...times);
   };
-  return [...entries].filter((entry) => entry && !entry.is_draft).sort((a, b) => touched(b) - touched(a))[0] || null;
+  //: One pass for the latest, not a sort (L-world-class-354): the comparator parsed six dates per compare, 86ms
+  //: at 4x CPU at dashboard boot on 5,000 notes (CPU profile). The first of equal times wins, as the stable sort did.
+  let best = null;
+  let bestTime = -1;
+  for (const entry of entries) {
+    if (!entry || entry.is_draft) continue;
+    const time = touched(entry);
+    if (time > bestTime) (best = entry), (bestTime = time);
+  }
+  return best;
 }
 
 const DASH_VIEW_LABELS = { full: "Full", compact: "Compact", focused: "Focused" };
@@ -2120,7 +2148,10 @@ function dashFillingSkeletonDone(outline) {
     dashResizeObserver.above = [];
   }
   outline.style.opacity = "0";
-  setTimeout(() => outline.remove(), 260);
+  //: Hidden, not removed: the outline is a child of `body`, and taking a child of `body` out
+  //: restyled the whole page through its sibling rules (L603: 6,267 elements, 106ms at 1x,
+  //: just after the first Notes press). The next fill removes it, when it shows another.
+  setTimeout(() => { outline.style.display = "none"; }, 260);
 }
 
 // --- widget picker modal ------------------------------------------------------------
@@ -2701,9 +2732,11 @@ async function renderMostLinkedWidget(body) {
 async function renderRecentNotesWidget(body) {
   //: Not a map's topics (UX-06): a map of forty listed forty one-word rows.
   const entries = (await dashEntries()).filter((e) => !e.map_topic);
-  const newest = [...entries].sort(
-    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-  );
+  //: Each date parsed once, not twice per compare (L-world-class-354: 33ms at 4x on 5,000 notes, CPU profile).
+  const newest = entries
+    .map((entry) => [new Date(entry.created_at).getTime(), entry])
+    .sort((a, b) => b[0] - a[0])
+    .map(([, entry]) => entry);
   miniEntryList(body, newest.slice(0, 6), "Your newest notes will appear here.", { label: "ph:plus New note", run: "capture" });
 }
 

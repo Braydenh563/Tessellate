@@ -185,7 +185,8 @@ def test_the_hand_drawn_look_is_front_matter_that_keeps_the_rest_and_clean_remov
     themed = "---\nconfig:\n  theme: dark\n---\nflowchart TD\n  A --> B\n"
     assert _look(themed, True) == "---\nconfig:\n  look: handDrawn\n  theme: dark\n---\nflowchart TD\n  A --> B\n"
     assert _look(_look(themed, True), False) == themed
-    assert 'makeMenuItem("ph:pencil-line Hand-drawn look"' in EMBED and 'makeMenuItem("ph:rectangle Clean look"' in EMBED
+    #: The look is one checkbox row in the Look submenu (current when on); pressing it again is the clean look.
+    assert 'makeMenuItem("ph:pencil-line Hand-drawn look"' in EMBED and "setLook(!hand)" in EMBED
 
 
 def test_source_typing_redraws_after_a_quarter_second_of_quiet():

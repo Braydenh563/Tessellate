@@ -326,3 +326,42 @@ def test_searxng_probe_still_allows_localhost(monkeypatch):
 
     monkeypatch.setattr(websearch.requests, "get", lambda *a, **k: FakeResponse())
     assert websearch.probe_searxng("http://localhost:8888") is True
+
+
+def test_reading_a_page_resolves_its_host_once_and_connects_to_that_address(monkeypatch):
+    """Audit 1031 AI20 (DNS rebinding): the address the check judged is the one
+    connected to. A second lookup could answer with a local address."""
+    from tessellate.core import security
+
+    lookups: list[str] = []
+    monkeypatch.setattr(security, "_resolve", lambda host: lookups.append(host) or ["93.184.216.34"])
+    fetched: list[str] = []
+
+    class _Page:
+        is_redirect = is_permanent_redirect = False
+        headers = {"content-type": "text/html"}
+        encoding = "utf-8"
+
+        class raw:  # noqa: N801 - urllib3's response body
+            @staticmethod
+            def read(limit, decode_content=True):  # noqa: ANN001, ANN205
+                return (b"<html><title>T</title><p>" + b"word " * 80 + b"</p></html>")[:limit]
+
+        def raise_for_status(self) -> None:
+            pass
+
+    class _Session:
+        def mount(self, *a, **k) -> None:  # noqa: ANN002, ANN003
+            pass
+
+        def get(self, url, **kwargs):  # noqa: ANN001, ANN003, ANN202
+            fetched.append(url)
+            return _Page()
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(websearch, "_private_session", lambda: _Session())
+    websearch.fetch_readable("http://example.com/a")
+    assert lookups == ["example.com"]
+    assert fetched and "93.184.216.34" in fetched[0]

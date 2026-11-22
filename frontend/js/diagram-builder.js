@@ -526,11 +526,10 @@
   //: The ... menu (1546 D7): what the host adds (`io.menu`, the dialog's Turn into shapes), then the
   //: exports. They run from diagram-embed.js, fetched on the first press.
   function more(S) {
-    const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
-    //: Suggest folds in here on a phone; at 480 px or less Direction, Redo and Ask too (diagram-kindbar.js, L-documents-7).
-    const { rows: fold, key } = diagramModel.kindbar.fold(S, DIRS, suggestMenu);
-    const mine = S.io.menu || [];
-    const menu = kebabMenu([...mine, ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
+    //: The grouped rows are made in diagram-kindbar.js (this file's gzip budget): Suggest folds in on a phone, the host's rows by `slot`.
+    const exportTo = (how) => () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name));
+    const { rows, key } = diagramModel.kindbar.more(S, DIRS, suggestMenu, exportTo, () => styleDo(S, "shortcuts"));
+    const menu = kebabMenu(rows, "More for this diagram");
     menu.classList.add("dgm-more");
     menu.dataset.rows = key;
     return menu;
@@ -542,7 +541,9 @@
     if (!old || old.dataset.rows === diagramModel.kindbar.fold(S, DIRS).key) return;
     const next = more(S);
     next.querySelector("button").tabIndex = old.querySelector("button").tabIndex;
+    const focused = old.contains(document.activeElement);
     old.replaceWith(next);
+    if (focused) next.querySelector("button").focus({ preventScroll: true });
   }
 
   //: The toolbar is diagram-bar.js (lazy, 1661 D2): one row, built from these.
@@ -581,6 +582,8 @@
     host.append(root);
     panes.set(root, S);
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
+    //: A setting that changes without a redraw (Wrap long lines) asks for the ... menu to be drawn again.
+    root.addEventListener("dgm:menu", () => refreshMore(S));
     root.addEventListener("keydown", (event) => diagramModel.kindbar.historyKey(S, event));
     root.addEventListener("keydown", (event) => diagramModel.bar.rootKey(S, event, { add: addBlock, style: styleDo }));
     S.tree.addEventListener("click", (event) => {

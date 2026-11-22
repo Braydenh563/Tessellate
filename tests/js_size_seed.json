@@ -88,7 +88,6 @@
  "note-history.js::openEntryHistory": 251,
  "notes-list.js::appendInlineRun": 229,
  "notes-list.js::renderNoteText": 158,
- "notes-list.js::renderSidebar": 166,
  "notifications.js::openNotifications": 225,
  "palette.js::cmdPaletteAsk": 539,
  "personas-pane.js::renderPersonas": 211,

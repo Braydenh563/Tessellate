@@ -143,8 +143,9 @@ BACKLOG with the reason it waits.
 - A VS Code extension: BACKLOG, "A VS Code extension" (no purpose stated yet).
 - The status dot's error state can be reached: checked
   (L-world-class-184, `tests/test_ai_status_error_reachable.py`).
-- Streamline and optimise the backend and every AI interaction: standing work,
-  done through the perf ratchets and the deep-audit perf pass, not one item.
+- Streamline and optimise the backend and every AI interaction: closed as a
+  measured list of seven (L-world-class-185, HISTORY 2026-11-22); new work goes
+  through `tests/test_ai_wire_budget_185.py` and the perf ratchets.
 - "I wrote 'ai is cool' as a note and it was filed under sketches": checked
   (`tests/test_filing_ai_is_cool.py`).
 - `docs/index.html`'s text against the README: checked (L-world-class-187,

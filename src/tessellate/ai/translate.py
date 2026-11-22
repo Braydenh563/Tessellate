@@ -47,6 +47,7 @@ def _pair(source: str, target: str, label: str) -> dict:
     `vocab.<pair>.spm`), the one the English to Spanish files already carry."""
     tag = source + target
     return {
+        "extra": extras.TRANSLATE_PAIR_EXTRA[f"{source}-{target}"],
         "from": source,
         "to": target,
         "label": label,
@@ -76,7 +77,7 @@ PAIRS: tuple[dict, ...] = (
 
 #: The per-language packages beside the engine's own (`core/extras`), read
 #: only while the engine is installed: a pair's files are useless without it.
-LANGUAGE_EXTRAS = ("translate-fr", "translate-de", "translate-it", "translate-pt")
+LANGUAGE_EXTRAS = ("translate-es", "translate-fr", "translate-de", "translate-it", "translate-pt")
 
 _PAIR_KEYS = ("from", "to", "label", "model", "lex", "vocab")
 

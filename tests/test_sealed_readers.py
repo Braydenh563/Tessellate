@@ -78,7 +78,7 @@ HANDS_ON = {
     "entry/capture.py::process_committed_media": "media_process skips a sealed file",
     "api/routes_files.py::_media_upload_path": "its callers open the path with unsealed",
     "api/routes_files.py::save_media_to_library": "media_process skips a sealed file",
-    "api/routes_import.py::export_notebook_folder": "export_folder writes sealed files through sealed_files",
+    "api/routes_import.py::folder_zip": "export_folder writes sealed files through sealed_files (the notebook and a space export)",
     "api/routes_recordings.py::label_speakers_by_voice": "_label_in_background reads through sealed_files.for_background",
     "api/routes_recordings.py::start_transcription": "_transcribe_in_background reads through sealed_files.for_background",
     "api/wb_items.py::create_object": "media_process skips a sealed file",

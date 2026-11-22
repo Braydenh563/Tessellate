@@ -44,7 +44,7 @@ VERTICAL_KEBABS = {
     "link-types.js": 1,  # the relation types list
     "entry-card.js": 1,  # a note's connection rows (moved out of note-cards.js, boot diet 3)
     "note-properties.js": 1,  # the note types list
-    "notes-list.js": 1,  # the Notes categories rail
+    "notes-sidebar.js": 1,  # the Notes categories rail
     "search.js": 1,  # the saved searches under the Notes categories rail (Brief 47)
     "settings-packages.js": 2,  # a package row, a bundle row
     "sheets-selects.js": 1,  # the Chats rail

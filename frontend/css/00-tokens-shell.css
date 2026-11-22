@@ -1996,10 +1996,10 @@ button.scroll-row-arrow[hidden] {
     var(--modal-bg-opaque);
 }
 /* The bar that stops below the Notes sub-tab strip. `--notes-sticky-top` is
-   written onto this page by `initNotesSubtabHeightToken` (phone-shell.js) and carries
+   written onto the bars that read it by `initNotesSubtabHeightToken` (phone-shell.js) and carries
    the strip's measured height plus its bottom margin; the `0px` that stylesheet
    declares for the token is what applies for the frame before that lands. */
-#tab-notes {
+#tab-notes .selectbar {
   --selectbar-top: var(--notes-sticky-top);
 }
 .library-contextbar-end {
@@ -3589,8 +3589,6 @@ button.scroll-row-arrow[hidden] {
 #tab-bar button {
   flex: 0 0 auto;
   white-space: nowrap;
-}
-#tab-bar button {
   background: transparent;
   border: none;
   border-radius: var(--radius-md);

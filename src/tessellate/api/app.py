@@ -68,8 +68,10 @@ from tessellate.core import (
     passes,
     security,
     startup_status,
+    stream_steps,
     validation_copy,
 )
+from tessellate.ai import wiring  # noqa: F401  (registers the AI factories core/deps builds with)
 from tessellate.core.deps import init_app_state
 from tessellate.entry import manager_purge
 
@@ -1594,6 +1596,8 @@ ROUTER_ROWS: tuple[Row, ...] = (
     #: behind the lock; `/mcp` itself checks its own bearer token instead.
     Row("routes_mcp", "router", LOCKED, "/mcp-clients"),
     Row("routes_mcp", "open_router", OPEN, "/mcp"),
+    Row("routes_mcp_oauth", "router", LOCKED, "/mcp-oauth"),
+    Row("routes_mcp_oauth", "open_router", OPEN, "/.well-known /oauth"),
     Row("routes_read", "router", LOCKED, "/read"),
     Row("routes_spelling", "router", LOCKED, "/grammar /spelling /spellpacks"),
     Row("routes_statistics", "router", LOCKED, "/statistics"),
@@ -1967,6 +1971,8 @@ def create_app(*, lazy_routes: bool | None = None) -> FastAPI:
         # call that cannot be interrupted and the workers are daemons: see
         # `jobs.Pool.shutdown`.
         jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)
+        # A chat step still in its thread would query a closing database (core/stream_steps.py).
+        stream_steps.drain()
         if deps._db is not None:
             deps._db.optimize()
         # The receipt's ledger keeps what this launch saw; the writer thread

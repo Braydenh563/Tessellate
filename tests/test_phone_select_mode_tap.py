@@ -23,7 +23,7 @@ pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
 def _tap(select_mode: bool) -> list[int]:
-    source = (JS_DIR / "phone-shell.js").read_text(encoding="utf-8")
+    source = (JS_DIR / "phone-shell.js").read_text(encoding="utf-8") + (JS_DIR / "phone-gestures.js").read_text(encoding="utf-8")
     match = re.search(r"^function initNotePage\(\) \{.*?^\}", source, re.S | re.M)
     assert match, "initNotePage is gone"
     script = f"""

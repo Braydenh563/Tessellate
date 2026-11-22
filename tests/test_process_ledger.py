@@ -13,6 +13,7 @@ import json
 
 import pytest
 
+from tests._clock import pin_clock
 from tessellate.core import activity, jobruns, taskhistory
 from tessellate.core import jobs as pool
 
@@ -359,7 +360,6 @@ from datetime import datetime, timedelta  # noqa: E402
 
 from tessellate.core.database import JobRunLog  # noqa: E402
 from tessellate.core.database_manager import DatabaseManager  # noqa: E402
-from tests._clock import pin_clock  # noqa: E402
 
 _NOW = datetime(2026, 11, 21, 9, 0, 0)
 

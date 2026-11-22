@@ -462,6 +462,8 @@ chatSendTurn.stage = {
         //: shut. The Sources panel still lists each page for the citations.
         if (event.ok && event.tool === "read_url") drawAnswerPanels(timeline.holder, [{ web: event.sources, read: true }]);
         if (event.ok && event.tool === "web_search") drawAnswerPanels(timeline.holder, [{ web: event.sources }]);
+        //: A browser tool opened or moved the page: the web panel shows the same page the model reads.
+        if (event.ok && /^https?:\/\//.test(event.panel_url || "") && event.tool !== "browser_read") ensureModule("webClip").then(() => { toggleWebPanel(true); openWebReader(event.panel_url); });
         status.textContent = "The model is making changes…";
         chatScrollToEnd();
       },

@@ -14,7 +14,6 @@
   --cal-month-cell: 8rem;
   --cal-allday: 5rem;
   --cal-hour: 3rem;
-  --cal-hours-min: 12rem;
 }
 .timeline-cal-head {
   display: flex;
@@ -260,7 +259,7 @@
 }
 .timeline-cal-week.timeline-cal-hours {
   flex: 1 1 auto;
-  min-height: var(--cal-hours-min);
+  min-height: calc(var(--cal-hour) * 4); /* four hour rows */
   overflow-y: auto;
 }
 .timeline-cal-week .ghost.small.timeline-cal-dayhead {

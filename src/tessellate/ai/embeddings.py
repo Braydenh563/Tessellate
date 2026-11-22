@@ -28,6 +28,7 @@ from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.core import jobs
 from tessellate.core.database import Attachment, Category, ChunkVector, EmbeddingRecord, Entry
 from tessellate.core.logbuffer import safe_value
+from tessellate.search import matrix_hooks
 
 if TYPE_CHECKING:
     # Only for the annotations below, which `from __future__ import
@@ -241,15 +242,10 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
             # `create_app`. A failure is logged and dropped: a cold matrix
             # means "no similarity yet", never a failed startup.
             try:
-                # `importlib`, not an `import` statement: this module is a
-                # leaf that `search/engine.py` sits on top of (through
-                # `search_manager`), so naming the engine here closes
-                # `ai.embeddings -> search.engine -> search.search_manager ->
-                # ai.embeddings`. `tests/test_no_import_cycles.py` counts the
-                # statement wherever it sits, because CodeQL does.
-                import importlib
-
-                search_engine = importlib.import_module("tessellate.search.engine")
+                # Through `matrix_hooks`: this module is a leaf that
+                # `search/engine.py` sits on top of (through `search_manager`),
+                # so naming the engine here would close a cycle.
+                search_engine = matrix_hooks.engine()
 
                 session = session_factory()
                 try:

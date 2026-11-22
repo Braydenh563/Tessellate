@@ -43,7 +43,7 @@ import sys
 from contextvars import ContextVar
 from typing import TextIO
 
-from tessellate.ai import tools
+from tessellate.ai import tools, wiring  # noqa: F401  (registers the AI factories)
 from tessellate.core import deps
 
 logger = logging.getLogger(__name__)
@@ -90,11 +90,33 @@ def _who() -> str:
     return _client["name"] or "mcp client"
 
 
+def _scope() -> dict | None:
+    """The HTTP client's note scope (core/mcp_scope.py), or None for the whole notebook."""
+    from tessellate.core import mcp_scope
+
+    caller = _caller.get()
+    scope = (caller or {}).get("scope")
+    return None if mcp_scope.is_whole(scope) else mcp_scope.clean(scope)
+
+
 def handle_as(caller: dict, message) -> dict | None:  # noqa: ANN001  # any JSON value
-    """`handle_request` for one HTTP client (`{"name", "writes"}`)."""
+    """`handle_request` for one HTTP client (`{"name", "writes", "scope"}`).
+
+    A scoped client's ids are worked out once per message and set where the
+    reading tools' one gate reads them (`mcp_scope.current`)."""
+    from tessellate.core import mcp_scope
+
     mark = _caller.set(caller)
+    ids = None
     try:
-        return handle_request(message)
+        if (scope := _scope()) is not None:
+            with deps.get_db().session() as session:
+                ids = mcp_scope.note_ids(session, scope)
+        scoped = mcp_scope.current.set(ids)
+        try:
+            return handle_request(message)
+        finally:
+            mcp_scope.current.reset(scoped)
     finally:
         _caller.reset(mark)
 
@@ -102,8 +124,12 @@ def handle_as(caller: dict, message) -> dict | None:  # noqa: ANN001  # any JSON
 def offered_tools() -> list[tools.ToolSpec]:
     """Every tool this server will list and run: not destructive, not
     interactive, not turned off in Settings -> Tools, and, unless writes are
-    switched on, read-only."""
+    switched on, read-only. A scoped token gets only the tools its scope can
+    hold (`mcp_scope.SCOPED_TOOLS`)."""
+    from tessellate.core import mcp_scope
+
     writes = writes_allowed()
+    allowed = mcp_scope.SCOPED_TOOLS if _scope() is not None else None
     return [
         spec
         for spec in tools.TOOLS.values()
@@ -112,6 +138,7 @@ def offered_tools() -> list[tools.ToolSpec]:
         and spec.name not in CHAT_ONLY
         and tools.tool_enabled(spec.name)
         and (writes or _is_read_only(spec))
+        and (allowed is None or spec.name in allowed)
     ]
 
 
@@ -164,7 +191,7 @@ def _annotations(spec: tools.ToolSpec) -> dict:
     return {
         "readOnlyHint": _is_read_only(spec),
         "destructiveHint": bool(spec.destructive),
-        "openWorldHint": spec.name in ("web_search", "read_url"),
+        "openWorldHint": spec.name in tools.ONLINE_TOOLS,
     }
 
 
@@ -344,9 +371,13 @@ def _call_tool(name: str, arguments: dict) -> dict:
             "content": [{"type": "text", "text": f"Unknown or unavailable tool '{name}'"}],
             "isError": True,
         }
+    from tessellate.core import mcp_scope
+
     session = deps.get_db().session()
     try:
-        result = tools.execute_tool(session, name, arguments or {}, agent=_who())
+        scope = _scope()
+        why = mcp_scope.write_refusal(session, scope, name, arguments or {}) if scope is not None else ""
+        result = {"error": why} if why else tools.execute_tool(session, name, arguments or {}, agent=_who())
     finally:
         session.close()
     result = _clean_label(result)
@@ -378,11 +409,16 @@ def _initialize(message: dict) -> dict:
     capabilities: dict = {"tools": {}, "prompts": {}}
     if _resources_offered():
         capabilities["resources"] = {}
-    return {
+    answer = {
         "protocolVersion": version,
         "capabilities": capabilities,
         "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
     }
+    if (scope := _scope()) is not None:
+        from tessellate.core import mcp_scope
+
+        answer["instructions"] = f"This link reaches only {mcp_scope.describe(scope)}. A new note must be filed inside that."
+    return answer
 
 
 def _tools_call(message: dict) -> dict:

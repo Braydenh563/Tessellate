@@ -398,8 +398,9 @@ def test_microbes_copy_prerendered_bodies_and_glows():
     assert "atlasOf(sp)" in body and "bgSprite(cell * angles, cell * phases" in body
     assert "g.drawImage(at.img, sx, sy, cell, cell, (X[i] - at.half) | 0" in frame
     assert "g.drawImage(sp.glowSprite, (X[i] - sp.glowHalf) | 0, (Y[i] - sp.glowHalf) | 0);" in frame
-    # The outlines are no longer built a frame, only the flagella.
-    assert "bodies(g, si, q, 0)" not in frame and "bodies(g, si, q, 2)" in frame
+    # The outlines are no longer built a frame, only the flagella (L-world-class-391
+    # split them out of `bodies` into `flagella`).
+    assert "outline(g, sp" not in frame and "flagella(g, si, q)" in frame
 
 
 def test_constellation_stars_are_copied_unscaled():

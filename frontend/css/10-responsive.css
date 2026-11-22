@@ -152,6 +152,29 @@
     min-height: calc(max(2.75rem, 44px) + 4px + 2 * var(--header-pad-y) + 1px);
   }
 }
+/* --- the one row, kept again from 820 (L-world-class-106) ---------------
+   The Local chip (row 1641) took 42px more of the header after the fit above
+   was measured, and the strip wrapped again: the top bar was 100px, two rows,
+   from 820 to 875 (`scratchpad/ui-sweeps/shell-devibe-106.js`). Measured at
+   820: brand 28, space switcher 65, strip 438, header controls 259, plus
+   three 9.6px gaps and 32px of padding is 851px in 820. One spacing step off
+   the header's three gaps and the switcher's caret (the circles icon is the
+   button; its menu still opens on it and `aria-haspopup` still says so)
+   frees 50px: 56px, one row, with no target under 36px and the tabs still at
+   their 44px floor. The band is Phase 9's 820 to 1099.98 (no new width
+   query): the tighter gaps cost nothing wider, where the row has room. */
+@media (min-width: 820px) and (max-width: 1099.98px) {
+  header#top-bar {
+    column-gap: var(--space-2);
+  }
+  #top-bar .header-controls,
+  #top-bar .header-cluster {
+    gap: var(--space-1);
+  }
+  #space-switcher-btn .ph-caret-down {
+    display: none;
+  }
+}
 /* A count on a tab is a badge on its glyph, not a word beside it, wherever the
    strip is narrow enough to care (everything below 1100: band 2's icons, band
    3's small captions, band 4's five columns). In the flow it cost 31px of a
@@ -289,7 +312,10 @@ header#top-bar[data-scrolled="1"],
    step (`--ui-step`) apart, each sliding in a space-1 from the left. Half, not
    a whole one (the owner 2026-11-03, "that dropdown looks quite tall and
    empty"): at a full step the box had grown to its height with rows five to
-   eight still clear for up to 390ms; now the last row is in by 285ms. */
+   eight still clear for up to 390ms; now the last row is in by 285ms. No
+   `:not(.hidden)` on the menu: a shown menu starts its rows' animations
+   anyway, and `.hidden` before a `>` made every `hidden` toggle restyle the
+   toggled element's whole subtree (tests/test_hidden_invalidation.py). */
 @keyframes ui-row {
   from {
     opacity: 0;
@@ -341,16 +367,16 @@ header#top-bar[data-scrolled="1"],
 .help-popover {
   --menu-origin-x: var(--help-caret-x);
 }
-.action-menu:not(.hidden) > :nth-child(-n + 8) {
+.action-menu > :nth-child(-n + 8) {
   animation: ui-row var(--ui-base) var(--ease-out) backwards;
 }
-.action-menu:not(.hidden) > :nth-child(2){animation-delay:calc(var(--ui-step)*0.5)}
-.action-menu:not(.hidden) > :nth-child(3){animation-delay:calc(var(--ui-step)*1)}
-.action-menu:not(.hidden) > :nth-child(4){animation-delay:calc(var(--ui-step)*1.5)}
-.action-menu:not(.hidden) > :nth-child(5){animation-delay:calc(var(--ui-step)*2)}
-.action-menu:not(.hidden) > :nth-child(6){animation-delay:calc(var(--ui-step)*2.5)}
-.action-menu:not(.hidden) > :nth-child(7){animation-delay:calc(var(--ui-step)*3)}
-.action-menu:not(.hidden) > :nth-child(8){animation-delay:calc(var(--ui-step)*3.5)}
+.action-menu > :nth-child(2){animation-delay:calc(var(--ui-step)*0.5)}
+.action-menu > :nth-child(3){animation-delay:calc(var(--ui-step)*1)}
+.action-menu > :nth-child(4){animation-delay:calc(var(--ui-step)*1.5)}
+.action-menu > :nth-child(5){animation-delay:calc(var(--ui-step)*2)}
+.action-menu > :nth-child(6){animation-delay:calc(var(--ui-step)*2.5)}
+.action-menu > :nth-child(7){animation-delay:calc(var(--ui-step)*3)}
+.action-menu > :nth-child(8){animation-delay:calc(var(--ui-step)*3.5)}
 /* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
    Panels that hang off an opener and show by `.hidden` took no part in the
    fade and grow (audit: `animation: none`), so they take the same two rules.
@@ -1916,6 +1942,14 @@ sheet-host[hidden] {
 .action-menu-card .action-menu .menu-item {
   width: 100%;
   min-height: var(--target-min);
+}
+/* A sheet has the height a popover does not: a long row wraps instead of ending in an ellipsis (the board's "More
+   board commands" had ten rows cut at 304px of a 356px sheet; menus.js, L-general-71). */
+.action-menu-card .action-menu .menu-item .ph-text {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 /* Reminders below 1100: the list is the page, and the add form is the sheet
    "New reminder" opens (`openReminderCompose`, app.js; the floating + below

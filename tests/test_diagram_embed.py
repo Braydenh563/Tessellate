@@ -121,9 +121,12 @@ def test_export_is_svg_png_at_twice_the_viewbox_and_the_two_copies_in_the_builde
     assert "Math.ceil(box[2]) * 2" in EMBED and "Math.ceil(box[3]) * 2" in EMBED and '"image/png"' in EMBED
     #: The board's rasteriser and its bundle are not pulled in.
     assert "wbRasterizeSvg" not in EMBED
-    for row in ("Save as SVG", "Save as PNG", "Copy as Mermaid", "Copy as SVG"):
-        assert '"ph:' in BUILDER and row in BUILDER, row
-    assert 'ensureModule("diagramEmbed")' in BUILDER and "S.io.menu" in BUILDER
+    # The stated intent moved: the four exports are rows of the Save as and Copy as submenus (diagram-kindbar.js `more`).
+    kindbar = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
+    for group, row in (("Save as", "SVG"), ("Save as", "PNG"), ("Copy as", "Mermaid"), ("Copy as", "SVG")):
+        assert f'"ph:copy {group}"' in kindbar or f'"ph:download-simple {group}"' in kindbar
+        assert f'"{row}"' in kindbar.replace("ph:file-svg ", "").replace("ph:file-png ", "").replace("ph:code ", ""), row
+    assert 'ensureModule("diagramEmbed")' in BUILDER and "S.io.menu" in kindbar
 
 
 def test_a_press_on_the_picture_finds_a_node_even_though_mermaid_12_prefixes_the_ids():

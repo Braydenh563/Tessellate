@@ -202,8 +202,28 @@
       rows.push({ label: "ph:arrow-clockwise Redo", group: "edit", run: () => S.io.redo() });
       if (ask) rows.push({ label: "ph:sparkle Ask for a change…", group: "edit", run: () => S.root.querySelector(".dgm-askbtn")?.click() });
     }
-    return { rows, key: (S.io.menu || []).map((row) => row.label).join("|") + (ask ? "|ask" : "") };
+    //: A chosen row is part of the key, so a menu that shows a setting is drawn again when the setting changes.
+    const sig = (row) => row.label + (row.current ? "*" : "") + (row.items ? `(${row.items.map(sig).join(",")})` : "");
+    return { rows, key: (S.io.menu || []).map(sig).join("|") + (ask ? "|ask" : "") };
   }
 
-  diagramModel.kindbar = { mount, fresh, historyKey, expand, fold, KINDS, SAMPLE };
+  //: The ... menu's top level (the owner: 15 flat rows were too many): the host's settings as submenus, then Save as and Copy as,
+  //: Keyboard shortcuts, and the host's Clear last as the danger row. A host row's `slot` places it: Save to Library goes inside Save as.
+  function more(S, DIRS, suggestMenu, exportTo, shortcuts) {
+    const { rows: folded, key } = fold(S, DIRS, suggestMenu);
+    const mine = (S.io.menu || []).map((row) => (row.items || row.slot ? row : { group: "view", ...row }));
+    const slot = (name) => mine.filter((row) => row.slot === name);
+    const item = (label, how) => makeMenuItem(label, "", exportTo(how));
+    const rows = [
+      ...folded,
+      ...mine.filter((row) => !row.slot),
+      { label: "ph:download-simple Save as", group: "out", items: [item("ph:file-svg SVG", "svg"), item("ph:file-png PNG", "png"), ...slot("save")] },
+      { label: "ph:copy Copy as", group: "out", items: [item("ph:image Picture", "picture"), item("ph:code Mermaid", "mermaid"), item("ph:file-svg SVG", "svgtext")] },
+      { ...makeMenuItem("ph:keyboard Keyboard shortcuts", "", shortcuts), group: "help" },
+      ...slot("clear").map((row) => ({ ...row, group: "danger" })),
+    ];
+    return { rows, key };
+  }
+
+  diagramModel.kindbar = { mount, fresh, historyKey, expand, fold, more, KINDS, SAMPLE };
 })();

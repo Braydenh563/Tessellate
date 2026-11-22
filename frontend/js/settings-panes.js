@@ -198,9 +198,11 @@ function autoGrowInputs(el) {
 //: already the height `autoGrow` would give it. So every check is read first,
 //: in one pass (one layout for all of them), and only the boxes that were
 //: measured while hidden or whose inputs changed are grown, after it.
-function autoGrowVisible() {
+//: `root` narrows the walk to what was just shown: each box's `offsetParent` forces a layout,
+//: 5 to 11ms of the first Notes press at 5,000 notes for boxes in sections that stayed hidden (L603).
+function autoGrowVisible(root = document) {
   const due = [];
-  for (const box of document.querySelectorAll("textarea.autogrow")) {
+  for (const box of root.querySelectorAll("textarea.autogrow")) {
     if (box.classList.contains("note-surface-mirror") || box.offsetParent === null) continue;
     if (
       box.dataset.autogrowPending ||

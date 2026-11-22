@@ -18,7 +18,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+import json
+
+from pydantic import BaseModel, Field, field_validator
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from tessellate.api import paging
@@ -50,6 +52,19 @@ class CorrectionBody(BaseModel):
     #: The subject's own words, so a filing prompt can say what kind of note a
     #: rule is about. Clipped by `learning.record`.
     excerpt: str = ""
+
+    #: A correction is kept for the life of the notebook and read by every
+    #: later pass, so what it is about is bounded (sweep 1004): a signal is a
+    #: word, not a document, and a subject is a few ids and a question.
+    @field_validator("subject")
+    @classmethod
+    def _bounded(cls, subject: dict) -> dict:
+        signals = subject.get("signals", [])
+        if not isinstance(signals, list) or len(signals) > 16 or any(not isinstance(g, str) or len(g) > 40 for g in signals):
+            raise ValueError("signals are at most 16 names of at most 40 characters")
+        if len(json.dumps(subject, default=str)) > 8000:
+            raise ValueError("subject is over 8,000 characters")
+        return subject
 
 
 @router.post("/corrections", status_code=201)

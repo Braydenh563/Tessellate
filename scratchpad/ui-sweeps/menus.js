@@ -133,7 +133,11 @@ function measure(opIdx) {
   const isSheet = !!menu.closest('.sheet, [class*="sheet"]');
   const role = menu.getAttribute('role') || '';
   const mr = menu.getBoundingClientRect();
-  const or = opener ? opener.getBoundingClientRect() : null;
+  //: A tool's list lifts itself clear of the options bar that opens above its button (whiteboard.js
+  //: `wbLiftMenuOffOptionsBar`, INBOX 823): the bar is between them by design, so the bar is what it opens from.
+  const bar = document.getElementById('wb-context');
+  const lifted = menu.style.translate && bar && bar.checkVisibility && bar.checkVisibility() ? bar : null;
+  const or = lifted ? lifted.getBoundingClientRect() : opener ? opener.getBoundingClientRect() : null;
   //: **Command rows**, the things a menu is a list of. A labelled select or a
   //: segmented control inside a dock menu is a form row with its own shape,
   //: so it answers to the section-label rule below, not to the row rules.
@@ -233,6 +237,7 @@ function measure(opIdx) {
     inset,
     role, isSheet, cls: menu.className.toString().slice(0, 60), id: menu.id,
     box: { l: Math.round(mr.left), t: Math.round(mr.top), r: Math.round(mr.right), b: Math.round(mr.bottom), w: Math.round(mr.width), h: Math.round(mr.height) },
+    lifted: !!lifted,
     op: or ? { l: Math.round(or.left), t: Math.round(or.top), r: Math.round(or.right), b: Math.round(or.bottom) } : null,
     // A tool's kind list lifted clear of the board's options bar (INBOX 823) sits the bar's
     // height from its opener by design: the gap is measured to the bar's far edge instead.
@@ -257,7 +262,10 @@ function judge(m) {
   const clipped = rows.filter((r) => r.clipped).map((r) => r.text);
   if (clipped.length) f.push(`clipped labels: ${JSON.stringify(clipped.slice(0, 4))}`);
   if (m.overflowX) f.push('menu scrolls sideways');
-  if (!m.isSheet && m.natural > 0 && m.box.w > 2 * m.natural + 8) f.push(`too wide: ${m.box.w}px for ${m.natural}px of content`);
+  //: A select's list is as wide as its button (`.select-menu { min-width: 100% }`, the platform's own rule), so a
+  //: full-width field on a phone owns a list that wide: the button's width is part of what it holds.
+  const floor = m.cls.includes('select-menu') && m.op ? Math.max(m.natural, m.op.r - m.op.l) : m.natural;
+  if (!m.isSheet && m.natural > 0 && m.box.w > 2 * floor + 8) f.push(`too wide: ${m.box.w}px for ${m.natural}px of content`);
   const single = rows.filter((r) => !r.multi && !r.tall);
   const hs = [...new Set(single.map((r) => r.h))];
   if (hs.length > 1 && Math.max(...hs) - Math.min(...hs) > 1) {
@@ -320,7 +328,7 @@ function judge(m) {
       const side = b.l >= o.r - 2 ? b.l - o.r : b.r <= o.l + 2 ? o.l - b.r : null;
       if (side !== null && side > 8) f.push(`${side}px beside its opener`);
       if (side === null) f.push('covers its opener');
-    } else {
+    } else if (!m.lifted) {
       const aligned = Math.abs(b.l - o.l) <= 8 || Math.abs(b.r - o.r) <= 8 || (b.l <= o.l && b.r >= o.r);
       if (!aligned) f.push(`not lined up with its opener: menu ${b.l}-${b.r}, opener ${o.l}-${o.r}`);
     }

@@ -312,7 +312,10 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       await ensureModule("tour");
       //: Settings' body is a lazy surface (settings-body.js): the replay rows
       //: and About's button exist only once it is built, as opening it does.
-      surfaceBuild("settings");
+      //: Each section is its own surface now (Help holds the replay rows,
+      //: About its button); building the parent alone left both at 0.
+      surfaceBuild("settings-help");
+      surfaceBuild("settings-about");
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
       const about = document.getElementById("about-take-tour");

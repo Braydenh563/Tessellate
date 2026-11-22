@@ -1,7 +1,8 @@
 """The translator's other languages (L-world-class-41).
 
 French, German, Italian and Portuguese are packages of their own beside the
-engine's (which carries Spanish both ways), each with both directions, pinned
+engine's (which carries English to Spanish), each with both directions, and
+Spanish's package is the way back into English (L-world-class-628), pinned
 to the Mozilla release's files. A pair shows in the picker only when the
 engine is installed and one folder holds its three files. The real files were
 fetched and each direction translated a sentence in Chromium (the LEDGER row
@@ -38,8 +39,11 @@ def test_a_language_package_is_its_two_directions_and_nothing_else(extra_id):
     lang = extra_id.split("-")[1]
     extra = extras.EXTRAS_BY_ID[extra_id]
     assert extra.kind == "download" and extra.licence == "MPL-2.0"
-    pairs = [p for p in translate.PAIRS if lang in (p["from"], p["to"])]
-    assert {(p["from"], p["to"]) for p in pairs} == {("en", lang), (lang, "en")}
+    pairs = [p for p in translate.PAIRS if lang in (p["from"], p["to"]) and p["extra"] != translate.EXTRA_ID]
+    # English to Spanish stays in the engine's package at its old version
+    # (L-world-class-628), so Spanish's package is the way back only.
+    engine = {("en", "es")} if lang == "es" else set()
+    assert {(p["from"], p["to"]) for p in pairs} == {("en", lang), (lang, "en")} - engine
     assert _written(extra_id) == set().union(*map(_files, pairs))
     for download in extra.downloads:
         (_member, name), = download.members

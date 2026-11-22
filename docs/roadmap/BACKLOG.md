@@ -584,6 +584,7 @@ GRAPH_PLAN.md owns the rest of this section.
 - **Tessellation side by side** (L-graph-12). Owner looks at `shots/tess-pair.png` (run `scratchpad/ui-sweeps/tess-pair.js` against their notebook; `LAYOUT=` picks the other view, default their saved one).
 - **Hand checks on the owner's device** (L816 to L818). The rest is automated in `scratchpad/ui-sweeps/graph-handchecks.js`. Left for the owner: drag feel by hand; Close in meaning with a real embedding model; the hover frame at 2,000 notes on an idle machine with a GPU (headless draw cost 8.1 ms, 2026-11-12; 16 ms target).
 - **A model polish for Compose into a draft** (L-graph-1). The draft is built with no model (`POST /documents/from-notes`); a polish step needs a real model: serve one with `scratchpad/llama-dev.sh serve`, compose 5 notes, and check the polished text cites every source note.
+- **The writing desk's prompts judged by a model** (from L-world-class-65). Stop and the thinking stream are verified on a real socket and on a real 0.6B and 1.5B model (2026-11-21); what is not is the quality of the five kinds' drafts, a Qwen3 pass that reaches its answer (0.6B on 4 cores thought for over 90 s first), the thinking panel at its 192px cap with a full-length thought (86px at 244 characters), and a server that separates `reasoning_content` or Ollama's native `thinking` (only a stand-in does). Next: `scratchpad/llama-dev.sh serve`, draft each kind from the same 3 thoughts, read the drafts.
 - **Map of meaning on real embeddings** (L-graph-2). Measured on hand-inserted vectors only (clusters 72 to 100 px wide, 506 to 513 px apart); run it on a notebook embedded by the real model and check topic clusters stay at least 3 times as far apart as they are wide.
 
 ---
@@ -647,14 +648,11 @@ additive.
 
 ## 11. Performance, accuracy and AI efficiency
 
+- **Perf leftovers, measured 2026-11-21 (moved from LEDGER L-world-class-622, 623, 624; the first Intl call and app.js fetch.then are closed, HISTORY 2026-11-21):** (622) a Settings pane switch's first frame at 4x CPU on 5,000 notes is one style pass over the whole shown pane, because a `display: none` pane keeps no styles: Tools 775 elements, Help 1,791, Personas 761 (trace, top-level task thread time, 3 visits each, 2026-11-21): longest task Tools 148 to 294ms, Help 164 to 200, Data 78 to 163, Models 110 to 164, General 66 to 146, Personas 131 to 209. Two attempts failed under 50ms: (1) `content-visibility: hidden` on visited panes in place of `display: none`: Tools 124, Personas 187, Help 160 (a `hidden` toggle still restyled the whole pane); (2) the same with the ten `.hidden`-before-a-featureless-subject rules rewritten (now built and linted, `test_css_invalidation`), which took a pane's un-hide style from 87 to 10ms in isolation: whole switch Tools 65 to 90ms after the first visit, Models 50 to 107, General 84 to 129, Personas 78 to 135, Help 137 to 307 (its 1,770 topics are drawn again by design, L676). It is not shipped because 21 offsetParent and getClientRects checks in settings*.js (settings-wiring.js:579, settings-find.js:297, settings-panes.js:68 and 206) and about 100 app-wide read a kept pane as shown; it waits for one visibility helper (`checkVisibility()`) every such check uses. Built on the way: Tools keeps its 73 rows on a revisit (the second 43 to 113ms style task is gone), leaving Help drops its topics in one timer (longest task median 138 to 110ms, sum 654 to 518), Settings scrolls no longer set `data-scrolling`. (623) background art microbes: frame 1.8ms at 4x, garbage 88 to 103 KB/s in 3 of 5 runs and 14 to 22 in the others (the engine boxing doubles), drawImage 26ms/s from a glow and a body copy per organism (bg-art.js:1661 to 1695); nothing seen. (624) dashboard boot at 4x on 5,000 notes, what remains (CPU profile in a boot trace, 3 runs, 2026-11-21): phone-shell.js `fitDock` 37 to 68ms self in a 97 to 131ms task (plus 70 to 101 of forced style); the atlas.js `step` 51 to 60ms is `paintUserMarks`' first nameMark draw (`drawCharacter`, a 873-line function), not sliceable without splitting it; avatars.js `nameMarkRasterise` 8 to 28ms self in 70 to 100ms timer tasks; the dashboard widgets' fetch continuations (48 to 131ms tasks: renderRecentNotesWidget 19 to 33ms self, dashContinueNote 12 to 27 from 15,000 `new Date` parses, dash-art.js `p.setup` 27). `content-visibility` on the dashboard widgets cut UpdateLayoutTree 945 to 794ms but clashes with sizeDashWidgetSpan (dashboard.js:870).
+
 ### Headroom: evaluated, not adopted
 
-Asked: *"is it worth trying to analyse and implement something like headroom
-for token efficiency?"* ([headroomlabs-ai/headroom][hr]: Apache-2.0, 62k
-stars, active). It compresses tool outputs, logs and RAG chunks before they
-reach the model: 60–95% off JSON, 15–20% for coding agents, with benchmark
-accuracy held. It is a good project. It is the wrong fit here, for three
-reasons that are about **this** app rather than about it:
+Asked: *"is it worth trying to analyse and implement something like headroom for token efficiency?"* ([headroomlabs-ai/headroom][hr]: Apache-2.0, 62k stars, active). It compresses tool outputs, logs and RAG chunks before they reach the model: 60–95% off JSON, 15–20% for coding agents, with benchmark accuracy held. It is a good project. It is the wrong fit here, for three reasons that are about **this** app rather than about it:
 
 1. **There is no token bill.** Ollama runs on the user's own machine, so a
    token costs latency and context window, not money. Headroom's headline
@@ -889,6 +887,10 @@ block, trimming harder below an 8k-token window; see the retired analysis doc's
 "Odysseus read deeply, 2026-09-21" section, item 1, for the full read and the
 size/risk call (M, take the idea, measure it on a small model before
 trusting it).
+
+- **L-world-class-230:** built 2026-11-22 as the base's `_LazyRouters` (app.py, cf5493bb; the branch's 71d6bf50 retracted at the merge), see HISTORY, "Moved from the plans, 2026-11-22 (L-world-class-230 built)".
+- **L-world-class-95 rest (moved from LEDGER 2026-11-21, parked for an owner call):** Laptop fold, four whole note cards at 1093x614@1.25. Built: links share the details line in card view (two pills), laptopfold 2 whole and 3 in part. Chrome measured on the showcase: top bar 0 to 44, sub-tabs 56 to 92, browse card 99, dock 112 to 154, capture bar 166 to 210, first card 222, status bar from 577; cards 89 to 186px with 6px gaps, the 165 and 186px ones are 3-line previews (compact, owner INBOX 473). Four whole 111px cards need 462px; 355px is there (222 to 577). Sub-tabs into the dock do not fit one row (tabs 421px, the dock row 825px with 773 used, 52px slack; icon-only tabs still 180px); a section switcher in the dock identity (a caret menu at 700px of height or less) saves 43px, to 398, still short, and hides a visible tab strip. The status bar is one 37px row already (x12 to 1081), so trimming it to four items gains nothing alone. Options: (ii) at 700px of height or less in card view, hide the capture bar behind its button and float the status cluster, a start near 123 and a floor of 614, which fits four; (iii) the owner relaxes the gate to three whole cards while 3-line previews stay (INBOX 473). The owner's call.
+- **L-world-class-320 rest: `--require-hashes` for the pip extras (2026-11-21, parked: the lock files cost more than they protect).** Built: each pip extra goes to pip bounded by a constraint (`core/extras.py` `EXTRA_BOUNDS`) and each catalogue embedding model is fetched at a pinned commit, its weights checked against pinned hashes (SECURITY.md T23); the open row is L-world-class-691. Blocker, measured with `pip install --dry-run --report` on Linux, Python 3.13: pip's hash mode needs a sha256 for every transitive dependency, and the sets are 23 packages for voice, 29 for documents (lxml, cryptography, onnxruntime, numpy, pillow), 12 for RapidOCR, each with different wheels per OS, CPU and Python 3.11 to 3.13 plus the frozen build's `--platform` list; a lock per extra would be about 9 platform files each, regenerated at every bump. If taken: `pip-compile --generate-hashes` per extra per platform in CI, and `--require-hashes` in `_run_install`.
 
 ### The dashboard's first paint waits for the whole notebook (L-world-class-879)
 
@@ -1792,9 +1794,7 @@ them are close to being built:
   (`src/tessellate/mcp_server.py`, a stdio server over the tool registry,
   checked 2026-10-04); consuming external servers is still open **(needs
   owner)**: it needs the trust model decided first.
-- **A VS Code extension.** **Next:** nothing is buildable until the owner states a purpose; the HTTP tool API (`GET /chat/tools`, `POST /chat/tools/execute`, WORLD_CLASS_PLAN B8) is the surface an extension would call. No stated purpose yet beyond the idea itself,
-  worth asking what it would let someone do that the app's own web UI, PWA
-  and desktop window don't, before scoping anything. **(needs owner)**
+- **A VS Code extension.** Built (L-world-class-627, `editors/vscode`); the old entry is in HISTORY, "Moved from the plans, 2026-11-21 (Docker image, VS Code extension)".
 - ~~**A browser clipper.**~~ **Built 2026-10-05** (WORLD_CLASS_PLAN row 24, D9): `POST /links/clip-page` (`routes_webclip.py`), the "Clip to MemoryMap" bookmarklet and `frontend/clip.html` / `clip.js`, `tests/test_webclip_page.py`. A packaged browser extension is not built; the bookmarklet is the capture path (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: BACKLOG)").
 - (Odysseus, fourth read 2026-10-10) 
 
@@ -3991,36 +3991,7 @@ Each row is a recommendation taken (standing order 3); the evidence is in
 the retired analysis doc "Parity matrix, 2026-10-10" and "Repositories and
 libraries read, 2026-10-10".
 
-- **A Docker image.** Recommendation: build it, in two flavours from one
-  Dockerfile. Draft at `docker/Dockerfile` and `compose.yaml`
-  (not built: the sandbox has no Docker daemon). Measured from a venv of the
-  core requirements without `sentence-transformers`: 213 MB of site-packages
-  (numpy 70 with its libs, sqlalchemy 28, cryptography 16, uvloop 16), plus
-  the app's `src` 28 MB and `frontend` 35 MB (Harper's WASM is 16 of them),
-  plus the slim Python base (about 125 MB): about 400 MB on disk, roughly 150
-  MB pulled. With `sentence-transformers` and CPU torch (769 MB for torch
-  alone in this repository's own venv, 1.5 GB for the whole venv): about 1.6
-  GB. Volume layout: `/data` (`TESSELLATE_DATA_DIR`: database, files, the LAN
-  certificate, backups) and `/models` (`HF_HOME` and
-  `SENTENCE_TRANSFORMERS_HOME`: the embedder, Whisper, RapidOCR, the Pyodide
-  and needle downloads), so a notebook reset never re-downloads a model.
-  Ollama stays on the host (`OLLAMA_URL=http://host.docker.internal:11434`).
-  **Blocker found, three small changes first** (a brief, not a session):
-  `__main__.py:32` binds `127.0.0.1` as a constant, and `netbind.bind_host`
-  widens it only when the LAN preference is on and a password exists; a
-  browser reaching the container through Docker's bridge is "the network",
-  and an app with no password answers every network request 403 (SEC-01).
-  So the image needs `TESSELLATE_BIND` (default unchanged), a first-password
-  environment variable or `--set-password` (today only `--reset-password`
-  exists), and a decision on TLS (a reverse proxy in front, with plain http
-  inside the compose network). **What the Windows launcher does that a
-  container cannot:** the desktop window (pywebview) and tray, the Start menu
-  and the Repair shortcut, native file dialogs (`core/desktop_dialog.py`),
-  watching a folder on the host, the capture hotkey (`--capture`), OS
-  reminders and notifications, the firewall prompt and port search, and
-  launching Ollama and detecting a GPU. Everything else (the venv, the
-  update check, the health check) a container replaces. Keep for the owner's
-  NAS and server users; drop as a desktop install path.
+- **A Docker image.** Built and run (L924, `docs/DOCKER.md`); the plan is in HISTORY, "Moved from the plans, 2026-11-21 (Docker image, VS Code extension)".
 - **Reuse the system Python's packages.** Recommendation: offer it, never
   default it. `start.sh` line 1070 and `start.bat` line 602 run
   `python -m venv .venv`; the choice is `--system-site-packages` on that
@@ -4386,6 +4357,7 @@ Each row is the one step left of a built item; everything that runs here is buil
 - **L946 (moved from LEDGER 2026-11-12):** Verify ocr-reading with real Tesseract or vision model. From OPEN.md:1635; OPEN.md:3049. Evidence: Reads-ahead is deliberate; real-reader check needs a real model/OCR install
 - **L947 (moved from LEDGER 2026-11-12):** Run RapidOCR and Tesseract for real on owner's machine. From OPEN.md:1640; OPEN.md:3533. Evidence: Needs a real install and a real read on the owner's machine; tests monkeypatch
 - **L948 (moved from LEDGER 2026-11-12):** Drive live translated captions with a real model. From OPEN.md:2748. Evidence: Built against fake translator; needs device and model
+- **L-world-class-628 remainder (2026-11-21):** English to French quality is the upstream model's (Mozilla's only en-fr run, retrain_hr_NLIxDbE1TBGyOTI-zwZagw). On 12 fixture sentences at beam 1 (Firefox's setting) 10 were right; "is on Tuesday" gave "aura eu le mardi" and "stayed inside and read" gave "restés à l'intérieur et lus". Beam 4 fixed the first only, changed register on 5 others and took 2,777 ms against 1,599 ms. Revisit when Mozilla publishes a new en-fr run.
 - **L949 (moved from LEDGER 2026-11-12):** Verify under-1 s sheet, real network install, WebView2 and Safari. From OPEN.md:2751. Evidence: Needs Windows desktop and Safari Also L955 (OPEN.md:599), the same check.
 - **L951 (moved from LEDGER 2026-11-12):** Open package bundle exports in Word/LibreOffice and run real pip. From OPEN.md:3135. Evidence: Needs Word or LibreOffice and real pip run
 - **L952 (moved from LEDGER 2026-11-12):** Run the Windows installer, upgrade from a pre-rename release and .bat fallbacks on a Windows machine. From OPEN.md:438. Evidence: No Windows here; w34-unv1-1111.md hardware-only (CI runs some)

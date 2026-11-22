@@ -28,7 +28,9 @@ def test_a_custom_property_on_a_page_is_written_only_when_it_changes():
     two changes a tab visit. The box decides, and an equal value is not written."""
     body = _body(frontend_text("phone-shell.js"), "function initNotesSubtabHeightToken(")
     assert "if (!(box > 0)) return;" in body
-    assert 'getPropertyValue("--notes-sticky-top") !== h' in body
+    #: L603: the value goes into a rule on the bars that read it, and the last
+    #: one written decides whether to write again.
+    assert "if (initNotesSubtabHeightToken.h !== h)" in body
     assert "if (h > 0)" not in body
 
 

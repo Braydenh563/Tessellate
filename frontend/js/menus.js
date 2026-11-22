@@ -701,6 +701,12 @@ function placeEscapedMenu(menu, opener) {
   const anchor = opener.getBoundingClientRect();
   // Same reason as placeHelpPopover: no frame at 0,0 before the move.
   menu.style.visibility = "hidden";
+  //: A cap this wrote on an earlier open is this open's to decide again.
+  if (menu._escapeCap) {
+    menu.style.maxHeight = "";
+    menu.style.overflowY = "";
+    menu._escapeCap = false;
+  }
   menu.style.left = "0px";
   menu.style.top = "0px";
   const box = menu.getBoundingClientRect();
@@ -722,7 +728,21 @@ function placeEscapedMenu(menu, opener) {
     //: below, which pins the box to the last position that fits, was always
     //: the right answer for that case.
     const fits = above >= margin && above + box.height <= window.innerHeight - margin;
-    top = fits ? above : Math.max(margin, window.innerHeight - margin - box.height);
+    const onScreen = anchor.top >= 0 && anchor.bottom <= window.innerHeight;
+    if (fits) top = above;
+    else if (onScreen) {
+      //: **Capped beside the opener, never over it** (L-general-72). Pinning
+      //: a box taller than either side to the window's foot laid it over its
+      //: own button: measured at 390x844 on Settings, Logs, Sort and view, a
+      //: 677px list at 157..836 over its opener at 281..325. The taller side
+      //: gets the list, capped to its room, and the rest scrolls.
+      const plan = menuSidePlan(box.height, anchor, 4, margin);
+      const room = plan.cap ?? Math.ceil(box.height);
+      menu.style.maxHeight = `${room}px`;
+      menu.style.overflowY = "auto";
+      menu._escapeCap = true;
+      top = plan.up ? anchor.top - 4 - Math.min(box.height, room) : anchor.bottom + 4;
+    } else top = Math.max(margin, window.innerHeight - margin - box.height);
   }
   menu.style.left = `${Math.round(left)}px`;
   menu.style.top = `${Math.round(top)}px`;
@@ -1287,7 +1307,11 @@ function wireMenuKeyboard(menu, opener) {
         //: only the class in this list, ArrowDown in those five found no items
         //: at all and left the focus where it was, which is the one thing a
         //: person who has just opened a menu will try.
-        ':scope > [role="group"] > [role="menuitem"]'
+        ':scope > [role="group"] > [role="menuitem"], ' +
+        //: The board's two-column View menu holds its groups in columns, and
+        //: its switch rows' boxes are `menuitemcheckbox` (`wbStampMenuRoles`).
+        ':scope > .wb-menu-col > [role="group"] > [role="menuitem"], ' +
+        ':scope [role="group"] > .wb-menu-row > [role="menuitemcheckbox"]'
       ),
     ]
       //: An item nobody can see is not one the arrows may land on. It never
@@ -1353,6 +1377,8 @@ function buildMenuItemButton(item) {
   button.className = "menu-item" + (item.danger ? " menu-danger" : "") + (item.disabled ? " menu-item-unavailable" : "");
   setLabel(button, item.label);
   if (item.title) button.title = item.title;
+  //: `current` marks the chosen row of a choice or the "on" row of a setting, as `kebabMenu.rows` does.
+  if (item.current) button.setAttribute("aria-current", "true");
   if (item.disabled) button.setAttribute("aria-disabled", "true");
   button.addEventListener("click", () => {
     closeActionMenus();

@@ -18,7 +18,7 @@ from starlette.concurrency import run_in_threadpool
 from tessellate.ai import acts, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
 from tessellate.ai.lazy import LazyModule
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
-from tessellate.core import deps
+from tessellate.core import deps, stream_steps
 from tessellate.core.logbuffer import safe_value
 
 agent = LazyModule("tessellate.ai.agent")
@@ -147,7 +147,9 @@ async def stop_when_gone(stop, lines):  # noqa: ANN001
     done = object()
 
     def step():  # noqa: ANN202
-        return next(source, done)
+        #: Listed while it runs: the engine is not disposed under it (core/stream_steps.py).
+        with stream_steps.running(stop):
+            return next(source, done)
 
     def close_after(finished) -> None:  # noqa: ANN001 - the step's future
         if not finished.cancelled():

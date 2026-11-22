@@ -257,3 +257,40 @@ def test_a_lazy_app_answers_every_route_unauthenticated_as_the_eager_app_does(ap
         if a != b:
             diffs.append((method, url, a, b))
     assert not diffs, diffs[:20]
+
+
+def _unused_routes_module():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "unused_routes.py"
+    spec = importlib.util.spec_from_file_location("unused_routes", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_unused_routes_report_sees_a_lazy_only_route(app_state):  # noqa: ARG001
+    """scripts/unused_routes.py walked the top level of `app.routes`, where an
+    included router is one node, so it listed 0 routes; it must reach a route
+    that only a lazy row serves, on an app where no request has loaded it."""
+    module = _unused_routes_module()
+    index = _row_index("routes_hello")
+    row = app_module.ROUTER_ROWS[index]
+    lazy_path = next(path for _m, path in _walk(row.router().routes))
+    app = app_module.create_app(lazy_routes=True)
+    assert not app.state.lazy_routes.loaded[index]
+    listed = {path for path, _methods, _name in module.unreferenced(app, corpus="")}
+    assert lazy_path in listed
+    assert "/health" in listed
+    again = module.unreferenced(app_module.create_app(lazy_routes=True), corpus=lazy_path)
+    assert lazy_path not in {path for path, _m, _n in again}
+
+
+def test_every_route_on_the_unused_routes_allow_list_is_still_a_route(app_state):  # noqa: ARG001
+    """An allow-list entry names a caller the text search cannot see; once its
+    route is gone the entry would hide nothing and must go with it."""
+    module = _unused_routes_module()
+    paths = {path for path, _route in module.flat_routes(app_module.create_app(lazy_routes=True))}
+    assert sorted(set(module.ALLOWED) - paths) == []
+    assert all(reason.strip() for reason in module.ALLOWED.values())

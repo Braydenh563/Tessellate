@@ -37,3 +37,27 @@ def _single_thread_blas() -> None:
 
 
 _single_thread_blas()
+
+
+def _cap_malloc_arenas() -> None:
+    #: glibc gives each thread that allocates its own 64 MB arena, up to eight per core, and
+    #: keeps what a request freed there. The server runs a pool of worker threads, so under
+    #: eight parallel clients over 4,500 notes resident memory went 393 MB to 1.2 GB in 15
+    #: minutes with only 196 MB of it traced by Python (anonymous mappings, 28 arenas); the
+    #: same load with two arenas stayed at 385 to 400 MB for 8 minutes (L609). `mallopt`
+    #: rather than the environment variable, which glibc reads at its first allocation,
+    #: before any Python runs. A person's own `MALLOC_ARENA_MAX` still wins; on a libc
+    #: without `mallopt` (macOS, Windows, musl) there is nothing to cap and nothing happens.
+    import os
+
+    if os.environ.get("MALLOC_ARENA_MAX"):
+        return
+    try:
+        import ctypes
+
+        ctypes.CDLL("libc.so.6").mallopt(-8, 2)  # M_ARENA_MAX
+    except (OSError, AttributeError):
+        pass
+
+
+_cap_malloc_arenas()

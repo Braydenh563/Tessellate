@@ -39,6 +39,7 @@ and separating a question about a capability from a request to use it.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from dataclasses import dataclass, field
 
 #: A cue that is a whole phrase ("mind map", "path between") is worth more than
@@ -176,8 +177,10 @@ _INFLECTION = (
 )
 
 
-def _compile(cues: tuple[str, ...]) -> list[tuple[re.Pattern[str], str, float]]:
-    """Cue strings into anchored patterns, once, at import.
+@lru_cache(maxsize=256)
+def _compile(cues: tuple[str, ...]) -> tuple[tuple[re.Pattern[str], str, float], ...]:
+    """Cue strings into anchored patterns, once per cue table (cached: the
+    tables are constants, and rebuilding them cost 13 ms a chat turn, L-world-class-185).
 
     A cue containing a space is matched as a phrase and weighted higher; a
     single word is matched on both boundaries. `re.escape` throughout, because
@@ -206,7 +209,7 @@ def _compile(cues: tuple[str, ...]) -> list[tuple[re.Pattern[str], str, float]]:
             # character, so ask for "not followed by more word" instead.
             tail = r"(?!\w)"
         out.append((re.compile(head + re.escape(cue) + tail, re.I), cue, weight))
-    return out
+    return tuple(out)
 
 
 def score_groups(
@@ -262,6 +265,16 @@ _ASKS_WEB = re.compile(
     r"\b(?:search|look(?: it)? up|google|check)\b.{0,12}?\b(?:the )?(?:web|internet|online)\b|\bsearch up\b|\bweb search\b|\bon the (?:web|internet)\b",
     re.I,
 )
+
+
+#: The rest of the browser tools earn their schema only when the turn is about a page.
+_BROWSING = re.compile(r"\b(?:browse|browser|web ?page|website|this page|the page|that page|follow (?:the|that|a) link|go back|find .{1,30} on (?:the|that|this) page)\b|https?://", re.I)
+
+
+def web_tools_for(question: str) -> list[str]:
+    """The web tools a turn is handed: search, read and open always, the rest of the browser when it is about a page."""
+    more = ["browser_read", "browser_follow", "browser_find", "browser_back"] if _BROWSING.search(question or "") else []
+    return ["web_search", "read_url", "browser_open", *more]
 
 
 def asks_web(question: str) -> bool:

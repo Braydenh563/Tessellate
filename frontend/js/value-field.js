@@ -118,7 +118,8 @@ function valueField(host, opts = {}) {
     }));
     const menu = kebabMenu(rows, `${opts.label || "Value"}: choose`);
     menu.classList.add("value-field-menu");
-    menu.querySelector(".action-menu")?.classList.add("value-field-list");
+    //: The list itself, not the wrapper: an action menu escapes to <body>, where a class on the wrapper no longer reaches it.
+    menu.querySelector(":scope > .action-menu")?.classList.add("value-field-list");
     const opener = menu.querySelector(":scope > button");
     opener.classList.add("value-field-chevron");
     opener.title = "Choose a value";

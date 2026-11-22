@@ -1170,7 +1170,7 @@ TAIL_TOPICS.extend(
             ),
             "body": (
                 "In a document's Live view (and a note's edit box), a formatted "
-                "phrase (bold, italic, code, strike through, a highlight, a link, "
+                "phrase (bold, italic, code, strike through, a highlight, a colour, superscript, subscript, underline, a link, "
                 "a wiki link, an equation) shows its markdown only while the caret "
                 "is in it or next to it, and the rest of the line stays rendered. "
                 "Every caret and selection counts. A heading, list or quote shows "

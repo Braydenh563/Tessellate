@@ -66,7 +66,7 @@ def test_the_sheets_are_lazy_and_read_the_key_table():
     # Every key the sheet lists comes from the table; none is typed twice.
     assert not re.search(r"\b(Box|Rounded|Decision)\b.*\b[1-7]\b", STYLE)
     assert "diagramModel.style" in BUILDER and '"?"' in BUILDER
-    assert "Keyboard shortcuts" in BUILDER
+    assert "Keyboard shortcuts" in (JS / "diagram-kindbar.js").read_text(encoding="utf-8")  # the ... menu's rows moved to the kindbar file
 
 
 def test_a_duplicate_keeps_the_colour():

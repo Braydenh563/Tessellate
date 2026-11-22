@@ -163,7 +163,7 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 73 tools to search, link, organise and act on
+- In Agent mode the assistant has 78 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
@@ -450,7 +450,8 @@ later; until then search uses keywords. To avoid the download, pull
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
 | Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
 | Speaker labels, models (pyannote and WeSpeaker) | The two small models it reads, a pinned 34 MB download kept in the data folder; works offline |
-| Translate offline (Bergamot, English and Spanish) | Translate this, in the command palette, with no model; a pinned 54 MB download that works offline; French, German, Italian and Portuguese are 51 to 53 MB packages beside it |
+| Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
+| Translate offline, Spanish to English, French, German, Italian, Portuguese (Bergamot) | One translation package per language, both ways (Spanish the way back), 26 to 53 MB each, added to the translator's picker; the More translation languages bundle installs them all |
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
 | Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
@@ -499,22 +500,22 @@ measured figure is the slowest of four runs' medians; the budget is 1.5 times it
 
 | Interaction | Measured (ms) | Budget (ms) |
 | --- | --- | --- |
-| Boot to first paint | 312 | 470 |
-| First interaction | 2101 | 3160 |
+| Boot to first paint | 302 | 460 |
+| First interaction | 2035 | 3060 |
 | List paint | 65 | 100 |
 | Search | 23 | 40 |
-| Board open | 111 | 170 |
-| Document open | 118 | 180 |
+| Board open | 108 | 170 |
+| Document open | 116 | 180 |
 
 The same figures as bars, slowest first (first interaction left out, as it would
 dwarf the rest):
 
 | Interaction | Measured | |
 | --- | --- | --- |
-| Boot to first paint | 312 ms | ██████████████ |
-| Document open | 118 ms | █████ |
-| Board open | 111 ms | █████ |
-| List paint | 65 ms | ███ |
+| Boot to first paint | 302 ms | ██████ |
+| Document open | 116 ms | ██ |
+| Board open | 108 ms | ██ |
+| List paint | 65 ms | █ |
 | Search | 23 ms | █ |
 
 The first interaction is the first click the app answers after a cold start,
@@ -527,6 +528,7 @@ share of each against your own notebook.
 | --- | --- |
 | [INSTALL](docs/INSTALL.md) | The Windows installer, the launcher, manual setup, updating and uninstalling |
 | [DOCKER](docs/DOCKER.md) | Running Tessellate in Docker: compose, volumes, ports, a model server on the host |
+| [VS Code extension](editors/vscode/README.md) | Save a selection, search notes and open one read only from VS Code |
 | [MCP](docs/MCP.md) | The MCP server: tools, resources, client config, security |
 | [MODELS](docs/MODELS.md) | Which model suits your machine, and using a server other than Ollama |
 | [PRIVACY](docs/PRIVACY.md) | What touches the network, private-note encryption, sessions |
@@ -549,7 +551,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 24,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 24,100+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

@@ -78,7 +78,9 @@ def test_a_flow_mapping_config_is_refused_and_other_front_matter_stays():
 
 
 def test_the_menu_offers_the_shapes_that_are_not_on_and_spacing_re_applies_the_shape():
-    assert "...curveRows()," in EMBED and "const now = curveOf(history[at]);" in EMBED
-    for words in ("Straight lines", "Curved lines", "Stepped lines", "Usual lines"):
+    # The stated intent moved: the three shapes are radio rows of the Lines submenu (the chosen one is `current`; pressing it again is the usual).
+    assert "items: curveRows()" in EMBED and "const now = curveOf(history[at]);" in EMBED
+    assert 'shape === now ? "usual" : shape' in EMBED
+    for words in ("Straight", "Curved", "Stepped", "usual"):
         assert words in EMBED
     assert "ignores `flowchart.curve`" in EMBED

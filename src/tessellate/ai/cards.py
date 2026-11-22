@@ -353,6 +353,7 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     "save_user_preference": (),  # carries its own accept/decline card
     "web_search": (),  # the Sources panel draws these, see `_tool_sources`
     "read_url": (),  # ditto
+    "browser_open": (), "browser_read": (), "browser_follow": (), "browser_find": (), "browser_back": (),  # the panel shows the page
     "ask_user": (),  # ends the turn with a question card
     "run_skill": (),  # ends the turn and hands over to the runner
     "make_plan": (),  # ditto, and the plan card is the checklist

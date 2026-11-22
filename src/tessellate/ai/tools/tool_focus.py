@@ -164,7 +164,7 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
     # per-question; `tool_enabled` already hides them otherwise, and second-
     # guessing that switch here would mean "web search is on but I didn't
     # think you meant it".
-    wanted.extend(["web_search", "read_url"])
+    wanted.extend(toolwords.web_tools_for(asked))
     # De-duplicated but order-preserving: a group can name a tool that is
     # already core, and a repeated schema is a wasted schema.
     unique = list(dict.fromkeys(wanted))

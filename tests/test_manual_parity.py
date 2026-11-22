@@ -97,7 +97,7 @@ def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_setting
     #: The Settings button's listener is in settings-controls.js now.
     wiring = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("wiring.js", "settings-controls.js"))
     # The panel moved to its own lazy piece (categories-panel.js).
-    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
+    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-sidebar.js", "categories-panel.js"))
     assert 'id="manage-categories-btn"' in html and 'id="settings-manage-categories"' in html
     assert '$("manage-categories-btn").addEventListener("click", () => openManageCategories());' in wiring
     assert 'wire("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
@@ -114,7 +114,7 @@ def test_the_category_tools_count_as_writes():
 def test_the_categories_panel_is_a_managed_list_with_the_reference_head():
     # The owner: "needs some ui redesign ... like the ai assistant panel".
     # The panel moved to its own lazy piece (categories-panel.js).
-    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
+    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-sidebar.js", "categories-panel.js"))
     assert 'head.classList.add("dialog-head");' in notes
     # A grid since INBOX 433 (an option may not hold its ⋯; a grid cell may).
     assert 'list.setAttribute("role", "grid");' in notes and 'list.setAttribute("aria-multiselectable", "true");' in notes
@@ -463,15 +463,16 @@ def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
     for words in ("Edit as blocks", "double-click a diagram object", "Open as a diagram", "![[name]]", "Done", "Cancel, Escape and the X",
-                  "SVG", "PNG", "Copy as Mermaid", "Copy as SVG", "Source"):
+                  "Save as (SVG, PNG)", "Copy as (Picture, Mermaid, SVG)", "Source"):
         assert words in body, words
     assert "diagram-elsewhere" in TOPIC_META and "diagram-elsewhere" in dict(HELP_GROUPS)["Documents and code"]
     embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
-    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     draw = (FRONTEND / "js" / "mermaid-draw.js").read_text(encoding="utf-8")
     mermaid = (FRONTEND / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
-    for label in ("Save as SVG", "Save as PNG", "Copy as Mermaid", "Copy as SVG"):
-        assert label in builder, label
+    #: The stated intent moved: the exports are rows of the Save as and Copy as submenus, made in diagram-kindbar.js.
+    kindbar = (FRONTEND / "js" / "diagram-kindbar.js").read_text(encoding="utf-8")
+    for label in ("Save as", "Copy as", "ph:file-png PNG", "ph:code Mermaid", "ph:image Picture"):
+        assert label in kindbar, label
     assert '"Edit as blocks"' in mermaid and '"Open as a diagram"' in draw
     #: R9c (1621 D4, D7): Save to Library on a fence and in the menu, the swap offer, and the chat card.
     for words in ("Save to Library", "replace the fence with a link", "link a board's diagram", "Attach a Library diagram to Chat"):
@@ -563,8 +564,8 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     assert '["Tab, Shift + Tab in Source", "Indent, take the indent back"]' in style and '["Esc in Source", "Leave the text for the views"]' in style
     reading = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
     kinds = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
-    assert "Hand-drawn look, in the ... menu" in kinds and "Clean look takes it back" in kinds
-    assert '"ph:pencil-line Hand-drawn look"' in embed and '"ph:rectangle Clean look"' in embed
+    assert "Hand-drawn look, under Look in the ... menu" in kinds and "press it again to take it back" in kinds
+    assert '"ph:pencil-line Hand-drawn look"' in embed and "setLook(!hand)" in embed
     for words in ("In Source, Tab indents and Shift+Tab takes it back", "Escape leaves the text", "a red line number", "Title names the document Done makes (blank dates it)"):
         assert words in reading, words
     assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading
@@ -817,6 +818,22 @@ def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_ke
     assert "lasts for the session" in body and "after a reload or a restart it starts empty" in body
     assert "a board, a mind map and a document keep their last hundred steps" in body
     assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]
+
+
+def test_the_mcp_scope_and_oauth_sign_in_are_in_the_guide_and_the_help():
+    """L-world-class-560 (order 13): the link's Categories and Tags fields and the
+    OAuth sign-in's Approve are named in the controls' own words in the Guide and
+    in the group's own help, beside the controls they name."""
+    from tessellate.ai import help_chat
+
+    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "mcp-links")
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html.split('id="mcp-config-help"', 1)[1].split("</div>", 1)[0]
+    for words in ("Categories and Tags", "OAuth", "Waiting to sign in", "Approve", "on this computer"):
+        assert words in topic["body"], words
+        assert words in help_body, words
+    assert 'for="mcp-client-cats" class="muted">Categories<' in html and 'for="mcp-client-tags" class="muted">Tags<' in html
+    assert 'aria-label="Waiting to sign in"' in html
 
 
 def test_the_manual_pictures_are_few_small_and_each_on_disk_for_a_real_topic():

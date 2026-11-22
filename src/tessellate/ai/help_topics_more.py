@@ -58,8 +58,7 @@ MORE_TOPICS: list[dict] = [
             "minutes apart it may walk over to you, and now and then it "
             "goes out for a while and comes back (Reduce actions on Normal). Stay "
             "here on every page in its menu keeps it in view on all of them. It keeps "
-            "quiet company while you type, plays when you idle, naps when you "
-            "are away. Choose who it is in "
+            "quiet company while you type, plays when you idle, naps when you are away. Choose who it is in "
             "Settings, Appearance, Atlas and faces, Corner companion: Off, "
             "You, The chat's persona, Atlas, or Your own character (a name and "
             "parts of its own). Companion size is Small, Medium or Large, or "
@@ -71,14 +70,12 @@ MORE_TOPICS: list[dict] = [
             "Rub it and it leans in; tickle its belly, click its nose or shake it "
             "while carried and it giggles, sneezes or turns over dizzy "
             "(switches under What it does on its own). Hover anything it wears for what and why. "
-            "Its large view (double-click it) has a "
-            "row of things to ask of it: wave, cheer, hop, stretch, shrug or "
+            "Its large view (double-click it) has a row of things to ask of it: wave, cheer, hop, stretch, shrug or "
             "wiggle, and Atlas also juggles stars, reads its map and "
             "meditates. Right-click it, or press Shift+F10 on it, for its "
             "menu: Say hello, Enlarge, Stay here on every page, Let it choose "
             "its spot here, a size, Quieter (only blinks and looks; Livelier undoes it), "
-            "Call back and reset its place, and Hide. "
-            "Ctrl+Shift+Y, the command palette and Find anything show or hide "
+            "Call back and reset its place, and Hide. Ctrl+Shift+Y, the command palette and Find anything show or hide "
             "it from anywhere, and the palette's Focus companion puts the keyboard on it. If it "
             "is ever out of reach, Call back (in the setting, its menu or the palette) brings it back."
         ),
@@ -168,8 +165,7 @@ MORE_TOPICS: list[dict] = [
             "moods follow the part of the day, brighter in the morning and quieter in "
             "the evening. None of it happens while you type, while Motion is reduced, "
             "or over something else it is doing. To stop it, turn off Little habits and "
-            "reactions in Settings, Appearance, Atlas and faces, Corner companion, What "
-            "it does on its own."
+            "reactions in Settings, Appearance, Atlas and faces, Corner companion, What it does on its own."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -199,8 +195,7 @@ MORE_TOPICS: list[dict] = [
             "crossfades it to its new spot, and it glances at the new page rather "
             "than crossing it. Arriving it gives a little at the knees, waking it "
             "rises, and after a reaction it breathes out, never the same way twice "
-            "running. To have it glide, walk on, tumble "
-            "or drop in instead, turn on Showy entrances in Settings, "
+            "running. To have it glide, walk on, tumble or drop in instead, turn on Showy entrances in Settings, "
             "Appearance, Atlas and faces. The rest of the time it sits, looks around, "
             "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
             "Motion off, or Interface animations off, it only fades or "
@@ -317,8 +312,7 @@ MORE_TOPICS: list[dict] = [
             "from your name; Shuffle redraws it and Back to my name's own "
             "undoes that, Choose parts yourself sets each part), and About me, "
             "which Atlas reads for more personal answers only while \"Let Atlas "
-            "read your name and About me\" is on. Delete my profile data clears "
-            "it; answers just get less personal."
+            "read your name and About me\" is on. Delete my profile data clears it; answers just get less personal."
         ),
         "badge": {"label": "Profile", "section": "preferences"},
     },
@@ -329,15 +323,9 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
-            "mcp link", "connect claude", "revoke a token",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop; "
-            "it can also read your notes (never "
-            "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. Make a link gives an "
-            "app its own token, shown once, to revoke. "
+            "Use these tools from another app, at the end of this section, is its own topic. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
@@ -356,8 +344,7 @@ MORE_TOPICS: list[dict] = [
             "tokens per step and in seconds; 0 means no limit. A skill may also "
             "cap its own tool calls and steps; a run that passes a cap stops, "
             "says which, and keeps its changes for Undo. With small model mode "
-            "on, a skill measured below 80% on small models shows Needs a "
-            "larger model, with why. In Agent mode "
+            "on, a skill measured below 80% on small models shows Needs a larger model, with why. In Agent mode "
             "the model's size, read from its name, decides how many tools it "
             "sees and how long one step may write: under 3B and up to 8B get "
             "a short toolbox and a reply that runs long is cut short, 8B and up get everything."
@@ -396,8 +383,7 @@ MORE_TOPICS: list[dict] = [
             "later note answers), where What it remembers is what you told it. "
             "The Dashboard's While you were away card counts each kind from the "
             "last read; a pair shows the other sentence and a button to open "
-            "its note; other buttons link a disagreement, remind you on a "
-            "date, or merge a repeated note. Every row "
+            "its note; other buttons link a disagreement, remind you on a date, or merge a repeated note. Every row "
             "says which note it came from, which model decided it and how sure "
             "it was. Edit a row and no later run overwrites it; delete one and "
             "it is never worked out again. What may run switches each kind off; "
@@ -433,8 +419,7 @@ MORE_TOPICS: list[dict] = [
             "Insert, Diagram, Mermaid diagram on a board takes a few lines of text and draws a "
             "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under Atlas, "
             "Make a mind map, builds a map from that note's headings and lists. "
-            "The Writing room's diagram needs a model for anything beyond a rule-made "
-            "flowchart, timeline or mind map. "
+            "The Writing room's diagram needs a model for anything beyond a rule-made flowchart, timeline or mind map. "
             "A diagram on a board can follow a Library diagram: it redraws from it, and if that "
             "diagram is deleted the board keeps its last picture and says so."
         ),
@@ -453,22 +438,18 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Notes, Questions lists the questions your notes ask in passing, "
-            "your own ones only (not a quote, a prompt list, a script's line or "
-            "a joke answered on the next line), "
-            "found when Atlas reads your notes (Read notes now, which says how many it "
-            "read and found, or on its own "
+            "your own ones only (not a quote, a prompt list, a script's line or a joke answered on the next line), "
+            "found when Atlas reads your notes (Read notes now, which says how many it read and found, or on its own "
             "with background tasks on), grouped by note, newest note first: "
             "Open, Answered or Dropped, picked in the bar with a count on each. A "
             "note that asks any says so on its card (2 open questions); pressing "
-            "that shows only its questions. A row says when it was asked; when a "
-            "later note answers it, the row "
+            "that shows only its questions. A row says when it was asked; when a later note answers it, the row "
             "says so with the sentence, and pressing that line opens the note. "
             "Mark answered asks which note answers it and links the two notes; "
             "Drop puts a question aside; Reopen brings either back. With no "
             "model the reading is by rule: a sentence ending in a question mark, "
             "or one that says I wonder, not sure if, need to find out, should I "
-            "or how do I; a later note on the same thing that states it marks "
-            "it answered. Ask about "
+            "or how do I; a later note on the same thing that states it marks it answered. Ask about "
             "these opens Ask answering from the notes with open questions only "
             "(Ask all notes under the box goes back). The Dashboard's While you "
             "were away card counts the open ones and names the oldest."
@@ -488,8 +469,7 @@ MORE_TOPICS: list[dict] = [
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
             "Dates like 3/4 mean (day first or month first; automatic follows your region), "
-            "Clock (a 12 or 24 hour clock everywhere), "
-            "and My birthday, which \"on my birthday\" in a reminder uses. "
+            "Clock (a 12 or 24 hour clock everywhere), and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
             "The welcome's preferences card offers the same choices once, and Skip passes them by. "
             "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
@@ -592,8 +572,7 @@ MORE_TOPICS: list[dict] = [
             "or Everything it finds; each Not right raises the bar. A long "
             "block in an answer from no model (the text read from a picture, "
             "say) is folded to one line, its first sentence and its length; "
-            "press it to read the whole. A model's own answer is never folded; "
-            "only its thinking is, under Thinking."
+            "press it to read the whole. A model's own answer is never folded; only its thinking is, under Thinking."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
@@ -609,8 +588,7 @@ MORE_TOPICS: list[dict] = [
             "scrolls sideways. The Wrap lines button in the card's top bar, beside "
             "Copy, breaks the long lines instead, so nothing scrolls; Don't wrap "
             "(the same button, pressed) puts the scrolling back, which is what you "
-            "want for code you mean to paste. Tables and code remember their own "
-            "choice for the next one."
+            "want for code you mean to paste. Tables and code remember their own choice for the next one."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -645,8 +623,7 @@ MORE_TOPICS: list[dict] = [
             "\"when did I last back up\" and the answer comes from these "
             "records, with times. Autonomous background AI is here too. Battery-efficient "
             "mode pauses background AI, heavy graph work and the moving "
-            "artwork. Quit Tessellate stops the app and its server properly, so "
-            "the next start finds its port free."
+            "artwork. Quit Tessellate stops the app and its server properly, so the next start finds its port free."
         ),
         "badge": {"label": "Background tasks", "section": "tasks"},
     },
@@ -655,17 +632,18 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "health", "is my notebook ok", "integrity", "integrity check", "corrupt",
             "corruption", "last backup", "last error", "data folder size", "how big",
-            "is it healthy", "check the database",
+            "is it healthy", "check the database", "speed", "slow", "how fast", "speed budget",
         ),
         "body": (
             "Settings, About, Health says how the notebook is, each line dated: "
             "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), what "
             "is running now, the last error in the log, and Integrity, whose "
             "Check now has the database check itself and counts the search index "
-            "beside your notes. The palette's Health goes straight there. The "
+            "beside your notes. Speed's Check now times this notebook's searches, "
+            "lists, boards and documents against the limits the app is held to, "
+            "with this page's first paint. The palette's Health goes straight there. The "
             "app also gives the notebook file a quick check each time it starts, "
-            "and if that fails it says so and points to the newest backup in "
-            "Settings, Import & export."
+            "and if that fails it says so and points to the newest backup in Settings, Import & export."
         ),
         "badge": {"label": "About", "section": "about"},
     },
@@ -780,8 +758,7 @@ MORE_TOPICS: list[dict] = [
             "words to expect", "embedding model", "embedding models", "languagetool", "java",
         ),
         "body": (
-            "Dictation model size runs from "
-            "Tiny (fastest) to Medium (most accurate); each size says whether it "
+            "Dictation model size runs from Tiny (fastest) to Medium (most accurate); each size says whether it "
             "is on this computer, a size that is not downloads the first time "
             "you dictate with it (choosing it asks first, and nothing downloads "
             "until then), and Remove this size frees the disk. Skip silence before "
@@ -825,8 +802,7 @@ MORE_TOPICS: list[dict] = [
             "Settings, Packages offers a spelling pack each (about 340 KB, "
             "kept on this computer); the Suggestions panel of such a document "
             "also has an Install button. Once installed, spelling is checked in "
-            "that language and grammar stays English. Add a word to the "
-            "dictionary as usual to stop it being flagged."
+            "that language and grammar stays English. Add a word to the dictionary as usual to stop it being flagged."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },
@@ -851,8 +827,7 @@ MORE_TOPICS: list[dict] = [
             "preview lists the files first, so you can untick any), "
             "or a PDF, Word file or slide deck, one note per chapter or slide (once installed). "
             "The four import groups (Import markdown, Import a document, Import "
-            "from another app, Web clipper) are folded: press a heading to open "
-            "it, and the ? beside it opens it too. "
+            "from another app, Web clipper) are folded: press a heading to open it, and the ? beside it opens it too. "
             "To keep a file whole as a document you can edit instead, open "
             "Library, Documents, the more menu, Import a file as a document. "
             "Backups: Back up now, and how many to keep; one is also taken "
@@ -885,8 +860,7 @@ MORE_TOPICS: list[dict] = [
             "Density, Zoom and the companion's size, marked On this device, are "
             "kept only on the device you set them on (a phone and a computer "
             "each have their own zoom); the rest, your colours and fonts "
-            "included, are kept in your notebook and follow you to every "
-            "browser you sign in from. Settings, "
+            "included, are kept in your notebook and follow you to every browser you sign in from. Settings, "
             "Import & export, Your settings: Export settings saves every setting "
             "as one .json file (no notes in it); Import settings reads one back, "
             "applies each setting it can, adds its skills, personas and templates "
@@ -978,8 +952,7 @@ MORE_TOPICS: list[dict] = [
             "press Random theme for a whole theme at random, save and switch your own, or Export look and Import look to move one between devices as a JSON file (an import skips what it cannot read and says which, with Undo). Theme & "
             "colour: Palette (Mix palette, accent and density picks those three at random, with Undo), Mode (light, dark or system), Accent colour or a "
             "custom one (a colour a button's words cannot be read on is "
-            "offered at the nearest shade that can), Page background, and "
-            "Build a scheme from one colour. "
+            "offered at the nearest shade that can), Page background, and Build a scheme from one colour. "
             "Typography & layout: Text size, Font (System, Serif, Mono, Arial, "
             "or Readable, the Atkinson Hyperlegible face), Density, Line spacing and Line width (Tight, Normal or Roomy, and Narrow, Standard or Wide, for notes and documents you read), Corner rounding, "
             "Zoom, Border style and Shadow intensity (Text size, Density and Zoom "
@@ -1058,8 +1031,7 @@ MORE_TOPICS: list[dict] = [
             "finds a setting by any word in it or by what it does, with words "
             "that mean the same (\"night\" or \"darker\" finds the theme, "
             "\"battery\" the battery-efficient mode, \"back up\" Backups, "
-            "\"the little guy in the corner\" the companion, and a slip such as "
-            "\"chnage pasword\" the password), and "
+            "\"the little guy in the corner\" the companion, and a slip such as \"chnage pasword\" the password), and "
             "lists the matching settings under it, each opening where it sits; with "
             "an embedding model on (Settings, Search and index), up to three more found by "
             "meaning follow under Close in meaning. A long section lists its "
@@ -1102,8 +1074,7 @@ MORE_TOPICS: list[dict] = [
             "paths: the recovery key and a new password keeps private notes "
             "and hands you a new key; I don't have it asks for a six-digit code Tessellate prints in its terminal or log (ten minutes, one use) and then resets the password like "
             "python -m tessellate --reset-password, which keeps ordinary notes, "
-            "documents, boards and settings, leaves private notes sealed for "
-            "good, and turns other devices off."
+            "documents, boards and settings, leaves private notes sealed for good, and turns other devices off."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
@@ -1185,6 +1156,27 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Web clipper", "section": "data", "target": "web-clip-box"},
     },
     {
+        "id": "assistant-browser",
+        "keywords": (
+            "browse the web", "browse a page", "open a page for me", "browser tools", "follow a link",
+            "find text on a page", "go back a page", "assistant browser", "browser mcp", "read a page for me",
+        ),
+        "body": (
+            "In Agent mode, with web search on (Settings, Web search), the assistant can "
+            "browse beside searching: it opens a page in the Web panel, reads it as text, "
+            "follows one of its links, finds words on it and goes back. The page it reads "
+            "is the page you see in the panel. Opening and following send a request, "
+            "so they use the same switch, the same address checks and the same "
+            "confirm as a web search: once a page has been read in a turn, "
+            "each further open or follow waits for you on a card. Reading, finding and "
+            "going back use the page already held and send nothing. A page is someone "
+            "else's words: Atlas reads it as data and never follows instructions in it. "
+            "An MCP client you connected sees the same tools while web search is on. "
+            "By hand, the reader has the page's links, Find in this page and Results."
+        ),
+        "badge": {"label": "Web search", "section": "websearch"},
+    },
+    {
         "id": "import-apps",
         "keywords": (
             "import from notion", "notion", "evernote", "enex", "apple notes", "obsidian vault",
@@ -1197,8 +1189,7 @@ MORE_TOPICS: list[dict] = [
             "From Obsidian (choose the vault folder), From Evernote (choose the "
             ".enex files you exported), From Apple Notes (choose the folder an "
             "exporter app wrote, one HTML, Markdown or text file per note) and "
-            "From a Tessellate folder (the zip Export notebook folder writes, every "
-            "field back as it was). "
+            "From a Tessellate folder (the zip Export notebook folder writes, every field back as it was). "
             "Choosing opens a preview: every note it found with its first words "
             "and a tick (a note already here starts unticked), Select all or none, "
             "then Import N. Closing it imports nothing. After the import, the "
@@ -1230,8 +1221,7 @@ MORE_TOPICS: list[dict] = [
             "Library's Boards & maps, What it learned and the advanced response "
             "settings until you want them. Nothing is turned off: every hidden "
             "place still opens from the command palette (Ctrl+K), and reminders "
-            "still ring. It is remembered on this device; turn it off in the "
-            "same place to bring the tabs back."
+            "still ring. It is remembered on this device; turn it off in the same place to bring the tabs back."
         ),
         "badge": {"label": "Simple mode", "section": "general", "target": "simple-mode-box"},
     },
@@ -1247,8 +1237,7 @@ MORE_TOPICS: list[dict] = [
             "file in your data folder: names and dates, never what you typed, "
             "and never sent anywhere (there is no telemetry). It lists your most "
             "used tabs and commands and the ones not used in 90 days, and the "
-            "command palette lists the commands you use most first. Clear the "
-            "counts forgets every one."
+            "command palette lists the commands you use most first. Clear the counts forgets every one."
         ),
         "badge": {"label": "What you use", "section": "general", "target": "usage-box"},
     },
@@ -1304,8 +1293,7 @@ MORE_TOPICS: list[dict] = [
             "that box. Sum takes a sum typed or keyed (12 * (3 + 4), 15% of "
             "80, 5 km to miles), shows a preview as you type and says how it "
             "read it; Enter or = keeps it in History. Scientific adds trig, logs, powers, roots, a "
-            "factorial, pi and e, Degrees or Radians and a memory (MC, MR, "
-            "M+, M-), worked out with no model. "
+            "factorial, pi and e, Degrees or Radians and a memory (MC, MR, M+, M-), worked out with no model. "
             "Each answer has Copy, and each tab has a History under "
             "its fields (the last twenty, kept on this device): press a row to "
             "put it back in the fields, or Copy it, Edit it (the next keep "
@@ -1320,8 +1308,7 @@ MORE_TOPICS: list[dict] = [
             "button; currency rates are dated, set in Settings, Search and index. "
             "Time zone takes a time and two places (09:00, London, Tokyo), offline. "
             "The Equation tab is the equation editor (see Equation editor): when "
-            "an equation is made of numbers, its value is shown under it, as in "
-            "Sum. The arrow keys, Home and End move "
+            "an equation is made of numbers, its value is shown under it, as in Sum. The arrow keys, Home and End move "
             "between the tabs. The Dashboard's Calculator widget draws "
             "Sum and Units on the page, with Copy but no Insert; Convert is Units alone."
         ),
@@ -1402,8 +1389,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "The Clock is one window for timers, a stopwatch and alarms. Chat opens "
-            "it for \"set a timer for 25 minutes\". Open it "
-            "from the command palette (Ctrl+K): Start a timer, Start a "
+            "it for \"set a timer for 25 minutes\". Open it from the command palette (Ctrl+K): Start a timer, Start a "
             "stopwatch or Set an alarm, or from the \"/\" menu in Chat, or by "
             "pressing the timer chip in the status bar, which opens the panel "
             "and never stops the clock. Type a length in the palette, such as "
@@ -1421,8 +1407,7 @@ MORE_TOPICS: list[dict] = [
             "Dashboard's Clock widget (Customise, Widgets) draws the same tabs "
             "on the page, over the same running clocks; the Stopwatch widget "
             "is the stopwatch alone (Start, Pause, Lap, Reset, with the laps "
-            "listed) and the Alarm widget is the alarm alone (a time and a "
-            "label, kept as a reminder). The "
+            "listed) and the Alarm widget is the alarm alone (a time and a label, kept as a reminder). The "
             "Dashboard's Focus timer is a separate ring timer: 5, 15, 25, 50 or "
             "60 minutes, or type any length from 1 to 180 (minus and plus step "
             "one minute below 10 and five above), a chime at the end, Breaks, "
@@ -1474,8 +1459,7 @@ MORE_TOPICS: list[dict] = [
             "the dashboard as a quick link (Quick access, Customise). "
             "The contents on the left jump to a group, the search box keeps only "
             "the topics that hold every word you type or what the words mean "
-            "(\"trash\" keeps the bin's topic), those whose name holds them "
-            "first, and the printer button "
+            "(\"trash\" keeps the bin's topic), those whose name holds them first, and the printer button "
             "prints what is shown (or saves it as a PDF). It is made from the "
             "Guide's own topics, so the two never disagree. What changed in each "
             "version is under Settings, About, What's new."
@@ -1503,8 +1487,7 @@ MORE_TOPICS: list[dict] = [
             "under the captions; the note keeps what was said. Keep the audio of live "
             "captions (off until you turn it on, in Settings, General, Microphone) makes Stop "
             "save the audio too, in Library, Recordings, with the lines as its transcript. "
-            "While a voice note records, the same "
-            "captions write its words into the dialog as you speak, and the "
+            "While a voice note records, the same captions write its words into the dialog as you speak, and the "
             "full transcript replaces them after. Captions need the Live captions "
             "bundle: Settings, Packages, Install on Live captions fetches the speech "
             "engine and a 32 MB English model in one click, and the first caption "
@@ -1590,8 +1573,10 @@ MORE_TOPICS: list[dict] = [
             "back) on this computer, with no model, in about a "
             "second, and Copy or Replace the selection puts it to use. With "
             "nothing selected it takes the whole editor you were in. It needs "
-            "Translate offline, a 54 MB download in Settings, Packages "
+            "Translate offline, a 27 MB download in Settings, Packages "
             "(Languages); until then the row says so and opens that page. "
+            "Each other language, and Spanish back into English, is a "
+            "translation package of its own, or all at once with the More translation languages bundle. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "
             "With more than one language pair installed the sheet shows a "
@@ -1670,8 +1655,7 @@ MORE_TOPICS: list[dict] = [
             "same app, still served by the copy running on this computer. When "
             "that copy is not running, the installed app shows a page saying "
             "Tessellate is not running on this computer, with a Retry button, "
-            "never an empty notebook: open Tessellate from the Start menu or "
-            "the launcher, then press Retry."
+            "never an empty notebook: open Tessellate from the Start menu or the launcher, then press Retry."
         ),
         "badge": {"label": "Install as an app", "section": "about", "target": "about-install"},
     },
@@ -1766,6 +1750,7 @@ TOPIC_META: dict[str, dict] = {
     "running-copies": {"title": "Running copies", "path": "Settings, About, Running copies", "target": "running-copies-group"},
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
+    "assistant-browser": {"title": "Browse the web with the assistant", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
     "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after (the app's Undo lasts for the session)"},
     "autonomous": {"title": "Autonomous background AI", "path": "Settings, Background tasks"},
@@ -2002,7 +1987,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch", "searxng",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch", "assistant-browser", "searxng",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
@@ -2525,8 +2510,7 @@ MORE_TOPICS.extend([
             "for every shape and its key. Connect to... on a block draws an "
             "arrow: pick a block, or type a new name to make it. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
-            "them, a group's body takes it inside. A block's "
-            "connector reads Start to Next and its label. "
+            "them, a group's body takes it inside. A block's connector reads Start to Next and its label. "
             "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
             "arrows; Shift for more). Direction (a menu) turns the flow (... on a phone). An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
@@ -2538,13 +2522,11 @@ MORE_TOPICS.extend([
             "Keys "
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 9 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
             "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
-            "Suggest (... on a phone) starts one: "
-            "Templates (then Use this template), From my notes "
+            "Suggest (... on a phone) starts one: Templates (then Use this template), From my notes "
             "and Describe it (a model; dimmed with none). A blank diagram becomes "
             "the suggestion; else blocks arrive as ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds those taken and "
-            "Escape drops them; Ctrl+Z undoes the whole addition. "
-            "Kind asks before it clears blocks. More: next topic."
+            "Escape drops them; Ctrl+Z undoes the whole addition. Kind asks before it clears blocks. More: next topic."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2563,7 +2545,7 @@ MORE_TOPICS.extend([
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
             "[ and ] fold the list and the picture to a rail. On a phone, once there is an arrow (another kind: a block), Blocks list opens the list as a sheet. "
             "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history, and a red line number is the line an error names; its note has Undo the last edit. Ctrl+Space lists words; Enter takes one. "
-            "In the bar Left and Right walk the buttons; the ... menu has the look, Save as PNG and Save to Library. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
+            "In the bar Left and Right walk the buttons; the ... menu has Look, Save as and Copy as. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
             "The New diagram window's Title names the document Done makes (blank dates it) and the files you export."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -2577,8 +2559,7 @@ MORE_TOPICS.extend([
         "body": (
             "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
             "each with a small picture; one starts an empty diagram of that kind. Box this block (its ... menu) or Box them (picked blocks) "
-            "adds a group round. "
-            "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the source's "
+            "adds a group round. Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the source's "
             "first word says which, and the bar offers that kind's blocks. A mind map has a branch "
             "and a leaf (B and N) under its centre; a second Branch in a row sits beside it. A timeline has a section, a period and an event "
             "(S, P and E), events inside their period. A sequence diagram has an actor, "
@@ -2593,7 +2574,7 @@ MORE_TOPICS.extend([
             "a head dragged sideways reorders, a drag from one lifeline to another adds a message, and the + at a gap opens the Add menu; "
             "from the keyboard, Insert in the blocks list adds a step under the selected one, + on the picture. "
             "A suggestion of its own kind arrives as ghosts to take; "
-            "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
+            "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, under Look in the ... menu, sketches any; press it again to take it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2629,8 +2610,8 @@ MORE_TOPICS.extend([
             "ask before dropping changes. On a board, double-click a diagram object. In Chat or Ask, "
             "a reply's diagram has Open as a diagram under it. "
             "Type ![[name]] in a note or a document to draw that diagram there, with a "
-            "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG, "
-            "Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
+            "line that opens it. The ... menu in the editor's bar has Save as (SVG, PNG) "
+            "and Copy as (Picture, Mermaid, SVG). A diagram's Library card "
             "has the same pictures in its menu; its page has Export in its head, and Download .mmd, in the ... menu, saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
             "/diagram and a board's Insert list your diagrams, then New diagram: an empty builder whose Done embeds that file. "
@@ -2638,7 +2619,7 @@ MORE_TOPICS.extend([
             "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
             "The Keys button in its foot, or ? outside a text field, lists every key. "
             "On a phone, and in Sequence, Mind map and Timeline, the shapes are one Add button that opens a sheet of them; pinch to "
-            "zoom, drag to move, double tap to fit. Save to Library, in the ... menu "
+            "zoom, drag to move, double tap to fit. Save to Library, under Save as in the ... menu "
             "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
             "a notice offers to replace the fence with a link, or to link a board's diagram to it; "
             "nothing changes until you press it. Attach a Library diagram to Chat and the model "
@@ -2710,8 +2691,7 @@ MORE_TOPICS.extend([
             "a slider and a number, sets how solid that colour is: the fill's for "
             "a Fill, the line's for a Border or line, the text's for text. "
             "Filled off keeps the fill's colour and Filled on brings it back; "
-            "From screen (where the browser has it) takes any colour on the screen. "
-            "Pick from the board is the "
+            "From screen (where the browser has it) takes any colour on the screen. Pick from the board is the "
             "eyedropper: the next click takes a colour instead of doing what it "
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "
@@ -2768,6 +2748,23 @@ MORE_TOPICS.append({
     ),
 })
 TOPIC_META["find-a-place"] = {"title": "Finding where something is", "path": "Notes tab, Ask your notebook"}
+#: Moved out of tools-setting whole when the scope and OAuth rows came (L-world-class-560): that topic sat at the reply budget.
+MORE_TOPICS.append({
+    "id": "mcp-links",
+    "title": "Use your notes from another app",
+    "keywords": ("mcp", "mcp link", "connect claude", "claude desktop", "claude.ai", "revoke a token", "oauth", "another app", "tool server", "docker"),
+    "badge": {"label": "Tools it can use", "section": "tools"},
+    "body": (
+        "Settings, Tools it can use, Use these tools from another app: a snippet to paste into an MCP client such as "
+        "Claude Desktop, which can then read your notes (never a private one) and use your skills as prompts. It reads "
+        "only until you tick Let that app add and change notes; deleting is never offered. Make a link gives an app an "
+        "address and its own token, shown once, to revoke; Categories and Tags limit it to those notes only, so it cannot "
+        "search, read or change any other. An app such as claude.ai can sign in with OAuth instead: its page waits, the "
+        "sign-in shows under Waiting to sign in with a short code, and you press Approve on this computer. The link works "
+        "only on this computer unless LAN mode is on, and nothing is sent anywhere else."
+    ),
+})
+TOPIC_META["mcp-links"] = {"title": "Use your notes from another app", "path": "Settings, Tools it can use, Use these tools from another app", "target": "mcp-config-group"}
 MORE_TOPICS.append({
     "id": "nicknames",
     "title": "Calling Atlas by any name",
@@ -3075,10 +3072,9 @@ MORE_TOPICS.append({
         "expand a diagram", "full screen diagram",
     ),
     "body": (
-        "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
-        "Stepped lines, Usual lines) and how far apart the blocks sit (Compact, Roomy, "
-        "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
-        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
+        "A flowchart's ... menu sets how arrows are drawn (Lines: Straight, Curved, Stepped) "
+        "and how far apart the blocks sit (Spacing: Compact, Roomy); the chosen row is ticked and pressing it again goes back to the usual. Both are kept in the diagram's own text as front matter and Undo "
+        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, under Look in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
@@ -3125,8 +3121,7 @@ MORE_TOPICS.append({
         "board's text or the Chat box, from a document's Insert menu, or with "
         "Alt+= there and in the Ask box, or Ctrl+K, Insert equation, each over "
         "the box you were in; Ctrl+K, Calculator and equations opens the same "
-        "dialog on Sum, and the shortcuts list has it under Tools. The "
-        "equation is drawn as it will read, with "
+        "dialog on Sum, and the shortcuts list has it under Tools. The equation is drawn as it will read, with "
         "dotted boxes where things go: click a box to fill it, Tab goes to the "
         "next one and the arrows move through the equation. Backspace in an "
         "empty box selects its whole structure, and a second removes it. Type it plainly: "
@@ -3134,8 +3129,7 @@ MORE_TOPICS.append({
         "as \\frac or \\alpha turns into the symbol as you type it. The "
         "palette inserts the structures Word offers (fraction, script, "
         "radical, integral, large operator, bracket, function, accent, limit "
-        "and log, operator, matrix), braces and labelled arrows, common "
-        "formulas and symbols: Greek in "
+        "and log, operator, matrix), braces and labelled arrows, common formulas and symbols: Greek in "
         "lower and upper case, operators, relations, arrows, sets and logic, "
         "calculus and function names; a selection goes into the first box. The "
         "LaTeX button shows the same equation as raw TeX to edit directly, and "
@@ -3147,8 +3141,7 @@ MORE_TOPICS.append({
         "the sentence, Display on its own line; Ctrl+Enter inserts, and with no "
         "box behind the dialog Insert is off and Copy copies the equation. An "
         "equation made of numbers shows its value under the field. It writes "
-        "TeX between dollar signs, so the note stays plain text. On a touch "
-        "screen the field offers its own keyboard."
+        "TeX between dollar signs, so the note stays plain text. On a touch screen the field offers its own keyboard."
     ),
     "badge": {"label": "Library", "tab": "library"},
 })

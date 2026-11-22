@@ -49,6 +49,7 @@ def main() -> None:
 
     from fakes import FakeEmbeddingService, FakeOllama
     from tessellate.api.app import create_app
+    from tessellate.ai import wiring  # noqa: F401
     from tessellate.core import deps
     from tessellate.core.database import (
         AuditLog,

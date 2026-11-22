@@ -1906,6 +1906,8 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
 
 def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
+    # L-world-class-390: by Web Animations `pause()` (0 to 1 ms), not a `:root.is-calm` class whose restyle of the
+    # loops was one 250 ms task at 4x CPU. The intent (loops hold, by part, resume on input) is unchanged.
     css = css08_text()
     # L-world-class-126 moved the class from <html> to each figure (a whole-page restyle at
     # rest), and L-world-class-390 from the figure to each loop, a quarter a task (one frame

@@ -52,7 +52,7 @@ def test_only_pairs_with_all_three_files_are_offered(folder):
 
 
 def test_not_installed_offers_no_pairs(monkeypatch):
-    monkeypatch.setattr(translate, "_folder", lambda: None)
+    monkeypatch.setattr(extras, "download_ready", lambda _id: None)
     assert translate.status()["pairs"] == []
 
 
@@ -72,3 +72,19 @@ def test_the_sheet_and_the_captions_read_the_saved_pair():
     assert 'prefs.set("translate-pair"' in js
     assert 'prefs.get("translate-pair")' in js
     assert 'prefs.get("translate-pair")' in frontend_text("captions.js")
+
+
+def test_every_registry_pair_has_three_pinned_hashed_downloads():
+    """L-world-class-41: each direction the picker can offer is a pinned download
+    (sha256 and size of the .gz, a run-id folder, the file name the registry
+    expects), so a pair never shows as installable without its bytes being checked."""
+    for pair in translate.PAIRS:
+        extra = extras.EXTRAS_BY_ID[pair["extra"]]
+        by_file = {m[1]: d for d in extra.downloads for m in d.members}
+        tag = pair["from"] + "-" + pair["to"]
+        for key in ("model", "lex", "vocab"):
+            d = by_file.get(pair[key])
+            assert d is not None, (tag, key)
+            assert d.unpack == "gzip" and len(d.sha256) == 64 and d.size > 100_000
+            assert f"/models/{tag}/" in d.url and d.url.endswith(pair[key] + ".gz")
+            assert "/main/" not in d.url and "latest" not in d.url

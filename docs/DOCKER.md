@@ -82,6 +82,16 @@ For Ollama nothing else is needed. For LM Studio and llama.cpp, open Settings, M
 
 A host firewall may block the Docker bridge from reaching those ports; allow the bridge subnet if Connect fails.
 
+## Use it from Claude or another AI (MCP)
+
+The tool server answers at `http://localhost:8000/mcp` on the same port, so an MCP client on the host connects with nothing else installed and nothing leaving the machine. `compose.yaml` sets `TESSELLATE_PUBLISHED_ON_LOOPBACK=1`: because the port is published on the host's loopback only, a request from the Docker bridge's private address is taken as this computer. A public address never is. Remove that line if you change the port mapping, and the tool server then refuses the host unless LAN mode is on.
+
+1. Open Settings, Tools it can use, Use these tools from another app.
+2. Choose which notes the app may reach: fill Categories or Tags (comma-separated), or leave both empty for the whole notebook. Tick This app can add and change notes only if it should write.
+3. Either press Make a link and paste the snippet into the client (an `Authorization: Bearer` header), or give the client the address `http://localhost:8000/mcp` and let it sign in with OAuth: its page waits, the sign-in shows under Waiting to sign in with a short code, and you press Approve once the codes match.
+
+Revoke ends a link or a sign-in at once. A remote client such as claude.ai has to reach the address itself, so it needs the reverse proxy above (with the name in `TESSELLATE_ALLOWED_HOSTS`); the sign-in is still approved in Settings on this computer. The full security model is in [MCP.md](MCP.md#over-http).
+
 ## Updating
 
 ```

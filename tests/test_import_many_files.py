@@ -4,7 +4,7 @@
 upload at 1,000 files with "Too many files. Maximum number of files is 1000."
 before the route ran, so a 5,000-file Obsidian vault failed at the preview
 step with a bare 400. Found by driving the real browser upload
-(scratchpad/ui-sweeps/upload5000.js)."""
+(scratchpad/ui-sweeps/folder5000.js, part 3)."""
 from __future__ import annotations
 
 from tessellate.api import routes_import

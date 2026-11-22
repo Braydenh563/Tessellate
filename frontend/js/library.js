@@ -782,19 +782,18 @@ function renderLibrary(options) {
     if (!$("library-show-binned")?.checked) {
       items = items.filter((i) => i.kind !== "archived");
     }
-    // Shelved notes get the same "kept, out of the way" treatment as
-    // activity: no extra checkbox, since the "Archived" chip already
-    // gives full access, and this is the one place "kept out of the way"
-    // actually matters: the mixed view is exactly where an archived note
-    // would otherwise clutter the notebook it was archived to get out of.
+    // Shelved notes are kept out of the way like activity: the "Archived" chip gives full access, and the mixed
+    // view is exactly where an archived note would clutter the notebook it was archived to get out of.
     items = items.filter((i) => i.kind !== "shelved");
   }
   if (query) {
     // Title *and* preview, for the same reason the conversation search reads
     // message text: you remember what a thing was about far more often than
     // what it ended up being called.
+    const heldWords = libraryPhrase.q === query ? libraryPhrase.words : null;
     const wordMatch = (i) =>
       i.serverMatch === query ||
+      (i.kind === "note" && Boolean(heldWords?.has(i.id))) ||
       (i.title || "").toLowerCase().includes(query) ||
       (i.preview || "").toLowerCase().includes(query);
     // With Semantic on, a note also matches if the meaning search returned it,
@@ -802,7 +801,7 @@ function renderLibrary(options) {
     // unchanged: see `librarySemanticIds`.
     const phrase = libraryPhrase.q === query && libraryPhrase.ids;
     const rest = libraryPhrase.rest;
-    const restMatch = (i) => !rest || (i.title || "").toLowerCase().includes(rest) || (i.preview || "").toLowerCase().includes(rest);
+    const restMatch = (i) => !rest || Boolean(heldWords?.has(i.id)) || (i.title || "").toLowerCase().includes(rest) || (i.preview || "").toLowerCase().includes(rest);
     items = phrase
       ? items.filter((i) => i.kind === "note" && libraryPhrase.ids.has(i.id) && restMatch(i))
       : librarySemanticIds
@@ -2097,16 +2096,20 @@ async function refreshLibraryServerSearch() {
 //: work", "pinned" keep the notes they leave, read and resolved by the server
 //: (`GET /read/filter`, ai/filters.py), and the words left over still search.
 //: `ids` null: no filter was read, and the box is the plain search it was.
-const libraryPhrase = { q: "", ids: null, rest: "" };
+//: `words`: the notes holding the words on the meaning layer (L628: request
+//: words dropped, a slip folded), which match beside the literal words.
+const libraryPhrase = { q: "", ids: null, rest: "", words: null };
 
 async function refreshLibraryPhrase() {
   const query = ($("library-search")?.value || "").trim().toLowerCase();
   if (query === libraryPhrase.q) return;
-  Object.assign(libraryPhrase, { q: query, ids: null, rest: "" });
+  Object.assign(libraryPhrase, { q: query, ids: null, rest: "", words: null });
   if (!query) return;
   try {
     const got = await apiJson("/read/filter?q=" + encodeURIComponent(query) + `&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true });
-    if (libraryPhrase.q === query && got.ids) Object.assign(libraryPhrase, { ids: new Set(got.ids), rest: (got.rest || "").toLowerCase() });
+    if (libraryPhrase.q !== query) return;
+    if (got.ids) Object.assign(libraryPhrase, { ids: new Set(got.ids), rest: (got.rest || "").toLowerCase() });
+    if (got.word_ids) libraryPhrase.words = new Set(got.word_ids);
   } catch {
     // No reading: the words search as before.
   }

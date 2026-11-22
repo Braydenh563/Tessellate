@@ -61,12 +61,24 @@ def test_first_clock_paint_is_its_own_task():
     assert "setTimeout(function firstClockPaint()" in src
 
 
+def test_the_first_intl_call_is_made_in_a_worker():
+    # The ICU set-up (73 to 281 ms at 4x CPU, whichever formatter is first) is the process's, so a
+    # worker that formats first leaves the page's first call at 0.2 to 1.5 ms (2026-11-21). The
+    # clocks paint when it answers, or on the timer when there is no worker.
+    src = read("shell-reminders.js")
+    start = src[src.index("new Worker(`/js/intl-warm.js") :][:400]
+    assert 'lazyAssetStamp("/js/intl-warm.js")' in start
+    assert "warm.onmessage = warm.onerror = () => {" in start and "startClockTicker();" in start
+    warm = read("intl-warm.js")
+    assert "toLocaleString()" in warm and "toLocaleDateString" in warm and "postMessage(" in warm
+
+
 def test_atlas_looks_build_on_first_read():
     # Both looks built at eval were 52 of atlas.js's 86 ms eval at 4x CPU.
     src = read("atlas.js")
     build = src.split("function atlasBuild() {", 1)[1].split("\n}\n", 1)[0]
     assert "Object.values(ATLAS_LOOKS)" not in build
-    assert "function atlasBuildLook(spec)" in src
+    assert "function* atlasBuildLook(spec)" in src
     assert "Object.defineProperty(ATLAS_LOOKS, name" in src
     assert "function atlasWarmLook()" in src
 
@@ -170,10 +182,55 @@ def test_a_search_key_drops_no_pane_text():
     assert 'else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();' in flat
 
 
+def test_settings_row_warm_reads_a_pane_in_slices():
+    # Appearance (1,260 elements) read whole was 118 ms at 4x, landing on the arrow key after its first visit
+    # (L-world-class-621): the read stops at a deadline, the vocabulary is the next slice, and a changed pane starts over.
+    find = read("settings-find.js")
+    assert "settingRowsScan.pane = function (pane, until = 0)" in find
+    assert "if (until && performance.now() > until) return null;" in find
+    assert "settingRowsScan.pane(pane, performance.now() + 6)" in find
+    assert "settingRowsWarm.words" in find
+    assert "settingRowsScan?.partial.delete(pane)" in read("settings.js")
+
+
+def test_select_observer_skips_the_shell_it_made():
+    # Each wrapped select added a shell and its option rows; the document observer re-queried every one (L-world-class-621).
+    body = read("sheets-selects.js").split("function watchForSelects()", 1)[1][:1600]
+    assert 'node.closest(".select-shell")' in body
+
+
+def test_settings_panes_are_built_lazily_and_only_the_shown_one_is_visible():
+    # The pane-switch budget (scratchpad/ui-sweeps/handlerlag.js, SETTINGS_BAR) rests on these: a pane is built on its
+    # first visit (surfaceBuild), and a switch only flips `hidden` on the panes, so no pane but the shown one is styled.
+    body = read("settings.js").split("function showSettingsSection(name)", 1)[1].split("\n}\n", 1)[0]
+    assert "surfaceBuild(`settings-${name}`)" in body
+    assert '$(`settings-${section}`).classList.toggle("hidden", section !== name)' in body
+    assert 'for (const name of SETTINGS_SECTIONS) surfaceBuild' not in body
+
+
+def test_handler_lag_sweep_holds_the_settings_pane_budget():
+    sweep = (JS.parent.parent / "scratchpad" / "ui-sweeps" / "handlerlag.js").read_text(encoding="utf-8")
+    assert "SETTINGS_BAR || 250" in sweep
+    assert "note('settings keys', sec, ev, loaf, SETTINGS_BAR)" in sweep
+
+
+def test_atlas_look_warms_in_slices():
+    # atlasWarmLook built a whole look in one task: 55 to 66 ms at 4x CPU (L-world-class-622 follow-on).
+    # The build is a generator that yields between its parts; the warm task runs one part per timeout and the
+    # getter finishes whatever is left, so a drawing that reads a look early still gets the whole of it.
+    src = read("atlas.js")
+    build = src.split("function* atlasBuildLook(spec) {", 1)[1].split("\n}\n", 1)[0]
+    assert build.count("yield;") >= 5
+    warm = src.split("setTimeout(function atlasWarmLook()", 1)[1].split("\n  }, 0);", 1)[0]
+    assert "atlasBuild.drain(spec, true)" in warm and "setTimeout(" in warm
+    assert "atlasBuild.drain(spec)" in src.split("Object.defineProperty(ATLAS_LOOKS, name", 1)[1].split("setTimeout(function atlasWarmLook", 1)[0]
+    assert "atlasBuild.gens.clear()" in src.split("function atlasBuild() {", 1)[1].split("\n}\n", 1)[0]
+
+
 def test_settings_search_builds_the_unbuilt_panes_before_the_first_key():
     # filterSettings builds all twenty-two panes on the first query: 400 ms of that key at 4x, even after a pause
     # on the box (L-world-class-355). The warm builds one a slot, before it scans.
     body = read("settings-find.js").split("function settingRowsWarm()", 1)[1].split("\n  function ", 1)[0]
     build = body.index("SETTINGS_SECTIONS.some((name) => surfaceBuild(`settings-${name}`))")
-    assert build < body.index("settingRowsScan.pane(pane)")
+    assert build < body.index("settingRowsScan.pane(pane, ")
     assert "settingIdle(settingRowsWarm);\n      return;" in body[build:]

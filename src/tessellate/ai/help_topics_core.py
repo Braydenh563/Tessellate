@@ -155,7 +155,7 @@ HELP_TOPICS: list[dict] = [
             "The Graph's search box reads filters as well as words: "
             '"connected to Harbor", "untouched since June", "tagged work", '
             '"pinned", "with pictures", "edited last week"; any other '
-            "words still have to match. The box says how many notes match; Enter jumps to the next "
+            "words still have to match, though a slip of one still finds it. The box says how many notes match; Enter jumps to the next "
             "match and pans to it, Shift and Enter to the one before, and Esc clears the search. "
             "Click a note for its panel: Open, Focus, "
             "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
@@ -260,7 +260,7 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking", and a slipped word still finds its notes. Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."
@@ -430,7 +430,11 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
-            "A space can be private: Private in New space or Edit space seals everything in it."
+            "A space can be private: Private in New space or Edit space seals everything in it. "
+            "In a space the dashboard line under the greeting names it and counts its notes, documents and boards "
+            "(not in All spaces). Export this space, in Edit space, downloads that space's notes, documents and boards "
+            "as a zip with nothing from another space; a locked private space asks to unlock first. "
+            "Moving notes to another space keeps every link: the link's chip names the other space, and both notes list it."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
@@ -686,20 +690,19 @@ HELP_TOPICS: list[dict] = [
             "never your notes, and never a question about your own notes or records. "
             "It runs in Agent mode: there the assistant looks something up online "
             "when asked, and a Chat question your notes do not answer is answered "
-            "from the pages found, one line a "
-            "page under its title, cited by its address. In Ask and in Chat's Ask "
+            "from the pages found, a line a page, cited by its address. In Ask and in Chat's Ask "
             "mode answers come from your notes only, and the Web button says so; the "
             "Web panel still searches by hand. The pages are in the "
-            "Web results fold under the answer; press a title to read one there, "
-            "as text, or the arrow to open it outside. "
+            "Web results fold under the answer: a title reads one there as text, "
+            "the arrow opens it outside. "
             "Paste a link and ask to read it: with web search on and no model "
             "the page is fetched and told back as its main points, key terms "
             "and sections; with it off you are told so and given the setting. "
-            "If a web search cannot run because SearXNG is down, the reply and the Web panel offer "
-            '"Start SearXNG" ("Install SearXNG" when absent; the reply also has "Set it up in '
-            'Settings", "Open the web panel" and "Use another provider"), and the panel '
-            "searches again once it answers; where this app cannot start it, it says why "
-            "and links Web search settings. Banter, slang or a single word is never sent to the web: "
+            "The Web panel says SearXNG is stopped as it opens, with Start; its dot's tooltip "
+            "names the engine's state. If a search fails because SearXNG is down, the reply and "
+            'the panel offer "Start SearXNG" ("Install SearXNG" when absent; the reply also has '
+            '"Set it up in Settings", "Open the web panel" and "Use another provider"), and the '
+            "panel searches again once it answers. Banter, slang or a single word is never sent to the web: "
             "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "

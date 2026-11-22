@@ -20,8 +20,10 @@ JSON, the streamable HTTP transport without its optional event stream, so
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import logging
+import os
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
@@ -36,14 +38,37 @@ router = APIRouter(tags=["mcp"])
 
 PARSE_ERROR = -32700
 NOT_HERE = "The tool server answers only on this computer. Turn on LAN mode in Settings to use it from another device."
-NO_TOKEN = "This needs a tool server token from Settings, Tools it can use, sent as Authorization: Bearer."
+NO_TOKEN = "This needs a tool server token from Settings, Tools it can use, sent as Authorization: Bearer, or an OAuth sign-in approved there."
+
+
+#: Set by docker/compose.yaml, which publishes the port on the host's loopback
+#: only: there a request from the host arrives from the bridge's private
+#: gateway address, never from loopback (docs/DOCKER.md, L-world-class-560).
+PUBLISHED_ENV = "TESSELLATE_PUBLISHED_ON_LOOPBACK"
+#: The private ranges a container bridge hands out (RFC 1918); Python's
+#: `is_private` also takes documentation and reserved ranges, which a bridge never is.
+BRIDGE_NETWORKS = tuple(ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+
+
+def _through_the_published_port(client) -> bool:  # noqa: ANN001  # an ASGI scope's `client`
+    """In a container whose port is published on the host's loopback, a private
+    (bridge) address is the host. A public one is never trusted this way."""
+    if os.environ.get(PUBLISHED_ENV) != "1" or not isinstance(client, (tuple, list)) or not client:
+        return False
+    try:
+        address = ipaddress.ip_address(str(client[0]))
+    except ValueError:
+        return False
+    return any(address in network for network in BRIDGE_NETWORKS)
 
 
 def _from_this_computer(request: Request) -> bool:
     """Both ends of the connection on loopback: the socket that accepted it
     and the address it came from (a name, as the test client sends, is read as
-    local by `arrived_on_loopback`)."""
+    local by `arrived_on_loopback`); or, in the Docker setup, the published port."""
     scope = request.scope
+    if _through_the_published_port(scope.get("client")):
+        return True
     return netbind.arrived_on_loopback(scope.get("server")) and netbind.arrived_on_loopback(scope.get("client"))
 
 
@@ -53,8 +78,10 @@ def _bearer(request: Request) -> str:
     return value.strip() if scheme.lower() == "bearer" else ""
 
 
-def _refuse(status: int, why: str) -> JSONResponse:
-    headers = {"WWW-Authenticate": 'Bearer realm="tessellate-mcp"'} if status == 401 else None
+def _refuse(status: int, why: str, request: Request | None = None) -> JSONResponse:
+    #: Where an OAuth client finds how to sign in (RFC 9728, routes_mcp_oauth.py).
+    meta = f', resource_metadata="{str(request.base_url).rstrip("/")}/.well-known/oauth-protected-resource"' if request else ""
+    headers = {"WWW-Authenticate": f'Bearer realm="tessellate-mcp"{meta}'} if status == 401 else None
     return JSONResponse({"jsonrpc": "2.0", "id": None, "error": {"code": -32001, "message": why}}, status_code=status, headers=headers)
 
 
@@ -64,7 +91,7 @@ def _client_for(request: Request) -> dict | JSONResponse:
     row = mcp_clients.match(_bearer(request))
     if row is None:
         logger.info("mcp over http refused: no live token")
-        return _refuse(401, NO_TOKEN)
+        return _refuse(401, NO_TOKEN, request)
     return row
 
 
@@ -81,7 +108,7 @@ async def mcp_post(request: Request) -> Response:
         body = json.loads(await request.body() or b"null")
     except (json.JSONDecodeError, UnicodeDecodeError):
         return JSONResponse({"jsonrpc": "2.0", "id": None, "error": {"code": PARSE_ERROR, "message": "Parse error"}}, status_code=400)
-    caller = {"name": row.get("name") or "mcp client", "writes": bool(row.get("writes"))}
+    caller = {"name": row.get("name") or "mcp client", "writes": bool(row.get("writes")), "scope": row.get("scope")}
     messages = body if isinstance(body, list) else [body]
 
     def answer() -> list:
@@ -110,6 +137,8 @@ def mcp_get() -> Response:
 class NewClient(BaseModel):
     name: str
     writes: bool = False
+    #: `{"categories": [...], "tags": [...]}`; empty is the whole notebook (core/mcp_scope.py).
+    scope: dict = {}
 
 
 @router.get("/mcp-clients")
@@ -125,7 +154,7 @@ def make_client(body: NewClient) -> dict:
     if not name:
         raise HTTPException(status_code=422, detail="Give the app a name.")
     try:
-        client, token = mcp_clients.create(name, writes=body.writes)
+        client, token = mcp_clients.create(name, writes=body.writes, scope=body.scope)
     except mcp_clients.TooMany:
         raise HTTPException(status_code=409, detail=f"There are already {mcp_clients.MAX_CLIENTS} tokens. Revoke one first.") from None
     return {"client": client, "token": token}

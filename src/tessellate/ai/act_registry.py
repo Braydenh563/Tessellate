@@ -292,6 +292,12 @@ def _listing(nouns: str) -> str:
 #: note" is the tag's deletion, not one note's untagging). Words only, never
 #: a date or a unit: those are `ai/recognise.py`'s (`tests/test_one_reader.py`).
 TOOL_CUES: tuple[tuple[str, str], ...] = (
+    #: The in-built browser's five (L-world-class-182): ahead of read_url, which any address names.
+    ("browser_open", r"\bopen .+ in the (?:browser|web panel|panel)\b"),
+    ("browser_read", r"\bread (?:the )?(?:open|current) page\b|\bread the page in the (?:browser|panel)\b"),
+    ("browser_follow", r"\bfollow the (?:link|\w+ link)\b"),
+    ("browser_find", r"\bfind .+ on (?:the|this) (?:open )?page\b"),
+    ("browser_back", r"\bgo back a page\b|\bback to the (?:last|previous) page\b"),
     ("read_url", r"https?://"),
     ("web_search", r"\b(?:search|look up|google)\b.*\b(?:the web|online|internet)\b"),
     ("read_text", r"\bread the (?:dates|amounts|numbers|times|units)\b"),

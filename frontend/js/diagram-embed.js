@@ -345,15 +345,15 @@
       field.setAttribute("wrap", on ? "soft" : "off");
       wrapBtn?.setAttribute("aria-pressed", String(on));
       srcwrap.classList.toggle("is-wrapped", on);
+      //: The ... menu's Look rows show this state, so it is rebuilt (diagram-builder.js `refreshMore`).
+      field.closest(".dgm")?.dispatchEvent(new CustomEvent("dgm:menu"));
       try {
         prefs.set("dgm-source-wrap", on ? "on" : "off");
       } catch {
         // A private window can refuse storage; the fold still applies for now.
       }
     };
-    const wrapRow = () => field.getAttribute("wrap") === "off"
-      ? makeMenuItem("ph:text-align-left Wrap long lines", "Fold long Source lines onto the next row. Line numbers hide while lines fold", () => setWrap(true))
-      : makeMenuItem("ph:arrows-out-line-horizontal Stop wrapping", "Keep each Source line on one row again, with its number", () => setWrap(false));
+    const wrapRow = () => ({ ...makeMenuItem("ph:text-align-left Wrap long lines", "Fold long Source lines onto the next row. Line numbers hide while lines fold", () => setWrap(field.getAttribute("wrap") === "off")), current: field.getAttribute("wrap") !== "off" });
     if (prefs.get("dgm-source-wrap", "off") === "on") setWrap(true);
     const number = () => {
       const bad = Number(field.dataset.errorLine) || 0;
@@ -394,15 +394,15 @@
       redo: () => at < history.length - 1 && (at += 1, apply(), live?.set(history[at])),
       get menu() {
         return [
-          ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
+          ...(shapes ? [{ ...makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at]))), group: "view" }] : []),
+          //: The settings are three submenus (the owner: the flat ... list was 15 rows): a chosen row is `current`, and pressing the chosen one again goes back to the usual.
+          { label: "ph:arrows-out-line-horizontal Spacing", group: "view", items: spacingRows() },
+          { label: "ph:line-segment Lines", group: "view", items: curveRows() },
+          { label: "ph:pencil-line Look", group: "view", items: [lookRow(), wrapRow()] },
+          //: `slot` rows are placed by diagram-builder.js (`more`): Save to Library inside Save as, Clear last as the danger row.
+          { ...makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)), slot: "save" },
           //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
-          makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
-          //: One look row, the one that is not on: the menu never says "Hand-drawn" while it is already drawn so, and it is rebuilt with every pane.
-          lookRow(),
-          wrapRow(),
-          ...spacingRows(),
-          ...curveRows(),
-          makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
+          { ...makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())), slot: "clear", danger: true },
         ];
       },
       get canUndo() { return at > 0; },
@@ -424,8 +424,8 @@
     };
     function curveRows() {
       const now = curveOf(history[at]);
-      const rows = { straight: ["ph:line-segment Straight lines", "Draw arrows as straight runs. Kept in the diagram's own text; Undo takes it back"], curved: ["ph:wave-sine Curved lines", "Draw arrows as smooth curves. Kept in the diagram's own text; Undo takes it back"], stepped: ["ph:path Stepped lines", "Draw arrows with right angles. Kept in the diagram's own text; Undo takes it back"], usual: ["ph:arrows-horizontal Usual lines", "Draw arrows the usual way again"] };
-      return Object.keys(rows).filter((shape) => shape !== now).map((shape) => makeMenuItem(rows[shape][0], rows[shape][1], () => setCurve(shape)));
+      const rows = { straight: ["ph:line-segment Straight", "Draw arrows as straight runs. Kept in the diagram's own text; Undo takes it back"], curved: ["ph:wave-sine Curved", "Draw arrows as smooth curves. Kept in the diagram's own text; Undo takes it back"], stepped: ["ph:path Stepped", "Draw arrows with right angles. Kept in the diagram's own text; Undo takes it back"] };
+      return Object.keys(rows).map((shape) => ({ ...makeMenuItem(rows[shape][0], shape === now ? "Press again to draw arrows the usual way" : rows[shape][1], () => setCurve(shape === now ? "usual" : shape)), current: shape === now }));
     }
     //: The spacing rows are the two levels that are not on, like the look row: Normal is the way back from either.
     const setSpacing = (level) => {
@@ -438,14 +438,12 @@
     };
     function spacingRows() {
       const now = spacingOf(history[at]);
-      const rows = { compact: ["ph:arrows-in-line-horizontal Compact spacing", "Draw the blocks closer together. Kept in the diagram's own text; Undo takes it back"], roomy: ["ph:arrows-out-line-horizontal Roomy spacing", "Draw the blocks further apart. Kept in the diagram's own text; Undo takes it back"], normal: ["ph:arrows-horizontal Normal spacing", "Draw the blocks at the usual distance again"] };
-      return Object.keys(rows).filter((level) => level !== now).map((level) => makeMenuItem(rows[level][0], rows[level][1], () => setSpacing(level)));
+      const rows = { compact: ["ph:arrows-in-line-horizontal Compact", "Draw the blocks closer together. Kept in the diagram's own text; Undo takes it back"], roomy: ["ph:arrows-out-line-horizontal Roomy", "Draw the blocks further apart. Kept in the diagram's own text; Undo takes it back"] };
+      return Object.keys(rows).map((level) => ({ ...makeMenuItem(rows[level][0], level === now ? "Press again to draw the blocks at the usual distance" : rows[level][1], () => setSpacing(level === now ? "normal" : level)), current: level === now }));
     }
     function lookRow() {
       const hand = diagramModel.front(history[at]).front.some((line) => /\blook:\s*handDrawn/.test(line));
-      return hand
-        ? makeMenuItem("ph:rectangle Clean look", "Draw the picture with straight, even lines again", () => setLook(false))
-        : makeMenuItem("ph:pencil-line Hand-drawn look", "Draw the picture as if sketched by hand. Kept in the diagram's own text; Undo takes it back", () => setLook(true));
+      return { ...makeMenuItem("ph:pencil-line Hand-drawn look", "Draw the picture as if sketched by hand. Kept in the diagram's own text; Undo takes it back", () => setLook(!hand)), current: hand };
     }
     const apply = () => {
       field.value = history[at];

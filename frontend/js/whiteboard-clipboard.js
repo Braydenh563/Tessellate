@@ -617,6 +617,12 @@
     for (const row of menu.querySelectorAll(".wb-menu-row, .wb-panel-group-label, input[type=\"file\"]")) {
       if (!row.hasAttribute("role")) row.setAttribute("role", "none");
     }
+    //: A switch row's box is the row's control, so the arrows walk it like a
+    //: command (menus.js sweep, L-general-71: in the View menu the second
+    //: ArrowDown found no next item, every other row being a switch).
+    for (const box of menu.querySelectorAll('.wb-menu-row > input[type="checkbox"]')) {
+      if (!box.hasAttribute("role")) box.setAttribute("role", "menuitemcheckbox");
+    }
   }
 
   //: The file's surface: what other files call (L634).

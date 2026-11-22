@@ -30,8 +30,8 @@ PACKAGE = "tessellate"
 #: The ratchet. Lower these when a group shrinks; never raise them.
 #: 15 and 3 at the audit; 14 and 2 measured 2026-11-21 (L688); 14 and 1 after the launcher
 #: registry and `paths.bundle_root` took the overlay and Settings edges (L-world-class-791).
-MAX_LARGEST_GROUP = 14
-MAX_GROUPS = 1
+MAX_LARGEST_GROUP = 0
+MAX_GROUPS = 0
 
 
 def _module_name(path: Path) -> str:

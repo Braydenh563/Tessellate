@@ -226,6 +226,10 @@
 #appearance-panel .settings-section > .row > h3 {
   padding-left: calc(1rem + 1px);
 }
+#appearance-panel .settings-section .doc-dock-menu-list .dock-menu-check {
+  min-height: var(--settings-control-h);
+  padding-block: 0;
+}
 #appearance-panel .modal-content .row {
   flex-wrap: wrap;
   min-width: 0;
@@ -320,6 +324,12 @@
 }
 :root:not([data-contrast="on"]) :is(#appearance-panel, #appearance-panel) :is(.settings-section > .row, p) > button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
   margin-inline-start: 0;
+}
+:root:not([data-contrast="on"]) :is(#appearance-panel, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) .notice button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  margin-inline-start: 0;
+}
+:root:not([data-contrast="on"]) :is(#appearance-panel, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) .notice > :not(button) + button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  margin-inline-start: auto;
 }
 #appearance-panel :is(.check-row, .setting-check, .checkbox-label).setting-modified::before {
   inset-inline-start: calc(var(--space-3) - var(--setting-bar-inset));

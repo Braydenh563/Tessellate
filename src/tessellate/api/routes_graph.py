@@ -110,6 +110,7 @@ SIMILAR_PER_NODE = 4
 # a deleted top id to the next row, so remove-then-add kept it (measured).
 _cache_lock = threading.Lock()
 _cache: dict[str, tuple] = {}
+_building: dict[str, threading.Lock] = {}
 #: KG6: topic summaries by their members and versions, newest last, capped.
 _summaries: dict[tuple, str] = {}
 SUMMARY_CACHE_MAX = 200
@@ -149,9 +150,18 @@ def _cached(name: str, fingerprint: tuple, build):  # noqa: ANN001
         hit = _cache.get(name)
         if hit is not None and hit[0] == fingerprint:
             return hit[1]
-    value = build()
-    with _cache_lock:
-        _cache[name] = (fingerprint, value)
+        building = _building.setdefault(name, threading.Lock())
+    #: L-world-class-626: one build per name at a time. Eight clients asking
+    #: while notes changed each ran community detection on the same version;
+    #: the ones behind the first now wait and read its result.
+    with building:
+        with _cache_lock:
+            hit = _cache.get(name)
+            if hit is not None and hit[0] == fingerprint:
+                return hit[1]
+        value = build()
+        with _cache_lock:
+            _cache[name] = (fingerprint, value)
     return value
 
 

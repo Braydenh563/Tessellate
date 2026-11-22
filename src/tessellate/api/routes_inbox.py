@@ -129,12 +129,6 @@ class MergeAccept(BaseModel):
     signals: list[Annotated[str, Field(max_length=40)]] = Field(default_factory=list, max_length=8)
 
 
-class MergeDismiss(BaseModel):
-    a: int
-    b: int
-    signals: list[Annotated[str, Field(max_length=40)]] = Field(default_factory=list, max_length=8)
-
-
 @router.post("/merges/accept")
 def accept_merge(body: MergeAccept, session: Session = Depends(get_session)) -> dict:
     """Fold one entity into the other; every mention follows."""
@@ -147,13 +141,6 @@ def accept_merge(body: MergeAccept, session: Session = Depends(get_session)) -> 
     made = learning.record(session, kind="accept_merge", subject={"a": keep.id, "b": gone.id, "signals": body.signals})
     session.commit()
     return {"kept": keep.id, "name": keep.name, "aliases": keep.aliases or [], "moved": moved, "undo_id": undo_id, "correction_id": made.id}
-
-
-@router.post("/merges/dismiss")
-def dismiss_merge(body: MergeDismiss, session: Session = Depends(get_session)) -> dict:
-    learning.record(session, kind="dismiss_merge", subject={"a": body.a, "b": body.b, "signals": body.signals})
-    session.commit()
-    return {"dismissed": True}
 
 
 class TypeDecision(BaseModel):
@@ -176,17 +163,6 @@ def accept_type(body: TypeDecision, session: Session = Depends(get_session)) -> 
     )
     manager_links.set_link_type(session, link, body.link_type)
     return {"link_id": link.id, "link_type": link.link_type, "correction_id": made.id}
-
-
-@router.post("/types/dismiss")
-def dismiss_type(body: TypeDecision, session: Session = Depends(get_session)) -> dict:
-    learning.record(
-        session,
-        kind="dismiss_link_type",
-        subject={"link_id": body.link_id, "link_type": body.link_type, "signals": [body.link_type]},
-    )
-    session.commit()
-    return {"dismissed": True}
 
 
 # --- what was dismissed, in one place (Brief 86, decision b) -----------------
