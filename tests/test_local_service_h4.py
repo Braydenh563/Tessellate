@@ -133,7 +133,12 @@ def test_an_http_write_naming_an_agent_is_filed_under_it(client):
     assert mine and all(e["actor"] == "agent:api@Code helper" for e in mine), mine
 
 
-def test_an_mcp_write_is_filed_under_the_client(client):
+def test_an_mcp_write_is_filed_under_the_client(client, monkeypatch):
+    from tessellate import mcp_server
+
+    #: `initialize` names the stdio client in a module global; left set, it leaked
+    #: "Desk assistant" into test_mcp_http's "never renames the stdio one" (CI leg 1).
+    monkeypatch.setattr(mcp_server, "_client", {"name": ""})
     deps.get_config().set_preference("mcp_writes_enabled", True)
     handle_request(
         {

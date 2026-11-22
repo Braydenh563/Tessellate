@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8565, frontend ids 2810, CSS sections 528, backend routes 741, backend modules 11307, test files 2944, tests 23122, plan headings 689, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8565, frontend ids 2810, CSS sections 528, backend routes 741, backend modules 11307, test files 2945, tests 23123, plan headings 689, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8565)
 
@@ -818,7 +818,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `usageFlush` | frontend/js/navigation.js:1869 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1451 |
 | `wireLongPress` | frontend/js/navigation.js:25 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2812 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2817 |
 
 ### frontend/js/router.js (12)
 
@@ -8237,55 +8237,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openTour` | frontend/js/tour.js:1805 |
-| `renderTourReplay` | frontend/js/tour.js:2005 |
-| `tourActiveTab` | frontend/js/tour.js:1252 |
-| `tourAnchorFor` | frontend/js/tour.js:636 |
-| `tourBack` | frontend/js/tour.js:1899 |
-| `tourBlockPanels` | frontend/js/tour.js:939 |
-| `tourBringIntoView` | frontend/js/tour.js:1048 |
-| `tourBusy` | frontend/js/tour.js:1664 |
-| `tourCandidates` | frontend/js/tour.js:852 |
-| `tourChoose` | frontend/js/tour.js:907 |
-| `tourClamp` | frontend/js/tour.js:834 |
-| `tourClearSpotlight` | frontend/js/tour.js:995 |
-| `tourClearTheWay` | frontend/js/tour.js:1364 |
-| `tourClose` | frontend/js/tour.js:1854 |
-| `tourContext` | frontend/js/tour.js:1498 |
-| `tourCovered` | frontend/js/tour.js:684 |
-| `tourDisable` | frontend/js/tour.js:2047 |
-| `tourFadedIn` | frontend/js/tour.js:1309 |
-| `tourFrame` | frontend/js/tour.js:1234 |
-| `tourLibraryView` | frontend/js/tour.js:1432 |
-| `tourNavigate` | frontend/js/tour.js:1404 |
-| `tourNext` | frontend/js/tour.js:1888 |
-| `tourOnScreen` | frontend/js/tour.js:652 |
-| `tourOpenFoldsAround` | frontend/js/tour.js:1465 |
-| `tourOpenSettings` | frontend/js/tour.js:1480 |
-| `tourOrigin` | frontend/js/tour.js:818 |
-| `tourOverlap` | frontend/js/tour.js:841 |
-| `tourPinShell` | frontend/js/tour.js:1590 |
-| `tourPlaceFixed` | frontend/js/tour.js:735 |
-| `tourPosition` | frontend/js/tour.js:1087 |
-| `tourPrepareSection` | frontend/js/tour.js:1524 |
-| `tourReflow` | frontend/js/tour.js:1973 |
-| `tourRender` | frontend/js/tour.js:1170 |
-| `tourResolve` | frontend/js/tour.js:711 |
-| `tourReveal` | frontend/js/tour.js:1652 |
-| `tourSectionPlace` | frontend/js/tour.js:1221 |
-| `tourSheetPlace` | frontend/js/tour.js:1152 |
-| `tourShow` | frontend/js/tour.js:1682 |
-| `tourSpotlight` | frontend/js/tour.js:1021 |
-| `tourStep` | frontend/js/tour.js:1557 |
-| `tourStepsFor` | frontend/js/tour.js:1784 |
-| `tourStrand` | frontend/js/tour.js:1573 |
-| `tourUsable` | frontend/js/tour.js:721 |
-| `tourVerifyCard` | frontend/js/tour.js:1603 |
+| `openTour` | frontend/js/tour.js:1813 |
+| `renderTourReplay` | frontend/js/tour.js:2013 |
+| `tourActiveTab` | frontend/js/tour.js:1260 |
+| `tourAnchorFor` | frontend/js/tour.js:644 |
+| `tourBack` | frontend/js/tour.js:1907 |
+| `tourBlockPanels` | frontend/js/tour.js:947 |
+| `tourBringIntoView` | frontend/js/tour.js:1056 |
+| `tourBusy` | frontend/js/tour.js:1672 |
+| `tourCandidates` | frontend/js/tour.js:860 |
+| `tourChoose` | frontend/js/tour.js:915 |
+| `tourClamp` | frontend/js/tour.js:842 |
+| `tourClearSpotlight` | frontend/js/tour.js:1003 |
+| `tourClearTheWay` | frontend/js/tour.js:1372 |
+| `tourClose` | frontend/js/tour.js:1862 |
+| `tourContext` | frontend/js/tour.js:1506 |
+| `tourCovered` | frontend/js/tour.js:692 |
+| `tourDisable` | frontend/js/tour.js:2055 |
+| `tourFadedIn` | frontend/js/tour.js:1317 |
+| `tourFrame` | frontend/js/tour.js:1242 |
+| `tourLibraryView` | frontend/js/tour.js:1440 |
+| `tourNavigate` | frontend/js/tour.js:1412 |
+| `tourNext` | frontend/js/tour.js:1896 |
+| `tourOnScreen` | frontend/js/tour.js:660 |
+| `tourOpenFoldsAround` | frontend/js/tour.js:1473 |
+| `tourOpenSettings` | frontend/js/tour.js:1488 |
+| `tourOrigin` | frontend/js/tour.js:826 |
+| `tourOverlap` | frontend/js/tour.js:849 |
+| `tourPinShell` | frontend/js/tour.js:1598 |
+| `tourPlaceFixed` | frontend/js/tour.js:743 |
+| `tourPosition` | frontend/js/tour.js:1095 |
+| `tourPrepareSection` | frontend/js/tour.js:1532 |
+| `tourReflow` | frontend/js/tour.js:1981 |
+| `tourRender` | frontend/js/tour.js:1178 |
+| `tourResolve` | frontend/js/tour.js:719 |
+| `tourReveal` | frontend/js/tour.js:1660 |
+| `tourSectionPlace` | frontend/js/tour.js:1229 |
+| `tourSheetPlace` | frontend/js/tour.js:1160 |
+| `tourShow` | frontend/js/tour.js:1690 |
+| `tourSpotlight` | frontend/js/tour.js:1029 |
+| `tourStep` | frontend/js/tour.js:1565 |
+| `tourStepsFor` | frontend/js/tour.js:1792 |
+| `tourStrand` | frontend/js/tour.js:1581 |
+| `tourUsable` | frontend/js/tour.js:729 |
+| `tourVerifyCard` | frontend/js/tour.js:1611 |
 | `tourVisible` | frontend/js/tour.js:610 |
-| `tourWaitForTarget` | frontend/js/tour.js:1320 |
-| `tourWatch` | frontend/js/tour.js:785 |
-| `tourWatchFrame` | frontend/js/tour.js:790 |
-| `tourWhiteboard` | frontend/js/tour.js:1444 |
+| `tourWaitForTarget` | frontend/js/tour.js:1328 |
+| `tourWatch` | frontend/js/tour.js:793 |
+| `tourWatchFrame` | frontend/js/tour.js:798 |
+| `tourWhiteboard` | frontend/js/tour.js:1452 |
 
 ### frontend/js/translate-worker.js (5)
 
@@ -28767,7 +28767,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23122)
+## Tests (23123)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31417,6 +31417,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tour_busy_l14.py | 6 |
 | tests/test_tour_follow.py | 7 |
 | tests/test_tour_targets.py | 2 |
+| tests/test_tour_visible_ancestors.py | 1 |
 | tests/test_transcript_81.py | 6 |
 | tests/test_transcript_copy.py | 2 |
 | tests/test_transcript_lines_l578.py | 4 |

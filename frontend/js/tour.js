@@ -621,7 +621,15 @@
     //: menu's own summary is on screen.
     const shut = el.parentElement?.closest("details:not([open])");
     if (shut && !shut.querySelector(":scope > summary")?.contains(el)) return false;
-    return Number(style.opacity || "1") > 0.05;
+    //: **Opacity multiplies down the tree and is not inherited**, so the
+    //: control's own value is not what the eye gets. Measured at 1440 on the
+    //: graph section: `#graph-card` stands at 0 for about 800ms after the tab
+    //: opens, and the ring went round `#graph-zoom` reading 1 on itself.
+    let seen = Number(style.opacity || "1");
+    for (let n = el.parentElement; n && n !== document.documentElement && seen > 0.05; n = n.parentElement) {
+      seen *= Number(getComputedStyle(n).opacity || "1");
+    }
+    return seen > 0.05;
   }
 
   //: The element a step actually points at, which is not always the element it

@@ -2796,6 +2796,11 @@ function syncScrollLock() {
     (el) => !el.classList.contains("hidden") && el.isConnected
   );
   document.documentElement.classList.toggle("modal-open", anyOpen);
+  //: Settings open, as a class for rules outside the modal (a phone's search
+  //: notice waits under it): a `body:has(#settings-modal...)` re-checked on
+  //: every DOM change in the page (tests/test_css_body_has.py).
+  const settings = document.getElementById("settings-modal");
+  document.documentElement.classList.toggle("settings-open", Boolean(settings && !settings.classList.contains("hidden")));
 }
 
 //: Moved from app.js for its gzip cap (INBOX 1573); the graph and the boards call it.
