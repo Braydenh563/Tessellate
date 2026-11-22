@@ -1823,8 +1823,7 @@ let modelStatus = null; // latest /models/status payload
 //: rather than guarding a function that may not exist yet.
 const settingsReadouts = {};
 
-//: The start-up choice, said once with Change (model-chosen.js, lazy; L671).
-function sayChatModelChosen(s) {
+function sayChatModelChosen(s) { // the start-up choice, said once with Change (model-chosen.js, lazy; L671)
   if (s.chat_model_chosen_why) ensureModule("modelChosen").then(() => settingsReadouts.chosen(s));
 }
 // Has the status endpoint ever answered? "We haven't asked yet" and "we asked

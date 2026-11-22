@@ -1626,7 +1626,6 @@ async function wbImportText(text) {
   return rows ? wbImportBoardRows(rows) : wbImportMermaid(text);
 }
 
-//: Its controls are wired when the dialog's surface is built (its first open, L-world-class-530).
 onSurface("wbImport", () => {
   const dialog = document.getElementById("wb-import-dialog");
   if (!dialog) return;

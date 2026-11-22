@@ -406,48 +406,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `CLIP_LIMITS` | frontend/js/chat.js:55 |
-| `aiWritingTrace` | frontend/js/chat.js:1015 |
-| `applyCompression` | frontend/js/chat.js:898 |
+| `aiWritingTrace` | frontend/js/chat.js:1012 |
+| `applyCompression` | frontend/js/chat.js:895 |
 | `atlasSuggestion` | frontend/js/chat.js:202 |
-| `batteryModeOn` | frontend/js/chat.js:940 |
+| `batteryModeOn` | frontend/js/chat.js:937 |
 | `bodyTextWithCitations` | frontend/js/chat.js:87 |
 | `chatEmptySettle` | frontend/js/chat.js:223 |
-| `chatTranscriptText` | frontend/js/chat.js:829 |
+| `chatTranscriptText` | frontend/js/chat.js:826 |
 | `clearChatEmptyState` | frontend/js/chat.js:352 |
 | `clipFor` | frontend/js/chat.js:61 |
 | `compactTokens` | frontend/js/chat.js:101 |
-| `compressChatContext` | frontend/js/chat.js:858 |
-| `compressSizeText` | frontend/js/chat.js:879 |
+| `compressChatContext` | frontend/js/chat.js:855 |
+| `compressSizeText` | frontend/js/chat.js:876 |
 | `copyToClipboard` | frontend/js/chat.js:152 |
 | `copyViaTextarea` | frontend/js/chat.js:112 |
-| `fillPersonaMark` | frontend/js/chat.js:632 |
+| `fillPersonaMark` | frontend/js/chat.js:629 |
 | `flashCopied` | frontend/js/chat.js:134 |
-| `loadResponseModes` | frontend/js/chat.js:578 |
-| `mountChatActionsMenu` | frontend/js/chat.js:773 |
-| `personaOptions` | frontend/js/chat.js:649 |
-| `progressMotionWanted` | frontend/js/chat.js:967 |
-| `progressPhaseText` | frontend/js/chat.js:1211 |
+| `loadResponseModes` | frontend/js/chat.js:575 |
+| `mountChatActionsMenu` | frontend/js/chat.js:770 |
+| `personaOptions` | frontend/js/chat.js:646 |
+| `progressMotionWanted` | frontend/js/chat.js:964 |
+| `progressPhaseText` | frontend/js/chat.js:1208 |
 | `regenerateFromBubble` | frontend/js/chat.js:190 |
 | `regenerateLastAnswer` | frontend/js/chat.js:195 |
-| `renderChatContextMeter` | frontend/js/chat.js:727 |
+| `renderChatContextMeter` | frontend/js/chat.js:724 |
 | `renderChatEmptyState` | frontend/js/chat.js:233 |
-| `renderChatTurnCount` | frontend/js/chat.js:753 |
-| `renderChatUsage` | frontend/js/chat.js:710 |
-| `renderCompressionState` | frontend/js/chat.js:911 |
-| `renderModelContextBox` | frontend/js/chat.js:436 |
-| `renderModelHealthNote` | frontend/js/chat.js:540 |
-| `renderModelSpec` | frontend/js/chat.js:468 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1129 |
-| `setResponseMode` | frontend/js/chat.js:610 |
-| `showCompressReview` | frontend/js/chat.js:886 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1157 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1179 |
-| `togglePersonaPrompt` | frontend/js/chat.js:702 |
-| `typingDots` | frontend/js/chat.js:1233 |
-| `webPageMarkdown` | frontend/js/chat.js:391 |
-| `webReaderIsOpen` | frontend/js/chat.js:377 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1064 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1097 |
+| `renderChatTurnCount` | frontend/js/chat.js:750 |
+| `renderChatUsage` | frontend/js/chat.js:707 |
+| `renderCompressionState` | frontend/js/chat.js:908 |
+| `renderModelContextBox` | frontend/js/chat.js:433 |
+| `renderModelHealthNote` | frontend/js/chat.js:537 |
+| `renderModelSpec` | frontend/js/chat.js:465 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1126 |
+| `setResponseMode` | frontend/js/chat.js:607 |
+| `showCompressReview` | frontend/js/chat.js:883 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1154 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1176 |
+| `togglePersonaPrompt` | frontend/js/chat.js:699 |
+| `typingDots` | frontend/js/chat.js:1230 |
+| `webPageMarkdown` | frontend/js/chat.js:389 |
+| `webReaderIsOpen` | frontend/js/chat.js:375 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1061 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1094 |
 
 ### frontend/js/chat-agent.js (40)
 
@@ -881,21 +881,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:745 |
 | `agentActivityQuiet` | frontend/js/status.js:737 |
-| `agentModeAvailable` | frontend/js/status.js:2750 |
-| `aiIsOff` | frontend/js/status.js:2065 |
-| `aiOffGlyph` | frontend/js/status.js:2436 |
-| `aiOfflineDismissed` | frontend/js/status.js:2237 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2233 |
-| `aiStatusState` | frontend/js/status.js:2322 |
+| `agentModeAvailable` | frontend/js/status.js:2749 |
+| `aiIsOff` | frontend/js/status.js:2064 |
+| `aiOffGlyph` | frontend/js/status.js:2435 |
+| `aiOfflineDismissed` | frontend/js/status.js:2236 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2232 |
+| `aiStatusState` | frontend/js/status.js:2321 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1667 |
 | `armReminderTimer` | frontend/js/status.js:534 |
 | `askNotificationPermission` | frontend/js/status.js:396 |
 | `boardHistoryActive` | frontend/js/status.js:1632 |
 | `checkDueReminders` | frontend/js/status.js:600 |
-| `closeModelGate` | frontend/js/status.js:2083 |
+| `closeModelGate` | frontend/js/status.js:2082 |
 | `closeNotifications` | frontend/js/status.js:368 |
-| `dismissAiOffline` | frontend/js/status.js:2245 |
+| `dismissAiOffline` | frontend/js/status.js:2244 |
 | `dismissToast` | frontend/js/status.js:962 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
 | `forcedReadIds` | frontend/js/status.js:187 |
@@ -906,10 +906,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `insightVerdicts` | frontend/js/status.js:1526 |
 | `integrityWords` | frontend/js/status.js:1348 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1907 |
+| `jobsRunning` | frontend/js/status.js:1906 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:2862 |
-| `lastAnswerLine` | frontend/js/status.js:2458 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:2861 |
+| `lastAnswerLine` | frontend/js/status.js:2457 |
 | `lockFieldWants` | frontend/js/status.js:1018 |
 | `noteDamagedNotebook` | frontend/js/status.js:1352 |
 | `noteServerDown` | frontend/js/status.js:1411 |
@@ -919,11 +919,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notify` | frontend/js/status.js:477 |
 | `offerUndo` | frontend/js/status.js:1574 |
 | `openLanPanel` | frontend/js/status.js:673 |
-| `openModelGate` | frontend/js/status.js:2093 |
+| `openModelGate` | frontend/js/status.js:2092 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:2938 |
+| `paintPrivacyChip` | frontend/js/status.js:2937 |
 | `paintReminderList` | frontend/js/status.js:569 |
-| `paintStatusItem` | frontend/js/status.js:2532 |
+| `paintStatusItem` | frontend/js/status.js:2531 |
 | `paintTitle` | frontend/js/status.js:510 |
 | `paintUndoDoor` | frontend/js/status.js:1769 |
 | `performRedo` | frontend/js/status.js:1688 |
@@ -938,42 +938,42 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1607 |
 | `pushUndo` | frontend/js/status.js:1485 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2881 |
-| `refreshModelStatus` | frontend/js/status.js:1935 |
-| `refreshPrivacyChip` | frontend/js/status.js:2952 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2880 |
+| `refreshModelStatus` | frontend/js/status.js:1934 |
+| `refreshPrivacyChip` | frontend/js/status.js:2951 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2260 |
-| `renderAiPill` | frontend/js/status.js:2466 |
-| `renderChatModeSeg` | frontend/js/status.js:2778 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2259 |
+| `renderAiPill` | frontend/js/status.js:2465 |
+| `renderChatModeSeg` | frontend/js/status.js:2777 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderStatusBar` | frontend/js/status.js:2581 |
+| `renderStatusBar` | frontend/js/status.js:2580 |
 | `renderUndoBar` | frontend/js/status.js:1751 |
-| `renderWebSearchToggle` | frontend/js/status.js:2758 |
+| `renderWebSearchToggle` | frontend/js/status.js:2757 |
 | `reopenAnswerPanel` | frontend/js/status.js:780 |
-| `resetStatusCadence` | frontend/js/status.js:1859 |
+| `resetStatusCadence` | frontend/js/status.js:1858 |
 | `retryServerNow` | frontend/js/status.js:1461 |
-| `sayChatModelChosen` | frontend/js/status.js:1827 |
+| `sayChatModelChosen` | frontend/js/status.js:1826 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1435 |
 | `scheduleUndoBar` | frontend/js/status.js:1743 |
-| `setChatMode` | frontend/js/status.js:2824 |
+| `setChatMode` | frontend/js/status.js:2823 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:515 |
 | `setTitleView` | frontend/js/status.js:520 |
-| `settingsOpen` | frontend/js/status.js:1875 |
+| `settingsOpen` | frontend/js/status.js:1874 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1595 |
-| `showAgentNoModelHint` | frontend/js/status.js:2819 |
+| `showAgentNoModelHint` | frontend/js/status.js:2818 |
 | `showServerDownBanner` | frontend/js/status.js:1392 |
-| `startPrivacyChip` | frontend/js/status.js:2962 |
+| `startPrivacyChip` | frontend/js/status.js:2961 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1649 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2304 |
-| `syncModelGatedControls` | frontend/js/status.js:2119 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2303 |
+| `syncModelGatedControls` | frontend/js/status.js:2118 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
 | `toast` | frontend/js/status.js:1180 |
@@ -993,12 +993,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:921 |
 | `toastStack` | frontend/js/status.js:925 |
 | `toastYield` | frontend/js/status.js:1040 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2724 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2723 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1174 |
 | `whenText` | frontend/js/status.js:1162 |
-| `withoutEndStop` | frontend/js/status.js:2493 |
+| `withoutEndStop` | frontend/js/status.js:2492 |
 
 ### frontend/js/ai-tools.js (30)
 
@@ -9764,14 +9764,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbBoardSvgMetadata` | frontend/js/whiteboard-interchange.js:304 |
 | `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:708 |
 | `wbBoardToMermaid` | frontend/js/whiteboard-interchange.js:36 |
-| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1791 |
+| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1790 |
 | `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:1390 |
-| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1786 |
-| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1774 |
-| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1780 |
-| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1763 |
-| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1835 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1899 |
+| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1785 |
+| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1773 |
+| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1779 |
+| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1762 |
+| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1834 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1898 |
 | `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1499 |
 | `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1454 |
 | `wbDrawioLook` | frontend/js/whiteboard-interchange.js:547 |
@@ -9782,7 +9782,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbDrawioShape` | frontend/js/whiteboard-interchange.js:603 |
 | `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:506 |
 | `wbDrawioText` | frontend/js/whiteboard-interchange.js:525 |
-| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1857 |
+| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1856 |
 | `wbExportDrawio` | frontend/js/whiteboard-interchange.js:1419 |
 | `wbExportMermaid` | frontend/js/whiteboard-interchange.js:1409 |
 | `wbExportOutline` | frontend/js/whiteboard-interchange.js:1430 |
@@ -9792,7 +9792,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbImportMermaid` | frontend/js/whiteboard-interchange.js:1235 |
 | `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:1337 |
 | `wbImportText` | frontend/js/whiteboard-interchange.js:1604 |
-| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1844 |
+| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1843 |
 | `wbMermaidCap` | frontend/js/whiteboard-interchange.js:1301 |
 | `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:396 |
 | `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:1397 |
@@ -9803,12 +9803,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMermaidSequenceParse` | frontend/js/whiteboard-interchange.js:456 |
 | `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:331 |
 | `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:1438 |
-| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1800 |
-| `wbPdf` | frontend/js/whiteboard-interchange.js:1916 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1879 |
-| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1681 |
-| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1691 |
-| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1685 |
+| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1799 |
+| `wbPdf` | frontend/js/whiteboard-interchange.js:1915 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1878 |
+| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1680 |
+| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1690 |
+| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1684 |
 
 ### frontend/js/whiteboard-items.js (25)
 
@@ -14887,12 +14887,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export` | GET | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:112 |
 | `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:207 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
-| `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:53 |
-| `/export/board-folder` | POST | `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:320 |
-| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:909 |
+| `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:54 |
+| `/export/board-folder` | POST | `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:321 |
+| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:830 |
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:190 |
-| `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:77 |
-| `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:214 |
+| `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:78 |
+| `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:215 |
 | `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:1103 |
 | `/extract/preview` | POST | `extract_preview` | src/tessellate/api/routes_entries.py:1057 |
 | `/extras` | GET | `list_extras` | src/tessellate/api/routes_settings_extras.py:19 |
@@ -14979,9 +14979,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:659 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:488 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:120 |
-| `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:675 |
-| `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:802 |
-| `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:695 |
+| `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:596 |
+| `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:723 |
+| `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:616 |
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:181 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:359 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1047 |
@@ -19451,8 +19451,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2772 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2925 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2751 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2903 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -24902,45 +24902,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `server_logs` | src/tessellate/api/routes_settings_logs.py:30 |
 | `stream_server_logs` | src/tessellate/api/routes_settings_logs.py:149 |
 
-### src/tessellate/api/routes_settings_transfer.py (35)
+### src/tessellate/api/routes_settings_transfer.py (27)
 
 | Name | File:line |
 |---|---|
-| `ImportDirectoryRequest` | src/tessellate/api/routes_settings_transfer.py:424 |
-| `_already_imported` | src/tessellate/api/routes_settings_transfer.py:523 |
-| `_check_upload` | src/tessellate/api/routes_settings_transfer.py:253 |
-| `_copy_into` | src/tessellate/api/routes_settings_transfer.py:271 |
-| `_create_document_notes` | src/tessellate/api/routes_settings_transfer.py:884 |
-| `_directory_import_detail` | src/tessellate/api/routes_settings_transfer.py:537 |
-| `_export_rows` | src/tessellate/api/routes_settings_transfer.py:42 |
-| `_exported_created` | src/tessellate/api/routes_settings_transfer.py:367 |
-| `_import_directory_files` | src/tessellate/api/routes_settings_transfer.py:559 |
-| `_import_markdown_files` | src/tessellate/api/routes_settings_transfer.py:730 |
-| `_import_root_for` | src/tessellate/api/routes_settings_transfer.py:487 |
-| `_import_roots` | src/tessellate/api/routes_settings_transfer.py:471 |
-| `_inside` | src/tessellate/api/routes_settings_transfer.py:495 |
-| `_is_png` | src/tessellate/api/routes_settings_transfer.py:267 |
-| `_is_svg` | src/tessellate/api/routes_settings_transfer.py:263 |
-| `_keep_exported_state` | src/tessellate/api/routes_settings_transfer.py:384 |
-| `_link_imported` | src/tessellate/api/routes_settings_transfer.py:716 |
-| `_parse_frontmatter` | src/tessellate/api/routes_settings_transfer.py:390 |
-| `_run_directory_import` | src/tessellate/api/routes_settings_transfer.py:507 |
-| `_stream_and_close` | src/tessellate/api/routes_settings_transfer.py:312 |
-| `_text_hash` | src/tessellate/api/routes_settings_transfer.py:519 |
-| `_under_root` | src/tessellate/api/routes_settings_transfer.py:482 |
-| `_until_stopped` | src/tessellate/api/routes_settings_transfer.py:550 |
-| `_upload_size` | src/tessellate/api/routes_settings_transfer.py:246 |
-| `_validated_import_directory` | src/tessellate/api/routes_settings_transfer.py:427 |
-| `build_board_folder` | src/tessellate/api/routes_settings_transfer.py:292 |
-| `build_markdown_export` | src/tessellate/api/routes_settings_transfer.py:151 |
-| `export_backup` | src/tessellate/api/routes_settings_transfer.py:54 |
-| `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:321 |
-| `export_csv` | src/tessellate/api/routes_settings_transfer.py:910 |
-| `export_json` | src/tessellate/api/routes_settings_transfer.py:79 |
-| `export_markdown` | src/tessellate/api/routes_settings_transfer.py:215 |
-| `import_directory` | src/tessellate/api/routes_settings_transfer.py:676 |
-| `import_document` | src/tessellate/api/routes_settings_transfer.py:803 |
-| `import_markdown` | src/tessellate/api/routes_settings_transfer.py:697 |
+| `ImportDirectoryRequest` | src/tessellate/api/routes_settings_transfer.py:425 |
+| `_check_upload` | src/tessellate/api/routes_settings_transfer.py:254 |
+| `_copy_into` | src/tessellate/api/routes_settings_transfer.py:272 |
+| `_create_document_notes` | src/tessellate/api/routes_settings_transfer.py:805 |
+| `_export_rows` | src/tessellate/api/routes_settings_transfer.py:43 |
+| `_exported_created` | src/tessellate/api/routes_settings_transfer.py:368 |
+| `_import_directory_files` | src/tessellate/api/routes_settings_transfer.py:480 |
+| `_import_markdown_files` | src/tessellate/api/routes_settings_transfer.py:651 |
+| `_is_png` | src/tessellate/api/routes_settings_transfer.py:268 |
+| `_is_svg` | src/tessellate/api/routes_settings_transfer.py:264 |
+| `_keep_exported_state` | src/tessellate/api/routes_settings_transfer.py:385 |
+| `_link_imported` | src/tessellate/api/routes_settings_transfer.py:637 |
+| `_parse_frontmatter` | src/tessellate/api/routes_settings_transfer.py:391 |
+| `_run_directory_import` | src/tessellate/api/routes_settings_transfer.py:472 |
+| `_stream_and_close` | src/tessellate/api/routes_settings_transfer.py:313 |
+| `_upload_size` | src/tessellate/api/routes_settings_transfer.py:247 |
+| `_validated_import_directory` | src/tessellate/api/routes_settings_transfer.py:428 |
+| `build_board_folder` | src/tessellate/api/routes_settings_transfer.py:293 |
+| `build_markdown_export` | src/tessellate/api/routes_settings_transfer.py:152 |
+| `export_backup` | src/tessellate/api/routes_settings_transfer.py:55 |
+| `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:322 |
+| `export_csv` | src/tessellate/api/routes_settings_transfer.py:831 |
+| `export_json` | src/tessellate/api/routes_settings_transfer.py:80 |
+| `export_markdown` | src/tessellate/api/routes_settings_transfer.py:216 |
+| `import_directory` | src/tessellate/api/routes_settings_transfer.py:597 |
+| `import_document` | src/tessellate/api/routes_settings_transfer.py:724 |
+| `import_markdown` | src/tessellate/api/routes_settings_transfer.py:618 |
 
 ### src/tessellate/api/routes_spaces.py (22)
 
@@ -28483,6 +28475,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `is_blank` | src/tessellate/entry/cleantext.py:28 |
 | `name_key` | src/tessellate/entry/cleantext.py:45 |
 | `strip_invisible` | src/tessellate/entry/cleantext.py:33 |
+
+### src/tessellate/entry/dir_import_parts.py (8)
+
+| Name | File:line |
+|---|---|
+| `_already_imported` | src/tessellate/entry/dir_import_parts.py:60 |
+| `_directory_import_detail` | src/tessellate/entry/dir_import_parts.py:72 |
+| `_import_root_for` | src/tessellate/entry/dir_import_parts.py:32 |
+| `_import_roots` | src/tessellate/entry/dir_import_parts.py:16 |
+| `_inside` | src/tessellate/entry/dir_import_parts.py:40 |
+| `_text_hash` | src/tessellate/entry/dir_import_parts.py:56 |
+| `_under_root` | src/tessellate/entry/dir_import_parts.py:27 |
+| `_until_stopped` | src/tessellate/entry/dir_import_parts.py:85 |
 
 ### src/tessellate/entry/duplicates.py (12)
 
