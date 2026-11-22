@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9058, frontend ids 2845, CSS sections 546, backend routes 722, backend modules 11094, test files 2996, tests 23507, plan headings 692, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9058, frontend ids 2845, CSS sections 546, backend routes 722, backend modules 11094, test files 2996, tests 23508, plan headings 692, app scripts 29, boot scripts 38, script files 402.
 
 ## Frontend functions (9058)
 
@@ -10055,9 +10055,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbAffinityDialog` | frontend/js/whiteboard-map-more.js:1016 |
-| `wbAffinityRun` | frontend/js/whiteboard-map-more.js:1093 |
-| `wbAffinityStickies` | frontend/js/whiteboard-map-more.js:1006 |
+| `wbAffinityDialog` | frontend/js/whiteboard-map-more.js:1021 |
+| `wbAffinityRun` | frontend/js/whiteboard-map-more.js:1098 |
+| `wbAffinityStickies` | frontend/js/whiteboard-map-more.js:1011 |
 | `wbAudioChoose` | frontend/js/whiteboard-map-more.js:332 |
 | `wbAudioClose` | frontend/js/whiteboard-map-more.js:402 |
 | `wbAudioLength` | frontend/js/whiteboard-map-more.js:276 |
@@ -10067,9 +10067,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbAudioPlay` | frontend/js/whiteboard-map-more.js:415 |
 | `wbAudioRemove` | frontend/js/whiteboard-map-more.js:393 |
 | `wbAudioRows` | frontend/js/whiteboard-map-more.js:286 |
-| `wbBoundaryDraw` | frontend/js/whiteboard-map-more.js:1166 |
-| `wbBoundarySetBox` | frontend/js/whiteboard-map-more.js:1140 |
-| `wbBoundaryTargets` | frontend/js/whiteboard-map-more.js:1155 |
+| `wbBoundaryDraw` | frontend/js/whiteboard-map-more.js:1171 |
+| `wbBoundarySetBox` | frontend/js/whiteboard-map-more.js:1145 |
+| `wbBoundaryTargets` | frontend/js/whiteboard-map-more.js:1160 |
 | `wbBrainstormClock` | frontend/js/whiteboard-map-more.js:492 |
 | `wbBrainstormLeft` | frontend/js/whiteboard-map-more.js:488 |
 | `wbBrainstormStart` | frontend/js/whiteboard-map-more.js:504 |
@@ -10088,11 +10088,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGanttTicks` | frontend/js/whiteboard-map-more.js:78 |
 | `wbGanttWireBar` | frontend/js/whiteboard-map-more.js:143 |
 | `wbGanttWords` | frontend/js/whiteboard-map-more.js:74 |
-| `wbGrammarApply` | frontend/js/whiteboard-map-more.js:768 |
+| `wbGrammarApply` | frontend/js/whiteboard-map-more.js:773 |
 | `wbGrammarAvailable` | frontend/js/whiteboard-map-more.js:698 |
-| `wbGrammarFixes` | frontend/js/whiteboard-map-more.js:757 |
+| `wbGrammarFixes` | frontend/js/whiteboard-map-more.js:762 |
 | `wbGrammarPaint` | frontend/js/whiteboard-map-more.js:733 |
-| `wbGrammarRepaint` | frontend/js/whiteboard-map-more.js:749 |
+| `wbGrammarRepaint` | frontend/js/whiteboard-map-more.js:752 |
 | `wbGrammarRun` | frontend/js/whiteboard-map-more.js:703 |
 | `wbGrammarSoon` | frontend/js/whiteboard-map-more.js:726 |
 | `wbMapOpenGantt` | frontend/js/whiteboard-map-more.js:229 |
@@ -10101,17 +10101,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbShapeCopy` | frontend/js/whiteboard-map-more.js:547 |
 | `wbShapePaste` | frontend/js/whiteboard-map-more.js:553 |
 | `wbShapePatch` | frontend/js/whiteboard-map-more.js:539 |
-| `wbStampClear` | frontend/js/whiteboard-map-more.js:860 |
-| `wbStampMenu` | frontend/js/whiteboard-map-more.js:852 |
-| `wbStampPaint` | frontend/js/whiteboard-map-more.js:809 |
-| `wbStampPress` | frontend/js/whiteboard-map-more.js:804 |
-| `wbStampSet` | frontend/js/whiteboard-map-more.js:784 |
-| `wbStampSvg` | frontend/js/whiteboard-map-more.js:878 |
-| `wbStickerCopies` | frontend/js/whiteboard-map-more.js:912 |
-| `wbStickerCopiesOf` | frontend/js/whiteboard-map-more.js:903 |
-| `wbStickerKey` | frontend/js/whiteboard-map-more.js:897 |
-| `wbStickerMatch` | frontend/js/whiteboard-map-more.js:920 |
-| `wbStickerSwap` | frontend/js/whiteboard-map-more.js:954 |
+| `wbStampClear` | frontend/js/whiteboard-map-more.js:865 |
+| `wbStampMenu` | frontend/js/whiteboard-map-more.js:857 |
+| `wbStampPaint` | frontend/js/whiteboard-map-more.js:814 |
+| `wbStampPress` | frontend/js/whiteboard-map-more.js:809 |
+| `wbStampSet` | frontend/js/whiteboard-map-more.js:789 |
+| `wbStampSvg` | frontend/js/whiteboard-map-more.js:883 |
+| `wbStickerCopies` | frontend/js/whiteboard-map-more.js:917 |
+| `wbStickerCopiesOf` | frontend/js/whiteboard-map-more.js:908 |
+| `wbStickerKey` | frontend/js/whiteboard-map-more.js:902 |
+| `wbStickerMatch` | frontend/js/whiteboard-map-more.js:925 |
+| `wbStickerSwap` | frontend/js/whiteboard-map-more.js:959 |
 | `wbTemplateAdd` | frontend/js/whiteboard-map-more.js:595 |
 | `wbTemplateOutline` | frontend/js/whiteboard-map-more.js:575 |
 | `wbTemplatePick` | frontend/js/whiteboard-map-more.js:580 |
@@ -29464,7 +29464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23507)
+## Tests (23508)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31161,7 +31161,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_map_gantt.py | 4 |
 | tests/test_map_gap_audit_1112.py | 6 |
 | tests/test_map_generation.py | 13 |
-| tests/test_map_grammar_vc12.py | 4 |
+| tests/test_map_grammar_vc12.py | 5 |
 | tests/test_map_inline_links.py | 2 |
 | tests/test_map_inline_math.py | 3 |
 | tests/test_map_layouts.py | 3 |

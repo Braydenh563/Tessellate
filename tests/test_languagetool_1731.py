@@ -338,7 +338,8 @@ def test_the_note_editor_and_whiteboard_draw_harper_first_too():
     )
     assert "docGrammarAsk(text).then" not in note
     board = (ROOT / "frontend/js/whiteboard-map-more.js").read_text()
-    assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); })" in board
+    # The first answer repaints only the labels it answered (mapcpu 500); still drawn first.
+    assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(new Set([text])); })" in board
     assert "docGrammarAsk(text).catch" not in board
 
 
