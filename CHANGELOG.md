@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Performance, L531: the README adds the warm start (service worker and cache, 180 ms to first paint) and the phone-width cold start (207 ms) beside the cold desktop start (256 ms), all from one run of `scratchpad/ui-sweeps/bootwarm.js`.
 Palette, L499: a Settings row's other words are its keys, find words and synonyms, and its body text is a loose match, so "new" lists New note before "Finding new versions" and "Last backup"; the README palette shot is retaken on the showcase seed.
 Laptop chrome, L-world-class-95: density meets the gate (4 whole note cards and the first dashboard widget above the fold at 1093x614@1.25); the sub-tab merge and status bar fold are in BACKLOG after two measured attempts each.
 Notes, L-world-class-22 (templates): a note template also fills `{{title}}` (the Capture title), `{{weekday}}` and `{{space}}`, and `${Label}` is a prompted field asked once through the prompt dialog and put at every place the label stands (cancelling stops the use); the Settings popover and the insert-template Guide topic say so.

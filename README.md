@@ -521,6 +521,16 @@ The first interaction is the first click the app answers after a cold start,
 with the session kept. `GET /models/bench/budgets?live=true` times the server's
 share of each against your own notebook.
 
+The budget's boot is a cold start at desktop width. The second start and a phone
+are faster. These were measured on the same notebook in one run, at machine load 1.4, as the p50 of five
+(`scratchpad/ui-sweeps/bootwarm.js`):
+
+| Start | First paint | App ready |
+| --- | --- | --- |
+| Cold, 1440x900 | 256 ms | 1549 ms |
+| Warm, the service worker and cache | 180 ms | 1115 ms |
+| Cold, phone 390x844 | 207 ms | 1414 ms |
+
 ## Documentation
 
 | Document | What it answers |
