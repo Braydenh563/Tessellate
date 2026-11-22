@@ -42,13 +42,16 @@ def test_a_dock_menu_switch_row_is_a_menu_row():
     # against 32px and 12.8px for its buttons; the Timeline's Options switch
     # 33.2px against "Review some days" at 34.5. Measured after: every row in
     # both menus 34.5px, inset 12.8px (padding --space-2 --space-5, the recipe).
-    recipe = re.search(r"\n:is\(\n  \.action-menu,.*?\) :is\(([^)]*)\) \{([^}]*)\}", CSS, re.S)
+    # The recipe is one selector per row class since L342 (a list :is() at the
+    # right is a universal-bucket rule), so the row list is read off the
+    # selector group rather than off one :is().
+    recipe = re.search(r"\n(:is\(\n  \.action-menu,[^{]*)\{([^}]*)\}", CSS)
     assert recipe, "the menu row recipe moved"
-    assert ".dock-menu-check" in recipe.group(1), "a switch row takes the recipe's height and inset"
+    assert ") .dock-menu-check {" in recipe.group(0), "a switch row takes the recipe's height and inset"
     assert "padding: var(--space-2) var(--space-5);" in recipe.group(2)
     assert "min-height: var(--control-h-lg);" in recipe.group(2)
-    touch = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\n  :is\(\n    \.action-menu,.*?\) :is\(([^)]*)\) \{\s*min-height: var\(--target-min\);", CSS, re.S)
-    assert touch and ".dock-menu-check" in touch.group(1), "and the finger's floor"
+    touch = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\n  (:is\(\n    \.action-menu,[^{]*)\{\s*min-height: var\(--target-min\);", CSS)
+    assert touch and ") .dock-menu-check" in touch.group(1), "and the finger's floor"
 
 
 def test_settings_does_not_pin_a_menu_row_to_its_strip_height():
