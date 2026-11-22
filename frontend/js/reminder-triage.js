@@ -56,11 +56,6 @@
     return at.getTime() < now.getTime() + 60000 ? new Date(now.getTime() + 60 * 60 * 1000) : at;
   }
 
-  const putReminder = (id, body) =>
-    apiJson(`/reminders/${id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
-  const binReminder = (id) => apiJson(`/reminders/${id}`, { method: "DELETE" });
-  const unbinReminder = (id) => apiJson(`/reminders/${id}/restore`, { method: "POST" });
-
   //: A row's name and due time: no state of the sheet, so it lives outside `openReminderTriage`.
   function triageRowText(reminder) {
     const text = document.createElement("div");
@@ -74,6 +69,11 @@
     text.append(name, when);
     return text;
   }
+
+  const putReminder = (id, body) =>
+    apiJson(`/reminders/${id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+  const binReminder = (id) => apiJson(`/reminders/${id}`, { method: "DELETE" });
+  const unbinReminder = (id) => apiJson(`/reminders/${id}/restore`, { method: "POST" });
 
   async function openReminderTriage(reminders) {
     lazyScript("/css/triage-lazy.css");
