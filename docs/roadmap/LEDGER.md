@@ -340,7 +340,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-
 ## ui-modernisation
 
 - [ ] **L380** `ui-modernisation` open, S: Fix capture box moving 2.4px/1.6px on first click. From OPEN.md:1452. Evidence: No fix test found (grep 2.4px hits only an unrelated test_reply_cards note)
