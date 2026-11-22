@@ -1,6 +1,7 @@
 """Pins for LEDGER rows found already built on 2026-11-12 (documents closeout): each one fails if the behaviour goes."""
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 from pathlib import Path
 
@@ -40,7 +41,7 @@ def test_l306_documents_view_reads_doccmview_only_after_it_exists():
 def test_l340_link_offer_ignores_are_kept_on_the_notebook():
     prose = _read("frontend", "js", "documents-prose.js")
     assert "link_offer_ignored" in prose and 'method: "PUT"' in prose.split("async function docLinkOfferIgnore", 1)[1][:600]
-    assert "docLinkOfferIgnore(finding.name)" in _read("frontend", "js", "documents.js")
+    assert "docLinkOfferIgnore(finding.name)" in frontend_text("documents.js")
 
 
 def test_l_documents_13_the_selection_bar_carries_the_note_button_on_a_phone():

@@ -41,6 +41,8 @@ var wbState = { objects };
 const nodes = Array.from({ length: N }, (_, i) => ({ dataset: { id: String(N - i) } }));
 nodes.push({ dataset: { id: "gone" } });
 var document = { querySelectorAll: () => nodes };
+// The board instances (wbInstances.queryAll) query every mounted board the same way.
+var wbInstances = { queryAll: () => nodes };
 const painted = [];
 function wbGrammarPaint(el, datum) { painted.push([el.dataset.id, datum.id]); }
 FN

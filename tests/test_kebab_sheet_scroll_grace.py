@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_kebab_sheet_stamps_menu_opened_at():
-    text = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
+    text = (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
     start = text.index("function openKebabSheet(")
     body = text[start : text.index("\n}\n", start)]
     assert "window._menuOpenedAt = performance.now();" in body

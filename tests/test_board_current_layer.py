@@ -6,12 +6,13 @@ all agree. The browser half is `scratchpad/ui-sweeps/wbdepth2.js wbcurrentlayer`
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LIB = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _board(client, **layer):

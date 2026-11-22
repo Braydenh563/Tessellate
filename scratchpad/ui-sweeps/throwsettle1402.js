@@ -45,7 +45,7 @@ async function one(page, flick, from) {
     // The same throw every run: the flick's speed in px per ms, its rolls
     // seeded (companion-throw.js's `companionThrowSeed`).
     await page.evaluate(([vx, vy, seed]) => {
-      companionThrowPlan.seeded.seed = seed;
+      nameMarkBuddyThrow.sweep.companionThrowSeed.seed = seed;
       nameMarkBuddyThrow(document.getElementById('nm-buddy'), vx, vy, nameMarkBuddyWorld(nameMarkBuddyTab()));
     }, [flick[1] / 16, flick[2] / 16, flick.seed]);
   } else {
@@ -116,7 +116,7 @@ async function one(page, flick, from) {
         const rows = [];
         if (DIRECT) {
           await page.evaluate(() => ensureModule('companionThrow'));
-          await page.waitForFunction(() => typeof nameMarkBuddyThrow === 'function' && typeof companionThrowPlan === 'function' && !!companionThrowPlan.seeded, null, { timeout: 15000 });
+          await page.waitForFunction(() => typeof nameMarkBuddyThrow === 'function' && Boolean(nameMarkBuddyThrow.sweep), null, { timeout: 15000 });
         }
         for (const [i, flick] of FLICKS.entries()) {
           const from = [Math.round(w / 2 - 32), Math.round(h * 0.55)];

@@ -1,16 +1,16 @@
 """Rainbow every level (F3, MINDMAP_PLAN gap 10): the canvas's `wbMapColors` and
 the thumbnail's `_map_branch_colors` pick the same colour for every topic."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 
 from tessellate.api.wb_preview import MAP_BRANCH_PALETTE, _map_branch_colors
 
-MAP = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def _fn(name):

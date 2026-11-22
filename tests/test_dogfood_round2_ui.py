@@ -7,7 +7,7 @@ Chromium (numbers in the commit).
 from __future__ import annotations
 
 from pathlib import Path
-from tests._app_js import with_pieces
+from tests._app_js import documents_text, with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -56,7 +56,7 @@ def test_create_with_an_empty_title_is_answered_and_the_h1_is_not_doubled():
     assert "required = true" in with_pieces("capture-ask.js")
     for name in ("capture-ask.js", "editor.js"):
         assert "content: `# ${" not in (JS / name).read_text().split("apiJson(\"/documents\"")[1][:200]
-    assert "A blank line is inside nothing" in (JS / "documents.js").read_text()
+    assert "A blank line is inside nothing" in documents_text()
 
 
 def test_a_leading_hash_is_not_part_of_a_tag():
@@ -90,7 +90,7 @@ def test_a_formatting_toolbar_is_one_tab_stop():
     # 21: Tab from the note title walked every toolbar button before the editor.
     #: INBOX 1722: the function moved to documents-mermaid.js so the diagram builder opens without the Library bundle.
     assert "function wireToolbarRoving" in (JS / "documents-mermaid.js").read_text()
-    src = (JS / "documents.js").read_text()
+    src = documents_text()
     assert "wireToolbarRoving(bar);" in src.split("function wireMarkdownToolbar")[1][:400]
 
 

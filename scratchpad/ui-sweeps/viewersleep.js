@@ -10,7 +10,7 @@ const { boot } = require("./lib.js");
   const { browser, page } = await boot({ viewport: { width: W, height: 900 }, ...(W < 600 ? { hasTouch: true, isMobile: true } : {}), ...(process.env.REDUCED ? { reducedMotion: "reduce" } : {}) });
   await page.evaluate((k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
+    const b = $("avatar-buddy");
     b.value = k;
     b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");
@@ -23,7 +23,7 @@ const { boot } = require("./lib.js");
   await page.waitForTimeout(4000);
   await page.evaluate(() => { const w = window.nameMarkBuddyWake; window.__wakes = []; window.nameMarkBuddyWake = function (...a) { window.__wakes.push(new Error().stack.split("\n").slice(1, 5).join(" < ")); return w.apply(this, a); };
     const r = document.getElementById("nm-buddy"); window.__cls = []; new MutationObserver(() => { const c = [...r.classList].filter((x) => /nmb-(sleep|act)/.test(x)).join(" "); if (window.__cls[window.__cls.length - 1] !== c) window.__cls.push(c); }).observe(r, { attributes: true, attributeFilter: ["class"] }); });
-  const sleep = () => page.evaluate(() => { nmb.lastInput = Date.now() - NMB_SLEEP_MS - 1000; nmb.awakeUntil = 0; nameMarkBuddyTick(); });
+  const sleep = () => page.evaluate(() => { nmb.lastInput = Date.now() - nmb.sweep.NMB_SLEEP_MS - 1000; nmb.awakeUntil = 0; nmb.sweep.nameMarkBuddyTick(); });
   await page.mouse.move(W - 5, 5);
   // OPEN=menu opens it from its menu's Enlarge (no wake), as the owner may have.
   const open = () => page.evaluate((how) => how === "menu" ? openNameMarkViewer(document.getElementById("nm-buddy").dataset.seed || "", { visit: true }) : document.querySelector("#nm-buddy .nm-buddy-face").dispatchEvent(new MouseEvent("dblclick", { bubbles: true })), process.env.OPEN || "dbl");

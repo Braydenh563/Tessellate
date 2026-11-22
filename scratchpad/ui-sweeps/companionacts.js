@@ -75,5 +75,7 @@ const PROP = { lie: 'pillow', read: 'book', beanbag: 'beanbag', chair: 'chair' }
   console.log(JSON.stringify({ kind: KIND, vw: VW, rows }));
   await browser.close();
   const bad = rows.filter((r) => (PROP[r.act] && r.propOpacity < 0.99) || r.inStep > 12 || r.outStep > 12 || r.leftShown.length || r.charTransform !== 'none' || r.restLayoutsPerSec > 1);
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((bad.length) ? 'FAIL companionacts: a measure above is out of bounds' : 'PASS companionacts');
   process.exit(bad.length ? 1 : 0);
 })();

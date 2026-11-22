@@ -26,7 +26,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")  # L308: the board rules moved with the Library bundle
 
 
 def _rule(selector_start: str) -> str:

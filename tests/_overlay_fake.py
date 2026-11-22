@@ -163,6 +163,10 @@ class FakeWin32:
         return 555
 
     def _UpdateLayeredWindow(self, hwnd: Any, _dst: Any, at: Any, size: Any, _src: Any, origin: Any, key: int, blend: Any, flags: int) -> int:
+        # Only the newest frame keeps its pixels: a copy of every frame grew a worker past 6 GB in a long sweep and the
+        # kernel killed it, losing the CI runner (3.11 legs, 2026-11-22). Tests read the pixels of `layered[-1]` only.
+        if self.layered:
+            self.layered[-1].pop("pixels", None)
         self.layered.append(
             {
                 "at": (at._obj.x, at._obj.y), "size": (size._obj.cx, size._obj.cy), "flags": flags,

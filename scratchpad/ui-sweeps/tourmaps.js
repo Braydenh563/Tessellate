@@ -6,7 +6,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  const hasMap = await page.evaluate(async () => (await tourContext()).map != null);
+  const hasMap = await page.evaluate(async () => (await openTour.sweep.context()).map != null);
   await page.evaluate(() => openTour('maps'));
   await page.waitForTimeout(2500);
   const first = await page.evaluate(() => ({

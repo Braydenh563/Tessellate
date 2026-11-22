@@ -8,6 +8,7 @@ the replace sends the results, its undo the originals. Driven in the app by
 from __future__ import annotations
 
 from tessellate.api.edit_conflicts import content_hash
+from tests._app_js import documents_text
 
 
 def _make(client, title, content):
@@ -199,7 +200,7 @@ def test_the_find_panel_reaches_the_every_document_find_and_replace():
 
     from tests._app_js import JS_DIR
 
-    docs = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     code = (JS_DIR / "documents-code.js").read_text(encoding="utf-8")
     replace = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
     assert 'name: "all-documents"' in docs and "docFindInDocuments(asked().search)" in docs

@@ -27,8 +27,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+#: whiteboard.js and the files it was split into (whiteboard-items, -stacking, -pointer, -pan, ...).
+WB = "\n".join(f.read_text(encoding="utf-8") for f in sorted(JS.glob("whiteboard*.js")) if not f.name.startswith("whiteboard-map"))
+MAP = "\n".join(f.read_text(encoding="utf-8") for f in sorted(JS.glob("whiteboard-map*.js")))
 
 #: Everything that makes the browser bring style or layout up to date.
 READS = re.compile(
@@ -267,9 +268,9 @@ def test_a_zoom_step_draws_the_transform_and_settles_once() -> None:
     assert "wbCullNow(t, size, scaling);" in frame
     assert "if (scaling) wbZoomSettle();" in frame
     settle = _code(_fn(WB, "function wbZoomSettle("))
-    assert "setTimeout(() => wbCullNow(), WB_ZOOM_SETTLE_MS)" in settle
+    assert "setTimeout(() => wbCullNow(), wbZoomSettle.ms)" in settle
     sync = _code(_fn(WB, "function wbSyncGridToTransform("))
-    assert "wbPublishInvZoom(el, inv), WB_ZOOM_SETTLE_MS)" in sync
+    assert "wbPublishInvZoom(el, inv, inst), wbZoomSettle.ms)" in sync
     cull = _code(_fn(WB, "function wbCullNow("))
     # The skip comes before any class is toggled, and the ground drawn is kept for the next step.
     assert cull.index("if (unlessDrawn && drawn") < cull.index("classList.toggle")

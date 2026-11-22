@@ -2064,5 +2064,8 @@
   //: counter live inside this IIFE, so a probe reads them here, and drives
   //: Next, Close and the needs table (a stubbed "has a map") through it.
   openTour.inspect = () => ({ run: tourRun, sections: TOUR_SECTIONS, place: tourSectionPlace, blockPanels: tourBlockPanels, next: tourNext, close: tourClose, needs: TOUR_NEEDS });
+  //: The sweeps' hands on its own names (scratchpad/ui-sweeps/tourfirst, tourfollow, tourmaps), on a name already shared so
+  //: the shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
+  openTour.sweep = { get run() { return tourRun; }, next: tourNext, back: tourBack, close: tourClose, context: tourContext };
   Object.assign(window, { TOUR_ENABLED, openTour, renderTourReplay });
 })();

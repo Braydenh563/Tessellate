@@ -20,7 +20,7 @@ PATTERN = re.compile(
 WRITE = re.compile(r"document\.write(?:ln)?\s*\(")
 #: `document.write` into a print window the app opened itself, with nothing
 #: in it but a `blob:` URL the app made (whiteboard.js, `wbExportPdf`).
-ALLOWED_WRITES = {"whiteboard.js": 1}
+ALLOWED_WRITES: dict[str, int] = {}
 
 
 def _line(text: str, offset: int) -> int:

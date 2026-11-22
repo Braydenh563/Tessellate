@@ -8,16 +8,29 @@
    system colours are the only ones used. */
 @media (forced-colors: active) {
   /* A chosen thing is outlined: the fill that said so is gone. */
-  :is([aria-selected="true"], [aria-pressed="true"], [aria-checked="true"], [aria-current]:not([aria-current="false"]), button.active, li.active, .chip.active, .seg > .active) {
+  :where([aria-selected="true"]):is([aria-selected="true"], [aria-current]:not([aria-current="false"])),
+  :where([aria-pressed="true"]):is([aria-pressed="true"], [aria-current]:not([aria-current="false"])),
+  :where([aria-checked="true"]):is([aria-checked="true"], [aria-current]:not([aria-current="false"])),
+  :is([aria-current]:not([aria-current="false"])),
+  :where(button.active):is(button.active, [aria-current]:not([aria-current="false"])),
+  :where(li.active):is(li.active, [aria-current]:not([aria-current="false"])),
+  .chip.active,
+  :is(.seg > .active) {
     outline: 2px solid Highlight;
     outline-offset: -2px;
   }
   /* A filled button has no border to stand on once its fill is gone. */
-  :is(button.small, button.accent, #chat-send, #reminder-add):not(.ghost, .icon-only, .linklike, .menu-item, .doc-dock-menu-item, [role="tab"], [aria-pressed]) {
+  :where(button.small):is(button.small, #chat-send):not(.ghost, .icon-only, .linklike, .menu-item, .doc-dock-menu-item, [role="tab"], [aria-pressed]),
+  :where(button.accent):is(button.accent, #chat-send):not(.ghost, .icon-only, .linklike, .menu-item, .doc-dock-menu-item, [role="tab"], [aria-pressed]),
+  #chat-send:not(.ghost, .icon-only, .linklike, .menu-item, .doc-dock-menu-item, [role="tab"], [aria-pressed]),
+  #reminder-add:not(.ghost, .icon-only, .linklike, .menu-item, .doc-dock-menu-item, [role="tab"], [aria-pressed]) {
     border: 1px solid ButtonText;
   }
   /* Colour is the content in these: kept, and ringed so the edge reads. */
-  :is(.theme-swatch, .theme-preview, .accent-swatch, .contents-dot) {
+  .theme-swatch,
+  .theme-preview,
+  .accent-swatch,
+  .contents-dot {
     forced-color-adjust: none;
     outline: 1px solid CanvasText;
     outline-offset: -1px;

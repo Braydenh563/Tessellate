@@ -3,8 +3,8 @@
 // spec panel (from ai-tools.js), editing an answer in place (from
 // sheets-selects.js), a note's "Explain this note" menu row (from menus.js),
 // the extract preview's Save (from chat-attach.js), the chat's Copy message
-// (`chatTurnTranscript`, awaited by its button) and dictation (from media.js,
-// 2026-11-11).
+// (`chatTurnTranscript`, awaited by its button), dictation (from media.js,
+// 2026-11-11) and the phone ⋯ sheet (from sheets-selects.js, 2026-11-22).
 // Each is reached only by a click, and no caller reads a return value, so
 // `LAZY_ENTRY_POINTS`-style stand-ins (`gestureKit`, lazy-entries.js) fetch
 // this file on first use and then call the real function.
@@ -431,4 +431,56 @@ async function toggleDictation(button, targetInput) {
   // every child on the button, and the bar meter startMicLevelMeter() builds
   // is one: appending it earlier just got it discarded a line later.
   stopLevelMeter = startMicLevelMeter(stream, button);
+}
+
+//: From sheets-selects.js (2026-11-22, the gzip budget): a phone ⋯ tap is its only caller.
+function openKebabSheet(menu, opener, label) {
+  closeActionMenus();
+  //: A scroll already on its way (the list settling after a note opened) would
+  //: reach `closeActionMenusOnScroll` and empty this sheet 100ms after it opened
+  //: (traced in deepflows' Find at 390): stamped like `openActionMenu`, which
+  //: gives a menu 200ms of grace from such a scroll.
+  window._menuOpenedAt = performance.now();
+  const home = menu.parentElement;
+  let closeSheet = null;
+  let sheetCard = null;
+  // A group's row and a level's back row move inside the sheet (`buildMenuGroupButton`), so they leave it open.
+  const onRow = (event) => {
+    const row = event.target.closest(".menu-item");
+    if (row && !row.matches(".has-submenu, .menu-back") && closeSheet) closeSheet();
+  };
+  closeSheet = openSheet({
+    label,
+    name: "action-menu",
+    returnFocus: opener,
+    build: (card) => {
+      card.classList.add("action-menu-card");
+      sheetCard = card;
+      menu._inSheet = true;
+      menu.style.left = "";
+      menu.style.top = "";
+      menu.classList.remove("hidden", "action-menu-flip", "action-menu-escaped");
+      card.appendChild(menu);
+      card.addEventListener("click", onRow, true);
+    },
+    onClose: () => {
+      closeSheet = null;
+      opener.setAttribute("aria-expanded", "false");
+    },
+    //: After the sheet's exit (`openSheet`'s `onGone`), so the card is not an
+    //: empty rectangle while it leaves. Skipped when the menu has already
+    //: been taken into a newer sheet (the same ⋯ pressed again inside the
+    //: exit window): sending it home then would empty the sheet that is open.
+    onGone: () => {
+      if (menu.parentElement !== sheetCard) return;
+      menu.classList.add("hidden");
+      if (home) home.appendChild(menu);
+      // After the observer has seen the class change above, so it does not
+      // escape a menu that is on its way home.
+      queueMicrotask(() => {
+        menu._inSheet = false;
+      });
+    },
+  });
+  opener.setAttribute("aria-expanded", "true");
 }

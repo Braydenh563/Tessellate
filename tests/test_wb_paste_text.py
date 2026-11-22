@@ -8,6 +8,7 @@ stickies (more than fifty, one text box). The browser half is
 `scratchpad/ui-sweeps/wb1005-paste.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,10 +17,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 PROSE = (ROOT / "frontend" / "js" / "documents-prose.js").read_text(encoding="utf-8")
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def _between(text: str, start: str, end: str) -> str:

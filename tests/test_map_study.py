@@ -8,6 +8,7 @@ pure, so node runs it here; the run itself is driven in the browser by
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_more_text
 import json
 import shutil
@@ -24,7 +25,7 @@ def _run(expr: str, tree: dict) -> object:
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    text = MAP_JS.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard-map.js")
     region = text[text.index("// WB-MAP-STUDY-BEGIN") : text.index("// WB-MAP-STUDY-END")]
     #: The index shape `wbMapIndex` hands it: roots, and children by parent id.
     script = (
@@ -89,12 +90,12 @@ def test_a_map_of_bare_topics_with_one_note_has_one_question():
 
 
 def test_the_study_bar_and_the_guide_know_the_note_answer():
-    mapjs = MAP_JS.read_text(encoding="utf-8")
+    mapjs = frontend_text("whiteboard-map.js")
     assert "function wbMapStudyShown(q)" in mapjs and "wbStudy.revealed.add(step.id)" in mapjs
     guide = help_more_text()
     assert "its note is the" in guide
     #: The caption is set before the frame is fitted, and takes its own line when cut.
-    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     show = board[board.index("function wbPresentShow(index)") :]
     assert show.index("wbPresentCaption(at, steps)") < show.index("const foot")
     #: The own line moved from an inline style to the picker's is-wide class
@@ -139,6 +140,6 @@ def test_a_longer_streak_waits_longer_and_a_mark_without_a_time_is_due():
 
 
 def test_a_mark_keeps_the_streak_and_the_time_it_was_made():
-    mapjs = MAP_JS.read_text(encoding="utf-8")
+    mapjs = frontend_text("whiteboard-map.js")
     mark = mapjs[mapjs.index("function wbMapStudyMark") : mapjs.index("function wbMapEndStudy")]
     assert "streak" in mark and "at: Date.now()" in mark

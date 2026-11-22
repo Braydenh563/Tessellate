@@ -43,3 +43,39 @@ def test_the_board_menu_the_palette_and_the_gallery_all_offer_it():
     assert "wb-suggest-board-name" in (root / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
     gallery = (root / "js" / "boards-gallery.js").read_text(encoding="utf-8")
     assert "/suggest-title" in gallery and "Suggest a name" in gallery
+
+
+def test_a_private_cards_title_never_names_the_board(client, session):
+    """Review 5899364438 item 4: a pinned private note's title stayed in the words a name is cut from."""
+    from tessellate.api import wb_boards
+    from tessellate.core import vault
+
+    vault.close()
+    vault.create(session, "test-passphrase")
+    session.commit()
+    board = client.post("/whiteboard/boards", json={"name": "Blank"}).json()
+    plain = client.post("/entries", json={"content": "# Garden plan\nBeds."}).json()["id"]
+    secret = client.post("/entries", json={"content": "# Surprise party\nShh."}).json()["id"]
+    made_private = client.post(f"/entries/{secret}/privacy", json={"private": True})
+    assert made_private.status_code == 200
+    for eid in (plain, secret):
+        client.post("/whiteboard/nodes", json={"entry_id": eid, "board_id": board["id"], "x": 0, "y": 0})
+    words = wb_boards._board_words(session, board["id"])
+    vault.close()
+    assert "Garden plan" in words and "Surprise" not in words
+
+
+def test_a_slow_model_falls_back_to_the_boards_words(client, monkeypatch):
+    """Item 4: the model runs on a job thread with a timeout, so a stalled model gives the composer's name."""
+    import time
+
+    from tessellate.ai import librarian
+    from tessellate.api import wb_boards
+    from tessellate.core import deps
+
+    board = _map(client, "- Garden plan\n  - Tomatoes in raised beds\n")
+    monkeypatch.setattr(wb_boards, "_TITLE_SECONDS", 0.05)
+    monkeypatch.setattr(type(deps.get_ollama()), "is_running", lambda self: True)
+    monkeypatch.setattr(librarian, "generate_title", lambda *a: time.sleep(1) or "Too late")
+    got = client.post(f"/whiteboard/boards/{board['id']}/suggest-title")
+    assert got.status_code == 200 and got.json()["by"] == "composer"

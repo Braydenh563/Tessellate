@@ -62,7 +62,8 @@ def test_a_selection_is_saved_by_one_request_per_gesture():
     for start, end in (
         ("async function wbFlushNudge() {", "function wbNudgeSelection"),
         ("async function wbSaveMultiSnapshot(rows) {", "function wbRenderMultiSelectionHandles"),
-        ("async function wbSaveBulkMove(origin) {", "// Copy/paste"),
+        #: The last function in whiteboard-gesture.js (L634): its body ends at the file's surface line.
+        ("async function wbSaveBulkMove(origin) {", "//: The file's surface"),
         ("async function wbFrameTurnEnd(d, primary) {", "function wbRotateGripTitle"),
     ):
         body = _between(wb, start, end)
@@ -124,11 +125,13 @@ def test_render_functions_do_not_add_page_level_listeners():
     found = []
     for path in sorted(root.glob("*.js")):
         text = path.read_text(encoding="utf-8")
-        for fn in re.finditer(r"(?ms)^(?:async )?function ((?:render|draw|paint|mount)\w*)\(.*?\n\}\n", text):
+        #: documents-focus.js is a wrapped piece (L-documents-117): its functions sit at two spaces, so the same line, indented, still sees them.
+        indent = " {2}" if path.name == "documents-focus.js" else ""
+        for fn in re.finditer(rf"(?ms)^{indent}(?:async )?function ((?:render|draw|paint|mount)\w*)\(.*?\n{indent}\}}\n", text):
             for line in fn.group(0).splitlines():
                 if re.search(r"\b(document|window)\.addEventListener\(", line) and "once" not in line:
                     found.append(f"{path.name}:{fn.group(1)}")
-    assert found == ["documents.js:mountDocToolbarControls"], found
+    assert found == ["documents-focus.js:mountDocToolbarControls"], found
 
 
 def test_link_offers_wait_two_seconds_in_the_middle_of_a_sentence():

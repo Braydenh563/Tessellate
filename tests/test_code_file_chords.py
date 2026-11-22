@@ -11,6 +11,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 DOCS_JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
 MARKDOWN_CALL = re.compile(r"\b(applyMarkdown|wrapDocSelection)\(")
 
@@ -80,7 +82,7 @@ def test_a_code_files_exports_are_its_source_not_an_empty_page():
     its title line and nothing else (the preview of a file with no rendered
     form is empty), named `apppy.html`; the bundle and Word rows were offered
     for it too."""
-    source = DOCS_JS.read_text(encoding="utf-8")
+    source = documents_text()
     export = (DOCS_JS.parent / "documents-export.js").read_text(encoding="utf-8")
     html = export[export.index("async function docExportHtmlRun(") :].split("\n}\n")[0]
     head = html.split("withDocPreviewShown")[0]
@@ -105,7 +107,7 @@ def test_an_export_name_keeps_a_code_files_extension():
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    source = DOCS_JS.read_text(encoding="utf-8")
+    source = documents_text()
     start = source.index("function docExportName")
     fn = source[start : source.index("\n}\n", start) + 3]
     titles = '["app.py", "..hidden", "a..b", "Notes v1.2"]'
@@ -115,7 +117,7 @@ def test_an_export_name_keeps_a_code_files_extension():
 
 
 def test_the_word_goal_is_not_offered_in_a_code_file():
-    source = DOCS_JS.read_text(encoding="utf-8")
+    source = documents_text()
     body = source[source.index("function renderDocStats()") :].split("\n}\n")[0]
     # CE3 (audit 1031 row 23) keeps the answer in `code` so a code file also
     # skips the word count; the goal button still hides on it.

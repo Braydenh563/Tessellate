@@ -5,6 +5,7 @@ Rounded was built as `data.round` (the Corners number); curved is `data.curve`,
 a smooth line through the same points, drawn on the line only (the hit band,
 ports and label keep the true shape). One "Line style" select writes both."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _curved() -> str:

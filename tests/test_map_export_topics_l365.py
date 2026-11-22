@@ -9,6 +9,7 @@ runs the pure pieces (`wbSvgText`) under node.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -18,7 +19,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
@@ -27,23 +28,30 @@ def _map_branch() -> str:
     return WB[start : WB.index('} else if (obj.kind === "text" && obj.data.sticker)', start)]
 
 
+def _look() -> str:
+    """The live-page reads (`wbExportLook`'s topic, L-whiteboard export split): the builder touches no element."""
+    start = WB.index("function wbExportLook(")
+    return WB[start : WB.index("\n}\n", start)]
+
+
 def test_the_cut_shapes_export_as_polygons_with_the_canvas_outline():
     branch = _map_branch()
     for shape in ("diamond", "hexagon", "chevron"):
         assert f'cut === "{shape}"' in branch, shape
         assert f'data-shape="{shape}"]::before' in CSS, shape
-    assert '"::after"' in branch and '"::before"' in branch
+    assert '"::after"' in _look() and '"::before"' in _look()
+    assert "topic.face" in branch and "topic.rim" in branch
     assert 'cut === "underline"' in branch and 'cut !== "none"' in branch
 
 
 def test_effect_and_phosphor_icon_still_travel():
     branch = _map_branch()
-    assert "wbExportTopicEffect(" in branch and "wbExportTopicGlyph(" in branch
+    assert "wbExportTopicEffect(" in branch and "topic.glyph" in branch and "wbExportTopicGlyph(" in _look()
 
 
 def test_the_label_takes_its_levels_size_weight_and_slant():
     branch = _map_branch()
-    assert 'querySelector(".wb-map-text")' in branch
+    assert 'querySelector(".wb-map-text")' in _look() and "topic.type" in branch
     assert "fontWeight: textStyle?.fontWeight" in branch and "fontStyle: textStyle?.fontStyle" in branch
     assert "fontSize: 14," not in branch
 

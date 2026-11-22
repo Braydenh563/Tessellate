@@ -96,7 +96,9 @@ def test_the_row_and_an_open_part_are_on_the_spacing_tokens() -> None:
     assert "padding: var(--space-1);" in bar
     assert "margin: calc(var(--space-4) - var(--space-1)) calc(var(--space-1) * -1) calc(var(--space-1) * -1);" in bar
     assert ".answer-foot-part > summary," in CSS
-    assert ".answer-foot-bar ~ * :is(.answer-foot-part:not([hidden]), .answer-evidence)," in CSS
+    # One selector per kept part, so each is filed under its class (L342).
+    assert ".answer-foot-bar ~ * :is(.answer-foot-part:not([hidden]))," in CSS
+    assert ".answer-foot-bar ~ * :where(.answer-evidence):is(.answer-evidence, .answer-foot-part:not([hidden]))," in CSS
 
 
 def test_the_row_is_one_row() -> None:

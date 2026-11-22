@@ -262,6 +262,15 @@ async function boot(opts={}) {
     applyAppearance();
   }, process.env.FONT || '').catch(() => {});
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
+  //: **Settings' listeners load on its first open** (the `settingsControls` bundle), so a sweep
+  //: that sets a Settings control and fires its `change` without opening Settings changed
+  //: nothing: 39 companion sweeps found no `#nm-buddy` (L554). Loaded here only for a sweep
+  //: whose text drives a Settings control that way, so every other boot stays as it was.
+  {
+    let text = '';
+    try { text = require('fs').readFileSync(require.main.filename, 'utf8'); } catch {}
+    if (/\$\('avatar-buddy/.test(text)) await page.evaluate(() => typeof ensureModule === 'function' && ensureModule('settingsControls')).catch(() => {});
+  }
   await page.waitForTimeout(800);
   //: **Search by meaning asks once too** (semantic-notice.js): the first save
   //: that wants the missing package raises a sticky toast, which sat over the
@@ -306,6 +315,9 @@ async function openBoardsTab(page, fns = ['initWhiteboard', 'wbOpenSidebar'], ti
     if (!button.classList.contains('active')) { button.click(); return false; }
     return names.every((f) => typeof window[f] === 'function');
   }, { names: fns }, { timeout, polling: 100 });
+  // The bundle's files run one after another: `initWhiteboard` is there before
+  // the later files (`wbFmtState` in whiteboard-format.js), so wait for all of it.
+  await page.evaluate(() => ensureModule('boards'));
 }
 
 // After `openWhiteboardBoard(id)` has been called: wait until the board is on
@@ -396,4 +408,14 @@ function seedBulkOnce(count) {
   return true;
 }
 
-module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, seedLibtextIfEmpty, seedBulkOnce, venvPython};
+// A new board or map by name, the way the app makes one (wbCreateBlankBoard): "New" makes an
+// untitled board at once now, and the template dialog the sweeps once filled
+// (#wb-template-name, #wb-template-create) is the split menu's, so they fill it no longer.
+async function newBoard(page, name, kind = 'board', timeout = 30000) {
+  await openBoardsTab(page, ['initWhiteboard', 'createNewBoard', 'wbShowCanvasView']);
+  await page.evaluate(([n, k]) => { wbShowCanvasView(); return createNewBoard.sweep.wbCreateBlankBoard(n, k); }, [name, kind === 'map' ? 'map' : 'board']);
+  await page.waitForFunction((k) => Boolean(window.currentBoardId) && (k !== 'map' || wbIsMap()), kind, { timeout, polling: 100 });
+  await waitForBoardOpen(page, 0, timeout);
+}
+
+module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, newBoard, seedLibtextIfEmpty, seedBulkOnce, venvPython};

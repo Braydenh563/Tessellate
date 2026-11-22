@@ -21,7 +21,7 @@ const CASES = [
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   await page.evaluate(() => ensureModule('companionMenu')); await page.waitForTimeout(1500);
-  await page.evaluate(() => { for (const n of ['nameMarkBuddyTick', 'nameMarkBuddyDrift', 'nameMarkBuddyErrand', 'nameMarkBuddyBored']) if (typeof window[n] === 'function') window[n] = () => {}; });
+  await page.evaluate(() => { for (const n of ['nmb.sweep.nameMarkBuddyTick', 'nmb.sweep.nameMarkBuddyDrift', 'nmb.sweep.nameMarkBuddyErrand', 'nameMarkBuddyBored']) if (typeof window[n] === 'function') window[n] = () => {}; });
   await page.evaluate(() => {
     window.__s = { on: false, pts: [] };
     const loop = (t) => { if (__s.on) { const b = document.getElementById('nm-buddy'); const r = b.getBoundingClientRect(); __s.pts.push([t, r.left + r.width / 2, r.top + r.height / 2, +getComputedStyle(b).opacity, b.dataset.route || '']); } requestAnimationFrame(loop); };

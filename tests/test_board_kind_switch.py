@@ -25,6 +25,7 @@ reported symptom reproduced on purpose.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -33,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 #: whiteboard-map.js verbatim on 2026-09-24, and the renderer and the
 #: gestures that call into it stayed in whiteboard.js.
 WHITEBOARD_JS = "\n".join(
-    (ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "whiteboard-map.js")
+    frontend_text(n) for n in ("whiteboard.js", "whiteboard-map.js")
 )
 INDEX_HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 

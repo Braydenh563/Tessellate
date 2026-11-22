@@ -69,7 +69,7 @@ const { boot } = require('./lib.js');
   // Tossed: a fast pull to the right and let go at speed.
   // Each throw draws its own bounce, grip and air (Math.random): the same pull came down on the far side of the window
   // in one run and on the sidebar's edge in the next (a hard landing carries it over the other way, by roll). The sweep's seed (companion-throw.js) makes the flight one flight: seed 1 comes down on the status bar, to the right.
-  await page.evaluate(async (seed) => { await ensureModule('companionThrow'); companionThrowPlan.seeded.seed = seed; }, Number(process.env.SEED || 1));
+  await page.evaluate(async (seed) => { await ensureModule('companionThrow'); nameMarkBuddyThrow.sweep.companionThrowSeed.seed = seed; }, Number(process.env.SEED || 1));
   await put(300, 420);
   f = await faceMid();
   await page.mouse.move(f[0], f[1]);
@@ -106,7 +106,7 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(900);
   const slow = await page.evaluate(() => nmb.thrown || null);
   if (slow) fails.push('a slow let-go was tossed');
-  // Reduce motion: no petting.
+  // Reduce motion: no petting. The companion reads MOTION.cause (theme-boot.js), not the attribute, so the switch goes through MOTION.apply.
   await page.mouse.move(100, 100);
   await page.evaluate(() => { MOTION.apply('off'); nmb.pettedAt = 0; nameMarkBuddyAct(''); });
   // The pet itself is private to avatars.js (one closure): the pointer resting on the face is what calls it.

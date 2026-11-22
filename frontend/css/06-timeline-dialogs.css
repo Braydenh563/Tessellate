@@ -650,13 +650,6 @@
 :root[data-mode="dark"] .graph-node text.graph-label-group {
   fill: var(--accent);
 }
-/* The notes a document draws on, beside its outline. The row is the note plus
-   a detach button, so the two can't run into each other on a long preview. */
-#doc-notes li {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
 /* The chat box grows with the question (capped by AUTOGROW_MAX_PX in JS).
    It replaced an <input>, so it has to keep an input's shape: one line to
    start with, and no manual resize handle fighting the auto-grow. */
@@ -2659,44 +2652,6 @@
 #wb-stroke-width {
   margin-inline: var(--space-2);
 }
-/* --- the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) -----------
-   Two rows of segments, a line saying what the pair will do, and one primary
-   button, on the modal recipe. The dropdown this replaced painted its own
-   surface and placed itself against whichever button opened it, which is how
-   it came to run off the bottom of the window (INBOX 12). Its rules are gone;
-   the name still appears in some grouped selectors in 08-consistency.css that
-   cover every menu in the app, which cost nothing to leave. */
-.wb-export-card .wb-export-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-/* The segments wrap rather than shrinking their words: seven formats do not
-   fit one line of a 390px dialog, and a segment whose labels are ellipsised
-   is a row of guesses. */
-.wb-export-card .wb-export-seg {
-  flex-wrap: wrap;
-  width: 100%;
-}
-.wb-export-card .wb-export-note {
-  margin: 0;
-  color: var(--muted);
-}
-/* The "some of these notes are collapsed" line (INBOX 238). `--warn` rather
-   than `--error`, because nothing has gone wrong: the export will work, it
-   will just carry what the board is showing, which is the whole point of the
-   sentence. It sits under the format and scope note in the same column so it
-   reads as a second line of the same explanation rather than as an alert
-   bolted onto the dialog.
-   Written with `.wb-export-card` in front of it, and immediately after the
-   rule it has to beat, because the element carries both classes: a bare
-   `.wb-export-warning` is one class against that rule's two, so the muted
-   grey won and the line was measured rendering at rgb(76, 85, 99). */
-.wb-export-card .wb-export-warning {
-  color: var(--warn);
-}
 .wb-snap-label {
   display: inline-flex;
   align-items: center;
@@ -2774,8 +2729,11 @@
   border-radius: var(--radius-in-pill);
 }
 /* A pill is a single row of controls. Once it has wrapped it is a block of
-   them, and the fully-rounded ends read as a mistake rather than a shape. */
-.whiteboard-floating-panel.bottom-center:has(> :last-child:not(:first-child)) {
+   them, and the fully-rounded ends read as a mistake rather than a shape.
+   The wrap is marked by the row's size observer (whiteboard-pan.js): a
+   `:has()` on a second child also matched the phone's hidden Tools opener, so
+   the row drew this radius on one line at every width (L-world-class-413). */
+.whiteboard-floating-panel.bottom-center.wb-rail-wrapped {
   border-radius: var(--radius);
 }
 /* Below this there is not enough width left to share the edge at all, the
@@ -2957,22 +2915,6 @@
    getting quite long... make them like a selectable dropdown"). */
 .wb-shape-picker {
   position: relative;
-}
-/* A tighter gap than `.row`'s own default 0.6rem, for a colour swatch +
-   opacity slider + checkbox squeezed into one properties-panel row. Real
-   bug, caught live: a first pass used `style="gap: 0.4rem"` inline, which
-   this app's own CSP (`style-src 'self'`) silently refused: exactly the
-   trap CLAUDE.md already names ("inline style attributes, all rejected by
-   this app's own CSP, all invisible until a browser was pointed at them"),
-   reintroduced by this same session before being caught by driving it. */
-.wb-inline-controls {
-  gap: 0.4rem;
-}
-.wb-shape-toggle-icon {
-  pointer-events: none;
-}
-.wb-shape-caret {
-  margin-left: -2px;
 }
 .wb-shape-menu {
   position: absolute;
@@ -3228,49 +3170,6 @@
   z-index: 100;
   box-shadow: var(--shadow-lg);
 }
-/* **One selection recipe for every kind** (WHITEBOARD_PLAN.md decision 6:
-   "eight handles, rotate stem on top, the bounding box at `--accent` 1px; a
-   note's inner card no longer draws its own outline").
-   Measured before it: a card and a text box wore a 2px accent outline, and a
-   sketch wore a dashed 35%-opacity stroke along its own path and no box at
-   all, so the same click read as two different kinds of thing. The box is a
-   real rect now (`.wb-sketch-selection-box`, drawn by `wbRenderSketchHandles`)
-   and both are 1px. */
-.node-card.wb-selected,
-.wb-object.wb-selected {
-  outline: 1px solid var(--accent);
-  outline-offset: 2px;
-}
-/* The note card's own edge stands down while the selection box is on it: two
-   rectangles two pixels apart is the "the outline on note objects differs from
-   every other object kind" report (INBOX 25), and the box is the one that
-   means something. */
-.node-card.wb-selected {
-  border-color: transparent;
-}
-.wb-card-content {
-  font-size: var(--text-lg);
-  line-height: 1.4;
-  /* **A flex item will not shrink below its own content unless it is told
-     it may.** `.wb-card` is a column flex container, and a placed note
-     carries the height the person dragged it to as an inline style. A flex
-     item's `min-height` defaults to `auto`, which resolves to its content's
-     height, so the text won a fight with a box that had a definite size:
-     the paragraphs were laid out past the card's own border, and with
-     nothing clipping them they were painted over the board.
-     Reported as "when I expand the size of notes in the whiteboard and
-     mindmap, the text goes out of the panel border" (INBOX 238). Measured
-     before the fix: a 324-character note in a 320x120 card rendered a
-     215px-tall content block, 112px of it below the card's bottom edge; a
-     408-character note in a 320x160 card spilled 254px.
-     `min-height: 0` lets the item shrink to the box, `overflow: hidden`
-     clips what does not fit. Both belong here rather than on `.wb-card`
-     itself: the eight resize handles and the rotate stem are absolutely
-     positioned children that sit *outside* the card's edge on purpose, and
-     clipping at the card would take them with it. */
-  min-height: 0;
-  overflow: hidden;
-}
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id
    /entry.thumb_url/entry.attachments at all: libraryCard() (library.js) and
@@ -3292,35 +3191,6 @@
   object-position: left top;
   border-radius: var(--radius-sm);
   display: block;
-}
-/* Reported: an attached note showed "a cut-off version" with no way to see
-   the rest. The card now renders the whole note (see renderWhiteboard in
-   app.js) and only clamps past a height cap, with a Show more/less toggle
-   below to get past it, this rule used to apply unconditionally at 3 lines
-   with nothing pointing at what was missing. Line-count rather than a pixel
-   max-height for the same reason `.entry-clamped` uses it: it scales with
-   the reading-size setting instead of pinning a font-independent height. */
-/* The collapsed state. The clipping itself is `.wb-card-content`'s job
-   above, since the card's own height is what the text has to fit inside;
-   this adds the cap for the other case, a card that has never been
-   resized and so has no definite height of its own to be clipped by.
-   Eight lines, which is what the `-webkit-line-clamp: 8` this replaces
-   showed, written as a height so that it composes with the card's box
-   instead of competing with it. The old rule could not: `-webkit-line-clamp`
-   counts lines in one inline formatting context, and this element holds
-   rendered markdown, so a note of five paragraphs was eight *paragraphs*
-   tall, not eight lines, and a card sized to hold four of them showed the
-   other four over the board.
-   `.wb-card-content-capped` is added by `renderWhiteboard` only for a card
-   with no stored height, because that is the only case this cap is for. A
-   card the person dragged to 700px is already telling the text how much
-   room it has, and capping it at eight lines as well would leave five
-   hundred pixels of empty card under a "Show more" that hides nothing. */
-.wb-card-content.wb-card-content-clamped.wb-card-content-capped {
-  max-height: calc(1.4em * 8);
-}
-.wb-card-more {
-  align-self: flex-start;
 }
 aside[data-resizable="1"] {
   position: relative;

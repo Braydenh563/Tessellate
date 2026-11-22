@@ -4,11 +4,12 @@ button; the trail fades by CSS, so no frame loop is added (the wake-source
 ratchet holds whiteboard.js's count), and nothing is drawn on the board. The
 browser half is `scratchpad/ui-sweeps/wblaser.js`."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 

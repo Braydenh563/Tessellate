@@ -19,7 +19,7 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => {
     nmb.lastInput = Date.now() - 9 * 60 * 1000;
     nmb.awakeUntil = 0;
-    nameMarkBuddyTick();
+    nmb.sweep.nameMarkBuddyTick();
   });
   await page.waitForTimeout(3500);
   console.log('asleep as:', JSON.stringify(await page.evaluate(() => ({ sleep: document.getElementById('nm-buddy').classList.contains('nmb-sleep'), act: nmb.act, pose: nmb.pose }))));

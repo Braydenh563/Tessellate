@@ -6,7 +6,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(2500);
   const states = ['', 'nmb-drowsy', 'nmb-groggy', 'nmb-pout', 'nmb-grumpy', 'nmb-night', 'nmb-reading'];
   const moods = ['calm', 'sad', 'shy', 'determined', 'happy'];

@@ -24,8 +24,8 @@ const ASIDE = { chat: 'chat-sidebar', documents: 'doc-sidebar', skills: 'skills-
       if (aside.classList.contains('sidebar-collapsed')) aside.querySelector('.sidebar-collapse-toggle').click();
       nameMarkBuddyIndexReset();
       const tab = nameMarkBuddyTab();
-      const inside = nameMarkBuddyPerches(tab).filter((p) => p.edge?.el && aside.contains(p.edge.el) && p.x >= 0);
-      const spot = inside.find((p) => !nameMarkBuddyHits(p.x, p.y, p.pose, nameMarkBuddyObstacles(tab), p.legs)) || inside[0];
+      const inside = nmb.sweep.nameMarkBuddyPerches(tab).filter((p) => p.edge?.el && aside.contains(p.edge.el) && p.x >= 0);
+      const spot = inside.find((p) => !nmb.sweep.nameMarkBuddyHits(p.x, p.y, p.pose, nmb.sweep.nameMarkBuddyObstacles(tab), p.legs)) || inside[0];
       if (!spot) return { skipped: 'no perch inside' };
       nameMarkBuddyMoveTo(document.getElementById('nm-buddy'), spot, true);
       const el = spot.edge.el;

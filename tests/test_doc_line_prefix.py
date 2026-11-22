@@ -5,6 +5,7 @@ used to give `- [ ] 1. - ## text`.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -46,12 +47,19 @@ CASES = [
 ]
 
 
-def test_a_line_prefix_switches_instead_of_stacking():
+def _whole_documents_js(tmp_path) -> str:
+    """documents.js and the pieces split out of it (L335), unwrapped, as one file the node scripts can read."""
+    path = tmp_path / "documents.js"
+    path.write_text(frontend_text("documents.js"), encoding="utf-8")
+    return str(path)
+
+
+def test_a_line_prefix_switches_instead_of_stacking(tmp_path):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
     out = subprocess.run(
-        [node, "-e", SCRIPT, str(ROOT / "frontend" / "js" / "documents.js"), json.dumps([c for c, _ in CASES])],
+        [node, "-e", SCRIPT, _whole_documents_js(tmp_path), json.dumps([c for c, _ in CASES])],
         capture_output=True, text=True, check=True,
     )
     got = json.loads(out.stdout)
@@ -60,7 +68,7 @@ def test_a_line_prefix_switches_instead_of_stacking():
 
 
 def test_underline_and_replace_have_their_word_processor_chords():
-    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
+    js = frontend_text("documents.js") + (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
     # CodeMirror's own Mod-u is "undo selection": without this binding Ctrl+U looked dead.
     # docProseChord leaves the key to CodeMirror in a code file (56e59a7).
     assert '{ key: "Mod-u", run: () => docProseChord(() => { applyMarkdown("underline"); }) }' in js
@@ -87,12 +95,12 @@ console.log(JSON.stringify([
 """
 
 
-def test_numbered_item_takes_its_place_when_the_level_changes():
+def test_numbered_item_takes_its_place_when_the_level_changes(tmp_path):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
     out = subprocess.run(
-        [node, "-e", NUMBER_SCRIPT, str(ROOT / "frontend" / "js" / "documents.js"), str(ROOT / "frontend" / "js" / "documents-prose.js")],
+        [node, "-e", NUMBER_SCRIPT, _whole_documents_js(tmp_path), str(ROOT / "frontend" / "js" / "documents-prose.js")],
         capture_output=True, text=True, check=True,
     )
     # Nested under 1. a: 1; back out beside 1. a (nested children skipped): 2; a bullet parent: 1.

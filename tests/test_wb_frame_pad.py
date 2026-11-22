@@ -35,6 +35,7 @@ const wbSaveObject = async () => {{}};
 const wbPushUndo = () => {{}};
 const wbUpdateSelectionBar = () => {{}};
 const document = {{ querySelector: () => null }};
+const wbInstances = {{ query: (sel) => document.querySelector(sel) }};
 {fit}
 (async () => {{
   const frame = {{ kind: "frame", id: 1, x: 0, y: 0, width: 400, height: 400, data: {frame_data} }};

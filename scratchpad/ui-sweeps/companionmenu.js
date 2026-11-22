@@ -104,7 +104,7 @@ const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       await page.waitForTimeout(250);
       const held = await page.evaluate(async () => {
         const before = [nmb.x, nmb.y];
-        if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
+        if (typeof nmb.sweep.nameMarkBuddyBellErrand === 'function') nmb.sweep.nameMarkBuddyBellErrand();
         nmb.lastInput = Date.now();
         nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
         nameMarkBuddyQueuePlace(); clearTimeout(nmb.placeTimer); nmb.placeTimer = 0;

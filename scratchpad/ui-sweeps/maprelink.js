@@ -11,7 +11,7 @@
 //
 //   BASE=http://127.0.0.1:8785 SCRATCH=/tmp/mm-mapfix \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/maprelink.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 let failures = 0;
 function check(label, ok, detail) {
@@ -20,15 +20,7 @@ function check(label, ok, detail) {
 }
 
 async function newMap(page, name) {
-  await page.evaluate(() => document.querySelector('[data-tab="library"]')?.click());
-  await page.waitForTimeout(500);
-  await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]')?.click());
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new")?.click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
+  await libNewBoard(page, name, 'map');
   await page.waitForFunction(() => wbIsMap() && wbMapIndex().roots.length > 0, null, { timeout: 90000 });
   await page.waitForTimeout(1500);
   await page.keyboard.press("Escape");

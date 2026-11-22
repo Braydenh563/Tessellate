@@ -5,7 +5,7 @@
 // Visits every tab, every Library sub-tab, an open whiteboard and an open
 // mind map, and on each measures, from the drawn box (not `nmb`):
 //   gap   the px between the line it touches its perch on (soles, seat or
-//         hands, `nameMarkBuddyOrigin`) and the edge of the surface it says
+//         hands, `nmb.sweep.nameMarkBuddyOrigin`) and the edge of the surface it says
 //         it is on (top edge, or underside when hanging);
 //   paint whether a painted surface actually starts within 4px of that line
 //         under its middle (elementsFromPoint, not the claim);

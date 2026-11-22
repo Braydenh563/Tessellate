@@ -19,6 +19,7 @@ from __future__ import annotations
 import atexit
 import json
 import logging
+import os
 import socket
 import subprocess  # noqa: S404  # fixed args, no shell; see _start
 import threading
@@ -81,7 +82,7 @@ def _start() -> int:
         return 0
     port = _free_port()
     command = [
-        java, "-Xmx768m", "-cp", str(folder / "*"),
+        java, "-Xmx768m", "-cp", str(folder / "*") + os.pathsep + str(folder),
         "org.languagetool.server.HTTPServer", "--port", str(port),
     ]  # fmt: skip
     _proc = subprocess.Popen(  # noqa: S603  # fixed args, java found above
