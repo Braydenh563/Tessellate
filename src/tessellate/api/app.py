@@ -68,6 +68,7 @@ from tessellate.core import (
     passes,
     security,
     startup_status,
+    stream_steps,
     validation_copy,
 )
 from tessellate.ai import wiring  # noqa: F401  (registers the AI factories core/deps builds with)
@@ -1970,6 +1971,8 @@ def create_app(*, lazy_routes: bool | None = None) -> FastAPI:
         # call that cannot be interrupted and the workers are daemons: see
         # `jobs.Pool.shutdown`.
         jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)
+        # A chat step still in its thread would query a closing database (core/stream_steps.py).
+        stream_steps.drain()
         if deps._db is not None:
             deps._db.optimize()
         # The receipt's ledger keeps what this launch saw; the writer thread

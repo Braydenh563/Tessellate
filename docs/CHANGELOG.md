@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Chat: a stream step still running in its thread when the browser goes is stopped and waited for before a reset, a backup restore or a quit closes the database; it used to query a disposed SQLite engine and crash the process (L-world-class-892).
 - Boot JS: three more lazy pieces off the boot files (L-world-class-810): status-ai-pill.js (the AI dot's reading and paint), notes-sidebar.js (the category list's draw) and phone-gestures.js (row swipe and the note page, fetched in the phone band only); status.js 2,968 to 2,793, notes-list.js 3,632 to 3,446, phone-shell.js 2,339 to 2,146, behaviour unchanged, no new script tag.
 - Boot CSS: the companion's 15 `@property` registrations and the Atlas one-off plays (1,835 B served, 390 gzipped) moved from 08-consistency.css to the top of characters-lazy.css, computed styles unchanged over 2,352 state combinations; boot CSS 154,487 to 154,101 gzipped and the sweep total 142,612 to 142,222 (L685).
 - Recordings: a wav recording is trimmed on the server (`POST /recordings/{id}/trim`, same container, original kept, kept peaks and shifted marks), so the tab decodes nothing for it; webm, ogg and mp4 still trim in the tab (L685 D18).

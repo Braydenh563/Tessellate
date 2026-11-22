@@ -21,7 +21,7 @@ from fastapi import HTTPException, Request
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import Session
 
-from tessellate.core import embedmodels, jobruns, spacelock
+from tessellate.core import embedmodels, jobruns, spacelock, stream_steps
 from tessellate.core.config import ConfigManager
 from tessellate.core import board_thumbs, sealed_files
 from tessellate.core.database import Entry
@@ -201,6 +201,7 @@ def reload_db() -> None:
     global _db
     assert _config is not None
     if _db is not None:
+        stream_steps.drain()
         _db.engine.dispose()
     _db = DatabaseManager(_config.db_path)
 
@@ -234,6 +235,7 @@ def reset_app_state() -> None:
 def _reset_app_state() -> None:
     global _config, _db, _ollama, _model_manager, _embeddings
     if _db is not None:
+        stream_steps.drain()
         _db.engine.dispose()
     from tessellate.core import selfcheck
 

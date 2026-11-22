@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_auth, routes_debug
-from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs, selfcheck
+from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs, selfcheck, stream_steps
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.api.this_computer import this_computer_only
@@ -218,7 +218,9 @@ def restore_backup(body: RestoreBody, request: Request) -> dict:
     current state is taken first, so a restore is itself undoable."""
     config = deps.get_config()
     with _jobs_held(request):
-        # Every connection must be closed while the file is replaced.
+        # Every connection must be closed while the file is replaced, and no
+        # chat step left inside a query (core/stream_steps.py).
+        stream_steps.drain()
         deps.get_db().engine.dispose()
         try:
             backup.restore_backup(body.name, config.db_path, config.data_dir, _retention(config))
@@ -343,6 +345,7 @@ def restore_bundle(request: Request, file: UploadFile = File(...), password: str
                 archive = Path(upload_path)
             with _jobs_held(request):
                 # Every connection must be closed while the file is replaced.
+                stream_steps.drain()
                 deps.get_db().engine.dispose()
                 try:
                     result = backup_bundle.restore_zip(archive, config.db_path, config.data_dir, _retention(config))
