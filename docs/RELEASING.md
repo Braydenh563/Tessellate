@@ -69,14 +69,14 @@ the workflow reads the installer's own version from this file too and passes it
 to `installer.iss` as `/DMyAppVersion` (which refuses a `TESSELLATE_VERSION` that
 says otherwise).
 
-The same number is written in four more places. Two have a lint that fails the
-build if they are missed, and two you must remember:
+The same number is written in four more places. Three have a lint that fails the
+build if they are missed, and one you must remember:
 
 | Place | Checked by |
 | --- | --- |
 | every `?v=` stamp in `frontend/index.html` | `tests/test_asset_cache_busting.py` |
 | the README's "Version 0.x.y." line | `tests/test_readme_freshness.py` |
-| `pyproject.toml`, the `version` line | nothing: do it by hand |
+| `pyproject.toml`, the `version` line | `tests/test_version_agreement.py` |
 | the same `?v=` stamps in `frontend/capture.html` and `frontend/clip.html` | nothing: do it by hand |
 
 The README line is also where the test count, the tool count and the skill count
@@ -155,7 +155,7 @@ tag, with its description taken from `CHANGELOG.md`'s matching section.
 after the release exists:
 
 - Installs a trimmed dependency set, deliberately **without**
-  `sentence-transformers` and torch. Settings, Packages treats those as an
+  fastembed (search by meaning). Settings, Packages treats it as an
   optional post-install, like voice dictation, and a multi-hundred-MB download in
   the base installer would contradict that.
 - Runs PyInstaller against `packaging/windows/tessellate.spec`. It is a onedir
@@ -254,5 +254,5 @@ This project is `0.x` while it stabilises (see the README's status line and
   how existing features behave.
 - **Minor** (`0.3.0` to `0.4.0`): new features and meaningful behaviour changes,
   the normal case for most releases at this stage.
-- There is no written criterion for `1.0`. That is a decision to make
-  deliberately when it comes up, not a rule to follow automatically.
+- **`1.0`** has written exit criteria: the 1.0 row of "The road to 1.0" in
+  `docs/ROADMAP.md`.

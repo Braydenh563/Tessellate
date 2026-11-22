@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 25 | 1 | 0 | 0 | 26 |
-| general | 0 | 21 | 2 | 0 | 5 | 23 |
-| all | 372 | 414 | 76 | 2 | 111 | 862 |
+| general | 0 | 20 | 2 | 0 | 5 | 22 |
+| all | 372 | 413 | 76 | 2 | 111 | 861 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -518,7 +518,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-22** `general` open, S: Correct stale ARCHITECTURE claims on document revisions, MCP, the MSI and immutable caching. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1068. Evidence: Several stale claims in this file contradict the code and need a doc fix. :1068: DocumentRevision exists (database.py:2019, repo/documents.py:313). :1804: the packaged app has no stdio MCP, but `Tesse
-- [ ] **L-general-24** `general` open, S: Correct stale RELEASING lines on the version check, torch and the 1.0 criterion. From open-work sweep 2026-11-12, docs/RELEASING.md:79. Evidence: This doc has three stale lines. :79: tests/test_version_agreement.py already checks pyproject. :158: says torch and sentence-transformers are an optional post-install, but they were replaced by fastem
 - [ ] **L-general-25** `general` open, S: Confirm or replace the question_noise misspelling table's source. From open-work sweep 2026-11-12, docs/THIRD_PARTY.md:101. Evidence: The question_noise.py misspelling table may be CC BY-SA 4.0 from Wikipedia. Its provenance is unconfirmed, and nothing tracks confirming or replacing it. This is a licence risk under AGPL.
 - [ ] **L-general-26** `general` open, S: Update the deep-audit skill steps to brief from and write LEDGER rows, not ranked files. From open-work sweep 2026-11-12, .claude/skills/deep-audit/SKILL.md:38. Evidence: Steps 2 and 3 say to brief from and write audit-*-ranked.md files, which no longer exist. checklist.md says findings are LEDGER rows. The skill contradicts its own checklist.
 - [ ] **L-general-27** `general` open, S: Align CONTRIBUTING with replace, do not layer and the current test count. From open-work sweep 2026-11-12, CONTRIBUTING.md:129. Evidence: This contradicts CLAUDE.md section 8, "Replace, do not layer: remove the old path". Line 52's "13,300+ tests" also disagrees with CLAUDE.md's "about 9,000". The docs/ mirror carries the same text.
