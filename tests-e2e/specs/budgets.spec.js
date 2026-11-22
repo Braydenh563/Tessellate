@@ -99,27 +99,8 @@ test("document: 50,000 words open", async ({ page }) => {
   await inside("document", () => measure.documentOpen(page, ids.document, 3));
 });
 
-// L-ui-modernisation-54, in CPU time (the load-independent form of "input
-// under 100 ms, no frame over 50 ms on a repeat visit"): the longest
-// main-thread task after a repeat click on each tab, CPU ms, p50 of five.
-// Measured 2026-11-21 on the seeded notebook: notes 30, library 45, graph 38,
-// timeline 32, chat 14, reminders 17, dashboard 25. The cap is the written 50.
-const TAB_TASK_CPU_CAP_MS = 50;
-for (const tab of ["notes", "library", "graph", "timeline", "chat", "reminders", "dashboard"]) {
-  test(`tab_cpu: a repeat visit to ${tab} has no main-thread task over ${TAB_TASK_CPU_CAP_MS} ms of CPU`, async ({ page }) => {
-    await openApp(page);
-    await page.waitForTimeout(3000);
-    // One visit first: the budget is the repeat visit.
-    await page.click(`#tab-bar [data-tab="${tab}"]`);
-    await page.waitForTimeout(1500);
-    const seen = [];
-    while (seen.length < ROUNDS) {
-      seen.push(await measure.tabTaskCpu(page, tab, 5));
-      if (seen[seen.length - 1] <= TAB_TASK_CPU_CAP_MS) break;
-    }
-    expect(Math.min(...seen), `${tab}: ${seen.join(", ")} ms of CPU over ${seen.length} round(s); the cap is ${TAB_TASK_CPU_CAP_MS} ms`).toBeLessThanOrEqual(TAB_TASK_CPU_CAP_MS);
-  });
-}
+// The tab_cpu budgets (L-ui-modernisation-54) are specs/tab-budgets.spec.js, in
+// CI's own budgets job beside the map's: together they did not fit this job's 15 minutes.
 
 // L-ui-modernisation-95, in CPU time: Atlas idle may cost at most 120 ms a
 // second of main thread over the page with the companion off. Medians on
@@ -136,8 +117,10 @@ test("companion_idle_cpu: Atlas idle costs at most 120 ms/s of main-thread CPU o
   const idle = async (kind) => {
     await page.evaluate(async (k) => { localStorage.removeItem("nm-buddy-spots"); prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy(); }, kind);
     await page.evaluate(() => revealTab("dashboard"));
-    await page.waitForTimeout(6000);
-    return measure.idleCpuPerSecond(browser, page, 4000);
+    // 3 s to settle and 3 s read, from 6 and 4: the gap is about 480 against 120,
+    // so the shorter read proves the same miss, and still fails loudly the day it passes.
+    await page.waitForTimeout(3000);
+    return measure.idleCpuPerSecond(browser, page, 3000);
   };
   const runs = [];
   for (let i = 0; i < 3; i++) runs.push((await idle("atlas")) - (await idle("off")));
