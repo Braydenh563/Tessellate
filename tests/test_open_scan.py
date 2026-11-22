@@ -1,4 +1,6 @@
-"""The open-work scanner the plan sessions and the closing session clear (the
+"""Source text: one test reads open_scan.py as text, because the rule it keeps is a comment beside `PROSE` (the phrases stay on one line), not behaviour.
+
+The open-work scanner the plan sessions and the closing session clear (the
 owner, 2026-11-12: "after these sessions are done, I should only be left with
 the backlog and nothing else")."""
 
