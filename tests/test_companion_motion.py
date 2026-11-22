@@ -31,6 +31,7 @@ from pathlib import Path
 import pytest
 from tests._app_js import app_js_text, frontend_text, with_pieces
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
@@ -38,7 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
 APP = app_js_text()
 SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _fn(name: str, src: str = AV) -> str:

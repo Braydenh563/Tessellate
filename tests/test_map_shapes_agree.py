@@ -15,9 +15,10 @@ import re
 from pathlib import Path
 
 from tessellate.api.routes_whiteboard import MAP_LEVEL_FIELDS, MAP_THEME_FIELDS, WhiteboardObjectData
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 BOOT_CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")

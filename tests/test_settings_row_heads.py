@@ -11,9 +11,9 @@ name takes `aria-labelledby` to its span instead.
 from __future__ import annotations
 
 import re
-from pathlib import Path
+from tests._app_js import index_html_text
 
-INDEX = (Path(__file__).resolve().parent.parent / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_every_setting_label_starts_with_a_span():

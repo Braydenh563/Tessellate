@@ -22,10 +22,11 @@ from pathlib import Path
 
 from tessellate.api.asset_strip import strip_js_comments
 from tests._app_js import with_pieces
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 ENTRIES = (JS / "lazy-entries.js").read_text(encoding="utf-8")
 APP = (JS / "app.js").read_text(encoding="utf-8")
 

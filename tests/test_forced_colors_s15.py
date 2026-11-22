@@ -12,11 +12,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 SHEET = (ROOT / "frontend" / "css" / "forced-colors-lazy.css").read_text(encoding="utf-8")
 APP = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_the_sheet_is_only_a_forced_colors_block_in_system_colours():

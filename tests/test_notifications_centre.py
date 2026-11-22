@@ -24,10 +24,11 @@ import pytest
 
 from tests._css_paths import css_text
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_JS = app_js_text()
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 STYLE = css_text()
 
 

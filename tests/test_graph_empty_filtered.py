@@ -20,9 +20,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_the_empty_state_has_a_filtered_variant_with_its_own_action():

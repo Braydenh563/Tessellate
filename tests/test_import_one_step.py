@@ -13,9 +13,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 #: The import buttons' listeners moved to settings-controls.js (2026-10-05,
 #: the boot gzip budget), so the two files are read as one text.
 WIRING = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8") + "\n" + (

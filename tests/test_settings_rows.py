@@ -16,10 +16,11 @@ from pathlib import Path
 from tessellate.api.routes_settings import PreferencesBody
 from tests._app_js import frontend_text
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS_JS = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_defaults_are_what_a_fresh_notebook_reads(client):

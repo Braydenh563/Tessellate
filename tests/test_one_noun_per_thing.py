@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
-HTML = Path("frontend/index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 FEATURES = Path("frontend/js/app-features.js").read_text(encoding="utf-8")
 
 

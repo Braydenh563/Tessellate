@@ -11,11 +11,12 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from tests import _js_scope
+from tests._app_js import all_js_text, index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 TOUR = _js_scope.unwrapped((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-JS_TEXT = "\n".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "js").glob("*.js"))
+HTML = index_html_text()
+JS_TEXT = all_js_text()
 
 _SELECTOR = re.compile(r"""^\s*(?:target|or)\s*:\s*["']([^"']+)["']""", re.M)
 _ID = re.compile(r"#([A-Za-z][\w-]*)")

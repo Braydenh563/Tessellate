@@ -22,6 +22,7 @@ from tessellate.ai import facts, questions
 from tessellate.core.database import AuditLog, DerivedFact, Entry, EntryLink, utcnow
 import pytest
 from tests._clock import SUITE_NOW, pin_clock
+from tests._app_js import index_html_text
 
 
 @pytest.fixture(autouse=True)
@@ -181,7 +182,7 @@ def test_the_list_renders_under_100ms_for_500_questions(session):
 # --- the view ---------------------------------------------------------------------
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_the_view_is_a_notes_sub_tab_with_a_dock():

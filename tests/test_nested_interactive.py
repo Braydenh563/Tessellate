@@ -20,6 +20,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from tests import _js_scope
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -116,7 +117,7 @@ def test_the_overlay_covers_the_card_and_the_controls_sit_above_it():
 # `scratchpad/ui-sweeps/foldhelp.js` measured all nine at 1440 and 390:
 # identical to the tenth of a pixel to the old positions.
 
-INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 SETTINGS = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
 
 # A summary that carries its one action (DESIGN.md's fold recipe allowed it)

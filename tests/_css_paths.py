@@ -193,3 +193,10 @@ def css_text() -> str:
     `cat`'d concatenation of CSS_FILES, to confirm.
     """
     return "".join(p.read_text(encoding="utf-8") for p in CSS_FILES)
+
+
+@lru_cache(maxsize=1)
+def css_glob_text() -> str:
+    """Every CSS file joined by newlines in name order (not load order), as the modules that scan
+    all of it read it: one shared copy."""
+    return "\n".join(p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css")))

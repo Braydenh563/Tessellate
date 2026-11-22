@@ -1,11 +1,11 @@
 """Audit 1031 Z20: the destructive space delete says so, asks for the name, and is explicit."""
 from __future__ import annotations
 
-from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_dialog_names_the_bin_skip_and_asks_for_the_name():

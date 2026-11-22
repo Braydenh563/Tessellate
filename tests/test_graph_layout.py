@@ -12,6 +12,7 @@ import subprocess
 
 import pytest
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 
 # A more intentional force layout and a Reshuffle: the real worker run in node, settled geometry measured (browser half: scratchpad/ui-sweeps/graph692.js).
@@ -383,7 +384,7 @@ def test_shape_is_dimmed_with_its_reason_off_the_force_layout():
 
 
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 
 

@@ -28,6 +28,7 @@ from pathlib import Path
 from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -7705,7 +7706,7 @@ def test_a_diagram_change_is_one_marked_picture() -> None:
 
 
 # --- A lock toggle (INBOX 1736) ------------------------------------------------
-_LT_HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+_LT_HTML = index_html_text()
 _LT_CSS = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
 _LT_DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 

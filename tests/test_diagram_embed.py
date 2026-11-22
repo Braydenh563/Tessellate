@@ -18,6 +18,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -26,7 +27,7 @@ EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
 DRAW = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
 INTER = (JS / "whiteboard-interchange.js").read_text(encoding="utf-8")
 BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _fence(text: str, source: str, near: int = 0):

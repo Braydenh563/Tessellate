@@ -12,11 +12,11 @@ put away while the overlay shows."""
 from __future__ import annotations
 
 from html.parser import HTMLParser
-from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).resolve().parent.parent / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 #: Each of these held the document's words while locked (DC1).
 MARKED = [

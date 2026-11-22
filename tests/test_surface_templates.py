@@ -21,11 +21,12 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 JS = FRONTEND / "js"
-INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 #: surface -> (its live root's id, globs of the files whose load-time wiring may

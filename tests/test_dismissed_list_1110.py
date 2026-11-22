@@ -14,9 +14,10 @@ from pathlib import Path
 from tessellate.ai import learning
 from tessellate.core import deps
 from tests.test_suggestions_inbox_kg9 import _entity, _note
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 DATA = (ROOT / "frontend" / "js" / "settings-data.js").read_text(encoding="utf-8")
 
 

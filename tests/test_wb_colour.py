@@ -12,12 +12,13 @@ instead of letting the press do what it would. The browser half is
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 FORMAT = (JS / "whiteboard-format.js").read_text(encoding="utf-8")
 BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 

@@ -12,9 +12,10 @@ presses each one at 1440 and 390, light and dark.
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 #: The listener lives with the Settings window's others (settings-controls.js, lazy).
 JS = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
 

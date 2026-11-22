@@ -8,11 +8,12 @@ import re
 from pathlib import Path
 
 from tests import _js_scope
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
 BROWSER = _js_scope.unwrapped((JS / "ask-browser.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 CSS = (ROOT / "frontend" / "css" / "ask-compose-lazy.css").read_text(encoding="utf-8")
 
 

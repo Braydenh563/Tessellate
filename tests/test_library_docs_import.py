@@ -15,9 +15,10 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
 
 

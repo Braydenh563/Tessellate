@@ -6,10 +6,11 @@ opens the same `/timeline/digest` review.
 """
 
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = (ROOT / "frontend/js/timeline.js").read_text()
-HTML = (ROOT / "frontend/index.html").read_text()
+HTML = index_html_text()
 
 
 def test_options_has_review_some_days():

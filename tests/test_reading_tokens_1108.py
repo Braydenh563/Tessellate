@@ -14,12 +14,13 @@ from tests._help_text import help_more_text
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = ROOT / "frontend" / "css"
 JS = ROOT / "frontend" / "js"
 TOKENS = (CSS / "00-tokens-shell.css").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 SETTINGS = (JS / "settings.js").read_text(encoding="utf-8")
 CONTROLS = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
 ROWS = (JS / "settings-rows.js").read_text(encoding="utf-8")

@@ -17,10 +17,11 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = _js_scope.unwrapped((ROOT / "frontend" / "js" / "captions.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _block(start: str, end: str) -> str:

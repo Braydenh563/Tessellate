@@ -11,11 +11,12 @@ from pathlib import Path
 import tessellate
 from tessellate.ai import help_chat
 from tests._app_js import app_js_text, with_pieces
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
 SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_the_frontend_and_backend_agree_on_the_address():

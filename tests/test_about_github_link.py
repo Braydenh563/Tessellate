@@ -1,8 +1,8 @@
 """Settings, About links to the project (INBOX 904 B51)."""
 
-from pathlib import Path
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_about_links_to_the_projects_github() -> None:

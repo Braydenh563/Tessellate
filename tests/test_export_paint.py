@@ -16,9 +16,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import all_js_text
 
 ROOT = Path(__file__).resolve().parent.parent
-JS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "js").glob("*.js")))
+JS = all_js_text()
 
 
 def _body(name: str) -> str:

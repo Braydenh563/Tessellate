@@ -8,10 +8,11 @@ through `kebabMenu`'s `items` rows (`buildMenuGroupButton`).
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def _desktop() -> list[tuple[str, list[str]]]:

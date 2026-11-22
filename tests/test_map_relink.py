@@ -19,11 +19,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import all_js_text
 
 ROOT = Path(__file__).resolve().parent.parent
 #: Every script, not one file: whiteboard.js is being split, and a rule about
 #: a function should not break because the function moved house.
-JS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "js").glob("*.js")))
+JS = all_js_text()
 
 
 def _body(name: str) -> str:

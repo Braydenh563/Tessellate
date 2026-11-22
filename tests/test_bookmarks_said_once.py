@@ -7,9 +7,9 @@ above the other. The lede stays, because it is there with a full list too;
 the empty state is its title and its one action.
 """
 import re
-from pathlib import Path
+from tests._app_js import index_html_text
 
-INDEX = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_the_empty_state_does_not_repeat_the_lede():

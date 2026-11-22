@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 from tessellate.ai import help_chat, help_targets
 from tessellate.ai.help_topics_core import HELP_TOPICS
+from tests._app_js import index_html_text
 
-INDEX = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 IDS = set(re.findall(r'id="([A-Za-z0-9_-]+)"', INDEX))
 
 

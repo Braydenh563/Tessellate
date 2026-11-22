@@ -14,9 +14,10 @@ from tests._help_text import help_chat_text
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 PANEL = HTML[HTML.index('id="graph-options"') : HTML.index("<!-- Trace: the one question")]
 
 #: section id -> (its '?' panel, the control names the panel must say)

@@ -15,9 +15,10 @@ import re
 from pathlib import Path
 
 from tests._css_paths import CSS_FILES
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 WHITEBOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 
 #: Rows that do something once and are done with the menu. A switch or a

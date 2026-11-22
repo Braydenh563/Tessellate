@@ -8,12 +8,13 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS_JS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 EDITOR_CSS = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def _fn(name: str, source: str = DOCS_JS) -> str:

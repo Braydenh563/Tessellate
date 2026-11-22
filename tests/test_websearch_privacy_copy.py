@@ -16,9 +16,10 @@ from pathlib import Path
 
 from tessellate.core import privacy_http
 from tessellate.search import websearch
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def _popover() -> str:

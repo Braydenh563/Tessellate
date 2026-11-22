@@ -11,9 +11,10 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text, frontend_text
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+CSS = css_glob_text()
 
 
 def _function(source: str, name: str) -> str:

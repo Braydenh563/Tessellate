@@ -12,6 +12,7 @@ Not named `test_*.py` on purpose, as `_app_js.py` and `_repo_files.py`.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 
@@ -126,7 +127,21 @@ def template_lines(src: str) -> set[int]:
     return inside
 
 
+#: One result per distinct script text, keyed by its digest (not the text, which would keep a second
+#: copy alive): about 400 modules unwrap the same scripts, and each held its own result (98 MB a worker).
+_UNWRAPPED: dict[bytes, str] = {}
+
+
 def unwrapped(source: str) -> str:
+    """The shared copy of `_unwrapped(source)`."""
+    key = hashlib.blake2b(source.encode("utf-8", "surrogatepass"), digest_size=20).digest()
+    hit = _UNWRAPPED.get(key)
+    if hit is None:
+        hit = _UNWRAPPED[key] = _unwrapped(source)
+    return hit
+
+
+def _unwrapped(source: str) -> str:
     """A wrapped script's text as it was before it was wrapped: the closure
     lines off and the two-space indent taken back (not inside a template
     literal, which the wrapper never indented), so a test that slices a

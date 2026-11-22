@@ -8,10 +8,11 @@ from __future__ import annotations
 from pathlib import Path
 from tests import _js_scope
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = unwrapped((ROOT / "frontend/js/meetings.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_a_library_section_on_the_dock_recipe():

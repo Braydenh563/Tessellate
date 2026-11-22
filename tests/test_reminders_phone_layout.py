@@ -12,11 +12,12 @@ import re
 from pathlib import Path
 
 from tests._css_paths import css_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_the_phone_add_row_is_the_floating_plus_and_its_sheet():

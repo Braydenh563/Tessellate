@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 SWEEPS = ROOT / "scratchpad/ui-sweeps"
-HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 CSS = (ROOT / "frontend/css/00-tokens-shell.css").read_text(encoding="utf-8")
 
 

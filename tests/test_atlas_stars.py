@@ -21,11 +21,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MOTION = nmb_curve_js() + (JS / "atlas-motion.js").read_text(encoding="utf-8")
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+CSS = css_glob_text()
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

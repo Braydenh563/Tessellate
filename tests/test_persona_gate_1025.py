@@ -7,9 +7,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from tests._app_js import with_pieces
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 CHAT = with_pieces("chat.js")
 
 

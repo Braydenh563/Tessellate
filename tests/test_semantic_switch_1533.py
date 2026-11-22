@@ -9,11 +9,11 @@ in the app" though its row said to use it through Ollama.
 
 from __future__ import annotations
 
-from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_the_switch_names_what_it_does_once_the_model_is_here():

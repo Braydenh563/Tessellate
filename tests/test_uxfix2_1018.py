@@ -1,8 +1,9 @@
 """UX audit 1018 (uxfix2): source-level guards for the six findings."""
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-INDEX = (ROOT / "frontend/index.html").read_text()
+INDEX = index_html_text()
 MAP_JS = (ROOT / "frontend/js/whiteboard-map.js").read_text()
 
 

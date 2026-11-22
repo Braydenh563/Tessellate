@@ -21,9 +21,10 @@ from pathlib import Path
 import pytest
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 ENTRY = re.compile(r'^\s*(\w+):\s*\{\s*keys:\s*"([^"]+)"', re.MULTILINE)
 
 #: Actions that have no button of their own, each with why. A new action must

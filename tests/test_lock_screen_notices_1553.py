@@ -27,11 +27,12 @@ from pathlib import Path
 
 from tests._frozen_clock import FIXED_NOW, freeze_reminder_clock
 from tests.test_clock_panel_1551 import CLOCK_PART, HARNESS, needs_node
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
 CSS = ROOT / "frontend/css"
-INDEX = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 #: The shared harness, with the lock screen, the session proof and the digest's store added.
 LOCK_HARNESS = (

@@ -63,6 +63,19 @@ def app_js_text() -> str:
     return _joined()
 
 
+@lru_cache(maxsize=1)
+def index_html_text() -> str:
+    """index.html as written, one shared copy: 180 modules each held their own (2 MB a copy, a worker)."""
+    return INDEX_HTML.read_text(encoding="utf-8")
+
+
+@lru_cache(maxsize=1)
+def all_js_text() -> str:
+    """Every script in `frontend/js`, as written, joined in name order (one shared copy for the
+    modules that scan all of it)."""
+    return "\n".join(p.read_text(encoding="utf-8") for p in sorted(JS_DIR.glob("*.js")))
+
+
 #: Pieces moved out of a boot script into lazy files (2026-10-12, the gzip
 #: budget): a test that reads the boot file by name also means these.
 MOVED_OUT = {

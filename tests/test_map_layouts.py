@@ -12,9 +12,10 @@ import re
 from pathlib import Path
 
 from tessellate.api.routes_whiteboard import BOARD_LAYOUTS
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
 NEW = ("logic-right", "timeline", "fishbone", "tree-table")
 

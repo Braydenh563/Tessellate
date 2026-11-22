@@ -18,10 +18,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import all_js_text
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parent.parent
-JS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "js").glob("*.js")))
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+JS = all_js_text()
+CSS = css_glob_text()
 
 
 def _inner(name: str) -> str:

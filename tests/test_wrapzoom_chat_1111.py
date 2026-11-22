@@ -15,9 +15,10 @@ import re
 from pathlib import Path
 
 from tests._css_paths import CSS_DIR
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 GRAPH_CSS = (CSS_DIR / "02-chat-graph.css").read_text(encoding="utf-8")
 WIDGETS_CSS = (CSS_DIR / "03-dashboard-widgets.css").read_text(encoding="utf-8")
 

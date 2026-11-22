@@ -11,10 +11,11 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_the_engine_line_is_a_lazy_piece_not_a_boot_script():

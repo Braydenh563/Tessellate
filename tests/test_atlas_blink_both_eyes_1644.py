@@ -9,11 +9,12 @@ the other). The act animates every `.nm-blinks` of the figure now.
 
 import re
 from pathlib import Path
+from tests._app_js import all_js_text
 
 JS_DIR = Path(__file__).resolve().parents[1] / "frontend" / "js"
 AVATARS = (JS_DIR / "avatars.js").read_text(encoding="utf-8")
 ATLAS = (JS_DIR / "atlas.js").read_text(encoding="utf-8")
-JS = "\n".join(p.read_text(encoding="utf-8") for p in sorted(JS_DIR.glob("*.js")))
+JS = all_js_text()
 
 
 def test_no_script_animates_only_the_first_blink_group():

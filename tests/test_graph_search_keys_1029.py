@@ -12,11 +12,12 @@ from pathlib import Path
 
 import pytest
 from tests._js_scope import gc_frame, unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _function(text: str, name: str) -> str:

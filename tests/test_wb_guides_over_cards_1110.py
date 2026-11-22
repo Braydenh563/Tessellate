@@ -5,10 +5,11 @@ so the guides go in the overlay SVG that index.html places after the card layer.
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_the_guides_go_in_the_overlay_layer():
