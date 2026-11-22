@@ -50,7 +50,7 @@ async function openNew(page, name, kind) {
   await page.waitForTimeout(500);
   await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]')?.click());
   await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new")?.click());
+  await page.evaluate(() => document.getElementById("wb-boards-new-template")?.click());
   await page.waitForTimeout(700);
   await page.fill("#wb-template-name", name);
   if (kind === "map") await page.click('#wb-template-kind button[data-value="map"]');

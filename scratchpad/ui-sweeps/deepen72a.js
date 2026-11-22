@@ -177,7 +177,7 @@ const clickText = (page, text) => page.getByText(text).first().evaluate((e) => {
     } else {
       await page.evaluate(() => { switchTab("library"); document.querySelector('#library-subtabs [data-target="library-view-whiteboard"]')?.click(); }); await page.waitForTimeout(1500);
     }
-    await page.evaluate(() => document.getElementById("wb-boards-new").click()); clicks++; await page.waitForTimeout(800);
+    await page.evaluate(() => document.getElementById("wb-boards-new-template").click()); clicks++; await page.waitForTimeout(800);
     await page.fill("#wb-template-name", "Deep map " + stamp);
     await page.evaluate(() => document.querySelector('#wb-template-kind button[data-value="map"]').click()); clicks++;
     const t0 = Date.now();

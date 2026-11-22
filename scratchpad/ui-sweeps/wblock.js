@@ -39,7 +39,7 @@ const OY = VW < 600 ? 150 : 0;
   await page.waitForTimeout(500);
   await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]').click());
   await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
+  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
   await page.waitForTimeout(700);
   await page.fill("#wb-template-name", `Lock sweep ${Date.now()}`);
   await page.click("#wb-template-create");

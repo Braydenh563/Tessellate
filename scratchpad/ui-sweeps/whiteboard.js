@@ -37,7 +37,7 @@ async function newBoard(page, name, type) {
   await page.waitForTimeout(500);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
+  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
   await page.waitForTimeout(700);
   await page.fill("#wb-template-name", name);
   if (type === "map") await page.click('#wb-template-kind button[data-value="map"]');
@@ -52,7 +52,13 @@ async function newBoard(page, name, type) {
 // slider and Playwright retries it for thirty seconds (Phase 2 removes the
 // drawer; until then the sweep aims around it).
 async function clickCanvas(page) {
-  await page.click("#whiteboard-container", { position: { x: 40, y: 300 } });
+  // Right of the board sidebar's rail, which now sits on the canvas's left edge.
+  const x = await page.evaluate(() => {
+    const c = document.getElementById("whiteboard-container").getBoundingClientRect();
+    const s = document.getElementById("wb-sidebar")?.getBoundingClientRect();
+    return Math.round((s && s.width ? s.right - c.left : 0) + 40);
+  });
+  await page.click("#whiteboard-container", { position: { x, y: 300 } });
   await page.waitForTimeout(150);
 }
 
@@ -68,6 +74,9 @@ async function clickCanvas(page) {
     const out = [];
     for (const b of document.querySelectorAll("#wb-tools-panel [data-tool], #wb-tools-panel [data-wb-key]")) {
       if (b.closest('[data-wb-surface="map"]')) continue;
+      // The nine "more shapes" (the owner, 2026-10-11) came after this check and
+      // have no letters free; the four primary shapes above them carry the keys.
+      if (b.closest(".wb-shape-menu-more")) continue;
       out.push({
         tool: b.dataset.tool || b.id,
         key: b.dataset.wbKey || null,
@@ -454,7 +463,8 @@ async function clickCanvas(page) {
   };
 
   const want = {
-    line: ["ink", "stroke", "order", "common"],
+    // A line takes end caps too since L356 (a plain line can be given heads).
+    line: ["ink", "caps", "stroke", "order", "common"],
     arrow: ["ink", "caps", "stroke", "order", "common"],
     shape: ["ink", "stroke", "fill", "order", "common"],
     text: ["ink", "text", "order", "common"],
@@ -466,15 +476,18 @@ async function clickCanvas(page) {
   for (const [name, id] of Object.entries(kinds)) {
     seen[name] = await barFor(kindOf(name), id);
   }
-  const wrongGroups = Object.keys(want).filter((k) => JSON.stringify(seen[k].groups) !== JSON.stringify(want[k]));
+  // A bar too wide for one row folds groups into More (wbFoldContextBar), so a
+  // kind's controls are the bar's groups and the folded ones together.
+  const reach = (v) => [...v.groups, ...v.more.filter((g) => !g.startsWith("more-"))].sort();
+  const wrongGroups = Object.keys(want).filter((k) => JSON.stringify(reach(seen[k])) !== JSON.stringify([...want[k]].sort()));
   ok(
     "the bar shows only the selected kind's controls",
     wrongGroups.length === 0,
-    Object.entries(seen).map(([k, v]) => `${k}: ${v.groups.join("+")} (${v.controls} controls, ${v.size})`).join("; "),
+    Object.entries(seen).map(([k, v]) => `${k}: ${v.groups.join("+")} [more ${v.more.join("+")}] (${v.controls} controls, ${v.size})`).join("; "),
   );
   ok(
-    "a plain line offers no line ends, an arrow does",
-    !seen.line.groups.includes("caps") && seen.arrow.groups.includes("caps"),
+    "a line and an arrow both offer line ends, on the bar or in More",
+    reach(seen.line).includes("caps") && reach(seen.arrow).includes("caps"),
     `line ${seen.line.groups.join("+")}, arrow ${seen.arrow.groups.join("+")}`,
   );
   // The caps come off the object, never off the tool's default: the arrow was

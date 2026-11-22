@@ -1653,6 +1653,7 @@ customElements.define("sheet-host", class extends HTMLElement {
       },
       onClose: () => {
         this._close = null;
+        this.removeAttribute("open");
         this.dispatchEvent(new Event("close"));
       },
       onGone: () => {
@@ -1660,6 +1661,9 @@ customElements.define("sheet-host", class extends HTMLElement {
         this._home.append(this);
       },
     });
+    //: The attribute too, as a dialog sets it: `[open]` selectors (CSS, the
+    //: board sweeps) read it, and an open sheet never matched (L529).
+    this.toggleAttribute("open", true);
   }
   close() {
     this._close?.();
