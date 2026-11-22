@@ -29,7 +29,8 @@ def test_the_reading_list_scrolls_in_the_next_frame_not_in_the_answer() -> None:
 
 def test_a_wide_dock_is_measured_once() -> None:
     fit = _body((JS / "library.js").read_text(encoding="utf-8"), "function ocrFitDock(")
-    assert ".width >= 720 && fits(0)" in fit
+    # The width is the ResizeObserver's (test_lag_owner_log_1122), so no `.width` read.
+    assert "width >= 720 && fits(0)" in fit
 
 
 def test_the_perch_look_does_not_repeat_on_an_unchanged_page() -> None:

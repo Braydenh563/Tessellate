@@ -7698,13 +7698,18 @@ function ocrDockApply(dock, count) {
 
 function ocrFitDock() {
   const dock = $("ocr-dock");
-  if (!dock || dock.offsetParent === null) return;
+  if (!dock) return;
+  //: The width the dock's own ResizeObserver last saw (0 while hidden): reading the
+  //: box here laid the dialog out every frame something asked, 21 to 41 ms forced
+  //: (the owner's lag log 2026-11-22). Read once, before the observer has spoken.
+  const width = ocrUi.dockWidth ?? (dock.offsetParent === null ? 0 : dock.getBoundingClientRect().width);
+  if (!width) return;
   cancelAnimationFrame(ocrUi.dockFrame);
   //: Width, words and which controls are shown (a document's layout pair
   //: comes and goes without changing a word).
   const shown = [...dock.querySelectorAll("button, details, select, input")]
     .filter((el) => !el.closest(".hidden, [hidden]")).length;
-  const key = `${Math.round(dock.getBoundingClientRect().width)}|${dock.textContent.length}|${shown}`;
+  const key = `${Math.round(width)}|${dock.textContent.length}|${shown}`;
   //: Fitted already at this width with these words: the row is as it was
   //: left (its own resize, from that fit, is what asked again).
   if (dock.dataset.fitKey === key) return;
@@ -7727,7 +7732,7 @@ function ocrFitDock() {
   //: recalculation of the whole dialog, 10 to 20 ms at 4x on 300 notes)
   //: where halving from the middle took three. A narrow one starts in the
   //: middle as before.
-  if (lo === 0 && hi === steps && dock.getBoundingClientRect().width >= 720 && fits(0)) hi = 0;
+  if (lo === 0 && hi === steps && width >= 720 && fits(0)) hi = 0;
   while (lo < hi) {
     const mid = Math.floor((lo + hi) / 2);
     if (fits(mid)) hi = mid;
@@ -7758,7 +7763,9 @@ function ocrScheduleFitDock() {
 function ocrWatchDock() {
   const dock = $("ocr-dock");
   if (!dock || ocrUi.dockObserver || typeof ResizeObserver === "undefined") return;
-  ocrUi.dockObserver = new ResizeObserver(() => {
+  ocrUi.dockObserver = new ResizeObserver((entries) => {
+    const entry = entries[entries.length - 1];
+    ocrUi.dockWidth = entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
     ocrScheduleFitDock();
   });
   ocrUi.dockObserver.observe(dock);

@@ -39,3 +39,12 @@ def test_the_selection_popup_asks_where_the_focus_is_before_any_selection_getter
     sync = _fn((JS / "selection.js").read_text(encoding="utf-8"), "syncSelectionPopup")
     guard = sync.index('document.activeElement?.closest?.(".lock-overlay, .modal-overlay, #sketch-overlay, .command-palette")')
     assert guard < sync.index("fieldSelection()") < sync.index("window.getSelection()")
+
+
+def test_the_ocr_dock_fit_takes_its_width_from_its_resize_observer() -> None:
+    # `ocrScheduleFitDock`: 21 to 41 ms of forced layout per frame. A repeat fit with the layout
+    # dirty: 169 to 334 ms before, 0 to 1 after (4x CPU, n 3 each); it still folds to step 3 at 700.
+    library = (JS / "library.js").read_text(encoding="utf-8")
+    fit = _fn(library, "ocrFitDock")
+    assert "ocrUi.dockWidth ??" in fit and fit.count("getBoundingClientRect") == 1
+    assert "ocrUi.dockWidth = entry.borderBoxSize" in _fn(library, "ocrWatchDock")
