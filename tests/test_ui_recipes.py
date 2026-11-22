@@ -2304,7 +2304,7 @@ def test_the_row_swipe_presses_the_rows_own_actions():
     see."""
     app = app_js_text()
     start = app.index("function initRowSwipe(list, actions)")
-    body = app[start : app.index("// --- the note page", start)]
+    body = app[start : app.index("//: The sheet's head already says", start)]
     assert '".favourite-btn"' in body
     assert "binNoteWithUndo(" in body
     assert 'input[type="checkbox"]' in body, "the reminder swipe presses the row's own Done"
@@ -5702,7 +5702,7 @@ def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in p.read_text(encoding="utf-8")}
-    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js"):  # note-cards.js name site moved to entry-menu.js (L611)
+    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-gestures.js"):  # note-cards.js name site moved to entry-menu.js (L611)
         assert name in used, name
 
 

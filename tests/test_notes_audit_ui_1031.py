@@ -64,7 +64,7 @@ def test_a_picker_row_is_named_as_a_phrase():
 
 
 def test_the_phone_note_page_drops_the_title_its_head_already_says():
-    shell = (JS / "phone-shell.js").read_text()
+    shell = (JS / "phone-shell.js").read_text() + (JS / "phone-gestures.js").read_text()
     assert "function dropRepeatedTitle(" in shell
     assert shell.count("dropRepeatedTitle(") >= 3  # the definition, the open and the refresh
 

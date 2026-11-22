@@ -96,7 +96,7 @@ def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_setting
     #: The Settings button's listener is in settings-controls.js now.
     wiring = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("wiring.js", "settings-controls.js"))
     # The panel moved to its own lazy piece (categories-panel.js).
-    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
+    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-sidebar.js", "categories-panel.js"))
     assert 'id="manage-categories-btn"' in html and 'id="settings-manage-categories"' in html
     assert '$("manage-categories-btn").addEventListener("click", () => openManageCategories());' in wiring
     assert 'wire("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
@@ -113,7 +113,7 @@ def test_the_category_tools_count_as_writes():
 def test_the_categories_panel_is_a_managed_list_with_the_reference_head():
     # The owner: "needs some ui redesign ... like the ai assistant panel".
     # The panel moved to its own lazy piece (categories-panel.js).
-    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
+    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-sidebar.js", "categories-panel.js"))
     assert 'head.classList.add("dialog-head");' in notes
     # A grid since INBOX 433 (an option may not hold its ⋯; a grid cell may).
     assert 'list.setAttribute("role", "grid");' in notes and 'list.setAttribute("aria-multiselectable", "true");' in notes

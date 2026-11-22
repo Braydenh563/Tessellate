@@ -34,12 +34,12 @@ def _function(source: str, name: str) -> str:
 
 
 def test_a_tap_is_not_settled_as_a_swipe():
-    swipe = _function(_read("phone-shell.js"), "initRowSwipe")
+    swipe = _function((_read("phone-shell.js") + _read("phone-gestures.js")), "initRowSwipe")
     end = swipe[swipe.index("const end = "):]
     # The row only settles once the gesture was decided as a horizontal drag;
     # a tap (never decided) leaves the row alone so its click opens the note.
     assert end.index("if (!decided) return;") < end.index("settle(li);")
-    page = _function(_read("phone-shell.js"), "initNotePage")
+    page = _function((_read("phone-shell.js") + _read("phone-gestures.js")), "initNotePage")
     assert 'classList.contains("is-settling")' in page
 
 
@@ -126,7 +126,7 @@ def test_the_palette_asks_for_the_notes_rows_with_the_query():
 
 
 def test_the_drawer_opener_says_what_it_holds_and_closes_on_a_choice():
-    shell = _read("phone-shell.js")
+    shell = (_read("phone-shell.js") + _read("phone-gestures.js"))
     assert '[data-dock-name="notes"]\', label: "Categories" }' in shell
     assert "Categories and tags" not in shell
     close = shell[shell.index('("category-list")?.addEventListener("click"'):]

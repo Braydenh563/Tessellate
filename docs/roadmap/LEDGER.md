@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 0 | 2 | 1 | 0 | 0 | 3 |
+| graph | 0 | 2 | 0 | 0 | 0 | 2 |
 | chat | 176 | 206 | 60 | 2 | 59 | 442 |
 | whiteboard | 30 | 41 | 4 | 0 | 11 | 75 |
 | documents | 70 | 13 | 1 | 0 | 20 | 84 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 17 | 1 | 0 | 0 | 18 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 372 | 418 | 73 | 2 | 113 | 863 |
+| all | 372 | 418 | 72 | 2 | 113 | 862 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -489,7 +489,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-671** `world-class` open, M: Read a private space's library pictures (Tesseract) in the background. From L-world-class-381. Evidence: core/media_process.py:110 skips a sealed picture; ocr, captioning and vision_ocr take a path on their own threads; the AI reads a private space only from a chat inside it (SECURITY.md T10), so only Tesseract may borrow the session (sealed_files.for_background)
 - [ ] **L-world-class-780** `world-class` open, S: Rule 2 (three clicks): four panel sub-views sit at depth 4, give the Chat activity panel and the Images Running view a palette command or a door at depth 3. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js light run: 4 destinations at depth 4 (Chat > More actions > Activity and past runs > Running, History, More activity actions; Library > Documents > Images > Running); dark adds Notes > Writing room > More ways to save > Keep it in Drafts, Notes > Manage categories > Show the notes > Running, Chat > Guide > More actions > Every help topic, Settings > What it learned > More for this fact > Correct what this says)
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
-- [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-843** `world-class` open, L: Architecture and size rows still open from the 1028 and 1031 audits. From L623 audit-1028-backend K24 K25 K26; audit-1031-architecture AR1 AR2 AR3 AR6; audit-1031-ai AI23; audit-1031-notes N45; audit-1031-perf PF12. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; god modules and functions over 150 lines (K24 K25), two schema systems (K26), routes holding 359 queries (AR1, see L-world-class-840), 10,000 global names (AR2), composer as second app (AR3), six job homes (AR6, 'not built' in HISTORY), files over 800 lines (AI23), complexity ratchet entries (N45 PF12); overlaps L-world-class-810 and 821.
 - [ ] **L-world-class-844** `world-class` open, M: Perf rows from the 1031 audit with no recorded fix. From L623 audit-1031-perf PF4 PF5 PF10; audit-1031-notes N4; audit-1031-shell SH7 SH12; audit-1031-ux UX3 UX8. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; boot parses 1,557 KB of scripts (PF4), first tab open blocks seconds at 4x (PF5), graph draw loop while settling (PF10), notes list not smooth at 199 notes (N4), phone renders every note (SH7), Settings panes 135 to 234 ms (SH12), 70 idle animations (UX3), theme button 858 ms (UX8); remeasure at head before fixing; PF6 is in L619.

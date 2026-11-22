@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8576, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2976, tests 23326, plan headings 688, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8583, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2975, tests 23323, plan headings 688, app scripts 29, boot scripts 38, script files 326.
 
-## Frontend functions (8576)
+## Frontend functions (8583)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -107,18 +107,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:259 |
-| `charactersLost` | frontend/js/lazy-entries.js:268 |
-| `emblemHead` | frontend/js/lazy-entries.js:276 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:305 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:338 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:299 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:326 |
-| `onDomReady` | frontend/js/lazy-entries.js:349 |
-| `plainHead` | frontend/js/lazy-entries.js:282 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:290 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:361 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:385 |
+| `afterCharacters` | frontend/js/lazy-entries.js:268 |
+| `charactersLost` | frontend/js/lazy-entries.js:277 |
+| `emblemHead` | frontend/js/lazy-entries.js:285 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:314 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:347 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:308 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:335 |
+| `onDomReady` | frontend/js/lazy-entries.js:358 |
+| `plainHead` | frontend/js/lazy-entries.js:291 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:299 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:370 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:394 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -231,11 +231,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSelectionPopup` | frontend/js/selection.js:749 |
 | `wrapFieldSelection` | frontend/js/selection.js:484 |
 
-### frontend/js/notes-list.js (117)
+### frontend/js/notes-list.js (115)
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:3076 |
+| `_loadEntries` | frontend/js/notes-list.js:2890 |
 | `appendInline` | frontend/js/notes-list.js:1219 |
 | `appendInlineRun` | frontend/js/notes-list.js:971 |
 | `appendPictureBox` | frontend/js/notes-list.js:901 |
@@ -253,16 +253,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryColour` | frontend/js/notes-list.js:2591 |
 | `categoryColoursChanged` | frontend/js/notes-list.js:2608 |
 | `categoryDotColour` | frontend/js/notes-list.js:2601 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2893 |
-| `clearSkeletons` | frontend/js/notes-list.js:2994 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2831 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3617 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2707 |
+| `clearSkeletons` | frontend/js/notes-list.js:2808 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2650 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3431 |
 | `engineQueryIds` | frontend/js/notes-list.js:250 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3429 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3475 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3433 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3243 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3289 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3247 |
 | `entryListItems` | frontend/js/notes-list.js:2560 |
-| `entryListOrder` | frontend/js/notes-list.js:3177 |
+| `entryListOrder` | frontend/js/notes-list.js:2991 |
 | `entryNeedsReview` | frontend/js/notes-list.js:273 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:847 |
 | `fileCard` | frontend/js/notes-list.js:713 |
@@ -282,8 +282,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `liveQueryIds` | frontend/js/notes-list.js:201 |
 | `loadCategories` | frontend/js/notes-list.js:2617 |
 | `loadEmbedDocuments` | frontend/js/notes-list.js:1432 |
-| `loadEntries` | frontend/js/notes-list.js:3065 |
-| `markSidebarRowCurrent` | frontend/js/notes-list.js:2835 |
+| `loadEntries` | frontend/js/notes-list.js:2879 |
 | `matchesSearch` | frontend/js/notes-list.js:440 |
 | `matchesTagCount` | frontend/js/notes-list.js:419 |
 | `meaningEngineMissing` | frontend/js/notes-list.js:297 |
@@ -296,32 +295,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowStays` | frontend/js/notes-list.js:2032 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:436 |
 | `noteSortName` | frontend/js/notes-list.js:1803 |
-| `noteTopicChip` | frontend/js/notes-list.js:3356 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3610 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3527 |
-| `notesRailSync` | frontend/js/notes-list.js:3538 |
-| `notesRailWanted` | frontend/js/notes-list.js:3555 |
+| `noteTopicChip` | frontend/js/notes-list.js:3170 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3424 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3341 |
+| `notesRailSync` | frontend/js/notes-list.js:3352 |
+| `notesRailWanted` | frontend/js/notes-list.js:3369 |
 | `notesScroller` | frontend/js/notes-list.js:2017 |
 | `openNoteEditor` | frontend/js/notes-list.js:113 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2118 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:2084 |
 | `paintCategoryDot` | frontend/js/notes-list.js:2604 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:3030 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:2844 |
 | `parseNoteQuery` | frontend/js/notes-list.js:307 |
 | `propQuery` | frontend/js/notes-list.js:2323 |
 | `readableUrl` | frontend/js/notes-list.js:877 |
-| `referenceCountChip` | frontend/js/notes-list.js:3285 |
-| `referenceCountText` | frontend/js/notes-list.js:3273 |
-| `refreshEntries` | frontend/js/notes-list.js:3185 |
+| `referenceCountChip` | frontend/js/notes-list.js:3099 |
+| `referenceCountText` | frontend/js/notes-list.js:3087 |
+| `refreshEntries` | frontend/js/notes-list.js:2999 |
 | `rememberNoteFilter` | frontend/js/notes-list.js:2412 |
-| `reminderCountChip` | frontend/js/notes-list.js:3328 |
+| `reminderCountChip` | frontend/js/notes-list.js:3142 |
 | `remoteImageNote` | frontend/js/notes-list.js:911 |
 | `renderEntries` | frontend/js/notes-list.js:2424 |
-| `renderEntriesWhenShown` | frontend/js/notes-list.js:3043 |
+| `renderEntriesWhenShown` | frontend/js/notes-list.js:2857 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:927 |
 | `renderNoteInline` | frontend/js/notes-list.js:1608 |
 | `renderNoteText` | frontend/js/notes-list.js:1447 |
-| `renderNotesRail` | frontend/js/notes-list.js:3574 |
+| `renderNotesRail` | frontend/js/notes-list.js:3388 |
 | `renderSidebar` | frontend/js/notes-list.js:2632 |
 | `renderWindowed` | frontend/js/notes-list.js:2035 |
 | `resetNoteList` | frontend/js/notes-list.js:2386 |
@@ -331,27 +330,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreFocusTo` | frontend/js/notes-list.js:79 |
 | `restoreNoteControl` | frontend/js/notes-list.js:101 |
 | `safeHref` | frontend/js/notes-list.js:822 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:3058 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3550 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3623 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:2872 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3364 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3437 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2233 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2930 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2744 |
 | `showNotesFilter` | frontend/js/notes-list.js:284 |
-| `showSkeletons` | frontend/js/notes-list.js:2951 |
-| `sidebarRovingRows` | frontend/js/notes-list.js:2815 |
-| `skeletonRemember` | frontend/js/notes-list.js:2973 |
+| `showSkeletons` | frontend/js/notes-list.js:2765 |
+| `skeletonRemember` | frontend/js/notes-list.js:2787 |
 | `sortEntries` | frontend/js/notes-list.js:1807 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3563 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3377 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2222 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3350 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3164 |
 | `unlatex` | frontend/js/notes-list.js:757 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2202 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1784 |
 | `wikiForms` | frontend/js/notes-list.js:1265 |
 | `wikiStem` | frontend/js/notes-list.js:1283 |
 | `windowRows` | frontend/js/notes-list.js:1862 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2912 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2844 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2726 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2658 |
 
 ### frontend/js/capture-ask.js (43)
 
@@ -879,18 +877,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `speakText` | frontend/js/media.js:291 |
 | `startMicLevelMeter` | frontend/js/media.js:206 |
 
-### frontend/js/status.js (120)
+### frontend/js/status.js (116)
 
 | Name | File:line |
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:745 |
 | `agentActivityQuiet` | frontend/js/status.js:737 |
-| `agentModeAvailable` | frontend/js/status.js:2749 |
+| `agentModeAvailable` | frontend/js/status.js:2572 |
 | `aiIsOff` | frontend/js/status.js:2064 |
-| `aiOffGlyph` | frontend/js/status.js:2435 |
 | `aiOfflineDismissed` | frontend/js/status.js:2236 |
 | `aiOfflineNoticeHidden` | frontend/js/status.js:2232 |
-| `aiStatusState` | frontend/js/status.js:2321 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1667 |
 | `armReminderTimer` | frontend/js/status.js:534 |
@@ -912,8 +908,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isNotificationUnread` | frontend/js/status.js:211 |
 | `jobsRunning` | frontend/js/status.js:1906 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:2861 |
-| `lastAnswerLine` | frontend/js/status.js:2457 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:2684 |
 | `lockFieldWants` | frontend/js/status.js:1018 |
 | `noteDamagedNotebook` | frontend/js/status.js:1352 |
 | `noteServerDown` | frontend/js/status.js:1411 |
@@ -925,9 +920,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLanPanel` | frontend/js/status.js:673 |
 | `openModelGate` | frontend/js/status.js:2092 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:2937 |
+| `paintPrivacyChip` | frontend/js/status.js:2760 |
 | `paintReminderList` | frontend/js/status.js:569 |
-| `paintStatusItem` | frontend/js/status.js:2531 |
+| `paintStatusItem` | frontend/js/status.js:2354 |
 | `paintTitle` | frontend/js/status.js:510 |
 | `paintUndoDoor` | frontend/js/status.js:1769 |
 | `performRedo` | frontend/js/status.js:1688 |
@@ -942,27 +937,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1607 |
 | `pushUndo` | frontend/js/status.js:1485 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2880 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2703 |
 | `refreshModelStatus` | frontend/js/status.js:1934 |
-| `refreshPrivacyChip` | frontend/js/status.js:2951 |
+| `refreshPrivacyChip` | frontend/js/status.js:2774 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
 | `renderAiOfflineNotice` | frontend/js/status.js:2259 |
-| `renderAiPill` | frontend/js/status.js:2465 |
-| `renderChatModeSeg` | frontend/js/status.js:2777 |
+| `renderChatModeSeg` | frontend/js/status.js:2600 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderStatusBar` | frontend/js/status.js:2580 |
+| `renderStatusBar` | frontend/js/status.js:2403 |
 | `renderUndoBar` | frontend/js/status.js:1751 |
-| `renderWebSearchToggle` | frontend/js/status.js:2757 |
+| `renderWebSearchToggle` | frontend/js/status.js:2580 |
 | `reopenAnswerPanel` | frontend/js/status.js:780 |
 | `resetStatusCadence` | frontend/js/status.js:1858 |
 | `retryServerNow` | frontend/js/status.js:1461 |
 | `sayChatModelChosen` | frontend/js/status.js:1826 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1435 |
 | `scheduleUndoBar` | frontend/js/status.js:1743 |
-| `setChatMode` | frontend/js/status.js:2823 |
+| `setChatMode` | frontend/js/status.js:2646 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:515 |
@@ -970,9 +964,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1874 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1595 |
-| `showAgentNoModelHint` | frontend/js/status.js:2818 |
+| `showAgentNoModelHint` | frontend/js/status.js:2641 |
 | `showServerDownBanner` | frontend/js/status.js:1392 |
-| `startPrivacyChip` | frontend/js/status.js:2961 |
+| `startPrivacyChip` | frontend/js/status.js:2784 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1649 |
@@ -997,12 +991,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:921 |
 | `toastStack` | frontend/js/status.js:925 |
 | `toastYield` | frontend/js/status.js:1040 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2723 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2546 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1174 |
 | `whenText` | frontend/js/status.js:1162 |
-| `withoutEndStop` | frontend/js/status.js:2492 |
+| `withoutEndStop` | frontend/js/status.js:2315 |
 
 ### frontend/js/ai-tools.js (30)
 
@@ -1039,67 +1033,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:487 |
 | `wireReindexButton` | frontend/js/ai-tools.js:546 |
 
-### frontend/js/phone-shell.js (57)
+### frontend/js/phone-shell.js (53)
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1856 |
-| `closeNotePageIfGone` | frontend/js/phone-shell.js:1128 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:2016 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:2005 |
-| `dockChatAttachments` | frontend/js/phone-shell.js:1260 |
-| `dockChatTools` | frontend/js/phone-shell.js:1318 |
-| `dockPhoneStatus` | frontend/js/phone-shell.js:813 |
-| `dockShown` | frontend/js/phone-shell.js:2095 |
-| `dockTabBar` | frontend/js/phone-shell.js:652 |
-| `dockTight` | frontend/js/phone-shell.js:2102 |
-| `dropRepeatedTitle` | frontend/js/phone-shell.js:1056 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1847 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1663 |
+| `closeNotePageIfGone` | frontend/js/phone-shell.js:958 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1823 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1812 |
+| `dockChatAttachments` | frontend/js/phone-shell.js:1067 |
+| `dockChatTools` | frontend/js/phone-shell.js:1125 |
+| `dockPhoneStatus` | frontend/js/phone-shell.js:821 |
+| `dockShown` | frontend/js/phone-shell.js:1902 |
+| `dockTabBar` | frontend/js/phone-shell.js:660 |
+| `dockTight` | frontend/js/phone-shell.js:1909 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1654 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:132 |
-| `fitDock` | frontend/js/phone-shell.js:2222 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1942 |
+| `fitDock` | frontend/js/phone-shell.js:2029 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1749 |
 | `focusTabPage` | frontend/js/phone-shell.js:386 |
-| `foldDockActions` | frontend/js/phone-shell.js:2168 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2113 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2060 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:2028 |
-| `initBottomTabBar` | frontend/js/phone-shell.js:683 |
-| `initDockFolding` | frontend/js/phone-shell.js:2235 |
+| `foldDockActions` | frontend/js/phone-shell.js:1975 |
+| `foldDockArrange` | frontend/js/phone-shell.js:1920 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1867 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1835 |
+| `initBottomTabBar` | frontend/js/phone-shell.js:691 |
+| `initDockFolding` | frontend/js/phone-shell.js:2042 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1768 |
-| `initNotePage` | frontend/js/phone-shell.js:1133 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1575 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:590 |
-| `initOcrPhonePage` | frontend/js/phone-shell.js:1220 |
-| `initPhoneChatRow` | frontend/js/phone-shell.js:1373 |
-| `initPhoneHeaderMore` | frontend/js/phone-shell.js:727 |
-| `initPhoneStatus` | frontend/js/phone-shell.js:849 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1968 |
-| `initRowSwipe` | frontend/js/phone-shell.js:952 |
-| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:883 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:2048 |
-| `ocrPhonePage` | frontend/js/phone-shell.js:1184 |
-| `openNotePage` | frontend/js/phone-shell.js:1066 |
-| `openSheet` | frontend/js/phone-shell.js:1413 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1721 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1686 |
-| `phoneSheetDialogs` | frontend/js/phone-shell.js:1239 |
-| `refreshNotePage` | frontend/js/phone-shell.js:1114 |
+| `initOcrPhonePage` | frontend/js/phone-shell.js:1027 |
+| `initPhoneChatRow` | frontend/js/phone-shell.js:1180 |
+| `initPhoneHeaderMore` | frontend/js/phone-shell.js:735 |
+| `initPhoneStatus` | frontend/js/phone-shell.js:857 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1775 |
+| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:891 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:1855 |
+| `ocrPhonePage` | frontend/js/phone-shell.js:991 |
+| `openSheet` | frontend/js/phone-shell.js:1220 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1528 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1493 |
+| `phoneSheetDialogs` | frontend/js/phone-shell.js:1046 |
+| `refreshNotePage` | frontend/js/phone-shell.js:953 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:168 |
 | `releaseEmblem` | frontend/js/phone-shell.js:151 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:218 |
 | `renderEmblem` | frontend/js/phone-shell.js:174 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:255 |
-| `sheetRow` | frontend/js/phone-shell.js:1623 |
+| `sheetRow` | frontend/js/phone-shell.js:1430 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1730 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1695 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1537 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1502 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
-| `watchStatusBarIdle` | frontend/js/phone-shell.js:795 |
+| `watchStatusBarIdle` | frontend/js/phone-shell.js:803 |
 
 ### frontend/js/wiring.js (34)
 
@@ -6738,6 +6728,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notesSpyPick` | frontend/js/notes-rail-spy.js:45 |
 | `notesSpySchedule` | frontend/js/notes-rail-spy.js:83 |
 
+### frontend/js/notes-sidebar.js (8)
+
+| Name | File:line |
+|---|---|
+| `addRow` | frontend/js/notes-sidebar.js:27 |
+| `drawSidebar` | frontend/js/notes-sidebar.js:8 |
+| `filterRow` | frontend/js/notes-sidebar.js:93 |
+| `markSidebarRowCurrent` | frontend/js/notes-sidebar.js:193 |
+| `queryRow` | frontend/js/notes-sidebar.js:139 |
+| `sheetRow` | frontend/js/notes-sidebar.js:145 |
+| `sidebarRovingRows` | frontend/js/notes-sidebar.js:177 |
+| `toggleFilter` | frontend/js/notes-sidebar.js:110 |
+
 ### frontend/js/notes-sync.js (1)
 
 | Name | File:line |
@@ -7032,6 +7035,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:238 |
 | `renderPersonas` | frontend/js/personas-pane.js:21 |
 | `savePersonaList` | frontend/js/personas-pane.js:10 |
+
+### frontend/js/phone-gestures.js (5)
+
+| Name | File:line |
+|---|---|
+| `dropRepeatedTitle` | frontend/js/phone-gestures.js:123 |
+| `initNotePage` | frontend/js/phone-gestures.js:191 |
+| `initRowSwipe` | frontend/js/phone-gestures.js:34 |
+| `openNotePage` | frontend/js/phone-gestures.js:133 |
+| `refreshNotePageNow` | frontend/js/phone-gestures.js:178 |
 
 ### frontend/js/phone-more.js (1)
 
@@ -8026,6 +8039,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `statsUsageSection` | frontend/js/statistics.js:282 |
 | `statsWeekCard` | frontend/js/statistics.js:151 |
 | `statsWeeklyOffer` | frontend/js/statistics.js:493 |
+
+### frontend/js/status-ai-pill.js (4)
+
+| Name | File:line |
+|---|---|
+| `aiOffGlyph` | frontend/js/status-ai-pill.js:134 |
+| `aiStatusState` | frontend/js/status-ai-pill.js:20 |
+| `lastAnswerLine` | frontend/js/status-ai-pill.js:151 |
+| `renderAiPill` | frontend/js/status-ai-pill.js:159 |
 
 ### frontend/js/status-embedding.js (3)
 
@@ -29322,7 +29344,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23326)
+## Tests (23323)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30100,7 +30122,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dash_fill_tasks.py | 5 |
 | tests/test_dash_map_feature.py | 4 |
 | tests/test_dash_pie_179.py | 4 |
-| tests/test_dash_spans_observer_sizes_620.py | 3 |
 | tests/test_dash_widget_markdown_178.py | 2 |
 | tests/test_dash_widget_stall.py | 3 |
 | tests/test_dashboard_art_cheap_1501.py | 4 |
@@ -32722,14 +32743,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4465 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4340 |
-| Needs hardware | docs/roadmap/LEDGER.md:539 |
+| Needs hardware | docs/roadmap/LEDGER.md:538 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1299 |
-| Owner calls | docs/roadmap/LEDGER.md:532 |
+| Owner calls | docs/roadmap/LEDGER.md:531 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4213 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32910,7 +32931,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3155 |
-| Plan session briefs | docs/roadmap/LEDGER.md:662 |
+| Plan session briefs | docs/roadmap/LEDGER.md:661 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2626 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32964,25 +32985,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:26 |
-| chat | docs/roadmap/LEDGER.md:678 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:762 |
+| chat | docs/roadmap/LEDGER.md:677 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:761 |
 | documents | docs/roadmap/LEDGER.md:329 |
-| documents | docs/roadmap/LEDGER.md:702 |
-| general | docs/roadmap/LEDGER.md:498 |
+| documents | docs/roadmap/LEDGER.md:701 |
+| general | docs/roadmap/LEDGER.md:497 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:666 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:774 |
+| graph | docs/roadmap/LEDGER.md:665 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:773 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4349 |
 | mindmap | docs/roadmap/LEDGER.md:346 |
-| mindmap | docs/roadmap/LEDGER.md:714 |
+| mindmap | docs/roadmap/LEDGER.md:713 |
 | timeline | docs/roadmap/LEDGER.md:465 |
-| timeline | docs/roadmap/LEDGER.md:738 |
+| timeline | docs/roadmap/LEDGER.md:737 |
 | ui-modernisation | docs/roadmap/LEDGER.md:348 |
-| ui-modernisation | docs/roadmap/LEDGER.md:726 |
+| ui-modernisation | docs/roadmap/LEDGER.md:725 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:690 |
+| whiteboard | docs/roadmap/LEDGER.md:689 |
 | world-class | docs/roadmap/LEDGER.md:467 |
-| world-class | docs/roadmap/LEDGER.md:750 |
+| world-class | docs/roadmap/LEDGER.md:749 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2794 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2845 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2952 |
