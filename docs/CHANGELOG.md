@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminder fact split is a one-pass scan, not a regex (CodeQL 2354 still saw the lookbehind form as polynomial).
 - Reminder fact split reads a long run of "!" in linear time (CodeQL 2354); a test assert no longer holds the write it checks (CodeQL 2355).
 - Whiteboard More sheet: one Arrange grouping (L-whiteboard-30's), the merge's second copy removed; shared names back under the cap.
 - Lints after the base merge: one askAtlasAboutNote (entry-menu.js held two), the head-title regexes anchored, four stale lazy stand-ins taken out.

@@ -376,9 +376,30 @@ def _before_without_a_time(rest: str, about: bool) -> dict | None:
 #: clock only up to 12:59, so "at 2027" stays a year.
 _BARE_CLOCK = re.compile(r"\b(at|by|from|until|till) (0?[1-9]|1[0-2])([0-5]\d)\b(?![:\d])", re.I)
 #: A new sentence after the reminder ("... at 930?? they come out at 10pm") is a fact about it, not its time.
-#: Only a lowercase opening counts, so "Dr. Smith" stays in the words. The lookbehind starts a match only at a
-#: run's first character, so a long run of "!" is one attempt, not one per character (CodeQL 2354).
-_FACT_SPLIT = re.compile(r"(?<![?!.\s])\s*[?!.]+\s+(?=[a-z])")
+#: Only a lowercase opening counts, so "Dr. Smith" stays in the words.
+_SENTENCE_END = "?!."
+
+
+def _fact_split(rest: str) -> list[str]:
+    """`rest` cut once at the first run of ?!. followed by space and a lowercase letter.
+
+    A scan, not a regex: each character is read once, so a long run of "!" costs nothing (CodeQL 2354,
+    where `\\s*[?!.]+\\s+` retried from every character of the run)."""
+    i, n = 0, len(rest)
+    while i < n:
+        if rest[i] not in _SENTENCE_END:
+            i += 1
+            continue
+        j = i
+        while j < n and rest[j] in _SENTENCE_END:
+            j += 1
+        k = j
+        while k < n and rest[k].isspace():
+            k += 1
+        if k > j and k < n and "a" <= rest[k] <= "z":
+            return [rest[:i].rstrip(), rest[k:]]
+        i = j
+    return [rest]
 
 
 def _with_colons(rest: str) -> str:
@@ -386,7 +407,7 @@ def _with_colons(rest: str) -> str:
 
 
 def _split_fact(rest: str) -> tuple[str, str]:
-    parts = _FACT_SPLIT.split(rest, maxsplit=1)
+    parts = _fact_split(rest)
     if len(parts) < 2 or not parts[0].strip() or not parts[1].strip(" ?!."):
         return rest, ""
     return parts[0], parts[1].strip(" ?!.")
