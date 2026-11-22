@@ -138,7 +138,9 @@ def _rows(group: str, sort: str = "recent", pinned: bool = True) -> list:
         {"id": 3, "title": "Mid", "pinned": False, "folder": "", "turns": 5, "updated_at": "2026-11-10T10:00:00", "last_at": "2026-11-10T10:00:00"},
     ]
     script = _ordering_script(
-        f"const now = new Date('2026-11-21T12:00:00');"
+        #: The fixed clock: `chatGroupOf` reads `new Date()`, so the pin is on Date itself (a bare `now` was never read).
+        "const RealDate = Date; globalThis.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : ['2026-11-21T12:00:00'])); }"
+        " static now() { return new RealDate('2026-11-21T12:00:00').getTime(); } };"
         f"const rows = chatListRows({json.dumps(chats)}, {{ sort: '{sort}', group: '{group}', pinned: {str(pinned).lower()} }}, 50);"
         "console.log(JSON.stringify(rows.map((r) => r.heading ? 'H:' + r.heading : r.id)));"
     )
