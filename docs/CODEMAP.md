@@ -406,48 +406,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `CLIP_LIMITS` | frontend/js/chat.js:55 |
-| `aiWritingTrace` | frontend/js/chat.js:1012 |
-| `applyCompression` | frontend/js/chat.js:895 |
+| `aiWritingTrace` | frontend/js/chat.js:1014 |
+| `applyCompression` | frontend/js/chat.js:897 |
 | `atlasSuggestion` | frontend/js/chat.js:202 |
-| `batteryModeOn` | frontend/js/chat.js:937 |
+| `batteryModeOn` | frontend/js/chat.js:939 |
 | `bodyTextWithCitations` | frontend/js/chat.js:87 |
 | `chatEmptySettle` | frontend/js/chat.js:223 |
-| `chatTranscriptText` | frontend/js/chat.js:826 |
+| `chatTranscriptText` | frontend/js/chat.js:828 |
 | `clearChatEmptyState` | frontend/js/chat.js:352 |
 | `clipFor` | frontend/js/chat.js:61 |
 | `compactTokens` | frontend/js/chat.js:101 |
-| `compressChatContext` | frontend/js/chat.js:855 |
-| `compressSizeText` | frontend/js/chat.js:876 |
+| `compressChatContext` | frontend/js/chat.js:857 |
+| `compressSizeText` | frontend/js/chat.js:878 |
 | `copyToClipboard` | frontend/js/chat.js:152 |
 | `copyViaTextarea` | frontend/js/chat.js:112 |
-| `fillPersonaMark` | frontend/js/chat.js:629 |
+| `fillPersonaMark` | frontend/js/chat.js:631 |
 | `flashCopied` | frontend/js/chat.js:134 |
-| `loadResponseModes` | frontend/js/chat.js:578 |
-| `mountChatActionsMenu` | frontend/js/chat.js:770 |
-| `personaOptions` | frontend/js/chat.js:646 |
-| `progressMotionWanted` | frontend/js/chat.js:964 |
-| `progressPhaseText` | frontend/js/chat.js:1208 |
+| `loadResponseModes` | frontend/js/chat.js:580 |
+| `mountChatActionsMenu` | frontend/js/chat.js:772 |
+| `personaOptions` | frontend/js/chat.js:648 |
+| `progressMotionWanted` | frontend/js/chat.js:966 |
+| `progressPhaseText` | frontend/js/chat.js:1210 |
 | `regenerateFromBubble` | frontend/js/chat.js:190 |
 | `regenerateLastAnswer` | frontend/js/chat.js:195 |
-| `renderChatContextMeter` | frontend/js/chat.js:724 |
+| `renderChatContextMeter` | frontend/js/chat.js:726 |
 | `renderChatEmptyState` | frontend/js/chat.js:233 |
-| `renderChatTurnCount` | frontend/js/chat.js:750 |
-| `renderChatUsage` | frontend/js/chat.js:707 |
-| `renderCompressionState` | frontend/js/chat.js:908 |
+| `renderChatTurnCount` | frontend/js/chat.js:752 |
+| `renderChatUsage` | frontend/js/chat.js:709 |
+| `renderCompressionState` | frontend/js/chat.js:910 |
 | `renderModelContextBox` | frontend/js/chat.js:436 |
 | `renderModelHealthNote` | frontend/js/chat.js:540 |
 | `renderModelSpec` | frontend/js/chat.js:468 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1126 |
-| `setResponseMode` | frontend/js/chat.js:607 |
-| `showCompressReview` | frontend/js/chat.js:883 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1154 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1176 |
-| `togglePersonaPrompt` | frontend/js/chat.js:699 |
-| `typingDots` | frontend/js/chat.js:1230 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1128 |
+| `setResponseMode` | frontend/js/chat.js:609 |
+| `showCompressReview` | frontend/js/chat.js:885 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1156 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1178 |
+| `togglePersonaPrompt` | frontend/js/chat.js:701 |
+| `typingDots` | frontend/js/chat.js:1232 |
 | `webPageMarkdown` | frontend/js/chat.js:391 |
 | `webReaderIsOpen` | frontend/js/chat.js:377 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1061 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1094 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1063 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1096 |
 
 ### frontend/js/chat-agent.js (40)
 
@@ -758,24 +758,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2482 |
-| `activeNotesSection` | frontend/js/navigation.js:2309 |
+| `aboveDockFab` | frontend/js/navigation.js:2486 |
+| `activeNotesSection` | frontend/js/navigation.js:2313 |
 | `arrowNavTarget` | frontend/js/navigation.js:219 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1838 |
-| `chatMidStream` | frontend/js/navigation.js:1770 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1842 |
+| `chatMidStream` | frontend/js/navigation.js:1774 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:919 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1800 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2615 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1804 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2619 |
 | `entryLabel` | frontend/js/navigation.js:1017 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2576 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2580 |
 | `goToTabHistory` | frontend/js/navigation.js:1108 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1749 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1753 |
 | `hideClosedDockMenuLists` | frontend/js/navigation.js:1519 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2372 |
-| `initScrollTopButton` | frontend/js/navigation.js:2635 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2376 |
+| `initScrollTopButton` | frontend/js/navigation.js:2639 |
 | `insideClosedDetails` | frontend/js/navigation.js:1573 |
 | `loadSurface` | frontend/js/navigation.js:1315 |
-| `measureSpacingPx` | frontend/js/navigation.js:2606 |
+| `measureSpacingPx` | frontend/js/navigation.js:2610 |
 | `menuOfOpener` | frontend/js/navigation.js:1595 |
 | `menuRowsOf` | frontend/js/navigation.js:1580 |
 | `mermaidSoon` | frontend/js/navigation.js:384 |
@@ -785,35 +785,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:332 |
 | `paintTabHistory` | frontend/js/navigation.js:966 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1386 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2491 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2495 |
 | `recordTabVisit` | frontend/js/navigation.js:1054 |
-| `recordingLive` | frontend/js/navigation.js:1777 |
+| `recordingLive` | frontend/js/navigation.js:1781 |
 | `renderMarkdown` | frontend/js/navigation.js:393 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2270 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2289 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2274 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2293 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1155 |
 | `revealTab` | frontend/js/navigation.js:829 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:139 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2458 |
-| `scrollingPage` | frontend/js/navigation.js:2411 |
-| `showNotesSection` | frontend/js/navigation.js:2314 |
-| `spacingPx` | frontend/js/navigation.js:2599 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2462 |
+| `scrollingPage` | frontend/js/navigation.js:2415 |
+| `showNotesSection` | frontend/js/navigation.js:2318 |
+| `spacingPx` | frontend/js/navigation.js:2603 |
 | `stepTabHistory` | frontend/js/navigation.js:1098 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2216 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2220 |
 | `surfaceRecovered` | frontend/js/navigation.js:1293 |
-| `switchTab` | frontend/js/navigation.js:1887 |
-| `syncScrollLock` | frontend/js/navigation.js:2777 |
+| `switchTab` | frontend/js/navigation.js:1891 |
+| `syncScrollLock` | frontend/js/navigation.js:2781 |
 | `tabLabel` | frontend/js/navigation.js:1005 |
-| `tabPlaceholder` | frontend/js/navigation.js:2152 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2133 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2143 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2122 |
-| `usageCount` | frontend/js/navigation.js:1848 |
-| `usageFeatureName` | frontend/js/navigation.js:1844 |
-| `usageFlush` | frontend/js/navigation.js:1852 |
+| `tabPlaceholder` | frontend/js/navigation.js:2156 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2137 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2147 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2126 |
+| `usageCount` | frontend/js/navigation.js:1852 |
+| `usageFeatureName` | frontend/js/navigation.js:1848 |
+| `usageFlush` | frontend/js/navigation.js:1856 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1448 |
 | `wireLongPress` | frontend/js/navigation.js:25 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2795 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2799 |
 
 ### frontend/js/router.js (12)
 
@@ -32558,14 +32558,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4494 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:542 |
+| Needs hardware | docs/roadmap/LEDGER.md:541 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:535 |
+| Owner calls | docs/roadmap/LEDGER.md:534 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32746,7 +32746,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:663 |
+| Plan session briefs | docs/roadmap/LEDGER.md:662 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32801,25 +32801,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:679 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:763 |
+| chat | docs/roadmap/LEDGER.md:678 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:762 |
 | documents | docs/roadmap/LEDGER.md:325 |
-| documents | docs/roadmap/LEDGER.md:703 |
-| general | docs/roadmap/LEDGER.md:507 |
+| documents | docs/roadmap/LEDGER.md:702 |
+| general | docs/roadmap/LEDGER.md:506 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:667 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:775 |
+| graph | docs/roadmap/LEDGER.md:666 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:774 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:341 |
-| mindmap | docs/roadmap/LEDGER.md:715 |
+| mindmap | docs/roadmap/LEDGER.md:714 |
 | timeline | docs/roadmap/LEDGER.md:459 |
-| timeline | docs/roadmap/LEDGER.md:739 |
+| timeline | docs/roadmap/LEDGER.md:738 |
 | ui-modernisation | docs/roadmap/LEDGER.md:343 |
-| ui-modernisation | docs/roadmap/LEDGER.md:727 |
+| ui-modernisation | docs/roadmap/LEDGER.md:726 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:691 |
+| whiteboard | docs/roadmap/LEDGER.md:690 |
 | world-class | docs/roadmap/LEDGER.md:461 |
-| world-class | docs/roadmap/LEDGER.md:751 |
+| world-class | docs/roadmap/LEDGER.md:750 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |

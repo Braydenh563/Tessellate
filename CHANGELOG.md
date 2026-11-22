@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The reach sweep counts an "About X" help popover as reached when the Guide has topic X (L-world-class-781).
 - Menus line up: a switch row in a dock menu starts on the icon column at the row height, the board's submenu rows' words no longer start early, and the zoom presets are as wide as their numbers (L-world-class-107).
 - The companion's 20 s calm pause no longer stalls a frame: its loops pause a quarter at a time, so the calm frame at 4x CPU fell from 132 to 264 ms to under 53 (L-world-class-390).
 - Folder imports are sent in parts of 200 files to a staged batch (`POST /import/app/batches`, then `?batch=` for the preview and the import), so the files cross the wire once and no single body of thousands is built (L-world-class-891).

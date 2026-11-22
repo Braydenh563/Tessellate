@@ -138,7 +138,12 @@ async function replay(page, path) {
     // The palette's registry against the destinations.
     await home(page);
     const cmds = await page.evaluate(() => paletteCommands().map((c) => [c.label, c.keywords || '', c.about || '', c.tab || '', c.reveal || ''].join(' ').toLowerCase().replace(/ph:[a-z-]+/g, '')));
-    console.log(`\nPALETTE: ${cmds.length} commands (each one chord or one click away)`);
+    // An 'About X' help popover is reached by the Guide's topic X (L-world-class-781): the Guide's
+    // titles join the haystack as 'guide ...' rows, so the help branch below matches them.
+    const guide = await page.evaluate(() => apiJson('/help/topics').then((l) => l.groups.flatMap((g) => g.topics.map((t) => 'guide ' + t.title.toLowerCase()))).catch(() => []));
+    if (!guide.length) throw new Error('reach.js: GET /help/topics gave no Guide topics');
+    cmds.push(...guide);
+    console.log(`\nPALETTE: ${cmds.length - guide.length} commands (each one chord or one click away), Guide topics ${guide.length}`);
     const words = (s) => s.toLowerCase().replace(/&/g, ' and ').split(/[^a-z]+/).filter((w) => w.length > 2 && !['and', 'the', 'new', 'tab'].includes(w));
     const missing = [];
     for (const r of rows.filter((r) => r.depth > 0)) {
@@ -148,8 +153,9 @@ async function replay(page, path) {
       if (/^(menu)\|/.test(r.path[r.path.length - 1])) continue;
       // A help popover (the '?' recipe) is reached by the Guide's topic of the same name, so it is matched
       // on its topic words alone, against every command and the Guide's own topic rows.
-      if (/help/i.test(last)) {
-        const topic = words(last.replace(/help/gi, ''));
+      if (/help|^about /i.test(last)) {
+        // A plural label ('About accounts') names the singular topic ('Account and security').
+        const topic = words(last.replace(/help|^about /gi, '')).map((x) => x.replace(/s$/, ''));
         if (!topic.length || cmds.some((c) => /guide|manual/.test(c) && topic.some((x) => c.includes(x)))) continue;
         if (cmds.some((c) => topic.filter((x) => c.includes(x)).length >= Math.ceil(topic.length * 0.7))) continue;
       }
@@ -159,7 +165,7 @@ async function replay(page, path) {
     for (const r of missing) console.log(`${r.depth}  ${r.name}`);
     const byDepth = {};
     for (const r of rows) byDepth[r.depth] = (byDepth[r.depth] || 0) + 1;
-    console.log(`\nSUMMARY (${process.env.THEME || 'light'}): destinations ${rows.length}, by depth ${JSON.stringify(byDepth)}, deeper than 3: ${deep.length}, no palette command: ${missing.length}, palette commands ${cmds.length}`);
+    console.log(`\nSUMMARY (${process.env.THEME || 'light'}): destinations ${rows.length}, by depth ${JSON.stringify(byDepth)}, deeper than 3: ${deep.length}, no palette command: ${missing.length}, palette commands ${cmds.length - guide.length}, Guide topics ${guide.length}`);
   };
   let frontier = [{ path: [], sig: start.sig, candidates: start.candidates, page: start.sig.split(' | ')[0] }];
   // The header and the tab bar are on every page: pressed from the first page
