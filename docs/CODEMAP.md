@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8589, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11552, test files 3040, tests 23519, plan headings 697, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8589, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11552, test files 3040, tests 23520, plan headings 697, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8589)
 
@@ -29205,7 +29205,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23519)
+## Tests (23520)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31692,7 +31692,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_switch_divider.py | 2 |
 | tests/test_settings_weight.py | 3 |
 | tests/test_share_target.py | 3 |
-| tests/test_sheet_head_buttons_right_1122.py | 1 |
+| tests/test_sheet_head_buttons_right_1122.py | 2 |
 | tests/test_sheet_modeless_resize.py | 2 |
 | tests/test_sheet_rows_1661.py | 1 |
 | tests/test_shell_fixes.py | 8 |
