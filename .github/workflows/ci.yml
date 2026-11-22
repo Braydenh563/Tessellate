@@ -195,8 +195,12 @@ jobs:
 
       # The budgets time the app, so they run alone, one worker, nothing else
       # on the runner's cores.
+      # Its own report folder: in one folder the budgets' report replaced the flows', so a
+      # flow that failed once and passed on retry left no trace to read (#224, boards.spec.js:34).
       - name: Run the budgets alone
         working-directory: tests-e2e
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-budgets
         run: npx playwright test specs/budgets.spec.js --project=notebook --workers=1
 
       - name: Upload the report on failure
@@ -204,7 +208,9 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
         with:
           name: playwright-report
-          path: tests-e2e/playwright-report/
+          path: |
+            tests-e2e/playwright-report/
+            tests-e2e/playwright-report-budgets/
           retention-days: 7
 
   e2e-budgets:
