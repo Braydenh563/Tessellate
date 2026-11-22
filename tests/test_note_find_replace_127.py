@@ -36,7 +36,8 @@ def test_ctrl_h_opens_on_the_replace_field():
 
 
 def test_page_find_yields_to_an_editor_that_answered():
-    assert 'if (id === "find" && e.defaultPrevented) continue;' in JS
+    # The yield moved into settings-wiring.js's shortcut filter, which answers "skip" with `return true`.
+    assert 'if (id === "find" && e.defaultPrevented) return true;' in JS
 
 
 def test_the_panel_wears_the_document_restyle_in_a_note():

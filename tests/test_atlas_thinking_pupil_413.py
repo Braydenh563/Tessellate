@@ -8,7 +8,7 @@ in the sweep). The placement is now 0.8px by 0.9px, which the sweep measures as 
 import re
 from pathlib import Path
 
-# The Atlas rules moved to the lazy characters sheet with the boot diet; the placement is the same.
+#: The Atlas rules load with the characters bundle since L-world-class-364, not the boot CSS.
 CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 
 
