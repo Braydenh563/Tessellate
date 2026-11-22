@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8589, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11552, test files 3040, tests 23520, plan headings 697, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8589, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11552, test files 3041, tests 23523, plan headings 697, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8589)
 
@@ -532,21 +532,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachLibraryFile` | frontend/js/chat-attach.js:207 |
 | `attachSelectionContext` | frontend/js/chat-attach.js:351 |
 | `attachedNotes` | frontend/js/chat-attach.js:404 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:1170 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:1178 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:913 |
-| `chatLeaveHeld` | frontend/js/chat-attach.js:1079 |
+| `chatLeaveHeld` | frontend/js/chat-attach.js:1087 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:962 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:1199 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:1207 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:375 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:950 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
 | `closeNotePicker` | frontend/js/chat-attach.js:897 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:1144 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:1204 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:1152 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:1212 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:433 |
 | `followupMatches` | frontend/js/chat-attach.js:1004 |
 | `followupTrail` | frontend/js/chat-attach.js:1007 |
-| `newChatConversation` | frontend/js/chat-attach.js:1090 |
+| `newChatConversation` | frontend/js/chat-attach.js:1098 |
 | `noteLabel` | frontend/js/chat-attach.js:410 |
 | `noteNamePlain` | frontend/js/chat-attach.js:470 |
 | `notePickerColumns` | frontend/js/chat-attach.js:757 |
@@ -562,7 +562,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:859 |
 | `plainText` | frontend/js/chat-attach.js:448 |
-| `promptTitle` | frontend/js/chat-attach.js:1188 |
+| `promptTitle` | frontend/js/chat-attach.js:1196 |
 | `releaseChatComposer` | frontend/js/chat-attach.js:1048 |
 | `renderAttachments` | frontend/js/chat-attach.js:523 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:266 |
@@ -574,7 +574,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setActiveChoice` | frontend/js/chat-attach.js:456 |
 | `setNoteLabel` | frontend/js/chat-attach.js:480 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:832 |
-| `syncChatPrivate` | frontend/js/chat-attach.js:1085 |
+| `syncChatPrivate` | frontend/js/chat-attach.js:1093 |
 
 ### frontend/js/sheets-selects.js (52)
 
@@ -29205,7 +29205,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23520)
+## Tests (23523)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29596,6 +29596,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_scroll_534.py | 4 |
 | tests/test_chat_send_turn_split_l169.py | 1 |
 | tests/test_chat_slash_order.py | 2 |
+| tests/test_chat_staged_file_discard_1122.py | 3 |
 | tests/test_chat_stop_done_w1.py | 9 |
 | tests/test_chat_stop_keeps_queue.py | 3 |
 | tests/test_chat_stray_keys.py | 2 |

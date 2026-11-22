@@ -1,0 +1,22 @@
+const { boot } = require('/home/user/tessellate/scratchpad/ui-sweeps/lib.js');
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  const posts = [];
+  page.on('request', (r) => { if (r.method() !== 'GET' && /documents|attachments|media|import/.test(r.url())) posts.push(r.method() + ' ' + r.url()); });
+  const docs = () => page.evaluate(async () => (await (await fetch('/documents', { headers: authHeaders ? authHeaders() : {} })).text()).length);
+  const state = (tag) => page.evaluate((tag) => tag + ' staged=' + attachedDocuments.filter((d) => d.file).length + ' chips=' + document.querySelectorAll('#chat-doc-attachments .att-chip, #chat-documents-attached > *').length + ' input=' + JSON.stringify($('chat-input').value), tag);
+  await page.evaluate(() => switchView ? switchView('chat') : null).catch(() => {});
+  await page.evaluate(() => { $('chat-input'); });
+  await page.waitForTimeout(800);
+  const before = await docs().catch((e) => 'docs err ' + e.message);
+  await page.evaluate(() => { $('chat-input').value = 'draft words'; importChatDocuments([new File(['print(1)\n'], 'probe.py', { type: 'text/x-python' })]); });
+  await page.waitForTimeout(600); console.log(await state('staged'));
+  await page.evaluate(() => newChatConversation());
+  console.log(await state('after new chat'));
+  await page.evaluate(() => importChatDocuments([new File(['x'], 'two.py', { type: 'text/x-python' })])); await page.waitForTimeout(300);
+  console.log(await state('staged again'));
+  const id = await page.evaluate(async () => { const r = await apiJson('/conversations', { method: 'POST', body: JSON.stringify({ question: 'probe', answer: 'ok' }) }).catch((e) => null); const l = await apiJson('/conversations').catch(() => []); const rows = l.conversations || l; return (r && r.id) || (rows[0] && rows[0].id) || null; });
+  if (id) { await page.evaluate((id) => openConversation(id), id); await page.waitForTimeout(800); console.log(await state('after open conv ' + id)); } else console.log('no conversation to open');
+  console.log('docs before/after', before, await docs().catch(() => 'err'), 'writes', posts.length, posts.join(' | '));
+  await browser.close();
+})();

@@ -1048,6 +1048,14 @@ let chatTimerBox = null;
 function releaseChatComposer({ announce = true } = {}) {
   //: Called by every way out of a chat: the page it read is that chat's.
   chatWeb.lastUrl = null;
+  //: A file staged on the unsent message is that message's, not the next chat's (the hub, 2026-11-22:
+  //: switching chats with one staged must discard it and leave no document). It was carried to the
+  //: new chat and became a document on that chat's first send. It never reached the server, so
+  //: dropping the chip is the whole discard.
+  if (attachedDocuments.some((d) => d.file)) {
+    attachedDocuments = attachedDocuments.filter((d) => !d.file);
+    renderDocumentAttachments();
+  }
   if (!chatController || !chatStreaming) return;
   $("chat-messages").removeAttribute("aria-busy"); // this transcript is no longer the one streaming
   const input = $("chat-input");

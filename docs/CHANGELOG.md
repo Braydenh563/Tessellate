@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat (the hub's 2026-11-22 check): a file staged on an unsent message is dropped when you start a new chat or open another one; it was carried to the next chat and imported as a document on its first send (1 chip after each, now 0, and 0 document writes).
 - Popup heads (the hub's 2026-11-22 brief): a lint keeps every popup title growing (`flex: 1 1 auto`) unless a head select takes the room, so Minimise and Close stay at the head's right edge; `scratchpad/ui-sweeps/allheads1122.js` opens every bare opener (about 40 heads: timeline add, new meeting, voice recorder, dictionary, settings, shortcuts, appearance, notifications and the rest) and measures 0px between the last control and the head's content edge at 390, 900 and 1440.
 - Chat: Ask can be chosen again in the Ask | Agent switch. Its click handler was bound at load, before the chat surface was built, so it bound nothing; the surface lint now checks top-level loops too (the owner, 2026-11-22).
 - Deep-audit skill: its steps brief from and write LEDGER rows, matching its checklist, not the retired ranked files (L-general-26).
