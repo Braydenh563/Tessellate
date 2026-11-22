@@ -586,11 +586,18 @@ def _reset_the_librarian():
     process), so a test that pressed Quit left them set for every test after
     it in the same process, in whatever order that run happened to have.
     Cleared on both sides, like `_forget_the_docker_probe` above. See
-    tests/test_autonomous_state_isolation.py."""
+    tests/test_autonomous_state_isolation.py.
+
+    Every test app starts the scheduler and `jobs.join_threads` skips it (it
+    names a stop), so it outlived its test: a pass it queued set `_working`,
+    and a later test's /tasks listed an "autonomous" row (CI leg 2, c3d48412).
+    Stopped and cleared here, as test_autonomous.py's own fixture does."""
     from tessellate.ai import autonomous
 
     autonomous.reset_state()
     yield
+    autonomous.stop()
+    autonomous._working.clear()
     autonomous.reset_state()
 
 
