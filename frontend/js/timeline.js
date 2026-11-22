@@ -844,7 +844,8 @@ function timelineRowEls() {
 //: A row by key, built if it was a shell (focus needs a row that is drawn).
 function timelineRowByKey(key) {
   if (!key) return null;
-  const row = $("timeline-scroll").querySelector(`:is(.timeline-row, .row-shell)[data-key="${CSS.escape(key)}"]`);
+  //: The window's own map first (`rowFor`, L-world-class-873), the same lookup Notes uses.
+  const row = timelineWindow.win?.rowFor(key) || $("timeline-scroll").querySelector(`:is(.timeline-row, .row-shell)[data-key="${CSS.escape(key)}"]`);
   return row && (timelineWindow.win?.fill(row) ?? row);
 }
 
@@ -1550,9 +1551,9 @@ function applyTimelineRowTabOrder() {
 //: the 62ms the feed took to build was this function's own time, nearly all
 //: of it in those calls. A formatter made with the same locale and options
 //: formats identically, so the text is unchanged.
-const TIMELINE_ROW_TIME = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+const TIMELINE_ROW_TIME = clockOptions.formatter({ hour: "numeric", minute: "2-digit" });
 const TIMELINE_ROW_DAY = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
-const TIMELINE_ROW_WRITTEN = new Intl.DateTimeFormat(undefined, {
+const TIMELINE_ROW_WRITTEN = clockOptions.formatter({
   year: "numeric", month: "numeric", day: "numeric",
   hour: "numeric", minute: "numeric", second: "numeric",
 });
@@ -1946,7 +1947,7 @@ const timelineSpans = {
     //: The rows are connections.js's (lazy, the Connections sheet's own bundle).
     const [body] = await Promise.all([
       apiJson(`/timeline/digest?start=${start}&end=${end}`).catch(() => null),
-      lazyScript("/js/connections.js"),
+      ensureModule("connections"),
     ]);
     if (!body) return;
     const day = (key) => new Date(`${key}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });

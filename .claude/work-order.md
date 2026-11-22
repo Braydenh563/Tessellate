@@ -1,11 +1,7 @@
 mode: continue
 status: done
 pr: 216
-max-continues: 60
-max-idle-minutes: 60
-finish-up: 70%
-started: 2026-11-07 14:40Z
-tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
+closed: 2026-11-14
 
 Closed 2026-11-14 (L-general-33): the 2026-11-12 open-work sweep carried every unticked line below into LEDGER or a plan, or found it built; LEDGER is where the open work lives now.
 

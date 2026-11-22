@@ -15,11 +15,11 @@ from fastapi.exceptions import RequestValidationError
 
 from tessellate.api import bounds, paging
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps
-from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
+from tessellate.core.database import Conversation, like_escape, utcnow
+from tessellate.repo import conversations as conversations_repo
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
 from tessellate.ai import consent_store
@@ -516,20 +516,8 @@ def list_conversations(
     # Archived chats are kept, but out of the way, same shape as an
     # archived note dropping out of the Notes tab. Reachable via the
     # Library's Shelved filter (routes_library._shelved), not this list.
-    live = Conversation.archived_at.is_(None)
-    order = (
-        Conversation.pinned.desc(),
-        Conversation.updated_at.desc(),
-        Conversation.id.desc(),
-    )
-
     if not term:
-        total = session.scalar(select(func.count(Conversation.id)).where(live)) or 0
-        rows = list(
-            session.scalars(
-                select(Conversation).where(live).order_by(*order).limit(limit).offset(offset)
-            )
-        )
+        total, rows = conversations_repo.live_page(session, limit, offset)
         response.headers["X-Total-Count"] = str(total)
         paging.finish(response, offset, limit, total)
         return [_summary(c) for c in rows]
@@ -539,16 +527,7 @@ def list_conversations(
     # taken *after* that check, never before: slicing first is what made the
     # old version answer "nothing found" for a chat it had simply not read.
     like = f"%{like_escape(term)}%"
-    candidates = session.scalars(
-        select(Conversation)
-        .where(
-            live,
-            Conversation.title.ilike(like, escape=LIKE_ESCAPE)
-            | Conversation.messages.ilike(like, escape=LIKE_ESCAPE),
-        )
-        .order_by(*order)
-        .limit(SEARCH_SCAN_CAP)
-    )
+    candidates = conversations_repo.search_candidates(session, like, SEARCH_SCAN_CAP)
     matched = [c for c in candidates if conversation_matches(c, term)]
     response.headers["X-Total-Count"] = str(len(matched))
     paging.finish(response, offset, limit, len(matched))
@@ -565,11 +544,7 @@ def pin_conversation(
     # chat as just-used, and unpinning would leave it at the top of the list
     # it was meant to drop back down. Passing the current value explicitly is
     # what suppresses the default: pinning is organising, not using.
-    session.execute(
-        update(Conversation)
-        .where(Conversation.id == conversation.id)
-        .values(pinned=body.pinned, updated_at=conversation.updated_at)
-    )
+    conversations_repo.set_quietly(session, conversation, pinned=body.pinned)
     session.commit()
     session.refresh(conversation)
     return _summary(conversation)
@@ -587,11 +562,7 @@ def archive_conversation(
     if not conversation.archived_at:
         # Same suppression as pinning above: archiving is organising, not
         # using, so `updated_at` must not jump to now.
-        session.execute(
-            update(Conversation)
-            .where(Conversation.id == conversation.id)
-            .values(archived_at=utcnow(), updated_at=conversation.updated_at)
-        )
+        conversations_repo.set_quietly(session, conversation, archived_at=utcnow())
         log_action(session, "archived", "conversation", conversation.id)
         session.commit()
         session.refresh(conversation)
@@ -604,11 +575,7 @@ def unarchive_conversation(
 ) -> dict:
     conversation = _existing(session, conversation_id)
     if conversation.archived_at:
-        session.execute(
-            update(Conversation)
-            .where(Conversation.id == conversation.id)
-            .values(archived_at=None, updated_at=conversation.updated_at)
-        )
+        conversations_repo.set_quietly(session, conversation, archived_at=None)
         log_action(session, "unarchived", "conversation", conversation.id)
         session.commit()
         session.refresh(conversation)
@@ -687,9 +654,7 @@ def _document_cards(session: Session, ids: set) -> dict:
 
 
 def _file_cards(session: Session, ids: set) -> dict:
-    from tessellate.core.database import Attachment
-
-    rows = session.query(Attachment).filter(Attachment.id.in_(ids)).all() if ids else []
+    rows = conversations_repo.attachments_by_ids(session, ids)
     return {a.id: {"id": a.id, "kind": "file", "name": a.filename} for a in rows}
 
 
@@ -703,14 +668,13 @@ def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict,
     deleted upload: the card disappears. Listing a private note's first line
     in a conversation would put it back on screen in the one place the
     private-notebook rule cannot reach. A map is held to the same."""
-    from tessellate.core.database import Entry
     from tessellate.entry import manager_text
     from tessellate.entry.properties import strip as strip_properties
 
     notes: dict = {}
     maps: dict = {}
     ids = note_ids | board_ids
-    for entry in session.query(Entry).filter(Entry.id.in_(ids)).all() if ids else []:
+    for entry in conversations_repo.entries_by_ids(session, ids):
         if entry.is_deleted or entry.is_private:
             continue
         if entry.id in note_ids:
@@ -1073,11 +1037,7 @@ def set_turn_followups(
     # not a change, so the column is left out of the SET clause and `onupdate`
     # fills it in: which is the behaviour being avoided. `values()` puts it in
     # the statement explicitly, and an explicit value beats `onupdate`.
-    session.execute(
-        update(Conversation)
-        .where(Conversation.id == conversation.id)
-        .values(messages=json.dumps(messages), updated_at=conversation.updated_at)
-    )
+    conversations_repo.set_quietly(session, conversation, messages=json.dumps(messages))
     session.commit()
     return {"saved": True, "followups": cleaned}
 
@@ -1145,9 +1105,7 @@ def set_turn_act_outcome(
         raise HTTPException(status_code=409, detail="That card was already answered.")
     _apply_outcome(card, body)
     card["outcome"] = body.outcome
-    session.execute(
-        update(Conversation).where(Conversation.id == conversation.id).values(messages=json.dumps(messages), updated_at=conversation.updated_at)
-    )
+    conversations_repo.set_quietly(session, conversation, messages=json.dumps(messages))
     session.commit()
     return {"saved": True, "state": body.outcome}
 
@@ -1282,8 +1240,7 @@ def restore_conversation(body: RestoreBody, session: Session = Depends(get_sessi
         raise HTTPException(status_code=422, detail="That chat's turns could not be read.") from error
     if not isinstance(messages, list):
         raise HTTPException(status_code=422, detail="That chat's turns could not be read.")
-    table = Conversation.__table__
-    if session.execute(select(table.c.id).where(table.c.id == body.id)).first():
+    if conversations_repo.exists(session, body.id):
         raise HTTPException(status_code=409, detail="That conversation is already here.")
     def plain(when: datetime | None) -> datetime | None:
         return when.replace(tzinfo=None) if when else None

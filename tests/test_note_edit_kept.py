@@ -58,7 +58,7 @@ const prefs = {
   remove: (k) => { delete store[k]; },
   json: (k, fallback) => { try { const v = JSON.parse(store[k]); return v && typeof v === "object" ? v : fallback; } catch { return fallback; } },
 };
-let editingId = null;
+let editingId = null; const appState = { get: () => editingId }; const setEditingNote = (id) => { editingId = id; };
 const toasts = [];
 function toastAction(message, label) { toasts.push([message, label]); }
 const keptEdit = { awaitsUnlock: false };

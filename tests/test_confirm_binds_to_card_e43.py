@@ -2,9 +2,10 @@
 
 `/chat/tools/execute` used to run whatever name and arguments the page sent
 and merely spent the id. A press now has to match the parked card; an Undo
-(no card id) is unchanged."""
+(no card id) runs only with the tag the server handed out (L-world-class-28)."""
 
 from tessellate.ai import consent_store
+from tests._tool_sig import call
 
 
 def _card(name, arguments):
@@ -41,6 +42,9 @@ def test_a_press_cannot_spend_a_card_on_another_action(client):
 def test_an_unknown_card_runs_nothing_and_no_card_still_undoes(client):
     unknown = client.post("/chat/tools/execute", json={"name": "create_note", "arguments": {"content": "Ghost"}, "consent_id": "nope"})
     assert unknown.status_code == 409
-    undo = client.post("/chat/tools/execute", json={"name": "create_note", "arguments": {"content": "Undo path"}})
+    #: Neither a card nor a tag: a call the page made up, refused (L-world-class-28).
+    unsigned = client.post("/chat/tools/execute", json={"name": "create_note", "arguments": {"content": "Made up"}})
+    assert unsigned.status_code == 400 and "not offered" in unsigned.json()["detail"]
+    undo = client.post("/chat/tools/execute", json=call("create_note", {"content": "Undo path"}))
     assert undo.status_code == 200
     assert _notes(client) == ["Undo path"]

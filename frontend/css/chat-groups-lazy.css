@@ -1,0 +1,21 @@
+/* The chat list's section headings (chat-groups.js, L-world-class-180): one
+   quiet line over each group, the same small muted label the sidebar's other
+   sections use. A heading is not a row: it takes no hover and no click. */
+#conversation-list .conv-group-head {
+  padding: var(--space-3) var(--space-3) var(--space-1);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: default;
+}
+#conversation-list .conv-group-head:hover,
+#conversation-list .conv-group-head:is(:focus-visible, :has(:focus-visible)) {
+  background: transparent;
+}
+#conversation-list .conv-group-head .conv-group-name {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}

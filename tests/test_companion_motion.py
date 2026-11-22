@@ -31,6 +31,7 @@ from pathlib import Path
 import pytest
 from tests._app_js import app_js_text, frontend_text, with_pieces
 from tests._js_scope import unwrapped
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
@@ -112,7 +113,7 @@ def test_it_can_always_be_called_back() -> None:
     assert "run: nameMarkBuddyCallBack" in _fn("nameMarkBuddyMenu")
     assert "act: () => nameMarkBuddyCallBack()" in APP
     assert 'id="avatar-buddy-recall"' in HTML
-    assert '$("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());' in SETTINGS
+    assert 'wire("avatar-buddy-recall").addEventListener("click", () => nameMarkBuddyCallBack());' in SETTINGS
 
 
 def test_its_menu_opens_at_it() -> None:
@@ -171,7 +172,7 @@ def test_a_panel_moved_by_a_transform_is_followed_every_frame() -> None:
     assert "companionscroll companionbeats" in gate
 
 
-CSS08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = css08_text()
 
 
 def test_the_companion_is_light_on_the_page() -> None:
@@ -1518,7 +1519,7 @@ def test_a_speech_line_is_as_wide_as_its_words_wherever_it_is_said() -> None:
     132px line; `scratchpad/ui-sweeps/companionsay.js` walks every case).
     The box takes its width from its text, and the figure's rule undoes
     the inset it does not use."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     base = _css_rule(css, ".nm-say")
     assert "width: max-content" in base
     assert "max-width:" in base and "100vw" in base
@@ -1540,7 +1541,7 @@ def test_atlas_pupils_stay_inside_its_eyes():
     aim = _fn("nameMarkBuddyAim")
     assert "const len = Math.hypot(lx, ly);" in aim and "lx /= len;" in aim and "ly /= len;" in aim
     assert "Math.max(-1, Math.min(1, (dx / reach)" not in aim
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert "#nm-buddy .nm-atlas .nm-eyes { translate: none !important; }" in css
     assert "#nm-buddy:is(.nmb-attend, .nmb-watch) .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 0px; --atl-lean-dir: 0; }" in css
     iris = re.search(r"#nm-buddy:is\(\.nmb-attend, \.nmb-watch\) \.nm-atlas \.atl-iris \{ translate: calc\(var\(--nmb-ex\) \* ([0-9.]+)px\) calc\(var\(--nmb-ey\) \* ([0-9.]+)px\)", css)
@@ -1578,7 +1579,7 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     assert "joined ? () => (leave(), into()) : into" in act_fn and "nameMarkBuddyBlend(buddy, leave)" in act_fn
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert "transition: transform calc(var(--motion-slow) * 3) var(--ease-in-out);" in css
 
 
@@ -1690,7 +1691,7 @@ def test_inbox_669_arm_gestures_start_and_end_at_the_arms_rest() -> None:
     # A gesture's keyframes began and ended at rotate(0deg), the rest only
     # of a calm standing arm: floating (-28deg) or her held-out arm (-50deg)
     # swung to 0 first and swung past rest at the end (20 degrees a frame).
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     for name in ["nmb-wave", "nmb-wave-l", "nmb-scratch", "nmb-hide-l", "nmb-hide-r", "atl-wave", "atl-buddy-wave", "atl-buddy-wave-f", "atl-buddy-scratch"]:
         body = re.search(r"@keyframes " + re.escape(name) + r" \{(.*?)\n\}", css, re.S).group(1)
         assert not re.search(r"(^|\s)(0%|100%|from|to)[ ,{]", body), name
@@ -1882,7 +1883,7 @@ def test_a_flight_frame_never_restyles_the_whole_figure():
     inherited, so a frame restyles only them."""
     avatars = frontend_text("avatars.js")
     assert 'setProperty("--nmb-sway"' not in avatars
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert "var(--nmb-sway)" not in css
     sway = _fn("nameMarkBuddySway", avatars)
     assert "style.rotate" in sway and "querySelectorAll" in sway
@@ -1905,15 +1906,17 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
 
 def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     # L-world-class-126 moved the class from <html> to each figure (a whole-page restyle at
-    # rest); the intent, the same loops held after the same 20 s, is unchanged.
-    rule = css[css.index(".atl-figure-box.is-calm") :]
-    rule = rule[: rule.index("{")]
-    assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
-    assert "animation-play-state: paused" in css[css.index(".atl-figure-box.is-calm") :]
+    # rest), and L-world-class-390 from the figure to each loop, a quarter a task (one frame
+    # repainted all 95); the intent, the same loops held after the same 20 s, is unchanged.
+    css = css + (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
+    assert "animation-play-state: paused" in css[css.index(".atl-figure-box .atl-calm") :].split("}")[0]
+    loops = AV[AV.index("const NMB_CALM_LOOPS") :].split("\n")[0]
+    assert ".atl-orbits *" in loops and ".atl-lw-tail" in loops and ".atl-layer-neb" in loops
     assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV
-    assert 'querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on)' in AV
+    assert 'loop.classList.toggle("atl-calm", on)' in AV and "loops.length / 4" in AV
+    assert "requestAnimationFrame" not in AV[AV.index("const nmbCalmLoops") : AV.index("nmbClock.setCalm = ")]
     assert 'document.documentElement.classList.toggle("is-calm"' not in AV
     assert '"pointermove"' in AV
 
@@ -1945,7 +1948,7 @@ def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> No
     assert "atlasMotionOK(box)" in cast and "finished.then(" in cast and ".remove()" in cast
     # The look of one: a white four-point glint that is invisible until it plays, so a cast that
     # never started (or ended) leaves nothing on the figure; none under reduced motion.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     rule = re.search(r"\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
     assert rule and "opacity: 0" in rule.group(1) and "transform-box: fill-box" in rule.group(1) and "fill: white" in rule.group(1)
     assert re.search(r'html\[data-motion="reduced"\][^{]*\.atl-cast-star[^{]*\{ display: none', css)

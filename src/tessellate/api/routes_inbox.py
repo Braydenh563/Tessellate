@@ -14,14 +14,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import bindparam, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import inbox, learning
 from tessellate.ai.entities import merge_with_undo
 from tessellate.api.routes_mentions import note_names
-from tessellate.core.database import LINK_TYPES, Entity, EntityMention, Entry
+from tessellate.core.database import LINK_TYPES, Entity, Entry
 from tessellate.core.deps import get_session
+from tessellate.repo import entities as entities_repo
+from tessellate.repo import inbox as inbox_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import tags as tag_repo
 from tessellate.entry import manager_links
@@ -43,19 +44,17 @@ def _visible(session: Session) -> set[int]:
     1.2 s `/suggestions` at 5,000 notes that returned an empty list (audit
     2026-10-05, ARCH-11). The few notes a link-type row shows are read by id
     in `_types`."""
-    return set(
-        session.scalars(select(Entry.id).where(Entry.is_deleted.is_(False), Entry.is_private.is_(False)))
-    )
+    return entities_repo.visible_note_ids(session)
 
 
 def _merges(session: Session, visible: set[int]) -> list[dict]:
     notes: dict[int, set[int]] = {}
-    for entity_id, entry_id in session.execute(select(EntityMention.entity_id, EntityMention.entry_id)):
+    for entity_id, entry_id in entities_repo.all_mentions(session):
         if entry_id in visible:
             notes.setdefault(entity_id, set()).add(entry_id)
     facts = [
         inbox.EntityFacts(id=e.id, name=e.name, notes=frozenset(notes[e.id]))
-        for e in session.scalars(select(Entity).where(Entity.merged_into.is_(None)))
+        for e in entities_repo.unmerged(session)
         if e.id in notes
     ]
     exclude = {
@@ -90,9 +89,7 @@ def _types(session: Session, visible_ids: set[int]) -> list[dict]:
     )
     visible: dict[int, Entry] = {}
     for start in range(0, len(wanted), 500):
-        visible.update(
-            (e.id, e) for e in session.scalars(select(Entry).where(Entry.id.in_(wanted[start : start + 500])))
-        )
+        visible.update(entities_repo.notes_by_ids(session, wanted[start : start + 500]))
     for link in links:
         source, target = visible.get(link.source_entry_id), visible.get(link.target_entry_id)
         if source is None or target is None:
@@ -211,13 +208,8 @@ def _turned_down_on_notes(session: Session) -> dict[int, list[str]]:
     """The tags turned down on notes (the edit form's "Not suggested" line)."""
     import json
 
-    from sqlalchemy import text
-
     found: dict[int, list[str]] = {}
-    rows = session.execute(
-        text("SELECT id, discarded_tags FROM entries WHERE is_deleted = 0 AND discarded_tags NOT IN ('', '[]')")
-    ).all()
-    for entry_id, raw in rows:
+    for entry_id, raw in inbox_repo.turned_down_tag_rows(session):
         try:
             tags = json.loads(raw or "[]")
         except (TypeError, ValueError):
@@ -255,15 +247,11 @@ def clear_dismissed_suggestions(session: Session = Depends(get_session)) -> dict
     from tessellate.api.routes_entries_relations import TENSION_DISMISSED_KEY
     from tessellate.core import deps
 
-    from sqlalchemy import text
-
     tensions = _tension_keys()
     ids = learning.revive_dismissals(session)
     on_notes = _turned_down_on_notes(session)
     if on_notes:
-        # Raw SQL: forgetting a verdict is not an edit, so no note's updated_at moves.
-        clear = text("UPDATE entries SET discarded_tags = '[]' WHERE id IN :ids").bindparams(bindparam("ids", expanding=True))
-        session.execute(clear, {"ids": list(on_notes)})
+        inbox_repo.forget_turned_down_tags(session, list(on_notes))
     session.commit()
     if tensions:
         deps.get_config().set_preference(TENSION_DISMISSED_KEY, [])
@@ -329,7 +317,7 @@ class DismissedItem(BaseModel):
 
 def _note_name(session: Session, entry_id: object) -> str:
     try:
-        content = session.scalar(select(Entry.content).where(Entry.id == int(entry_id)))  # type: ignore[call-overload]
+        content = inbox_repo.content_of(session, int(entry_id))  # type: ignore[call-overload]
     except (TypeError, ValueError):
         return ""
     if not content:
@@ -340,7 +328,7 @@ def _note_name(session: Session, entry_id: object) -> str:
 
 def _entity_name(session: Session, entity_id: object) -> str:
     try:
-        return session.scalar(select(Entity.name).where(Entity.id == int(entity_id))) or ""  # type: ignore[call-overload]
+        return entities_repo.name_of(session, int(entity_id))  # type: ignore[call-overload]
     except (TypeError, ValueError):
         return ""
 

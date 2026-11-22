@@ -10,7 +10,8 @@
 
 (() => {
   const ENTITY_KIND_WORDS = { person: "Person", place: "Place", project: "Project", organisation: "Organisation", thing: "Thing" };
-  const ENTITY_KIND_ICONS = { person: "ph-user", place: "ph-map-pin", project: "ph-kanban", organisation: "ph-buildings", thing: "ph-cube" };
+  const ENTITY_KIND_ICONS = { person: "ph-user", place: "ph-map-pin", project: "ph-kanban", organisation: "ph-buildings", thing: "ph-cube", task: "ph-square", reminder: "ph-bell", revised: "ph-pencil-simple", new: "ph-plus", dropped: "ph-minus" };
+  const ENTITY_CHANGE_WORDS = { revised: "Changed", new: "Added", dropped: "Dropped" };
 
   function entityIcon(kind) {
     const icon = document.createElement("i");
@@ -21,6 +22,15 @@
 
   function entityWhen(iso) {
     return iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+  }
+
+  //: B4's stamp, in the night shift's words (dash-night.js, the Tensions
+  //: card): which model worked it out, or that none was needed, and when.
+  //: A name found before models were kept says only when.
+  function entityFoundBy(model, at) {
+    const who = model === "local" ? "Found without a model" : model ? `Found by ${model}` : "Found";
+    const when = entityWhen(at);
+    return when ? `${who} on ${when}` : who;
   }
 
   let entityPageClose = null;
@@ -70,6 +80,7 @@
     const [first, last] = [entityWhen(page.first_seen), entityWhen(page.last_seen)];
     if (first) facts.push(first === last ? first : `${first} to ${last}`);
     if (page.aliases.length) facts.push(`also ${page.aliases.join(", ")}`);
+    if (page.found_by) facts.push(entityFoundBy(page.found_by.model, page.found_by.at));
     entityPageClose = openSheet({
       label: page.name,
       sub: facts.join(" · "),
@@ -89,7 +100,18 @@
         head.appendChild(actions);
         const body = document.createElement("div");
         body.className = "inbox-body";
+        //: B4: what makes it a person's or a project's page: what is still
+        //: open, when it came up, and the notes joined to its notes.
+        const open = page.open_items || [];
+        body.append(entitySection("Open items", open.map(entityOpenRow), page.kind === "person" ? "No open task names them." : "Its notes hold no open tasks or reminders."));
+        //: B4: what its notes say about it, each claim cited to its note, and
+        //: what those claims were before an edit changed them.
+        body.append(entitySection("Claims", (page.claims || []).map(entityClaimRow), "No sentence in its notes names it."));
+        body.append(entitySection("What changed", (page.changes || []).map(entityChangeRow), "No edit has changed what its notes say about it."));
+        body.append(entitySection("Timeline",(page.timeline || []).map(entityMonthRow), "Its notes have no dates."));
         body.append(entitySection("Mentioned in", page.mentions.map(entityMentionRow), "No visible note names it."));
+        const linked = (page.links || []).map((n) => entityNoteButton(n.id, n.title, n.links > 1 ? `Linked to ${n.links} of its notes` : "Linked to one of its notes"));
+        body.append(entitySection("Linked notes", linked, "No other note is linked to its notes."));
         const related = document.createElement("div");
         related.className = "row entity-related";
         for (const other of page.related) {
@@ -134,6 +156,71 @@
       flashEntry(m.id);
     });
     row.append(open, docBacklinkContext(m));
+    return row;
+  }
+
+  function entityNoteButton(id, title, sub = "", passage = "") {
+    const row = document.createElement("div");
+    row.className = "inbox-row";
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "linklike inbox-row-title";
+    open.textContent = noteNamePlain(title) || "Untitled note";
+    open.title = passage ? "Open its note at this sentence" : "Open this note";
+    open.addEventListener("click", () => {
+      entityPageClose?.();
+      if (passage) openNoteAtPassage(id, passage);
+      else flashEntry(id);
+    });
+    row.append(open);
+    if (sub) {
+      const meta = document.createElement("span");
+      meta.className = "muted entity-row-sub";
+      meta.textContent = sub;
+      row.append(meta);
+    }
+    return row;
+  }
+
+  //: An open task says its words and the note it is in; a reminder its day.
+  function entityOpenRow(item) {
+    const due = item.kind === "reminder" ? `Reminder, ${entityWhen(item.due_at)}` : `To do, in ${noteNamePlain(item.title) || "Untitled note"}`;
+    const row = entityNoteButton(item.entry_id, item.text, due);
+    row.querySelector("button").prepend(entityIcon(item.kind === "reminder" ? "reminder" : "task"));
+    return row;
+  }
+
+  //: A claim opens its note with the sentence marked; its line says the note
+  //: and who found it (the night shift's model, or none).
+  function entityClaimRow(claim) {
+    const sub = `In ${noteNamePlain(claim.title) || "Untitled note"} · ${entityFoundBy(claim.model, claim.computed_at)}`;
+    return entityNoteButton(claim.entry_id, claim.text, sub, claim.text);
+  }
+
+  //: A change says what it is now (or was, when dropped), the edit's day, and
+  //: what a changed claim said before. A dropped sentence is not in the note
+  //: any more, so it opens the note with nothing marked.
+  function entityChangeRow(change) {
+    const was = change.kind === "revised" ? `, was “${change.then}”` : "";
+    const sub = `${ENTITY_CHANGE_WORDS[change.kind]} ${entityWhen(change.at)} in ${noteNamePlain(change.title) || "Untitled note"}${was}`;
+    const row = entityNoteButton(change.entry_id, change.now || change.then, sub, change.now || "");
+    row.querySelector("button").prepend(entityIcon(change.kind));
+    return row;
+  }
+
+  function entityMonthRow(month) {
+    const [year, m] = month.month.split("-").map(Number);
+    const row = document.createElement("div");
+    row.className = "entity-month";
+    const head = document.createElement("p");
+    head.className = "entity-date";
+    const when = document.createElement("strong");
+    when.textContent = new Date(year, m - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const count = document.createElement("span");
+    count.className = "muted";
+    count.textContent = ` ${nounCount(month.count, "note")}`;
+    head.append(when, count);
+    row.append(head, ...month.notes.map((n) => entityNoteButton(n.id, n.title)));
     return row;
   }
 
@@ -201,7 +288,7 @@
    *  list of where it can go. */
   async function openEntitiesSheet({ mergeFrom = null } = {}) {
     const rows = await apiJson("/entities").catch(() => null);
-    if (!rows) return toast("Couldn't load the people and things in your notes. Try again.", true, { action: ["Try again", () => openEntitiesSheet({ mergeFrom })] });
+    if (!rows) return toast(voiceLine("failed", { what: "load the people and things in your notes" }), true, { action: ["Try again", () => openEntitiesSheet({ mergeFrom })] });
     openSheet({
       label: mergeFrom ? `Merge “${mergeFrom.name}” into` : "People and things",
       sub: mergeFrom ? "Every mention moves; its names are kept as other names." : "Named in your notes, most named first.",

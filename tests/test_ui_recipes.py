@@ -280,6 +280,12 @@ SHEET_RECIPE = {
     # The way out: `openSheet`'s close adds it for --motion-fast, then removes
     # the overlay (no exit under reduced motion).
     "sheet-leaving",
+    # A `<sheet-host>` lifted in by `showModal()` (LEDGER L-world-class-131): the variants
+    # `openSheet` stamps for a form, picker or setting ("hosted") and a history ("panel").
+    "sheet-hosted",
+    "sheet-panel",
+    "sheet-card-hosted",
+    "sheet-card-panel",
 }
 
 
@@ -655,7 +661,7 @@ def test_no_dialog_is_a_direct_child_of_a_page() -> None:
     )
     assert pages, "no .tab-page elements found; this lint has lost its subject"
     offenders = []
-    for match in re.finditer(r"<dialog[^>]*id=\"([^\"]+)\"", html):
+    for match in re.finditer(r"<(?:dialog|sheet-host)[^>]*id=\"([^\"]+)\"", html):
         before = html[: match.start()]
         # The nearest unclosed `.tab-page` opener, if any, is this dialog's page.
         opens = len(re.findall(r'class="[^"]*\btab-page\b', before))
@@ -2367,7 +2373,7 @@ def test_a_selection_bubble_returns_on_one_right_click_helper():
 # summary from their own surroundings. Frozen, like the hand-built menus
 # above: a folded group of settings is `details.settings-fold`, and a new
 # unnamed one is a second disclosure shape nobody styled.
-BARE_DISCLOSURES = 14
+BARE_DISCLOSURES = 0
 
 # The families 08-consistency.css dresses as "a heading with a chevron" rather
 # than as a control in a row. Every one of its four disclosure rules has to
@@ -3049,8 +3055,8 @@ def test_font_and_density_are_lists_that_keep_their_handlers() -> None:
     density = density[: density.index("</select>")]
     assert re.findall(r'value="(\w+)"', density) == ["auto", "comfortable", "compact", "spacious"]
     js = with_pieces("settings.js")
-    assert '$("font-seg").addEventListener("change"' in js and 'prefs.set("font", e.target.value)' in js
-    assert '$("density-seg").addEventListener("change"' in js
+    assert 'wire("font-seg").addEventListener("change"' in js and 'prefs.set("font", e.target.value)' in js
+    assert 'wire("density-seg").addEventListener("change"' in js
     assert '$("font-seg").value = appearancePref("font")' in js
     assert '$("density-seg").value = prefs.get("density", null) || "auto"' in js
     assert "#font-seg button" not in js and "#density-seg button" not in js
@@ -3142,6 +3148,7 @@ PILL_CONTROLS = {
     ".chat-dock-controls .chat-dock-more>button": "the chat composer's row is pills",
     ".chat-dock-controls .seg": "the chat composer's row is pills",
     ".chat-dock-controls .seg button": "the chat composer's row is pills",
+    ".chat-dock-controls .seg>button": "the same segments in the strip's family rule (L-world-class-250)",
     ".chat-context-pill": "the context meter in the chat composer's row",
     ".minimised-pill": "a minimised panel's pill (INBOX 1475, the owner's reference: a rounded pill with the glyph, the name and an x)",
     ".minimised-pill-x": "the round x inside that pill",
@@ -3679,7 +3686,9 @@ def test_every_small_dialog_opens_with_the_dialog_head() -> None:
     eyebrow rule drew at 12px uppercase beside the 16px head of every other
     dialog."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    dialogs = re.findall(r"<dialog\b[^>]*space-dialog[^>]*>(.*?)</dialog>", html, re.S)
+    #: A popup that is a form or a picker is a `<sheet-host>` now (131), with the same head.
+    dialogs = re.findall(r"<(dialog|sheet-host)\b[^>]*space-dialog[^>]*>(.*?)</\1>", html, re.S)
+    dialogs = [body for _tag, body in dialogs]
     #: 12 since the Tensions dialog became the suggestions sheet (KG9).
     assert len(dialogs) >= 12, "the small dialogs moved: this lint is looking at the wrong markup"
     for body in dialogs:
@@ -3964,7 +3973,7 @@ def test_a_settings_pane_lists_its_groups_in_the_sidebar() -> None:
     link = _css_block("#settings-nav .settings-nav-group")
     assert "background: transparent" in link and "box-shadow: none" in link
     current = _css_block('#settings-nav .settings-nav-group[aria-current="location"]')
-    assert "var(--accent)" in current and "font-weight: 650" in current
+    assert "var(--accent)" in current and "font-weight: 600" in current
     assert "--accent-surface" not in current and "background" not in current
     code = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert "scrollIntoView" not in re.sub(r"//.*", "", code), "scroll the pane's own scrollTop"
@@ -4138,9 +4147,9 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     that ignores it."""
     js = {path.name: path.read_text(encoding="utf-8") for path in JS}
     #: Atlas's drawing calls belong to the decider, atlas.js and avatars.js
-    #: (their own files), the welcome card's large greeting and Settings' find
-    #: row (a result's icon, not a reply head).
-    allowed = {"atlas.js", "avatars.js", "chat-agent.js", "settings-wiring.js", "onboarding.js", "settings-panes.js"}
+    #: (their own files), the welcome card's large greeting, Settings' find
+    #: row (a result's icon, not a reply head) and the palette row's face (`paletteRowParts`, app-features.js).
+    allowed = {"atlas.js", "avatars.js", "chat-agent.js", "settings-wiring.js", "onboarding.js", "settings-panes.js", "app-features.js"}
     strays = [
         name
         for name, text in js.items()
@@ -4174,7 +4183,7 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     #: The setting: a default, a control, a live repaint and a reset.
     settings = with_pieces("settings.js")  # the listener moved to settings-controls.js with the lazy body (INBOX 1501)
     assert '"assistant-avatar": "atlas"' in settings
-    assert "repaintAssistantAvatars()" in settings[settings.index('$("assistant-avatar").addEventListener') :][:300]
+    assert "repaintAssistantAvatars()" in settings[settings.index('wire("assistant-avatar").addEventListener') :][:300]
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="assistant-avatar"' in index and '<option value="emblem">App emblem</option>' in index
     #: The emblem is the logo's own builder (`emblemArt`), never a second
@@ -5724,7 +5733,7 @@ def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in frontend_text(p.name)}
-    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js", "note-cards.js"):
+    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js"):  # note-cards.js name site moved to entry-menu.js (L611)
         assert name in used, name
 
 
@@ -5837,6 +5846,35 @@ def test_a_bar_has_one_select_one_filter_trigger_and_one_view_order() -> None:
     for seg in re.findall(r'<div class="seg[^"]*"[^>]*>(.*?)</div>', html, re.S):
         if "ph-rows" in seg and "ph-squares-four" in seg:
             assert seg.index("ph-rows") < seg.index("ph-squares-four"), "a view switch is list, then grid"
+
+
+def test_the_chat_strip_is_one_pill_family() -> None:
+    """DESIGN.md, Bar controls (L-world-class-250): Chat, the busiest screen,
+    counted 12 control recipes, three of them pills in one row (the chips,
+    the chosen Ask | Agent segment on a fill with no edge, the other on
+    none) and the Ask Atlas offer on a hairline with no ground. Each segment
+    is a chip now, the well behind them stepped back, and the offer rests on
+    the chip's ground and lifts to the chip's accent."""
+    rules: dict[str, str] = {}
+    for sel, body in _rules(_css_all()):
+        key = " ".join(sel.split())
+        rules[key] = rules.get(key, "") + body
+    family = next(
+        (body for sel, body in rules.items()
+         if ".chat-dock-controls>.chat-tool-group>button" in sel and ".chat-dock-controls .seg>button" in sel
+         and "border-radius" in body),
+        None,
+    )
+    assert family, "the strip's family rule must name the mode segments beside the chips"
+    for decl in ("border-radius: var(--radius-pill)", "border: 1px solid transparent", "background: var(--chip-bg)"):
+        assert decl in family, decl
+    assert "background: none" in rules.get(".chat-dock-controls .seg", ""), "the well behind the segments draws no second ground"
+    unchosen = rules.get('.chat-dock-controls .seg>button:not(.active, [aria-pressed="true"])', "")
+    assert "background: var(--chip-bg)" in unchosen, "an unchosen segment rests on the chip ground"
+    offer = rules.get(".help-atlas > .atlas-suggest", "")
+    assert "background: var(--chip-bg)" in offer and "border: 1px solid transparent" in offer
+    lift = rules.get(".help-atlas > .atlas-suggest:hover, .help-atlas > .atlas-suggest:focus-visible", "")
+    assert "border-color: var(--accent)" in lift and "background: var(--accent-soft)" in lift
 
 
 def test_the_documents_assistant_is_one_composer_at_one_height() -> None:
@@ -6401,7 +6439,8 @@ def test_the_present_bar_caption_is_a_page_picker():
     rows are every step, the current one aria-current; the presentation's keys wait while
     it is open and Esc closes it first. The history bar keeps its plain text cell."""
     wb = frontend_text("whiteboard.js")
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    #: The present bar blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
     assert 'kebabMenu(items, "Go to a page")' in body and "run: () => wbPresentShow(i)" in body
@@ -6445,6 +6484,7 @@ PANEL_FIXED_JS = {
     "lightbox-view.js": "the image viewer",
     "settings-controls.js": "an anchored control overlay",
     "whiteboard-map-more.js": "a topic's audio player, an anchored popover",
+    "whiteboard-map-stamps.js": "the affinity sort's confirm card (head from `dialogHead`), fixed like every confirm",
     "companion-settings.js": "a help body (the habits row's popover)",
     "settings-health.js": "a help body (the data folder check's popover)",
     "hello-unlock.js": "a help body (Unlock with Windows Hello's popover in Settings)",
@@ -6698,7 +6738,7 @@ def test_a_pane_tab_row_names_sections_that_exist() -> None:
     controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert "function ensurePaneTabs(box)" in controls and "  ensurePaneTabs(box);" in controls
     activity = html[html.index('id="activity-tabs"') : html.index('id="activity-running"')]
-    assert activity.count("pop-tab-glyph") == 2 and activity.count("pop-count") == 2
+    assert activity.count("pop-tab-glyph") == 3 and activity.count("pop-count") == 3
 
 
 def test_the_theme_tile_is_four_overlapping_dots_over_the_name() -> None:
@@ -7929,6 +7969,223 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
 
 
+def test_a_confirmations_decline_is_the_quiet_text_action_not_a_bordered_ghost() -> None:
+    """L527: Cancel beside a tool-confirm's filled Confirm was a second bordered box."""
+    css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    m = re.search(r"\.tool-confirm \.row > button\.ghost \{([^}]*)\}", css)
+    assert m, "the confirmation's decline recipe is gone"
+    body = m.group(1)
+    assert re.search(r"border:\s*0", body) and "background: transparent" in body and "color: var(--accent-text)" in body
+    assert re.search(r"\.tool-confirm \.row > button\.ghost:is\(:hover, :focus-visible\):not\(:disabled\) \{\s*background: var\(--hover-veil\)", css)
+
+
+def test_a_scroll_rows_arrows_are_for_a_pointer_not_touch() -> None:
+    """On touch the swipe is the control: an arrow sat over the last chip that shows and covered
+    its middle at 390 (L-world-class-35, touch.js), so `hover: none` hides the arrows."""
+    shell = (ROOT / "frontend/css/00-tokens-shell.css").read_text(encoding="utf-8")
+    assert re.search(r"@media \(hover: none\) \{\s*button\.scroll-row-arrow\.icon-only \{\s*display: none;", shell)
+
+
+def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
+    """L-world-class-36: #doc-statusbar was 80px over at 320 to 820 (overlap.js)."""
+    #: The status bar's rules sit in the lazy Library sheet with the rest of the editor's (L-documents-1).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    m = re.search(r"\.doc-statusbar > #doc-caret,\s*\.doc-statusbar > \.doc-statusbar-button \{([^}]*)\}", css)
+    assert m and "min-width: 0" in m.group(1) and "overflow: hidden" in m.group(1)
+    assert re.search(r"\.doc-statusbar > #doc-caret \{\s*flex-shrink: 8;\s*text-overflow: ellipsis;", css)
+    assert re.search(r"\.doc-statusbar-button > span \{[^}]*text-overflow: ellipsis", css)
+    assert re.search(r"@media \(max-width: 599\.98px\) \{\s*\.doc-statusbar > \.doc-statusbar-button \{\s*flex-shrink: 1;", css)
+
+
+def test_the_optional_package_notice_keeps_its_action_whole() -> None:
+    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings)."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
+    assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
+
+
+def test_the_more_tags_chip_keeps_its_finger_target_inside_its_box() -> None:
+    """L-world-class-36: the 24px "+N" chip's overhang ran 10px past its box at 390."""
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    assert re.search(r"\.entry-meta\.note-meta > \.note-meta-more \{\s*min-width: var\(--target-min\);", css)
+
+
+def test_a_reminders_phone_time_may_wrap_instead_of_overflowing() -> None:
+    """L-world-class-36: the nowrap time ran 6px past its column at 320."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"#reminder-groups \.entry-meta > \.entry-date \{\s*grid-area: when;\s*white-space: normal;", css)
+
+
+def test_ask_as_of_slider_is_one_value_with_the_day():
+    """H8, L-world-class-91: Ask's time travel has a slider beside the day picker, the recipe "A day picked on a
+    slider": days back from today, drawn right to left, typeable (`data-unit`), and kept in step with the day input."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.search(r'<input type="range" id="ask-as-of-slider"[^>]*data-unit=" days back"', html)
+    assert html.index('id="ask-as-of"') < html.index('id="ask-as-of-slider"') < html.index('id="ask-as-of-clear"')
+    css = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "css").glob("*.css"))
+    assert re.search(r"\.ask-as-of-slider \{[^}]*direction: rtl", css)
+    wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    assert '$("ask-as-of-slider").addEventListener("input"' in wiring
+    #: L-world-class-352: the span runs from the oldest note (no fixed 365) and a typed day moves the slider. `showAskAsOf` moved to the lazy gesture-kit.js for the gzip cap.
+    assert not re.search(r'id="ask-as-of-slider"[^>]*max="365"', html)
+    assert "oldest_day" in (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
+    assert "box.oninput" in (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "| A day picked on a slider" in design
+
+
+def test_every_canvas_has_one_zoom_order():
+    """L-world-class-351: the graph stacked In, Out, Fit, Full screen in a
+    column with Fit drawn as arrows-out and Full screen as frame-corners, while
+    the board's pill read Out, level, In, Fit with the same two glyphs swapped
+    and Full screen up in the top bar. One order, one shape, one set of keys."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    graph = html.split('id="graph-zoom"', 1)[1].split("</div>", 1)[0]
+    ids = re.findall(r'<button id="([\w-]+)"', graph)
+    assert ids == ["graph-zoom-out", "graph-zoom-in", "graph-zoom-fit", "graph-fullscreen"], ids
+    board = html.split('data-panel-id="zoom"', 1)[1].split("</div>", 1)[0]
+    ids = re.findall(r'<button id="([\w-]+)"', board)
+    assert ids[-2:] == ["wb-zoom-fit", "wb-fullscreen"], ids
+    assert ids.index("wb-zoom-out") < ids.index("wb-zoom-in") < ids.index("wb-zoom-fit"), ids
+    for strip in (graph, board):
+        assert re.search(r'zoom-fit"[^>]*>\s*<i class="ph ph-frame-corners"', strip)
+        assert re.search(r'fullscreen"[^>]*>\s*<i class="ph ph-arrows-out"', strip)
+        assert "(Ctrl+-)" in strip and "Ctrl+=" in strip and "(Ctrl+0)" in strip
+    widgets = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    assert re.search(r"\.graph-zoom \{[^}]*flex-direction: row", widgets)
+    graph_js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    keys = graph_js.split('graphZoomRoving($("graph-zoom"));', 1)[1][:1200]
+    assert "event.ctrlKey || event.metaKey" in keys
+    assert all(code in keys for code in ("Equal:", "Minus:", "Digit0:"))
+    assert 'strip.setAttribute("aria-orientation", "horizontal")' in graph_js
+
+
+# --- the Help accordion is one named family (LEDGER L-world-class-114) ---------------
+
+#: The thirteen groups of Settings, Help, in order. Each is one `h3` and one
+#: `.help-accordion` that `renderHelpTopics` draws from `GET /help/topics`; a
+#: topic is a `details[data-topic]` in it. A fourteenth group, or a rename, is
+#: a decision for the Guide's table (`HELP_GROUPS`) and this list together.
+HELP_ACCORDIONS = (
+    "Getting started",
+    "Writing notes",
+    "Filing, tags and categories",
+    "Asking Atlas",
+    "Documents and code",
+    "Boards and maps",
+    "Library and files",
+    "Graph, Timeline, Reminders and Dashboard",
+    "Small tools",
+    "Look and feel",
+    "Models and the AI",
+    "Privacy and your data",
+    "Settings and support",
+)
+
+#: Topics whose own title does not bring the Guide's chat to them (the Guide ranks by
+#: keywords, and these titles are phrased for a reader of the list, not an asker).
+#: May only fall: LEDGER L-world-class-420 gives each its keywords.
+GUIDE_MISSES_BY_TITLE = 0
+
+
+def test_the_help_accordion_is_thirteen_named_groups_drawn_by_one_builder() -> None:
+    from tessellate.ai.help_topics_more import HELP_GROUPS
+
+    assert tuple(title for title, _ in HELP_GROUPS) == HELP_ACCORDIONS
+    js = frontend_text("settings-find.js")
+    draw = js[js.index("function renderHelpTopics()") :][:1800]
+    assert 'list.className = "help-accordion"' in draw and "list.dataset.helpGroup = group.title" in draw
+    assert 'document.createElement("h3")' in draw, "a group head is an h3 above its accordion"
+    row = js[js.index("function helpTopicRow(") :][:600]
+    assert "details.dataset.topic = topic.id" in row
+    raw = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    markup = re.sub(r"<!--.*?-->", "", raw, flags=re.S)
+    assert 'id="help-topics"' in markup
+    pane = markup[markup.index('id="help-topics"') : markup.index('id="help-empty"')]
+    assert "<details" not in pane, "a help topic is drawn from the table, never written into index.html"
+
+
+def test_every_accordion_id_is_a_guide_topic_and_the_guide_finds_most_by_title() -> None:
+    from tessellate.ai import help_chat
+    from tessellate.ai.help_topics_more import HELP_GROUPS
+
+    guide = {topic["id"] for topic in help_chat.HELP_TOPICS}
+    listed = [topic_id for _, ids in HELP_GROUPS for topic_id in ids]
+    assert sorted(listed) == sorted(guide), "an accordion row with no Guide topic, or a topic with no row"
+    served = [t["id"] for g in help_chat.help_listing()["groups"] for t in g["topics"]]
+    assert sorted(served) == sorted(guide), "help_listing dropped a topic the Guide has"
+    misses = [
+        topic["id"]
+        for topic in help_chat.HELP_TOPICS
+        if topic["id"] not in [t["id"] for t in help_chat.topics_for(help_chat.topic_title(topic))][: help_chat.MAX_TOPICS]
+    ]
+    assert len(misses) <= GUIDE_MISSES_BY_TITLE, f"{len(misses)} topics the Guide cannot find by their own title: {misses[:12]}"
+
+
+# --- a popup is the kind 27.2's table rules (LEDGER L-world-class-131, decision 63) ----
+
+#: WORLD_CLASS_PLAN 27.2, the fifteen popups the table rules. A dialog only when it must
+#: interrupt (a key, an irreversible step); a form, a picker or a setting is a sheet; a history
+#: is a panel read beside the page. A sheet or a panel is a `<sheet-host>` in the markup, which
+#: `showModal()` lifts into `openSheet` (phone-shell.js), so the scrim, the tier, Escape, the
+#: backdrop press and the leaving fade are the recipe's and every caller keeps the dialog API.
+POPUP_KINDS = {
+    "recovery-key-dialog": "dialog",
+    "space-delete-dialog": "dialog",
+    "space-create-dialog": "sheet",
+    "space-edit-dialog": "sheet",
+    "doc-storage-dialog": "sheet",
+    "doc-template-dialog": "sheet",
+    "note-template-dialog": "sheet",
+    "wb-template-dialog": "sheet",
+    "wb-import-dialog": "sheet",
+    "quick-note": "sheet",
+    "doc-history-dialog": "panel",
+    "doc-ai-history-dialog": "panel",
+    "doc-word-goal-dialog": "sheet",
+    "doc-dictionary-dialog": "sheet",
+    "dash-widgets-dialog": "sheet",
+    "doc-replace-dialog": "sheet",
+    "doc-stats-dialog": "sheet",
+}
+
+
+def test_each_popup_is_the_kind_the_table_rules() -> None:
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    markup = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    native = set(re.findall(r'<dialog\b[^>]*\bid="([^"]+)"', markup))
+    hosts = dict(re.findall(r'<sheet-host\b[^>]*\bid="([^"]+)"([^>]*)>', markup))
+    assert native == {i for i, kind in POPUP_KINDS.items() if kind == "dialog"}, (
+        f"a popup is a native <dialog> only when it must interrupt: {sorted(native)}"
+    )
+    assert set(hosts) == {i for i, kind in POPUP_KINDS.items() if kind != "dialog"}, sorted(hosts)
+    for ident, kind in POPUP_KINDS.items():
+        if kind == "dialog":
+            continue
+        attrs = hosts[ident]
+        assert ("data-sheet-kind=\"panel\"" in attrs) == (kind == "panel"), f"{ident} is a {kind}"
+        assert "card" not in re.search(r'class="([^"]*)"', attrs).group(1).split(), f"{ident}: the sheet is the card, a host is not a second one"
+
+
+def test_a_sheet_host_is_lifted_into_the_one_sheet_recipe() -> None:
+    js = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
+    start = js.index('customElements.define("sheet-host", class extends HTMLElement')
+    body = js[start : start + 1800]
+    for needed in ("get open()", "showModal()", "close()", "openSheet({", "headless: true", 'variant: panel ? "panel" : "hosted"', "modal: !panel", 'new Event("close")'):
+        assert needed in body, needed
+    sheet = js[js.index("function openSheet(") :][:9000]
+    assert "headless" in sheet and "if (!headless)" in sheet, "a host brings its own dialog head, so the sheet draws none"
+
+
+def test_the_sheet_host_has_its_geometry_and_no_native_dialog_rules_left_for_it() -> None:
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    for needed in ("sheet-host[hidden]", ".sheet-card.sheet-card-hosted", ".sheet-card.sheet-card-panel", ".sheet-overlay.sheet-hosted", ".sheet-overlay.sheet-panel"):
+        assert needed in css, needed
+    every = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
+    assert ".dash-widgets-dialog[open]" not in every, "a closed host is `hidden`, not a native [open] dialog"
+    assert "#doc-history-dialog {" not in every, "a host's width is its class, so the phone rule can win"
+
+
 def test_a_show_all_button_repeated_down_a_picker_is_the_quiet_text_action() -> None:
     """INBOX 1566 sweep (L-documents-46): four bordered ghosts down the icon picker at 390 became `ghost quiet`
     (border transparent, accent text, the edge back under [data-contrast="on"]); the Reminders filter chips
@@ -8015,3 +8272,16 @@ def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
     assert 'createElement("dialog")' not in js and "modal-overlay" not in js
     assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
     assert ".style." not in js and "style=" not in js
+
+
+def test_no_stylesheet_declares_the_weight_650() -> None:
+    """A font with static weights (Segoe UI and most system faces) has no 650 and
+    resolves it to Bold 700, so a head set at 650 drew a step heavier than the 600
+    the recipes name (DESIGN.md, `.card h2`). Group heads, nav rows and titles are
+    600; measured at 1366x768 the Settings heads were 600 and 650 side by side
+    (L-world-class-105)."""
+    hits = []
+    for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
+        css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
+    assert not hits, f"declare 600, not 650: {hits}"

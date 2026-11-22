@@ -82,7 +82,7 @@ def _js(name: str) -> str:
 
 
 def test_companion_container_fades_on_the_root_flag():
-    text = _css("08-consistency.css")
+    text = _css("characters-lazy.css")
     body = _rule(text, ":root[data-fullscreen] #nm-buddy-band")
     assert "opacity: 0" in body and "visibility: hidden" in body
     assert "pointer-events: none" in body

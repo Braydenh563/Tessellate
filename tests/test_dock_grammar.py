@@ -114,6 +114,8 @@ ON_THE_GRAMMAR = {
     # The OCR workspace's tools (INBOX 717): View, then Read, one row that
     # folds what does not fit into its own menu, the first dock in a dialog.
     "ocr",
+    # The Documents editor's bar (L-world-class-358): the filled Run closes the row.
+    "documents",
 }
 
 
@@ -162,7 +164,7 @@ def _kind(tag: str, classes: set[str]) -> str:
         return "other"
     if "icon-only" in classes:
         return "icon"
-    if classes & {"ghost", "library-chip", "linklike"}:
+    if classes & {"ghost", "library-chip", "linklike", "chat-model-button"}:
         return "worded"
     return "filled"
 
@@ -229,6 +231,11 @@ class _Parser(HTMLParser):
                 and in_run
                 and not in_seg
                 and "ghost" not in classes
+                # A link-style button (`.linklike`, DESIGN.md's recipe index:
+                # "a link in a dock") is plain text with a press, as quiet as
+                # a ghost, and never the dock's action (the Documents bar's
+                # "Install Python" line).
+                and "linklike" not in classes
                 and "icon-only" not in classes
                 # And a chip is not a primary either, for the same reason a
                 # segment's cell is not: `.library-chip` is the app's own
@@ -238,6 +245,11 @@ class _Parser(HTMLParser):
                 # clear ("Show: Work") is one, and counting it failed that
                 # dock for having two filled buttons when it has one.
                 and "library-chip" not in classes
+                # A model pill (`.chat-model-button`, the `#chat-active-model`
+                # recipe) names a model and opens its picker: a readout with
+                # a press, never the dock's action (the Writing room's and
+                # the document bar's pill, section 20).
+                and "chat-model-button" not in classes
             ):
                 dock.filled.append(a.get("id") or "(no id)")
             if tag == "input" and a.get("type") in ("checkbox", "radio"):
@@ -340,15 +352,16 @@ def test_segments_in_a_zone_carry_an_icon_per_option(seg):
         # them, and the runtime shape is gated by a sweep instead:
         # `scratchpad/ui-sweeps/timelinedock.js` asserts one row, the icons,
         # the `aria-pressed` per segment and the 44px target at 390.
+        #: documents.js joined for the Documents dock's diagram segment, built in docDiagramSeg.
         #: app.js and timeline.js joined: the Timeline tab, whose kind filter
         #: is the case above, was split out of app.js into timeline.js.
         app = "\n".join(
             frontend_text(name)
-            for name in ("app.js", "timeline.js")
+            for name in ("app.js", "timeline.js", "documents.js")
         )
         assert seg.id and f'"{seg.id}"' in app, (
             f"{seg.dock}:{seg.id}: a segment with no options and nothing in "
-            "app.js or timeline.js that builds them"
+            "app.js, timeline.js or documents.js that builds them"
         )
         return
     assert seg.with_icon >= seg.options, (

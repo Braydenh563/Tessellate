@@ -59,7 +59,7 @@ function toggleRowExpanded(id) {
     //: the local map already learned not to be.
     if (notesRailId === id) notesRailId = null;
   }
-  const li = document.querySelector(`#entry-list > li[data-id="${id}"]`);
+  const li = noteRowFor(id);
   if (!li) return renderEntries();
   //: **In place, and animated** (INBOX 676, the owner: "the dropdown and
   //: collapse should be a smooth animation adn not sudden and janky"). This
@@ -159,7 +159,7 @@ async function refreshNoteSearchWhy() {
   // note" on a note linked to something nobody is reading. On card view the
   // last card clicked or focused counts (L709, the owner 2026-11-12).
   const open =
-    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null) || Number($("entry-list")?.dataset.lastCard) || null;
+    appState.get("note") || (expandedRows.size === 1 ? [...expandedRows][0] : null) || Number($("entry-list")?.dataset.lastCard) || null;
   let body;
   try {
     // 50 is the endpoint's own ceiling (`routes_search.MAX_LIMIT`): a search

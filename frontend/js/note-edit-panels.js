@@ -38,7 +38,7 @@ async function renderRelatedWhileEditing(li, entry) {
   }
   // The form may have closed (Save/Cancel) or moved on to a different note
   // while this was in flight.
-  if (editingId !== entry.id || !panel.isConnected) return;
+  if (appState.get("note") !== entry.id || !panel.isConnected) return;
   panel.replaceChildren();
   if (!related.length) {
     panel.textContent = "No related notes yet.";
@@ -102,7 +102,7 @@ async function renderNoteBookmarksWhileEditing(li, entry) {
     } catch {
       return;
     }
-    if (editingId !== entry.id || !panel.isConnected) return;
+    if (appState.get("note") !== entry.id || !panel.isConnected) return;
     panel.replaceChildren();
     if (attached.length) {
       const label = document.createElement("span");
@@ -133,7 +133,7 @@ async function renderNoteBookmarksWhileEditing(li, entry) {
           //: Undo puts it back where it was in the list (undo-1005): the
           //: DELETE answers with when it was attached, the order References
           //: are listed in. The panel repaints only while this note is open.
-          const repaint = () => { if (editingId === entry.id && panel.isConnected) refresh(); };
+          const repaint = () => { if (appState.get("note") === entry.id && panel.isConnected) refresh(); };
           const reattach = async () => {
             await apiJson(`/entries/${entry.id}/bookmarks`, { method: "POST", body: JSON.stringify({ bookmark_id: bookmark.id, created_at: gone.created_at }) });
             repaint();
@@ -175,13 +175,13 @@ async function renderNoteBookmarksWhileEditing(li, entry) {
 async function openBookmarkAttachPicker(entry, done) {
   const chosen = await pickLibraryItemDialog("Attach a link", { sources: ["link"] });
   const id = chosen?.row?.id;
-  if (id == null || editingId !== entry.id) return;
+  if (id == null || appState.get("note") !== entry.id) return;
   try {
     await apiJson(`/entries/${entry.id}/bookmarks`, {
       method: "POST",
       body: JSON.stringify({ bookmark_id: Number(id) }),
     });
-    const repaint = () => (editingId === entry.id ? done() : null);
+    const repaint = () => (appState.get("note") === entry.id ? done() : null);
     pushUndo(
       "Attached a link to a note",
       async () => {
@@ -255,7 +255,7 @@ function renderEditForm(li, entry) {
   //: A stable id, because three separate features key off one: the "/" menu
   //: and the `[[` autocomplete (EDITOR_SURFACES in editor.js), the selection
   //: bar, and this form's own toolbar. Safe to be a constant rather than a
-  //: per-note id: `editingId` allows exactly one open edit form at a time.
+  //: per-note id: the note slice (`appState.get("note")`) allows exactly one open edit form at a time.
   textarea.id = "entry-edit-content";
   textarea.className = "note-edit-box";
   textarea.dataset.autocorrect = "";
@@ -357,12 +357,7 @@ function renderEditForm(li, entry) {
     });
   }
 
-  const categorySelect = document.createElement("select");
-  fillCategoryOptions(categorySelect, entry.category);
-  categorySelect.setAttribute("aria-label", "Category");
-  if (draft && [...categorySelect.options].some((o) => o.value === draft.category)) {
-    categorySelect.value = draft.category;
-  }
+  const categorySelect = renderEditForm.categorySelect(entry, draft);
   categorySelect.addEventListener("change", () => { noteFormDirty = true; });
   //: **The category is its chip** (INBOX 606): the note card's own category
   //: chip, dot and name, opening a menu of the categories. The select is the
@@ -471,7 +466,7 @@ function renderEditForm(li, entry) {
             return;
           }
         }
-        editingId = null;
+        setEditingNote(null);
         noteFormDirty = false;
         noteFormDraft = null;
         forgetNoteEditLocally();
@@ -496,12 +491,33 @@ function renderEditForm(li, entry) {
   //: Escape closes the form, asking first when it has changes (INBOX 432:
   //: it did nothing). Bubbling, and only when nothing inside took it first,
   //: so the "/" menu, the [[ list and the editor's own Escape still win.
-  li.addEventListener("keydown", async (event) => {
-    if (event.key !== "Escape" || event.defaultPrevented || editingId !== entry.id) return;
+  const escapeForm = async (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || appState.get("note") !== entry.id) return;
     if (document.querySelector(".action-menu:not(.hidden), #editor-menu:not(.hidden)")) return;
     event.preventDefault();
     if (await noteFormMayClose()) closeNoteForm();
-  });
+  };
+  li.addEventListener("keydown", escapeForm);
+  //: With the caret nowhere (a click on the page's blank, a closed popover
+  //: handing focus to <body>) the key never reaches the form; the page
+  //: takes it for as long as this form is the one on screen.
+  const escapeFromBody = (event) => {
+    if (!li.isConnected) {
+      if (renderEditForm.bodyKeys === escapeFromBody) renderEditForm.bodyKeys = null;
+      return;
+    }
+    if (document.querySelector("dialog[open], .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)")) return;
+    if (event.target === document.body) escapeForm(event);
+    //: Ctrl+S saves this form (L-world-class-102). Capture phase, so the chord is taken before the page's own, which finds nothing to save here.
+    if (event.key.toLowerCase() === "s" && (event.ctrlKey || event.metaKey) && (event.target === document.body || li.contains(event.target))) {
+      event.preventDefault();
+      event.stopPropagation();
+      saveButton.click();
+    }
+  };
+  //: The page has one listener for this (below the function); each render only
+  //: points it at the form now on screen, so re-renders never stack listeners.
+  renderEditForm.bodyKeys = escapeFromBody;
   row.append(
     smallButton("Cancel", "Discard changes", async () => {
       if (await noteFormMayClose()) closeNoteForm();
@@ -551,19 +567,7 @@ ${textarea.value}`));
   for (const field of [titleInput, textarea]) field.addEventListener("input", recount);
   const foot = document.createElement("div");
   foot.className = "note-edit-foot";
-  //: The margin reader, the note half (WORLD_CLASS_PLAN I2): one switch with
-  //: the document editor's, its column under the text (margin-reader.js).
-  const marginBtn = document.createElement("button");
-  marginBtn.type = "button";
-  marginBtn.className = "ghost small icon-only note-edit-margin-toggle";
-  marginBtn.setAttribute("aria-pressed", "false");
-  marginBtn.setAttribute("aria-label", "Margin reader");
-  marginBtn.title = "Show notes of yours about the paragraph you are writing, under the text";
-  marginBtn.innerHTML = '<i class="ph ph-notepad" aria-hidden="true"></i>';
-  const marginHost = document.createElement("aside");
-  marginHost.className = "doc-margin note-edit-margin hidden";
-  marginHost.setAttribute("aria-label", "Margin reader");
-  marginHost.setAttribute("aria-live", "polite");
+  const { marginBtn, marginHost } = renderEditForm.margin();
   foot.append(count, marginBtn, row);
   const toolbarEl = noteEditToolbar(textarea.id);
   //: Preview: reported: "there is no preview", then, once there was one,
@@ -581,13 +585,7 @@ ${textarea.value}`));
     sourceBtn.setAttribute("aria-pressed", String(noteSourceOn()));
     sourceBtn.classList.toggle("is-active", noteSourceOn());
   }
-  //: Attachment cards for the files this note's text points at, the same
-  //: cards and the same menu as the capture box (INBOX 440 (2)).
-  const chipsHost = document.createElement("div");
-  chipsHost.className = "att-cards hidden";
-  chipsHost.id = "entry-edit-attachment-chips";
-  chipsHost.setAttribute("role", "group");
-  chipsHost.setAttribute("aria-label", "Files in this note");
+  const chipsHost = renderEditForm.chipsHost();
   //: **One writing surface** (INBOX 606): the title, the properties line, the
   //: strip and the text in the capture box's own `.note-composer`, which
   //: carries the edge, the ground and the focus ring for all of them.
@@ -619,6 +617,47 @@ ${textarea.value}`));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
 }
+//: The category select of the edit form, filled and set from the draft; split from `renderEditForm`.
+renderEditForm.categorySelect = (entry, draft) => {
+  const categorySelect = document.createElement("select");
+  fillCategoryOptions(categorySelect, entry.category);
+  categorySelect.setAttribute("aria-label", "Category");
+  if (draft && [...categorySelect.options].some((o) => o.value === draft.category)) {
+    categorySelect.value = draft.category;
+  }
+  return categorySelect;
+};
+//: The attachment cards' host of the edit form, split from `renderEditForm`.
+//: The margin reader's switch and column, split from `renderEditForm`.
+renderEditForm.margin = () => {
+  //: The margin reader, the note half (WORLD_CLASS_PLAN I2): one switch with
+  //: the document editor's, its column under the text (margin-reader.js).
+  const marginBtn = document.createElement("button");
+  marginBtn.type = "button";
+  marginBtn.className = "ghost small icon-only note-edit-margin-toggle";
+  marginBtn.setAttribute("aria-pressed", "false");
+  marginBtn.setAttribute("aria-label", "Margin reader");
+  marginBtn.title = "Show notes of yours about the paragraph you are writing, under the text";
+  marginBtn.innerHTML = '<i class="ph ph-notepad" aria-hidden="true"></i>';
+  const marginHost = document.createElement("aside");
+  marginHost.className = "doc-margin note-edit-margin hidden";
+  marginHost.setAttribute("aria-label", "Margin reader");
+  marginHost.setAttribute("aria-live", "polite");
+  return { marginBtn, marginHost };
+};
+renderEditForm.chipsHost = () => {
+  //: Attachment cards for the files this note's text points at, the same
+  //: cards and the same menu as the capture box (INBOX 440 (2)).
+  const chipsHost = document.createElement("div");
+  chipsHost.className = "att-cards hidden";
+  chipsHost.id = "entry-edit-attachment-chips";
+  chipsHost.setAttribute("role", "group");
+  chipsHost.setAttribute("aria-label", "Files in this note");
+  return chipsHost;
+};
+//: The note form's page-level keys (Escape with focus on <body>, Ctrl+S): one
+//: capture listener for the page's life, calling whichever form renderEditForm set.
+document.addEventListener("keydown", (event) => renderEditForm.bodyKeys?.(event), true);
 
 //: Hold an edit the server could not take and close the form on it. False
 //: when it cannot be held (storage full or blocked), so the form stays and
@@ -626,7 +665,7 @@ ${textarea.value}`));
 async function holdNoteEdit(id, body) {
   await ensureModule("quickNote");
   if (!noteEditOutboxAdd(id, body)) return false;
-  editingId = null;
+  setEditingNote(null);
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
@@ -640,10 +679,10 @@ async function holdNoteEdit(id, body) {
 async function closeNoteForm() {
   //: The focus goes back to the note (WCAG 2.4.3): the redraw removes the form
   //: that held it.
-  const back = editingId;
+  const back = appState.get("note");
   const held = document.activeElement;
   const wasInside = !held || held === document.body || Boolean(held.closest?.("#entry-list"));
-  editingId = null;
+  setEditingNote(null);
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
@@ -692,7 +731,7 @@ window.startApp = async function () {
 
 async function offerKeptNoteEdit() {
   const kept = prefs.json(NOTE_EDIT_KEPT, {});
-  if (!Number.isInteger(kept.id) || editingId !== null) return;
+  if (!Number.isInteger(kept.id) || appState.get("note") !== null) return;
   let note = null;
   try {
     note = await apiJson(`/entries/${kept.id}`, { silent: true });

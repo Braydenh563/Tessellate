@@ -223,37 +223,7 @@
       .then((response) => response.text())
       .then((text) => {
         const words = new Set(DOC_EXTRA_WORDS);
-        //: **`trim()`, and it is the whole bug report.** Reported with a
-        //: screenshot of 268 suggestions on a 298-word document, every one of
-        //: them a real English word: "litterally everything isnt in the
-        //: dictionary". The list loads, so the no-dictionary guard in
-        //: `docWordKnown` never fires; it just matches nothing.
-        //:
-        //: The file is committed with unix line endings and this sandbox reads
-        //: it that way, which is why `docs-spell.js` measured six findings over
-        //: 8,000 characters with no false positives. Git on Windows checks text
-        //: out with CRLF by default, so every entry arrives as `"offline\r"`,
-        //: and `Set.has("offline")` is false for all 92,972 of them. One
-        //: checkout on one platform turns the checker into a machine that flags
-        //: the entire language.
-        //:
-        //: Trimming here rather than only pinning the file in `.gitattributes`
-        //: (which this commit does as well): the attribute fixes the checkout,
-        //: and this fixes every copy that already exists, plus any future list
-        //: that arrives with trailing whitespace from wherever it was built.
-        for (const line of text.split("\n")) {
-          const word = line.trim();
-          if (word) words.add(word);
-        }
-        docWordlist = words;
-        docWordlistState.loading = false;
-        //: The ranked suggestions are drawn from the same pool, so it has to be
-        //: rebuilt, and the pass that ran without a dictionary has to run again
-        //: now that there is one.
-        docKnownWordsCache = null;
-        docSpellCache = new Map();
-        docCmApplySpellcheck();
-        renderDocProse();
+        docSpellWordsSliced(text, words, () => docWordlistReadyNow(words)); // trimmed, in 8 ms slices (documents-spell.js)
       })
       .catch(() => {
         //: Once, not on a loop: a failed fetch here means the file is missing
@@ -262,6 +232,20 @@
         docWordlistState.loading = false;
         docWordlistState.failed = true;
       });
+  }
+
+  //: The set is whole: the checker reads it from here on.
+  function docWordlistReadyNow(words) {
+    docWordlist = words;
+    docWordlistState.loading = false;
+    //: The suggestions share the pool, so it is rebuilt, and the pass that ran without a dictionary runs again, a frame
+    //: after the set and not in its task: the two together were a 267 ms frame after a first paint (L-world-class-40).
+    docKnownWordsCache = null;
+    docSpellCache = new Map();
+    afterFrames(() => setTimeout(() => {
+      docCmApplySpellcheck();
+      renderDocProse();
+    }), 1);
   }
 
   //: A word the checker is willing to have an opinion about. Everything refused
@@ -674,70 +658,70 @@
     return finding.hint;
   };
 
-  $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
+  //: The dictionary dialog is a surface built on its first open (index.html), so its controls are wired then.
+  onSurface("docDictionary", () => {
+    $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
 
-  $("doc-spelling-variant")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
-    }).catch(() => prefsCache);
-    //: The variant decides which half of the pair table is a finding, so the
-    //: lookup has to be rebuilt before the next pass reads it.
-    docVariantFor = null;
-    //: And the grammar checker's dialect with it (British or American rules).
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    $("doc-spelling-variant")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
+      }).catch(() => prefsCache);
+      //: The variant decides which half of the pair table is a finding, so the lookup has to be rebuilt before the next pass reads it.
+      docVariantFor = null;
+      //: And the grammar checker's dialect with it (British or American rules).
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
-  //: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
-  $("doc-prose-groups")?.addEventListener("change", async (event) => {
-    const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ prose_kinds_off: off }),
-    }).catch(() => prefsCache);
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+    $("doc-prose-groups")?.addEventListener("change", async (event) => {
+      const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ prose_kinds_off: off }),
+      }).catch(() => prefsCache);
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  $("doc-link-offers")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ link_offers: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
-    DOC_LINK_OFFERS.text = null;
-    DOC_LINK_OFFERS.findings = [];
-    renderDocProse();
-  });
+    $("doc-link-offers")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ link_offers: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+      DOC_LINK_OFFERS.text = null;
+      DOC_LINK_OFFERS.findings = [];
+      renderDocProse();
+    });
 
-  //: Link text (K11): the same preference as Settings, Writing. The grammar
-  //: answer is thrown away because what it keeps depends on the switch.
-  $("doc-check-link-text")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    //: Link text (K11): the same preference as Settings, Writing. The grammar answer is thrown away because what it keeps depends on the switch.
+    $("doc-check-link-text")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  $("doc-grammar-check")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    $("doc-grammar-check")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  //: The same preference Settings, Preferences sets (`smart_punctuation`), here
-  //: beside the other writing checks; saved on the change, as the two above are.
-  $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
+    //: The same preference Settings, Preferences sets (`smart_punctuation`), here
+    //: beside the other writing checks; saved on the change, as the two above are.
+    $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+    });
   });
 
   for (const [name, id] of Object.entries(DOC_TOOL_KEYS)) {

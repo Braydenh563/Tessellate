@@ -227,7 +227,7 @@
     try {
       body = (await apiJson(`/bookmarks/${bookmark.id}/text`)).text || "";
     } catch (error) {
-      toast(error.message, true);
+      toast(error.message, true, { retry: () => readText(bookmark, holder) });
       return;
     }
     const reading = document.createElement("div");

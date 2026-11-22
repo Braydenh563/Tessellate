@@ -7,4 +7,11 @@
     --toast-line: 1.25rem;
     font-size: var(--text-sm);
   }
+  /* Settings, Search and index holds the same switch, and the notice stood
+     341x173px over the lower quarter of every section at 360x740
+     (L-world-class-394): it waits, still open, until Settings closes. The
+     body class is set by settings.js: a body:has() rule re-matches on every DOM change. */
+  body.settings-open .toast.semantic-install-toast {
+    display: none;
+  }
 }

@@ -132,6 +132,10 @@ Packaged app (the in-app snippet fills in the real executable path):
 - **Claude Code:** `claude mcp add tessellate -e TESSELLATE_DATA_DIR=/path/to/your/data -e TESSELLATE_MCP_TOKEN=<token> -- /path/to/python -m tessellate.mcp_server`, or put the same entry in a project `.mcp.json`.
 - **Other clients:** any client that can launch a stdio server takes the same command, arguments and environment. The server speaks MCP protocol versions 2025-06-18, 2025-03-26 and 2024-11-05.
 
+## VS Code
+
+`tools/vscode/` is a small extension over the HTTP tool server. It searches your notes, saves a selection as a note, and offers the tool server to VS Code's own chat. Make a token in Settings, Tools it can use, then run Tessellate: Set tool server token. Its README covers installing it from the checkout.
+
 ## Security model
 
 - **Local only.** There is no network listener and no port. The client starts the process, and the process talks over the pipe the client holds. Nothing else can connect.

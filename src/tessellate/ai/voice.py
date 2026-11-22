@@ -19,6 +19,11 @@ from tessellate.core.logbuffer import safe_value
 
 #: Names the add-on as Settings, Packages lists it ("Voice notes"), not the
 #: command that installs it: the person reads this in a toast.
+class SpeechError(RuntimeError):
+    """A failure whose text is a sentence for the person (an add-on missing, a
+    model that will not load); any other RuntimeError is developer detail."""
+
+
 INSTALL_HINT = (
     "Voice notes need an add-on that isn't installed yet. Install “Voice "
     "notes” in Settings, Packages, then restart the app."
@@ -190,7 +195,7 @@ def iter_segments(audio_path: Path, model_size: str = "base", options: dict | No
     sends the user looking at their microphone instead of their network.
     """
     if not whisper_available():
-        raise RuntimeError(INSTALL_HINT)
+        raise SpeechError(INSTALL_HINT)
     try:
         model = _get_model(model_size)
     except Exception as exc:
@@ -198,7 +203,7 @@ def iter_segments(audio_path: Path, model_size: str = "base", options: dict | No
         # corrupt cache) is for the log; the person gets the one thing they
         # can act on, which is nearly always the connection.
         logger.warning("Couldn't load the Whisper %s model", safe_value(model_size, 40), exc_info=True)
-        raise RuntimeError(
+        raise SpeechError(
             "Couldn't load the speech model. The first use downloads it, so "
             "check your internet connection and try again."
         ) from exc

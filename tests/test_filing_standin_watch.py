@@ -2,7 +2,7 @@
 model, Qwen2.5 1.5B on llama-server, 2026-10-05).
 
 With a slow model the note is filed by its words first (`standin`) and the
-model's answer replaces it when it lands (routes_entries.py, `_LateFiling`).
+model's answer replaces it when it lands (entry/filing_background.py, `_LateFiling`).
 `watchFiling` stopped at the first answer that was not `pending`, so the
 composer's line and the toast said the stand-in ("Filed under “Health” (69%
 sure)") and nothing ever said the model then moved it: measured, a note about

@@ -92,8 +92,10 @@ def test_version_history_names_versions_and_compares_side_by_side():
     assert "docDiffSplitLayout(host, opts.split)" in _body("docRenderDiff")
     assert 'docHistoryFilter === "named"' in _body("renderDocHistoryList")
     assert "docIdeCall(\"docIdeCompareWith\", entry.id" in _body("docHistoryRowMenu")
-    assert "modal.appendChild(overlay)" in _body("docPromptInModal")
-    assert "docPromptInModal(" in _body("docNameCurrentVersion")
+    #: The history is a sheet (L-world-class-131), so its prompt is the plain `promptDialog`
+    #: over it: nothing is inert behind a sheet, and `docPromptInModal` is gone.
+    assert "promptDialog(" in _body("docNameCurrentVersion")
+    assert "docPromptInModal" not in app_js_text()
     from tests._app_js import INDEX_HTML
 
     html = INDEX_HTML.read_text(encoding="utf-8")

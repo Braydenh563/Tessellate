@@ -13,6 +13,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import hmac
+import importlib
 import logging
 import os
 import re
@@ -33,104 +34,18 @@ from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import Headers
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import FileResponse
+from starlette.routing import BaseRoute, Match, NoMatchFound, get_route_path
 from starlette.middleware.gzip import DEFAULT_EXCLUDED_CONTENT_TYPES, GZipMiddleware
 
 from tessellate import __version__
 from tessellate.ai import autonomous, embeddings
+#: The speller's app vocabulary is registered by the help topics, which routes_help
+#: used to bring in at import; with routes loaded lazily (L-world-class-230) the app
+#: loads them itself, about 5 ms, so the first question reads the app's own words.
+from tessellate.ai import help_topics_core  # noqa: F401
 from tessellate.search import searxng_manager
 from tessellate.api import versioning
-from tessellate.api import (
-    asset_strip,
-    routes_ask_history,
-    routes_capabilities,
-    routes_auth,
-    routes_bookmarks,
-    routes_categories,
-    routes_chat,
-    routes_conversations,
-    routes_debug,
-    routes_documents,
-    run_sandbox,
-    routes_backups,
-    routes_duplicates,
-    routes_tidy,
-    routes_drafts,
-    routes_learned,
-    routes_learned_audit,
-    routes_meetings,
-    routes_mentions,
-    routes_inbox,
-    routes_entities,
-    routes_relations,
-    routes_kept_words,
-    routes_properties,
-    routes_property_table,
-    routes_bench,
-    routes_editor,
-    routes_import,
-    routes_usage,
-    routes_night,
-    routes_questions,
-    routes_read,
-    routes_spelling,
-    routes_statistics,
-    routes_utilities,
-    routes_privacy,
-    routes_vision,
-    routes_resurface,
-    routes_entries,
-    routes_entries_history,
-    routes_entries_links,
-    routes_entries_reevaluate,
-    routes_entries_relations,
-    routes_files,
-    routes_files_ocr,
-    routes_files_readings,
-    routes_graph,
-    routes_help,
-    routes_insights,
-    routes_diag,
-    routes_lag,
-    routes_library,
-    routes_maintenance,
-    routes_models,
-    routes_recordings,
-    routes_reminders,
-    routes_settings,
-    routes_settings_extras,
-    routes_settings_logs,
-    routes_settings_transfer,
-    routes_spaces,
-    routes_folder_sync,
-    routes_studio,
-    routes_sync,
-    routes_hello,
-    routes_origin_handoff,
-    routes_private_spaces,
-    routes_tasks,
-    routes_timeline,
-    routes_search,
-    routes_tags,
-    routes_translate,
-    routes_update,
-    routes_captions,
-    routes_voice,
-    routes_webclip,
-    routes_websearch,
-    routes_whiteboard,
-    routes_board_library,
-    routes_board_convert,
-    routes_code_snippets,
-    routes_code_assist,
-    routes_board_history,
-    routes_board_affinity,
-    routes_document_claims,
-    routes_document_story,
-    routes_map_suggest,
-    routes_map_from_notes,
-    routes_graph_projection,
-    routes_documents_from_notes,
-)
+from tessellate.api import asset_strip, routes_auth, routes_diag, routes_update
 from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
@@ -149,6 +64,7 @@ from tessellate.core import (
     logbuffer,
     netbind,
     origin,
+    paths,
     passes,
     security,
     startup_status,
@@ -166,10 +82,7 @@ from tessellate.entry import manager_purge
 # alone one that happens to contain a "frontend" folder. Checked first and
 # explicitly, not inferred from a path that only looks the same in both
 # cases by coincidence.
-if getattr(sys, "frozen", False):
-    BUNDLE_ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-else:
-    BUNDLE_ROOT = Path(__file__).resolve().parents[3]
+BUNDLE_ROOT = paths.bundle_root()
 FRONTEND_DIR = BUNDLE_ROOT / "frontend"
 
 
@@ -491,13 +404,15 @@ class RevalidatedStatic(StaticFiles):
     _gzip_cache: dict[str, tuple[int, int, bytes]] = {}
 
     #: **Comments are stripped from what is served** (audit 2026-10-05, FE-01):
-    #: the app's own `js/*.js` and `css/*.css` (and `index.html`, above), never
+    #: the app's own `js/*.js`, `css/*.css` and `surfaces/*.html` (and `index.html`, above), never
     #: `vendor/`, never the files on disk. See `asset_strip.py` for why and how.
     @staticmethod
     def _strippable(path: str) -> bool:
         path = path.replace("\\", "/")
-        return (path.startswith("js/") and path.endswith(".js")) or (
-            path.startswith("css/") and path.endswith(".css")
+        return (
+            (path.startswith("js/") and path.endswith(".js"))
+            or (path.startswith("css/") and path.endswith(".css"))
+            or (path.startswith("surfaces/") and path.endswith(".html"))
         )
 
     async def _precompressed(self, response, scope, strip: bool = False):
@@ -727,6 +642,8 @@ def _startup_maintenance() -> None:
         steps = (
             ("_check_notebook_file", "Check the notebook file"),
             ("_check_data_folder", "Check the data folder"),
+            ("_sweep_sealed_leftovers", "Clear temporary copies of private files"),
+            ("_mend_category_names", "Mend category names saved with a broken bar"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
             ("_backup_if_due", "Back up if today's is due"),
@@ -747,6 +664,17 @@ def _startup_maintenance() -> None:
         run.result = "at start"
 
 
+def _mend_category_names() -> None:
+    """Category names saved with a broken bar for "&" are renamed once (L803)."""
+    from tessellate.entry.manager_categories import mend_broken_bar_names
+
+    session = deps.get_db().session()
+    try:
+        mend_broken_bar_names(session)
+    finally:
+        session.close()
+
+
 def _read_note_dates() -> None:
     """Notes saved before written-out dates were read get them read once, as
     a background job that resumes where it stopped (`entry/redate.py`)."""
@@ -758,12 +686,12 @@ def _read_note_dates() -> None:
 def _seed_companion_milestone() -> None:
     """The notes already here are the desk companion's baseline, so a restart at 100 notes does not cheer the 100 again
     (`core/companion_events.seed`)."""
-    from tessellate.api.routes_entries import _note_total
+    from tessellate.entry.capture import note_total
     from tessellate.core import companion_events
 
     session = deps.get_db().session()
     try:
-        companion_events.seed(_note_total(session))
+        companion_events.seed(note_total(session))
     finally:
         session.close()
 
@@ -774,6 +702,15 @@ def _check_notebook_file() -> None:
     a damaged file is never copied over a good backup, because the daily
     backup checks its own copy (`backup.verify_copy`) and refuses it."""
     backup.check_at_boot(deps.get_config().db_path)
+
+
+def _sweep_sealed_leftovers() -> None:
+    """Plain temp copies of a private space's files and half-written
+    rewrites a crash left behind (L-world-class-52, `core/sealed_files.py`)."""
+    from tessellate.core import sealed_files
+
+    cfg = deps.get_config()
+    sealed_files.sweep_leftovers(cfg.data_dir, (cfg.uploads_dir,))
 
 
 def _check_data_folder() -> None:
@@ -797,7 +734,8 @@ def _backup_if_due() -> None:
         config = deps.get_config()
         keep = int(config.get_preference("backup_retention_count", backup.KEEP_BACKUPS))
         if backup.backup_is_due(config.db_path, config.data_dir):
-            with jobruns.job_run("backup") as run:
+            why = "Today's backup was due when the app started."
+            with jobruns.job_run("backup", origin="schedule", why=why) as run:
                 path = backup.backup_now(config.db_path, config.data_dir, keep, run, origin="daily")
                 run.result = f"saved {path.name} (the daily backup at start)"
         #: Every start holds the folder to the retention number, not only a
@@ -836,11 +774,7 @@ def _start_searxng_if_asked() -> None:
         config = deps.get_config()
         if not config.get_preference("searxng_autostart", False):
             return
-        threading.Thread(
-            target=lambda: searxng_manager.start(config.data_dir),
-            name="searxng-autostart",
-            daemon=True,
-        ).start()
+        jobs.thread("searxng-autostart", lambda: searxng_manager.start(config.data_dir))
     except Exception:  # noqa: BLE001  # a failed autostart must never block startup
         logging.getLogger("tessellate.startup").warning(
             "SearXNG autostart didn't run this start", exc_info=True
@@ -885,6 +819,12 @@ def _warm_routes(app) -> None:
             "server": ("127.0.0.1", 80),
         }
         try:
+            # A lazy app (L-world-class-230) includes the rest of its routers here,
+            # behind the lock screen, so the first requests after the unlock do not
+            # import them one by one; the `/health` after them builds their routes.
+            lazy = getattr(app.state, "lazy_routes", None)
+            if lazy is not None:
+                lazy.load_all()
             asyncio.run(app(scope, receive, send))
         except Exception:  # noqa: BLE001  # a warm-up that fails changes nothing but the first request's time
             logging.getLogger("tessellate.startup").debug("route warm-up did not run", exc_info=True)
@@ -1167,6 +1107,7 @@ def out_of_space_body(wanted: int | None = None) -> dict:
     try:
         data_dir = str(deps.get_config().data_dir)
     except Exception:  # noqa: BLE001  # pragma: no cover - only before the config exists
+        logging.getLogger(__name__).debug("out_of_space_body: only before the config exists", exc_info=True)
         pass
     free = diskspace.free_bytes(data_dir) if data_dir else None
     where = f" Your notebook is in {data_dir}." if data_dir else ""
@@ -1329,10 +1270,7 @@ def _start_services() -> Path:
     #: owner's lag log): the search model's load, the speller, the day's
     #: housekeeping and the queued jobs start after the unlock answer has
     #: gone (core/afterunlock.py), never beside it.
-    if _has_password():
-        afterunlock.arm()
-    else:
-        afterunlock.disarm()
+    afterunlock.arm(_has_password())
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
     afterunlock.defer("resume-jobs", jobs.resume)
@@ -1392,6 +1330,7 @@ def _has_password() -> bool:
         with deps.get_db().session() as session:
             return session.scalar(select(User.id)) is not None
     except Exception:  # noqa: BLE001  # nothing to wait for is the old behaviour
+        logging.getLogger(__name__).debug("_has_password: nothing to wait for is the old behaviour", exc_info=True)
         return False
 
 
@@ -1517,138 +1456,264 @@ def _add_middleware(app: FastAPI) -> None:
 #: token header). `tests/test_middleware_table_1031.py` holds the table to every router.
 OPEN, LOCKED, MEDIA = "open", "locked", "media"
 
-ROUTERS: tuple[tuple[APIRouter, str], ...] = (
-    (routes_auth.router, OPEN),
-    (routes_hello.router, OPEN),
-    (routes_origin_handoff.router, OPEN),
+
+class Row(NamedTuple):
+    """One router in the table, named rather than imported (L-world-class-230): the module
+    under `tessellate.api`, the router's attribute, its gate, and the first path segments
+    its routes start with, space-separated. A route module is imported, and its router
+    included, at the first request whose path starts with one of those segments, so app
+    import no longer pays for 100 modules (825 of 2,060 ms) the lock screen never calls.
+    `tests/test_lazy_routes.py` holds each row's segments to the routes it serves."""
+
+    module: str
+    attr: str
+    gate: str
+    segments: str
+
+    def router(self) -> APIRouter:
+        return getattr(importlib.import_module(f"tessellate.api.{self.module}"), self.attr)
+
+
+ROUTER_ROWS: tuple[Row, ...] = (
+    Row("routes_auth", "router", OPEN, "/auth"),
+    Row("routes_hello", "router", OPEN, "/auth"),
+    Row("routes_origin_handoff", "router", OPEN, "/origin-handoff"),
     # Before routes_entries: its static paths (`/tensions`, `/link-suggestions`) must be tried ahead
     # of `GET /{entry_id}`, which they used to precede inside that one router (K24).
-    (routes_entries_relations.router, LOCKED),
-    (routes_entries_links.router, LOCKED),
-    (routes_entries_history.router, LOCKED),
-    (routes_entries_reevaluate.router, LOCKED),
-    (routes_entries.router, LOCKED),
-    (routes_mentions.router, LOCKED),
-    (routes_meetings.router, LOCKED),
-    (routes_inbox.router, LOCKED),
-    (routes_entities.router, LOCKED),
-    (routes_relations.router, LOCKED),
-    (routes_kept_words.router, LOCKED),
-    (routes_properties.router, LOCKED),
-    (routes_property_table.router, LOCKED),
-    (routes_chat.router, LOCKED),
-    (routes_ask_history.router, LOCKED),
-    (routes_models.router, LOCKED),
-    (routes_settings.router, LOCKED),
-    (routes_settings_transfer.router, LOCKED),  # export and import routes (K24)
-    (routes_settings_extras.router, LOCKED),  # optional extras and embedding models (K24)
-    (routes_settings_logs.router, LOCKED),  # the log viewer (K24)
-    (routes_maintenance.router, LOCKED),
-    (routes_lag.router, LOCKED),
-    (routes_diag.router, LOCKED),
+    Row("routes_entries_relations", "router", LOCKED, "/entries"),
+    Row("routes_entries_links", "router", LOCKED, "/entries"),
+    Row("routes_entries_history", "router", LOCKED, "/entries"),
+    Row("routes_entries_reevaluate", "router", LOCKED, "/entries"),
+    Row("routes_entries", "router", LOCKED, "/entries"),
+    Row("routes_mentions", "router", LOCKED, "/entries"),
+    Row("routes_meetings", "router", LOCKED, "/entries /meetings"),
+    Row("routes_inbox", "router", LOCKED, "/suggestions"),
+    Row("routes_entities", "router", LOCKED, "/entities"),
+    Row("routes_relations", "router", LOCKED, "/relation-types"),
+    Row("routes_kept_words", "router", LOCKED, "/kept-words"),
+    Row("routes_properties", "router", LOCKED, "/entries /note-types"),
+    Row("routes_property_table", "router", LOCKED, "/property-table"),
+    Row("routes_chat", "router", LOCKED, "/chat"),
+    Row("routes_chat_meta", "router", LOCKED, "/chat"),  # its side routes (L624)
+    Row("routes_ask_history", "router", LOCKED, "/ask-history"),
+    Row("routes_models", "router", LOCKED, "/models"),
+    Row("routes_settings", "router", LOCKED, "/audit /events /memory /personas /preferences /recycle-bin /skills /support-bundle /system /templates"),
+    Row("routes_settings_transfer", "router", LOCKED, "/export /import"),  # export and import routes (K24)
+    Row("routes_settings_extras", "router", LOCKED, "/embedding-models /extras"),  # optional extras and embedding models (K24)
+    Row("routes_settings_logs", "router", LOCKED, "/logs"),  # the log viewer (K24)
+    Row("routes_maintenance", "router", LOCKED, "/system"),
+    Row("routes_lag", "router", LOCKED, "/logs"),
+    Row("routes_diag", "router", LOCKED, "/diagnostics"),
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings_logs.open_router`'s own comment says why it is separate.
-    (routes_settings_logs.open_router, OPEN),
+    Row("routes_settings_logs", "open_router", OPEN, "/logs"),
     # The Run button's sandbox page: no data, its own sandboxing policy, and
     # registered before the documents router so `/documents/{id}` does not
     # claim the path (`api/run_sandbox.py`).
-    (run_sandbox.router, OPEN),
+    Row("run_sandbox", "router", OPEN, "/documents"),
     # A long run's row in Activity (DOCUMENTS_PLAN 25 row 9): locked.
-    (run_sandbox.jobs_router, LOCKED),
+    Row("run_sandbox", "jobs_router", LOCKED, "/documents"),
     # The offline translator (WORLD_CLASS_PLAN 28.5 row 10): what is
     # installed is behind the unlock; the engine and model files are open,
     # like the Python runtime's, because a Worker's fetch carries no token.
-    (routes_translate.router, LOCKED),
-    (routes_translate.files_router, OPEN),
-    (routes_update.router, LOCKED),
-    (routes_websearch.router, LOCKED),
-    (routes_webclip.router, LOCKED),
-    (routes_backups.router, LOCKED),
-    (routes_spaces.router, LOCKED),
-    (routes_private_spaces.router, LOCKED),
-    (routes_files.router, LOCKED),
-    (routes_files_ocr.router, LOCKED),  # the OCR routes of files and media (K24)
-    (routes_files_readings.router, LOCKED),  # the reading-side routes of files and media (K24)
+    Row("routes_translate", "router", LOCKED, "/translate"),
+    Row("routes_translate", "files_router", OPEN, "/translate"),
+    Row("routes_update", "router", LOCKED, "/update"),
+    Row("routes_websearch", "router", LOCKED, "/websearch"),
+    Row("routes_webclip", "router", LOCKED, "/links"),
+    Row("routes_backups", "router", LOCKED, "/backups /storage"),
+    Row("routes_spaces", "router", LOCKED, "/spaces"),
+    Row("routes_private_spaces", "router", LOCKED, "/private-spaces /spaces"),
+    Row("routes_files", "router", LOCKED, "/entries /files /media"),
+    Row("routes_files_ocr", "router", LOCKED, "/files /media /ocr /ocr-readers"),  # the OCR routes of files and media (K24)
+    Row("routes_files_readings", "router", LOCKED, "/files /media"),  # the reading-side routes of files and media (K24)
+    Row("routes_reading_bin", "router", LOCKED, "/files /media /reading-bin"),  # bin, restore and purge a reading (split from the readings routes)
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the
     # media cookie, on their own gate rather than widening `locked` for every
     # route. See require_unlock_media's docstring.
-    (routes_files.media_router, MEDIA),
-    (routes_search.router, LOCKED),
-    (routes_tags.router, LOCKED),
-    (routes_categories.router, LOCKED),
-    (routes_conversations.router, LOCKED),
-    (routes_documents.router, LOCKED),
-    (routes_duplicates.router, LOCKED),
-    (routes_tidy.router, LOCKED),
-    (routes_drafts.router, LOCKED),
-    (routes_learned.router, LOCKED),
-    (routes_learned_audit.router, LOCKED),
-    (routes_night.router, LOCKED),
-    (routes_bench.router, LOCKED),
-    (routes_editor.router, LOCKED),
-    (routes_import.router, LOCKED),
-    (routes_usage.router, LOCKED),
-    (routes_usage.capture_router, LOCKED),
-    (routes_questions.router, LOCKED),
-    (routes_resurface.router, LOCKED),
-    (routes_insights.router, LOCKED),
-    (routes_graph.router, LOCKED),
-    (routes_graph_projection.router, LOCKED),
-    (routes_help.router, LOCKED),
-    (routes_reminders.router, LOCKED),
+    Row("routes_files", "media_router", MEDIA, "/files /media"),
+    Row("routes_search", "router", LOCKED, "/search"),
+    Row("routes_tags", "router", LOCKED, "/tags"),
+    Row("routes_categories", "router", LOCKED, "/categories"),
+    Row("routes_groups", "router", LOCKED, "/entries /groups"),
+    Row("routes_conversations", "router", LOCKED, "/conversations"),
+    Row("routes_documents", "router", LOCKED, "/documents"),
+    Row("routes_duplicates", "router", LOCKED, "/duplicates"),
+    Row("routes_tidy", "router", LOCKED, "/tidy"),
+    Row("routes_drafts", "router", LOCKED, "/drafts"),
+    Row("routes_learned", "router", LOCKED, "/learned"),
+    Row("routes_learned_audit", "router", LOCKED, "/learned"),
+    Row("routes_night", "router", LOCKED, "/night"),
+    Row("routes_bench", "router", LOCKED, "/models"),
+    Row("routes_editor", "router", LOCKED, "/editor"),
+    Row("routes_import", "router", LOCKED, "/export /import"),
+    Row("routes_usage", "router", LOCKED, "/usage"),
+    Row("routes_usage", "capture_router", LOCKED, "/capture"),
+    Row("routes_questions", "router", LOCKED, "/questions"),
+    Row("routes_resurface", "router", LOCKED, "/resurface"),
+    Row("routes_insights", "router", LOCKED, "/insights"),
+    Row("routes_graph", "router", LOCKED, "/graph"),
+    Row("routes_graph_projection", "router", LOCKED, "/graph"),
+    Row("routes_help", "router", LOCKED, "/help"),
+    Row("routes_reminders", "router", LOCKED, "/reminders"),
     # A notification's Done and Snooze, pressed by the service worker with a
     # token scoped to one reminder and those two actions (core/reminder_token.py)
     # instead of a session: the one route here outside the gate, and why is in
     # `routes_reminders.act_from_notification` and tests/test_every_route_is_locked.py.
-    (routes_reminders.open_router, OPEN),
-    (routes_bookmarks.router, LOCKED),
-    (routes_voice.router, LOCKED),
-    (routes_studio.router, LOCKED),
-    (routes_folder_sync.router, LOCKED),
-    (routes_recordings.router, LOCKED),
-    (routes_recordings.media_router, MEDIA),
-    (routes_captions.router, LOCKED),
-    (routes_tasks.router, LOCKED),
-    (routes_timeline.router, LOCKED),
-    (routes_library.router, LOCKED),
-    (routes_whiteboard.router, LOCKED),
-    (routes_whiteboard.media_router, MEDIA),
-    (routes_board_library.router, LOCKED),
-    (routes_board_convert.router, LOCKED),
-    (routes_code_snippets.router, LOCKED),
-    (routes_code_assist.router, LOCKED),
-    (routes_board_history.router, LOCKED),
-    (routes_map_suggest.router, LOCKED),
-    (routes_board_affinity.router, LOCKED),
-    (routes_document_claims.router, LOCKED),
-    (routes_document_story.router, LOCKED),
-    (routes_map_from_notes.router, LOCKED),
-    (routes_documents_from_notes.router, LOCKED),
-    (routes_debug.router, LOCKED),
-    (routes_privacy.router, LOCKED),
-    (routes_capabilities.router, LOCKED),
-    (routes_read.router, LOCKED),
-    (routes_spelling.router, LOCKED),
-    (routes_statistics.router, LOCKED),
-    (routes_utilities.router, LOCKED),
+    Row("routes_reminders", "open_router", OPEN, "/reminders"),
+    Row("routes_bookmarks", "router", LOCKED, "/bookmarks"),
+    Row("routes_voice", "router", LOCKED, "/voice"),
+    Row("routes_studio", "router", LOCKED, "/studio"),
+    Row("routes_folder_sync", "router", LOCKED, "/sync"),
+    Row("routes_recordings", "router", LOCKED, "/recordings"),
+    Row("routes_recordings", "media_router", MEDIA, "/media"),
+    Row("routes_captions", "router", LOCKED, "/voice"),
+    Row("routes_tasks", "router", LOCKED, "/activity /desktop /jobs /running-copies /shutdown /tasks"),
+    Row("routes_timeline", "router", LOCKED, "/timeline"),
+    Row("routes_library", "router", LOCKED, "/bin /library"),
+    Row("routes_library_meta", "router", LOCKED, "/library"),
+    Row("routes_whiteboard", "router", LOCKED, "/whiteboard"),
+    Row("routes_whiteboard", "media_router", MEDIA, "/media"),
+    Row("routes_board_library", "router", LOCKED, "/board-library /whiteboard"),
+    Row("routes_board_convert", "router", LOCKED, "/whiteboard"),
+    Row("routes_code_snippets", "router", LOCKED, "/code-snippets"),
+    Row("routes_code_assist", "router", LOCKED, "/documents"),
+    Row("routes_board_history", "router", LOCKED, "/whiteboard"),
+    Row("routes_map_suggest", "router", LOCKED, "/whiteboard"),
+    Row("routes_board_affinity", "router", LOCKED, "/whiteboard"),
+    Row("routes_document_claims", "router", LOCKED, "/documents"),
+    Row("routes_document_story", "router", LOCKED, "/documents"),
+    Row("routes_map_from_notes", "router", LOCKED, "/whiteboard"),
+    Row("routes_documents_from_notes", "router", LOCKED, "/documents"),
+    Row("routes_debug", "router", LOCKED, "/debug"),
+    Row("routes_privacy", "router", LOCKED, "/privacy"),
+    Row("routes_capabilities", "router", LOCKED, "/capabilities"),
+    #: INBOX 1860: making and revoking the tool server's tokens is a Settings act,
+    #: behind the lock; `/mcp` itself checks its own bearer token instead.
+    Row("routes_mcp", "router", LOCKED, "/mcp-clients"),
+    Row("routes_mcp", "open_router", OPEN, "/mcp"),
+    Row("routes_read", "router", LOCKED, "/read"),
+    Row("routes_spelling", "router", LOCKED, "/grammar /spelling /spellpacks"),
+    Row("routes_statistics", "router", LOCKED, "/statistics"),
+    Row("routes_utilities", "router", LOCKED, "/utilities"),
     #: WORLD_CLASS_PLAN B6: the segment the other computer reads, and Sync now.
-    (routes_sync.router, LOCKED),
+    Row("routes_sync", "router", LOCKED, "/sync"),
     #: Open in the table only: its one route's own gate takes a session or the paired
     #: computer's sync pass (decision 11), and refuses anything else with 401.
-    (routes_sync.open_router, OPEN),
+    Row("routes_sync", "open_router", OPEN, "/sync"),
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.
-    (routes_vision.router, LOCKED),
+    Row("routes_vision", "router", LOCKED, "/charts /most-opened /review-queue /tidy-proposals"),
 )
 
 
-def _include_routers(app: FastAPI, locked: list) -> None:
-    """Every API router in `ROUTERS` order (a path one claims first wins), each behind the
-    gate its row names. ARCH-22."""
+def __getattr__(name: str):
+    """`ROUTERS`, the table as (router, gate) pairs, for the tests that hold the table to
+    the routers: built on reading, because building it imports every route module."""
+    if name == "ROUTERS":
+        return tuple((row.router(), row.gate) for row in ROUTER_ROWS)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def _first_segment(path: str) -> str:
+    return "/" + path.lstrip("/").split("/", 1)[0]
+
+
+class _LazyRouters(BaseRoute):
+    """Includes each router of `ROUTER_ROWS` at the first request that could reach it
+    (L-world-class-230). It sits in `app.routes` where the table's routers used to start
+    and never matches itself: its `matches` includes the rows whose segments the path
+    starts with, in place, right after itself and in table order, and Starlette's router,
+    which is part-way through `app.routes` at that moment, tries them next. A row only
+    ever serves paths under its own segments, so a row not yet included cannot have
+    claimed the path first, and the table's order still decides. Each router is included
+    by `app.include_router` with its row's gate, exactly as before, so the unlock and every
+    middleware layer apply to it the same. `load_all` is the eager mode: tests, `/openapi.json`."""
+
+    def __init__(self, app: FastAPI, gates: dict[str, list]) -> None:
+        self.app = app
+        self.gates = gates
+        self.loaded = [False] * len(ROUTER_ROWS)
+        # Rows tried, whether or not they came in: a row that failed to import is logged
+        # once and not retried at every request.
+        self.settled = [False] * len(ROUTER_ROWS)
+        self.by_segment: dict[str, list[int]] = {}
+        for index, row in enumerate(ROUTER_ROWS):
+            for segment in row.segments.split():
+                self.by_segment.setdefault(segment, []).append(index)
+        self._lock = threading.Lock()
+
+    def matches(self, scope):
+        if scope["type"] in ("http", "websocket"):
+            indexes = self.by_segment.get(_first_segment(get_route_path(scope)))
+            if indexes and not all(self.settled[i] for i in indexes):
+                self.load(indexes)
+        return Match.NONE, {}
+
+    def load(self, indexes) -> None:
+        for index in indexes:
+            if self.settled[index]:
+                continue
+            row = ROUTER_ROWS[index]
+            # Imported outside the lock, so a request's own row is not kept waiting
+            # behind another module's import (the launch warm-up's `load_all`).
+            try:
+                router = row.router()
+            except Exception:  # noqa: BLE001  # one broken module must not take down the rows after it
+                self._log_failure(index, row)
+                continue
+            with self._lock:
+                if self.settled[index]:
+                    continue
+                routes = self.app.router.routes
+                try:
+                    self.app.include_router(router, dependencies=self.gates[row.gate])
+                except Exception:  # noqa: BLE001
+                    self._log_failure(index, row)
+                    continue
+                included = routes.pop()
+                # In place, not a new list: the request that called `matches` is
+                # iterating this very list and must see the router it just included.
+                # `include_router` has already marked the routes changed.
+                routes.insert(routes.index(self) + 1 + sum(self.loaded[:index]), included)
+                self.loaded[index] = True
+                self.settled[index] = True
+
+    def _log_failure(self, index: int, row: Row) -> None:
+        """Its paths answer 404 from here on, and the log names the module, once, at error
+        level, so a broken route module is not a quiet 500 per request or a debug line."""
+        self.settled[index] = True
+        logging.getLogger("tessellate.startup").error(
+            "route module tessellate.api.%s failed to load; its routes are not served",
+            row.module,
+            exc_info=True,
+        )
+
+    def load_all(self) -> None:
+        self.load(range(len(ROUTER_ROWS)))
+
+    async def handle(self, scope, receive, send) -> None:  # never matched, see `matches`
+        raise RuntimeError("the lazy router host never handles a request itself")
+
+    def url_path_for(self, name: str, /, **path_params):
+        raise NoMatchFound(name, path_params)
+
+
+def load_all_routes(app: FastAPI) -> None:
+    """Include every router now: what a caller that lists the routes needs first."""
+    app.state.lazy_routes.load_all()
+
+
+def _include_routers(app: FastAPI, locked: list, *, eager: bool) -> None:
+    """Every API router in `ROUTER_ROWS` order (a path one claims first wins), each behind
+    the gate its row names (ARCH-22), included at its first request unless `eager`."""
     gates = {OPEN: [], LOCKED: locked, MEDIA: [Depends(routes_auth.require_unlock_media)]}
-    for router, gate in ROUTERS:
-        app.include_router(router, dependencies=gates[gate])
+    host = _LazyRouters(app, gates)
+    app.router.routes.append(host)
+    app.state.lazy_routes = host
+    if eager:
+        host.load_all()
 
     routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
 
@@ -1728,6 +1793,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         network; this is the same document, behind the unlock. Tooling that
         wants it sends `X-Auth-Token` like every other call.
         """
+        load_all_routes(app)
         return JSONResponse(app.openapi())
 
     @app.post("/system/clear-static-cache", tags=["system"], dependencies=locked)
@@ -1831,7 +1897,14 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             return {"markdown": ""}
 
 
-def create_app() -> FastAPI:
+def create_app(*, lazy_routes: bool | None = None) -> FastAPI:
+    """The app. `lazy_routes` (L-world-class-230): include each route module at its first
+    request (`_LazyRouters`). Off under pytest unless asked, so a test listing `app.routes`
+    sees them all, and off with `TESSELLATE_EAGER_ROUTES=1`."""
+    if lazy_routes is None:
+        lazy_routes = not (
+            os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("TESSELLATE_EAGER_ROUTES") == "1"
+        )
     # First, before any singleton is built. This catches `uvicorn … --workers 4`
     # run directly against this factory, which is the only way the app can be
     # started multi-worker: `python -m tessellate` hands uvicorn an app object
@@ -1859,6 +1932,8 @@ def create_app() -> FastAPI:
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
         concurrency.apply_worker_limit()
+        from tessellate.api import routes_models
+
         routes_models.prewarm_installed()
         _warm_routes(_app)
         afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
@@ -1866,6 +1941,11 @@ def create_app() -> FastAPI:
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
         # line in the log.
+        # The registry first (core/background.py): every named worker, the
+        # reminder notifier among them, is signalled before anything waits.
+        from tessellate.core import background
+
+        background.stop_all()
         jobs.stop_all()
         # The thread Jobs (`jobs.thread`): their watchers name how they
         # stop, and quitting is when to ask.
@@ -1917,7 +1997,7 @@ def create_app() -> FastAPI:
     # Everything that touches the user's data sits behind the unlock
     # gate; /auth itself and /health stay open.
     locked = [Depends(require_unlock), Depends(deadline.guard)]
-    _include_routers(app, locked)
+    _include_routers(app, locked, eager=not lazy_routes)
     _add_system_routes(app, locked)
 
     # The owner's benches (tools/avatar-lab.html, tools/companion-sim.html)

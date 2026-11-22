@@ -60,7 +60,7 @@ function fillEntryMenu(menu, entry) {
           }
           toast("Note duplicated.");
         } catch (err) {
-          toast(err.message || "Couldn't duplicate note.", true);
+          toast(err.message || voiceLine("failed", { what: "duplicate note" }), true);
         }
       },
     },
@@ -97,7 +97,7 @@ function fillEntryMenu(menu, entry) {
       // titled note ("Probe A\nrelates to sourdough"), which reads as
       // two sentences jammed together on one line of the dialog.
       run: () =>
-        lazyScript("/js/connections.js").then(() => openConnections(
+        ensureModule("connections").then(() => openConnections(
           "entries",
           entry.id,
           entry.title || noteNamePlain(entry.content, 80)
@@ -142,7 +142,7 @@ function fillEntryMenu(menu, entry) {
       run: async () => {
         if (!(await openNoteEditor(entry.id))) return;
         // The edit textarea now exists, improve it in place.
-        const box = document.querySelector(`#entry-list li[data-id="${entry.id}"] textarea`);
+        const box = noteRowFor(entry.id)?.querySelector("textarea");
         if (box) openImprove(box);
       },
     },
@@ -180,7 +180,7 @@ function fillEntryMenu(menu, entry) {
           pushBinPairUndo("Made a mind map from a note", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
           await openWhiteboardBoard(board.id);
         } catch (err) {
-          toast(err.message || "Couldn't make a mind map of this note.", true);
+          toast(err.message || voiceLine("failed", { what: "make a mind map of this note" }), true);
         }
       },
     }]),
@@ -425,7 +425,7 @@ fillEntryMenu.headings = async function (entry) {
   try {
     whole = await fullEntry(entry.id);
   } catch (error) {
-    toast(error.message || "Couldn't read that note.", true);
+    toast(error.message || voiceLine("failed", { what: "read that note" }), true);
     return;
   }
   const entries = mdTocEntries(whole.title ? bodyWithoutTitleLine(whole.content) : stripFrontmatter(whole.content));
@@ -458,7 +458,7 @@ fillEntryMenu.headings = async function (entry) {
 };
 
 fillEntryMenu.jump = async function (id, index, total, text) {
-  const row = document.querySelector(`li[data-id="${id}"]`);
+  const row = noteRowFor(id) || document.querySelector(`li[data-id="${id}"]`);
   const content = row?.querySelector(".entry-content");
   if (!content) return;
   const more = row.querySelector(".entry-more");
@@ -535,7 +535,7 @@ async function generateEntryTitle(entry) {
       detail: title ? `“${title}”` : `Note #${entry.id}`,
     });
   } catch (error) {
-    toast(error.message || "Couldn't generate a title.", true);
+    toast(error.message || voiceLine("failed", { what: "generate a title" }), true);
   }
 }
 
@@ -549,7 +549,7 @@ async function removeEntryTitle(entry) {
     // Said out loud: it was silent.
     toast("Title removed.", false, { exempt: true });
   } catch (error) {
-    toast(error.message || "Couldn't remove the title.", true);
+    toast(error.message || voiceLine("failed", { what: "remove the title" }), true);
   }
 }
 
@@ -580,6 +580,7 @@ async function translateNoteInDesk(entry) {
   $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
 }
 
+// Moved from note-cards.js (boot gzip budget, L611): this menu row is its one caller.
 //: Start a chat about one note. Named by its title in the words a person
 //: would use, so the agent's own search tools find it, rather than pasting the
 //: whole note into the box.

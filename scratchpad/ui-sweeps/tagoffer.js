@@ -45,7 +45,7 @@ function ok(label, pass, detail) {
   // driving the status the probe would only ever see the "no model" half and
   // would have reported the offer missing as a fault.
   const withoutModel = await page.evaluate(() => {
-    modelStatus = { ollama_running: false };
+    modelStatus = { ollama_running: false, ai_off: true };
     renderEntries();
     const li = [...document.querySelectorAll(".entry-list li")].find((el) =>
       el.textContent.includes("A note with nothing filed on it yet."),
@@ -64,7 +64,7 @@ function ok(label, pass, detail) {
   );
 
   await page.evaluate(() => {
-    modelStatus = { ollama_running: true };
+    modelStatus = { ollama_running: true, ai_off: false };
     renderEntries();
   });
   await page.waitForTimeout(200);

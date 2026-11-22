@@ -734,6 +734,8 @@ function selectFaceText(option, resync) {
   return short && NARROW_FACE.matches ? short : option.textContent.trim();
 }
 
+//: Its opener's arrow keys do nothing as a row of an open menu (Notes, Sort and view): the menu's arrows walk
+//: past it (navigation.js), and opening here too left its list up, orphaned, once Escape closed the menu (L-world-class-875).
 function enhanceSelect(select) {
   if (!select || select.hasAttribute(SELECT_ENHANCED)) return;
   // A multi-select is a different control with different semantics, and
@@ -962,7 +964,7 @@ function enhanceSelect(select) {
   //: APG select-only combobox: ↓ and ↑ on the closed button open the list on the chosen row (Enter and Space already do, as a click).
   opener.addEventListener("keydown", (event) => {
     if ((event.key !== "ArrowDown" && event.key !== "ArrowUp") || event.altKey || event.ctrlKey || event.metaKey) return;
-    if (!menu.classList.contains("hidden")) return;
+    if (!menu.classList.contains("hidden") || opener.closest(".doc-dock-menu-list, [role='menu']")) return;
     event.preventDefault();
     opener.click();
   });
@@ -1105,7 +1107,7 @@ function enhanceAllSelects(root) {
 function dateFieldFace(value, isTime) {
   if (isTime) {
     const [h, m] = value.split(":").map(Number);
-    return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() });
   }
   const day = new Date(`${value}T00:00:00`);
   const year = day.getFullYear() === new Date().getFullYear() ? undefined : "numeric";
@@ -1188,7 +1190,12 @@ function focusSelect(select) {
 // New selects appear whenever a panel renders, so watch for them rather
 // than asking every render path to remember to call this.
 function watchForSelects() {
-  enhanceAllSelects(document);
+  //: **Settings panes wrap their selects as each is shown** (`showSettingsSection`
+  //: calls `enhanceAllSelects` on the pane), not here: the boot pass wrapped 99
+  //: selects, about 50 ms, most in panes nobody opened (WORLD_CLASS_PLAN 19,
+  //: L-world-class-14).
+  for (const select of document.querySelectorAll("select")) if (!select.closest("#settings-modal")) enhanceSelect(select);
+  enhanceAllSelects.stampSwitches?.(document);
   for (const field of document.querySelectorAll('input:is([type="date"], [type="time"])')) enhanceDateField(field);
   annotateSliders(document);
   new MutationObserver((records) => {
@@ -1882,6 +1889,7 @@ async function loadConversationList() {
     const li = document.createElement("li");
     if (conversation.id === chatConv.id) li.classList.add("active-conv");
     if (conversation.pinned) li.classList.add("pinned-conv");
+    Object.assign(li.dataset, { at: conversation.last_at, turns: conversation.turns });
 
     //: **The whole row opens the chat, not just the words in it.** Reported:
     //: "I clicked on other chat conversations in the chat sidebar but the
@@ -1931,7 +1939,7 @@ async function loadConversationList() {
     if (conversation.tokens) bits.push(`${formatTokens(conversation.tokens)} tok`);
     meta.textContent = bits.join(" · ");
     //: The hover holds the exact time (OPEN #593); the row reads relative.
-    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), ...bits.slice(1)].filter(Boolean).join(" · ");
+    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short", ...clockOptions() }), ...bits.slice(1)].filter(Boolean).join(" · ");
     title.append(name, meta);
     // The title often isn't the subject: show what was actually asked.
     if (conversation.preview && conversation.preview !== conversation.title) {
@@ -1941,83 +1949,90 @@ async function loadConversationList() {
     // taking most of the row, leaving a few characters of the chat's name.
     const actions = document.createElement("span");
     actions.className = "entry-actions";
-    const items = [];
-    items.push(
-      makeMenuItem(
-        conversation.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
-        conversation.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
-        async () => {
-          await apiJson(`/conversations/${conversation.id}/pin`, {
-            method: "PUT",
-            body: JSON.stringify({ pinned: !conversation.pinned }),
-          });
-          chatWriteRecord("chatPinUndo", conversation.id, !conversation.pinned);
-          loadConversationList();
-        }
-      )
-    );
-    items.push(
-      makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptTitle("Rename this chat", conversation.title);
-        if (!next) return;
-        await apiJson(`/conversations/${conversation.id}`, {
-          method: "PUT",
-          body: JSON.stringify({ title: next }),
-        });
-        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
-        if (chatConv.id === conversation.id) $("chat-title").textContent = next;
-        loadConversationList();
-      })
-    );
-    items.push(
-      makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
-        //: Asked for, so answered directly: the activity notice below obeys
-        //: "AI activity: panel only", and with that set the click showed
-        //: nothing at all, start or finish (the owner at release).
-        toast("Atlas is naming this chat…");
-        const named = await apiJson(`/conversations/${conversation.id}/retitle`, {
-          method: "POST",
-        }).catch((e) => {
-          toast(e.message, true);
-          return null;
-        });
-        if (!named) return;
-        if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        if (named.title === conversation.title) toast("Kept the first question as the title.");
-        else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
-        loadConversationList();
-      })
-    );
-    items.push(appLinkMenuItem("chat", conversation.id));
-    items.push(
-      // Not destructive, so not grouped with Delete below, same "keep it,
-      // but out of the way" action Notes already has for entries (BACKLOG
-      // §30b's named remaining scope: chats and documents). Reachable
-      // again from the Library's Shelved filter.
-      makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
-        await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
-        if (chatConv.id === conversation.id) newChatConversation();
-        //: Awaited, so the row is gone by the time the toast says where it went (AI21).
-        await loadConversationList();
-        chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
-      })
-    );
-    items.push(
-      makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
-        if (!(await confirmDialog("Delete this saved chat?"))) return;
-        const gone = await apiJson(`/conversations/${conversation.id}`, { method: "DELETE" });
-        if (chatConv.id === conversation.id) newChatConversation();
-        loadConversationList();
-        chatDeleteUndo(gone);
-      })
-    );
+    const items = loadConversationList.menu(conversation);
     //: Six rows is past the ceiling (DESIGN.md): what you do to it, its address, and the two that put it away.
     const group = (item) => (/Copy app link/.test(item.label) ? "copy" : /Archive|Delete/.test(item.label) ? "end" : "act");
     actions.appendChild(kebabMenu(items.map((item) => ({ ...item, group: group(item) })), `Actions for ${conversation.title}`, { vertical: true }));
     li.append(title, actions);
     list.appendChild(li);
   }
+  //: The Group by control and the section headings (lazy, chat-groups.js).
+  lazyScript("/js/chat-groups.js").then((ok) => ok && chatGroups(list));
 }
+//: One chat row's menu items, split from `loadConversationList`.
+loadConversationList.menu = (conversation) => {
+  const items = [];
+  items.push(
+    makeMenuItem(
+      conversation.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
+      conversation.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
+      async () => {
+        await apiJson(`/conversations/${conversation.id}/pin`, {
+          method: "PUT",
+          body: JSON.stringify({ pinned: !conversation.pinned }),
+        });
+        chatWriteRecord("chatPinUndo", conversation.id, !conversation.pinned);
+        loadConversationList();
+      }
+    )
+  );
+  items.push(
+    makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
+      const next = await promptTitle("Rename this chat", conversation.title);
+      if (!next) return;
+      await apiJson(`/conversations/${conversation.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title: next }),
+      });
+      chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
+      if (chatConv.id === conversation.id) $("chat-title").textContent = next;
+      loadConversationList();
+    })
+  );
+  items.push(
+    makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
+      //: Asked for, so answered directly: the activity notice below obeys
+      //: "AI activity: panel only", and with that set the click showed
+      //: nothing at all, start or finish (the owner at release).
+      toast("Atlas is naming this chat…");
+      const named = await apiJson(`/conversations/${conversation.id}/retitle`, {
+        method: "POST",
+      }).catch((e) => {
+        toast(e.message, true);
+        return null;
+      });
+      if (!named) return;
+      if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
+      if (named.title === conversation.title) toast("Kept the first question as the title.");
+      else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
+      loadConversationList();
+    })
+  );
+  items.push(appLinkMenuItem("chat", conversation.id));
+  items.push(
+    // Not destructive, so not grouped with Delete below, same "keep it,
+    // but out of the way" action Notes already has for entries (BACKLOG
+    // §30b's named remaining scope: chats and documents). Reachable
+    // again from the Library's Shelved filter.
+    makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
+      await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
+      if (chatConv.id === conversation.id) newChatConversation();
+      //: Awaited, so the row is gone by the time the toast says where it went (AI21).
+      await loadConversationList();
+      chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
+    })
+  );
+  items.push(
+    makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
+      if (!(await confirmDialog("Delete this saved chat?"))) return;
+      const gone = await apiJson(`/conversations/${conversation.id}`, { method: "DELETE" });
+      if (chatConv.id === conversation.id) newChatConversation();
+      loadConversationList();
+      chatDeleteUndo(gone);
+    })
+  );
+  return items;
+};
 
 // An edited answer is labelled, always. A transcript that silently presents
 // your words as the model's is worse than no transcript.

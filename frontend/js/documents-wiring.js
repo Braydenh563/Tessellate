@@ -2,8 +2,7 @@
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
   // --- documents wiring ---
-  //: The code panel's ways in (INBOX 788), each fetching documents-codekit.js
-  //: on its first press. `keep` reopens a tab without toggling it shut.
+  //: The code panel's ways in (INBOX 788), each fetching documents-codekit.js on its first press. `keep` reopens a tab without toggling it shut.
   async function docCodeSideFrom(tab, keep = false) {
     if (!(await lazyScript("/js/documents-codekit.js"))) return toast("The code panel could not be loaded.", true, { action: ["Try again", () => docCodeSideFrom(tab, keep)] });
     if (keep) docCodeSideOpen(tab, { auto: true });
@@ -17,8 +16,7 @@
     scheduleUndoBar();
     markDocDirty();
     scheduleDocPreview();
-    //: Only the fallback's own column (DX1): the engine numbers its own lines,
-    //: and every note box's gutter was redrawn per key typed here.
+    //: Only the fallback's own column (DX1): the engine numbers its own lines, and every note box's gutter was redrawn per key typed here.
     if (!docCmView) renderDocGutter(docBoxEl());
   }
   // Both formatting toolbars, wired the same way. `data-md-target` on the
@@ -57,8 +55,7 @@
     return out;
   }
 
-  //: The attributes as the text between `{{` and `|`, in one fixed order so the
-  //: same run is always the same characters.
+  //: The attributes as the text between `{{` and `|`, in one fixed order so the same run is always the same characters.
   function mdRunFormat(attrs) {
     return ["size", "font", "ink", "hl"].filter((key) => attrs[key] !== undefined && attrs[key] !== null).map((key) => `${key}=${attrs[key]}`).join(" ");
   }
@@ -90,8 +87,7 @@
     const mark = kind === "ink" ? "++" : "==";
     const open = kind === "ink" ? `++${colour}|` : colour === "yellow" ? "==" : `==${colour}|`;
     const picked = value.slice(start, end);
-    //: The marks on this line that the selection sits inside (or is): the whole
-    //: mark takes the new colour, whatever part of its words was selected.
+    //: The marks on this line that the selection sits inside (or is): the whole mark takes the new colour, whatever part of its words was selected.
     const lineFrom = value.lastIndexOf("\n", start - 1) + 1;
     const lineTo = value.indexOf("\n", end) === -1 ? value.length : value.indexOf("\n", end);
     const marks = kind === "ink" ? /\+\+[a-z]+\|((?:(?!\+\+).)+)\+\+/g : /==(?:[a-z]+\|)?((?:(?!==).)+)==/g;
@@ -223,8 +219,7 @@
       for (const [md, label] of menu.items) {
         const button = document.createElement("button");
         button.type = "button";
-        //: The one menu-row recipe, shared with the chat's kebab (`.menu-item`,
-        //: 02-chat-graph.css) -- see the comment on `.doc-dock-menu-list`.
+        //: The one menu-row recipe, shared with the chat's kebab (`.menu-item`, 02-chat-graph.css) -- see the comment on `.doc-dock-menu-list`.
         button.className = "menu-item doc-dock-menu-item";
         button.dataset.md = md;
         button.textContent = label;
@@ -418,8 +413,7 @@
   const NOTE_SURFACES = {
     //: Capture, the most used text box in the app.
     "entry-content": { size: "box", live: true },
-    //: The note edit form (`renderEditForm`), rebuilt per edit, which is why
-    //: the listener is delegated rather than bound at boot.
+    //: The note edit form (`renderEditForm`), rebuilt per edit, which is why the listener is delegated rather than bound at boot.
     "entry-edit-content": { size: "inline", live: true },
     //: The graph's own two note boxes (Phase 8b): the node popup's editor and
     //: the new-note box beside it. Both are note text, and both had a bare
@@ -484,11 +478,17 @@
       host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
       //: The same whole-line copy and cut the document has (INBOX 652).
       CM.state.Prec.high(docLineClipboardExtension(CM)),
-      //: Bullets that do not nest when retyped, fences that close at their own
-      //: indent, Enter on an empty item ending the list (dogfood round 1).
+      //: Pasted HTML becomes Markdown here as in a document (L-world-class-50): the same `docRichPasteEvent`, and Ctrl+Shift+V the same plain paste.
+      CM.state.Prec.high(CM.view.EditorView.domEventHandlers({
+        keydown: (event) => {
+          docPastePlain = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v";
+          return false;
+        },
+        paste: (event, view) => docRichPasteEvent(event, view),
+      })),
+      //: Bullets that do not nest when retyped, fences that close at their own indent, Enter on an empty item ending the list (dogfood round 1).
       docListFenceExtensions(CM, false),
-      //: Grammar rides with the rendering: the note's own list (PROSE-TOOLS,
-      //: `noteGrammarPlugin`).
+      //: Grammar rides with the rendering: the note's own list (PROSE-TOOLS, `noteGrammarPlugin`).
       host.noteLiveSlot.of(noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live),
       (host.noteGutterSlot = new CM.state.Compartment()).of(noteSurfaceGutter(CM, host)),
       //: **No findings plugin here, and that is the option the plan names
@@ -510,11 +510,10 @@
       CM.language.indentOnInput(),
       CM.language.syntaxHighlighting(CM.language.defaultHighlightStyle, { fallback: true }),
       CM.language.bracketMatching(),
-      docCmTheme(CM),
+      docCmThemeKept(CM),
       docCmHighlight(CM),
       CM.view.placeholder(host.placeholder || ""),
-      //: This app's chords first, so Ctrl+B is bold in a note for the same
-      //: reason it is bold in a document.
+      //: This app's chords first, so Ctrl+B is bold in a note for the same reason it is bold in a document.
       docRedoChord(CM),
       CM.view.keymap.of([
         //: The host's own keys first (Phase 8c): a box whose Enter means "done"
@@ -540,8 +539,7 @@
     const labelled = host.getAttribute("aria-labelledby");
     const byId = labelled ? labelled.split(/\s+/).map((id) => document.getElementById(id)?.textContent.trim()).filter(Boolean).join(" ") : "";
     const forLabel = host.id ? document.querySelector(`label[for="${CSS.escape(host.id)}"]`)?.textContent.trim() : "";
-    //: A placeholder is the last resort, and only its first line: Capture's runs
-    //: to three lines of tips, which is not a name.
+    //: A placeholder is the last resort, and only its first line: Capture's runs to three lines of tips, which is not a name.
     return byId || host.getAttribute("aria-label") || forLabel || host.title || (host.placeholder || "").split("\n")[0].trim() || "Note text";
   }
 
@@ -619,8 +617,7 @@
     ];
   }
 
-  //: The Source choice is one for every note box, remembered: a person who
-  //: writes in raw markdown wants it in the edit form as much as in Capture.
+  //: The Source choice is one for every note box, remembered: a person who writes in raw markdown wants it in the edit form as much as in Capture.
   const NOTE_SOURCE_KEY = "note-source-view";
   //: **Only the boxes that carry the Source toggle** (INBOX 447, the owner:
   //: "i dont think the md is rendered at all in the graph popups"). Source
@@ -645,8 +642,7 @@
     return true;
   }
 
-  //: The view changed: mirror it out, and run the pipelines a typed character
-  //: would have run in the textarea.
+  //: The view changed: mirror it out, and run the pipelines a typed character would have run in the textarea.
   function noteSurfaceUpdate(host, update) {
     const view = update.view;
     if (update.docChanged || update.selectionSet) noteSurfaceMirror(host, view, update.docChanged);
@@ -658,8 +654,7 @@
     //: never raises for a typed character (the same call `docCmUpdate` makes
     //: for the document, and for the same reason).
     if (typeof editorHandleInput === "function") editorHandleInput(surface);
-    //: Autocorrect (autocorrect.js, Brief 94) hears a typed change as an event,
-    //: a microtask later: it may dispatch, which an update in progress refuses.
+    //: Autocorrect (autocorrect.js, Brief 94) hears a typed change as an event, a microtask later: it may dispatch, which an update in progress refuses.
     if (update.transactions.some((tr) => tr.isUserEvent("input.type"))) {
       queueMicrotask(() => host.dispatchEvent(new CustomEvent("note-typed", { bubbles: true, detail: surface })));
     }
@@ -679,8 +674,7 @@
     host.noteMirrorStale = true;
     clearTimeout(host.noteMirrorTimer);
     host.noteMirrorTimer = setTimeout(() => host.noteMirrorFlush?.(), NOTE_MIRROR_MS);
-    //: A script's own `box.value = ...` already told everyone; only a change
-    //: made in the view raises the event.
+    //: A script's own `box.value = ...` already told everyone; only a change made in the view raises the event.
     if (!docChanged || host.noteSettingValue) return;
     noteSurfaceMirroring = true;
     try {
@@ -690,8 +684,7 @@
     }
   }
 
-  //: What brings the textarea level with the view, and keeps anything that
-  //: reaches into the textarea itself from finding it behind.
+  //: What brings the textarea level with the view, and keeps anything that reaches into the textarea itself from finding it behind.
   function noteSurfaceMirrorTools(host, view, valueProto) {
     const nativeRange = HTMLTextAreaElement.prototype.setSelectionRange;
     host.noteMirrorStale = false;
@@ -704,8 +697,7 @@
       noteSurfaceMirroring = true;
       try {
         valueProto.set.call(host, text);
-        //: Some engines refuse a selection on a box that is not rendered, and a
-        //: refusal is not a reason to drop the text.
+        //: Some engines refuse a selection on a box that is not rendered, and a refusal is not a reason to drop the text.
         nativeRange.call(host, Math.min(range.from, text.length), Math.min(range.to, text.length));
       } catch (error) {
         // The text is in; the caret there is the view's to keep.
@@ -788,8 +780,7 @@
         },
       });
     }
-    //: And `box.readOnly`, for the same reason as `value`: the flag is the
-    //: textarea's, the person types into the view.
+    //: And `box.readOnly`, for the same reason as `value`: the flag is the textarea's, the person types into the view.
     const readOnlyProto = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "readOnly");
     if (readOnlyProto && readOnlyProto.set && host.noteReadOnlySlot) {
       Object.defineProperty(host, "readOnly", {
@@ -803,8 +794,7 @@
         },
       });
     }
-    //: And `box.focus()`, which a dozen call sites use to put the caret in a
-    //: note box: the textarea is invisible and would take the keystrokes.
+    //: And `box.focus()`, which a dozen call sites use to put the caret in a note box: the textarea is invisible and would take the keystrokes.
     const focus = host.focus.bind(host);
     host.focus = (...args) => {
       if (noteSurfaceViews.has(host)) view.focus();
@@ -921,7 +911,18 @@
       selection: { anchor: from, head: to },
       extensions: noteSurfaceExtensions(CM, host, settings),
     });
+    //: Views whose editor left the page are destroyed first (see `noteSurfaceViews.live`).
+    for (const gone of noteSurfaceViews.live) {
+      if (gone.dom.isConnected) continue;
+      noteSurfaceViews.live.delete(gone);
+      try {
+        gone.destroy();
+      } catch (error) {
+        //: A view that cannot be torn down is no worse off than before.
+      }
+    }
     const view = new CM.view.EditorView({ state, parent: wrap });
+    noteSurfaceViews.live.add(view);
     //: The same guard the document's own host carries: the app binds single
     //: characters as global shortcuts ("/" focuses search), and a
     //: contenteditable is not a textarea, so nothing else stops them. Measured
@@ -1026,8 +1027,7 @@
 
   $("doc-csv-grid")?.addEventListener("click", () => ensureModule("docCsvGrid").then(() => docViewState.csvGrid?.toggle()));
 
-  //: DOCUMENTS_PLAN 25 row 2: Run on a .py document with no Python yet is
-  //: disabled, and this line beside it is the way to the install.
+  //: DOCUMENTS_PLAN 25 row 2: Run on a .py document with no Python yet is disabled, and this line beside it is the way to the install.
   $("doc-code-run-why")?.addEventListener("click", () => docRunOpenPythonExtra());
 
   $("doc-code-format").addEventListener("click", async () => {

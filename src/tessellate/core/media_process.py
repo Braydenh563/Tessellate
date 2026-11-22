@@ -30,6 +30,7 @@ import importlib
 from pathlib import Path
 from sqlalchemy.orm import Session
 
+from tessellate.core import sealed_files
 from tessellate.core.database import MediaUpload
 
 
@@ -104,6 +105,10 @@ def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
     read_text = bool(config.get_preference("auto_read_image_text", True))
 
     path = media_dir / upload.filename
+    # The readers run in the background, which has no vault key: a private
+    # space's sealed picture would be read as ciphertext (L-world-class-52).
+    if sealed_files.is_sealed(path):
+        return
     suffix = Path(upload.filename).suffix.lower()
     if read_text and suffix in ocr.OCR_SUFFIXES and _due(upload, "ocr", upload.ocr_text):
         ocr.extract_in_background(upload.id, path)

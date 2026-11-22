@@ -82,13 +82,13 @@ c.commit();print(e)`;
     const r = [...pane.querySelectorAll('.inbox-row')].find((x) => x.textContent.includes(`Sam${s} Lee`));
     if (!r) return { visible: !pane.hidden, text: pane.textContent.slice(0, 200) };
     const box = r.getBoundingClientRect();
-    return { visible: !pane.hidden, text: r.querySelector('.inbox-row-title').textContent, why: r.querySelector('.link-suggestion-why').textContent, w: Math.round(box.width), sideways: r.scrollWidth > r.clientWidth + 1 };
+    return { visible: !pane.hidden, text: r.querySelector('.link-suggestion-pair').textContent, why: r.querySelector('.link-suggestion-why').textContent, w: Math.round(box.width), sideways: r.scrollWidth > r.clientWidth + 1 };
   }, s);
   console.log(JSON.stringify(nameRow));
-  check('Names: the pair, the fuller name kept', nameRow.visible && nameRow.text && nameRow.text.startsWith(`“Sam${s}”`), nameRow.text);
+  check('Names: the pair, the fuller name kept', nameRow.visible && nameRow.text && nameRow.text.startsWith(`Sam${s}`), nameRow.text);
   await page.evaluate((s) => {
     const r = [...document.querySelectorAll('#inbox-pane-names .inbox-row')].find((x) => x.textContent.includes(`Sam${s} Lee`));
-    r?.querySelector('.inbox-row-actions button')?.click();
+    r?.querySelector('.link-suggestion-actions button')?.click();
   }, s);
   await page.waitForTimeout(1500);
   const merged = execFileSync('python3', ['-c', `import sqlite3,sys
@@ -104,13 +104,13 @@ c=sqlite3.connect(sys.argv[1]);print(c.execute("select count(*) from entity_ment
     const r = [...document.querySelectorAll('#inbox-pane-types .inbox-row')].find((x) => x.textContent.includes(`Kiln note ${s}`));
     if (!r) return null;
     const mark = r.querySelector('.doc-backlink-context mark');
-    return { mark: mark?.textContent, button: r.querySelector('.inbox-row-actions button')?.textContent.trim(), sideways: r.scrollWidth > r.clientWidth + 1 };
+    return { mark: mark?.textContent, button: r.querySelector('.link-suggestion-actions button')?.textContent.trim(), sideways: r.scrollWidth > r.clientWidth + 1 };
   }, s);
   console.log(JSON.stringify(typeRow));
   check('Link types: the cue marked in its sentence', typeRow && /for example/i.test(typeRow.mark || ''), typeRow && typeRow.mark);
   await page.evaluate((s) => {
     const r = [...document.querySelectorAll('#inbox-pane-types .inbox-row')].find((x) => x.textContent.includes(`Kiln note ${s}`));
-    r?.querySelector('.inbox-row-actions button')?.click();
+    r?.querySelector('.link-suggestion-actions button')?.click();
   }, s);
   await page.waitForTimeout(1200);
   const typed = execFileSync('python3', ['-c', `import sqlite3,sys

@@ -415,7 +415,7 @@
   //: (`notesPaletteCommands`, below, INBOX 432: a category to go to, a #tag to
   //: show, Move for the note in hand), each with a group.
   function paletteBase(lowered) {
-    return [...paletteCommands(), ...notesPaletteCommands(lowered)].map((c) => (c.group ? c : { ...c, group: "Everywhere" }));
+    return [...paletteCommands(), ...chatPaletteRows(), ...notesPaletteCommands(lowered)].map((c) => (c.group ? c : { ...c, group: "Everywhere" }));
   }
 
   //: Everything typed text can reach: the hand-written rows and the three
@@ -872,6 +872,18 @@
   // ---- from palette.js (search-boot-1005): notesPaletteCommands ----
   // Moved whole. Every use is in this file, so it is not needed before this file loads.
 
+  //: The chat menu's Rename had no palette command (L-world-class-876): offered while Chat is the tab.
+  function chatPaletteRows() {
+    if (prefs.get("activeTab", null) !== "chat" || !chatConv) return [];
+    return [{
+      group: "This chat",
+      label: "ph:pencil-simple Rename this chat",
+      about: "Give the chat a title of your own.",
+      keywords: "rename title name conversation",
+      run: paletteLater(() => renameCurrentConversation()),
+    }];
+  }
+
   function notesPaletteCommands(query = "") {
     const rows = [];
     const ids = paletteNotesInHand();
@@ -889,6 +901,27 @@
         about: one ? `${one.tags.length ? one.tags.map((t) => `#${t}`).join(" ") : "No tags yet."}` : `${ids.length} selected notes.`,
         run: paletteLater(() => openBulkTags(ids)),
       });
+    }
+    //: The two note menu rows the palette lacked (L693): a note in hand, and
+    //: not a private one, can be chatted about or filed by Atlas from here.
+    const held = ids.length === 1 ? allEntries.find((e) => e.id === ids[0]) : null;
+    if (held) {
+      rows.push({
+        group: "This note",
+        label: "ph:chat-circle Ask Atlas about this note",
+        about: "Start a chat about this note and what it connects to.",
+        keywords: "chat about talk discuss",
+        run: paletteLater(() => ensureModule("entryMenu").then((ok) => ok && askAtlasAboutNote(held))),
+      });
+      if (!held.is_private) {
+        rows.push({
+          group: "This note",
+          label: "ph:sparkle Tag and file with Atlas",
+          about: "Atlas re-reads the note, suggests tags and links, and may refile it.",
+          keywords: "file it refile tag atlas",
+          run: paletteLater(() => reevaluateEntry(held)),
+        });
+      }
     }
     //: Tidy (INBOX 691): the reviews, and two of them by name.
     rows.push({
@@ -951,7 +984,7 @@
   function paletteNotesInHand() {
     if (selectMode && selectedIds.size) return [...selectedIds];
     const row = overlayReturnFocus?.closest?.("#entry-list li[data-id]");
-    const id = notePageOpenId || editingId || Number(row?.dataset.id);
+    const id = notePageOpenId || appState.get("note") || Number(row?.dataset.id);
     return id ? [Number(id)] : [];
   }
 

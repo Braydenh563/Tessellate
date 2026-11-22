@@ -53,16 +53,18 @@ class Budget(NamedTuple):
     server_cap_ms: int = 0
 
 
-#: Measured 2026-10-11 (README "Performance"), machine load 7 to 11. A
-#: measurement is the slowest p50 of four browser runs (three or four server
-#: rounds), so a loaded machine sets the figure rather than a lucky minute.
+#: Measured 2026-11-22 at idle (README "Performance"), load 1.6 to 1.9 before each
+#: of four rounds on the shared four-core box; the first reading, 2026-10-11, was
+#: taken at load 7 to 11 and its caps were three to ten times too loose. A
+#: measurement is the slowest p50 of four browser runs (five server rounds each),
+#: so a lucky minute does not set the figure, and a cap never rises.
 BUDGETS: tuple[Budget, ...] = (
-    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 713, 1070, "/", 76, 120),
-    Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 4639, 6960),
-    Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 139, 210, "/entries?limit=60", 40, 60),
-    Budget("search", "Search", "One search request, p50 over three queries", 30, 50, "/search?q=harbour&limit=20", 40, 60),
-    Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 108, 170, "/whiteboard/?board_id={board}", 75, 120),
-    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 359, 540, "/documents/{document}", 32, 50),
+    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 312, 470, "/", 48, 80),
+    Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 2101, 3160),
+    Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 65, 100, "/entries?limit=60", 29, 50),
+    Budget("search", "Search", "One search request, p50 over three queries", 23, 40, "/search?q=harbour&limit=20", 23, 40),
+    Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 111, 170, "/whiteboard/?board_id={board}", 46, 70),
+    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 118, 180, "/documents/{document}", 20, 30),
 )
 SHARE_RUNS = 5
 
@@ -87,15 +89,9 @@ def heavy_ids(session) -> dict[str, int]:  # noqa: ANN001
     """The board with the most objects and the longest document: the two
     items the budget names, found rather than assumed so the live reading
     works on any notebook."""
-    from sqlalchemy import func, select
+    from tessellate.repo import documents, whiteboard
 
-    from tessellate.core.database import WhiteboardObject
-    from tessellate.repo import documents
-
-    board = session.execute(
-        select(WhiteboardObject.board_id).where(WhiteboardObject.board_id.is_not(None))
-        .group_by(WhiteboardObject.board_id).order_by(func.count().desc()).limit(1)
-    ).scalar()
+    board = whiteboard.busiest_board_id(session)
     document = documents.largest_id(session)
     return {"board": board or 0, "document": document or 0}
 

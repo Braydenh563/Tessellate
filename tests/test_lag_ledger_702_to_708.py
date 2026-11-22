@@ -56,7 +56,7 @@ def test_l705_timeline_scroll_to_today_lays_out_once():
 
 
 def test_l705_notes_rail_measures_after_layout():
-    text = (JS / "notes-list.js").read_text()
+    text = (JS / "notes-list.js").read_text() + (JS / "notes-wire.js").read_text()
     render = _fn(text, "async function renderNotesRail")
     assert 'renderNotesRail.ro?.observe($("entry-list"))' in render
     assert "getBoundingClientRect" not in render

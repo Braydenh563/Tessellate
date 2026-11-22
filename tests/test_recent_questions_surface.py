@@ -79,7 +79,7 @@ def test_the_two_surfaces_do_not_mix(ai_client, fake_ollama, session):
 
 
 def _asked(session, question):
-    from tessellate.api.routes_chat import ASK_SURFACE
+    from tessellate.api.chat_recent import ASK_SURFACE
 
     session.add(AuditLog(action="queried", entity_type=ASK_SURFACE, detail=question))
     session.commit()

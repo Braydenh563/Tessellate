@@ -232,7 +232,7 @@ async function viewAskHistoryTurn(id) {
 async function toggleAskHistoryPin(id, pinned) {
   //: A failure is said, not swallowed (audit 2026-10-05, FE-12).
   const done = await apiJson(`/ask-history/${id}/pin?pinned=${pinned}`, { method: "PUT" }).catch((error) =>
-    toast(error.message || "Couldn't change the pin.", true)
+    toast(error.message || voiceLine("failed", { what: "change the pin" }), true)
   );
   if (done !== undefined) {
     const setPin = (to) => async () => {
@@ -250,7 +250,7 @@ async function deleteAskHistoryTurn(id) {
   // by the same one-click miss deserves the same guard, not less.
   if (!(await confirmDialog("Delete this question and answer?"))) return;
   const gone = await apiJson(`/ask-history/${id}`, { method: "DELETE" }).catch((error) =>
-    toast(error.message || "Couldn't delete that question.", true)
+    toast(error.message || voiceLine("failed", { what: "delete that question" }), true)
   );
   if (gone) pushTokenUndo("Deleted a question", [{ del: [`/ask-history/${id}`, "DELETE"], restore: "/ask-history/restore", token: gone.undo_token }], askHistoryRepaint, "Question deleted.");
   askHistoryRepaint();
@@ -296,7 +296,7 @@ async function forgetRecentQuestion(question) {
     };
     offerUndo("Forgot a question", "Question forgotten.", remember, forget);
   } catch (error) {
-    toast(error.message || "Couldn't forget that question.", true);
+    toast(error.message || voiceLine("failed", { what: "forget that question" }), true);
     return;
   }
   loadRecentQuestions();
@@ -310,7 +310,7 @@ async function clearAskHistory() {
   );
   if (!ok) return;
   const cleared = await apiJson("/ask-history", { method: "DELETE" }).catch((error) =>
-    toast(error.message || "Couldn't clear the history.", true)
+    toast(error.message || voiceLine("failed", { what: "clear the history" }), true)
   );
   if (cleared) pushTokenUndo("Cleared the question history", [{ del: ["/ask-history", "DELETE"], restore: "/ask-history/restore", token: cleared.undo_token }], askHistoryRepaint, "Question history cleared.");
   askHistoryRepaint();

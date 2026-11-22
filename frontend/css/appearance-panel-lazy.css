@@ -67,7 +67,7 @@
 #appearance-panel .settings-group h3:not(.flush),
 #appearance-panel .settings-group h4:not(.flush) {
   font-size: var(--text-lg);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--text);
   text-transform: none;
   letter-spacing: normal;

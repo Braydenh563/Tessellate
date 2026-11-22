@@ -2,7 +2,7 @@
 
 For a server or a NAS. Tessellate is designed to pair with a local AI model (Ollama, LM Studio or llama.cpp recommended) but works without one: capture, search by keyword, documents and boards need no model.
 
-The files are `docker/Dockerfile` and `docker/compose.yaml`. The image's first build waits for a machine with a running Docker daemon (BACKLOG, "A Docker image", with its check): the machine this guide was written on had a client and no daemon. The commands and variables below were checked against the files and the code. Report what your first build says.
+The files are `docker/Dockerfile` and `docker/compose.yaml`. The image was built and run on 2026-11-14 (L924): the default image is 560 MB, runs as `mm`, answers `/` and `/health` on port 8000 and writes the notebook to `/data`.
 
 ## Quick start
 

@@ -23,9 +23,10 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import clock
 from tessellate.ai import captioning, vision_ocr
+from tessellate.api.downloads import unsealed
 from tessellate.core import activity, deps, ocr, pdfpages
-from tessellate.core.database import PageRead
 from tessellate.core.deps import get_session
+from tessellate.repo import page_reads as page_reads_repo
 
 logger = logging.getLogger(__name__)
 
@@ -284,16 +285,7 @@ def _stored_regions(key: tuple[str, int] | None, page: int) -> OcrRegionsOut | N
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead.regions)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
-        blob = (row[0] if row else "") or ""
+            blob = page_reads_repo.regions_blob(session, kind, source_id, page)
         if not blob.strip():
             return None
         stored = json.loads(blob)
@@ -331,21 +323,10 @@ def _remember_regions(key: tuple[str, int] | None, page: int, out: OcrRegionsOut
     try:
         body = out.model_dump(exclude={"pages", "page"})
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
-            if row is None:
-                #: A page looked at but never read is a real state: the row
-                #: carries the regions and an empty `text`, which is what keeps
-                #: "N pages read" honest. See `PageRead.regions`.
-                row = PageRead(kind=kind, source_id=source_id, page=int(page))
-                session.add(row)
+            #: A page looked at but never read is a real state: the row carries
+            #: the regions and an empty `text`, which is what keeps "N pages
+            #: read" honest. See `PageRead.regions`.
+            row = page_reads_repo.find_or_add(session, kind, source_id, page)
             row.regions = json.dumps(body)
             session.commit()
     except Exception:  # noqa: BLE001 - a cache write must never fail a read
@@ -367,15 +348,7 @@ def _forget_regions(
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
+            row = page_reads_repo.find(session, kind, source_id, page)
             if row is not None and row.regions:
                 if only_source and f'"source": "{only_source}' not in row.regions:
                     return
@@ -626,10 +599,11 @@ def media_ocr_regions(
         else "Text already extracted from this file"
     )
     key = rf._page_read_key(None, upload_id)
-    if suffix == ".pdf":
-        return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
-    #: An image is a one page document, and page 0 is where its regions go.
-    out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
+    with unsealed(path) as path:
+        if suffix == ".pdf":
+            return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
+        #: An image is a one page document, and page 0 is where its regions go.
+        out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
     out.readings = _stored_readings(upload.vision_ocr_text, upload.vision_ocr_model, upload.ocr_text, out.source)
     return out
 
@@ -658,9 +632,10 @@ def attachment_ocr_regions(
         else "Text already extracted from this file"
     )
     key = rf._page_read_key(attachment_id, None)
-    if suffix == ".pdf":
-        return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
-    out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
+    with unsealed(path) as path:
+        if suffix == ".pdf":
+            return rf._pdf_regions_for(path, page, stored, label, key, auto, rf._checked_engine(engine))
+        out = rf._regions_for(path, stored, label, key, 0, auto, rf._checked_engine(engine))
     out.readings = _stored_readings(
         attachment.vision_ocr_text, attachment.vision_ocr_model, attachment.ocr_text, out.source
     )
@@ -867,6 +842,33 @@ def _local_text(path: Path, choice: str = "") -> str:
         return ocr.extract_text(path, choice) if choice else ocr.extract_text(path)
 
 
+def _local_pdf_text(path: Path, choice: str = "") -> str:
+    """An uploaded PDF read without a model (L631): its text layer when it has
+    one, else its first pages drawn to pictures and read with the chosen OCR
+    engine. Raises 409 with a plain reason when neither can be done, so the
+    caller never shows an empty panel as if the PDF had no words."""
+    from tessellate.core import docview
+
+    text = (docview.extract(path).text or "").strip()
+    if text:
+        return text
+    if not pdfpages.available():
+        raise HTTPException(
+            status_code=409,
+            detail="This PDF has no text layer, and reading its pages needs the PDF viewer extra. Install it in Settings, then try again.",
+        )
+    if reason := ocr.unavailable_reason(choice):
+        raise HTTPException(status_code=409, detail=reason)
+    out: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="mm-pdfocr-") as scratch:
+        for number, png in enumerate(pdfpages.render_pages(path), start=1):
+            page_path = Path(scratch) / f"page-{number:03d}.png"
+            page_path.write_bytes(png)
+            if page_text := _local_text(page_path, choice).strip():
+                out.append(page_text)
+    return "\n\n".join(out)
+
+
 def _local_region_text(path: Path, choice: str = "") -> str:
     """`ocr.extract_region_text`: a crop is read as one block (INBOX 1568)."""
     with activity.track("ocr", "Reading text from a picture", stoppable=False):
@@ -902,18 +904,7 @@ def _remember_page_read(key: tuple[str, int] | None, result: OcrPageReadOut, rea
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(result.page),
-                )
-                .one_or_none()
-            )
-            if row is None:
-                row = PageRead(kind=kind, source_id=source_id, page=int(result.page))
-                session.add(row)
+            row = page_reads_repo.find_or_add(session, kind, source_id, result.page)
             row.reader = reader
             row.model = result.model or ""
             row.text = result.text
@@ -972,21 +963,10 @@ def _remember_page_caption(key: tuple[str, int] | None, page: int, caption: str,
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            row = (
-                session.query(PageRead)
-                .filter(
-                    PageRead.kind == kind,
-                    PageRead.source_id == source_id,
-                    PageRead.page == int(page),
-                )
-                .one_or_none()
-            )
-            if row is None:
-                #: A page described but never read is a real state, the whole
-                #: point of this being its own column, so the row is created
-                #: here rather than requiring a reading to exist first.
-                row = PageRead(kind=kind, source_id=source_id, page=int(page))
-                session.add(row)
+            #: A page described but never read is a real state, the whole point
+            #: of this being its own column, so the row is created here rather
+            #: than requiring a reading to exist first.
+            row = page_reads_repo.find_or_add(session, kind, source_id, page)
             row.caption = caption.strip()
             row.caption_model = model or ""
             session.flush()
@@ -1019,12 +999,7 @@ def _page_read_text_map(kind: str, ids: list[int]) -> dict[int, str]:
         return {}
     try:
         with deps.get_db().session() as session:
-            rows = (
-                session.query(PageRead)
-                .filter(PageRead.kind == kind, PageRead.source_id.in_(ids))
-                .order_by(PageRead.source_id.asc(), PageRead.page.asc())
-                .all()
-            )
+            rows = page_reads_repo.for_sources(session, kind, ids)
     except Exception:  # noqa: BLE001 - an unreadable cache is an empty one
         logger.debug("could not load stored page readings for a list", exc_info=True)
         return {}
@@ -1056,11 +1031,7 @@ def _page_read_count_map(kind: str, ids: list[int]) -> dict[int, int]:
         return {}
     try:
         with deps.get_db().session() as session:
-            rows = (
-                session.query(PageRead.source_id, PageRead.text)
-                .filter(PageRead.kind == kind, PageRead.source_id.in_(ids))
-                .all()
-            )
+            rows = page_reads_repo.source_and_texts(session, kind, ids)
     except Exception:  # noqa: BLE001 - an unreadable cache is an empty one
         logger.debug("could not count stored page readings for a list", exc_info=True)
         return {}
@@ -1099,12 +1070,7 @@ def _stored_page_reads(key: tuple[str, int] | None) -> list[OcrPageReadOut]:
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
-            rows = (
-                session.query(PageRead)
-                .filter(PageRead.kind == kind, PageRead.source_id == source_id)
-                .order_by(PageRead.page.asc())
-                .all()
-            )
+            rows = page_reads_repo.for_source(session, kind, source_id)
             pages = [
                 OcrPageReadOut(
                     page=row.page,

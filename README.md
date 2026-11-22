@@ -167,7 +167,7 @@ Open a section for the detail.
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
-- 22 built-in skills (and your own) run multi-step jobs as a visible
+- 23 built-in skills (and your own) run multi-step jobs as a visible
   checklist. Small models are first-class: a small-model mode gives a 4B model
   one step and one tool at a time.
 - A command palette (`Ctrl`/`Cmd`+`K`) runs any command or goes to any place
@@ -274,8 +274,13 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <details>
-<summary><b>Seventeen more</b>: the Library and its Activity view, Timeline, Reminders, Documents and focus mode, a board, a mind map, the command palette, Tools and features, Settings, Your look, the popup agent, the corner companion, Atlas, light and dark side by side, and a phone</summary>
+<summary><b>Twenty more</b>: Chat with no model connected, the Library and its Activity view, Timeline, Reminders, Documents and focus mode, the page reader, the OCR workspace, a board, a mind map, the command palette, Tools and features, Settings, Your look, the popup agent, the corner companion, Atlas, light and dark side by side, and a phone</summary>
 <br>
+
+<p align="center">
+  <img src="docs/screenshots/chat-empty.png" alt="Chat with no model connected: an empty conversation with starter questions to try, saved chats beside it, and a line above the box saying that chat answers from your notes until a model is connected" width="850">
+  <br><sub><b>No model needed</b>: chat still answers from your notes, and says what waits for a model</sub>
+</p>
 
 <p align="center">
   <img src="docs/screenshots/library.png" alt="Library: chats, boards, mind maps, documents and notes as cards in one grid, with a filter chip per kind and its count" width="850">
@@ -305,6 +310,16 @@ Captured from the app in the dark theme at 1440 by 900.
 <p align="center">
   <img src="docs/screenshots/focus.png" alt="Documents in focus mode: the page alone under a slim bar, with the writing suggestions panel open beside it" width="850">
   <br><sub><b>Focus mode</b>: the page and nothing else, with the writing checks beside it when you want them</sub>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/reader.png" alt="The page reader open on a three-page scanned PDF: the page images in a rail, page one with the regions Tesseract found outlined, and its reading beside it with a confidence for each region" width="850">
+  <br><sub><b>Page reader</b>: a scanned PDF, page by page, with the text read from each page beside it</sub>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ocr.png" alt="The OCR workspace on a scanned invoice: each block of text outlined on the picture, and the recognised text beside it in five numbered regions with a confidence each, Read again, Copy all and Save as note below" width="850">
+  <br><sub><b>OCR workspace</b>: the text Tesseract read from a picture, region by region, ready to correct, copy or save as a note</sub>
 </p>
 
 <p align="center">
@@ -435,7 +450,7 @@ later; until then search uses keywords. To avoid the download, pull
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
 | Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
 | Speaker labels, models (pyannote and WeSpeaker) | The two small models it reads, a pinned 34 MB download kept in the data folder; works offline |
-| Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
+| Translate offline (Bergamot, English and Spanish) | Translate this, in the command palette, with no model; a pinned 54 MB download that works offline; French, German, Italian and Portuguese are 51 to 53 MB packages beside it |
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
 | Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
@@ -478,29 +493,29 @@ vulnerability, see [SECURITY.md](SECURITY.md).
 Each interaction has a time budget, held by a test that fails when it is
 exceeded (`tests/test_budgets.py` for the server, `tests-e2e/specs/budgets.spec.js`
 in a real browser; the table is `BUDGETS` in `src/tessellate/api/routes_bench.py`).
-Measured in headless Chromium on a four-core machine under load, on a 500-note
+Measured in headless Chromium on a four-core machine at idle (load under 2 before each run), on a 500-note
 notebook with a board of 500 objects and a document of 50,000 words. Each
 measured figure is the slowest of four runs' medians; the budget is 1.5 times it.
 
 | Interaction | Measured (ms) | Budget (ms) |
 | --- | --- | --- |
-| Boot to first paint | 713 | 1070 |
-| First interaction | 4639 | 6960 |
-| List paint | 139 | 210 |
-| Search | 30 | 50 |
-| Board open | 108 | 170 |
-| Document open | 359 | 540 |
+| Boot to first paint | 312 | 470 |
+| First interaction | 2101 | 3160 |
+| List paint | 65 | 100 |
+| Search | 23 | 40 |
+| Board open | 111 | 170 |
+| Document open | 118 | 180 |
 
 The same figures as bars, slowest first (first interaction left out, as it would
 dwarf the rest):
 
 | Interaction | Measured | |
 | --- | --- | --- |
-| Boot to first paint | 713 ms | ██████████████ |
-| Document open | 359 ms | ███████ |
-| List paint | 139 ms | ███ |
-| Board open | 108 ms | ██ |
-| Search | 30 ms | █ |
+| Boot to first paint | 312 ms | ██████████████ |
+| Document open | 118 ms | █████ |
+| Board open | 111 ms | █████ |
+| List paint | 65 ms | ███ |
+| Search | 23 ms | █ |
 
 The first interaction is the first click the app answers after a cold start,
 with the session kept. `GET /models/bench/budgets?live=true` times the server's
@@ -534,7 +549,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 23,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 24,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

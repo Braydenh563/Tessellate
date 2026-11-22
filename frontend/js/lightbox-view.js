@@ -43,6 +43,8 @@ function lightboxZoomFactor(e) {
 
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
+  //: Where the focus was, so closing hands it back instead of dropping it on the page (L593).
+  const opener = document.activeElement;
   const overlay = document.createElement("div");
   overlay.className = "lightbox";
   // Not decoration: this is what puts the lightbox inside `activeOverlay()`'s
@@ -157,62 +159,13 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: the workspace's own wording. Only for a picture with a media row: a url
   //: with nothing behind it has nothing to delete.
   const readingDelete = (which) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "ghost small icon-only danger lightbox-reading-delete hidden";
-    button.title = "Delete this reading";
-    button.setAttribute("aria-label", "Delete this reading");
-    setLabel(button, "ph:trash");
-    button.addEventListener("click", async (event) => {
-      event.stopPropagation();
-      //: Held before the first `await`: `currentTarget` is gone once the
-      //: click's dispatch ends (the workspace's own Delete reading lost its
-      //: button that way, 6e072b2).
-      const self = event.currentTarget;
-      const item = lightboxInfoItem || items[index];
-      const source = which === "alt" ? item?.altSource : item?.textSource;
-      const id = lightboxMediaId(item);
-      if (!item || !source || !id) return;
-      const whose = source === "vision" ? "the vision model's" : "Tesseract's";
-      if (!(await confirmDialog(`Delete ${whose} reading of this image? You can read it again any time.`))) return;
-      self.disabled = true;
-      try {
-        //: To the reading bin, not away (the OCR workspace's own route): Undo
-        //: restores that row, Redo bins the reading again. The panel is
-        //: redrawn from the fields it held, as they were and as they become.
-        const bin = () => apiJson(`/media/${id}/readings/${source}`, { method: "DELETE" });
-        const fields = ["text", "byline", "altText", "altByline", "textSource", "altSource"];
-        const was = Object.fromEntries(fields.map((key) => [key, item[key]]));
-        const now =
-          source === item.textSource
-            ? { text: item.altText || "", byline: item.altText ? "Text read with Tesseract OCR" : "", altText: "", altByline: "", textSource: item.altSource || "", altSource: "" }
-            : { altText: "", altByline: "", altSource: "" };
-        const repaint = (values) => {
-          Object.assign(item, values);
-          if (overlay.isConnected) renderInfo(item, true);
-          if (typeof loadLibrary === "function") loadLibrary();
-        };
-        let held = (await bin())?.binned_id;
-        repaint(now);
-        toast("Reading deleted.");
-        pushUndo(
-          "Deleted a reading",
-          async () => {
-            if (held) await apiJson(`/reading-bin/${held}/restore`, { method: "POST" });
-            repaint(was);
-          },
-          async () => {
-            held = (await bin())?.binned_id;
-            repaint(now);
-          }
-        );
-      } catch (err) {
-        toast(err.message || "Couldn't delete that reading.", true);
-      } finally {
-        self.disabled = false;
-      }
+    return openLightbox.readingDelete(which, {
+      current: () => lightboxInfoItem || items[index],
+      mediaId: lightboxMediaId,
+      redraw: (item) => {
+        if (overlay.isConnected) renderInfo(item, true);
+      },
     });
-    return button;
   };
   const infoTextDelete = readingDelete("text");
   const infoAltDelete = readingDelete("alt");
@@ -1086,7 +1039,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
 
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
-  actionBtn("ph:download-simple", "Download this file", async () => {
+  const saveFileNow = async () => {
     try {
       const current = items[index];
       const href = await current.getUrl();
@@ -1107,9 +1060,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       a.click();
       a.remove();
     } catch {
-      toast("Couldn't save that file.", true);
+      toast(voiceLine("failed", { what: "save that file" }), true, { action: ["Try again", saveFileNow] });
     }
-  }, topActions);
+  };
+  actionBtn("ph:download-simple", "Download this file", saveFileNow, topActions);
   //: "Open in": the browser's own viewer, in a tab of its own, for a file
   //: with a url (a native document has none: its url is a download).
   const openTabBtn = actionBtn("ph:arrow-square-out", "Open in a new tab", async () => {
@@ -1254,10 +1208,31 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     button.disabled = true;
     try {
       const wasText = lightboxEditTarget.text;
-      const saved = await apiJson(lightboxEditTarget.url, {
-        method: "PUT",
-        body: JSON.stringify({ text: docEdit.value }),
-      });
+      //: `base_hash`: the text this edit opened on, so a save over a file another window changed meanwhile is
+      //: asked about (keep mine, take theirs), not silently written over it (WORLD_CLASS_PLAN 22.1 item 5).
+      let saved = null;
+      while (!saved) {
+        try {
+          saved = await apiJson(lightboxEditTarget.url, {
+            method: "PUT",
+            body: JSON.stringify({ text: docEdit.value, base_hash: lightboxEditTarget.hash }),
+          });
+        } catch (error) {
+          if (!isEditConflict(error)) throw error;
+          const current = error.detail.current;
+          const answer = await editConflictPrompt({ noun: "file", mine: docEdit.value, theirs: current.content || "" });
+          if (answer === "mine") lightboxEditTarget.hash = current.content_hash;
+          else {
+            if (answer === "theirs") {
+              lightboxEditTarget.text = current.content || "";
+              lightboxEditTarget.hash = current.content_hash;
+              docEdit.value = lightboxEditTarget.text;
+            }
+            return;
+          }
+        }
+      }
+      lightboxEditTarget.hash = saved.content_hash || null;
       pushRequestUndo("Edited a file's text", lightboxEditTarget.url, "PUT", { text: wasText }, { text: saved.text ?? docEdit.value }, () => lightboxLoadExtractedText?.());
       //: Re-rendered from what the server wrote back, not from what was
       //: typed. They are the same today; if they ever differ, a normalised
@@ -1271,7 +1246,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       //: A 409 is the server declining to overwrite (`docview.editability`),
       //: and its `detail` is written to be read by a person, so it is shown
       //: rather than replaced with a generic failure.
-      toast(error.message || "Couldn't save that file.", true);
+      toast(error.message || voiceLine("failed", { what: "save that file" }), true);
     } finally {
       button.disabled = false;
     }
@@ -1303,7 +1278,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       const extension = kind === "markdown" ? "md" : "txt";
       await saveFile(`${stem}.${extension}`, new Blob([text], { type: "text/plain" }));
     } catch (error) {
-      toast(error.message || "Couldn't export that text.", true);
+      toast(error.message || voiceLine("failed", { what: "export that text" }), true);
     } finally {
       button.disabled = false;
     }
@@ -1529,7 +1504,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
               item.filename = updated.original_name;
               renderInfo(item, true);
             } catch (err) {
-              toast(err.message || "Couldn't rename that image.", true);
+              toast(err.message || voiceLine("failed", { what: "rename that image" }), true);
             }
           },
         },
@@ -1548,7 +1523,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
               }
               show(index);
             } catch (err) {
-              toast(err.message || "Couldn't delete that image.", true);
+              toast(err.message || voiceLine("failed", { what: "delete that image" }), true);
             }
           },
         },
@@ -1716,7 +1691,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   // everything else per item rather than caching it.
   let lightboxLoadExtractedText = null;
 
-  async function showDocument(item, name, attachmentId) {
+  //: What a new file clears from the viewer before it is read; split from `showDocument`.
+  function resetDocumentView() {
     img.classList.add("hidden");
     broken.classList.add("hidden");
     doc.classList.remove("hidden");
@@ -1744,6 +1720,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     previewHtmlBtn.classList.add("hidden");
     clearFind();
     find.classList.remove("hidden");
+  }
+
+  async function showDocument(item, name, attachmentId) {
+    resetDocumentView();
 
     // A native Tessellate document (the Documents list) or a real Attachment
     // row each has its own text/info endpoint; a `/media/` upload has a
@@ -1825,7 +1805,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (item.kind && item.text != null) {
         editFileBtn.classList.add("hidden");
       } else if (payload.editable) {
-        lightboxEditTarget = { url: textUrl, text: body };
+        lightboxEditTarget = { url: textUrl, text: body, hash: payload.content_hash || null };
         editFileBtn.classList.remove("hidden");
       } else {
         editFileBtn.classList.add("hidden");
@@ -1903,6 +1883,9 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       } catch {
         info = null;
       }
+      //: A locked PDF asks for its password once a visit (L-world-class-133);
+      //: once it opens, the server keeps it in memory and never asks again.
+      if (info?.locked) info = await askPdfPassword(infoUrl.replace("/pdf-info", "/pdf-unlock"));
       if (info && info.available && info.pages > 0) {
         docBody.classList.add("hidden");
         find.classList.add("hidden"); // nothing here is text to search yet
@@ -2161,7 +2144,12 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     // The picture may have been paged away from while this was in flight.
     if (forIndex !== index) return;
 
-    const readings = lightboxReadingsFor(row);
+    //: The two stored readings come from `GET /files/readings` (F10), so the
+    //: panel and the search index agree; the row is the fallback if it fails.
+    const stored = row.id ? await apiJson(`/files/readings?source=upload&id=${row.id}`).catch(() => null) : null;
+    if (forIndex !== index) return;
+    const of = (kind) => (Array.isArray(stored) ? stored : []).find((r) => r.kind === kind && !r.page);
+    const readings = lightboxReadingsFor(stored ? { vision_ocr_text: of("vision")?.text, vision_ocr_model: of("vision")?.model, ocr_text: of("ocr")?.text } : row);
     if (!item.caption && row.caption) item.caption = row.caption;
     if (row.id && !item.metaId) item.metaId = row.id;
     if (!item.text) {
@@ -2322,6 +2310,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     overlay.remove();
     setFullscreenSurface("lightbox", false);
     document.removeEventListener("keydown", onKey, true);
+    if (opener?.isConnected && opener !== document.body) opener.focus({ preventScroll: true });
   };
   //: Typing keeps its keys: the find box and the file editor are inside this
   //: dialog, and an arrow there moves the caret, not the file.
@@ -2436,6 +2425,65 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     infoText.focus();
   });
 }
+//: One reading's delete button, split from `openLightbox`; `here` gives it the open picture, its media id and a repaint.
+openLightbox.readingDelete = (which, here) => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small icon-only danger lightbox-reading-delete hidden";
+  button.title = "Delete this reading";
+  button.setAttribute("aria-label", "Delete this reading");
+  setLabel(button, "ph:trash");
+  button.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    //: Held before the first `await`: `currentTarget` is gone once the
+    //: click's dispatch ends (the workspace's own Delete reading lost its
+    //: button that way, 6e072b2).
+    const self = event.currentTarget;
+    const item = here.current();
+    const source = which === "alt" ? item?.altSource : item?.textSource;
+    const id = here.mediaId(item);
+    if (!item || !source || !id) return;
+    const whose = source === "vision" ? "the vision model's" : "Tesseract's";
+    if (!(await confirmDialog(`Delete ${whose} reading of this image? You can read it again any time.`))) return;
+    self.disabled = true;
+    try {
+      //: To the reading bin, not away (the OCR workspace's own route): Undo
+      //: restores that row, Redo bins the reading again. The panel is
+      //: redrawn from the fields it held, as they were and as they become.
+      const bin = () => apiJson(`/media/${id}/readings/${source}`, { method: "DELETE" });
+      const fields = ["text", "byline", "altText", "altByline", "textSource", "altSource"];
+      const was = Object.fromEntries(fields.map((key) => [key, item[key]]));
+      const now =
+        source === item.textSource
+          ? { text: item.altText || "", byline: item.altText ? "Text read with Tesseract OCR" : "", altText: "", altByline: "", textSource: item.altSource || "", altSource: "" }
+          : { altText: "", altByline: "", altSource: "" };
+      const repaint = (values) => {
+        Object.assign(item, values);
+        here.redraw(item);
+        if (typeof loadLibrary === "function") loadLibrary();
+      };
+      let held = (await bin())?.binned_id;
+      repaint(now);
+      toast("Reading deleted.");
+      pushUndo(
+        "Deleted a reading",
+        async () => {
+          if (held) await apiJson(`/reading-bin/${held}/restore`, { method: "POST" });
+          repaint(was);
+        },
+        async () => {
+          held = (await bin())?.binned_id;
+          repaint(now);
+        }
+      );
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "delete that reading" }), true);
+    } finally {
+      self.disabled = false;
+    }
+  });
+  return button;
+};
 
 // ---- from editor.js (search-boot-1005): highlightCodeInto ----
 // Moved whole. Every use is in this file, so it is not needed before this file loads.

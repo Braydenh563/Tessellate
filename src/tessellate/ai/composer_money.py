@@ -12,15 +12,17 @@ same with one on.
 
 from __future__ import annotations
 
+import functools
 import re
 from datetime import date, timedelta
 from typing import NamedTuple
 
 from tessellate.ai import composer, composer_frame, composer_lists, recognise, recognise_units
+from tessellate.core.lazyre import lazy_compile
 
 #: "How much money have I recorded I've spent" and "what have I spent so far"
 #: are the same total: the ask can say where the figures are kept.
-_SPENT = re.compile(
+_SPENT = lazy_compile(
     r"^(?:how much|what) (?:money )?(?:have|did|do|has) (?:i|we) "
     r"(?:(?:really|actually|ever|just|already|even) )?(?:(?:recorded|logged|noted|tracked|written(?: down)?|put down)(?: (?:that|as))? (?:(?:i|we)(?:'ve| have|ve)? )?)?"
     r"(?:spen[dt]|paid|pay|spending)\b(.*)$",
@@ -28,9 +30,9 @@ _SPENT = re.compile(
 )
 #: "How much grocery spending have I recorded", "what's my recorded travel
 #: spending": the subject sits before the noun (stress run 2026-10-30).
-_KIND_SPENT = re.compile(r"^(?:how much|what(?:'s|s| is)?) (?:my |our )?(?:recorded |paid )?(?P<tail>\S.*)$", re.I)
+_KIND_SPENT = lazy_compile(r"^(?:how much|what(?:'s|s| is)?) (?:my |our )?(?:recorded |paid )?(?P<tail>\S.*)$", re.I)
 _KIND_NOUNS = frozenset({"spending", "expense", "expenses", "cost", "costs"})
-_KIND_RECORDED = re.compile(r"^(?:have|did|do) (?:i|we) (?:recorded|logged|noted|tracked|got|have)\b", re.I)
+_KIND_RECORDED = lazy_compile(r"^(?:have|did|do) (?:i|we) (?:recorded|logged|noted|tracked|got|have)\b", re.I)
 
 
 def _kind_spent(q: str) -> tuple[str, str] | None:
@@ -48,52 +50,52 @@ def _kind_spent(q: str) -> tuple[str, str] | None:
 
 
 #: "What's my total spending", "total spent in October".
-_TOTAL = re.compile(
+_TOTAL = lazy_compile(
     r"^(?:and )?(?:what(?:'s|s| is| was)? )?(?:my |our |the )?(?:total|net|gross) (?:of )?(?:all )?(?:(?:what|that) (?:i|we)(?:'ve| have)? )?(?:my |the )?(?:recorded )?(?:outgoing )?"
     r"(?:spend(?:ing)?|spent|expenses?|payments?|purchases?)\b(.*)$",
     re.I,
 )
 #: "What do my October payments add up to", "how much was the hotel altogether".
-_ADD_UP = re.compile(
+_ADD_UP = lazy_compile(
     r"^what do (?:my|the|our) (?P<subject>(?:(?!(?:payments|expenses|purchases|spending|costs)\b)[\w'-]+ )*)(?:payments|expenses|purchases|spending|costs) (?:add up to|come to|total)\b(?P<rest>.*)$"
     r"|^how much (?:was|were|did) (?:the|my|our) (?P<thing>(?:(?!(?:cost|altogether|in|all|overall)\b)[\w'-]+ )*(?!(?:cost|altogether|in|all|overall)\b)[\w'-]+) (?:cost )?(?P<all>altogether|in total|all up|overall)\??$",
     re.I,
 )
 #: "How much is left on my hotel bill", "how much travel money is still unpaid".
-_DUE_ASK = re.compile(
+_DUE_ASK = lazy_compile(
     r"^how much (?P<subject>(?:(?!(?:money|is|do)\b)[\w'-]+ )*)(?:money )?(?:is|do i have) (?:still )?(?:explicitly )?(?:left (?:to pay )?(?:on|for)|owing|unpaid|outstanding|due)\b(?P<rest>.*)$",
     re.I,
 )
 #: A question about a word, not an amount: "what did I mean by recorded spending".
-_ABOUT_WORDS = re.compile(r"\b(?:mean|meant|meaning|referring|refer|stand for|define|definition)\b", re.I)
-_MOST = re.compile(r"^what(?:'s| is| was| were)? (?:my|the|our) (biggest|largest|highest|smallest|cheapest|lowest|priciest) (.+)$", re.I)
+_ABOUT_WORDS = lazy_compile(r"\b(?:mean|meant|meaning|referring|refer|stand for|define|definition)\b", re.I)
+_MOST = lazy_compile(r"^what(?:'s| is| was| were)? (?:my|the|our) (biggest|largest|highest|smallest|cheapest|lowest|priciest) (.+)$", re.I)
 _MONEY_NOUNS = frozenset({"expense", "expenses", "cost", "costs", "bill", "bills", "purchase", "purchases", "payment", "payments", "spend", "spending"})
 _SMALL = frozenset({"smallest", "cheapest", "lowest"})
 #: Clauses about money that is not spent: owed, earned, a target, a budget,
 #: an asking price, a balance still due, or an amount the note denies ("not
 #: $320 each way"). A refund is read apart (`_REFUND`) and taken off.
-_NOT_SPENT = re.compile(
+_NOT_SPENT = lazy_compile(
     r"\b(?:owes?|owed|lent|lend|borrow\w*|earn\w*|salary|income|refund\w*|saved|savings|save|goal|targets?|budget\w*"
     r"|listing|listed|asking|quoted|due|balance|unpaid|reached|aim\w*|limit|cap)\b|\bnot\s+(?:[A-Z]{3}\s*)?[$£€]"
     #: "keep food under $100" is the aim, not money spent (gold answer 15).
     r"|\bkeep(?:\s+\w+){0,4}\s+(?:under|below)\b",
     re.I,
 )
-_REFUND = re.compile(r"\brefund\w*\b", re.I)
+_REFUND = lazy_compile(r"\brefund\w*\b", re.I)
 #: A goal or a plan is not a measure done: "Q1: run a 10k" adds nothing.
-_PLANNED = re.compile(r"\b(?:goals?|plan(?:s|ned|ning)?|targets?|want(?:s|ed)? to|aim(?:s|ing)? to|hope to|going to|will|should|wishlist)\b", re.I)
+_PLANNED = lazy_compile(r"\b(?:goals?|plan(?:s|ned|ning)?|targets?|want(?:s|ed)? to|aim(?:s|ing)? to|hope to|going to|will|should|wishlist)\b", re.I)
 #: A stretch still to come, said of any quantity: "another 5 hours to go".
-_DUE_LEFT = re.compile(
+_DUE_LEFT = lazy_compile(
     r"\b(?:due|unpaid|owing|outstanding|remaining|to go|still (?:to|need|left|owed)|left (?:to|over|on|until|before))\b", re.I,
 )
 #: Words that make a clause no quantity done: a plan, a goal or budget, a
 #: balance still to come, a refund (read apart and taken off).
-_NOT_DONE = re.compile(_PLANNED.pattern + r"|\bbudget\w*|\blimits?\b|\baim\w*|" + _REFUND.pattern + "|" + _DUE_LEFT.pattern, re.I)
+_NOT_DONE = lazy_compile(_PLANNED.pattern + r"|\bbudget\w*|\blimits?\b|\baim\w*|" + _REFUND.pattern + "|" + _DUE_LEFT.pattern, re.I)
 #: A balance still owed, said beside the total so it is not mistaken as missed.
-_STILL_DUE = re.compile(r"\b(?:due|unpaid|balance|haven't paid|not paid)\b", re.I)
+_STILL_DUE = lazy_compile(r"\b(?:due|unpaid|balance|haven't paid|not paid)\b", re.I)
 #: A note is a spending note when its title or text says so.
-_SPENDING = re.compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?|shop\w*)\b", re.I)
-_DATE_TAIL = re.compile(r"(?<!\s)\s+(?:on|in|at|from|for)\s+.*$", re.I)
+_SPENDING = lazy_compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?|shop\w*)\b", re.I)
+_DATE_TAIL = lazy_compile(r"(?<!\s)\s+(?:on|in|at|from|for)\s+.*$", re.I)
 
 
 class Item(NamedTuple):
@@ -104,9 +106,9 @@ class Item(NamedTuple):
     sentence: object
 
 
-_VERB = re.compile(r"^(?:i\s+)?(?:paid|spent|bought|cost|was|were|aud|usd|gbp|eur|nzd|cad)\b\s*", re.I)
+_VERB = lazy_compile(r"^(?:i\s+)?(?:paid|spent|bought|cost|was|were|aud|usd|gbp|eur|nzd|cad)\b\s*", re.I)
 #: Word by word: a blank run is split one way only (CodeQL).
-_AFTER = re.compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w'-]+(?:\s+[\w'-]+)*?)(?:\s+(?:to|because|as|in|on)\b.*)?\s*$", re.I)
+_AFTER = lazy_compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w'-]+(?:\s+[\w'-]+)*?)(?:\s+(?:to|because|as|in|on)\b.*)?\s*$", re.I)
 
 
 #: A clause longer than this has no label to read after its amount: `_AFTER` tries a connector word at every
@@ -330,7 +332,7 @@ def _still_due(views: list, win: _Win | None, subject: list[str], dimension: str
 
 #: A balance or a stretch still to come: money says "another $160 is due",
 #: any other quantity "another 5 hours to go" or "8 km left".
-_DUE_CLAUSE = re.compile(r"\b(?:another|balance|due|unpaid)\b", re.I)
+_DUE_CLAUSE = lazy_compile(r"\b(?:another|balance|due|unpaid)\b", re.I)
 
 
 def _due_by(views: list, win: _Win | None, subject: list[str], test, dimension: str = "money") -> list[Item]:  # noqa: ANN001
@@ -364,13 +366,16 @@ def _cite_all(out, items: list[Item], said: str) -> None:  # noqa: ANN001
 
 
 #: The words of a money question that set its window or its manner, not its subject.
-_WINDOW = re.compile(
+_WINDOW = lazy_compile(
     r"\b(?:so far|altogether|all up|in total|overall|"
     r"(?:before|after) refunds?|across the notebook|in (?:these|my) notes|(?:have i |i've )?recorded|actually|explicitly|"
     r"net|gross|total|(?:that )?(?:have|has|with) amounts?|(?:in |during |for |on |over |across |throughout )?(?:" + "|".join(sorted(recognise.MONTH_NAMES - {"may"})) + r")(?:\s+(?:of\s+)?20\d\d)?|(?:in |of |during )?(?:this|last) year|(?:in |of )20\d\d)\b",
     re.I,
 )
-_STOP = frozenset(composer._words("me my i in on for of the a an to have has did do is it that from all money spent spend spending paid pay amounts amount outgoing payments payment expenses expense notes note these this and with you your"))  # noqa: SLF001
+#: Built at the first question, not at import: stemming loads the English list (about 160 ms).
+@functools.cache
+def _stop() -> frozenset[str]:
+    return frozenset(composer._words("me my i in on for of the a an to have has did do is it that from all money spent spend spending paid pay amounts amount outgoing payments payment expenses expense notes note these this and with you your"))  # noqa: SLF001
 
 
 _AUX = frozenset("is are was were am be been being do does did have has had there it actually really recorded logged noted tracked".split())
@@ -384,7 +389,7 @@ def _subject(rest: str) -> tuple[list[str], str]:
     #: "book spending is actually recorded": the subject stops at the verb.
     words = said.split()
     said = " ".join(words[:next((i for i, w in enumerate(words) if w.lower() in _AUX), len(words))])
-    stems = [w for w in composer._words(said) if w not in _STOP]  # noqa: SLF001
+    stems = [w for w in composer._words(said) if w not in _stop()]  # noqa: SLF001
     return stems, said if stems else ""
 
 
@@ -404,14 +409,14 @@ def _one_of_several(items: list, views: list, win: _Win | None, subject: list[st
 #: What an untitled note says was bought ("I just bought a new gaming mouse
 #: discounted from $150 to $68": "a new gaming mouse"), its name in a list of
 #: spending rather than the whole sentence with its old price (INBOX 1456).
-_BOUGHT = re.compile(
+_BOUGHT = lazy_compile(
     r"\b(?:bought|purchased|ordered|got|paid for)\s+(?P<what>(?:(?!for|at|from|on|discounted|reduced|marked|haha|lol)[\w'-]+\s?){1,5})",
     re.I,
 )
 
 
 #: A figure and its unit in a name ("5km", "a 10 km run"): the answer says the figure once, in its own place.
-_FIGURE_IN_NAME = re.compile(r"\b\d[\d.,]*\s?(?:[a-zA-Zµ]+\b)?")
+_FIGURE_IN_NAME = lazy_compile(r"\b\d[\d.,]*\s?(?:[a-zA-Zµ]+\b)?")
 
 
 #: A first word that says when or where, not what, after "bought".
@@ -419,7 +424,7 @@ _WHEN_WORDS = frozenset("in on at from since by last this next yesterday today t
 
 
 #: "My phone is ...", "The car was ...": a short subject before its verb.
-_SUBJECT = re.compile(r"((?:my|your|the)\s+[\w-]+(?:\s[\w-]+){0,2}?)\s+(?:is|are|was|were)\b", re.I)
+_SUBJECT = lazy_compile(r"((?:my|your|the)\s+[\w-]+(?:\s[\w-]+){0,2}?)\s+(?:is|are|was|were)\b", re.I)
 
 
 def _note_name(view) -> str:  # noqa: ANN001
@@ -472,7 +477,7 @@ def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, floa
     return f"Your notes record {_money(symbol, total)} spent{on}{when}: {listed}.", total
 
 
-_PAID = re.compile(r"\b(?:paid|spent|bought|booked|purchased|ordered|charged|got)\b", re.I)
+_PAID = lazy_compile(r"\b(?:paid|spent|bought|booked|purchased|ordered|charged|got)\b", re.I)
 
 
 def _planned(view, today: date) -> bool:  # noqa: ANN001
@@ -499,11 +504,11 @@ def _only_priced(out, items: list[Item]) -> bool:  # noqa: ANN001
 
 #: "Rent is $1,200 a month", "groceries about $80 a week": a standing amount,
 #: said as the rate it is, never as money paid (audit 1031 C30).
-_RATE = re.compile(r"(?P<sign>[$£€¥])\s?(?P<n>\d[\d,]*(?:\.\d+)?)\s*(?:/|(?:a|per|each|every)\s+)(?P<per>day|week|fortnight|month|quarter|year)\b", re.I)
-_APPROX = re.compile(r"\b(?:about|around|roughly|approximately|approx|~)\b", re.I)
-_RATE_FILLER = re.compile(r"\b(?:is|are|was|were|cost|costs|runs|about|around|roughly|approximately|approx|at|of|comes to|come to)\b|~", re.I)
+_RATE = lazy_compile(r"(?P<sign>[$£€¥])\s?(?P<n>\d[\d,]*(?:\.\d+)?)\s*(?:/|(?:a|per|each|every)\s+)(?P<per>day|week|fortnight|month|quarter|year)\b", re.I)
+_APPROX = lazy_compile(r"\b(?:about|around|roughly|approximately|approx|~)\b", re.I)
+_RATE_FILLER = lazy_compile(r"\b(?:is|are|was|were|cost|costs|runs|about|around|roughly|approximately|approx|at|of|comes to|come to)\b|~", re.I)
 #: A period typed with the ask ("what do I spend on rent a month") is no part of the subject.
-_PERIOD_ASKED = re.compile(r"\b(?:(?:a|per|each|every) (?:day|week|fortnight|month|quarter|year)|daily|weekly|monthly|yearly|annually)\b", re.I)
+_PERIOD_ASKED = lazy_compile(r"\b(?:(?:a|per|each|every) (?:day|week|fortnight|month|quarter|year)|daily|weekly|monthly|yearly|annually)\b", re.I)
 
 
 def _rates(views: list, subject: list[str]) -> list[tuple[str, Item]]:
@@ -653,7 +658,7 @@ def _total_rest(q: str):  # noqa: ANN202
 
 #: "What expenses have I recorded", "list my purchases", "what have I bought"
 #: (INBOX 1456): a list of what was spent is the sum with its items named.
-_LISTING = re.compile(
+_LISTING = lazy_compile(
     r"^(?:what|which) ([\w'-]+ )?(?:expenses|purchases|payments|costs|bills|spending) (?:have|did|do) (?:i|we) "
     r"(?:recorded|logged|noted|tracked|made|had|written down|got)\b(.*)$"
     r"|^(?:list|show)(?: me)? (?:all )?(?:my|our|the) (?:recorded )?([\w'-]+ )?(?:expenses|purchases|payments|spending)\b(.*)$"
@@ -708,19 +713,19 @@ def _due(out, rest: str, views: list, today: date, dimension: str = "money", ask
 
 #: A measure asked by its dimension's word or by a unit: "how far did I run",
 #: "how many km have I walked", "what's my total distance".
-_MEASURE = re.compile(
+_MEASURE = lazy_compile(
     r"^(?:how (?P<far>far)|how (?:many|much) (?P<unit>[a-zµ]+)|how (?P<long>long)(?= (?:have|did) (?:i|we) (?:spen[dt]|practi[sc]ed|worked|studied)\b)"
     r"|what(?:'s|s| is| was)? (?:my |our |the )?total (?P<noun>distance|weight|time))(?P<rest>(?: .*)?)$",
     re.I,
 )
 _CALENDAR = frozenset({"day", "days", "week", "weeks", "fortnight", "fortnights", "month", "months", "year", "years"})
 _DIMENSION_WORDS = {"far": "length", "distance": "length", "weight": "mass", "time": "time", "long": "time"}
-_DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've|i|we) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
+_DOER = lazy_compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've|i|we) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
 #: Verbs that say a measure was recorded, not what was done: no filter.
 _ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have", "go", "went", "gone"})
 #: "how far in total", "how many km altogether": the sum asked with no doing
 #: word; what follows ("for running") names the subject.
-_TOTAL_TAIL = re.compile(r"(?:in total|altogether|overall|all up|in all|in sum)\b(?P<after>[^?!.]*)", re.I)
+_TOTAL_TAIL = lazy_compile(r"(?:in total|altogether|overall|all up|in all|in sum)\b(?P<after>[^?!.]*)", re.I)
 _PAST = {"run": ("ran", "run"), "swim": ("swam", "swum"), "ride": ("rode", "ridden"), "drive": ("drove", "driven"), "lose": ("lost", "lost"), "gain": ("gained", "gained")}
 _BASE = {forms[0]: verb for verb, forms in _PAST.items()} | {forms[1]: verb for verb, forms in _PAST.items()}
 
@@ -746,7 +751,7 @@ def _dimension_of(word: str) -> tuple[str | None, bool]:
 
 #: "Total time", "how much time in total", "how long altogether": the same
 #: bare total as "what is my total time".
-_BARE_TOTAL = re.compile(r"^(?:(?:my|our|the) )?total (?P<noun>distance|weight|time)(?P<rest>(?: [^?!.]*)?)$|^how (?:much time|long) (?:in total|altogether|overall|all up)$", re.I)
+_BARE_TOTAL = lazy_compile(r"^(?:(?:my|our|the) )?total (?P<noun>distance|weight|time)(?P<rest>(?: [^?!.]*)?)$|^how (?:much time|long) (?:in total|altogether|overall|all up)$", re.I)
 
 
 def _without_trailing_punctuation(text: str) -> str:
@@ -871,13 +876,13 @@ _DIMENSION_NOUN = {"length": "distance", "mass": "weight", "time": "time", "volu
 #: A stretch or a balance asked as what is left: "how many hours are left on
 #: the deck", "how many hours do I have left", "how much time is still to go".
 #: Money's own wording is `_DUE_ASK`.
-_LEFT_ASK = re.compile(
+_LEFT_ASK = lazy_compile(
     r"^how (?:(?P<far>far)|(?:many|much) (?P<unit>[a-zµ]+))\b(?P<subject>(?: (?!(?:is|are|do|does|have|has|will|would|can|did|left|remain|remains)\b)[\w'-]+)*?)"
     r"(?: (?:is|are|do i have|do we have|have i got|remain|remains))? (?:still )?(?:left|remaining|remain|to go|outstanding|owing|due)\b(?P<rest>.*)$",
     re.I,
 )
 #: "How many days are left until Christmas" is a day, not a stretch to go.
-_UNTIL = re.compile(r"\b(?:until|till|before|by)\b", re.I)
+_UNTIL = lazy_compile(r"\b(?:until|till|before|by)\b", re.I)
 
 
 def _left_asked(q: str) -> tuple[str, str, str] | None:
@@ -895,11 +900,11 @@ def _left_asked(q: str) -> tuple[str, str, str] | None:
 
 _DEFAULT_UNIT = {"length": "km", "mass": "kg", "time": "hours", "volume": "litres", "money": "$"}
 _CEILING = frozenset({"budget", "limit", "cap"})
-_TARGET_WORD = re.compile(r"\b(goal|target|budget|limit|cap|aim)s?\b", re.I)
-_TARGET_ASK = re.compile(r"^(?:and )?how (?P<head>far|many|much|long|close|near)\b(?P<rest>.*)$", re.I)
+_TARGET_WORD = lazy_compile(r"\b(goal|target|budget|limit|cap|aim)s?\b", re.I)
+_TARGET_ASK = lazy_compile(r"^(?:and )?how (?P<head>far|many|much|long|close|near)\b(?P<rest>.*)$", re.I)
 #: What makes "how much is my budget" a question about a figure, and "how far
 #: am I from my goal" one about the distance left to it.
-_TARGET_CUE = re.compile(
+_TARGET_CUE = lazy_compile(
     r"\b(?:short|left|remain\w*|to go|further|farther|more|away|off|until|before|toward\w*|from|reach\w*|hit|get(?:ting)? to|need|close|near|under|over|within|behind|ahead|past|beyond|exceed\w*|used|used up|against|spent|spend)\b",
     re.I,
 )
@@ -1036,9 +1041,9 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
 #: September", "how much heavier am I this month than last month".
 #: DOTALL and no `$`: the rest always matches, so a failed start cannot
 #: rescan the tail (CodeQL 1873, polynomial on "than vs vs ...").
-_LINK = re.compile(r"\s(?P<link>than|compared (?:to|with)|versus|vs\.?)\s+(?P<other>\S.*)", re.I | re.S)
-_HOW = re.compile(r"^(?:and )?how (?:much|many)\b(?P<body>.*)$", re.I)
-_DOING = re.compile(r"\b(?:did|have|had|do) (?:i|we) (?P<verb>[a-z]+)\b", re.I)
+_LINK = lazy_compile(r"\s(?P<link>than|compared (?:to|with)|versus|vs\.?)\s+(?P<other>\S.*)", re.I | re.S)
+_HOW = lazy_compile(r"^(?:and )?how (?:much|many)\b(?P<body>.*)$", re.I)
+_DOING = lazy_compile(r"\b(?:did|have|had|do) (?:i|we) (?P<verb>[a-z]+)\b", re.I)
 _MORE = {"more": "less", "further": "less", "farther": "less", "longer": "less", "heavier": "lighter"}
 _LESS = {"less": "more", "fewer": "more", "lighter": "heavier", "shorter": "longer"}
 _COMPARATIVE_DIMENSION = {"further": "length", "farther": "length", "heavier": "mass", "lighter": "mass", "longer": "time"}

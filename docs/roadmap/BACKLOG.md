@@ -2,13 +2,9 @@
 
 > **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [LEDGER.md](LEDGER.md) (every open item outside the plans; licence: AGPL-3.0) · [HISTORY.md](HISTORY.md) (already built).
 
-Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This
-file is the **standing backlog**: everything that is still work, numbered as it
-always was, so every §-reference elsewhere still resolves.
+Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This file is the **standing backlog**: everything that is still work, numbered as it always was, so every §-reference elsewhere still resolves.
 
-The live list: what to do next, and the two sections of freshly reported work
-(§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans
-are in [LEDGER.md](LEDGER.md); finished work is in [HISTORY.md](HISTORY.md).
+The live list: what to do next, and the two sections of freshly reported work (§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans are in [LEDGER.md](LEDGER.md); finished work is in [HISTORY.md](HISTORY.md).
 
 > **Status, 2026-09-07.** Every UI/UX item in this file (§2 quick wins, §15
 > Appearance, §16 Sweeping UI quality-of-life, §19 Accessibility, §24
@@ -39,45 +35,10 @@ root logger and uvicorn's. It now sanitises each message to one printable line
 (so a chat question or a page title can't forge a row) and keeps tracebacks in a
 separate `trace` field for a fold.
 
-**What's left.** Streaming (NDJSON over `fetch`, not `EventSource`, see
-HISTORY.md for why), follow/tail with autoscroll, level/text/source
-filters, the `trace` fold, merging in `browserLogs`, and an error badge on
-the nav item are all **done**, see HISTORY.md. Also done: **exporting a
-support bundle** (an allowlist zip of the log buffer, scrubbed
-`preferences.json`, and model status).
+**What's left.** Streaming (NDJSON over `fetch`, not `EventSource`, see HISTORY.md for why), follow/tail with autoscroll, level/text/source filters, the `trace` fold, merging in `browserLogs`, and an error badge on the nav item are all **done**, see HISTORY.md. Also done: **exporting a support bundle** (an allowlist zip of the log buffer, scrubbed `preferences.json`, and model status).
 
-- **Getting one error OUT of the log** (asked for directly after the console
-  landed: "make sure that if there is an error in the log that it can be
-  accessed and copied"). Each record has its own copy button that takes the
-  traceback with it, an open traceback has a **Copy traceback** of its own,
-  and "Copy all" relabels to "Copy 12 shown" whenever a filter is hiding
-  something. **The real find here was underneath:** every copy in the whole
-  app went through `navigator.clipboard`, which browsers expose **only in a
-  secure context**. `http://localhost` qualifies, which is why nothing had
-  ever shown it: but reach the app at `http://192.168.1.20:8000` or through
-  a tunnel (§17's mobile-access question, and the proxied client address §8b
-  already saw in a real log) and the API is `undefined`, so every copy button
-  in the app was a no-op that said "couldn't copy". Copying now tries the
-  modern API, then `execCommand` on plain http, then shows the text
-  pre-selected in a dialog. A test asserts no caller writes to
-  `navigator.clipboard` directly any more, since a helper only some callers
-  use leaves the rest quietly lying.
-- ~~**Export a support bundle.**~~ **done**, see below; it is an allowlist,
-  not a denylist. One button that zips the log buffer,
-  `preferences.json` with anything sensitive stripped, and Ollama/model
-  status (`/models/status`) into a file the user attaches to a bug report,
-  asked for indirectly ("an interface for managing the application… errors
-  etc") and echoed by the outside review's "support bundle" suggestion.
-  Everything in it is already local and already visible somewhere in the app;
-  this only collects it. No new telemetry: the file is written to disk and
-  the user chooses whether to send it, which is the difference between this
-  and the outside review's other suggestion (opt-in crash reporting),
-  rejected in §30.
-- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
-  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
-  discards rather than losing the fact silently), and the frontend renders it
-  - "N earlier records … the oldest record still kept is from …", whenever
-  `stats().dropped` is nonzero.
+- **Getting one error OUT of the log** (asked for directly after the console landed: "make sure that if there is an error in the log that it can be accessed and copied"). Each record has its own copy button that takes the traceback with it, an open traceback has a **Copy traceback** of its own, and "Copy all" relabels to "Copy 12 shown" whenever a filter is hiding something. **The real find here was underneath:** every copy in the whole app went through `navigator.clipboard`, which browsers expose **only in a secure context**. `http://localhost` qualifies, which is why nothing had ever shown it: but reach the app at `http://192.168.1.20:8000` or through a tunnel (§17's mobile-access question, and the proxied client address §8b already saw in a real log) and the API is `undefined`, so every copy button in the app was a no-op that said "couldn't copy". Copying now tries the modern API, then `execCommand` on plain http, then shows the text pre-selected in a dialog. A test asserts no caller writes to `navigator.clipboard` directly any more, since a helper only some callers use leaves the rest quietly lying.
+- The support bundle and the dropped-records count are built: HISTORY.md, "Moved from the plans, 2026-11-14 (BACKLOG size cap)".
 
 ---
 
@@ -150,28 +111,17 @@ Moved to HISTORY.md ("Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, 
 > one new SSE field, one schema change to what a saved conversation stores,
 > real work, correctly deferred rather than rushed this session.
 
-**Why.** Asked for directly. The page mixes three activities in one column, and
-the web panel is bolted on top of the message list.
+**Why.** Asked for directly. The page mixes three activities in one column, and the web panel is bolted on top of the message list.
 
 **Shape.**
 
 - **Chat**: plain grounded Q&A
-- **Agent**: tool-calling with its own controls: which tools are allowed this
-  turn, max rounds, visible plan/progress, and a stop that keeps what it already
-  did
+- **Agent**: tool-calling with its own controls: which tools are allowed this turn, max rounds, visible plan/progress, and a stop that keeps what it already did
 - **Browse**: web search results, reader view, page history
 
-Cross-linking is the point: the agent hands a page to Browse, Browse hands a page
-to the chat. Web-search gating should be independent, a Browse-only mode where
-the section works even when the chat/agent `web_search` tool is off.
+Cross-linking is the point: the agent hands a page to Browse, Browse hands a page to the chat. Web-search gating should be independent, a Browse-only mode where the section works even when the chat/agent `web_search` tool is off.
 
-**On the "in-built browser".** In the browser-served app this can only be an
-`<iframe>`, and most sites send `X-Frame-Options`/`frame-ancestors` that refuse
-to load in one, it would fail on exactly the sites worth opening. Proxying and
-rewriting pages server-side is effectively writing a browser, and re-introduces
-every tracker the privacy work removed. So the reader view stays the web path,
-and a genuine embedded browser belongs in the desktop shell, whose webview can
-navigate anywhere. **This ties §3 to §7.**
+**On the "in-built browser".** In the browser-served app this can only be an `<iframe>`, and most sites send `X-Frame-Options`/`frame-ancestors` that refuse to load in one, it would fail on exactly the sites worth opening. Proxying and rewriting pages server-side is effectively writing a browser, and re-introduces every tracker the privacy work removed. So the reader view stays the web path, and a genuine embedded browser belongs in the desktop shell, whose webview can navigate anywhere. **This ties §3 to §7.**
 
 ---
 
@@ -188,27 +138,13 @@ navigate anywhere. **This ties §3 to §7.**
 > a session; check `routes_library.py` and the `Entry`/`Document`/
 > `Conversation` models before assuming otherwise.
 
-**Why.** Asked for directly. Everything that isn't a note lives only in its own
-tab, and there is no archive at all.
+**Why.** Asked for directly. Everything that isn't a note lives only in its own tab, and there is no archive at all.
 
-**Order matters: images first, since the gallery is a view over what they
-store:**
+**Order matters: images first, since the gallery is a view over what they store:**
 
-1. ~~**File uploads on notes**~~ **Built, see `frontend/js/attachment-actions.js`, `routes_files.py` `ATTACHMENT_SUFFIXES` and `routes_library.py`** (every sub-bullet below is struck or done). Original ask: **File uploads on notes, asked for again, directly: "I want to be able
-   to upload files with notes."** Worth being precise about what's already
-   there versus what isn't, since this is narrower than it sounds:
-   - **Already exists:** images can be pasted or dropped into a note or
-     document (this item, above), and `📎 Attach a file` stores an arbitrary
-     file (PDF, `.docx`, anything) against a note and gives you back a
-     download: so the storage layer and one upload path both already
-     handle non-image files.
-   - ~~**What's actually missing:** that attach path is a button, reached
-     after the note exists, there's no drag-and-drop of an arbitrary file
-     straight onto the capture box itself.~~ **Stale, already done.**
-     `app.js`'s global `dragover`/`drop`/`paste` handlers match *any*
-     `<textarea>` (including `#entry-content`) and already filter for
-     `image/`, `application/`, `text/`, `video/` and `audio/`, not
-     image-only: and attach every file in a multi-file drop, not just the
+1. ~~**File uploads on notes**~~ **Built, see `frontend/js/attachment-actions.js`, `routes_files.py` `ATTACHMENT_SUFFIXES` and `routes_library.py`** (every sub-bullet below is struck or done). Original ask: **File uploads on notes, asked for again, directly: "I want to be able to upload files with notes."** Worth being precise about what's already there versus what isn't, since this is narrower than it sounds:
+   - **Already exists:** images can be pasted or dropped into a note or document (this item, above), and `📎 Attach a file` stores an arbitrary file (PDF, `.docx`, anything) against a note and gives you back a download: so the storage layer and one upload path both already handle non-image files.
+   - ~~**What's actually missing:** that attach path is a button, reached after the note exists, there's no drag-and-drop of an arbitrary file straight onto the capture box itself.~~ **Stale, already done.** `app.js`'s global `dragover`/`drop`/`paste` handlers match *any* `<textarea>` (including `#entry-content`) and already filter for `image/`, `application/`, `text/`, `video/` and `audio/`, not image-only: and attach every file in a multi-file drop, not just the
      first. A file-picker button (`#entry-attach-file`) reuses the same
      `handleFileUpload` for a third path. See the "ROADMAP.md Tier 2 §16c"
      comment right above `#entry-attach-file`'s listener in `app.js`, this
@@ -383,15 +319,13 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
 
 ---
 
-## 6. OpenAI-compatible backends: **done**
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+## 6. OpenAI-compatible backends: **done**; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ## 7. Desktop packaging
 
-**Windows installer: built, not yet run for real.** Asked directly which of
-portable/installed/both, which platform(s) first, whether to pay for code
-signing, and where to distribute, answers: installed (not portable),
+**VS Code extension on the Marketplace (L-world-class-183, owner: a publisher account).** Built in `tools/vscode/` (search, save selection, tool server for chat; tests/test_vscode_extension.py); publishing needs the owner's Marketplace publisher and a `vsce package` run, then a real VS Code 1.101+ check of the chat tool server.
+
+**Windows installer: built, not yet run for real.** Asked directly which of portable/installed/both, which platform(s) first, whether to pay for code signing, and where to distribute, answers: installed (not portable),
 Windows only for v1, unsigned for now (a certificate isn't worth it before
 there's a user base to justify the yearly cost), GitHub Releases only. Built
 on those answers: `packaging/windows/memorymap.spec` (PyInstaller, onedir:
@@ -956,6 +890,23 @@ block, trimming harder below an 8k-token window; see the retired analysis doc's
 size/risk call (M, take the idea, measure it on a small model before
 trusting it).
 
+### The dashboard's first paint waits for the whole notebook (L-world-class-879)
+
+Moved from the LEDGER 2026-11-22 after two measured attempts. At 390 px and
+500 notes, idle, the opening curtain lifts at a median of 692 ms (16 boots,
+614 to 800) with 0 shift after it. There are no long tasks before 1.5 s; the
+time is awaits: DOMContentLoaded at about 140 ms, `/auth/status` by 143,
+`/entries` page one 156 to 282, the rest 285 to 387, then the tab loads at
+about 401 (`tabReady` waits `entriesReady`, app.js). The dashboard waits for
+the whole list because On this day, Pace and Loose ends read all of
+`allEntries`; rendering at page one would redraw those after the curtain lifts.
+Tried and reverted: lifting on the skeleton outline (467 to 675 ms, 0.024 to
+0.053 shift) and starting the hero reads at unlock (median 745 and 800 ms
+against 644 and 704). What is left: render the widgets that do not read the
+notebook at page one and the three that do at the last page, under the curtain.
+Kept: the curtain waits for the hero line and first steps (0 shift in 16
+boots, was 0.053 in 1), and boot reads `/reminders` and `/categories` once.
+
 ---
 
 ## 12. Does the AI know it is an agent?
@@ -1145,9 +1096,6 @@ palettes."
 
 ## 16. Sweeping UI quality-of-life
 
-- ~~**A status bar along the bottom**~~ **done** (`#status-bar`/
-  `renderStatusBar()`), flagged stale by a backlog audit; see the
-  near-duplicate bullet further down this list too.
 - ~~**Sorting and grouping saved chats**~~ **Built (sorting), see `frontend/js/sheets-selects.js:1478` (`sortConversations`: Recent, Most turns, Most tokens, A-Z, with the pinned chats first) and `#chat-sidebar-sort` (`index.html:2171`); grouping by model or folder is not built.** Also from IDEAS.md and also homeless
   until now. Conversations sort by recency and nothing else; there is no "by
   length", "by which model answered", no folders, no grouping by topic. The
@@ -1155,23 +1103,9 @@ palettes."
   timestamps), so this is a list-rendering job. The IDEAS note suggests an
   agent tool and a skill for it too, which would fall out of §14's shape once
   the sort exists. **(needs Opus)**: which sorts and groupings, a list design.
-- ~~**Undo toasts** for anything soft-deleted, instead of confirm dialogs~~ **Built, see `frontend/js/status.js:1190` (`pushUndo`, the undo bar and the toast's Undo).**
-- ~~**Optimistic UI**: a saved note appears instantly and reconciles~~ **Built where it matters, see `frontend/js/library.js:7404`, `7642` and `7801` (optimistic, corrected when the server refuses) and the draft that survives a failed save (`app.js:229`).**
-- ~~**Consistent empty states** and loading skeletons~~ **Built, see `docs/DESIGN.md:527` (`.empty-state`) and `:543` (`showSkeletons`/`clearSkeletons`, swept by `f2-skel.js`).**
-- ~~**Keyboard**~~ **Built, see `frontend/js/settings-wiring.js:915` (`/` jumps to search), `:1068` (`TAB_JUMP_KEYS`, `m` then a letter) and `activeOverlay()` (Escape and the Tab trap on every `aria-modal` dialog).** `/` focuses search, `g`+letter jumps tabs, Escape closes every
-  overlay
-- ~~**Bulk selection** in the note list~~ **Built, see `frontend/js/skills.js:1241-1377` (the selection bar: move to a category, tags, more) and `tag-manager.js:674` (`openBulkTags`).**
-- ~~**"What changed" after an AI action**~~ **Built, see `frontend/js/library.js:41` and `chat-agent.js` (`changeRow`, one row per write with View and Undo; the tool chip is a `<details>` with arguments and result).** Chips say what ran, not what it did
-- ~~**Confirm on close** with unsaved text~~ **Built, see `frontend/js/navigation.js:1703` (one `beforeunload` guard) and `confirmLeavingUnsavedWork`.**
-- ~~**Relative timestamps** everywhere, absolute on hover~~ **Built, see `frontend/js/note-cards.js:1945` (`relativeTime`) and about 35 other call sites across the tabs.**
 - ~~**Dashboard**: audit every quick-access button actually lands where it
   says~~ done (§8): every quick link now checked from all three Notes
   sub-tabs. Still worth doing: **add the ones that are missing**
-- ~~**Collapsible sidebars.**~~ **Done**: `makeSidebarResizable`'s
-  `sidebar-collapse-toggle` is wired on all three (Notes, Chat, Documents).
-- ~~**A status bar pinned to the bottom.**~~ **done, same item as above**,
-  a second, near-duplicate bullet for the same ask; both are satisfied by the
-  one `#status-bar` that now exists.
 - **A global quick-capture hotkey in desktop mode.** Not asked for directly,
   but the app's own pitch, "just capture, a local AI files it", implies
   capture should be as close to zero-friction as opening the app currently
@@ -1833,9 +1767,7 @@ before testing), so this is about what it covers, not whether it exists.
 
 ---
 
-## 28. In-app help: an AI that knows the docs, built
-
-Built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md. Kept for its number.
+## 28. In-app help: an AI that knows the docs, built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md, kept for its number
 
 ---
 
@@ -2073,14 +2005,9 @@ resolution note in [HISTORY.md](HISTORY.md).
 link-reasoning judgement against a real model, this sandbox has no Ollama, so
 only the fake-transport tests exercise it.
 
-## 63. Ship a starter skills library, DONE, this claim was stale
+## 63. Ship a starter skills library, DONE, this claim was stale; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
-
-## 64. Documents editor: built, moved to HISTORY.md
-
-The slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`)
-both exist; the rest of the pass lives in DOCUMENTS_PLAN.md. Kept for its number.
+## 64. Documents editor: built, moved to HISTORY.md; the slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`) exist, the rest lives in DOCUMENTS_PLAN.md
 
 ## 65. Highlight/web-clip capture
 
@@ -2768,9 +2695,7 @@ Reported live across several messages. The lightbox half is **partly built**
 (see HANDOVER.md); the upload half is **logged, not built**, and is the
 larger piece.
 
-### What was built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### What was built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### Still open: the upload split, and what it collides with
 
@@ -3440,13 +3365,9 @@ that proved each one** (not a reading of the source), the twelve-item
 competitor gap analysis triaged against what this app already has, and a
 brainstormed list of what is missing that nobody has asked for yet.
 
-### 109.1 Fixed, and how each was actually proven
+### 109.1 Fixed, and how each was actually proven; built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"), kept for its number
 
-Built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"). Kept for its number.
-
-### 109.2 Text highlighting: built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### 109.2 Text highlighting: built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### 109.3 The competitor gap analysis, triaged
 
@@ -3520,9 +3441,7 @@ Genuinely open, ranked by value-per-effort:
 
 ## §110: the toolbar round: formatting in Notes, and five more measured bugs
 
-### 110.1 Built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### 110.1 Built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### 110.2 The five bugs, and the measurement that found each
 
@@ -4419,6 +4338,82 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
 
+## World-class plan: the checks that need a real device or a real model (2026-11-12)
+
+Each row is the one step left of a built item; everything that runs here is built and tested.
+
+- **L-world-class-72 (moved from LEDGER 2026-11-14):** Profile the Windows frozen build's startup on a real machine. Check: on the reference laptop (cold and warm, with and without antivirus) time launch to window and to /health; compare with the CI summary line. Recommendation: collect five CI runs first, then set a threshold at 1.5 times their median and profile only if the laptop is over it.
+- **L-world-class-116 (moved from LEDGER 2026-11-14):** Capture on the real desktop window and real clipboards. Check: on Windows and macOS, paste text, an image and a file into the capture bar from the real clipboard, kill the app mid-save, relaunch; each note is there once. Recommendation: run it with the next desktop build; the crash-between-commit-and-answer case is tested here.
+- **L968 (moved from LEDGER 2026-11-14):** Restart now through start.bat on a real Windows desktop. Check: from a source install press Restart now; the console runs start.bat's steps, the window returns, and User view (hidden console) stays hidden. Recommendation: run it once with the next Windows build; the spawn and the bat's pid forwarding are tested with a fake spawn.
+- **L-world-class-117 (moved from LEDGER 2026-11-14):** Chrome_WidgetWin_0 error 1411 on Restart. Check: on a Windows desktop (packaged exe and source), press Restart now five times; the window comes back each time and `restart.log`/the console show no crash. Recommendation: run it with the next Windows build; the fix is covered by a fake window, the real error text is the owner's report.
+- **L-world-class-100 (moved from LEDGER 2026-11-14):** A real screen-reader pass. Check: NVDA on Windows and VoiceOver on macOS through lock, capture, the notes list, a note, Settings and chat; every control is announced by name and role, focus never lands on a hidden element. Recommendation: run it once before a release; the axe sweep (0 findings at 1440) covers what can run here.
+- **L-world-class-134 (moved from LEDGER 2026-11-14):** Live captions on real hardware. Check: a ten-minute captioned recording on the reference laptop (lag under 2 s, CPU under 60%), then the Windows, macOS and aarch64 wheels each caption one clip. Recommendation: wheels first, the laptop run after; the fake-engine tests cover the pipeline.
+- **L950 (moved from LEDGER 2026-11-14):** Packaged captions helper. Check: with release assets published, the per-platform pin downloads, its hash matches, and the supervisor restarts a killed whisper-server on the Windows desktop. Recommendation: build it with the first release that ships captions; it needs the assets to exist.
+- **L971 (moved from LEDGER 2026-11-14):** Boot forced layout, canvas pointerout, most-accessed render (1667i). Check: a Performance trace from the owner's browser at boot on the dashboard; the three long tasks named in w34-fix2-1111.md are gone or under 50 ms. Recommendation: the owner records one trace; no reproduction here at 4x CPU.
+- **Boot long tasks at 4x, owner browser (from L-world-class-354 and 364, measured 2026-11-21 here):** Chromium trace at dashboard boot, 4x CPU, empty notebook, five runs each: UpdateLayoutTree total median 945 ms (max single 99), Layout 205, ParseHTML 407 (most of it parser-blocking script execution inside ParseHTML; markup parse itself is about 100 ms: index.html 1.2 MB, lines 0-64 head 81 ms, 94-267 47 ms). Two pure style tasks with no script remain: the first recalc (5 elements, 18 `@property` registrations, 132 ms: the boot stylesheet's rule set build) and the dashboard's first full draw (836 to 856 elements, 118 to 170 ms, `Related style rule` subtree invalidations, scheduled by the splash leaving and the skeleton swap); a later body class toggle costs 2 to 5 ms, so no selector reaches the whole tree. `bootlongtasks.js` at 1x: per-run longest 50, 0, 0, 0, 60 ms (4 of 5 runs under 50, the 60 has no script); at 4x median longest 179 ms (phone-shell timer 136 ms with 130 ms forced style and layout, app.js fetch.then 93, atlas atlasWarmLook 66). A probe with `content-visibility: auto` on `#dash-grid > .dash-widget` took the UTL total median 945 to 794 ms and the longest 99 to 74 but is unsafe: `sizeDashWidgetSpan` (dashboard.js:870) measures card heights for the masonry. Check: the owner records one trace on their own notebook; only an owner-sized notebook shows whether the dashboard recalc stays over 50 ms at 1x.
+- **L976 (moved from LEDGER 2026-11-14):** Text metrics and the wrap sweep beyond Chromium. Check: the wrap sweep in Firefox and WebKit at 360, 768 and 1440; no clipped label, no overflow. Recommendation: run it when Firefox and WebKit builds are installed (only Chromium is here).
+- **L-world-class-109 (moved from LEDGER 2026-11-14):** Back opened Settings (421 j). Check: the owner's exact clicks before Back opened Settings; replay them in the sweep and assert Back returns to the previous tab. Recommendation: keep the history stack as built; one cause found and fixed 2026-11-14 (pane changes inside Settings, then close, then Back reopened it; L-world-class-356, sweep `backtabs.js`); replay the owner's path against that sweep.
+- **L-world-class-112 (moved from LEDGER 2026-11-14):** Atlas's anatomy, rounds 3 and 4 (427 1). Check: the owner looks at Atlas at rest and talking, light and dark, and says keep or redo. Recommendation: keep rounds 3 and 4 as built; this is taste, so no change is made on the owner's behalf.
+- **Real phones on the LAN trust page and plain http (Brief 40):** Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used
+- **L915 (moved from LEDGER 2026-11-12):** Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
+- **L918 (moved from LEDGER 2026-11-12):** Run CHAT evals gate on a 3B model. From OPEN.md:616. Evidence: Needs real-model run (pytest -m evals, scratchpad/llama-dev.sh)
+- **L-world-class-26 real-model half (time travel, I5):** the claim-pair judge (`timetravel.model_judge`, `JUDGE_PROMPT`) and the as-of meaning rank (`timetravel.past_vectors`, the search's meaning floor) run only on fakes. Check: with `scratchpad/llama-dev.sh serve` and the built-in embedder, add an evals case in `tests/eval/` (the I5 fixture: one revised, one reworded-same, one contradicted pair; a note found as of March only by its past meaning) and run `pytest -m evals`; record the verdicts right of 3 and the then-note's rank.
+- **L919 (moved from LEDGER 2026-11-12):** Verify iPhone profile install, Windows network category and macOS readers on real machines. From OPEN.md:577. Evidence: Needs real iPhone, Windows and macOS machines; parsed from fixtures only Also L588 (a Windows machine): The merge of skills, personas and templates on Settings import is built and tested (routes_settings.py `_MERGED_LISTS`, tests/test_settings_rows.py). The check left: in the Windows desktop app, press Export settings and Import settings, and see the native save dialog open on the folder chosen in Settings, and that an imported file keeps this notebook's other personas, skills and templates. Needs a Windows machine; unverified here. Also, from L-world-class-75: Back with a sheet over Settings on a physical phone (the hardware Back gesture); the 390 emulation passes.
+- **L920 (moved from LEDGER 2026-11-12):** Run provider checks against a real model instead of the fake transport. From OPEN.md:612. Evidence: Standing caveat CLAUDE.md s4; needs real model
+- **L921 (moved from LEDGER 2026-11-12):** Verify real built-in embedding model load, Ollama pulls and dark theme for new rows. From OPEN.md:619; OPEN.md:3540. Evidence: No sentence-transformers here (CLAUDE.md s7); needs real model
+- **L922 (moved from LEDGER 2026-11-12):** Verify real Ollama keep_alive 0 and /api/ps, desktop window and WebKit. From OPEN.md:629; OPEN.md:3671. Evidence: ollama_client.py:573 stop via keep_alive 0 built; needs real Ollama
+- **L923 (moved from LEDGER 2026-11-12):** Reproduce the Windows grammar worker failure on the owner's machine. From OPEN.md:690. Evidence: Needs the owner's Windows machine; failure now names its reason
+- **L925 (moved from LEDGER 2026-11-12):** Upgrade a real pre-Brief-7 database to verify migrations. From OPEN.md:1772; OPEN.md:3358. Evidence: Needs the owner's real year-old database file
+- **L926 (moved from LEDGER 2026-11-12):** Measure privacy receipt on real destinations and status ring under auto motion on hardware. From OPEN.md:2515. Evidence: Needs real destination and motion measure on hardware
+- **L927 (moved from LEDGER 2026-11-12):** Measure the learning loop on a real large notebook. From OPEN.md:3363. Evidence: Needs a real large notebook
+- **L928 (moved from LEDGER 2026-11-12):** Re-measure cosine numbers with a real 384-dim embedding backend. From OPEN.md:3368. Evidence: Needs real 384-dim backend via llama runner
+- **L929 (moved from LEDGER 2026-11-12):** Verify the another-device notice on the recovery card with a second device and screen reader. From OPEN.md:3527. Evidence: Needs a second device on LAN and screen reader; sweep server binds loopback only. Also L958 (OPEN.md:617), the same check.
+- **L930 (moved from LEDGER 2026-11-12):** Verify LAN bar and LAN security on a real phone (wifi drop, hotspot). From OPEN.md:3883; OPEN.md:3884. Evidence: Needs real phone and network
+- **L931 (moved from LEDGER 2026-11-12):** Run Windows DPAPI and macOS Keychain paths in core/pinstore.py on real machines. From OPEN.md:3893. Evidence: core/pinstore.py:10,158 implements CryptProtectData/Keychain; needs the owner's Windows desktop and a Mac to run.
+- **L932 (moved from LEDGER 2026-11-12):** Verify grounded tag path with a real small model (pytest -m evals) and dark theme. From OPEN.md:594; OPEN.md:2638; OPEN.md:3621. Evidence: Needs a real model
+- **L934 (moved from LEDGER 2026-11-12):** Test touch drag from the Library on real touch hardware. From OPEN.md:1639. Evidence: Needs real touch hardware; headless drag shows no ghost
+- **L935 (moved from LEDGER 2026-11-12):** Verify PDF zoom dock, trackpad pinch, touch and Windows webview. From OPEN.md:3857. Evidence: Needs PDF renderer, real trackpad, touch, Windows
+- **L936 (moved from LEDGER 2026-11-12):** Verify real Whisper segments, model rewording and speaker naming in page. From OPEN.md:593; OPEN.md:2625. Evidence: Needs real Whisper and model
+- **L937 (moved from LEDGER 2026-11-12):** Verify real Whisper, mic, whisper-server and Safari/Firefox capture. From OPEN.md:598; OPEN.md:600; OPEN.md:2742; OPEN.md:2768. Evidence: Real mic and browsers; fake transport only
+- **L938 (moved from LEDGER 2026-11-12):** Drive Summarise 503, OCR pinch zoom and phone board/map paths on touch hardware. From OPEN.md:615; OPEN.md:3456. Evidence: Pinch zoom and phone path need touch hardware
+- **L939 (moved from LEDGER 2026-11-12):** Verify Summarise with a real small model and transcription with real faster-whisper. From OPEN.md:625; OPEN.md:1648; OPEN.md:3565. Evidence: Needs real small model and transcription engine
+- **L940 (moved from LEDGER 2026-11-12):** Verify voice enhancement on a real voice with a human rater. From OPEN.md:641. Evidence: Only synthetic tones via fake mic; needs real voice and human rater
+- **L941 (moved from LEDGER 2026-11-12):** Verify webview, phone tour, voice, OCR, clipper, update check, restore on owner's Windows desktop and phone. From OPEN.md:754. Evidence: Needs owner's Windows desktop, mic, network and a phone
+- **L942 (moved from LEDGER 2026-11-12):** See PDF page picture drawn with the render extra and a real reading. From OPEN.md:1482; OPEN.md:3395. Evidence: pdfpages.available() false in this sandbox; needs owner's machine with the render extra
+- **L943 (moved from LEDGER 2026-11-12):** Listen to the captions chime by ear. From OPEN.md:1988. Evidence: Needs human ears; W34 unverifiable
+- **L944 (moved from LEDGER 2026-11-12):** Measure live captions latency on a real whisper-server and tune STEP_MS, LENGTH_MS, audio_ctx. From OPEN.md:1627; OPEN.md:2764. Evidence: scratchpad/captions_audio.py exists; needs a real whisper-server on the reference laptop, not the fake transport
+- **L945 (moved from LEDGER 2026-11-12):** Read audio_ctx accuracy on more sentences with real whisper. From OPEN.md:1628; OPEN.md:2765. Evidence: Needs real whisper runs and a human read of more sentences
+- **L946 (moved from LEDGER 2026-11-12):** Verify ocr-reading with real Tesseract or vision model. From OPEN.md:1635; OPEN.md:3049. Evidence: Reads-ahead is deliberate; real-reader check needs a real model/OCR install
+- **L947 (moved from LEDGER 2026-11-12):** Run RapidOCR and Tesseract for real on owner's machine. From OPEN.md:1640; OPEN.md:3533. Evidence: Needs a real install and a real read on the owner's machine; tests monkeypatch
+- **L948 (moved from LEDGER 2026-11-12):** Drive live translated captions with a real model. From OPEN.md:2748. Evidence: Built against fake translator; needs device and model
+- **L949 (moved from LEDGER 2026-11-12):** Verify under-1 s sheet, real network install, WebView2 and Safari. From OPEN.md:2751. Evidence: Needs Windows desktop and Safari Also L955 (OPEN.md:599), the same check.
+- **L951 (moved from LEDGER 2026-11-12):** Open package bundle exports in Word/LibreOffice and run real pip. From OPEN.md:3135. Evidence: Needs Word or LibreOffice and real pip run
+- **L952 (moved from LEDGER 2026-11-12):** Run the Windows installer, upgrade from a pre-rename release and .bat fallbacks on a Windows machine. From OPEN.md:438. Evidence: No Windows here; w34-unv1-1111.md hardware-only (CI runs some)
+- **L953 (moved from LEDGER 2026-11-12):** Verify the packaged PyInstaller build after the package rename on Windows. From OPEN.md:439. Evidence: Needs Windows packaged build; w34-unv1-1111.md hardware-only
+- **L954 (moved from LEDGER 2026-11-12):** Check Chat tap right after boot at 390 and the Highlight API in a macOS webview. From OPEN.md:597; OPEN.md:2712. Evidence: Needs macOS webview and idle-machine timing; no evidence either way
+- **L956 (moved from LEDGER 2026-11-12):** Check Firefox/Safari permission help, webview denied state and hidden-tab firing on a non-UTC machine. From OPEN.md:603. Evidence: Needs Firefox, Safari, desktop webview, non-UTC machine
+- **L957 (moved from LEDGER 2026-11-12):** Run launchers once on real Windows and macOS (start.bat, --doctor, --shortcut, uninstall --dry-run). From OPEN.md:610; OPEN.md:2972; OPEN.md:3349. Evidence: Needs owner's Windows machine; start.bat, doctor.bat, uninstall.bat exist at root
+- **L959 (moved from LEDGER 2026-11-12):** Run on Windows and macOS; Action Center toast after 600 s needs COM. From OPEN.md:692. Evidence: Needs Windows and macOS machines
+- **L960 (moved from LEDGER 2026-11-12):** Draw splash.ps1 on Windows (look, minimise, taskbar id) and check macOS right-drag. From OPEN.md:695; OPEN.md:3874; INBOX.md:904 B50. Evidence: scripts/splash.ps1 exists; needs Windows run (taskbar id fix b1e2dcf6 untested visually)
+- **L961 (moved from LEDGER 2026-11-12):** Compile the installer.iss ISPP version reader on Windows CI. From OPEN.md:696. Evidence: packaging/windows/installer.iss; needs Windows CI run
+- **L962 (moved from LEDGER 2026-11-12):** Drive sign-in off in the desktop window, on a second LAN device and the dark prompt card. From OPEN.md:729; OPEN.md:2304. Evidence: Needs desktop window and a real second device
+- **L963 (moved from LEDGER 2026-11-12):** Run the desktop window (start-desktop.sh) on the owner's desktop. From OPEN.md:1938; OPEN.md:3381. Evidence: Needs owner's Windows desktop
+- **L964 (moved from LEDGER 2026-11-12):** Check in the desktop webview profile and on a second machine. From OPEN.md:1760; OPEN.md:2577. Evidence: Needs the owner's Windows desktop and a second machine
+- **L966 (moved from LEDGER 2026-11-12):** Verify Quit contrast, line-number baseline, Windows rasteriser and tablets on real displays. From OPEN.md:3304. Evidence: Needs Windows display and real devices
+- **L969 (moved from LEDGER 2026-11-12):** Verify on a real touch device and the Windows webview. From OPEN.md:3900. Evidence: Needs real touch hardware and the owner's Windows desktop.
+- **L970 (moved from LEDGER 2026-11-12):** Measure frame times and cache, @starting-style, :has on owner's desktop webview. From OPEN.md:1263. Evidence: Needs owner's Windows desktop webview; W34 notes it unverifiable (w34-L2r-1111.md).
+- **L973 (moved from LEDGER 2026-11-12):** Smoke step traceback check reads whole output. From OPEN.md:698. Evidence: Windows CI smoke behaviour; needs a Windows run to see a benign traceback
+- **L977 (moved from LEDGER 2026-11-12):** Chromium only: no second browser, no real touch device. From OPEN.md:1344; OPEN.md:3373. Evidence: Needs real touch hardware and other browsers; gcWorldFor constant reasoned only.
+- **L980 (moved from LEDGER 2026-11-12):** Provider tests use fake transport; real inference and Windows build unverified. From OPEN.md:3342; a31c-1103.md Not verified. Evidence: CLAUDE.md section 4; needs a real model (pytest -m evals)
+- **L981 (moved from LEDGER 2026-11-12):** installer.iss ISPP version reader compiles only on Windows. From OPEN.md:3482. Evidence: Needs a Windows CI run or owner's Windows desktop; packaging/windows/installer.iss.
+- **L-world-class-3 (moved from LEDGER 2026-11-12):** Verify the Linux Secret Service PIN store against a real keyring. From open-work sweep 2026-11-12, tests/test_pin_unlock.py:342. Evidence: The skip does not hide a broken test, but the Linux Secret Service path of core/pinstore.py has never run against a real keyring. L931 covers only the Windows DPAPI and macOS Keychain paths, so Linux 
+- **L-world-class-4 (moved from LEDGER 2026-11-12):** Evaluate Kokoro-82M via kokoro-onnx as a second natural voice. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1800. Evidence: It is on the ranked vendor shortlist with no code. Piper was built for read aloud. The only mention in the plans is WORLD_CLASS_PLAN 2205's prose line "research in flight", which is not a row.
+- **L-world-class-5 (moved from LEDGER 2026-11-12):** Verify Tessellate --mcp from the packaged Windows exe with a real MCP client (hardware). From open-work sweep 2026-11-12, docs/INSTALL.md:297. Evidence: The packaged windowed exe's stdio MCP mode has not been checked on a real Windows build. L687 covers the HTTP transport, not this check.
+- **L-world-class-28 (moved from LEDGER 2026-11-12):** I7 gate: filing accuracy with 20 synthetic corrections up 10 points, on a real model (pytest -m evals). From WORLD_CLASS_PLAN.md I7 gate. Evidence: test_corrections_wrong_card_i7.py runs on a fake transport; the 20-correction filing eval needs a real model
+- **Second device and calendar app on the LAN (L567):** Add a second device (a phone or another computer) on the LAN trust page, then subscribe a real calendar app (Apple Calendar, Google Calendar, Thunderbird) to the reminders feed and check an event appears and updates; needs the hardware, nothing else of the thread move is open.
+- **Filing 1010 leftovers that need a real model or a tagger (L-world-class-23):** Run the filing paths with a real chat model (`scratchpad/llama-dev.sh serve`, `pytest -m evals`): `_engine_tags` puts the model's grounded tags first and the engine fills the rest, and only the no-model path has been driven; and a verb-sense guard so "a tutoring service run by" is not read as #running needs a part-of-speech tagger (about one wrong extra tag on the 67-note set). Nothing else from the 1010 pass is open.
+- **Split the rest of the files over 800 lines (L624, moved 2026-11-12):** 167 source files are over the bar; `tests/file_size_caps.json` caps each (its length plus a tenth) and the cap only falls. Split each as it is next worked on (avatars.js first: 110 tests read its text, so they move to a shared reader in the same commit).
+
 ## Device and owner checks from the mindmap plan (2026-11-12)
 
 Each row is the one step that needs the owner's own machine, a device or a real model; everything that runs here was built and tested first.
@@ -4438,6 +4433,8 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L912, the Timeline tab to first rows under 300 ms, on the owner's idle hardware.** Headless on a loaded or idle sandbox cannot stand in for the owner's machine. With the notebook at about 96 notes, open the dashboard, click the Timeline tab, and read the time to the first row (DevTools Performance, or the 10-run method in the L912 HISTORY line); under 300 ms is the bar.
 - **L913, the look of the OS notification on real Windows and macOS.** The page's calls are measured with a stubbed `Notification` and a stubbed worker registration; how Windows (Action Center, Focus Assist) and macOS (Notification Center, Do Not Disturb) draw the "Reminder" title, the body, the Done and Snooze 10 minutes buttons, and the 12 s auto-close is the check left. On each: allow notifications, make a reminder due in a minute with the app in the background, and read what appears and whether the buttons act.
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
+- **L667, a real SearXNG install through the package notice.** The notice, the failure toast and the notice coming back were verified live on :9020 (Install, 503 "Couldn't download SearXNG", notice restored in under 1 s), but the from-source install could not finish here: github.com's archive host answers 403 through the sandbox proxy and the Docker daemon is not running. Check on a machine with github.com: in a fresh data folder press Install on the web search notice, wait for Settings, Web search to say running, ask a web question, then press Undo and see it stop.
+- **L660, first-run checks that need a real Windows installer and real Ollama (2026-11-21): Setup's optional-package pick installs on first launch with progress and Stop; the janitor warms only an installed model.** Built and tested on fake transports (`packaging/windows/installer.iss:391` writes `pending-extras.txt`, `api/app.py:680` `_install_pending_extras`, `ai/janitor.py:832` `warm_filing_model`; `tests/test_extras.py`, `tests/test_janitor_warm.py`). Check on real hardware: run the built Windows Setup with two packages ticked, open the app, and see the bell task show bytes and percent with a working Stop; then, on a fresh Ollama holding only a non-default chat model, check the log says the filing model warmed and never "llama3.2 failed".
 
 ## Whiteboard, parked 2026-11-13
 
@@ -4463,10 +4460,7 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
 - **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
 
-- **Documents device checks (moved from LEDGER 2026-11-14; each needs the named device or person, everything that runs headless is built and swept):**
-  - A real phone: L884: Verify phone selection menus and selection bar placement with a real finger on iOS and Android. From OPEN.md:738; OPEN.md:3122; OPEN.md:3861. Evidence: iOS/Android native selection UI; cannot be emulated headless. Blocked: needs a real finger on iOS and Android native selection UI, which no headless browser reproduces. | L-documents-93: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested | L-documents-95: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
-  - A real desktop, browser or Word: L-documents-91: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here | L-documents-92: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code | L891: Device check: a real print dialog, Safari, Firefox (not installed here: /opt/pw-browsers has only Chromium), a screen reader and a phone IME over the documents editor. From L891. Evidence: Measured 2026-11-14 in Chromium: an image pasted through the real clipboard with Ctrl+V lands as an attachment 4/4 (hw891.js); Harper p2-harper.js 16/16, cold first lint 1,797 ms, warm 111 ms for 1,401 words, nothing at boot | L894: Device check: ClearType greyscale on a real Windows display. From L894. Evidence: The CodeMirror per-key cost is measured and tracked in L-documents-26; only the Windows display is left
-  - A person with a screen reader, or real inference: L887: Run a screen reader over aria-current=location in the documents outline. From OPEN.md:1483; OPEN.md:3402. Evidence: Needs a human with a screen reader; documents-comments.js:438 sets aria-current. Blocked: needs a human with a screen reader; documents-comments.js:438 sets aria-current but speech cannot be checked headless. | L893: Device check: the diagram builder with real inference, on Windows, and under a screen reader. From L893. Evidence: Measured 2026-11-14 at 390 light with CDP touch (diagram-touch.js, rewritten for the Add split and the phone's Blocks sheet): Add menu 10 rows 44 px hit-tested, a block added, pinch to 5x, zoom kept on redraw, pan 264 px, double tap fits; light contrast 8 of 8 texts at 4.5 or more; 40 blocks open 2.5 s, an added block repaints in 483 ms (long tasks 114 and 115 ms on a loaded box, see the new row); print to PDF one page with all four labels and no chrome
+- **Documents device checks:** the three device groups (phone, desktop webview or Word, screen reader) moved to HISTORY.md, "Moved from the plans, 2026-11-22 (BACKLOG size cap)"; each is still the LEDGER's blocked-hardware rows.
 
 ## Placed from IDEAS.md, 2026-11-14
 
@@ -4482,6 +4476,8 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L704, the companion's Tempo look flushes the style other code dirtied.** `nameMarkBuddyTempo`'s `getAnimations` still shows 3 to 11 forced style flushes per tab-flip run (median 17 ms, max 46 ms at 4x). Measured with invalidation tracking: the dirt is the tab's own (timeline rows' class and rule changes, 168 elements in the 21 ms one) plus running animations, not the companion's writes. Three variants changed nothing (look taken inside the idle callback: median 25.7 ms; looks every 4 s when the last found nothing: 30.5 ms; idle callback held while `nmb.pageAt` is under 300 ms old: 38.1 ms, all against 17.4 ms before, n=6 each), so none was kept. **The check:** `scratchpad/w`-style trace (CPU 4, `disabled-by-default-devtools.timeline.stack`), five tab clicks, `UpdateLayoutTree` events whose top frame is `nameMarkBuddyTempo`; the fix must come from the pages that dirty (batch the timeline rows' class writes) or from listing the figure's animations without `getAnimations`.
 - **L707, the companion adds layouts to a tab switch that no listener of its own causes.** With the Atlas companion on, a tab click to chat counts a median 102 Layout events against 25 with it off, reminders 136 against 7 (4x CPU, six fresh loads each). A traced chat switch (four loads) splits 355 Layouts into 266 unforced, the figure's own frame-stepped drawing and walk, and 89 forced, the largest being `atlasRigRead` 10, `check@:7321` 8, the composer's `autoGrow` 20, `nameMarkBuddySupported` 5. Swallowing `transitionrun`, `transitionend`, `transitioncancel`, `animationstart` and `animationend` before the keep-up sees them gave 387 Layouts (305 unforced), so the keep-up is not the cause and no change to it was made. **The check:** `scratchpad/ui-sweeps/companionperf.js`-style trace (CPU 4, stack category), tab clicks with `prefs.set('avatar-buddy','atlas')` against `'off'`, count `Layout`; the fix must come from stepping the figure's layers on the compositor or from the forced readers above (`atlasRigRead`, `nameMarkBuddyBlend`, `rect@avatars.js:5484`).
 - **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).
+- **L690 device check: Windows memory cap.** Run a crafted document through the parse child on a real Windows machine and confirm the job object (`JOB_OBJECT_LIMIT_PROCESS_MEMORY`, `parse_guard._limit_memory_windows`) turns a huge allocation into the "too large to read" answer; only a fake ctypes was tested here.
+- **L695 (moved from LEDGER 2026-11-21, needs the owner):** a custom domain for the site, and the diagram dive that only Fable may run (opt-in by the owner, CLAUDE.md order 4). Sync, studio and pet are built (dec4ec1a5, 603ba7780, 3ef770475). From INBOX.md:1748 Q34, OPEN O54.
 
 ## Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21
 
@@ -4498,3 +4494,4 @@ Moved from LEDGER (the hub: finish, or BACKLOG with two measured attempts). Run 
 - **Board:** mapmorezoom (the More box 42px off the drawn wedge at zoom 100 and 115, both runs); toolgrid (448.72px, both); connlabel (button not shown, both); wbrail (history and present bars draw the card radius and 8px padding while the tool row and zoom are pills at 4px/6.4px: a design call, which shape a one-row bar on the board takes).
 - **Shell and notes:** verify1011 (206: the document AI panel not shown; 218: stepper radii 2.4 on 36px buttons); laptopfold (1093: 3 whole cards for 4); iphone1011 (notes foot 752; sheets with overscroll contain/auto; run 2 timed out at 300s); anchorsmotion (rowmenu and graph surfaces not found at 1440x900 and 1440x600); libtlscroll (table); graphcoldlayout (tree stored and checked, physics not dimmed).
 - **Companion:** companionsleeptab, locomotion, companionsmooth, perchall (16 window-bar perches while a panel is free), companionmenulow (5 of 54 menus), viewerpose (an arm 131 degrees from rest at 300 ms), atlasaura (1), atlasmoodfx (paints/s, above), and the measure exits companionacts, napgait, peekdown, viewerclash; companioneyes (masculine look, lie and hang with thinking: 2 of 16 pupil-edge samples outside the white, 17 cases, worst 0.13).
+- **L-world-class-106, needs the owner (devibecode programme after the shell pass, 2026-11-22):** 22.4 step 7 is the owner's review of the shell pass (HISTORY, "Devibecode programme, the shell pass"), and each next surface starts only after it. **Owner-review gate:** the owner reads that HISTORY section and the two shots, then says go (or names fixes) on this bullet; no session starts Notes before that. Then, in 22.4's order: Notes, Dashboard, Chat, Settings, Library, Documents, Graph, Whiteboard and maps, Timeline, Reminders, Help and the palette, the companion and Atlas, each through the same seven steps.

@@ -2,9 +2,9 @@
 head would be (the owner, 2026-10-19). Measured once in Chromium, each pose and variant, first z against the eyes
 (before: 85px above the eyes lying, 64px half down; after: about 40px in every pose)."""
 
-from pathlib import Path
+from tests._css_paths import css08_text
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = css08_text()
 
 
 def test_each_lying_pose_moves_the_zs_down_to_the_head() -> None:

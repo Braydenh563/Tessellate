@@ -50,7 +50,7 @@ async function typePhrase(page, surface, text) {
     window.__qaKey = 0;
     window.__qaLast = 0;
     f.addEventListener('input', () => { window.__qaKey = performance.now(); });
-    const state = qaFields.get(f);
+    const state = quickAddAttach.fields.get(f);
     if (window.__qaObs) window.__qaObs.disconnect();
     window.__qaObs = new MutationObserver(() => { window.__qaLast = performance.now(); });
     window.__qaObs.observe(state.row, { childList: true, subtree: true, attributes: true });
@@ -59,11 +59,11 @@ async function typePhrase(page, surface, text) {
   await page.keyboard.type(text, { delay: 25 });
   await page.waitForFunction((sel) => {
     const f = document.querySelector(sel);
-    const st = qaFields.get(f);
+    const st = quickAddAttach.fields.get(f);
     return st && st.text === f.value && !st.timer && !st.pending;
   }, sel, { timeout: 8000 });
   return page.evaluate((sel) => {
-    const st = qaFields.get(document.querySelector(sel));
+    const st = quickAddAttach.fields.get(document.querySelector(sel));
     const chips = [...st.row.querySelectorAll('.qa-chip')].map((c) => ({ kind: c.dataset.kind, value: c.dataset.value, on: !c.classList.contains('is-off'), words: c.textContent.trim() }));
     return { chips, latency: window.__qaLast && window.__qaKey ? window.__qaLast - window.__qaKey : null, reading: !!st.reading };
   }, sel);
@@ -132,7 +132,7 @@ async function score(page) {
       await page.keyboard.press('Enter');
       await page.waitForTimeout(700);
       const r = sent.find((s) => /reminders$/.test(s.url));
-      const ask = await page.evaluate(() => { const a = qaFields.get($('reminder-magic')).ask; return a.classList.contains('hidden') ? '' : a.textContent; });
+      const ask = await page.evaluate(() => { const a = quickAddAttach.fields.get($('reminder-magic')).ask; return a.classList.contains('hidden') ? '' : a.textContent; });
       if (e.ask) { ok = !r && !!ask; got = { ask }; }
       else if (r) {
         const w = local(r.body.due_at);
@@ -192,7 +192,7 @@ async function layout(page) {
     await openSurface(page, surface);
     await typePhrase(page, surface, SAMPLE[surface]);
     const m = await page.evaluate((sel) => {
-      const st = qaFields.get(document.querySelector(sel));
+      const st = quickAddAttach.fields.get(document.querySelector(sel));
       const row = st.row;
       const r = row.getBoundingClientRect();
       const chips = [...row.querySelectorAll('.qa-chip')];

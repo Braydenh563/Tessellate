@@ -27,4 +27,4 @@ def test_no_model_is_a_reason_not_an_error(client):
 def test_the_button_is_wired():
     root = Path(__file__).resolve().parent.parent / "frontend"
     assert 'id="template-draft"' in (root / "index.html").read_text(encoding="utf-8")
-    assert '$("template-draft")?.addEventListener("click"' in unwrapped((root / "js" / "settings-controls.js").read_text(encoding="utf-8"))
+    assert 'wire("template-draft").addEventListener("click"' in unwrapped((root / "js" / "settings-controls.js").read_text(encoding="utf-8"))

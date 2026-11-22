@@ -33,7 +33,7 @@ def test_both_sheets_are_lazy_with_stand_ins_and_a_way_in():
     assert 'reveal: "studio"' in features and 'reveal: "sync-group"' in features
     targets = _js("reveal-targets.js")
     assert "openStudio()" in targets and '"sync-group": { settings: "data", el: "sync-group" }' in targets
-    assert '$("sync-folder-open")?.addEventListener("click", () => openFolderSync());' in _js("settings-rows.js")
+    assert 'SURFACES.wire("sync-folder-open", "click", () => openFolderSync());' in _js("settings-rows.js")
     text = app_js_text()
     assert "function openStudio()" in text and "async function openFolderSync()" in text
 

@@ -158,14 +158,18 @@ MID_TOPICS.extend(
             "keywords": (
                 "search chats", "search my chats", "find a chat", "find an old chat", "old chats",
                 "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
+                "group chats", "group my chats", "tidy my chats",
             ),
             "body": (
                 "The Chats list beside the chat shows your last eight saved chats. "
                 "The search box above it finds a chat by its title or by anything "
                 "said in it and lists up to 32 matches. Sort "
                 "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
-                "chat stays first. Each chat's menu renames, pins, archives or "
-                "deletes it. All in Library opens every chat, with the full search."
+                "chat stays first. The rows button beside it groups the list by "
+                "day, month or length, with Pinned always on top; your choice is "
+                "kept. Each chat's menu renames, pins, archives or "
+                "deletes it. All in Library opens every chat, with the full search. "
+                "Ask the agent to sort, group or pin chats, or run the Tidy my chats skill."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -326,7 +330,8 @@ MID_TOPICS.extend(
                 "as one Merge above the list, and the count after a tag shows its "
                 "notes. Right-click a tag chip (or press the menu key on it) for "
                 "Show notes, Rename in all notes, Remove from this note "
-                "and Manage tags. The selection bar's Tags adds or removes tags on "
+                "and Manage tags; hover a tag chip on a note card to see how "
+                "many notes carry it. The selection bar's Tags adds or removes tags on "
                 "every selected note at once."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
@@ -370,6 +375,29 @@ MID_TOPICS.extend(
                     " September), each with Confirm, which keeps it as your own word from then on, and Not "
                     "right, which never shows it or anything like it again;"
                 )
+            ),
+            "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            "id": "note-groups",
+            "keywords": (
+                "group notes", "groups", "note group", "note groups", "gather notes",
+                "collect notes", "put notes together", "group notes together",
+                "also file under", "more than one category", "two categories",
+                "multiple categories", "note in two categories", "second category",
+            ),
+            "body": (
+                "A group is a set of notes you gather by hand, apart from "
+                "categories and tags: nothing files into it and no sorting moves "
+                "a note out of it. Click a note's category chip and choose Add to "
+                "a group to put it in one (or make a new one); the Groups row in "
+                "the notes sidebar lists them, and a group's menu shows its notes, "
+                "renames it or deletes it (the notes are kept). In the Notes box, "
+                "group:\"Trip plans\" shows one group's notes. A note keeps the "
+                "one category it is filed under and can also sit in others: the "
+                "same chip menu's Also file under puts it in more categories, "
+                "which only you set. It then shows under each one in the sidebar "
+                "and in a category filter, search, Ask and exports."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
@@ -420,9 +448,10 @@ MID_TOPICS.extend(
                 "writing suggestion), with the exact time on hover, and any "
                 "earlier version can be put back; Then and now on an earlier "
                 "version sets what it said against what the note says today, "
-                "sentence by sentence (Changed, No longer says, Says now). In Ask, "
+                "sentence by sentence (Changed, Contradicts then, No longer says, "
+                "Says now); with a model on, the model judges each pair. In Ask, "
                 "the clock button answers from your notes as they were on a day "
-                "you pick, and Back to now returns to today. It also says who "
+                "you pick, by date or by sliding back through the days, and Back to now returns to today; its notes are grouped by the month each version was written. It also says who "
                 "filed the note "
                 "and how sure, and a change made by an AI tool names the model "
                 "that made it. When the same note or document is edited in two "
@@ -562,7 +591,7 @@ MID_TOPICS.extend(
             ),
             "body": (
                 "Library, Contents is the whole notebook as a tree: pick By "
-                "category, By tag, By topic, By month or By folder in its Group by list, "
+                "category, By tag, By topic, By month, By folder or By type in its Group by list, "
                 "and each group folds at its heading. A document lists its "
                 "headings, so a press jumps straight to one. Expand all and "
                 "Collapse all, in the ⋯ menu, open or fold every group; folded, "
@@ -571,7 +600,9 @@ MID_TOPICS.extend(
                 "to the ends, and Enter opens. By month puts each document under "
                 "the month it was made, with that month's notes. By topic groups "
                 "notes by the subjects the graph finds in how they link; F2 or "
-                "right-click on a topic's heading renames it or shows it on the graph."
+                "right-click on a topic's heading renames it or shows it on the graph. "
+                "By type groups notes under their note type (Meeting, Book, your own), "
+                "and the notes with no type come last."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -738,10 +769,11 @@ MID_TOPICS.extend(
                 "is this line right", "confirm a line",
             ),
             "body": (
-                "Press a numbered mark in an answer: under the note's words, "
-                "Is this line right? has Confirm and Not right. Not right "
-                "leaves those sentences of the note out of every answer from "
-                "the next one on, and no pattern that quotes them is offered. "
+                "Press a numbered mark in an answer, or open Show the evidence: "
+                "under the note's words, Is this line right? has Confirm and "
+                "Not right. Not right leaves those sentences of the note out "
+                "of every answer from the next one on, and out of what filing "
+                "reads, and no pattern that quotes them is offered. "
                 "Confirm pins them as true: answers say them as your word, "
                 "with the day you pinned them, and a model reads them that "
                 "way too. Each goes on the undo stack, and lists in Settings, "
@@ -878,7 +910,10 @@ MID_TOPICS.extend(
                 "are in its menu. Hide models too big for this computer leaves "
                 "out the ones that will not fit. Download another model takes any "
                 "Ollama model name or a Hugging Face link and says what it is "
-                "before it downloads. Installed models shows the models you have "
+                "before it downloads. A card for a Hugging Face upload names its licence "
+                "(Apache-2.0 for the unsloth Gemma 4 and Qwen3-VL ones) and links the "
+                "model card that states it; a model under Google's Gemma terms, "
+                "EmbeddingGemma, asks you to accept them first. Installed models shows the models you have "
                 "as the same cards, with their size on this computer and what "
                 "each is in use for; a card's menu puts it to use, copies its "
                 "name or removes it (not while it is in use)."
@@ -1346,6 +1381,31 @@ MID_TOPICS.extend(
                 "It runs on this computer and works offline."
             ),
             "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "searxng",  # this and sign-in: Settings popovers with no Guide topic (L-world-class-781)
+            "keywords": ("searxng", "install searxng", "run searxng", "start searxng", "self-hosted search", "let tessellate run searxng", "search engine on my computer"),
+            "body": (
+                "Settings, Web search, SearXNG: the recommended way to search. It is a self-hosted search "
+                "engine the app installs and runs for you in one click, with no Docker, account or setup of "
+                "your own. It gives better results than scraping DuckDuckGo, cannot be rate-limited the way "
+                "scraping can, and the query never leaves your own network. It has to be on this computer or "
+                "your own network: the app never sends searches to somebody else's instance, and the one it "
+                "runs for you listens on 127.0.0.1 only."
+            ),
+            "badge": {"label": "Web search", "section": "websearch"},
+        },
+        {
+            "id": "sign-in",
+            "keywords": ("signing in", "sign in", "password when the app opens", "ask for a password", "open without a password", "skip the password", "no password on open"),
+            "body": (
+                "Settings, Account & security, Signing in. Ask for a password when the app opens is on by "
+                "default. Turned off, the app opens on this computer without asking; another device on your "
+                "network still needs the password, and so do private notes, which stay encrypted and ask for "
+                "it when you open one. Turning it off asks for your current password. The app is single-user: "
+                "one notebook, one password; for a separate notebook, run it with another data folder."
+            ),
+            "badge": {"label": "Account & security", "section": "account"},
         },
     ]
 )

@@ -114,7 +114,12 @@ class _Count(HTMLParser):
 #: `<template data-surface="board">` (1,741 elements, built when a board opens)
 #: took it to 3,782; the OCR workspace's card (`data-surface="ocr"`, 130) to 3,652;
 #: the keyboard shortcuts sheet's card (`data-surface="shortcuts"`, 83) to 3,569.
-BOOT_ELEMENTS_CAP = 3_569
+#: 2026-11-13 (L621): measured 1,054 with the meeting recorder's card a surface too
+#: (`data-surface="meeting"`, 61); the tab panes had gone to surfaces meanwhile.
+#: 2026-11-21 (L-world-class-530): 1,009 on head; Find anything's card (`finder`, 55) and the
+#: Activity panel's body (`agentMonitor`, 56) to 897; six dialogs (forgot password, recovery key,
+#: replace across documents, delete space, board templates, board import) to 749.
+BOOT_ELEMENTS_CAP = 749
 
 
 def test_the_boot_document_does_not_grow():
@@ -290,7 +295,8 @@ def test_a_deep_link_paints_through_its_target_until_the_card_exists():
     flash = asks[asks.index("async function flashEntry(") :].split("\n}\n", 1)[0]
     assert "(await renderEntries()) === false" in flash, "flashEntry draws without waiting for the card file"
     assert re.search(r"finally \{\s*noteEngine\.jumpId = null;", flash), "jumpId is cleared before the late draw"
-    assert flash.index("await renderEntries()") < flash.index("querySelector(`#entry-list li[data-id")
+    # The lookup is `noteRowFor` since rows fold into runs (L-world-class-873).
+    assert flash.index("await renderEntries()") < flash.index("noteRowFor(id)")
     notes = (JS / "notes-list.js").read_text(encoding="utf-8")
     render = notes[notes.index("function renderEntries(") :].split("\n  const list =", 1)[0]
     assert "return renderEntries.waiting;" in render and "lazyLoadFailed(" in render and "return false;" in render

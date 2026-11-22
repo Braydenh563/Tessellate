@@ -99,7 +99,8 @@ atlasBlink.saccade.step = (r = [Math.random(), Math.random()]) => {
   //: And not at rest: the held look is kept, the irises stop stepping until the next input (`atlasTailCalm.rest`).
   if (globalThis.atlasTailCalm?.rest.on) return false;
   const box = buddy.querySelector(".atl-figure-box");
-  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging")) return true;
+  //: Nor behind a dialog: drawn at opacity 0, its eyes stepped 3 times a second there (AT, L675).
+  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging") || nameMarkBuddyBehindCover()) return true;
   const ex = (nmb.ex || 0) + (r[0] - 0.5) * 0.5;
   const ey = (nmb.ey || 0) + (r[1] - 0.5) * 0.36;
   for (const iris of buddy.querySelectorAll(".nm-atlas .atl-iris")) {

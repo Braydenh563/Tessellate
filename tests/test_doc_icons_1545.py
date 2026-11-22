@@ -130,7 +130,7 @@ def test_export_embeds_the_glyphs_and_the_font_only_when_an_icon_is_present():
     body = EXPORT[EXPORT.index("docExportHtmlDocument.icons = async") :]
     assert "i.md-inline-icon" in body
     assert 'getComputedStyle(icon, "::before").content' in body
-    assert "/vendor/phosphor/Phosphor.woff2" in body
+    assert "/vendor/phosphor/Phosphor-full.woff2" in body
     # no icon, no font: the early return comes before the fetch
     assert body.index("return \"\"") < body.index("fetch(")
     assert "${DOC_EXPORT_CSS}${extraCss}" in EXPORT

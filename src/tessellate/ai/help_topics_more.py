@@ -164,8 +164,7 @@ MORE_TOPICS: list[dict] = [
             "number your note count passes, such as 100, on the desk too. Catch it "
             "in the air with a click while it falls and it clutches, then relaxes once it lands. Atlas "
             "also has rare habits of its own: a look around, a hum, a settling breath "
-            "and a second look at the pointer, each at most once in three minutes. "
-            "Its "
+            "and a second look at the pointer, each at most once in three minutes. Its "
             "moods follow the part of the day, brighter in the morning and quieter in "
             "the evening. None of it happens while you type, while Motion is reduced, "
             "or over something else it is doing. To stop it, turn off Little habits and "
@@ -208,8 +207,7 @@ MORE_TOPICS: list[dict] = [
             "stays put. Two seconds after your last move it can go still to save "
             "power: Motion at rest, in the same place, keeps it always alive, "
             "alive on mains power only (the default), or still when idle. "
-            "To keep it still, set Corner companion to Off in "
-            "Settings, Appearance, Atlas and faces."
+            "To keep it still, set Corner companion to Off in Settings, Appearance, Atlas and faces."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -228,8 +226,7 @@ MORE_TOPICS: list[dict] = [
             "catches the top bar and hangs from it, grabs a panel's top edge "
             "and climbs on, catches the end of a panel as it falls past or "
             "slides off one and pulls itself up, splats against a side of the "
-            "window and slides "
-            "down to the panel below, or goes off one side and comes back on "
+            "window and slides down to the panel below, or goes off one side and comes back on "
             "the other. How you throw it chooses: a soft toss lands near, a hard "
             "one sideways can go far or into a corner, and a hard one upwards "
             "can leave the top of the window and fall back in. A panel only "
@@ -277,8 +274,7 @@ MORE_TOPICS: list[dict] = [
             "the face on the assistant's chat replies, the popup agent and the "
             "guide between Atlas and the app's animated emblem (it holds still "
             "under Motion off or with Interface animations off); other "
-            "personas keep their own faces. "
-            "Atlas's face follows the app's mood: "
+            "personas keep their own faces. Atlas's face follows the app's mood: "
             "thinking while an answer runs, happy when it lands, worried at an "
             "error, sleepy late at night. Enlarge, in the companion's menu or "
             "on any face, shows the full drawing; right-click the companion "
@@ -333,19 +329,20 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
+            "mcp link", "connect claude", "revoke a token",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
-            "with a Copy button; that client can also read your notes (never "
+            "app: a snippet to paste into an MCP client such as Claude Desktop; "
+            "it can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. "
+            "you tick Let that app add and change notes. Make a link gives an "
+            "app its own token, shown once, to revoke. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
             "nothing in its head; Check answer finds any number its answer "
-            "says that the notes do not, and Propose act shows a change as "
-            "a card you confirm. "
+            "says that the notes do not, and Propose act shows a change as a card you confirm. "
             "Settings, Tools it can use lists the actions Atlas may take in "
             "Agent mode, grouped as Reads your notebook, Asks you first "
             "and Reaches the web; turn one off and it is never "
@@ -363,8 +360,7 @@ MORE_TOPICS: list[dict] = [
             "larger model, with why. In Agent mode "
             "the model's size, read from its name, decides how many tools it "
             "sees and how long one step may write: under 3B and up to 8B get "
-            "a short toolbox and a reply that runs long is cut short, 8B and "
-            "up get everything."
+            "a short toolbox and a reply that runs long is cut short, 8B and up get everything."
         ),
         "badge": {"label": "Tools it can use", "section": "tools"},
     },
@@ -399,20 +395,21 @@ MORE_TOPICS: list[dict] = [
             "open, two claims in different notes that disagree, a question a "
             "later note answers), where What it remembers is what you told it. "
             "The Dashboard's While you were away card counts each kind from the "
-            "last read; a pair shows the other sentence under it, a button to "
-            "open the other note and, for a disagreement, one to link the two "
-            "notes as disagreeing. Every row "
+            "last read; a pair shows the other sentence and a button to open "
+            "its note; other buttons link a disagreement, remind you on a "
+            "date, or merge a repeated note. Every row "
             "says which note it came from, which model decided it and how sure "
             "it was. Edit a row and no later run overwrites it; delete one and "
             "it is never worked out again. What may run switches each kind off; "
-            "Read my notes now runs it. Check what it learned, on the bar, re-reads "
+            "Read my notes now runs it. Learned: manage, on Atlas's own cards, opens "
+            "this pane. Check what it learned, on the bar, re-reads "
             "every claim and question against its note as the note says it now: it "
             "retires what no longer holds, each with its reason and an Undo (a note "
             "edited or deleted; a note tagged joke, quote, fiction, test or draft, "
             "or a sentence inside a quote or a list of questions and answers; a "
             "sentence you marked wrong; a repeat), and flags what needs your eye "
             "(two notes that disagree, a date that has passed), marked on the row "
-            "with a Check this line. It also runs after each background pass, as a "
+            "with a Check this line and a Keep it button (the flag goes and is not raised again). It also runs after each background pass, unless Check what it learned on its own schedule, at the top of the pane, is off, as a "
             "job in Settings, Background tasks with its lines, and as the skill "
             "Check what it learned. Export what it learned and Forget "
             "everything learned act on all of it and never touch your notes. "
@@ -484,13 +481,14 @@ MORE_TOPICS: list[dict] = [
             "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
             "general settings", "seasons", "hemisphere", "southern hemisphere", "summer", "winter",
-            "my birthday", "on my birthday", "date order", "day first", "month first", "before:", "first run preferences",
+            "my birthday", "on my birthday", "date order", "day first", "month first", "12 hour", "24 hour", "clock", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General. Calendar: First day of the week, Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
-            "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "Clock (a 12 or 24 hour clock everywhere), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
             "The welcome's preferences card offers the same choices once, and Skip passes them by. "
@@ -645,8 +643,7 @@ MORE_TOPICS: list[dict] = [
             "succeeded, 412 notes indexed\", with the exact time on hover; a "
             "failure says why in a few words. Ask \"what ran overnight\" or "
             "\"when did I last back up\" and the answer comes from these "
-            "records, with times. Autonomous background AI is here "
-            "too. Battery-efficient "
+            "records, with times. Autonomous background AI is here too. Battery-efficient "
             "mode pauses background AI, heavy graph work and the moving "
             "artwork. Quit Tessellate stops the app and its server properly, so "
             "the next start finds its port free."
@@ -734,9 +731,11 @@ MORE_TOPICS: list[dict] = [
             "that made it. Under it, what finished in the last half hour says how "
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, the chat's ⋯ menu (Activity and past runs), or the "
-            "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
+            "palette (Activity). Its three tabs carry a glyph and a count, and each part is a card "
             "headed by a glyph and a title. Its Agent runs tab lists each run this session "
-            "with its steps, and the log is in its menu. Stop the model, in the "
+            "with its steps, and the log is in its menu. Its History tab lists every run "
+            "since the app started, with what started it (you, a schedule, start-up or an event), "
+            "when, how long it took, how it ended and why. Stop the model, in the "
             "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
             "this app did not start keeps its own model, and the message says so."
@@ -850,7 +849,7 @@ MORE_TOPICS: list[dict] = [
             "needed, and merging keeps every tag and bins the rest. Import "
             "markdown files or a folder (Obsidian frontmatter is understood; a "
             "preview lists the files first, so you can untick any), "
-            "or a PDF, Word file or slide deck, one note per chapter or slide. "
+            "or a PDF, Word file or slide deck, one note per chapter or slide (once installed). "
             "The four import groups (Import markdown, Import a document, Import "
             "from another app, Web clipper) are folded: press a heading to open "
             "it, and the ? beside it opens it too. "
@@ -860,9 +859,10 @@ MORE_TOPICS: list[dict] = [
             "each day the app starts. Restore first says how many notes and "
             "documents the backup holds against now, and snapshots first, so even a "
             "restore can be undone. A line above the list gives the schedule, when "
-            "it last ran and whether that worked, and when the next is due; in the "
+            "it last ran and whether that worked, and when the next is due (the "
+            "Dashboard's Backups card, added from Edit layout, shows the last backup and the next due, with a Backup settings button); in the "
             "desktop app, Also copy each backup to sends a second copy to a folder "
-            "you choose, such as an external drive. Each backup row says when in words, marks "
+            "you choose, such as an external drive (the desktop app asks once on first run). Each backup row says when in words, marks "
             "the newest Latest, and says what made it (the daily backup, Back "
             "up now, before an update or a restore), its size and whether it "
             "was checked. App cache, at the bottom: Clear app cache "
@@ -925,18 +925,19 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Find anything (Ctrl+P, or the magnifying glass in the status bar) searches notes, "
-            "files, documents, chats and actions in one box as you type: Enter opens "
-            "the top result, the arrows move, Esc closes, and the star keeps the "
+            "files, documents, chats and actions in one box as you type (the Notes sidebar has its own \"Search everything\" field: Enter opens it with your words): Enter opens "
+            "the top result (a chat opens at the turn that holds your words), the arrows move, Esc closes, and the star keeps the "
             "search as a row under Saved searches in the Notes sidebar. Sort has Best "
             "match, Group by category (a note under its category, the rest under "
-            "their kind), Newest first and Oldest first. Its '?' lists "
+            "their kind), Newest first and Oldest first. Inside a note you are writing, Ctrl+F finds in that note, "
+            "Ctrl+H adds a replace field, F3 steps to the next match and Esc closes the panel. Its '?' lists "
             "the operators. The kind chips under the box scroll sideways when they do "
             "not fit: a thin bar on a mouse or trackpad, an arrow at the end that has "
             "more, a swipe on touch. It lists the command "
             "palette's actions too, so \"dark\" finds Toggle light/dark, after the "
             "notes and files. The command palette (Ctrl+K) sends what you type "
             "here: its last row, Search everything for, opens this box with "
-            "the words already searched. As you type it suggests your recent searches, "
+            "the words already searched. Typing a note, a meeting or a search in plain words (note: buy clay, new meeting with Sam) adds a matching Do it row. As you type it suggests your recent searches, "
             "then note titles, tags and categories, with the best match in grey: Tab or "
             "Right takes it, and Settings, General, Search turns it off."
         ),
@@ -993,8 +994,7 @@ MORE_TOPICS: list[dict] = [
             "tab's sliding marker, even with Motion off bar a menu's spring and "
             "its rows arriving in turn; off makes them instant) with Reveal "
             "replies under it (a reply no model wrote rises into place). Advanced has "
-            "Custom CSS. Ctrl+Shift+L "
-            "switches light and dark from anywhere."
+            "Custom CSS. Ctrl+Shift+L switches light and dark from anywhere."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},
     },
@@ -1027,8 +1027,8 @@ MORE_TOPICS: list[dict] = [
             "phone menu", "app menu",
         ),
         "body": (
-            "On a phone the tabs are a bar along the bottom: Dashboard, Notes, "
-            "Chat, Library and More, last. More opens a sheet: Graph, Timeline "
+            "On a phone the tabs are a bar along the bottom: Dashboard (captioned Home "
+            "under 480 pixels wide), Notes, Chat, Library and More, last. More opens a sheet: Graph, Timeline "
             "and Reminders first, then Ask the agent, Commands, Guide, Agent "
             "activity while the agent runs, and Settings. More is lit while one "
             "of its pages is showing, and carries the count of reminders due. "
@@ -1077,7 +1077,7 @@ MORE_TOPICS: list[dict] = [
             "auto-lock", "auto lock", "change my password", "reset password",
             "other devices", "on my phone", "another computer", "sessions",
             "lock everywhere", "re-encrypt", "new key", "rotate key",
-            "recovery key", "make a recovery key",
+            "recovery key", "make a recovery key", "accounts", "signing in", "single-user",
         ),
         "body": (
             "Settings, Account & security. Signing in: ask for a password when "
@@ -1086,18 +1086,16 @@ MORE_TOPICS: list[dict] = [
             "always with your password, over https on port 8443, and only on "
             "networks you trusted (the wifi icon in the status bar, Alt+L). "
             "Ask before a new device signs in holds one until you Allow; "
-            "Allowed devices have Remove. Loosening "
-            "needs your password. The first "
+            "Allowed devices have Remove. Loosening needs your password. The first "
             "visit warns that the certificate is not trusted: compare its "
             "SHA-256 fingerprint with the one under the switch before you "
-            "continue, and Regenerate certificate makes a new one. Trust this certificate on your phone downloads it, and its ? says how to install it on iPhone and Android. If this computer's address changes, the app makes a new certificate straight away. Change your password (private "
+            "continue. Trust this certificate on your phone installs it once (its ? has the steps); Regenerate certificate makes a new one. Also allow plain http is off: on, anyone on the Wi-Fi can read your password and sign-in cookies. Change your password (private "
             "notes move across; a new one needs at least 8 characters, and an "
             "easy one gets a warning). Re-encrypt private notes (Settings, Account & security) makes "
             "a new encryption key and moves every private note onto it, so an old "
             "backup stops opening them; every other session is signed out. Sessions: Auto-lock when idle, from 5 minutes "
             "to 12 hours, and Lock everywhere now; the lock in the top bar "
-            "locks at once. "
-            "Recovery key: Make a recovery key (or Replace it) "
+            "locks at once. Recovery key: Make a recovery key (or Replace it) "
             "asks your password and shows a key once, to copy or download and "
             "keep away from this computer; the old one stops working. Forgot "
             "your password? on the lock screen, on this computer only, has two "
@@ -1113,7 +1111,7 @@ MORE_TOPICS: list[dict] = [
         "id": "model-bench",
         "keywords": (
             "model bench", "test my models", "which model is best", "compare models",
-            "best model for my notes", "benchmark", "try my models",
+            "best model for my notes", "benchmark", "try my models", "model chosen at start",
         ),
         "body": (
             "Settings, Models, Test my models runs your installed models on your "
@@ -1127,7 +1125,10 @@ MORE_TOPICS: list[dict] = [
             "in chat. Stop ends a run, and a stopped run makes no "
             "recommendation. It needs at least six filed notes, runs entirely on "
             "this computer, and can be switched off in Settings, What it "
-            "learned, What may run, Model bench."
+            "learned, What may run, Model bench. When the stored chat model is "
+            "not installed, the first launch picks the largest one that is, and "
+            "says so once: which chat, background and picture models it chose "
+            "and why, with Change, which opens Settings, Models."
         ),
         "badge": {"label": "Test my models", "section": "models", "target": "bench-box"},
     },
@@ -1164,7 +1165,9 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, Import & export, Web clipper has a bookmark called Clip to "
-            "Tessellate (typing clipper in the command palette opens it). Drag it to your browser's bookmarks bar (or press Copy the "
+            "Tessellate, in three numbered steps (typing clipper in the command palette, "
+            "or the Web panel's menu, Clip a page from your browser, opens it; Try it on a sample "
+            "shows the clip window without making the bookmark first). Drag it to your browser's bookmarks bar (or press Copy the "
             "bookmark and make a bookmark with it as the address). On any page, "
             "press it: a small Tessellate window opens beside the page with its "
             "title and address, and Save as a note keeps the page's main text, or "
@@ -1211,8 +1214,7 @@ MORE_TOPICS: list[dict] = [
             "Every import keeps a report of what it read, wrote, skipped and found "
             "already here, each skipped file named with why: See the report when it "
             "ends, or Report in the Activity panel. "
-            "A long import shows in the Activity panel with Stop; the notes made "
-            "before Stop stay."
+            "A long import shows in the Activity panel with Stop; the notes made before Stop stay."
         ),
         "badge": {"label": "Import from another app", "section": "data", "target": "import-app-box"},
     },
@@ -1273,7 +1275,8 @@ MORE_TOPICS: list[dict] = [
             "the top answers from the same counts with no model: try Summarise my "
             "month, What do I use most? or Am I writing more than last month?, or ask "
             "how many notes you wrote in July, or when you wrote your first or newest note. Clear (shown once there is an answer) empties the box. This week compares notes made, words "
-            "written and reminders done since Monday with the whole of last week. "
+            "written and reminders done since Monday with the whole of last week, and "
+            "offers one feature you have not used lately, a different one each week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "
             "statistics, or Statistics in the command palette (Ctrl+K). Ask "
@@ -1306,8 +1309,7 @@ MORE_TOPICS: list[dict] = [
             "Each answer has Copy, and each tab has a History under "
             "its fields (the last twenty, kept on this device): press a row to "
             "put it back in the fields, or Copy it, Edit it (the next keep "
-            "replaces that row) or Remove it; Clear empties the list and Undo "
-            "brings it back. "
+            "replaces that row) or Remove it; Clear empties the list and Undo brings it back. "
             "Every tab ends in the same row: a line saying where Insert writes, "
             "then Copy, Insert as equation (Sum and Units; the sum with its "
             "result as an equation) and Insert. When the dialog was opened from "
@@ -1315,15 +1317,13 @@ MORE_TOPICS: list[dict] = [
             "and Copy is the way out. The keypad is one Tab stop: the "
             "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
-            "button; currency rates are set by hand and dated, not today's rate. "
-            "Time zone takes a time and two places (09:00, London, Tokyo), "
-            "offline. "
+            "button; currency rates are dated, set in Settings, Search and index. "
+            "Time zone takes a time and two places (09:00, London, Tokyo), offline. "
             "The Equation tab is the equation editor (see Equation editor): when "
             "an equation is made of numbers, its value is shown under it, as in "
             "Sum. The arrow keys, Home and End move "
             "between the tabs. The Dashboard's Calculator widget draws "
-            "Sum and Units on the page, with Copy but no Insert; Convert is "
-            "Units alone."
+            "Sum and Units on the page, with Copy but no Insert; Convert is Units alone."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -1362,8 +1362,9 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "A private space seals everything in it with your vault password, "
-            "as a private note is: its notes, documents and boards. Turn on "
-            "Private in New space, or in Edit space (the pencil beside a space "
+            "as a private note is: its notes, documents and boards, and on disk "
+            "the bytes of its recordings, library pictures and note files. Turn on "
+            "Private in New space, or in Edit space (Ctrl+K, Rename space, or the pencil beside a space "
             "in the picker); turning it on asks once with the count of what "
             "gets sealed. A locked private space shows its name with a lock and "
             "nothing else: its notes, documents and boards are out of search, "
@@ -1383,6 +1384,8 @@ MORE_TOPICS: list[dict] = [
             "private note while it is locked. A locked private space cannot "
             "be deleted or brought back with Undo. An export leaves it out "
             "unless it is unlocked and you ask, and backups keep it encrypted. "
+            "Its recordings and files are read in the background while it is "
+            "open; its pictures only when you press Read again. "
             "New notes start private (Account & security, off by default) seals "
             "each new note from its first save, unfiled and unindexed. Make all "
             "notes private, beside it, locks every ordinary note after a confirm, "
@@ -1553,8 +1556,7 @@ MORE_TOPICS: list[dict] = [
             "(a different passphrase) is counted and left alone. A notebook folder copied to another computer has the "
             "same sync id and is refused, and so is a second copy writing the same file in the folder: on one copy, press "
             "Make a new sync id (Settings, Import & export, Sync between computers; computers paired with it pair again), "
-            "then sync again. "
-            "The last-synced line under the group says when and which way."
+            "then sync again. The last-synced line under the group says when and which way."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },
@@ -1571,8 +1573,7 @@ MORE_TOPICS: list[dict] = [
             "time, counted the way wc counts. With nothing selected it counts "
             "the whole editor you were in. The Capture box and a document also "
             "show a running count as you type; a document leaves out its "
-            "Markdown marks, code and comments, and so matches its Document "
-            "statistics."
+            "Markdown marks, code and comments, and so matches its Document statistics."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
@@ -1585,14 +1586,17 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Select a passage in a note, a document or a reading and run "
             "Translate this from the command palette (Ctrl+K): it turns "
-            "English into Spanish on this computer, with no model, in about a "
+            "English into Spanish (or French, German, Italian or Portuguese, and "
+            "back) on this computer, with no model, in about a "
             "second, and Copy or Replace the selection puts it to use. With "
             "nothing selected it takes the whole editor you were in. It needs "
-            "Translate offline, a 27 MB download in Settings, Packages "
+            "Translate offline, a 54 MB download in Settings, Packages "
             "(Languages); until then the row says so and opens that page. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "
-            "Other languages: the Writing room translates with your model."
+            "With more than one language pair installed the sheet shows a "
+            "picker; each pair after the first is a language package (French, German, "
+            "Italian, Portuguese). Other languages: the Writing room translates with your model."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },
@@ -1626,8 +1630,7 @@ MORE_TOPICS: list[dict] = [
             "Shortcut key, on macOS a Shortcuts action, on Linux a custom keyboard "
             "shortcut. Pressing the key over any app opens a one-line box on the "
             "Tessellate that is already running; Enter saves the note, filed like "
-            "any other, and the box closes. On a phone, Share to Tessellate does "
-            "the same."
+            "any other, and the box closes. On a phone, Share to Tessellate does the same."
         ),
         "badge": {"label": "Capture from anywhere", "section": "shortcuts", "target": "capture-anywhere-box"},
     },
@@ -1647,8 +1650,7 @@ MORE_TOPICS: list[dict] = [
             "launcher finds its usual port taken it uses the next free one, "
             "so a copy left running in the background is found here. Only "
             "copies that are really running are listed: a leftover from a "
-            "copy that crashed is removed when the list opens, and Shut down "
-            "on one just clears it."
+            "copy that crashed is removed when the list opens, and Shut down on one just clears it."
         ),
         "badge": {"label": "Running copies", "section": "about", "target": "running-copies-group"},
     },
@@ -1765,7 +1767,7 @@ TOPIC_META: dict[str, dict] = {
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
-    "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after"},
+    "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after (the app's Undo lasts for the session)"},
     "autonomous": {"title": "Autonomous background AI", "path": "Settings, Background tasks"},
     "guide": {"title": "Atlas, the guide", "path": "Status bar, the compass (Ctrl+Shift+H)"},
     "command-palette": {"title": "The command palette", "path": "Ctrl+K"},
@@ -1926,6 +1928,7 @@ TOPIC_META: dict[str, dict] = {
     "filing-settings": {"title": "Filing switches, and asking when unsure", "path": "Settings, Background tasks; Capture, the Filing options menu"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
+    "note-groups": {"title": "Groups, and a note in more than one category", "path": "A note's category chip, then Add to a group or Also file under"},
     "tidy": {"title": "Tidy: reviews with no AI", "path": "Notes tab, the broom in the dock"},
     "manage-categories": {"title": "Managing categories", "path": "Notes tab, the Categories head in the sidebar"},
     "note-history": {"title": "A note's history", "path": "A note's menu, History"},
@@ -1968,7 +1971,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "audio-overview", "folder-sync", "meetings",
     )),
     ("Filing, tags and categories", (
-        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
+        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "note-groups", "tidy",
     )),
     ("Asking Atlas", (
         "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
@@ -1999,11 +2002,11 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch", "searxng",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "sign-in", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -2045,8 +2048,8 @@ MORE_TOPICS.extend([
             (
                 "Your phone opens this computer's notebook over your own network: turn on Allow other "
                 "devices on this network (Settings, Account & security, Other devices), then open the "
-                "large address it shows (Copy is beside it, and QR code shows a code the phone's camera "
-                "opens; Other addresses folds the rest) on the phone and sign in with your password. On "
+                "large address it shows (Copy is beside it, and QR code opens it, Phone setup QR code "
+                "installs the certificate; Other addresses folds the rest) on the phone and sign in with your password. On "
                 "an iPhone, press Install the certificate on the lock screen, then, in the iPhone's own "
                 "Settings app, General, VPN and Device Management to install it and About, Certificate "
                 "Trust Settings to trust it; its ? has the steps. The phone's first sign-in waits until "
@@ -2165,12 +2168,13 @@ MORE_TOPICS.append({
     "badge": {"label": "Account & security", "section": "account"},
 })
 TOPIC_META.update({
+    "searxng": {"title": "SearXNG", "path": "Settings, Web search, SearXNG"},
+    "sign-in": {"title": "Signing in", "path": "Settings, Account & security, Signing in"},
     "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
     "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
     "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
-    "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
-                       "target": "settings-file-group"},
+    "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings", "target": "settings-file-group"},
     "encryption": {"title": "What is encrypted", "path": "Settings, Account & security"},
     "delete-data": {"title": "Deleting your data", "path": "Settings, General, Bin"},
     "share-note": {"title": "Sharing a note", "path": "A note's menu, Download .md"},
@@ -2258,7 +2262,7 @@ MORE_TOPICS.extend([
             "active layer", "which layer", "layer new items go on", "layer to the front", "send layer to back", "duplicate a layer",
         ),
         "body": (
-            "The current layer, as in draw.io: in a board's sidebar, Layers, press a "
+            "The current layer, as in draw.io: in a board's sidebar, Layers (also Ctrl+K, Board layers), press a "
             "named layer's name and everything new (drawn, typed, pasted, imported "
             "or placed from the library) goes on it; the row is tinted while it is "
             "current. Press the name again, or its ⋯ menu's Stop drawing on it, "
@@ -2515,8 +2519,7 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "Add a block: N, a shelf tile or Add; /diagram opens the builder in a document. "
-            "Picture opens first, "
-            "blocks at its left. List gives the blocks list the room instead; "
+            "Picture opens first, blocks at its left. List gives the blocks list the room instead; "
             "Source and Split show text; Ctrl+Z undoes "
             "either. Add shows the last shape you used: press it to add one, or press its arrow "
             "for every shape and its key. Connect to... on a block draws an "
@@ -2536,8 +2539,7 @@ MORE_TOPICS.extend([
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 9 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
             "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
             "Suggest (... on a phone) starts one: "
-            "Templates (then Use this template), "
-            "From my notes "
+            "Templates (then Use this template), From my notes "
             "and Describe it (a model; dimmed with none). A blank diagram becomes "
             "the suggestion; else blocks arrive as ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds those taken and "
@@ -2836,7 +2838,7 @@ MORE_TOPICS.append({
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
         "word, and puts back a missing apostrophe (havent, ive, dont, youre and the rest "
         "become haven't, I've, don't, you're; ill, id, cant and wont only where "
-        "the words around them say so), in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
+        "the words around them say so), in the note boxes, the chat and Ask composers, the reminder boxes (new and edit), the Atlas help chat, the editor's ask and rewrite lines, a bookmark's title and note, memories, skill and template descriptions and the titles. "
         "The corrected word is underlined for five seconds: rest the pointer on "
         "it or click it for a small menu to keep it, put back what you typed, "
         "or edit the word (a document gets the same underline), "
@@ -2844,8 +2846,7 @@ MORE_TOPICS.append({
         "the toast carries Undo too. A word you put back is left alone for the "
         "rest of the session, and a word in your dictionary never changes. It "
         "never runs in code, links, tags or search boxes. Turn it off in "
-        "Settings, General, Writing; a document has its own switch in the "
-        "editor's ... menu."
+        "Settings, General, Writing; a document has its own switch in the editor's ... menu."
     ),
     "badge": {"label": "General", "section": "general", "target": "pref-autocorrect"},
 })

@@ -124,6 +124,21 @@ BUILTIN_TYPES: tuple[dict, ...] = (
 #: "seed when the table is empty", because a person who deletes every type
 #: has said they want none, and a restart must not hand them back.
 BUILTINS_SEEDED_PREF = "note_types_seeded"
+#: The highest id a deleted type held (L613). SQLite hands the highest rowid
+#: out again once its row is gone, so a type made or seeded after a delete took
+#: the deleted one's id and its Undo could not have it back.
+TYPES_HIGH_ID_PREF = "note_types_high_id"
+
+
+def next_type_id(session: Session, config) -> int:  # noqa: ANN001
+    """An id no type has held: above every row and every deleted one."""
+    top = session.scalar(select(func.max(NoteType.id))) or 0
+    return max(top, int(config.get_preference(TYPES_HIGH_ID_PREF) or 0)) + 1
+
+
+def remember_deleted_type(type_id: int, config) -> None:  # noqa: ANN001
+    if type_id > int(config.get_preference(TYPES_HIGH_ID_PREF) or 0):
+        config.set_preference(TYPES_HIGH_ID_PREF, type_id)
 
 
 def ensure_builtin_types(session: Session, config) -> None:  # noqa: ANN001
@@ -136,7 +151,8 @@ def ensure_builtin_types(session: Session, config) -> None:  # noqa: ANN001
     added = False
     for spec in BUILTIN_TYPES:
         if find_type(session, spec["name"]) is None:
-            session.add(NoteType(name=spec["name"], icon=spec["icon"], colour=spec["colour"], fields=list(spec["fields"])))
+            session.add(NoteType(id=next_type_id(session, config), name=spec["name"], icon=spec["icon"], colour=spec["colour"], fields=list(spec["fields"])))
+            session.flush()
             added = True
     if added:
         session.commit()

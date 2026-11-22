@@ -59,7 +59,7 @@ def test_no_duplicate_banners_and_no_duplicate_retry_loops() -> None:
     start one retry loop, not one each."""
     app = app_js_text()
     banner = _function(app, "showServerDownBanner")
-    assert "if (serverDownNote && serverDownNote.isConnected) return;" in banner
+    assert "if (serverDownNote && serverDownNote.isConnected) return message;" in banner
     schedule = _function(app, "scheduleServerDownRetry")
     assert "if (serverDownRetryTimer) return;" in schedule
 
@@ -95,3 +95,27 @@ def test_poll_health_hits_the_open_health_route_with_a_timeout() -> None:
     poll = _function(app, "pollServerHealth")
     assert 'fetch("/health"' in poll
     assert "AbortSignal.timeout(4000)" in poll
+
+
+def test_a_write_while_the_server_is_down_is_refused_with_the_banners_message() -> None:
+    """LEDGER L-world-class-99 (22.1.6): a write is not sent into a dead
+    server, it is refused at once with the banner's own words, as the
+    TypeError the held-note paths already treat as "the server is gone"
+    (`noteServerGone`); the refusal also asks the health poll to look now,
+    so a server that came back clears the banner without the 30 s backoff."""
+    app = app_js_text()
+    api_fn = _function(app, "api")
+    before_fetch = api_fn[: api_fn.index("response = await fetch(")]
+    assert "serverUnreachable" in before_fetch and "retryServerNow();" in before_fetch
+    assert "throw new TypeError(showServerDownBanner());" in before_fetch
+    assert "readOnly" in before_fetch
+    banner = _function(app, "showServerDownBanner")
+    assert "return message;" in banner and "text.textContent = message;" in banner
+    assert "networkErr.message = showServerDownBanner();" in api_fn
+
+
+def test_sign_in_and_health_are_never_refused_by_the_banner() -> None:
+    """They are how the app finds out the server is back."""
+    api_fn = _function(app_js_text(), "api")
+    before_fetch = api_fn[: api_fn.index("response = await fetch(")]
+    assert "/auth/" in before_fetch and "/health" in before_fetch

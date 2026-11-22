@@ -28,6 +28,8 @@ def _run(dirty: bool, in_flight: bool) -> list[str]:
     source = app_js_text()
     match = re.search(r"^async function renderPrefs\(\) \{.*?^\}", source, re.S | re.M)
     assert match, "renderPrefs is gone"
+    fills = re.search(r"^const PREFS_FILLS = \[.*?^\];", source, re.S | re.M)
+    assert fills, "the field table moved"
     script = f"""
 const order = [];
 let prefsDirty = {str(dirty).lower()};
@@ -41,7 +43,11 @@ const paintUserMarks = () => {{}};
 const extraNoticeMount = () => {{}};
 const afterCharacters = () => {{}};
 const updateProfileCount = () => {{}};
+const mountProfileLook = () => {{}};
+const setOwnNameMarkStyle = () => {{}};
+const SURFACES = {{ fill: () => {{}} }};
 const markPrefsSaved = () => {{ prefsDirty = false; }};
+{fills.group(0)}
 {match.group(0)}
 renderPrefs().then(() => process.stdout.write(JSON.stringify(order)));
 """

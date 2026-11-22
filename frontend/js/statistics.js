@@ -79,7 +79,7 @@
     try {
       await go();
     } catch {
-      toast("Couldn't open that.", true, { action: ["Try again", () => statsGo(go)] });
+      toast(voiceLine("failed", { what: "open that" }), true, { action: ["Try again", () => statsGo(go)] });
     }
   }
 
@@ -229,7 +229,7 @@
         const data = await apiJson(`/statistics?growth=${encodeURIComponent(select.value)}`, { silent: true });
         holder.replaceChildren(statsGrowthChart(data.notebook));
       } catch {
-        toast("Couldn't change the range.", true, { action: ["Try again", () => select.dispatchEvent(new Event("change"))] });
+        toast(voiceLine("failed", { what: "change the range" }), true, { action: ["Try again", () => select.dispatchEvent(new Event("change"))] });
       }
     });
     label.append(text, select);
@@ -371,7 +371,7 @@
         answer.classList.remove("hidden");
         clear.hidden = false;
       } catch {
-        toast("Couldn't answer that.", true, { action: ["Try again", () => ask(text)] });
+        toast(voiceLine("failed", { what: "answer that" }), true, { action: ["Try again", () => ask(text)] });
       } finally {
         send.disabled = false;
       }
@@ -487,6 +487,17 @@
     return paintStatistics(body).finally(() => body.removeAttribute("aria-busy"));
   }
 
+  //: One of the features not used lately, the same all week (Monday to
+  //: Sunday) and the next one the week after: the usage list feeds the weekly
+  //: offer (L595, UI_MODERNISATION statistics row 4). None when all are used.
+  function statsWeeklyOffer(unused, asOf) {
+    if (!unused || !unused.length) return null;
+    //: 1970-01-01 was a Thursday, so three days on makes every week start on a Monday.
+    const week = Math.floor((Math.floor(Date.parse(`${String(asOf).slice(0, 10)}T00:00:00Z`) / 864e5) + 3) / 7);
+    if (!Number.isFinite(week)) return null;
+    return unused[((week % unused.length) + unused.length) % unused.length];
+  }
+
   //: The dashboard's This week card (DASH_WIDGETS.week): the page's first
   //: section, with the way into the rest.
   async function renderWeekWidget(body) {
@@ -503,6 +514,15 @@
     foot.className = "row stats-more";
     foot.appendChild(more);
     body.appendChild(foot);
+    if (!data.usage) return;
+    const { labels, unused } = await statsUnused(data.usage, data.as_of).catch(() => ({ labels: {}, unused: null }));
+    const offer = statsWeeklyOffer(unused, data.as_of);
+    if (!offer) return;
+    const label = labels[offer] || offer;
+    const tip = document.createElement("p");
+    tip.className = "muted stats-unused stats-offer";
+    tip.append("Not used lately: ", smallButton(label, `Open ${label}`, () => statsOpenFeature(offer)));
+    foot.before(tip);
   }
 
   Object.assign(window, { openStatistics, renderWeekWidget, statsCard });

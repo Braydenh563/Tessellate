@@ -49,7 +49,7 @@
       //: told why. The message is what the server sent, and it belongs on
       //: screen rather than in a console nobody has open.
       const why = (err && err.message) || "the server refused it";
-      toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
+      toast(voiceLine("failed", { what: "add that note to the board", why: why }), true, { action: ["Try again", () => wbPlaceNote(entryId, at)] });
     }
   }
 

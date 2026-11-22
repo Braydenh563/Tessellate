@@ -37,7 +37,7 @@ function foldNoteToolbarForFirstPaint() {
 onSurface("notes", foldNoteToolbarForFirstPaint);
 
 //: Read by navigation.js's `hasUnsavedWork` (WORLD_CLASS_PLAN 22.1 item 4).
-//: `editingId` alone says a form is *open*, not that anything in it has
+//: the note slice (`appState.get("note")`) alone says a form is *open*, not that anything in it has
 //: changed; comparing every field back to `entry` at guard time would need
 //: the same `entry` object this closure already has, so it is cheaper and
 //: less to keep in step to set this once, here, than to reconstruct it from
@@ -55,14 +55,14 @@ let noteFormDraft = null;
 //: Ask before throwing away a form with changes in it. Answers true when it
 //: is fine to leave (nothing changed, or the person agreed).
 async function noteFormMayClose() {
-  if (editingId === null || !noteFormDirty) return true;
+  if (appState.get("note") === null || !noteFormDirty) return true;
   return confirmDialog("Discard your changes to this note?", { confirmLabel: "Discard" });
 }
 
 //: The keyboard back on a note's row after a redraw, unless it went somewhere.
 function focusNoteRow(id) {
   restoreFocusTo(() => {
-    const row = document.querySelector(`#entry-list > li[data-id="${id}"]`);
+    const row = noteRowFor(id);
     if (!row) return null;
     for (const other of document.querySelectorAll("#entry-list > li[tabindex='0']")) other.tabIndex = -1;
     row.tabIndex = 0;
@@ -101,7 +101,7 @@ function heldNoteControl() {
 function restoreNoteControl(held) {
   if (!held) return;
   restoreFocusTo(() => {
-    const li = document.querySelector(`#entry-list > li[data-id="${held.id}"]`);
+    const li = noteRowFor(held.id);
     //: Else the row itself (Save changes closed its form), which a script may focus.
     if (li && !li.hasAttribute("tabindex")) li.tabIndex = -1;
     return (held.cls && li?.querySelector(`.${held.cls}`)) || li;
@@ -111,14 +111,14 @@ function restoreNoteControl(held) {
 //: Every "edit this note" goes through here, so a form with changes is
 //: never swapped for another note's without asking.
 async function openNoteEditor(id, { focusTags = false } = {}) {
-  if (editingId !== null && editingId !== id && !(await noteFormMayClose())) return false;
-  if (editingId !== id) {
+  if (appState.get("note") !== null && appState.get("note") !== id && !(await noteFormMayClose())) return false;
+  if (appState.get("note") !== id) {
     noteFormDirty = false;
     noteFormDraft = null;
     //: The copy kept on this device goes with it (note-edit-panels.js).
     if (typeof forgetNoteEditLocally === "function") forgetNoteEditLocally();
   }
-  editingId = id;
+  setEditingNote(id);
   //: **On a phone the note page is put away first.** Tapping a note opens it
   //: as a full-page sheet (`openNotePage`, phone-shell.js) and its Edit button
   //: lands here, but the form is drawn into the list, which is behind that
@@ -219,6 +219,8 @@ const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|ur
 //: it fails or says null).
 const noteEngine = {
   q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null,
+  //: The words to mark in the one note a search result opened (`flashEntry`).
+  opened: { id: null, terms: [] },
   body: { q: "", ids: null, pending: "" },
   live: { q: "", ids: null, pending: "" },
   ask(slot, q, load, fail, done = renderEntries) {
@@ -309,6 +311,7 @@ function parseNoteQuery(raw) {
     exclude: [],
     tags: [],
     categories: [],
+    groups: [],
     flags: [],
     tagCount: null,
     titles: [],
@@ -327,11 +330,12 @@ function parseNoteQuery(raw) {
   });
   //: `tag:"two words"` and `cat:"Home office"` first, then bare quoted
   //: phrases, so neither's spaces become word breaks.
-  const named = (raw || "").replace(/\b(tag|cat|category|in|title):"([^"]+)"/gi, (_, key, value) => {
+  const named = (raw || "").replace(/\b(tag|cat|category|in|title|group):"([^"]+)"/gi, (_, key, value) => {
     const v = value.toLowerCase().trim();
     const k = key.toLowerCase();
     if (k === "tag") query.tags.push(v);
     else if (k === "title") query.titles.push(v);
+    else if (k === "group") query.groups.push(v);
     else query.categories.push(v);
     return " ";
   });
@@ -347,13 +351,14 @@ function parseNoteQuery(raw) {
     //: `#trip` is how a card shows a tag, so it is how people type one
     //: (INBOX 432: it matched nothing); `tag:#trip` the same.
     //: A bare `tag:` is still being typed: it narrows nothing yet.
-    if (/^(tag:#?|#|category:|cat:|in:|title:|is:|kind:|has:|space:)$/.test(lower)) continue;
+    if (/^(tag:#?|#|category:|cat:|in:|title:|group:|is:|kind:|has:|space:)$/.test(lower)) continue;
     if (lower.startsWith("tag:")) query.tags.push(lower.slice(4).replace(/^#/, ""));
     else if (lower.startsWith("#") && lower.length > 1) query.tags.push(lower.slice(1));
     else if (lower.startsWith("category:")) query.categories.push(lower.slice(9));
     else if (lower.startsWith("cat:")) query.categories.push(lower.slice(4));
     else if (lower.startsWith("in:")) query.categories.push(lower.slice(3));
     else if (lower.startsWith("title:")) query.titles.push(lower.slice(6));
+    else if (lower.startsWith("group:")) query.groups.push(lower.slice(6));
     else if (/^(before|after):\S+$/.test(lower) && parseNoteQuery.day(lower.split(":")[1])) {
       //: A span leaves its whole extent out: before March is before the 1st, after March is after the 31st (as Find anything does).
       const [key, word] = lower.split(":");
@@ -391,6 +396,8 @@ parseNoteQuery.day = function (word, now = new Date()) {
   return { first: iso(new Date(year, month, 1)), last: iso(new Date(year, month + 1, 0)) };
 };
 
+//: In a category: filed there, or also put there by hand (L-world-class-173).
+
 function noteQueryIsEmpty(query) {
   return (
     !query.words.length &&
@@ -398,6 +405,7 @@ function noteQueryIsEmpty(query) {
     !query.exclude.length &&
     !query.tags.length &&
     !query.categories.length &&
+    !query.groups.length &&
     !query.flags.length &&
     !query.tagCount &&
     !query.titles.length &&
@@ -444,7 +452,7 @@ function matchesSearch(entry) {
   }
   const content = (entry.content || "").toLowerCase();
   const tags = (entry.tags || []).map((t) => t.toLowerCase());
-  const category = (entry.category || "").toLowerCase();
+  const category = [entry.category, ...(entry.also_in || [])].join("\n").toLowerCase();
   const haystack = `${content} ${tags.join(" ")}`;
 
   // A tag: or cat: filter is a statement about which notes count at all.
@@ -453,6 +461,7 @@ function matchesSearch(entry) {
   if (query.tags.length && !query.tags.every((t) => tags.some((tag) => tag === t || tag.startsWith(`${t}/`)))) {
     return false;
   }
+  if (query.groups.length && !query.groups.every((g) => (entry.groups || []).some((n) => n.toLowerCase() === g))) return false;
   if (query.titles.length) {
     const title = noteSortName(entry).toLowerCase();
     if (!query.titles.every((t) => title.includes(t))) return false;
@@ -1617,6 +1626,7 @@ function renderNoteInline(element, text, terms) {
     const link = document.createElement("button");
     link.type = "button";
     link.className = "wiki-link";
+    link.dataset.wiki = name;
     const label = wikiLinkLabel(name);
     link.textContent = label;
     link.title = `Go to the note starting "${label}"`;
@@ -1817,135 +1827,6 @@ function sortEntries(entries) {
   return [...entries].sort((a, b) => byPinned(a, b) || cmp(a, b));
 }
 
-//: **One windowed list, for Notes and the Timeline** (audit 1029 N9, audit 1028
-//: S16 and S53). `renderIncrementally` (library.js) only ever added: a list
-//: scrolled to its end held every card, 300 notes 12,126 elements, and the
-//: Timeline's own paging did the same with 8 elements a row, 27,500 nodes at
-//: 2,000 rows. Here every row is an empty `<li class="row-shell">` holding its
-//: place (its key, the height it last drew at), and only the rows within
-//: `ROW_WINDOW_MARGIN` of the scroller's window are built; a built row that is
-//: `ROW_WINDOW_FAR` past the window becomes a shell again once the scroll
-//: settles. A shell is one element, so a notebook costs one node a row plus
-//: the screenful. The keyboard builds the row it moves to (`fill`), the
-//: selection lives in `selectedIds` and not in the rows, and a row being
-//: edited, holding focus, open or with a menu open is never hollowed
-//: (`stays`), nor the one Tab stop. One instance serves any number of lists (the Timeline has a
-//: list a day) and `add` appends, which is how a page of the Timeline lands.
-const ROW_WINDOW_MARGIN = "1200px 0px";
-const ROW_WINDOW_BATCH = 6;
-const ROW_WINDOW_FAR = 3000;
-const ROW_WINDOW_CARRY = ["rail-subject", "flash"];
-
-function windowRows(root, o) {
-  const info = new WeakMap(); // row -> { items, i }
-  const lists = new WeakMap(); // list -> its items
-  const live = new Set(); // rows built now
-  let timer = 0;
-  let off = false;
-  const carry = (to, from) => {
-    if (!from) return to;
-    to.tabIndex = from.tabIndex;
-    for (const name of ROW_WINDOW_CARRY) if (from.classList.contains(name)) to.classList.add(name);
-    return to;
-  };
-  //: `o.shell` names the shell's tag: a `<tbody>` takes `tr` (L491, the Timeline table).
-  const shellFor = (items, i, from) => {
-    const li = document.createElement(o.shell || "li");
-    li.className = "row-shell";
-    li.setAttribute("aria-hidden", "true");
-    //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
-    li.style.cssText = `visibility:hidden;height:${o.heights.get(o.keyOf(items[i])) || o.guess}px`;
-    li.tabIndex = -1;
-    o.tag(li, items[i]);
-    info.set(li, { items, i });
-    return carry(li, from);
-  };
-  const make = (items, i, from) => {
-    const li = carry(o.build(items[i], i), from);
-    info.set(li, { items, i });
-    live.add(li);
-    observer.observe(li);
-    return li;
-  };
-  //: A shell is hidden, so it cannot take focus: the keyboard (Home, End,
-  //: the arrows) builds the row it is moving to first.
-  function fill(shell) {
-    const at = info.get(shell);
-    if (!at || !shell.classList.contains("row-shell") || !shell.parentElement) return shell;
-    const li = make(at.items, at.i, shell);
-    shell.replaceWith(li);
-    o.onFill?.(li);
-    return li;
-  }
-  //: The rows beyond it come with it, further from the window: a few rows in
-  //: one frame cost less than a row in every frame of a scroll.
-  function fillRun(target, up) {
-    const run = [target];
-    const step = up ? "previousElementSibling" : "nextElementSibling";
-    for (let el = target[step]; el?.classList.contains("row-shell") && run.length < ROW_WINDOW_BATCH; el = el[step]) run.push(el);
-    for (const shell of run) fill(shell);
-  }
-  //: Rows are emptied once the scroll settles, never on the frame they left:
-  //: building a card is mostly the browser styling its forty elements, so a
-  //: row read a moment ago and scrolled back to is kept. Every position is
-  //: read before any row is replaced, so it is one layout.
-  function settle() {
-    if (off) return;
-    const box = root ? root.getBoundingClientRect() : { top: 0, bottom: innerHeight };
-    const far = [];
-    for (const li of live) {
-      if (!li.isConnected) live.delete(li);
-      else if (li.tabIndex !== 0 && !o.stays(li)) {
-        const r = li.getBoundingClientRect();
-        if (r.bottom < box.top - ROW_WINDOW_FAR || r.top > box.bottom + ROW_WINDOW_FAR) far.push([li, r.height]);
-      }
-    }
-    for (const [li, height] of far) {
-      const at = info.get(li);
-      if (height) o.heights.set(o.keyOf(at.items[at.i]), height);
-      const shell = shellFor(at.items, at.i, li);
-      li.replaceWith(shell);
-      live.delete(li);
-      observer.observe(shell);
-    }
-    o.onSettle?.();
-  }
-  const observer = new IntersectionObserver((seen) => {
-    if (off) return;
-    for (const { target, isIntersecting, boundingClientRect, rootBounds } of seen) {
-      const at = info.get(target);
-      if (!at || !target.parentElement) continue;
-      if (!target.classList.contains("row-shell")) {
-        if (boundingClientRect.height) o.heights.set(o.keyOf(at.items[at.i]), boundingClientRect.height);
-      } else if (isIntersecting) fillRun(target, rootBounds && boundingClientRect.top < rootBounds.top);
-    }
-    clearTimeout(timer);
-    timer = setTimeout(settle, 300);
-  }, { root, rootMargin: ROW_WINDOW_MARGIN });
-  //: `now(item, i)` says which rows are built as they land; the rest are shells.
-  function add(list, more, now = () => false) {
-    const items = lists.get(list) || [];
-    lists.set(list, items);
-    const from = items.length;
-    for (const item of more) items.push(item);
-    const fragment = document.createDocumentFragment();
-    more.forEach((item, k) => {
-      const i = from + k;
-      if (now(item, i)) return fragment.appendChild(make(items, i));
-      const shell = shellFor(items, i);
-      observer.observe(shell);
-      fragment.appendChild(shell);
-    });
-    list.appendChild(fragment);
-  }
-  function stop() {
-    off = true;
-    observer.disconnect();
-    clearTimeout(timer);
-  }
-  return { add, fill, stop };
-}
-
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
 
 //: Kept while it still holds the list: the walk read the computed style of every
@@ -1960,9 +1841,18 @@ function notesScroller(list) {
 }
 window.addEventListener("resize", () => (notesScroller.kept = null), { passive: true });
 
-const NOTE_WINDOW_FIRST = 12;
-const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId
-  || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
+//: Built on a first draw; unbuilt rows go in runs of `run` (L-world-class-873).
+const NOTE_WINDOW = { first: 12, run: 50 };
+//: **Note `id`'s row in the Notes list**, built or a shell, its run opened if
+//: it was folded into one (L-world-class-873). Every lookup of a Notes row by
+//: id comes here: a query alone misses a row inside a run.
+function noteRowFor(id) {
+  const list = document.getElementById("entry-list");
+  if (!list || id == null || id === "") return null;
+  if (noteWindow.win && noteWindow.list === list) noteWindow.win.rowFor(Number(id));
+  const key = CSS.escape(String(id));
+  return list.querySelector(`:scope > li[data-id="${key}"]`) || list.querySelector(`li[data-id="${key}"]`);
+}
 
 function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, grown } = {}) {
   if (grown) {
@@ -1982,6 +1872,9 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     heights: noteWindow.heights,
     guess: notesViewMode === "rows" ? 50 : 132,
     keyOf: (item) => item[0].id,
+    run: NOTE_WINDOW.run,
+    //: Cards sit `--space-3` apart (01-forms-settings.css); rows touch.
+    gap: notesViewMode === "rows" ? "" : "var(--space-3)",
     tag: (li, item) => { li.dataset.id = item[0].id; },
     //: Built rows say where they are in the whole list; the shells are hidden
     //: from screen readers.
@@ -1991,7 +1884,8 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
       li.setAttribute("aria-setsize", noteWindow.items.length);
       return li;
     },
-    stays: noteRowStays,
+    stays: (li) => li.contains(document.activeElement) || Number(li.dataset.id) === appState.get("note")
+      || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))'),
     onFill: (li) => entryCardControls(li, li.tabIndex === 0),
     onSettle: settled,
   });
@@ -1999,7 +1893,7 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
   noteWindow.fill = win.fill;
   //: A redraw builds the rows that were built before it (the same place in
   //: the list), the note being jumped to or edited, or the first screenful.
-  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW_FIRST));
+  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW.first));
   afterChunk?.();
 }
 
@@ -2124,10 +2018,11 @@ function applyNotesViewMode() {
 //: visible. Filtering, sorting, threading and pagination all decide that
 //: between them, and a second implementation of "which notes are on screen"
 //: is a second thing to keep in step, the DOM already holds the answer.
+//: The window's own order when it holds the list: rows in a run have no element.
 function listedNoteIds() {
-  return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) =>
-    Number(li.dataset.id)
-  );
+  const list = document.getElementById("entry-list");
+  if (list && noteWindow.win && noteWindow.list === list) return noteWindow.win.keys(list);
+  return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) => Number(li.dataset.id));
 }
 
 function updateExpandAllButton() {
@@ -2279,7 +2174,7 @@ function libraryVisibleRows() {
     : favouritesOnly
       ? allEntries.filter((e) => e.pinned && noteListed(e))
       : activeCategory
-        ? allEntries.filter((e) => e.category === activeCategory && noteListed(e))
+        ? allEntries.filter((e) => (e.category === activeCategory || (e.also_in || []).includes(activeCategory)) && noteListed(e))
         : allEntries.filter(noteListed);
   const matched = visible.filter(matchesSearch);
   //: UX-04: no match, and /search corrected a typo: show what it found.
@@ -2318,11 +2213,10 @@ function resetNoteList(list) {
   //: list redraws whole, so what was on screen is remembered by id and a card
   //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
   //: first render, and a render after the list was empty, mark nothing.
-  rowEnterIds = new Set([...list.querySelectorAll(":scope > li[data-id]")].map((li) => li.dataset.id));
+  rowEnterIds = new Set(listedNoteIds().map(String));
   //: The rows built now are where the reader is: the redraw builds them again.
   const keep = new Set([...list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")].map((li) => Number(li.dataset.id)));
-  if (noteEngine.jumpId != null) keep.add(noteEngine.jumpId);
-  if (editingId != null) keep.add(editingId);
+  for (const id of [noteEngine.jumpId, appState.get("note")]) if (id != null) keep.add(id);
   clearTimeout(rowEnterTimer);
   rowEnterTimer = setTimeout(() => { rowEnterIds = null; }, 1000);
   list.replaceChildren();
@@ -2433,7 +2327,7 @@ function renderEntries(appendOnly = false) {
     : favouritesOnly
       ? allEntries.filter((e) => e.pinned && noteListed(e)).length
       : activeCategory
-        ? allEntries.filter((e) => e.category === activeCategory && noteListed(e)).length
+        ? allEntries.filter((e) => (e.category === activeCategory || (e.also_in || []).includes(activeCategory)) && noteListed(e)).length
         : allEntries.filter(noteListed).length;
   $("entries-heading-label").textContent =
     noteSearchCorrectionShown
@@ -2488,23 +2382,8 @@ function renderEntries(appendOnly = false) {
 // next chunk, and it is not a note. Left in `children` it would join the
 // roving tabindex and the arrow-key walk below, so ArrowDown at the bottom of
 // the list would focus an invisible element and appear to do nothing.
-const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id]"));
-
-//: A shift-click range over every row between the two, built or not.
-function selectNoteRange(list, fromId, toId, on) {
-  const rows = entryListItems(list);
-  const a = rows.findIndex((li) => li.dataset.id === fromId);
-  const b = rows.findIndex((li) => li.dataset.id === toId);
-  if (a === -1 || b === -1) return;
-  for (const li of rows.slice(Math.min(a, b), Math.max(a, b) + 1)) {
-    if (on) selectedIds.add(Number(li.dataset.id));
-    else selectedIds.delete(Number(li.dataset.id));
-    const check = li.querySelector(":scope > .select-check");
-    if (check) check.checked = on;
-    if (!li.classList.contains("row-shell")) li.classList.toggle("is-selected", on);
-  }
-  updateBatchCount();
-}
+//: A run (L-world-class-873) stands in the walk for the rows it holds: `noteWindow.fill` opens it.
+const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id], :scope > li.row-run"));
 
 function applyEntryListTabOrder(list) {
   const items = entryListItems(list);
@@ -2514,67 +2393,6 @@ function applyEntryListTabOrder(list) {
   // instead of silently resetting focus back to the top of the list.
   const holder = current && items.find((li) => li === current || li.contains(current));
   entryListSetStop(items, holder || items[0] || null);
-}
-
-function initEntryListKeyboardNav() {
-  const list = $("entry-list");
-  list.addEventListener("focusin", entryListFocusStop);
-  list.addEventListener("keydown", (event) => {
-    //: Home/End, Delete (to the bin, with Undo) and F2 (edit) on a focused
-    //: row, as a notes list answers them everywhere else (INBOX 432: only
-    //: the arrows and Enter did anything).
-    const keys = ["ArrowDown", "ArrowUp", "Enter", "Home", "End", "Delete", "F2"];
-    if (!keys.includes(event.key)) return;
-    //: A note's own ⋯ menu lives inside its row, so its arrow keys bubble
-    //: here too: ArrowDown in the menu moved to the next item and then this
-    //: moved the focus out of the menu onto the row (measured, menus.js).
-    if (event.target.closest('.action-menu, [role="menu"], [role="listbox"]')) return;
-    //: **A text field keeps its own keys.** A note's edit form lives inside
-    //: its row, so the title box, the tags box and the body editor sent their
-    //: Home, End and arrow keys here: the caret never moved, the focus jumped
-    //: to another row, and what was typed next went nowhere (found by the
-    //: deepflows sweep: click into the editor, press End, type). Checkboxes
-    //: and buttons are not fields, so the row's arrows still work from them.
-    if (event.target.closest('textarea, select, [contenteditable], .cm-editor, input:not([type="checkbox"]):not([type="radio"]):not([type="button"])')) return;
-    const items = entryListItems(list);
-    const current = event.target.closest("li");
-    const index = current ? items.indexOf(current) : -1;
-    if (index === -1) return;
-
-    if (event.target === current && (event.key === "Delete" || event.key === "F2")) {
-      const entry = allEntries.find((e) => e.id === Number(current.dataset.id));
-      if (!entry || editingId === entry.id) return;
-      event.preventDefault();
-      const next = items[index + 1] || items[index - 1];
-      if (event.key === "F2") openNoteEditor(entry.id);
-      else binNoteWithUndo(entry).then(() => {
-        const again = next && document.querySelector(`#entry-list li[data-id="${next.dataset.id}"]`);
-        again?.focus();
-      });
-      return;
-    }
-    if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
-      event.preventDefault();
-      const nextIndex =
-        event.key === "Home" ? 0
-          : event.key === "End" ? items.length - 1
-            : Math.min(Math.max(index + (event.key === "ArrowDown" ? 1 : -1), 0), items.length - 1);
-      const target = noteWindow.fill(items[nextIndex]);
-      entryListSetStop(entryListItems(list), target);
-      target.focus();
-      // .focus() alone scrolls in most browsers, but not predictably, 
-      // explicit and consistent with the same fix on the command palette's
-      // own arrow-key nav, which has no focus to lean on at all.
-      target.scrollIntoView({ block: "nearest" });
-    } else if (event.key === "Enter" && event.target === current) {
-      // Only when the <li> itself has focus, not a button/link/textarea
-      // inside it: those already handle their own Enter behaviour, and
-      // this app has no separate "note view" to open: editing in place is
-      // what opening a note means here.
-      event.preventDefault();
-      current.querySelector(".entry-actions [title='Edit this entry']")?.click();
-    }
-  });
 }
 
 //: **A category's colour, from one function.** The one the person chose
@@ -2659,7 +2477,7 @@ function renderSidebar() {
   for (const name of categoryMeta.keys()) if (name !== "Uncategorised") counts.set(name, 0);
   for (const entry of allEntries) {
     if (!noteListed(entry)) continue;
-    counts.set(entry.category, (counts.get(entry.category) || 0) + 1);
+    for (const name of [entry.category, ...(entry.also_in || [])]) counts.set(name, (counts.get(name) || 0) + 1);
   }
 
   const ul = $("category-list");
@@ -2748,16 +2566,7 @@ function renderSidebar() {
     ul.appendChild(li);
     return li;
   };
-  const toggleFilter = (drafts) => () => {
-    if (drafts) draftsOnly = !draftsOnly;
-    else favouritesOnly = !favouritesOnly;
-    if (drafts) favouritesOnly = false;
-    else draftsOnly = false;
-    activeCategory = null;
-    showNotesSection("browse");
-    renderSidebar();
-    renderEntries();
-  };
+  const toggleFilter = renderSidebar.toggleFilter;
 
   // Drafts: a filter row beside the categories, always shown (even at 0) so it stays findable.
   filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", toggleFilter(true));
@@ -2783,16 +2592,21 @@ function renderSidebar() {
   queryRow("ph:lock Private", (e) => e.is_private, "is:private", "");
   //: Tags, beside Drafts and Favourites (INBOX 432): a sheet of every tag
   //: (categories-panel.js `openTagsSheet`), not a second long list here.
-  const tagRow = document.createElement("li");
-  tagRow.className = "category-drafts-row";
-  const tagName = document.createElement("span");
-  tagName.className = "category-name";
-  setLabel(tagName, "ph:hash Tags");
-  tagRow.append(tagName);
-  tagRow.title = "Every tag: see its notes, rename, merge or remove it";
-  tagRow.addEventListener("click", () => openTagsSheet());
-  wireSidebarRowKeys(tagRow);
-  ul.appendChild(tagRow);
+  const sheetRow = (label, title, open) => {
+    const row = document.createElement("li");
+    row.className = "category-drafts-row";
+    const name = document.createElement("span");
+    name.className = "category-name";
+    setLabel(name, label);
+    row.append(name);
+    row.title = title;
+    row.addEventListener("click", open);
+    wireSidebarRowKeys(row);
+    ul.appendChild(row);
+  };
+  sheetRow("ph:hash Tags", "Every tag: see its notes, rename, merge or remove it", () => openTagsSheet());
+  //: Groups of notes gathered by hand (L-world-class-172), a sheet too.
+  sheetRow("ph:folders Groups", "Notes you gathered by hand, apart from categories and tags", () => openNoteGroupsSheet());
 
   //: One order everywhere a list of categories is shown: by name, ignoring
   //: case and accents, numbers in number order (INBOX 432: a bare `.sort()`
@@ -2803,6 +2617,17 @@ function renderSidebar() {
   sidebarRovingRows(ul);
   foldSide();
 }
+//: The Drafts and Favourites rows' click, split from `renderSidebar`.
+renderSidebar.toggleFilter = (drafts) => () => {
+  if (drafts) draftsOnly = !draftsOnly;
+  else favouritesOnly = !favouritesOnly;
+  if (drafts) favouritesOnly = false;
+  else draftsOnly = false;
+  activeCategory = null;
+  showNotesSection("browse");
+  renderSidebar();
+  renderEntries();
+};
 
 //: **One tab stop for the whole category list** (UX1: 62 stops for 31
 //: categories, every name and then its ⋯, before the first note). The row that
@@ -3143,8 +2968,10 @@ async function _loadEntries() {
       // Categories the AI has filed notes into since the last load need
       // their ids fetched before rename/delete can work on them.
       // Deliberately not awaited: the list renders now and the controls
-      // light up a moment later.
-      loadCategories();
+      // light up a moment later. Once a load, at its first page: the list is
+      // the server's, not the pages', and the last page asked again, so boot
+      // fetched it twice (L-world-class-874).
+      if (first) loadCategories();
       fillCategoryOptions(document.getElementById("entry-category"), null);
     }
     first = false;
@@ -3195,7 +3022,7 @@ async function refreshEntries(ids) {
   let total;
   try {
     //: A note being edited is read whole, the rest as a preview (a row with `content_truncated` holds a part: `fullEntry`).
-    const response = await api(`/entries?ids=${wanted.join(",")}${wanted.includes(editingId) ? "" : "&preview=300"}`);
+    const response = await api(`/entries?ids=${wanted.join(",")}${wanted.includes(appState.get("note")) ? "" : "&preview=300"}`);
     rows = await response.json();
     total = Number(response.headers.get("X-Total-Count"));
   } catch {
@@ -3230,52 +3057,8 @@ async function refreshEntries(ids) {
   fillCategoryOptions(document.getElementById("entry-category"), null);
 }
 
-//: **A change made on another device shows here** (INBOX 881, the owner
-//: 2026-10-11: "what if I make a change on my phone?? does it live
-//: update??"). Every `NOTE_CHANGES_MS` while the page is visible, and at once
-//: when it comes back (the phone's browser brought forward), the list asks
-//: `GET /entries/changes` which notes moved since its last answer and
-//: patches those in with `refreshEntries`. The note being edited is left
-//: alone: its Save sends `base_hash`, so a newer text from elsewhere still
-//: gets the Keep mine / Take theirs prompt rather than being overwritten
-//: under the person's cursor. `seen` drops an id already refreshed at the
-//: same `updated_at` (the server's stamp overlaps by two seconds).
-const NOTE_CHANGES_MS = 15_000;
-const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false, quiet: 0 };
-async function followNoteChanges() {
-  clearTimeout(noteChanges.timer);
-  if (document.hidden) return;
-  noteChanges.timer = setTimeout(followNoteChanges, noteChanges.since ? NOTE_CHANGES_MS * (noteChanges.quiet >= 4 ? 2 : 1) : 2000);
-  //: The first stamp is taken as soon as there is a session, before the list
-  //: has finished loading, so a change made while it loads is not missed.
-  if (noteChanges.busy || !authToken() || (noteChanges.since && !entriesComplete)) return;
-  noteChanges.busy = true;
-  try {
-    const body = await apiJson(`/entries/changes?since=${encodeURIComponent(noteChanges.since)}`, { silent: true });
-    const first = !noteChanges.since;
-    noteChanges.since = body.since;
-    if (first) return;
-    //: More than one answer holds: an empty patch is `refreshEntries`'s full read.
-    if (body.more) return void refreshEntries([]);
-    const ids = body.ids.filter((id) => id !== editingId && noteChanges.seen.get(id) !== body.stamps[id]);
-    if (noteChanges.seen.size > 500) noteChanges.seen.clear();
-    for (const id of body.ids) noteChanges.seen.set(id, body.stamps[id]);
-    //: Battery: four empty answers in a row slow the ask to 30 s; a change or a return to the tab restores 15 s.
-    noteChanges.quiet = body.ids.length ? 0 : noteChanges.quiet + 1;
-    if (!ids.length) return;
-    await refreshEntries(ids);
-    refreshNotePage(ids);
-  } catch {
-    /* offline or locked: the next tick asks again */
-  } finally {
-    noteChanges.busy = false;
-  }
-}
-document.addEventListener("visibilitychange", () => {
-  noteChanges.quiet = 0;
-  followNoteChanges();
-});
-followNoteChanges();
+//: A change made on another device shows here (INBOX 881): the poll is notes-sync.js, started now as it was.
+ensureModule("notesSync");
 
 //: **What the note list needs to draw a `[[map]]` as a map chip**, fetched
 //: once and only for a notebook that has one.
@@ -3333,7 +3116,7 @@ function referenceCountChip(entry, options = {}) {
   if (!counts || !counts.total) return null;
   const refChip = chip(`ph:graph ${referenceCountText(counts)}`, "refs", (event) => {
     event.stopPropagation();
-    lazyScript("/js/connections.js").then(() => openConnections(
+    ensureModule("connections").then(() => openConnections(
       "entries",
       entry.id,
       entry.title || noteNamePlain(entry.content, 80)
@@ -3578,8 +3361,8 @@ function notesRailHiddenByChoice() {
 //: jump that has just landed are both things the render is the first to know
 //: about, and neither has a hook of its own in this file.
 function notesRailSync() {
-  if (editingId != null && editingId !== notesRailSeenEditing) notesRailId = editingId;
-  notesRailSeenEditing = editingId;
+  if (appState.get("note") != null && appState.get("note") !== notesRailSeenEditing) notesRailId = appState.get("note");
+  notesRailSeenEditing = appState.get("note");
   const opened = typeof lastOpenedEntryId === "number" ? lastOpenedEntryId : null;
   if (opened != null && opened !== notesRailSeenOpened) notesRailId = opened;
   notesRailSeenOpened = opened;
@@ -3642,7 +3425,7 @@ async function renderNotesRail() {
   if (body.dataset.key === key) return;
   body.setAttribute("aria-busy", "true");
   //: The rows are drawn by connections.js (the sheet's own bundle), which also draws the answer (`drawNotesRail`).
-  await lazyScript("/js/connections.js");
+  await ensureModule("connections");
   return drawNotesRail(entry, key);
 }
 
@@ -3650,7 +3433,7 @@ async function renderNotesRail() {
 //: the column put the keyboard, so focus is never left on something that has
 //: just gone.
 function notesRailFocusSubject() {
-  const li = document.querySelector(`#entry-list li[data-id="${notesRailId}"]`);
+  const li = noteRowFor(notesRailId);
   if (li) li.focus({ preventScroll: true });
 }
 
@@ -3671,92 +3454,4 @@ function setNotesRailHidden(hidden) {
   renderNotesRail();
 }
 
-onSurface("notes", () => {
-    const rail = $("notes-rail");
-    const list = $("entry-list");
-    if (!rail || !list) return;
-    //: Selecting a row is focusing it: a click on a card's body focuses its
-    //: `<li>` (the list's roving tabindex), and so does every arrow key.
-    list.addEventListener("focusin", (event) => {
-      const li = event.target.closest?.("li[data-id]");
-      if (!li || li.parentElement !== list) return;
-      //: **Not a card's menu.** Its ⋯ is a button inside the row, so pressing it
-      //: is focus in the row, and the rail opened 120ms later: the column takes
-      //: 318px from the list and its dock wraps to two lines, so the row moved
-      //: 318px left and 44px down under a menu already placed beside where the
-      //: ⋯ had been (the review, 2026-09-27, `anchorsmotion.js`: 118px from its
-      //: opener at 1440x600, over the rail). A menu acts on a note; it does not
-      //: choose one to read.
-      if (event.target.closest?.(".menu-wrap, .action-menu")) return;
-      //: INBOX 571: a card chosen by hand is the subject (it is pinned in
-      //: notes-rail-spy.js); the rail is already drawn, so nothing moves.
-      const id = Number(li.dataset.id);
-      if (!Number.isFinite(id) || id === notesRailId) return;
-      notesRailId = id;
-      scheduleNotesRail();
-    });
-    $("notes-rail-close")?.addEventListener("click", () => {
-      notesRailFocusSubject();
-      setNotesRailHidden(true);
-      toast("Connections hidden. The notes list's More menu brings them back.");
-    });
-    $("notes-rail-toggle")?.addEventListener("click", () => {
-      setNotesRailHidden(!notesRailHiddenByChoice());
-      $("notes-more-menu")?.removeAttribute("open");
-    });
-    //: The keys every list here keeps (WORLD_CLASS_PLAN 1.6): arrows walk the
-    //: rows, Enter opens one (they are buttons), Escape goes back to the list.
-    rail.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        notesRailFocusSubject();
-        return;
-      }
-      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-      const rows = [...rail.querySelectorAll("button.connection-row")];
-      const at = rows.indexOf(document.activeElement);
-      if (at < 0) return;
-      event.preventDefault();
-      const next = rows[Math.min(rows.length - 1, Math.max(0, at + (event.key === "ArrowDown" ? 1 : -1)))];
-      next?.focus();
-    });
-    notesRailWide.addEventListener("change", renderNotesRail);
-    //: A sidebar dragged or collapsed changes the list's room, which decides whether the rail fits; the window
-    //: does not change then, so the sidebar is observed (and the list, for the rail's own width check).
-    if (typeof ResizeObserver === "function" && $("sidebar")) {
-      let last = 0;
-      renderNotesRail.ro = new ResizeObserver((entries) => {
-        for (const { target, contentRect } of entries) {
-          //: L705: read after layout.
-          if (target.id === "entry-list") {
-            if (target.getBoundingClientRect().width >= NOTES_RAIL_MIN_READING) continue;
-            const rail = $("notes-rail");
-            rail.hidden = true;
-            rail.dataset.cramped = "1";
-            window.notesRailMark?.();
-          } else if (last !== (last = Math.round(contentRect.width))) scheduleNotesRail();
-        }
-      });
-      renderNotesRail.ro.observe($("sidebar"));
-    }
-    syncNotesRailToggle();
-});
-
-//: GRAPH_PLAN 518: a save that renamed a note while other notes still write
-//: its old [[name]] offers to rewrite them as the new one.
-function offerWikiRename(entryId, saved) {
-  const offer = saved && saved.wiki_rename;
-  if (!offer) return;
-  const who = offer.notes === 1 ? "1 note still links" : `${offer.notes} notes still link`;
-  toastAction(`${who} to [[${offer.old}]].`, `Rename to [[${offer.new}]]`, async () => {
-    try {
-      const done = await apiJson(`/entries/${entryId}/wiki-rename`, { method: "POST", body: JSON.stringify({ old: offer.old }) });
-      pushWikiRenameUndo(entryId, offer.old, done);
-      toast(`Updated ${nounCount(done.rewritten, "note")}.`);
-      await loadEntries().catch(() => {});
-    } catch (error) {
-      toast(error.message || "Couldn't update those links.", true);
-    }
-  });
-}
+onSurface("notes", wireNotesRail);

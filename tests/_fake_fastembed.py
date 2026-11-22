@@ -9,6 +9,8 @@ sparse so a 66 MB file costs nothing).
 
 from __future__ import annotations
 
+import dataclasses
+import hashlib
 import math
 import sys
 import types
@@ -145,3 +147,20 @@ def fake_fetch(monkeypatch, hub: Path, *, works: bool = True) -> list[str]:  # n
 
     monkeypatch.setattr(embedmodels, "fetch", fetch)
     return fetched
+
+
+def weights_sha() -> str:
+    """The sha256 of `snapshot`'s sparse weights (all zero bytes)."""
+    digest = hashlib.sha256()
+    chunk = b"\0" * (1024 * 1024)
+    for _ in range(WEIGHT_BYTES // len(chunk)):
+        digest.update(chunk)
+    return digest.hexdigest()
+
+
+def pinned_to_fake(model: embedmodels.EmbedModel) -> embedmodels.EmbedModel:
+    """`model` with its weight pins (L-world-class-320) set to what
+    `snapshot` writes, so a faked download verifies."""
+    extra = hashlib.sha256(b"x" * 16).hexdigest()
+    pins = ((model.onnx.model_file, weights_sha()), *((name, extra) for name in model.onnx.extra_files))
+    return dataclasses.replace(model, onnx=dataclasses.replace(model.onnx, sha256=pins))

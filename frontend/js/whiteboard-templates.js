@@ -434,6 +434,7 @@ async function wbUntitledNames() {
 
 //: Resolves `{name, kind, ref}` (ref null for blank) or null when cancelled.
 async function wbOpenTemplateGallery(kind = "board") {
+  surfaceBuild("wbTemplate");
   const dialog = document.getElementById("wb-template-dialog");
   const list = document.getElementById("wb-template-list");
   const preview = document.getElementById("wb-template-preview");
@@ -561,8 +562,9 @@ async function wbOpenTemplateGallery(kind = "board") {
   });
   const finish = (make) => {
     const name = nameField.value.trim() || untitled[kind === "map" ? "map" : "board"];
-    dialog.close();
+    //: Settled first: closing fires `close`, whose listener settles with nothing.
     settle(make ? { name, kind, ref: chosen?.ref || null } : null);
+    dialog.close();
   };
   search.value = "";
   search.oninput = () => fill();
@@ -607,10 +609,8 @@ async function wbOpenTemplateGallery(kind = "board") {
   };
   document.getElementById("wb-template-create").onclick = () => finish(true);
   for (const btn of dialog.querySelectorAll("[data-close-dialog='wb-template-dialog']")) btn.onclick = () => finish(false);
-  dialog.oncancel = (e) => {
-    e.preventDefault();
-    finish(false);
-  };
+  //: Escape and a press on the scrim close the sheet, not through `finish`.
+  dialog.addEventListener("close", () => settle(null), { once: true });
   fill();
   dialog.showModal();
   nameField.focus();

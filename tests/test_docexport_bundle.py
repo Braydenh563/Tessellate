@@ -123,3 +123,18 @@ def test_a_name_cannot_climb_out_of_the_media_folder(app_state, tmp_path):
 
     assert carried == []
     assert set(zipfile.ZipFile(io.BytesIO(data)).namelist()) == {"Climb.md"}
+
+
+def test_citations_leave_as_footnotes():
+    text = "Claim [@lamport] and [@missing].\n\n```\n[@lamport] in code\n```\n\n[@lamport]: <https://example.org/paper>\n"
+    out = docexport.citations_to_footnotes(text)
+    assert "Claim [^lamport] and [@missing]." in out
+    assert "[@lamport] in code" in out
+    assert "[^lamport]: <https://example.org/paper>" in out
+    assert docexport.citations_to_footnotes("no keys [@x]") == "no keys [@x]"
+
+
+def test_export_md_carries_citations_as_footnotes(client):
+    doc = client.post("/documents", json={"title": "Cited", "content": "# Cited\n\nA claim [@a].\n\n[@a]: the source\n"}).json()
+    body = client.get(f"/documents/{doc['id']}/export.md").text
+    assert "A claim [^a]." in body and "[^a]: the source" in body

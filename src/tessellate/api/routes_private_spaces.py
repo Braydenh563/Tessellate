@@ -103,6 +103,9 @@ def _open_spaces(session: Session, x_auth_token: str | None) -> dict:
     if vault.key() is None:
         raise HTTPException(status_code=409, detail="The private notes key could not be opened.")
     spacelock.open_for(x_auth_token)
+    # Opened now: this request's reads were narrowed when it began, and the
+    # sealing below must see the spaces' rows (L-world-class-52).
+    session.info.pop("sealed_workspaces", None)
     # A run cut short (a crash while a space was being sealed) finishes here.
     sealed = sum(private_space.seal_space_members(session, sid) for sid in private_space.private_space_ids(session))
     manager.log_action(session, "unlocked", "vault", detail="private spaces opened")

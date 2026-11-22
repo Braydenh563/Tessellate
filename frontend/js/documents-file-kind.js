@@ -51,10 +51,13 @@
   // and a failed one is retried the next time you open the tab instead of
   // poisoning the cache for good.
   async function loadDocFileTypes() {
+    //: The prose pass only when the table has just landed (an open document was read as markdown until then): with it
+    //: in hand already, every open ran the pass itself (`renderDocTools`), so a tab visit ran it twice (L-world-class-40).
+    const had = docFileTypes.length > 0;
     await loadDocTypeTable();
     if (!docFileTypes.length) return;
     docTypeMount();
-    syncDocFileType();
+    syncDocFileType({ prose: !had });
   }
 
   //: The open document's type, never null. Falls back to markdown for a
@@ -315,8 +318,13 @@
     if (proxy) setTimeout(() => (document.getElementById(proxy) || document.querySelector(proxy))?.click());
   });
   //: The card's `.card:has(details.dock-menu[open])`, as a class (07-whiteboard-misc.css says why).
-  const viewMenu = document.getElementById("doc-view-menu");
-  viewMenu?.addEventListener("toggle", () => viewMenu.closest(".card")?.classList.toggle("doc-view-menu-open", viewMenu.open));
+  //: Both of the dock's menus (View, More): one opening as the other closes leaves the class on.
+  for (const dockMenu of [document.getElementById("doc-view-menu"), document.getElementById("doc-dock-menu")]) {
+    dockMenu?.addEventListener("toggle", () => {
+      const card = dockMenu.closest(".card");
+      card?.classList.toggle("doc-view-menu-open", Boolean(card.querySelector("details.dock-menu[open]")));
+    });
+  }
   document.addEventListener("click", (event) => {
     const menu = document.getElementById("doc-dock-menu");
     if (!menu?.open) return;

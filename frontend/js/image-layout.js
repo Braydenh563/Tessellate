@@ -362,7 +362,7 @@ async function imageSaveNote(img, id, change) {
     await refreshEntries([id]);
     return content;
   } catch (error) {
-    toast(error.message || "Couldn't change the picture.", true);
+    toast(error.message || voiceLine("failed", { what: "change the picture" }), true);
     return false;
   }
 }
@@ -402,7 +402,7 @@ function imageWirePicture(img) {
 //: or the note view is looked up afresh (the save replaced them), and a
 //: thumbnail, which has no grip, hands its align button the keys instead.
 function imageRefocus(id, marked, at, held) {
-  const root = document.querySelector(marked ? `[data-image-edit="${id}"]` : `li[data-id="${id}"]`);
+  const root = marked ? document.querySelector(`[data-image-edit="${id}"]`) : noteRowFor(id) || document.querySelector(`li[data-id="${id}"]`);
   const img = root?.querySelectorAll("img[data-alt]")[at];
   if (!img) return;
   imageWirePicture(img);

@@ -66,3 +66,14 @@ def test_a_vision_reading_and_a_page_reading_are_findable(client):
     )
     hits = client.get("/search?q=xylograph&hybrid=false").json()["hits"]
     assert any(h.get("source") == "media" and h.get("id") == upload_id for h in hits), hits
+
+
+def test_the_route_returns_every_reading_in_one_shape(client):
+    att_id, upload_id = _files(client)
+    got = client.get(f"/files/readings?source=upload&id={upload_id}")
+    assert got.status_code == 200, got.text
+    assert [(r["kind"], r["text"], r["model"]) for r in got.json()] == [("vision", "quarterly heliotrope plan", "tiny-vision")]
+    got = client.get(f"/files/readings?source=attachment&id={att_id}").json()
+    assert {r["kind"] for r in got} == {"caption", "ocr"}
+    assert client.get("/files/readings?source=nope&id=1").status_code == 422
+    assert client.get("/files/readings?source=upload&id=99999").status_code == 404

@@ -35,10 +35,11 @@ import re
 import shutil
 import subprocess  # noqa: S404  # fixed args from a hardcoded table below, no shell, no user input
 import sys
+import threading
 import time
 from pathlib import Path
 
-from tessellate.core import jobs, ocr_prep
+from tessellate.core import jobs, ocr_prep, parse_guard
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.ocr")
@@ -286,6 +287,7 @@ def saved_language() -> str:
     try:
         value = str(config.get_preference(LANGUAGE_PREFERENCE, "") or "")
     except Exception:  # noqa: BLE001  # settings not readable: the default
+        logger.debug("saved_language: settings not readable: the default", exc_info=True)
         return ""
     return value if _LANGUAGE_PATTERN.match(value) else ""
 
@@ -694,6 +696,13 @@ def _log_package_missing() -> None:
     )
 
 
+#: How long the OCR child may spend on one picture (L-world-class-321) before
+#: the file is treated as crafted and its reader stopped: generous, since a
+#: large scan is read in up to two page modes.
+OCR_TIMEOUT_SECONDS = 180
+
+
+@parse_guard.isolated("ocr", timeout=OCR_TIMEOUT_SECONDS, on_stop=str)
 def extract_text(image_path: Path, choice: str = "") -> str:
     """Best-effort OCR text for one image file. Never raises: a missing
     binary, a corrupt image, or an unsupported format all just mean no text
@@ -773,6 +782,7 @@ def _read_with_fallbacks(pytesseract, img, modes: tuple[int | None, ...]) -> str
     return ""
 
 
+@parse_guard.isolated("ocr", timeout=OCR_TIMEOUT_SECONDS, on_stop=str)
 def extract_region_text(image_path: Path, choice: str = "") -> str:
     """`extract_text` for a drawn region: a crop is one block, so Tesseract is
     asked for a single uniform block first and for sparse text second. Another
@@ -828,6 +838,7 @@ def _region_data(pytesseract, img) -> tuple[dict, float]:
     return data, (prepared.scale if prepared.scale > 0 else 1.0)
 
 
+@parse_guard.isolated("ocr", timeout=OCR_TIMEOUT_SECONDS, on_stop=lambda: None)
 def extract_regions(image_path: Path, choice: str = "") -> dict | None:
     """Text laid out as Tesseract found it: one entry per block, with the
     box it occupies on the page.
@@ -1074,7 +1085,28 @@ def _reading_block_kind(body: str) -> str:
     return "text"
 
 
-def extract_and_store(upload_id: int, image_path: Path) -> None:
+#: **A hand-set text outranks a read queued before it.** A clear stores
+#: nothing, so "already has text" could not stop a background read queued at
+#: upload from landing afterwards and putting the machine's words back (CI
+#: py3.12 on 50462a6a: cleared, then 'reading'). Each hand set bumps the
+#: upload's count; a read stores only if the count is what it was queued at.
+#: In memory: the queue it guards is in memory too.
+_hand_sets: dict[int, int] = {}
+_hand_sets_lock = threading.Lock()
+
+
+def text_set_by_hand(upload_id: int) -> None:
+    """Mark that a person set (or cleared) this upload's text just now."""
+    with _hand_sets_lock:
+        _hand_sets[upload_id] = _hand_sets.get(upload_id, 0) + 1
+
+
+def _hand_set_count(upload_id: int) -> int:
+    with _hand_sets_lock:
+        return _hand_sets.get(upload_id, 0)
+
+
+def extract_and_store(upload_id: int, image_path: Path, queued_at: int | None = None) -> None:
     """Runs OCR synchronously and writes the result onto the `MediaUpload`
     row if any text was found. Split out from `extract_in_background` below
     so tests can call this directly without waiting on a real thread.
@@ -1098,10 +1130,12 @@ def extract_and_store(upload_id: int, image_path: Path) -> None:
         if deps.get_model_manager().resolve_vision_model(deps.get_ollama()):
             return
     except Exception:  # noqa: BLE001  # no backend reachable: Tesseract is the reader
+        logger.debug("extract_and_store: no backend reachable: Tesseract is the reader", exc_info=True)
         pass
     text = extract_text(image_path)
     if not text:
         return
+    jobs.check_stop()  # Stop pressed while Tesseract read: the text is not stored
     # Imported here, not at module level: this file has to stay importable
     # (for `tesseract_available()`/`extract_text()` alone) without pulling
     # in the whole app's dependency graph just to check whether a binary
@@ -1119,10 +1153,10 @@ def extract_and_store(upload_id: int, image_path: Path) -> None:
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return  # deleted (or its upload never committed) before OCR finished
-        if upload.ocr_text:
+        if upload.ocr_text or (queued_at is not None and _hand_set_count(upload_id) != queued_at):
             #: Read again or typed by hand while this pass ran: that reading
             #: stands ("Read with RapidOCR" came back with this pass's
-            #: Tesseract text, PR 211 CI).
+            #: Tesseract text, PR 211 CI), and so does a clear.
             return
         upload.ocr_text = text
         session.commit()
@@ -1134,7 +1168,10 @@ def extract_in_background(upload_id: int, image_path: Path) -> None:
     already done by the time this runs, the same "don't make the caller
     wait for something that isn't the point of the request" reasoning as
     `ai/embeddings.py`'s background reinstall-and-retry."""
-    jobs.enqueue("ocr", extract_and_store, upload_id, image_path, name=image_path.name, dedupe_key=("ocr", upload_id))
+    jobs.enqueue(
+        "ocr", extract_and_store, upload_id, image_path, _hand_set_count(upload_id),
+        name=image_path.name, dedupe_key=("ocr", upload_id),
+    )
 
 
 #: Per platform, the first package manager found on PATH gets tried. Every

@@ -143,7 +143,7 @@ def test_the_history_dialog_has_the_action_and_it_asks_the_summary_route():
     root = Path(__file__).resolve().parents[1]
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
     dlg = html[html.index('id="doc-history-dialog"') :]
-    dlg = dlg[: dlg.index("</dialog>")]
+    dlg = dlg[: dlg.index("</sheet-host>")]  # the history is a panel host now (L-world-class-131)
     assert 'id="doc-history-story-btn"' in dlg and 'id="doc-history-story"' in dlg
     js = (root / "frontend" / "js" / "documents-history.js").read_text(encoding="utf-8")
     assert "/revisions/summary" in js and "readOnly: true" in js

@@ -258,13 +258,13 @@ async function openEntryHistory(entry) {
 }
 
 
-const THEN_NOW_WORDS = { revised: "Changed", dropped: "No longer says", new: "Says now" };
-
 //: One row's then-and-now block, opened under the row and closed by the same
 //: button. The row's own version against the note now (`POST
 //: /entries/{id}/then-and-now`, by text, so two edits on one day are still
 //: two versions): sentences paired by their words, so "Changed" shows the
-//: sentence then above the sentence now.
+//: sentence then above the sentence now. With a model on, the model judged
+//: each pair (I5): one that says the opposite is "Contradicts then", and the
+//: foot names the model.
 async function toggleThenAndNow(entry, thenText, row, button) {
   const open = row.querySelector(".then-now");
   if (open) {
@@ -298,12 +298,15 @@ async function toggleThenAndNow(entry, thenText, row, button) {
     block.append(same);
     return;
   }
+  //: Local, not a global (test_global_scope_ratchet).
+  const words = { revised: "Changed", dropped: "No longer says", new: "Says now", contradicts: "Contradicts then" };
   for (const change of changes) {
     const item = document.createElement("div");
     item.className = `then-now-row then-now-${change.kind}`;
     const kind = document.createElement("span");
     kind.className = "chip";
-    chipWords(kind, THEN_NOW_WORDS[change.kind] || change.kind);
+    const word = change.judgement === "contradicts" ? "contradicts" : change.kind;
+    chipWords(kind, words[word] || change.kind);
     item.append(kind);
     if (change.then !== null && change.then !== undefined) {
       const then = document.createElement("p");
@@ -319,6 +322,12 @@ async function toggleThenAndNow(entry, thenText, row, button) {
     }
     block.append(item);
   }
+  if (body.judged_by) {
+    const judged = document.createElement("p");
+    judged.className = "muted small then-now-judged";
+    judged.textContent = `Compared by ${body.judged_by}.`;
+    block.append(judged);
+  }
   if (body.exact === false) {
     const note = document.createElement("p");
     note.className = "muted small";
@@ -332,7 +341,7 @@ async function toggleThenAndNow(entry, thenText, row, button) {
 //: AI's actors and the event ids its writes fall between
 //: (`skill_runner._undo_span`), which `POST /events/undo` takes as one. The
 //: Recent activity widget's "Undo what Atlas did" grammar, the same plan
-//: sentence (`activityUndoPlanText`): always the dry run first, shown in the
+//: sentence (`activityPlanText`): always the dry run first, shown in the
 //: confirm, then that plan applied. A board item stays "can't be undone",
 //: said in the plan rather than skipped silently. Lives here, beside the
 //: note's own History, because both are about putting a note back; reached
@@ -343,7 +352,7 @@ async function undoSkillRun(span, button, onDone) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify(body) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", { what: "read what would be undone" }), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -357,19 +366,37 @@ async function undoSkillRun(span, button, onDone) {
     return;
   }
   const byId = new Map((allEntries || []).map((entry) => [entry.id, entry]));
-  const ok = await confirmDialog(`Undo this run?\n\n${activityUndoPlanText(plan, byId, "this run")}`, {
+  const ok = await confirmDialog(`Undo this run?\n\n${activityPlanText(plan, byId, "this run")}`, {
     confirmLabel: "Undo",
     danger: false,
   });
   if (!ok) return;
   try {
-    const done = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ ...body, dry_run: false }) });
+    const applied = JSON.stringify({ ...body, dry_run: false });
+    const done = await apiJson("/events/undo", { method: "POST", body: applied });
+    //: Redo re-applies the reversed events (`POST /events/redo`, L805), so the
+    //: run's Undo is a step on the normal stack.
+    //: Only the notes the undo touched are re-read (test_refresh_entries).
+    const ids = (done.items || []).filter((item) => item.entity_type === "entry").map((item) => item.entity_id);
+    if (done.restored?.length) {
+      pushUndo(
+        "Undid this run",
+        async () => {
+          await apiJson("/events/redo", { method: "POST", body: JSON.stringify({ restored: done.restored }) });
+          await refreshEntries(ids).catch(() => {});
+        },
+        async () => {
+          done.restored = (await apiJson("/events/undo", { method: "POST", body: applied })).restored;
+          await refreshEntries(ids).catch(() => {});
+        }
+      );
+    }
     toast(`Put back ${nounCount(done.undone, "note")}.`);
     button?.remove();
     onDone?.();
     await loadEntries().catch(() => {});
   } catch (error) {
-    toast(error.message || "Couldn't undo that run.", true);
+    toast(error.message || voiceLine("failed", { what: "undo that run" }), true);
   }
 }
 

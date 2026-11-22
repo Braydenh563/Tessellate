@@ -43,7 +43,7 @@ class FakeDate extends Date {
   static now() { return now; }
 }
 const sandbox = {
-  prefsCache: {}, authToken: () => 'token', performance: { now: () => 1000 },
+  prefsCache: {}, clockOptions: () => ({}), authToken: () => 'token', performance: { now: () => 1000 },
   $: (id) => (id === 'lock-overlay' ? null : chip),
   setLabel: (el, text) => { chip.label = text; },
   toast: (t) => toasts.push(t),
@@ -62,8 +62,8 @@ const sandbox = {
     get: (k, d) => (store.has(k) ? store.get(k) : d),
     remove: (k) => store.delete(k),
   },
-  setInterval: (fn) => { const id = nextTimer++; timers.set(id, fn); return id; },
-  clearInterval: (id) => timers.delete(id),
+  //: The shared one-second clock (prefs.js `secondTick`): each added paint is one entry in `timers`.
+  secondTick: { add: (fn) => timers.set(fn, fn), remove: (fn) => timers.delete(fn) },
   setTimeout: () => nextTimer++,
   clearTimeout: () => {},
   document: { addEventListener() {} },
@@ -303,3 +303,21 @@ def test_the_panel_is_a_movable_modeless_sheet_with_three_tabs():
 
 def test_a_stopped_clock_still_offers_undo_from_the_panel():
     assert "stopUtilityClock(find())" in SRC[SRC.index("function openClockPanel"):]
+
+
+# L586: the Clock panel's head carries a '?' popover (data-help-for) for the Timer and Stopwatch tabs;
+# Count words has no surface of its own (a palette row that toasts), so its help is the Guide topic.
+def test_the_clock_panel_head_has_a_help_popover_naming_each_tab():
+    assert 'help.setAttribute("data-help-for", "clock-help")' in SRC
+    assert 'body.id = "clock-help"' in SRC
+    help_lines = SRC.split("const CLOCK_HELP = [", 1)[1].split("];", 1)[0]
+    for lead in ('"Timer: ', '"Stopwatch: ', '"Alarm: '):
+        assert lead in help_lines, lead
+
+
+def test_count_words_and_the_clock_have_guide_topics():
+    from tessellate.ai import help_topics_more
+
+    topics = {t["id"]: t for t in help_topics_more.MORE_TOPICS}
+    assert "Count words" in topics["count-words"]["body"]
+    assert "stopwatch" in topics["timer"]["body"].lower()

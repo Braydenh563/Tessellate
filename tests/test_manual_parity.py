@@ -39,7 +39,7 @@ MANUAL = {
     "create_note": ("capture-ask.js", 'apiJson("/entries", {', "Notes, Capture box"),
     "edit_note": ("note-edit-panels.js", "base_hash: base", "a note's Edit form"),
     "tag_note": ("note-edit-panels.js", 'tagField.className = "tag-field note-edit-tags";', "a note's Edit form, Tags"),
-    "pin_note": ("entry-card.js", 'button.classList.add("favourite-btn");', "a note's star"),
+    "pin_note": ("entry-card.js", 'button.classList.add("favourite-btn");', "a note's star, or a chat's Pin in its menu"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
@@ -100,7 +100,7 @@ def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_setting
     notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
     assert 'id="manage-categories-btn"' in html and 'id="settings-manage-categories"' in html
     assert '$("manage-categories-btn").addEventListener("click", () => openManageCategories());' in wiring
-    assert '$("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
+    assert 'wire("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
     assert "kebabMenu(categoryMenuItems(meta), `Actions for ${category}`, { vertical: true })" in notes
     assert 'data-help-for", "manage-cat-help"' in notes
     # Every change offers undo.
@@ -350,9 +350,10 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
                       "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]
-    settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
+    #: The row is painted by the pane's refresh, which moved to settings-controls.js with the panes (L675).
+    settings = (FRONTEND / "js" / "settings-controls.js").read_text(encoding="utf-8")
     assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
-    assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings
+    assert '$("desktop-companion-row").classList.toggle("hidden", !onThisComputer);' in settings
     note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:600]
     assert "while the desktop app runs" in note
 
@@ -805,3 +806,37 @@ def test_a_board_window_in_a_document_is_in_the_guide_in_its_buttons_words() -> 
     for label in ("Edit in place", "Refresh", "Edit here"):
         assert f"{label}" in js and label in body, label
     assert "zoom and pan" in body and "plus and minus" in body
+
+
+def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_keeps_its_own():
+    """L-world-class-76 (INBOX 1851): only a board, a map and a document keep their undo across a
+    reload (`undo-store.js`); the app's own stack starts empty, and Help says so."""
+    from tessellate.ai import help_chat
+
+    body = next(t for t in help_chat.HELP_TOPICS if t["id"] == "undo-bin")["body"]
+    assert "lasts for the session" in body and "after a reload or a restart it starts empty" in body
+    assert "a board, a mind map and a document keep their last hundred steps" in body
+    assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]
+
+
+def test_the_manual_pictures_are_few_small_and_each_on_disk_for_a_real_topic():
+    """L-world-class-785 (the owner: "add a few pictures"): three to five WebP files, each for a
+    topic the Guide has, each with alt text, each small enough that the boot and the first
+    Settings open never pay for them (they load lazily, only when a topic is drawn)."""
+    from tessellate.ai.help_chat import HELP_TOPICS, help_listing
+    from tessellate.ai.help_images import HELP_IMAGES
+
+    assert 3 <= len(HELP_IMAGES) <= 5
+    ids = {topic["id"] for topic in HELP_TOPICS}
+    files = [entry["file"] for entry in HELP_IMAGES.values()]
+    assert len(set(files)) == len(files)
+    folder = FRONTEND / "img" / "help"
+    for topic_id, entry in HELP_IMAGES.items():
+        assert topic_id in ids, f"{topic_id}: no such help topic"
+        assert len(entry["alt"]) >= 20 and not entry["alt"].endswith("!"), f"{topic_id}: alt text"
+        path = folder / entry["file"]
+        assert path.read_bytes()[8:12] == b"WEBP", f"{path} is not WebP"
+        assert path.stat().st_size <= 30_000, f"{path} is over 30 KB: lower the quality in help-images.py"
+    assert {p.name for p in folder.iterdir()} == set(files), "a picture on disk the list does not name"
+    drawn = {t["id"] for g in help_listing()["groups"] for t in g["topics"] if t["image"]}
+    assert drawn == set(HELP_IMAGES), "the manual's listing must carry every picture"

@@ -64,6 +64,10 @@ ALLOWED = {
     # The icon font for an exported page (INBOX 1545): a static file from the
     # open /vendor mount, read as a blob to inline, not an API request.
     "documents-export.js": 1,
+    # The first document open's warm (L-world-class-40): the Library bundle's
+    # stamped /js files and the /vendor editor read into the HTTP cache at low
+    # priority, static files from open mounts, not an API request.
+    "library.js": 1,
 }
 
 #: `fetch(` as a call: not `.fetch(` (a method), not a word ending in fetch.

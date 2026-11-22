@@ -62,6 +62,9 @@ const unlock = async (page) => {
     ctx = await mk(browser); page = await ctx.newPage();
     await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
     await unlock(page);
+    // The list is built lazily on the Notes tab now, so open it once to warm.
+    await page.waitForFunction(() => typeof switchTab === 'function', null, { timeout: 60000 });
+    await page.evaluate(() => switchTab('notes'));
     await page.waitForFunction(() => document.querySelector('#entry-list li'), null, { timeout: 60000 });
     await page.waitForTimeout(4000);
     await page.evaluate(() => { const o = document.getElementById('onboarding-overlay'); if (o) o.classList.add('hidden'); });

@@ -35,7 +35,7 @@ def _answer_lead(chip: str, notes: list[dict], today, voice: str, says_cannot) -
     try:
         trial = composer.compose(chip, notes, today=today, voice=voice)
     except Exception:  # noqa: BLE001 - a chip that cannot be tried is not offered
-        _log.warning("a follow-up chip could not be tried, so it is not offered: %r", chip, exc_info=True)
+        _log.warning("a follow-on chip could not be tried, so it is not offered: %r", chip, exc_info=True)
         return None
     text = str(trial.get("text") or "")
     return composer_chips.lead(text) if trial.get("grounding") and not says_cannot(text) else None

@@ -194,7 +194,7 @@ function featureCatalog() {
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
       { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },
       { name: "Statistics", desc: "Your notebook, reminders and usage, counted, with this week against last.", reveal: "statistics" },
-      { name: "This week", desc: "Notes made, words written and reminders done, against last week.", reveal: "widget-week" },
+      { name: "This week", desc: "Notes made, words written and reminders done, against last week, and one feature not used lately.", reveal: "widget-week" },
       { name: "Streaks", desc: "How many days in a row you've captured something.", reveal: "widget-streak" },
     ]},
     { group: "Make it yours", items: [
@@ -330,22 +330,19 @@ function renderToolShortcutList(list) {
 //: `LAZY_ENTRY_POINTS` stand-in (bundle `featureRows`, nobody reads its return),
 //: so the dashboard draws the tiles once this file is in, as it did before when
 //: it waited for `featureCatalog`.
+//: The bell's count in words, for the palette's Open notifications row (L693).
+function notificationsUnreadSaid() {
+  const readAt = notificationsReadAt();
+  const forced = forcedUnreadIds();
+  const n = storedNotifications().filter((item) => isNotificationUnread(item, readAt, forced)).length;
+  return n ? `${n} unread.` : "All caught up.";
+}
+
+//: Activity's Agent runs and History tabs are rows of their own: they sat four presses deep (L-world-class-780).
 function paletteCommands() {
-  //: **The documents editor's own commands, at the top, while one is open**
-  //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
-  //: palette of its own, which is the chord this one already has: two
-  //: palettes on one key is the collision the agent palette's comment records
-  //: being caught twice. So the editor contributes a group here instead, and
-  //: `docPaletteCommands` (documents.js) returns nothing at all unless the
-  //: Documents tab is showing with a document in it. Guarded by `typeof`
-  //: because that file is in the Library's lazy bundle and the palette opens
-  //: from every tab, including before it has ever been fetched.
-  const editor = typeof docPaletteCommands === "function" ? docPaletteCommands() : [];
+  const [editor, board] = paletteCommands.groups();
   //: And an open map's (whiteboard-map.js, lazy for the same reason).
   if (typeof mapPaletteCommands === "function") editor.push(...mapPaletteCommands());
-  //: The open board's commands, the same way (FEAT-11, whiteboard-commands.js):
-  //: nothing unless a board is on screen, which needs the bundle in.
-  const board = typeof wbPaletteCommands === "function" ? wbPaletteCommands() : [];
   //: Every row below declares where it goes (tests/test_catalogue_reveal.py)
   //: and `catalogueRun` makes its `run`; the editor's rows are commands on
   //: the document already open, so they keep their own.
@@ -410,7 +407,7 @@ function paletteCommands() {
     //, but was reachable only by already knowing that chord. This palette
     // is the app's own "what can I do here" list; it belongs in it.
     { label: "ph:strategy Ask the agent anything", reveal: "agent-palette", chord: "askAgent" },
-    { label: "ph:palette New sketch", reveal: "sketch", chord: "quickSketch" },
+    { label: "ph:palette New sketch", reveal: "sketch", chord: "quickSketch", keywords: "draw drawing keep note save picture", about: "Draw something and keep it as a note." },
     //: A command, not a search (INBOX 666: the palette is commands and
     //: places; finding a meeting is Find anything's). INBOX 644: there was
     //: no way to start a meeting note by name anywhere in the app.
@@ -471,10 +468,13 @@ function paletteCommands() {
       label: "ph:paperclip Browse files",
       reveal: "library-files",
     },
-    {
-      label: "ph:link Browse links",
-      reveal: "library-links",
-    },
+    //: Named as the Library's tab names it (reach.js, L-world-class-132: "Library >
+    //: Bookmarks" had no command, the row said "links").
+    { label: "ph:link Browse bookmarks", reveal: "library-links", keywords: "links saved pages" },
+    { label: "ph:folders Browse boards and maps", reveal: "library-boards", keywords: "boards whiteboards maps mind maps library gallery", about: "Every board and mind map, in the Library." },
+    { label: "ph:waveform Browse recordings", reveal: "library-recordings", keywords: "recordings audio meetings library", about: "Every recording, in the Library." },
+    { label: "ph:lightning Browse skills", reveal: "library-skills", keywords: "skills library run", about: "The skills you can run, in the Library." },
+    { label: "ph:list-bullets Library contents", reveal: "library-contents", keywords: "contents table category tag library", about: "A table of contents for the whole notebook." },
     {
       //: The whole list of what the app can do, from the list of what the app
       //: can do: the features browser was reachable from a dashboard button
@@ -511,6 +511,9 @@ function paletteCommands() {
       label: "ph:folders New workspace",
       reveal: "workspace-new",
     },
+    { label: "ph:pencil-simple Rename space", reveal: "space-rename", keywords: "workspace name icon private edit", about: "Change this space's name, icon or privacy." },
+    { label: "ph:stack Board layers", reveal: "board-layers", keywords: "order front back paint sidebar", about: "The open board's layers: what sits in front, hide and lock." },
+    { label: "ph:globe Browse the web in Chat", reveal: "chat-web-search", keywords: "web search online internet turn on off", about: "Chat's Web switch: search the web here, opt-in." },
     // Filters as commands: the fastest route to "the notes I mean" without
     // remembering the operator syntax.
     ...[
@@ -551,6 +554,10 @@ function paletteCommands() {
     { label: "ph:sliders Settings, General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
     { label: "ph:floppy-disk Settings, Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
     { label: "ph:brain Settings, What it remembers", reveal: "settings:memory" },
+    //: The three sections reach.js found no command for (L-world-class-132).
+    { label: "ph:magnifying-glass Settings, Search and index", reveal: "settings:searchindex", about: "The search engine, the index it builds, and how strict a match must be." },
+    { label: "ph:graduation-cap Settings, What it learned", reveal: "settings:learned", about: "What it picked up from how you file and fix, and the switches for each." },
+    { label: "ph:globe Settings, Web search", reveal: "settings:websearch", about: "Searching the web from Chat, off by default." },
     { label: "ph:note-blank Settings, Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
     { label: "ph:shield-check Settings, Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
     { label: "ph:globe-hemisphere-west Settings, Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
@@ -570,8 +577,10 @@ function paletteCommands() {
     ...(editor.some((c) => /equation/i.test(c.label)) ? [] : [{ label: "ph:function Insert equation", keywords: "equation formula maths math latex fraction root integral matrix insert write", about: "The equation editor, over the box you were writing in: Insert puts it there as TeX, or Copy takes it.", keys: "Alt+=", act: () => openMathEditor({ target: popupToolMaths.box(paletteCaughtNow().target) }) }]),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
-    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
+    { label: "ph:translate Translate this", keywords: "translate translation spanish french german italian portuguese language offline selection passage", about: "The selected passage into another language, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
+    { label: "ph:activity Activity, Agent runs", keywords: "agent runs plans steps past tasks", about: "The agent's runs this session, step by step.", act: () => openActivity("runs") },
+    { label: "ph:clock-counter-clockwise Activity, History", keywords: "history finished jobs past background done", about: "Every run since the app started.", act: () => openActivity("history") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
     { label: "ph:tree-evergreen Settings, Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },
@@ -597,11 +606,28 @@ function paletteCommands() {
     { label: "ph:clock-counter-clockwise Where you left off", keywords: "unsaved typed draft recent resume pick up", about: "Every box that holds words you typed and have not saved, one press to jump back to it.", act: () => typedWords("open") },
     //: The top bar's other controls, so each is in the palette too (ledger 1410).
     { label: "ph:gear Open Settings", chord: "settings", act: () => openSettingsModal() },
-    { label: "ph:bell Open notifications", keywords: "bell", act: () => openNotifications() },
+    { label: "ph:bell Open notifications", keywords: "bell unread", about: notificationsUnreadSaid(), act: () => openNotifications() },
     { label: "ph:squares-four Switch space", act: () => $("space-switcher-btn")?.click() },
     { label: "ph:power Quit Tessellate", act: () => quitApp() },
   ].map(catalogueRun);
 }
+//: The open document's, map's and board's own commands, split from `paletteCommands`.
+paletteCommands.groups = () => {
+  //: **The documents editor's own commands, at the top, while one is open**
+  //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
+  //: palette of its own, which is the chord this one already has: two
+  //: palettes on one key is the collision the agent palette's comment records
+  //: being caught twice. So the editor contributes a group here instead, and
+  //: `docPaletteCommands` (documents.js) returns nothing at all unless the
+  //: Documents tab is showing with a document in it. Guarded by `typeof`
+  //: because that file is in the Library's lazy bundle and the palette opens
+  //: from every tab, including before it has ever been fetched.
+  const editor = typeof docPaletteCommands === "function" ? docPaletteCommands() : [];
+  //: The open board's commands, the same way (FEAT-11, whiteboard-commands.js):
+  //: nothing unless a board is on screen, which needs the bundle in.
+  const board = typeof wbPaletteCommands === "function" ? wbPaletteCommands() : [];
+  return [editor, board];
+};
 
 //: **Quick access** (INBOX 461; the owner of the Start something row: "make
 //: this a quick access section ... what is there can be default"). Up to
@@ -673,4 +699,18 @@ function renderQuickLinks() {
   group.append(head, row);
   box.replaceChildren(group);
   window.edgeFadeWire?.(row);
+}
+
+function paletteRowParts(match, abouts) {
+  const { icon, text } = richPickerSplitLabel(match.label);
+  const chordLabel = match.chord && typeof shortcuts !== "undefined" ? shortcuts[match.chord]?.label : "";
+  return {
+    icon: icon || "ph:dot-outline",
+    //: Atlas's own face stands in its tile (the owner: "find anything
+    //: search" should have the avatar too).
+    face: match.mark === "atlas" && typeof atlasAvatar === "function" ? atlasAvatar(20) : null,
+    label: text,
+    about: match.about || abouts.get(match.reveal) || chordLabel || "",
+    keys: paletteKeys(match),
+  };
 }

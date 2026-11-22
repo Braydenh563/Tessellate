@@ -122,10 +122,17 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
         # download for close to the same answers. `hf.co/…` because neither is
         # in Ollama's curated library, the same shape the vision and ocr
         # groups already use for that situation, and the UD-Q4_K_XL tag is
-        # Unsloth's own dynamic quant rather than a plain Q4.
+        # Unsloth's own dynamic quant rather than a plain Q4. `licence` and
+        # `licence_url` (INBOX 1851): the card prints the licence the Hub model
+        # card states (read 2026-11-21: Apache-2.0 for Gemma 4 and Qwen3-VL), so
+        # nobody has to trust that a re-upload is open. EmbeddingGemma is the
+        # opposite case and is not offered as a GGUF here: even unsloth's copy
+        # is `license:gemma`, so it stays behind Google's terms (core/embedmodels.py).
         {"name": "hf.co/unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL", "size": "~4.0 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/gemma-4-E2B-it-qat-GGUF",
          "purpose": "MoE, quantisation-aware 4-bit: e2b answers at roughly half the download"},
         {"name": "hf.co/unsloth/gemma-4-E4B-it-qat-GGUF:UD-Q4_K_XL", "size": "~5.3 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/gemma-4-E4B-it-qat-GGUF",
          "purpose": "MoE, quantisation-aware 4-bit: e4b answers at roughly half the download"},
         # `label`: what the card prints. The pull tag stays "gemma4:26b" (the
         # model is the 26B-A4B one: 26B of weights, about 4B active per word).
@@ -159,7 +166,9 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
     # never offered in the first place.
     "vision": [
         {"name": "moondream", "size": "~1.7 GB", "purpose": "Tiny and fast: the one to try on modest hardware"},
-        {"name": "hf.co/LiquidAI/LFM2.5-VL-1.6B-GGUF", "size": "~1.6 GB", "purpose": "Liquid's small vision model, not in Ollama's own library, pulled from its publisher's Hub repo instead"},
+        {"name": "hf.co/LiquidAI/LFM2.5-VL-1.6B-GGUF", "size": "~1.6 GB",
+         "licence": "LFM Open License v1.0", "licence_url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF/blob/main/LICENSE",
+         "terms_url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF/blob/main/LICENSE", "purpose": "Liquid's small vision model, not in Ollama's own library, pulled from its publisher's Hub repo instead"},
         {"name": "qwen3-vl:2b", "size": "~1.9 GB", "purpose": "Smallest of the Qwen-VL line"},
         {"name": "qwen2.5vl:3b", "size": "~2.2 GB", "purpose": "A fallback for the 2B/4B Qwen3-VL entries either side of it, if either is ever pulled from Ollama's library and not this catalogue"},
         {"name": "qwen3-vl:4b", "size": "~3.3 GB", "purpose": "A step up from the 2B"},
@@ -191,13 +200,19 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
     # core/docview.py's scanned-page path wants, and picking moondream for it
     # gets a description of a page instead of the page.
     "ocr": [
+        # Hub licences read 2026-11-21 (INBOX 1852): the ggml-org GGUF repos declare none, so
+        # the card links the base model that does (GLM-OCR and DeepSeek-OCR are MIT).
         {"name": "hf.co/ggml-org/GLM-OCR-GGUF:Q8_0", "size": "~1.4 GB",
+         "licence": "MIT", "licence_url": "https://huggingface.co/zai-org/GLM-OCR",
          "purpose": "Best size-to-accuracy here. Tables and layout, 8 languages, start with this one"},
         {"name": "hf.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF:Q8_0", "size": "~1.8 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF",
          "purpose": "Layout, tables, formulas, charts. Strong on structured pages"},
         {"name": "hf.co/unsloth/Qwen3-VL-4B-Instruct-GGUF:Q4_K_M", "size": "~2.5 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/Qwen3-VL-4B-Instruct-GGUF",
          "purpose": "Reads documents and answers about them, a VLM as well as a reader"},
         {"name": "hf.co/ggml-org/DeepSeek-OCR-GGUF:Q8_0", "size": "~3.6 GB",
+         "licence": "MIT", "licence_url": "https://huggingface.co/deepseek-ai/DeepSeek-OCR",
          "purpose": "The most accurate on dense and handwritten pages. Needs ~8 GB", "ram_gb": 8},
     ],
 }
@@ -946,6 +961,7 @@ def _is_app_pair(db: object, embeddings: object) -> bool:
     try:
         return db is APP_GETTERS["db"]() and embeddings is APP_GETTERS["embeddings"]()
     except Exception:  # noqa: BLE001  # no app state: a script or a test
+        logging.getLogger(__name__).debug("_is_app_pair: no app state: a script or a test", exc_info=True)
         return False
 
 
@@ -1102,6 +1118,7 @@ def _is_app_client(client: object) -> bool:
     try:
         return client is APP_GETTERS["ollama"]()
     except Exception:  # noqa: BLE001  # no app state: a script or a test
+        logging.getLogger(__name__).debug("_is_app_client: no app state: a script or a test", exc_info=True)
         return False
 
 

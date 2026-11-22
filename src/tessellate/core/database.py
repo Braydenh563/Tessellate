@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import zlib
 from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -46,6 +47,8 @@ from sqlalchemy.orm import (
     with_loader_criteria,
 )
 from sqlalchemy.orm.attributes import flag_modified
+
+from tessellate.core.packed_vector import PackedVector
 
 
 
@@ -296,6 +299,26 @@ def _forget_private_spaces(session, flush_context, instances):
         session.info.pop(PRIVATE_SPACES, None)
 
 
+@event.listens_for(Session, "before_flush")
+def _stamp_edited_at(session, flush_context, instances):
+    """Every write that changes a saved note's text stamps `Entry.edited_at`
+    in this one place (L570), so an AI-tool edit, an import over an existing
+    note and a duplicate merge are covered as well as the edit routes, and
+    `lexical_filing` can key its changed-since read on it. Not an insert (a
+    new note is "never edited"), not a privacy toggle (sealing rewrites
+    `content` with ciphertext), not an access_count bump, filing or a pin:
+    only `content` is read here. Tag and category edits still stamp through
+    `manager.mark_edited`, which the AI's own filing must not call."""
+    for obj in session.dirty:
+        if not isinstance(obj, Entry) or obj in session.new:
+            continue
+        attrs = sa_inspect(obj).attrs
+        if attrs["edited_at"].history.has_changes():
+            continue
+        if attrs["content"].history.has_changes() and not attrs["is_private"].history.has_changes():
+            obj.edited_at = utcnow()
+
+
 #: Flushes that wrote each model, for this process. A cache keyed on
 #: `max(updated_at)` alone serves a stale answer when two writes share a clock
 #: tick (a pinned clock always does), so every such fingerprint carries this.
@@ -524,6 +547,44 @@ class Category(Base, WorkspaceMixin):
     #: no clean-up pass. `_rebuild_categories_unique_constraint` copies it.
     colour: Mapped[str | None] = mapped_column(String(16), default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+
+
+class EntryCategory(Base):
+    """A note's further categories (L-world-class-173): `entries.category_id`
+    stays the one the filer decides; a row here is a second place the person
+    put the note. Only people write it, so the janitor's single centroid rule
+    is untouched. Both keys cascade, so deleting a note or a category needs no
+    clean-up pass; a row naming the note's own primary category is never read
+    (`entry/memberships.py`)."""
+
+    __tablename__ = "entry_categories"
+
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id", ondelete="CASCADE"), primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+
+
+class NoteGroup(Base, WorkspaceMixin):
+    """A set of notes a person gathered by hand (L-world-class-172), apart from
+    categories and tags: no model files into it and no rule re-sorts it."""
+
+    __tablename__ = "note_groups"
+    __table_args__ = (UniqueConstraint("workspace_id", "name", name="uq_note_groups_workspace_name"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class NoteGroupMember(Base):
+    __tablename__ = "note_group_members"
+
+    group_id: Mapped[int] = mapped_column(ForeignKey("note_groups.id", ondelete="CASCADE"), primary_key=True)
+    entry_id: Mapped[int] = mapped_column(
+        ForeignKey("entries.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    added_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class Entry(Base, WorkspaceMixin):
@@ -797,6 +858,10 @@ class Entity(Base):
     #: Set on the entity a merge emptied: its mentions moved to this id. The
     #: row stays so an old name resolves; nothing lists it (it has no mentions).
     merged_into: Mapped[int | None] = mapped_column(Integer, default=None)
+    #: WORLD_CLASS_PLAN B4's stamp: the model that first found the name, with
+    #: `created_at` the when. Null on every entity from before the column,
+    #: whose finder was never kept; the page then says only when.
+    model: Mapped[str | None] = mapped_column(String(80), default=None)
 
 
 #: The kinds an entity can be (GRAPH_PLAN KG5). Closed, like LINK_TYPES: the
@@ -1187,7 +1252,7 @@ class EmbeddingRecord(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
@@ -1236,7 +1301,7 @@ class ChunkVector(Base):
     start: Mapped[int] = mapped_column(Integer)
     end: Mapped[int] = mapped_column(Integer)
     digest: Mapped[str] = mapped_column(String(32))
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
 
@@ -1262,7 +1327,7 @@ class StagedEmbedding(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(Integer, unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
@@ -1297,16 +1362,16 @@ class Attachment(Base, WorkspaceMixin):
     #: the same "a person may overwrite any of it" rule; added by the
     #: additive auto-migrator on existing databases like every other
     #: backfilled column here.
-    caption: Mapped[str | None] = mapped_column(Text, default=None)
+    caption: Mapped[str | None] = mapped_column(SealedText(), default=None)
     caption_model: Mapped[str | None] = mapped_column(String(200), default=None)
     caption_edited: Mapped[bool] = mapped_column(Boolean, default=False)
     #: Local Tesseract text for an image, or the extracted/converted text of
     #: a document (`core/docview.py`), one column either way, because what
     #: a reader wants is "the text in this file", not which extractor found it.
-    ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: A vision model reading the pages, for the case Tesseract cannot serve:
     #: handwriting, low contrast, a diagram whose meaning is in its layout.
-    vision_ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    vision_ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     vision_ocr_model: Mapped[str | None] = mapped_column(String(200), default=None)
 
 
@@ -1411,9 +1476,9 @@ class Bookmark(Base, WorkspaceMixin):
     __tablename__ = "bookmarks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    url: Mapped[str] = mapped_column(String(2000))
-    title: Mapped[str] = mapped_column(String(200), default="")
-    note: Mapped[str] = mapped_column(Text, default="")
+    url: Mapped[str] = mapped_column(SealedTitle(2000, locked="A private link"))
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="A private link"), default="")
+    note: Mapped[str] = mapped_column(SealedText(), default="")
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
     # Free text, not a foreign key to a real folder table: asked for directly
     # ("should they be groupable... make sections and groups"), but a full
@@ -1442,9 +1507,9 @@ class Bookmark(Base, WorkspaceMixin):
     #: `POST /bookmarks/{id}/refresh`, which needs the web switch; "" until then.
     #: Loaded on first read (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
     #: neither; the list reads the two flags below, worked out in SQL, and the icon has its own route.
-    favicon: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    favicon: Mapped[str] = mapped_column(Text, default="", deferred_group="favicon")
     excerpt: Mapped[str] = mapped_column(String(400), default="")
-    page_text: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    page_text: Mapped[str] = mapped_column(Text, default="", deferred_group="page_text")
     has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
     has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
@@ -1701,6 +1766,30 @@ class NightRun(Base):
     counts: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+class PackedText(TypeDecorator):
+    """Text stored zlib-compressed when that is smaller (L-world-class-696):
+    a revision is a whole older copy of a note, so a notebook's history was
+    most of its size. A value is kept as bytes behind `_MAGIC`; text that does
+    not shrink, and every row written before this type, stays plain text and
+    reads back unchanged, so no migration is needed (SQLite keeps either in a
+    TEXT column). Not searchable with SQL: readers filter in Python."""
+
+    impl = Text
+    cache_ok = True
+    _MAGIC = b"\x01tz1"
+
+    def process_bind_param(self, value, dialect):
+        if not isinstance(value, str) or len(value) < 120:
+            return value
+        packed = self._MAGIC + zlib.compress(value.encode("utf-8"), 6)
+        return packed if len(packed) < len(value.encode("utf-8")) else value
+
+    def process_result_value(self, value, dialect):
+        if isinstance(value, (bytes, bytearray, memoryview)) and bytes(value[:4]) == self._MAGIC:
+            return zlib.decompress(bytes(value[4:])).decode("utf-8")
+        return value
+
+
 class EntryRevision(Base):
     """A note's text as it was before an edit.
 
@@ -1714,7 +1803,7 @@ class EntryRevision(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), index=True)
-    content: Mapped[str] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(PackedText)
     tags: Mapped[str] = mapped_column(Text, default="[]")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
@@ -1811,6 +1900,13 @@ class Document(Base, WorkspaceMixin):
     #: In the recycle bin since then (WORLD_CLASS_PLAN 5 item 10); null is live.
     #: Hidden from every read by `_hide_binned`; a purge is the hard delete.
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    #: What a person files it under, as a note's own are (WORLD_CLASS_PLAN
+    #: decision 65, L-world-class-393): tags a JSON string array, the category
+    #: by id, properties a JSON object of name to text. Additive: "[]", null and
+    #: "{}" are what every older row reads, and the selection bars write them.
+    tags: Mapped[str] = mapped_column(Text, default="[]", server_default=sql_text("'[]'"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), default=None)
+    properties: Mapped[str] = mapped_column(Text, default="{}", server_default=sql_text("'{}'"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
@@ -2031,7 +2127,7 @@ class Recording(Base, WorkspaceMixin):
     __tablename__ = "recordings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="A private recording"), default="")
     mime: Mapped[str] = mapped_column(String(80), default="audio/webm")
     #: The stored, random name under `data_dir/recordings`; never a path the
     #: client chose.
@@ -2045,7 +2141,7 @@ class Recording(Base, WorkspaceMixin):
     #: The add-on's transcript, a JSON list of `{start, end, text, speaker}`
     #: in milliseconds (WORLD_CLASS 28.5 row 7, `core/transcript.py`); added
     #: by the auto-migrator to a database made before it.
-    segments: Mapped[str] = mapped_column(Text, default="[]")
+    segments: Mapped[str] = mapped_column(SealedText(locked="[]"), default="[]")
     #: The meeting note it was recorded into, if any (no foreign key: the
     #: note may be binned and purged while the recording is kept).
     entry_id: Mapped[int | None] = mapped_column(Integer, default=None, index=True)
@@ -2308,7 +2404,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: caller only ever wants "is there searchable text here at all".
     #: Populated for raster images only (`ocr.OCR_SUFFIXES`); a PDF upload
     #: stays NULL forever, honestly, no page-rasterisation step exists.
-    ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: A vision model's own description of the image (`ai/captioning.py`),
     #: filled in on a background thread after upload, same NULL convention
     #: as `ocr_text` above: "not captioned yet or no vision model available",
@@ -2316,7 +2412,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: left alone after that (a caption an AI or a person already read and
     #: trusted must not silently change under them) unless the user presses
     #: Regenerate: see `routes_files.caption_media`.
-    caption: Mapped[str | None] = mapped_column(Text, default=None)
+    caption: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: Which model wrote the caption currently stored, or NULL when there is
     #: no caption or it was only ever typed by hand. Asked for directly: a
     #: caption with no visible author reads as this app's own opinion rather
@@ -2339,7 +2435,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: NULL until run: manual-trigger only (`POST /media/{id}/vision-ocr`),
     #: never automatic on upload, since it is a full model round trip a
     #: person opts into rather than something every upload should pay for.
-    vision_ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    vision_ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: Which model produced `vision_ocr_text`, or NULL when there is none, 
     #: same "credit the model, not the app" reasoning as `caption_model`.
     vision_ocr_model: Mapped[str | None] = mapped_column(String(200), default=None)
@@ -2362,6 +2458,13 @@ class MediaUpload(Base, WorkspaceMixin):
     #: Library row, no search hit, no caption or reading job, until the person
     #: chooses Save to Library (`POST /media/{id}/library`), which clears this.
     board_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: What a person files it under, as a note's own are (WORLD_CLASS_PLAN
+    #: decision 65, L-world-class-393): tags a JSON string array, the category
+    #: by id, properties a JSON object of name to text. Additive: "[]", null and
+    #: "{}" are what every older row reads, and the selection bars write them.
+    tags: Mapped[str] = mapped_column(Text, default="[]", server_default=sql_text("'[]'"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), default=None)
+    properties: Mapped[str] = mapped_column(Text, default="{}", server_default=sql_text("'{}'"))
 
 
 class JobRun(Base):
@@ -2389,6 +2492,35 @@ class JobRun(Base):
     result: Mapped[str] = mapped_column(String(400), default="")
     error: Mapped[str] = mapped_column(String(400), default="")
     duration_ms: Mapped[float | None] = mapped_column(Float, default=None)
+
+
+class JobRunLog(Base):
+    """One finished run, kept across restarts (L-world-class-570).
+
+    `JobRun` is the last run of each kind; this is the History tab's list of
+    every run, with its origin, why and process lines, so a restart no longer
+    empties it. Written at a run's finish from `core/jobruns.py`'s ledger entry
+    and pruned there (`jobruns.KEEP_ROWS` rows, `KEEP_DAYS` days by the
+    person's own clock), so it cannot grow without end.
+    """
+
+    __tablename__ = "job_run_log"
+
+    run_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(40), default="")
+    title: Mapped[str] = mapped_column(String(400), default="")
+    label: Mapped[str] = mapped_column(String(400), default="")
+    origin: Mapped[str] = mapped_column(String(20), default="")
+    why: Mapped[str] = mapped_column(String(400), default="")
+    outcome: Mapped[str] = mapped_column(String(12), default="completed")
+    detail: Mapped[str] = mapped_column(String(400), default="")
+    started: Mapped[float] = mapped_column(Float, default=0.0)
+    ended: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    duration_ms: Mapped[float | None] = mapped_column(Float, default=None)
+    count: Mapped[int] = mapped_column(Integer, default=1)
+    lines: Mapped[list] = mapped_column(JSON, default=list)
+    #: The person's own clock when it ended: what the 30-day prune reads.
+    logged_at: Mapped[datetime] = mapped_column(DateTime, index=True)
 
 
 class DurableJob(Base):
@@ -2510,7 +2642,11 @@ _SEALED_COLUMNS.update(
         Conversation: ("title", "messages"),
         AskTurn: ("question", "answer"),
         Reminder: ("text",),
+        Bookmark: ("url", "title", "note"),
+        Recording: ("title", "segments"),
+        MediaUpload: ("ocr_text", "caption", "vision_ocr_text"),
+        Attachment: ("ocr_text", "caption", "vision_ocr_text"),
     }
 )
-_SPACE_SEALED.extend((Conversation, AskTurn, Reminder))
+_SPACE_SEALED.extend((Conversation, AskTurn, Reminder, Bookmark, Recording, MediaUpload, Attachment))
 

@@ -81,7 +81,7 @@
     pin.title = pinned ? `Unpin ${model.value}` : `Pin ${model.value} to the top`;
     pin.setAttribute("aria-label", pin.title);
     const icon = document.createElement("i");
-    icon.className = `ph ${pinned ? "ph-fill " : ""}ph-push-pin`;
+    icon.className = "ph ph-push-pin";
     icon.setAttribute("aria-hidden", "true");
     pin.append(icon);
     pin.addEventListener("click", (event) => {

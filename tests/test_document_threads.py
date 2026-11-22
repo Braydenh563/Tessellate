@@ -245,13 +245,16 @@ def test_threads_made_or_dropped_by_the_reconcile_are_saved():
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
     source = COMMENTS_JS.read_text(encoding="utf-8")
+    threads_source = COMMENTS_JS.with_name("documents-threads.js").read_text(encoding="utf-8")  # moved out (L624)
 
     def region(begin: str, end: str) -> str:
-        return source[source.index(begin) + len(begin) : source.index(end)]
+        text = threads_source if "THREADS" in begin else source
+        return text[text.index(begin) + len(begin) : text.index(end)]
 
     sync = source[source.index("function docThreadsSync(") :]
     sync = sync[: sync.index("\n  }\n") + 5]
     model = region("// DOC-COMMENT-BEGIN", "// DOC-COMMENT-END") + region("// DOC-THREADS-BEGIN", "// DOC-THREADS-END")
+    model += "\nconst renderDocComments = { model: { docThreadsReconcile } };\n"  # the panel reaches the model through this
     out = subprocess.run(
         [node, "-e", model + SYNC_DRIVER.replace("%SYNC%", sync)], capture_output=True, text=True, timeout=60, check=False
     )

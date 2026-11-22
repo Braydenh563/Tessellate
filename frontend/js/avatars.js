@@ -1444,7 +1444,7 @@
     return elements[0];
   }
 
-  function nameMark(seed, size = 20) {
+  function nameMark(seed, size = 20, part = "") {
     //: A registered renderer (a character drawn by hand) answers first.
     const own = characterRendererFor(seed);
     if (own) return own.make(seed).mark(size);
@@ -1452,14 +1452,42 @@
     const named = String(seed || "").trim().toLowerCase();
     const ai = typeof aiNameNow === "function" ? String(aiNameNow() || "").toLowerCase() : "atlas";
     if (named && (named === ai || named === "atlas")) return atlasMark(size);
-    //: Under 28px a face never moves, so it is one picture; above, its parts.
-    const moving = size >= 28;
-    //: 28px and under is the small mark: the face and one cue (drawCharacter).
-    const mini = size <= 28;
-    const style = JSON.stringify(nameMarkOwnFor(seed) || {});
-    const face = nameMarkCompose(`gen|${moving ? "p" : "f"}${mini ? "m" : ""}|${seed}|${style}|${nameMarkLookLean() || ""}`, () => drawCharacter(seed, 100, mini ? "mini" : "mark"), { parts: moving ? NM_MARK_PARTS : "", size });
+    //: `part` "draw": only the first of the face's two tasks (`nameMarkGenerated`); null, no face yet.
+    if (part) return nameMarkGenerated(seed, size, true);
+    //: Under 28px a face never moves (one picture); 28px and under is the small mark (drawCharacter).
+    const face = nameMarkGenerated(seed, size);
     watchNameMark(face);
     return face;
+  }
+
+  //: The drawn SVGs of faces whose cut is still to come (`nameMark(seed, size, "draw")`), by cache key.
+  const nameMarkDrawn = new Map();
+
+  function nameMarkGenerated(seed, size, drawOnly = false) {
+    const moving = size >= 28;
+    const mini = size <= 28;
+    const style = JSON.stringify(nameMarkOwnFor(seed) || {});
+    const key = `gen|${moving ? "p" : "f"}${mini ? "m" : ""}|${seed}|${style}|${nameMarkLookLean() || ""}`;
+    //: A face's first draw is two tasks, not one: the character drawn (about 45 ms at 4x CPU cold), then cut up and
+    //: measured (about 40; L-world-class-362, 86 ms as one). `drawOnly` does the first; the second finds it here.
+    const draw = () => drawCharacter(seed, 100, mini ? "mini" : "mark");
+    if (drawOnly) return nameMarkFaceCache.has(key) || nameMarkDrawn.has(key) ? null : nameMarkDrawn.set(key, draw()) && null;
+    const build = () => {
+      const drawn = nameMarkDrawn.get(key);
+      nameMarkDrawn.delete(key);
+      return drawn || draw();
+    };
+    return nameMarkCompose(key, build, { parts: moving ? NM_MARK_PARTS : "", size });
+  }
+
+  //: The Settings head's 56px face (`#profile-avatar`) is cut up once while the page is idle: drawn cold
+  //: inside the first Settings open, its measure forced that window's layout, 25-33ms (L-world-class-37).
+  //: Only the cache is filled; a registered or Atlas face has no cut to warm.
+  function nameMarkWarmOwn() {
+    const seed = userMarkSeed();
+    if (!seed || characterRendererFor(seed) || isAtlasSeed(seed)) return;
+    nameMarkGenerated(seed, 56, true);
+    setTimeout(() => nameMarkGenerated(seed, 56), 30);
   }
 
   // --- the generated characters ------------------------------------------------------
@@ -7496,8 +7524,13 @@
     const lock = document.querySelector("#lock-overlay:not(.hidden)");
     //: A minimised panel (`data-panel-min`, panel-movable.js) is a pill in the tray, not a cover (the owner, 2026-11-04).
     const cover = lock ? "lock" : document.querySelector("dialog[open]:modal:not([data-panel-min]), .modal-overlay:not(.hidden):not([data-panel-min]), .lock-overlay:not(.hidden)") ? "modal" : "";
+    const was = buddy.dataset.cover;
     if (cover) buddy.dataset.cover = cover;
     else delete buddy.dataset.cover;
+    //: The tail and lower-body loops rest while covered (`atlasCornerCovered`); the cover lifting starts them again.
+    //: A drawn figure box means the Atlas files are loaded, so the wake is there.
+    const box = !cover && was && buddy.querySelector(".atl-figure-box");
+    if (box) atlasRigWake(box);
   }
   //: **Nothing is measured behind a modal** (INBOX 1587, the owner's lag log:
   //: `avatars.js TimerHandler:setTimeout 846ms (forced layout 810ms)` every one
@@ -7536,11 +7569,29 @@
   //: 26 to 41 ms at 1x and 130 to 250 ms at 4x CPU, once every calm; on the
   //: figure it restyles the figure alone. The DOM is touched only when the
   //: state changes, so a pointermove that finds it awake costs a timer.
+  //: **On the loops, a quarter a task** (L-world-class-390): the class on the
+  //: figure paused all 95 in one frame, whose paint was 117 to 206 ms at 4x
+  //: CPU; four tasks of a quarter each stay under 50. Web Animations' pause()
+  //: costs nothing but takes the loops from CSS for good (atl-off and
+  //: data-atlas-hidden would stop holding them), so it is not used.
+  const NMB_CALM_LOOPS = '.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg';
+  const nmbCalmLoops = (on) => {
+    const run = (nmbClock.calmRun = (nmbClock.calmRun || 0) + 1);
+    const loops = [];
+    for (const box of document.querySelectorAll(".atl-figure-box")) loops.push(...box.querySelectorAll(NMB_CALM_LOOPS));
+    const per = Math.ceil(loops.length / 4);
+    const step = (from) => {
+      if (run !== nmbClock.calmRun) return; // woken or calmed again: the newer run has them
+      for (const loop of loops.slice(from, from + per)) loop.classList.toggle("atl-calm", on);
+      if (from + per < loops.length) setTimeout(step, 20, from + per);
+    };
+    step(0);
+  };
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
     if (on !== nmbClock.isCalm) {
       nmbClock.isCalm = on;
-      for (const box of document.querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on);
+      nmbCalmLoops(on);
     }
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };
@@ -9566,7 +9617,8 @@
   function nameMarkBuddyNoteOpened(id) {
     const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => String(e.id) === String(id)) : null;
     if (!entry) return;
-    const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
+    const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"]`)
+      || (typeof noteRowFor === "function" ? noteRowFor(id) : null) || document.querySelector(`li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
     //: The list carries a long note cut short (`content_truncated`, 297 characters), so its length is not the note's.
     else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
@@ -11615,5 +11667,7 @@
   //: shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
   nmb.sweep = { NMB_EXPR_EVENTS, NMB_SLEEP_MS, nameMarkBuddyBand, nameMarkBuddyBeat, nameMarkBuddyBellErrand, nameMarkBuddyChatErrand, nameMarkBuddyCheck, nameMarkBuddyChoose, nameMarkBuddyCovers, nameMarkBuddyDrift, nameMarkBuddyEase, nameMarkBuddyEdges, nameMarkBuddyErrand, nameMarkBuddyHeadAt, nameMarkBuddyHits, nameMarkBuddyKeepUp, nameMarkBuddyObstacles, nameMarkBuddyOrigin, nameMarkBuddyPerches, nameMarkBuddyPet, nameMarkBuddyRideBox, nameMarkBuddyScroller, nameMarkBuddySeen, nameMarkBuddyShape, nameMarkBuddyStillGood, nameMarkBuddySupported, nameMarkBuddyTick, nameMarkBuddyWander, nameMarkBuddyWordsUnder, nameMarkBuddyYoursObstacles };
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  if (window.requestIdleCallback) requestIdleCallback(nameMarkWarmOwn, { timeout: 4000 });
+  else setTimeout(nameMarkWarmOwn, 2000);
   Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_BLEND_IN_MS, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });
 })();

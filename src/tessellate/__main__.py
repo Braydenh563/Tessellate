@@ -15,7 +15,7 @@ import time
 import warnings
 from pathlib import Path
 
-from tessellate.core import launch_status, startup_status
+from tessellate.core import desktop_entry, launch_status, startup_status
 from tessellate.launcher_loading import (
     _STARTUP_PHASE_PERCENT,
     _loading_html,
@@ -26,6 +26,8 @@ from tessellate.launcher_loading import (
     _LOADING_HTML,
     _recolour_loading_page,
 )
+
+desktop_entry.register(sys.modules[__name__])
 
 #: Re-exported: tests read them as `__main__._LOADING_HTML`.
 __all__ = [
@@ -428,6 +430,7 @@ def _bootloader_splash():
     try:
         import pyi_splash  # type: ignore[import-not-found]
     except Exception:  # noqa: BLE001  # ImportError, or the module's own failure
+        logger.debug("_bootloader_splash: ImportError, or the module's own failure", exc_info=True)
         return None
     return pyi_splash
 
@@ -779,8 +782,9 @@ def _boot_and_swap(window) -> None:
     from tessellate.core import instance_lock
 
     instance_lock.set_focus_handler(lambda: _bring_forward(window))
-    server = threading.Thread(target=_run_server, daemon=True)
-    server.start()
+    from tessellate.core import jobs
+
+    jobs.thread("desktop-server", _run_server)
     if _wait_for_server_with_progress(window):
         # Tick the step this process owns *before* the swap, not after: after
         # the swap this page no longer exists. The step is genuinely over at
@@ -919,6 +923,28 @@ def _pythonw_path() -> Path | None:
     return candidate if candidate.is_file() else None
 
 
+#: The flags start.bat understands; any other app flag is not carried through it.
+_BAT_FLAGS = ("--desktop", "--no-browser")
+
+
+def _launcher_bat() -> Path | None:
+    """`start.bat` beside this source checkout, when Windows should restart
+    through it (L968: Restart now ran `python -m tessellate` directly, so the
+    venv check, repair and update that start.bat does on every start were
+    skipped). None for the packaged exe (it has no .bat) and off Windows."""
+    if sys.platform != "win32" or getattr(sys, "frozen", False):
+        return None
+    candidate = Path(__file__).resolve().parents[2] / "start.bat"
+    return candidate if candidate.is_file() else None
+
+
+def _launcher_argv(bat: Path, args: list[str], restart_after: int | None) -> list[str]:
+    """`cmd /c start.bat <flags it knows> --restart-after PID`."""
+    keep = [a for a in args if a in _BAT_FLAGS]
+    after = ["--restart-after", str(restart_after)] if restart_after else []
+    return ["cmd", "/c", str(bat), *keep, *after]
+
+
 def _spawn_desktop(hidden: bool, restart_after: int | None = None):
     """Start a fresh `memorymap --desktop` process in the given console
     mode, independent of whatever process/window is calling this, the one
@@ -949,6 +975,18 @@ def _spawn_desktop(hidden: bool, restart_after: int | None = None):
                 creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
                 close_fds=True,
                 cwd=os.getcwd(),
+            )
+        bat = _launcher_bat()
+        if bat is not None:
+            # Through start.bat like any start; its own preference handling
+            # hides the console (exit code 42 hand-off), so no flag per mode.
+            CREATE_NO_WINDOW = 0x08000000
+            CREATE_NEW_CONSOLE = 0x00000010
+            return subprocess.Popen(
+                _launcher_argv(bat, ["--desktop"], restart_after),
+                creationflags=CREATE_NO_WINDOW if hidden else CREATE_NEW_CONSOLE,
+                close_fds=True,
+                cwd=str(bat.parent),
             )
         if hidden:
             pythonw = _pythonw_path()
@@ -1028,6 +1066,9 @@ def _relaunch_argv() -> list[str]:
         if arg in _NOT_CARRIED or arg.startswith("--restart-after="):
             continue
         rest.append(arg)
+    bat = _launcher_bat()
+    if bat is not None:
+        return _launcher_argv(bat, rest, os.getpid())
     head = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, "-m", "tessellate"]
     return [*head, *rest, "--restart-after", str(os.getpid())]
 
@@ -1254,6 +1295,7 @@ def _window_class_name(hwnd: int) -> str:
         ctypes.windll.user32.GetClassNameW(hwnd, buf, 256)
         return buf.value or "?"
     except Exception:  # noqa: BLE001  # a diagnostic label for a log line; "?" is the answer
+        logger.debug("_window_class_name: a diagnostic label for a log line; '?' is the answer", exc_info=True)
         return "?"
 
 
@@ -1327,8 +1369,9 @@ def _stop_background_work() -> None:
 
     desk_companion.shutdown()
     try:
-        from tessellate.core import jobs
+        from tessellate.core import background, jobs
 
+        background.stop_all()
         jobs.stop_all()
     except Exception as exc:  # noqa: BLE001  # best effort on the way out
         logger.warning("couldn't stop background work before exiting: %s", exc)
@@ -1799,12 +1842,20 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     storage = resolved_data_dir() / "webview"
     storage.mkdir(parents=True, exist_ok=True)
     try:
-        webview.start(  # blocks until the window closes; daemon dies with us
-            _boot_and_swap,  # runs on its own thread once the window is open
-            window,
-            private_mode=False,
-            storage_path=str(storage),
-            **(({"icon": _icon}) if _icon else {}),
+        from tessellate.core.window_teardown import run_window
+
+        run_window(
+            lambda: webview.start(  # blocks until the window closes; daemon dies with us
+                _boot_and_swap,  # runs on its own thread once the window is open
+                window,
+                private_mode=False,
+                storage_path=str(storage),
+                **(({"icon": _icon}) if _icon else {}),
+            ),
+            # A restart's new copy that hit WebView2's benign teardown error
+            # starts its window again (L-world-class-117).
+            restarting="--restart-after" in sys.argv,
+            relaunch=lambda: _spawn_detached(_relaunch_argv()),
         )
     except TypeError:
         # An older pywebview without one of the keyword arguments above
@@ -2227,62 +2278,16 @@ def _tray_new_note(window) -> None:
     )
 
 
-def _start_tray(
-    window,
-    icon_path: Path,
-    console_hwnd: int | None,
-    console_hidden: bool,
-    console_targets: dict[int, str] | None = None,
-):
-    """The system tray icon: Open / View Logs / Restart / Quit.
-
-    Returns None: and the caller falls back to an ordinary window that
-    really closes on the X button, when pystray or Pillow aren't installed.
-    Both are optional for the same reason pywebview itself is (core/extras.py):
-    a source checkout that never asked for the desktop window shouldn't need
-    them, and the packaged Windows installer bundles both so this path is
-    always taken there.
-
-    Runs pystray's own event loop in a daemon thread: `webview.start()` below
-    blocks the main thread until the window is really destroyed, and pystray's
-    `run()` blocks too: two things that both want to block forever can't
-    share one thread. Windows' pystray backend (the only platform this ships
-    on) tolerates running off the main thread; that would not be true on
-    macOS, which is one reason the desktop build doesn't target it.
-    """
-    try:
-        import pystray
-        from PIL import Image
-    except ImportError:
-        logger.info(
-            "no system tray: install pystray + Pillow for one "
-            "(pip install pystray Pillow), or use the Windows installer, "
-            "which bundles both"
-        )
-        return None
-    except Exception as exc:
-        # Not just ImportError: pystray picks a backend at import time (Xorg,
-        # AppKit, win32...) and that backend's own init can raise anything, 
-        # found in this sandbox as Xlib.error.DisplayNameError on a headless
-        # Linux box with no X server. A missing tray icon is cosmetic; the
-        # window is not, so this must degrade the same way a genuinely
-        # missing package does rather than take the whole launcher down.
-        logger.warning("system tray unavailable, continuing without one: %s", exc, exc_info=True)
-        return None
-
+def _tray_menu_items(pystray, window, console_hwnd, console_hidden, console_targets=None) -> list:  # noqa: ANN001
+    """The tray's menu, in order, built from `pystray` (a parameter so a test
+    can pass a stand-in; the real module only imports on Windows desktops).
+    A separate step from `_start_tray` (L965) so the menu is testable without
+    a tray, a thread or a window."""
     from tessellate.core import desk_companion
 
-    image = _tray_image(Image, icon_path)
-
-    # Running from start.bat/start-desktop.bat rather than the packaged
-    # installer (whose PyInstaller build sets console=False, so there is no
-    # window to find) leaves a cmd.exe console sitting behind the app. This
-    # menu item is the *live* control for it; `console_hwnd` and its initial
-    # `console_hidden` state come from the caller, which already applied the
-    # show_console_on_startup preference before the window opened.
     console_state = {"hidden": console_hidden}
 
-    def _console_hidden(item) -> bool:
+    def _console_hidden(item) -> bool:  # noqa: ANN001
         return console_state["hidden"]
 
     # Everything a tray icon is for: capture something, ask something, check
@@ -2346,13 +2351,71 @@ def _start_tray(
         pystray.MenuItem("Restart", lambda icon, item: _tray_restart(window, icon)),
         pystray.MenuItem("Quit", lambda icon, item: _tray_quit(window, icon)),
     ]
+    return menu_items
+
+
+def _start_tray(
+    window,
+    icon_path: Path,
+    console_hwnd: int | None,
+    console_hidden: bool,
+    console_targets: dict[int, str] | None = None,
+):
+    """The system tray icon: Open / View Logs / Restart / Quit.
+
+    Returns None: and the caller falls back to an ordinary window that
+    really closes on the X button, when pystray or Pillow aren't installed.
+    Both are optional for the same reason pywebview itself is (core/extras.py):
+    a source checkout that never asked for the desktop window shouldn't need
+    them, and the packaged Windows installer bundles both so this path is
+    always taken there.
+
+    Runs pystray's own event loop in a daemon thread: `webview.start()` below
+    blocks the main thread until the window is really destroyed, and pystray's
+    `run()` blocks too: two things that both want to block forever can't
+    share one thread. Windows' pystray backend (the only platform this ships
+    on) tolerates running off the main thread; that would not be true on
+    macOS, which is one reason the desktop build doesn't target it.
+    """
+    try:
+        import pystray
+        from PIL import Image
+    except ImportError:
+        logger.info(
+            "no system tray: install pystray + Pillow for one "
+            "(pip install pystray Pillow), or use the Windows installer, "
+            "which bundles both"
+        )
+        return None
+    except Exception as exc:
+        # Not just ImportError: pystray picks a backend at import time (Xorg,
+        # AppKit, win32...) and that backend's own init can raise anything, 
+        # found in this sandbox as Xlib.error.DisplayNameError on a headless
+        # Linux box with no X server. A missing tray icon is cosmetic; the
+        # window is not, so this must degrade the same way a genuinely
+        # missing package does rather than take the whole launcher down.
+        logger.warning("system tray unavailable, continuing without one: %s", exc, exc_info=True)
+        return None
+
+    image = _tray_image(Image, icon_path)
+
+    # Running from start.bat/start-desktop.bat rather than the packaged
+    # installer (whose PyInstaller build sets console=False, so there is no
+    # window to find) leaves a cmd.exe console sitting behind the app. The
+    # "Hide console window" item is the *live* control for it; `console_hwnd`
+    # and its initial `console_hidden` state come from the caller, which
+    # already applied the show_console_on_startup preference before the
+    # window opened.
+    menu_items = _tray_menu_items(pystray, window, console_hwnd, console_hidden, console_targets)
     icon = pystray.Icon(
         "memorymap",
         image,
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-    threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread("tray-icon", lambda: _run_tray_loop(icon))
     return icon
 
 
@@ -2445,6 +2508,7 @@ def _password_exists(db) -> bool:  # noqa: ANN001  # a DatabaseManager
         with db.session() as session:
             return session.scalar(select(User.id).limit(1)) is not None
     except Exception:  # noqa: BLE001  # an unreadable DB: the safe answer is "no"
+        logger.debug("_password_exists: an unreadable DB: the safe answer is 'no'", exc_info=True)
         return False
 
 
@@ -2699,4 +2763,10 @@ def _run_server_holding_lock() -> None:
 
 
 if __name__ == "__main__":
+    # First, before any window or server: in a packaged build the reader's
+    # child process (core/parse_guard.py) is this same exe started again, and
+    # this is what makes that start run the child instead of a second app.
+    import multiprocessing
+
+    multiprocessing.freeze_support()
     main()

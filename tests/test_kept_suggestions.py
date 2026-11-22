@@ -67,15 +67,15 @@ def test_the_suggestions_are_on_the_note_when_its_state_settles(client, monkeypa
     stops on the first settled `filing_state`, and the suggestions must be
     there by then. Slow suggestions make it certain; the wait is on the
     state alone, as the composer's poller waits."""
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_suggestions
 
-    keep = routes_entries._keep_suggestions
+    keep = tag_suggestions.keep_suggestions
 
     def slow_keep(*args, **kwargs):
         time.sleep(0.5)
         return keep(*args, **kwargs)
 
-    monkeypatch.setattr(routes_entries, "_keep_suggestions", slow_keep)
+    monkeypatch.setattr(tag_suggestions, "keep_suggestions", slow_keep)
     _seed(client)
     note_id = client.post(
         "/entries", json={"content": "Front squats today, legs wrecked", "defer_filing": True}
@@ -130,16 +130,16 @@ def test_the_note_line_is_spaced_in_groups():
 
 def _filed_by_the_model(monkeypatch):
     """The filing as if the model answered: the real category, `filed_by`
-    "llm", so `_keep_suggestions` takes the model path."""
-    from tessellate.api import routes_entries
+    "llm", so `keep_suggestions` takes the model path."""
+    from tessellate.entry import filing_background
 
-    real = routes_entries._file_entry_now
+    real = filing_background._file_entry_now
 
     def as_model(*args, **kwargs):
         category, confidence, _ = real(*args, **kwargs)
         return category, confidence, "llm"
 
-    monkeypatch.setattr(routes_entries, "_file_entry_now", as_model)
+    monkeypatch.setattr(filing_background, "_file_entry_now", as_model)
 
 
 def test_the_state_settles_before_the_models_tags_come_back(client, monkeypatch):
@@ -180,14 +180,14 @@ def test_a_failed_suggestion_does_not_fail_the_filing(client, monkeypatch):
     (a failed flush) left the session's transaction broken, so the settle
     commit raised and the whole filing was marked failed. The suggestions run
     in a savepoint; only they are lost."""
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_suggestions
     from tessellate.core.database import Entry
 
     def broken_keep(session, entry, filed_by):
         session.add(Entry(content=None))
         session.flush()
 
-    monkeypatch.setattr(routes_entries, "_keep_suggestions", broken_keep)
+    monkeypatch.setattr(tag_suggestions, "keep_suggestions", broken_keep)
     note_id = client.post(
         "/entries", json={"content": "Front squats today, legs wrecked", "defer_filing": True}
     ).json()["id"]

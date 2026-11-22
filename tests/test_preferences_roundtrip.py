@@ -61,3 +61,20 @@ def test_the_launch_switch_decides_whether_startup_warms_the_model(app_state, mo
     app_state.set_preference("warm_search_model_at_launch", on)
     create_app()
     assert len(calls) == (1 if on else 0)
+
+
+def test_a_launch_without_a_password_is_not_held_by_an_earlier_launch(app_state, monkeypatch):
+    """CI 606c3a2c leg 1: an earlier app in the same process armed the hold
+    (it had a password), so this launch, with none, deferred its warm-up for
+    an unlock that never comes. Each launch decides the hold afresh."""
+    from tessellate.ai import embeddings
+    from tessellate.api.app import create_app
+    from tessellate.core import afterunlock
+
+    calls = []
+    monkeypatch.setattr(embeddings, "start_warmup", lambda *a, **k: calls.append(1))
+    app_state.set_preference("warm_search_model_at_launch", True)
+    afterunlock.arm()
+    create_app()
+    assert calls == [1]
+    assert not afterunlock.armed()

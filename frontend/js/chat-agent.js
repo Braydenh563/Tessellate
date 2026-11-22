@@ -258,14 +258,20 @@ function paintUserMarks() {
   const seed = userMarkSeed();
   //: The faces come after the page (`afterCharacters`, lazy-entries.js).
   afterCharacters(() => {
-    for (const holder of document.querySelectorAll("[data-user-mark]")) {
-      //: A face drawn from this name stays; the Settings preview replaces it (B47).
+    //: The first face is drawn in this task and cut up in the next (avatars.js `nameMark` part "draw"): cold,
+    //: both in one were 86 ms at 4x CPU (L-world-class-362).
+    const holders = document.querySelectorAll("[data-user-mark]");
+    nameMark(seed, +holders[0]?.dataset.userMark || 18, "draw");
+    //: One holder a task (L-world-class-354): the faces together were 65 ms at 4x CPU, median of 5.
+    const drawHolder = (i) => {
+      const holder = holders[i];
+      if (!holder) return;
       const size = +holder.dataset.userMark || 18;
-      if (holder.firstChild?.key === seed + size) continue;
-      const face = nameMark(seed, size);
-      face.key = seed + size;
-      holder.replaceChildren(face);
-    }
+      //: A face drawn from this name stays; the Settings preview replaces it (B47).
+      if (holder.firstChild?.key !== seed + size) holder.replaceChildren(Object.assign(nameMark(seed, size), { key: seed + size }));
+      setTimeout(() => drawHolder(i + 1));
+    };
+    setTimeout(() => drawHolder(0));
   });
   const head = document.getElementById("profile-head-name");
   if (head) head.textContent = (prefsCache?.display_name || "").trim() || "Your profile";
@@ -463,6 +469,7 @@ function changeRow(change, options = {}) {
             name: change.undo.tool,
             arguments: change.undo.arguments,
             steps: change.undo.steps,
+            sig: change.undo.sig,
           }),
         });
         if (result?.error) throw new Error(result.error);
@@ -474,7 +481,7 @@ function changeRow(change, options = {}) {
         loadEntries();
       } catch (error) {
         undo.disabled = false;
-        toast(error.message || "Couldn't undo that change.", true);
+        toast(error.message || voiceLine("failed", { what: "undo that change" }), true);
       }
     });
     undo.dataset.changeUndo = "1";
@@ -576,7 +583,7 @@ const CARD_KINDS = {
       smallButton("ph:pencil-simple Edit", "Open this note with the editor on", () => {
         //: The same two steps the note list's own Edit does, in the order that
         //: works from here: `flashEntry` switches tab and re-renders, and
-        //: `editingId` is what that render reads to open the editor. Set it
+        //: the note slice (`appState.get("note")`) is what that render reads to open the editor. Set it
         //: first and the jump would clear it.
         flashEntry(item.id);
         openNoteEditor(item.id);
@@ -919,7 +926,7 @@ function rememberDraftVersion(text) {
   draftVersions.push({
     text: trimmed,
     words: wordCount(trimmed),
-    at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }),
   });
   if (draftVersions.length > MAX_DRAFT_VERSIONS) draftVersions.shift();
   renderDraftVersions();
@@ -1007,7 +1014,7 @@ function pushDraftUndo() {
   );
   draftUndoStack.push(point);
   if (draftUndoStack.length > MAX_DRAFT_UNDO) draftUndoStack.shift();
-  updateDraftUndoButton();
+  paintDraftStepBack();
 }
 
 function putDraftBack(point) {
@@ -1017,11 +1024,11 @@ function putDraftBack(point) {
   foldedThoughts = "";
   $("draft-text").value = point.draft;
   updateDraftCount();
-  updateDraftUndoButton();
+  paintDraftStepBack();
   saveDraftLocally();
 }
 
-function updateDraftUndoButton() {
+function paintDraftStepBack() {
   const button = $("draft-undo");
   // `draftController` as well as the stack: the undo point for a pass is
   // pushed at its first token, not before the call, so without this the

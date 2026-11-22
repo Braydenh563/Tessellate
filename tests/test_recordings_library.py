@@ -32,7 +32,7 @@ def test_markers_while_recording_by_button_and_key():
 
 def test_trim_writes_a_new_wav_object_pointing_at_its_original():
     block = JS.split("async function trimRecording(")[1].split("\n}\n")[0]
-    assert 'mime: "audio/wav", source_id: rec.id' in block
+    assert "/trim" in block and "decodeAudioData" not in block
     assert "mp3" not in JS.lower()
 
 
@@ -180,7 +180,7 @@ def test_live_captions_have_doors_where_people_look():
     assert 'id="meeting-captions"' in HTML and 'id="recordings-captions"' in HTML
     bar = HTML.split('data-dock-name="library-recordings"')[1].split("</section>")[0]
     assert 'id="recordings-captions"' in bar
-    assert '$("meeting-captions")' in JS and '$("recordings-captions")' in JS
+    assert '$("meeting-captions")' in JS and 'wire("recordings-captions"' in JS
     assert "function openLiveCaptionsFrom()" in JS
     features = (ROOT / "frontend/js/app-features.js").read_text(encoding="utf-8")
     assert 'name: "Live captions"' in features
@@ -217,16 +217,12 @@ def test_after_saving_the_dialog_shows_the_first_lines_and_open():
     assert 'setMeetingState("done")' in shown and "MEETING_DONE_LINES" in shown
 
 
-def test_a_long_take_says_what_a_trim_costs_before_it_is_made():
-    """A trim decodes the whole recording in the page (libr-1011 row 1219): a
-    take of twenty minutes or more says how much memory that is; a short one
-    stays quiet."""
-    assert "const RECORDING_TRIM_HEAVY_MINUTES = 20;" in JS
-    assert "const RECORDING_TRIM_MB_PER_MINUTE = 12;" in JS
+def test_a_trim_costs_the_page_nothing_so_it_warns_of_nothing():
+    """L632 moved the cut to the server: the sheet no longer says a long take
+    opens in this tab (the old weight note), because it no longer does."""
     sheet = JS.split("function openRecordingTrim(rec) {")[1].split("\n}\n")[0]
-    assert "minutes >= RECORDING_TRIM_HEAVY_MINUTES" in sheet
-    assert "Trimming opens the whole recording in this tab" in sheet
-    assert "card.append(start.row, end.row, kept, ...heavy, bar);" in sheet
+    assert "RECORDING_TRIM_HEAVY_MINUTES" not in JS and "Trimming opens the whole recording" not in sheet
+    assert "card.append(start.row, end.row, kept, bar);" in sheet
 
 
 CSS = (ROOT / "frontend/css/meetings-lazy.css").read_text(encoding="utf-8")

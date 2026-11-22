@@ -443,7 +443,7 @@ function noteTemplateText(raw, clipboard = "[clipboard]") {
   const now = new Date();
   return String(raw || "")
     .replace(/\{\{?date\}\}?/g, stampDate(now))
-    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
+    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }))
     .replaceAll("{{clipboard}}", clipboard);
 }
 
@@ -457,7 +457,7 @@ async function noteTemplateForUse(template) {
     try {
       clipboard = (await navigator.clipboard.readText()) || "";
     } catch {
-      toast("Couldn't read the clipboard, so that part of the template is empty.", "info");
+      toast(voiceLine("failed", { what: "read the clipboard", why: "that part of the template is empty" }), "info");
     }
   }
   const full = noteTemplateText(raw, clipboard);
@@ -615,16 +615,19 @@ function captureNeedsWords() {
 }
 
 //: **The server is gone, not the note** (INBOX 434): held in the outbox
-//: (quick-note.js) and the box cleared. Staged files cannot be held, so then
-//: the words stay, saying why. Answers whether it said anything.
+//: (quick-note.js) and the box cleared; staged pictures and files go with it
+//: (IndexedDB, L-world-class-115). When storage refuses, the words stay, saying
+//: why. Answers whether it said anything.
 async function heldOffline(error, body, contentBox, titleBox) {
   if (!(error instanceof TypeError)) return false;
   const status = $("save-status");
-  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd(body))) {
+  if (!(await noteOutboxAdd(body, { images: captureStagedImages, files: captureStagedFiles }))) {
     status.textContent = "The server is not answering. Your note is kept here; save again when it is back.";
     status.classList.add("error");
     return true;
   }
+  clearStagedImages();
+  captureStagedFiles = [];
   resetCaptureForm(contentBox, titleBox);
   focusCaptureBox();
   status.textContent = "Saved on this device. It goes into your notebook as soon as the server answers.";
@@ -877,7 +880,7 @@ let lastOpenedEntryId = null;
 //: Nearest-scroller pattern per DESIGN.md: `scrollIntoView` walks every
 //: ancestor to the page, including the page itself, which is not what we want.
 function scrollEditingEntryIntoView(id) {
-  const li = document.querySelector(`#entry-list li[data-id="${id}"]`);
+  const li = noteRowFor(id);
   if (!li) return;
   let node = li.parentElement;
   while (node && node !== document.body) {
@@ -901,8 +904,10 @@ function scrollEditingEntryIntoView(id) {
   if (rect.top < 0) window.scrollBy(0, rect.top - 8);
 }
 
-async function flashEntry(id) {
+async function flashEntry(id, { terms = [] } = {}) {
   lastOpenedEntryId = id;
+  //: Cleared with the filter below, so the finder hands its words over: that note's card marks them.
+  noteEngine.opened = { id, terms };
   switchTab("notes");
   // The Notes tab is split into sub-tabs, and the note list lives in "browse".
   // Without this the card is found and scrolled to while its whole section is
@@ -943,7 +948,7 @@ async function flashEntry(id) {
     noteEngine.jumpId = null;
   }
   requestAnimationFrame(() => {
-    const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
+    const card = noteRowFor(id);
     if (!card) {
       //: Not a note after all (audit 1031 N48): the address goes back to the list rather than naming a dead id, and the last "Showing note" line leaves the live region.
       recordTabVisit("notes", "browse", "", { refine: true });
@@ -959,7 +964,7 @@ async function flashEntry(id) {
     const far = Math.abs(card.getBoundingClientRect().top) > 2 * window.innerHeight;
     card.scrollIntoView({ behavior: reduced || far ? "auto" : "smooth", block: "center" });
     if (far) requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.querySelector(`#entry-list li[data-id="${id}"]`)?.scrollIntoView({ block: "center" });
+      noteRowFor(id)?.scrollIntoView({ block: "center" });
     }));
     // Restart the animation even when the same note is jumped to twice in a
     // row: without the reflow the class is already there and nothing replays.
@@ -1376,22 +1381,7 @@ onSurface("notes", () => {
 //: answer switch). The Ask scope it sets stays here: `askQuestion` reads it.
 let askScope = null;
 
-function showAskAsOf(on) {
-  const row = $("ask-as-of-row");
-  const box = $("ask-as-of");
-  if (!row || !box) return;
-  row.classList.toggle("hidden", !on);
-  $("ask-time-travel")?.setAttribute("aria-pressed", on ? "true" : "false");
-  if (on) {
-    //: Nothing after today: the future has no notes to read.
-    const today = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    box.max = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
-    box.focus();
-  } else {
-    box.value = "";
-  }
-}
+//: `showAskAsOf` is in the lazy gesture-kit.js (a stand-in, lazy-entries.js).
 
 //: From app.js (its cap), 2026-10-06; read at call time only.
 // --- capture templates (Wave B) ---------------------------------------------------

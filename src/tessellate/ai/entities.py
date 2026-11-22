@@ -115,7 +115,7 @@ def suggest_entities(
     return [name for name, _ in suggest_entities_with_kinds(text, model_manager, ollama, limit)]
 
 
-def _find_or_create_entity(session: Session, name: str, cache: dict[str, Entity]) -> Entity:
+def _find_or_create_entity(session: Session, name: str, cache: dict[str, Entity], model: str | None = None) -> Entity:
     """Case-folded exact match within this pass's own cache first (so the
     same note's five names don't each hit the database), then the table
     itself, then a name an entity carries as an alias, then a new row. A
@@ -142,7 +142,8 @@ def _find_or_create_entity(session: Session, name: str, cache: dict[str, Entity]
             cache["\0aliases"] = aliases  # type: ignore[assignment]
         existing = aliases.get(name.casefold())  # type: ignore[union-attr]
     existing = _survivor(session, existing)
-    entity = existing or Entity(name=name)
+    # B4's stamp: a new name keeps the model that found it.
+    entity = existing or Entity(name=name, model=model)
     if not existing:
         session.add(entity)
         session.flush()  # need entity.id for the EntityMention below
@@ -358,7 +359,7 @@ def extract_entities_pass(
                 model_gate.yield_to_interactive()
                 found = suggest_entities_with_kinds(content, model_manager, ollama)
             for name, kind in found:
-                entity = _find_or_create_entity(session, name, cache)
+                entity = _find_or_create_entity(session, name, cache, model_manager.utility_model())
                 if kind and not entity.kind:
                     entity.kind = kind
                 already = session.scalars(

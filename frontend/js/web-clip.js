@@ -48,6 +48,21 @@
       : "Couldn't copy here. Drag the bookmark to your bookmarks bar instead.";
   });
 
+  //: Try it: the same window the bookmark opens, on a sample page that
+  //: names its own text, so the steps can be seen before the bookmark is made.
+  $("web-clip-try")?.addEventListener("click", () => {
+    const sample = {
+      u: `${location.origin}/#sample-clip`,
+      t: "A sample page",
+      s: "This is a sample. On a real page the window shows the page's main text, or only what you had selected, and Save as a note keeps it with its address.",
+    };
+    //: The clip window is a static page, not a locked route, opened by its full address as the bookmarklet does.
+    const opened = window.open(`${location.origin}/clip.html#${encodeURIComponent(JSON.stringify(sample))}`, "memorymap-clip", "width=560,height=520");
+    $("web-clip-status").textContent = opened
+      ? "This is the window the bookmark opens. Close it when you have looked."
+      : "Your browser blocked the window. Allow pop-ups for this address, then try again.";
+  });
+
   renderWebClip();
 
   //: **The web panel's reader** (moved from chat.js for the boot scripts' gzip
@@ -203,7 +218,7 @@
         body: JSON.stringify({ blocks: blocks.slice(0, 2500) }),
       });
     } catch (error) {
-      toast(error.message || "Couldn't analyse this page.");
+      toast(error.message || voiceLine("failed", { what: "analyse this page" }));
       return;
     }
     if (webReaderPage !== page) return;

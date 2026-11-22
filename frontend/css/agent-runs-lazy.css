@@ -1,0 +1,223 @@
+/* agent-runs-lazy.css: the Activity panel's run list (`.monitor-runs`, `.agent-run-*`), moved from
+   07-whiteboard-misc.css (L-world-class-350) to load with the `activity` bundle. */
+
+/* --- the run list (AGENT_SKILLS_REFORM.md, Phase C) --------------------------
+   One row per run, collapsed. The rows themselves are the chat transcript's
+   own components: `.agent-step.step-plan` for a run, `.agent-step
+   .step-thinking` for a step, `.tool-chip` for a call: so almost nothing is
+   needed here: the container, the three-part summary line, and the marker for
+   the one state the chat did not have a colour for.
+   Same max-height as the log it replaces on screen, for the same reason: this
+   panel is a glance, and past eight rows it is a list to scroll. */
+.monitor-runs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 12.5rem;
+  padding-top: var(--space-3);
+  overflow-y: auto;
+}
+
+/* **A run row is a grid of four columns** (owner report, 2026-09-23: "not
+   aligned and look unprofessional"): the fold marker, the run's icon, the
+   name, and the state pill. The second line (the detail or step count, and
+   the bar) starts in the name's column, so every line of every row begins
+   on one edge, and the pill is pinned to the last column's right edge, so
+   every row ends on one. Measured before: the name's text at 76px and the
+   detail under it at 43.6px, with the icon inside the name and the detail
+   sentence wrapping to three lines beside a bar centred on it.
+   The marker column is kept on a row with nothing to fold too (its marker
+   is `visibility: hidden`, below), because a row that closed the gap would
+   put its icon one column left of its neighbours'. */
+.monitor-runs .agent-run-row > .agent-run-summary {
+  display: grid;
+  grid-template-columns: var(--space-3) 1rem minmax(0, 1fr) auto;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  align-items: center;
+}
+
+.monitor-runs .agent-run-row > .agent-run-summary::before {
+  grid-column: 1;
+  justify-self: center;
+}
+
+.agent-run-icon {
+  grid-column: 2;
+  font-size: var(--text-body);
+  line-height: 1;
+  color: var(--muted);
+}
+
+.agent-run-name {
+  grid-column: 3;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The detail is one line: a background job's sentence is truncated here and
+   whole on the element's `title` (renderAgentRunSummary), because a sentence
+   wrapped to three lines beside a bar made the first row 96px against its
+   neighbours' 60. A step counter ("Step 2 of 3") never shrinks: it is a
+   label on the bar beside it. */
+.agent-run-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-run-meta.agent-run-count {
+  flex: 0 0 auto;
+}
+
+.agent-run-meta:empty {
+  display: none;
+}
+
+/* The state is a pill: tinted by what it says, in the last column. The word
+   stays `--ink` on every tint, so its contrast does not depend on which state
+   it is in; the glyph carries the state's own colour. */
+.monitor-runs .agent-run-state {
+  grid-column: 4;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.monitor-runs .agent-run-state.plan-step-running {
+  background: var(--accent-soft);
+}
+
+.monitor-runs .agent-run-state.plan-step-running > i {
+  color: var(--accent-text);
+}
+
+.monitor-runs .agent-run-state.plan-step-done > i {
+  color: var(--ok);
+}
+
+.monitor-runs .agent-run-state.plan-step-failed {
+  background: var(--error-soft);
+}
+
+.monitor-runs .agent-run-state.plan-step-failed > i {
+  color: var(--error);
+}
+
+.monitor-runs .agent-run-state.plan-step-stalled,
+.monitor-runs .agent-run-state.plan-step-paused {
+  background: var(--warn-soft);
+}
+
+.monitor-runs .agent-run-state.plan-step-stalled > i,
+.monitor-runs .agent-run-state.plan-step-paused > i {
+  color: var(--warn);
+}
+
+.agent-run-meta {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* Nested one level in, so a step's tool calls read as belonging to the step
+   rather than to the run. `--space-5` is the same indent the plan card's own
+   ordered list uses for exactly this. */
+.agent-run-step {
+  margin-left: var(--space-5);
+}
+
+/* In the panel a step starts in the run's icon column, so the fold marker of
+   a step sits under the icon of the run it belongs to: the summary's own
+   inset plus the marker column and its gap. */
+.monitor-runs .agent-run-step {
+  margin-left: calc(var(--space-3) * 2 + var(--space-2));
+}
+
+/* A step's own text is content, not a heading: the same normal weight the
+   chat's plan card gives its `<li>`s. The summary rule it inherits from is
+   written for a one-line label and puts 600 on it, which over three lines of
+   wrapped step text reads as shouting. */
+.monitor-runs .agent-run-step > summary {
+  font-weight: 400;
+}
+
+.agent-run-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+/* A step with nothing under it must not pretend to be openable: an empty
+   disclosure that a reader clicks twice is a control that reports as broken.
+   `:not(.has-tools)` is set by the panel when a call is filed under it. */
+.agent-run-step:not(.has-tools) > summary::before {
+  visibility: hidden;
+}
+
+/* A run row's own state word borrows the same colours (`plan-step-*` is set on
+   it by `renderAgentRunSummary`), and the two that only a *run* can be need
+   their own: a run has no ✓/✕ suffix, because the word is already there. */
+.agent-run-state.plan-step-done::after,
+.agent-run-state.plan-step-failed::after,
+.agent-run-state.plan-step-stalled::after,
+.agent-run-state.plan-step-retrying::after,
+.agent-run-state.plan-step-replanned::after,
+.agent-run-state.plan-step-paging::after,
+.agent-run-state.plan-step-running::after {
+  content: none;
+}
+
+/* The second line spans the name's column to the end: `minmax(0, 1fr)` on
+   that column is what lets a long detail shrink rather than push the list
+   wider than the panel (measured once at 501px inside 300, 2026-09-09). */
+.agent-run-progress {
+  grid-column: 3 / -1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.agent-run-row .task-progress {
+  flex: 1 1 auto;
+  height: var(--space-1);
+  margin: 0;
+}
+
+/* Beside a detail sentence the bar takes a fixed share, so the sentence and
+   the bar each keep a readable width rather than the sentence's own length
+   deciding the bar's. */
+.agent-run-meta:not(.agent-run-count):not(:empty) + .task-progress {
+  flex: 0 0 40%;
+}
+
+/* **A step's state has to beat the summary's own colour.** The step rows reuse
+   `.agent-step.step-thinking summary`, which paints every summary `--muted` at
+   (0,2,1): so a bare `.plan-step-retrying` (0,1,0) lost, and a retrying step
+   was the same grey as a running one. Measured: `rgb(76,85,99)`, which is
+   `--muted`, on a row that should have been `--warn`. Scoped through the
+   container so it wins on specificity rather than on file order. */
+.monitor-runs .agent-run-step > summary[data-state="retrying"],
+.monitor-runs .agent-run-step > summary[data-state="replanned"],
+.monitor-runs .agent-run-step > summary[data-state="stalled"] {
+  color: var(--warn);
+}
+
+.monitor-runs .agent-run-step > summary[data-state="failed"] {
+  color: var(--error);
+}

@@ -59,7 +59,7 @@ function focusPanel(row) {
 async function toggleRelated(entry) {
   if (!toggleNotePanel(entry, "related")) return;
   const related = await apiJson(`/entries/${entry.id}/related`).catch(() => []);
-  const card = document.querySelector(`#entry-list li[data-id="${entry.id}"]`);
+  const card = noteRowFor(entry.id);
   if (!card || !notePanelStillOpen(entry, "related")) return;
   const row = document.createElement("div");
   row.className = "entry-links";
@@ -130,7 +130,7 @@ const REFERENCE_KIND_LABELS = {
 async function toggleFaded(entry) {
   if (!toggleNotePanel(entry, "faded")) return;
   const answer = await apiJson(`/resurface/near/${entry.id}`, { silent: true }).catch(() => null);
-  const card = document.querySelector(`#entry-list li[data-id="${entry.id}"]`);
+  const card = noteRowFor(entry.id);
   if (!card || !notePanelStillOpen(entry, "faded")) return;
   const row = document.createElement("div");
   row.className = "entry-links";
@@ -185,7 +185,7 @@ async function toggleNoteReminders(entry) {
     `/reminders?entry_id=${entry.id}&include_done=false&limit=20`,
     { silent: true }
   ).catch(() => null);
-  const card = document.querySelector(`#entry-list li[data-id="${entry.id}"]`);
+  const card = noteRowFor(entry.id);
   if (!card || !notePanelStillOpen(entry, "reminders")) return;
   const row = document.createElement("div");
   row.className = "entry-links";
@@ -226,7 +226,7 @@ async function toggleNoteReminders(entry) {
 async function toggleReferences(entry) {
   if (!toggleNotePanel(entry, "references")) return;
   const answer = await apiJson(`/entries/${entry.id}/references`).catch(() => null);
-  const card = document.querySelector(`#entry-list li[data-id="${entry.id}"]`);
+  const card = noteRowFor(entry.id);
   if (!card || !notePanelStillOpen(entry, "references")) return;
   const row = document.createElement("div");
   row.className = "entry-links";
@@ -322,7 +322,7 @@ function similarNoteRow(entry, other, onLinked) {
       onLinked?.();
     } catch (error) {
       relChip.removeAttribute("aria-disabled");
-      toast(error.message || "Couldn't link those notes.", true);
+      toast(error.message || voiceLine("failed", { what: "link those notes" }), true);
     }
   };
   const relChip = chip("", "link entry-related-chip", linkIt);

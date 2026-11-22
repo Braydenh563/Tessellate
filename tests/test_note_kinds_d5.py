@@ -99,6 +99,19 @@ def test_a_note_type_made_before_the_list_was_read_keeps_its_id_through_delete_a
     assert {first["id"], second["id"]} <= ids
 
 
+def test_undo_of_a_made_type_then_redo_keeps_its_id_l571(client):
+    from tests._app_js import app_js_text
+
+    made = client.post("/note-types", json={"name": "Recipe", "fields": []}).json()
+    gone = client.delete(f"/note-types/{made['id']}")
+    assert gone.status_code == 200
+    back = client.post("/note-types", json={"name": "Recipe", "fields": [], "id": made["id"], "restore": True})
+    restored = back.json()
+    assert restored["id"] == made["id"]
+    # The sheet's redo sends that same door.
+    assert "{ ...body, id: liveId, restore: true }" in app_js_text()
+
+
 def test_the_only_type_deleted_then_the_list_read_still_gets_its_id_back(client):
     """L571 (integ-1005): the only type made, deleted, then the list read
     before Undo. The list's first read seeded the built-ins into the freed

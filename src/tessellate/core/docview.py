@@ -51,6 +51,7 @@ that a new dependency is a decision rather than a side effect.
 
 from __future__ import annotations
 
+import logging
 import re
 import zipfile
 from dataclasses import dataclass
@@ -58,7 +59,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from xml.etree.ElementTree import ParseError
 
-from tessellate.core import pdfpages
+from tessellate.core import parse_guard, pdfpages
 
 #: Files that are already text. Read straight off disk and decoded, no
 #: converter, no optional package, so these work on a bare install.
@@ -348,6 +349,7 @@ def _docx_part(archive: zipfile.ZipFile, name: str, parse) -> object | None:
             return None
         return parse(archive.read(name))
     except Exception:  # noqa: BLE001 - an optional part never sinks the import
+        logging.getLogger(__name__).debug("_docx_part: an optional part never sinks the import", exc_info=True)
         return None
 
 
@@ -643,6 +645,7 @@ class _DocxLines:
         return f"{out}\n" if out else ""
 
 
+@parse_guard.isolated("document", timeout=60, on_stop=str)
 def docx_to_markdown(path: Path) -> str:
     """A .docx read without markitdown and without python-docx.
 
@@ -813,6 +816,31 @@ def extract(path: Path, vision_reader=None) -> ViewedFile:
     return ViewedFile(text=text, kind=kind_for(suffix), source="file", truncated=truncated)
 
 
+def _first_conversion(path: Path, suffix: str) -> str:
+    """markitdown's text, or "" when it is absent or cannot parse the file;
+    `ParseStopped` when its reader was stopped (L-world-class-321)."""
+    from tessellate.entry import importer
+
+    #: **A Word file with tracked changes is read here, markitdown or not.**
+    #: markitdown takes every insertion as written and drops every deletion,
+    #: which is accepting a reviewer's changes on the reader's behalf without
+    #: showing them; this reader keeps them as suggestion mode's marks to
+    #: accept or reject in the editor (INBOX 404).
+    if suffix == ".docx" and docx_has_revisions(path):
+        return docx_to_markdown(path)
+    if not importer.markitdown_available():
+        return ""
+    try:
+        return importer.convert_to_markdown(path)
+    except parse_guard.ParseStopped:
+        raise
+    except Exception:  # noqa: BLE001
+        # A file markitdown cannot parse is a viewer message, never a 500,
+        # the same contract `/import/document` keeps for the same reason.
+        logging.getLogger(__name__).debug("_first_conversion: markitdown could not read %s; the viewer says so", suffix, exc_info=True)
+        return ""
+
+
 def _extract_converted(path: Path, suffix: str, vision_reader) -> ViewedFile:
     """A .docx/.pdf/.pptx and friends, via markitdown, then vision OCR.
 
@@ -824,21 +852,12 @@ def _extract_converted(path: Path, suffix: str, vision_reader) -> ViewedFile:
     """
     from tessellate.entry import importer
 
-    converted = ""
-    #: **A Word file with tracked changes is read here, markitdown or not.**
-    #: markitdown takes every insertion as written and drops every deletion,
-    #: which is accepting a reviewer's changes on the reader's behalf without
-    #: showing them; this reader keeps them as suggestion mode's marks to
-    #: accept or reject in the editor (INBOX 404).
-    if suffix == ".docx" and docx_has_revisions(path):
-        converted = docx_to_markdown(path)
-    elif importer.markitdown_available():
-        try:
-            converted = importer.convert_to_markdown(path)
-        except Exception:  # noqa: BLE001
-            # A file markitdown cannot parse is a viewer message, never a 500, 
-            # the same contract `/import/document` keeps for the same reason.
-            converted = ""
+    try:
+        converted = _first_conversion(path, suffix)
+    except parse_guard.ParseStopped as exc:
+        # The reader's child hung, crashed or ran out of memory on this
+        # file (L-world-class-321): say which, and read it no further.
+        return ViewedFile(text="", kind="plain", source="converted", message=exc.sentence)
 
     #: **A Word file reads on a bare install too** (Phase 7). markitdown is
     #: better at it and stays first; this is what happens when it is absent,

@@ -34,13 +34,13 @@ import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps, events
+from tessellate.core import activity, deps, events
 from tessellate.core.database import Entry, WhiteboardObject
 from tessellate.core.deps import get_session
 from tessellate.repo import relations as relations_repo
+from tessellate.repo import whiteboard as whiteboard_repo
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -91,7 +91,7 @@ def _candidates(db: Session, board_id: int, query: str, skip_titles: set[str]) -
         logging.getLogger("tessellate.whiteboard").warning("Branch suggestions: search failed", exc_info=True)
         hits = []
     on_map = set()
-    for obj in db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id)):
+    for obj in whiteboard_repo.board_objects(db, board_id):
         try:
             ref = json.loads(obj.data or "{}").get("ref_id")
         except (TypeError, ValueError):
@@ -191,7 +191,7 @@ def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_sess
     if not topic:
         raise HTTPException(status_code=422, detail="Give the topic some words first: they are what the notes are found by.")
     parent = _parent_topic(db, node)
-    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
+    children = whiteboard_repo.children_of(db, node.id)
     have = {_topic_text(db, child).casefold() for child in children} | {topic.casefold()}
     rows = _candidates(db, board_id, f"{topic} {parent or ''}".strip(), have)
     if not rows:
@@ -218,7 +218,7 @@ def _title_of(text: str) -> str:
 
 def _refs_on_map(db: Session, board_id: int) -> set[int]:
     out: set[int] = set()
-    for obj in db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id)):
+    for obj in whiteboard_repo.board_objects(db, board_id):
         try:
             ref = json.loads(obj.data or "{}").get("ref_id")
         except (TypeError, ValueError):
@@ -292,7 +292,7 @@ def expand_from_note(board_id: int, node_id: int, db: Session = Depends(get_sess
     from tessellate.entry import manager_text
 
     title = _title_of(manager_text.readable_content(entry))
-    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
+    children = whiteboard_repo.children_of(db, node.id)
     have = {_topic_text(db, child).casefold() for child in children}
     found = _heading_suggestions(entry, title, have)
     found += _link_suggestions(db, entry, board_id, have | {s["text"].casefold() for s in found})
@@ -322,7 +322,7 @@ def add_branches(board_id: int, node_id: int, body: BranchesBody, db: Session = 
     from tessellate.entry import manager_text
 
     parent = _node_or_404(db, board_id, node_id)
-    siblings = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == parent.id)).all()
+    siblings = whiteboard_repo.children_of(db, parent.id)
     made = []
     for i, item in enumerate(body.items):
         source = None
@@ -364,9 +364,7 @@ def _branch_outline(db: Session, node: WhiteboardObject) -> list[tuple[int, str]
     """(depth, words) for the topic and everything under it, depth first in
     sibling order, at most `SUMMARY_TOPICS`; a topic with no words is skipped
     but its branch is not."""
-    rows = db.scalars(
-        select(WhiteboardObject).where(WhiteboardObject.board_id == node.board_id, WhiteboardObject.kind.in_(TOPIC_KINDS))
-    ).all()
+    rows = whiteboard_repo.objects_of_kinds(db, node.board_id, TOPIC_KINDS)
     children: dict[int, list[WhiteboardObject]] = {}
     for row in rows:
         if row.parent_id is not None:
@@ -435,7 +433,8 @@ def summarise_branch(board_id: int, node_id: int, db: Session = Depends(get_sess
     summary, source, reason = "", "outline", "offline"
     if len(outline) > 1 and deps.get_ollama().is_running():
         try:
-            summary = _ask_for_summary(outline)
+            with activity.track("generation", "Summarising a branch", stoppable=False):
+                summary = _ask_for_summary(outline)
             reason = "unusable"
         except Exception:
             logging.getLogger("tessellate.whiteboard").warning("Branch summary: the model failed", exc_info=True)

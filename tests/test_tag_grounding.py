@@ -58,13 +58,13 @@ def test_no_model_never_offers_a_tag_the_note_has_no_word_for(session) -> None:
 
 
 def test_a_models_tags_are_kept_only_when_the_note_has_their_words(session, monkeypatch) -> None:
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_suggestions
 
     _notebook(session)
     entry = manager.create_entry(session, "Lentil dal with cumin and a tin of tomatoes", category_name="Cooking")
     session.commit()
     monkeypatch.setattr(librarian, "suggest_tags", lambda text, have, *a, vocabulary=None, **k: list(vocabulary or [])[:2])
-    routes_entries._keep_suggestions(session, entry, "llm")
+    tag_suggestions.keep_suggestions(session, entry, "llm")
     kept = json.loads(entry.suggested_tags)
     assert not {"study", "university"} & set(kept), kept
 

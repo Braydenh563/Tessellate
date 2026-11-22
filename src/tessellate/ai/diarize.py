@@ -92,7 +92,7 @@ def spans(audio_path: Path) -> list[Span]:
         return _runner(audio_path)
     folder = model_folder()
     if folder is None or not engine_installed():
-        raise RuntimeError("Telling voices apart needs “Speaker labels” in Settings, Packages.")
+        raise voice.SpeechError("Telling voices apart needs “Speaker labels” in Settings, Packages.")
     import sherpa_onnx
 
     config = sherpa_onnx.OfflineSpeakerDiarizationConfig(

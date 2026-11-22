@@ -185,6 +185,7 @@ def _live_ollama_models(ollama) -> list[dict]:  # noqa: ANN001
     try:
         return (ollama.list_models() or []) if ollama.is_running() else []
     except Exception:  # noqa: BLE001  # Ollama down or odd is "nothing found", never an error
+        logger.debug("_ollama_rows: Ollama down or odd is 'nothing found', never an error", exc_info=True)
         return []
 
 

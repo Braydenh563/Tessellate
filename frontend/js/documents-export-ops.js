@@ -462,7 +462,7 @@
     // behind the dialog otherwise, and it is the same width as the dialog's
     // own left edge.
     $("doc-dock-menu")?.removeAttribute("open");
-    lazyScript("/js/connections.js").then(() => openConnections("documents", currentDoc.id, currentDoc.title || "This document"));
+    ensureModule("connections").then(() => openConnections("documents", currentDoc.id, currentDoc.title || "This document"));
   });
 
   $("doc-copy-link").addEventListener("click", () => {

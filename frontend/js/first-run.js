@@ -108,7 +108,7 @@ function firstStepName(host) {
       return;
     }
     try {
-      prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ display_name: name }) });
+      prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ display_name: name }) });
     } catch (err) {
       toast(`Your name could not be saved: ${err.message}`, true);
       return;
@@ -272,7 +272,9 @@ function firstStepsCard(host, state) {
 }
 
 async function renderFirstSteps(host, cardOff = false) {
-  renderGetStarted();
+  //: Held for the opening curtain (`dashShown`): the menu joins the dock a
+  //: moment after the page, and moved its buttons in view (L-world-class-879).
+  dashLine.menu = renderGetStarted();
   if (cardOff) return void host.replaceChildren();
   lazyScript("/css/first-run-lazy.css");
   const state = await firstStepsState();
