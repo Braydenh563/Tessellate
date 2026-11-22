@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 57 | 10 | 0 | 0 | 67 |
-| general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 372 | 439 | 81 | 2 | 113 | 892 |
+| general | 0 | 28 | 2 | 0 | 6 | 30 |
+| all | 372 | 438 | 81 | 2 | 113 | 891 |
 
 ## graph
 
@@ -524,7 +524,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 - [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
-- [ ] **L-general-72** `general` open, S: At 390 the Logs Sort and view menu covers its opener. From L-general-71 menu sweep, 2026-11-22. Evidence: scratchpad/ui-sweeps/menus.js at 390 on the 5k showcase: settings/logs Sort and view (#logs-more-menu, 8 rows, 243px) covers its opener
 
 ## general
 

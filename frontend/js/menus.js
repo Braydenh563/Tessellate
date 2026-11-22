@@ -701,6 +701,12 @@ function placeEscapedMenu(menu, opener) {
   const anchor = opener.getBoundingClientRect();
   // Same reason as placeHelpPopover: no frame at 0,0 before the move.
   menu.style.visibility = "hidden";
+  //: A cap this wrote on an earlier open is this open's to decide again.
+  if (menu._escapeCap) {
+    menu.style.maxHeight = "";
+    menu.style.overflowY = "";
+    menu._escapeCap = false;
+  }
   menu.style.left = "0px";
   menu.style.top = "0px";
   const box = menu.getBoundingClientRect();
@@ -722,7 +728,21 @@ function placeEscapedMenu(menu, opener) {
     //: below, which pins the box to the last position that fits, was always
     //: the right answer for that case.
     const fits = above >= margin && above + box.height <= window.innerHeight - margin;
-    top = fits ? above : Math.max(margin, window.innerHeight - margin - box.height);
+    const onScreen = anchor.top >= 0 && anchor.bottom <= window.innerHeight;
+    if (fits) top = above;
+    else if (onScreen) {
+      //: **Capped beside the opener, never over it** (L-general-72). Pinning
+      //: a box taller than either side to the window's foot laid it over its
+      //: own button: measured at 390x844 on Settings, Logs, Sort and view, a
+      //: 677px list at 157..836 over its opener at 281..325. The taller side
+      //: gets the list, capped to its room, and the rest scrolls.
+      const plan = menuSidePlan(box.height, anchor, 4, margin);
+      const room = plan.cap ?? Math.ceil(box.height);
+      menu.style.maxHeight = `${room}px`;
+      menu.style.overflowY = "auto";
+      menu._escapeCap = true;
+      top = plan.up ? anchor.top - 4 - Math.min(box.height, room) : anchor.bottom + 4;
+    } else top = Math.max(margin, window.innerHeight - margin - box.height);
   }
   menu.style.left = `${Math.round(left)}px`;
   menu.style.top = `${Math.round(top)}px`;
