@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 41 | 1 | 0 | 0 | 42 |
+| world-class | 0 | 40 | 1 | 0 | 0 | 41 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 432 | 76 | 2 | 111 | 880 |
+| all | 372 | 431 | 76 | 2 | 111 | 879 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -474,7 +474,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L565** `chat` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L587** `chat` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
-- [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
 - [ ] **L619** `world-class` open, M: Verify perf at 2,000 notes, real model, phone boot, long-session PF6 growth. From audit-1031-perf.md. Evidence: Only perf2/perf3/GR1 hold 2,000-note numbers; load average 6 skews ms
 - [ ] **L623** `graph` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
