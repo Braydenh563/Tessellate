@@ -4,7 +4,8 @@
 read the filing path makes is timed on a fixed seed. The numbers measured on
 2026-11-14: corrections 17 ms, boosts 14, filing_accuracy 78, excluded_categories 22,
 filing_evidence 31. The budget is one second each (over ten times the slowest), so a read that
-turns into a per-note pass fails here rather than on someone's notebook."""
+turns into a per-note pass fails here rather than on someone's notebook. CPU time,
+not wall time (L-general-70): a loaded runner stretched a 17 ms read to 2.6 s."""
 
 from __future__ import annotations
 
@@ -25,9 +26,9 @@ def _seed(session) -> str:
 
 
 def _timed(fn) -> float:
-    start = time.perf_counter()
+    start = time.process_time()
     fn()
-    return time.perf_counter() - start
+    return time.process_time() - start
 
 
 def test_the_filing_reads_stay_fast_on_3000_notes_and_corrections(session):
