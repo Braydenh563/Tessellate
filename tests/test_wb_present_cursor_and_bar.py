@@ -16,16 +16,20 @@ HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
 
 def _rule(selector_part: str) -> str:
     for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", CSS):
-        if selector_part in match.group(1):
+        if selector_part in match.group(1) + "{":
             return match.group(1) + "{" + match.group(2) + "}"
     raise AssertionError(selector_part)
 
 
 def test_the_slide_hides_the_cursor_at_rest_and_never_shows_an_items_hover_cursor():
-    plain = _rule(".wb-presenting .whiteboard-container *")
+    plain = _rule(".wb-presenting .whiteboard-container {")
     assert "cursor: default;" in plain
-    rest = _rule(".wb-presenting.wb-cursor-rest .whiteboard-container *")
+    rest = _rule(".wb-presenting.wb-cursor-rest .whiteboard-container")
     assert "cursor: none;" in rest and ".wb-laser-on" in rest
+    # No item's hover cursor: both layers take no pointer events while presenting,
+    # so the container is all the pointer is ever over (no universal `*` needed).
+    lazy = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"\.wb-presenting #wb-html-layer,\s*#library-view-whiteboard\.wb-presenting #wb-svg-layer \{\s*pointer-events: none;", lazy)
     assert "wb-present-bar" not in plain + rest  # the bar keeps its own cursor
     assert 'container.style.cursor = "";' in JS and "board.style.cursor = cursor" in JS  # the tool's inline one, lifted
     assert 'text.style.cursor = "move"' not in (ROOT / "frontend/js/whiteboard-map.js").read_text(encoding="utf-8")
