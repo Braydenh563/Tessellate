@@ -710,8 +710,6 @@ function placeEscapedMenu(menu, opener) {
   if (left + box.width > window.innerWidth - margin) {
     left = Math.max(margin, window.innerWidth - margin - box.width);
   }
-  if (top + box.height > window.innerHeight - margin) {
-    const above = anchor.top - 4 - box.height;
     //: **Both edges, not just the top.** This branch used to accept `above`
     //: on `above >= margin` alone, which is only half the question: with a
     //: trigger below the fold (a card the list has scrolled past, a menu
@@ -721,9 +719,15 @@ function placeEscapedMenu(menu, opener) {
     //: past the window and nothing able to bring that back. The fallback
     //: below, which pins the box to the last position that fits, was always
     //: the right answer for that case.
-    const fits = above >= margin && above + box.height <= window.innerHeight - margin;
-    top = fits ? above : Math.max(margin, window.innerHeight - margin - box.height);
-  }
+  //: Neither side fits: the one rule (`menuSidePlan`), capped on the roomier side. Pushed up into the
+  //: window instead, Settings Logs More at 390x844 (679px) covered its own button (157 against 281).
+  //: The clamp keeps an opener off the window's edge (the case above) inside it.
+  const plan = menuSidePlan(box.height, anchor, 4, margin);
+  menu.style.overflowY = plan.cap === null ? "" : "auto";
+  if (plan.cap !== null) menu.style.maxHeight = `${plan.cap}px`;
+  const height = plan.cap ?? box.height;
+  if (plan.up) top = anchor.top - 4 - height;
+  top = Math.max(margin, Math.min(top, window.innerHeight - margin - height));
   menu.style.left = `${Math.round(left)}px`;
   menu.style.top = `${Math.round(top)}px`;
   menu.style.visibility = "";

@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9059, frontend ids 2845, CSS sections 546, backend routes 722, backend modules 11094, test files 3000, tests 23527, plan headings 694, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9059, frontend ids 2845, CSS sections 546, backend routes 722, backend modules 11094, test files 3001, tests 23528, plan headings 694, app scripts 29, boot scripts 38, script files 402.
 
 ## Frontend functions (9059)
 
@@ -156,35 +156,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterMenuExit` | frontend/js/menus.js:784 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1385 |
-| `buildMenuItemButton` | frontend/js/menus.js:1352 |
+| `afterMenuExit` | frontend/js/menus.js:788 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1389 |
+| `buildMenuItemButton` | frontend/js/menus.js:1356 |
 | `cardOpener` | frontend/js/menus.js:465 |
 | `closeActionMenus` | frontend/js/menus.js:101 |
 | `closeActionMenusOnScroll` | frontend/js/menus.js:55 |
 | `closeHelpPopovers` | frontend/js/menus.js:280 |
-| `docBacklinkContext` | frontend/js/menus.js:1206 |
+| `docBacklinkContext` | frontend/js/menus.js:1210 |
 | `dragFlag` | frontend/js/menus.js:33 |
-| `escapeAndCapMenu` | frontend/js/menus.js:833 |
-| `escapeMenuIfClipped` | frontend/js/menus.js:732 |
-| `escapeMenuToBody` | frontend/js/menus.js:754 |
+| `escapeAndCapMenu` | frontend/js/menus.js:837 |
+| `escapeMenuIfClipped` | frontend/js/menus.js:736 |
+| `escapeMenuToBody` | frontend/js/menus.js:758 |
 | `fitActionMenuInWindow` | frontend/js/menus.js:512 |
 | `focusMenuItem` | frontend/js/menus.js:645 |
-| `historyActorLabel` | frontend/js/menus.js:1567 |
-| `isEditConflict` | frontend/js/menus.js:1562 |
+| `historyActorLabel` | frontend/js/menus.js:1571 |
+| `isEditConflict` | frontend/js/menus.js:1566 |
 | `menuClippingAncestor` | frontend/js/menus.js:659 |
-| `menuExitMs` | frontend/js/menus.js:791 |
+| `menuExitMs` | frontend/js/menus.js:795 |
 | `menuSidePlan` | frontend/js/menus.js:490 |
 | `nearestScrollParent` | frontend/js/menus.js:157 |
 | `openActionMenu` | frontend/js/menus.js:532 |
 | `placeEscapedMenu` | frontend/js/menus.js:699 |
 | `placeHelpPopover` | frontend/js/menus.js:188 |
-| `restoreEscapedMenu` | frontend/js/menus.js:798 |
-| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:779 |
-| `wireEscapedActionMenu` | frontend/js/menus.js:909 |
-| `wireEscapedMenuResize` | frontend/js/menus.js:1189 |
+| `restoreEscapedMenu` | frontend/js/menus.js:802 |
+| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:783 |
+| `wireEscapedActionMenu` | frontend/js/menus.js:913 |
+| `wireEscapedMenuResize` | frontend/js/menus.js:1193 |
 | `wireHelpPopover` | frontend/js/menus.js:343 |
-| `wireMenuKeyboard` | frontend/js/menus.js:1264 |
+| `wireMenuKeyboard` | frontend/js/menus.js:1268 |
 
 ### frontend/js/lightbox.js (2)
 
@@ -29465,7 +29465,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23527)
+## Tests (23528)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30632,6 +30632,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_error_contract.py | 4 |
 | tests/test_error_log_1549.py | 5 |
 | tests/test_error_toasts.py | 8 |
+| tests/test_escaped_menu_side_1122.py | 1 |
 | tests/test_events.py | 25 |
 | tests/test_events_undo.py | 13 |
 | tests/test_every_route_is_locked.py | 4 |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A menu moved out of a clipping panel that fits neither under nor over its button now opens on the roomier side and scrolls, instead of being pushed up over the button (Settings Logs More at 390x844: top 157 over a button at 281 to 325, now 329 under it; L-world-class-875).
 - The Activity panel (Agent runs) floats without taking room: opening it no longer adds 288px to the bottom of the dashboard's scroll, or of Notes, Timeline, Library and Reminders (the owner, 2026-11-22).
 - Panels: the Suggestions head and the Dictionary's head, count line and field stay put while the list scrolls (a 400 px scroll moved them 400 and 321 px; now 0); the Dictionary closes on a press outside it; a moved or docked dialog is no longer modal, so its dim and blur go and the app beside it works (Escape still closes it), and a moved overlay lets presses through. Every popup in the middle closes on a press outside it (one rule for every dialog and overlay), unless something was typed in it; the Timeline month picker shows its days again.
 - Lag: opening the OCR workspace no longer lays the page out for the selection popup (196 to 538 ms at 4x CPU, now under 1 ms). Its tool row no longer lays the dialog out to refit at the same width (169 to 334 ms, now under 1 ms).
