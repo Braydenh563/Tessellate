@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11493, test files 2948, tests 23181, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11505, test files 2949, tests 23192, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -14346,7 +14346,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11493)
+## Backend modules (11505)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25194,7 +25194,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `uninstall` | src/tessellate/core/extra_downloads.py:497 |
 | `url_allowed` | src/tessellate/core/extra_downloads.py:167 |
 
-### src/tessellate/core/extras.py (69)
+### src/tessellate/core/extras.py (72)
 
 | Name | File:line |
 |---|---|
@@ -25202,71 +25202,88 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Bundle` | src/tessellate/core/extras.py:1054 |
 | `Extra` | src/tessellate/core/extras.py:363 |
 | `InstallState` | src/tessellate/core/extras.py:1142 |
-| `_blocking_failure` | src/tessellate/core/extras.py:2438 |
-| `_bulk_refusal` | src/tessellate/core/extras.py:2264 |
-| `_busy` | src/tessellate/core/extras.py:2013 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2493 |
+| `_bulk_refusal` | src/tessellate/core/extras.py:2319 |
+| `_busy` | src/tessellate/core/extras.py:2068 |
 | `_canonical` | src/tessellate/core/extras.py:1493 |
-| `_claim` | src/tessellate/core/extras.py:2001 |
-| `_constraints_copy` | src/tessellate/core/extras.py:1725 |
-| `_dispatch` | src/tessellate/core/extras.py:2019 |
+| `_claim` | src/tessellate/core/extras.py:2056 |
+| `_constraints_copy` | src/tessellate/core/extras.py:1726 |
+| `_dispatch` | src/tessellate/core/extras.py:2074 |
 | `_extra_size` | src/tessellate/core/extras.py:1031 |
-| `_finish_bulk` | src/tessellate/core/extras.py:2317 |
+| `_finish_bulk` | src/tessellate/core/extras.py:2372 |
 | `_forget_footprints` | src/tessellate/core/extras.py:1373 |
 | `_frozen_target_args` | src/tessellate/core/extras.py:259 |
-| `_install_cleanup` | src/tessellate/core/extras.py:1814 |
-| `_install_ocr_binary` | src/tessellate/core/extras.py:1787 |
-| `_install_refusal` | src/tessellate/core/extras.py:2098 |
-| `_installed_snapshot` | src/tessellate/core/extras.py:1744 |
+| `_install_cleanup` | src/tessellate/core/extras.py:1815 |
+| `_install_ocr_binary` | src/tessellate/core/extras.py:1788 |
+| `_install_refusal` | src/tessellate/core/extras.py:2153 |
+| `_installed_snapshot` | src/tessellate/core/extras.py:1745 |
+| `_installed_version` | src/tessellate/core/extras.py:1856 |
 | `_interpreter_behind` | src/tessellate/core/extras.py:195 |
-| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2353 |
+| `_left_alone` | src/tessellate/core/extras.py:1866 |
+| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2408 |
+| `_lock_selection` | src/tessellate/core/extras.py:1879 |
 | `_no_build` | src/tessellate/core/extras.py:1409 |
 | `_pip_base_command` | src/tessellate/core/extras.py:316 |
 | `_pip_platforms` | src/tessellate/core/extras.py:280 |
 | `_pip_reason` | src/tessellate/core/extras.py:102 |
 | `_python_candidates` | src/tessellate/core/extras.py:171 |
 | `_read_footprint` | src/tessellate/core/extras.py:1328 |
-| `_release_captions_helper` | src/tessellate/core/extras.py:2090 |
+| `_release_captions_helper` | src/tessellate/core/extras.py:2145 |
 | `_removable_names` | src/tessellate/core/extras.py:1588 |
 | `_remove_from_frozen_target` | src/tessellate/core/extras.py:1498 |
 | `_requirement_name` | src/tessellate/core/extras.py:1487 |
 | `_requirements_path` | src/tessellate/core/extras.py:1688 |
-| `_roll_back` | src/tessellate/core/extras.py:1755 |
-| `_run_bulk` | src/tessellate/core/extras.py:2227 |
-| `_run_bulk_item` | src/tessellate/core/extras.py:2291 |
-| `_run_download_install` | src/tessellate/core/extras.py:1945 |
-| `_run_download_uninstall` | src/tessellate/core/extras.py:1987 |
-| `_run_install` | src/tessellate/core/extras.py:1855 |
-| `_run_single` | src/tessellate/core/extras.py:2040 |
+| `_roll_back` | src/tessellate/core/extras.py:1756 |
+| `_run_bulk` | src/tessellate/core/extras.py:2282 |
+| `_run_bulk_item` | src/tessellate/core/extras.py:2346 |
+| `_run_download_install` | src/tessellate/core/extras.py:2000 |
+| `_run_download_uninstall` | src/tessellate/core/extras.py:2042 |
+| `_run_install` | src/tessellate/core/extras.py:1903 |
+| `_run_single` | src/tessellate/core/extras.py:2095 |
 | `_run_uninstall` | src/tessellate/core/extras.py:1598 |
 | `_shared_with_others` | src/tessellate/core/extras.py:1565 |
 | `_spell_pack_extras` | src/tessellate/core/extras.py:434 |
 | `_status_row` | src/tessellate/core/extras.py:1268 |
-| `_uninstall_skip` | src/tessellate/core/extras.py:2257 |
+| `_uninstall_skip` | src/tessellate/core/extras.py:2312 |
 | `activate_frozen_extras` | src/tessellate/core/extras.py:245 |
 | `bulk` | src/tessellate/core/extras.py:1392 |
-| `bulk_label` | src/tessellate/core/extras.py:2221 |
+| `bulk_label` | src/tessellate/core/extras.py:2276 |
 | `bulk_status` | src/tessellate/core/extras.py:1377 |
 | `bundles` | src/tessellate/core/extras.py:1297 |
 | `cancel` | src/tessellate/core/extras.py:1434 |
 | `current` | src/tessellate/core/extras.py:1430 |
 | `download_mb` | src/tessellate/core/extras.py:1040 |
-| `download_ready` | src/tessellate/core/extras.py:2450 |
+| `download_ready` | src/tessellate/core/extras.py:2505 |
 | `find_system_python` | src/tessellate/core/extras.py:133 |
 | `footprint` | src/tessellate/core/extras.py:1305 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:223 |
-| `install_blocking` | src/tessellate/core/extras.py:2411 |
+| `install_blocking` | src/tessellate/core/extras.py:2466 |
 | `installed_bytes` | src/tessellate/core/extras.py:1358 |
 | `is_installed` | src/tessellate/core/extras.py:1221 |
-| `legacy_engine` | src/tessellate/core/extras.py:2149 |
-| `on_release` | src/tessellate/core/extras.py:2084 |
+| `legacy_engine` | src/tessellate/core/extras.py:2204 |
+| `on_release` | src/tessellate/core/extras.py:2139 |
 | `removal_locked` | src/tessellate/core/extras.py:1396 |
-| `remove` | src/tessellate/core/extras.py:2111 |
-| `remove_legacy_engine` | src/tessellate/core/extras.py:2160 |
-| `reset_for_tests` | src/tessellate/core/extras.py:2402 |
-| `start` | src/tessellate/core/extras.py:2047 |
-| `start_bulk` | src/tessellate/core/extras.py:2173 |
+| `remove` | src/tessellate/core/extras.py:2166 |
+| `remove_legacy_engine` | src/tessellate/core/extras.py:2215 |
+| `reset_for_tests` | src/tessellate/core/extras.py:2457 |
+| `start` | src/tessellate/core/extras.py:2102 |
+| `start_bulk` | src/tessellate/core/extras.py:2228 |
 | `status` | src/tessellate/core/extras.py:1249 |
 | `unavailable_reason` | src/tessellate/core/extras.py:1413 |
+
+### src/tessellate/core/extras_lock.py (9)
+
+| Name | File:line |
+|---|---|
+| `Entry` | src/tessellate/core/extras_lock.py:50 |
+| `Lock` | src/tessellate/core/extras_lock.py:64 |
+| `canonical` | src/tessellate/core/extras_lock.py:44 |
+| `marker_applies` | src/tessellate/core/extras_lock.py:137 |
+| `parse` | src/tessellate/core/extras_lock.py:116 |
+| `parse_entries` | src/tessellate/core/extras_lock.py:70 |
+| `read` | src/tessellate/core/extras_lock.py:128 |
+| `render` | src/tessellate/core/extras_lock.py:101 |
+| `split` | src/tessellate/core/extras_lock.py:93 |
 
 ### src/tessellate/core/filetypes.py (6)
 
@@ -29148,7 +29165,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23181)
+## Tests (23192)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30301,6 +30318,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 26 |
 | tests/test_extras_inplace_progress.py | 5 |
+| tests/test_extras_lock_691.py | 11 |
 | tests/test_f13_ek_1110.py | 4 |
 | tests/test_f7_pool_moves.py | 3 |
 | tests/test_fact_accept.py | 7 |

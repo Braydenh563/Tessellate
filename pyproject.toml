@@ -50,7 +50,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 "tessellate.ai" = ["data/taxonomy/*.json", "data/skill_rates.json", "data/study_terms.json"]
 "tessellate.api" = ["run_sandbox_assets/*"]
-"tessellate.data" = ["*.json"]
+"tessellate.data" = ["*.json", "extras_locks/*.txt"]
 
 [tool.ruff]
 target-version = "py311"
