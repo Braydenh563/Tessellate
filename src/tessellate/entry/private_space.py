@@ -364,6 +364,29 @@ def unseal_space_files(session: Session, space_id: str) -> int:
     return _seal_files(_owned_rows(session, space_id), False)
 
 
+def forget_sealed_by_space(session: Session, space_id: str) -> list[int]:
+    """A private space deleted into an ordinary one: its notes stay private
+    notes of their own, no longer sealed by a space that is gone, so a later
+    move into another private space and out cannot unseal them
+    (L-world-class-842). The ids, for Undo to mark again."""
+    entries, _documents = _members(session, space_id)
+    ids = [entry.id for entry in entries if entry.sealed_by_space]
+    for entry in entries:
+        entry.sealed_by_space = False
+    session.flush()
+    return ids
+
+
+def mark_sealed_by_space(session: Session, space_id: str, ids: list[int]) -> None:
+    """Undo of that delete: the notes the space had sealed are its again."""
+    if not ids:
+        return
+    entries, _documents = _members(session, space_id)
+    for entry in entries:
+        if entry.id in ids and entry.is_private:
+            entry.sealed_by_space = True
+
+
 def keep_members_private(session: Session, space_id: str) -> None:
     """A space turned ordinary with "Keep it private": each note becomes an
     ordinary private note, its own switch again. A document stays sealed."""
