@@ -312,3 +312,29 @@ def test_the_note_editor_and_whiteboard_draw_harper_first_too():
     board = (ROOT / "frontend/js/whiteboard-map-more.js").read_text()
     assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); })" in board
     assert "docGrammarAsk(text).catch" not in board
+
+
+def test_a_tree_that_unpacks_past_its_byte_or_file_budget_is_refused(tmp_path, monkeypatch):
+    """Review 6008801452: a tree is bounded in total size, counted as it inflates, and in file count."""
+    import zipfile
+
+    from tessellate.core import extra_downloads
+    from tessellate.core.extra_downloads import DownloadFailed, _unpack_tree
+
+    path = tmp_path / "a.zip"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        for n in range(3):
+            archive.writestr(f"P/org/f{n}.txt", b"0" * 4000)
+    for name, value in (("TREE_MAX_BYTES", 10_000), ("TREE_MAX_FILES", 2)):
+        staging = tmp_path / name
+        staging.mkdir()
+        monkeypatch.setattr(extra_downloads, name, value)
+        with zipfile.ZipFile(path) as archive:
+            try:
+                _unpack_tree(archive, "P/org/", "org", staging)
+            except DownloadFailed as exc:
+                assert exc.args[0] == "unpacked_too_big"
+            else:
+                raise AssertionError(f"{name} was not enforced")
+        monkeypatch.undo()
+    assert "unpacked_too_big" in extra_downloads.REASONS

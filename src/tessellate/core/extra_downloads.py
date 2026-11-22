@@ -75,6 +75,10 @@ _TREE_PART_RE = re.compile(r"[A-Za-z0-9._$@+=,-]+")
 
 #: How much is read at a time, and how often the progress line changes.
 _CHUNK = 256 * 1024
+#: What one archive tree may unpack to (review 6008801452). The pinned hash fixes the archive, but a bad pin or a
+#: replaced mirror file would otherwise inflate without a bound. LanguageTool's kept tree is 196 MB (languagetool_files).
+TREE_MAX_BYTES = 1024 * 1024 * 1024
+TREE_MAX_FILES = 50_000
 
 
 @dataclass(frozen=True)
@@ -289,6 +293,7 @@ REASONS = {
         "this version expects."
     ),
     "bad_archive": "The archive could not be read.",
+    "unpacked_too_big": "The archive unpacks to more than this version expects, so it was not kept.",
     "network_code": (
         "{label}: this engine contains network code, so it was not installed. "
         "Tessellate only runs engines that cannot reach the network."
@@ -437,6 +442,8 @@ def _unpack_tree(
     drive letter) fails the install; nothing is written outside `staging`.
     Returns one sentinel (the first file), so the marker stays short."""
     first = ""
+    files = 0
+    left = TREE_MAX_BYTES
     for info in archive.infolist():
         if not info.filename.startswith(prefix) or info.is_dir():
             continue
@@ -446,10 +453,18 @@ def _unpack_tree(
         parts = rel.split("/")
         if not all(_TREE_PART_RE.fullmatch(part) and part not in {".", ".."} for part in parts):
             raise DownloadFailed("missing_member")
+        files += 1
+        if files > TREE_MAX_FILES:
+            raise DownloadFailed("unpacked_too_big")
         target = staging.joinpath(dest, *parts)
         target.parent.mkdir(parents=True, exist_ok=True)
+        #: Counted as it inflates, not from the member's declared size, which the archive itself states.
         with archive.open(info) as handle, open(target, "wb") as out:
-            shutil.copyfileobj(handle, out)
+            while chunk := handle.read(_CHUNK):
+                left -= len(chunk)
+                if left < 0:
+                    raise DownloadFailed("unpacked_too_big")
+                out.write(chunk)
         first = first or "/".join([dest, *parts])
     if not first:
         raise KeyError(prefix)
