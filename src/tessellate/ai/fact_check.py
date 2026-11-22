@@ -100,7 +100,7 @@ _NOT_COUNTS = {"offset", "limit", "page", "id", "seed"}
 _TOKEN = re.compile(r"[#/]?\d+(?:[.,:/-]\d+)*(?:st|nd|rd|th|am|pm|%)?|[a-z]+(?:['-][a-z]+)*|[^\sa-z0-9]")
 #: "10-12": two figures, where "2026-10-28" (two hyphens) and "9-10am" are
 #: dates and times.
-_RANGE = re.compile(r"(\d+(?:[.,]\d+)?)-(\d+(?:[.,]\d+)?)$")
+_RANGE = re.compile(r"(\d++(?:[.,]\d++)?)-(\d++(?:[.,]\d++)?)$")
 _NUMBER_WORD = re.compile(r"(" + "|".join(_TENS) + r")(?:-(" + "|".join(k for k in _UNITS if 0 < _UNITS[k] < 10) + r"))?$")
 
 

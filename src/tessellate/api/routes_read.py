@@ -8,6 +8,8 @@ unlock like every route, and at `/api/v1/read` for an outside client.
 
 from __future__ import annotations
 
+import logging
+
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -185,9 +187,16 @@ def act_preview(
     parsed = acts.parse(q, clock, [])
     if parsed is None or (parsed["intent"] == "reminder" and not parsed.get("time_given") and not parsed.get("on_list")):
         return {"act": None}
-    planned = acts.preview(session, parsed, None)
+    try:
+        planned = acts.preview(session, parsed, None)
+    except Exception:  # noqa: BLE001
+        #: A plan that fails is logged in full and answered as no act: an exception's own text
+        #: (a path, a query) never reaches the page (CodeQL py/stack-trace-exposure).
+        logging.getLogger(__name__).exception("act preview failed")
+        return {"act": None}
     card = planned.get("card") or {}
-    return {"act": {"intent": parsed["intent"], "line": planned.get("line") or "", "label": card.get("label") or "", "steps": len(card.get("steps") or [])}}
+    line, label = str(planned.get("line") or ""), str(card.get("label") or "")
+    return {"act": {"intent": str(parsed["intent"]), "line": line, "label": label, "steps": len(card.get("steps") or [])}}
 
 
 @router.get("/read/answer")

@@ -3,7 +3,7 @@ stats say why the window is the size it is, and the pill's popover shows that se
 
 from __future__ import annotations
 
-from tests.test_adaptive_context_b6 import KV_PER_TOKEN, ollama_model, memory, prefs  # noqa: F401
+from tests.test_adaptive_context_b6 import ollama_model, memory, prefs  # noqa: F401
 from tests._app_js import frontend_text
 from pathlib import Path
 

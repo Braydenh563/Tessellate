@@ -28,7 +28,8 @@ from dataclasses import dataclass, field
 from tessellate.ai import realise
 from tessellate.entry import properties
 
-_HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
+#: One way through a line of tabs (CodeQL 2340s): the closing "#"s come off in `_heading_text`.
+_HEADING = re.compile(r"^(#{1,6})[ \t]+(\S.*)$")
 _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
 _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
 #: One space after a stop: the prose is folded to single spaces before the split, so no `\s+` run is left for
@@ -39,7 +40,8 @@ _FOOTNOTE = re.compile(r"\[\^[^\]\n]*\]|<sup>[^<]{0,6}</sup>")
 #: A list marker with nothing after it ("-", "* ", "3."): an empty bullet.
 _MARKER_ONLY = re.compile(r"^\s*(?:[-*+•]+|\d{1,2}[.)])\s*$")
 _FOOTNOTE_LINE = re.compile(r"^\s*\[\^[^\]]+\]:")
-_LINK = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|\[([^\]]+)\]\([^)]*\)")
+#: No "[" inside a link's text, so a run of "[[" is read once, not from every bracket (CodeQL).
+_LINK = re.compile(r"\[\[([^\[\]|]+)(?:\|([^\[\]]+))?\]\]|\[([^\[\]]+)\]\([^()]*\)")
 _BOLD = re.compile(r"\*\*([^*\n]{2,60})\*\*|__([^_\n]{2,60})__")
 _PRONOUNS = frozenset({
     "it", "this", "that", "these", "those", "there", "he", "she", "they", "we", "i", "you", "which", "what", "who", "here",
@@ -54,7 +56,8 @@ _DEF = re.compile(
     r"(?P<verb>is defined as|is known as|is called|refers to|is when|is the|is a|is an|is|are|means|stands for)\s+(?P<body>.{10,})$"
 )
 _COLON = re.compile(r"^(?:[-*+]\s+)?\**(?P<term>[A-Za-z0-9][^:*\n]{1,40}?)\**\s*[:–-]\s+(?P<body>\S.{7,})$")
-_QA = re.compile(r"^\**Q\**[:.]\**\s*(?P<q>.+?)\s*\n+\**A\**[:.]\**\s*(?P<a>.+?)\s*$", re.M)
+#: Each side starts and ends on a non-space, so trailing tabs have one reading (CodeQL).
+_QA = re.compile(r"^\**Q\**[:.]\**[ \t]*(?P<q>\S(?:[^\n]*\S)?)[ \t]*\n+\**A\**[:.]\**[ \t]*(?P<a>\S(?:[^\n]*\S)?)[ \t]*$", re.M)
 
 STOP = frozenset(
     "a an the of and or to in on at for with by from as is are was were be been being it its this that these those there their them "
@@ -62,6 +65,11 @@ STOP = frozenset(
     "have has had having into onto over under about up down out off per via also just only each every any some more most other such "
     "which what when where who whom whose how why".split()
 )
+
+
+def _heading_text(found: re.Match) -> str:
+    """A heading's words without its closing marks ("## Plan ##" is "Plan")."""
+    return found.group(2).rstrip().rstrip("#").rstrip() or found.group(2).strip()
 
 
 def clean(text: str) -> str:
@@ -160,7 +168,7 @@ def sections(content: str) -> list[Section]:
     for line in _drop_code(properties.strip(content or "").splitlines()):
         found = _HEADING.match(line)
         if found:
-            out.append(Section(len(found.group(1)), clean(found.group(2))))
+            out.append(Section(len(found.group(1)), clean(_heading_text(found))))
         else:
             out[-1].lines.append(line)
     return [s for s in out if s.title or s.text]
@@ -180,7 +188,7 @@ def title_of(content: str, *, size: int = 80) -> str:
         if not line.strip():
             continue
         heading = _HEADING.match(line)
-        text = clean(_TITLE_MARK.sub("", heading.group(2) if heading else line.strip(), count=1))
+        text = clean(_TITLE_MARK.sub("", _heading_text(heading) if heading else line.strip(), count=1))
         if heading:
             return realise.cut_title(text, size)
         first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]

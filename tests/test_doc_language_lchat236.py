@@ -116,7 +116,7 @@ def test_british_and_american_english_are_two_lists_of_one_stock():
     assert "organise" in uk and "organize" not in uk and "organize" in us and "organise" not in us
     assert "travelled" in uk and "traveled" not in uk
     #: Not a spelling pair: both countries use these.
-    for word in ("practice", "program", "knife", "knives", "centre" if False else "house"):
+    for word in ("practice", "program", "knife", "knives", "house"):
         assert word in us and word in uk, word
     assert us < every and uk < every
     assert variants.english("off") == every and variants.english("all") == every

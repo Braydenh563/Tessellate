@@ -939,7 +939,6 @@ def social_reply(question: str) -> dict | None:
 #: A place is added only to a question that wants one (INBOX 1414: "what can
 #: you help me with" was given the guide's own button). A how-to carries its
 #: place in its steps.
-_FIND_ASKED = re.compile(r"\b(?:where|find|locate|get to|go to|navigate|located|which (?:tab|menu|setting))\b", re.I)
 _WHERE_ASKED = re.compile(r"^\s*(?:where(?:'s| is| are| do| can| would)?|which (?:tab|setting|menu))\b", re.I)
 
 

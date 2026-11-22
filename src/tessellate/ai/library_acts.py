@@ -29,7 +29,7 @@ _EVERYTHING = r"(?:everything|all (?:of )?(?:my )?(?:the )?(?:notes|entries)|(?:
 _TAG_MANY = re.compile(
     rf"{_LEAD}(?:tag|label)\s+{_EVERYTHING}\s+(?:(?:i |that i )?(?:wrote|made|saved|created|written)\s+)?(?:from|in|during|within|of|since)\s+(?P<scope>.+?)\s+(?:with|as)\s+(?P<tags>.+)$", re.I)
 _NO_NAME = frozenset({"a", "an", "the", "my", "any", "one", "this", "that", "it", "all", "every"})
-_OLD = re.compile(r"^(?:the |my |all |all of |all my |every )*(?:old|older|oldest|stale|finished|done|past|former)\s+", re.I)
+_OLD = re.compile(r"^(?:(?:the|my|every|all(?: of)?) )*(?:old|older|oldest|stale|finished|done|past|former)\s+", re.I)
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 _MONTH = re.compile(rf"^(?:the )?(?:month of )?(?:(?P<m>{'|'.join(_MONTHS)}|{'|'.join(m[:3] for m in _MONTHS if m != 'may')})\.?)(?:\s+(?P<y>\d{{4}}))?$", re.I)
 _MAX_NOTES = 100

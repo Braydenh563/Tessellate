@@ -350,7 +350,7 @@ def _clock_window(rest: str) -> tuple[str, str]:
 
 
 #: "... the day before", "... an hour before" with no thing it is before: a reminder whose time is still to ask.
-_BEFORE_TAIL = re.compile(r"\s+(?:the (?:day|night|week|morning|evening) before|(?:an?|one|1) (?:hour|hr) before)\s*$", re.I)
+_BEFORE_TAIL = re.compile(r"(?<=\s)(?:the (?:day|night|week|morning|evening) before|(?:an?|one|1) (?:hour|hr) before)\s*$", re.I)
 
 
 def _read_when(rest: str, now: datetime, locale: str | None) -> tuple[str, dict | None]:
@@ -365,9 +365,10 @@ def _read_when(rest: str, now: datetime, locale: str | None) -> tuple[str, dict 
 def _before_without_a_time(rest: str, about: bool) -> dict | None:
     """"about the dentist the day before" says what, not which day: asked for the day, never guessed (L49)."""
     before = _BEFORE_TAIL.search(rest)
-    if not before or not rest[: before.start()].strip(" ,.;:-"):
+    head = rest[: before.start()].rstrip() if before else ""
+    if not head.strip(" ,.;:-"):
         return None
-    what = _without_lead(rest[: before.start()].strip(" ,.;:-"), ("to ", "about ", "that ", "for "), once=False)
+    what = _without_lead(head.strip(" ,.;:-"), ("to ", "about ", "that ", "for "), once=False)
     return {"intent": "reminder", "text": _cap(what)[:500], "said": what[:500], "due_at": None, "time_given": False, **({"thing": True} if about else {})}
 
 

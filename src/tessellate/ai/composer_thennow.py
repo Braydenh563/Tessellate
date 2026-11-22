@@ -15,7 +15,6 @@ from tessellate.ai import composer_frame, timetravel
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Entry, EntryRevision, like_escape, LIKE_ESCAPE
 
-_ASK = re.compile(r"\b(?:then and now|now and then|then versus now|then vs\.? now|before and after)\b(?:\s+(?:about|on)\s+(?:the\s+)?(?P<tail>.+?))?\s*[?.!]*$|\babout\s+(?:the\s+)?(?P<name>.+?)\s+(?:then and now|now and then|before and after)\b", re.I)
 _SUBJECT = re.compile(r"\b(?:say|said|write|wrote|written|note|noted|think|thought|know)\b.*?\b(?:about|on|of)\s+(?:the\s+|my\s+)?(?P<name>.+?)(?=\s+(?:then and now|now and then|before and after)\b)", re.I)
 
 

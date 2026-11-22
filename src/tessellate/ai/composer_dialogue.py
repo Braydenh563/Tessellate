@@ -419,10 +419,8 @@ def _follow_item(text: str, previous: str, last: dict, turns: list[dict]) -> Any
         return _NOT_THIS
     if nth:
         return FollowOn(f"what is the {nth.group(1).lower()} item on the {named.group(1)}", previous, "", "ordinal")
-    if left:
-        state = "done" if left.group(1).lower() in ("done", "ticked") else "open"
-        return FollowOn(f"how many items are {state} on the {named.group(1)}", previous, "", "ordinal")
-    return _NOT_THIS
+    state = "done" if left.group(1).lower() in ("done", "ticked") else "open"
+    return FollowOn(f"how many items are {state} on the {named.group(1)}", previous, "", "ordinal")
 
 
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:

@@ -603,8 +603,6 @@ def _listed_topics() -> list[dict]:
 
 
 def _lead_faults(lead: str, title: str) -> list[str]:
-    import re
-
     words = lead.split()
     return [
         reason
