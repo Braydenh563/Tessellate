@@ -154,6 +154,10 @@ class KeychainStore(Store):
         _run(["security", "delete-generic-password", "-s", _SERVICE, "-a", account])
 
 
+#: Letters, digits, `_`, `-` and `.`: legal in a file name on every system this runs on.
+_SAFE_FILE_NAME = re.compile(r"[A-Za-z0-9_.-]{1,64}")
+
+
 class DpapiStore(Store):
     """Windows: CryptProtectData, user scope, through ctypes. DPAPI encrypts
     to the signed-in Windows user; the protected bytes are kept under
@@ -205,19 +209,32 @@ class DpapiStore(Store):
         finally:
             kernel32.LocalFree(out.pbData)
 
+    @staticmethod
+    def _file_name(account: str) -> str:
+        """A name Windows accepts. A PIN account is a 32-hex digest and keeps its name, so records
+        already on disk still read; any other account (a secret setting's "setting|mcp_token|<id>"
+        holds `|`, which Windows refuses: the owner's log, 2026-11-22) is named by its digest.
+        Those never reached the disk under their raw name, because the write itself failed."""
+        if _SAFE_FILE_NAME.fullmatch(account):
+            return f"{account}.bin"
+        return "a-" + hashlib.sha256(account.encode()).hexdigest()[:40] + ".bin"
+
     def put(self, account: str, secret: str) -> None:
         folder = self._dir()
         if folder is None:
             raise StoreError("no place for DPAPI data")
-        folder.mkdir(parents=True, exist_ok=True)
-        path = folder / f"{account}.bin"
+        path = folder / self._file_name(account)
         tmp = path.with_suffix(".tmp")
-        tmp.write_bytes(self._crypt(secret.encode(), True))
-        os.replace(tmp, path)
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+            tmp.write_bytes(self._crypt(secret.encode(), True))
+            os.replace(tmp, path)
+        except OSError as exc:
+            raise StoreError(f"DPAPI data could not be written: {exc}") from exc
 
     def get(self, account: str) -> str | None:
         folder = self._dir()
-        path = folder / f"{account}.bin" if folder else None
+        path = folder / self._file_name(account) if folder else None
         if path is None or not path.is_file():
             return None
         try:
@@ -228,7 +245,7 @@ class DpapiStore(Store):
     def delete(self, account: str) -> None:
         folder = self._dir()
         if folder is not None:
-            (folder / f"{account}.bin").unlink(missing_ok=True)
+            (folder / self._file_name(account)).unlink(missing_ok=True)
 
 
 _store: Store | None = None

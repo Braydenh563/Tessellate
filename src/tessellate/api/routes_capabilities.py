@@ -20,12 +20,15 @@ rare enough that a reload is the right way to see it.
 from __future__ import annotations
 
 import importlib.util
+import logging
 
 from fastapi import APIRouter
 
 from tessellate import __version__
 from tessellate.api import paging
 from tessellate.core import deps
+
+log = logging.getLogger("tessellate.capabilities")
 
 router = APIRouter(tags=["system"])
 
@@ -51,7 +54,15 @@ def _mcp() -> dict:
     #: app's packages, and this notebook's folder, so it opens the same notes.
     from tessellate import mcp_server
 
-    env = {"TESSELLATE_DATA_DIR": str(resolved_data_dir()), mcp_server.TOKEN_ENV: mcp_server.token()}
+    #: A token that could not be made or kept leaves this one field empty; it never fails the
+    #: whole answer (a Windows store write raised through here and /capabilities answered 500,
+    #: the owner's log, 2026-11-22).
+    try:
+        token = mcp_server.token()
+    except Exception:
+        log.warning("the MCP token could not be read or stored; /capabilities leaves it empty", exc_info=True)
+        token = ""
+    env = {"TESSELLATE_DATA_DIR": str(resolved_data_dir()), mcp_server.TOKEN_ENV: token}
     if getattr(sys, "frozen", False):
         return {
             "installed": True,
