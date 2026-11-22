@@ -44,3 +44,37 @@ def test_the_data_and_model_folders_belong_to_the_user_the_app_runs_as():
 
 def test_the_proxy_host_variable_is_offered_in_compose():
     assert "TESSELLATE_ALLOWED_HOSTS" in COMPOSE
+
+
+def test_the_image_reports_its_own_health():
+    """L-general-5: an orchestrator could not tell a container whose app had died from a live one.
+    The slim image has no curl, so the check is the interpreter asking /health on the served port."""
+    match = re.search(r"^HEALTHCHECK\b(.*?)CMD (\[.*\])$", DOCKERFILE.replace("\\\n", " "), re.M)
+    assert match, "no HEALTHCHECK"
+    assert "--interval=" in match.group(1) and "--start-period=" in match.group(1)
+    cmd = match.group(2)
+    assert cmd.startswith('["python"') and "/health" in cmd and "TESSELLATE_PORT" in cmd
+    assert re.search(r"TESSELLATE_PORT=8000", DOCKERFILE)
+
+
+def test_the_build_context_never_carries_the_notebook_or_a_venv():
+    """The whole context goes to the daemon before any COPY runs."""
+    ignore = (ROOT / ".dockerignore").read_text(encoding="utf-8")
+    entries = {line.strip() for line in ignore.splitlines() if line.strip() and not line.startswith("#")}
+    for private in ("data", ".venv", ".git", "*.db"):
+        assert private in entries, private
+    import fnmatch
+
+    for line in DOCKERFILE.splitlines():
+        if not line.startswith("COPY ") or "--from=" in line:
+            continue
+        for source in line.split()[1:-1]:
+            top = source.rstrip("/").split("/")[0]
+            assert not any(fnmatch.fnmatch(top, e) or fnmatch.fnmatch(source, e) for e in entries), source
+
+
+def test_the_licence_and_notices_ship_in_the_image():
+    """L-general-3, the Docker part: AGPL-3.0 travels with every copy of the program."""
+    assert re.search(r"^COPY [^\n]*\bLICENSE\b", DOCKERFILE, re.M)
+    assert re.search(r"^COPY [^\n]*docs/THIRD_PARTY\.md", DOCKERFILE, re.M)
+    assert "COPY --from=build /app /app" in DOCKERFILE

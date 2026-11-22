@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8589, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11552, test files 3041, tests 23523, plan headings 697, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8589, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11552, test files 3041, tests 23526, plan headings 697, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8589)
 
@@ -29205,7 +29205,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23523)
+## Tests (23526)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30303,7 +30303,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dock_menu_closed_hidden.py | 2 |
 | tests/test_dock_menu_switch_1110.py | 2 |
 | tests/test_docker_env.py | 7 |
-| tests/test_docker_files.py | 4 |
+| tests/test_docker_files.py | 7 |
 | tests/test_docs_1102_dx.py | 6 |
 | tests/test_docs_1102_dx20.py | 1 |
 | tests/test_docs_1102_dx21.py | 3 |

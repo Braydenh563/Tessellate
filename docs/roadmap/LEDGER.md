@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 55 | 0 | 69 | 357 |
-| general | 0 | 17 | 2 | 0 | 5 | 19 |
-| all | 326 | 349 | 66 | 0 | 122 | 741 |
+| general | 0 | 15 | 4 | 0 | 5 | 19 |
+| all | 326 | 347 | 68 | 0 | 122 | 741 |
 
 ## graph
 
@@ -441,9 +441,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
 - [ ] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it
-- [ ] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text
+- [ ] **L-general-3** `general` partly, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text Built 2026-11-22: the Docker image copies LICENSE and docs/THIRD_PARTY.md (tests/test_docker_files.py). Left: the installer, MSI and Linux zip.
 - [ ] **L-general-4** `general` open, M: Add frontend/vendor/PROVENANCE.json (path, sha256, size, version, upstream URL, licence, notice) with a test that recomputes the hashes. From ANALYSIS.md:4262. Evidence: frontend/vendor/PROVENANCE.json does not exist; no doc holds the item
-- [ ] **L-general-5** `general` open, S: Add a Docker HEALTHCHECK on /health, hadolint in CI, and a static test for the Dockerfile (context, chown, dockerignore, healthcheck). From ANALYSIS.md:4351. Evidence: docker/Dockerfile has mkdir/chown (line 32) and compose context '..' but no HEALTHCHECK; no hadolint anywhere in .github or docker; no docker static test
+- [ ] **L-general-5** `general` partly, S: Add a Docker HEALTHCHECK on /health, hadolint in CI, and a static test for the Dockerfile (context, chown, dockerignore, healthcheck). From ANALYSIS.md:4351. Evidence: docker/Dockerfile has mkdir/chown (line 32) and compose context '..' but no HEALTHCHECK; no hadolint anywhere in .github or docker; no docker static test Built 2026-11-22: HEALTHCHECK (python asks /health on TESSELLATE_PORT; 200 without a login measured), a root .dockerignore (data, .venv, .git, *.db), tests in tests/test_docker_files.py. Left: hadolint in CI (not run here; the binary could not be run in this session).
 - [ ] **L-general-6** `general` open, S: Put a running-build stamp (source_commit, started_at, data dir id) and data_dir_writable in /health and Settings > About. From ANALYSIS.md:4352. Evidence: grep source_commit src returns nothing; app.py:1734 health() returns status/app/version/desktop only
 - [ ] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule
 - [ ] **L-general-8** `general` open, S: Add `python -m tessellate tool NAME --json` over mcp_server.offered_tools() and a SKILL.md intent-router snippet on Settings' MCP row. From ANALYSIS.md:4353. Evidence: __main__.py argparse has no `tool` subcommand; renderMcpSnippet in settings-controls.js has no SKILL.md

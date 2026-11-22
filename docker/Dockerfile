@@ -25,6 +25,10 @@ COPY src ./src
 COPY frontend ./frontend
 COPY migrations ./migrations
 COPY alembic.ini ./
+# The AGPL text and the bundled parts' notices travel with the code they cover
+# (L-general-3): a copy of the image is a copy of the program.
+COPY LICENSE README.md ./
+COPY docs/THIRD_PARTY.md ./docs/
 RUN /venv/bin/pip install --no-deps -e .
 
 FROM python:3.13-slim
@@ -52,4 +56,8 @@ USER mm
 # TESSELLATE_ALLOWED_HOSTS (comma-separated, names only) or the app answers 421.
 ENV TESSELLATE_BIND=0.0.0.0 \
     TESSELLATE_PORT=8000
+# The slim image has no curl: the interpreter the app runs on asks /health,
+# which answers without a login, over the plain http this port serves.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD ["python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/health' % os.environ.get('TESSELLATE_PORT', '8000'), timeout=4)"]
 CMD ["python", "-m", "tessellate"]
