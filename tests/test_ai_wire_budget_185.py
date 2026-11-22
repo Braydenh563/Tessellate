@@ -80,7 +80,8 @@ def test_a_note_save_makes_one_small_filing_call(wire):
     client, seen = wire
     for text in ("Bread proving times: 2 hours at 24C", "Harbor launch planned for March"):
         before = len(seen)
-        assert client.post("/entries", json={"content": text}).status_code < 300
+        saved = client.post("/entries", json={"content": text})
+        assert saved.status_code < 300
         sent = _settled(seen, before)
         assert len(sent) == SAVE_CALLS, [r.get("messages", [{}])[0].get("content", "")[:60] for r in sent]
         assert max(len(json.dumps(r)) for r in sent) <= SAVE_BYTES
