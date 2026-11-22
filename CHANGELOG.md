@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Budgets, L540: the browser budgets are re-measured on an idle machine and tightened (first interaction 6960 to 2840 ms, first paint 1070 to 390 ms); the server shares keep their loaded figures, since their test runs in the loaded suite.
 Ledger, L542: INBOX 266 closes with no owner needed; its seven asks were all answered by 2026-10-05 (BACKLOG, INBOX 266 status).
 Stylesheet grammar, L533: the 13a counts are recounted from the stylesheet (115 layers, 7 shadows, 87 `!important`, 156 colour literals) and four colour-literal caps fall to their counts (189 allowed to 156).
 Performance, L531: the README adds the warm start (service worker and cache, 180 ms to first paint) and the phone-width cold start (207 ms) beside the cold desktop start (256 ms), all from one run of `scratchpad/ui-sweeps/bootwarm.js`.
