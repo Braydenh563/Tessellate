@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: the first letter typed in the search box answers in about 150 ms at 4x CPU, from about 400; the panes are built while the box waits (L-world-class-355).
 - Documents: opening a document paints its text sooner (first frame median 347 to 240 ms); the side panels and the spelling re-check follow a frame at a time (L-world-class-40).
 - Documents: the Library's idle warm also fetches the file-type table, so the first document opened from the Library no longer waits on it (L-world-class-40).
 - The Guide has topics for SearXNG and Signing in, the two Settings help popovers it had no topic for (L-world-class-781).

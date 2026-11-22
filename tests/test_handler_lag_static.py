@@ -168,3 +168,12 @@ def test_a_search_key_drops_no_pane_text():
     flat = " ".join(obs.split())
     # A change above the panes (a pane added or swapped by the idle parse) still empties the cache.
     assert 'else if (rec.type === "childList" && at?.querySelector(".settings-section")) settingsTextCache = new WeakMap();' in flat
+
+
+def test_settings_search_builds_the_unbuilt_panes_before_the_first_key():
+    # filterSettings builds all twenty-two panes on the first query: 400 ms of that key at 4x, even after a pause
+    # on the box (L-world-class-355). The warm builds one a slot, before it scans.
+    body = read("settings-find.js").split("function settingRowsWarm()", 1)[1].split("\n  function ", 1)[0]
+    build = body.index("SETTINGS_SECTIONS.some((name) => surfaceBuild(`settings-${name}`))")
+    assert build < body.index("settingRowsScan.pane(pane)")
+    assert "settingIdle(settingRowsWarm);\n      return;" in body[build:]
