@@ -2391,6 +2391,14 @@ function renderEntries(appendOnly = false) {
   if (!noteSearch && noteSearchWhy.size) noteSearchWhy.clear();
   const empty = $("empty-message");
   const noMatch = $("no-match-message");
+  //: A redraw rebuilds the open edit form, and the caret in it went with the old one: filing's refresh
+  //: just after a capture left the form with nothing focused and its editor never mounted (notes.spec.js:61
+  //: on CI, note-edit-rerender.js). The new form takes the caret where the old one had it.
+  const held = document.activeElement;
+  if (!grown && editingId !== null && held?.closest?.(`#entry-list > li[data-id="${editingId}"]`)) {
+    if (held.matches(".note-edit-tag-input")) focusTagsAfterRender = editingId;
+    else focusBodyAfterRender = editingId;
+  }
   const keep = grown ? null : resetNoteList(list);
   // Re-applied on every render, not just on a click: `replaceChildren`
   // above leaves the class alone, but a later render that rebuilt the <ul>
