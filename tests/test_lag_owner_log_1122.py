@@ -30,3 +30,12 @@ def test_the_board_library_keeps_its_scroll_without_reading_it_on_a_redraw() -> 
     assert 'addEventListener("scroll"' in render and "wbLibState.libScroll = list.scrollTop" in render
     # The offset is written back only when it has to move.
     assert "if (top || was) list.scrollTop = top;" in render
+
+
+def test_the_selection_popup_asks_where_the_focus_is_before_any_selection_getter() -> None:
+    # Opening the OCR workspace: `syncSelectionPopup` paid 350 to 419 ms of forced layout (4x CPU).
+    # Called with the layout dirty and the focus inside the workspace: 196 to 538 ms before, 0 to 1
+    # after (n 3 each, called right after `openOcrWorkspace`). The popup never shows inside these panels.
+    sync = _fn((JS / "selection.js").read_text(encoding="utf-8"), "syncSelectionPopup")
+    guard = sync.index('document.activeElement?.closest?.(".lock-overlay, .modal-overlay, #sketch-overlay, .command-palette")')
+    assert guard < sync.index("fieldSelection()") < sync.index("window.getSelection()")
