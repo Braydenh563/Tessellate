@@ -264,5 +264,15 @@ _ASKS_WEB = re.compile(
 )
 
 
+#: The rest of the browser tools earn their schema only when the turn is about a page.
+_BROWSING = re.compile(r"\b(?:browse|browser|web ?page|website|this page|the page|that page|follow (?:the|that|a) link|go back|find .{1,30} on (?:the|that|this) page)\b|https?://", re.I)
+
+
+def web_tools_for(question: str) -> list[str]:
+    """The web tools a turn is handed: search, read and open always, the rest of the browser when it is about a page."""
+    more = ["browser_read", "browser_follow", "browser_find", "browser_back"] if _BROWSING.search(question or "") else []
+    return ["web_search", "read_url", "browser_open", *more]
+
+
 def asks_web(question: str) -> bool:
     return bool(_ASKS_WEB.search(question or ""))

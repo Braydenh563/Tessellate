@@ -43,7 +43,7 @@ __main__.py::_serve_with_lan.serve_both::task::2
 ai/tools/tool_web.py::prefetch_web::executor::1
 api/routes_backups.py::export_bundle::request-task::1
 api/chat_agent.py::stop_when_gone::task::1
-api/routes_import.py::export_notebook_folder::request-task::1
+api/routes_import.py::folder_zip::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
 api/routes_settings_transfer.py::export_backup::request-task::1

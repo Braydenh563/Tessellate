@@ -152,6 +152,7 @@ def link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: A
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             props=link.props,
+            space_name=entry_service.other_space_name(session, entry, other),
         )
         for link, other in links
     ]

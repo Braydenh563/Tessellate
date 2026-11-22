@@ -58,13 +58,14 @@ class Budget(NamedTuple):
 #: taken at load 7 to 11 and its caps were three to ten times too loose. A
 #: measurement is the slowest p50 of four browser runs (five server rounds each),
 #: so a lucky minute does not set the figure, and a cap never rises.
+#: Merged 2026-11-22 from two slices: each figure is the side with the lower cap.
 BUDGETS: tuple[Budget, ...] = (
-    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 312, 470, "/", 48, 80),
-    Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 2101, 3160),
+    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 302, 460, "/", 48, 80),
+    Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 2035, 3060),
     Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 65, 100, "/entries?limit=60", 29, 50),
     Budget("search", "Search", "One search request, p50 over three queries", 23, 40, "/search?q=harbour&limit=20", 23, 40),
-    Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 111, 170, "/whiteboard/?board_id={board}", 46, 70),
-    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 118, 180, "/documents/{document}", 20, 30),
+    Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 108, 170, "/whiteboard/?board_id={board}", 46, 70),
+    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 116, 180, "/documents/{document}", 20, 30),
 )
 SHARE_RUNS = 5
 

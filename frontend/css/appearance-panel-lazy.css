@@ -226,6 +226,10 @@
 #appearance-panel .settings-section > .row > h3 {
   padding-left: calc(1rem + 1px);
 }
+#appearance-panel .settings-section .doc-dock-menu-list .dock-menu-check {
+  min-height: var(--settings-control-h);
+  padding-block: 0;
+}
 #appearance-panel .modal-content .row {
   flex-wrap: wrap;
   min-width: 0;

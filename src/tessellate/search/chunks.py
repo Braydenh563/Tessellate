@@ -37,6 +37,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import ChunkVector
+from tessellate.search import matrix_hooks
 
 if TYPE_CHECKING:
     import numpy as np
@@ -323,12 +324,11 @@ def lift(session: Session, backend_id: str, vector, ids: list[int], scores):  # 
     if not ENABLED or not ids:
         return scores
     try:
-        import importlib
 
         import numpy as np
 
-        # `importlib`: the engine imports `search_manager`, which calls this.
-        engine = importlib.import_module("tessellate.search.engine")
+        # `matrix_hooks`: the engine imports `search_manager`, which calls this.
+        engine = matrix_hooks.engine()
         note_matrix = engine.current_matrix(session, backend_id)
         if note_matrix is None or len(note_matrix.ids) != len(ids):
             return scores

@@ -263,6 +263,7 @@
 ) :is(
   .menu-item,
   .doc-dock-menu-item,
+  .dock-menu-check,
   .nav-history-item,
   .library-image-menu-item,
   .action-menu-item,
@@ -279,6 +280,7 @@
 ) :is(
   .menu-item,
   .doc-dock-menu-item,
+  .dock-menu-check,
   .nav-history-item,
   .library-image-menu-item,
   .action-menu-item,
@@ -1818,6 +1820,30 @@ summary > .ph-lead,
 [data-doc-dock-submenu] .doc-dock-menu-check > span {
   flex: 1 1 auto;
   min-width: 0;
+}
+/* **A switch row in a dock menu is a menu row** (menus.js on the 5k showcase: the Timeline's and the Logs' ticks stood
+   on two x and two heights, 34.5px against the 32px of the buttons beside them). The row's height is the
+   row's own recipe (a button's), and the icon leads: the switch is drawn last, at the far end, as in the
+   documents' menu, whatever order the markup wrote them in. The words are the row's anonymous flex item. */
+.doc-dock-menu-list .dock-menu-check,
+.doc-dock-menu-list .doc-dock-menu-check {
+  /* A button's own height: 32 with a mouse, the 44px target under touch and at phone widths. */
+  min-height: max(var(--target-min), var(--button-min-h));
+}
+/* Settings sets its buttons to its own control height, so its switch rows stand on it too. */
+#settings-modal .settings-section .doc-dock-menu-list .dock-menu-check {
+  min-height: var(--settings-control-h);
+  padding-block: 0;
+}
+.doc-dock-menu-list .dock-menu-check > .ph-lead {
+  display: inline-block;
+  flex: none;
+  width: 1.25em;
+  text-align: center;
+}
+.doc-dock-menu-list .dock-menu-check > input {
+  order: 1;
+  margin-inline-start: auto;
 }
 /* INBOX 18: the pinned group at the end of a formatting strip had square
    corners and was opaque only on the note form. It is not pinned any more
@@ -4935,88 +4961,6 @@ body .chip.item-label,
   from { transform: rotate(-2.6deg); }
   to { transform: rotate(2.6deg); }
 }
-@keyframes nmv-arm-drift {
-  from { transform: rotate(-4deg); }
-  to { transform: rotate(4deg); }
-}
-/* **`--nmb-tilt` and `--nmb-lean` do not inherit** (companiondepth2.js companionrecalcorder,
-   2026-10-04): avatars.js writes them inline on `#nm-buddy` when a walk
-   starts, and as inherited properties each write restyled all 528
-   descendants (28ms) though only `.nm-buddy-char` (both: the tilt's
-   `rotate`, the walk's bob and glide keyframes) and the skirt's root (the
-   lean: `atl-lower-trail`) read them. They pass down by `inherit` along
-   the one path to `.nm-buddy-char`, `.nm-buddy-face > .nm-buddy-char`; the
-   skirt's root is written to directly (`nameMarkBuddyWay`), because
-   `inherit` on the box between it and the figure (`.atl-lw-lower`, which
-   the limb loops animate) made an idle companion restyle every frame
-   (6 recalcs in 2s became 105). A new reader needs its own link. */
-@property --nmb-tilt { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --nmb-lean { syntax: "<number>"; inherits: false; initial-value: 0; }
-/* **The look does not inherit either** (the lag log: `input 384ms pointerout on div.modal-overlay.nm-viewer`):
-   `--nmb-ex`, `--nmb-ey` and `--nmb-hx` were inherited, so one write on `#nm-buddy` restyled all 647
-   descendants (113ms at 4x CPU) for the four elements that read them: the faces' `.nm-eyes` and
-   `.nm-buddy-head`, Atlas's `.atl-layer-lids` and `.atl-iris`. avatars.js `nameMarkBuddyAim.set`
-   writes them on those (0.6ms). A new reader is added to `nameMarkBuddyAim.readers` there. */
-@property --nmb-ex { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --nmb-ey { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --nmb-hx { syntax: "<number>"; inherits: false; initial-value: 0; }
-/* **The lean** (round 9, the owner: "tilt their body that way while still
-   mostly facing forward"): `data-lean="l"` or `"r"` on `#nm-buddy`, on a
-   figure box or on a drawing turns the body a few degrees about the feet,
-   the head follows a little further with the face's features sliding
-   toward that side, and the tail and the nebula lag behind and settle
-   (an overshooting ease, a beat late). Every part eases over about 360ms
-   and nothing snaps; at rest it costs nothing, being a held transform.
-   `--atl-lean-dir` is -1, 0 or 1 (`--atl-lean` is the pose's own lean in
-   degrees); declared at the root and never again on `.nm-atlas` itself,
-   so an ancestor's value reaches every layer. */
-@property --atl-lean-dir { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --nmb-lean-pose { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-@property --nmb-lie-shift { syntax: "<length>+"; inherits: false; initial-value: 0 0; }
-/* **The arms match the mood** (round 9, the owner: "make sure that the
-   positions of the limbs like the arm ... actually match the mood as well",
-   then "state variations, not the exact same animation or mood animation
-   each time"). Each mood gives each look's arms an angle about the
-   shoulder, in up to three drawn variants: open arms or one raised when
-   happy, a hand to the mouth when laughing, the chin hand or folded arms
-   when thinking, hands up when surprised, a scratch at the head when
-   confused, an eye rubbed when sleepy, hanging arms when sad, hands on the
-   hips when proud, clasped when shy or worried, to the chest in love. The
-   masculine arms hang and swing wide; the feminine right arm is held out
-   and her gestures come in closer and higher.
-   **Never crossed, never a T** (INBOX 1589, the owner: arms "going in like
-   opposite directions but like fully extended or ... inverted in front of
-   it like it is trying to cross its arms"): an arm turned in stops with its
-   hand at the body's middle (18 degrees for his shoulders, 12 for her
-   narrower ones; 40 to 76 crossed them), a hand to the mouth is the chin
-   hand rather than an arm swung up across the face, and no variant holds
-   both arms straight out to the sides (60 to 115 degrees): out wide is down
-   and open or up and raised (`test_atlas_acts_1589.py`).
-   **The hooks**: the mood is `data-atlas-mood` (as before); the variant is
-   `data-atlas-variant="0"|"1"|"2"` on `#nm-buddy`, a figure box or a
-   drawing (it inherits, so one attribute on the host reaches every
-   layer). The arms ease between moods and variants with the limbs' own
-   transition; a pose or an act that places the arms (sit, float, hang,
-   wave, the stances) outranks the mood, being more specific. */
-@property --atl-v1 { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --atl-v2 { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --atl-chin { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --atl-lean { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-@property --atl-sx { syntax: "<number>"; inherits: false; initial-value: 1; }
-@property --atl-sy { syntax: "<number>"; inherits: false; initial-value: 1; }
-@property --atl-tail { syntax: "<angle>"; inherits: false; initial-value: 0deg; }@media all {
-  /* One-off plays: a poke, a nod, a hop, a spin, a wave, and a full-size
-     Atlas says hello with a wave when it appears. Off and Reduce motion
-     keep it still. */
-  :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) {
-    & .nm-atlas.nm-react .atl-mood,
-    & .atl-face.nm-react .atl-sway { animation: atl-boing 0.7s var(--ease-spring); }
-    & .nm-atlas.atl-play-nod .atl-head { animation: atl-nod 0.9s ease-in-out; }
-    & .nm-atlas.atl-play-hop .atl-mood { animation: atl-hop-once 0.8s ease-out; }
-    & .nm-atlas.atl-play-spin .atl-mood { animation: atl-spin 0.9s ease-in-out; }
-    & .nm-atlas:is(.atl-play-wave, .atl-full) .nmb-arm-r { animation: atl-wave 1.6s ease-in-out 0.4s; }
-  }
-}
 /* The chat's persona picker: a native select cannot hold a picture, so the
    chosen persona's mark stands just before it (`fillPersonaMark`). */
 .persona-picker {
@@ -5050,7 +4994,9 @@ body .chip.item-label,
    button the pill's inner height, concentric with its end: 0px from the
    border above, below and to the right (L-world-class-107 measured 0, 0
    and 2 with a 2px end margin, the fill off the cap's curve); a finger
-   keeps the 28px target (the pill grows around it there). */
+   keeps the 28px target (the pill grows around it there). The circle is
+   drawn 2px inside its 24px target (padding, content-box), 3px from the
+   pill's outer edge on all three sides. */
 @media (pointer: fine) {
   #entry-list .link-connection > .menu-wrap {
     display: inline-flex;
@@ -5062,6 +5008,8 @@ body .chip.item-label,
     min-width: 0;
     min-height: 0;
     margin-inline-end: 0;
+    padding: 2px;
+    background-clip: content-box;
   }
 }
 /* --- A note's time: the same corner on every card --- */
@@ -6541,12 +6489,12 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 :where(.lock-overlay:not(#lock-overlay)):not(.hidden),
 :where(#palette-overlay):not(.hidden) {
   transition: opacity var(--ui-base) var(--ease-out);
-  & > * {
+  & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) {
     transition: translate var(--ui-slow) var(--ease-out), scale var(--ui-slow) var(--ease-out);
   }
   @starting-style {
     opacity: 0;
-    & > * {
+    & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) {
       translate: 0 var(--space-2);
       scale: 0.985;
     }
@@ -6560,7 +6508,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) allow-discrete;
-  & > * {
+  & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) {
     translate: 0 var(--space-2);
     scale: 0.985;
     transition: translate var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out);
@@ -6697,6 +6645,41 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 }
 #entry-list:not(.is-rows) > li:not(.list-window-sentinel) > :not(.entry-meta, .entry-title) {
   margin-bottom: 0;
+}
+/* **The link row shares the details line when both fit** (L-world-class-95,
+   the owner's "4 note cards above the fold" at 1093x614). A card with links
+   was 141px there: title, preview, a 26px row of link pills, then the
+   details line under it. The card wraps as rows instead of a column, every
+   part a full row of its own but these two: the links first, then the
+   details at their own max-content width, so when the pair is wider than
+   the card the details drop to the next row, as before, and nothing is
+   hidden or clipped. An open editor keeps the column. */
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) {
+  flex-flow: row wrap;
+  align-items: center;
+  column-gap: var(--space-4);
+  --card-part: 0 0 100%;
+}
+/* The parts read what the anchor set, so no `:has` rule ends in `*`
+   (tests/test_tab_entry_cost.py). Without links a part keeps the
+   `0 0 auto` it had (measured: every card's height unchanged); `min-width: 0` is the cross axis of the column, so it changes
+   nothing there. The token is paid for by inlining `--cal-hours-min`. */
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel) {
+  --card-part: 0 0 auto;
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel) > * {
+  flex: var(--card-part);
+  min-width: 0;
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)) > .entry-links {
+  flex: 0 1 auto;
+  order: 1;
+  margin-top: var(--space-3);
+}
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel, :has(textarea)):has(> .entry-links) > .entry-meta {
+  flex: 1 0 auto;
+  width: auto;
+  order: 2;
 }
 /* Phase 12 decision 7: chips only for state, so the category is its dot and
    its word, as the Timeline's rows already draw it; the pointer inks it. */

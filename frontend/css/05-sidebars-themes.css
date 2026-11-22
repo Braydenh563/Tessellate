@@ -5974,6 +5974,31 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 #entry-view-seg {
   margin: 0;
 }
+/* In the strip the switch is the strip's own buttons, not a `.seg` well: the well was 40px tall
+   beside 32px tools, every segment filled and the chosen one rimmed (the owner's "grey pill" that
+   pushed Insert to a hidden line). Resting segments are bare; the chosen one wears the strip's one
+   "on", the accent edge and soft fill Bold pressed wears (09-editor.css). */
+#note-toolbar > #entry-view-seg {
+  padding: 0;
+  background: transparent;
+  flex-wrap: nowrap;
+}
+#note-toolbar > #entry-view-seg > button:not([aria-pressed="true"]) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+#note-toolbar > #entry-view-seg > button:not([aria-pressed="true"]):is(:hover, :focus-visible) {
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
+}
+#note-toolbar > #entry-view-seg > button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: none;
+  color: var(--ink);
+}
 .note-composer.is-reading :is(.note-surface, #entry-content) {
   display: none;
 }

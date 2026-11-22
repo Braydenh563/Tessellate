@@ -163,7 +163,7 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 73 tools to search, link, organise and act on
+- In Agent mode the assistant has 78 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
@@ -499,21 +499,21 @@ measured figure is the slowest of four runs' medians; the budget is 1.5 times it
 
 | Interaction | Measured (ms) | Budget (ms) |
 | --- | --- | --- |
-| Boot to first paint | 312 | 470 |
-| First interaction | 2101 | 3160 |
+| Boot to first paint | 302 | 460 |
+| First interaction | 2035 | 3060 |
 | List paint | 65 | 100 |
 | Search | 23 | 40 |
-| Board open | 111 | 170 |
-| Document open | 118 | 180 |
+| Board open | 108 | 170 |
+| Document open | 116 | 180 |
 
 The same figures as bars, slowest first (first interaction left out, as it would
 dwarf the rest):
 
 | Interaction | Measured | |
 | --- | --- | --- |
-| Boot to first paint | 312 ms | ██████████████ |
-| Document open | 118 ms | █████ |
-| Board open | 111 ms | █████ |
+| Boot to first paint | 302 ms | ██████████████ |
+| Document open | 116 ms | █████ |
+| Board open | 108 ms | █████ |
 | List paint | 65 ms | ███ |
 | Search | 23 ms | █ |
 
@@ -527,6 +527,7 @@ share of each against your own notebook.
 | --- | --- |
 | [INSTALL](docs/INSTALL.md) | The Windows installer, the launcher, manual setup, updating and uninstalling |
 | [DOCKER](docs/DOCKER.md) | Running Tessellate in Docker: compose, volumes, ports, a model server on the host |
+| [VS Code extension](editors/vscode/README.md) | Save a selection, search notes and open one read only from VS Code |
 | [MCP](docs/MCP.md) | The MCP server: tools, resources, client config, security |
 | [MODELS](docs/MODELS.md) | Which model suits your machine, and using a server other than Ollama |
 | [PRIVACY](docs/PRIVACY.md) | What touches the network, private-note encryption, sessions |

@@ -34,6 +34,7 @@ from pathlib import Path
 import numpy as np
 
 from tessellate.ai.embeddings import EmbeddingService
+from tessellate.ai import wiring  # noqa: F401
 from tessellate.core import deps
 from tessellate.core.database import Entry
 from tessellate.search import chunks, search_manager

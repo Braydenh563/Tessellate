@@ -118,7 +118,9 @@ async function signIn(page) {
   //: which saves the answer so it never comes back on this data dir. Left
   //: open it sat over the dashboard shot.
   const dont = page.getByRole('button', { name: "Don't check" });
-  if (await dont.isVisible().catch(() => false)) {
+  //: It can arrive after the 3.5 s settle (it sat over the palette shot on
+  //: 2026-11-21), so wait for it rather than glance once.
+  if (await dont.waitFor({ state: 'visible', timeout: 12000 }).then(() => true, () => false)) {
     await dont.click();
     await page.waitForTimeout(800);
   }
@@ -307,6 +309,9 @@ async function stage(page, shot) {
       break;
     }
     case 'palette':
+      //: The Notes sidebar fills after the tab opens; shot before it did, the
+      //: palette sat over an empty Categories column (2026-11-21).
+      await page.waitForSelector('#category-list > li', { timeout: 15000 }).catch(() => {});
       await page.evaluate(() => openPalette());
       await page.waitForTimeout(700);
       //: Typed: the palette is commands and places (INBOX 666), so a word

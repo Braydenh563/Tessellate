@@ -240,8 +240,10 @@
 
 
   //: The app's colour tokens, read once per render. One document, one theme,
-  //: so every surface reads the same ones.
-  const gcTokens = {};
+  //: so every surface reads the same ones. `let`: a theme change hands out a new
+  //: object (`gcThemeChanged`), because every cache below (the scene, the label
+  //: copy, each node's sprite) is keyed on this object's identity.
+  let gcTokens = {};
 
   //: Node radius, GRAPH_PLAN.md §5 Phase 1: `4 + 2*sqrt(degree)`, clamped to
   //: [4, 18]. Degree is counted client-side from the edges until Phase 5 sends
@@ -305,6 +307,8 @@
   //: Of those, how many of the best-connected in view may be named over another
   //: dot when nowhere else is free; see the label pass in `gcDraw`.
   const GC_LABEL_LANDMARK_HUBS = 10;
+  //: Candidates queued per landmark wanted: a hub with no free place is replaced by the next one that has.
+  const GC_LABEL_SPARE_FACTOR = 10;
   //: **Every name only on a small map** (owner, 0.3.31: "the labels on the
   //: graph are a bit much", a 35-note map named every dot at the fit). Past
   //: this many notes the fitted overview names its best-connected third (the
@@ -341,6 +345,22 @@
       fadeMs: gcMs(get("--ui-slow", "0.2s")),
       hoverMs: gcMs(get("--ui-slow", "0.2s")),
     });
+  }
+
+  //: **A theme change repaints the map** (owner: light and dark on the graph
+  //: left the node outlines and label chips in the old theme). The tokens were
+  //: read when a map rendered and never again, and each cache is keyed on the
+  //: identity of `gcTokens`, so a new object makes every one miss once. One
+  //: read and one redraw per change, on the app's own announcement of one
+  //: (`refreshArtForTheme`, which the toggle, the OS scheme and a palette all
+  //: reach, after the new attribute is set): no observer of its own, no
+  //: polling, nothing per frame.
+  function gcThemeChanged() {
+    gcTokens = {};
+    gcReadTokens(gcTab);
+    gcSpriteCache.clear();
+    gcHoverMark.cache.clear();
+    for (const s of [gcTab, graphPaneSurface]) if (s && s.ctx) gcRequestDraw(s);
   }
 
   //: A CSS time ("0.16s", "120ms") in milliseconds.
@@ -502,7 +522,7 @@
   //: dot. The dots go into a grid so a big map costs a few cell reads per
   //: label rather than a scan of every note. `blocked` are boxes no label may
   //: take at all (the topic plates, KG6), forced ones included where they can.
-  function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = null) {
+  function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = null, candCap = Infinity) {
     let cell = 0;
     for (const item of items) cell = Math.max(cell, item.bottom - item.top, 1);
     cell = Math.max(cell * 4, 1);
@@ -520,23 +540,27 @@
         }
       }
     }
-    const coversDisc = (box) => {
-      const x0 = Math.floor(box.left / cell);
-      const x1 = Math.floor(box.right / cell);
-      const y0 = Math.floor(box.top / cell);
-      const y1 = Math.floor(box.bottom / cell);
+    //: One walk over the grid cells a box (grown by `pad`, and `margin` cells more) touches; `hit` is asked of
+    //: each dot filed there and the first true ends it. The two questions below differ only in what they ask.
+    const scan = (box, pad, margin, hit) => {
+      const x0 = Math.floor((box.left - pad) / cell) - margin;
+      const x1 = Math.floor((box.right + pad) / cell) + margin;
+      const y0 = Math.floor((box.top - pad) / cell) - margin;
+      const y1 = Math.floor((box.bottom + pad) / cell) + margin;
       for (let cx = x0; cx <= x1; cx++) {
         for (let cy = y0; cy <= y1; cy++) {
-          for (const disc of grid.get(`${cx},${cy}`) || []) {
-            if (disc.id === box.id) continue;
-            const nx = Math.max(box.left, Math.min(disc.x, box.right));
-            const ny = Math.max(box.top, Math.min(disc.y, box.bottom));
-            if ((nx - disc.x) ** 2 + (ny - disc.y) ** 2 < disc.r * disc.r) return true;
-          }
+          for (const disc of grid.get(`${cx},${cy}`) || []) if (hit(disc)) return true;
         }
       }
       return false;
     };
+    const coversDisc = (box) =>
+      scan(box, 0, 0, (disc) => {
+        if (disc.id === box.id) return false;
+        const nx = Math.max(box.left, Math.min(disc.x, box.right));
+        const ny = Math.max(box.top, Math.min(disc.y, box.bottom));
+        return (nx - disc.x) ** 2 + (ny - disc.y) ** 2 < disc.r * disc.r;
+      });
     //: **A name is nearer its own dot than any other** (INBOX 1300 C41, the
     //: owner: "labels overlap nodes"; measured at the fit on the 57-note seed,
     //: 6 of 16 names stood nearer another note's dot, and so read as its
@@ -551,18 +575,7 @@
       const mine = own.get(box.id);
       if (!mine) return false;
       const reach = edgeGap(box, mine);
-      const x0 = Math.floor((box.left - reach) / cell) - 1;
-      const x1 = Math.floor((box.right + reach) / cell) + 1;
-      const y0 = Math.floor((box.top - reach) / cell) - 1;
-      const y1 = Math.floor((box.bottom + reach) / cell) + 1;
-      for (let cx = x0; cx <= x1; cx++) {
-        for (let cy = y0; cy <= y1; cy++) {
-          for (const disc of grid.get(`${cx},${cy}`) || []) {
-            if (disc.id !== box.id && edgeGap(box, disc) < reach) return true;
-          }
-        }
-      }
-      return false;
+      return scan(box, reach, 1, (disc) => disc.id !== box.id && edgeGap(box, disc) < reach);
     };
     //: A place past the edge of the canvas is no place (INBOX 693: names "cut
     //: by the viewport"); `bounds` is the canvas in world units.
@@ -634,26 +647,31 @@
     //:   their least-crossed place, on the plate that hides the line under it
     //:   (`gcDrawLabels`), because an overview with no hub named is not
     //:   clearer.
+    //: **Spares behind the hubs** (L-graph-20 G7: 500 notes, 12 hubs asked for,
+    //: 2 drawn). A hub in the dense middle has no free place; the overview
+    //: queues more candidates than it wants and stops at `candCap` placed, so
+    //: the best-connected notes that have room are named instead.
+    let candPlaced = 0;
     for (const box of items) {
+      if (box.cand && !box.force && candPlaced >= candCap) continue;
       const spots = [box, ...(box.alts || []).map((spot) => ({ ...box, ...spot, alts: undefined }))];
+      const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
       if (box.force) {
         //: Asked for by name: drawn whatever it lands on, at the clearest
         //: place that covers no label and no dot if there is one.
         placed.push(
-          best(spots, (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot)) ||
+          best(spots, clear) ||
             best(spots, (spot) => !clashes(spot) && !coversDisc(spot)) ||
             gcClampBox(box, bounds)
         );
         continue;
       }
-      const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
-      if (box.landmark) {
-        const pick = best(spots, clear);
-        if (pick) placed.push(pick);
-        continue;
-      }
+      //: A landmark takes the least-crossed clear place; any other name only a place that crosses no line.
       const pick = best(spots, clear);
-      if (pick && fewest === 0) placed.push(pick);
+      if (pick && (box.landmark || fewest === 0)) {
+        placed.push(pick);
+        if (box.cand) candPlaced += 1;
+      }
     }
     return placed;
   }
@@ -1544,6 +1562,82 @@
     ctx.restore();
   }
 
+  //: **The Map of meaning names its groups** (owner, 2026-11-22: "almost no
+  //: labels, no sense of what it means"). `/graph/projection` sends clusters
+  //: of notes that sit together, each named by the words its notes share; here
+  //: each is a faint outline and its name on a plate above it, seated clear of
+  //: the dots and of the other plates (`gcSeatTopicPlates`), and entered in
+  //: `topicPlates` so a note's own name keeps off it. The map's one muted line
+  //: says when notes are placed by shared words, not meaning, and how to get
+  //: the real map.
+  function gcDrawMeaningNames(ctx, s, k) {
+    const tree = s.size === "full" ? s.tree : null;
+    if (!tree || !tree.map) return;
+    const placed = new Map(s.nodes.filter((n) => Number.isFinite(n.x) && !n.isGroup).map((n) => [n.id, n]));
+    const shapes = [];
+    ctx.save();
+    ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
+    for (const group of tree.clusters || []) {
+      const points = [];
+      for (const id of group.ids) {
+        const node = placed.get(id);
+        if (!node || !gcVisibleAtTime(node, s)) continue;
+        const pad = (node.r || 6) + 10;
+        for (let i = 0; i < 8; i++) points.push([node.x + pad * Math.cos(i * Math.PI / 4), node.y + pad * Math.sin(i * Math.PI / 4)]);
+      }
+      if (points.length < 24) continue;
+      const hull = d3.polygonHull(points);
+      if (!hull) continue;
+      const top = hull.reduce((a, b) => (b[1] < a[1] ? b : a));
+      shapes.push({
+        id: group.id, hull, text: group.label, size: points.length,
+        entry: {
+          topic: group.id, cx: top[0], top: top[1], w: ctx.measureText(group.label).width + 10 / k,
+          minX: hull.reduce((a, b) => Math.min(a, b[0]), Infinity), maxX: hull.reduce((a, b) => Math.max(a, b[0]), -Infinity),
+        },
+      });
+    }
+    shapes.sort((a, b) => b.size - a.size);
+    const dots = [];
+    for (const node of placed.values()) if (gcVisibleAtTime(node, s)) dots.push({ x: node.x, y: node.y, r: node.r || 6 });
+    const seats = gcSeatTopicPlates(shapes.map((p) => p.entry), dots, k);
+    s.topicPlates = s.topicPlates || [];
+    shapes.forEach((shape, i) => {
+      const seat = seats[i];
+      ctx.beginPath();
+      shape.hull.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+      ctx.globalAlpha = 0.05;
+      ctx.fillStyle = gcTokens.accent;
+      ctx.fill();
+      ctx.globalAlpha = 0.88;
+      ctx.fillStyle = gcTokens.card;
+      ctx.fillRect(seat.left, seat.top, seat.right - seat.left, seat.bottom - seat.top);
+      s.topicPlates.push({ left: seat.left, right: seat.right, top: seat.top, bottom: seat.bottom, topic: shape.id });
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = gcTokens.ink;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(shape.text, seat.x, (seat.top + seat.bottom) / 2);
+    });
+    ctx.restore();
+    if (tree.source === "words") {
+      //: In screen pixels, along the bottom.
+      ctx.save();
+      ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+      ctx.font = `12px ${gcTokens.font}`;
+      ctx.fillStyle = gcTokens.muted;
+      ctx.textBaseline = "bottom";
+      //: Centred between the legend (left) and the zoom strip (right), the short form when it does not fit.
+      const long = "Placed by shared words, not meaning. Install the search model in Settings for the real map.";
+      const room = s.dims.w - 400 - 200;
+      const text = ctx.measureText(long).width <= room ? long : "Placed by shared words, not meaning.";
+      ctx.textAlign = "center";
+      ctx.fillText(text, 400 + room / 2, s.dims.h - 10);
+      ctx.restore();
+    }
+  }
+
   //: GRAPH_PLAN KG8: the kinds of link taken off the map (a link's
   //: `link_type`, "untyped" for none), kept between visits, and the property
   //: chip that lights its notes.
@@ -2147,8 +2241,11 @@
   //: shown or hidden is a box going to or from no size); a camera the person
   //: moved keeps where it is, and nothing refits before the first fit or
   //: while the warm-up plays (`gcFrameIntro`).
+  //: **Not while the map is read again** (`refitPending`, L-graph-20 G29): a return to the tab shows the
+  //: panels during the read, and the refit glided the old picture 25 px toward a frame the first tick then
+  //: replaced with an instant one, a heavy frame at each step (4x CPU, 2,000 notes).
   function gcRefitForPanels(s) {
-    if (s.userZoomed || s.intro || !s.zoom || !s.svg || !s.nodes?.length) return;
+    if (s.userZoomed || s.intro || s.refitPending || !s.zoom || !s.svg || !s.nodes?.length) return;
     if (s.tree) frameTree(s.svg, s.zoom, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
     else if (s.fittedOnce) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
   }
@@ -3202,6 +3299,7 @@
       gcTess.paint(ctx, s, k);
       gcDrawTreemap(ctx, s, k);
       gcDrawTopicHulls(ctx, s, k);
+      gcDrawMeaningNames(ctx, s, k);
     }
     //: Read from the switch itself, like the labels above, so what the menu
     //: shows and what is drawn cannot disagree (the owner: "it is showing
@@ -3339,7 +3437,7 @@
         const [from, to] = a.id === scoreFor ? [a, b] : [b, a];
         s.simScoreLabels.push({ from, to, score: edge.score });
       }
-      if (s.tree) {
+      if (s.tree && !s.tree.map) {
         // A tree's edges are curves between fixed points. `hierarchyPath` and
         // `arcPath` already return SVG path data, and Path2D speaks it, so the
         // curve maths is shared with the SVG renderer rather than rewritten.
@@ -3369,7 +3467,8 @@
       ctx.strokeStyle = bucket.tint || gcTokens[style.colour] || gcTokens.muted;
       // `.graph-edge.graph-dim` is opacity 0.06 in the stylesheet; kept, because
       // a dimmed edge that is still readable defeats the spotlight.
-      const alpha = (over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10);
+      //: The Map of meaning is about distance: its lines are a footnote, 0.6 of a link's strength.
+      const alpha = ((over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10)) * (s.tree?.map ? 0.6 : 1);
       //: An arrowed link thins from its source half to its target half.
       gcSetStroke(ctx, s, style.width * widthScale * (bucket.wide ? 0.8 : 1), k, alpha, !!style.dash);
       ctx.setLineDash(style.dash ? style.dash.map((v) => v / k) : []);
@@ -3521,6 +3620,22 @@
     //: neighbourhood (degree 2 or more), so a map of islands does not name
     //: twelve arbitrary dots. They join the queue below as ordinary labels:
     //: the collision pass decides whether each has room.
+    //: **The Map of meaning names the notes at the heart of each group** (owner, 2026-11-22: "almost
+    //: no labels"): its notes have few links, so the degree rule below left four names on 33 notes.
+    //: The two nearest each group's middle, so a group reads as a name plate and four notes it holds.
+    if (labelsOn && s.tree?.map && labelled.length < drawn.length) {
+      const already = new Set(labelled.map((node) => node.id));
+      const byId = new Map(drawn.map((node) => [node.id, node]));
+      for (const group of s.tree.clusters || []) {
+        const held = group.ids.map((id) => byId.get(id)).filter((node) => node && !node._dim);
+        if (!held.length) continue;
+        const cx = held.reduce((a, node) => a + node.x, 0) / held.length;
+        const cy = held.reduce((a, node) => a + node.y, 0) / held.length;
+        held.sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy));
+        for (const node of held.slice(0, 4)) if (!already.has(node.id)) labelled.push(node);
+      }
+      return;
+    }
     if (labelsOn && labelled.length < drawn.length && k <= labelZoom && s.nodes.length > GC_LABEL_ALL_SMALL) {
       const already = new Set(labelled.map((node) => node.id));
       const degree = (node) => (s.adj.get(node.id) || { size: 0 }).size;
@@ -3554,7 +3669,10 @@
       } else {
         pool.sort((a, b) => degree(b) - degree(a));
       }
-      const landmarks = pool.slice(0, count);
+      //: Spares (GC_LABEL_SPARE_FACTOR) queue behind the hubs; `gcPlaceLabels` stops at `count` placed.
+      const landmarks = pool.slice(0, count * GC_LABEL_SPARE_FACTOR);
+      f.candIds = new Set(landmarks.map((node) => node.id));
+      f.candCap = count;
       for (const node of landmarks) labelled.push(node);
     }
   }
@@ -3825,6 +3943,7 @@
         align: beside ? "left" : "center",
         alts,
         landmark: landmarkIds.has(node.id),
+        cand: Boolean(f.candIds?.has(node.id)),
       });
     }
     return items;
@@ -3896,7 +4015,7 @@
       //: (INBOX 1744: dot names ran under the hover card).
       gcHoverCardFrame(s);
       const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t), ...gcCat.cardBoxes(s, t)];
-      const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
+      const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame, f.candCap);
       placedLabels = placed;
       book.labelBoxes = placed;
       book.labelsDrawn = placed.length;
@@ -4162,7 +4281,7 @@
       ctx.lineWidth = (style.width + 2) / k;
       ctx.setLineDash([]);
       ctx.beginPath();
-      if (s.tree && edge._path2d) {
+      if (s.tree && !s.tree.map && edge._path2d) {
         ctx.stroke(edge._path2d);
         continue;
       }
@@ -4396,9 +4515,12 @@
     //: Below `GC_LABEL_NARROW_W` the cut is `GC_LABEL_NARROW_CUT` characters
     //: (a hub's a few more); the whole name is on hover and in the panel.
     const narrow = !s.tree && s.dims && s.dims.w < GC_LABEL_NARROW_W;
+    //: **At the overview of a big map the names are short too** (L-graph-20 G7: 500 notes, 2 of 12 hubs named
+    //: because a 26 to 36 character name is 170 to 230 px and every place was under a dot): the same cut as a phone's.
+    const overview = !s.tree && Boolean(s.transform && s.nodes) && s.nodes.length > GC_LABEL_ALL_MAX && s.transform.k <= GC_LABEL_ZOOM;
     const limit = s.tree
       ? s.tree.arc ? 12 : s.tree.radial ? 16 : 30
-      : narrow
+      : narrow || overview
         ? GC_LABEL_NARROW_CUT + (hub ? 6 : 0)
         : hub ? 36 : 26;
     const text = node.preview || "";
@@ -5567,6 +5689,49 @@
     return card;
   }
 
+  //: **Show details on hover** (the owner: "toggle on and off and/or close the
+  //: mini details panels"): the Display switch `graph-hovercard`, on by default;
+  //: off, neither the pointer's card nor the keyboard's shows.
+  function gcHoverCardOn(s) {
+    const box = s.size === "full" ? gcEl("graph-card-on") : null;
+    return box ? box.checked : prefs.get("graph-card-on", null) !== "0";
+  }
+
+  //: How long a card outlives the pointer leaving its note, so the pointer can
+  //: cross the gap to the card's close button; the card takes no pointer
+  //: elsewhere, so the map under it still answers.
+  const GC_CARD_LINGER_MS = 600;
+
+  //: Whether the pointer is inside the one box that holds the shown card's dot
+  //: and the card (screen pixels over the map), so it can walk across the gap.
+  function gcCardBridge(s, card) {
+    const p = s._ptr;
+    const node = s.byId && s.byId.get(card._for);
+    if (!p || !node || card._ax == null) return false;
+    const t = s.transform;
+    const r = (node.r + (node._grow || 0)) * t.k;
+    const sx = node.x * t.k + t.x;
+    const sy = node.y * t.k + t.y;
+    const rect = s.canvas.getBoundingClientRect();
+    const x = p[0] - rect.left;
+    const y = p[1] - rect.top;
+    const w = card._w || 0;
+    const h = card._h || 0;
+    return x >= Math.min(sx - r, card._ax) && x <= Math.max(sx + r, card._ax + w) && y >= Math.min(sy - r, card._ay) && y <= Math.max(sy + r, card._ay + h);
+  }
+
+  //: Hide the shown card for its note (the X, or Escape on the map) until the
+  //: pointer leaves that note and a note is pointed at again. True when a card
+  //: was showing, so Escape does nothing else then.
+  function gcHoverCardDismiss(s = gcTab) {
+    const card = s && s._hoverCard;
+    if (!card || card.hidden) return false;
+    s._cardOff = card._for;
+    card._over = false;
+    gcRequestDraw(s, true);
+    return true;
+  }
+
   //: The card's element, built once into the map's box: `role="tooltip"`, the
   //: canvas `aria-describedby` it while it shows, never focusable (the arrow
   //: keys move the note it describes, Enter opens the note).
@@ -5581,6 +5746,24 @@
     card.hidden = true;
     box.appendChild(card);
     s._hoverCard = card;
+    //: Where the pointer is while a card shows, for `gcCardBridge`; a move
+    //: redraws only then, and leaving the map forgets it.
+    box.addEventListener("pointermove", (event) => {
+      if (card.hidden) return;
+      s._ptr = [event.clientX, event.clientY];
+      gcRequestDraw(s, true);
+    });
+    box.addEventListener("pointerleave", () => {
+      s._ptr = null;
+      if (!card.hidden) gcRequestDraw(s, true);
+    });
+    //: Escape on the map hides a shown card and does nothing else then: this
+    //: listens first (capture) on the map's box, ahead of graph.js's own keys.
+    box.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !gcHoverCardDismiss(s)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
     //: Called after layout and before paint whenever the card's size changes,
     //: so it is placed by its new size in the same frame.
     card._sizer = new ResizeObserver(() => {
@@ -5633,7 +5816,18 @@
     dot.setAttribute("aria-hidden", "true");
     const title = document.createElement("strong");
     title.textContent = facts.title;
-    head.append(dot, title);
+    //: The card's one live part: `pointer-events` is on this button only, and
+    //: the pointer over it keeps the card (`gcHoverCardFrame`). Never focusable:
+    //: Escape on the map is the keyboard's way.
+    const close = smallButton("ph:x", "Hide this card", () => gcHoverCardDismiss(s));
+    close.classList.add("icon-only", "graph-hovercard-close");
+    close.tabIndex = -1;
+    close.addEventListener("pointerenter", () => { card._over = true; });
+    close.addEventListener("pointerleave", () => {
+      card._over = false;
+      gcRequestDraw(s, true);
+    });
+    head.append(dot, title, close);
     const parts = [head];
     const line = (text, cls) => {
       const p = document.createElement("p");
@@ -5671,10 +5865,28 @@
   //: is open, and on a pane (which keeps the native tooltip).
   function gcHoverCardFrame(s) {
     if (s.size !== "full") return;
-    const id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
+    let id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
+    const shown = s._hoverCard && !s._hoverCard.hidden && s._hoverCard._for != null ? s._hoverCard : null;
+    //: Nothing under the pointer: the shown card stays while the pointer is on
+    //: its close button, and a moment after, to be reached.
+    if (id == null && shown) {
+      //: Between the dot and the card (their joint box) the card stays however
+      //: slowly the pointer walks to the X; the linger only starts outside it.
+      if (shown._over || gcCardBridge(s, shown)) {
+        id = shown._for;
+        shown._lingerAt = null;
+      } else if (shown._lingerAt == null) shown._lingerAt = performance.now();
+      if (id == null && performance.now() - shown._lingerAt < GC_CARD_LINGER_MS) {
+        id = shown._for;
+        if (!s._lingerTimer) s._lingerTimer = setTimeout(() => { s._lingerTimer = null; gcRequestDraw(s, true); }, GC_CARD_LINGER_MS + 1);
+      }
+    }
+    if (shown && (id !== shown._for || s.hoveredId != null || gcKeyboardId(s) != null)) shown._lingerAt = null;
+    //: A closed card stays closed while its note is still the one pointed at.
+    if (s._cardOff != null && s._cardOff !== id) s._cardOff = null;
     const node = id != null && s.byId ? s.byId.get(id) : null;
     const popup = document.getElementById("graph-popup");
-    const show = node && !node.isGroup && !s.dragNode && !s.panning && !s.intro && (!popup || popup.classList.contains("hidden"));
+    const show = node && !node.isGroup && !s.dragNode && !s.panning && !s.intro && (!popup || popup.classList.contains("hidden")) && gcHoverCardOn(s) && s._cardOff == null;
     const card = show ? gcHoverCardEl(s) : s._hoverCard;
     if (!card) return;
     if (!show) {
@@ -6531,6 +6743,29 @@
     });
   }
 
+  //: **A note with no position yet is placed here, not in the worker.**
+  //: d3-force assigns its phyllotaxis spiral inside `forceSimulation`, which
+  //: means the main thread has no positions at all until the first tick comes
+  //: back: so the frame drawn the instant the payload arrives would be an
+  //: empty canvas, and the gate's "first frame after data" would be timing a
+  //: blank. The same spiral is laid down here (identical constants, so the
+  //: worker keeps these rather than re-placing anything) and the first frame
+  //: is a real picture of the notebook that then relaxes into its layout.
+  //: Lifted out of `renderGraphCanvas` for the size cap; a tree layout never calls it.
+  function gcSeedSpiral(s, nodes, width, height) {
+    const centreX = width / 2;
+    const centreY = height / 2;
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    gcSeedBesideNeighbours(s, nodes);
+    nodes.forEach((node, index) => {
+      if (Number.isFinite(node.x) && Number.isFinite(node.y)) return;
+      const radius = 10 * Math.sqrt(0.5 + index);
+      const angle = index * goldenAngle;
+      node.x = centreX + radius * Math.cos(angle);
+      node.y = centreY + radius * Math.sin(angle);
+    });
+  }
+
   async function renderGraphCanvas(s = gcTab) {
     if (!gcEnsureCanvas(s)) return;
     const sequence = ++s.renderSeq;
@@ -6560,6 +6795,7 @@
     void wantEntities, wantDocuments, wantMaps;
     if (!s.shown) gcArriving(s, true);
     const endpoint = graphEndpoint();
+    s.refitPending = reframe && Boolean(s.shown); // `gcRefitForPanels`; cleared once the read is back
     //: A failed read is not an empty graph. Reported class of bug: the map
     //: drew "Nothing to map yet" over a notebook full of linked notes because
     //: the only thing distinguishing the two was a null this returned silently.
@@ -6573,6 +6809,7 @@
     const data = await apiJson(endpoint).then(graphFill).catch(() => null);
     clearTimeout(slow);
     stats?.removeAttribute("aria-busy");
+    s.refitPending = false;
     if (!data) {
       gcArriving(s, false);
       surfaceFailed(document.getElementById("graph-empty"), "your map", renderGraph);
@@ -6698,6 +6935,8 @@
       s.layoutKind === "force"
         ? null
         : layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges), gcWorkerParams(s));
+    //: The Map of meaning draws its links faintly, with each note's nearest by meaning under them.
+    if (s.tree?.map) s.tree.links = graphLate.mapLinks(visibleEdges, new Set(visibleNodes.map((n) => n.id)));
 
     // A note already on screen keeps the spot it had settled into, so a legend
     // toggle or a slider change does not replay the whole "explode outward"
@@ -6816,27 +7055,7 @@
     const titleCount = new Map();
     for (const node of nodes) if (gcIsNote(node) && node.preview) titleCount.set(node.preview, (titleCount.get(node.preview) || 0) + 1);
     s.dupTitles = new Set([...titleCount].filter(([, n]) => n > 1).map(([title]) => title));
-    //: **A note with no position yet is placed here, not in the worker.**
-    //: d3-force assigns its phyllotaxis spiral inside `forceSimulation`, which
-    //: means the main thread has no positions at all until the first tick comes
-    //: back: so the frame drawn the instant the payload arrives would be an
-    //: empty canvas, and the gate's "first frame after data" would be timing a
-    //: blank. The same spiral is laid down here (identical constants, so the
-    //: worker keeps these rather than re-placing anything) and the first frame
-    //: is a real picture of the notebook that then relaxes into its layout.
-    if (!s.tree) {
-      const centreX = width / 2;
-      const centreY = height / 2;
-      const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-      gcSeedBesideNeighbours(s, nodes);
-      nodes.forEach((node, index) => {
-        if (Number.isFinite(node.x) && Number.isFinite(node.y)) return;
-        const radius = 10 * Math.sqrt(0.5 + index);
-        const angle = index * goldenAngle;
-        node.x = centreX + radius * Math.cos(angle);
-        node.y = centreY + radius * Math.sin(angle);
-      });
-    }
+    if (!s.tree) gcSeedSpiral(s, nodes, width, height);
     // Everything the worker could still be about is now gone: whatever it says
     // next is about the previous node array and is dropped on arrival.
     //: From the map that was there (`gcTweenFromPrior`): a computed layout
@@ -6887,6 +7106,9 @@
 
     graphRenderStats(data, nodes, edges, colourMode, s.layoutKind);
     graphSyncTimeSlider(data, (cutoff) => {
+      //: Not a frame for a cut-off that did not change (a tab return re-syncs the slider at its end: one of
+      //: the full frames of the second after it, L-graph-20 G29).
+      if ((s.timeCutoff ?? null) === (cutoff ?? null) && s.timeCutoff !== undefined) return;
       s.timeCutoff = cutoff;
       gcRequestDraw(s);
     });
@@ -7781,9 +8003,11 @@
     }
   }
 
+  //: A getter, not a copy: `gcTokens` is replaced on a theme change.
+  Object.defineProperty(window, "gcTokens", { configurable: false, get: () => gcTokens });
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   //: The sweeps' hands on its own names (scratchpad/ui-sweeps/graphlinkpeek), on a name already shared so
   //: the shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
   renderGraphCanvas.sweep = { curvedLinks: gcCurvedLinks, bowPoint: gcBowPoint, peekKinds: GC_PEEK_KINDS, edgeAtWorld: gcEdgeAtWorld, nodeAtWorld: gcNodeAtWorld };
-  Object.assign(window, { gcAutoFitTurnedOn, gcCat, gcExportPng, gcFitInsets, gcOpenTopic, gcPost, gcRenameTopicInline, gcRequestDraw, gcReshuffle, gcStill, gcStop, gcTab, gcTogglePin, gcTokens, gcTopicMembers, gcTopicSummaries, gcTreeFrameNodes, gcVisibleAtTime, gcWorkerParams, graphPaneRerender, renderGraphCanvas });
+  Object.assign(window, { gcAutoFitTurnedOn, gcCat, gcExportPng, gcFitInsets, gcOpenTopic, gcPost, gcRenameTopicInline, gcRequestDraw, gcReshuffle, gcStill, gcStop, gcTab, gcThemeChanged, gcTogglePin, gcTopicMembers, gcTopicSummaries, gcTreeFrameNodes, gcVisibleAtTime, gcWorkerParams, graphPaneRerender, renderGraphCanvas });
 })();

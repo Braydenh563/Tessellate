@@ -97,7 +97,7 @@ def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_setting
     #: The Settings button's listener is in settings-controls.js now.
     wiring = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("wiring.js", "settings-controls.js"))
     # The panel moved to its own lazy piece (categories-panel.js).
-    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
+    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-sidebar.js", "categories-panel.js"))
     assert 'id="manage-categories-btn"' in html and 'id="settings-manage-categories"' in html
     assert '$("manage-categories-btn").addEventListener("click", () => openManageCategories());' in wiring
     assert 'wire("settings-manage-categories").addEventListener("click", () => openManageCategories());' in wiring
@@ -114,7 +114,7 @@ def test_the_category_tools_count_as_writes():
 def test_the_categories_panel_is_a_managed_list_with_the_reference_head():
     # The owner: "needs some ui redesign ... like the ai assistant panel".
     # The panel moved to its own lazy piece (categories-panel.js).
-    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "categories-panel.js"))
+    notes = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("notes-list.js", "notes-sidebar.js", "categories-panel.js"))
     assert 'head.classList.add("dialog-head");' in notes
     # A grid since INBOX 433 (an option may not hold its ⋯; a grid cell may).
     assert 'list.setAttribute("role", "grid");' in notes and 'list.setAttribute("aria-multiselectable", "true");' in notes
@@ -817,6 +817,22 @@ def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_ke
     assert "lasts for the session" in body and "after a reload or a restart it starts empty" in body
     assert "a board, a mind map and a document keep their last hundred steps" in body
     assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]
+
+
+def test_the_mcp_scope_and_oauth_sign_in_are_in_the_guide_and_the_help():
+    """L-world-class-560 (order 13): the link's Categories and Tags fields and the
+    OAuth sign-in's Approve are named in the controls' own words in the Guide and
+    in the group's own help, beside the controls they name."""
+    from tessellate.ai import help_chat
+
+    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "mcp-links")
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html.split('id="mcp-config-help"', 1)[1].split("</div>", 1)[0]
+    for words in ("Categories and Tags", "OAuth", "Waiting to sign in", "Approve", "on this computer"):
+        assert words in topic["body"], words
+        assert words in help_body, words
+    assert 'for="mcp-client-cats" class="muted">Categories<' in html and 'for="mcp-client-tags" class="muted">Tags<' in html
+    assert 'aria-label="Waiting to sign in"' in html
 
 
 def test_the_manual_pictures_are_few_small_and_each_on_disk_for_a_real_topic():

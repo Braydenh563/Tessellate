@@ -7,6 +7,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 
 from __future__ import annotations
 
+from tessellate.ai.tools._common import ONLINE_TOOLS
 from tessellate.core import deps
 from tessellate.ai import personal, toolwords
 from tessellate.ai.provider import set_write_tools
@@ -348,9 +349,7 @@ def web_barred(question: str) -> set[str]:
     """The web tools a first-person question must not be offered: "who is my
     sister" is in the notes, and a model holding `web_search` sends it out
     (audit 1030 A3). An explicit "search the web for" keeps them."""
-    if personal.about_own_record(question or "") and not toolwords.asks_web(question or ""):
-        return {"web_search", "read_url"}
-    return set()
+    return set(ONLINE_TOOLS) if personal.about_own_record(question or "") and not toolwords.asks_web(question or "") else set()
 
 
 def tool_enabled(name: str) -> bool:
@@ -360,7 +359,7 @@ def tool_enabled(name: str) -> bool:
     # hold (web off, nothing disabled), which is what a fresh notebook has.
     config = deps.peek_config()
     web_on = config.get_preference("web_search_enabled", False) if config else False
-    if name in ("web_search", "read_url") and not web_on:
+    if name in ONLINE_TOOLS and not web_on:
         return False
     disabled = config.get_preference("disabled_tools", []) if config else []
     return name not in set(disabled)

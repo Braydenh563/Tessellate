@@ -3379,7 +3379,11 @@ button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not
    first attempt that read as correct and changed nothing on screen. Matching
    the chain and adding the ancestor is what actually wins, honestly, without
    an `!important`. */
-.doc-toolbar summary:not(.icon-only):not(.icon-button),
+/* The summary selectors below also carry the `.fold-summary` exclusion of the disclosure rule further
+   down (`summary:not(...):not(.fold-summary, ...)`): without it that rule ties them on weight, wins on
+   order and draws the strip's menu opener as a filled pill (Capture's "More", the owner: "looks out of
+   place"; at rest fill 0.10 and a 0.4 white rim beside buttons with neither). */
+.doc-toolbar summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary),
 .doc-toolbar button.icon-only:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not(.wb-tool),
 .doc-toolbar button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not(.wb-tool) {
   padding: 0.25rem 0.4rem;
@@ -3393,11 +3397,11 @@ button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not
    no longer have. The reasoning for the recipe itself, and the measurements
    that found this the last surface off it, are on the matching rule in
    05-sidebars-themes.css. */
-.doc-toolbar summary:not(.icon-only):not(.icon-button):hover,
-.doc-toolbar summary:not(.icon-only):not(.icon-button):focus-visible,
+.doc-toolbar summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary):hover,
+.doc-toolbar summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary):focus-visible,
 .doc-toolbar button.icon-only:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not(.wb-tool):hover,
 .doc-toolbar button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not(.wb-tool):hover,
-.doc-toolbar .doc-toolbar-menu[open] > summary:not(.icon-only):not(.icon-button),
+.doc-toolbar .doc-toolbar-menu[open] > summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary),
 .doc-toolbar button.icon-only:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not(.wb-tool):is(:focus-visible, :has(:focus-visible)),
 .doc-toolbar button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not(.wb-tool):is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);

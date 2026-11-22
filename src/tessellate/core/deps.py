@@ -15,17 +15,12 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, Callable, TypeVar
 
 from fastapi import HTTPException, Request
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import Session
 
-from tessellate.ai.embeddings import EmbeddingService
-from tessellate.ai.model_manager import ModelManager
-from tessellate.ai.ollama_client import OllamaClient
-from tessellate.ai.openai_client import OpenAICompatClient
-from tessellate.ai.provider import Provider
 from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
 from tessellate.core import board_thumbs, sealed_files
@@ -36,9 +31,33 @@ _ModelT = TypeVar("_ModelT")
 
 _config: ConfigManager | None = None
 _db: DatabaseManager | None = None
-_ollama: Provider | None = None
-_model_manager: ModelManager | None = None
-_embeddings: EmbeddingService | None = None
+# The AI services are typed `Any` here: core may not import `ai` (the factories
+# below are how it builds them), and what they are is `ai.provider.Provider`,
+# `ai.model_manager.ModelManager` and `ai.embeddings.EmbeddingService`.
+_ollama: Any = None
+_model_manager: Any = None
+_embeddings: Any = None
+
+#: How core builds the AI services without importing `ai`: `ai/wiring.py`
+#: registers the builders when it is imported (the app, the launcher, the MCP
+#: server and the test conftest all import it), the same inversion as
+#: `jobstore.set_forget`. Keys: `llm_client(config)`, `model_manager(config)`,
+#: `embeddings(model_manager, client)`.
+_ai_factories: dict[str, Callable[..., Any]] = {}
+
+
+def register_ai_factories(**factories: Callable[..., Any]) -> None:
+    _ai_factories.update(factories)
+
+
+def _factory(name: str) -> Callable[..., Any]:
+    try:
+        return _ai_factories[name]
+    except KeyError:
+        raise RuntimeError(
+            "the AI services are not wired: import tessellate.ai.wiring before "
+            "building the app state"
+        ) from None
 
 
 class MultipleWorkersError(RuntimeError):
@@ -115,52 +134,9 @@ DEFAULT_BASE_URLS = {
 }
 
 
-def build_llm_client(config: ConfigManager) -> Provider:
-    """The chat backend the user has chosen (§6).
-
-    Two dialects, not four products: `openai` covers LM Studio, llama.cpp, Jan
-    and vLLM alike, because the only thing that differs between them is the
-    base URL. Everything downstream, the agent, the librarian, the janitor , 
-    is written against `Provider` and never asks which one it got.
-
-    An unrecognised provider name falls back to Ollama rather than raising. The
-    preferences file is a JSON file the user is invited to edit by hand, and a
-    typo in it should cost the setting, not the app.
-    """
-    provider = str(config.get_preference("llm_provider", "ollama") or "ollama").lower()
-    base_url = str(config.get_preference("llm_base_url", "") or "").strip()
-
-    # The lock is enforced here as well as at the endpoint, and that is not
-    # belt-and-braces for its own sake: `preferences.json` is a plain file the
-    # user is invited to edit by hand, and it is what a restored backup or a
-    # copied config brings with it. Checking only on the way in would mean a
-    # remote address that never passed through the endpoint is used anyway, 
-    # silently, and on every turn.
-    #
-    # Falling back to the provider's local default rather than refusing to
-    # start: the app must open anyway so the setting can be fixed from inside it.
-    if base_url and config.get_preference("local_only_ai", True):
-        from tessellate.core import security
-
-        allowed, reason, _ = security.check_backend_url(base_url, local_only=True)
-        if not allowed:
-            logging.getLogger("tessellate.config").warning(
-                "refusing the saved AI backend %r and using the local default "
-                "instead: %s",
-                base_url,
-                reason,
-            )
-            base_url = ""
-
-    if provider == "openai":
-        return OpenAICompatClient(
-            base_url=base_url or DEFAULT_BASE_URLS["openai"],
-            api_key=str(config.get_preference("llm_api_key", "") or ""),
-        )
-    # `config.ollama_url` carries the OLLAMA_URL environment variable, which
-    # predates this setting: so it stays the default for the Ollama path
-    # rather than being overwritten by an empty preference.
-    return OllamaClient(base_url=base_url or config.ollama_url)
+def build_llm_client(config: ConfigManager) -> Any:
+    """The chat backend the user has chosen (§6); built by `ai/wiring.py`."""
+    return _factory("llm_client")(config)
 
 
 #: One builder at a time. The singletons are built lazily by whichever
@@ -213,27 +189,10 @@ def _init_app_state(data_dir: str | Path | None = None) -> None:
                 raise backup.DamagedNotebookError(words) from exc
     if _ollama is None:
         _ollama = build_llm_client(_config)
-    # `ai/provider.py` reads the user's sampling overrides through a getter
-    # rather than importing this module: it is the bottom of the AI stack and
-    # this is the wiring that builds on it, so the import would be a cycle
-    # (CodeQL flagged it) as well as the wrong direction. Registered here,
-    # where the config it reads is known to exist.
-    #
-    # Even a submodule-direct, function-scoped import of it was still flagged
-    # as beginning a cycle (CodeQL's cyclic-import query counts a function
-    # body's imports too, not just module-level ones), so this is imported
-    # by name through `importlib` instead of a `from`/`import` statement,
-    # which is the same runtime lookup with nothing for the static check to
-    # see as an edge.
-    import importlib
-
-    importlib.import_module("tessellate.ai.provider").set_sampling_overrides_getter(
-        lambda: _config.get_preference("sampling_overrides", {})
-    )
     if _model_manager is None:
-        _model_manager = ModelManager(_config)
+        _model_manager = _factory("model_manager")(_config)
     if _embeddings is None:
-        _embeddings = EmbeddingService(_model_manager, _ollama)
+        _embeddings = _factory("embeddings")(_model_manager, _ollama)
 
 
 def reload_db() -> None:
@@ -308,14 +267,14 @@ def reload_llm_client() -> None:
     # only for as long as nobody saved, then the next save paid the 5 s cold
     # load. The service keeps its loaded model and talks to the new client.
     if _embeddings is None:
-        _embeddings = EmbeddingService(get_model_manager(), _ollama)
+        _embeddings = _factory("embeddings")(get_model_manager(), _ollama)
     else:
         _embeddings.use_client(_ollama)
 
 
 def override_ai(
-    ollama: Provider | None = None,
-    embeddings: EmbeddingService | None = None,
+    ollama: Any = None,
+    embeddings: Any = None,
 ) -> None:
     """Swap in fakes: tests only. Real code never calls this."""
     global _ollama, _embeddings
@@ -363,7 +322,7 @@ def peek_config() -> ConfigManager | None:
 jobruns.set_database_source(peek_db)
 
 
-def get_ollama() -> Provider:
+def get_ollama() -> Any:
     """The chat backend, whichever dialect it speaks.
 
     Still named for Ollama because every call site is, and renaming it would
@@ -374,13 +333,13 @@ def get_ollama() -> Provider:
     return _ollama
 
 
-def get_model_manager() -> ModelManager:
+def get_model_manager() -> Any:
     init_app_state()
     assert _model_manager is not None
     return _model_manager
 
 
-def get_embeddings() -> EmbeddingService:
+def get_embeddings() -> Any:
     init_app_state()
     assert _embeddings is not None
     return _embeddings
@@ -736,16 +695,3 @@ def clear_index_stale() -> None:
 
 def index_stale_notes() -> int:
     return int(get_config().get_preference("index_stale_notes", 0) or 0)
-
-
-#: Handed to the model manager so its durable jobs can find the running app's
-#: own objects without importing this module (an import cycle).
-#: Not named `_model_manager`: that is the running manager above, and the
-#: module under its name made every chat and /models/status a 500.
-from tessellate.ai import model_manager as _manager_module  # noqa: E402
-
-_manager_module.APP_GETTERS.update(db=get_db, embeddings=get_embeddings, ollama=get_ollama)
-
-from tessellate.ai import voice as _voice  # noqa: E402
-
-_voice.CONFIG_PEEK = peek_config

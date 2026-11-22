@@ -39,7 +39,7 @@ def _stream_events(client, question, **body):
 
 # Tools that reach the internet. They stay hidden until the user opts in
 # (Wave F), so the registry is always larger than what's offered.
-ONLINE_TOOLS = {"web_search", "read_url"}
+ONLINE_TOOLS = set(tools.ONLINE_TOOLS)
 
 
 def test_registry_shapes_are_valid_for_ollama(app_state):

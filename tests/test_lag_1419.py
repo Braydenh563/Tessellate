@@ -34,6 +34,7 @@ def test_the_dashboard_outline_follows_the_grid_after_a_paint():
     # after the frame's layout: still read where it forces nothing, the intent of 1419.
     assert "ro.follow = () =>" in body and "setTimeout(" not in body
     assert "grid.offsetTop - top0" in body
+    assert "setTimeout(" not in body
 
 
 def test_the_brand_logo_waits_for_the_page_to_load_before_it_reads_layout():

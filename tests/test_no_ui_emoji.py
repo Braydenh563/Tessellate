@@ -135,7 +135,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     "frontend/js/dashboard.js": [
         ("LEADING_EMOJI", "a regex that strips a leading emoji a person typed into a title"),
     ],
-    "frontend/js/status.js": [
+    "frontend/js/status-ai-pill.js": [
         (
             "const AI_STATUS_GLYPH",
             "the colour-blind-safe status mark set, documented at the declaration: the "

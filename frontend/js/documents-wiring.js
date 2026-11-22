@@ -160,6 +160,16 @@
       return el;
     };
     bar.appendChild(sep());
+    //: A strip without its own Insert (the notes' two) gets it ahead of the pairs, so it folds last (Capture 1280).
+    if (!bar.querySelector('[data-md="insert"]')) {
+      const insert = document.createElement("button");
+      insert.type = "button";
+      insert.dataset.md = "insert";
+      insert.dataset.mdExtra = "1";
+      insert.title = "Insert a block, image, link, table, diagram, emoji or equation (or press /)";
+      setLabel(insert, "ph:plus Insert");
+      bar.appendChild(insert);
+    }
     //: **A pair is one flex item.** Undo and redo (and outdent and indent) are
     //: one decision; the strip wraps between items, and at 1440 it wrapped
     //: between Undo and Redo, leaving Redo alone at the start of row two.
@@ -180,16 +190,6 @@
       button.setAttribute("aria-label", spec.title);
       setLabel(button, spec.icon);
       pair.appendChild(button);
-    }
-    //: A strip without its own Insert (the notes' two) gets the same button.
-    if (!bar.querySelector('[data-md="insert"]')) {
-      const insert = document.createElement("button");
-      insert.type = "button";
-      insert.dataset.md = "insert";
-      insert.dataset.mdExtra = "1";
-      insert.title = "Insert a block, image, link, table, diagram, emoji or equation (or press /)";
-      setLabel(insert, "ph:plus Insert");
-      bar.appendChild(insert);
     }
     for (const menu of EDITOR_TOOLBAR_MENUS) {
       //: The document strip carries these rows in its Style menu already.

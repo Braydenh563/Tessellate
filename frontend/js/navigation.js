@@ -861,7 +861,10 @@ function revealTab(name) {
   }
   scheduleUndoBar();
   if (name === "notes") window.initNotesSubtabHeightToken?.();
+  //: An empty `data-stale` is a draw the Notes press put after the paint (phone-shell.js): drawing
+  //: it here too built 4,998 rows inside the press and again two frames on (L603, 210 and 63ms).
   if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  else if (name === "notes" && window.notesSidebarOwed) renderSidebar();
   //: The companion finds its perch on the tab it is now on (avatars.js).
   window.nameMarkBuddyTabChanged?.();
   // When the strip is narrow enough to scroll, the tab you just chose is the
@@ -887,7 +890,7 @@ function revealTab(name) {
   //: At the frame, before it paints (INBOX 1530 c): its reads came straight
   //: after the class flips above and laid the new page out inside the click
   //: (14 to 47 ms of `openDoc`), which `openDocument` then dirtied again.
-  requestAnimationFrame(autoGrowVisible);
+  requestAnimationFrame(() => autoGrowVisible());
 }
 
 // --- back / forward through the pages you have visited ----------------------
@@ -1633,7 +1636,12 @@ document.addEventListener("keydown", (event) => {
       return;
     }
   }
-  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'])");
+  //: A row that opens a submenu ("Atlas ›") is a menu row first: APG walks
+  //: past it on the arrows, and treating it as a closed menu button here
+  //: opened its flyout and took the focus back from the row
+  //: `wireMenuKeyboard` had just moved to (L-world-class-107, menus.js: the
+  //: first ArrowDown in every note's ⋯ menu stayed on Atlas).
+  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false']):not([role='menuitem'])");
   //: A row that opens a flyout (`role="menuitem"`, the dashboard Customise's View) is walked
   //: by its own menu; ArrowRight opens it (APG). Taken for a closed menu button, ArrowDown
   //: opened its flyout and left the focus on it (menus.js at 1440).
@@ -2364,15 +2372,15 @@ function showNotesSection(name, { focus = false } = {}) {
   }
   prefs.set(NOTES_SECTION_STORE, wanted);
   //: Ask's answer and the draft carry static assistant heads (INBOX 471).
-  paintAssistantHeads();
+  paintAssistantHeads($(wanted) || document);
   //: The connections rail belongs to the list (notes-list.js): it leaves with
   //: Browse and comes back with it.
   scheduleNotesRail();
   // A textarea measured while its section is display:none reports
   // scrollHeight 0, so autoGrow collapsed the capture box to its minimum and
   // it only sprang open once clicked (user-reported). Re-measure now that the
-  // section is actually visible.
-  autoGrowVisible();
+  // section is actually visible. Only the section just shown changed.
+  autoGrowVisible($(wanted) || document);
 }
 
 function initNotesSubtabs() {

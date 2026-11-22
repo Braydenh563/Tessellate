@@ -164,9 +164,17 @@
    layout, which put it visually after whichever note happened to be last). */
 .story-mode-btn {
   margin-left: auto;
+  /* The secondary button's rest state (`button.ghost`: quiet fill, hairline,
+     ink), not white on the accent glass, which read as disabled until hover.
+     A flex row, so the icon, the words and the chevron sit a token apart
+     (a `<summary>` is a list-item and ignored every gap). */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--accent-surface);
-  color: var(--on-accent);
+  background: var(--btn-quiet-bg);
+  border: 1px solid var(--ghost-btn-border);
+  color: var(--ink);
   border-radius: var(--radius-md);
   font-weight: 600;
   /* This button carries `.graph-trace-note` too (graph.js, for the shared
@@ -204,7 +212,8 @@
 
 .story-mode-btn:is(:hover, :focus-visible),
 .story-mode-btn:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--accent-surface-hover);
+  background: var(--ghost-btn-bg);
+  border-color: var(--ghost-btn-border-hover);
   text-decoration: none;
 }
 

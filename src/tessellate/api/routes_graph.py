@@ -22,7 +22,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import clock
@@ -31,10 +30,7 @@ from tessellate.api import bounds
 from tessellate.core import activity, cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import (
-    Attachment,
-    EmbeddingRecord,
     Entry,
-    NoteType,
     writes,
 )
 from tessellate.core.deps import get_session
@@ -110,13 +106,13 @@ SIMILAR_PER_NODE = 4
 # a deleted top id to the next row, so remove-then-add kept it (measured).
 _cache_lock = threading.Lock()
 _cache: dict[str, tuple] = {}
+_building: dict[str, threading.Lock] = {}
 #: KG6: topic summaries by their members and versions, newest last, capped.
 _summaries: dict[tuple, str] = {}
 SUMMARY_CACHE_MAX = 200
 
 
 def _graph_fingerprint(session: Session) -> tuple:
-    live = Entry.is_deleted == False  # noqa: E712
     return (
         # Which notebook. The cache is process-global while the counts below
         # are emphatically not unique, two notebooks holding three notes each
@@ -129,8 +125,7 @@ def _graph_fingerprint(session: Session) -> tuple:
         # an equal newest edit would otherwise share one centrality.
         str(session.info.get("workspace_id") or ""),
         tuple(sorted(session.info.get("hidden_workspaces") or ())),
-        session.scalar(select(func.count(Entry.id)).where(live)) or 0,
-        session.scalar(select(func.max(Entry.updated_at)).where(live)),
+        *graph_layers.live_count_and_newest(session),
         # Two note writes in one clock tick share a newest edit.
         writes(Entry),
         relations_repo.count(session),
@@ -149,9 +144,18 @@ def _cached(name: str, fingerprint: tuple, build):  # noqa: ANN001
         hit = _cache.get(name)
         if hit is not None and hit[0] == fingerprint:
             return hit[1]
-    value = build()
-    with _cache_lock:
-        _cache[name] = (fingerprint, value)
+        building = _building.setdefault(name, threading.Lock())
+    #: L-world-class-626: one build per name at a time. Eight clients asking
+    #: while notes changed each ran community detection on the same version;
+    #: the ones behind the first now wait and read its result.
+    with building:
+        with _cache_lock:
+            hit = _cache.get(name)
+            if hit is not None and hit[0] == fingerprint:
+                return hit[1]
+        value = build()
+        with _cache_lock:
+            _cache[name] = (fingerprint, value)
     return value
 
 
@@ -432,15 +436,7 @@ def _centrality(
     def build() -> dict:
         extra: list[dict] = []
         if use_similarity:
-            ids = set(
-                session.scalars(
-                    select(Entry.id).where(
-                        Entry.is_deleted == False,  # noqa: E712
-                        Entry.is_draft == False,  # noqa: E712
-                        *(() if maps else (Entry.is_board == False,)),  # noqa: E712
-                    )
-                )
-            )
+            ids = graph_layers.similarity_note_ids(session, boards=maps)
             extra = _similarity_edges(session, ids, set())
             extra += _layer_similarity_edges(session, documents, entities)
         index = paths.build_light(
@@ -486,20 +482,11 @@ def _add_entity_nodes(
     an Entry id, which is what lets this be opt-in without breaking a
     consumer that assumes every node id is a note.
     """
-    from tessellate.core.database import Entity, EntityMention
 
-    mentions = list(
-        session.execute(
-            select(EntityMention.entity_id, EntityMention.entry_id).where(
-                EntityMention.entry_id.in_(node_ids)
-            )
-        )
-    )
+    mentions = graph_layers.mentions_in(session, node_ids)
     entity_ids = {m.entity_id for m in mentions}
     if entity_ids:
-        entities = {
-            e.id: e for e in session.scalars(select(Entity).where(Entity.id.in_(entity_ids)))
-        }
+        entities = graph_layers.entities_by_id(session, entity_ids)
         for entity_id, entity in entities.items():
             nodes.append(
                 {
@@ -643,7 +630,6 @@ def _mark_board_nodes(entries: list, nodes: list[dict], board_ids: set[int]) -> 
 def _add_map_member_edges(
     session: Session, maps: set[int], edges: list[dict], node_ids: set[int], taken: set[frozenset[int]]
 ) -> None:
-    from tessellate.core.database import WhiteboardObject
 
     #: **`kind == "note"` only, and this is not a tidiness
     #: preference.** The first version queried every
@@ -656,12 +642,7 @@ def _add_map_member_edges(
     #: target: 1}`, a map joined to *itself* through a document
     #: node: on the second row it was ever given. An id is only
     #: meaningful with its table, and the kind is the table.
-    rows = session.execute(
-        select(WhiteboardObject.board_id, WhiteboardObject.data).where(
-            WhiteboardObject.board_id.in_(maps),
-            WhiteboardObject.kind == "note",
-        )
-    )
+    rows = graph_layers.map_note_rows(session, maps)
     for board_id, raw in rows:
         try:
             ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
@@ -713,11 +694,7 @@ def _add_unresolved_nodes(
     """
     from bisect import bisect_left
 
-    live = session.execute(
-        select(Entry.content, Entry.source_path).where(
-            Entry.is_deleted == False, Entry.is_private == False  # noqa: E712
-        )
-    ).all()
+    live = graph_layers.wiki_sources(session)
     openings = sorted(manager_wiki.wiki_opening(content) for content, _ in live)
     stems = {
         (path or "").rsplit("/", 1)[-1].lower().removesuffix(".md").removesuffix(".markdown")
@@ -745,12 +722,7 @@ def _add_attachment_nodes(
     session: Session, nodes: list[dict], edges: list[dict], node_ids: set[int]
 ) -> None:
     """GRAPH_PLAN 514 (6): each file or picture on a note, as its own node."""
-    rows = session.scalars(
-        select(Attachment)
-        .where(Attachment.entry_id.in_(node_ids))
-        .order_by(Attachment.created_at.desc())
-        .limit(GRAPH_DOCUMENT_CAP)
-    )
+    rows = graph_layers.attachments_on(session, node_ids, GRAPH_DOCUMENT_CAP)
     for row in rows:
         key = f"attachment:{row.id}"
         nodes.append(
@@ -767,30 +739,6 @@ def _word_count(text: str | None) -> int:
     return cjk.word_count(text)
 
 
-#: What `/graph` reads of a note: the node's fields, the label's text (the
-#: memo below decides whether it is read), and what the opt-in layers need
-#: (a board's settings, a vault file's path for unwritten links).
-_GRAPH_COLUMNS = (
-    Entry.id,
-    Entry.content,
-    Entry.tags,
-    Entry.workspace_id,
-    Entry.category_id,
-    Entry.created_at,
-    Entry.updated_at,
-    Entry.edited_at,
-    Entry.access_count,
-    Entry.pinned,
-    Entry.graph_pin_x,
-    Entry.graph_pin_y,
-    Entry.parent_id,
-    Entry.is_board,
-    Entry.is_private,
-    Entry.board_settings,
-    Entry.source_path,
-)
-
-
 def _payload_key(session: Session, similarity: bool, include_maps: bool, include_tags: bool) -> tuple:
     """Everything the default `/graph` payload is made of, as one digest.
 
@@ -804,7 +752,6 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
     the ORM so the space filter applies, as the payload's own reads do.
     """
     from tessellate.core import vault
-    from tessellate.core.database import WhiteboardObject
 
     digest = hashlib.blake2b(digest_size=16)
 
@@ -813,37 +760,21 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
             digest.update(repr(tuple(row)).encode())
         digest.update(b"|")
 
-    feed(
-        session.execute(
-            select(
-                Entry.id, Entry.updated_at, Entry.access_count, Entry.pinned, Entry.graph_pin_x,
-                Entry.graph_pin_y, Entry.category_id, Entry.tags, Entry.is_private, Entry.workspace_id,
-                Entry.parent_id, Entry.is_board, Entry.board_settings, Entry.source_path, Entry.created_at,
-            )
-            .where(Entry.is_deleted == False, Entry.is_draft == False)  # noqa: E712
-            .order_by(Entry.id)
-        )
-    )
+    feed(graph_layers.fingerprint_notes(session))
     feed(categories_repo.id_names(session))
     feed(relations_repo.columns(session, ordered=True))
-    feed(session.execute(select(Attachment.entry_id).distinct().order_by(Attachment.entry_id)))
-    feed(
-        session.execute(
-            select(WhiteboardObject.id, WhiteboardObject.board_id, WhiteboardObject.data)
-            .where(WhiteboardObject.kind == "note")
-            .order_by(WhiteboardObject.id)
-        )
-    )
+    feed(graph_layers.fingerprint_attachments(session))
+    feed(graph_layers.fingerprint_map_objects(session))
     digest.update(repr(sorted(relation_types.kinds(session).items())).encode())
     config = deps.get_config()
     with_similarity = similarity and not config.get_preference("battery_efficient_mode")
     if with_similarity:
-        feed(session.execute(select(func.count(EmbeddingRecord.id), func.max(EmbeddingRecord.created_at))))
+        feed(graph_layers.fingerprint_embeddings(session))
         #: Vectors from two models live in different spaces: a switch is a new
         #: payload though no note changed.
         digest.update(str(deps.get_embeddings().backend_id()).encode())
     #: A note type's name and colour paint the "Note type" rule (`type_colours`).
-    feed(session.execute(select(NoteType.id, NoteType.name, NoteType.colour).order_by(NoteType.id)))
+    feed(graph_layers.fingerprint_note_types(session))
     vault_key = vault.key()
     return (
         _graph_fingerprint(session),
@@ -916,11 +847,7 @@ def _graph_entries(session: Session, include_maps: bool) -> list:
     #: below) were half of a warm call's time in the ORM's instance
     #: bookkeeping alone; a row answers `e.id`, `e.content`, `e.is_board` the
     #: same way, so every helper below takes it unchanged.
-    entries = list(
-        session.execute(
-            manager.note_filter(select(*_GRAPH_COLUMNS), boards=manager.BOARDS_INCLUDE)
-        )
-    )
+    entries = graph_layers.graph_note_rows(session)
     #: **A board is an `Entry`, so "off" has to mean "not on the map at all".**
     #: Reported (INBOX 185, the owner): "Things that I have turned off in the
     #: graph for not showing them like the mindmap and entities still show
@@ -947,7 +874,7 @@ def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dic
     # kind, age, space, tag, has a file), so every note carries the fields
     # each rule reads. One query for the file rule rather than a join per
     # node; tags are the column's JSON list, never the raw string.
-    with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
+    with_files = graph_layers.attached_note_ids(session)
     maps_of = graph_layers.maps_of(session)
     now = clock.utc()
     #: Each note's label and word count, read once per version (`_note_texts`).
@@ -1234,7 +1161,7 @@ def _build_graph(
     _add_sealed_link_nodes(session, nodes, edges, node_ids)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
-    type_colours = {row.name: row.colour for row in session.scalars(select(NoteType)) if row.colour}
+    type_colours = graph_layers.type_colours(session)
     # **Encoded here, on the worker thread** (audit 2026-10-05, ARCH-14).
     # A sync route's returned dict is encoded by FastAPI on the event loop
     # (py-spy: `serialize_response`), so a 2.4 MB graph at 5,000 notes held
@@ -1281,11 +1208,16 @@ _NOTE_DEFAULTS = {
     "tags": [],
     "access_count": 0,
     "edited_at": None,
+    "space_id": "default",
 }
+#: Read by no graph code: the notes lists get their ages from their own endpoints (L-graph-20 G28).
+_NOTE_UNREAD = ("age_days",)
 _LINK_DEFAULTS = ("reason", "reason_confidence", "link_type")
 
 
 def _slim_note(node: dict) -> None:
+    for key in _NOTE_UNREAD:
+        node.pop(key, None)
     for key, default in _NOTE_DEFAULTS.items():
         if key in node and node[key] == default and type(node[key]) is type(default):
             del node[key]
@@ -1306,17 +1238,12 @@ def _slim(nodes: list[dict], edges: list[dict]) -> None:
             for key in _LINK_DEFAULTS:
                 if key in edge and edge[key] is None:
                     del edge[key]
+            if edge.get("two_way") is False:
+                del edge["two_way"]  # `!edge.two_way` reads it the same; `graphFill` puts it back
 
 def _load_entries(session: Session, ids) -> dict[int, Entry]:  # noqa: ANN001
     """The live notes with these ids, read in chunks (SQLite's variable cap)."""
-    wanted = list(ids)
-    found: dict[int, Entry] = {}
-    for start in range(0, len(wanted), 500):
-        rows = session.scalars(
-            select(Entry).where(Entry.id.in_(wanted[start : start + 500]), Entry.is_deleted == False)  # noqa: E712
-        )
-        found.update((e.id, e) for e in rows)
-    return found
+    return graph_layers.live_by_ids_chunked(session, ids)
 
 
 def _local_topology(session: Session, similarity: bool, maps: bool = False) -> tuple[paths.Connections, dict, bool]:
@@ -1341,9 +1268,7 @@ def _local_topology(session: Session, similarity: bool, maps: bool = False) -> t
     def build() -> tuple[paths.Connections, dict, bool]:
         extra_edges: list[dict] = []
         if use_similarity:
-            node_ids = set(
-                session.scalars(select(Entry.id).where(Entry.is_deleted == False))  # noqa: E712
-            )
+            node_ids = graph_layers.live_note_ids(session)
             extra_edges = _similarity_edges(session, node_ids, set())
         #: L-graph-8: boards are walked only with the map's Maps switch on,
         #: as on `/graph`, so a board no longer joins two notes it holds.
@@ -1690,9 +1615,7 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
     so the model is asked again next time. Cancelling is the browser's: an
     abandoned request still caches what it got, for the next ask.
     """
-    rows = list(
-        session.scalars(select(Entry).where(Entry.id.in_(body.ids), Entry.is_deleted.is_(False)))
-    )
+    rows = graph_layers.live_entries_by_ids(session, body.ids)
     if not rows:
         raise HTTPException(status_code=404, detail="Those notes could not be found.")
     readable = sorted((e for e in rows if not e.is_private), key=lambda e: e.id)
@@ -1740,7 +1663,6 @@ def _build_topics(session: Session) -> dict:
     """`entry/topics.build` over the same index as the clusters, with each
     readable note's tags, entities and title words as the naming terms. A
     private note is in a topic (its links are not secret) and lends no word."""
-    from tessellate.core.database import Entity, EntityMention
     from tessellate.search.query import STOPWORDS
 
     index = paths.build(session)
@@ -1755,9 +1677,7 @@ def _build_topics(session: Session) -> dict:
             if word not in STOPWORDS:
                 terms.add(("word", word))
         terms_of[entry.id] = terms
-    for name, entry_id in session.execute(
-        select(Entity.name, EntityMention.entry_id).join(Entity, Entity.id == EntityMention.entity_id)
-    ):
+    for name, entry_id in graph_layers.entity_name_mentions(session):
         if entry_id in terms_of and name and name.strip():
             terms_of[entry_id].add(("entity", name.strip()))
     found = topic_finder.build(index, terms_of, titles)
@@ -2018,7 +1938,6 @@ def _hop_reasons(session: Session, index: paths.Connections, pairs: list[tuple[i
     the link suggestions use). Nothing for a hop with a private end: its tags
     and entities come from its text."""
     from tessellate.ai import relations
-    from tessellate.core.database import Entity, EntityMention
 
     readable = {
         node: entry for node, entry in index.entries.items() if not entry.is_private
@@ -2038,14 +1957,10 @@ def _hop_reasons(session: Session, index: paths.Connections, pairs: list[tuple[i
         for other, step in steps.items():
             if step.kind in ("link", "thread"):
                 neighbours.setdefault(node, set()).add(other)
-    entity_ids = set(session.scalars(select(EntityMention.entity_id).where(EntityMention.entry_id.in_(wanted))))
+    entity_ids = graph_layers.entity_ids_in(session, wanted)
     entity_notes: dict[str, set[int]] = {}
     if entity_ids:
-        for name, entry_id in session.execute(
-            select(Entity.name, EntityMention.entry_id)
-            .join(Entity, Entity.id == EntityMention.entity_id)
-            .where(EntityMention.entity_id.in_(entity_ids))
-        ):
+        for name, entry_id in graph_layers.entity_name_mentions(session, entity_ids):
             entity_notes.setdefault((name or "").strip(), set()).add(entry_id)
     return {
         (a, b): relations.explain_pair(a, b, notes, neighbours, entity_notes)
@@ -2148,11 +2063,7 @@ def pin_nodes(body: PinsBody, session: Session = Depends(get_session)) -> dict:
             continue
         kind, number = target
         (notes if kind == "" else documents)[number] = row
-    entries = (
-        session.query(Entry)
-        .filter(Entry.id.in_(notes), Entry.is_deleted == False)  # noqa: E712
-        .all()
-    )
+    entries = graph_layers.pin_targets(session, notes)
     for entry in entries:
         entry.graph_pin_x = notes[entry.id].x
         entry.graph_pin_y = notes[entry.id].y
@@ -2178,11 +2089,7 @@ def unpin_all_nodes(session: Session = Depends(get_session)) -> dict:
     workspace filter here: this route has no more reason to reach across
     spaces than `pin_node` above does.
     """
-    pinned = (
-        session.query(Entry)
-        .filter(Entry.is_deleted == False, Entry.graph_pin_x.is_not(None))  # noqa: E712
-        .all()
-    )
+    pinned = graph_layers.pinned_notes(session)
     held = documents_repo.pinned(session)
     # Every pin cleared, documents and nodes a filter hides included, so the
     # Undo puts back exactly what this released (K9, K10).

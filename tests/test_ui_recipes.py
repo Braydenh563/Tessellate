@@ -2311,7 +2311,7 @@ def test_the_row_swipe_presses_the_rows_own_actions():
     see."""
     app = app_js_text()
     start = app.index("function initRowSwipe(list, actions)")
-    body = app[start : app.index("// --- the note page", start)]
+    body = app[start : app.index("//: The sheet's head already says", start)]
     assert '".favourite-btn"' in body
     assert "binNoteWithUndo(" in body
     assert 'input[type="checkbox"]' in body, "the reminder swipe presses the row's own Done"
@@ -4177,7 +4177,8 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     assert "paintAssistantAvatar(holder, 20)" in chat[chat.index("function paintAssistantHeads") :][:200]
     #: `assistantHeadRow` moved to help-chat.js (lazy) with its only callers (Brief 101a).
     assert "paintAssistantAvatar(avatar, 20)" in js["help-chat.js"][js["help-chat.js"].index("function assistantHeadRow") :][:600]
-    assert "paintAssistantHeads()" in js["navigation.js"], "a section change fills the static heads"
+    #: The section just shown, not every section (L603): a hidden one fills its own when shown.
+    assert "paintAssistantHeads($(wanted) || document)" in js["navigation.js"], "a section change fills the static heads"
     guide = js["help-chat.js"]
     assert guide.count("assistantHeadRow(GUIDE_NAME)") == 4, "a guide row, its pending row, the streamed one and the revealed one each open with the head"
     #: The setting: a default, a control, a live repaint and a reset.
@@ -5733,7 +5734,7 @@ def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in frontend_text(p.name)}
-    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js"):  # note-cards.js name site moved to entry-menu.js (L611)
+    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-gestures.js"):  # note-cards.js name site moved to entry-menu.js (L611)
         assert name in used, name
 
 
@@ -6191,6 +6192,11 @@ def test_a_dot_on_the_graph_answers_with_its_hover_card():
     assert "gcHoverCardFrame(s);" in canvas
     rule = css[css.index(".graph-hovercard {") :].split("}")[0]
     assert "backdrop-filter" not in rule and "var(--modal-bg-opaque)" in rule
+    # The card may be closed and switched off (DESIGN.md): the X is its one live part.
+    assert "gcHoverCardDismiss" in canvas and '"Hide this card"' in canvas
+    assert "pointer-events: auto;" in css[css.index(".graph-hovercard-close {") :].split("}")[0]
+    assert "pointer-events: none;" in rule
+    assert "gcHoverCardOn(s)" in canvas and 'id="graph-card-on"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
 def test_ghost_topics_are_one_lazy_layer_with_four_keys():
@@ -6880,8 +6886,10 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
     responsive = css["10-responsive.css"]
     assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
-    assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
-    delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
+    # No `:not(.hidden)` on the menu (2026-11-21): it made every `hidden` toggle restyle a
+    # whole subtree (test_css_invalidation), and a shown menu starts its rows' animations anyway.
+    assert ".action-menu > :nth-child(-n + 8)" in responsive
+    delays = re.findall(r"\.action-menu > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
     assert [int(n) for n, _ in delays] == list(range(2, 9)), "rows 2 to 8 each have a step of delay, and nothing past 8"
     assert all("var(--ui-step)" in d for _, d in delays)
     for frames in ("ui-grow", "ui-row"):
@@ -8285,3 +8293,48 @@ def test_no_stylesheet_declares_the_weight_650() -> None:
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
     assert not hits, f"declare 600, not 650: {hits}"
+
+
+def test_the_capture_strip_recipe_holds() -> None:
+    """The formatting strip's four rules (DESIGN.md, the toolbar with more tools than a row holds).
+
+    Reported on Capture: the menu opener a filled pill among bare buttons, Insert the first tool
+    behind More with room to spare, and a caret as tall as the three-line placeholder.
+    """
+    theme = (ROOT / "frontend" / "js" / "documents-cm-theme.js").read_text(encoding="utf-8")
+    placeholder = re.search(r'"\.cm-placeholder":\s*\{([^}]*)\}', theme)
+    assert placeholder and 'position: "absolute"' in placeholder.group(1), (
+        "a placeholder in the line's flow makes an empty line as tall as the placeholder"
+    )
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".doc-toolbar summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary)," in css, (
+        "the strip's menu opener must carry the disclosure rule's exclusions or that rule paints it as a pill"
+    )
+    docs = documents_text()
+    extras = docs[docs.index("function mountEditorToolbarExtras"):]
+    extras = extras[: extras.index("for (const menu of EDITOR_TOOLBAR_MENUS)")]
+    assert extras.index('"ph:plus Insert"') < extras.index("doc-toolbar-pair"), (
+        "the row folds from its end, so Insert must come before the Undo and Indent pairs"
+    )
+    assert "document.fonts?.ready?.then(fitDocToolbars)" in docs, "a late font must refit the strip"
+    #: The note's Live, Source and Read switch (L-documents-53) sat in the strip as a `.seg` well: 40px
+    #: tall beside 32px tools, every segment filled and the chosen one rimmed (the owner: a grey pill that
+    #: pushed Insert to a hidden line). In the strip it is the strip's own buttons, the chosen one in the
+    #: strip's one "on" (the accent edge and soft fill, as Bold pressed).
+    seg = _css_block("#note-toolbar > #entry-view-seg")
+    assert re.search(r"padding:\s*0", seg) and re.search(r"background:\s*transparent", seg), seg
+    rest = _css_block("#note-toolbar > #entry-view-seg > button:not([aria-pressed=\"true\"])")
+    assert re.search(r"background:\s*transparent", rest) and "box-shadow: none" in rest, rest
+    on = _css_block("#note-toolbar > #entry-view-seg > button[aria-pressed=\"true\"]")
+    assert "var(--accent-soft)" in on and "var(--accent)" in on and "box-shadow: none" in on, on
+def test_the_map_of_meaning_names_groups_and_draws_ties_with_one_recipe() -> None:
+    """Owner 2026-11-22: the Map of meaning is names, nearest-meaning ties and a fallback line, all from
+    the one projection route; the layout control carries its own help, and DESIGN.md indexes it."""
+    graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    canvas = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "mapLinks" in graph and "gcDrawMeaningNames" in canvas
+    assert 'data-help-for="graph-layout-help"' in html and 'id="graph-layout-help"' in html
+    assert "The meaning map" in design and "gcDrawMeaningNames" in design
+    assert "mapLinks" not in canvas.replace("graphLate.mapLinks", "")  # one tie builder, in graph.js

@@ -1515,6 +1515,22 @@
                   the box, and stops at once when you press Revoke. Each row
                   says when that app last used it.
                 </p>
+                <p>
+                  Categories and Tags limit a link to notes filed in those
+                  categories or carrying those tags: the app cannot search,
+                  list, read, follow a connection to or change any other note,
+                  and a note it adds must be filed inside. Leave both empty for
+                  the whole notebook.
+                </p>
+                <p>
+                  An app such as claude.ai can sign in with OAuth instead of a
+                  pasted token: give it the address /mcp on this app and it
+                  opens a page that waits. The sign-in appears below under
+                  Waiting to sign in with a short code; check the code matches
+                  and press Approve on this computer. The notes and changes
+                  ticked above apply to it, and it is listed and revoked like
+                  any other link. Nothing is sent anywhere else.
+                </p>
               </div>
               <label class="check-row">
                 <input type="checkbox" id="pref-mcp-writes">
@@ -1534,6 +1550,16 @@
                 <input id="mcp-client-name" type="text" maxlength="60" placeholder="Claude Desktop">
                 <button type="button" id="mcp-client-create" class="ghost small"><i class="ph ph-link ph-lead" aria-hidden="true"></i> Make a link</button>
               </div>
+              <!-- L-world-class-560: a link reaches only these notes (core/mcp_scope.py). -->
+              <p class="muted">Only these notes, or leave both empty for the whole notebook.</p>
+              <div class="row field-row">
+                <label for="mcp-client-cats" class="muted">Categories</label>
+                <input id="mcp-client-cats" type="text" maxlength="400" placeholder="Work, Reading">
+              </div>
+              <div class="row field-row">
+                <label for="mcp-client-tags" class="muted">Tags</label>
+                <input id="mcp-client-tags" type="text" maxlength="400" placeholder="travel">
+              </div>
               <label class="check-row">
                 <input type="checkbox" id="mcp-client-writes">
                 <span>This app can add and change notes
@@ -1547,6 +1573,9 @@
                 </div>
               </div>
               <ul id="mcp-client-list" class="entry-list" aria-label="Apps with a link"></ul>
+              <!-- OAuth sign-ins waiting for this computer's approval (routes_mcp_oauth.py). -->
+              <p id="mcp-oauth-head" class="muted hidden">Waiting to sign in. Approve gives the app the notes and changes chosen above.</p>
+              <ul id="mcp-oauth-list" class="entry-list" aria-label="Waiting to sign in"></ul>
             </div>
           </template>
           </section>

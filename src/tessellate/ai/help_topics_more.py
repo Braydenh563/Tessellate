@@ -20,6 +20,7 @@ id, which `openSettingsModal(section, target)` scrolls to and lights).
 from __future__ import annotations
 
 from tessellate.ai.help_topics_more_mid import MID_TOPICS
+from tessellate.ai.help_topics_web import ASSISTANT_BROWSER, ASSISTANT_BROWSER_META, MCP_LINKS, MCP_LINKS_META
 
 MORE_TOPICS: list[dict] = [
     {
@@ -329,15 +330,10 @@ MORE_TOPICS: list[dict] = [
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
             "cut that reply short", "model size", "does atlas do sums",
-            "mcp link", "connect claude", "revoke a token",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop; "
-            "it can also read your notes (never "
-            "a private one) and use your skills as prompts. It reads only until "
-            "you tick Let that app add and change notes. Make a link gives an "
-            "app its own token, shown once, to revoke. "
+            "Use these tools from another app, at the end of this section, is "
+            "its own topic. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
@@ -655,14 +651,16 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "health", "is my notebook ok", "integrity", "integrity check", "corrupt",
             "corruption", "last backup", "last error", "data folder size", "how big",
-            "is it healthy", "check the database",
+            "is it healthy", "check the database", "speed", "slow", "how fast", "speed budget",
         ),
         "body": (
             "Settings, About, Health says how the notebook is, each line dated: "
             "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), what "
             "is running now, the last error in the log, and Integrity, whose "
             "Check now has the database check itself and counts the search index "
-            "beside your notes. The palette's Health goes straight there. The "
+            "beside your notes. Speed's Check now times this notebook's searches, "
+            "lists, boards and documents against the limits the app is held to, "
+            "with this page's first paint. The palette's Health goes straight there. The "
             "app also gives the notebook file a quick check each time it starts, "
             "and if that fails it says so and points to the newest backup in "
             "Settings, Import & export."
@@ -1184,6 +1182,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "badge": {"label": "Web clipper", "section": "data", "target": "web-clip-box"},
     },
+    ASSISTANT_BROWSER,
     {
         "id": "import-apps",
         "keywords": (
@@ -1766,6 +1765,7 @@ TOPIC_META: dict[str, dict] = {
     "running-copies": {"title": "Running copies", "path": "Settings, About, Running copies", "target": "running-copies-group"},
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
+    "assistant-browser": ASSISTANT_BROWSER_META, "mcp-links": MCP_LINKS_META,
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
     "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after (the app's Undo lasts for the session)"},
     "autonomous": {"title": "Autonomous background AI", "path": "Settings, Background tasks"},
@@ -2002,7 +2002,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch", "searxng",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch", "searxng", "assistant-browser",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
@@ -2768,6 +2768,7 @@ MORE_TOPICS.append({
     ),
 })
 TOPIC_META["find-a-place"] = {"title": "Finding where something is", "path": "Notes tab, Ask your notebook"}
+MORE_TOPICS.append(MCP_LINKS)
 MORE_TOPICS.append({
     "id": "nicknames",
     "title": "Calling Atlas by any name",

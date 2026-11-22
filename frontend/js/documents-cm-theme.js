@@ -143,6 +143,106 @@
     },
   };
 
+  //: The table grid rules (the markdown table as a CSS grid over the line), split out so docCmTheme stays
+  //: under the function-size cap. A function, not a const: docTableGridRules is in documents-cm-load.js, which loads after this file.
+  function docCmTableRules() {
+  return {
+    //: --- tables ---------------------------------------------------------
+    //: **A grid over the line, not a `<table>` widget.** Replacing the block
+    //: with a rendered table is what every "table editor" in a markdown app
+    //: does and it is what forces them to have a serialiser, which is what
+    //: loses the author's own whitespace (PLAN D4's gate, and the long
+    //: comment on the model at the top of this file). Here the pipes are
+    //: hidden like every other marker in this view and each cell is a mark,
+    //: so `display: grid` on the line turns those marks into the columns:
+    //: the text on screen is still the text in the file, at the same
+    //: offsets, and the caret walks it normally.
+    //:
+    //: `minmax(0, 1fr)` rather than `1fr`, because a grid column's implicit
+    //: minimum is its content's min-content width, so one long unbroken word
+    //: in a cell would push the table wider than the editor instead of
+    //: wrapping.
+    ".cm-md-table": {
+      display: "grid",
+      "--doc-table-col-min": "6em",
+      borderLeft: "1px solid var(--border)",
+      //: The cell menu is positioned against whichever row it is on.
+      position: "relative",
+    },
+    //: Past `DOC_TABLE_GRID_MAX` columns there is no class to place the
+    //: cells with, so the line falls back to what it did before them. It is
+    //: the worse rendering (every zero-width child behind a hidden pipe
+    //: takes a track of its own), and it is a table no editor this wide can
+    //: show usefully in any case.
+    ".cm-md-table-wide": {
+      gridAutoFlow: "column",
+      gridAutoColumns: "minmax(var(--doc-table-col-min), 1fr)",
+    },
+    ...docTableGridRules(),
+    ".cm-md-table-head": {
+      fontWeight: "650",
+      backgroundColor: "var(--field-inset)",
+      borderTop: "1px solid var(--border)",
+      //: The cell menu is positioned against this line.
+      position: "relative",
+    },
+    //: The rendered view's own cell inset (`.md-table td`: 0.4rem by
+    //: 0.6rem), where this was 0.05em by 0.5em and a row of words sat
+    //: against the rules above and below it (17c, measured in
+    //: `scratchpad/ui-sweeps/docblocks17c.js`).
+    ".cm-md-td": {
+      padding: "var(--space-2) var(--space-4)",
+      borderRight: "1px solid var(--border)",
+      borderBottom: "1px solid var(--border)",
+    },
+    //: The cell the caret is in: a ring inside the cell, so it moves no
+    //: rule and changes no column width, and a faint ground that sits
+    //: under a selection rather than hiding it.
+    ".cm-md-td-active": {
+      boxShadow: "inset 0 0 0 2px var(--accent)",
+      backgroundColor: "color-mix(in srgb, var(--accent) 6%, transparent)",
+      borderRadius: "var(--radius-sm, 6px)",
+    },
+    ".cm-md-table .cm-md-td-last": {
+      paddingRight: "calc(var(--space-4) + 1.75rem)",
+    },
+    //: Room for the filter chip beside the menu, so it never covers the header's last word.
+    ".cm-md-table .cm-md-td-filtered": { paddingRight: "calc(var(--space-4) + 1.75rem + 9rem)" },
+    ".cm-md-td-left": { textAlign: "left" },
+    ".cm-md-td-center": { textAlign: "center" },
+    ".cm-md-td-right": { textAlign: "right" },
+    //: The delimiter row is the header's underline, and the header's cells
+    //: already draw that. With its own text hidden it would otherwise leave
+    //: a blank line through the middle of the table; it comes back to full
+    //: height the moment the caret arrives on it, which is the rule `---`
+    //: has followed here since Phase 2.
+    ".cm-md-table-rule": { height: "0", overflow: "hidden" },
+    //: A frontmatter line, hidden the same way and for the same reason: the
+    //: properties panel above the editor is where it is read and written.
+    //: `border: 0` as well as the height, and it is measured: the opening
+    //: fence is also a `---`, so it carries `.cm-md-rule`'s bottom border,
+    //: and a zero-high line with a border is a 1px line across the top of
+    //: the document.
+    ".cm-md-frontmatter": { height: "0", overflow: "hidden", border: "0" },
+    //: Out of the grid's flow, or the menu would be a column of its own and
+    //: every cell in the table would narrow to make room for it.
+    //: Centred on its row, which is now any row (the menu follows the
+    //: caret): pinned to the top it sat 5px high on a one-line row.
+    ".cm-md-table-menu": {
+      position: "absolute",
+      right: "2px",
+      top: "calc(50% - 0.875rem)",
+      opacity: "0.7",
+    },
+    ".cm-md-table-menu:hover, .cm-md-table-menu:focus-within": { opacity: "1" },
+    //: A filtered row is out of the grid, not blank. Two classes beat the
+    //: line's `display: grid`.
+    ".cm-md-table.cm-md-row-hidden": { display: "none" },
+    //: A formula's result reads as a computed value, not typed text.
+    ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
+  };
+  }
+
   //: **One theme per mode** (L-world-class-890): `EditorView.theme` mounts a
   //: new style module each call and CodeMirror keeps every module it has
   //: mounted, so building one per editor kept about 90KB of rules for every
@@ -248,7 +348,11 @@
         ".cm-selectionMatch": { backgroundColor: "var(--accent-soft)" },
         ".cm-searchMatch": { backgroundColor: "var(--accent-soft)" },
         ".cm-searchMatch.cm-searchMatch-selected": { outline: "1px solid var(--accent)" },
-        ".cm-placeholder": { color: "var(--muted)" },
+        //: Out of the line's flow: CodeMirror draws it as an inline-block, so a three-line
+        //: placeholder made the empty line three lines tall and the caret with it (the owner,
+        //: Capture: "the caret is 3 lines tall"). Absolute with no offsets it stays where the
+        //: line starts and takes no height.
+        ".cm-placeholder": { color: "var(--muted)", position: "absolute", maxWidth: "calc(100% - 2rem)", whiteSpace: "pre-wrap", pointerEvents: "none" },
         ".cm-tooltip": {
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
@@ -1083,99 +1187,7 @@
         ".cm-md-image": { maxWidth: "100%", borderRadius: "var(--radius-sm)" },
         ".cm-md-image-under": { display: "block", marginTop: "var(--space-2)" },
 
-        //: --- tables ---------------------------------------------------------
-        //: **A grid over the line, not a `<table>` widget.** Replacing the block
-        //: with a rendered table is what every "table editor" in a markdown app
-        //: does and it is what forces them to have a serialiser, which is what
-        //: loses the author's own whitespace (PLAN D4's gate, and the long
-        //: comment on the model at the top of this file). Here the pipes are
-        //: hidden like every other marker in this view and each cell is a mark,
-        //: so `display: grid` on the line turns those marks into the columns:
-        //: the text on screen is still the text in the file, at the same
-        //: offsets, and the caret walks it normally.
-        //:
-        //: `minmax(0, 1fr)` rather than `1fr`, because a grid column's implicit
-        //: minimum is its content's min-content width, so one long unbroken word
-        //: in a cell would push the table wider than the editor instead of
-        //: wrapping.
-        ".cm-md-table": {
-          display: "grid",
-          "--doc-table-col-min": "6em",
-          borderLeft: "1px solid var(--border)",
-          //: The cell menu is positioned against whichever row it is on.
-          position: "relative",
-        },
-        //: Past `DOC_TABLE_GRID_MAX` columns there is no class to place the
-        //: cells with, so the line falls back to what it did before them. It is
-        //: the worse rendering (every zero-width child behind a hidden pipe
-        //: takes a track of its own), and it is a table no editor this wide can
-        //: show usefully in any case.
-        ".cm-md-table-wide": {
-          gridAutoFlow: "column",
-          gridAutoColumns: "minmax(var(--doc-table-col-min), 1fr)",
-        },
-        ...docTableGridRules(),
-        ".cm-md-table-head": {
-          fontWeight: "650",
-          backgroundColor: "var(--field-inset)",
-          borderTop: "1px solid var(--border)",
-          //: The cell menu is positioned against this line.
-          position: "relative",
-        },
-        //: The rendered view's own cell inset (`.md-table td`: 0.4rem by
-        //: 0.6rem), where this was 0.05em by 0.5em and a row of words sat
-        //: against the rules above and below it (17c, measured in
-        //: `scratchpad/ui-sweeps/docblocks17c.js`).
-        ".cm-md-td": {
-          padding: "var(--space-2) var(--space-4)",
-          borderRight: "1px solid var(--border)",
-          borderBottom: "1px solid var(--border)",
-        },
-        //: The cell the caret is in: a ring inside the cell, so it moves no
-        //: rule and changes no column width, and a faint ground that sits
-        //: under a selection rather than hiding it.
-        ".cm-md-td-active": {
-          boxShadow: "inset 0 0 0 2px var(--accent)",
-          backgroundColor: "color-mix(in srgb, var(--accent) 6%, transparent)",
-          borderRadius: "var(--radius-sm, 6px)",
-        },
-        ".cm-md-table .cm-md-td-last": {
-          paddingRight: "calc(var(--space-4) + 1.75rem)",
-        },
-        //: Room for the filter chip beside the menu, so it never covers the header's last word.
-        ".cm-md-table .cm-md-td-filtered": { paddingRight: "calc(var(--space-4) + 1.75rem + 9rem)" },
-        ".cm-md-td-left": { textAlign: "left" },
-        ".cm-md-td-center": { textAlign: "center" },
-        ".cm-md-td-right": { textAlign: "right" },
-        //: The delimiter row is the header's underline, and the header's cells
-        //: already draw that. With its own text hidden it would otherwise leave
-        //: a blank line through the middle of the table; it comes back to full
-        //: height the moment the caret arrives on it, which is the rule `---`
-        //: has followed here since Phase 2.
-        ".cm-md-table-rule": { height: "0", overflow: "hidden" },
-        //: A frontmatter line, hidden the same way and for the same reason: the
-        //: properties panel above the editor is where it is read and written.
-        //: `border: 0` as well as the height, and it is measured: the opening
-        //: fence is also a `---`, so it carries `.cm-md-rule`'s bottom border,
-        //: and a zero-high line with a border is a 1px line across the top of
-        //: the document.
-        ".cm-md-frontmatter": { height: "0", overflow: "hidden", border: "0" },
-        //: Out of the grid's flow, or the menu would be a column of its own and
-        //: every cell in the table would narrow to make room for it.
-        //: Centred on its row, which is now any row (the menu follows the
-        //: caret): pinned to the top it sat 5px high on a one-line row.
-        ".cm-md-table-menu": {
-          position: "absolute",
-          right: "2px",
-          top: "calc(50% - 0.875rem)",
-          opacity: "0.7",
-        },
-        ".cm-md-table-menu:hover, .cm-md-table-menu:focus-within": { opacity: "1" },
-        //: A filtered row is out of the grid, not blank. Two classes beat the
-        //: line's `display: grid`.
-        ".cm-md-table.cm-md-row-hidden": { display: "none" },
-        //: A formula's result reads as a computed value, not typed text.
-        ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
+        ...docCmTableRules(),
         ...DOC_CM_TAIL_RULES,
       },
       { dark }

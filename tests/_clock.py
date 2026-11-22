@@ -90,7 +90,6 @@ HOLDERS: tuple[tuple[str, str], ...] = (
     ("tests.test_insights_api", "utcnow"),
     ("tests.test_night_pairs", "utcnow"),
     ("tests.test_pair_passes_paths", "utcnow"),
-    ("tests.test_plans_at_5000", "utcnow"),
     ("tests.test_properties_never_in_previews", "utcnow"),
     ("tests.test_query_plans", "utcnow"),
     ("tests.test_questions_own", "utcnow"),

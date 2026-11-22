@@ -62,7 +62,9 @@ def to_space(session: Session, space_id: str, ids: list[int]) -> dict:
     reads them), a note keeps its category's name (made in the target when it
     has none), and what hangs off a note comes with it: its files, reminders
     and fade score, and links whose both ends moved. A link to a note left
-    behind stays where it was."""
+    behind is never dropped (L-world-class-22): the row stays, and the
+    ambient filter reads it from either end's space (`core/database`), so both
+    notes list it and its chip names the other space."""
     if space_id == "all":
         raise ValueError("Pick one space to move them to.")
     if session.get(Space, space_id) is None:

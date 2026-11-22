@@ -46,6 +46,7 @@ from collections.abc import Callable, Iterator
 from itertools import chain
 from dataclasses import dataclass
 from dataclasses import field as dc_field
+from enum import Enum
 
 from sqlalchemy.orm import Session
 
@@ -54,6 +55,7 @@ from tessellate.ai.lazy import LazyModule
 from tessellate.ai import budget as run_budget, plan_writes, skills, tools
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
+from tessellate.ai.steps import drive as drive_steps
 
 logger = logging.getLogger("tessellate.skills")
 
@@ -1258,20 +1260,73 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
     (WORLD_CLASS_PLAN A5). The order of the checks inside is load-bearing and
     each one's comment says why it is where it is.
     """
-    step = run.steps[index]
     _count_step()
-    st = _begin_step(setup, index, step)
-    while st.outcome is None:
-        source = yield from _open_turn(setup, run, st)
-        if source is None:
-            break
-        seen = yield from _observe_turn(run, source)
-        yield from _judge_turn(run, st, seen)
-    if st.outcome == "abort":
-        return "stop"
-    if st.outcome != "done":
-        return (yield from _replan_or_stop(setup, run, st))
-    return _after_done(setup, run, index)
+    attempt = _Attempt(setup, run, index, _begin_step(setup, index, run.steps[index]))
+    return (yield from drive_steps(_ATTEMPT_STEPS, Step.OPEN, Step.DONE, attempt))
+
+
+class Step(Enum):
+    """`_run_one_step`'s states (WORLD_CLASS_PLAN decision 61), one function each.
+
+    OPEN starts an attempt's turn; OBSERVE reads what it did; JUDGE holds it
+    to the step's contract and either asks again (OPEN) or settles; SETTLE
+    turns the outcome into the run loop's next move ("next", "again", "stop").
+    """
+
+    OPEN = "open"
+    OBSERVE = "observe"
+    JUDGE = "judge"
+    SETTLE = "settle"
+    DONE = "done"
+
+
+@dataclass
+class _Attempt:
+    """What a `Step` function of `_run_one_step` reads or changes."""
+
+    setup: _RunSetup
+    run: _RunState
+    index: int
+    st: _StepState
+    source: object = None
+    seen: object = None
+    #: The run loop's next move, set by SETTLE; `drive_steps` returns it.
+    result: str | None = None
+
+
+def _attempt_open(at: _Attempt) -> Iterator[dict]:
+    if at.st.outcome is not None:
+        return Step.SETTLE
+    at.source = yield from _open_turn(at.setup, at.run, at.st)
+    return Step.SETTLE if at.source is None else Step.OBSERVE
+
+
+def _attempt_observe(at: _Attempt) -> Iterator[dict]:
+    at.seen = yield from _observe_turn(at.run, at.source)
+    return Step.JUDGE
+
+
+def _attempt_judge(at: _Attempt) -> Iterator[dict]:
+    yield from _judge_turn(at.run, at.st, at.seen)
+    return Step.OPEN
+
+
+def _attempt_settle(at: _Attempt) -> Iterator[dict]:
+    if at.st.outcome == "abort":
+        at.result = "stop"
+    elif at.st.outcome != "done":
+        at.result = yield from _replan_or_stop(at.setup, at.run, at.st)
+    else:
+        at.result = _after_done(at.setup, at.run, at.index)
+    return Step.DONE
+
+
+_ATTEMPT_STEPS = {
+    Step.OPEN: _attempt_open,
+    Step.OBSERVE: _attempt_observe,
+    Step.JUDGE: _attempt_judge,
+    Step.SETTLE: _attempt_settle,
+}
 
 
 def _run_skill(

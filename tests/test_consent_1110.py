@@ -322,6 +322,6 @@ def test_a_yes_to_an_offer_that_repeats_a_reminder_still_asks(client, session):
 
 
 def test_a_three_note_request_parks_three_cards():
-    from tessellate.ai import agent
+    from tessellate.ai import agent_policy
 
-    assert agent.MAX_PARKED_CONFIRMS >= 12
+    assert agent_policy.MAX_PARKED_CONFIRMS >= 12

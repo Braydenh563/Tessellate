@@ -591,10 +591,7 @@ const loadResponseModes = (() => {
       if (active) select.title = active.description;
     }
   };
-  onSurface("chat", paint);
-  //: The Ask box's picker is built with the notes surface: painted only with Chat's, it opened an
-  //: empty list on a session that had not opened Chat (menus.js at 1440).
-  onSurface("notes", paint);
+  onSurface("chat", paint); onSurface("notes", paint); // the Ask box's Answer length list is built with Notes (L-general-71)
   return async () => {
     body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
     paint();

@@ -14,7 +14,7 @@ import re
 from sqlalchemy.orm import Session
 from tessellate.repo import relation_types
 from tessellate.ai import toolrank, toolwords
-from tessellate.ai.tools.tool_sets import CHANGE_TOOLS, CORE_TOOLS, TOOL_GROUPS, WRITE_TOOLS, tool_enabled
+from tessellate.ai.tools.tool_sets import CHANGE_TOOLS, CORE_TOOLS, ONLINE_TOOLS, TOOL_GROUPS, WRITE_TOOLS, tool_enabled
 from tessellate.ai.tools.tool_read import CHARS_PER_TOKEN
 from tessellate.ai.tools.tool_table import TOOLS
 from tessellate.ai.tools.tool_focus import focus_detail
@@ -325,14 +325,14 @@ def tool_catalog() -> list[dict]:
             "description": spec.description,
             "destructive": spec.destructive or spec.name in CHANGE_TOOLS,
             "enabled": tool_enabled(spec.name),
-            "online": spec.name in ("web_search", "read_url"),
+            "online": spec.name in ONLINE_TOOLS,
             "counts": spec.name in COUNTING_TOOLS,
             #: The Settings list's group (CHAT_PLAN, INBOX 71): what a tool
             #: does to the notebook, the one question a person switching it
             #: off is asking.
             "group": (
                 "online"
-                if spec.name in ("web_search", "read_url")
+                if spec.name in ONLINE_TOOLS
                 else "confirm"
                 if spec.destructive or spec.name in CHANGE_TOOLS or spec.name in WRITE_TOOLS
                 else "read"

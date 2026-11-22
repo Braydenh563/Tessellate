@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+from tests._clock import pin_clock
 from tessellate.ai import learning
 from tessellate.core import database
-from tests._clock import pin_clock
 
 FIXED_NOW = datetime(2026, 11, 14, 9, 0, 0, tzinfo=timezone.utc)
 

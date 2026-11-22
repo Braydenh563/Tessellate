@@ -153,7 +153,7 @@ def test_an_open_panel_is_kept_clear_and_a_fitted_map_refits_round_it():
     assert "if (entries.some((entry) => entry.target.id !== s.boxId && !entry.target.matches(GC_FIT_MENUS))) gcRefitForPanels(s);" in CANVAS
     assert 'const GC_FIT_MENUS = "#graph-options, #graph-help-panel, #graph-card > .graph-overlay > .dock";' in CANVAS
     refit = CANVAS[CANVAS.index("\nfunction gcRefitForPanels(") : CANVAS.index("\n}\n", CANVAS.index("\nfunction gcRefitForPanels("))]
-    assert "s.userZoomed || s.intro || !s.zoom" in refit and "else if (s.fittedOnce) fitGraphToView(" in refit
+    assert "s.userZoomed || s.intro || s.refitPending || !s.zoom" in refit  # the read-again guard joined the list (L-graph-20) and "else if (s.fittedOnce) fitGraphToView(" in refit
 
 
 def test_the_zoom_buttons_count_as_moving_the_camera_and_fit_as_fitting_it():

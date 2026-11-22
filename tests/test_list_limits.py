@@ -34,6 +34,10 @@ BOUNDED = {
     "/chat/tools",
     # The slash commands (ai/slash.py): a registry in code, like the modes.
     "/chat/commands",
+    # MCP tokens: at most MAX_CLIENTS live (20), revoked rows pruned after a while;
+    # sign-in requests: at most MAX_PENDING (20), each gone after ten minutes.
+    "/mcp-clients",
+    "/mcp-oauth/requests",
     "/skills",
     "/extras",
     # The document file types the importer accepts: also a literal.
@@ -116,7 +120,7 @@ NAMED = {
     "/entries/changes": ("../entry/listing.py", ".limit(CHANGES_IDS_MAX + 1)"),
     # The graph draws every note by design; documents are capped and the
     # encoded payload is cached while nothing moves (`_payload_key`).
-    "/graph": ("routes_graph.py", ".limit(GRAPH_DOCUMENT_CAP)"),
+    "/graph": ("routes_graph.py", "documents_repo.unshelved(session, GRAPH_DOCUMENT_CAP)"),
 }
 
 

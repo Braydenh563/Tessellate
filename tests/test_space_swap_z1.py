@@ -82,6 +82,9 @@ def test_deleting_the_open_space_keeps_its_undo() -> None:
 #: doc22-1102: docNoteTypes, docNoteTypesAsked and docPropsDrawn (note types per notebook, two flags) moved
 #: into documents-props.js's closure, so they are no longer module-level names here.
 EXEMPT = {
+    "importWorker": "the import upload worker's handle, not data",
+    "staged": "the upload worker's own scope (no app state): the files of one import, replaced by the next one's first chunk",
+    "graphAutoFitDone": "the graph camera's framed-once flag (UI, not data): switchTab clears it on a fresh visit",
     "uiStateOnServer": "the notebook's mirrored settings",
     "paletteUsage": "which palette commands were used, per notebook",
     "askHistoryTotal": "reset with the Ask history list (loadAskHistoryBadge reads it again)",
@@ -421,6 +424,8 @@ const ctx = {
   kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
   //: The server-down refusal (22.1 item 6) reads these; the server is up in this harness.
   serverUnreachable: false, retryServerNow() {}, showServerDownBanner: () => "",
+  //: The hand-lock refusal (L529) reads this; the app is unlocked in this harness.
+  lockedByHand: false,
   toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
   //: A fetch that answers when the test says so, with the kind of body it is told.
   fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),

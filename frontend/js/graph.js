@@ -1191,7 +1191,7 @@ function renderTraceReadout(result) {
     arrow.className = "ph ph-arrow-right graph-trace-arrow-icon";
     arrow.setAttribute("aria-hidden", "true");
     const how = document.createElement("span");
-    how.className = "graph-trace-connector-label";
+    how.className = "graph-trace-connector-label visually-hidden";
     how.textContent = also.length ? `${step.how} +${also.length}` : step.how;
     connector.append(arrow, how);
     path.append(connector, noteButton(byId.get(step.target)));
@@ -1874,12 +1874,14 @@ function graphFill(data) {
     n.tags ??= [];
     n.access_count ??= 0;
     n.edited_at ??= null;
+    n.space_id ??= "default";
   }
   for (const e of data?.edges || []) {
     if (e.kind !== "link") continue;
     e.reason ??= null;
     e.reason_confidence ??= null;
     e.link_type ??= null;
+    e.two_way ??= false;
   }
   return data;
 }
@@ -2272,7 +2274,9 @@ let graphHighlightIds = null;
 //: (`GET /read/filter`, ai/filters.py; this file reads no words itself). The
 //: words left over still match the preview. A box with no filter in it
 //: (`ids` null) is the plain search it always was.
-const graphPhrase = { q: "", ids: null, rest: "", waiting: false, timer: 0 };
+//: `words`: the notes holding the words on the meaning layer (L628: request
+//: words dropped, a slip folded), lit beside the literal match.
+const graphPhrase = { q: "", ids: null, rest: "", words: null, waiting: false, timer: 0 };
 
 //: The server is asked after a pause, not per key: the plain words are matched
 //: in the page at once, and a phrase that is a filter replaces them when the
@@ -2282,6 +2286,7 @@ function graphReadPhrase(query) {
   if (graphPhrase.q === query) return;
   graphPhrase.q = query;
   graphPhrase.ids = null;
+  graphPhrase.words = null;
   clearTimeout(graphPhrase.timer);
   graphPhrase.waiting = Boolean(query);
   if (!query) return;
@@ -2294,6 +2299,7 @@ function graphReadPhrase(query) {
           graphPhrase.ids = new Set(got.ids);
           graphPhrase.rest = (got.rest || "").toLowerCase();
         }
+        if (got.word_ids) graphPhrase.words = new Set(got.word_ids);
         applyGraphHighlight(true);
       })
       .catch(() => {
@@ -2307,7 +2313,7 @@ function graphReadPhrase(query) {
 //: one match?": several times a note, and once per line end, every frame. Now
 //: it asks a set. The key is the node array, the query and what the server
 //: said about a phrase, so a hover or a pan reuses the last answer untouched.
-const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", ids: null, list: [], at: -1, current: null };
+const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", words: null, ids: null, list: [], at: -1, current: null };
 
 //: A note's lowercase name, kept on the node and made again only when the
 //: preview itself changed (an edit, a rename): the label index.
@@ -2320,10 +2326,11 @@ function graphPreviewLower(node) {
 }
 
 function graphNodeMatches(node, query) {
+  const held = graphPhrase.q === query && Boolean(graphPhrase.words?.has(node.id));
   if (graphPhrase.ids && graphPhrase.q === query) {
-    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || graphPreviewLower(node).includes(graphPhrase.rest));
+    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || held || graphPreviewLower(node).includes(graphPhrase.rest));
   }
-  return !query || graphPreviewLower(node).includes(query);
+  return !query || held || graphPreviewLower(node).includes(query);
 }
 
 //: The notes `query` lights: `list` newest first (the order Enter walks them
@@ -2332,8 +2339,9 @@ function graphNodeMatches(node, query) {
 function graphSearchFor(nodes, query) {
   const g = graphSearch;
   const phrase = graphPhrase.q === query ? graphPhrase.ids : null;
-  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest) return g;
-  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, at: -1, current: null });
+  const words = graphPhrase.q === query ? graphPhrase.words : null;
+  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest && g.words === words) return g;
+  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, words, at: -1, current: null });
   g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query)) : [];
   g.list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")) || a.id - b.id);
   g.ids = query ? new Set(g.list.map((n) => n.id)) : null;
@@ -3078,19 +3086,30 @@ const graphLate = {
 //: that mean alike sit together. The layout is synchronous, so the first call
 //: starts the fetch and draws the notes in a row until it arrives; a note the
 //: server has no point for (no vector yet, private) stays in that row below
-//: the map. No lines: the picture is about distance.
+//: the map. With no embedding model the server places notes by their shared
+//: words and says so (`source: "words"`; the canvas names it). Faint lines
+//: join each note to its nearest by meaning (`ties`) beside the person's own
+//: links (`graphLate.mapLinks`), and `clusters` carry the names the canvas
+//: draws over each group (`gcDrawMeaningNames`).
 graphLate.projection = null;
 graphLate.layoutMap = function (nodes, width, height) {
-  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false };
-  const fresh = graphLate.projection && Date.now() - graphLate.projection.at < 60000;
+  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false, map: true };
+  //: Fresh for a minute, or for five seconds once a note has no point (written since): the
+  //: row it waits in is the picture's weakest part, so it is asked about again soon.
+  const held = graphLate.projection;
+  const unplaced = held && nodes.some((n) => !held.points.has(n.id));
+  const fresh = held && Date.now() - held.at < (unplaced ? 5000 : 60000);
   if (!graphLate.projection || (!fresh && !graphLate.projection.busy)) {
-    const held = graphLate.projection;
-    graphLate.projection = { at: held ? held.at : 0, busy: true, points: held ? held.points : new Map() };
+    graphLate.projection = { ...(held || { points: new Map(), ties: [], clusters: [], source: "model" }), at: held ? held.at : 0, busy: true };
     apiJson("/graph/projection")
       .then((data) => {
         const points = new Map(data.points.map((p) => [p.id, p]));
-        graphLate.projection = { at: Date.now(), busy: false, points };
-        if (graphLayout() === "map") renderGraph();
+        graphLate.projection = { at: Date.now(), busy: false, points, ties: data.ties || [], clusters: data.clusters || [], source: data.source || "model" };
+        if (graphLayout() === "map") {
+          //: The camera framed the row the notes waited in; frame the map unless the person has moved it.
+          if (!gcTab.userZoomed) graphAutoFitDone = false;
+          renderGraph();
+        }
       })
       .catch(() => {
         graphLate.projection.busy = false;
@@ -3121,7 +3140,23 @@ graphLate.layoutMap = function (nodes, width, height) {
     node.shared = false;
     done.nodes.push(node);
   }
+  done.clusters = graphLate.projection.clusters;
+  done.source = graphLate.projection.source;
   return done;
+};
+//: The lines the map draws: the notes' own links as they are shown, and under
+//: them each note's nearest two by meaning (a pair the map already draws is
+//: not drawn twice). Ties are `similar` lines, so they wear the dotted accent
+//: look; the canvas fades the whole set (`gcDrawEdges`, `s.tree.map`).
+graphLate.mapLinks = function (shown, ids) {
+  const links = shown.map((e) => ({ ...e }));
+  const idOf = (end) => (end && end.id != null ? end.id : end);
+  const pairs = new Set(shown.map((e) => [idOf(e.source), idOf(e.target)].sort().join("|")));
+  for (const [a, b, score] of graphLate.projection?.ties || []) {
+    if (!ids.has(a) || !ids.has(b) || pairs.has([a, b].sort().join("|"))) continue;
+    links.push({ source: a, target: b, kind: "similar", score });
+  }
+  return links;
 };
 function watchGraphPopupSize(popup, place) {
   if (typeof ResizeObserver !== "function" || popup.dataset.placeWatch) return;
@@ -5038,7 +5073,7 @@ graphLate.wireSelectionMore();
 //: canvas renderer (the default) never ran the SVG render that used to do it,
 //: so Curved links, Cluster glow and Label backgrounds came back on after a
 //: reload while drawn from the box.
-const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group",
+const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group", "graph-card-on",
   "graph-focus-in", "graph-focus-out", "graph-focus-neighbours", "graph-pane-in", "graph-pane-out", "graph-pane-neighbours", "graph-autofit"];
 //: Off by default, so stored "1" means on; and the sliders' stored values.
 const GRAPH_STORED_OFF = ["graph-arrows", "graph-tidy"];
@@ -5095,6 +5130,10 @@ for (const prefix of ["focus", "pane"]) {
   }
 }
 
+$("graph-card-on")?.addEventListener("change", (event) => {
+  prefs.set("graph-card-on", event.target.checked ? "1" : "0");
+  gcRequestDraw();
+});
 $("graph-label-plates")?.addEventListener("change", (event) => {
   prefs.set("graph-label-plates", event.target.checked ? "1" : "0");
   gcRequestDraw();
@@ -5383,6 +5422,7 @@ const GRAPH_DEFAULTS = {
   "graph-labels": true,
   "graph-curved": true,
   "graph-label-plates": true,
+  "graph-card-on": true,
   "graph-nebula": true,
   "graph-length-score": true,
   "graph-group": true,

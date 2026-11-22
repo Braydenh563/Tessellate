@@ -35,7 +35,7 @@ NOTES = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "notes-list.j
 def test_the_category_list_is_not_drawn_behind_another_tab() -> None:
     """The first page of notes drew the Notes tab's sidebar on the dashboard (11 and 29ms at 6x CPU)."""
     start = NOTES.index("function renderSidebar() {")
-    head = NOTES[start : NOTES.index("const counts = new Map();", start)]
+    head = NOTES[start : NOTES.index("return drawSidebar();", start)]
     assert '$("tab-notes").classList.contains("hidden")' in head
     assert 'dataset.stale = "1"' in head and "return;" in head, "owed with the list's own debt"
 
@@ -43,4 +43,6 @@ def test_the_category_list_is_not_drawn_behind_another_tab() -> None:
 def test_the_debt_is_paid_when_the_list_is_drawn_for_a_visible_tab() -> None:
     start = NOTES.index("function renderEntries(appendOnly = false) {")
     first = NOTES[start : NOTES.index("\n", NOTES.index("renderSidebar()", start))]
-    assert 'dataset.stale) renderSidebar()' in first
+    #: L499 added the category list's own debt (`notesSidebarOwed`) beside the stale list.
+    assert '!$("tab-notes").classList.contains("hidden")' in first
+    assert 'dataset.stale || window.notesSidebarOwed)) renderSidebar()' in first

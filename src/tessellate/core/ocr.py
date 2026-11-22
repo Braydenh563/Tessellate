@@ -436,7 +436,8 @@ def _rapidocr_lines(image_path: Path) -> list[tuple[list, str, float]] | None:
     object with `boxes`, `txts` and `scores`. Both are read."""
     try:
         reader = _rapidocr_reader()
-        out = reader(str(image_path))
+        picture, scale = _rapidocr_input(image_path)
+        out = reader(picture)
     except Exception:
         logger.warning("RapidOCR failed for %s", image_path.name, exc_info=True)
         return None
@@ -457,11 +458,37 @@ def _rapidocr_lines(image_path: Path) -> list[tuple[list, str, float]] | None:
         if not text:
             continue
         try:
-            corners = [[float(x), float(y)] for x, y in box]
+            corners = [[float(x) / scale, float(y) / scale] for x, y in box]
         except (TypeError, ValueError):
             continue
         lines.append((corners, text, float(score)))
     return lines
+
+
+def _rapidocr_input(image_path: Path) -> tuple[object, float]:
+    """What RapidOCR reads, and how much bigger than the file it is (L703).
+
+    Small text is enlarged to `ocr_prep`'s target height, and nothing else:
+    RapidOCR has its own detector, and Tesseract's full preparation (grey,
+    inverted ground, stretched tones) read worse through it, mean similarity
+    0.853 to 0.805 over nine rendered pages (a 1.2px blur 0.994 to 0.626).
+    Enlarging alone took the mean to 0.876 (7px text 0.816 to 0.936, a dark
+    ground 0.942 to 1.000) with no page more than 0.003 worse. The path is
+    read as it was when the text is big enough or Pillow cannot open it."""
+    try:
+        import numpy as np
+        from PIL import Image
+
+        with Image.open(image_path) as img:
+            img.load()
+            scale = ocr_prep.scale_factor(ocr_prep.estimate_text_height(ocr_prep.to_grey(img)), *img.size)
+            if scale <= 1.0:
+                return str(image_path), 1.0
+            size = (max(1, round(img.width * scale)), max(1, round(img.height * scale)))
+            return np.asarray(img.convert("RGB").resize(size, resample=Image.Resampling.LANCZOS)), scale
+    except Exception:  # noqa: BLE001  # the enlargement is an improvement, never a reason the read fails
+        logger.info("RapidOCR enlargement skipped for %s", image_path.name, exc_info=True)
+        return str(image_path), 1.0
 
 
 def _rapidocr_text(image_path: Path) -> str:

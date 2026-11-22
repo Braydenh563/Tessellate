@@ -18,7 +18,7 @@ import pytest
 from tessellate.core import deps
 
 ROOT = Path(__file__).resolve().parent.parent
-STATUS = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("status.js", "status-embedding.js"))
+STATUS = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("status.js", "status-embedding.js", "status-ai-pill.js"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 

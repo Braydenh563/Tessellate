@@ -25,7 +25,7 @@ def _rule(selector: str) -> str:
 
 
 def test_the_category_list_is_one_tab_stop_with_arrows_home_end_and_the_menu_on_the_right_arrow():
-    text = (JS / "notes-list.js").read_text(encoding="utf-8")
+    text = (JS / "notes-list.js").read_text(encoding="utf-8") + (JS / "notes-sidebar.js").read_text(encoding="utf-8")
     assert "sidebarRovingRows(ul);" in text
     roving = text.split("function sidebarRovingRows", 1)[1].split("\n}\n", 1)[0]
     assert "li.tabIndex = li === stop ? 0 : -1" in roving and "button.tabIndex = -1" in roving

@@ -91,6 +91,8 @@ def test_a_read_written_with_its_json_arguments_is_a_call():
     argument is the schema's own shape, a call rather than a description; it
     is taken ungated only for a read, which costs a round if it was not
     meant, never a change to the notebook."""
+    import tessellate.ai.tools  # noqa: F401  registers the write list; alone, nothing is a read
+
     calls, cleaned = extract_text_tool_calls(
         'I\'ve listed the notes: search_notes({"query": "loose ends"}) and more.', TOOLS
     )
@@ -179,3 +181,14 @@ def test_a_stray_close_tag_never_reaches_the_stream():
 def test_a_close_tag_split_across_chunks_is_still_caught():
     content, _thinking = _stream(["<think>a</th", "ink>b"])
     assert content == "b"
+
+
+def test_qwen_small_doubled_opening_brace_is_still_the_call():
+    """L-world-class-842, measured: Qwen2.5-1.5B on its own chat template in
+    llama-cpp-python wrote this for "Open https://bread.example/", one `{`
+    more than it closed. It read as no call, and the raw tag was the answer."""
+    text = '<tool_call>\n{{"name": "search_notes", "arguments": {"query": "bread"}}\n</tool_call>'
+    call, cleaned = _one(text)
+    assert call["name"] == "search_notes" and call["arguments"] == {"query": "bread"}
+    assert "<tool_call>" not in cleaned
+

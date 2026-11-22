@@ -350,3 +350,35 @@ def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(ap
     assert response.status_code in (200, 504), response.text[:200]
     assert took < 5.0
     assert hanging.held >= 1 and _seen(hanging.client_closed)
+
+
+def test_a_probe_already_out_is_not_waited_on_again(monkeypatch):
+    """No wall clock: while one probe is held, a second call returns the last
+    answer without waiting; only the call that started the probe waits."""
+    from types import SimpleNamespace
+
+    from tessellate.ai import backend_hint
+
+    waits = []
+
+    class _Counted(threading.Event):
+        def wait(self, timeout=None):  # noqa: ANN001, ANN201
+            waits.append(timeout)
+            return super().wait(0)
+
+    release, started = threading.Event(), []  # made before the spy: it really holds
+    #: Its own namespace, not `threading` itself: Thread.start waits on an Event too.
+    monkeypatch.setattr(backend_hint, "threading", SimpleNamespace(Event=_Counted, Lock=threading.Lock))
+    latest = backend_hint.Latest(False)
+
+    def probe():  # noqa: ANN202
+        started.append(1)
+        release.wait(HANG_GUARD)
+        return True
+
+    try:
+        assert latest.get(probe) is False
+        assert latest.get(probe) is False
+        assert len(waits) == 1 and started == [1]
+    finally:
+        release.set()

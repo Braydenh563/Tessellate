@@ -41,9 +41,29 @@ function mapPreview(board, { size = "card" } = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", `board-minimap board-minimap-${size}`);
   svg.setAttribute("aria-hidden", "true");
-  ensureModule("mapPreview").then((ok) => ok && mapPreviewDraw(svg, board, size));
+  mapPreview.queue.push([svg, board, size]);
+  if (mapPreview.queue.length === 1) ensureModule("mapPreview").then((ok) => (ok ? mapPreview.drain() : (mapPreview.queue.length = 0)));
   return svg;
 }
+//: **Drawn a few at a time** (L-world-class-354): every miniature waiting on the lazy file drew in the
+//: one task its load ended, 92 to 119ms at 4x CPU at dashboard boot (bootlongtasks.js, 5,000 notes).
+//: Now each task draws until 12ms have gone, then yields, so no draw run is a long task on its own.
+mapPreview.queue = [];
+mapPreview.drain = async () => {
+  const queue = mapPreview.queue;
+  while (queue.length) {
+    const end = performance.now() + 12;
+    //: One bad board is logged and skipped, so the queue never sticks with an item in it.
+    while (queue.length && performance.now() < end) {
+      try {
+        mapPreviewDraw(...queue.shift());
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    if (queue.length) await (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
+  }
+};
 
 //: How many things are on a board, as the sentence a person reads. On a map
 //: the objects *are* the nodes, so calling them "images", which every surface

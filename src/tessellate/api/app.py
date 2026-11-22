@@ -70,6 +70,7 @@ from tessellate.core import (
     startup_status,
     validation_copy,
 )
+from tessellate.ai import wiring  # noqa: F401  (registers the AI factories core/deps builds with)
 from tessellate.core.deps import init_app_state
 from tessellate.entry import manager_purge
 
@@ -1594,6 +1595,8 @@ ROUTER_ROWS: tuple[Row, ...] = (
     #: behind the lock; `/mcp` itself checks its own bearer token instead.
     Row("routes_mcp", "router", LOCKED, "/mcp-clients"),
     Row("routes_mcp", "open_router", OPEN, "/mcp"),
+    Row("routes_mcp_oauth", "router", LOCKED, "/mcp-oauth"),
+    Row("routes_mcp_oauth", "open_router", OPEN, "/.well-known /oauth"),
     Row("routes_read", "router", LOCKED, "/read"),
     Row("routes_spelling", "router", LOCKED, "/grammar /spelling /spellpacks"),
     Row("routes_statistics", "router", LOCKED, "/statistics"),

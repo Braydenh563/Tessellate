@@ -30,16 +30,16 @@
         return "wrap";
       }
       if (stored === "row" || stored === "wrap") return stored;
-      //: No stored choice and a narrow window: one row (143 px wrapped, 59 px
-      //: here at 700 px wide; dogfood item 10). The toggle always wins.
-      return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
+      //: No stored choice: one row at every width, with what does not fit behind More (`fitDocToolbarRow`),
+      //: the one mechanism Capture's strip uses too. Wrapping was the default above 760px and drew the
+      //: documents strip's last tools (Undo, Redo) on a second row or past its end (the owner, at 1920).
+      //: The layout toggle always wins.
+      return "row";
     } catch {
       return "wrap"; // private mode: the safe shape, since it never clips
     }
   }
 
-  const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
-  window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
 
   function applyDocToolbarMode(mode) {
     const row = mode === "row";
@@ -676,6 +676,10 @@
     const shown = [...document.querySelectorAll(".doc-toolbar")].filter((bar) => bar.getClientRects().length);
     for (const bar of shown) fitDocToolbarRow(bar);
   }
+  //: A late font changes every tool's width and not the strip's, so the width observer never sees it:
+  //: the row was fitted on the fallback face and ran past its end on the real one. Once, at load.
+  document.fonts?.ready?.then(fitDocToolbars);
+  document.fonts?.addEventListener?.("loadingdone", fitDocToolbars);
 
   //: The file's surface: what other files call.
   Object.assign(window, { docGutterPref, docGutterWanted, applyDocGutter, docToolbarCollapsed, applyDocToolbarCollapsed, setDocToolbarCollapsed, docSyncFormatShow, toggleDocToolbar, mountDocToolbarControlsFor, applyDocToolbarLayoutButtons });

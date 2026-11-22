@@ -20,7 +20,7 @@ from typing import Callable
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import clock, deps
+from tessellate.core import clock, deps, mcp_scope
 from tessellate.repo import memberships
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import EmbeddingRecord, Entry
@@ -76,6 +76,20 @@ def mark_outside() -> None:
 def outside_seen() -> contextvars.ContextVar[list[bool] | None]:
     """The variable itself, for `execute_tool` to open and close per call."""
     return _OUTSIDE
+
+
+#: The tools that reach the internet: hidden until the web switch is on, grouped
+#: "online" in Settings, Tools, and open-world to an MCP client.
+ONLINE_TOOLS = frozenset({
+    "web_search", "read_url",
+    "browser_open", "browser_read", "browser_follow", "browser_find", "browser_back",
+})
+
+#: Their confirm sentences (merged into `tool_run`'s table).
+BROWSER_CONFIRMS = {
+    "browser_open": lambda a: f"Open {a.get('url', 'a web page')} in the panel",
+    "browser_follow": lambda a: f"Follow link {a.get('link', '?')} on the open page",
+}
 
 
 class ToolError(ValueError):
@@ -249,6 +263,8 @@ def _visible(*extra):
         #: Boards and maps are `Entry` rows too, but these are the *note*
         #: tools; the whiteboard tools read boards by their own queries.
         Entry.is_board == False,  # noqa: E712
+        #: An outside client's token scoped to some notes (core/mcp_scope.py).
+        *(() if (scoped := mcp_scope.current.get()) is None else (Entry.id.in_(scoped),)),
         *extra,
     )
 
@@ -335,7 +351,8 @@ def _undo_edit(session: Session, entry: Entry) -> dict:
 
 def _require_note(session: Session, args: dict, field: str = "note_id") -> Entry:
     entry = manager.get_entry(session, int(args[field]))
-    if entry is None or entry.is_deleted:
+    #: Outside a token's scope reads as missing, so the client learns nothing.
+    if entry is None or entry.is_deleted or not mcp_scope.in_scope(entry.id):
         raise ToolError(f"No note with id {args.get(field)}")
     if entry.is_private:
         # Deliberately the same wording as a missing note in spirit, but

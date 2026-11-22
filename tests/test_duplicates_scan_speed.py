@@ -124,3 +124,93 @@ def test_a_long_tail_vocabulary_keeps_the_prefix_filter():
     prepared = [duplicates._prepare(" ".join(rng.choice(vocab) for _ in range(40))) for _ in range(500)]
     work, words = duplicates._prefix_work(prepared, duplicates.DEFAULT_THRESHOLD)
     assert len(prepared) ** 2 * words / 2 >= work * duplicates.DENSE_PER_CANDIDATE
+
+
+#: L-world-class-410 (2026-11-21): a note's own word, one no other note holds
+#: ("Note 4123"), can never be shared, yet it counted in the dense scan's
+#: vocabulary. Each note's number put 5,000 notes over 25 common words past
+#: the dense budget, so the prefix filter compared nearly every pair in
+#: Python: `GET /tidy` (the dashboard's Tidy badge) took 70 s and the
+#: server's memory climbed to 2.1 GB. The matrix is built over shared words.
+def _numbered(count: int, seed: int) -> list[str]:
+    rng = random.Random(seed)
+    vocab = "harbor launch plan garden bread river budget meeting travel recipe draft notes ideas".split()
+    return [f"note{n} " + " ".join(rng.choice(vocab) for _ in range(rng.randint(3, 30))) for n in range(count)]
+
+
+@pytest.mark.parametrize("threshold", [0.4, 0.72, 0.9, 1.0])
+def test_words_held_by_one_note_change_no_dense_answer(threshold):
+    texts = _numbered(160, 11) + ["solo", "solo", "", "alone words here"]
+    assert _dense(texts, threshold) == pytest.approx(_brute(texts, threshold))
+
+
+def test_a_word_of_its_own_on_every_note_keeps_the_dense_scan():
+    prepared = [duplicates._prepare(t) for t in _numbered(1500, 13)]
+    work, words = duplicates._prefix_work(prepared, duplicates.DEFAULT_THRESHOLD)
+    #: Only the 13 shared words make columns; the 1,500 numbers do not.
+    assert words == 13
+    started = time.perf_counter()
+    list(duplicates._scan(prepared, duplicates.DEFAULT_THRESHOLD))
+    assert time.perf_counter() - started < 4.0
+
+
+def _reference_groups(prepared, threshold):
+    """The old grouping: a union-find over every pair, best score per group."""
+    parent = list(range(len(prepared)))
+
+    def root(node):
+        while parent[node] != node:
+            node = parent[node]
+        return node
+
+    pairs = list(duplicates._scan(prepared, threshold))
+    for i, j, _score in pairs:
+        parent[root(i)] = root(j)
+    members, top = {}, {}
+    for index in range(len(prepared)):
+        members.setdefault(root(index), []).append(index)
+    for i, _j, score in pairs:
+        top[root(i)] = max(top.get(root(i), 0.0), score)
+    return sorted((group, top[root(group[0])]) for group in members.values() if len(group) > 1)
+
+
+
+def _grouped(prepared, threshold):
+    """Groups of two or more and each group's best score, from `_groups`. Its
+    signature moved in the base merge (array blocks in, roots and scores out,
+    L-world-class-872); what is asserted of it here is unchanged."""
+    roots, top = duplicates._groups(len(prepared), duplicates._scan_blocks(prepared, threshold))
+    members = {}
+    for index, group in enumerate(roots):
+        members.setdefault(group, []).append(index)
+    return [(group, top[root]) for root, group in members.items() if len(group) > 1]
+
+
+@pytest.mark.parametrize("threshold", [0.4, 0.72, 1.0])
+@pytest.mark.parametrize("texts", ["numbered", "mixed"])
+def test_groups_match_a_union_find_over_every_pair(threshold, texts):
+    """L-world-class-410: groups and their best score are the old answer on
+    both the dense path (numbered) and the prefix filter (mixed)."""
+    if texts == "numbered":
+        sample = _numbered(300, 5) + ["solo", "solo", ""]
+    else:
+        rng = random.Random(9)
+        words = [f"w{n}" for n in range(400)]
+        sample = [" ".join(rng.sample(words, rng.randint(2, 6))) for _ in range(300)] + ["x y", "x y z"]
+    prepared = [duplicates._prepare(t) for t in sample]
+    got = sorted(_grouped(prepared, threshold))
+    assert [g for g, _s in got] == [g for g, _s in _reference_groups(prepared, threshold)]
+    assert [s for _g, s in got] == pytest.approx([s for _g, s in _reference_groups(prepared, threshold)])
+
+
+def test_millions_of_alike_pairs_group_in_seconds():
+    """5,000 notes over 25 shared words had 11.5 million qualifying pairs and
+    a 51 s `/tidy`; 2,500 such notes must group well inside 10 s."""
+    rng = random.Random(3)
+    words = [f"w{n}" for n in range(25)]
+    sample = [f"note{n} " + " ".join(rng.sample(words, rng.randint(8, 14))) for n in range(2500)]
+    prepared = [duplicates._prepare(t) for t in sample]
+    started = time.perf_counter()
+    groups = _grouped(prepared, 0.4)
+    assert time.perf_counter() - started < 10.0
+    assert sum(len(g) for g, _s in groups) > 2000
