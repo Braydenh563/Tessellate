@@ -28,7 +28,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SKIP = re.compile(
     r"^(docs/roadmap/(BACKLOG|HISTORY)\.md|CHANGELOG\.md|docs/CHANGELOG\.md|docs/CODEMAP\.md"
     r"|frontend/vendor/|frontend/fonts/|.*\.min\.(js|css)$|.*\.lock$|.*package-lock\.json$"
-    r"|\.claude/skills/ui-ux-pro-max/|scripts/open_scan\.py$|tests/fixtures/)"
+    r"|\.claude/skills/ui-ux-pro-max/|scripts/open_scan\.py$|tests/fixtures/"
+    #: A form a contributor ticks per PR: its empty boxes are the form.
+    r"|\.github/PULL_REQUEST_TEMPLATE\.md$)"
 )
 TEXT = re.compile(r"\.(md|txt|py|js|css|html|json|ya?ml|toml|sh|cfg|ini)$")
 
@@ -45,6 +47,18 @@ SIGNAL = re.compile(
 
 #: A reminder's default text ("Follow up: <note>") is app copy, not work.
 COPY = re.compile(r"`Follow up: \$\{")
+#: An API's own keyword that shares a marker word: SQLAlchemy's
+#: `mapped_column(..., deferred=True)` loads a column on first read.
+API_WORD = re.compile(r"\bdeferred=True\b")
+#: Prose whose marker word is a plain verb, matched as the exact phrase
+#: (PR 242 review: teach the scan the phrase rather than bend the prose):
+#: a pass that "must still open it" (a file) and a button that a feature
+#: "had left open" (asked for). The match is within one line, so each
+#: phrase must stay on one line where it is written (a re-wrap brings the hit back).
+PROSE = re.compile(r"\bmust still open it\b|\bRun button had left open\b")
+#: Each exception strips only its own match, so a marker on the same line
+#: (`deferred=True)  # TODO`) is still reported.
+_EXCEPT = (API_WORD, PROSE)
 #: Text in quotes in a code file is copy a user reads (a checkbox's "Not
 #: done", a template's "## Still open", the `todo` callout), never a work
 #: marker; a marker lives in a comment or a docstring (owner, INBOX 1810).
@@ -161,7 +175,10 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):
                 continue
-            if SIGNAL.search(seen[i - 1]) and not COPY.search(line):
+            rest = seen[i - 1]
+            for word in _EXCEPT:
+                rest = word.sub("", rest)
+            if SIGNAL.search(rest) and not COPY.search(line):
                 found.append((f, i, line.strip()[:200]))
     return found
 
