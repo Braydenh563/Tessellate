@@ -81,4 +81,4 @@ def test_both_boxes_use_it_and_load_the_layer() -> None:
         assert '"/js/meaning.js"' in app[start : app.index("]", start)], bundle
     for name in ("library.js", "graph.js"):
         text = (JS / name).read_text(encoding="utf-8")
-        assert "meaningAlts(query" in text and "meaningHolds(things, text)" in text, name
+        assert "meaningAlts(query" in text and "meaningHolds(things, " in text, name

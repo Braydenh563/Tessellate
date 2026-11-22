@@ -793,14 +793,10 @@ function renderLibrary(options) {
     // Title *and* preview, for the same reason the conversation search reads
     // message text: you remember what a thing was about far more often than
     // what it ended up being called.
-    //: Read by meaning (L628, meaning.js in this bundle): an ending, a synonym, a slip of a word these
-    //: items use, the request's own words dropped; the plain words as before without the layer.
+    //: L628: by meaning too (meaning.js, in this bundle): an ending, a synonym, a slip, the request's own words dropped.
     const lowered = (i) => `${i.title || ""} ${i.preview || ""}`.toLowerCase();
-    const things = typeof meaningAlts === "function"
-      ? meaningAlts(query, new Set(items.flatMap((i) => lowered(i).match(/[a-z0-9]+/g) || [])))
-      : null;
-    const holds = (text) => text.includes(query) || (!!things && meaningHolds(things, text));
-    const wordMatch = (i) => i.serverMatch === query || holds(lowered(i));
+    const things = typeof meaningAlts === "function" && meaningAlts(query, new Set(items.flatMap((i) => lowered(i).match(/[a-z0-9]+/g) || [])));
+    const wordMatch = (i) => i.serverMatch === query || lowered(i).includes(query) || (!!things && meaningHolds(things, lowered(i)));
     // With Semantic on, a note also matches if the meaning search returned it,
     // even when it shares no words with the query. Everything else is
     // unchanged: see `librarySemanticIds`.
