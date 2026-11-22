@@ -29,7 +29,7 @@ function paletteKeys(match) {
 //: describe one control two ways); then the shortcut registry's label.
 function paletteAbouts() {
   const abouts = new Map();
-  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
+  const catalog = featureCatalog();
   for (const group of catalog) {
     for (const item of group.items || []) {
       if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);
@@ -338,6 +338,7 @@ function notificationsUnreadSaid() {
   return n ? `${n} unread.` : "All caught up.";
 }
 
+//: Activity's Agent runs and History tabs are rows of their own: they sat four presses deep (L-world-class-780).
 function paletteCommands() {
   const [editor, board] = paletteCommands.groups();
   //: And an open map's (whiteboard-map.js, lazy for the same reason).
@@ -578,8 +579,8 @@ function paletteCommands() {
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish french german italian portuguese language offline selection passage", about: "The selected passage into another language, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
-    { label: "ph:list-checks Agent runs", keywords: "activity past runs agent steps plan tools", about: "The agent's past runs, step by step.", act: () => openActivity("runs") },
-    { label: "ph:clock-counter-clockwise Job history", keywords: "activity history past jobs finished failed stopped log", about: "Jobs that finished, failed or were stopped.", act: () => openActivity("history") },
+    { label: "ph:activity Activity, Agent runs", keywords: "agent runs plans steps past tasks", about: "The agent's runs this session, step by step.", act: () => openActivity("runs") },
+    { label: "ph:clock-counter-clockwise Activity, History", keywords: "history finished jobs past background done", about: "Every run since the app started.", act: () => openActivity("history") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
     { label: "ph:tree-evergreen Settings, Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },

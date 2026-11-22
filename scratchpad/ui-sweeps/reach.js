@@ -15,6 +15,59 @@
 // is by words: a destination counts as named when every word of its last label
 // appears in one command's label, keywords, about or target.
 const L = require('./trustlib.js');
+
+// **Is a destination named by a palette command or a Guide topic?** By words, from each name it has: the
+// label pressed, the label's own head (a tooltip's words before its colon or full stop: "Skills: saved jobs
+// you can run" is Skills), and the names the destination shows (its lit headings and the dialog on top,
+// from the signature), because a live-state label ("Local: Nothing left this computer") names nothing
+// (L-world-class-781). Words are stemmed, so "Manage categories" finds the Guide's "Managing categories".
+// A tab's own name is lit on every destination in it, so it names none of them.
+const TABS = /^(dashboard|notes|chat|library|documents|graph|timeline|reminders|boards?|maps|images|files|settings)$/i;
+const NOISE = ['and', 'the', 'new', 'tab', 'this', 'for', 'you', 'your', 'what', 'here', 'with', 'from'];
+const stems = (s) => s.toLowerCase().replace(/&/g, ' and ').replace(/\(.*$/, '').split(/[^a-z]+/)
+  .filter((w) => w.length > 2 && !NOISE.includes(w)).map((w) => (w.length > 5 ? w.replace(/(ing|ies|es|e|s)$/, '') : w.replace(/s$/, '')));
+function namedBy(label, sig, cmds) {
+  const bare = label.replace(/^(actions for|more actions).*/i, '');
+  const [, lit = '', on = ''] = sig.split(' | ');
+  const names = [bare, bare.split(/[:.]\s/)[0], ...lit.split('+').map((x) => x.replace(/#$/, '')).filter((x) => !TABS.test(x)), on.replace(/^ON:/, '')]
+    .filter((x) => x && !/^(modal-overlay|settings)$/i.test(x.trim()));
+  const hit = (ws, pool) => ws.length && pool.some((c) => ws.filter((x) => c.includes(x)).length >= Math.ceil(ws.length * 0.7));
+  // A help popover (the '?' recipe) is reached by the Guide's topic of the same name.
+  if (/help|^about /i.test(bare)) {
+    const topic = stems(bare.replace(/help|^about /gi, ''));
+    if (!topic.length || cmds.some((c) => /guide|manual/.test(c) && topic.some((x) => c.includes(x)))) return true;
+    if (hit(topic, cmds)) return true;
+  }
+  // A row with no words of its own ('More actions', an 'Actions for' kebab) is a door, not a destination.
+  if (!stems(bare).length) return true;
+  return names.some((n) => hit(stems(n), cmds));
+}
+// A step inside a flow (L-world-class-781): a row reached from a destination that is named, so the flow's own
+// command or Guide topic finds the step (the Writing room's "Write from notes", New document's "Plain text (.txt)").
+// The top tabs never lend their name (every row of a tab would match), and a door ("More actions") is passed through
+// to its own parent. `byName` maps a row's ' > ' name to { depth, sig }.
+function inFlow(name, byName, cmds) {
+  const labels = name.split(' > ');
+  for (let k = labels.length - 1; k >= 1; k--) {
+    const up = byName.get(labels.slice(0, k).join(' > '));
+    if (!up || (up.depth <= 1 && TABS.test(labels[k - 1]))) return false;
+    const bare = labels[k - 1].replace(/^(actions for|more actions).*/i, '');
+    if (stems(bare).length && namedBy(labels[k - 1], up.sig, cmds)) return true;
+  }
+  return false;
+}
+
+// Self-check: the matcher's own cases, so a change that stops matching them fails before a 50-minute crawl.
+{
+  const cmds = ['guide managing categories', 'browse skills skills library run', 'settings, privacy', 'guide signing in', 'new document'];
+  const want = [['Manage categories', ' |  | ON:Manage categories', true], ['Skills: saved jobs you can run over your notes', ' |  | ON:Run a skill', true],
+    ['Local: Nothing left this computer since the app', ' | Privacy | ON:Settings', true], ['About signing in', ' |  | ON:About signing in', true],
+    ['Plain text (.txt)', 'tab-documents | Documents+Library | ', false], ['Quantum flux', ' |  | ON:Quantum flux', false]];
+  for (const [label, sig, ok] of want) if (namedBy(label, sig, cmds) !== ok) throw new Error(`reach.js self-check: "${label}" should ${ok ? '' : 'not '}be named`);
+  const byName = new Map([['Notes', { depth: 1, sig: 'tab-notes | Notes | ' }], ['Notes > Writing room', { depth: 2, sig: 'tab-notes | Notes+Writing room | ' }], ['Chat', { depth: 1, sig: 'tab-chat | Chat | ' }]]);
+  const flows = [['Notes > Writing room > Write from notes', true], ['Chat > Opens Atlas with this question', false], ['Notes > Quantum flux', false]];
+  for (const [name, ok] of flows) if (inFlow(name, byName, cmds.concat('guide writing room')) !== ok) throw new Error(`reach.js self-check: "${name}" should ${ok ? '' : 'not '}be a step in a named flow`);
+}
 const MAXD = Number(process.env.MAXD || 4);
 const NAVISH = /^(open|go to|manage|customi[sz]e|settings|tools|history|browse|view|show|see|details|properties|more|help|guide|tour|templates?|new|edit|find|filter|select|sort|search|bin|trash|activity|tidy|tags|categories|spaces?|notifications?|account|appearance|import|export|backup|about|shortcuts|recent|quick|capture|compose|ask|write|record|read|library|dashboard|notes|chat|graph|timeline|reminders|documents?|boards?|maps?|skills|images|files|links|bookmarks|contents)/i;
 const DANGER = /(delete|remove|clear|reset|wipe|erase|lock|quit|sign out|log ?out|uninstall|discard|empty|destroy|factory|restart|stop|shut ?down|close the app|unlink|forget|revoke|disconnect|update now|install|download|pull|run now)/i;
@@ -138,34 +191,28 @@ async function replay(page, path) {
     // The palette's registry against the destinations.
     await home(page);
     const cmds = await page.evaluate(() => paletteCommands().map((c) => [c.label, c.keywords || '', c.about || '', c.tab || '', c.reveal || ''].join(' ').toLowerCase().replace(/ph:[a-z-]+/g, '')));
-    //: The Guide's topics (title, path, lead, find words) are reached from the palette's Guide, so a popover
-    //: whose topic has one is not unnamed (L-world-class-781: 50 of 57 unnamed were 'About ...' popovers).
-    const guide = await page.evaluate(async () => (await apiJson('/help/topics')).groups.flatMap((g) => g.topics.map((t) => 'guide ' + [t.title, t.path || '', t.lead || '', [].concat(t.find || []).join(' ')].join(' ').toLowerCase())));
-    console.log(`\nGUIDE: ${guide.length} topics`);
-    console.log(`\nPALETTE: ${cmds.length} commands (each one chord or one click away)`);
+    // An 'About X' help popover is reached by the Guide's topic X (L-world-class-781): the Guide's
+    // titles join the haystack as 'guide ...' rows, so the help branch below matches them.
+    const guide = await page.evaluate(() => apiJson('/help/topics').then((l) => l.groups.flatMap((g) => g.topics.map((t) => 'guide ' + t.title.toLowerCase()))).catch(() => []));
+    if (!guide.length) throw new Error('reach.js: GET /help/topics gave no Guide topics');
     cmds.push(...guide);
-    const words = (s) => s.toLowerCase().replace(/&/g, ' and ').split(/[^a-z]+/).filter((w) => w.length > 2 && !['and', 'the', 'new', 'tab'].includes(w));
-    const missing = [];
+    console.log(`\nPALETTE: ${cmds.length - guide.length} commands (each one chord or one click away), Guide topics ${guide.length}`);
+    const missing = [], steps = [];
+    const byName = new Map(rows.map((r) => [r.name, r]));
     for (const r of rows.filter((r) => r.depth > 0)) {
-      const last = r.path[r.path.length - 1].split('|').slice(1).join('|').replace(/^(actions for|more actions).*/i, '');
-      const w = words(last.replace(/\(.*$/, ''));
-      if (!w.length) continue;
+      const label = r.path[r.path.length - 1].split('|').slice(1).join('|');
       if (/^(menu)\|/.test(r.path[r.path.length - 1])) continue;
-      // A help popover (the '?' recipe) is reached by the Guide's topic of the same name, so it is matched
-      // on its topic words alone, against every command and the Guide's own topic rows.
-      //: 'About ...' is the same '?' recipe (its label names the topic, not the word help): L-world-class-781.
-      if (/help|^\s*about\b/i.test(last)) {
-        const topic = words(last.replace(/help|^\s*about\b/gi, ''));
-        if (!topic.length || cmds.some((c) => /guide|manual/.test(c) && topic.some((x) => c.includes(x)))) continue;
-        if (cmds.some((c) => topic.filter((x) => c.includes(x)).length >= Math.ceil(topic.length * 0.7))) continue;
-      }
-      if (!cmds.some((c) => w.filter((x) => c.includes(x)).length >= Math.ceil(w.length * 0.7))) missing.push(r);
+      if (namedBy(label, r.sig, cmds)) continue;
+      if (inFlow(r.name, byName, cmds)) steps.push(r);
+      else missing.push(r);
     }
+    console.log(`STEPS INSIDE A NAMED FLOW: ${steps.length}`);
+    for (const r of steps) console.log(`${r.depth}  ${r.name}`);
     console.log(`DESTINATIONS WITH NO PALETTE COMMAND: ${missing.length} of ${rows.length - 1}`);
     for (const r of missing) console.log(`${r.depth}  ${r.name}`);
     const byDepth = {};
     for (const r of rows) byDepth[r.depth] = (byDepth[r.depth] || 0) + 1;
-    console.log(`\nSUMMARY (${process.env.THEME || 'light'}): destinations ${rows.length}, by depth ${JSON.stringify(byDepth)}, deeper than 3: ${deep.length}, no palette command: ${missing.length}, palette commands ${cmds.length}`);
+    console.log(`\nSUMMARY (${process.env.THEME || 'light'}): destinations ${rows.length}, by depth ${JSON.stringify(byDepth)}, deeper than 3: ${deep.length}, no palette command: ${missing.length}, steps in a named flow: ${steps.length}, palette commands ${cmds.length - guide.length}, Guide topics ${guide.length}`);
   };
   let frontier = [{ path: [], sig: start.sig, candidates: start.candidates, page: start.sig.split(' | ')[0] }];
   // The header and the tab bar are on every page: pressed from the first page

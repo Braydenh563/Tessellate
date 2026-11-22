@@ -142,7 +142,7 @@ function fillEntryMenu(menu, entry) {
       run: async () => {
         if (!(await openNoteEditor(entry.id))) return;
         // The edit textarea now exists, improve it in place.
-        const box = document.querySelector(`#entry-list li[data-id="${entry.id}"] textarea`);
+        const box = noteRowFor(entry.id)?.querySelector("textarea");
         if (box) openImprove(box);
       },
     },
@@ -458,7 +458,7 @@ fillEntryMenu.headings = async function (entry) {
 };
 
 fillEntryMenu.jump = async function (id, index, total, text) {
-  const row = document.querySelector(`li[data-id="${id}"]`);
+  const row = noteRowFor(id) || document.querySelector(`li[data-id="${id}"]`);
   const content = row?.querySelector(".entry-content");
   if (!content) return;
   const more = row.querySelector(".entry-more");

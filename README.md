@@ -493,29 +493,29 @@ vulnerability, see [SECURITY.md](SECURITY.md).
 Each interaction has a time budget, held by a test that fails when it is
 exceeded (`tests/test_budgets.py` for the server, `tests-e2e/specs/budgets.spec.js`
 in a real browser; the table is `BUDGETS` in `src/tessellate/api/routes_bench.py`).
-Measured in headless Chromium on an idle four-core machine, on a 500-note
+Measured in headless Chromium on a four-core machine at idle (load under 2 before each run), on a 500-note
 notebook with a board of 500 objects and a document of 50,000 words. Each
 measured figure is the slowest of four runs' medians; the budget is 1.5 times it.
 
 | Interaction | Measured (ms) | Budget (ms) |
 | --- | --- | --- |
-| Boot to first paint | 259 | 390 |
-| First interaction | 1891 | 2840 |
-| List paint | 53 | 80 |
-| Search | 20 | 30 |
-| Board open | 119 | 180 |
-| Document open | 114 | 180 |
+| Boot to first paint | 312 | 470 |
+| First interaction | 2101 | 3160 |
+| List paint | 65 | 100 |
+| Search | 23 | 40 |
+| Board open | 111 | 170 |
+| Document open | 118 | 180 |
 
 The same figures as bars, slowest first (first interaction left out, as it would
 dwarf the rest):
 
 | Interaction | Measured | |
 | --- | --- | --- |
-| Boot to first paint | 259 ms | ██████████████ |
-| Board open | 119 ms | ██████ |
-| Document open | 114 ms | ██████ |
-| List paint | 53 ms | ███ |
-| Search | 20 ms | █ |
+| Boot to first paint | 312 ms | ██████████████ |
+| Document open | 118 ms | █████ |
+| Board open | 111 ms | █████ |
+| List paint | 65 ms | ███ |
+| Search | 23 ms | █ |
 
 The first interaction is the first click the app answers after a cold start,
 with the session kept. `GET /models/bench/budgets?live=true` times the server's

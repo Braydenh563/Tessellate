@@ -390,7 +390,7 @@
   //: tab, its filters and the person's place are left alone; the toast's Open
   //: is the full jump.
   function flashSavedRow(id) {
-    const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
+    const card = noteRowFor(id);
     if (!card || card.getClientRects().length === 0) return;
     card.scrollIntoView({ block: "nearest", behavior: "auto" });
     card.classList.remove("flash");

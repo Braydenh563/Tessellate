@@ -62,7 +62,7 @@ async function noteFormMayClose() {
 //: The keyboard back on a note's row after a redraw, unless it went somewhere.
 function focusNoteRow(id) {
   restoreFocusTo(() => {
-    const row = document.querySelector(`#entry-list > li[data-id="${id}"]`);
+    const row = noteRowFor(id);
     if (!row) return null;
     for (const other of document.querySelectorAll("#entry-list > li[tabindex='0']")) other.tabIndex = -1;
     row.tabIndex = 0;
@@ -101,7 +101,7 @@ function heldNoteControl() {
 function restoreNoteControl(held) {
   if (!held) return;
   restoreFocusTo(() => {
-    const li = document.querySelector(`#entry-list > li[data-id="${held.id}"]`);
+    const li = noteRowFor(held.id);
     //: Else the row itself (Save changes closed its form), which a script may focus.
     if (li && !li.hasAttribute("tabindex")) li.tabIndex = -1;
     return (held.cls && li?.querySelector(`.${held.cls}`)) || li;
@@ -1827,135 +1827,6 @@ function sortEntries(entries) {
   return [...entries].sort((a, b) => byPinned(a, b) || cmp(a, b));
 }
 
-//: **One windowed list, for Notes and the Timeline** (audit 1029 N9, audit 1028
-//: S16 and S53). `renderIncrementally` (library.js) only ever added: a list
-//: scrolled to its end held every card, 300 notes 12,126 elements, and the
-//: Timeline's own paging did the same with 8 elements a row, 27,500 nodes at
-//: 2,000 rows. Here every row is an empty `<li class="row-shell">` holding its
-//: place (its key, the height it last drew at), and only the rows within
-//: `ROW_WINDOW_MARGIN` of the scroller's window are built; a built row that is
-//: `ROW_WINDOW_FAR` past the window becomes a shell again once the scroll
-//: settles. A shell is one element, so a notebook costs one node a row plus
-//: the screenful. The keyboard builds the row it moves to (`fill`), the
-//: selection lives in `selectedIds` and not in the rows, and a row being
-//: edited, holding focus, open or with a menu open is never hollowed
-//: (`stays`), nor the one Tab stop. One instance serves any number of lists (the Timeline has a
-//: list a day) and `add` appends, which is how a page of the Timeline lands.
-const ROW_WINDOW_MARGIN = "1200px 0px";
-const ROW_WINDOW_BATCH = 6;
-const ROW_WINDOW_FAR = 3000;
-const ROW_WINDOW_CARRY = ["rail-subject", "flash"];
-
-function windowRows(root, o) {
-  const info = new WeakMap(); // row -> { items, i }
-  const lists = new WeakMap(); // list -> its items
-  const live = new Set(); // rows built now
-  let timer = 0;
-  let off = false;
-  const carry = (to, from) => {
-    if (!from) return to;
-    to.tabIndex = from.tabIndex;
-    for (const name of ROW_WINDOW_CARRY) if (from.classList.contains(name)) to.classList.add(name);
-    return to;
-  };
-  //: `o.shell` names the shell's tag: a `<tbody>` takes `tr` (L491, the Timeline table).
-  const shellFor = (items, i, from) => {
-    const li = document.createElement(o.shell || "li");
-    li.className = "row-shell";
-    li.setAttribute("aria-hidden", "true");
-    //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
-    li.style.cssText = `visibility:hidden;height:${o.heights.get(o.keyOf(items[i])) || o.guess}px`;
-    li.tabIndex = -1;
-    o.tag(li, items[i]);
-    info.set(li, { items, i });
-    return carry(li, from);
-  };
-  const make = (items, i, from) => {
-    const li = carry(o.build(items[i], i), from);
-    info.set(li, { items, i });
-    live.add(li);
-    observer.observe(li);
-    return li;
-  };
-  //: A shell is hidden, so it cannot take focus: the keyboard (Home, End,
-  //: the arrows) builds the row it is moving to first.
-  function fill(shell) {
-    const at = info.get(shell);
-    if (!at || !shell.classList.contains("row-shell") || !shell.parentElement) return shell;
-    const li = make(at.items, at.i, shell);
-    shell.replaceWith(li);
-    o.onFill?.(li);
-    return li;
-  }
-  //: The rows beyond it come with it, further from the window: a few rows in
-  //: one frame cost less than a row in every frame of a scroll.
-  function fillRun(target, up) {
-    const run = [target];
-    const step = up ? "previousElementSibling" : "nextElementSibling";
-    for (let el = target[step]; el?.classList.contains("row-shell") && run.length < ROW_WINDOW_BATCH; el = el[step]) run.push(el);
-    for (const shell of run) fill(shell);
-  }
-  //: Rows are emptied once the scroll settles, never on the frame they left:
-  //: building a card is mostly the browser styling its forty elements, so a
-  //: row read a moment ago and scrolled back to is kept. Every position is
-  //: read before any row is replaced, so it is one layout.
-  function settle() {
-    if (off) return;
-    const box = root ? root.getBoundingClientRect() : { top: 0, bottom: innerHeight };
-    const far = [];
-    for (const li of live) {
-      if (!li.isConnected) live.delete(li);
-      else if (li.tabIndex !== 0 && !o.stays(li)) {
-        const r = li.getBoundingClientRect();
-        if (r.bottom < box.top - ROW_WINDOW_FAR || r.top > box.bottom + ROW_WINDOW_FAR) far.push([li, r.height]);
-      }
-    }
-    for (const [li, height] of far) {
-      const at = info.get(li);
-      if (height) o.heights.set(o.keyOf(at.items[at.i]), height);
-      const shell = shellFor(at.items, at.i, li);
-      li.replaceWith(shell);
-      live.delete(li);
-      observer.observe(shell);
-    }
-    o.onSettle?.();
-  }
-  const observer = new IntersectionObserver((seen) => {
-    if (off) return;
-    for (const { target, isIntersecting, boundingClientRect, rootBounds } of seen) {
-      const at = info.get(target);
-      if (!at || !target.parentElement) continue;
-      if (!target.classList.contains("row-shell")) {
-        if (boundingClientRect.height) o.heights.set(o.keyOf(at.items[at.i]), boundingClientRect.height);
-      } else if (isIntersecting) fillRun(target, rootBounds && boundingClientRect.top < rootBounds.top);
-    }
-    clearTimeout(timer);
-    timer = setTimeout(settle, 300);
-  }, { root, rootMargin: ROW_WINDOW_MARGIN });
-  //: `now(item, i)` says which rows are built as they land; the rest are shells.
-  function add(list, more, now = () => false) {
-    const items = lists.get(list) || [];
-    lists.set(list, items);
-    const from = items.length;
-    for (const item of more) items.push(item);
-    const fragment = document.createDocumentFragment();
-    more.forEach((item, k) => {
-      const i = from + k;
-      if (now(item, i)) return fragment.appendChild(make(items, i));
-      const shell = shellFor(items, i);
-      observer.observe(shell);
-      fragment.appendChild(shell);
-    });
-    list.appendChild(fragment);
-  }
-  function stop() {
-    off = true;
-    observer.disconnect();
-    clearTimeout(timer);
-  }
-  return { add, fill, stop };
-}
-
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
 
 //: Kept while it still holds the list: the walk read the computed style of every
@@ -1970,9 +1841,18 @@ function notesScroller(list) {
 }
 window.addEventListener("resize", () => (notesScroller.kept = null), { passive: true });
 
-const NOTE_WINDOW_FIRST = 12;
-const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === appState.get("note")
-  || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
+//: Built on a first draw; unbuilt rows go in runs of `run` (L-world-class-873).
+const NOTE_WINDOW = { first: 12, run: 50 };
+//: **Note `id`'s row in the Notes list**, built or a shell, its run opened if
+//: it was folded into one (L-world-class-873). Every lookup of a Notes row by
+//: id comes here: a query alone misses a row inside a run.
+function noteRowFor(id) {
+  const list = document.getElementById("entry-list");
+  if (!list || id == null || id === "") return null;
+  if (noteWindow.win && noteWindow.list === list) noteWindow.win.rowFor(Number(id));
+  const key = CSS.escape(String(id));
+  return list.querySelector(`:scope > li[data-id="${key}"]`) || list.querySelector(`li[data-id="${key}"]`);
+}
 
 function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, grown } = {}) {
   if (grown) {
@@ -1992,6 +1872,9 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     heights: noteWindow.heights,
     guess: notesViewMode === "rows" ? 50 : 132,
     keyOf: (item) => item[0].id,
+    run: NOTE_WINDOW.run,
+    //: Cards sit `--space-3` apart (01-forms-settings.css); rows touch.
+    gap: notesViewMode === "rows" ? "" : "var(--space-3)",
     tag: (li, item) => { li.dataset.id = item[0].id; },
     //: Built rows say where they are in the whole list; the shells are hidden
     //: from screen readers.
@@ -2001,7 +1884,8 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
       li.setAttribute("aria-setsize", noteWindow.items.length);
       return li;
     },
-    stays: noteRowStays,
+    stays: (li) => li.contains(document.activeElement) || Number(li.dataset.id) === appState.get("note")
+      || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))'),
     onFill: (li) => entryCardControls(li, li.tabIndex === 0),
     onSettle: settled,
   });
@@ -2009,7 +1893,7 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
   noteWindow.fill = win.fill;
   //: A redraw builds the rows that were built before it (the same place in
   //: the list), the note being jumped to or edited, or the first screenful.
-  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW_FIRST));
+  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW.first));
   afterChunk?.();
 }
 
@@ -2134,10 +2018,11 @@ function applyNotesViewMode() {
 //: visible. Filtering, sorting, threading and pagination all decide that
 //: between them, and a second implementation of "which notes are on screen"
 //: is a second thing to keep in step, the DOM already holds the answer.
+//: The window's own order when it holds the list: rows in a run have no element.
 function listedNoteIds() {
-  return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) =>
-    Number(li.dataset.id)
-  );
+  const list = document.getElementById("entry-list");
+  if (list && noteWindow.win && noteWindow.list === list) return noteWindow.win.keys(list);
+  return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) => Number(li.dataset.id));
 }
 
 function updateExpandAllButton() {
@@ -2328,7 +2213,7 @@ function resetNoteList(list) {
   //: list redraws whole, so what was on screen is remembered by id and a card
   //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
   //: first render, and a render after the list was empty, mark nothing.
-  rowEnterIds = new Set([...list.querySelectorAll(":scope > li[data-id]")].map((li) => li.dataset.id));
+  rowEnterIds = new Set(listedNoteIds().map(String));
   //: The rows built now are where the reader is: the redraw builds them again.
   const keep = new Set([...list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")].map((li) => Number(li.dataset.id)));
   for (const id of [noteEngine.jumpId, appState.get("note")]) if (id != null) keep.add(id);
@@ -2497,7 +2382,8 @@ function renderEntries(appendOnly = false) {
 // next chunk, and it is not a note. Left in `children` it would join the
 // roving tabindex and the arrow-key walk below, so ArrowDown at the bottom of
 // the list would focus an invisible element and appear to do nothing.
-const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id]"));
+//: A run (L-world-class-873) stands in the walk for the rows it holds: `noteWindow.fill` opens it.
+const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id], :scope > li.row-run"));
 
 function applyEntryListTabOrder(list) {
   const items = entryListItems(list);
@@ -3086,8 +2972,10 @@ async function _loadEntries() {
       // Categories the AI has filed notes into since the last load need
       // their ids fetched before rename/delete can work on them.
       // Deliberately not awaited: the list renders now and the controls
-      // light up a moment later.
-      loadCategories();
+      // light up a moment later. Once a load, at its first page: the list is
+      // the server's, not the pages', and the last page asked again, so boot
+      // fetched it twice (L-world-class-874).
+      if (first) loadCategories();
       fillCategoryOptions(document.getElementById("entry-category"), null);
     }
     first = false;
@@ -3549,7 +3437,7 @@ async function renderNotesRail() {
 //: the column put the keyboard, so focus is never left on something that has
 //: just gone.
 function notesRailFocusSubject() {
-  const li = document.querySelector(`#entry-list li[data-id="${notesRailId}"]`);
+  const li = noteRowFor(notesRailId);
   if (li) li.focus({ preventScroll: true });
 }
 

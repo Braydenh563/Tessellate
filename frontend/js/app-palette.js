@@ -415,7 +415,7 @@
   //: (`notesPaletteCommands`, below, INBOX 432: a category to go to, a #tag to
   //: show, Move for the note in hand), each with a group.
   function paletteBase(lowered) {
-    return [...paletteCommands(), ...notesPaletteCommands(lowered)].map((c) => (c.group ? c : { ...c, group: "Everywhere" }));
+    return [...paletteCommands(), ...chatPaletteRows(), ...notesPaletteCommands(lowered)].map((c) => (c.group ? c : { ...c, group: "Everywhere" }));
   }
 
   //: Everything typed text can reach: the hand-written rows and the three
@@ -875,6 +875,18 @@
 
   // ---- from palette.js (search-boot-1005): notesPaletteCommands ----
   // Moved whole. Every use is in this file, so it is not needed before this file loads.
+
+  //: The chat menu's Rename had no palette command (L-world-class-876): offered while Chat is the tab.
+  function chatPaletteRows() {
+    if (prefs.get("activeTab", null) !== "chat" || !chatConv) return [];
+    return [{
+      group: "This chat",
+      label: "ph:pencil-simple Rename this chat",
+      about: "Give the chat a title of your own.",
+      keywords: "rename title name conversation",
+      run: paletteLater(() => renameCurrentConversation()),
+    }];
+  }
 
   function notesPaletteCommands(query = "") {
     const rows = [];

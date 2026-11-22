@@ -741,6 +741,8 @@ function selectFaceText(option, resync) {
   return short && NARROW_FACE.matches ? short : option.textContent.trim();
 }
 
+//: Its opener's arrow keys do nothing as a row of an open menu (Notes, Sort and view): the menu's arrows walk
+//: past it (navigation.js), and opening here too left its list up, orphaned, once Escape closed the menu (L-world-class-875).
 function enhanceSelect(select) {
   if (!select || select.hasAttribute(SELECT_ENHANCED)) return;
   // A multi-select is a different control with different semantics, and
@@ -969,7 +971,7 @@ function enhanceSelect(select) {
   //: APG select-only combobox: ↓ and ↑ on the closed button open the list on the chosen row (Enter and Space already do, as a click).
   opener.addEventListener("keydown", (event) => {
     if ((event.key !== "ArrowDown" && event.key !== "ArrowUp") || event.altKey || event.ctrlKey || event.metaKey) return;
-    if (!menu.classList.contains("hidden")) return;
+    if (!menu.classList.contains("hidden") || opener.closest(".doc-dock-menu-list, [role='menu']")) return;
     event.preventDefault();
     opener.click();
   });

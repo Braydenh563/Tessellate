@@ -13573,8 +13573,9 @@ if (!navigator.connection?.saveData && (navigator.hardwareConcurrency || 2) >= 4
     const bytes = [...LAZY_MODULES.library, "/vendor/codemirror/codemirror.min.js"].filter((file) => !file.endsWith(".css"));
     //: Then, once every file has settled, the evaluation in a later idle slot: the editor's 80 ms and the documents file's 130 ms
     //: stop landing on the first open (documents.js `warmDocumentEngine` keeps its own phone and data-saving guard).
+    //: The file-type table last: `loadDocuments` awaits it before the list, so a cold one was a serial fetch in the click.
     Promise.all(bytes.map((file) => fetch(file + (file.startsWith("/js/") ? lazyAssetStamp(file) : ""), { priority: "low" }).catch(() => 0))).then(() =>
-      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => window.warmDocumentEngine() && window.loadCodeMirror()).then((CM) => CM && (window.requestIdleCallback || setTimeout)(() => ensureDocEditor()))), 1000)
+      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => window.warmDocumentEngine() && window.loadCodeMirror()).then((CM) => CM && (window.requestIdleCallback || setTimeout)(() => (ensureDocEditor(), loadDocTypeTable())))), 1000)
     );
   });
 }

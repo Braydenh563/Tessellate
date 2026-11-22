@@ -295,7 +295,8 @@ def test_a_deep_link_paints_through_its_target_until_the_card_exists():
     flash = asks[asks.index("async function flashEntry(") :].split("\n}\n", 1)[0]
     assert "(await renderEntries()) === false" in flash, "flashEntry draws without waiting for the card file"
     assert re.search(r"finally \{\s*noteEngine\.jumpId = null;", flash), "jumpId is cleared before the late draw"
-    assert flash.index("await renderEntries()") < flash.index("querySelector(`#entry-list li[data-id")
+    # The lookup is `noteRowFor` since rows fold into runs (L-world-class-873).
+    assert flash.index("await renderEntries()") < flash.index("noteRowFor(id)")
     notes = (JS / "notes-list.js").read_text(encoding="utf-8")
     render = notes[notes.index("function renderEntries(") :].split("\n  const list =", 1)[0]
     assert "return renderEntries.waiting;" in render and "lazyLoadFailed(" in render and "return false;" in render

@@ -7938,7 +7938,12 @@ input[type="file"] {
 .dock-menu-check {
   display: flex;
   align-items: center;
-  padding: var(--space-2) var(--space-3);
+  /* The menu row's own padding and floor (08-consistency.css, the shared
+     menu-row rule): at `--space-3` these rows' icons stood 4.8px left of every
+     other row's and 1.3px shorter, measured in Timeline, Options by menus.js
+     (L-world-class-107). */
+  min-height: var(--control-h-lg);
+  padding: var(--space-2) var(--space-5);
   border: 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -7951,6 +7956,17 @@ input[type="file"] {
 }
 .dock-menu-check > input {
   margin: 0;
+}
+/* The switch goes last, as in the `.doc-dock-menu-check` recipe (icon, word,
+   switch), so the icon starts on the column every other row's icon is on:
+   first in the markup, it put the icon 33.6px right of the rest. */
+.dock-menu-list > .dock-menu-check {
+  width: 100%;
+  line-height: 1.6;
+}
+.dock-menu-list > .dock-menu-check > input {
+  order: 1;
+  margin-inline-start: auto;
 }
 .dock-menu-section > select {
   width: 100%;

@@ -43,6 +43,7 @@ from urllib.parse import quote
 
 from tessellate.core import clock
 from tessellate.core import paths, sealed_files
+from tessellate.entry.import_spaces import space_for
 
 FORMAT = "memorymap-folder"
 VERSION = 1
@@ -57,7 +58,7 @@ ENTRY_LEFT_OUT = {
     "content": "carried as readable text",
     "category_id": "carried as the category's name",
     "tags": "carried as a list",
-    "workspace_id": "a note lands in the space open when it is imported",
+    "workspace_id": "carried as `space` (its name and icon); a default-space note lands in the space open",
     "access_count": "how often this install opened it",
     "last_opened_at": "when this install last opened it",
     "entities_extracted_at": "a pass's bookmark; the pass reads the note again",
@@ -185,6 +186,8 @@ class _Related:
     reminders: dict = field(default_factory=dict)
     doc_reminders: dict = field(default_factory=dict)
     doc_links: dict = field(default_factory=dict)
+    #: space id to {name, icon, is_private}; the default space is not listed.
+    spaces: dict = field(default_factory=dict)
     #: Where a person also put each note, and its groups (L-world-class-172, 173): note id to names.
     also_in: dict = field(default_factory=dict)
     groups: dict = field(default_factory=dict)
@@ -200,7 +203,7 @@ def _grouped(rows: list, key: str) -> dict:
 def _related(session) -> _Related:  # noqa: ANN001
     from sqlalchemy import select
 
-    from tessellate.core.database import Attachment, Category, DocumentLink, EntryLink, Reminder
+    from tessellate.core.database import Attachment, Category, DocumentLink, EntryLink, Reminder, Space
 
     from tessellate.core.database import Entry
     from tessellate.repo import memberships
@@ -216,6 +219,8 @@ def _related(session) -> _Related:  # noqa: ANN001
         reminders=_grouped([r for r in reminders if r.entry_id is not None], "entry_id"),
         doc_reminders=_grouped([r for r in reminders if r.document_id is not None], "document_id"),
         doc_links=_grouped(list(session.scalars(select(DocumentLink).order_by(DocumentLink.id))), "document_id"),
+        spaces={sp.id: {"name": sp.name, "icon": sp.icon, "is_private": bool(sp.is_private)}
+                for sp in session.scalars(select(Space)) if sp.id != "default"},
     )
 
 
@@ -229,7 +234,11 @@ def note_record(entry, related: _Related, uploads_dir: Path) -> dict:  # noqa: A
     record = {"id": entry.id, "content": text, "sealed": sealed,
               "category": related.category.get(entry.category_id, manager.UNCATEGORISED),
               "also_in": related.also_in.get(entry.id, []), "groups": related.groups.get(entry.id, []),
-              "tags": manager.entry_tags(entry)}
+              "tags": manager.entry_tags(entry),
+              "space": related.spaces.get(entry.workspace_id)}
+    if sealed and (record["space"] or {}).get("is_private"):
+        #: L-world-class-871: sealed text beside a plain space name would list the private spaces.
+        record["space"] = {"is_private": True}
     record.update(_row(entry, ENTRY_LEFT_OUT))
     record["attachments"] = [
         _attachment_record(a, name, uploads_dir) for a, name in zip(attachments, _attachment_names(attachments))
@@ -674,7 +683,7 @@ def _existing_notes(session, notes: list) -> dict:  # noqa: ANN001
 _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 
 
-def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
+def _make_entry(session, record: dict, said: list[str], spaces: dict | None = None):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
     from tessellate.entry import frontmatter_keys, manager_private
@@ -683,6 +692,12 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
                                  dates=not record.get("created_at"))
     _restore(entry, record, _ENTRY_SKIP)
+    #: Imported with a space open, everything goes there (`test_export_spaces_private`); from the
+    #: default space or All spaces, each note goes back to the space it was exported from (L979).
+    opened = session.info.get("workspace_id")
+    where = space_for(session, record.get("space"), spaces if spaces is not None else {}) if opened in (None, "default", "all") else None
+    if where is not None:
+        entry.workspace_id = where
     _fresh_bin_period(entry)
     if record.get("sealed"):
         entry.is_private = True
@@ -935,6 +950,7 @@ def write(session, result, uploads_dir: Path, progress: Progress | None = None) 
     said: list[str] = []
     merged = 0
     stopped = False
+    spaces: dict = {}
     for done, note in enumerate(result.notes, 1):
         if progress.stopped is not None and progress.stopped():
             stopped = True
@@ -945,7 +961,7 @@ def write(session, result, uploads_dir: Path, progress: Progress | None = None) 
             idmap[old] = found
             merged += 1
         else:
-            entry = _make_entry(session, note.record, said)
+            entry = _make_entry(session, note.record, said, spaces)
             idmap[old] = entry.id
             _write_attachments(session, entry, note, uploads_dir)
             made.append((entry, note.record))

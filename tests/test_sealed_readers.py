@@ -89,7 +89,6 @@ HANDS_ON = {
     "ai/captions.py::begin": "names the spool; _hear appends it sealed in a private space (L-world-class-670)",
     "entry/export_folder.py::export": "_write_note reads through sealed_files",
     "entry/export_folder.py::write": "_write_attachments seals a private space's file (L-world-class-670)",
-    "api/routes_import.py::import_app": "export_folder.write seals a private space's file (L-world-class-670)",
     "entry/export_folder.py::note_record": "_attachment_record hashes with _sha256_file, sealed-aware",
     "entry/export_folder.py::snapshot": "note_record, as above",
     "entry/export_folder.py::_attachment_record": "_sha256_file hashes the plain bytes of a sealed file",
@@ -136,6 +135,7 @@ PATHS_ONLY = {
 #: next unlock seals them (`private_space.seal_space_members` from `_open_spaces`).
 PLAIN_WRITES = {
     "entry/sync_extras_apply.py::file": "a file from the other computer, never a sealed space's",
+    "api/routes_import.py::_import": "an import (the body `import_app` hands to)",
 }
 
 
