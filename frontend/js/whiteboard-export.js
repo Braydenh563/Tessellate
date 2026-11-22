@@ -303,16 +303,16 @@
         }
         return out;
       },
-      //: The map's tree edges, already real SVG paths in board coordinates (that is
-      //: the whole reason `wbRenderMapEdges` draws them as SVG instead of on a
-      //: canvas), cloned rather than recomputed so they cannot disagree with the
-      //: screen. Painted as drawn: a branch is a filled, tapered ribbon in its
-      //: branch's colour (a stylesheet rule over an inline custom property), and
-      //: the export used to force `fill="none"` and a grey stroke, so every branch
-      //: came out as a pair of thin grey outlines. The class and the custom
+      //: The map's tree edges, already real SVG paths in board coordinates (that is the whole reason
+      //: `wbRenderMapEdges` draws them as SVG instead of on a canvas), cloned rather than recomputed so
+      //: they cannot disagree with the screen; a line a drop left undrawn off screen is drawn first.
+      //: Painted as drawn: a branch is a filled, tapered ribbon in its branch's colour (a stylesheet
+      //: rule over an inline custom property), and the export used to force `fill="none"` and a grey
+      //: stroke, so every branch came out as a pair of thin grey outlines. The class and the custom
       //: property do not survive the clone, so the computed paint goes on as attributes.
       mapEdges() {
         const out = [];
+        wbUpdateMapEdges.drawHeld();
         for (const edge of wbInstances.queryAll(".wb-map-edges .wb-map-edge")) {
           const clone = edge.cloneNode(true);
           clone.removeAttribute("class");

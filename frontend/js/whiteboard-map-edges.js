@@ -619,8 +619,15 @@
   //: every mousemove frame re-binds every card, sketch and object on the board
   //: for the sake of two curves, which is the "glitchy and slow to update"
   //: report this file already carries.
-  function wbUpdateMapEdges(edges) {
+  //: `onScreen`: a line the cull hides is held for the cull to draw (`wbMapStaleEdges`).
+  function wbUpdateMapEdges(edges, { onScreen = false } = {}) {
     for (const { parent, child, el, layout } of edges || []) {
+      if (onScreen && el.parentNode?.classList?.contains("wb-culled")) {
+        el._wbMoved = true;
+        wbMapStaleEdges.set(el, { parentId: parent.id, childId: child.id });
+        continue;
+      }
+      wbMapStaleEdges.delete(el);
       const d = wbMapEdgePathD(parent, child, layout);
       //: Drawn by hand: the render's cache no longer holds what is on screen.
       el._wbMoved = true;
@@ -640,6 +647,33 @@
         el._wbLabel.setAttribute("y", String(point.y + (Number(child.data?.edge_label_dy) || 0)));
       }
     }
+  }
+
+  //: **A line off screen is drawn when it comes on screen, not at the drop**
+  //: (mapperf 500: the drop of a 500-topic branch drew all 499 of its inside
+  //: lines, 131ms of a 182ms frame, with two topics on screen). The cull hides
+  //: a line whose ends are both off screen (`display: none`), so its `d` is
+  //: read by nothing until the cull shows it again or an export clones it,
+  //: and both draw it first. Keyed by the path; the topics are looked up again
+  //: when it is drawn, since a render between can replace them.
+  const wbMapStaleEdges = new Map();
+
+  //: Draws the given held lines (every one held, by default) that are still
+  //: on the board; a line whose topic has gone is left for the render.
+  function wbMapDrawStaleEdges(paths = [...wbMapStaleEdges.keys()]) {
+    const edges = [];
+    let index = null;
+    for (const el of paths) {
+      const held = wbMapStaleEdges.get(el);
+      if (!held) continue;
+      wbMapStaleEdges.delete(el);
+      if (!el.isConnected) continue;
+      index = index || wbMapIndex();
+      const parent = index.byId.get(held.parentId);
+      const child = index.byId.get(held.childId);
+      if (parent && child) edges.push({ parent, child, el, layout: wbMapLayout() });
+    }
+    wbUpdateMapEdges(edges);
   }
 
   //: Every tree line that is drawn, as its two topics and its key, in the
@@ -743,6 +777,7 @@
         //: writes the path per drag frame and marks it) forgets what it holds.
         if (drawn && held.path._wbMoved) {
           held.path._wbMoved = false;
+          wbMapStaleEdges.delete(held.path);
           held.key = held.paint = null;
         }
         const geomKey = wbMapEdgeKey(parent, child, layout, colors);
@@ -762,6 +797,7 @@
       const wrap = held.wrap;
       if (group.childNodes[slot] !== wrap) group.insertBefore(wrap, group.childNodes[slot] || null);
     });
+    for (const el of wbMapStaleEdges.keys()) if (!el.isConnected) wbMapStaleEdges.delete(el);
     wbRenderMapEdgePluses(edges, layout, only);
     wbSyncMapEdgeHandles();
   }
@@ -927,4 +963,6 @@
 
   //: The file's surface: what other files call (L286).
   Object.assign(window, { WB_MAP_SIDES, wbMapFacingSide, wbMapEdgeAnchors, wbMapEdgeWaypoint, wbMapEdgeFractions, wbMapEdgeCubic, wbMapElbowPoints, WB_MAP_EDGE_CONTROL_GAP, wbMapEdgeHandlePoint, wbMapEdgePathD, wbMapEdgeWeight, wbMapEdgeHasArrow, wbMapCubicAt, wbMapRibbonD, wbMapEdgeIsRibbon, wbMapEdgeContext, wbMapEdgesFor, wbUpdateMapEdges, wbMapDropStale, wbRenderMapEdges });
+  //: On the drawing function rather than a name of its own (the global-scope ratchet).
+  wbUpdateMapEdges.drawHeld = wbMapDrawStaleEdges;
 })();
