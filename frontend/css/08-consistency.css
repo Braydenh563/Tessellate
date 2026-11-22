@@ -3848,7 +3848,8 @@ body .chip.item-label,
   color: var(--ok);
 }
 :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label.is-warn {
-  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  /* 8%, not 14%: "Tight fit" on a model card was 4.29:1 in light (L-world-class-106 shell pass), 4.67 at 8%. */
+  background: color-mix(in srgb, var(--warn) 8%, transparent);
   color: var(--warn);
 }
 /* A label that can be long (a model's "In use for chat and background
