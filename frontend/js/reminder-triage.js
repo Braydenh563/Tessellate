@@ -21,20 +21,20 @@
       const base = (before.content || "").replace(/\s+$/, "");
       const after = `${base}\n\nOutcome (${new Date().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}): ${line}`;
       const added = after.slice(base.length);
-      const put = async (content) => {
+      const put = (content) => async () => {
         await apiJson(`/entries/${id}`, { method: "PUT", body: JSON.stringify({ content }) });
         await refreshEntries([id]).catch(() => {});
       };
       const takeOff = async () => {
         const now = (await apiJson(`/entries/${id}`)).content || "";
         if (!now.endsWith(added)) throw new Error("The note changed since, so the outcome line was left in it.");
-        await put(now.slice(0, now.length - added.length));
+        await put(now.slice(0, now.length - added.length))();
       };
       const putBack = async () => {
         const now = ((await apiJson(`/entries/${id}`)).content || "").replace(/\s+$/, "");
-        await put(`${now}${added}`);
+        await put(`${now}${added}`)();
       };
-      await put(after);
+      await put(after)();
       const undoable = pushUndo("Added an outcome to a note", takeOff, putBack);
       toastAction("Added the outcome to the note.", "Undo", async () => {
         settleUndoFromToast(undoable);
