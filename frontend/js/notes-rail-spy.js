@@ -50,7 +50,7 @@ function notesSpyPick() {
     notesSpyPin = { id: String(notesRailId) };
   }
   if (notesSpyPin) {
-    const card = list.querySelector(`:scope > li[data-id="${notesSpyPin.id}"]`)?.getBoundingClientRect();
+    const card = noteRowFor(notesSpyPin.id)?.getBoundingClientRect();
     const far = window.innerHeight;
     if (card && card.bottom > -far && card.top < 2 * far) return;
     notesSpyPin = null;
@@ -99,7 +99,7 @@ function notesRailMark(entry) {
     if (li.dataset.id !== id) li.classList.remove("rail-subject");
   }
   if (!id) return;
-  list.querySelector(`:scope > li[data-id="${id}"]`)?.classList.add("rail-subject");
+  noteRowFor(id)?.classList.add("rail-subject");
   const body = $("notes-rail-body");
   if (body && body.dataset.subject !== id) {
     body.dataset.subject = id;

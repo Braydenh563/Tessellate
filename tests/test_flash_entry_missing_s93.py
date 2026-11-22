@@ -34,7 +34,8 @@ const ctx = {
   resolveNotePage: () => 0, renderSidebar: () => {},
   renderEntries: async () => (drawn === "false" ? false : true),
   // The list is windowed: only the rows it drew are in the page. Ids 1 to 50 are; the rest are not.
-  document: { querySelector: (selector) => (Number(/data-id="(\d+)"/.exec(selector)[1]) <= 50 ? card : null) },
+  //: Rows are looked up through `noteRowFor` (L-world-class-873), which opens a folded run.
+  noteRowFor: (id) => (Number(id) <= 50 ? card : null),
   requestAnimationFrame: (fn) => fn(), reducedMotionWanted: () => false,
   window: { innerHeight: 800 }, announce: (text) => log.push(["announce", text]),
   toast: (text) => log.push(["toast", text]), nameMarkBuddyNoteOpened: (id) => log.push(["buddy", id]),

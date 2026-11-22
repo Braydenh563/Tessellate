@@ -62,7 +62,7 @@ async function noteFormMayClose() {
 //: The keyboard back on a note's row after a redraw, unless it went somewhere.
 function focusNoteRow(id) {
   restoreFocusTo(() => {
-    const row = document.querySelector(`#entry-list > li[data-id="${id}"]`);
+    const row = noteRowFor(id);
     if (!row) return null;
     for (const other of document.querySelectorAll("#entry-list > li[tabindex='0']")) other.tabIndex = -1;
     row.tabIndex = 0;
@@ -101,7 +101,7 @@ function heldNoteControl() {
 function restoreNoteControl(held) {
   if (!held) return;
   restoreFocusTo(() => {
-    const li = document.querySelector(`#entry-list > li[data-id="${held.id}"]`);
+    const li = noteRowFor(held.id);
     //: Else the row itself (Save changes closed its form), which a script may focus.
     if (li && !li.hasAttribute("tabindex")) li.tabIndex = -1;
     return (held.cls && li?.querySelector(`.${held.cls}`)) || li;
@@ -1852,6 +1852,13 @@ function sortEntries(entries) {
 //: edited, holding focus, open or with a menu open is never hollowed
 //: (`stays`), nor the one Tab stop. One instance serves any number of lists (the Timeline has a
 //: list a day) and `add` appends, which is how a page of the Timeline lands.
+//: **Runs** (`o.run`, L-world-class-873): a shell is still an element the browser
+//: styles and lays out on every show of the tab, 4,380 of them on a 4,628-note
+//: Notes switch (74 to 100ms of style). Rows that are not built land as one
+//: `row-run` spacer per `o.run` rows, as tall as the shells it stands for; a
+//: run that nears the window opens into its shells, and far shells fold back
+//: into runs once the scroll settles. A run has no key, so a lookup by key goes
+//: through `rowFor`, which opens the run holding it.
 const ROW_WINDOW_MARGIN = "1200px 0px";
 const ROW_WINDOW_BATCH = 6;
 const ROW_WINDOW_FAR = 3000;
@@ -1861,6 +1868,9 @@ function windowRows(root, o) {
   const info = new WeakMap(); // row -> { items, i }
   const lists = new WeakMap(); // list -> its items
   const live = new Set(); // rows built now
+  const runs = new Set(); // run spacers now
+  const els = new Map(); // key -> its row or shell now
+  const owned = new Set(); // lists this window serves
   let timer = 0;
   let off = false;
   const carry = (to, from) => {
@@ -1879,18 +1889,85 @@ function windowRows(root, o) {
     li.tabIndex = -1;
     o.tag(li, items[i]);
     info.set(li, { items, i });
+    els.set(o.keyOf(items[i]), li);
     return carry(li, from);
   };
   const make = (items, i, from) => {
     const li = carry(o.build(items[i], i), from);
     info.set(li, { items, i });
+    els.set(o.keyOf(items[i]), li);
     live.add(li);
     observer.observe(li);
     return li;
   };
+  const heightOf = (item) => o.heights.get(o.keyOf(item)) || o.guess;
+  //: One spacer for rows `i` to `to - 1`, as tall as their shells would be.
+  const runFor = (items, i, to) => {
+    const li = document.createElement(o.shell || "li");
+    li.className = "row-shell row-run";
+    li.setAttribute("aria-hidden", "true");
+    let height = 0;
+    for (let k = i; k < to; k++) height += heightOf(items[k]);
+    //: `o.gap` is the space between two rows (a margin, so not in their heights).
+    const gaps = o.gap && to - i > 1 ? ` + ${to - i - 1} * ${o.gap}` : "";
+    li.style.cssText = `visibility:hidden;height:calc(${height}px${gaps})`;
+    li.tabIndex = -1;
+    li.dataset.run = to - i;
+    info.set(li, { items, i, to });
+    runs.add(li);
+    observer.observe(li);
+    return li;
+  };
+  //: A run opens into its shells; the observer builds the ones in the window.
+  function open(run) {
+    const at = info.get(run);
+    runs.delete(run);
+    observer.unobserve(run);
+    if (!at || !run.parentElement) return [];
+    const shells = [];
+    for (let k = at.i; k < at.to; k++) {
+      const shell = shellFor(at.items, k);
+      observer.observe(shell);
+      shells.push(shell);
+    }
+    run.replaceWith(...shells);
+    return shells;
+  }
+  //: The row or shell for `key`, its run opened first (null when no list holds it).
+  function rowFor(key) {
+    const el = els.get(key);
+    if (el?.isConnected) return el;
+    for (const run of runs) {
+      const at = info.get(run);
+      if (!run.isConnected) { runs.delete(run); continue; }
+      for (let k = at.i; k < at.to; k++) if (o.keyOf(at.items[k]) === key) { open(run); return els.get(key) || null; }
+    }
+    return null;
+  }
+  //: Unbuilt rows `from` to `to - 1`, as runs of `o.run` (a lone row stays a shell).
+  const spacers = (items, from, to) => {
+    const out = [];
+    for (let k = from; k < to; k += o.run) {
+      const end = Math.min(k + o.run, to);
+      if (end - k > 1) out.push(runFor(items, k, end));
+      else {
+        const shell = shellFor(items, k);
+        observer.observe(shell);
+        out.push(shell);
+      }
+    }
+    return out;
+  };
   //: A shell is hidden, so it cannot take focus: the keyboard (Home, End,
   //: the arrows) builds the row it is moving to first.
-  function fill(shell) {
+  //: A run opens and its first row is built, or its last when `last`
+  //: (ArrowUp and End come into a run from below).
+  function fill(shell, last = false) {
+    if (runs.has(shell)) {
+      const opened = open(shell);
+      if (!opened.length) return shell;
+      shell = opened[last ? opened.length - 1 : 0];
+    }
     const at = info.get(shell);
     if (!at || !shell.classList.contains("row-shell") || !shell.parentElement) return shell;
     const li = make(at.items, at.i, shell);
@@ -1903,7 +1980,7 @@ function windowRows(root, o) {
   function fillRun(target, up) {
     const run = [target];
     const step = up ? "previousElementSibling" : "nextElementSibling";
-    for (let el = target[step]; el?.classList.contains("row-shell") && run.length < ROW_WINDOW_BATCH; el = el[step]) run.push(el);
+    for (let el = target[step]; el?.classList.contains("row-shell") && !runs.has(el) && run.length < ROW_WINDOW_BATCH; el = el[step]) run.push(el);
     for (const shell of run) fill(shell);
   }
   //: Rows are emptied once the scroll settles, never on the frame they left:
@@ -1929,7 +2006,34 @@ function windowRows(root, o) {
       live.delete(li);
       observer.observe(shell);
     }
+    if (o.run) for (const list of owned) fold(list, box);
     o.onSettle?.();
+  }
+  //: Far shells and runs side by side fold back into runs, so a list scrolled
+  //: end to end goes back to a few dozen spacers. Positions first, one layout.
+  function fold(list, box) {
+    if (!list.isConnected) return owned.delete(list);
+    const far = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.bottom < box.top - ROW_WINDOW_FAR || r.top > box.bottom + ROW_WINDOW_FAR;
+    };
+    const free = (el) => el.classList.contains("row-shell") && el.tabIndex !== 0
+      && !ROW_WINDOW_CARRY.some((name) => el.classList.contains(name)) && info.has(el);
+    const groups = [];
+    let group = [];
+    for (const el of list.children) {
+      if (free(el) && far(el)) group.push(el);
+      else { if (group.length > 1) groups.push(group); group = []; }
+    }
+    if (group.length > 1) groups.push(group);
+    for (const g of groups) {
+      if (g.every((el) => runs.has(el)) && g.length <= Math.ceil(g.reduce((n, el) => n + Number(el.dataset.run), 0) / o.run)) continue;
+      const first = info.get(g[0]);
+      const last = info.get(g[g.length - 1]);
+      for (const el of g) { runs.delete(el); observer.unobserve(el); }
+      g[0].before(...spacers(first.items, first.i, last.to ?? last.i + 1));
+      for (const el of g) el.remove();
+    }
   }
   const observer = new IntersectionObserver((seen) => {
     if (off) return;
@@ -1938,7 +2042,8 @@ function windowRows(root, o) {
       if (!at || !target.parentElement) continue;
       if (!target.classList.contains("row-shell")) {
         if (boundingClientRect.height) o.heights.set(o.keyOf(at.items[at.i]), boundingClientRect.height);
-      } else if (isIntersecting) fillRun(target, rootBounds && boundingClientRect.top < rootBounds.top);
+      } else if (isIntersecting && runs.has(target)) open(target);
+      else if (isIntersecting) fillRun(target, rootBounds && boundingClientRect.top < rootBounds.top);
     }
     clearTimeout(timer);
     timer = setTimeout(settle, 300);
@@ -1949,22 +2054,35 @@ function windowRows(root, o) {
     lists.set(list, items);
     const from = items.length;
     for (const item of more) items.push(item);
+    owned.add(list);
     const fragment = document.createDocumentFragment();
+    let gap = -1; // first unbuilt row of the stretch being gathered
+    const close = (to) => {
+      if (gap < 0) return;
+      if (o.run) fragment.append(...spacers(items, gap, to));
+      else for (let k = gap; k < to; k++) fragment.appendChild(observed(shellFor(items, k)));
+      gap = -1;
+    };
     more.forEach((item, k) => {
       const i = from + k;
-      if (now(item, i)) return fragment.appendChild(make(items, i));
-      const shell = shellFor(items, i);
-      observer.observe(shell);
-      fragment.appendChild(shell);
+      if (!now(item, i)) { if (gap < 0) gap = i; return; }
+      close(i);
+      fragment.appendChild(make(items, i));
     });
+    close(items.length);
     list.appendChild(fragment);
   }
+  const observed = (el) => (observer.observe(el), el);
   function stop() {
     off = true;
     observer.disconnect();
     clearTimeout(timer);
+    runs.clear();
+    els.clear();
+    owned.clear();
   }
-  return { add, fill, stop };
+  const keys = (list) => (lists.get(list) || []).map(o.keyOf);
+  return { add, fill, rowFor, keys, stop };
 }
 
 const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
@@ -1981,9 +2099,18 @@ function notesScroller(list) {
 }
 window.addEventListener("resize", () => (notesScroller.kept = null), { passive: true });
 
-const NOTE_WINDOW_FIRST = 12;
-const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === appState.get("note")
-  || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
+//: Built on a first draw; unbuilt rows go in runs of `run` (L-world-class-873).
+const NOTE_WINDOW = { first: 12, run: 50 };
+//: **Note `id`'s row in the Notes list**, built or a shell, its run opened if
+//: it was folded into one (L-world-class-873). Every lookup of a Notes row by
+//: id comes here: a query alone misses a row inside a run.
+function noteRowFor(id) {
+  const list = document.getElementById("entry-list");
+  if (!list || id == null || id === "") return null;
+  if (noteWindow.win && noteWindow.list === list) noteWindow.win.rowFor(Number(id));
+  const key = CSS.escape(String(id));
+  return list.querySelector(`:scope > li[data-id="${key}"]`) || list.querySelector(`li[data-id="${key}"]`);
+}
 
 function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, grown } = {}) {
   if (grown) {
@@ -2003,6 +2130,9 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
     heights: noteWindow.heights,
     guess: notesViewMode === "rows" ? 50 : 132,
     keyOf: (item) => item[0].id,
+    run: NOTE_WINDOW.run,
+    //: Cards sit `--space-3` apart (01-forms-settings.css); rows touch.
+    gap: notesViewMode === "rows" ? "" : "var(--space-3)",
     tag: (li, item) => { li.dataset.id = item[0].id; },
     //: Built rows say where they are in the whole list; the shells are hidden
     //: from screen readers.
@@ -2012,7 +2142,8 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
       li.setAttribute("aria-setsize", noteWindow.items.length);
       return li;
     },
-    stays: noteRowStays,
+    stays: (li) => li.contains(document.activeElement) || Number(li.dataset.id) === appState.get("note")
+      || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))'),
     onFill: (li) => entryCardControls(li, li.tabIndex === 0),
     onSettle: settled,
   });
@@ -2020,7 +2151,7 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, gro
   noteWindow.fill = win.fill;
   //: A redraw builds the rows that were built before it (the same place in
   //: the list), the note being jumped to or edited, or the first screenful.
-  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW_FIRST));
+  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW.first));
   afterChunk?.();
 }
 
@@ -2145,10 +2276,11 @@ function applyNotesViewMode() {
 //: visible. Filtering, sorting, threading and pagination all decide that
 //: between them, and a second implementation of "which notes are on screen"
 //: is a second thing to keep in step, the DOM already holds the answer.
+//: The window's own order when it holds the list: rows in a run have no element.
 function listedNoteIds() {
-  return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) =>
-    Number(li.dataset.id)
-  );
+  const list = document.getElementById("entry-list");
+  if (list && noteWindow.win && noteWindow.list === list) return noteWindow.win.keys(list);
+  return [...document.querySelectorAll("#entry-list > li[data-id]")].map((li) => Number(li.dataset.id));
 }
 
 function updateExpandAllButton() {
@@ -2339,7 +2471,7 @@ function resetNoteList(list) {
   //: list redraws whole, so what was on screen is remembered by id and a card
   //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
   //: first render, and a render after the list was empty, mark nothing.
-  rowEnterIds = new Set([...list.querySelectorAll(":scope > li[data-id]")].map((li) => li.dataset.id));
+  rowEnterIds = new Set(listedNoteIds().map(String));
   //: The rows built now are where the reader is: the redraw builds them again.
   const keep = new Set([...list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")].map((li) => Number(li.dataset.id)));
   for (const id of [noteEngine.jumpId, appState.get("note")]) if (id != null) keep.add(id);
@@ -2508,7 +2640,8 @@ function renderEntries(appendOnly = false) {
 // next chunk, and it is not a note. Left in `children` it would join the
 // roving tabindex and the arrow-key walk below, so ArrowDown at the bottom of
 // the list would focus an invisible element and appear to do nothing.
-const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id]"));
+//: A run (L-world-class-873) stands in the walk for the rows it holds: `noteWindow.fill` opens it.
+const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id], :scope > li.row-run"));
 
 function applyEntryListTabOrder(list) {
   const items = entryListItems(list);
@@ -3556,7 +3689,7 @@ async function renderNotesRail() {
 //: the column put the keyboard, so focus is never left on something that has
 //: just gone.
 function notesRailFocusSubject() {
-  const li = document.querySelector(`#entry-list li[data-id="${notesRailId}"]`);
+  const li = noteRowFor(notesRailId);
   if (li) li.focus({ preventScroll: true });
 }
 

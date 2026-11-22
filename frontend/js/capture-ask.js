@@ -880,7 +880,7 @@ let lastOpenedEntryId = null;
 //: Nearest-scroller pattern per DESIGN.md: `scrollIntoView` walks every
 //: ancestor to the page, including the page itself, which is not what we want.
 function scrollEditingEntryIntoView(id) {
-  const li = document.querySelector(`#entry-list li[data-id="${id}"]`);
+  const li = noteRowFor(id);
   if (!li) return;
   let node = li.parentElement;
   while (node && node !== document.body) {
@@ -948,7 +948,7 @@ async function flashEntry(id, { terms = [] } = {}) {
     noteEngine.jumpId = null;
   }
   requestAnimationFrame(() => {
-    const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
+    const card = noteRowFor(id);
     if (!card) {
       //: Not a note after all (audit 1031 N48): the address goes back to the list rather than naming a dead id, and the last "Showing note" line leaves the live region.
       recordTabVisit("notes", "browse", "", { refine: true });
@@ -964,7 +964,7 @@ async function flashEntry(id, { terms = [] } = {}) {
     const far = Math.abs(card.getBoundingClientRect().top) > 2 * window.innerHeight;
     card.scrollIntoView({ behavior: reduced || far ? "auto" : "smooth", block: "center" });
     if (far) requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.querySelector(`#entry-list li[data-id="${id}"]`)?.scrollIntoView({ block: "center" });
+      noteRowFor(id)?.scrollIntoView({ block: "center" });
     }));
     // Restart the animation even when the same note is jumped to twice in a
     // row: without the reflow the class is already there and nothing replays.

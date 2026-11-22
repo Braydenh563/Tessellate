@@ -275,7 +275,7 @@ function closeNoteTagPopover({ restoreFocus = false } = {}) {
 //: list's heading.
 function noteTagFocusTarget(anchor, entryId) {
   if (anchor.isConnected) return anchor;
-  const card = document.querySelector(`li[data-id="${CSS.escape(String(entryId))}"]`);
+  const card = noteRowFor(entryId) || document.querySelector(`li[data-id="${CSS.escape(String(entryId))}"]`);
   const chip = card?.querySelector(".note-meta > .tag-add");
   if (chip) return chip;
   const target = card?.querySelector(".note-meta") || document.getElementById("entries-heading");

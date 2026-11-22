@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: rows that are not built fold into one spacer per fifty, so a Notes switch at 4,628 notes styles 100 list elements instead of 4,392 (median 142ms to 70ms at 1440x900); every lookup of a row by id goes through `noteRowFor`, which opens the run holding it (L-world-class-873).
 A test pins folder uploads past Starlette's 1,000-file default (L-world-class-411): 1,200 files to `/import/app` import all 1,200 (`bounds.FolderUploadRoute`, built under L979); without the route class the request is a 400.
 The import preview builds its rows in chunks (L-world-class-870): a thousand files built every row in one task (125 to 229 ms idle, 1.1 s on a loaded host); it now builds 40, then 100 a frame, with the ticks kept apart from the boxes so Import and Select all are right before the last row lands. Measured at 1,000 rows, idle: longest task 0 to 83 ms.
 Boot reads the open reminders once, not twice (L-world-class-879): the due poll's first look (`openReminderList`, status.js) asked for a month's window while the dashboard and the bell read the whole open list; it now cuts its month from that shared read, which they join (1 `/reminders` GET at boot, was 2). Later looks keep the stamp and the month's window.

@@ -9599,7 +9599,8 @@
   function nameMarkBuddyNoteOpened(id) {
     const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => String(e.id) === String(id)) : null;
     if (!entry) return;
-    const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
+    const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"]`)
+      || (typeof noteRowFor === "function" ? noteRowFor(id) : null) || document.querySelector(`li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
     else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
   }
