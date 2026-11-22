@@ -1182,5 +1182,5 @@
     );
   }
 
-  Object.assign(window, { docCmTheme, docCmThemeKept });
+  Object.assign(window, { docCmThemeKept });
 })();

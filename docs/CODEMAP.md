@@ -235,13 +235,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `rowWindowCarry` | frontend/js/row-window.js:32 |
-| `rowWindowFarRows` | frontend/js/row-window.js:68 |
-| `rowWindowFoldGroups` | frontend/js/row-window.js:89 |
-| `rowWindowRunEl` | frontend/js/row-window.js:53 |
-| `rowWindowShellEl` | frontend/js/row-window.js:41 |
-| `rowWindowSpacers` | frontend/js/row-window.js:81 |
-| `windowRows` | frontend/js/row-window.js:114 |
+| `rowWindowCarry` | frontend/js/row-window.js:33 |
+| `rowWindowFarRows` | frontend/js/row-window.js:69 |
+| `rowWindowFoldGroups` | frontend/js/row-window.js:90 |
+| `rowWindowRunEl` | frontend/js/row-window.js:54 |
+| `rowWindowShellEl` | frontend/js/row-window.js:42 |
+| `rowWindowSpacers` | frontend/js/row-window.js:82 |
+| `windowRows` | frontend/js/row-window.js:115 |
 
 ### frontend/js/notes-list.js (116)
 

@@ -19,6 +19,7 @@ import subprocess
 
 import pytest
 from tests._app_js import JS_DIR
+from tests import _js_scope
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -75,7 +76,7 @@ const shells = (list) => list.kids.filter((k) => k.classList.contains('row-shell
 
 
 def _run(probes: str) -> dict:
-    source = (JS_DIR / "row-window.js").read_text(encoding="utf-8")
+    source = _js_scope.unwrapped((JS_DIR / "row-window.js").read_text(encoding="utf-8"))
     match = re.search(r"^const ROW_WINDOW_MARGIN.*?^function windowRows\(.*?^\}\n", source, re.S | re.M)
     assert match, "windowRows is gone from row-window.js (moved out of notes-list.js whole)"
     script = HARNESS % {"source": match.group(0), "probes": probes}
