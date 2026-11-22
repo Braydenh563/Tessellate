@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8846, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2854, tests 22874, plan headings 695, app scripts 29, boot scripts 38, script files 362.
+Counts: frontend functions 8847, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2854, tests 22874, plan headings 695, app scripts 29, boot scripts 38, script files 363.
 
-## Frontend functions (8846)
+## Frontend functions (8847)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:276 |
-| `charactersLost` | frontend/js/lazy-entries.js:285 |
-| `emblemHead` | frontend/js/lazy-entries.js:293 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:322 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:355 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:316 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:343 |
-| `onDomReady` | frontend/js/lazy-entries.js:366 |
-| `plainHead` | frontend/js/lazy-entries.js:299 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:307 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:378 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:397 |
+| `afterCharacters` | frontend/js/lazy-entries.js:277 |
+| `charactersLost` | frontend/js/lazy-entries.js:286 |
+| `emblemHead` | frontend/js/lazy-entries.js:294 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:323 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:356 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:317 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:344 |
+| `onDomReady` | frontend/js/lazy-entries.js:367 |
+| `plainHead` | frontend/js/lazy-entries.js:300 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:308 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:379 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:398 |
 
 ### frontend/js/att-chip.js (7)
 
@@ -10046,6 +10046,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbTidyNextRight` | frontend/js/whiteboard-map.js:3827 |
 | `wbWireEdgeLabelDrag` | frontend/js/whiteboard-map.js:2605 |
 
+### frontend/js/whiteboard-menus.js (1)
+
+| Name | File:line |
+|---|---|
+| `wbInitMenus` | frontend/js/whiteboard-menus.js:4 |
+
 ### frontend/js/whiteboard-navigator.js (15)
 
 | Name | File:line |
@@ -10561,21 +10567,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:5709 |
-| `dragging` | frontend/js/whiteboard.js:5123 |
+| `addBoardToNote` | frontend/js/whiteboard.js:4735 |
+| `dragging` | frontend/js/whiteboard.js:4149 |
 | `handleWbZoom` | frontend/js/whiteboard.js:599 |
-| `highlighterBlend` | frontend/js/whiteboard.js:5729 |
+| `highlighterBlend` | frontend/js/whiteboard.js:4755 |
 | `initWhiteboard` | frontend/js/whiteboard.js:1929 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:5386 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:5621 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:5490 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:4123 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:4097 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:5546 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:4412 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:4647 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:4516 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:3149 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:3123 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4572 |
 | `wbAlignTol` | frontend/js/whiteboard.js:985 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:446 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:527 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:5365 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:4391 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:509 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:477 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:363 |
@@ -10591,7 +10597,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1022 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:944 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:5350 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:4376 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
 | `wbMultiKey` | frontend/js/whiteboard.js:1405 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:919 |
@@ -10606,8 +10612,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:500 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1145 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1146 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:5313 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:5300 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:4339 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:4326 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:656 |
 | `wbSnap` | frontend/js/whiteboard.js:968 |
 | `wbSnapOn` | frontend/js/whiteboard.js:955 |

@@ -848,22 +848,24 @@
         const publish = (entries) => {
           const size = entries && entries[0] && entries[0].borderBoxSize && entries[0].borderBoxSize[0];
           const box = size ? { width: size.inlineSize, height: size.blockSize } : panel.getBoundingClientRect();
+          //: The tools row is a pill on one line and a card once wrapped: its
+          //: first and last shown sections' rows, read before anything below
+          //: writes a style (the listeners and the properties).
+          let wrapped = false;
+          if (name === "tools") {
+            const shown = [...(panel.querySelector(".wb-tool-group")?.children || [])].filter((el) => el.offsetParent);
+            wrapped = shown.length > 1 && shown[shown.length - 1].offsetTop > shown[0].offsetTop + 4;
+          }
           panel.dispatchEvent(new Event("wb-panel-resize"));
           // A hidden panel measures 0, and a 0 here would collapse the offset
           // of whatever is clearing it right on top of the panel above. The
           // CSS fallbacks stay in charge until there is a real size to use.
           if (box.height > 0) wbPanelMetricsRoot.style.setProperty(`--wb-h-${name}`, `${Math.round(box.height)}px`);
-          //: The tools row is a pill on one line and a card once wrapped: read
-          //: here, after layout, as the first and last shown section's rows.
-          if (name === "tools") {
-            const shown = [...(panel.querySelector(".wb-tool-group")?.children || [])].filter((el) => el.offsetParent);
-            const wrapped = shown.length > 1 && shown[shown.length - 1].offsetTop > shown[0].offsetTop + 4;
-            panel.classList.toggle("wb-rail-wrapped", wrapped && panel.dataset.dock !== "side");
-          }
           // The tools panel's width is read back by its own side-dock rule
           // (`width: var(--wb-w-tools)`), so a width taken while it lay along the
           // bottom (758px at 768) became the side column's width.
           if (box.width > 0 && (name !== "tools" || panel.dataset.dock === "side")) wbPanelMetricsRoot.style.setProperty(`--wb-w-${name}`, `${Math.round(box.width)}px`);
+          if (name === "tools") panel.classList.toggle("wb-rail-wrapped", wrapped && panel.dataset.dock !== "side");
         };
         new ResizeObserver(publish).observe(panel);
       }

@@ -215,8 +215,10 @@ EXPECTED = {
     'whiteboard-paint.js': [
         '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
     ],
-    'whiteboard.js': [
+    'whiteboard-menus.js': [
         '"The default board cannot change kind. Make a new board to start a mind map."',
+    ],
+    'whiteboard.js': [
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',
     ],

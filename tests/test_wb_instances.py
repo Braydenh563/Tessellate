@@ -562,7 +562,7 @@ def test_init_whiteboard_binds_container_listeners_through_the_instances():
     direct = re.findall(r'(?:containerEl|container\.node\(\)\??|wbInstances\.container\(\)\??|\$\("whiteboard-container"\)\??)\.addEventListener\(', text)
     assert direct == [], direct
     #: initWhiteboard and the sections carved out of it, which it calls once (L634).
-    wb = "".join((JS / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "whiteboard-pointer.js", "whiteboard-pan.js"))
+    wb = "".join((JS / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "whiteboard-pointer.js", "whiteboard-pan.js", "whiteboard-menus.js"))
     assert not re.search(r"^(?!\s*//).*\bcontainerEl\b", wb, re.M)
     assert wb.count("wbInstances.on(") >= 26
     #: The document-wide key handler asks whose board a key is for, and a read-only one takes none.
