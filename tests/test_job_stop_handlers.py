@@ -34,13 +34,23 @@ def _press_stop() -> None:
     jobs._here.job.stop()
 
 
+def _stop_then(value: str):  # noqa: ANN202
+    """The model call, with Stop pressed while it runs: returns `value`."""
+
+    def call(*_args, **_kwargs) -> str:  # noqa: ANN002, ANN003
+        _press_stop()
+        return value
+
+    return call
+
+
 def test_caption_stopped_during_the_model_call_stores_nothing(app_state, fake_ollama, tmp_path, monkeypatch):
     upload_id = _upload()
     image = tmp_path / "a.png"
     image.write_bytes(b"\x89PNG\r\n\x1a\n")
     fake_ollama.capabilities_declared = ["vision"]
     deps.override_ai(ollama=fake_ollama)
-    monkeypatch.setattr(captioning, "caption_text", lambda *a, **k: (_press_stop(), "a cat")[1])
+    monkeypatch.setattr(captioning, "caption_text", _stop_then("a cat"))
     pool = jobs.Pool(widths={"model": 1})
     try:
         pool.enqueue("caption", captioning.caption_and_store, upload_id, image, name="a.png")
@@ -74,7 +84,7 @@ def test_vision_read_stopped_during_the_model_call_stores_nothing(app_state, fak
     image.write_bytes(b"\x89PNG\r\n\x1a\n")
     fake_ollama.capabilities_declared = ["vision"]
     deps.override_ai(ollama=fake_ollama)
-    monkeypatch.setattr(vision_ocr, "vision_ocr_text", lambda *a, **k: (_press_stop(), "words")[1])
+    monkeypatch.setattr(vision_ocr, "vision_ocr_text", _stop_then("words"))
     pool = jobs.Pool(widths={"model": 1})
     try:
         pool.enqueue("vision", vision_ocr.vision_ocr_and_store, upload_id, image, name="a.png")
