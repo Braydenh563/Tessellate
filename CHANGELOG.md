@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Desktop companion: a prop act keeps its drawn prop layer instead of redrawing and resizing it on most ticks (L-general-72); act ticks at dpi 192 went from a 31 ms median to 9 ms. A load-order test checks every name documents.js calls at load is defined before it.
+- Documents: the toolbar-state sweep reads what the caret is inside through `renderDocStatusBar.marksAt`, since the scroll and status file was wrapped and `docToolbarMarksAt` left the global scope.
 - Merge with the base, corrected: the companion's read reaction takes the base's `content_truncated` test again; the map's dragged-branch layer finds its layers through the active board (`wbInstances`); seven functions this branch grew are back at their size seeds (helpers moved out as properties, comments rewrapped), and the chat list's two seeds follow it to chat-list.js.
 - Sweeps: deepflows opens a document by its row title, not the small page's heading (L-documents-54), which was first and 7px tall.
 - Documents: the idle warm-up loads the whole library bundle, not documents.js alone, which ran before documents-surface.js had exported setDocView (page error "setDocView is not defined", fontmatrix in CI).

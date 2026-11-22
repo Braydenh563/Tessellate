@@ -111,7 +111,7 @@ const STOPS = [
           //: Their state is still the app's answer to "what is the caret inside", which
           //: `docToolbarMarksAt` gives and `renderDocToolbarState` paints on whichever
           //: button exists; the stop asserts that answer for a mark with no button.
-          const marks = [...docToolbarMarksAt(window.CM6, docCmView.state)];
+          const marks = [...renderDocStatusBar.marksAt(window.CM6, docCmView.state)];
           const unbuttoned = marks.filter((m) => !bar.querySelector(`button[data-md="${m}"]`));
           r({
             at,
