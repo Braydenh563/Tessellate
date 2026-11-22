@@ -86,7 +86,8 @@ def test_a_store_that_raises_oserror_falls_back_to_the_owner_only_file(tmp_path,
             pass
 
     monkeypatch.setattr(secrets_store, "_keyring", lambda data_dir: Refusing())
-    assert secrets_store.write(tmp_path, "mcp_token", "tok") is True
+    kept = secrets_store.write(tmp_path, "mcp_token", "tok")
+    assert kept is True
     assert secrets_store.read(tmp_path, "mcp_token") == "tok"
     assert any("refused mcp_token" in r.getMessage() for r in caplog.records)
 

@@ -376,8 +376,9 @@ def _before_without_a_time(rest: str, about: bool) -> dict | None:
 #: clock only up to 12:59, so "at 2027" stays a year.
 _BARE_CLOCK = re.compile(r"\b(at|by|from|until|till) (0?[1-9]|1[0-2])([0-5]\d)\b(?![:\d])", re.I)
 #: A new sentence after the reminder ("... at 930?? they come out at 10pm") is a fact about it, not its time.
-#: Only a lowercase opening counts, so "Dr. Smith" stays in the words.
-_FACT_SPLIT = re.compile(r"\s*[?!.]+\s+(?=[a-z])")
+#: Only a lowercase opening counts, so "Dr. Smith" stays in the words. The lookbehind starts a match only at a
+#: run's first character, so a long run of "!" is one attempt, not one per character (CodeQL 2354).
+_FACT_SPLIT = re.compile(r"(?<![?!.\s])\s*[?!.]+\s+(?=[a-z])")
 
 
 def _with_colons(rest: str) -> str:

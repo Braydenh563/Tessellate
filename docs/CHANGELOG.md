@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminder fact split reads a long run of "!" in linear time (CodeQL 2354); a test assert no longer holds the write it checks (CodeQL 2355).
 - Whiteboard More sheet: one Arrange grouping (L-whiteboard-30's), the merge's second copy removed; shared names back under the cap.
 - Lints after the base merge: one askAtlasAboutNote (entry-menu.js held two), the head-title regexes anchored, four stale lazy stand-ins taken out.
 - Packaging (L-general-3, L-general-5): every build carries LICENSE and THIRD_PARTY.md (both PyInstaller specs, so the installer, the MSI and the Linux zip, and the Docker image); CI lints the Dockerfile with the official hadolint action. Migrations: an empty merge revision joins document sub-pages and chat folders, which met at the base merge as two heads.

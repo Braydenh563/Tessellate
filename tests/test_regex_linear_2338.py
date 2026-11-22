@@ -27,6 +27,11 @@ def test_an_old_lead_reads_a_long_run_of_all_my_in_linear_time():
     assert _ratio(library_acts._OLD.match, lambda n: "all my " * n + "x") < 30
 
 
+def test_a_fact_split_reads_a_long_run_of_bangs_in_linear_time():
+    """CodeQL 2354: each "!" of a run started its own try at `\\s*[?!.]+\\s+`."""
+    assert _ratio(commands._FACT_SPLIT.split, lambda n: "buy tickets" + "!" * n + "x") < 30
+
+
 def test_the_patterns_still_read_what_they_read():
     assert commands._BEFORE_TAIL.search("about the dentist the day before")
     for lead in ("all my old ", "all of the old ", "the oldest ", "every stale "):
