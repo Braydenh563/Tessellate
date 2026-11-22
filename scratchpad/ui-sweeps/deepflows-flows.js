@@ -607,7 +607,10 @@ async function openSettingsByGear(env) {
 const SETTINGS_SKIP = /pref-simple-mode|password when the app opens|other devices on this network|newer version|Update automatically|newest changes|SearXNG|autonomous optimization/i;
 
 //: Every switch visible in the current section: its index, label and state.
-const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#settings-modal input[type="checkbox"]')]
+//: With `want` ({ label, nth }), the element of that switch instead, found in the
+//: same page call that lists them, so nothing drawn in between can move it (L-general-74).
+function switchesInPage(want) {
+  const found = [...document.querySelectorAll('#settings-modal input[type="checkbox"]')]
   .map((c, i) => ({ c, i }))
   .filter(({ c }) => {
     if (c.disabled) return false;
@@ -624,6 +627,7 @@ const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#setti
     return Boolean(hit && label.contains(hit));
   })
   .map(({ c, i }) => ({
+    c,
     i,
     id: c.id || '',
     label: ((c.closest('label') || c.parentElement).textContent || '').trim().replace(/\s+/g, ' ').replace(/ \(\d+ [a-z ]+\)$/, '').slice(0, 70), // a count in the words ("(3 hidden)") moves with the state
@@ -633,21 +637,27 @@ const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#setti
   //: list elsewhere (the tools, the skills) has or has not drawn yet: after a
   //: reload it is not the number it was. A switch is found again by its words
   //: and which of the same words it is in its section (`nth`).
-  .map((sw, k, all) => ({ ...sw, nth: all.slice(0, k).filter((o) => o.label === sw.label).length })));
+  .map((sw, k, all) => ({ ...sw, nth: all.slice(0, k).filter((o) => o.label === sw.label).length }));
+  if (!want) return found.map(({ c, ...sw }) => sw);
+  const sw = found.filter((x) => x.label === want.label)[want.nth];
+  return sw ? (sw.c.closest('label') || sw.c) : null;
+}
+const switchesHere = (env) => env.js(switchesInPage, null);
 
 //: The switch a `toggled` record means, in a fresh listing.
 const findSw = (here, t) => here.filter((x) => x.label === t.label)[t.nth];
 
-//: Presses a switch found by `switchesHere`, by its id (by its words without one):
-//: its index from an earlier list is stale once a press redraws a list above it
-//: (Models' gated controls), and pressing it then presses another (deepflows SHARD=7).
+//: Presses a switch found by `switchesHere`: by its id, or without one by its words
+//: and `nth`, found in the same page call that takes its handle. An index from an
+//: earlier call is stale once a list above it draws (Models' gated controls, deepflows
+//: SHARD=7), and pressing it then presses the next switch (L-general-74).
 async function clickSwitch(env, sw) {
-  const now = sw.id ? sw : (findSw(await switchesHere(env), sw) || sw);
-  const handle = await env.page.evaluateHandle(([id, i]) => {
-    const c = (id && document.getElementById(id)) || document.querySelectorAll('#settings-modal input[type="checkbox"]')[i];
-    return c.closest('label') || c;
-  }, [sw.id || null, now.i]);
-  await handle.asElement().click({ timeout: 4000 });
+  const handle = sw.id
+    ? await env.page.evaluateHandle((id) => { const c = document.getElementById(id); return c && (c.closest('label') || c); }, sw.id)
+    : await env.page.evaluateHandle(switchesInPage, { label: sw.label, nth: sw.nth });
+  const el = handle.asElement();
+  if (!el) throw new Error(`"${sw.label.slice(0, 40)}" is not on screen to press`);
+  await el.click({ timeout: 4000 });
 }
 
 //: Press back every switch the run pressed (`toggled`: { section, i, id, label, was }).
