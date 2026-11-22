@@ -120,7 +120,7 @@ NAMED = {
     "/entries/changes": ("../entry/listing.py", ".limit(CHANGES_IDS_MAX + 1)"),
     # The graph draws every note by design; documents are capped and the
     # encoded payload is cached while nothing moves (`_payload_key`).
-    "/graph": ("routes_graph.py", ".limit(GRAPH_DOCUMENT_CAP)"),
+    "/graph": ("routes_graph.py", "documents_repo.unshelved(session, GRAPH_DOCUMENT_CAP)"),
 }
 
 

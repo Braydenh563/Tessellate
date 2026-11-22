@@ -4993,7 +4993,9 @@ body .chip.item-label,
    button the pill's inner height, concentric with its end: 0px from the
    border above, below and to the right (L-world-class-107 measured 0, 0
    and 2 with a 2px end margin, the fill off the cap's curve); a finger
-   keeps the 28px target (the pill grows around it there). */
+   keeps the 28px target (the pill grows around it there). The circle is
+   drawn 2px inside its 24px target (padding, content-box), 3px from the
+   pill's outer edge on all three sides. */
 @media (pointer: fine) {
   #entry-list .link-connection > .menu-wrap {
     display: inline-flex;
@@ -5005,6 +5007,8 @@ body .chip.item-label,
     min-width: 0;
     min-height: 0;
     margin-inline-end: 0;
+    padding: 2px;
+    background-clip: content-box;
   }
 }
 /* --- A note's time: the same corner on every card --- */

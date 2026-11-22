@@ -613,12 +613,6 @@
   font-size: 1em;
   opacity: 1;
 }
-/* Reduced motion keeps the open state (the turned chevron) and drops only the turn. */
-@media (prefers-reduced-motion: reduce) {
-  .graph-trace-story > summary > .doc-toolbar-menu-caret {
-    transition: none;
-  }
-}
 
 /* **A notebook with nothing to map has nothing to key or zoom** (unslop 1103,
    19): the legend said "Bigger dot, more links" and the zoom strip floated

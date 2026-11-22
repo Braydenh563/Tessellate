@@ -82,6 +82,9 @@ def test_deleting_the_open_space_keeps_its_undo() -> None:
 #: doc22-1102: docNoteTypes, docNoteTypesAsked and docPropsDrawn (note types per notebook, two flags) moved
 #: into documents-props.js's closure, so they are no longer module-level names here.
 EXEMPT = {
+    "importWorker": "the import upload worker's handle, not data",
+    "staged": "the upload worker's own scope (no app state): the files of one import, replaced by the next one's first chunk",
+    "graphAutoFitDone": "the graph camera's framed-once flag (UI, not data): switchTab clears it on a fresh visit",
     "uiStateOnServer": "the notebook's mirrored settings",
     "paletteUsage": "which palette commands were used, per notebook",
     "askHistoryTotal": "reset with the Ask history list (loadAskHistoryBadge reads it again)",
