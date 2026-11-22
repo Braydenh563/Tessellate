@@ -114,7 +114,16 @@
 /* The peeked width, above the rail's (1,1,0) by the same id list. */
 .layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:hover,
 .layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
-  width: var(--saved-width);
+  width: var(--peek-width, var(--saved-width));
+}
+/* Notes' sidebar stays sticky while peeked (owner bug 5 on #257: the peek stayed 48px). Its own
+   `#tab-notes #sidebar` (2,0,0) and rail (2,1,0) rules outrank the peek above, so the hover set
+   `--sb-peek` and showed the list squeezed into the rail. Sticky, not absolute: the page is its
+   scroll container, and a sticky item wider than its 48px track overlays the content beside it
+   without moving it. */
+#tab-notes .layout-sidebar-collapsed > #sidebar.sidebar-collapsed:is(:hover, :focus-visible, :has(:focus-visible)) {
+  position: sticky;
+  width: var(--peek-width, var(--saved-width));
 }
 /* `right: 1rem`, the pinned-open position, not the 1.25rem it had: the head's
    reserve (--sidebar-toggle-lane) is measured from the pinned spot, and the

@@ -354,7 +354,7 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
     const again = button.classList.contains("active") && matchMedia(PHONE_TABS).matches;
     //: A press on Notes paints the page first and draws a list that went stale behind another
     //: tab after it (INBOX 1516: the draw was inside the press, 650 ms at 4x before the page showed).
-    if (button.dataset.tab === "notes" && $("entry-list").dataset.stale) {
+    if (button.dataset.tab === "notes" && ($("entry-list").dataset.stale || renderSidebar.owed)) {
       $("entry-list").dataset.stale = "";
       afterFrames(renderEntries);
     }

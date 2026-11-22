@@ -116,6 +116,9 @@ function applySidebarWidth(aside, width, { remember = true } = {}) {
   const onRight = RIGHT_SIDE_SIDEBARS.has(aside.id);
   const rail = "48px";
   const fitted = `${sidebarFittedWidth(clamped)}px`;
+  //: The peek opens to the width the sidebar has when pinned open, the fitted one, not the stored
+  //: choice: at 1440 the notes sidebar was 245 open and peeked to 260 (owner bug 5 on #257).
+  aside.style.setProperty("--peek-width", fitted);
   if (aside.classList.contains("sidebar-collapsed")) {
     aside.parentElement.style.gridTemplateColumns = onRight
       ? `minmax(0, 1fr) ${rail}`
@@ -480,7 +483,10 @@ function initResizableSidebars() {
     syncSidebarInert();
   };
   wire();
-  for (const name of ["documents", "chat", "library"]) onSurface(name, wire);
+  //: Notes too (owner bug 5 on #257): its sidebar is in the notes surface, so it was wired only by a
+  //: later pass, about 10 s after the first Notes open, with no collapse toggle until then and its
+  //: width jumping from the stylesheet's 245 to the stored 260.
+  for (const name of ["notes", "documents", "chat", "library"]) onSurface(name, wire);
   onSurface("chat", () => makeWebPanelResizable($("web-panel")));
   window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
