@@ -56,13 +56,63 @@ def _move_dependents(session: Session, moved_ids: list[int], space_id: str) -> N
             link.workspace_id = space_id
 
 
+def _outside_ends(session: Session, movers: set[int]) -> list[Entry]:
+    """The live notes at the far end of every link with exactly one end in `movers`."""
+    with impersonate_workspace(session, "all"):
+        links = session.scalars(
+            select(EntryLink).where(
+                EntryLink.source_entry_id.in_(movers) | EntryLink.target_entry_id.in_(movers)
+            )
+        ).all()
+        far = {
+            link.id: link.target_entry_id if link.source_entry_id in movers else link.source_entry_id
+            for link in links
+            if (link.source_entry_id in movers) != (link.target_entry_id in movers)
+        }
+        found = session.scalars(select(Entry).where(Entry.id.in_(set(far.values())))).all()
+    alive = {e.id: e for e in found if not e.is_deleted}
+    return [alive[end] for end in far.values() if end in alive]
+
+
+def _home_name(session: Session, homes: set[str]) -> str:
+    """Where the left-behind ends live, in words; a private space is never named."""
+    if len(homes) > 1:
+        return "other spaces"
+    if not homes:
+        return ""
+    space = session.get(Space, next(iter(homes)))
+    if space is None:
+        return "Default space"
+    return "another private space" if space.is_private else space.name
+
+
+def hidden_links(session: Session, space_id: str, ids: list[int]) -> dict:
+    """What a move would hide: `{"hidden_links": n, "staying_in": name}`.
+
+    A link is read through one space's filter, so one end moving leaves it
+    in neither space. Showing it from both would leak a note across spaces
+    (a private one's title), so it is counted for the screen to say before
+    the move."""
+    movers = {
+        e.id
+        for e in session.scalars(select(Entry).where(Entry.id.in_(list(dict.fromkeys(ids)))))
+        if (e.workspace_id or "default") != space_id
+    }
+    if not movers:
+        return {"hidden_links": 0, "staying_in": ""}
+    kept = _outside_ends(session, movers)
+    homes = {e.workspace_id or "default" for e in kept}
+    return {"hidden_links": len(kept), "staying_in": _home_name(session, homes)}
+
+
 def to_space(session: Session, space_id: str, ids: list[int]) -> dict:
     """Move these notes into one space and return `{"moved": n, "from": {id: old
     space}}`. Only notes the session can see move (the ambient space filter
     reads them), a note keeps its category's name (made in the target when it
     has none), and what hangs off a note comes with it: its files, reminders
     and fade score, and links whose both ends moved. A link to a note left
-    behind stays where it was."""
+    behind stays where it was, and `hidden_links` / `staying_in` say how many
+    that is (`hidden_links`) so the screen can ask first."""
     if space_id == "all":
         raise ValueError("Pick one space to move them to.")
     if session.get(Space, space_id) is None:
@@ -73,10 +123,11 @@ def to_space(session: Session, space_id: str, ids: list[int]) -> dict:
         if (e.workspace_id or "default") != space_id
     ]
     if not entries:
-        return {"moved": 0, "from": {}}
+        return {"moved": 0, "from": {}, "hidden_links": 0, "staying_in": ""}
+    hidden = hidden_links(session, space_id, ids)
     before = {str(e.id): e.workspace_id or "default" for e in entries}
     _move_entries(session, entries, space_id)
     _move_dependents(session, [e.id for e in entries], space_id)
     manager.log_action(session, "moved", "entry", None, f"{len(entries)} note(s) to the space {space_id}")
     session.commit()
-    return {"moved": len(entries), "from": before}
+    return {"moved": len(entries), "from": before, **hidden}

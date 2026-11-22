@@ -340,6 +340,8 @@ class MoveNotesBody(BaseModel):
     #: Out of a private space (INBOX 1727): "Keep it private" (the default)
     #: or "Make it ordinary".
     keep_private: bool = True
+    #: Count the links the move would hide and move nothing (the screen asks first).
+    preview: bool = False
 
 
 @router.post("/spaces/{space_id}/move-notes")
@@ -367,6 +369,8 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
     # A locked private space's notes are out of this read, so only the target can be locked here.
     if target.is_private and session.info.get("sealed_workspaces"):
         raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+    if body.preview:
+        return {"moved": 0, **moving.hidden_links(session, space_id, body.ids)}
     leaving = private_space.leaving_ids(session, space_id, body.ids)
     moved = moving.to_space(session, space_id, body.ids)
     if leaving:

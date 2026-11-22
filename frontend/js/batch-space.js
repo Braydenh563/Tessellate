@@ -10,11 +10,11 @@
 //: one was, which is what the Undo sends back. Each request names the space
 //: the notes are in now, since a note moved out of the space on screen is
 //: one this window's own space filter no longer sees.
-function batchSpaceRequest(spaceId, ids, from, keepPrivate = true) {
+function batchSpaceRequest(spaceId, ids, from, keepPrivate = true, preview = false) {
   return api(`/spaces/${encodeURIComponent(spaceId)}/move-notes`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Auth-Token": authToken(), "X-Workspace-ID": from },
-    body: JSON.stringify({ ids, keep_private: keepPrivate }),
+    body: JSON.stringify({ ids, keep_private: keepPrivate, preview }),
   }).then((r) => r.json());
 }
 
@@ -58,6 +58,18 @@ async function moveNotesToSpace(ids, space) {
   const fromPrivate = spacesCache.find((s) => s.id === activeSpaceId())?.is_private && !space.is_private;
   const keep = fromPrivate ? await privateSpaces("askKeep", ids.length === 1 ? "this note" : "these notes") : true;
   if (keep === null) return null;
+  //: Links to notes staying behind are read through the old space only, so they
+  //: go out of view; say how many before moving (L-world-class-22).
+  try {
+    const { hidden_links: hidden = 0, staying_in: stays = "" } = await batchSpaceRequest(space.id, ids, activeSpaceId(), keep, true);
+    if (hidden) {
+      const words = `${hidden} ${hidden === 1 ? "link" : "links"} to ${hidden === 1 ? "a note" : "notes"} staying in ${stays} will be hidden.`;
+      if (!(await confirmDialog(`Move anyway?\n\n${words}`, { confirmLabel: "Move" }))) return null;
+    }
+  } catch (error) {
+    toast(error.message, true);
+    return null;
+  }
   try {
     moved = await batchSpaceRequest(space.id, ids, activeSpaceId(), keep);
   } catch (error) {
