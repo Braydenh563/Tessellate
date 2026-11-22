@@ -2180,6 +2180,7 @@ def ocr_media(
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
     if body.text is not None:
         upload.ocr_text = body.text.strip() or None
+        ocr.text_set_by_hand(upload.id)
         session.commit()
         if body.edited:
             _set_edited_reading(_page_read_key(None, upload.id), upload.ocr_text, "tesseract")

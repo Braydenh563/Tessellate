@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8568, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11497, test files 2947, tests 23178, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8568, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11499, test files 2947, tests 23179, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8568)
 
@@ -13959,7 +13959,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1937 |
 | `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1714 |
 | `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1350 |
-| `/media/{filename}` | GET | `get_media` | src/tessellate/api/routes_files.py:2222 |
+| `/media/{filename}` | GET | `get_media` | src/tessellate/api/routes_files.py:2223 |
 | `/media/{upload_id}` | DELETE | `delete_media` | src/tessellate/api/routes_files.py:1895 |
 | `/media/{upload_id}` | PUT | `rename_media` | src/tessellate/api/routes_files.py:1966 |
 | `/media/{upload_id}/caption` | POST | `caption_media` | src/tessellate/api/routes_files.py:2046 |
@@ -14347,7 +14347,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11497)
+## Backend modules (11499)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22748,7 +22748,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `delete_media` | src/tessellate/api/routes_files.py:1896 |
 | `download_export` | src/tessellate/api/routes_files.py:1272 |
 | `download_file` | src/tessellate/api/routes_files.py:215 |
-| `get_media` | src/tessellate/api/routes_files.py:2223 |
+| `get_media` | src/tessellate/api/routes_files.py:2224 |
 | `list_attachment_gallery` | src/tessellate/api/routes_files.py:320 |
 | `list_exports` | src/tessellate/api/routes_files.py:1234 |
 | `list_media` | src/tessellate/api/routes_files.py:1514 |
@@ -25889,58 +25889,60 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_macos` | src/tessellate/core/netid.py:234 |
 | `read_windows` | src/tessellate/core/netid.py:323 |
 
-### src/tessellate/core/ocr.py (48)
+### src/tessellate/core/ocr.py (50)
 
 | Name | File:line |
 |---|---|
-| `_adopt_tesseract` | src/tessellate/core/ocr.py:136 |
-| `_binary_install_attempt` | src/tessellate/core/ocr.py:1185 |
-| `_block_regions` | src/tessellate/core/ocr.py:530 |
-| `_extra_size` | src/tessellate/core/ocr.py:639 |
-| `_image_size` | src/tessellate/core/ocr.py:471 |
-| `_is_title_line` | src/tessellate/core/ocr.py:1051 |
-| `_join_line_blocks` | src/tessellate/core/ocr.py:503 |
-| `_language_kwargs` | src/tessellate/core/ocr.py:328 |
-| `_line_boxes` | src/tessellate/core/ocr.py:494 |
-| `_line_words` | src/tessellate/core/ocr.py:972 |
-| `_log_binary_missing` | src/tessellate/core/ocr.py:675 |
-| `_log_package_missing` | src/tessellate/core/ocr.py:689 |
-| `_mostly_bullets` | src/tessellate/core/ocr.py:1043 |
-| `_one_thread_for_tesseract` | src/tessellate/core/ocr.py:660 |
-| `_prepared` | src/tessellate/core/ocr.py:752 |
-| `_probe_windows_tesseract` | src/tessellate/core/ocr.py:107 |
-| `_rapidocr_lines` | src/tessellate/core/ocr.py:429 |
-| `_rapidocr_reader` | src/tessellate/core/ocr.py:415 |
-| `_rapidocr_regions` | src/tessellate/core/ocr.py:554 |
-| `_rapidocr_text` | src/tessellate/core/ocr.py:466 |
-| `_read_string` | src/tessellate/core/ocr.py:762 |
-| `_read_with_fallbacks` | src/tessellate/core/ocr.py:770 |
-| `_reading_block_kind` | src/tessellate/core/ocr.py:1059 |
-| `_region_data` | src/tessellate/core/ocr.py:823 |
-| `_registry_tesseract_dir` | src/tessellate/core/ocr.py:75 |
-| `_word_box` | src/tessellate/core/ocr.py:959 |
-| `attempt_binary_install` | src/tessellate/core/ocr.py:1210 |
-| `clear_language_cache` | src/tessellate/core/ocr.py:251 |
-| `effective_language` | src/tessellate/core/ocr.py:315 |
-| `engine` | src/tessellate/core/ocr.py:382 |
-| `engine_name` | src/tessellate/core/ocr.py:400 |
-| `engine_status` | src/tessellate/core/ocr.py:580 |
-| `extra_size` | src/tessellate/core/ocr.py:631 |
-| `extract_and_store` | src/tessellate/core/ocr.py:1087 |
-| `extract_in_background` | src/tessellate/core/ocr.py:1143 |
-| `extract_region_text` | src/tessellate/core/ocr.py:785 |
-| `extract_regions` | src/tessellate/core/ocr.py:841 |
-| `extract_text` | src/tessellate/core/ocr.py:705 |
-| `installed_languages` | src/tessellate/core/ocr.py:213 |
-| `local_available` | src/tessellate/core/ocr.py:408 |
-| `packages_available` | src/tessellate/core/ocr.py:335 |
-| `rapidocr_available` | src/tessellate/core/ocr.py:365 |
-| `regions_from_reading` | src/tessellate/core/ocr.py:995 |
-| `saved_language` | src/tessellate/core/ocr.py:280 |
-| `set_language` | src/tessellate/core/ocr.py:294 |
-| `tesseract_available` | src/tessellate/core/ocr.py:165 |
-| `tesseract_version` | src/tessellate/core/ocr.py:257 |
-| `unavailable_reason` | src/tessellate/core/ocr.py:643 |
+| `_adopt_tesseract` | src/tessellate/core/ocr.py:137 |
+| `_binary_install_attempt` | src/tessellate/core/ocr.py:1210 |
+| `_block_regions` | src/tessellate/core/ocr.py:531 |
+| `_extra_size` | src/tessellate/core/ocr.py:640 |
+| `_hand_set_count` | src/tessellate/core/ocr.py:1104 |
+| `_image_size` | src/tessellate/core/ocr.py:472 |
+| `_is_title_line` | src/tessellate/core/ocr.py:1052 |
+| `_join_line_blocks` | src/tessellate/core/ocr.py:504 |
+| `_language_kwargs` | src/tessellate/core/ocr.py:329 |
+| `_line_boxes` | src/tessellate/core/ocr.py:495 |
+| `_line_words` | src/tessellate/core/ocr.py:973 |
+| `_log_binary_missing` | src/tessellate/core/ocr.py:676 |
+| `_log_package_missing` | src/tessellate/core/ocr.py:690 |
+| `_mostly_bullets` | src/tessellate/core/ocr.py:1044 |
+| `_one_thread_for_tesseract` | src/tessellate/core/ocr.py:661 |
+| `_prepared` | src/tessellate/core/ocr.py:753 |
+| `_probe_windows_tesseract` | src/tessellate/core/ocr.py:108 |
+| `_rapidocr_lines` | src/tessellate/core/ocr.py:430 |
+| `_rapidocr_reader` | src/tessellate/core/ocr.py:416 |
+| `_rapidocr_regions` | src/tessellate/core/ocr.py:555 |
+| `_rapidocr_text` | src/tessellate/core/ocr.py:467 |
+| `_read_string` | src/tessellate/core/ocr.py:763 |
+| `_read_with_fallbacks` | src/tessellate/core/ocr.py:771 |
+| `_reading_block_kind` | src/tessellate/core/ocr.py:1060 |
+| `_region_data` | src/tessellate/core/ocr.py:824 |
+| `_registry_tesseract_dir` | src/tessellate/core/ocr.py:76 |
+| `_word_box` | src/tessellate/core/ocr.py:960 |
+| `attempt_binary_install` | src/tessellate/core/ocr.py:1235 |
+| `clear_language_cache` | src/tessellate/core/ocr.py:252 |
+| `effective_language` | src/tessellate/core/ocr.py:316 |
+| `engine` | src/tessellate/core/ocr.py:383 |
+| `engine_name` | src/tessellate/core/ocr.py:401 |
+| `engine_status` | src/tessellate/core/ocr.py:581 |
+| `extra_size` | src/tessellate/core/ocr.py:632 |
+| `extract_and_store` | src/tessellate/core/ocr.py:1109 |
+| `extract_in_background` | src/tessellate/core/ocr.py:1165 |
+| `extract_region_text` | src/tessellate/core/ocr.py:786 |
+| `extract_regions` | src/tessellate/core/ocr.py:842 |
+| `extract_text` | src/tessellate/core/ocr.py:706 |
+| `installed_languages` | src/tessellate/core/ocr.py:214 |
+| `local_available` | src/tessellate/core/ocr.py:409 |
+| `packages_available` | src/tessellate/core/ocr.py:336 |
+| `rapidocr_available` | src/tessellate/core/ocr.py:366 |
+| `regions_from_reading` | src/tessellate/core/ocr.py:996 |
+| `saved_language` | src/tessellate/core/ocr.py:281 |
+| `set_language` | src/tessellate/core/ocr.py:295 |
+| `tesseract_available` | src/tessellate/core/ocr.py:166 |
+| `tesseract_version` | src/tessellate/core/ocr.py:258 |
+| `text_set_by_hand` | src/tessellate/core/ocr.py:1098 |
+| `unavailable_reason` | src/tessellate/core/ocr.py:644 |
 
 ### src/tessellate/core/ocr_prep.py (13)
 
@@ -29153,7 +29155,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23178)
+## Tests (23179)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31054,7 +31056,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ocr.py | 20 |
 | tests/test_ocr_clean_loops.py | 7 |
 | tests/test_ocr_ctrl_z_543.py | 2 |
-| tests/test_ocr_edit.py | 3 |
+| tests/test_ocr_edit.py | 4 |
 | tests/test_ocr_engine.py | 12 |
 | tests/test_ocr_engine_choice_717.py | 8 |
 | tests/test_ocr_engine_ui.py | 6 |
