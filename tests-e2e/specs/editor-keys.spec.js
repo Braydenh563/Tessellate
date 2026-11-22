@@ -40,7 +40,10 @@ test("Ctrl+Shift+Z redoes in a document, as Ctrl+Y does", async ({ page }) => {
   expect(await docText(page)).toBe("Start. one");
   // The formatting toolbar starts collapsed; Ctrl+Shift+X opens it.
   await page.keyboard.press("Control+Shift+X");
-  await page.locator('#tab-documents [data-md="redo"]').first().click();
+  // The toolbar is one row that folds its last tools behind More (Capture item 1), so Redo may sit there.
+  const redo = page.locator('#tab-documents [data-md="redo"]').first();
+  if (!(await redo.isVisible())) await page.locator("#tab-documents .doc-toolbar-more:visible").first().click();
+  await redo.click();
   expect(await docText(page), "the toolbar Redo did nothing").toBe("Start. one\ntwo");
   expect(errors).toEqual([]);
 });
@@ -147,10 +150,11 @@ test("at 700px wide the formatting toolbar is one row, not seven", async ({ page
   expect(height, `the toolbar wrapped to ${height}px`).toBeLessThan(80);
   const editor = (await page.locator("#tab-documents .cm-scroller").first().boundingBox()).height;
   expect(editor, "the editor was squeezed by the toolbar").toBeGreaterThan(260);
-  // A wide window keeps the expanded default.
+  // A wide window is the same one row: the row is the default at every width now (Capture item 1),
+  // where it was an expanded wrap above 900px.
   await page.setViewportSize({ width: 1280, height: 800 });
-  await expect.poll(async () => (await bar.boundingBox()).height).toBeGreaterThan(40);
-  expect(await bar.getAttribute("data-toolbar-mode")).toBeNull();
+  await expect.poll(async () => await bar.getAttribute("data-toolbar-mode")).toBe("row");
+  expect((await bar.boundingBox()).height, "the wide toolbar wrapped").toBeLessThan(80);
   expect(errors).toEqual([]);
 });
 
