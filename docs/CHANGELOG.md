@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+A notebook folder export names each attached file by SHA-256 (`sha256` in its sidecar) rather than SHA-1; archives made before still import, their `sha1` skipped as before.
 The OCR workspace's markup is a file read on its first open (`frontend/surfaces/ocr.html`, as Settings' body), which keeps index.html under its 900 KB cap after the board panels came in.
 The whiteboard split into wrapped files (L634) is merged with the Undo guard for a held board item (L-world-class-97), the Try again action on every literal error toast (L-world-class-43) and the CSS split into lazy sheets; the map's stamps, stickers and boundary code lives in `whiteboard-map-stamps.js`, beside theirs, `whiteboard-map-marks.js`.
 Clearing an image's text stays cleared: a background read queued at upload could land after the clear and put the machine's words back (CI py3.12 on 50462a6a). A hand set or clear now outranks any read queued before it (`ocr.text_set_by_hand`); tests/test_ocr_edit.py holds the real read on an Event until after the clear.

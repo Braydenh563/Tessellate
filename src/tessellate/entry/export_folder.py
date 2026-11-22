@@ -112,10 +112,13 @@ def _safe_name(name: str) -> str:
     return cleaned[:120] or "file"
 
 
-def _sha1_file(path: Path) -> str | None:
+def _sha256_file(path: Path) -> str | None:
+    """The file's identity in the manifest. SHA-256 since 2026-11-22: SHA-1 over a sealed file's
+    plain bytes sent CodeQL's weak-hash query on a ten-minute path walk; archives
+    made before carry `sha1`, which restore skips like this."""
     if not path.is_file():
         return None
-    digest = hashlib.sha1()  # noqa: S324  # an identity check, not security
+    digest = hashlib.sha256()
     if sealed_files.is_sealed(path):
         try:
             digest.update(sealed_files.read(path))
@@ -160,7 +163,7 @@ def _attachment_names(attachments: list) -> list[str]:
 def _attachment_record(attachment, name: str, uploads_dir: Path) -> dict:  # noqa: ANN001
     record = _row(attachment, _ROW_LEFT_OUT | {"entry_id", "stored_name"})
     record["file"] = name
-    record["sha1"] = _sha1_file(uploads_dir / attachment.stored_name)
+    record["sha256"] = _sha256_file(uploads_dir / attachment.stored_name)
     return record
 
 
@@ -724,7 +727,7 @@ def _write_attachments(session, entry, note, uploads_dir: Path) -> None:  # noqa
         stored = f"{uuid.uuid4().hex}{posixpath.splitext(record['file'])[1][:12].lower()}"
         (uploads_dir / stored).write_bytes(data)
         attachment = Attachment(entry_id=entry.id, filename=record.get("filename") or record["file"], stored_name=stored, size=len(data))
-        _restore(attachment, record, _ROW_LEFT_OUT | {"entry_id", "stored_name", "size", "file", "sha1"})
+        _restore(attachment, record, _ROW_LEFT_OUT | {"entry_id", "stored_name", "size", "file", "sha1", "sha256"})
         session.add(attachment)
 
 
