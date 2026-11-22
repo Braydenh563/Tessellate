@@ -501,7 +501,15 @@ function wbRenderLibrary() {
   //: when its shapes arrive, which sent the list to the top and the opened
   //: group out of sight ("these dropdowns don't show anything"). A new search
   //: starts at the top, as it did.
-  const top = query === wbLibState.libQuery ? list.scrollTop : 0;
+  //: The offset comes from a scroll listener, not `list.scrollTop`: read here, just after the
+  //: sidebar opens, it forced a layout of the whole panel (258 ms of a 274 ms click on the
+  //: owner's lag log, 2026-11-22).
+  if (!list.dataset.scrollKept) {
+    list.dataset.scrollKept = "1";
+    list.addEventListener("scroll", () => { wbLibState.libScroll = list.scrollTop; }, { passive: true });
+  }
+  const was = wbLibState.libScroll || 0;
+  const top = query === wbLibState.libQuery ? was : 0;
   wbLibState.libQuery = query;
   clearSkeletons(list);
   list.replaceChildren();
@@ -579,7 +587,8 @@ function wbRenderLibrary() {
   const keep = tiles.find((t) => t.dataset.ref === active) || tiles[0];
   //: A redraw under the keyboard (a star, a rename) keeps the reader's place.
   if (keep) wbLibSetActive(keep, { focus: hadFocus });
-  list.scrollTop = top;
+  if (top || was) list.scrollTop = top;
+  wbLibState.libScroll = top;
   wbLibAnnounceCount(tiles.length, words.length > 0);
 }
 

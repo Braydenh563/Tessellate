@@ -19,7 +19,10 @@ def test_the_library_redraw_keeps_the_scroll_place():
     source = with_pieces("whiteboard-library.js")
     body = source[source.index("function wbRenderLibrary()") :]
     body = body[: body.index("\n}\n")]
-    assert re.search(r"const top = query === wbLibState\.libQuery \? list\.scrollTop : 0;", body)
+    # The place comes from a scroll listener, not a `list.scrollTop` read: that read, just after the
+    # sidebar opened, forced the panel's whole layout (tests/test_lag_owner_log_1122.py).
+    assert re.search(r"const top = query === wbLibState\.libQuery \? was : 0;", body)
+    assert "const was = wbLibState.libScroll || 0;" in body
     assert "wbLibState.libQuery = query;" in body
     # restored after the tiles and the focus are placed, which can scroll it
     assert body.index("wbLibSetActive(keep") < body.index("list.scrollTop = top;")
