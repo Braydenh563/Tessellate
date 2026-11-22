@@ -79,7 +79,7 @@ GitHub and the docs site draw these fences; any mermaid viewer does too.
 ```mermaid
 flowchart TB
   subgraph Browser["Browser: frontend/, vanilla JS, no build step"]
-    Shell["29 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
+    Shell["30 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
     Lazy["Lazy modules<br/>LAZY_MODULES + ensureModule:<br/>board, graph, docs, code, meetings, mermaid"]
     SW["sw.js: offline cache, hash-stamped assets"]
     Shell -- "first use" --> Lazy
@@ -468,7 +468,7 @@ Tessellate/
 │   ├── theme-boot.js · boot-guard.js # before first paint: theme, perf mode,
 │   │                        #   and the guard that reports a boot failure
 │   ├── app.js … agent-activity.js # the shell, notes, chat and settings
-│   │                        #   glue: 29 classic scripts, one file until
+│   │                        #   glue: 30 classic scripts, one file until
 │   │                        #   2026-09-26, in index.html's order (app.js
 │   │                        #   first: api, auth, the lazy loader;
 │   │                        #   agent-activity.js, Agent Activity's list of
@@ -1411,10 +1411,10 @@ fetched by `ensureP5` the first time something draws: the dashboard's art asks f
 is ever loaded from a CDN, consistent with the offline-first rule. The
 JavaScript is split by surface (`dashboard.js`, `timeline.js`,
 `library.js`, `documents.js`, `graph.js`, `whiteboard.js`, `settings.js`); `app.js`
-and the 28 files after it hold the shell and everything shared, cut on
+and the 29 files after it hold the shell and everything shared, cut on
 2026-09-26 from one 50,000-line file into contiguous ranges kept in the old
 order, so a file may call into the ones above it while the page loads and
-never into one below (`tests/test_frontend_load_order.py`; tests read the 29
+never into one below (`tests/test_frontend_load_order.py`; tests read the 30
 as one text through `tests/_app_js.py`). The two biggest lazy surfaces are split
 further by concern: `documents-code.js` and `documents-prose.js` hold the
 document editor's code and prose tools, and `whiteboard-map.js` the mind map
@@ -1493,7 +1493,7 @@ top-level read of a later file's constant, and on a lazy name read at load
 with no stand-in; `tests/test_lazy_bundle_calls.py` covers the lazy bundles.
 `scratchpad/appjs-map.js --check FROM TO [AFTER]` answers the same question
 for a range of lines before it moves. The app's own code was one 50,000-line
-`app.js` until 0.3.3; it was cut into the 29 files above as contiguous
+`app.js` until 0.3.3; it was cut into the 30 files above as contiguous
 ranges in their old order, so every reference that was backward stayed
 backward (git history: appjs-split.md). A test
 that means "the app's code" reads all of them as one text through
@@ -1621,7 +1621,7 @@ there moves out on the next start (`core/secrets_store.py`).
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 23,000+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 24,000+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,
@@ -1832,7 +1832,7 @@ ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM and FA
 - Licence rule for taking code in: MIT, ISC, BSD, Apache-2.0 and GPL-3.0 may come in with notices; EPL-2.0 (ELK.js), CC share-alike and non-commercial licences are refused; tldraw (own licence) and a ProseMirror/Tiptap swap are refused; model weights and voices are licensed per file. (was ANALYSIS.md:4420; topic: CLAUDE.md section 3 licence line / docs/THIRD_PARTY.md header)
 - Library verdicts: drop networkx, Whoosh, NLTK, textblob, snips-nlu, adapt-parser, hunspell, pyspellchecker, rapidfuzz, transformers.js, ruff-wasm, KaTeX; Pyodide, sql.js and eslint-linter stay optional downloads, never vendored; Harper's 16 MB stays lazy and off the boot gzip budget; model2vec potion is the torch-free embedding candidate, unmeasured against bge-small. (was ANALYSIS.md:4112; topic: ARCHITECTURE.md vendoring section or docs/THIRD_PARTY.md)
 - Algorithm verdicts: build bigram LLR collocations, pair-count co-occurrence, Naive Bayes (only if it beats TF-IDF on the filing eval), SimHash, K-means; skip BK-tree; drop t-SNE/UMAP/HMM/CRF/SVM. (was ANALYSIS.md:4096; topic: BACKLOG.md filing section)
-- Architecture review verdicts: keep FastAPI+SQLite in one process, the no-build frontend, imperative DOM helpers, the event log and job runtime as the spine (finish B2 before new background features); change to cascade layers, ES modules (rejected as of CLAUDE.md: 29 classic scripts stay), and move the 20 stable sweeps into CI. (was ANALYSIS.md:3676; topic: ARCHITECTURE.md decisions)
+- Architecture review verdicts: keep FastAPI+SQLite in one process, the no-build frontend, imperative DOM helpers, the event log and job runtime as the spine (finish B2 before new background features); change to cascade layers, ES modules (rejected as of CLAUDE.md: 30 classic scripts stay), and move the 20 stable sweeps into CI. (was ANALYSIS.md:3676; topic: ARCHITECTURE.md decisions)
 - Vendor shortlist ranked: Silero VAD via faster-whisper plus browser audio constraints and language/initial_prompt (built), then Piper, Kokoro-82M via kokoro-onnx (no code yet), perfect-freehand, model2vec potion; rbush, dagre, MiniSearch, chrono-node, GLiNER, lingua-py, DeepFilterNet left until a measurement asks. (was ANALYSIS.md:4488; topic: BACKLOG.md voice/whiteboard sections)
 - A tool argument is either intent (the model's) or a fact the app can compute (never asked of the model): reminder arithmetic, dates, offsets are computed by the harness. (was AGENT_SKILLS_REFORM.md:134; topic: ARCHITECTURE.md agent harness section)
 - Real-model reach for tests is two env vars, TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL, read at import by the eval module; no pytest option or conftest hook, so 'every eval skipped' is the default. (was AGENT_SKILLS_REFORM.md:143; topic: CLAUDE.md section 4 / WORKING.md evals)

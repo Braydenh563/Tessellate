@@ -303,3 +303,88 @@ def test_an_import_commits_in_batches_not_per_note(exported, monkeypatch):
     session.close()
     assert written["imported"] == 503
     assert len(commits) < 60, f"{len(commits)} commits for 503 notes"
+
+
+def test_notes_come_back_in_the_spaces_they_were_exported_from(client, tmp_path):
+    """L979: the folder export dropped `workspace_id`, so three spaces became
+    one and every note landed in the open space. The sidecar names the space
+    and the import finds or makes it by name; a note from the default space
+    stays in the open one."""
+    from tessellate.core.database import Entry, Space
+    from tessellate.entry import manager
+
+    session = deps.get_db().session()
+    session.add_all([Space(id="garden", name="Garden", icon="ph-plant"), Space(id="trips", name="Trips", icon="ph-airplane")])
+    session.commit()
+    for text, space in [("plain one", "default"), ("garden one", "garden"), ("garden two", "garden"), ("trip one", "trips")]:
+        manager.create_entry(session, text).workspace_id = space
+    session.commit()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        export_folder.export(session, deps.get_config().uploads_dir, archive)
+    session.close()
+    deps.reset_app_state()
+    deps.init_app_state(data_dir=tmp_path / "empty")
+
+    session, result, written = _import(buffer.getvalue())
+    where = {e.content: e.workspace_id for e in session.query(Entry)}
+    names = {s.id: (s.name, s.icon) for s in session.query(Space)}
+    session.close()
+    assert written["imported"] == 4 and result.skipped == []
+    assert names[where["garden one"]] == ("Garden", "ph-plant") == names[where["garden two"]]
+    assert names[where["trip one"]] == ("Trips", "ph-airplane")
+    assert where["plain one"] == "default"
+
+
+def test_a_private_space_is_matched_by_privacy_and_skipped_while_locked(client, monkeypatch):
+    """Review of PR 255: a note from a private "Work" never lands in an open
+    "Work", and an existing private space is not used while the vault is locked."""
+    from tessellate.core import vault
+    from tessellate.core.database import Space
+
+    session = deps.get_db().session()
+    session.add_all([Space(id="t255-open", name="Desk 255"), Space(id="t255-priv", name="Desk 255", is_private=True)])
+    session.flush()
+    monkeypatch.setattr(vault, "key", lambda: None)
+    assert export_folder.space_for(session, {"name": "Desk 255", "is_private": True}, {}) is None
+    assert export_folder.space_for(session, {"name": "Desk 255"}, {}) == "t255-open"
+    monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
+    assert export_folder.space_for(session, {"name": "Desk 255", "is_private": True}, {}) == "t255-priv"
+    session.rollback()
+    session.close()
+
+
+
+def test_a_sealed_note_leaves_its_private_space_nameless(client, monkeypatch, tmp_path):
+    """L-world-class-871: a sealed note's sidecar says only that its space is
+    private (no name, no icon, so the folder does not list the private spaces);
+    a readable one keeps the name."""
+    from tessellate.core.database import Entry
+
+    entry = Entry(content="kept", workspace_id="desk-871", is_private=False)
+    related = export_folder._Related(spaces={"desk-871": {"name": "Desk 871", "icon": "ph-lock", "is_private": True}})
+    monkeypatch.setattr(export_folder, "_readable", lambda e: ("sealed text", True))
+    assert export_folder.note_record(entry, related, tmp_path)["space"] == {"is_private": True}
+    monkeypatch.setattr(export_folder, "_readable", lambda e: ("kept", False))
+    assert export_folder.note_record(entry, related, tmp_path)["space"]["name"] == "Desk 871"
+
+
+def test_a_nameless_private_space_comes_back_as_the_vaults_private_space(client, monkeypatch):
+    """L-world-class-871: unlocked, a sealed note with a nameless private space
+    goes to the first private space here, made ("Private") when there is none;
+    locked, to the open space."""
+    from tessellate.core import vault
+    from tessellate.core.database import Space
+
+    session = deps.get_db().session()
+    nameless = {"is_private": True}
+    monkeypatch.setattr(vault, "key", lambda: None)
+    assert export_folder.space_for(session, nameless, {}) is None
+    monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
+    made = session.get(Space, export_folder.space_for(session, nameless, {}))
+    assert made.is_private and made.name == "Private"
+    session.add(Space(id="aaa-871", name="Vault 871", is_private=True))
+    session.flush()
+    assert export_folder.space_for(session, nameless, {}) == "aaa-871"
+    session.rollback()
+    session.close()

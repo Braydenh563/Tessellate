@@ -171,17 +171,7 @@ def _routes(app):
     plain `isinstance(route, APIRoute)` filter over `app.routes` sees three
     routes out of two hundred and passes with the whole API unchecked. That is
     the shape of bug this file exists to catch, so it is worth the recursion.
-
-    A lazy row (`api/lazy_routes.py`) is empty until its first request, so the
-    list comes from a copy of the app with every row loaded, and `app` itself
-    meets each lazy row at the request this file sends it: the refusal checked
-    is the lazy gate's, as served.
     """
-    from tessellate.api.app import create_app
-    from tessellate.api.lazy_routes import load_all_routes
-
-    listing = create_app()
-    load_all_routes(listing)
     seen = set()
 
     def walk(routes, prefix=""):
@@ -199,7 +189,7 @@ def _routes(app):
                     seen.add(pair)
                     yield pair
 
-    yield from walk(listing.routes)
+    yield from walk(app.routes)
 
 
 @pytest.fixture()

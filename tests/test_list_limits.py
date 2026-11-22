@@ -63,12 +63,8 @@ def _routes(app):
 
     Included routers are lazy entries holding the real router, so a plain
     `isinstance(route, APIRoute)` filter sees three routes out of two hundred.
-    `test_every_route_is_locked.py` records that trap at length. A lazy row
-    (`api/lazy_routes.py`) is empty until loaded, so every row is loaded first.
+    `test_every_route_is_locked.py` records that trap at length.
     """
-    from tessellate.api.lazy_routes import load_all_routes
-
-    load_all_routes(app)
 
     def walk(routes, prefix=""):
         for route in routes:

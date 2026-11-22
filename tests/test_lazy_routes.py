@@ -1,227 +1,296 @@
-"""The lazy router host (L-world-class-230, `api/lazy_routes.py`).
+"""The lazy router host (L-world-class-230): a route module is included at its first request.
 
-A route module outside `BOOT_MODULES` is imported at the first request that
-matches one of its paths. What must not change: the response, the gate, which
-of two overlapping paths wins, and what the schema lists.
+`create_app` names its routers in `ROUTER_ROWS` instead of importing them, and
+`_LazyRouters` includes a row's router the first time a request's path starts
+with one of the row's segments. These tests hold the four promises that makes:
+a first request to a lazy prefix is served, the unlock still guards it before
+and after its router is included, `/openapi.json` lists every route, and a
+path no route serves is still a 404. Each builds a lazy app explicitly, since
+`create_app()` under pytest is eager.
 """
 
 from __future__ import annotations
 
+import logging
+import random
 import re
-import subprocess
-import sys
-from pathlib import Path
 
 import pytest
+from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
-from starlette.routing import Match
+from starlette.routing import Mount, Route, WebSocketRoute
 
 from tessellate.api import app as app_module
-from tessellate.api import lazy_routes, routes_auth
-from tessellate.api.route_table import PATHS
 
-ROOT = Path(__file__).resolve().parents[1]
+SKIP_METHODS = {"HEAD", "OPTIONS"}
 
 
-def _fresh():
-    return app_module.create_app()
+def _walk(routes, prefix="", segments=None):
+    """(method, path) of every route, included routers walked through (see
+    tests/test_every_route_is_locked.py for why a flat filter is not enough).
+    With `segments` (a row's), a route that is not an APIRoute (websocket, mount,
+    add_route) must start with one of them: the walk cannot list it as a method and
+    path, so the row's promise about it would otherwise go unchecked."""
+    for route in routes:
+        inner = getattr(route, "original_router", None)
+        if inner is not None:
+            context = getattr(route, "include_context", None)
+            yield from _walk(inner.routes, prefix + getattr(context, "prefix", ""), segments)
+            continue
+        if isinstance(route, APIRoute):
+            for method in sorted(set(route.methods or []) - SKIP_METHODS):
+                yield method, prefix + route.path
+        elif segments is not None:
+            first = app_module._first_segment(prefix + getattr(route, "path", ""))
+            assert first in segments.split(), (type(route).__name__, prefix + getattr(route, "path", ""))
 
 
-def _eager(monkeypatch):
-    """The app as it was before the lazy host: every row included at create_app."""
-    with monkeypatch.context() as patch:
-        patch.setattr(lazy_routes, "is_lazy", lambda _spec: False)
-        app = app_module.create_app()
-    assert not lazy_routes.lazy_rows(app)
-    return app
+def _row_index(module):
+    return next(i for i, row in enumerate(app_module.ROUTER_ROWS) if row.module == module)
 
 
-def _row(app, spec):
-    return next(row for row in lazy_routes.lazy_rows(app) if row.spec == spec)
+def _setup(client):
+    token = client.post("/auth/setup", json={"password": "first-pass"}).json()["token"]
+    return {"X-Auth-Token": token}
 
 
-def test_the_path_table_is_fresh():
-    built = lazy_routes.render_table(lazy_routes.build_table(app_module.ROUTER_ROWS))
-    on_disk = (ROOT / "src" / "tessellate" / "api" / "route_table.py").read_text(encoding="utf-8")
-    assert built == on_disk, "run: PYTHONPATH=src python scripts/route_table.py"
-
-
-def test_every_row_outside_the_boot_set_is_lazy_and_keeps_its_place(app_state):  # noqa: ARG001
-    app = _fresh()
-    rows = [spec for spec, _gate in app_module.ROUTER_ROWS if lazy_routes.is_lazy(spec)]
-    assert set(PATHS) == set(rows)
-    assert [row.spec for row in lazy_routes.lazy_rows(app)] == rows
-    assert not any(row.loaded for row in lazy_routes.lazy_rows(app))
-    # Each row keeps the gate its row names: the outer include carries it.
-    gates = {"open": 0, "locked": 2, "media": 1}
-    for route in app.router.routes:
-        row = getattr(route, "original_router", None)
-        if isinstance(row, lazy_routes.LazyRouter):
-            gate = dict(app_module.ROUTER_ROWS)[row.spec]
-            assert len(route.include_context.dependencies) == gates[gate], row.spec
-
-
-def test_routers_still_resolves_every_row_in_order():
-    resolved = app_module.ROUTERS
-    assert [gate for _r, gate in resolved] == [gate for _s, gate in app_module.ROUTER_ROWS]
-    assert all(router.routes for router, _gate in resolved)
-
-
-def test_the_app_import_leaves_the_lazy_modules_unimported(tmp_path):
-    probe = (
-        "import sys, os; os.environ['TESSELLATE_DATA_DIR'] = sys.argv[1]\n"
-        "from tessellate.api import app, lazy_routes\n"
-        "app.create_app()\n"
-        "rows = {spec.split('.')[0] for spec, _ in app.ROUTER_ROWS}\n"
-        "print(sorted(m.split('.')[-1] for m in sys.modules if m.split('.')[-1] in rows))\n"
-    )
-    out = subprocess.run(
-        [sys.executable, "-c", probe, str(tmp_path / "data")],
-        capture_output=True, text=True, timeout=60, env={"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"},
-    )
-    assert out.returncode == 0, out.stderr[-2000:]
-    loaded = eval(out.stdout.strip().splitlines()[-1])  # noqa: S307  (our own probe's list)
-    assert set(loaded) == set(lazy_routes.BOOT_MODULES)
-
-
-def test_a_lazy_rows_first_request_answers_as_the_eager_app(client, monkeypatch):
-    client.post("/entries", json={"content": "A note about the garden.", "tags": ["tomatoes", "basil"]})
-    first = client.get("/tags")
-    assert _row(client.app, "routes_tags.router").loaded
-    eager = TestClient(_eager(monkeypatch)).get("/tags")
-    assert first.status_code == eager.status_code == 200
-    assert first.json() == eager.json()
-    assert set(first.json()) >= {"tomatoes", "basil"}
-
-
-def test_the_gate_refuses_a_lazy_locked_route_without_a_session(app_state):  # noqa: ARG001
-    client = TestClient(_fresh())
-    made = client.post("/auth/setup", json={"password": "correct horse battery"})
-    token = made.json()["token"]
-    routes_auth._active_tokens.clear()
-    assert client.get("/tags").status_code == 401
-    assert _row(client.app, "routes_tags.router").loaded
-    unlocked = client.post("/auth/unlock", json={"password": "correct horse battery"}).json()["token"]
-    assert token and client.get("/tags", headers={"X-Auth-Token": unlocked}).status_code == 200
-
-
-def test_an_open_lazy_row_stays_open(app_state):  # noqa: ARG001
-    client = TestClient(_fresh())
-    client.post("/auth/setup", json={"password": "correct horse battery"})
-    routes_auth._active_tokens.clear()
-    # The sandbox page is open by design (its row says why); locked it would be 401.
-    page = client.get("/documents/run-sandbox")
-    assert page.status_code == 200, page.status_code
-    assert _row(client.app, "run_sandbox.router").loaded
-
-
-def _concrete(template: str) -> str:
-    return re.sub(r"\{[^}:]+(:(int|float))?\}", "1", re.sub(r"\{[^}:]+:path\}", "a/b", template))
-
-
-def _target(app, method: str, path: str):
-    """The endpoint the router picks for (method, path), and whether the match was full."""
-    scope = {"type": "http", "method": method, "path": path, "root_path": "", "headers": [], "query_string": b""}
-    partial = None
-    for route in app.router.routes:
-        match, _child = route.matches(scope)
-        if match is Match.FULL:
-            return _leaf(route, scope), "full"
-        if match is Match.PARTIAL and partial is None:
-            partial = route
-    return (_leaf(partial, scope), "partial") if partial is not None else (None, "none")
-
-
-def _leaf(route, scope):
-    while hasattr(route, "_match"):  # FastAPI's included-router node
-        _m, _child, inner, _ctx = route._match(scope)
-        if inner is None:
-            return None
-        route = inner
-    endpoint = getattr(route, "endpoint", None)
-    return getattr(endpoint, "__qualname__", None) or f"{type(route).__name__} {getattr(route, 'path', '')}"
-
-
-def _all_templates():
-    for spec, _gate in app_module.ROUTER_ROWS:
-        for template in lazy_routes.router_paths(lazy_routes.resolve(spec)):
-            yield spec, template
-
-
-def test_overlapping_paths_go_where_they_went_when_everything_was_eager(app_state, monkeypatch):  # noqa: ARG001
-    templates = list(_all_templates())
-    compiled = {spec: lazy_routes._pattern(tuple(t for s, t in templates if s == spec)) for spec, _ in templates}
-    overlaps = sorted(
-        {_concrete(t) for _spec, t in templates if sum(bool(p.match(_concrete(t))) for p in compiled.values()) > 1}
-    )
-    assert len(overlaps) > 10, overlaps  # the case this test exists for is common here
-    eager = _eager(monkeypatch)
-    wrong = []
-    for path in overlaps:
-        for method in ("GET", "POST", "DELETE"):
-            want = _target(eager, method, path)
-            got = _target(_fresh(), method, path)  # a fresh app: nothing loaded before this path
-            if got != want:
-                wrong.append(f"{method} {path}: {got} != {want}")
+def test_each_row_names_exactly_the_segments_its_routes_start_with():
+    """The host's correctness rests on this: a row not yet included must not
+    serve a path outside its segments, or a request could miss its route."""
+    wrong = {}
+    for row in app_module.ROUTER_ROWS:
+        router = row.router()
+        served = {
+            app_module._first_segment(path) for _method, path in _walk(router.routes, router.prefix, row.segments)
+        }
+        if served != set(row.segments.split()):
+            wrong[f"{row.module}.{row.attr}"] = sorted(served)
     assert not wrong, wrong
 
 
-def test_a_trailing_slash_redirect_reaches_a_lazy_row(app_state, monkeypatch):  # noqa: ARG001
-    lazy = TestClient(_fresh()).get("/tags/", follow_redirects=False)
-    eager = TestClient(_eager(monkeypatch)).get("/tags/", follow_redirects=False)
-    assert (lazy.status_code, lazy.headers.get("location")) == (eager.status_code, eager.headers.get("location"))
+def test_a_lazy_app_includes_nothing_until_asked(app_state):  # noqa: ARG001
+    app = app_module.create_app(lazy_routes=True)
+    assert not any(app.state.lazy_routes.loaded)
 
 
-def test_the_schema_lists_every_route_before_any_was_requested(app_state, monkeypatch):  # noqa: ARG001
-    app = _fresh()
-    listed = app.openapi()
-    assert all(row.loaded for row in lazy_routes.lazy_rows(app))
-    eager = _eager(monkeypatch).openapi()
-    assert len(listed["paths"]) > 400
-    assert listed == eager
+def test_the_first_request_to_a_lazy_prefix_is_served(app_state):  # noqa: ARG001
+    app = app_module.create_app(lazy_routes=True)
+    client = TestClient(app)
+    headers = _setup(client)
+    host = app.state.lazy_routes
+    assert not host.loaded[_row_index("routes_tags")]
+    response = client.get("/tags", headers=headers)
+    assert response.status_code == 200, response.text
+    assert host.loaded[_row_index("routes_tags")]
+    # Only the rows that could serve `/tags` (and `/auth`, for the setup) came in.
+    assert not host.loaded[_row_index("routes_chat")]
 
 
-@pytest.mark.parametrize("spec", ["routes_files_ocr.router"])
-def test_a_row_that_needs_another_module_loads_it_first(spec):
+def test_the_unlock_guards_a_lazy_route_before_and_after_it_is_included(app_state):  # noqa: ARG001
+    app = app_module.create_app(lazy_routes=True)
+    client = TestClient(app)
+    headers = _setup(client)
+    host = app.state.lazy_routes
+    index = _row_index("routes_tags")
+    assert not host.loaded[index]
+    # The request that includes the router is itself refused: the gate is on the
+    # router from the moment it is included, not from the next request.
+    assert client.get("/tags").status_code == 401
+    assert host.loaded[index]
+    assert client.get("/tags").status_code == 401
+    assert client.get("/tags", headers=headers).status_code == 200
+
+
+def test_middleware_applies_to_a_lazy_route_as_to_an_eager_one(app_state):  # noqa: ARG001
+    lazy = TestClient(app_module.create_app(lazy_routes=True))
+    eager = TestClient(app_module.create_app(lazy_routes=False))
+    headers = _setup(lazy)
+    a = lazy.get("/tags", headers=headers)
+    b = eager.get("/tags", headers=headers)
+    assert a.status_code == b.status_code == 200
+    assert "content-security-policy" in a.headers
+    assert set(a.headers) == set(b.headers)
+
+
+def test_openapi_lists_every_route_of_a_lazy_app(app_state):  # noqa: ARG001
+    lazy = TestClient(app_module.create_app(lazy_routes=True))
+    eager = TestClient(app_module.create_app(lazy_routes=False))
+    headers = _setup(lazy)
+    lazy_paths = lazy.get("/openapi.json", headers=headers).json()["paths"]
+    eager_paths = eager.get("/openapi.json", headers=headers).json()["paths"]
+    assert len(lazy_paths) > 200
+    assert lazy_paths == eager_paths
+
+
+def test_a_fully_loaded_lazy_app_has_the_eager_routes_in_the_eager_order(app_state):  # noqa: ARG001
+    lazy = app_module.create_app(lazy_routes=True)
+    # Included out of table order on purpose: the host still places each in its row's slot.
+    TestClient(lazy).get("/whiteboard")
+    TestClient(lazy).get("/entries")
+    app_module.load_all_routes(lazy)
+    eager = app_module.create_app(lazy_routes=False)
+    assert list(_walk(lazy.routes)) == list(_walk(eager.routes))
+
+
+def test_a_path_no_route_serves_is_still_a_404(app_state):  # noqa: ARG001
+    lazy = TestClient(app_module.create_app(lazy_routes=True))
+    eager = TestClient(app_module.create_app(lazy_routes=False))
+    headers = _setup(lazy)
+    for path in ("/no-such-route", "/tags/no/such/route/here", "/entries/1/no-such-child"):
+        a = lazy.get(path, headers=headers)
+        b = eager.get(path, headers=headers)
+        assert a.status_code == b.status_code, path
+    assert lazy.get("/no-such-route", headers=headers).status_code == 404
+
+
+def test_the_routers_table_still_reads_as_router_gate_pairs():
+    """`ROUTERS` is built on reading (module `__getattr__`) for the tests that
+    hold the table to the routers; it must keep the old shape."""
+    pairs = app_module.ROUTERS
+    assert len(pairs) == len(app_module.ROUTER_ROWS)
+    assert all(hasattr(router, "routes") and gate in {"open", "locked", "media"} for router, gate in pairs)
+
+
+def test_importing_the_app_imports_only_the_route_modules_it_calls():
+    """The point of the host: app import pays for three route modules, not a hundred.
+    `routes_auth` (the unlock and the vault layer), `routes_diag` (the build hash) and
+    `routes_update` (the launcher choice at start) are called by app.py itself.
+    Measured 2026-11-22: app import 2,639 to 874 ms median wall, five runs."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
     probe = (
-        "from tessellate.api import lazy_routes\n"
-        f"lazy_routes.resolve({spec!r})\n"
-        "from tessellate.api import routes_files_ocr\n"
-        "assert routes_files_ocr.rf is not None\n"
+        "import sys, tessellate.api.app\n"
+        "print(' '.join(sorted(m for m in sys.modules if m.startswith('tessellate.api.routes_')"
+        " or m == 'tessellate.api.run_sandbox')))\n"
     )
     out = subprocess.run(
-        [sys.executable, "-c", probe], capture_output=True, text=True, timeout=60,
-        env={"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"},
+        [sys.executable, "-c", probe], cwd=root, capture_output=True, text=True, check=True,
+        env={"PYTHONPATH": str(root / "src"), "PATH": ""},
     )
-    assert out.returncode == 0, out.stderr[-2000:]
+    assert out.stdout.split() == [
+        "tessellate.api.routes_auth", "tessellate.api.routes_diag", "tessellate.api.routes_update",
+    ]
 
 
-def test_the_unused_routes_report_sees_a_lazy_only_route():
+def test_the_segment_walk_catches_a_route_that_is_not_an_api_route():
+    from fastapi import APIRouter
+
+    router = APIRouter()
+    router.routes.append(WebSocketRoute("/stray/ws", lambda ws: None))
+    router.routes.append(Mount("/other", routes=[Route("/x", lambda r: None)]))
+    with pytest.raises(AssertionError):
+        list(_walk(router.routes, "", "/entries"))
+    assert list(_walk(router.routes[:1], "", "/stray")) == []
+
+
+def test_no_row_router_has_lifespan_handlers():
+    """A lazily included router's startup, shutdown or lifespan handlers would never run
+    (`include_router` does not copy them), so none may have one."""
+    bad = {}
+    for row in app_module.ROUTER_ROWS:
+        router = row.router()
+        found = [
+            name
+            for name in ("on_startup", "on_shutdown")
+            if getattr(router, name, None)
+        ]
+        if getattr(router, "lifespan_context", None) is not None and not _is_default_lifespan(router):
+            found.append("lifespan")
+        if found:
+            bad[f"{row.module}.{row.attr}"] = found
+    assert not bad, bad
+
+
+def _is_default_lifespan(router) -> bool:
+    """The default, or the wrapper `include_router` makes when a router includes others
+    (its nested routers are rows or modules of their own, held to the same rule)."""
+    context = router.lifespan_context
+    return type(context).__name__ == "_DefaultLifespan" or context.__qualname__.startswith("_merge_lifespan_context")
+
+
+def test_a_router_that_fails_to_import_is_logged_and_the_rest_still_load(app_state, monkeypatch, caplog):  # noqa: ARG001
+    rows = list(app_module.ROUTER_ROWS)
+    index = _row_index("routes_entries_relations")
+    rows[index] = rows[index]._replace(module="no_such_route_module_for_test")
+    monkeypatch.setattr(app_module, "ROUTER_ROWS", tuple(rows))
+    app = app_module.create_app(lazy_routes=True)
+    client = TestClient(app, raise_server_exceptions=False)
+    headers = _setup(client)
+    with caplog.at_level(logging.ERROR):
+        client.get("/entries", headers=headers)
+        client.get("/entries", headers=headers)
+    errors = [r for r in caplog.records if r.levelno >= logging.ERROR and "no_such_route_module_for_test" in r.getMessage()]
+    assert len(errors) == 1, "one error naming the module, not one per request"
+    host = app.state.lazy_routes
+    sharing = [i for i in host.by_segment["/entries"] if i != index]
+    assert sharing and all(host.loaded[i] for i in sharing)
+    assert not host.loaded[index]
+
+
+def _concrete(path):
+    path = re.sub(r"\{[^}]*:path\}", "a/b", path)
+    return re.sub(r"\{[^}]*\}", "1", path)
+
+
+def test_a_lazy_app_answers_every_route_unauthenticated_as_the_eager_app_does(app_state):  # noqa: ARG001
+    """The gate parity of the whole table: after a password is set, every (method, path)
+    of the eager app is sent with no token to both apps, in a fixed shuffled order, and
+    the status codes must match."""
+    eager_app = app_module.create_app(lazy_routes=False)
+    pairs = sorted(set(_walk(eager_app.routes)))
+    random.Random(1).shuffle(pairs)
+    eager = TestClient(eager_app, raise_server_exceptions=False)
+    lazy = TestClient(app_module.create_app(lazy_routes=True), raise_server_exceptions=False)
+    # A third client sets the password: the one that does keeps its media cookie.
+    _setup(TestClient(app_module.create_app(lazy_routes=False)))
+    # Acting routes that are open by design (a shutdown, a sync, a handoff) are sent as GET only.
+    skip = ("/auth", "/shutdown", "/sync", "/mcp", "/origin-handoff", "/reminders/act")
+    diffs = []
+    for method, path in pairs:
+        url = _concrete(path)
+        if method != "GET" and url.startswith(skip):
+            continue
+        a, b = lazy.request(method, url).status_code, eager.request(method, url).status_code
+        if a != b:
+            diffs.append((method, url, a, b))
+    assert not diffs, diffs[:20]
+
+
+def _unused_routes_module():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "unused_routes.py"
+    spec = importlib.util.spec_from_file_location("unused_routes", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_unused_routes_report_sees_a_lazy_only_route(app_state):  # noqa: ARG001
     """scripts/unused_routes.py walked the top level of `app.routes`, where an
     included router is one node, so it listed 0 routes; it must reach a route
     that only a lazy row serves, on an app where no request has loaded it."""
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location("unused_routes", ROOT / "scripts" / "unused_routes.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    lazy_path = PATHS["routes_hello.router"][0]
-    app = _fresh()
-    assert not _row(app, "routes_hello.router").loaded
+    module = _unused_routes_module()
+    index = _row_index("routes_hello")
+    row = app_module.ROUTER_ROWS[index]
+    lazy_path = next(path for _m, path in _walk(row.router().routes))
+    app = app_module.create_app(lazy_routes=True)
+    assert not app.state.lazy_routes.loaded[index]
     listed = {path for path, _methods, _name in module.unreferenced(app, corpus="")}
     assert lazy_path in listed
     assert "/health" in listed
-    assert not {path for path, _m, _n in module.unreferenced(_fresh(), corpus=lazy_path)} & {lazy_path}
+    again = module.unreferenced(app_module.create_app(lazy_routes=True), corpus=lazy_path)
+    assert lazy_path not in {path for path, _m, _n in again}
 
 
-def test_every_route_on_the_unused_routes_allow_list_is_still_a_route():
+def test_every_route_on_the_unused_routes_allow_list_is_still_a_route(app_state):  # noqa: ARG001
     """An allow-list entry names a caller the text search cannot see; once its
     route is gone the entry would hide nothing and must go with it."""
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location("unused_routes_allow", ROOT / "scripts" / "unused_routes.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    paths = {path for path, _route in lazy_routes.flat_routes(_fresh())}
+    module = _unused_routes_module()
+    paths = {path for path, _route in module.flat_routes(app_module.create_app(lazy_routes=True))}
     assert sorted(set(module.ALLOWED) - paths) == []
     assert all(reason.strip() for reason in module.ALLOWED.values())

@@ -11,53 +11,70 @@ exactly these notes.
 from __future__ import annotations
 
 import os
+import re
+import secrets
+import shutil
 import tempfile
+import threading
 import time
 import zipfile
 from pathlib import Path
-from typing import BinaryIO
+from typing import Any, BinaryIO, Callable, Coroutine
 
 import json
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse
+from fastapi.routing import APIRoute
+from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.formparsers import MultiPartException
-from sqlalchemy.orm import Session
 
 from tessellate.core import activity, deps, jobruns
 from tessellate.core.deps import get_session
 from tessellate.entry import app_import, export_folder, import_report, manager
 
-router = APIRouter(tags=["import"])
-
 #: Files in one request: a vault picked as a folder is many files.
 MAX_FILES = 5000
 #: Notes embedded and committed per call after an import (was one commit per note, L508).
 EMBED_BATCH_NOTES = 100
+#: **Files sent in parts** (L-world-class-891): a 5,000-file vault was one
+#: multipart body the page took 1.4s to build, twice (preview, then import).
+#: Parts land in `data_dir/import-batches/<id>/` and the import reads them all
+#: at once, so an Obsidian `[[link]]` resolves across parts. A batch left
+#: behind (a closed tab) goes when the next one opens, a day on.
+BATCH_DIR = "import-batches"
+BATCH_KEEP_SECONDS = 24 * 3600
+_BATCH_ID = re.compile(r"[0-9a-f]{32}")
+_BATCH_LOCK = threading.Lock()
 
 
-class _Upload:
-    """The parts of an app import: the files and the unticked keys."""
+class _ManyFilesRoute(APIRoute):
+    """Parses a multipart body with this import's own file cap before FastAPI
+    reads it (L-world-class-411). Starlette refuses more than 1,000 file parts
+    by default, so a folder of 5,000 notes got "Too many files" before
+    `MAX_FILES` was read. The form is cached on the request, so FastAPI's own
+    `request.form()` returns this one; one over the cap is let through so
+    `_received` refuses it in the import's own words."""
 
-    def __init__(self, files: list[UploadFile], exclude: str) -> None:
-        self.files, self.exclude = files, exclude
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        handler = super().get_route_handler()
+
+        async def handle(request: Request) -> Response:
+            if request.headers.get("content-type", "").startswith("multipart/form-data"):
+                #: More than one over is refused by the parser: still in the import's words, not a bare 400.
+                try:
+                    await request.form(max_files=MAX_FILES + 1)
+                except (MultiPartException, StarletteHTTPException) as exc:
+                    if "files" not in str(getattr(exc, "detail", None) or getattr(exc, "message", exc)).lower():
+                        raise
+                    raise HTTPException(status_code=422, detail=f"More files at once than one import takes ({MAX_FILES}).") from exc
+            return await handler(request)
+
+        return handle
 
 
-async def _upload_form(request: Request) -> _Upload:
-    """The form read here, not by FastAPI: its parser keeps Starlette's limit of 1,000
-    files, so a vault picked as a folder of more notes was refused before `MAX_FILES`
-    could answer (L-world-class-411). Over the cap, the refusal is the route's own words:
-    one over is let through so `_received` counts it, more fails here."""
-    try:
-        form = await request.form(max_files=MAX_FILES + 1, max_fields=100)
-    except (MultiPartException, StarletteHTTPException) as exc:
-        if "files" not in str(getattr(exc, "detail", None) or getattr(exc, "message", exc)).lower():
-            raise
-        raise HTTPException(status_code=422, detail=f"More files at once than one import takes ({MAX_FILES}).") from exc
-    files = [part for part in form.getlist("files") if not isinstance(part, str)]
-    exclude = form.get("exclude")
-    return _Upload(files, exclude if isinstance(exclude, str) else "")
+router = APIRouter(tags=["import"], route_class=_ManyFilesRoute)
 
 
 def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
@@ -74,6 +91,62 @@ def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
             raise HTTPException(status_code=413, detail="That export is larger than 200 MB.")
         raw.append((upload.filename or "note", upload.file))
     return raw
+
+
+def _batch(batch_id: str) -> Path:
+    """The staging folder of a batch; an id that is not one is the same 404 as a gone one."""
+    folder = Path(deps.get_config().data_dir) / BATCH_DIR / batch_id
+    if not _BATCH_ID.fullmatch(batch_id) or not folder.is_dir():
+        raise HTTPException(status_code=404, detail="That import is no longer waiting. Choose the files again.")
+    return folder
+
+
+def _batch_list(folder: Path) -> list[list]:
+    return json.loads((folder / "files.json").read_text(encoding="utf-8"))
+
+
+@router.post("/import/app/batches", status_code=201)
+def open_batch() -> dict:
+    """A new batch, after clearing any left a day ago."""
+    root = Path(deps.get_config().data_dir) / BATCH_DIR
+    root.mkdir(parents=True, exist_ok=True)
+    cutoff = time.time() - BATCH_KEEP_SECONDS
+    for old in root.iterdir():
+        if old.is_dir() and old.stat().st_mtime < cutoff:
+            shutil.rmtree(old, ignore_errors=True)
+    batch_id = secrets.token_hex(16)
+    (root / batch_id).mkdir()
+    (root / batch_id / "files.json").write_text("[]", encoding="utf-8")
+    return {"batch": batch_id}
+
+
+@router.post("/import/app/batches/{batch_id}")
+def add_to_batch(batch_id: str, files: list[UploadFile]) -> dict:
+    """One part: its files are copied to the batch in order, held to the same
+    caps as one request (`MAX_FILES`, 200 MB) over every part."""
+    folder = _batch(batch_id)
+    with _BATCH_LOCK:
+        staged = _batch_list(folder)
+        if len(staged) + len(files) > MAX_FILES:
+            raise HTTPException(status_code=422, detail=f"{len(staged) + len(files)} files at once is more than one import takes ({MAX_FILES}).")
+        total = sum(size for _, size in staged)
+        for upload in files:
+            size = app_import.size_of(upload.file)
+            total += size
+            if total > app_import.MAX_ARCHIVE_BYTES:
+                raise HTTPException(status_code=413, detail="That export is larger than 200 MB.")
+            with open(folder / str(len(staged)), "wb") as out:
+                shutil.copyfileobj(upload.file, out)
+            staged.append([upload.filename or "note", size])
+        (folder / "files.json").write_text(json.dumps(staged), encoding="utf-8")
+    return {"files": len(staged)}
+
+
+@router.delete("/import/app/batches/{batch_id}", status_code=204)
+def drop_batch(batch_id: str) -> Response:
+    """The preview's Cancel: nothing was imported, so nothing is kept."""
+    shutil.rmtree(_batch(batch_id), ignore_errors=True)
+    return Response(status_code=204)
 
 
 def _progress(run: jobruns.Run, job: activity.Job) -> export_folder.Progress:
@@ -124,19 +197,39 @@ def _refuse_open_private_while_locked(source: str, notes: list) -> None:
 @router.post("/import/app", status_code=201)
 def import_app(
     response: Response,
+    files: list[UploadFile] = File(default_factory=list),
     source: str = Query(pattern="^(notion|obsidian|evernote|apple|memorymap)$"),
     dry_run: bool = Query(False),
-    upload: _Upload = Depends(_upload_form),
+    batch: str = Query(""),
+    exclude: str = Form(""),
     session: Session = Depends(get_session),
 ) -> dict:
     """Read, write, and keep a report. The write is a job with progress and
     Stop (decision 70): Stop ends it at the next note and every note made
     before then stays: the writer commits every hundred notes and at a stop,
-    and the embeddings are stored and committed in batches (L508)."""
+    and the embeddings are stored and committed in batches (L508). With
+    `batch` the files are the ones its parts staged; the import (not the
+    preview) clears them."""
+    left_out = _excluded(exclude)
+    if not batch:
+        return _import(_received(files), response, source, dry_run, left_out, session)
+    if files:
+        raise HTTPException(status_code=422, detail="Send the files in the batch or in this request, not both.")
+    folder = _batch(batch)
+    raw = [(name, open(folder / str(i), "rb")) for i, (name, _) in enumerate(_batch_list(folder))]  # noqa: SIM115
+    try:
+        return _import(raw, response, source, dry_run, left_out, session)
+    finally:
+        for _, handle in raw:
+            handle.close()
+        if not dry_run:
+            shutil.rmtree(folder, ignore_errors=True)
+
+
+def _import(raw: list[tuple[str, BinaryIO]], response: Response, source: str, dry_run: bool, left_out: set[str],
+            session: Session) -> dict:
     from tessellate.api.routes_settings_transfer import _parse_frontmatter
 
-    left_out = _excluded(upload.exclude)
-    raw = _received(upload.files)
     label = app_import.LABELS[source]
     t0 = time.perf_counter()
     try:
@@ -192,10 +285,6 @@ def import_report_page(report_id: str) -> dict:
 
 @router.get("/export/folder")
 def export_notebook_folder(background_tasks: BackgroundTasks, session: Session = Depends(get_session)) -> FileResponse:
-    return folder_zip(session, background_tasks, "tessellate-notebook.zip", "folder")
-
-
-def folder_zip(session: Session, background_tasks: BackgroundTasks, filename: str, detail: str) -> FileResponse:
     """The whole notebook as a markdown folder in a zip (WORLD_CLASS 25b):
     every note with its sidecar and attachments, documents, boards and an
     `index.json`. Written to a temporary file, not memory, because the
@@ -209,6 +298,6 @@ def folder_zip(session: Session, background_tasks: BackgroundTasks, filename: st
         counts = done.manifest["counts"]
         run.result = f"exported {counts['notes']} notes, {counts['attachments']} attachments" + (
             f", {counts['missing']} attachment files missing" if counts["missing"] else "")
-    manager.log_action(session, "exported", "data", detail=detail)
+    manager.log_action(session, "exported", "data", detail="folder")
     session.commit()
-    return FileResponse(tmp_path, media_type="application/zip", filename=filename, background=background_tasks)
+    return FileResponse(tmp_path, media_type="application/zip", filename="tessellate-notebook.zip", background=background_tasks)

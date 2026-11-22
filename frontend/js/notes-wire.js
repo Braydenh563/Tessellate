@@ -3,18 +3,19 @@
 // the wiki-rename offer. Lazy (`LAZY_MODULES.notesWire`, lazy-entries.js stand-ins); nobody reads a return value.
 
 //: A shift-click range over every row between the two, built or not.
+//: By id, as rows folded into a run have no element (L-world-class-873).
 function selectNoteRange(list, fromId, toId, on) {
-  noteWindow.win?.flush();
-  const rows = entryListItems(list);
-  const a = rows.findIndex((li) => li.dataset.id === fromId);
-  const b = rows.findIndex((li) => li.dataset.id === toId);
+  const ids = listedNoteIds();
+  const a = ids.indexOf(Number(fromId));
+  const b = ids.indexOf(Number(toId));
   if (a === -1 || b === -1) return;
-  for (const li of rows.slice(Math.min(a, b), Math.max(a, b) + 1)) {
-    if (on) selectedIds.add(Number(li.dataset.id));
-    else selectedIds.delete(Number(li.dataset.id));
-    const check = li.querySelector(":scope > .select-check");
+  for (const id of ids.slice(Math.min(a, b), Math.max(a, b) + 1)) {
+    if (on) selectedIds.add(id);
+    else selectedIds.delete(id);
+    const li = list.querySelector(`:scope > li[data-id="${id}"]:not(.row-shell)`);
+    const check = li?.querySelector(":scope > .select-check");
     if (check) check.checked = on;
-    if (!li.classList.contains("row-shell")) li.classList.toggle("is-selected", on);
+    li?.classList.toggle("is-selected", on);
   }
   updateBatchCount();
 }
@@ -39,7 +40,6 @@ function initEntryListKeyboardNav() {
     //: deepflows sweep: click into the editor, press End, type). Checkboxes
     //: and buttons are not fields, so the row's arrows still work from them.
     if (event.target.closest('textarea, select, [contenteditable], .cm-editor, input:not([type="checkbox"]):not([type="radio"]):not([type="button"])')) return;
-    noteWindow.win?.flush();
     const items = entryListItems(list);
     const current = event.target.closest("li");
     const index = current ? items.indexOf(current) : -1;
@@ -49,11 +49,13 @@ function initEntryListKeyboardNav() {
       const entry = allEntries.find((e) => e.id === Number(current.dataset.id));
       if (!entry || appState.get("note") === entry.id) return;
       event.preventDefault();
-      const next = items[index + 1] || items[index - 1];
+      const ids = listedNoteIds();
+      const at = ids.indexOf(entry.id);
+      const next = ids[at + 1] ?? ids[at - 1];
       if (event.key === "F2") openNoteEditor(entry.id);
       else binNoteWithUndo(entry).then(() => {
-        const again = next && document.querySelector(`#entry-list li[data-id="${next.dataset.id}"]`);
-        again?.focus();
+        const again = noteRowFor(next);
+        if (again) noteWindow.fill(again).focus();
       });
       return;
     }
@@ -63,7 +65,8 @@ function initEntryListKeyboardNav() {
         event.key === "Home" ? 0
           : event.key === "End" ? items.length - 1
             : Math.min(Math.max(index + (event.key === "ArrowDown" ? 1 : -1), 0), items.length - 1);
-      const target = noteWindow.fill(items[nextIndex]);
+      //: Into a run from below (ArrowUp, End) builds its last row.
+      const target = noteWindow.fill(items[nextIndex], nextIndex < index || event.key === "End");
       entryListSetStop(entryListItems(list), target);
       target.focus();
       // .focus() alone scrolls in most browsers, but not predictably, 

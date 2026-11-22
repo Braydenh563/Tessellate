@@ -1,6 +1,6 @@
 """One windowed list serves the Notes list and the Timeline feed (audit 1028 S16, S53).
 
-`windowRows` (notes-list.js) holds every row as a one-element shell and builds
+`windowRows` (row-window.js) holds every row as a one-element shell and builds
 only the ones near the reader. These tests run it under node against a small
 fake DOM, a fake `IntersectionObserver` and a fixed clock (timers are queued
 and fired by the test, never waited for), so the rules are pinned without a
@@ -19,6 +19,7 @@ import subprocess
 
 import pytest
 from tests._app_js import JS_DIR
+from tests import _js_scope
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -75,9 +76,9 @@ const shells = (list) => list.kids.filter((k) => k.classList.contains('row-shell
 
 
 def _run(probes: str) -> dict:
-    source = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    source = _js_scope.unwrapped((JS_DIR / "row-window.js").read_text(encoding="utf-8"))
     match = re.search(r"^const ROW_WINDOW_MARGIN.*?^function windowRows\(.*?^\}\n", source, re.S | re.M)
-    assert match, "windowRows is gone from notes-list.js"
+    assert match, "windowRows is gone from row-window.js (moved out of notes-list.js whole)"
     script = HARNESS % {"source": match.group(0), "probes": probes}
     done = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=False)
     assert done.returncode == 0, done.stderr[-800:]
@@ -88,7 +89,6 @@ def test_a_long_list_is_one_shell_per_row_and_only_the_first_screenful_is_built(
     out = _run("""
 const { items, list, win } = make(5000);
 win.add(list, items, (item, i) => i < 12);
-win.flush();
 process.stdout.write(JSON.stringify({
   rows: list.kids.length, shells: shells(list).length, built: built.length,
   shellHeight: shells(list)[0].style.cssText, hidden: shells(list)[0].attrs['aria-hidden'],
@@ -157,33 +157,11 @@ process.stdout.write(JSON.stringify({
     assert out["stillShell"] is True and out["off"] is True
 
 
-def test_shells_past_the_first_screens_land_later_in_order_603():
-    """L603: the Notes press on 5,000 notes paid 140 to 210ms for shells nobody
-    could see. The first 240 land with the press, the rest in later chunks in
-    order, a row asked to be built is always in the first pass, and `flush`
-    lands everything for a caller that walks every row."""
-    out = _run("""
-const { items, list, win } = make(5000);
-win.add(list, items, (item, i) => i < 12 || i === 900);
-const first = list.kids.length;
-const builtFirst = built.length;
-timers.shift()();
-const second = list.kids.length;
-win.flush();
-const ids = list.kids.map((k) => Number(k.dataset.id));
-process.stdout.write(JSON.stringify({ first, builtFirst, second, rows: list.kids.length,
-  ordered: ids.every((id, i) => i === 0 || id === ids[i - 1] + 1) }));
-""")
-    assert out["first"] == 901 and out["builtFirst"] == 13
-    assert out["second"] == 1401 and out["rows"] == 5000 and out["ordered"] is True
-
-
 def test_a_table_body_gets_row_shells_of_its_own_tag():
     """L491: the Timeline table windows its rows, and a `<li>` in a `<tbody>` is not a row."""
     out = _run("""
 const { items, list, win } = make(300, { shell: 'tr' });
 win.add(list, items, (item, i) => i < 40);
-win.flush();
 process.stdout.write(JSON.stringify({ tags: [...new Set(shells(list).map((k) => k.tag))], shells: shells(list).length, built: built.length }));
 """)
     assert out == {"tags": ["tr"], "shells": 260, "built": 40}

@@ -227,4 +227,7 @@ def test_the_dashboard_shows_its_widgets_once_they_have_drawn():
     assert 'grid.classList.remove("dash-filling")' in render
     assert "return drawn;" in _fn(dash, "mountWidgetBody")
     assert "#dash-grid.dash-filling {" in CSS["08-consistency.css"]
-    assert ".then(() => window.dashSettled).then(lift, lift);" in _fn(JS, "curtainShell")
+    #: The curtain waits for the widgets through `dashShown`, which also holds
+    #: the hero line and first steps above the grid (L-world-class-879).
+    assert "window.dashShown = Promise.allSettled([settled, window.dashHeroDrawn, dashLine.steps]);" in render
+    assert ".then(() => window.dashShown || window.dashSettled).then(lift, lift);" in _fn(JS, "curtainShell")

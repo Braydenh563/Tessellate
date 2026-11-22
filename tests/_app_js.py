@@ -68,7 +68,7 @@ def app_js_text() -> str:
 MOVED_OUT = {
     "ai-tools.js": ("task-steps.js", "chat-tasks.js", "improve-panel.js", "feature-model-sheet.js", "gesture-kit.js", "answer-kit.js"),
     "menus.js": ("gesture-kit.js", "entry-menu.js"),
-    "notes-list.js": ("notes-lazy.js", "notes-wire.js", "notes-sync.js", "notes-sidebar.js"),
+    "notes-list.js": ("notes-lazy.js", "notes-wire.js", "notes-sync.js", "notes-sidebar.js", "row-window.js"),
     "note-cards.js": ("map-preview.js", "entry-card.js"),
     "markdown.js": ("table-block.js", "board-embed.js"),
     "sheets-selects.js": ("personas-pane.js", "gesture-kit.js"),

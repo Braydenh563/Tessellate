@@ -101,10 +101,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-21 L634: the board list, the handles, item paint and save, and the drag carved out of whiteboard.js into four wrapped files (whiteboard-boards, -handles, -items, -drag). Measured 7,122.
 #: 2026-11-21 L634: guides, paint, caps, groups, style, tree, gesture and clipboard carved out of whiteboard.js into eight wrapped files. Measured 7,071.
 #: 2026-11-22 merge of the whiteboard carve (#223) with the documents carve (L335): measured 6,694.
-#: 2026-11-22 L700 D24: file-drop.js (no exports) and note-pick-preview.js (one) wrapped whole. Measured 7,385.
-#: 2026-11-22 the CD merge: world-class-plan's web panel, groups and bulk bar brought 12 names; mermaid-frame.js (its own document) wrapped whole for 8. Measured 7,385.
-#: 2026-11-22 merge of world-class-plan into wc-rows-ai: measured 6,673.
-GLOBAL_NAMES_CAP = 6673
+#: 2026-11-22 L-world-class-873: row-window.js wrapped whole (one export, `windowRows`) and documents-cm-theme.js exports only `docCmThemeKept`. Measured 6,691.
+GLOBAL_NAMES_CAP = 6691
 
 
 @functools.lru_cache(maxsize=None)

@@ -608,7 +608,6 @@ async function importMarkdown(inputId = "import-md-files") {
         : "Choose one or more .md files first.";
     return;
   }
-  const form = new FormData();
   //: The third argument is the filename the server sees, and `webkitRelativePath`
   //: is the only place a folder picker puts the path, `file.name` is the bare
   //: name even when the file came from three folders down. Sending the path is
@@ -630,26 +629,40 @@ async function importMarkdown(inputId = "import-md-files") {
   //: tick on each; the files left unticked are never sent.
   const keep = await markdownPreview(chosen, status);
   if (!keep) return;
-  for (const file of keep) {
-    form.append("files", file, file.webkitRelativePath || file.name);
-  }
-  setLabel(status, `ph:spin Importing ${nounCount(keep.length, "file")}…`);
+  //: One request takes at most this many files (`MAX_IMPORT_FILES`; the multipart
+  //: reader refuses a thousand), so a folder of thousands goes in batches and
+  //: the counts are added up (L979: 5,000 files came back "did not work").
+  const IMPORT_MARKDOWN_BATCH = 500;
+  const total = { imported: 0, already: 0, skipped: [], ids: [] };
   try {
-    // `api.upload` (F5): the multipart type from the browser, and
-    // X-Workspace-ID, without which the notes land in the default space.
-    const response = await api.upload("/import/markdown", form).catch(() => {
-      throw new Error("The import did not work. Check the file and try again.");
-    });
-    const result = await response.json();
+    for (let at = 0; at < keep.length; at += IMPORT_MARKDOWN_BATCH) {
+      const form = new FormData();
+      for (const file of keep.slice(at, at + IMPORT_MARKDOWN_BATCH)) {
+        form.append("files", file, file.webkitRelativePath || file.name);
+      }
+      setLabel(status, `ph:spin Importing ${nounCount(keep.length, "file")}…` + (at ? ` ${at} done` : ""));
+      // `api.upload` (F5): the multipart type from the browser, and
+      // X-Workspace-ID, without which the notes land in the default space.
+      const response = await api.upload("/import/markdown", form).catch(() => {
+        throw new Error("The import did not work. Check the file and try again.");
+      });
+      const part = await response.json();
+      total.imported += part.imported;
+      total.already += part.already || 0;
+      total.skipped.push(...part.skipped);
+      total.ids.push(...part.ids);
+    }
     status.textContent =
-      `Imported ${nounCount(result.imported, "note")}.` +
+      `Imported ${nounCount(total.imported, "note")}.` +
       //: Passed over because the same file and text are already a note.
-      (result.already ? ` ${result.already} already in your notebook, left as they are.` : "") +
-      (result.skipped.length ? ` Skipped: ${result.skipped.join("; ")}` : "");
-    undoImport(result, status);
+      (total.already ? ` ${total.already} already in your notebook, left as they are.` : "") +
+      (total.skipped.length ? ` Skipped: ${total.skipped.slice(0, 20).join("; ")}${total.skipped.length > 20 ? ` and ${total.skipped.length - 20} more` : ""}` : "");
+    undoImport(total, status);
     loadEntries().catch(() => {});
   } catch (error) {
-    status.textContent = error.message;
+    //: Earlier batches stay (and can be undone); say how far it got.
+    status.textContent = total.imported ? `${error.message} ${nounCount(total.imported, "note")} came in before it stopped.` : error.message;
+    if (total.imported) undoImport(total, status);
   }
 }
 

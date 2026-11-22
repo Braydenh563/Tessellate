@@ -60,9 +60,31 @@ ALLOWED: dict[str, str] = {
 }
 
 
+def flat_routes(app):  # noqa: ANN001, ANN201
+    """(full path, route) for every leaf route, every lazy row loaded first.
+
+    FastAPI keeps an included router as one node in `app.routes`, so a walk of
+    the top level alone sees no API route at all (this report listed 0 for that
+    reason), and a lazy row (app.py `_LazyRouters`) is empty until loaded."""
+    from tessellate.api.app import load_all_routes
+
+    load_all_routes(app)
+
+    def walk(routes, prefix):  # noqa: ANN001, ANN202
+        for route in routes:
+            inner = getattr(route, "original_router", None)
+            if inner is not None:
+                yield from walk(inner.routes, prefix + (getattr(route.include_context, "prefix", "") or ""))
+            elif hasattr(route, "endpoint"):
+                yield prefix + route.path, route
+            elif hasattr(route, "routes") and hasattr(route, "app"):
+                yield from walk(route.routes, prefix + route.path)
+
+    yield from walk(app.routes, "")
+
+
 def unreferenced(app, corpus: str) -> list[tuple[str, str, str]]:  # noqa: ANN001
     """(path, methods, name) of every route the corpus never mentions."""
-    from tessellate.api.lazy_routes import flat_routes
 
     found = []
     for path, route in flat_routes(app):

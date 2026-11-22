@@ -225,3 +225,12 @@ def test_atlas_look_warms_in_slices():
     assert "atlasBuild.drain(spec, true)" in warm and "setTimeout(" in warm
     assert "atlasBuild.drain(spec)" in src.split("Object.defineProperty(ATLAS_LOOKS, name", 1)[1].split("setTimeout(function atlasWarmLook", 1)[0]
     assert "atlasBuild.gens.clear()" in src.split("function atlasBuild() {", 1)[1].split("\n}\n", 1)[0]
+
+
+def test_settings_search_builds_the_unbuilt_panes_before_the_first_key():
+    # filterSettings builds all twenty-two panes on the first query: 400 ms of that key at 4x, even after a pause
+    # on the box (L-world-class-355). The warm builds one a slot, before it scans.
+    body = read("settings-find.js").split("function settingRowsWarm()", 1)[1].split("\n  function ", 1)[0]
+    build = body.index("SETTINGS_SECTIONS.some((name) => surfaceBuild(`settings-${name}`))")
+    assert build < body.index("settingRowsScan.pane(pane, ")
+    assert "settingIdle(settingRowsWarm);\n      return;" in body[build:]

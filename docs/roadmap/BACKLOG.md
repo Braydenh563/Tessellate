@@ -888,9 +888,26 @@ block, trimming harder below an 8k-token window; see the retired analysis doc's
 size/risk call (M, take the idea, measure it on a small model before
 trusting it).
 
-- **L-world-class-230:** built 2026-11-22 (71d6bf50), see HISTORY, "Moved from the plans, 2026-11-22 (L-world-class-230 built)".
+- **L-world-class-230:** built 2026-11-22 as the base's `_LazyRouters` (app.py, cf5493bb; the branch's 71d6bf50 retracted at the merge), see HISTORY, "Moved from the plans, 2026-11-22 (L-world-class-230 built)".
 - **L-world-class-95 rest (moved from LEDGER 2026-11-21, parked for an owner call):** Laptop fold, four whole note cards at 1093x614@1.25. Built: links share the details line in card view (two pills), laptopfold 2 whole and 3 in part. Chrome measured on the showcase: top bar 0 to 44, sub-tabs 56 to 92, browse card 99, dock 112 to 154, capture bar 166 to 210, first card 222, status bar from 577; cards 89 to 186px with 6px gaps, the 165 and 186px ones are 3-line previews (compact, owner INBOX 473). Four whole 111px cards need 462px; 355px is there (222 to 577). Sub-tabs into the dock do not fit one row (tabs 421px, the dock row 825px with 773 used, 52px slack; icon-only tabs still 180px); a section switcher in the dock identity (a caret menu at 700px of height or less) saves 43px, to 398, still short, and hides a visible tab strip. The status bar is one 37px row already (x12 to 1081), so trimming it to four items gains nothing alone. Options: (ii) at 700px of height or less in card view, hide the capture bar behind its button and float the status cluster, a start near 123 and a floor of 614, which fits four; (iii) the owner relaxes the gate to three whole cards while 3-line previews stay (INBOX 473). The owner's call.
 - **L-world-class-320 rest: `--require-hashes` for the pip extras (2026-11-21, parked: the lock files cost more than they protect).** Built: each pip extra goes to pip bounded by a constraint (`core/extras.py` `EXTRA_BOUNDS`) and each catalogue embedding model is fetched at a pinned commit, its weights checked against pinned hashes (SECURITY.md T23); the open row is L-world-class-691. Blocker, measured with `pip install --dry-run --report` on Linux, Python 3.13: pip's hash mode needs a sha256 for every transitive dependency, and the sets are 23 packages for voice, 29 for documents (lxml, cryptography, onnxruntime, numpy, pillow), 12 for RapidOCR, each with different wheels per OS, CPU and Python 3.11 to 3.13 plus the frozen build's `--platform` list; a lock per extra would be about 9 platform files each, regenerated at every bump. If taken: `pip-compile --generate-hashes` per extra per platform in CI, and `--require-hashes` in `_run_install`.
+
+### The dashboard's first paint waits for the whole notebook (L-world-class-879)
+
+Moved from the LEDGER 2026-11-22 after two measured attempts. At 390 px and
+500 notes, idle, the opening curtain lifts at a median of 692 ms (16 boots,
+614 to 800) with 0 shift after it. There are no long tasks before 1.5 s; the
+time is awaits: DOMContentLoaded at about 140 ms, `/auth/status` by 143,
+`/entries` page one 156 to 282, the rest 285 to 387, then the tab loads at
+about 401 (`tabReady` waits `entriesReady`, app.js). The dashboard waits for
+the whole list because On this day, Pace and Loose ends read all of
+`allEntries`; rendering at page one would redraw those after the curtain lifts.
+Tried and reverted: lifting on the skeleton outline (467 to 675 ms, 0.024 to
+0.053 shift) and starting the hero reads at unlock (median 745 and 800 ms
+against 644 and 704). What is left: render the widgets that do not read the
+notebook at page one and the three that do at the last page, under the curtain.
+Kept: the curtain waits for the hero line and first steps (0 shift in 16
+boots, was 0.053 in 1), and boot reads `/reminders` and `/categories` once.
 
 ---
 
@@ -1081,9 +1098,6 @@ palettes."
 
 ## 16. Sweeping UI quality-of-life
 
-- ~~**A status bar along the bottom**~~ **done** (`#status-bar`/
-  `renderStatusBar()`), flagged stale by a backlog audit; see the
-  near-duplicate bullet further down this list too.
 - ~~**Sorting and grouping saved chats**~~ **Built (sorting), see `frontend/js/sheets-selects.js:1478` (`sortConversations`: Recent, Most turns, Most tokens, A-Z, with the pinned chats first) and `#chat-sidebar-sort` (`index.html:2171`); grouping by model or folder is not built.** Also from IDEAS.md and also homeless
   until now. Conversations sort by recency and nothing else; there is no "by
   length", "by which model answered", no folders, no grouping by topic. The
@@ -1091,23 +1105,9 @@ palettes."
   timestamps), so this is a list-rendering job. The IDEAS note suggests an
   agent tool and a skill for it too, which would fall out of §14's shape once
   the sort exists. **(needs Opus)**: which sorts and groupings, a list design.
-- ~~**Undo toasts** for anything soft-deleted, instead of confirm dialogs~~ **Built, see `frontend/js/status.js:1190` (`pushUndo`, the undo bar and the toast's Undo).**
-- ~~**Optimistic UI**: a saved note appears instantly and reconciles~~ **Built where it matters, see `frontend/js/library.js:7404`, `7642` and `7801` (optimistic, corrected when the server refuses) and the draft that survives a failed save (`app.js:229`).**
-- ~~**Consistent empty states** and loading skeletons~~ **Built, see `docs/DESIGN.md:527` (`.empty-state`) and `:543` (`showSkeletons`/`clearSkeletons`, swept by `f2-skel.js`).**
-- ~~**Keyboard**~~ **Built, see `frontend/js/settings-wiring.js:915` (`/` jumps to search), `:1068` (`TAB_JUMP_KEYS`, `m` then a letter) and `activeOverlay()` (Escape and the Tab trap on every `aria-modal` dialog).** `/` focuses search, `g`+letter jumps tabs, Escape closes every
-  overlay
-- ~~**Bulk selection** in the note list~~ **Built, see `frontend/js/skills.js:1241-1377` (the selection bar: move to a category, tags, more) and `tag-manager.js:674` (`openBulkTags`).**
-- ~~**"What changed" after an AI action**~~ **Built, see `frontend/js/library.js:41` and `chat-agent.js` (`changeRow`, one row per write with View and Undo; the tool chip is a `<details>` with arguments and result).** Chips say what ran, not what it did
-- ~~**Confirm on close** with unsaved text~~ **Built, see `frontend/js/navigation.js:1703` (one `beforeunload` guard) and `confirmLeavingUnsavedWork`.**
-- ~~**Relative timestamps** everywhere, absolute on hover~~ **Built, see `frontend/js/note-cards.js:1945` (`relativeTime`) and about 35 other call sites across the tabs.**
 - ~~**Dashboard**: audit every quick-access button actually lands where it
   says~~ done (§8): every quick link now checked from all three Notes
   sub-tabs. Still worth doing: **add the ones that are missing**
-- ~~**Collapsible sidebars.**~~ **Done**: `makeSidebarResizable`'s
-  `sidebar-collapse-toggle` is wired on all three (Notes, Chat, Documents).
-- ~~**A status bar pinned to the bottom.**~~ **done, same item as above**,
-  a second, near-duplicate bullet for the same ask; both are satisfied by the
-  one `#status-bar` that now exists.
 - **A global quick-capture hotkey in desktop mode.** Not asked for directly,
   but the app's own pitch, "just capture, a local AI files it", implies
   capture should be as close to zero-friction as opening the app currently

@@ -53,19 +53,18 @@ class Budget(NamedTuple):
     server_cap_ms: int = 0
 
 
-#: Browser figures measured idle 2026-11-21 (load under 2 on four cores,
-#: L540): the slowest p50 of four runs. CI runs the browser budgets alone on
-#: the runner (it measured first paint 204, first interaction 1447 the same
-#: day), so idle is the condition they are held in. The server shares stay as
-#: measured 2026-10-11 at load 7 to 11, because CI times them inside the full
-#: suite on a busy runner; idle they ran 50, 27, 21, 41 and 22 ms.
+#: Browser figures measured idle 2026-11-21 and 2026-11-22 (load under 2 on
+#: four cores, L540; README "Performance"): the slowest p50 of four runs, five
+#: server rounds each, so a lucky minute does not set the figure. Where the two
+#: readings differ the lower cap is kept, because a cap never rises. CI runs the
+#: browser budgets alone on the runner, so idle is the condition they are held in.
 BUDGETS: tuple[Budget, ...] = (
-    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 302, 460, "/", 76, 120),
+    Budget("first_paint", "Boot to first paint", "Navigation start to the first contentful paint, cold cache, stored session", 302, 460, "/", 48, 80),
     Budget("first_interaction", "First interaction", "Navigation start to the Notes tab answering a click with its first row", 2035, 3060),
-    Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 71, 110, "/entries?limit=60", 40, 60),
-    Budget("search", "Search", "One search request, p50 over three queries", 23, 40, "/search?q=harbour&limit=20", 40, 60),
-    Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 108, 170, "/whiteboard/?board_id={board}", 75, 120),
-    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 116, 180, "/documents/{document}", 32, 50),
+    Budget("list", "List paint", "Switching to Notes to the first page of rows settled", 65, 100, "/entries?limit=60", 29, 50),
+    Budget("search", "Search", "One search request, p50 over three queries", 23, 40, "/search?q=harbour&limit=20", 23, 40),
+    Budget("board", "Board open", "Opening a board of 500 objects to every object on the canvas", 108, 170, "/whiteboard/?board_id={board}", 46, 70),
+    Budget("document", "Document open", "Opening a document of 50,000 words to resolved", 116, 180, "/documents/{document}", 20, 30),
 )
 SHARE_RUNS = 5
 
