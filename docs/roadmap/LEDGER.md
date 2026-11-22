@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 0 | 0 | 0 | 0 | 0 |
+| ui-modernisation | 0 | 1 | 0 | 0 | 0 | 1 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 1 | 0 | 0 | 1 | 1 |
-| all | 306 | 372 | 121 | 2 | 132 | 799 |
+| all | 306 | 373 | 121 | 2 | 132 | 800 |
 
 ## graph
 
@@ -289,7 +289,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 
 ## ui-modernisation
-
+- [ ] **L-ui-modernisation-201** `ui-modernisation` open, M: Atlas animated spans make every restyle expensive: contain them, or pause them while typing. From owner lag log 2026-11-22. Evidence: 4x CPU: buddy face click 664-680 ms, 470-816 Atlas elements restyled at 120-186 ms each, the forced read nameMarkBuddyBlend's getAnimations (avatars.js nameMarkBuddyBlend); chat keydown 176-304 ms, the browser's pre-edit style flush 169 ms, pending invalidations from atl-orbit-arm, atl-orbiter-glow, atl-ring-spin, atl-orbiter-swirl, emblem-float and the saccade class flips (atlas-motion.js atlasBlink.saccade.hold); selector matching 152 ms over 1,883 selectors, top 30 mostly Atlas rules (scratchpad/lag probe.js, trace-sel.js, inval.js)
 
 ## timeline
 
