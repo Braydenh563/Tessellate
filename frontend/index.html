@@ -4172,7 +4172,7 @@ Link to another note with [[its first few words]]."></textarea>
           </p>
           <ul class="muted">
             <li><strong>Hover a note</strong> to see its dates, links and tags;
-              click it to edit. Its X or Esc hides the card; Options, Display, Show details on hover turns it off or on.</li>
+              click it to edit. Options, Display has the rest.</li>
             <li><strong>Hold Alt and drop one note onto another</strong> to link them.
               Double-click empty space to add a note there; its Private button seals it.</li>
             <li><strong>Trace</strong> shows how any two notes connect.</li>
@@ -4181,8 +4181,7 @@ Link to another note with [[its first few words]]."></textarea>
             <li>A bigger dot has more links (Size in the options changes that).
               Click a legend colour to hide it.</li>
             <li>Tree, Radial, Arc, Map of meaning, Treemap and Tessellation layouts stay still; change
-              them in the toolbar. Treemap sizes categories by links;
-              Tessellation gives each note a cell.</li>
+              them in the toolbar; the ? by Options, Layout says what each shows.</li>
             <li>In Treemap and Tessellation, click a category's name bar to
               select its notes, double-click to zoom, right-click for its
               menu; C steps through them.</li>
@@ -4245,7 +4244,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <label for="graph-layout" id="graph-layout-label">Layout</label>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="graph-layout-help" aria-controls="graph-layout-help" aria-expanded="false"
-                  title="What distance means on the Map of meaning" aria-label="What distance means on the Map of meaning">
+                  title="What each layout shows" aria-label="What each layout shows">
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </span>
@@ -4264,9 +4263,10 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </div>
             <div class="help-body hidden" id="graph-layout-help" role="dialog"
-              aria-label="What distance means on the Map of meaning">
+              aria-label="What each layout shows">
               <p>Map of meaning: the closer two notes sit, the more alike they are in meaning, and a name over a group says what its notes share. Faint lines join each note to its nearest by meaning.</p>
               <p>With no search model installed it places notes by the words they share instead; Settings, Search and index installs one for the real map.</p>
+              <p>Treemap sizes categories by their links; Tessellation gives each note a cell.</p>
             </div>
             <!-- Q31: the Tessellation view's two looks; shown under that layout only
                  (`setGraphPhysicsEnabled`). -->

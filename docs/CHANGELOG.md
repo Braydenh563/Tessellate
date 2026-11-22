@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Graph help panel back under its 1000-character budget: the hover card's switches and the layouts' descriptions moved behind Options' own help.
 - Suggest links: the note icon in each option row takes the label grammar's `ph-lead`, so it lands on the title's cap-height centre in any UI font (0.63 px off in Segoe UI's metrics before, 0.03 px after).
 - Graph theme: switching light and dark on the graph repaints node outlines and label chips at once (the canvas read its tokens only when a map rendered; they are now re-read once on the theme's own signal and redrawn once, no polling); a dark chip read 29,29,29 and a node outline 30,30,28 after the switch to light, against 254,254,254 and 254,254,255 on a fresh light load, now equal (`scratchpad/ui-sweeps/graph-theme-suggest.js`, 1440 and 1920).
 - Graph hover card: it has a close X (Hide this card; Escape on the map also hides it, then does nothing else) that keeps it hidden until the pointer leaves the note, and Display has a Show details on hover switch (default on, remembered) that turns the pointer's and the keyboard's card off; the card stays while the pointer walks the gap between the note and the X (313 px at 290 px/s, 1,078 ms, failed against a 600 ms timer alone).

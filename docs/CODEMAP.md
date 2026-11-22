@@ -12186,10 +12186,10 @@ Every `id="..."` in `frontend/index.html` and `frontend/surfaces/*.html`, sorted
 | `graph-label-fade` | frontend/index.html:4590 |
 | `graph-label-plates` | frontend/index.html:4577 |
 | `graph-labels` | frontend/index.html:4561 |
-| `graph-layout` | frontend/index.html:4255 |
+| `graph-layout` | frontend/index.html:4254 |
 | `graph-layout-chip` | frontend/index.html:4053 |
-| `graph-layout-help` | frontend/index.html:4266 |
-| `graph-layout-label` | frontend/index.html:4245 |
+| `graph-layout-help` | frontend/index.html:4265 |
+| `graph-layout-label` | frontend/index.html:4244 |
 | `graph-legend` | frontend/index.html:4776 |
 | `graph-legend-toggle` | frontend/index.html:4347 |
 | `graph-length-score` | frontend/index.html:4425 |
@@ -12221,7 +12221,7 @@ Every `id="..."` in `frontend/index.html` and `frontend/surfaces/*.html`, sorted
 | `graph-new-status` | frontend/index.html:4880 |
 | `graph-new-tags` | frontend/index.html:4875 |
 | `graph-new-title` | frontend/index.html:4857 |
-| `graph-options` | frontend/index.html:4209 |
+| `graph-options` | frontend/index.html:4208 |
 | `graph-options-reset` | frontend/index.html:4732 |
 | `graph-options-toggle` | frontend/index.html:4083 |
 | `graph-pane` | frontend/index.html:1565 |
@@ -12303,11 +12303,11 @@ Every `id="..."` in `frontend/index.html` and `frontend/surfaces/*.html`, sorted
 | `graph-unpin-all-menu` | frontend/index.html:4134 |
 | `graph-unresolved` | frontend/index.html:4527 |
 | `graph-view-delete` | frontend/index.html:4132 |
-| `graph-view-help` | frontend/index.html:4236 |
-| `graph-view-label` | frontend/index.html:4228 |
+| `graph-view-help` | frontend/index.html:4235 |
+| `graph-view-label` | frontend/index.html:4227 |
 | `graph-view-picker` | frontend/index.html:4128 |
 | `graph-view-save` | frontend/index.html:4130 |
-| `graph-view-section` | frontend/index.html:4221 |
+| `graph-view-section` | frontend/index.html:4220 |
 | `graph-zoom` | frontend/index.html:4883 |
 | `graph-zoom-fit` | frontend/index.html:4886 |
 | `graph-zoom-in` | frontend/index.html:4885 |
