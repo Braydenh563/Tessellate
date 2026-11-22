@@ -104,13 +104,12 @@ test("document: 50,000 words open", async ({ page }) => {
 
 // L-ui-modernisation-95, in CPU time: Atlas idle may cost at most 120 ms a
 // second of main thread over the page with the companion off. Medians on
-// 2026-11-21: off 3.7, me 15.9, atlas 479.8 ms/s. Atlas is about four times
-// over, so this is a strict expected failure (a strict xfail): when the code
-// gets under the cap the test starts passing, Playwright reports it, and the
-// marker comes off. Never widen the cap.
+// 2026-11-21: off 3.7, me 15.9, atlas 479.8 ms/s. After the 8 s settle CI read it
+// under the cap on both tries (0b73bded, 2026-11-22), so the expected-failure
+// marker is off; a desktop here reads +120 to +185 (BACKLOG L-ui-modernisation-201:
+// the rest that would stop it is off on mains power, owner decision 55). Never widen the cap.
 const ATLAS_IDLE_CPU_CAP_MS = 120;
 test("companion_idle_cpu: Atlas idle costs at most 120 ms/s of main-thread CPU over off", async ({ page, browser }) => {
-  test.fail(true, "L-ui-modernisation-95: Atlas idle is about 480 ms/s over off in CPU time");
   await openApp(page);
   // The full figure on every runner (L-ui-modernisation-201): a slow one would otherwise switch to the lite set.
   await measure.pinFullFigure(page);
