@@ -337,7 +337,9 @@ function docIdeCall(name, ...args) {
 }
 
 //: Fetched once documents.js has run, not as this file runs: the idle warm-up puts the bundle on the page one file at a time, so a fetch started here ran documents-ide.js before documents.js had defined `docToolPref` and `docCmView` (two ReferenceErrors, and the IDE's setup stopped at its first line). `typeof` because the bundle may have failed to load.
-lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js")).then(() => {
+//: The whole bundle, not documents.js alone: under that warm-up a lone fetch of documents.js put it on the page
+//: before documents-surface.js and the other pieces it calls at load ("setDocView is not defined", menus.js sweep).
+ensureModule("library").then(() => lazyScript("/js/documents-ide.js")).then(() => {
   const CM = window.CM6;
   //: Here, not at the IDE script's top level: that script can run before documents.js has declared `docToolPref` (page error "docToolPref is not defined").
   if (typeof docToolPref === "function") {
