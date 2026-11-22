@@ -2406,6 +2406,8 @@ function stopArt() {
 }
 function refreshArtForTheme() {
   window.dashArtRefresh?.();
+  //: The graph's canvas reads the theme's tokens once, so it is told here too.
+  window.gcThemeChanged?.();
 }
 //: A colour chosen while the dashboard is showing redraws it, after the frames
 //: (INBOX 1516: asked by its class, not by `checkVisibility`, a layout flush
