@@ -136,7 +136,8 @@ const PHONE = process.env.PHONE === '1';
       // Visible ones only: the page carries a dozen `.modal-overlay`
       // elements in its markup, all `.hidden` until something opens them.
       dialog: [...document.querySelectorAll('.modal-overlay')].some((o) => o.offsetParent),
-      toast: (document.querySelector('#toast, .toast')?.textContent || '').trim().slice(0, 80),
+      //: Every toast: a stack leads with its "+1 more" group, so the first is not always the newest.
+      toast: [...document.querySelectorAll('#toast, .toast')].map((t) => t.textContent.trim()).join(' | ').slice(0, 240),
     }));
     console.log('deadLink', JSON.stringify(deadLink));
     await page.keyboard.press('Escape');
