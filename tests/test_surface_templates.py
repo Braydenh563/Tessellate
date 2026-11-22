@@ -103,6 +103,55 @@ SURFACES = {
         ("openMeetingRecorder",),
         ("meeting-card", "meeting-close", "meeting-title", "meeting-transcript", "meeting-done"),
     ),
+    #: L-world-class-530: the hidden dialogs built on first open.
+    "finder": (
+        "finder-overlay",
+        ("search.js", "wiring.js", "settings-wiring.js", "router-overlays.js", "reveal-targets.js", "spaces-find.js"),
+        ("openFinder",),
+        ("finder-input", "finder-results", "finder-summary", "finder-sort", "finder-save", "finder-close", "finder-filters"),
+    ),
+    "agentMonitor": (
+        "agent-monitor",
+        ("agent-activity.js", "dashboard.js", "status.js", "phone-shell.js"),
+        ("setAgentMonitorVisible",),
+        ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-list"),
+    ),
+    "lockForgot": (
+        "lock-forgot-card",
+        ("account-recovery.js", "settings-wiring.js", "utility-tools.js"),
+        ("openForgotPassword",),
+        ("lock-forgot-close", "lock-recovery-key", "lock-reset-submit", "lock-forgot-error"),
+    ),
+    "recoveryKey": (
+        "recovery-key-dialog",
+        ("account-recovery.js", "settings-controls.js"),
+        ("wireRecoveryDialog",),
+        ("recovery-key-title", "recovery-key-value", "recovery-key-done", "recovery-key-offer"),
+    ),
+    "docReplace": (
+        "doc-replace-dialog",
+        ("documents-replace.js", "documents*.js"),
+        ("docReplaceOpen",),
+        ("doc-replace-find", "doc-replace-with", "doc-replace-run", "doc-replace-list", "doc-replace-summary"),
+    ),
+    "spaceDelete": (
+        "space-delete-dialog",
+        ("batch-space.js", "private-spaces.js", "spaces-find.js"),
+        ("rmSpace",),
+        ("space-delete-id", "space-delete-fate", "space-delete-submit", "space-delete-confirm"),
+    ),
+    "wbTemplate": (
+        "wb-template-dialog",
+        ("whiteboard*.js",),
+        ("wbOpenTemplateGallery",),
+        ("wb-template-list", "wb-template-preview", "wb-template-name", "wb-template-create"),
+    ),
+    "wbImport": (
+        "wb-import-dialog",
+        ("whiteboard*.js",),
+        ("wbOpenImportDialog",),
+        ("wb-import-text", "wb-import-file", "wb-import-go", "wb-import-choose"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),

@@ -62,8 +62,8 @@ class Source:
 
 SOURCES: tuple[Source, ...] = (
     Source("entry/private_space.py", consts=("MOVE_OUT_TO_SHARE",)),
-    Source("core/sealed_files.py", consts=("LOCKED_DETAIL", "DAMAGED_DETAIL", "LOOKS_SEALED_DETAIL", "CHANGED_DETAIL")),
-    Source("api/routes_recordings.py", consts=("SEALED_IN_BACKGROUND",)),
+    Source("api/routes_recordings.py", consts=("SEALED_OUTSIDE_PRIVATE",)),
+    Source("core/sealed_files.py", consts=("LOCKED_DETAIL", "DAMAGED_DETAIL", "LOOKS_SEALED_DETAIL", "CHANGED_DETAIL", "BACKGROUND_LOCKED_DETAIL")),
     Source("core/backup.py", raises=("FileNotFoundError", "ValueError"), functions=("restore_backup",)),
     Source("core/syntaxcheck.py", raises=("ValueError",), functions=("check",)),
     Source("ai/insights.py", raises=("ValueError",), functions=("confirm", "dismiss")),
@@ -84,6 +84,8 @@ SOURCES: tuple[Source, ...] = (
     Source("core/docview.py", returns=("editability",), keywords=("message",)),
     Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",), returns=("remove_model",)),
     Source("ai/diarize.py", consts=("INSTALL_HINT",)),
+    Source("core/recording_trim.py", raises=("TrimError",), consts=("NEEDS_ADDON",)),
+    Source("entry/editing.py", raises=("NeedsKey",)),
     Source("ai/captions_process.py", raises=("HelperError",)),
     Source("ai/natural_voice.py", raises=("ValueError", "RuntimeError"), consts=("INSTALL_HINT",)),
     Source("entry/folder_sync.py", raises=("SyncError",)),
@@ -326,8 +328,10 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_backups.py", "str(exc)"): "FileNotFoundError and ValueError from core/backup.py restore_backup",
     ("routes_categories.py", "str(exc)"): "ToolError (ai/tools/categories.py) and ValueError (entry/manager.py)",
     ("routes_captions.py", "str(exc)"): "CaptionsError from ai/captions.py: its hint constants and literal sentences",
-    ("routes_recordings.py", "str(exc)"): "RuntimeError from ai/voice.py transcribe",
+    ("routes_recordings.py", "_sentence(exc, TRANSCRIBE_FAILED)"): "routes_recordings._sentence: RunFailed, voice.SpeechError or a sealed-file sentence, else TRANSCRIBE_FAILED",
     ("routes_recordings.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
+    ("routes_recordings.py", "exc.sentence"): "TrimError.sentence from core/recording_trim.py: NEEDS_ADDON and its literal sentences (L632)",
+    ("routes_entries_history.py", "str(exc)"): "NeedsKey from entry/editing.py stored_form, one fixed sentence (moved from routes_entries, L-world-class-632)",
     ("routes_recordings.py", "diarize.INSTALL_HINT"): "ai/diarize.py INSTALL_HINT",
     ("routes_studio.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
     ("routes_voice.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
@@ -381,8 +385,8 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_files.py", "sealed_files.LOCKED_DETAIL"): "core/sealed_files.py LOCKED_DETAIL, checked in SOURCES (L-world-class-52)",
     ("routes_files.py", "sealed_files.LOOKS_SEALED_DETAIL"): "core/sealed_files.py LOOKS_SEALED_DETAIL, checked in SOURCES (L-world-class-52)",
     ("routes_recordings.py", "sealed_files.LOCKED_DETAIL"): "core/sealed_files.py LOCKED_DETAIL, checked in SOURCES (L-world-class-52)",
+    ("routes_recordings.py", "SEALED_OUTSIDE_PRIVATE"): "a constant in routes_recordings.py, checked in SOURCES (L-world-class-381 review)",
     ("routes_recordings.py", "sealed_files.LOOKS_SEALED_DETAIL"): "core/sealed_files.py LOOKS_SEALED_DETAIL, checked in SOURCES (L-world-class-52)",
-    ("routes_recordings.py", "SEALED_IN_BACKGROUND"): "a constant in routes_recordings.py, checked in SOURCES (L-world-class-52)",
     # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
     ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",
 }

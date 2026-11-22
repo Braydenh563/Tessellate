@@ -16,10 +16,10 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import composer_dialogue, composer_talk, notebook_stats
-from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.core.database import Category, Document
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "composer" / "conversations_1729.json").read_text(encoding="utf-8"))
 NOW = datetime.fromisoformat(FIXTURE["now"])
@@ -28,8 +28,7 @@ STUMPED = ("has me stumped", "Not sure what you mean", "did not catch what")
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _seed(session) -> None:

@@ -258,13 +258,13 @@ async function openEntryHistory(entry) {
 }
 
 
-const THEN_NOW_WORDS = { revised: "Changed", dropped: "No longer says", new: "Says now" };
-
 //: One row's then-and-now block, opened under the row and closed by the same
 //: button. The row's own version against the note now (`POST
 //: /entries/{id}/then-and-now`, by text, so two edits on one day are still
 //: two versions): sentences paired by their words, so "Changed" shows the
-//: sentence then above the sentence now.
+//: sentence then above the sentence now. With a model on, the model judged
+//: each pair (I5): one that says the opposite is "Contradicts then", and the
+//: foot names the model.
 async function toggleThenAndNow(entry, thenText, row, button) {
   const open = row.querySelector(".then-now");
   if (open) {
@@ -298,12 +298,15 @@ async function toggleThenAndNow(entry, thenText, row, button) {
     block.append(same);
     return;
   }
+  //: Local, not a global (test_global_scope_ratchet).
+  const words = { revised: "Changed", dropped: "No longer says", new: "Says now", contradicts: "Contradicts then" };
   for (const change of changes) {
     const item = document.createElement("div");
     item.className = `then-now-row then-now-${change.kind}`;
     const kind = document.createElement("span");
     kind.className = "chip";
-    chipWords(kind, THEN_NOW_WORDS[change.kind] || change.kind);
+    const word = change.judgement === "contradicts" ? "contradicts" : change.kind;
+    chipWords(kind, words[word] || change.kind);
     item.append(kind);
     if (change.then !== null && change.then !== undefined) {
       const then = document.createElement("p");
@@ -318,6 +321,12 @@ async function toggleThenAndNow(entry, thenText, row, button) {
       item.append(now);
     }
     block.append(item);
+  }
+  if (body.judged_by) {
+    const judged = document.createElement("p");
+    judged.className = "muted small then-now-judged";
+    judged.textContent = `Compared by ${body.judged_by}.`;
+    block.append(judged);
   }
   if (body.exact === false) {
     const note = document.createElement("p");

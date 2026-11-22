@@ -16,6 +16,7 @@ def test_the_own_face_is_warmed_at_the_settings_head_size_on_idle():
 
 def test_the_warm_fills_the_same_cache_key_nameMark_reads():
     # One builder for both, so a warmed face is the one Settings asks for.
-    nm = AVATARS.split("function nameMark(seed, size = 20) {", 1)[1].split("\n  }\n", 1)[0]
+    nm = AVATARS.split("function nameMark(seed, size = 20", 1)[1]  # L-world-class-363 added `part`, the face in two tasks
+    nm = nm.split("\n  }\n", 1)[0]
     assert "nameMarkGenerated(seed, size)" in nm
     assert 'data-user-mark="56"' in (Path(__file__).resolve().parents[1] / "frontend/index.html").read_text(encoding="utf-8")

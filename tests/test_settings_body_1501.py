@@ -18,9 +18,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tests._js_scope import unwrapped
-
 import pytest
+
+from tests._js_scope import unwrapped
+from tests._surface_assets import inline_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
@@ -31,7 +32,8 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 #: The raw file, not the conftest's view of it: that turns each surface script into a `<template>`, and
 #: since each pane holds a `<template>` of its own (L675) a lazy match would stop at the first pane's end.
 with open(FRONTEND / "index.html", encoding="utf-8") as _page:
-    RAW = _page.read()
+    #: Settings' body is a fetched file now (L-world-class-760); put back in its script as it once sat.
+    RAW = inline_surfaces(_page.read())
 TEMPLATE = re.search(r'<script type="text/x-surface" id="settings-body-template" data-surface="settings"[^>]*>(.*?)</script>', RAW, re.S)
 
 

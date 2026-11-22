@@ -19,6 +19,13 @@ from fastapi.testclient import TestClient
 from tessellate.api import routes_auth
 from tessellate.core import reminder_token
 from tessellate.core.database import utcnow
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 

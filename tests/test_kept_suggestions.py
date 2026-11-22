@@ -67,15 +67,15 @@ def test_filing_keeps_the_suggestions_on_the_note(client):
 def test_the_wait_covers_suggestions_kept_after_the_state_settles(client, monkeypatch):
     """The CI race, made certain: suggestions kept a moment after
     `filing_state` settles are still there when the wait returns."""
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_suggestions
 
-    keep = routes_entries._keep_suggestions
+    keep = tag_suggestions.keep_suggestions
 
     def slow_keep(*args, **kwargs):
         time.sleep(0.5)
         return keep(*args, **kwargs)
 
-    monkeypatch.setattr(routes_entries, "_keep_suggestions", slow_keep)
+    monkeypatch.setattr(tag_suggestions, "keep_suggestions", slow_keep)
     test_filing_keeps_the_suggestions_on_the_note(client)
 
 

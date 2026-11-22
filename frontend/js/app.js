@@ -65,7 +65,7 @@ for (const level of ["log", "info", "warn", "error"]) {
   };
 }
 //: "ResizeObserver loop completed with undelivered notifications" is the
-//: browser saying it deferred a resize callback one frame, not an
+//: browser saying it delayed a resize callback one frame, not an
 //: exception (no `e.error`, nothing thrown): logged as ERROR it filled the
 //: owner's console from the Library's Files view (release, 2026-09-27).
 //: The observer behind it is in the carry-over list; this only stops the
@@ -431,6 +431,8 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
+  //: A write that landed tells the other windows (notes-sync.js hears it, L585).
+  if (response.ok && !readOnly && !/^(GET|HEAD)?$/.test(fetchOptions.method || "") && typeof document !== "undefined") document.dispatchEvent(new Event("notebook-written"));
   //: **A read that started in the old space is dropped here, for every loader at once.**
   //: Its rows are the old space's: applied after a switch they would sit in the new one's
   //: lists. The error is quiet (`isStale`: no toast, no log line), and a write is never
@@ -701,6 +703,26 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
     overlay.classList.remove("hidden");
   });
 }
+
+//: A locked PDF asks once (L-world-class-133): `unlockUrl` keeps the password
+//: in memory for this run; the PDF's info on success, null on Not now.
+async function askPdfPassword(unlockUrl) {
+  //: A locked PDF asks once a visit (L-world-class-133), whichever surface
+  //: opened it; once it opens, the server keeps the password in memory.
+  if (askPdfPassword.asked.has(unlockUrl)) return null;
+  askPdfPassword.asked.add(unlockUrl);
+  let info = null;
+  const opened = await askPasswordPrompt({
+    title: "This PDF has a password",
+    message: "Enter it to see the pages. It is kept until the app closes, never saved.",
+    submitLabel: "Open",
+    submit: async (password) => {
+      info = await apiJson(unlockUrl, { method: "POST", body: JSON.stringify({ password }) });
+    },
+  });
+  return opened ? info : null;
+}
+askPdfPassword.asked = new Set();
 
 function showLockScreen(setupMode) {
   settleLockPrompt(false);
@@ -1379,7 +1401,7 @@ function confirmDialog(message, options = {}) {
 // Resolves to the trimmed text, or "" for cancel/empty. "" rather than null so
 // every caller's guard is the same shape as the confirm one.
 //: `segment`, when given, adds **one** segmented control under the field: `{label, options: [{value, label, title}], value}`. The dialog then resolves `{text, choice}` instead of a bare string.  One extra control in the dialog that already exists, rather than a second dialog after this one. CLAUDE.md records why in as many words: bookmark URL editing was reported broken five times while working end-to-end every time, and the fault was never the handler, "a second modal that only appears *after* you commit the first is a bad way to expose a second field". Naming a new board and saying what kind of board it is are one decision.
-function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null } = {}) {
+function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null, cancelLabel = "Cancel" } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay confirm-overlay";
@@ -1477,7 +1499,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     const row = document.createElement("div");
     row.className = "row confirm-actions";
     row.append(
-      smallButton("Cancel", "Cancel", () => close("")),
+      smallButton(cancelLabel, cancelLabel, () => close("")),
       smallButton(confirmLabel, confirmLabel, () => input.reportValidity() && close(input.value.trim()), false)
     );
     card.append(head, input);
@@ -1540,6 +1562,8 @@ const LAZY_MODULES = {
   tagManager: ["/js/tag-manager.js"],
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
+  //: Groups of notes gathered by hand, and a note's further categories: see note-groups.js.
+  noteGroups: ["/js/note-groups.js"],
   noteHistory: ["/js/note-history.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
@@ -1591,7 +1615,7 @@ const LAZY_MODULES = {
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
-  webClip: ["/js/web-clip.js", "/js/web-results.js"],
+  webClip: ["/js/web-panel.js", "/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
@@ -1883,8 +1907,9 @@ const LAZY_ENTRY_POINTS = {
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder", "noteRecording"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
-  tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
+  tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
+  noteGroups: ["openNoteGroupsSheet"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
   extraNotice: ["extraNoticeMount"],

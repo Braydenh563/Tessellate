@@ -329,3 +329,15 @@ def decap(text: str) -> str:
     if first and (first.group(0) in ("I", "I'm", "I've", "I'd", "I'll") or any(c.isupper() for c in first.group(0)[1:])):
         return text
     return text[:1].lower() + text[1:]
+
+
+def gap_before(held: list, i: int) -> str:
+    """"… " before a fact's sentence when the note's sentence before it is not
+    quoted: one pair of marks never runs over a skipped sentence (L-chat-10)."""
+    if not i or held[i].view is not held[i - 1].view:
+        return ""
+    keys = [s.key for s in held[i].view.sentences]
+    here, before = held[i].sentence.key, held[i - 1].sentence.key
+    if here not in keys or before not in keys:
+        return ""
+    return "… " if keys.index(here) > keys.index(before) + 1 else ""

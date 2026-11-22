@@ -19,7 +19,7 @@ import sys
 import textwrap
 import threading
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -28,6 +28,13 @@ from sqlalchemy import select
 from tessellate.core import deps, jobs, jobstore
 from tessellate.core.database import DurableJob
 from tessellate.core.database_manager import DatabaseManager
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -135,12 +142,14 @@ def test_no_database_records_nothing_and_still_runs(kinds):
         pool.shutdown(deadline=2)
 
 
-def test_a_lease_is_taken_once_and_renewed_by_its_owner(db, kinds):
+def test_a_lease_is_taken_once_and_renewed_by_its_owner(db, kinds, monkeypatch):
+    moment = [SUITE_NOW]
+    pin_clock(monkeypatch, lambda: moment[0])
     job_id = jobstore.record("test-remember", (1, Path("/z")), {}, db=db)
     assert jobstore.lease(job_id, db=db) is True
     assert jobstore.lease(job_id, db=db) is False  # already running
     first = _rows(db)[0].lease_until
-    time.sleep(0.01)
+    moment[0] += timedelta(seconds=1)
     assert jobstore.renew([job_id], db=db) == 1
     assert _rows(db)[0].lease_until > first
     jobstore.finish(job_id, db=db)
@@ -233,7 +242,7 @@ def _set(db, job_id, **values):
 
 
 def test_resume_queues_the_left_work_and_leaves_live_leases(db, kinds):
-    now = datetime.now(timezone.utc)
+    now = SUITE_NOW
     queued = jobstore.record("test-remember", (1, Path("/a")), {}, dedupe_key=("k", 1), db=db)
     lapsed = jobstore.record("test-remember", (2, Path("/b")), {}, db=db)
     _set(db, lapsed, state="running", owner="gone-1", attempts=1, lease_until=now - timedelta(seconds=5))
@@ -488,3 +497,28 @@ def test_the_panels_stop_reaches_a_running_job_and_offers_the_button(client, kin
         pool.shutdown(deadline=2)
     assert answer["stopped"] is True and "next safe step" in answer["detail"]
     assert STEPS == [0, 1, 2]
+
+
+def test_a_filing_row_saved_before_the_move_resumes_on_the_new_handler(db):
+    """L-world-class-633: `file-entry` moved from the route module to
+    `entry/filing_background`. A row written by the old build (kind plus
+    payload, no handler name) is resumed on the new function, and a handler
+    named by the old dotted string still maps to it."""
+    from tessellate.entry import filing_background
+
+    row_id = jobstore.record("file-entry", (7, "default"), {}, db=db)
+    submitted = []
+    jobstore.resume(db=db, enqueue=lambda *call: submitted.append(call))
+    jobstore.stop()
+    assert [(c[1], c[2], c[6]) for c in submitted] == [(filing_background._file_entry_in_background, (7, "default"), row_id)]
+
+    old = "tessellate.api.routes_entries:_file_entry_in_background"
+    assert jobstore.RENAMED_TARGETS[old] == jobstore.HANDLERS["file-entry"]
+    saved = dict(jobstore.HANDLERS)
+    try:
+        jobstore.register("file-entry", old)
+        assert jobstore.resolve("file-entry") is filing_background._file_entry_in_background
+        assert jobstore.durable_kind("file-entry", filing_background._file_entry_in_background)
+    finally:
+        jobstore.HANDLERS.clear()
+        jobstore.HANDLERS.update(saved)

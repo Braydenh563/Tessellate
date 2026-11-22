@@ -44,16 +44,17 @@ from __future__ import annotations
 
 import functools
 import math
-from datetime import datetime
 import re
 from collections import Counter
 from collections.abc import Iterator
 
+from tessellate.core import clock
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, guide_lead, help_words, presets
+from tessellate.ai import act_registry, guide_lead, help_title_keywords, help_words, presets
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
+from tessellate.ai.help_images import image_for  # the manual's few pictures (L-world-class-785)
 from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from tessellate.core.lazyre import lazy_compile
@@ -292,7 +293,8 @@ _KEYWORDS_REMOVE_GUIDE: dict[str, tuple[str, ...]] = {
 for _topic in HELP_TOPICS:
     _drop = set(_KEYWORDS_REMOVE_GUIDE.get(_topic["id"], ()))
     _topic["keywords"] = tuple(k for k in _topic["keywords"] if k not in _drop) + tuple(
-        k for k in _KEYWORDS_ADD_GUIDE.get(_topic["id"], ()) if k not in _topic["keywords"]
+        k for k in (*_KEYWORDS_ADD_GUIDE.get(_topic["id"], ()), *help_title_keywords.BY_TITLE.get(_topic["id"], ()))
+        if k not in _topic["keywords"]
     )
 
 
@@ -362,7 +364,7 @@ def _act_of(question: str) -> tuple[str, bool] | None:
         return None
     if act_registry.reader is None:
         return None
-    got = act_registry.reader(inner, now=datetime.now())
+    got = act_registry.reader(inner, now=clock.wall())
     if got.intent in act_registry.ACTS and got.intent not in ("navigate", "open", "find"):
         return got.intent, True
     first = inner.split()[0].lower()
@@ -590,6 +592,7 @@ def help_listing() -> dict:
                     "body": topic["body"],
                     "find": " ".join(topic["keywords"]),
                     "link": topic["badge"],
+                    "image": image_for(topic_id),
                 }
             )
         groups.append({"title": title, "topics": topics})

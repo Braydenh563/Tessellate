@@ -1386,7 +1386,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   let lightboxPreviewSource = null;
 
   // **The AI/manage actions: gated on a media id, and only ever visible
-  // when one is present.** Reported directly, and left open on purpose the
+  // when one is present.** Reported directly, and left for later on purpose the
   // first time this bar was built: rename, describe with AI, read text (two
   // ways) and delete all need a real `MediaUpload` row, and of nine
   // `openLightbox` callers only the Library's own gallery has one to pass.
@@ -1927,6 +1927,9 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       } catch {
         info = null;
       }
+      //: A locked PDF asks for its password once a visit (L-world-class-133);
+      //: once it opens, the server keeps it in memory and never asks again.
+      if (info?.locked) info = await askPdfPassword(infoUrl.replace("/pdf-info", "/pdf-unlock"));
       if (info && info.available && info.pages > 0) {
         docBody.classList.add("hidden");
         find.classList.add("hidden"); // nothing here is text to search yet

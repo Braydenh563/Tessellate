@@ -1,8 +1,8 @@
 """The Connections block and a note's link routes (create, remove, retype, reason, generate a reason).
 
-Split out of routes_entries.py (K24); mounted in app.py beside that module's router. The helpers the
-Connections block reads (`_stored_connections`, `_connected_files`, ...) stay in
-routes_entries, which routes_documents and the tests reach them through.
+Split out of routes_entries.py (K24); mounted in app.py beside that module's router. What the
+Connections block reads is `entry_service.connections` (decision 55); this route adds the text-only
+references and the names, and shapes the total.
 """
 
 from __future__ import annotations
@@ -17,17 +17,10 @@ from tessellate.api.routes_entries import (
     LinkBody,
     LinkPatchBody,
     LinkReasonBody,
-    _add_referenced,
-    _add_wiki_outgoing,
-    _attached_documents,
-    _boards_of,
-    _connected_files,
     _existing_entry,
     _refuse_while_sealed,
-
-    _stored_connections,
-    _to_out,
 )
+from tessellate.api.entry_out import to_out
 from tessellate.api.routes_entities import names_in_note
 from tessellate.api.routes_entries_refs import _reference_rows
 from tessellate.api.schemas import EntryOut
@@ -35,6 +28,7 @@ from tessellate.core import deps
 from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
 from tessellate.entry import manager_links
+from tessellate.entry import service as entry_service
 from tessellate.entry import manager_text
 from tessellate.repo import relations as relations_repo
 from tessellate.repo.content import NOTES
@@ -62,23 +56,12 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
     neither.
     """
     entry = _existing_entry(session, entry_id)
-    outgoing, incoming = _stored_connections(session, entry)
-    documents = _attached_documents(session, entry)
-    references = _reference_rows(session, entry)
-    _add_referenced(session, references, documents, incoming)
-    _add_wiki_outgoing(session, entry, outgoing)
-    boards = _boards_of(session, entry, references)
-    files = _connected_files(session, manager_text.readable_content(entry))
-
+    found = entry_service.connections(session, entry, _reference_rows(session, entry))
     return {
-        "outgoing": outgoing,
-        "incoming": incoming,
-        "documents": documents,
-        "boards": boards,
-        "files": files,
+        **found,
         #: B4: the names it says, each opening its person or project page.
         "names": names_in_note(session, entry),
-        "total": len(outgoing) + len(incoming) + len(documents) + len(boards) + len(files),
+        "total": sum(len(rows) for rows in found.values()),
     }
 
 
@@ -109,7 +92,7 @@ def create_link(
         raise HTTPException(
             status_code=400, detail="Those notes are already linked, or you tried to link a note to itself."
         )
-    return _to_out(session, source)
+    return to_out(session, source)
 
 
 @router.delete("/{entry_id}/links/{link_id}", response_model=EntryOut)
@@ -119,7 +102,7 @@ def delete_link(
     entry = NOTES.writable(session, entry_id)
     link = relations_repo.get_for_note(session, entry.id, link_id)
     manager_links.delete_link(session, link)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 @router.patch("/{entry_id}/links/{link_id}", response_model=EntryOut)
@@ -139,7 +122,7 @@ def patch_link(
         manager_links.set_link_props(session, link, body.props)
     if "two_way" in sent:
         manager_links.set_link_two_way(session, link, body.two_way)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 @router.put("/{entry_id}/links/{link_id}/reason", response_model=EntryOut)
@@ -153,7 +136,7 @@ def update_link_reason(
     link = relations_repo.get_for_note(session, entry.id, link_id)
     try:
         manager_links.set_link_reason(session, link, body.reason)
-        return _to_out(session, entry)
+        return to_out(session, entry)
     except Exception:
         # The exception text can carry paths or content; only the log gets it
         # (see test_removing_a_model_never_returns_the_filesystem_path).

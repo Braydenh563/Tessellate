@@ -334,12 +334,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: that no longer held it. The control is the truth, so the section is read
   //: from where it sits now, and the one the caller named is only the answer
   //: when the control is not in the markup at all.
+  overlayReturnFocus = document.activeElement;
+  window.uiSettlingUntil = performance.now() + 400;
+  //: The body is a file fetched on the first open (L-world-class-760), begun at the gear under the pointer; only
+  //: an open that comes first, from the palette, a link or a key, waits for it. Later opens stay synchronous.
+  if (SURFACES.pending("settings")) await SURFACES.load("settings");
   if (scrollToId) {
     const holder = $(scrollToId)?.closest(".settings-section");
     if (holder?.id.startsWith("settings-")) section = holder.id.slice("settings-".length);
   }
-  overlayReturnFocus = document.activeElement;
-  window.uiSettlingUntil = performance.now() + 400;
   surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
@@ -349,6 +352,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     await ensureModule("settingsControls");
   }
   $("settings-modal").classList.remove("hidden");
+  document.body.classList.add("settings-open");
   //: The window's own selects outside a pane; each pane wraps its own when shown (L-world-class-14).
   for (const select of $("settings-modal").querySelectorAll("select")) if (!select.closest(".settings-section")) enhanceSelect(select);
   // Runs on open rather than once at load: several sections are built
@@ -479,7 +483,7 @@ let changelogLoaded = false;
 //: The fetch stays eager, because its answer decides whether the control is
 //: shown at all: a packaged build may not ship the file, and offering a
 //: disclosure that opens onto nothing is worse than not offering one. Only
-//: the render is deferred, since that is the expensive half.
+//: the render waits, since that is the expensive half.
 //:
 //: `toggle` rather than `click`: a `<details>` can also be opened by the
 //: keyboard, by find-in-page, and programmatically, and `toggle` is the one
@@ -714,6 +718,7 @@ function closeSettingsModal() {
   focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
   $("settings-modal").classList.add("hidden");
+  document.body.classList.remove("settings-open");
 }
 
 // --- logs viewer (Wave A) ---------------------------------------------------------
@@ -3394,6 +3399,10 @@ document.addEventListener("motionchange", () => {
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
+//: The first sign Settings is about to open (the gear under the pointer, in focus or touched) starts the fetch of its
+//: body (L-world-class-760), which then parses ahead in idle slots while the click lands. Settings opened any
+//: other way (the palette, a link, a key) fetches in `openSettingsModal` before it builds.
+for (const type of ["pointerover", "focusin", "touchstart"]) $("settings-btn").addEventListener(type, () => SURFACES.load("settings"), { passive: true });
 $("settings-close").addEventListener("click", () => closeSettingsModal());
 $("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 

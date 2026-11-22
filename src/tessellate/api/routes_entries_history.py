@@ -15,23 +15,33 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_entries import (
-    HISTORY_PAGE,
     _existing_entry,
-    _readable,
     _refuse_while_sealed,
-    _stored_form,
-    _to_out,
 )
+from tessellate.api.entry_out import to_out
 from tessellate.api.routes_entries_refs import _reference_rows
 from tessellate.api.schemas import EntryOut
 from tessellate.core import deps, events
 from tessellate.core.database import AuditLog, EntryRevision
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.entry import editing, manager, private_space
 from tessellate.entry import manager_text
 from tessellate.repo.content import NOTES
 
 router = APIRouter(tags=["entries"], prefix="/entries")
+
+#: How many events one request of a note's history returns. A note edited
+#: every day for a year has a history worth paging through rather than
+#: sending whole to a sheet that shows a dozen rows at a time.
+HISTORY_PAGE = 50
+
+
+def _restorable(entry, text: str, session: Session):  # noqa: ANN001, ANN202
+    """A past version's text in the form the note stores now; 409 while the key is not loaded."""
+    try:
+        return editing.stored_form(entry, text, session)
+    except private_space.NeedsKey as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.get("/{entry_id}/references")
@@ -40,6 +50,14 @@ def entry_references(entry_id: int, session: Session = Depends(get_session)) -> 
     entry = _existing_entry(session, entry_id)
     items = _reference_rows(session, entry)
     return {"items": items, "total": len(items)}
+
+
+def _judge() -> tuple:
+    """The running model as the judge of the claim pairs (I5), or no judge,
+    which keeps the pairing by shared words."""
+    from tessellate.ai import timetravel
+
+    return timetravel.model_judge(deps.get_ollama(), deps.get_model_manager())
 
 
 @router.get("/{entry_id}/then-and-now")
@@ -57,7 +75,7 @@ def then_and_now(entry_id: int, as_of: date = Query(...), session: Session = Dep
     then = timetravel.text_as_of(session, entry, timetravel.end_of_day(as_of, zone))
     if then is None:
         raise HTTPException(status_code=404, detail=f"This note did not exist on {timetravel.day_words(as_of)}.")
-    out = timetravel.then_and_now(then.text, entry.content or "")
+    out = timetravel.then_and_now(then.text, entry.content or "", *_judge())
     out.update({"as_of": as_of.isoformat(), "revision_id": then.revision_id, "exact": then.exact})
     return out
 
@@ -105,7 +123,7 @@ def then_and_now_of_text(entry_id: int, body: ThenTextBody, session: Session = D
     entry = _existing_entry(session, entry_id)
     if entry.is_private:
         raise HTTPException(status_code=403, detail="This note is private, so its history is not compared.")
-    return timetravel.then_and_now(body.then, entry.content or "")
+    return timetravel.then_and_now(body.then, entry.content or "", *_judge())
 
 
 @router.get("/{entry_id}/history")
@@ -166,7 +184,7 @@ def entry_history(
                 # Decrypted for display exactly like the note itself, so a
                 # private note's history is readable while unlocked and not
                 # otherwise.
-                "content": _readable(at_the_time.get("content") or ""),
+                "content": editing.readable(at_the_time.get("content") or ""),
                 "tags": at_the_time.get("tags") or [],
                 # Whether this event's values were dropped by the compactor
                 # (`events.compact`), so the sheet can say "the text from this
@@ -229,7 +247,7 @@ def restore_event(
         )
 
     if "content" in state:
-        restored = _stored_form(entry, state["content"], session)
+        restored = _restorable(entry, state["content"], session)
     manager.record_revision(session, entry)
     if "content" in state:
         entry.content = restored
@@ -252,7 +270,7 @@ def restore_event(
     )
     session.commit()
     session.refresh(entry)
-    return _to_out(session, entry)
+    return to_out(session, entry)
 
 
 @router.post("/{entry_id}/history/{revision_id}/restore", response_model=EntryOut)
@@ -269,7 +287,7 @@ def restore_revision(
     if revision is None or revision.entry_id != entry.id:
         raise HTTPException(status_code=404, detail="That version no longer exists.")
 
-    restored = _stored_form(entry, revision.content, session)
+    restored = _restorable(entry, revision.content, session)
     manager.record_revision(session, entry)
     entry.content = restored
     entry.tags = revision.tags
@@ -277,4 +295,4 @@ def restore_revision(
     manager.log_action(session, "edited", "entry", entry.id, "restored an earlier version")
     session.commit()
     session.refresh(entry)
-    return _to_out(session, entry)
+    return to_out(session, entry)

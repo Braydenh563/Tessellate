@@ -8,9 +8,17 @@ zone by name, a repeat, an alarm and a completed status.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from tessellate.core import ics_import
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 FIELDS = ("text", "due_at", "priority", "recurring", "alert_minutes", "done")
 REPEATS = ("none", "daily", "weekly", "monthly", "FREQ=WEEKLY;INTERVAL=2")
@@ -25,7 +33,7 @@ def _upload(client, body: str, tz: int = 0):
 
 
 def _make_twenty(client) -> list[dict]:
-    base = datetime.now(timezone.utc).replace(microsecond=0, second=0) + timedelta(days=2)
+    base = SUITE_NOW.replace(microsecond=0, second=0) + timedelta(days=2)
     made = []
     for i in range(20):
         body = {
@@ -70,7 +78,7 @@ def test_importing_its_own_export_twice_updates_rather_than_doubles(client):
 
 
 def test_a_bad_line_is_reported_and_the_rest_kept(client):
-    ahead = (datetime.now(timezone.utc) + timedelta(days=3)).strftime("%Y%m%dT%H%M%SZ")
+    ahead = (SUITE_NOW + timedelta(days=3)).strftime("%Y%m%dT%H%M%SZ")
     body = "\r\n".join([
         "BEGIN:VCALENDAR", "VERSION:2.0",
         "BEGIN:VEVENT", "SUMMARY:Good one", f"DTSTART:{ahead}", "END:VEVENT",

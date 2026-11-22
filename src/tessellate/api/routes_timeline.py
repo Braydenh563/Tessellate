@@ -31,14 +31,15 @@ from datetime import datetime, timedelta, timezone
 from functools import partial
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import Select, String, and_, func, or_, select
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy import Select, and_, func, or_
+from sqlalchemy.orm import Session
 
 from tessellate.core import cjk
-from tessellate.core.database import Entry, EntryDate, Space, utcnow
+from tessellate.core.database import Entry, EntryDate, utcnow
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
+from tessellate.repo import timeline as timeline_repo
 from tessellate.repo.documents import Document
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
@@ -405,10 +406,7 @@ def timeline(
     kinds = _requested_kinds(kind)
     _check_params(scale, group, limit)
 
-    query = select(Entry).where(
-        Entry.is_deleted == False,  # noqa: E712
-        Entry.is_private == False,  # noqa: E712  # private text stays out of a view
-    )
+    query = timeline_repo.visible_notes()  # private text stays out of a view
     #: A board is an `Entry` with `is_board` set, so "notes only" and "boards
     #: only" are one query with a flag rather than two code paths.
     if "note" in kinds and "board" not in kinds:
@@ -598,12 +596,7 @@ def _dates_of(session: Session, entries: list) -> tuple[dict[int, EntryDate], di
     resolved: dict[int, EntryDate] = {}
     every: dict[int, list[str]] = {}
     if entries:
-        rows = session.scalars(
-            select(EntryDate)
-            .where(EntryDate.entry_id.in_([entry.id for entry in entries]))
-            .order_by(EntryDate.id)
-        )
-        for row in rows:
+        for row in timeline_repo.dates_of(session, [entry.id for entry in entries]):
             resolved.setdefault(row.entry_id, row)
             every.setdefault(row.entry_id, []).append(row.at.date().isoformat())
     return resolved, every
@@ -621,7 +614,7 @@ def _placed_rows(session: Session, entries: list, documents_found: list, reminde
     # one query each for the whole page rather than one per row, the same
     # batching `resolved` above uses: a timeline over a year of writing is
     # hundreds of rows and this endpoint is drawn on every visit to the tab.
-    spaces = {space.id: space.name for space in session.scalars(select(Space))}
+    spaces = timeline_repo.space_names(session)
     links = manager.links_count_bulk(session, [entry.id for entry in entries])
 
     placed: list[dict] = []
@@ -686,13 +679,7 @@ def _with_placement(query: Select) -> tuple[Select, object, object]:
     placement four times, so a 5,000-note range read 40 ms of SQL on this
     alone and the cost grew with the notebook, not the page.
     """
-    first_pick = (
-        select(EntryDate.entry_id.label("entry_id"), func.min(EntryDate.id).label("pick"))
-        .group_by(EntryDate.entry_id)
-        .subquery("first_mention")
-    )
-    mention = aliased(EntryDate)
-    joined = query.outerjoin(first_pick, first_pick.c.entry_id == Entry.id).outerjoin(mention, mention.id == first_pick.c.pick)
+    joined, mention = timeline_repo.with_first_mention(query)
     joined, own_date = properties_repo.join_meeting_date(joined, Entry.id)
     return joined, mention.at, own_date
 
@@ -731,12 +718,11 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     placed += [first <= until + wall] if until is not None else []
     clauses = [and_(first.is_(None), *written), and_(first.is_not(None), *placed)]
     if also:
-        named = [EntryDate.entry_id == Entry.id]
-        #: A span overlaps the window when it starts before the window ends and
-        #: ends after it starts (decision 13); a day's end is its own start.
-        named += [func.coalesce(EntryDate.until, EntryDate.at) >= since + wall] if since is not None else []
-        named += [EntryDate.at <= until + wall] if until is not None else []
-        clauses.append(select(EntryDate.id).where(*named).correlate(Entry).exists())
+        clauses.append(
+            timeline_repo.names_a_date_between(
+                since + wall if since is not None else None, until + wall if until is not None else None
+            )
+        )
     return query.where(or_(*clauses))
 
 
@@ -755,11 +741,7 @@ def _density(session: Session, ranged: Select, mention_at) -> dict[str, int]:
     #: date (lowest id, as before) is a correlated read served by the
     #: `entry_id` index; dates are stored as naive UTC text, so the day is its
     #: first ten characters, which is what `.date()` gave on the row.
-    day = func.substr(func.coalesce(mention_at, Entry.created_at), 1, 10, type_=String)
-    rows = session.execute(
-        ranged.with_only_columns(day.label("day"), func.count()).select_from(Entry).order_by(None).group_by("day")
-    ).all()
-    return {str(when): int(count) for when, count in rows if when}
+    return timeline_repo.day_counts(session, ranged, mention_at)
 
 
 #: The longest span a brush may ask about: a year and a day, the strip's own
@@ -810,8 +792,10 @@ def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: AN
 
 #: One model call per span (review 5899369381): the call left running past
 #: SPAN_MODEL_TIMEOUT is reused by the next open of the same span, and its
-#: review is kept, keyed by the span's ends and its newest note, so a note
-#: written into the span asks again. Small: one sheet is open at a time.
+#: review is kept, keyed by the span's ends, what its notes say and today
+#: (review 5907787263: an edited note, or "today" in the prompt moving on,
+#: asks again). A call is dropped from the flights when it lands, read or not.
+#: Small: one sheet is open at a time.
 _SPAN_FLIGHTS: dict[tuple, object] = {}
 _SPAN_SAID: dict[tuple, str] = {}
 _SPAN_KEPT_MAX = 16
@@ -826,7 +810,8 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
 
     from tessellate.core import jobs
 
-    key = (first, last, max((n["id"] for n in notes), default=None))
+    key = _span_key(notes, first, last, now)
+    started = False
     with _SPAN_LOCK:
         if key in _SPAN_SAID:
             return _SPAN_SAID[key]
@@ -834,12 +819,34 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
         if flight is None:
             flight = jobs.future("span digest", _span_said_by_model, notes, first, last, now)
             _SPAN_FLIGHTS[key] = flight
+            started = True
+    if started:
+        #: Outside the lock: a call already done runs its callback here, at once.
+        flight.add_done_callback(lambda done: _span_landed(key, done))
     try:
-        said = flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
+        return flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
     except FutureTimeout:
         return ""
     except Exception as exc:  # noqa: BLE001  # a failed call is the composer's turn
         logging.getLogger(__name__).info("span digest: the model call failed (%s); the composer writes it", exc)
+        return ""
+
+
+def _span_key(notes: list[dict], first, last, now) -> tuple:  # noqa: ANN001
+    """The span's ends, a digest of each note's id, words and category, and today."""
+    import hashlib
+
+    said = hashlib.sha256()
+    for n in notes:
+        said.update(f"{n['id']}\x1f{n['category']}\x1f{n['content']}\x1e".encode())
+    return (first, last, said.hexdigest(), now.date())
+
+
+def _span_landed(key: tuple, flight) -> None:  # noqa: ANN001
+    """A span call is done: off the flights, and its review kept when it said one."""
+    try:
+        said = flight.result() or ""
+    except Exception:  # noqa: BLE001
         said = ""
     with _SPAN_LOCK:
         _SPAN_FLIGHTS.pop(key, None)
@@ -847,7 +854,6 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
             _SPAN_SAID[key] = said
             while len(_SPAN_SAID) > _SPAN_KEPT_MAX:
                 _SPAN_SAID.pop(next(iter(_SPAN_SAID)))
-    return said
 
 
 @router.get("/digest")

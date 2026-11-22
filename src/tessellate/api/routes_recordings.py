@@ -15,25 +15,27 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, Response, UploadFile
-from pydantic import BaseModel, Field
-from sqlalchemy import or_, text
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.orm import Session
 
 from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, sealed_aware, sealed_http
-from tessellate.core import activity, deps, jobs, recordings, sealed_files, transcript
-from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
+from tessellate.core import activity, deps, jobs, recordings, sealed_files, spacelock, transcript, vault
+from tessellate.core import recording_trim as trim_audio
+from tessellate.core.database import Entry, Recording, SealedWriteRefused, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
 from tessellate.entry import manager_text
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry.manager import log_action
 from tessellate.repo import content as content_repo
+from tessellate.repo import recordings as recordings_repo
 
 router = APIRouter(tags=["recordings"])
 #: `<audio src>` sends the media cookie, never the X-Auth-Token header, so
@@ -60,6 +62,17 @@ class RecordingFinish(BaseModel):
     markers: list[float | dict] = Field(default_factory=list, max_length=recordings.MARKERS_MAX)
 
 
+class RecordingTrim(BaseModel):
+    start_ms: int = Field(ge=0, le=24 * 3600 * 1000)
+    end_ms: int = Field(gt=0, le=24 * 3600 * 1000)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> RecordingTrim:
+        if self.end_ms <= self.start_ms:
+            raise ValueError("The end must come after the start.")
+        return self
+
+
 class RecordingPatch(BaseModel):
     title: str | None = Field(default=None, max_length=200)
     #: A number, or `{at, note}` for a mark with a comment (Brief 96).
@@ -70,9 +83,9 @@ class RecordingPatch(BaseModel):
 def _get(session: Session, recording_id: int, binned: bool = False) -> Recording:
     if binned:
         with other_bin.including_binned(session):
-            row = session.get(Recording, recording_id)
+            row = recordings_repo.find(session, recording_id)
     else:
-        row = session.get(Recording, recording_id)
+        row = recordings_repo.find(session, recording_id)
         if row is not None and row.deleted_at is not None:
             row = None
     if row is None:
@@ -107,19 +120,8 @@ def list_recordings(
     alone)."""
     offset = paging.start(cursor, offset)
     recovered = recordings.recover_stale(session)
-    query = session.query(Recording).filter(Recording.state == "saved")
     needle = " ".join(q.split())
-    if needle:
-        # The transcript is stored as JSON, so a quote in the words is `\"` there.
-        stored = json.dumps(needle, ensure_ascii=False)[1:-1]
-        query = query.filter(
-            or_(
-                Recording.title.ilike(f"%{like_escape(needle)}%", escape=LIKE_ESCAPE),
-                Recording.segments.ilike(f"%{like_escape(stored)}%", escape=LIKE_ESCAPE),
-            )
-        )
-    total = query.count()
-    rows = query.order_by(Recording.created_at.desc()).offset(offset).limit(limit).all()
+    rows, total = recordings_repo.page(session, needle, offset, limit)
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     announced = [recordings.as_dict(row) for row in recovered]
@@ -155,8 +157,7 @@ def create_recording(body: RecordingCreate, session: Session = Depends(get_sessi
         derived=body.derived,
         state="recording",
     )
-    session.add(row)
-    session.flush()
+    recordings_repo.add(session, row)
     log_action(session, "created", "recording", row.id, detail=mime)
     session.commit()
     return recordings.as_dict(row)
@@ -224,6 +225,56 @@ def finish_recording(
     row.updated_at = utcnow()
     session.commit()
     return recordings.as_dict(row)
+
+
+@router.post("/recordings/{recording_id}/trim", status_code=201)
+def trim_recording(recording_id: int, body: RecordingTrim, session: Session = Depends(get_session)) -> dict:
+    """The part from `start_ms` to `end_ms` as a new wav recording that points
+    at its original (L632). The cut is made here, packet by packet, so the page
+    never decodes the whole take; the original is kept, and its waveform and
+    marks are carried over for the span."""
+    row = _writable(session, recording_id)
+    path = recordings.path_of(row)
+    if row.state != "saved" or not path.is_file():
+        raise HTTPException(status_code=404, detail="That recording's audio is missing.")
+    end = min(body.end_ms, row.duration_ms) if row.duration_ms else body.end_ms
+    if end <= body.start_ms:
+        raise HTTPException(status_code=422, detail="The end must come after the start.")
+    try:
+        with sealed_files.readable(path) as audio:
+            wav = trim_audio.cut(Path(audio), body.start_ms, end)
+    except sealed_files.SealedError as exc:
+        raise sealed_http(exc) from exc
+    except trim_audio.TrimError as exc:
+        raise HTTPException(status_code=503, detail=exc.sentence) from exc
+    span = row.duration_ms or end
+    bars = json.loads(row.peaks or "[]")
+    kept_marks = [
+        ({"at": m["at"] - body.start_ms, "note": m["note"]} if m.get("note") else m["at"] - body.start_ms)
+        for m in transcript.marks_of(row)
+        if body.start_ms <= m["at"] <= end
+    ]
+    made = Recording(
+        title=f"{row.title or 'Recording'} (trimmed)"[:200],
+        mime="audio/wav",
+        filename=recordings.new_filename("audio/wav"),
+        entry_id=row.entry_id,
+        source_id=row.id,
+        derived="trim",
+        state="saved",
+        size_bytes=len(wav),
+        duration_ms=end - body.start_ms,
+        peaks=recordings.clean_peaks(bars[int(body.start_ms / span * len(bars)) : -(-end * len(bars) // span)]),
+    )
+    made.markers = recordings.clean_markers(kept_marks, made.duration_ms)
+    try:
+        sealed_files.append(recordings.path_of(made), wav, sealed=sealed_files.wanted(session, row.workspace_id))
+    except sealed_files.LooksSealed as exc:
+        raise HTTPException(status_code=415, detail=sealed_files.LOOKS_SEALED_DETAIL) from exc
+    recordings_repo.add(session, made)
+    log_action(session, "created", "recording", made.id, detail="trim")
+    session.commit()
+    return recordings.as_dict(made)
 
 
 @router.get("/recordings/{recording_id}")
@@ -296,7 +347,8 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
     except sealed_files.SealedError as exc:
         raise sealed_http(exc) from exc
     except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        logger.warning("transcription failed: %s", exc)
+        raise HTTPException(status_code=503, detail=_sentence(exc, TRANSCRIBE_FAILED)) from exc
     except Exception as exc:  # a bad clip must not 500 mysteriously
         logger.warning("transcription failed", exc_info=True)
         raise HTTPException(
@@ -309,14 +361,26 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
     return {"text": " ".join(seg["text"] for seg in kept), "segments": kept}
 
 
-#: A background run has no vault key (`vault.key`), so it can neither open a
-#: private space's sealed audio nor write its sealed transcript.
-SEALED_IN_BACKGROUND = "A private space's recording can't be transcribed in the background yet."
+#: A space turned ordinary that kept its files private still holds sealed
+#: audio, and a run outside a private space has no session to act for.
+SEALED_OUTSIDE_PRIVATE = "This recording is kept private, so it can't be transcribed in the background."
 
 
-def _refuse_sealed_in_background(path: Path) -> None:
-    if sealed_files.is_sealed(path):
-        raise HTTPException(status_code=409, detail=SEALED_IN_BACKGROUND)
+def _acting_for(session: Session, row: Recording, path: Path) -> str | None:
+    """The session a background run on `row` acts for (L-world-class-381):
+    the caller's, for a private space's recording, so the run opens the
+    sealed audio and writes the sealed transcript as that session and stops
+    when its private-space door shuts (`sealed_files.for_background`). None
+    for an ordinary space's recording, which needs no key; 409 up front for
+    a sealed one there, as before the change."""
+    if not sealed_files.wanted(session, row.workspace_id):
+        if sealed_files.is_sealed(path):
+            raise HTTPException(status_code=409, detail=SEALED_OUTSIDE_PRIVATE)
+        return None
+    token = vault.requester()
+    if token is None or not spacelock.opened(token):
+        raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
+    return token
 
 
 @router.post("/recordings/{recording_id}/transcribe/start", status_code=202)
@@ -331,14 +395,14 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
-    _refuse_sealed_in_background(path)
+    token = _acting_for(session, row, path)
     name = row.title or "a recording"
     job = activity.start("transcription", f"Transcribing “{name}”", stoppable=True)
     if not recordings.begin_transcription(row.id, job.id):
         activity.finish(job)
         raise HTTPException(status_code=409, detail="That recording is already being transcribed.")
     work = (row.id, Path(path), row.duration_ms, deps.get_config().get_preference("voice_model", "base"),
-            session.info.get("workspace_id"), job)
+            session.info.get("workspace_id"), job, token)
     #: A thread Job (`jobs.thread`, decision 58); the Stop route ends it between
     #: two segments, so the registry entry has no stopper of its own.
     jobs.thread(f"transcribe-{row.id}", lambda: _transcribe_in_background(*work))
@@ -356,32 +420,36 @@ def stop_transcription(recording_id: int, session: Session = Depends(get_session
 
 
 def _transcribe_in_background(
-    recording_id: int, path: Path, duration_ms: int, model_size: str, workspace: str | None, job: activity.Job
+    recording_id: int, path: Path, duration_ms: int, model_size: str, workspace: str | None, job: activity.Job,
+    token: str | None = None,
 ) -> None:
     kept: list[dict] = []
     state, error = "done", ""
     try:
-        for segment in voice.iter_segments(path, model_size=model_size):
-            if job.stopped:
-                state = "stopped"
-                break
-            kept.append(segment)
-            if duration_ms:
-                job.update(done=min(segment["end"], duration_ms), total=duration_ms)
-                recordings.note_progress(recording_id, job.progress)
-            job.update(detail=f"{len(kept)} lines heard")
-        if state == "done":
-            kept = _voice_labelled(kept, path, job)
-            if job.stopped:
-                state = "stopped"
-            else:
-                _keep_segments(recording_id, kept, workspace)
+        with sealed_files.for_background(path, token) as (audio, check):
+            for segment in voice.iter_segments(audio, model_size=model_size):
+                check()
+                if job.stopped:
+                    state = "stopped"
+                    break
+                kept.append(segment)
+                if duration_ms:
+                    job.update(done=min(segment["end"], duration_ms), total=duration_ms)
+                    recordings.note_progress(recording_id, job.progress)
+                job.update(detail=f"{len(kept)} lines heard")
+            if state == "done":
+                kept = _voice_labelled(kept, audio, job)
+                if job.stopped:
+                    state = "stopped"
+                else:
+                    check()
+                    _keep_segments(recording_id, kept, workspace, check, named=token is None)
     except RuntimeError as exc:
         logger.warning("background transcription failed: %s", exc)
-        state, error = "failed", str(exc)
+        state, error = "failed", _sentence(exc, TRANSCRIBE_FAILED)
     except Exception:  # noqa: BLE001  # a bad clip is a row that says so, never a dead thread
         logger.warning("background transcription failed", exc_info=True)
-        state, error = "failed", "Couldn't transcribe that recording. Try recording it again."
+        state, error = "failed", TRANSCRIBE_FAILED
     finally:
         words = sum(len(seg["text"].split()) for seg in kept) if state == "done" else 0
         _record_failure(job, state, error)
@@ -390,11 +458,33 @@ def _transcribe_in_background(
         recordings.end_transcription(recording_id, state, error, words)
 
 
+class RunFailed(RuntimeError):
+    """A background run's own failure, worded for the person."""
+
+
+TRANSCRIBE_FAILED = "Couldn't transcribe that recording. Try recording it again."
+VOICES_FAILED = "Couldn't tell the voices apart. See Settings, Logs for why."
+
+
+def _sentence(exc: RuntimeError, fallback: str) -> str:
+    """A background run's failure line. Only a sentence written for the
+    person is shown: this module's `RunFailed`, the speech module's
+    `SpeechError`, a sealed-file error. A sealed write refused because the
+    vault locked mid-run is the locked line, never the database's words
+    (SECURITY.md T28). Any other RuntimeError (a model's, a library's) is the
+    fixed `fallback`; its text is in the log where it is caught."""
+    if isinstance(exc, SealedWriteRefused):
+        return sealed_files.BACKGROUND_LOCKED_DETAIL
+    if isinstance(exc, (RunFailed, voice.SpeechError, sealed_files.SealedError)):
+        return str(exc)
+    return fallback
+
+
 def _record_failure(job: activity.Job, state: str, error: str) -> None:
     """The run's last-run line for a background job that ended "failed".
-    `error` is always one of this module's own sentences (a RuntimeError
-    raised here, or a fixed line for anything else, whose exception is logged
-    where it is caught), never an exception's text."""
+    `error` comes from `_sentence` or is one of the two fixed lines above, so
+    it is never an arbitrary exception's text (that is logged where it is
+    caught)."""
     if job.run is not None and state == "failed":
         job.run.fail(error)
 
@@ -409,17 +499,31 @@ def _voice_labelled(kept: list[dict], path: Path, job: activity.Job) -> list[dic
     return diarize.label_audio(transcript.clean(kept), path)
 
 
-def _keep_segments(recording_id: int, segments: list[dict], workspace: str | None) -> None:
+def _open_door() -> None:
+    """An ordinary space's run: no door to look at."""
+
+
+def _keep_segments(
+    recording_id: int, segments: list[dict], workspace: str | None, check: Callable[[], None] = _open_door, *,
+    named: bool = True,
+) -> None:
+    """Write the transcript. A private space's run (`named` False) is never
+    read by the model in the background, nor is its meeting note (SECURITY.md
+    T28, T10), and `check` is asked immediately before the commit, so a lock
+    at any step before it keeps nothing (review of L-world-class-381)."""
     session = deps.get_db().session()
     if workspace:
         session.info["workspace_id"] = workspace
     try:
-        row = session.query(Recording).filter(Recording.id == recording_id).first()
+        row = recordings_repo.find_by_query(session, recording_id)
         if row is None:
-            raise RuntimeError("That recording was deleted while it was transcribed.")
-        kept = _named_if_unlabelled(session, row, transcript.clean(segments))
+            raise RunFailed("That recording was deleted while it was transcribed.")
+        kept = transcript.clean(segments)
+        if named:
+            kept = _named_if_unlabelled(session, row, kept)
         row.segments = transcript.dumps(kept)
         log_action(session, "transcribed", "recording", row.id)
+        check()
         session.commit()
     finally:
         session.close()
@@ -495,49 +599,62 @@ def label_speakers_by_voice(recording_id: int, session: Session = Depends(get_se
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
-    _refuse_sealed_in_background(path)
+    token = _acting_for(session, row, path)
     name = row.title or "a recording"
     job = activity.start("transcription", f"Telling the voices apart in “{name}”", stoppable=False)
     if not recordings.begin_transcription(row.id, job.id, task="voices"):
         activity.finish(job)
         raise HTTPException(status_code=409, detail="That recording is already being worked on.")
-    work = (row.id, Path(path), session.info.get("workspace_id"), job)
+    work = (row.id, Path(path), session.info.get("workspace_id"), job, token)
     jobs.thread(f"voices-{row.id}", lambda: _label_in_background(*work))
     return {"id": row.id, "job_id": job.id, "transcription": recordings.transcription_of(row.id)}
 
 
-def _label_in_background(recording_id: int, path: Path, workspace: str | None, job: activity.Job) -> None:
+def _label_in_background(
+    recording_id: int, path: Path, workspace: str | None, job: activity.Job, token: str | None = None
+) -> None:
     state, error, count = "done", "", 0
     try:
-        found = diarize.spans(path)
-        session = deps.get_db().session()
-        if workspace:
-            session.info["workspace_id"] = workspace
-        try:
-            row = session.query(Recording).filter(Recording.id == recording_id).first()
-            if row is None:
-                raise RuntimeError("That recording was deleted while its voices were told apart.")
-            segments = transcript.loads(row.segments)
-            labels = diarize.voice_labels(segments, found)
-            if labels is not None:
-                labelled = transcript.clean([{**seg, "speaker": label} for seg, label in zip(segments, labels, strict=True)])
-                count = diarize.speaker_count(labelled)
-                row.segments = transcript.dumps(labelled)
-                log_action(session, "edited", "recording", row.id, f"{count} speakers labelled by voice")
-                session.commit()
-        finally:
-            session.close()
+        with sealed_files.for_background(path, token) as (audio, check):
+            found = diarize.spans(audio)
+            check()
+            count = _keep_voice_labels(recording_id, found, workspace, check)
     except RuntimeError as exc:
         logger.warning("telling the voices apart failed: %s", exc)
-        state, error = "failed", str(exc)
+        state, error = "failed", _sentence(exc, VOICES_FAILED)
     except Exception:  # noqa: BLE001  # a bad clip or a model that will not load is a row that says so
         logger.warning("telling the voices apart failed", exc_info=True)
-        state, error = "failed", "Couldn't tell the voices apart. See Settings, Logs for why."
+        state, error = "failed", VOICES_FAILED
     finally:
         _record_failure(job, state, error)
         job.result = {"done": f"{count} speakers", "failed": error}[state]
         activity.finish(job)
         recordings.end_transcription(recording_id, state, error, speakers=count)
+
+
+def _keep_voice_labels(recording_id: int, found: list, workspace: str | None, check: Callable[[], None] = _open_door) -> int:
+    """Write the voices' labels over the transcript; the number of speakers.
+    `check` is asked immediately before the commit, as `_keep_segments` does."""
+    session = deps.get_db().session()
+    if workspace:
+        session.info["workspace_id"] = workspace
+    try:
+        row = recordings_repo.find_by_query(session, recording_id)
+        if row is None:
+            raise RunFailed("That recording was deleted while its voices were told apart.")
+        segments = transcript.loads(row.segments)
+        labels = diarize.voice_labels(segments, found)
+        if labels is None:
+            return 0
+        labelled = transcript.clean([{**seg, "speaker": label} for seg, label in zip(segments, labels, strict=True)])
+        count = diarize.speaker_count(labelled)
+        row.segments = transcript.dumps(labelled)
+        log_action(session, "edited", "recording", row.id, f"{count} speakers labelled by voice")
+        check()
+        session.commit()
+        return count
+    finally:
+        session.close()
 
 
 class RenameSpeakerBody(BaseModel):
@@ -591,9 +708,7 @@ def _locked_away(session: Session, recording_id: int) -> bool:
     sealed = session.info.get("sealed_workspaces")
     if not sealed:
         return False
-    space = session.execute(
-        text("SELECT workspace_id FROM recordings WHERE id = :id AND deleted_at IS NULL"), {"id": recording_id}
-    ).scalar()
+    space = recordings_repo.space_of(session, recording_id)
     return space in sealed
 
 

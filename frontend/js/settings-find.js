@@ -810,6 +810,11 @@
     helpMarks(lead, topic.lead, rx);
     body.replaceChildren();
     helpFill(body, topic.body, rx);
+    //: Drawn with the text, so a closed topic fetches nothing (`help_images.py`, L-world-class-785).
+    if (topic.image && !details.querySelector(".help-picture")) {
+      const { src, alt, width, height } = topic.image;
+      details.append(Object.assign(document.createElement("img"), { className: "help-picture", src, alt, width, height, loading: "lazy", decoding: "async" }));
+    }
     const path = where?.firstChild;
     if (topic.path && path) {
       path.replaceChildren("Where: ");

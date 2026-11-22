@@ -38,7 +38,7 @@ import sys
 import time
 from pathlib import Path
 
-from tessellate.core import jobs, ocr_prep
+from tessellate.core import jobs, ocr_prep, parse_guard
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.ocr")
@@ -695,6 +695,13 @@ def _log_package_missing() -> None:
     )
 
 
+#: How long the OCR child may spend on one picture (L-world-class-321) before
+#: the file is treated as crafted and its reader stopped: generous, since a
+#: large scan is read in up to two page modes.
+OCR_TIMEOUT_SECONDS = 180
+
+
+@parse_guard.isolated("ocr", timeout=OCR_TIMEOUT_SECONDS, on_stop=str)
 def extract_text(image_path: Path, choice: str = "") -> str:
     """Best-effort OCR text for one image file. Never raises: a missing
     binary, a corrupt image, or an unsupported format all just mean no text
@@ -774,6 +781,7 @@ def _read_with_fallbacks(pytesseract, img, modes: tuple[int | None, ...]) -> str
     return ""
 
 
+@parse_guard.isolated("ocr", timeout=OCR_TIMEOUT_SECONDS, on_stop=str)
 def extract_region_text(image_path: Path, choice: str = "") -> str:
     """`extract_text` for a drawn region: a crop is one block, so Tesseract is
     asked for a single uniform block first and for sparse text second. Another
@@ -829,6 +837,7 @@ def _region_data(pytesseract, img) -> tuple[dict, float]:
     return data, (prepared.scale if prepared.scale > 0 else 1.0)
 
 
+@parse_guard.isolated("ocr", timeout=OCR_TIMEOUT_SECONDS, on_stop=lambda: None)
 def extract_regions(image_path: Path, choice: str = "") -> dict | None:
     """Text laid out as Tesseract found it: one entry per block, with the
     box it occupies on the page.

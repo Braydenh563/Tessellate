@@ -12,7 +12,7 @@ from pathlib import Path
 from tessellate.core.embedmodels import EMBED_MODELS, OLLAMA_EMBED_MODELS
 
 ROOT = Path(__file__).resolve().parents[1]
-STATUS = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+STATUS = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "status-settings.js").read_text(encoding="utf-8")
 SKILLS = (ROOT / "src" / "tessellate" / "ai" / "skills.py").read_text(encoding="utf-8")
 EMBEDDINGS = (ROOT / "src" / "tessellate" / "ai" / "embeddings.py").read_text(encoding="utf-8")
 

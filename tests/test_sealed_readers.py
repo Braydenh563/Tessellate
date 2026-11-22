@@ -25,16 +25,18 @@ SEALED_CALL = re.compile(r"\bsealed_files\.|\bunsealed\(|\bsealed_aware\(")
 #: helper `downloads.unsealed`, 423 locked and 409 damaged), or skips a
 #: sealed file because it has no key (a background pass).
 THROUGH = {
-    "ai/docreader.py::read_document_and_store",
+    "ai/docreader.py::_read_and_store",
     "api/app.py::_sweep_sealed_leftovers",
     "api/chat_attach.py::_attached_files",
     "api/chat_attach.py::_attached_media_files",
     "api/chat_attach.py::_attachment_readings",
     "api/chat_request.py::_caption_of",
     "api/chat_request.py::_resolve_chat_images",
+    "api/routes_recordings.py::trim_recording",
     "api/routes_files.py::analyse_attachment",
     "api/routes_files.py::attached_file_html_preview",
     "api/routes_files.py::attached_file_pdf_info",
+    "api/routes_files.py::attached_file_pdf_unlock",
     "api/routes_files.py::attached_file_pdf_page",
     "api/routes_files.py::attached_file_text",
     "api/routes_files.py::caption_media",
@@ -73,12 +75,12 @@ HANDS_ON = {
     "api/routes_conversations.py::_process_committed_media": "media_process skips a sealed file",
     "api/routes_documents.py::_process_committed_media": "media_process skips a sealed file",
     "api/routes_documents.py::export_bundle": "docexport.bundle reads through sealed_files",
-    "api/routes_entries.py::_process_committed_media": "media_process skips a sealed file",
+    "entry/capture.py::process_committed_media": "media_process skips a sealed file",
     "api/routes_files.py::_media_upload_path": "its callers open the path with unsealed",
     "api/routes_files.py::save_media_to_library": "media_process skips a sealed file",
     "api/routes_import.py::export_notebook_folder": "export_folder writes sealed files through sealed_files",
-    "api/routes_recordings.py::label_speakers_by_voice": "_refuse_sealed_in_background answers 409",
-    "api/routes_recordings.py::start_transcription": "_refuse_sealed_in_background answers 409",
+    "api/routes_recordings.py::label_speakers_by_voice": "_label_in_background reads through sealed_files.for_background",
+    "api/routes_recordings.py::start_transcription": "_transcribe_in_background reads through sealed_files.for_background",
     "api/wb_items.py::create_object": "media_process skips a sealed file",
     "core/media_process.py::process_committed_upload_ids": "process_committed_upload skips a sealed file",
     "core/media_process.py::process_referenced_uploads": "process_committed_upload skips a sealed file",
@@ -128,7 +130,7 @@ PATHS_ONLY = {
 #: Writes plain bytes from a thread or an import that has no key; the next
 #: unlock seals them (`private_space.seal_space_members` from `_open_spaces`).
 PLAIN_WRITES = {
-    "ai/captions.py::begin": "the live-caption PCM spool, removed when the take ends (L-world-class-381)",
+    "ai/captions.py::begin": "the live-caption PCM spool, removed when the take ends (L-world-class-670)",
     "core/recording_make.py::save_generated": "a background thread's WAV",
     "entry/export_folder.py::write": "an import",
     "entry/export_folder.py::_write_attachments": "an import",

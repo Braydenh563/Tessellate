@@ -41,6 +41,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
+from tessellate.core import clock
 from tessellate.core import paths, sealed_files
 
 FORMAT = "memorymap-folder"
@@ -101,7 +102,7 @@ def _restore(obj: object, record: dict, skip: set[str] | dict) -> None:
             # The bin clock restarts at the import: the stamp the export
             # carried is when the row was binned elsewhere, and the startup
             # sweep would purge a row just imported before it could be seen.
-            value = datetime.now(timezone.utc)
+            value = clock.utc()
         setattr(obj, column.name, value)
 
 
@@ -183,6 +184,9 @@ class _Related:
     doc_links: dict = field(default_factory=dict)
     #: space id to {name, icon, is_private}; the default space is not listed.
     spaces: dict = field(default_factory=dict)
+    #: Where a person also put each note, and its groups (L-world-class-172, 173): note id to names.
+    also_in: dict = field(default_factory=dict)
+    groups: dict = field(default_factory=dict)
 
 
 def _grouped(rows: list, key: str) -> dict:
@@ -197,8 +201,14 @@ def _related(session) -> _Related:  # noqa: ANN001
 
     from tessellate.core.database import Attachment, Category, DocumentLink, EntryLink, Reminder, Space
 
+    from tessellate.core.database import Entry
+    from tessellate.repo import memberships
+
     reminders = list(session.scalars(select(Reminder).order_by(Reminder.id)))
+    every = list(session.execute(select(Entry.id, Entry.category_id)))
     return _Related(
+        also_in=memberships.also_in_bulk(session, every),
+        groups=memberships.groups_bulk(session, [e.id for e in every]),
         category={c.id: c.name for c in session.scalars(select(Category))},
         attachments=_grouped(list(session.scalars(select(Attachment).order_by(Attachment.id))), "entry_id"),
         links=_grouped(list(session.scalars(select(EntryLink).order_by(EntryLink.id))), "source_entry_id"),
@@ -219,6 +229,7 @@ def note_record(entry, related: _Related, uploads_dir: Path) -> dict:  # noqa: A
     attachments = [] if manager.note_is_sealed(entry.is_private) else related.attachments.get(entry.id, [])
     record = {"id": entry.id, "content": text, "sealed": sealed,
               "category": related.category.get(entry.category_id, manager.UNCATEGORISED),
+              "also_in": related.also_in.get(entry.id, []), "groups": related.groups.get(entry.id, []),
               "tags": manager.entry_tags(entry),
               "space": related.spaces.get(entry.workspace_id)}
     if sealed and (record["space"] or {}).get("is_private"):
@@ -456,7 +467,7 @@ def export(session, uploads_dir: Path, archive: zipfile.ZipFile, progress=None) 
     documents = _write_documents(archive, session, related)
     manifest = {
         "format": FORMAT, "version": VERSION, "app_version": __version__,
-        "exported_at": datetime.now().astimezone().isoformat(),
+        "exported_at": clock.utc().astimezone().isoformat(),
         "counts": {"notes": len(notes), "boards": len(boards), "documents": len(documents),
                    "attachments": sum(len(n["attachments"]) for n in notes), "missing": len(missing)},
         "categories": _categories(session),
@@ -730,7 +741,7 @@ def _new_space(session, name: str, space: dict, private: bool):  # noqa: ANN001,
 def _make_entry(session, record: dict, said: list[str], spaces: dict | None = None):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
-    from tessellate.entry import manager_private
+    from tessellate.entry import frontmatter_keys, manager_private
 
     entry = manager.create_entry(session, record["content"], category_name=record.get("category") or manager.UNCATEGORISED,
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
@@ -750,6 +761,7 @@ def _make_entry(session, record: dict, said: list[str], spaces: dict | None = No
         manager_private.set_private(session, entry, True)
     if entry.created_at is not None:
         manager.record_dates(session, entry)
+    frontmatter_keys.keep_exported_state(session, entry, {k: record.get(k) for k in ("also_in", "groups")})
     return entry
 
 

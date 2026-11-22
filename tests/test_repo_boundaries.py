@@ -50,8 +50,24 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: board's category names) to repo/categories.py: 694; the spaces' id, list, find
 #: and count reads to repo/spaces.py: 688; the chat attach paths' Library upload
 #: reads to repo/uploads.py: 687; the affinity sort's sticky read to
-#: repo/whiteboard.py: 686.
-ORM_CALLS_CAP = 686
+#: repo/whiteboard.py: 686; the journal and Connections reads to entry/service.py
+#: (decision 55, L-world-class-123): 658; the filing stop and the extraction's
+#: reads there too: 655; L625's first moves (the category routes' note lists,
+#: the recordings' page, find, add and sealed probe, the board history's item
+#: and event-log reads, the bench's busiest board, the embedding coverage) to
+#: repo/categories.py, repo/recordings.py, repo/whiteboard.py and
+#: repo/graph_layers.py, with other sessions' moves since: 616; the spaces purge,
+#: move and restore to repo/spaces.py: 580; the Library's kinds to repo/library.py: 557.
+ORM_CALLS_CAP = 330
+
+#: L625 (ARCHITECTURE.md section 2, principle 8): the plain query verbs in the
+#: route modules alone, the count the repository layer's progress is read by.
+#: 230 on 2026-11-21 before L625's first moves (categories, recordings, models,
+#: bench, board history), 215 after; the spaces purge, move and restore to
+#: repo/spaces.py: 190, the Library's kinds to repo/library.py: 172; it only falls.
+ROUTE_QUERIES_CAP = 35
+
+_ROUTE_QUERY = re.compile(r"\bsession\.query\(|\bselect\(|\bsession\.execute\(")
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("
@@ -84,6 +100,14 @@ def test_orm_calls_in_the_routers_only_go_down():
     assert count <= ORM_CALLS_CAP, (
         f"{count} ORM calls under api/ (cap {ORM_CALLS_CAP}): a new query belongs in "
         "the resource's repository under src/tessellate/repo/, not in a router"
+    )
+
+
+def test_queries_in_the_route_modules_only_go_down():
+    count = sum(len(_ROUTE_QUERY.findall(p.read_text(encoding="utf-8"))) for p in API.glob("routes_*.py"))
+    assert count <= ROUTE_QUERIES_CAP, (
+        f"{count} session.query / select( / session.execute calls in api/routes_*.py "
+        f"(cap {ROUTE_QUERIES_CAP}): move the query into src/tessellate/repo/"
     )
 
 

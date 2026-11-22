@@ -1932,6 +1932,7 @@ async function loadConversationList() {
     const li = document.createElement("li");
     if (conversation.id === chatConv.id) li.classList.add("active-conv");
     if (conversation.pinned) li.classList.add("pinned-conv");
+    Object.assign(li.dataset, { at: conversation.last_at, turns: conversation.turns });
 
     //: **The whole row opens the chat, not just the words in it.** Reported:
     //: "I clicked on other chat conversations in the chat sidebar but the
@@ -2067,6 +2068,8 @@ async function loadConversationList() {
     li.append(title, actions);
     list.appendChild(li);
   }
+  //: The Group by control and the section headings (lazy, chat-groups.js).
+  lazyScript("/js/chat-groups.js").then((ok) => ok && chatGroups(list));
 }
 
 // An edited answer is labelled, always. A transcript that silently presents
@@ -2300,7 +2303,7 @@ async function loadChatSuggestions() {
   // Re-check after the await in case a message was sent while we waited
   if ($("chat-messages").querySelector(".msg")) return;
 
-  // batch-a.md's "left open" item: `#chat-suggest` is on loan to `.chat-empty`
+  // batch-a.md's last item: `#chat-suggest` is on loan to `.chat-empty`
   // (see the long comment on `openConversation` below) and `newChatConversation`
   // used to wipe `#chat-messages` with a bare `replaceChildren()` without
   // sending it home first, so a "+ New" click while this call was still

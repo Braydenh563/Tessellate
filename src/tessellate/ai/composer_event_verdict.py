@@ -65,8 +65,8 @@ def apply(question: str, reply: dict | None, today: date) -> dict | None:
 
 
 #: Words that make "are we meeting on Tuesday" a question about the day, not about a named thing.
-_GENERIC = frozenset("are we am i will do have is there be an a the any meeting meetings meet meeting call calls sync catch up catch-up".split())
-_MEETING = re.compile(r"\b(?:meeting|meetings|sync|call|catch-?up|stand-?up|1:1|interview)\b", re.I)
+_GENERIC = frozenset("are we am i will do have has got is there be an a the any to go attend meeting meetings meet meeting call calls sync catch up catch-up".split())
+_MEETING = re.compile(r"\b(?:meeting|sync|call|catch-?up|stand-?up|1:1|interview)s?\b", re.I)
 
 
 def day_question(question: str) -> str:
@@ -88,7 +88,10 @@ def answer(question: str, run, today: date) -> dict | None:  # noqa: ANN001
 
 
 def lead(question: str, text: str) -> str:
-    """"Yes." when the day's list holds a meeting, else "No meeting is written for <window>."."""
+    """"Yes." when the day's list holds a meeting, else "No <the word asked> is written for <window>."."""
     if _MEETING.search(text):
         return "Yes."
-    return f"No meeting is written for {recognise_questions.event_window_asked(question).removeprefix('on ')}."
+    asked = _MEETING.search(question)
+    # Name the word asked ("No call is written"), with "meetings" and "interviews" said once.
+    noun = asked.group(0).lower().removesuffix("s") if asked else "meeting"
+    return f"No {noun} is written for {recognise_questions.event_window_asked(question).removeprefix('on ')}."

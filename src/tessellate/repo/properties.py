@@ -14,7 +14,7 @@ from datetime import datetime
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.core.database import Entry, EntryProperty
+from tessellate.core.database import Entry, EntryProperty, NoteType
 from tessellate.repo import NotFound
 
 MISSING = "That note has no such property."
@@ -210,3 +210,8 @@ def table(
     by_note = _cells(session, ids, wanted - {""})
     ordered = _ordered(ids, by_note, sort, descending)
     return _rows(session, ordered[: max(1, min(limit, TABLE_ROWS))], by_note, columns), len(ordered)
+
+
+def note_types(session: Session) -> list[NoteType]:
+    """The note types, by name."""
+    return list(session.scalars(select(NoteType).order_by(NoteType.name)))

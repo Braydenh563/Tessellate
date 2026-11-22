@@ -73,7 +73,6 @@ def _two_turns(go, first):
     return text, next((e["frame"] for e in events if e.get("type") == "frame"), {})
 
 
-@pytest.mark.xfail(strict=True, reason="'and the dentist' reads as a new topic ('There are two notes about dentist'), not the 'when' of the answer before (L239 reopened)")
 @pytest.mark.parametrize("first", ["when is the passport renewal", "when is the atlas beta"])
 def test_l239_and_the_dentist_keeps_the_when_of_the_answer_before(go, first):
     text, frame = _two_turns(go, first)

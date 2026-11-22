@@ -81,6 +81,7 @@ const DASH_WIDGETS = {
   heatmap: { title: "ph:calendar-check Activity heatmap", description: "A calendar-style heatmap of note activity over the past months.", render: renderHeatmapWidget },
   "tag-cloud": { title: "ph:cloud Tag cloud", description: "All your tags sized by how often they're used.", render: renderTagCloudWidget },
   categories: { title: "ph:folders Categories", description: "Every category with its note count, click to filter.", render: renderCategoriesWidget },
+  mix: { title: "ph:chart-pie Category mix", description: "What share of your notes each category holds, as a pie; a slice opens its notes.", render: (body) => renderCategoriesWidget(body, true) },
   //: The key stays `random`, it is a stored widget id and renaming it would
   //: drop the widget off every dashboard that has it turned on. What it does
   //: changed (WORLD_CLASS_PLAN 15, I4): over ten notes it shows the three
@@ -486,7 +487,7 @@ function fetchDashGraph() {
 async function dashEntries() {
   if (entriesEverLoaded) return allEntries;
   const notes = await appState.when("notes", 8000);
-  return notes || apiJson("/entries", { cacheMs: 4000 });
+  return notes || apiJson("/entries?preview=300", { cacheMs: 4000 });
 }
 
 //: **The sub line is composed and rotates** (INBOX 1300, the owner: "Maybe the
@@ -855,7 +856,11 @@ function sizeDashWidgets() {
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
   //: reads go before any write.
-  const heights = cards.map((card) => card.getBoundingClientRect().height);
+  //: A height the grid's observer has already reported is used as it is (L-world-class-620): the rect read here
+  //: laid the page out whole, 49 to 307 ms at 4x on 500 notes, because the fills had dirtied it. A card the
+  //: observer has not reported yet is read.
+  const known = sizeDashWidgets.heights;
+  const heights = cards.map((card) => known.get(card) ?? card.getBoundingClientRect().height);
   if (!heights.some(Boolean)) return;
   const styles = getComputedStyle(grid);
   const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
@@ -867,6 +872,8 @@ function sizeDashWidgets() {
   grid.classList.add("spans-ready");
 }
 
+sizeDashWidgets.heights = new WeakMap();
+
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
 // size rather than only once at render time.
 function watchDashWidgets() {
@@ -876,17 +883,15 @@ function watchDashWidgets() {
     return;
   }
   dashResizeObserver?.disconnect();
-  let queued = false;
-  dashResizeObserver = new ResizeObserver(() => {
+  dashResizeObserver = new ResizeObserver((entries) => {
+    //: The sizes arrive with the entries, after the frame's layout, so sizing here reads nothing back (L-world-class-620).
+    for (const entry of entries) {
+      if (entry.target.classList.contains("dash-widget")) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+    }
     dashResizeObserver.follow?.();
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
-      //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
-      if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
-    });
+    //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
+    //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
+    if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
   });
   //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
   //: with the widgets drawn rather than empty: sizing here as well was a whole-page layout
@@ -2250,7 +2255,7 @@ function dashWidgetRow(name, layout, position = null) {
 const DASH_WIDGET_GROUPS = {
   stats: "overview", streak: "overview", heatmap: "overview", pace: "overview", week: "overview",
   digest: "overview", art: "overview",
-  pinned: "notes", random: "notes", categories: "notes", "on-this-day": "notes",
+  pinned: "notes", random: "notes", categories: "notes", mix: "notes", "on-this-day": "notes",
   unfinished: "notes", orphans: "notes", tensions: "notes", boards: "notes",
   documents: "notes",
   capture: "doing", reminders: "doing", focus: "doing", questions: "doing",
@@ -2559,7 +2564,8 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
     // the preview, the same shape the timeline card uses. It is what a person
     // calls the note, and without it every row in a widget starts with the
     // same three words of body text.
-    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "").trim();
+    //: A task's box goes with its bullet (L-world-class-178: "- [ ] email Sam" read "[ ] email Sam").
+    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+)/gm, "").trim();
     const split = flat.indexOf("\n");
     const heading = (split === -1 ? flat : flat.slice(0, split)).trim();
     const rest = split === -1 ? "" : flat.slice(split + 1).replace(/\s+/g, " ").trim();
@@ -2724,7 +2730,7 @@ async function renderQuestionsWidget(body) {
   body.appendChild(box);
 }
 
-// Weekly digest caching (Wave J follow-up). The AI digest is expensive,
+// Weekly digest caching (Wave J, second pass). The AI digest is expensive,
 // so once it's generated it STAYS until you regenerate, and it resets
 // itself each day. Generation is a module-level promise, so switching
 // away from the dashboard never cancels it, whenever it finishes, the
@@ -2949,7 +2955,9 @@ async function renderRemindersWidget(body) {
     //: the time read as part of the sentence.
     const what = document.createElement("span");
     what.className = "dash-reminder-text";
-    what.textContent = reminder.text;
+    //: Its words as inline Markdown, as the note rows above draw theirs (L-world-class-178:
+    //: a reminder made from a note showed "**Sam**" and "[the venue](https://...)" raw).
+    renderInlineMarkdown(what, reminder.text, [], true);
     const at = document.createElement("span");
     at.className = "dash-reminder-when muted";
     at.textContent = when;
@@ -3080,11 +3088,31 @@ async function renderHeatmapWidget(body) {
 
 // --- category breakdown ------------------------------------------------------
 
-async function renderCategoriesWidget(body) {
+//: `asPie` is the Category mix widget (L-world-class-179): the same counts drawn
+//: by the chart recipe (`drawAskChart`, kind "pie", ask-chart.js), never a
+//: second chart; each slice wears its category's dot colour and a click shows
+//: that category's notes, as a bar here does.
+async function renderCategoriesWidget(body, asPie = false) {
   const stats = await fetchDashStats().catch(() => null);
-  const categories = (stats && stats.categories) || [];
+  const categories = ((stats && stats.categories) || []).filter((row) => !asPie || row.count > 0);
   if (!categories.length) {
-    dashEmpty(body, "Save a few notes and your categories appear here.", { label: "ph:plus New note", run: "capture" });
+    dashEmpty(body, asPie ? "Save a few notes and the share each category holds appears here." : "Save a few notes and your categories appear here.", { label: "ph:plus New note", run: "capture" });
+    return;
+  }
+  if (asPie) {
+    const host = document.createElement("div");
+    host.className = "ask-chart dash-mix";
+    body.replaceChildren(host);
+    await ensureModule("askHistory");
+    const rows = categories.map(({ name, count }) => ({ label: name, value: count, colour: categoryDotColour(name) }));
+    drawAskChart(host, {
+      kind: "pie",
+      by: "category",
+      title: "Notes by category",
+      rows,
+      total: rows.reduce((sum, row) => sum + row.value, 0),
+      onPick: (row) => (row.other ? switchTab("notes") : showCategoryNotes(row.label)),
+    });
     return;
   }
   const max = categories[0].count || 1;

@@ -62,6 +62,15 @@ These are the constraints that shaped every decision. When in doubt, they win.
    instead of executing silently.
 7. **Tests are fast and fully offline.** Every AI call is faked in `tests/`, so
    the suite needs no GPU, no models, and no network.
+8. **Routes hold no queries; repositories do (L625).** `src/tessellate/repo/<resource>.py`
+   is the one place a resource's tables are read and written: plain functions
+   taking the request's `Session` first, which flush and never commit (the
+   route owns the transaction), with errors named `NotFound`, `Invalid`,
+   `Conflict` (the rules are in `repo/__init__.py`). A query a route needs
+   moves to its resource's module, or to the module of the table it reads.
+   `tests/test_repo_boundaries.py` holds two ratchets that only fall: every
+   ORM call under `api/`, and `session.query`, `select(` and `session.execute`
+   in `api/routes_*.py` (230 before the first moves, 215 after).
 
 ## 3. The big picture
 
@@ -294,6 +303,8 @@ Tessellate/
 │   │   ├── ocr.py           # local Tesseract OCR; `engine_status` reports
 │   │   │                    #   program, Python part, version and language
 │   │   ├── pdfpages.py      # a PDF page -> a PNG (optional `pdfpages` extra)
+│   │   ├── parse_guard.py   # uploads parsed in a child process with a time
+│   │   │                    #   and memory limit (SECURITY.md T19)
 │   │   ├── docview.py       # any file -> its text (the viewer + import path)
 │   │   ├── docmeta.py       # a document's frontmatter, read for the list
 │   │   ├── docexport.py     # a document's markdown -> a file to hand on
@@ -1001,7 +1012,7 @@ SQLite via SQLAlchemy 2.0 (`core/database.py`). Main tables:
   hands off), timestamps, and soft-delete (`is_deleted` / `deleted_at`).
   Also on an entry: `suggested_tags` and `discarded_tags` (JSON lists):
   the tags filing offered, shown on the card as "+ tag", and the ones a
-  person refused so no pass after it offers them again on that note (`_keep_suggestions`
+  person refused so no filing pass after it offers them again on that note (`_keep_suggestions`
   in `routes_entries.py` fills the first at filing: the model's tag pass when
   the model filed the note, otherwise `ai/lexical_filing.suggest_tags`, which
   only ever offers tags the person already uses); and `edited_at`, which moves only when a person changes the
@@ -1219,6 +1230,18 @@ metadata. Extrapolated linearly (`entries`/`embeddings` are the only tables
 that grow with note count, and both are simple fixed-width-ish rows, no
 per-note table fan-out) that's **~350MB at 200,000 notes**, comfortably
 inside "a notebook nobody will ever actually finish filling."
+
+**Compressing it (L-world-class-174), and what was left alone.** Measured on a
+seeded 5,000-note notebook with 384-dimension vectors: 26.7 MB vacuumed, of
+which `embeddings` 10.3 MB, `search_index_content` 4.4, `entries` 4.1,
+`entry_revisions` 3.2. Vectors are stored as float16 (`core/packed_vector.py`,
+length says the width, so old rows and old backup bundles read unchanged):
+20.5 MB after, the embeddings table about 4.2 MB. **Note text is not
+compressed**: `entries_fts` is an external-content index that reads
+`entries.content` in place, so a compressed column would blind search, and a
+private note's text is already ciphertext, which does not compress.
+`entry_revisions.content` could be (its readers are ORM, but
+`ai/timetravel.py` searches it with SQL `LIKE`), a possible next step.
 
 **What doesn't fit this rate, and isn't bounded by it:**
 
@@ -1598,7 +1621,7 @@ there moves out on the next start (`core/secrets_store.py`).
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 22,000+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 23,000+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,
@@ -1752,7 +1775,7 @@ not an import string, and uvicorn cannot fork that); running `uvicorn` against
 the factory directly can, and is the case the check exists for.
 
 More workers is also not the lever for speed here. The slow paths are Ollama
-and embedding. A background filing (`defer_filing`) runs both off the request
+and embedding. Filing put off until after the save (`defer_filing`) runs both off the request
 thread; a plain save and an edit still embed on the request (corrected
 2026-10-05, audit ARCH-02: this line said both were always off it).
 

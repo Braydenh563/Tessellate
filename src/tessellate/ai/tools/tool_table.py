@@ -26,7 +26,8 @@ from tessellate.ai.tools.tool_learn import _audit_link_reasons, _check_learned, 
 from tessellate.ai.tools.tool_path import _path_between
 from tessellate.ai.tools.tool_read import _calculate, _check_answer, _count_notes, _find_similar_notes, _get_current_time, _get_note_tool, _list_categories, _list_notes, _list_tags, _notebook_overview, _notebook_structure, _propose_act, _read_text, _related_notes, _search_help, _search_notes, _summarize_notes
 from tessellate.ai.tools.tool_write import _complete_reminder, _create_note, _delete_note, _delete_tag, _edit_note, _link_notes, _list_reminders, _pin_note, _rename_tag, _restore_note, _set_reminder, _tag_note, _unlink_notes, link_type_description
-from tessellate.ai.tools.tool_skills import _delete_skill, _search_chat_history, _verify_block
+from tessellate.ai.tools.chats import _search_chat_history
+from tessellate.ai.tools.tool_skills import _delete_skill, _verify_block
 from tessellate.ai.tools.tool_web import _read_url, _web_search
 
 def _tool_group(name: str) -> str:
@@ -831,8 +832,9 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "search_chat_history",
-            "Search earlier conversations with the user, from other days too. Use it when "
-            "they mention something 'we talked about' that is not in this thread.",
+            "Search earlier conversations with the user. Use it when "
+            "they mention something 'we talked about' that is not in this thread. "
+            "sort or group_by lists chats.",
             {
                 "type": "object",
                 "properties": {
@@ -841,6 +843,8 @@ TOOLS: dict[str, ToolSpec] = {
                         "description": "Words to look for (leave empty for the most recent chats)",
                     },
                     "limit": {"type": "integer", "description": "How many chats"},
+                    "sort": {"type": "string"},
+                    "group_by": {"type": "string"},
                 },
             },
             _search_chat_history,
@@ -1147,15 +1151,14 @@ TOOLS: dict[str, ToolSpec] = {
             # the model reads, and it now names the feature the user sees.
             # "Favourites" is a place in the sidebar; "floats to the top" is
             # the sort. The flag does both, so the sentence says both.
-            "Add a note to Favourites (or remove it). Favourited notes appear "
-            "under Favourites in the sidebar and float to the top of lists.",
+            "Add a note to Favourites (or remove it); favourites float to the top of lists.",
             {
                 "type": "object",
                 "properties": {
                     "note_id": _NOTE_ID,
+                    "chat_id": {"type": "integer"},
                     "pinned": {"type": "boolean", "description": "Leave out to pin; false only to unpin"},
                 },
-                "required": ["note_id"],
             },
             _pin_note,
         ),
@@ -1272,7 +1275,7 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "complete_reminder",
-            "Mark a reminder done (or not done).",
+            "Mark a reminder done, or open again.",
             {
                 "type": "object",
                 "properties": {

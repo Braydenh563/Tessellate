@@ -10,16 +10,15 @@ import pytest
 
 from tessellate.core import clock
 from tessellate.core.database import EntryLink
-from tessellate.api import chat_said, chat_turn, routes_chat
 import tests._seed_composer_1110 as seed
+from tests._clock import pin_clock
 
 NOW = seed.NOW
 
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
 
 

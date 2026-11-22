@@ -17,12 +17,14 @@ import re
 import threading
 from collections import OrderedDict
 from dataclasses import dataclass
-from datetime import datetime, time, timezone
+from datetime import datetime, time
 
 from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai import recognise, variants
+from tessellate.ai.help_words import one_edit_apart
 from tessellate.ai.note_recency import is_recency_ask
 from tessellate.ai.embeddings import (
     EmbeddingService,
@@ -32,6 +34,7 @@ from tessellate.core import cjk
 from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
 from tessellate.search import long_question
 from tessellate.search import query as query_understanding
+from tessellate.repo import memberships
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
 # records at length: the one annotation naming `np.ndarray` is a local
@@ -57,7 +60,7 @@ def _user_today(session: Session):
 
         return user_now(deps.get_config()).date()
     except Exception:  # noqa: BLE001  # a script or a test with no app state
-        return datetime.now().date()
+        return clock.wall().date()
 
 # Below this cosine similarity a match is probably noise, hide it. An
 # absolute floor, kept as a sanity check alongside the relative one below
@@ -259,6 +262,7 @@ CORRECT_MIN_LEN = 4
 # difflib ratio floor for treating a vocabulary word as the query word
 # misspelt: 0.8 is roughly one wrong letter in five, two in ten.
 CORRECT_CUTOFF = 0.8
+_ENDINGS = ("ing", "ed", "es", "s", "ly", "er", "ate", "ion")
 
 
 def is_exact_term(term: str) -> bool:
@@ -280,7 +284,8 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     text rather than inventing a match."""
     corrected: list[str] = []
     for term in terms:
-        if len(term) < CORRECT_MIN_LEN or is_exact_term(term):
+        #: A word of the language is not a typo (VC8): "casual" in a notebook that says "causal" is not searched as "causal".
+        if len(term) < CORRECT_MIN_LEN or is_exact_term(term) or term in variants.english():
             corrected.append(term)
             continue
         first = term[0]
@@ -306,6 +311,22 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     return corrected
 
 
+def _stemmed_forms(term: str) -> list[str]:
+    """The typed word as the index would hold it: with an ending off ("gardning" is "gardn" and "ing", one edit
+    from the stem "garden"), and the Porter stem's last "y" as "i" or dropped "e" ("holidai", "receiv")."""
+    bare = [term[: -len(end)] for end in _ENDINGS if term.endswith(end) and len(term) - len(end) >= CORRECT_MIN_LEN]
+    return bare + [w[:-1] + "i" for w in (term, *bare) if w.endswith("y")] + [w[:-1] for w in (term, *bare) if w.endswith("e")]
+
+
+def _likeness(typed: str, whole: bool, word: str) -> float:
+    """How alike a typed form and a vocabulary word are. One slip (a letter wrong, missing, extra or two swapped)
+    is a typo however low the ratio says, so it outranks a word that is merely alike ("libary" and "librari",
+    VC8); the ratio ranks among those. Not for a four-letter word: it is one slip from dozens, and an acronym
+    ("PaaS", a mind map's word the index never holds) became "pass"."""
+    ratio = difflib.SequenceMatcher(None, typed, word).ratio()
+    return ratio + 1.0 if whole and len(word) > CORRECT_MIN_LEN and one_edit_apart(typed, word) else ratio
+
+
 def _near_words(term: str, vocabulary: list[str]) -> list[str]:
     """The vocabulary word closest to a misspelt term, as a one-item list.
 
@@ -313,12 +334,13 @@ def _near_words(term: str, vocabulary: list[str]) -> list[str]:
     ("respir" for "respiraton"), so a stem is also compared with the typed
     word cut to just past the stem's length."""
     best, best_ratio = None, CORRECT_CUTOFF
+    bare = [(form, True) for form in _stemmed_forms(term)]
     for word in vocabulary:
         if abs(len(word) - len(term)) > 2 and not (len(word) >= CORRECT_MIN_LEN and len(word) < len(term)):
             continue
-        for typed in {term, term[: len(word) + 1]}:
-            ratio = difflib.SequenceMatcher(None, typed, word).ratio()
-            if ratio >= best_ratio:
+        for typed, whole in ((term, True), (term[: len(word) + 1], False), *bare):
+            ratio = _likeness(typed, whole, word)
+            if ratio > best_ratio or (ratio >= CORRECT_CUTOFF and best is None):
                 best, best_ratio = word, ratio
     return [best] if best else []
 
@@ -326,6 +348,8 @@ def _near_words(term: str, vocabulary: list[str]) -> list[str]:
 def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:
     """A whole word from a note that starts with `stem`, the one
     nearest the typed word; None when no note holds one."""
+    #: Porter writes a last "y" as "i" ("holidai"), which no note spells that way.
+    stem = stem[:-1] if stem.endswith("i") and len(stem) > CORRECT_MIN_LEN else stem
     rows = session.execute(
         text("SELECT content FROM entries WHERE content LIKE :p LIMIT 40"),
         {"p": f"%{stem}%"},
@@ -1116,7 +1140,7 @@ def _rank(
 
 def note_search_mode(mode: str) -> None:
     """Record how a search found its notes (the box's engine calls this too)."""
-    _last_search.update(mode=mode, at=datetime.now(timezone.utc).isoformat())
+    _last_search.update(mode=mode, at=clock.utc().isoformat())
 
 
 def _rank_inner(
@@ -1223,7 +1247,7 @@ def _category_notes(session: Session, category_id: int, limit: int) -> list[Entr
                 Entry.is_deleted == False,  # noqa: E712
                 Entry.is_private == False,  # noqa: E712
                 Entry.is_board == False,  # noqa: E712
-                Entry.category_id == category_id,
+                memberships.in_category(category_id),
             )
             .order_by(Entry.created_at.desc(), Entry.id.desc())
             .limit(limit)
@@ -1265,9 +1289,10 @@ def _candidates(session: Session, subject: str, embeddings: EmbeddingService, sc
     )
     keyword = keyword_search(session, subject, limit=FUSION_DEPTH)
     if scope is not None:
+        also = memberships.also_ids(session, scope.id)
         if semantic is not None:
-            semantic = [(entry, score) for entry, score in semantic if entry.category_id == scope.id]
-        keyword = [entry for entry in keyword if entry.category_id == scope.id]
+            semantic = [(entry, score) for entry, score in semantic if entry.category_id == scope.id or entry.id in also]
+        keyword = [entry for entry in keyword if entry.category_id == scope.id or entry.id in also]
     return semantic, keyword
 
 

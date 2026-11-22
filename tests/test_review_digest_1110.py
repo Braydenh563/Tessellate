@@ -14,11 +14,10 @@ import datetime as dt
 import pytest
 
 from tessellate.ai import activity, review_digest
-from tessellate.api import routes_chat, routes_insights
-from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 11, 10, 9, 0, 0)
 REMINDERS = [
@@ -34,9 +33,7 @@ DAY_PHRASES = ["daily review", "give me a daily review", "summarise my day", "ho
 
 @pytest.fixture
 def book(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_insights, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     notes = [
         ("# Harbor launch plan\n\nShip the mobile app to the public on the 14th of next month.\n\n- [ ] Store listing copy", 9, "Work"),
         ("# Beta feedback\n\n41 testers active. The top complaint is the sign-up flow with nine fields.", 8, "Work"),

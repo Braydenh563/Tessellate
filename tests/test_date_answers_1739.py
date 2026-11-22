@@ -17,11 +17,12 @@ import re
 import pytest
 
 from tessellate.ai import composer_aware, composer_intent, composer_shift
-from tessellate.api import chat_said, chat_turn, routes_chat
+from tessellate.api import chat_said
 from tessellate.core import clock
 from tessellate.core.database import Document
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 10, 9, 0)
 UNI_BODY = "Just finished my final assignment on friday at 3:30am but it's done haha!"
@@ -32,8 +33,7 @@ TYPO = "any othjer notes around that time"
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    for module in (routes_chat, chat_said, chat_turn):
-        monkeypatch.setattr(module, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
     #: The follow-ups read their day against this clock (`composer_dialogue`), not the config's.
     monkeypatch.setattr(clock, "today", lambda: NOW.date())
 

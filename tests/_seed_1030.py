@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 30, 2, 50)
 
@@ -70,11 +71,8 @@ def seed(session):
 
 def asker(client, monkeypatch, *, chat=False):
     """`go(question, history=None, open_id=None)` -> (answer text, events)."""
-    from tessellate.api import routes_chat
-    from tessellate.core import config
 
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
     def go(question, history=None, open_id=None):
         body = {"question": question}

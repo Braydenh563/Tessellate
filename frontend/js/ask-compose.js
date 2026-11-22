@@ -483,11 +483,11 @@ function digestMore(answerEl, more) {
 //: (`/reminders/parse`, rules first, the person's clock); a checklist or a
 //: note is a new note. Each one says what it did, with Undo.
 //: A call's asks ("yo brotato", `vocative.py`), waiting for the Ask box's
-//: follow-up strip, which is drawn just after the offer.
+//: next-question strip, which is drawn just after the offer.
 let askOfferAsks = null;
 
 function digestOffer(answerEl, offer) {
-  //: An "ask" offer is what to say next: the follow-up chips draw it, in
+  //: An "ask" offer is what to say next: the next-question chips draw it, in
   //: Chat on the answer's own bubble (kept with the turn), in Ask next.
   if (offer?.kind === "ask") {
     const bubble = answerEl?.closest(".msg.assistant");
@@ -782,7 +782,7 @@ function drawWhyTrail(parent, lines, before = null) {
   renderAskWhy(lines, holder);
 }
 
-//: **A follow-up is a question that keeps the answer above it** (decision 8:
+//: **A next question is a question that keeps the answer above it** (decision 8:
 //: "'Ask again' chips become follow-ups that carry the previous answer as
 //: context"). The chips themselves are `/chat/followups`, the same second
 //: model call the Chat tab makes after a turn is on screen, and clicking one
@@ -927,7 +927,7 @@ async function askQuestion(preset) {
   askTrailPending = null;
   renderAskTrail();
   lastQuestion = question;
-  //: A chip, a follow-up or Retry asks without typing: the box shows it
+  //: A chip, a next question or Retry asks without typing: the box shows it
   //: anyway (K29, "I forgot instantly"), the one place the question is said;
   //: a "You asked:" line above the answer said it twice (INBOX 1301).
   if (preset != null) questionBox.value = question;
@@ -979,7 +979,7 @@ async function askQuestion(preset) {
   $("ai-answer-grounding").replaceChildren();
   $("ai-answer-grounding").classList.add("hidden");
   //: The whole foot goes with it, not only the grounding chips: a sources
-  //: disclosure left open from the previous question is a list of notes that
+  //: disclosure kept open from the previous question is a list of notes that
   //: have nothing to do with the one being asked.
   clearAskAnswerFoot();
   thinkingText.textContent = "";
@@ -1346,7 +1346,10 @@ function renderChatMeta(meta) {
   //: read as a missing one. Then the chips keep their words and the number
   //: moves to the title.
   const scored = everyRowScored(meta.raw_results, matchInfo, connected);
-  for (const entry of meta.raw_results) {
+  const months = meta.as_of ? askAsOf.monthGroups(meta.raw_results, meta.as_of_written) : null;
+  const heads = new Map((months || []).map((group) => [group.rows[0].id, group]));
+  for (const entry of months ? months.flatMap((group) => group.rows) : meta.raw_results) {
+    if (heads.has(entry.id)) rawList.appendChild(askAsOf.monthHead(heads.get(entry.id)));
     const row = clickableResult(entry);
     const badge = matchReasonBadge(matchInfo[entry.id], scored);
     if (badge) {
@@ -1456,6 +1459,49 @@ function askAsOf() {
   const value = $("ask-as-of")?.value || "";
   return row && !row.classList.contains("hidden") && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
 }
+
+//: **An as-of answer's notes by month** (WORLD_CLASS_PLAN H8, LEDGER
+//: L-world-class-26): asked as of a day, each note is read as one version,
+//: and `as_of_written` says when that version was written. The rows are
+//: grouped under its month, the newest month first and each group in the
+//: search's own order, so "what did I think in March" reads March's words
+//: together. Null when the answer is not as of a day or a row has no date
+//: (the list then stays as the search ordered it).
+askAsOf.monthGroups = (rows, written) => {
+  if (!written || !rows.length) return null;
+  const groups = new Map();
+  for (const row of rows) {
+    const when = new Date(written[row.id] || "");
+    if (Number.isNaN(when.getTime())) return null;
+    const key = `${when.getFullYear()}-${String(when.getMonth() + 1).padStart(2, "0")}`;
+    if (!groups.has(key)) groups.set(key, { key, when, rows: [] });
+    groups.get(key).rows.push(row);
+  }
+  return [...groups.values()]
+    .sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0))
+    .map((group) => ({
+      key: group.key,
+      label: group.when.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+      rows: group.rows,
+    }));
+};
+
+//: A month's head: the group-head recipe (`.reminder-group-head`, its count
+//: as muted `.group-count` figures), as a row of the results list. Both are properties of `askAsOf`, so the
+//: shared scope gains no name.
+askAsOf.monthHead = (group) => {
+  const head = document.createElement("li");
+  head.className = "reminder-group-head as-of-month";
+  head.dataset.month = group.key;
+  const label = document.createElement("span");
+  label.textContent = group.label;
+  const count = document.createElement("span");
+  count.className = "group-count";
+  count.textContent = String(group.rows.length);
+  count.setAttribute("aria-label", nounCount(group.rows.length, "note"));
+  head.append(label, count);
+  return head;
+};
 
 //: **What the Ask tab shows while the model works** (INBOX 298: 250 of 250
 //: streaming frames had nothing moving). The Chat tab's two components, not

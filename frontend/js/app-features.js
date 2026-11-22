@@ -155,6 +155,7 @@ function featureCatalog() {
       { name: "Rediscover", desc: "Three faded notes a day, with the reason each one surfaced.", reveal: "widget-rediscover" },
       { name: "Loose ends", desc: "How much of the notebook is connected, and the oldest notes that are not.", reveal: "widget-orphans" },
       { name: "Unfinished", desc: "Notes with checklist items still waiting to be ticked.", reveal: "widget-unfinished" },
+      { name: "Category mix", desc: "What share of your notes each category holds, as a pie.", reveal: "widget-mix" },
       { name: "Writing pace", desc: "How many words you have written each day this fortnight.", reveal: "widget-pace" },
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
       { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },
@@ -411,7 +412,7 @@ function paletteCommands() {
       // started from a file you had already found, which is no answer to "I
       // want to read something". `openPageReader` (library.js) opens it on what
       // you were last reading, else your newest readable file; the decision and
-      // what was deliberately not built is in UI_MODERNISATION_PLAN.md, "how
+      // what was deliberately left out is in UI_MODERNISATION_PLAN.md, "how
       // the page reader is reached".
       //: "OCR" in the words (the owner, 2026-10-10: searching "ocr" in the
       //: palette, Find anything and Quick access's list found nothing).
@@ -444,10 +445,9 @@ function paletteCommands() {
       label: "ph:paperclip Browse files",
       reveal: "library-files",
     },
-    {
-      label: "ph:link Browse links",
-      reveal: "library-links",
-    },
+    //: Named as the Library's tab names it (reach.js, L-world-class-132: "Library >
+    //: Bookmarks" had no command, the row said "links").
+    { label: "ph:link Browse bookmarks", reveal: "library-links", keywords: "links saved pages" },
     { label: "ph:folders Browse boards and maps", reveal: "library-boards", keywords: "boards whiteboards maps mind maps library gallery", about: "Every board and mind map, in the Library." },
     { label: "ph:waveform Browse recordings", reveal: "library-recordings", keywords: "recordings audio meetings library", about: "Every recording, in the Library." },
     { label: "ph:lightning Browse skills", reveal: "library-skills", keywords: "skills library run", about: "The skills you can run, in the Library." },
@@ -488,6 +488,9 @@ function paletteCommands() {
       label: "ph:folders New workspace",
       reveal: "workspace-new",
     },
+    { label: "ph:pencil-simple Rename space", reveal: "space-rename", keywords: "workspace name icon private edit", about: "Change this space's name, icon or privacy." },
+    { label: "ph:stack Board layers", reveal: "board-layers", keywords: "order front back paint sidebar", about: "The open board's layers: what sits in front, hide and lock." },
+    { label: "ph:globe Browse the web in Chat", reveal: "chat-web-search", keywords: "web search online internet turn on off", about: "Chat's Web switch: search the web here, opt-in." },
     // Filters as commands: the fastest route to "the notes I mean" without
     // remembering the operator syntax.
     ...[
@@ -528,6 +531,10 @@ function paletteCommands() {
     { label: "ph:sliders Settings, General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
     { label: "ph:floppy-disk Settings, Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
     { label: "ph:brain Settings, What it remembers", reveal: "settings:memory" },
+    //: The three sections reach.js found no command for (L-world-class-132).
+    { label: "ph:magnifying-glass Settings, Search and index", reveal: "settings:searchindex", about: "The search engine, the index it builds, and how strict a match must be." },
+    { label: "ph:graduation-cap Settings, What it learned", reveal: "settings:learned", about: "What it picked up from how you file and fix, and the switches for each." },
+    { label: "ph:globe Settings, Web search", reveal: "settings:websearch", about: "Searching the web from Chat, off by default." },
     { label: "ph:note-blank Settings, Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
     { label: "ph:shield-check Settings, Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
     { label: "ph:globe-hemisphere-west Settings, Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
@@ -602,7 +609,7 @@ function quickCatalogue(only = null) {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
     const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
-    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are not built (5 to 19 ms at 4x
+    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are skipped (5 to 19 ms at 4x
     //: on every return to the dashboard, which asked for five tiles; INBOX 1778 d).
     if (only && !only.has(key)) continue;
     const parts = key && paletteRowParts(row, abouts);

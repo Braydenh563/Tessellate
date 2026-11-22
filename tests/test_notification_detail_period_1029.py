@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
 def _run(function: str, argument: str) -> str:
-    source = (JS_DIR / "status.js").read_text(encoding="utf-8")
+    source = "\n".join((JS_DIR / name).read_text(encoding="utf-8") for name in ("status.js", "status-embedding.js"))
     parts = []
     for name in ("withoutEndStop", function):
         match = re.search(rf"^function {name}\(.*?^\}}", source, re.S | re.M)
@@ -47,6 +47,6 @@ def test_a_sentence_keeps_a_question_mark_and_an_ellipsis_character():
 
 
 def test_the_notice_uses_the_one_builder():
-    source = (JS_DIR / "status.js").read_text(encoding="utf-8")
+    source = "\n".join((JS_DIR / name).read_text(encoding="utf-8") for name in ("status.js", "status-embedding.js"))
     assert "embeddingProblemDetail(error)" in source
     assert "`${error}. Settings, Models" not in source

@@ -83,8 +83,9 @@ def test_the_shown_part_is_what_a_label_reads():
 
 def test_previews_show_the_shown_text():
     from tessellate.ai import extractor
-    from tessellate.api import routes_entries, routes_graph
+    from tessellate.api import routes_graph
+    from tessellate.entry import manager_text
 
-    assert routes_entries._preview("go [[A|B]]") == "go B"
+    assert manager_text.preview("go [[A|B]]") == "go B"
     assert extractor._short_preview("go [[A|B]]") == "go B"
     assert routes_graph._preview_line("go [[A|B]]") == "go B"

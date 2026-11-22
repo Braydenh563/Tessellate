@@ -13,6 +13,7 @@ they live, because their wording is what a future session will search for.
 - [Built](#built)
 - [Partly built](#partly-built)
 - [Filed as LEDGER rows](#filed-as-ledger-rows)
+- [Where the rest stands](#where-the-rest-stands)
 - [From the audits](#from-the-audits)
 
 ## Built
@@ -109,6 +110,45 @@ they live, because their wording is what a future session will search for.
 
 These sixteen ideas are LEDGER rows L-world-class-172 to L-world-class-187
 (`docs/roadmap/LEDGER.md`), where they are sized and worked in order.
+## Where the rest stands
+
+Checked against the app on 2026-11-14. Each idea is built, or has its place in
+BACKLOG with the reason it waits.
+
+- Manually group notes together, separate from the main sorting: BACKLOG §23
+  (tags may already serve; a `collections` table if not).
+- A note with more than one category: BACKLOG §23, the same entry.
+- Compress notes and data on disk: BACKLOG, "Compressing the notebook on disk".
+- Gravity and spread on the graph's other layouts: built (L-world-class-175,
+  `tests/test_graph_physics_layouts_175.py`).
+- A visual timeline drawn as a branching line with off-shoots: built
+  (L-world-class-176, `tests/test_timeline_branch_176.py`).
+- Settings pages on a narrow phone view: measured at 360 and 320 wide, 21
+  sections, none cut off (L-world-class-177,
+  `scratchpad/ui-sweeps/settings-phone-177.js`).
+- Markdown in the dashboard's widgets: built (L-world-class-178,
+  `tests/test_dash_widget_markdown_178.py`).
+- Pie charts for the dashboard: built, the Category mix widget
+  (L-world-class-179, `tests/test_dash_pie_179.py`).
+- Different ways to sort chats: built (`#chat-sidebar-sort`: recent, most turns,
+  most tokens, A to Z; pinned chats first). Grouping chats with an agent tool
+  and a skill: BACKLOG, "Grouping saved chats".
+- An agent's edit proposed as a suggestion you can accept: built in documents
+  (`documents-ai.js`, a diff with a box per change, then Replace, Insert or
+  Remove) and in chat (a tool that writes asks first and is parked until you
+  confirm).
+- An in-built browser with MCP tool abilities: BACKLOG, "On the in-built
+  browser" (an iframe fails on the sites worth opening). The stdio MCP server
+  over the app's own tools is built, `python -m tessellate.mcp_server`.
+- A VS Code extension: BACKLOG, "A VS Code extension" (no purpose stated yet).
+- The status dot's error state can be reached: checked
+  (L-world-class-184, `tests/test_ai_status_error_reachable.py`).
+- Streamline and optimise the backend and every AI interaction: standing work,
+  done through the perf ratchets and the deep-audit perf pass, not one item.
+- "I wrote 'ai is cool' as a note and it was filed under sketches": checked
+  (`tests/test_filing_ai_is_cool.py`).
+- `docs/index.html`'s text against the README: checked (L-world-class-187,
+  `tests/test_docs_site_matches_readme.py`).
 
 ## From the audits
 

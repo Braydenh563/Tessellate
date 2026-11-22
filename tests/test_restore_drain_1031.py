@@ -16,6 +16,21 @@ from tessellate.core import deps
 from tests._pool_wait import pool_idle
 
 
+def _drain_waits(monkeypatch) -> list[bool]:
+    """Whether each drain found the way clear when it began (L-general-70): a
+    restore that held for nobody waited for nobody, however slow the runner."""
+    clear: list[bool] = []
+    cond = deps._gate.cond  # noqa: SLF001
+    real = cond.wait_for
+
+    def wait_for(predicate, timeout=None):  # noqa: ANN001, ANN202
+        clear.append(bool(predicate()))
+        return real(predicate, timeout=timeout)
+
+    monkeypatch.setattr(cond, "wait_for", wait_for)
+    return clear
+
+
 def _save(client, text):
     return client.post("/entries", json={"content": text}).json()
 
@@ -30,14 +45,25 @@ def test_a_session_is_counted_while_a_request_holds_it(app_state):
 
 
 def test_draining_waits_for_the_request_to_finish(app_state):
+    # Ordered by events, not timed (L-general-70): the drain is still waiting
+    # while the request holds its session, and goes once it lets go.
     gen = deps.get_session()
     next(gen)
-    threading.Timer(0.15, gen.close).start()
-    started = time.monotonic()
-    with deps.drained(deadline=5.0) as idle:
-        assert idle is True
-        assert deps.requests_in_flight() == 0
-    assert time.monotonic() - started >= 0.1
+    entered, seen = threading.Event(), []
+
+    def drain() -> None:
+        with deps.drained(deadline=5.0) as idle:
+            seen.append((idle, deps.requests_in_flight()))
+            entered.set()
+
+    drainer = threading.Thread(target=drain)
+    drainer.start()
+    try:
+        assert not entered.wait(0.2), "the drain went while a request held its session"
+    finally:
+        gen.close()
+    drainer.join(5)
+    assert seen == [(True, 0)]
 
 
 def test_draining_gives_up_at_the_deadline_and_says_so(app_state):
@@ -111,8 +137,10 @@ def test_an_open_stream_that_holds_no_session_does_not_hold_a_restore(client, mo
     with client.stream("GET", "/jobs/stream?seconds=5") as stream:
         next(stream.iter_lines())
         assert deps.requests_in_flight() == 0
+        clear = _drain_waits(monkeypatch)
         restored = client.post("/backups/restore", json={"name": name})
         assert restored.status_code == 200, restored.text
+        assert clear and all(clear), "the restore waited on the stream"
 
 
 def test_a_long_poll_behind_the_unlock_check_does_not_hold_a_restore(client, monkeypatch):
@@ -133,7 +161,9 @@ def test_a_long_poll_behind_the_unlock_check_does_not_hold_a_restore(client, mon
     poll = threading.Thread(target=lambda: polled.append(client.get("/auth/lan-watch?since=0").status_code))
     poll.start()
     time.sleep(0.5)
+    clear = _drain_waits(monkeypatch)
     restored = client.post("/backups/restore", json={"name": name})
     poll.join(10)
     assert polled == [200]
     assert restored.status_code == 200, restored.text
+    assert clear and all(clear), "the restore waited on the long poll"

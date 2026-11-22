@@ -14,11 +14,10 @@ import json
 import pytest
 
 from tessellate.ai import acts, commands
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests._consent import confirmed
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 28, 10, 0, 0)
 TOMORROW_9 = dt.datetime(2026, 10, 29, 9, 0)
@@ -271,8 +270,7 @@ def _stream(client, question: str, history: list | None = None) -> list[dict]:
 def clock(monkeypatch):
     #: Every test here, not only the chat ones: a snooze "until friday" read
     #: against the real clock went past on Friday after 9 (2026-10-30).
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _said(events: list[dict]) -> str:

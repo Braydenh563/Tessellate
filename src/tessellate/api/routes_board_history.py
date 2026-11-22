@@ -40,13 +40,13 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import or_, select
-from sqlalchemy import func as sqlfunc
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.core.deps import get_session
+from tessellate.repo import whiteboard as whiteboard_repo
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -78,19 +78,10 @@ def _board_param(board_id: int | None) -> int | None:
     return board_id or None
 
 
-def _names_board(column: str, board_id: int | None):
-    """An event whose payload's `column` (after or before) names this board."""
-    path = f"$.{column}.board_id"
-    if board_id is None:
-        return sqlfunc.json_type(AuditLog.payload, path) == "null"
-    return sqlfunc.json_extract(AuditLog.payload, path) == board_id
-
-
 def _current_rows(db: Session, board_id: int | None) -> dict[str, object]:
     out: dict[str, object] = {}
     for kind, (_, model) in KINDS.items():
-        where = model.board_id.is_(None) if board_id is None else model.board_id == board_id
-        for row in db.scalars(select(model).where(where)):
+        for row in whiteboard_repo.rows_on(db, model, board_id):
             out[f"{kind}:{row.id}"] = row
     return out
 
@@ -110,12 +101,7 @@ def _board_events(db: Session, board_id: int | None, current: dict[str, object])
     for key in current:
         kind, raw = key.split(":")
         ids[kind].add(int(raw))
-    named = db.execute(
-        select(AuditLog.entity_type, AuditLog.entity_id).where(
-            AuditLog.entity_type.in_([etype for etype, _ in KINDS.values()]),
-            or_(_names_board("after", board_id), _names_board("before", board_id)),
-        )
-    )
+    named = whiteboard_repo.items_logged_on(db, [etype for etype, _ in KINDS.values()], board_id)
     for etype, entity_id in named:
         if entity_id is not None:
             ids[KIND_OF_TYPE[etype]].add(int(entity_id))
@@ -124,11 +110,7 @@ def _board_events(db: Session, board_id: int | None, current: dict[str, object])
         wanted = sorted(ids[kind])
         for start in range(0, len(wanted), 500):
             chunk = wanted[start : start + 500]
-            rows = db.scalars(
-                select(AuditLog)
-                .where(AuditLog.entity_type == etype, AuditLog.entity_id.in_(chunk))
-                .order_by(AuditLog.id.asc())
-            )
+            rows = whiteboard_repo.events_of(db, etype, chunk)
             for row in rows:
                 out.setdefault(f"{kind}:{row.entity_id}", []).append(row)
     #: **Only this board's part of each log.** SQLite gives a deleted row's id
@@ -357,7 +339,6 @@ def list_snapshots(
 @router.post("/history/snapshots", status_code=201)
 def save_snapshot(body: SnapshotBody, db: Session = Depends(get_session)) -> dict:
     """Name the board as it is now (its newest event)."""
-    from datetime import datetime
 
     entry = _snapshot_board(db, body.board_id)
     current = _current_rows(db, body.board_id)
@@ -367,7 +348,7 @@ def save_snapshot(body: SnapshotBody, db: Session = Depends(get_session)) -> dic
         raise HTTPException(status_code=409, detail="This board has nothing on it yet, so there is nothing to keep.")
     settings = _board_settings(entry)
     snaps = [s for s in settings.get("snapshots") or [] if isinstance(s, dict)]
-    now = datetime.now()
+    now = clock.wall()
     snap = {
         "id": max((int(s.get("id", 0)) for s in snaps), default=0) + 1,
         "name": (body.name or "").strip() or f"Snapshot {now:%H:%M}",

@@ -526,9 +526,12 @@ _NO_CATEGORY = frozenset({"", "none", "uncategorised", "uncategorized"})
 
 
 def category_hint(note: dict) -> str:
-    """" [Health]", or "" for a note in no category."""
+    """" [Health]", or "" for a note in no category; a note also put in
+    others by hand reads " [Health, Travel]"."""
     name = str(note.get("category") or "").strip()
-    return "" if name.lower() in _NO_CATEGORY else f" [{name}]"
+    names = [] if name.lower() in _NO_CATEGORY else [name]
+    names += [str(c) for c in note.get("also_in") or []]
+    return f" [{', '.join(names)}]" if names else ""
 
 
 def _written_hint(note: dict) -> str:

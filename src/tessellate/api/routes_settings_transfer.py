@@ -15,25 +15,26 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse
 
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate import __version__
-from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
+from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, parse_guard, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import memberships
 from tessellate.entry import importer, manager
-from tessellate.entry import manager_wiki
-from tessellate.entry import manager_text
+from tessellate.entry import frontmatter_keys, manager_text, manager_wiki
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
 from tessellate.entry.cleantext import import_path
 from tessellate.api.this_computer import this_computer_only
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(tags=["settings"])
 
@@ -87,6 +88,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
     }
 
     category_names = manager.bulk_category_names(session, entries)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
 
     for e in entries:
         payload["entries"].append({
@@ -98,6 +100,9 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # search index either: `backup.strip_leftovers`.)
             "content": manager_text.readable_content(e),
             "category": category_names.get(e.category_id, manager.UNCATEGORISED),
+            #: Where a person also put it and the groups it is in (L-world-class-172, 173).
+            "also_in": also_in.get(e.id, []),
+            "groups": in_groups.get(e.id, []),
             "tags": manager.shown_tags(e),
             "ai_confidence": e.ai_confidence,
             # Said, so a note decrypted for the export is not mistaken for an
@@ -164,7 +169,8 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
         wanted = set(ids)
         entries = [entry for entry in entries if entry.id in wanted]
     category_names = manager.bulk_category_names(session, entries)
-    
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
+
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         for entry in entries:
@@ -182,6 +188,10 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
             ]
             if tags:
                 front.append(f"tags: [{', '.join(tags)}]")
+            if also_in.get(entry.id):
+                front.append(f"also-in: [{', '.join(also_in[entry.id])}]")
+            if in_groups.get(entry.id):
+                front.append(f"note-groups: [{', '.join(in_groups[entry.id])}]")
             if entry.pinned:
                 front.append("pinned: true")
             readable = manager_text.readable_content(entry)
@@ -218,6 +228,66 @@ def export_markdown(
     )
 
 
+#: A board's picture as uploads, not JSON (review 5907752577): a board with
+#: its pictures inlined passes the 16 MB JSON cap (`security.JSON_BODY_BYTES`)
+#: and met a 413; an upload keeps the large cap, and the PNG goes as bytes.
+BOARD_SVG_MAX = 64 * 1024 * 1024
+BOARD_PNG_MAX = 96 * 1024 * 1024
+
+
+def _read_capped(upload: UploadFile, limit: int, what: str) -> bytes:
+    data = upload.file.read(limit + 1)
+    if len(data) > limit:
+        raise HTTPException(status_code=413, detail=f"The {what} is too large to export.")
+    return data
+
+
+@router.post("/export/board-folder")
+def export_board_folder(
+    svg: UploadFile,
+    png: UploadFile | None = None,
+    name: str = Form(default="", max_length=200),
+    ids: str = Form(default="", max_length=60_000),
+    session: Session = Depends(get_session),
+) -> Response:
+    """A board or map as a folder (WORLD_CLASS_PLAN decision 66): its picture
+    as SVG and PNG, and every note it links as Markdown, the same files the
+    selection's Export writes, under `notes/`. One zip, one folder inside.
+    `ids` is the note ids, comma separated; a browser that could not draw a
+    PNG sends none and still exports."""
+    try:
+        note_ids = sorted({int(part) for part in ids.split(",") if part.strip()})
+    except ValueError:
+        raise HTTPException(status_code=422, detail="The note list could not be read.") from None
+    if len(note_ids) > 5000:
+        raise HTTPException(status_code=422, detail="That is too many notes for one export.")
+    try:
+        svg_text = _read_capped(svg, BOARD_SVG_MAX, "picture").decode("utf-8")
+    except UnicodeDecodeError:
+        svg_text = ""
+    if not svg_text.lstrip().startswith(("<svg", "<?xml")):
+        raise HTTPException(status_code=422, detail="That is not an SVG picture.")
+    png_bytes = _read_capped(png, BOARD_PNG_MAX, "PNG") if png is not None else None
+    if png_bytes is not None and not png_bytes.startswith(b"\x89PNG"):
+        raise HTTPException(status_code=422, detail="The PNG could not be read.")
+    #: The ASCII form: it names the download in a header, which is Latin-1.
+    slug = paths.slug(name, 60, ascii_only=True, fallback="board")
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(f"{slug}/{slug}.svg", svg_text)
+        if png_bytes is not None:
+            archive.writestr(f"{slug}/{slug}.png", png_bytes)
+        if note_ids:
+            notes = zipfile.ZipFile(io.BytesIO(build_markdown_export(session, note_ids)))
+            for name in notes.namelist():
+                archive.writestr(f"{slug}/notes/{name}", notes.read(name))
+    return Response(
+        content=buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{slug}.zip"'},
+    )
+
+
 MAX_IMPORT_BYTES = 1024 * 1024  # a single markdown note, not a novel
 #: `import_markdown` below had a per-file size cap but no cap on how many
 #: files one request could carry, each one does its own `create_entry` +
@@ -228,9 +298,6 @@ MAX_IMPORT_BYTES = 1024 * 1024  # a single markdown note, not a novel
 MAX_IMPORT_FILES = 500
 
 
-#: The keys the app reads into its own fields (and writes on export); every
-#: other key stays in the note's text as a property (GRAPH_PLAN KG4).
-_APP_KEYS = {"category", "tags", "created", "updated", "pinned"}
 
 
 def _exported_created(values: list[str] | None):
@@ -247,16 +314,12 @@ def _exported_created(values: list[str] | None):
         return None
     if parsed.tzinfo is not None:
         parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
-    return parsed if parsed <= datetime.now(timezone.utc).replace(tzinfo=None) else None
+    return parsed if parsed <= clock.utc().replace(tzinfo=None) else None
 
 
 def _keep_exported_state(session: Session, entry, meta: dict) -> None:
-    """Put back the date and pin an exported note carried."""
-    if meta.get("created"):
-        entry.created_at = meta["created"]
-    if meta.get("pinned"):
-        entry.pinned = True
-    if meta.get("created") or meta.get("pinned"):
+    """Put back the date, pin, extra categories and groups an exported note carried."""
+    if frontmatter_keys.keep_exported_state(session, entry, meta):
         session.commit()
 
 
@@ -285,14 +348,8 @@ def _parse_frontmatter(text: str) -> tuple[dict, str]:
         meta["created"] = stamp
     if (found.get("pinned") or [""])[0].lower() == "true":
         meta["pinned"] = True
-    kept: list[str] = []
-    skipping = False
-    for line in text[:end].rstrip("\n").split("\n")[1:-1]:
-        head = line.partition(":")[0].strip().lower()
-        if line[:1] not in (" ", "\t", "-") and ":" in line:
-            skipping = head in _APP_KEYS
-        if not skipping:
-            kept.append(line)
+    meta.update(frontmatter_keys.exported_memberships(found))
+    kept = frontmatter_keys.unexported_lines(text[:end])
     body = body.lstrip("\n")
     if any(line.strip() for line in kept):
         return meta, "---\n" + "\n".join(kept) + "\n---\n" + body
@@ -403,15 +460,9 @@ def _already_imported(session) -> dict:  # noqa: ANN001
     """Every live note that came from a vault file: its path in the vault ->
     the hashes of its text, or `_PRIVATE` when its text is encrypted."""
 
-    from tessellate.core.database import Entry
 
     known: dict = {}
-    rows = session.execute(
-        select(Entry.source_path, Entry.content, Entry.is_private).where(
-            Entry.source_path != "", Entry.is_deleted.is_(False)
-        )
-    )
-    for path, content, private in rows:
+    for path, content, private in notes_repo.source_texts(session):
         if private:
             known[path] = _PRIVATE
         elif known.get(path) is not _PRIVATE:
@@ -710,6 +761,17 @@ def import_document(file: UploadFile, session: Session = Depends(get_session)) -
         saved.flush()
         try:
             text = importer.convert_to_markdown(Path(saved.name))
+        except parse_guard.ParseStopped as exc:
+            #: The reader's child hung, crashed or ran out of memory (L-world-class-321; the log says which).
+            name = logbuffer.safe_value(file.filename or "that file", 80)
+            jobruns.note_finished(
+                "import", "failed", f"Couldn't read {name}. Reading it was stopped: it may be damaged."
+            )
+            raise HTTPException(
+                status_code=422,
+                detail="Reading that file was stopped because it took too long, needed too much "
+                "memory or broke the reader. It may be damaged.",
+            ) from exc
         except Exception as exc:  # a file markitdown can't parse must not 500
             #: Background jobs shows this row to a person, so it is a plain
             #: sentence with the file's name; the converter's own words (a
@@ -786,10 +848,11 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(
-        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted"]
+        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted", "also_in", "groups"]
     )
-    
+
     category_names = manager.bulk_category_names(session, entries)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
     
     for e in entries:
         writer.writerow(
@@ -801,6 +864,8 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
                 e.ai_confidence,
                 e.created_at.isoformat(),
                 e.is_deleted,
+                "|".join(also_in.get(e.id, [])),
+                "|".join(in_groups.get(e.id, [])),
             ]
         )
     manager.log_action(session, "exported", "data", detail="csv")

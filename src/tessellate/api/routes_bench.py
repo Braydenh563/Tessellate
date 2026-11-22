@@ -14,13 +14,13 @@ import json
 import logging
 import threading
 import time
-from datetime import datetime, timezone
 from typing import Callable, NamedTuple
 
 import requests
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from tessellate.core import clock
 from tessellate.api.this_computer import this_computer_only
 from tessellate.ai import bench, facts
 from tessellate.core import deps, jobruns, jobs
@@ -87,15 +87,9 @@ def heavy_ids(session) -> dict[str, int]:  # noqa: ANN001
     """The board with the most objects and the longest document: the two
     items the budget names, found rather than assumed so the live reading
     works on any notebook."""
-    from sqlalchemy import func, select
+    from tessellate.repo import documents, whiteboard
 
-    from tessellate.core.database import WhiteboardObject
-    from tessellate.repo import documents
-
-    board = session.execute(
-        select(WhiteboardObject.board_id).where(WhiteboardObject.board_id.is_not(None))
-        .group_by(WhiteboardObject.board_id).order_by(func.count().desc()).limit(1)
-    ).scalar()
+    board = whiteboard.busiest_board_id(session)
     document = documents.largest_id(session)
     return {"board": board or 0, "document": document or 0}
 
@@ -182,7 +176,7 @@ def _run(models: list[str], size: int, budget_seconds: float) -> None:
                 session, deps.get_ollama(), models, size=size, budget_seconds=budget_seconds,
                 stop=_stop, on_progress=lambda p: _state.__setitem__("progress", p),
             )
-            report["finished_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            report["finished_at"] = clock.utc().isoformat(timespec="seconds")
             atomic_write_text(_report_path(), json.dumps(report, indent=1))
             best = report.get("recommended")
             job.result = (

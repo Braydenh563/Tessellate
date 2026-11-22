@@ -16,7 +16,7 @@ import json
 import re
 import threading
 from typing import Annotated
-from datetime import datetime, timezone
+from datetime import timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.ai.embeddings import bytes_to_vector, derived_pairs as derive_pairs, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import activity, cjk, companion_events
@@ -34,6 +35,7 @@ from tessellate.core.database import (
     EmbeddingRecord,
     Entry,
     NoteType,
+    writes,
 )
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
@@ -129,6 +131,8 @@ def _graph_fingerprint(session: Session) -> tuple:
         tuple(sorted(session.info.get("hidden_workspaces") or ())),
         session.scalar(select(func.count(Entry.id)).where(live)) or 0,
         session.scalar(select(func.max(Entry.updated_at)).where(live)),
+        # Two note writes in one clock tick share a newest edit.
+        writes(Entry),
         relations_repo.count(session),
         relations_repo.newest(session),
     )
@@ -848,7 +852,7 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
         include_maps,
         include_tags,
         # A node's `age_days` counts from today.
-        datetime.now(timezone.utc).date().isoformat(),
+        clock.utc().date().isoformat(),
         # A private note's label is its text while this request may read it,
         # a placeholder otherwise; a new key reads differently again.
         hashlib.blake2b(vault_key, digest_size=8).hexdigest() if vault_key else None,
@@ -945,7 +949,7 @@ def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dic
     # node; tags are the column's JSON list, never the raw string.
     with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
     maps_of = graph_layers.maps_of(session)
-    now = datetime.now(timezone.utc)
+    now = clock.utc()
     #: Each note's label and word count, read once per version (`_note_texts`).
     labels = _note_texts(entries)
     type_of = graph_layers.note_types_of(session, node_ids)

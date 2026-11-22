@@ -462,6 +462,10 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "note-groups.js:newGroup": "job: makes an empty group; the group's own Delete removes it and no note is changed",
+    "note-groups.js:toggle": "settings: a check row that is its own undo (press again) and no note text is changed",
+    "note-groups.js:save": "settings: a check row that is its own undo (press again) and no note text is changed",
+    "note-groups.js:build": "job: renames or deletes a group after its own prompt or confirm; the notes are kept",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
@@ -594,6 +598,7 @@ EXEMPT: dict[str, str] = {
     "ai-tools.js:wireReindexButton": "job: starts or stops work or a model; deletes no user data",
     "app-palette.js:openPalette": "telemetry: telemetry or a background warm-up; no user data",
     "app.js:lockNow": "auth: sign-in, recovery or lock; no user data",
+    "app.js:submit": "auth: a locked PDF's password, kept in memory for the run (askPdfPassword); no user data",
     "app.js:startApp": "telemetry: telemetry or a background warm-up; no user data",
     "app.js:startWithoutPassword": "auth: sign-in, recovery or lock; no user data",
     "ask-chart.js:renderAskChart": "read: reads or asks the model; shows a result, writes nothing",
@@ -660,9 +665,9 @@ EXEMPT: dict[str, str] = {
     "onboarding.js:maybeShowConsoleViewIntro": "settings: a setting with its own Reset or the settings history",
     "onboarding.js:renderOnboardingActions": "job: starts or stops work or a model; deletes no user data",
     "onboarding.js:renderPrefs": "settings: a setting with its own Reset or the settings history",
-    "phone-shell.js:clearAppCache": "job: starts or stops work or a model; deletes no user data",
+    "app-reset.js:clearAppCache": "job: starts or stops work or a model; deletes no user data",
     "notifications.js:openExportsFromNotification": "job: starts or stops work or a model; deletes no user data",
-    "phone-shell.js:quitApp": "auth: sign-in, recovery or lock; no user data",
+    "app-reset.js:quitApp": "auth: sign-in, recovery or lock; no user data",
     "questions-view.js:initQuestionsView": "job: starts or stops work or a model; deletes no user data",
     "quickadd.js:noteOffersFetch": "read: reads or asks the model; shows a result, writes nothing",
     "reminder-notify.js:showReminderNotification": "telemetry: telemetry or a background warm-up; no user data",
@@ -708,6 +713,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard-history.js:build": "board: board snapshot list, the board's version history",
     "whiteboard-history.js:wbSnapshotRow": "board: board snapshot list, the board's version history",
     "whiteboard-map.js:wbMapSummariseBranch": "read: asks the model for a summary",
+    "whiteboard.js:wbExportBoardFolder": "job: a board export the person asked for, built on the server and saved as a download; it writes and deletes nothing",
     "whiteboard.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
     "whiteboard.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
     "whiteboard.js:wbPaintStickyDates": "read: reads dates out of sticky text",

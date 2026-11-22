@@ -205,7 +205,7 @@ def test_the_offer_says_size_and_source_in_one_line_and_asks_before_anything():
 
 
 def test_the_status_poll_reaches_the_offer():
-    assert "status.semantic_offer" in _text("frontend/js/status.js")
+    assert "status.semantic_offer" in _text("frontend/js/status.js", "frontend/js/status-settings.js")
 
 
 def test_settings_row_says_downloads_are_ask_first():

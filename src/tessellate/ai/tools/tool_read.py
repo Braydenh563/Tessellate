@@ -14,6 +14,7 @@ from sqlalchemy import and_, func, or_, select
 from tessellate.core import deps
 from tessellate.entry import link_wording, manager, manager_links, paths
 from tessellate.ai import note_rank
+from tessellate.repo import memberships
 from tessellate.search import search_manager
 from tessellate.entry.properties import strip as strip_properties
 from datetime import timedelta
@@ -569,8 +570,9 @@ def _list_notes(session: Session, args: dict) -> dict:
     rows, total, has_more = page_of_notes(session, filters, tag, offset, limit)
     described = describe_filters(category, tag, since_days)
     dates_by_id = manager.entry_dates_bulk(session, [e.id for e in rows])
+    also_by_id = memberships.also_in_bulk(session, rows)
     result = {
-        "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, [])) for e in rows],
+        "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, []), also_in=also_by_id.get(e.id, [])) for e in rows],
         "returned": len(rows),
         "total_matching": total,
         "offset": offset,
@@ -901,10 +903,11 @@ def _summarize_notes(session: Session, args: dict) -> dict:
         rows = [e for e in rows if manager.category_name_for(session, e) == str(wanted)]
         period = f"{period}, {wanted}"
     dates_by_id = manager.entry_dates_bulk(session, [e.id for e in rows])
+    also_by_id = memberships.also_in_bulk(session, rows)
     result = {
         "period": period,
         "count": len(rows),
-        "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, [])) for e in rows],
+        "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, []), also_in=also_by_id.get(e.id, [])) for e in rows],
         "how_to_read_more": _READ_MORE,
         "label": "ph:note-pencil Gathered notes to summarise",
     }

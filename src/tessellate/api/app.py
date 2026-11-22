@@ -47,6 +47,7 @@ from tessellate.api import (
     routes_bookmarks,
     routes_categories,
     routes_chat,
+    routes_groups,
     routes_chat_meta,
     routes_conversations,
     routes_debug,
@@ -94,6 +95,7 @@ from tessellate.api import (
     routes_diag,
     routes_lag,
     routes_library,
+    routes_library_meta,
     routes_maintenance,
     routes_models,
     routes_recordings,
@@ -149,6 +151,7 @@ from tessellate.core import (
     logbuffer,
     netbind,
     origin,
+    paths,
     passes,
     security,
     startup_status,
@@ -166,10 +169,7 @@ from tessellate.entry import manager_purge
 # alone one that happens to contain a "frontend" folder. Checked first and
 # explicitly, not inferred from a path that only looks the same in both
 # cases by coincidence.
-if getattr(sys, "frozen", False):
-    BUNDLE_ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-else:
-    BUNDLE_ROOT = Path(__file__).resolve().parents[3]
+BUNDLE_ROOT = paths.bundle_root()
 FRONTEND_DIR = BUNDLE_ROOT / "frontend"
 
 
@@ -491,13 +491,15 @@ class RevalidatedStatic(StaticFiles):
     _gzip_cache: dict[str, tuple[int, int, bytes]] = {}
 
     #: **Comments are stripped from what is served** (audit 2026-10-05, FE-01):
-    #: the app's own `js/*.js` and `css/*.css` (and `index.html`, above), never
+    #: the app's own `js/*.js`, `css/*.css` and `surfaces/*.html` (and `index.html`, above), never
     #: `vendor/`, never the files on disk. See `asset_strip.py` for why and how.
     @staticmethod
     def _strippable(path: str) -> bool:
         path = path.replace("\\", "/")
-        return (path.startswith("js/") and path.endswith(".js")) or (
-            path.startswith("css/") and path.endswith(".css")
+        return (
+            (path.startswith("js/") and path.endswith(".js"))
+            or (path.startswith("css/") and path.endswith(".css"))
+            or (path.startswith("surfaces/") and path.endswith(".html"))
         )
 
     async def _precompressed(self, response, scope, strip: bool = False):
@@ -771,12 +773,12 @@ def _read_note_dates() -> None:
 def _seed_companion_milestone() -> None:
     """The notes already here are the desk companion's baseline, so a restart at 100 notes does not cheer the 100 again
     (`core/companion_events.seed`)."""
-    from tessellate.api.routes_entries import _note_total
+    from tessellate.entry.capture import note_total
     from tessellate.core import companion_events
 
     session = deps.get_db().session()
     try:
-        companion_events.seed(_note_total(session))
+        companion_events.seed(note_total(session))
     finally:
         session.close()
 
@@ -1598,6 +1600,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_search.router, LOCKED),
     (routes_tags.router, LOCKED),
     (routes_categories.router, LOCKED),
+    (routes_groups.router, LOCKED),
     (routes_conversations.router, LOCKED),
     (routes_documents.router, LOCKED),
     (routes_duplicates.router, LOCKED),
@@ -1633,6 +1636,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_tasks.router, LOCKED),
     (routes_timeline.router, LOCKED),
     (routes_library.router, LOCKED),
+    (routes_library_meta.router, LOCKED),
     (routes_whiteboard.router, LOCKED),
     (routes_whiteboard.media_router, MEDIA),
     (routes_board_library.router, LOCKED),

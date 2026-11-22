@@ -10,13 +10,13 @@ step through the same lock and CSP as every other call.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 from sqlalchemy.orm import Session as DbSession
 
+from tessellate.core import clock
 from tessellate.ai import captions
 from tessellate.api import routes_entries
 from tessellate.api.schemas import EntryCreate
@@ -39,7 +39,7 @@ def _save(session: captions.Session, db: DbSession) -> dict:
         text = session.transcript().strip()
         if not text:
             return {"entry_id": None, "text": ""}
-        now = datetime.now()
+        now = clock.wall()
         stamp = f"{now.day} {now:%b %Y, %H:%M}"
         entry = routes_entries.create_entry(
             EntryCreate(content=f"Live captions, {stamp}\n\n{text}", tags=[TAG], defer_filing=True), db

@@ -8850,7 +8850,23 @@ function noteSurfaceExtensions(CM, host, options) {
   //: `readOnly` only refuses the person's input.
   host.noteReadOnlyExtensions = (on) => (on ? [CM.state.EditorState.readOnly.of(true), CM.view.EditorView.editable.of(false)] : []);
   host.noteReadOnlySlot = new CM.state.Compartment();
+  //: Note find and replace (L-world-class-127); a capture box keeps the page find.
+  const finds = host.id === "entry-edit-content" || host.id === "graph-popup-content";
+  const findKeys = finds
+    ? [
+        {
+          key: "Mod-h",
+          run: (view) => {
+            CM.search.openSearchPanel(view);
+            view.dom.querySelector(".cm-search input[name=replace]")?.focus();
+            return true;
+          },
+        },
+        ...CM.search.searchKeymap,
+      ]
+    : [];
   return [
+    ...(finds ? [CM.search.search({ top: true })] : []),
     host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
     //: The same whole-line copy and cut the document has (INBOX 652).
     CM.state.Prec.high(docLineClipboardExtension(CM)),
@@ -8902,6 +8918,7 @@ function noteSurfaceExtensions(CM, host, options) {
       //: the one card being edited.
       ...(Array.isArray(host.noteSurfaceKeys) ? host.noteSurfaceKeys : []),
       ...noteSurfaceKeymap(host),
+      ...findKeys,
       ...CM.commands.historyKeymap,
       ...CM.commands.defaultKeymap,
     ]),
@@ -11250,7 +11267,7 @@ function renderDocCaret() {
 }
 
 //: **Which formatting buttons are on for the caret** (DOCUMENTS_PLAN Phase 2,
-//: the third of the three things the engine phase left deliberately unbuilt:
+//: the third of the three things the engine phase did not do:
 //: "which buttons are 'on' for the caret's position is not driven from the
 //: syntax tree, which the tree now makes cheap").
 //:

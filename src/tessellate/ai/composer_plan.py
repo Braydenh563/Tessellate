@@ -734,7 +734,15 @@ def ahead_default(today: date) -> tuple[date, date, str]:
     return today, today + timedelta(days=AHEAD_DAYS - 1), AHEAD_SAID
 
 
-_KIND_STEMS = {study.stem(k) for k in _KINDS}
+#: Each kind's stems, singular and plural: the stemmer reads "meetings" as "meetin" and "meeting" as "meet".
+_KIND_OF = {stem: k for k in _KINDS for stem in (study.stem(k), study.stem(f"{k}s"))}
+_KIND_STEMS = set(_KIND_OF)
+
+
+def _kind_stems(stems: set[str]) -> set[str]:
+    """Every stem of the kinds `stems` name ("meetin" brings "meet" too)."""
+    kinds = {_KIND_OF[s] for s in stems if s in _KIND_OF}
+    return {s for s, k in _KIND_OF.items() if k in kinds}
 
 
 def _kind_due(ctx: Ctx, kinds: set[str], today: date) -> Reply | None:
@@ -743,9 +751,20 @@ def _kind_due(ctx: Ctx, kinds: set[str], today: date) -> Reply | None:
     kept = [e for e in found if kinds & _stems(e.text)]
     if not kept:
         return None
-    noun = next(k for k in _KINDS if study.stem(k) in kinds)
+    noun = next(_KIND_OF[s] for s in kinds if s in _KIND_OF)
     head = f"{len(kept)} {noun}{'s' if len(kept) != 1 else ''} ahead in your notes:"
     return Reply("\n".join([head, *_grouped(kept, today)]), asks=_item_chips(kept, today))
+
+
+def _meetings_ahead(ctx: Ctx, today: date) -> Reply | None:
+    """"share my meeting schedule", "what meetings are coming up": the dated meetings, or, with none, that said and
+    the schedule itself, never the web or a stray meeting note (L-timeline-11)."""
+    meetings = _kind_due(ctx, _kind_stems({study.stem("meeting")}), today)
+    if meetings is not None:
+        return meetings
+    rest = _due(ctx, ahead_default(today))
+    lead = "No meeting is dated ahead in your notes."
+    return Reply(f"{lead} {rest.text}", rest.offer, rest.asks) if rest else Reply(lead)
 
 
 def _subject_stems(text: str, win) -> set[str]:  # noqa: ANN001
@@ -760,11 +779,13 @@ def _subject_stems(text: str, win) -> set[str]:  # noqa: ANN001
 
 
 def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
+    if schedule := _SCHEDULE.match(text):
+        return _meetings_ahead(ctx, today) if schedule.group("meet") else _due(ctx, ahead_default(today))
     win = window(text, today)
     leftover = _subject_stems(text, win)
     kind = {k for k in leftover if k in _KIND_STEMS}
     if kind and leftover == kind and not ctx.open_ids:
-        return _kind_due(ctx, kind, today)
+        return _meetings_ahead(ctx, today) if {_KIND_OF[k] for k in kind} == {"meeting"} else _kind_due(ctx, _kind_stems(kind), today)
     if leftover or (win is None and ctx.open_ids):
         return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
     return _due(ctx, win or ahead_default(today))
@@ -917,8 +938,21 @@ _KNOW_AHEAD = lazy_compile(
     r"(?:about|on|for|regarding)\s+(?:the )?" + recognise.AHEAD_DAY_WORDS + r"\W*$", re.I)
 
 
+#: "share my meeting schedule with me", "show me my calendar" (L-timeline-11): the schedule is the dated items ahead.
+_SCHEDULE = re.compile(
+    rf"^{_LEAD}(?:share|show|go over|go through|walk me through|read(?: out)?|tell me|give me|what(?:'s|’s| is) (?:on|in))?\s*(?:me\s+)?"
+    r"(?:my|the)\s+(?:(?P<meet>meeting)\s+|work\s+)?(?:schedule|calendar|agenda|diary|planner)(?:\s+with me)?(?:\s+please)?\W*$", re.I)
+
+
+def asks_schedule(text: str) -> bool:
+    """"go over my meeting schedule": the schedule, not a summary of notes about it."""
+    return bool(_SCHEDULE.match(" ".join((text or "").split())))
+
+
 def _asks_due(text: str, today: date) -> bool:
     """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
+    if _SCHEDULE.match(text):
+        return True
     if _KNOW_AHEAD.match(text):
         win = window(text, today)
         return win is not None and win[1] >= today
@@ -941,8 +975,9 @@ def answer(ctx: Ctx) -> Reply | None:
         return None
     if day := composer_event_verdict.day_question(text):
         #: "are we meeting on Tuesday" asks of the day: its list, led by Yes or by what is missing.
-        reply = _answer_text(ctx, day)
-        return reply and Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}", reply.offer, reply.asks)
+        #: Nothing dated in the window is the answer too: never a meeting note from another day (CHAT_PLAN, placed 2026-10-30, item 3).
+        reply = _answer_text(ctx, day) or Reply("")
+        return Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}".strip(), reply.offer, reply.asks)
     #: As typed first; then with the casual wrapper and text-speak off ("whats on tmrw", R9-8, R9-14).
     return _answer_text(ctx, text) or (_answer_text(ctx, spelled) if (spelled := rephrase(text)) and spelled != text else None)
 

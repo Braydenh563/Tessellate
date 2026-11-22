@@ -38,6 +38,7 @@ run.
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import contextvars
 import itertools
 import logging
@@ -192,10 +193,9 @@ ORIGIN_WHY: dict[str, str] = {
     "event": "Something changed, so it ran.",
 }
 
-#: What the History tab keeps across restarts (`JobRunLog`): the newest rows
-#: and nothing older than the days, by the person's own clock.
-KEEP_ROWS = 500
-KEEP_DAYS = 30
+#: What the History tab keeps across restarts lives in `jobrun_log.py` (the file size cap).
+from tessellate.core import jobrun_log  # noqa: E402
+from tessellate.core.jobrun_log import KEEP_DAYS, KEEP_ROWS  # noqa: E402, F401
 
 _finished: deque[dict] = deque(maxlen=FINISHED_KEEP)
 _ids = itertools.count(1)
@@ -251,61 +251,12 @@ def clear_finished() -> None:
     _bump()
 
 
-def _logged_now() -> datetime:
-    """Now on the person's own clock, naive: what `JobRunLog.logged_at` holds."""
-    from tessellate.core import config
-
-    return config.loaded_user_now().replace(tzinfo=None)
-
-
 def _persist(entry: dict, replaced: str = "", db=None) -> None:  # noqa: ANN001
-    """Write one finished run to `job_run_log` and prune it. `replaced` is the
-    run id a merged row stands in for. Never raises: the ring still has it."""
-    db = _database(db)
-    if db is None:
-        return
-    try:
-        from sqlalchemy import delete, func, select
-
-        from tessellate.core.database import JobRunLog
-
-        now = _logged_now()
-        with db.session() as session:
-            if replaced:
-                session.execute(delete(JobRunLog).where(JobRunLog.run_id == replaced))
-            session.merge(
-                JobRunLog(
-                    run_id=entry["run_id"], kind=entry["kind"], title=_clip(entry["title"]),
-                    label=_clip(entry["label"]), origin=entry["origin"], why=_clip(entry["why"]),
-                    outcome=entry["outcome"], detail=_clip(entry["detail"]), started=entry["started"],
-                    ended=entry["ended"], duration_ms=entry["duration_ms"], count=entry["count"],
-                    lines=entry["lines"], logged_at=now,
-                )
-            )
-            session.flush()
-            session.execute(delete(JobRunLog).where(JobRunLog.logged_at < now - timedelta(days=KEEP_DAYS)))
-            if session.scalar(select(func.count()).select_from(JobRunLog)) > KEEP_ROWS:
-                keep = select(JobRunLog.run_id).order_by(JobRunLog.ended.desc()).limit(KEEP_ROWS)
-                session.execute(delete(JobRunLog).where(JobRunLog.run_id.not_in(keep)))
-            session.commit()
-    except Exception:  # noqa: BLE001  # the history is a convenience, never a reason to fail a run
-        logger.debug("could not keep the run history", exc_info=True)
+    jobrun_log.persist(entry, replaced, _database(db), _clip, KEEP_ROWS, KEEP_DAYS)
 
 
 def _forget_logged(db=None) -> None:  # noqa: ANN001
-    db = _database(db)
-    if db is None:
-        return
-    try:
-        from sqlalchemy import delete
-
-        from tessellate.core.database import JobRunLog
-
-        with db.session() as session:
-            session.execute(delete(JobRunLog))
-            session.commit()
-    except Exception:  # noqa: BLE001
-        logger.debug("could not clear the run history", exc_info=True)
+    jobrun_log.forget(_database(db))
 
 
 def history(limit: int = KEEP_ROWS, db=None) -> list[dict]:  # noqa: ANN001
@@ -313,31 +264,7 @@ def history(limit: int = KEEP_ROWS, db=None) -> list[dict]:  # noqa: ANN001
     with the ring's runs over it, the ring being the fresher copy of a run
     both hold."""
     ring = finished(FINISHED_KEEP)
-    seen = {run["run_id"] for run in ring}
-    stored: list[dict] = []
-    db = _database(db)
-    if db is not None:
-        try:
-            from sqlalchemy import select
-
-            from tessellate.core.database import JobRunLog
-
-            with db.session() as session:
-                rows = session.scalars(select(JobRunLog).order_by(JobRunLog.ended.desc()).limit(limit))
-                for row in rows:
-                    if row.run_id in seen:
-                        continue
-                    stored.append(
-                        {
-                            "run_id": row.run_id, "kind": row.kind, "name": "", "label": row.label,
-                            "title": row.title, "origin": row.origin, "why": row.why,
-                            "outcome": row.outcome, "detail": row.detail, "started": row.started,
-                            "ended": row.ended, "duration_ms": row.duration_ms,
-                            "lines": list(row.lines or []), "count": row.count,
-                        }
-                    )
-        except Exception:  # noqa: BLE001
-            logger.debug("could not read the run history", exc_info=True)
+    stored = jobrun_log.stored(limit, _database(db), {run["run_id"] for run in ring})
     out = ring + stored
     out.sort(key=lambda run: run.get("ended") or 0.0, reverse=True)
     return out[:limit]
@@ -348,6 +275,11 @@ def history(limit: int = KEEP_ROWS, db=None) -> list[dict]:  # noqa: ANN001
 #: a restart ends the runs, and `mark_interrupted` settles their rows.
 _live: list["Run"] = []
 _live_lock = threading.Lock()
+#: The run whose start last wrote each kind's row. A run that finishes after
+#: a newer one of its kind started leaves the row alone; the start times can
+#: tie (two starts in one clock tick, a coarse clock, a pinned test clock),
+#: so the owner decides, not the times.
+_owners: dict[str, "Run"] = {}
 
 #: The scheduled passes someone pressed Stop on (`core/passes.py` adds and
 #: clears; a pass's own loop reads it between steps). Here, below both, so
@@ -418,7 +350,7 @@ class Run:
         #: run (a pool job's): `/tasks` then adds its lines, not a second row.
         self.listed = False
         self.result = ""
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = clock.utc()
         self._t0 = time.monotonic()
         self._db = db
         self._status = "ok"
@@ -527,6 +459,8 @@ class Run:
         with _live_lock:
             if self not in _live:
                 _live.append(self)
+            if self._db is not None:
+                _owners[self.kind] = self
         _bump()
         #: In the app log under its run id, so Settings, Logs can show this
         #: run's lines (the Logs button filters on "[run-12]").
@@ -586,11 +520,7 @@ class Run:
                 if row is None:
                     row = JobRun(kind=self.kind, started_at=self.started_at)
                     session.add(row)
-                elif (
-                    row.status == "running"
-                    and row.started_at is not None
-                    and row.started_at > self.started_at
-                ):
+                elif row.status == "running" and self._superseded():
                     return  # a newer run is still going and owns the row
                 self._write_ending(row)
                 session.commit()
@@ -598,9 +528,15 @@ class Run:
             logger.debug("could not record the end of %r", self.kind, exc_info=True)
 
 
+    def _superseded(self) -> bool:
+        """True when a newer run of this kind started and has not ended."""
+        with _live_lock:
+            owner = _owners.get(self.kind)
+            return owner is not None and owner is not self and not owner.ended
+
     def _undo_skipped(self, session, row) -> None:  # noqa: ANN001
         """A skipped run was never a run: put the row back as it was."""
-        if row is not None and row.started_at == self.started_at:
+        if row is not None and row.started_at == self.started_at and not self._superseded():
             if self._before is None:
                 session.delete(row)
             else:
@@ -610,7 +546,7 @@ class Run:
 
     def _write_ending(self, row) -> None:  # noqa: ANN001
         row.started_at = self.started_at
-        row.finished_at = datetime.now(timezone.utc)
+        row.finished_at = clock.utc()
         row.status = self._status
         row.result = _clip(self.result) if self._status != "failed" else ""
         row.error = self._error
@@ -738,7 +674,7 @@ def note_finished(
     """
     run = Run(kind, _database(db), ledger=False)
     if isinstance(duration_ms, (int, float)) and duration_ms >= 0:
-        run.started_at = datetime.now(timezone.utc) - timedelta(milliseconds=duration_ms)
+        run.started_at = clock.utc() - timedelta(milliseconds=duration_ms)
         run._t0 = time.monotonic() - duration_ms / 1000
     if outcome == "failed":
         run.fail(detail or "Failed.")

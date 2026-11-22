@@ -45,7 +45,7 @@ from datetime import timedelta
 from sqlalchemy import func, or_, select
 
 from tessellate.core import events
-from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow
+from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow, writes
 from tessellate.entry import link_facts, link_wording, manager
 from tessellate.entry import manager_categories
 from tessellate.entry import manager_links
@@ -712,7 +712,7 @@ _duplicates_seen: dict = {}
 def _count_duplicates(session) -> int:  # noqa: ANN001
     #: The database's own address leads the signature: two notebooks (a test's
     #: throwaway one, a space switch) must never share an answer.
-    signature = (str(session.get_bind().url), *session.execute(
+    signature = (str(session.get_bind().url), writes(Entry), *session.execute(
         select(func.count(Entry.id), func.max(Entry.updated_at), func.max(Entry.id)).where(
             Entry.is_deleted == False,  # noqa: E712
             Entry.is_private == False,  # noqa: E712
@@ -876,6 +876,18 @@ def _apply_merge_notes(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa
         for entry in entries[1:]:
             manager.soft_delete_entry(session, entry)
     return len(undo), {"merged": undo}
+
+
+def merge_pair(session, keep_id: int, fold_id: int) -> dict:  # noqa: ANN001
+    """Tidy's own merge of two notes (the Duplicates review's), for a caller that already
+    knows the pair: the fact that one note says what another does. Same undo as the review's."""
+    with events.acting_as(ACTOR):
+        applied, undo = _apply_merge_notes(session, [{"id": f"dupe:{keep_id}-{fold_id}"}])
+    if not applied:
+        raise ValueError("One of those notes is gone, so nothing was merged.")
+    row = _log(session, "duplicates", applied, undo)
+    session.flush()
+    return {"undo_id": row.id if row is not None else None, "keeper": keep_id, "binned": [fold_id]}
 
 
 def _apply_merge_categories(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa: ANN001

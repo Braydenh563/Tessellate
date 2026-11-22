@@ -10,6 +10,7 @@ from tessellate.ai import composer
 from tessellate.ai import composer_empty
 from tessellate.ai import composer_smalltalk
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 
 def _ask(client, question: str, **body) -> dict:
@@ -142,10 +143,9 @@ def test_the_plain_chat_models_know_the_users_clock(app_state, monkeypatch):
     import datetime as dt
 
     from tessellate.ai import librarian
-    from tessellate.core import config
 
     when = dt.datetime(2026, 10, 17, 21, 45, 30, tzinfo=dt.timezone.utc)
-    monkeypatch.setattr(config, "user_now", lambda cfg: when)
+    pin_clock(monkeypatch, lambda: when)
     marker = " The current date and time is 2026-10-17T21:45:00"
     for system in (
         librarian.system_content(),

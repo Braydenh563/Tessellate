@@ -31,7 +31,7 @@
 //    list, filters, sort, selection, cards, bulk actions' helpers, and
 //    "reading a binned note in full" (§36G, openBinnedNote/closeBinnedReader
 //    and the #binned-overlay reader). The binned-note reader is included
-//    deliberately, resolving this split's own open question: it is called
+//    deliberately, settling a question this split raised: it is called
 //    from nowhere but this file's own openLibraryItem(), and its overlay
 //    exists only to serve the Library's Bin filter chip, it is Library's
 //    own code that happened to get its own §-number and its own "---"
@@ -53,8 +53,8 @@
 //    "library")` branch** in app.js (which already exists, and already
 //    calls loadLibrary()), merging the two would be a real behaviour
 //    change (one code path instead of two) riding along with a split, which
-//    the split's own rules forbid. Logged to ROADMAP.md instead as a
-//    worthwhile follow-up, not built here.
+//    the split's own rules forbid. The wrapper has since been removed: the
+//    AI Skills page renders from its own sub-tab handler (`librarySubtabs`).
 //  - whiteboard.js:82-91: two `Set()`s (the image gallery's expanded-caption
 //    set, since folded into `openRowReadings`, and libraryDocsSelection) that
 //    whiteboard.js declared alongside its own
@@ -647,7 +647,7 @@ function librarySorted(items) {
 // Meaning-matched note ids for the Library's current query, or null when the
 // Semantic toggle is off (or the query is empty, or the search failed).
 //
-// **The design question this answers, which is why it was not built sooner.**
+// **The design question this answers, which is why it came late.**
 // The Library mixes notes, documents, chats, images and skills, and only
 // *notes* have embeddings: nothing in this app has ever embedded a PDF, a
 // conversation or an image. So "semantic search over the Library" has no
@@ -1391,6 +1391,19 @@ function renderLibraryContextBars() {
   // is offering a button that cannot work.
   const allBinned = chosen.every((key) => key.startsWith("archived:"));
   $("library-bulk-restore").classList.toggle("hidden", !allBinned);
+  //: Tags, category and a property for the notes ticked (WORLD_CLASS_PLAN
+  //: decision 65, L-world-class-392): the dialogs the Notes bar opens, given
+  //: the notes' ids. Documents, chats and files carry none of the three.
+  const more = $("library-batch-more-host");
+  const notes = () => librarySelectedItems().filter((i) => i.kind === "note").map((i) => i.id);
+  if (!more.childElementCount) {
+    more.appendChild(kebabMenu([
+      { label: "ph:tag Tags…", run: () => openBulkTags(notes()), group: "edit" },
+      { label: "ph:folder-simple Move to category…", run: () => chooseNoteCategory(notes()), group: "edit" },
+      { label: "ph:list-dashes Set a property…", run: () => openBulkProperty(notes()), group: "edit" },
+    ], "More for the selected notes"));
+  }
+  more.classList.toggle("hidden", !chosen.some((key) => key.startsWith("note:")));
 }
 
 function librarySelectedItems() {
@@ -2312,9 +2325,8 @@ $("library-refresh").addEventListener("click", loadLibrary);
 // matching button, everything else (Everything, Files, Tags, Drafts,
 // Activity, the bin) falls back to "+ New note", the fastest capture path
 // in the app, and a reasonable default when there's no single obvious
-// answer. A real "choose what to create" picker for the Everything view
-// specifically was asked for too but not built this pass, logged rather
-// than rushed; see BACKLOG.md.
+// answer. Everything and the other kinds open
+// the "choose what to create" picker (`openLibraryCreatePicker`, below).
 const LIBRARY_CREATE_BY_KIND = {
   note: {
     label: "ph:plus New note",
@@ -2349,7 +2361,7 @@ const LIBRARY_CREATE_BY_KIND = {
     },
   },
   //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramModel.door`, documents-mermaid.js), asked for a document
-  //: so a board left open under the Boards sub-tab does not take the diagram.
+  //: so a board kept open under the Boards sub-tab does not take the diagram.
   diagram: {
     label: "ph:flow-arrow New diagram",
     run: async () => {
@@ -2386,7 +2398,7 @@ const LIBRARY_CREATE_BY_KIND = {
   // "New board" on a tab called Whiteboards, which is why they reported it
   // missing.
   //
-  // It also answers the deferred half of the ask, "maybe with a way to
+  // It also answers the second half of the ask, "maybe with a way to
   // export that into a visual diagram on the whiteboard", by construction:
   // the map *is* a whiteboard, so it exports through the export button that
   // is already there.
@@ -3935,6 +3947,10 @@ function syncLibraryDocsSelectbar() {
   const bar = document.getElementById("library-docs-selectbar");
   const count = document.getElementById("library-docs-selected-count");
   if (!bar || !count) return;
+  libraryMeta("menu", "document", () => [...libraryDocsSelection], async () => {
+    libraryDocsSelection.clear();
+    renderLibraryDocuments();
+  }, bar);
   const n = libraryDocsSelection.size;
   bar.classList.toggle("hidden", n === 0);
   count.textContent = `${n} selected`;
@@ -4386,6 +4402,8 @@ const ocrUi = {
   installing: false,
   //: Which file `ocrWorkspacePages` was counted for (`ocrBuildPageRail`).
   pagesFor: "",
+  //: A PDF's own bookmarks by file (`pdf-info`'s `outline`), the rail's Contents.
+  outlines: new Map(),
 };
 let ocrWorkspaceImages = [], ocrWorkspaceCurrent = null, ocrWorkspaceRegions = [];
 //: Which page of a multi-page document is on the stage, and how many there
@@ -5696,14 +5714,24 @@ const ocrPageCounts = new Map();
 
 async function ocrKnownPages(image, signal) {
   const key = ocrRailKey(image);
-  if (ocrPageCounts.has(key)) return ocrPageCounts.get(key);
+  //: The outline comes with `pdf-info` only, so a count the regions answer
+  //: recorded first does not stand in for it.
+  if (ocrPageCounts.has(key) && ocrUi.outlines.has(key)) return ocrPageCounts.get(key);
   const url = image._isAttachment
     ? `/files/${image.id}/pdf-info`
     : `/media/pdf-info/${encodeURIComponent((image.url || "").split("/").pop())}`;
   try {
-    const info = await apiJson(url, { silent: true, signal });
+    let info = await apiJson(url, { silent: true, signal });
+    if (info?.locked) {
+      info = await askPdfPassword(url.replace("/pdf-info", "/pdf-unlock"));
+      //: The page was asked for before the password (the picture goes first,
+      //: for speed) and failed; asked again now that it opens.
+      const shown = $("ocr-image");
+      if (info?.available && shown && ocrWorkspaceCurrent === image) shown.src = ocrPageImageUrl(image, ocrWorkspacePage);
+    }
     const pages = info?.available ? Number(info.pages) || 0 : 0;
     if (pages > 0) ocrPageCounts.set(key, pages);
+    if (info) ocrUi.outlines.set(key, info.outline || []);
     return pages;
   } catch {
     //: Not knowing yet is not a failure: the regions answer carries the count.
@@ -5713,6 +5741,7 @@ async function ocrKnownPages(image, signal) {
 
 //: The lit item in the rail follows the page at once, before anything is asked.
 function ocrRailActive(image) {
+  if (ocrRailMode === "contents") return ocrRenderRail(image);
   const activeKey = ocrIsPdf(image) ? `page:${ocrWorkspacePage}` : ocrRailKey(image);
   for (const thumb of document.querySelectorAll("#ocr-rail .ocr-rail-item")) {
     const active = thumb.dataset.key === activeKey;
@@ -6043,6 +6072,7 @@ function ocrBuildPageRail(image, pages) {
   //: A one-page document has no Pages list, so the switch has fallen back to
   //: Files or Images: the rail shows that list, this file lit, rather than
   //: staying empty (measured with no page renderer: Files 1, rail 0 items).
+  if (ocrRailMode === "contents") return ocrRenderRail(image);
   if (ocrRailMode !== "pages") {
     if (!rail.children.length) ocrRenderRail(image);
     return;
@@ -6103,7 +6133,7 @@ function closeOcrWorkspace() {
   const overlay = $("ocr-workspace");
   if (!overlay) return;
   overlay.classList.add("hidden");
-  //: A popover left open would be open again on the next visit, over a
+  //: A popover kept open would be open again on the next visit, over a
   //: different file.
   for (const open of overlay.querySelectorAll("details[open]")) open.open = false;
   closeHelpPopovers();
@@ -6300,6 +6330,10 @@ function ocrRenderRailSwitch(current) {
       title: "The pages of the document you are reading",
     });
   }
+  const outline = viewing ? ocrUi.outlines.get(ocrRailKey(viewing)) || [] : [];
+  if (outline.length && ocrRailMode !== "images") {
+    segments.push({ id: "contents", label: "Contents", count: outline.length, title: "The document's own headings" });
+  }
   host.replaceChildren();
   //: One segment is not a choice. Hidden rather than rendered inert, for the
   //: same reason the box-overlay toggle is disabled when there is nothing to
@@ -6315,7 +6349,7 @@ function ocrRenderRailSwitch(current) {
   //: the rail on Files and its own pages one press away, and `ocrBuildPageRail`
   //: then returned early because the mode was no longer "pages".
   const pending = Boolean(viewing) && ocrIsPdf(viewing) && !ocrPagesKnown;
-  if (ocrRailMode === "pages" && !paged && !pending) {
+  if ((ocrRailMode === "pages" && !paged && !pending) || (ocrRailMode === "contents" && !outline.length)) {
     ocrRailMode = viewing?._isImage ? "images" : "files";
   }
   const usable = segments;
@@ -6352,6 +6386,33 @@ function ocrRenderRail(current) {
   if (!rail) return;
   ocrRenderRailSwitch(current);
   if (ocrRailMode === "pages") return; // the page rail is built elsewhere
+  //: The outline panel (28.4 row 8): the PDF's bookmarks, indented by level,
+  //: each a press to its page; the lit one is the last heading at or before it.
+  const outlineRail = (image) => {
+    const outline = (image && ocrUi.outlines.get(ocrRailKey(image))) || [];
+    rail.dataset.pagesFor = "";
+    rail.replaceChildren();
+    const lit = outline.reduce((at, entry, index) => (entry.page <= ocrWorkspacePage ? index : at), -1);
+    outline.forEach((entry, index) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "ocr-rail-item ocr-outline-item";
+      item.dataset.key = `outline:${index}`;
+      item.dataset.level = String(Math.min(Number(entry.level) || 0, 3));
+      const name = document.createElement("span");
+      name.className = "ocr-rail-name";
+      name.textContent = entry.title;
+      item.append(name);
+      item.title = `${entry.title}, page ${entry.page + 1}`;
+      item.classList.toggle("is-active", index === lit);
+      item.setAttribute("aria-current", index === lit ? "true" : "false");
+      item.addEventListener("click", () => ocrLoadPage(image, entry.page));
+      rail.appendChild(item);
+    });
+    rail.classList.remove("hidden");
+    ocrRoveSync(rail, ".ocr-rail-item");
+  };
+  if (ocrRailMode === "contents") return outlineRail(ocrWorkspaceCurrent || current);
   const siblings = (ocrSiblingCache || []).filter(
     (row) => ocrCanOpen(row) && (ocrRailMode === "images" ? row._isImage : !row._isImage)
   );
@@ -9049,6 +9110,10 @@ function syncLibraryMediaSelectbar() {
   const bar = document.getElementById("library-media-selectbar");
   const count = document.getElementById("library-media-selected-count");
   if (!bar || !count) return;
+  //: Only uploads carry the three; a file attached to a note is filed with its note.
+  libraryMeta("menu", "media", () => [...libraryMediaSelection.values()].filter((row) => !row._isAttachment).map((row) => row.id), async () => {
+    clearLibraryMediaSelection();
+  }, bar);
   const n = libraryMediaSelection.size;
   bar.classList.toggle("hidden", n === 0);
   //: Not `body:has(#library-media-selectbar)`: it restyled every tile on any page change (INBOX 1716).
@@ -13417,7 +13482,7 @@ if (!navigator.connection?.saveData && (navigator.hardwareConcurrency || 2) >= 4
     //: Then, once every file has settled, the evaluation in a later idle slot: the editor's 80 ms and the documents file's 130 ms
     //: stop landing on the first open (documents.js `warmDocumentEngine` keeps its own phone and data-saving guard).
     Promise.all(bytes.map((file) => fetch(file + (file.startsWith("/js/") ? lazyAssetStamp(file) : ""), { priority: "low" }).catch(() => 0))).then(() =>
-      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => (warmDocumentEngine(), docWarmed && loadCodeMirror())).then((CM) => CM && (window.requestIdleCallback || setTimeout)(() => ensureDocEditor()))), 1000)
+      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => (window.warmDocumentEngine(), docWarmed && window.loadCodeMirror())).then((CM) => CM && (window.requestIdleCallback || setTimeout)(() => ensureDocEditor()))), 1000)
     );
   });
 }

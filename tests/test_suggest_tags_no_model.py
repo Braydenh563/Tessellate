@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import logging
 
-from tessellate.api import routes_entries
+from tessellate.entry import assist
+
 
 
 def test_no_model_suggests_the_notebooks_own_tags_without_a_traceback(client, caplog):
@@ -20,7 +21,7 @@ def test_no_model_suggests_the_notebooks_own_tags_without_a_traceback(client, ca
 
     for text in ("Netting the beans in the garden", "Garden beds need compost", "Garden tomatoes staked"):
         client.post("/entries", json={"content": text, "tags": ["garden"]})
-    routes_entries._SAID_ONCE.discard("no-model-tags")
+    assist._SAID_ONCE.discard("no-model-tags")
     caplog.set_level(logging.INFO, logger="memorymap")
     first = client.post("/entries/suggest-tags", json={"content": "beans in the garden need netting"})
     again = client.post("/entries/suggest-tags", json={"content": "the garden beans again"})
@@ -40,7 +41,7 @@ def test_a_failing_model_falls_back_to_the_notebooks_own(ai_client, fake_ollama,
     def boom(*args, **kwargs):
         raise RuntimeError("model went away")
 
-    monkeypatch.setattr(routes_entries.librarian, "suggest_tags", boom)
+    monkeypatch.setattr(assist.librarian, "suggest_tags", boom)
     response = ai_client.post("/entries/suggest-tags", json={"content": "beans in the garden"})
     assert response.status_code == 200
     assert "garden" in response.json()["suggested_tags"]

@@ -17,8 +17,16 @@ import pytest
 
 from tessellate.api.routes_settings_transfer import _parse_frontmatter
 from tessellate.core import deps
+from tessellate.core.database import Entry
 from tessellate.entry import app_import, export_folder
 from tests.fixtures import notebook500
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def first_difference(a: object, b: object, path: str = "") -> str | None:
@@ -154,6 +162,26 @@ def test_the_sidecar_wins_over_the_front_matter(exported):
     assert after["notes"][entry_id]["category"] == sidecar["category"]
 
 
+def test_a_sidecars_groups_and_extra_categories_come_back(exported):
+    """L-world-class-692: the export writes `groups` and `also_in`; the import restores them."""
+    from tessellate.repo import memberships
+
+    _, data = exported
+    source = zipfile.ZipFile(io.BytesIO(data))
+    row = json.loads(source.read("index.json"))["notes"][3]
+    edited = io.BytesIO()
+    with zipfile.ZipFile(edited, "w") as archive:
+        for name in source.namelist():
+            body = source.read(name)
+            if name == row["sidecar"]:
+                body = json.dumps({**json.loads(body), "also_in": ["Ideas"], "groups": ["Trip plan"]}).encode()
+            archive.writestr(name, body)
+    session, _, written = _import(edited.getvalue())
+    entry = session.get(Entry, written["idmap"][json.loads(source.read(row["sidecar"]))["id"]])
+    assert memberships.for_one(session, entry) == (["Ideas"], ["Trip plan"])
+    session.close()
+
+
 def test_a_note_with_no_sidecar_reads_its_front_matter(exported):
     _, data = exported
     source = zipfile.ZipFile(io.BytesIO(data))
@@ -241,7 +269,7 @@ def test_a_connector_and_a_map_reference_come_back_joined_to_their_items(client,
 def test_a_note_binned_long_ago_comes_in_with_a_fresh_bin_period(exported):
     """It used to keep its old date, so the next start purged what the import
     had just made. A note still inside the bin's days keeps its own date."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import timedelta, timezone
 
     from sqlalchemy import select
 
@@ -252,7 +280,7 @@ def test_a_note_binned_long_ago_comes_in_with_a_fresh_bin_period(exported):
     try:
         binned = list(session.scalars(select(Entry).where(Entry.is_deleted.is_(True))))
         assert len(binned) == len([r for r in before["notes"].values() if r["is_deleted"]]) > 0
-        floor = datetime.now(timezone.utc) - timedelta(minutes=5)
+        floor = SUITE_NOW - timedelta(minutes=5)
         for entry in binned:
             stamp = entry.deleted_at if entry.deleted_at.tzinfo else entry.deleted_at.replace(tzinfo=timezone.utc)
             assert stamp > floor, (entry.id, entry.deleted_at)

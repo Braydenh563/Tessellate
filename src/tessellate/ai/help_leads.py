@@ -69,6 +69,7 @@ TOPIC_LEADS: dict[str, str] = {
     "filing-settings": "Ask me when filing is not sure, the search model at launch and the filing style.",
     "suggested-tags": "Add or turn down the tags Atlas suggested when it filed a note.",
     "tag-manager": "Rename, merge or remove tags across all your notes at once.",
+    "note-groups": "Gather notes by hand into a group, or file one note under more than one category.",
     "manage-categories": "Make, rename, merge, split or delete categories without losing notes.",
     "tidy": "Reviews that find loose ends in your notes and help you fix them, with no AI.",
     # Asking Atlas
