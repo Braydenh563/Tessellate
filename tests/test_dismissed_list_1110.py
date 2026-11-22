@@ -29,7 +29,7 @@ def test_every_kind_of_no_is_listed_once_with_words_not_ids(client, session):
     b = _note(client, "Boiler service history")
     sam = _entity(session, "Sam", a["id"])
     lee = _entity(session, "Sam Lee", a["id"])
-    client.post("/suggestions/merges/dismiss", json={"a": sam, "b": lee, "signals": ["part_name"]})
+    client.post("/learned/corrections", json={"kind": "dismiss_merge", "subject": {"a": sam, "b": lee, "signals": ["part_name"]}})
     client.post("/entries/tensions/dismiss", json={"earlier_id": a["id"], "later_id": b["id"]})
     client.post(f"/entries/{a['id']}/suggested-tags", json={"discard": ["Study", "uni"]})
     learning.record(session, kind="dismiss_resurface", subject={"entry_id": b["id"]})
@@ -55,7 +55,7 @@ def test_restoring_one_row_offers_that_suggestion_again_and_leaves_the_rest(clie
     a = _note(client, "one")
     sam = _entity(session, "Sam", a["id"])
     lee = _entity(session, "Sam Lee", a["id"])
-    client.post("/suggestions/merges/dismiss", json={"a": sam, "b": lee, "signals": ["part_name"]})
+    client.post("/learned/corrections", json={"kind": "dismiss_merge", "subject": {"a": sam, "b": lee, "signals": ["part_name"]}})
     learning.record(session, kind="dismiss_resurface", subject={"entry_id": a["id"]})
     session.commit()
     assert client.get("/suggestions").json()["merges"] == []

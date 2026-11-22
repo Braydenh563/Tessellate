@@ -171,7 +171,7 @@ def test_a_dismissed_merge_stays_dismissed(client, session):
     x = _entity(session, "Sam", a["id"])
     y = _entity(session, "Sam Lee", a["id"])
     assert client.get("/suggestions").json()["merges"]
-    client.post("/suggestions/merges/dismiss", json={"a": x, "b": y, "signals": ["part_name"]})
+    client.post("/learned/corrections", json={"kind": "dismiss_merge", "subject": {"a": x, "b": y, "signals": ["part_name"]}})
     assert client.get("/suggestions").json()["merges"] == []
 
 
@@ -216,7 +216,7 @@ def test_a_dismissed_type_stays_dismissed_and_a_private_end_is_never_offered(cli
     target = _note(client, "# Kiln two\n\nbody")
     holder = _note(client, "# Plan\n\nBackground: [[Kiln two]] is the gas one.")
     row = client.get("/suggestions").json()["types"][0]
-    client.post("/suggestions/types/dismiss", json={"link_id": row["link_id"], "link_type": row["link_type"]})
+    client.post("/learned/corrections", json={"kind": "dismiss_link_type", "subject": {"link_id": row["link_id"], "link_type": row["link_type"], "signals": [row["link_type"]]}})
     assert client.get("/suggestions").json()["types"] == []
 
     other = _note(client, "# Kiln three\n\nbody")
@@ -310,7 +310,7 @@ def test_a_dismissed_merge_comes_back_when_dismissals_are_cleared_and_goes_again
     a = _note(client, "one")
     x = _entity(session, "Sam", a["id"])
     y = _entity(session, "Sam Lee", a["id"])
-    client.post("/suggestions/merges/dismiss", json={"a": x, "b": y, "signals": ["part_name"]})
+    client.post("/learned/corrections", json={"kind": "dismiss_merge", "subject": {"a": x, "b": y, "signals": ["part_name"]}})
     body1 = client.get("/suggestions").json()
     assert body1["merges"] == []
     body2 = client.get("/suggestions/dismissed").json()

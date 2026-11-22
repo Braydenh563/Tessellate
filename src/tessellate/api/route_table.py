@@ -60,9 +60,7 @@ PATHS: dict[str, tuple[str, ...]] = {
     'routes_inbox.router': (
         '/suggestions',
         '/suggestions/merges/accept',
-        '/suggestions/merges/dismiss',
         '/suggestions/types/accept',
-        '/suggestions/types/dismiss',
         '/suggestions/dismissed',
         '/suggestions/dismissed/clear',
         '/suggestions/dismissed/restore',

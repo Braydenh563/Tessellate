@@ -212,3 +212,16 @@ def test_the_unused_routes_report_sees_a_lazy_only_route():
     assert lazy_path in listed
     assert "/health" in listed
     assert not {path for path, _m, _n in module.unreferenced(_fresh(), corpus=lazy_path)} & {lazy_path}
+
+
+def test_every_route_on_the_unused_routes_allow_list_is_still_a_route():
+    """An allow-list entry names a caller the text search cannot see; once its
+    route is gone the entry would hide nothing and must go with it."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("unused_routes_allow", ROOT / "scripts" / "unused_routes.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    paths = {path for path, _route in lazy_routes.flat_routes(_fresh())}
+    assert sorted(set(module.ALLOWED) - paths) == []
+    assert all(reason.strip() for reason in module.ALLOWED.values())
