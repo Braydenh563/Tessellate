@@ -11,6 +11,7 @@ run here in node so every expansion is held to the exact text it must produce.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -39,15 +40,29 @@ def _region() -> str:
 
 def _function(path: Path, name: str) -> str:
     #: app.js means the app's code, every piece of it (tests/_app_js.py).
-    text = app_js_text() if path == APP_JS else path.read_text(encoding="utf-8")
+    text = app_js_text() if path == APP_JS else frontend_text(path.name) if path == DOCUMENTS_JS else path.read_text(encoding="utf-8")
     start = text.index(f"function {name}(")
     return text[start : text.index("\n}\n", start) + 2]
+
+
+def _picker_shortcodes() -> str:
+    """The icon picker's own emoji data and `window.iconShortcodes`, cut out of
+    its file: the completion's names are aliases of the picker's emoji and the
+    picker is a lazy script, so the harness stands in for it with the real text."""
+    text = (ROOT / "frontend" / "js" / "icon-picker.js").read_text(encoding="utf-8")
+    source = text[text.index("const ICON_EMOJI_SOURCE = [") : text.index("\n  ];", text.index("const ICON_EMOJI_SOURCE = ["))] + "\n];"
+    codes = text[text.index("const ICON_SHORTCODES ="):]
+    codes = codes[: codes.index(";\n") + 2]
+    fn = text[text.index("window.iconShortcodes = () => {"):]
+    fn = fn[: fn.index("\n  };") + 5]
+    return f"const window = {{}}; const iconPickerState = {{}}; function ensureModule() {{}}\n{source}\n{codes}\n{fn}\n"
 
 
 def run(calls: list) -> list:
     """Evaluate `[name, *args]` calls against the region, in node."""
     script = (
-        _region()
+        _picker_shortcodes()
+        + _region()
         + "\n"
         + _function(PREFS_JS, "nounCount")
         + "\n"
@@ -162,8 +177,8 @@ def test_table_NxM_is_columns_by_rows_with_the_first_header_chosen() -> None:
 
 @node
 def test_todo_callout_and_hr_write_their_markdown() -> None:
-    todo, callout, hr = run([["options", "todo", ""], ["options", "callout", ""], ["options", "hr", ""]])
-    assert todo == [["todo", "A task to tick", "- [ ] ", None]]
+    task, callout, hr = run([["options", "todo", ""], ["options", "callout", ""], ["options", "hr", ""]])
+    assert task == [["todo", "A task to tick", "- [ ] ", None]]
     assert [r[2] for r in callout] == ["> [!note]\n> ", "> [!tip]\n> ", "> [!warning]\n> "]
     assert hr[0][2] == "---\n"
 
@@ -417,7 +432,7 @@ def test_two_hyphens_make_a_dash_except_where_markdown_needs_them() -> None:
 
 def test_the_list_offers_the_expansions_and_enter_takes_one() -> None:
     """The rows reach the prose popup, and Enter is theirs (never a word row's)."""
-    docs = DOCUMENTS_JS.read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     render = _function(DOCUMENTS_JS, "renderDocComplete")
     assert "docFillAt(box)" in render
     fill = _function(DOCUMENTS_JS, "docFillAt")

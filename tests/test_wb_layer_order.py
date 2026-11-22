@@ -1,4 +1,4 @@
-"""F2, draw.io's layer rows that were still open: a layer's menu brings the whole layer to the front or sends it to
+"""F2, draw.io's last layer rows, built: a layer's menu brings the whole layer to the front or sends it to
 the back (its items keep their order among themselves) and duplicates it onto a layer of its own.
 
 The module runs in node against a stand-in for the board's lists; the board's own stacking functions are cut out of
@@ -17,7 +17,7 @@ from tests import _js_scope
 from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:
@@ -101,4 +101,4 @@ def test_the_layer_menu_the_bundle_and_the_help_agree():
     assert "/js/whiteboard-layers-more.js" in script_file_text("lazy-entries.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
     #: Duplicate is one Undo step: the copy, the new layer and the move are bundled.
-    assert 'action: "batch"' in src and "wbUndoStack.splice(mark)" in src
+    assert 'action: "batch"' in src and "wbStacks.undo.splice(mark)" in src  # L-whiteboard-52: read through the wbStacks surface

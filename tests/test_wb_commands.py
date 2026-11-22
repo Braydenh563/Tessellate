@@ -9,6 +9,7 @@ holds each row's words and key to the table's, so renaming a control renames
 it everywhere (standing order 13).
 """
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text
 import re
 from pathlib import Path
@@ -17,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _table() -> dict:
@@ -86,9 +87,8 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     digit on a map, by three palette rows and by the keys sheet's row.
     bm1005-mapmulti.js check 5: Alt+1 1 topic shown, Alt+2 5, Alt+3 all 6,
     one Ctrl+Z puts the folds back; 1440 light and 390 dark."""
-    js = ROOT / "frontend" / "js"
-    board = (js / "whiteboard.js").read_text(encoding="utf-8")
-    mapjs = (js / "whiteboard-map.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
+    mapjs = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     assert "async function wbMapFoldToLevel(level)" in mapjs
     assert '"wbMapFoldToLevel"' in board[board.index("const WB_RECORDED = [") :][:900]
     assert "/^Digit[1-9]$/.test(e.code) && wbIsMap()" in board
@@ -97,3 +97,16 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     assert 'keys: ["Alt+1 to 9"]' in COMMANDS
     help_text = help_chat_text()
     assert "Alt+1 to Alt+9 show that many levels" in help_text
+
+
+def test_the_more_sheet_takes_the_one_filter_field_and_keeps_rules_honest():
+    """L367: a map's More sheet is 59 to 62 rows at 390 px. It uses
+    `listFilter` (DESIGN.md's long-list recipe), clears it on every open, and
+    the separator sync skips the field and its empty note."""
+    body = COMMANDS[COMMANDS.index("function wbInitMoreMenu(") :]
+    body = body[: body.index("\n}\n")]
+    assert 'listFilter(menu, { label: "Filter commands", inside: true' in body
+    assert 'filter.input.value = "";' in body and "wbSyncMoreMenu(menu);" in body
+    sync = COMMANDS[COMMANDS.index("function wbSyncMoreMenu(") :]
+    sync = sync[: sync.index("\n}\n")]
+    assert '"list-filter"' in sync and '"list-filter-empty"' in sync

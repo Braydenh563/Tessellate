@@ -32,6 +32,10 @@ const MEASURE = `window.__m = (rootSel) => {
   const rs = ctrls.map(seen);
   for (let i = 0; i < ctrls.length; i++) for (let j = i + 1; j < ctrls.length; j++) {
     if (ctrls[i].contains(ctrls[j]) || ctrls[j].contains(ctrls[i])) continue;
+    // A rail row's own ⋮ overlays its title by design (INBOX 722, DOCUMENTS_PLAN 1121 row 7, decided:
+    // keep the overlay); within one row it is no overlap. Across rows it still counts.
+    const ownMenu = (c, d) => { const m = c.closest('.doc-item-menu, .entry-actions, .category-actions'); const row = m && m.closest('li, .doc-item'); return !!(row && row.contains(d) && !m.contains(d)); };
+    if (ownMenu(ctrls[i], ctrls[j]) || ownMenu(ctrls[j], ctrls[i])) continue;
     const a = rs[i], b = rs[j];
     const ix = Math.min(a.right, b.right) - Math.max(a.left, b.left), iy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
     if (ix > 2 && iy > 2) { overlaps++; if (ovl.length < 4) ovl.push((ctrls[i].id || ctrls[i].className.toString().slice(0,20) + ':' + ctrls[i].textContent.trim().slice(0, 10)) + '|' + (ctrls[j].id || ctrls[j].className.toString().slice(0,20) + ':' + (ctrls[j].getAttribute('aria-label')||ctrls[j].textContent).trim().slice(0, 14))); }

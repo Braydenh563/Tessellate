@@ -31,7 +31,7 @@
 //    list, filters, sort, selection, cards, bulk actions' helpers, and
 //    "reading a binned note in full" (§36G, openBinnedNote/closeBinnedReader
 //    and the #binned-overlay reader). The binned-note reader is included
-//    deliberately, resolving this split's own open question: it is called
+//    deliberately, settling a question this split raised: it is called
 //    from nowhere but this file's own openLibraryItem(), and its overlay
 //    exists only to serve the Library's Bin filter chip, it is Library's
 //    own code that happened to get its own §-number and its own "---"
@@ -53,8 +53,8 @@
 //    "library")` branch** in app.js (which already exists, and already
 //    calls loadLibrary()), merging the two would be a real behaviour
 //    change (one code path instead of two) riding along with a split, which
-//    the split's own rules forbid. Logged to ROADMAP.md instead as a
-//    worthwhile follow-up, not built here.
+//    the split's own rules forbid. The wrapper has since been removed: the
+//    AI Skills page renders from its own sub-tab handler (`librarySubtabs`).
 //  - whiteboard.js:82-91: two `Set()`s (the image gallery's expanded-caption
 //    set, since folded into `openRowReadings`, and libraryDocsSelection) that
 //    whiteboard.js declared alongside its own
@@ -200,6 +200,8 @@ function docTypeMenu(onPick, ariaLabel) {
 //: How big a list row says a document is: a code file's lines, a prose
 //: document's words (1031 CE8: "19 words" for a script). Both lists use it.
 function docSizeText(doc, withKind = false) {
+  //: A diagram's words are Mermaid keywords; the row says what it is instead (R11).
+  if (doc.file_type === "mmd") return "Diagram";
   const kind = docFileTypes.find((t) => t.ext === doc.file_type);
   if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
   return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
@@ -645,7 +647,7 @@ function librarySorted(items) {
 // Meaning-matched note ids for the Library's current query, or null when the
 // Semantic toggle is off (or the query is empty, or the search failed).
 //
-// **The design question this answers, which is why it was not built sooner.**
+// **The design question this answers, which is why it came late.**
 // The Library mixes notes, documents, chats, images and skills, and only
 // *notes* have embeddings: nothing in this app has ever embedded a PDF, a
 // conversation or an image. So "semantic search over the Library" has no
@@ -1373,6 +1375,19 @@ function renderLibraryContextBars() {
   // is offering a button that cannot work.
   const allBinned = chosen.every((key) => key.startsWith("archived:"));
   $("library-bulk-restore").classList.toggle("hidden", !allBinned);
+  //: Tags, category and a property for the notes ticked (WORLD_CLASS_PLAN
+  //: decision 65, L-world-class-392): the dialogs the Notes bar opens, given
+  //: the notes' ids. Documents, chats and files carry none of the three.
+  const more = $("library-batch-more-host");
+  const notes = () => librarySelectedItems().filter((i) => i.kind === "note").map((i) => i.id);
+  if (!more.childElementCount) {
+    more.appendChild(kebabMenu([
+      { label: "ph:tag Tags…", run: () => openBulkTags(notes()), group: "edit" },
+      { label: "ph:folder-simple Move to category…", run: () => chooseNoteCategory(notes()), group: "edit" },
+      { label: "ph:list-dashes Set a property…", run: () => openBulkProperty(notes()), group: "edit" },
+    ], "More for the selected notes"));
+  }
+  more.classList.toggle("hidden", !chosen.some((key) => key.startsWith("note:")));
 }
 
 function librarySelectedItems() {
@@ -1798,7 +1813,8 @@ function ensureLibraryGridStop(grid) {
 document.addEventListener("documents-undone", () => {
   if ($("library-grid")?.offsetParent) loadLibrary();
 });
-$("library-grid").addEventListener("focusin", (event) => {
+//: `onSurface`: a bare `$` here built the whole Library page (589 elements) at the load of a Documents open.
+onSurface("library", () => $("library-grid").addEventListener("focusin", (event) => {
   const card = event.target.closest?.(".library-card");
   if (!card || card.querySelector(".card-open")?.tabIndex === 0) return;
   const grid = event.currentTarget;
@@ -1807,7 +1823,7 @@ $("library-grid").addEventListener("focusin", (event) => {
   }
   setLibraryCardStop(card, true);
   grid.dataset.stopKey = card.dataset.stopKey || "";
-});
+}));
 
 // Each kind opens where it is actually worked on. The Library finds things; it
 // is not a fifth editor.
@@ -1931,39 +1947,45 @@ function closeBinnedReader() {
   $("binned-overlay").classList.add("hidden");
 }
 
-$("binned-close").addEventListener("click", closeBinnedReader);
-$("binned-restore").addEventListener("click", async () => {
-  const id = binnedNoteId;
-  if (!id) return;
-  try {
-    await apiJson(`/entries/${id}/restore`, { method: "POST" });
-    pushBinPairUndo("Restored a note from the bin", `/entries/${id}`, `/entries/${id}/restore`, true, () => Promise.all([refreshEntries([id]), loadLibrary()]));
-    toast("Restored.");
-  } catch (error) {
-    toast(voiceLine("failed", { what: "restore that note", why: error.message }), true);
-    return;
-  }
-  closeBinnedReader();
-  loadLibrary();
-  loadEntries();
+onSurface("library", () => {
+  $("binned-close").addEventListener("click", closeBinnedReader);
 });
-$("binned-purge").addEventListener("click", async () => {
-  const id = binnedNoteId;
-  if (!id) return;
-  // The note is on screen and has just been read, so the dialog does not have
-  // to quote it back the way the old bin row's did: "this cannot be undone"
-  // is the whole of what is left to say.
-  if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
-  try {
-    await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
-    undoStoreClear.purged("note", id);
-    toast("Deleted for good.");
-  } catch (error) {
-    toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
-    return;
-  }
-  closeBinnedReader();
-  loadLibrary();
+onSurface("library", () => {
+  $("binned-restore").addEventListener("click", async () => {
+    const id = binnedNoteId;
+    if (!id) return;
+    try {
+      await apiJson(`/entries/${id}/restore`, { method: "POST" });
+      pushBinPairUndo("Restored a note from the bin", `/entries/${id}`, `/entries/${id}/restore`, true, () => Promise.all([refreshEntries([id]), loadLibrary()]));
+      toast("Restored.");
+    } catch (error) {
+      toast(voiceLine("failed", { what: "restore that note", why: error.message }), true);
+      return;
+    }
+    closeBinnedReader();
+    loadLibrary();
+    loadEntries();
+  });
+});
+onSurface("library", () => {
+  $("binned-purge").addEventListener("click", async () => {
+    const id = binnedNoteId;
+    if (!id) return;
+    // The note is on screen and has just been read, so the dialog does not have
+    // to quote it back the way the old bin row's did: "this cannot be undone"
+    // is the whole of what is left to say.
+    if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
+    try {
+      await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
+      undoStoreClear.purged("note", id);
+      toast("Deleted for good.");
+    } catch (error) {
+      toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
+      return;
+    }
+    closeBinnedReader();
+    loadLibrary();
+  });
 });
 
 // BACKLOG §22's still-open half of "take me to the thing the agent just
@@ -2011,11 +2033,11 @@ async function flashLibraryItem(kind, id) {
 // attached to it. The skill editor lives in Settings, Skills, so this opens
 // that with a blank form rather than growing a second editor that would then
 // have to be kept in step with the first.
-$("skills-add-new")?.addEventListener("click", async () => {
+onSurface("library", () => $("skills-add-new")?.addEventListener("click", async () => {
   await openSettingsModal("skills");
   stopEditingSkill();           // clears the form and resets the button label
   $("skill-name")?.focus();
-});
+}));
 
 // The Library (§4, §36F). Filter and sort are first-class here rather than an
 // afterthought, so they are wired like controls: every change re-renders from
@@ -2069,13 +2091,17 @@ async function runLibrarySearch() {
   libraryCurrentPage = 1; // a new search can move an item off whatever page it was on
   renderLibrary();
 }
-$("library-semantic-toggle").addEventListener("change", () => {
-  syncLibraryFilterButton();
-  runLibrarySearch();
+onSurface("library", () => {
+  $("library-semantic-toggle").addEventListener("change", () => {
+    syncLibraryFilterButton();
+    runLibrarySearch();
+  });
 });
-$("library-search").addEventListener("input", () => {
-  clearTimeout(librarySearchDebounceTimeout);
-  librarySearchDebounceTimeout = setTimeout(runLibrarySearch, 150);
+onSurface("library", () => {
+  $("library-search").addEventListener("input", () => {
+    clearTimeout(librarySearchDebounceTimeout);
+    librarySearchDebounceTimeout = setTimeout(runLibrarySearch, 150);
+  });
 });
 //: **The sort is remembered, as every other Library sort is** (libtl-0926):
 //: Documents (`library-docs-sort`) and Images (`LIBRARY_MEDIA_SORT_KEY`)
@@ -2088,16 +2114,20 @@ $("library-search").addEventListener("input", () => {
 //: a `change` makes it read again, which would also render a Library that
 //: has not loaded yet.
 const LIBRARY_SORT_KEY = "library-sort";
-(() => {
-  const select = $("library-sort");
-  let stored = null;
-  try { stored = prefs.get(LIBRARY_SORT_KEY, null); } catch { /* a private window */ }
-  if (stored && [...select.options].some((o) => o.value === stored)) select.value = stored;
-})();
-$("library-sort").addEventListener("change", (event) => {
-  try { prefs.set(LIBRARY_SORT_KEY, event.target.value); } catch { /* a private window */ }
-  libraryCurrentPage = 1;
-  renderLibrary();
+onSurface("library", () => {
+  (() => {
+    const select = $("library-sort");
+    let stored = null;
+    try { stored = prefs.get(LIBRARY_SORT_KEY, null); } catch { /* a private window */ }
+    if (stored && [...select.options].some((o) => o.value === stored)) select.value = stored;
+  })();
+});
+onSurface("library", () => {
+  $("library-sort").addEventListener("change", (event) => {
+    try { prefs.set(LIBRARY_SORT_KEY, event.target.value); } catch { /* a private window */ }
+    libraryCurrentPage = 1;
+    renderLibrary();
+  });
 });
 //: The Filter menu's button says when a filter is on (Phase 8): a menu that
 //: hides "Include bin" must not also hide that the bin is being shown.
@@ -2107,10 +2137,12 @@ function syncLibraryFilterButton() {
   summary?.classList.toggle("is-on", on);
   summary?.setAttribute("aria-pressed", String(on));
 }
-$("library-show-binned").addEventListener("change", () => {
-  libraryCurrentPage = 1;
-  syncLibraryFilterButton();
-  renderLibrary();
+onSurface("library", () => {
+  $("library-show-binned").addEventListener("change", () => {
+    libraryCurrentPage = 1;
+    syncLibraryFilterButton();
+    renderLibrary();
+  });
 });
 for (const button of document.querySelectorAll("#library-view button, #library-boards-view button")) {
   button.addEventListener("click", () => {
@@ -2124,40 +2156,44 @@ for (const button of document.querySelectorAll("#library-view button, #library-b
   });
 }
 // The bin's own control, on the bin's own screen.
-$("library-bin-empty").addEventListener("click", async () => {
-  const count = libraryCounts.archived || 0;
-  const ok = await confirmDialog(
-    `Permanently delete ${nounCount(count, "note")} in the bin?\n\n` +
-      "This cannot be undone."
-  );
-  if (!ok) return;
-  //: The binned ids, asked for before they are gone, so what this device kept of
-  //: each goes with it (`undoStoreClear.purged`).
-  const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
-  try {
-    await apiJson("/recycle-bin/empty", { method: "POST" });
-    for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
-  } catch (e) {
-    // Was unconditional before: a failed request still showed "The bin is
-    // empty." right under its own error toast, one saying it worked and one
-    // saying it didn't, for the same click.
-    toast(e.message, true);
-    return;
-  }
-  toast("The bin is empty.");
-  loadLibrary();
-  loadEntries();
+onSurface("library", () => {
+  $("library-bin-empty").addEventListener("click", async () => {
+    const count = libraryCounts.archived || 0;
+    const ok = await confirmDialog(
+      `Permanently delete ${nounCount(count, "note")} in the bin?\n\n` +
+        "This cannot be undone."
+    );
+    if (!ok) return;
+    //: The binned ids, asked for before they are gone, so what this device kept of
+    //: each goes with it (`undoStoreClear.purged`).
+    const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
+    try {
+      await apiJson("/recycle-bin/empty", { method: "POST" });
+      for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
+    } catch (e) {
+      // Was unconditional before: a failed request still showed "The bin is
+      // empty." right under its own error toast, one saying it worked and one
+      // saying it didn't, for the same click.
+      toast(e.message, true);
+      return;
+    }
+    toast("The bin is empty.");
+    loadLibrary();
+    loadEntries();
+  });
 });
 
 // The activity log as a file. A download needs the auth header, so the bytes
 // are fetched and handed to saveFile, the way every other export is.
-$("library-activity-export").addEventListener("click", async () => {
-  try {
-    const response = await api("/audit/export.csv");
-    await saveFile("tessellate-activity.csv", await response.blob());
-  } catch (e) {
-    toast(e.message, true);
-  }
+onSurface("library", () => {
+  $("library-activity-export").addEventListener("click", async () => {
+    try {
+      const response = await api("/audit/export.csv");
+      await saveFile("tessellate-activity.csv", await response.blob());
+    } catch (e) {
+      toast(e.message, true);
+    }
+  });
 });
 
 // --- bulk actions -------------------------------------------------------------
@@ -2165,123 +2201,133 @@ $("library-activity-export").addEventListener("click", async () => {
 // doing one thing to nine things. Every one of these confirms with a *count*,
 // because "delete 9 items" is the sentence that stops a mistake and "are you
 // sure?" is the one that doesn't.
-$("library-clear-selection").addEventListener("click", () => {
-  librarySelection = new Set();
-  renderLibrary();
+onSurface("library", () => {
+  $("library-clear-selection").addEventListener("click", () => {
+    librarySelection = new Set();
+    renderLibrary();
+  });
 });
-$("library-bulk-open").addEventListener("click", () => {
-  const chosen = librarySelectedItems();
-  if (!chosen.length) return;
-  // One thing opens; several would be several tab switches ending wherever the
-  // last one landed, so the honest answer is to open the first and say so.
-  if (chosen.length > 1) toast(`Opening the first of ${chosen.length}.`);
-  openLibraryItem(chosen[0]);
+onSurface("library", () => {
+  $("library-bulk-open").addEventListener("click", () => {
+    const chosen = librarySelectedItems();
+    if (!chosen.length) return;
+    // One thing opens; several would be several tab switches ending wherever the
+    // last one landed, so the honest answer is to open the first and say so.
+    if (chosen.length > 1) toast(`Opening the first of ${chosen.length}.`);
+    openLibraryItem(chosen[0]);
+  });
 });
-$("library-bulk-restore").addEventListener("click", async () => {
-  const chosen = librarySelectedItems().filter((i) => i.kind === "archived");
-  if (!chosen.length) return;
-  // Was `.catch(() => {})` then an unconditional "Restored N notes." for
-  // every item *attempted*: a per-item 404/500 was silently swallowed and
-  // still counted as a success. Track real outcomes instead.
-  let restored = 0;
-  const back = [];
-  for (const item of chosen) {
-    try {
-      await apiJson(binRoutes(item).restore, { method: "POST" });
-      restored++;
-      if (item.subtype !== "reading") back.push(item);
-    } catch {
-      // counted below
-    }
-  }
-  if (back.length) {
-    pushRoutePairUndo(
-      `Restored ${nounCount(back.length, "item")} from the bin`,
-      back.map((item) => [binRoutes(item).bin, "DELETE"]),
-      back.map((item) => [binRoutes(item).restore, "POST"]),
-      () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
-    );
-  }
-  if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
-  const failed = chosen.length - restored;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
-  loadLibrary();
-  loadEntries();
-  loadReminders();
-});
-$("library-bulk-delete").addEventListener("click", async () => {
-  const chosen = librarySelectedItems();
-  if (!chosen.length) return;
-  // Binned notes are destroyed; everything else is deleted the way its own
-  // menu deletes it. Saying which is which in the confirmation matters, 
-  // "delete" means recoverable for a note and permanent for one already binned.
-  const permanent = chosen.filter((i) => i.kind === "archived").length;
-  const ok = await confirmDialog(
-    `Delete ${nounCount(chosen.length, "item")}?\n\n` +
-      (permanent
-        ? `${permanent} of them ${permanent === 1 ? "is" : "are"} already in the bin and will be destroyed permanently.`
-        : "Notes and documents go to the bin; chats are deleted for good.")
-  );
-  if (!ok) return;
-  // Same fix as library-bulk-restore just above: a per-item failure used to
-  // be swallowed by `.catch(() => {})` and still counted toward the
-  // unconditional "Deleted N items." toast. Track what actually succeeded.
-  let deleted = 0;
-  //: What each recoverable delete needs to come back (INBOX 898): a note or a
-  //: document its bin's restore, a chat the row its DELETE answered with.
-  const comeBack = [];
-  for (const item of chosen) {
-    const route =
-      item.kind === "archived"
-        ? [binRoutes(item).purge, "DELETE"]
-        : item.kind === "note"
-          ? [`/entries/${item.id}`, "DELETE"]
-          : item.kind === "document" || item.kind === "diagram"
-            ? [`/documents/${item.id}`, "DELETE"]
-            : item.kind === "chat"
-              ? [`/conversations/${item.id}`, "DELETE"]
-              : item.kind === "file"
-                ? [`/files/${item.id}`, "DELETE"]
-                : null;
-    if (!route) continue;
-    try {
-      const answer = await apiJson(route[0], { method: route[1] });
-      deleted++;
-      if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
-      if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
-      else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
-      else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
-    } catch {
-      // counted below
-    }
-  }
-  if (comeBack.length) {
-    const live = comeBack.map((c) => ({ ...c }));
-    pushUndo(
-      `Deleted ${nounCount(comeBack.length, "item")} from the Library`,
-      async () => {
-        for (const c of live) {
-          if (c.chat) await apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(c.chat) });
-          else await apiJson(c.back[0], { method: c.back[1] });
-        }
-        await Promise.all([loadLibrary(), loadEntries()]);
-      },
-      async () => {
-        for (const c of live) {
-          const answer = await apiJson(c.route[0], { method: c.route[1] });
-          if (c.chat && answer?.restore) c.chat = answer.restore;
-        }
-        await Promise.all([loadLibrary(), loadEntries()]);
+onSurface("library", () => {
+  $("library-bulk-restore").addEventListener("click", async () => {
+    const chosen = librarySelectedItems().filter((i) => i.kind === "archived");
+    if (!chosen.length) return;
+    // Was `.catch(() => {})` then an unconditional "Restored N notes." for
+    // every item *attempted*: a per-item 404/500 was silently swallowed and
+    // still counted as a success. Track real outcomes instead.
+    let restored = 0;
+    const back = [];
+    for (const item of chosen) {
+      try {
+        await apiJson(binRoutes(item).restore, { method: "POST" });
+        restored++;
+        if (item.subtype !== "reading") back.push(item);
+      } catch {
+        // counted below
       }
-    );
-  }
-  if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
-  const failed = chosen.length - deleted;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
-  loadLibrary();
-  loadEntries();
+    }
+    if (back.length) {
+      pushRoutePairUndo(
+        `Restored ${nounCount(back.length, "item")} from the bin`,
+        back.map((item) => [binRoutes(item).bin, "DELETE"]),
+        back.map((item) => [binRoutes(item).restore, "POST"]),
+        () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
+      );
+    }
+    if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
+    const failed = chosen.length - restored;
+    if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
+    loadLibrary();
+    loadEntries();
+    loadReminders();
+  });
 });
-$("library-refresh").addEventListener("click", loadLibrary);
+onSurface("library", () => {
+  $("library-bulk-delete").addEventListener("click", async () => {
+    const chosen = librarySelectedItems();
+    if (!chosen.length) return;
+    // Binned notes are destroyed; everything else is deleted the way its own
+    // menu deletes it. Saying which is which in the confirmation matters, 
+    // "delete" means recoverable for a note and permanent for one already binned.
+    const permanent = chosen.filter((i) => i.kind === "archived").length;
+    const ok = await confirmDialog(
+      `Delete ${nounCount(chosen.length, "item")}?\n\n` +
+        (permanent
+          ? `${permanent} of them ${permanent === 1 ? "is" : "are"} already in the bin and will be destroyed permanently.`
+          : "Notes and documents go to the bin; chats are deleted for good.")
+    );
+    if (!ok) return;
+    // Same fix as library-bulk-restore just above: a per-item failure used to
+    // be swallowed by `.catch(() => {})` and still counted toward the
+    // unconditional "Deleted N items." toast. Track what actually succeeded.
+    let deleted = 0;
+    //: What each recoverable delete needs to come back (INBOX 898): a note or a
+    //: document its bin's restore, a chat the row its DELETE answered with.
+    const comeBack = [];
+    for (const item of chosen) {
+      const route =
+        item.kind === "archived"
+          ? [binRoutes(item).purge, "DELETE"]
+          : item.kind === "note"
+            ? [`/entries/${item.id}`, "DELETE"]
+            : item.kind === "document" || item.kind === "diagram"
+              ? [`/documents/${item.id}`, "DELETE"]
+              : item.kind === "chat"
+                ? [`/conversations/${item.id}`, "DELETE"]
+                : item.kind === "file"
+                  ? [`/files/${item.id}`, "DELETE"]
+                  : null;
+      if (!route) continue;
+      try {
+        const answer = await apiJson(route[0], { method: route[1] });
+        deleted++;
+        if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
+        if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
+        else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
+        else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
+      } catch {
+        // counted below
+      }
+    }
+    if (comeBack.length) {
+      const live = comeBack.map((c) => ({ ...c }));
+      pushUndo(
+        `Deleted ${nounCount(comeBack.length, "item")} from the Library`,
+        async () => {
+          for (const c of live) {
+            if (c.chat) await apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(c.chat) });
+            else await apiJson(c.back[0], { method: c.back[1] });
+          }
+          await Promise.all([loadLibrary(), loadEntries()]);
+        },
+        async () => {
+          for (const c of live) {
+            const answer = await apiJson(c.route[0], { method: c.route[1] });
+            if (c.chat && answer?.restore) c.chat = answer.restore;
+          }
+          await Promise.all([loadLibrary(), loadEntries()]);
+        }
+      );
+    }
+    if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
+    const failed = chosen.length - deleted;
+    if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
+    loadLibrary();
+    loadEntries();
+  });
+});
+onSurface("library", () => {
+  $("library-refresh").addEventListener("click", loadLibrary);
+});
 
 // **The "All" tab's create button, matched to whichever filter chip is
 // active.** Reported directly: it always said "+ New document" and made a
@@ -2292,9 +2338,8 @@ $("library-refresh").addEventListener("click", loadLibrary);
 // matching button, everything else (Everything, Files, Tags, Drafts,
 // Activity, the bin) falls back to "+ New note", the fastest capture path
 // in the app, and a reasonable default when there's no single obvious
-// answer. A real "choose what to create" picker for the Everything view
-// specifically was asked for too but not built this pass, logged rather
-// than rushed; see BACKLOG.md.
+// answer. Everything and the other kinds open
+// the "choose what to create" picker (`openLibraryCreatePicker`, below).
 const LIBRARY_CREATE_BY_KIND = {
   note: {
     label: "ph:plus New note",
@@ -2329,7 +2374,7 @@ const LIBRARY_CREATE_BY_KIND = {
     },
   },
   //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramModel.door`, documents-mermaid.js), asked for a document
-  //: so a board left open under the Boards sub-tab does not take the diagram.
+  //: so a board kept open under the Boards sub-tab does not take the diagram.
   diagram: {
     label: "ph:flow-arrow New diagram",
     run: async () => {
@@ -2366,7 +2411,7 @@ const LIBRARY_CREATE_BY_KIND = {
   // "New board" on a tab called Whiteboards, which is why they reported it
   // missing.
   //
-  // It also answers the deferred half of the ask, "maybe with a way to
+  // It also answers the second half of the ask, "maybe with a way to
   // export that into a visual diagram on the whiteboard", by construction:
   // the map *is* a whiteboard, so it exports through the export button that
   // is already there.
@@ -2577,7 +2622,7 @@ function updateLibraryCreateButton() {
     btn.onclick = openLibraryCreatePicker;
   }
 }
-updateLibraryCreateButton();
+onSurface("library", updateLibraryCreateButton);
 
 // ======================= SKILLS DASHBOARD TAB =======================
 
@@ -2993,7 +3038,7 @@ function renderSkillCards(query = "") {
   empty.append(title, hint, action);
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const sort = $("skills-sort");
   if (sort) {
     sort.value = skillSort();
@@ -3011,7 +3056,7 @@ onDomReady(() => {
     skillKindFilter = event.target.value;
     renderSkillCards($("skills-search")?.value || "");
   });
-});
+}));
 
 async function renderSkillsDashboard() {
   const container = document.getElementById("skills-dashboard-list");
@@ -3158,11 +3203,13 @@ async function renderSkillsDashboard() {
 //: `#skills-logs-collapse` no longer exists in the markup; nothing here
 //: reaches for it any more.
 
-$("skills-logs-clear")?.addEventListener("click", async () => {
-  const ok = await confirmDialog("Clear the skill run log? This can't be undone.");
-  if (!ok) return;
-  await apiJson("/audit?entity_type=skill", { method: "DELETE" }).catch((e) => toast(e.message, true));
-  renderSkillLogs();
+onSurface("library", () => {
+  $("skills-logs-clear")?.addEventListener("click", async () => {
+    const ok = await confirmDialog("Clear the skill run log? This can't be undone.");
+    if (!ok) return;
+    await apiJson("/audit?entity_type=skill", { method: "DELETE" }).catch((e) => toast(e.message, true));
+    renderSkillLogs();
+  });
 });
 
 async function renderSkillLogs() {
@@ -3422,7 +3469,7 @@ function renderLibraryDocsPropertyFilter(docs) {
   select.classList.toggle("hidden", counts.size === 0);
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("library-docs-property");
   if (!select) return;
   select.addEventListener("change", () => {
@@ -3432,7 +3479,7 @@ onDomReady(() => {
     libraryDocsCurrentPage = 1;
     renderLibraryDocuments();
   });
-});
+}));
 
 const LIBRARY_DOC_SORT_KEY = "library-docs-sort";
 
@@ -3441,7 +3488,7 @@ function libraryDocSort() {
   return LIBRARY_DOC_SORTS[stored] ? stored : "newest";
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("library-docs-sort");
   if (!select) return;
   select.value = libraryDocSort();
@@ -3452,7 +3499,7 @@ onDomReady(() => {
     libraryDocsCurrentPage = 1;
     renderLibraryDocuments();
   });
-});
+}));
 
 //: Each file is its own request, so one that cannot be read does not take the
 //: others with it, and says so by name. The headers are written out in full:
@@ -3555,6 +3602,29 @@ function libraryDocsNewMount() {
       b.addEventListener("click", open);
       head.after(b);
     }
+    //: Today (L-documents-64): the day's document, opened or made from the "Daily" template, beside New
+    //: diagram. The day's title is the template's own (`docTemplateFill`), so the button and the gallery row agree by one spelling.
+    if (head && !$("library-docs-today")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-today";
+      b.type = "button";
+      b.className = "ghost small";
+      b.title = "Open today's document, or start it from the Daily template";
+      setLabel(b, "ph:calendar-check Today");
+      b.addEventListener("click", async () => {
+        await ensureModule("library");
+        const template = DOC_TEMPLATES.find((t) => t.id === "daily");
+        const day = window.docTemplateFill(template).title;
+        //: A failed look-up must not start a second copy.
+        const found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`).catch((e) => toast(voiceLine("failed", { what: "look for today's document", why: e.message }), true));
+        if (!found) return;
+        const doc = found.find((d) => (d.title || "").trim() === day);
+        switchTab("documents");
+        if (doc) openDocument(doc.id);
+        else await window.createDocument(template);
+      });
+      head.after(b);
+    }
     const empty = $("library-docs-empty");
     if (empty && !$("library-docs-empty-diagram")) {
       const b = document.createElement("button");
@@ -3577,20 +3647,28 @@ function libraryDocsNewMount() {
   slot.replaceChildren(wrap);
 }
 
+//: Sub-pages (D14): the tree, its kebab rows, `/subpage` and the breadcrumb, lazy (documents-subpages.js). Fetched as
+//: this file loads, so an editor opened without the list still draws its parents.
+lazyScript("/js/documents-subpages.js");
 async function renderLibraryDocuments() {
   const list = document.getElementById("library-docs-list");
   const empty = document.getElementById("library-docs-empty");
   const noMatch = document.getElementById("library-docs-no-match");
   if (!list) return;
-  const needle = (document.getElementById("library-docs-search")?.value || "")
-    .trim()
-    .toLowerCase();
-
+  const needle = (document.getElementById("library-docs-search")?.value || "").trim().toLowerCase();
   let docs = [];
+  // One element with a class and (optionally) text: the row below is a dozen of them.
+  const mk = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
   showSkeletons(list, 4, "li");
   //: The type table names a code card's kind; the library can open before
   //: the Documents tab has asked for it.
   await loadDocTypeTable();
+  await lazyScript("/js/documents-subpages.js");
   libraryDocsNewMount();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
@@ -3604,10 +3682,7 @@ async function renderLibraryDocuments() {
     //: and call it the oldest, and the pager would offer pages that do not
     //: exist. With `q` given the server counts the matches, not the table,
     //: so the loop ends on the size of the search.
-    docs = await apiPagedList(
-      needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents",
-      DOCUMENTS_PAGE_SIZE
-    );
+    docs = await apiPagedList(needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents", DOCUMENTS_PAGE_SIZE);
   } catch {
     list.replaceChildren();
     return surfaceFailed(empty, "your documents", renderLibraryDocuments);
@@ -3634,9 +3709,7 @@ async function renderLibraryDocuments() {
   // by a new search) - drop it from the selection too, or the bar's count
   // would go on including a row that no longer exists.
   const liveIds = new Set(docs.map((d) => d.id));
-  for (const id of [...libraryDocsSelection]) {
-    if (!liveIds.has(id)) libraryDocsSelection.delete(id);
-  }
+  for (const id of [...libraryDocsSelection]) if (!liveIds.has(id)) libraryDocsSelection.delete(id);
 
   list.replaceChildren();
   const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
@@ -3663,6 +3736,9 @@ async function renderLibraryDocuments() {
   //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
   //: an array another reader holds.
   docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
+  //: The tree, collapsed by default (D14), only on the whole list: a search or a property shows its matches flat.
+  const tree = !needle && !propertyFiltered ? window.docSubpagesPiece : null;
+  if (tree) docs = tree.order(docs);
   if (libraryDocsPageSize === "all" || !docs.length) {
     pageBar?.classList.add("hidden");
   } else {
@@ -3672,15 +3748,13 @@ async function renderLibraryDocuments() {
     const start = (libraryDocsCurrentPage - 1) * pageSize;
     docs = docs.slice(start, start + pageSize);
     pageBar?.classList.remove("hidden");
-    document.getElementById("library-docs-page-status").textContent =
-      `Page ${libraryDocsCurrentPage} of ${totalPages}`;
+    document.getElementById("library-docs-page-status").textContent = `Page ${libraryDocsCurrentPage} of ${totalPages}`;
     document.getElementById("library-docs-page-prev").disabled = libraryDocsCurrentPage <= 1;
     document.getElementById("library-docs-page-next").disabled = libraryDocsCurrentPage >= totalPages;
   }
 
   for (const doc of docs) {
     const item = document.createElement("li");
-
     // Reported: "can't rename, multi select, or delete documents in the
     // library subtab" - this row used to be nothing but the Open button
     // below. The tick and the ⋯ menu give it the same three actions a
@@ -3697,50 +3771,37 @@ async function renderLibraryDocuments() {
     const open = document.createElement("article");
     open.className = "doc-list-item";
     Object.assign(open.dataset, { obj: `document:${doc.id}`, objTitle: doc.title || "Untitled" });
-    const openDoc = () => {
-      // switchTab first, then open. Reported as "the documents subtab document
-      // cards don't even do anything": openDocument() loaded the document
-      // correctly, but the Documents *page* stayed hidden behind the Library
-      // tab, so from the outside the click did nothing at all.
-      switchTab("documents");
-      openDocument(doc.id);
-    };
+    // switchTab first, then open. Reported as "the documents subtab document
+    // cards don't even do anything": openDocument() loaded the document
+    // correctly, but the Documents *page* stayed hidden behind the Library
+    // tab, so from the outside the click did nothing at all.
+    const openDoc = () => { switchTab("documents"); openDocument(doc.id); };
     open.addEventListener("click", openDoc);
 
-    const top = document.createElement("div");
-    top.className = "doc-list-top";
-    const tick = document.createElement("input");
-    tick.type = "checkbox";
-    tick.className = "doc-list-tick";
+    const top = mk("div", "doc-list-top");
+    const tick = Object.assign(mk("input", "doc-list-tick"), { type: "checkbox" });
     tick.checked = libraryDocsSelection.has(doc.id);
     tick.setAttribute("aria-label", `Select "${doc.title || "Untitled"}"`);
     tick.addEventListener("click", (event) => event.stopPropagation());
     tick.addEventListener("change", () => {
-      if (tick.checked) libraryDocsSelection.add(doc.id);
-      else libraryDocsSelection.delete(doc.id);
+      libraryDocsSelection[tick.checked ? "add" : "delete"](doc.id);
       syncLibraryDocsSelectbar();
     });
-    const icon = document.createElement("span");
-    icon.className = "doc-list-icon";
+    const icon = mk("span", "doc-list-icon");
     setLabel(icon, "ph:file-text");
     icon.setAttribute("aria-hidden", "true");
     top.append(tick, icon);
 
-    const body = document.createElement("span");
-    body.className = "doc-list-body";
-    const title = document.createElement("span");
-    title.className = "doc-list-title";
-    title.textContent = doc.title || "Untitled";
+    const body = mk("span", "doc-list-body");
+    const title = mk("span", "doc-list-title", doc.title || "Untitled");
     cardOpener(title, openDoc);
-    const meta = document.createElement("span");
-    meta.className = "muted doc-list-meta";
+    const meta = mk("span", "muted doc-list-meta");
     // Words and when it was last touched, the two facts that tell you which
     // of five similarly-named drafts is the one you meant.
     //: A code file is its lines and its type ("6 lines · JavaScript"), not
     //: its words (1031 CE8; `docSizeText` is the one rule).
     const words = docSizeText(doc, true);
-    const when = doc.updated_at ? relativeTime(doc.updated_at) : "";
-    meta.textContent = [words, when].filter(Boolean).join(" · ");
+    meta.textContent = [words, doc.updated_at ? relativeTime(doc.updated_at) : ""].filter(Boolean).join(" · ");
     body.append(title, meta);
 
     // The document's own opening, which is the thing that actually tells four
@@ -3753,20 +3814,36 @@ async function renderLibraryDocuments() {
     //: with its own "# Title" line, so the snippet began with the title the
     //: row prints in bold one line up (`libraryTitleAndPreview`).
     const docPreview = libraryTitleAndPreview(doc.title || "", doc.preview || "", false).preview;
-    if (docPreview) {
-      const preview = document.createElement("span");
-      preview.className = "doc-list-preview";
-      preview.textContent = docPreview;
-      body.append(preview);
+    //: **A page, not a line of grey text** (INBOX 1325, L-documents-54): the heading and the opening lines on a small page,
+    //: drawn from the summary the list already has (nothing stored, nothing fetched); `.doc-list-page` in library-lazy.css.
+    const page = document.createElement("span");
+    page.className = "doc-list-page";
+    page.setAttribute("aria-hidden", "true");
+    const leaf = mk("span", "doc-list-page-leaf");
+    const leafHead = mk("span", "doc-list-page-head");
+    leafHead.textContent = doc.title || "Untitled";
+    const leafLines = mk("span", "doc-list-page-lines");
+    leafLines.textContent = docPreview;
+    leaf.append(leafHead, leafLines);
+    page.append(leaf);
+    //: The document's first picture is the page's cover (L-documents-80): the summary names it, the image loads lazily, and a broken one leaves the text page.
+    if (doc.cover) {
+      const cover = mk("img", "doc-list-page-cover");
+      cover.loading = "lazy";
+      cover.decoding = "async";
+      cover.alt = "";
+      cover.addEventListener("error", () => cover.remove());
+      cover.src = doc.cover;
+      page.append(cover);
     }
+    if (docPreview) body.append(mk("span", "doc-list-preview", docPreview));
 
     // Same three actions `libraryActions()` gives a document's card in the
     // "All" view: kept as its own copy rather than calling that function
     // directly, because its `reload` is hard-coded to `loadLibrary()` (the
     // "All" view's own data), which would leave this list showing a document
     // that was just renamed or deleted until something else refreshed it.
-    const menu = kebabMenu(
-      withLibraryCopyActions([
+    const menu = kebabMenu(withLibraryCopyActions([
         // **A read-only showcase, not the editor.** Asked for directly:
         // "make a way to view documents in the documents tab in the
         // lightbox." The row's own click already opens the full editor, 
@@ -3784,26 +3861,21 @@ async function renderLibraryDocuments() {
             toast(error.message || voiceLine("failed", { what: "open that document" }), true);
             return;
           }
-          openLightbox(
-            [
-              {
-                filename: full.title || "Untitled",
-                id: full.id,
-                //: What tells the lightbox this preview has an editor to open
-                //:, see `openDocBtn` there. Separate from `id`, which the
-                //: lightbox also uses for attachments and uploads.
-                documentId: full.id,
-                kind: full.file_type === "md" ? "markdown" : "code",
-                text: full.content || "",
-                addedAt: full.updated_at || "",
-                // No file on /media to fetch a URL from, Save reads this
-                // directly, the same route the kebab's own "Download .md"
-                // item already uses.
-                getUrl: () => `/documents/${full.id}/export.md`,
-              },
-            ],
-            0
-          );
+          openLightbox([{
+            filename: full.title || "Untitled",
+            id: full.id,
+            //: What tells the lightbox this preview has an editor to open
+            //:, see `openDocBtn` there. Separate from `id`, which the
+            //: lightbox also uses for attachments and uploads.
+            documentId: full.id,
+            kind: full.file_type === "md" ? "markdown" : "code",
+            text: full.content || "",
+            addedAt: full.updated_at || "",
+            // No file on /media to fetch a URL from, Save reads this
+            // directly, the same route the kebab's own "Download .md"
+            // item already uses.
+            getUrl: () => `/documents/${full.id}/export.md`,
+          }], 0);
         }),
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
           const next = await promptDialog("Rename this document", doc.title || "");
@@ -3811,28 +3883,20 @@ async function renderLibraryDocuments() {
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
           renderLibraryDocuments();
         }),
+        ...(window.docSubpagesPiece?.menuItems(doc) || []),
         makeMenuItem("ph:download-simple Download .md", "Save a copy as a markdown file", () => {
           downloadFromApi(`/documents/${doc.id}/export.md`, "document.md");
         }),
         makeMenuItem("ph:trash Delete", "Delete this document", async () => {
-          if (
-            !(await confirmDialog(
-              `Delete "${doc.title || "Untitled"}"? You can undo this straight after.`
-            ))
-          ) {
-            return;
-          }
           //: The fourth and last door onto the same delete. All four now go
           //: through `deleteDocumentWithUndo`, a delete that is recoverable
           //: from one menu and permanent from another is worse than one that
           //: is permanent everywhere, because it teaches a rule that is false.
-          await deleteDocumentWithUndo(doc).catch((e) => toast(e.message, true));
+          if ((await deleteDocumentWithUndo(doc, true).catch((e) => toast(e.message, true))) === false) return;
           libraryDocsSelection.delete(doc.id);
           renderLibraryDocuments();
         }),
-      ], "document", doc.title, doc.id),
-      `Actions for "${doc.title || "Untitled"}"`
-    );
+    ], "document", doc.title, doc.id), `Actions for "${doc.title || "Untitled"}"`);
     menu.classList.add("doc-list-menu");
     menu.addEventListener("click", (event) => event.stopPropagation());
     // **Reported: "the documents popup menu in the library subtab gets cut
@@ -3845,7 +3909,8 @@ async function renderLibraryDocuments() {
     // so there is no call here: wiring it twice installs two
     // MutationObservers on one menu, which do the same reparent twice.
 
-    open.append(top, body, menu);
+    open.append(top, page, body, menu);
+    tree?.decorate(item, open, doc, renderLibraryDocuments);
     item.appendChild(open);
     list.appendChild(item);
   }
@@ -3861,42 +3926,46 @@ function syncLibraryDocsSelectbar() {
   count.textContent = `${n} selected`;
 }
 
-$("library-docs-clear-selection")?.addEventListener("click", () => {
-  libraryDocsSelection.clear();
-  renderLibraryDocuments();
+onSurface("library", () => {
+  $("library-docs-clear-selection")?.addEventListener("click", () => {
+    libraryDocsSelection.clear();
+    renderLibraryDocuments();
+  });
 });
 
-$("library-docs-bulk-delete")?.addEventListener("click", async () => {
-  const ids = [...libraryDocsSelection];
-  if (!ids.length) return;
-  const ok = await confirmDialog(
-    `Delete ${nounCount(ids.length, "document")}? This cannot be undone.`
-  );
-  if (!ok) return;
-  let deleted = 0;
-  const gone = [];
-  for (const id of ids) {
-    try {
-      await apiJson(`/documents/${id}`, { method: "DELETE" });
-      deleted++;
-      gone.push(id);
-    } catch {
-      // counted below, same as the "All" view's own bulk delete
-    }
-  }
-  if (gone.length) {
-    pushRoutePairUndo(
-      `Deleted ${nounCount(gone.length, "document")}`,
-      gone.map((id) => [`/documents/${id}/restore`, "POST"]),
-      gone.map((id) => [`/documents/${id}`, "DELETE"]),
-      () => renderLibraryDocuments()
+onSurface("library", () => {
+  $("library-docs-bulk-delete")?.addEventListener("click", async () => {
+    const ids = [...libraryDocsSelection];
+    if (!ids.length) return;
+    const ok = await confirmDialog(
+      `Delete ${nounCount(ids.length, "document")}? This cannot be undone.`
     );
-  }
-  libraryDocsSelection.clear();
-  if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
-  const failed = ids.length - deleted;
-  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
-  renderLibraryDocuments();
+    if (!ok) return;
+    let deleted = 0;
+    const gone = [];
+    for (const id of ids) {
+      try {
+        await apiJson(`/documents/${id}`, { method: "DELETE" });
+        deleted++;
+        gone.push(id);
+      } catch {
+        // counted below, same as the "All" view's own bulk delete
+      }
+    }
+    if (gone.length) {
+      pushRoutePairUndo(
+        `Deleted ${nounCount(gone.length, "document")}`,
+        gone.map((id) => [`/documents/${id}/restore`, "POST"]),
+        gone.map((id) => [`/documents/${id}`, "DELETE"]),
+        () => renderLibraryDocuments()
+      );
+    }
+    libraryDocsSelection.clear();
+    if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
+    const failed = ids.length - deleted;
+    if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
+    renderLibraryDocuments();
+  });
 });
 
 // Every `/media/upload` has ever produced: note-inline images, document
@@ -4065,7 +4134,7 @@ function setLibraryMediaView(mode) {
   applyLibraryMediaView();
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   document
     .getElementById("library-media-view-preview")
     ?.addEventListener("click", () => setLibraryMediaView("preview"));
@@ -4073,7 +4142,7 @@ onDomReady(() => {
     .getElementById("library-media-view-type")
     ?.addEventListener("click", () => setLibraryMediaView("type"));
   applyLibraryMediaView();
-});
+}));
 
 //: Which of the two media sub-tabs is showing. Not persisted: it is a place
 //: in the Library, and the sub-tab strip already says which one you are on.
@@ -6011,7 +6080,7 @@ function closeOcrWorkspace() {
   const overlay = $("ocr-workspace");
   if (!overlay) return;
   overlay.classList.add("hidden");
-  //: A popover left open would be open again on the next visit, over a
+  //: A popover kept open would be open again on the next visit, over a
   //: different file.
   for (const open of overlay.querySelectorAll("details[open]")) open.open = false;
   closeHelpPopovers();
@@ -8847,7 +8916,7 @@ function buildFileReadingSummary(image, summary, images) {
   copy.title = "Copy everything read from this file";
   copy.addEventListener("click", (event) => {
     event.stopPropagation();
-    copyToClipboard(mediaReading(image), copy);
+    copyToClipboard(mediaReading(image).replace(/\f/g, ""), copy);
   });
   //: The two controls travel together on the right, with the facts on the
   //: left (the owner, 2026-09-21: "move the files tab row copy text button
@@ -8858,25 +8927,47 @@ function buildFileReadingSummary(image, summary, images) {
   headActions.className = "row library-file-reading-actions";
   headActions.append(copy, open);
   head.append(meta, headActions);
-  //: The whole reading, in place. Reported directly: "the text extracted
-  //: from this file area and dropdown in the library files subtab is
-  //: broken, it only shows the first line on the first page extracted". It
-  //: was the Phase 7.5 one-line summary working as designed, and the design
-  //: was wrong. The box is capped and scrolls (`.library-file-reading-text`),
-  //: so a forty-page scan shows its first few lines and the rest is a scroll
+  //: **A reading column, not a code box** (INBOX 827, L1). Body size and a 1.6
+  //: line height in a measure a person reads, each page under its own "Page N"
+  //: mark when the reading came page by page (the server joins pages with a form
+  //: feed), up to half the window with a fade where more waits, and a find box
+  //: once the text scrolls. The box is capped, so a forty-page scan is a scroll
   //: rather than a column that pushes every other row off the page.
-  const fullText = document.createElement("pre");
+  const fullText = document.createElement("div");
   fullText.className = "library-file-reading-text";
-  fullText.textContent = mediaReading(image);
+  fullText.tabIndex = 0;
+  fullText.setAttribute("role", "region");
+  fullText.setAttribute("aria-label", `Text read from ${image.original_name || "this file"}`);
+  const pages = mediaReading(image).split("\f").map((part) => part.trim()).filter(Boolean);
+  pages.forEach((pageText, index) => {
+    if (pages.length > 1) {
+      const mark = document.createElement("p");
+      mark.className = "library-file-page-mark";
+      mark.textContent = `Page ${index + 1}`;
+      fullText.appendChild(mark);
+    }
+    const body = document.createElement("p");
+    body.className = "library-file-page-text";
+    body.textContent = pageText;
+    fullText.appendChild(body);
+  });
   fullText.addEventListener("scroll", () => {
     readingScrollTops.set(mediaRowKey(image), fullText.scrollTop);
+    fullText.classList.toggle("is-at-end", fullText.scrollTop + fullText.clientHeight >= fullText.scrollHeight - 2);
   });
   //: After layout, not now: this element is built before it is in the
   //: document, so it has no scroll height yet and `scrollTop` would be
   //: dropped on the floor. One frame is enough, the tile is appended
   //: synchronously in the same task.
   const savedScroll = readingScrollTops.get(mediaRowKey(image)) || 0;
-  if (savedScroll > 0) requestAnimationFrame(() => { fullText.scrollTop = savedScroll; });
+  requestAnimationFrame(() => {
+    if (savedScroll > 0) fullText.scrollTop = savedScroll;
+    fullText.classList.toggle("is-at-end", fullText.scrollTop + fullText.clientHeight >= fullText.scrollHeight - 2);
+    //: Find only earns its row when the text scrolls.
+    if (fullText.scrollHeight > fullText.clientHeight + 1 && !holder.querySelector(".library-file-find")) {
+      holder.insertBefore(LinkShelf.readingFind(fullText), fullText);
+    }
+  });
   fullText.addEventListener("click", (event) => event.stopPropagation());
   holder.append(head, fullText);
   return holder;
@@ -9081,7 +9172,7 @@ function libraryMediaSort() {
 //: task you are in the middle of, and a filter that silently persisted across
 //: sessions is how a Library comes back next week apparently missing half its
 //: files. Same reasoning the notes list uses for its own transient filters.
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("library-media-sort");
   if (select) {
     select.value = libraryMediaSort();
@@ -9105,7 +9196,7 @@ onDomReady(() => {
     libraryImageOriginsOn = next;
     filterLibraryImagesGallery();
   });
-});
+}));
 
 //: **Where a picture came from: the sketch pad, or anywhere else.** Asked for
 //: directly (2026-09-23): filter the Images sub-tab by sketches and uploaded
@@ -10757,7 +10848,7 @@ function filterLibraryImagesGallery() {
 // this split registers its top-level listeners as bare statements instead
 // (safe because every <script> here loads after body content), but there
 // was no reason to change that shape while moving it.
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const librarySubtabs = document.getElementById("library-subtabs");
   const LIBRARY_SECTION_FRESH_MS = 5000;
   const librarySectionShownAt = {};
@@ -10995,6 +11086,8 @@ onDomReady(() => {
       const created = await apiJson("/bookmarks", {
         method: "POST",
         body: JSON.stringify({
+          //: The person's own Save: the server may fetch the icon (with the web on); API saves do not.
+          fetch: true,
           url,
           title: titleInput.value.trim(),
           group_name: groupInput.value.trim(),
@@ -11028,6 +11121,7 @@ onDomReady(() => {
         toast(`Saved: you already had this bookmark (${created.title || created.url}).`);
       }
       renderBookmarks();
+      LinkShelf.afterSave();
     } catch (error) {
       toast(error.message, true);
     }
@@ -11070,12 +11164,13 @@ onDomReady(() => {
     if (search) search.value = "";
     bookmarkScope.group = null;
     bookmarkScope.tag = null;
+    bookmarkScope.dupes = false;
     bookmarkStateFilter = "all";
     renderBookmarkGroupChips();
     filterBookmarks();
     search?.focus();
   });
-  $("bookmark-group-new")?.addEventListener("click", newBookmarkGroup);
+  $("bookmark-group-new")?.addEventListener("click", () => LinkShelf.newFolder());
   $("bookmark-group-manage")?.addEventListener("click", manageBookmarkGroups);
   $("bookmark-import")?.addEventListener("click", () => $("bookmark-import-file")?.click());
   $("bookmark-import-file")?.addEventListener("change", (event) => {
@@ -11105,7 +11200,7 @@ onDomReady(() => {
     clearTimeout(contentsFilterTimer);
     contentsFilterTimer = setTimeout(renderContents, 150);
   });
-});
+}));
 
 // --- Multi-select for Boards, Links and Contents (asked for directly: "in
 // many of the library subtabs… there is no way to multi select") ----------
@@ -11322,7 +11417,7 @@ async function bulkDeleteLibraryBoards() {
   if (typeof renderLibraryBoardsGallery === "function") renderLibraryBoardsGallery();
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   // The bar goes right above the grid it governs, same placement the
   // Documents/Files sub-tabs' own bars have in index.html.
   const boardsGrid = document.getElementById("library-boards-grid");
@@ -11357,7 +11452,7 @@ onDomReady(() => {
       button.addEventListener("click", run);
       linksEnd.insertBefore(button, linksDelete);
     };
-    linkVerb("library-links-bulk-move", "ph:folder-simple Move to group", "Put the ticked bookmarks in a group", bulkMoveLibraryLinks);
+    linkVerb("library-links-bulk-move", "ph:folder-simple Move to folder", "Put the ticked bookmarks in a folder", bulkMoveLibraryLinks);
     linkVerb("library-links-bulk-read", "ph:check-circle Mark read", "Mark the ticked bookmarks as read", () =>
       bulkUpdateLibraryLinks({ is_read: true }, (n) => `Marked ${nounCount(n, "bookmark")} as read.`));
     linkVerb("library-links-bulk-pin", "ph:push-pin Pin", "Pin the ticked bookmarks to the top", () =>
@@ -11371,14 +11466,14 @@ onDomReady(() => {
   //: your place, not for bulk-editing. Nothing could reach the bar any more,
   //: and a set of actions for a selection that can never be made is worse
   //: than none.
-});
+}));
 
 // --- Links (§30): a bookmark shelf for websites, alongside the notes and
 // documents already linkable to each other via [[wiki links]] ------------
 
 let bookmarksCache = [];
 // The group and the tag the Links tab is narrowed to (null = all): one object, so a new filter adds no global name.
-const bookmarkScope = { group: null, tag: null };
+const bookmarkScope = { group: null, tag: null, dupes: false };
 let bookmarkStateFilter = "all"; // "all" | "unread" | "pinned"
 //: Sites folded away in the "By site" grouping, for this visit.
 const bookmarkFoldedSites = new Set();
@@ -11430,6 +11525,7 @@ async function renderBookmarks() {
   nounCount.dock("library-links", bookmarksCache.length, "bookmark");
   //: The empty state's Add a bookmark is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
   $("bookmark-add")?.classList.toggle("hidden", !bookmarksCache.length);
+  LinkShelf.applyView();
   renderBookmarkGroupChips();
   filterBookmarks();
   syncSelectbarCount("library-links", libraryLinksSelection.size);
@@ -11493,7 +11589,7 @@ renderBookmarks.file = {
 async function deleteBookmarksWithUndo(links) {
   const kept = links.map((b) => ({
     url: b.url, title: b.title, note: b.note, group_name: b.group_name, tags: b.tags || [],
-    pinned: Boolean(b.pinned), is_read: Boolean(b.is_read),
+    pinned: Boolean(b.pinned), is_read: Boolean(b.is_read), icon: b.icon || "", color: b.color || "",
   }));
   let deleted = 0;
   for (const bookmark of links) {
@@ -11583,7 +11679,7 @@ async function bulkMoveLibraryLinks() {
   const links = [...libraryLinksSelection.values()];
   if (!links.length) return;
   const value = await promptDialog(
-    `Group for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading, blank clears it)`,
+    `Folder for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading)`,
     ""
   );
   //: Cancel and an empty field both resolve "" (see `moveToGroup`), so a bulk
@@ -11678,25 +11774,6 @@ async function deleteBookmarkGroup(group) {
   return renameBookmarkGroup(group, "");
 }
 
-async function newBookmarkGroup() {
-  const name = (await promptDialog("Name for the new group (e.g. Work/Reading)", "")).trim();
-  if (!name) return;
-  if (allBookmarkGroups().includes(name)) {
-    toast(`"${name}" already exists.`);
-    bookmarkScope.group = name;
-    renderBookmarks();
-    return;
-  }
-  setEmptyBookmarkGroups([...emptyBookmarkGroups(), name]);
-  // Pre-fill the Add form so the obvious next move, saving a bookmark into
-  // the group you just made, needs no second trip to the group field.
-  const groupInput = $("bookmark-group-input");
-  if (groupInput) groupInput.value = name;
-  bookmarkScope.group = name;
-  renderBookmarks();
-  toast(`Group "${name}" created. Add a bookmark to it, or it'll be forgotten on the next device.`);
-}
-
 //: The manage dialog. Built by hand rather than reusing confirmDialog because
 //: it is a list with two actions per row, and it re-renders itself in place
 //: after each one: reopening it after every rename would lose your place.
@@ -11705,14 +11782,14 @@ function manageBookmarkGroups() {
   overlay.className = "modal-overlay confirm-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Manage bookmark groups");
+  overlay.setAttribute("aria-label", "Manage bookmark folders");
 
   const card = document.createElement("div");
   card.className = "card modal-card confirm-card bookmark-groups-card";
   const blurb = document.createElement("p");
   blurb.className = "muted text-sm";
   blurb.textContent =
-    "Renaming a group moves every bookmark in it. Deleting one keeps the bookmarks and just ungroups them.";
+    "Renaming a folder moves every bookmark in it. Deleting one keeps the bookmarks and just takes them out of it.";
   const list = document.createElement("div");
   list.className = "bookmark-groups-list";
 
@@ -11739,7 +11816,7 @@ function manageBookmarkGroups() {
     if (!groups.length) {
       const none = document.createElement("p");
       none.className = "muted";
-      none.textContent = "No groups yet. Use “New group”, or type a group name when you add a bookmark.";
+      none.textContent = "No folders yet. Use “New folder”, or type a folder name when you add a bookmark.";
       list.appendChild(none);
       return;
     }
@@ -11771,8 +11848,8 @@ function manageBookmarkGroups() {
         smallButton("ph:trash", `Delete "${group}"`, async () => {
           const ok = await confirmDialog(
             count === 0
-              ? `Delete the empty group "${group}"?`
-              : `Delete the group "${group}"? Its ${nounCount(count, "bookmark")} stay: they just stop being grouped.`
+              ? `Delete the empty folder "${group}"?`
+              : `Delete the folder "${group}"? Its ${nounCount(count, "bookmark")} stay: they just stop being filed.`
           );
           if (!ok) return;
           await deleteBookmarkGroup(group);
@@ -11789,14 +11866,14 @@ function manageBookmarkGroups() {
   const footer = document.createElement("div");
   footer.className = "row confirm-actions";
   footer.append(
-    smallButton("New group", "Create a new group", async () => {
+    smallButton("New folder", "Create a new folder", async () => {
       close();
-      await newBookmarkGroup();
+      await LinkShelf.newFolder();
     }),
     smallButton("Done", "Close", close, false)
   );
 
-  card.append(dialogHead("Manage groups", close), blurb, list, footer);
+  card.append(dialogHead("Manage folders", close), blurb, list, footer);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
@@ -11816,18 +11893,23 @@ function renderBookmarkGroupChips() {
   if (bookmarksCache.length === 0) {
     bookmarkScope.group = null;
     bookmarkScope.tag = null;
+    bookmarkScope.dupes = false;
     bookmarkStateFilter = "all";
+    LinkShelf.scopeBar();
     return;
   }
-  //: A group that has gone (renamed, emptied) cannot stay the filter.
-  if (bookmarkScope.group !== null && !groups.includes(bookmarkScope.group)) bookmarkScope.group = null;
+  //: A folder that has gone (renamed, emptied) cannot stay the filter.
+  const folderNames = LinkShelf.folders(groups);
+  if (bookmarkScope.group !== null && !folderNames.includes(bookmarkScope.group)) bookmarkScope.group = null;
+  if (bookmarkScope.dupes && !LinkShelf.duplicateSets().length) bookmarkScope.dupes = false;
   const apply = () => { renderBookmarkGroupChips(); filterBookmarks(); };
   const chip = (label, count, active, onPress) => {
     const el = document.createElement("button");
     el.type = "button";
     el.className = `library-chip${active ? " active" : ""}`;
     el.setAttribute("aria-pressed", active ? "true" : "false");
-    el.append(document.createTextNode(label));
+    if (label.startsWith("ph:")) setLabel(el, label);
+    else el.append(document.createTextNode(label));
     if (count !== null) {
       const n = document.createElement("span");
       n.className = "library-chip-count";
@@ -11844,12 +11926,15 @@ function renderBookmarkGroupChips() {
   //: and the groups below narrow it further.
   const unread = bookmarksCache.filter((b) => !b.is_read).length;
   const pinned = bookmarksCache.filter((b) => b.pinned).length;
-  chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkScope.group === null && bookmarkScope.tag === null, () => {
+  const allChip = chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkScope.group === null && bookmarkScope.tag === null && !bookmarkScope.dupes, () => {
     bookmarkStateFilter = "all";
     bookmarkScope.group = null;
     bookmarkScope.tag = null;
+    bookmarkScope.dupes = false;
     apply();
   });
+  //: A link dropped on All leaves its folder; a nested folder dropped there moves up.
+  LinkShelf.wireChip(allChip, null);
   chip("Unread", unread, bookmarkStateFilter === "unread", () => {
     bookmarkStateFilter = bookmarkStateFilter === "unread" ? "all" : "unread";
     apply();
@@ -11862,15 +11947,31 @@ function renderBookmarkGroupChips() {
   } else if (bookmarkStateFilter === "pinned") {
     bookmarkStateFilter = "all";
   }
-  for (const group of groups) {
-    const count = bookmarksCache.filter((b) => b.group_name === group).length;
-    // "Work/Reading" renders as "Work / Reading", the "/" is a grouping
-    // convention for the user to type, not meant to display as a raw slash.
-    chip(group.split("/").join(" / "), count, bookmarkScope.group === group, () => {
+  //: Duplicates appear only when the shelf has some: the same address saved twice (scheme, www, a trailing slash and tracking marks aside).
+  const dupeLinks = LinkShelf.duplicateSets().flat().length;
+  if (dupeLinks) {
+    chip("Duplicates", dupeLinks, bookmarkScope.dupes, () => {
+      bookmarkScope.dupes = !bookmarkScope.dupes;
+      if (bookmarkScope.dupes) {
+        //: Copies are found across the whole shelf, not inside the folder that happens to be open.
+        bookmarkScope.group = null;
+        bookmarkScope.tag = null;
+        bookmarkStateFilter = "all";
+      }
+      apply();
+    });
+  }
+  //: Folders: one chip each, nested ones after their parent. A drag source and a drop target (library-links.js).
+  for (const group of folderNames) {
+    LinkShelf.folderChip(box, group, bookmarkScope.group === group, () => {
       bookmarkScope.group = bookmarkScope.group === group ? null : group;
       apply();
     });
   }
+  const fresh = chip("ph:folder-plus New folder", null, false, () => LinkShelf.newFolder(bookmarkScope.group && !bookmarkScope.group.includes("/") ? bookmarkScope.group : ""));
+  fresh.classList.add("bookmark-new-folder");
+  fresh.removeAttribute("aria-pressed");
+  fresh.title = "Make a folder (inside the open one, when a top folder is open)";
   //: Tags after the groups: a link carries several, so a tag filters across groups (one at a time, like a group).
   const tagCounts = new Map();
   for (const b of bookmarksCache) for (const tag of b.tags || []) tagCounts.set(tag.toLowerCase(), { tag, n: (tagCounts.get(tag.toLowerCase())?.n || 0) + 1 });
@@ -11881,6 +11982,7 @@ function renderBookmarkGroupChips() {
       apply();
     }).classList.add("bookmark-tag-chip");
   }
+  LinkShelf.scopeBar();
 }
 
 //: Sorting for the Links sub-tab, the Library's sub-tabs were reported as
@@ -11914,7 +12016,7 @@ function bookmarkSort() {
   return BOOKMARK_SORTS[stored] ? stored : "newest";
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("bookmark-sort");
   if (!select) return;
   select.value = bookmarkSort();
@@ -11922,15 +12024,17 @@ onDomReady(() => {
     prefs.set(BOOKMARK_SORT_KEY, select.value);
     filterBookmarks();
   });
-});
+}));
 
 function filterBookmarks() {
   const list = $("bookmark-list");
   const noMatch = $("bookmark-no-match");
   if (!list) return;
   const query = ($("bookmark-search")?.value || "").trim().toLowerCase();
+  const dupeIds = bookmarkScope.dupes ? new Set(LinkShelf.duplicateSets().flat().map((b) => b.id)) : null;
   const visible = bookmarksCache.filter((b) => {
-    if (bookmarkScope.group !== null && b.group_name !== bookmarkScope.group) return false;
+    if (bookmarkScope.group !== null && !LinkShelf.inFolder(b.group_name, bookmarkScope.group)) return false;
+    if (bookmarkScope.dupes && !dupeIds.has(b.id)) return false;
     if (bookmarkScope.tag !== null && !(b.tags || []).some((tag) => tag.toLowerCase() === bookmarkScope.tag)) return false;
     if (bookmarkStateFilter === "unread" && b.is_read) return false;
     if (bookmarkStateFilter === "pinned" && !b.pinned) return false;
@@ -11954,6 +12058,11 @@ function filterBookmarks() {
   //: pinned-first order was being thrown away by the client sort.
   const by = BOOKMARK_SORTS[bookmarkSort()];
   const ordered = [...visible].sort(bookmarkSort() === "site" ? by : (a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || by(a, b));
+  //: The duplicates view reads set by set: the copies of one address side by side, whatever the sort.
+  if (bookmarkScope.dupes) {
+    const order = new Map(LinkShelf.duplicateSets().flatMap((set, at) => set.map((b) => [b.id, at])));
+    ordered.sort((a, b) => order.get(a.id) - order.get(b.id));
+  }
   if (bookmarkSort() === "site") {
     //: **"By site" groups, it does not only order.** Sorted by host the rows
     //: of one site already sat together, but nothing said so and nothing
@@ -12056,7 +12165,11 @@ function bookmarkRow(bookmark) {
   mark.className = `bookmark-mark bookmark-mark-${kind.key}`;
   mark.setAttribute("aria-hidden", "true");
   mark.title = kind.label;
-  setLabel(mark, bookmark.pinned ? "ph:push-pin" : kind.icon);
+  //: The icon the person chose, else the site's own (fetched at save, web on), else the kind's glyph; a pin
+  //: shows only where nothing else was chosen. The colour is the row's too (`.has-look`), a quiet tint.
+  LinkShelf.fillMark(mark, bookmark, bookmark.pinned ? "ph:push-pin" : kind.icon);
+  LinkShelf.withLook(row, bookmark.color);
+  LinkShelf.wireRow(row, bookmark);
   row.appendChild(mark);
   row.classList.toggle("is-read", Boolean(bookmark.is_read));
   row.dataset.bookmarkId = bookmark.id;
@@ -12124,6 +12237,13 @@ function bookmarkRow(bookmark) {
       "bookmark-meta",
     ),
   );
+  //: What the page said, two lines of it: shown by the cards view, hidden in the list (CSS).
+  if (bookmark.excerpt) {
+    const excerpt = document.createElement("p");
+    excerpt.className = "bookmark-excerpt";
+    excerpt.textContent = bookmark.excerpt;
+    main.append(excerpt);
+  }
 
   const actions = document.createElement("div");
   actions.className = "row bookmark-actions";
@@ -12190,7 +12310,7 @@ function bookmarkRow(bookmark) {
     const titleInput = field("Title", bookmark.title, "Title");
     const urlInput = field("URL", bookmark.url, "https://example.com");
     // Blank is meaningful here and always was: it means "no group".
-    const groupInput = field("Group", bookmark.group_name, "e.g. Work/Reading");
+    const groupInput = field("Folder", bookmark.group_name, "e.g. Work/Reading");
     const tagsInput = field("Tags", (bookmark.tags || []).join(", "), "Separate with commas");
     //: The note had no way in once a link was saved: the Add form never asked
     //: for one and this form never showed it, though the row and the search
@@ -12245,9 +12365,10 @@ function bookmarkRow(bookmark) {
           note: noteInput.value.trim(),
         };
         const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", tags: bookmark.tags || [], note: bookmark.note || "" };
-        await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify(edited) });
+        await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify({ ...edited, fetch: true }) });
         pushBookmarksPutUndo("Edited a bookmark", [{ id: bookmark.id, before: wasFields, after: edited }]);
         renderBookmarks();
+        if (url !== bookmark.url) LinkShelf.afterSave();
       } catch (error) {
         save.disabled = false;
         toast(error.message || voiceLine("failed", { what: "save that bookmark" }), true);
@@ -12263,7 +12384,7 @@ function bookmarkRow(bookmark) {
 
   const moveToGroup = async () => {
     const value = await promptDialog(
-      "Group (e.g. Work/Reading: blank clears it)", bookmark.group_name
+      "Folder (e.g. Work/Reading: blank takes it out of its folder)", bookmark.group_name
     );
     // Unlike the title prompt above, an intentionally blank group is a real,
     // useful answer ("ungroup this link"), so only an actual Cancel/Escape
@@ -12302,26 +12423,7 @@ function bookmarkRow(bookmark) {
       row.classList.remove("is-open");
       return;
     }
-    const box = document.createElement("div");
-    box.className = "bookmark-detail";
-    const addr = document.createElement("code");
-    addr.className = "bookmark-detail-url";
-    addr.textContent = bookmark.url;
-    const facts = [kind.label];
-    if (bookmark.group_name) facts.push(bookmark.group_name.split("/").join(" / "));
-    if ((bookmark.tags || []).length) facts.push(bookmark.tags.map((tag) => `#${tag}`).join(" "));
-    const saved = new Date(bookmark.created_at);
-    if (!Number.isNaN(saved.getTime())) facts.push(`saved ${saved.toLocaleDateString()}`);
-    facts.push(bookmark.is_read ? "read" : "unread");
-    const meta = metaLine(facts, "bookmark-detail-meta");
-    box.append(addr, meta);
-    if (bookmark.note) {
-      const note = document.createElement("p");
-      note.className = "bookmark-detail-note";
-      note.textContent = bookmark.note;
-      box.appendChild(note);
-    }
-    row.appendChild(box);
+    row.appendChild(LinkShelf.detailsCard(bookmark, { kind, done: renderBookmarks }));
     row.classList.add("is-open");
   };
 
@@ -12355,14 +12457,15 @@ function bookmarkRow(bookmark) {
       { ...makeMenuItem("ph:eye Details", "Show the whole address, the note and when it was saved", toggleDetails), group: "look" },
       {
         ...makeMenuItem(
-          bookmark.is_read ? "ph:circle Mark as unread" : "ph:check-circle Mark as read",
-          bookmark.is_read ? "Put this back on the reading list" : "Take this off the reading list",
+          bookmark.is_read ? "ph:bookmark-simple Read later" : "ph:check-circle Mark as read",
+          bookmark.is_read ? "Put this back on the reading list (Unread)" : "Take this off the reading list",
           toggleRead
         ),
         group: "look",
       },
-      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, group, tags or note", startEditing), group: "change" },
-      { ...makeMenuItem("ph:folder-simple Move to group", "Move this bookmark to a group", moveToGroup), group: "change" },
+      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, folder, tags or note", startEditing), group: "change" },
+      { ...makeMenuItem("ph:palette Icon and colour", "Choose an icon and a highlight colour for this bookmark", () => LinkShelf.chooseBookmarkLook(bookmark, kind)), group: "change" },
+      { ...makeMenuItem("ph:folder-simple Move to folder", "Move this bookmark to a folder", moveToGroup), group: "change" },
       {
         ...makeMenuItem("ph:copy Copy address", "Copy the address to the clipboard", async () => {
           //: `copyToClipboard` flashes the button it is given, and a menu row is
@@ -13111,7 +13214,7 @@ function contentsTreeKeys(event) {
   }
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const tree = $("contents-outline");
   if (!tree) return;
   tree.addEventListener("keydown", contentsTreeKeys);
@@ -13127,7 +13230,7 @@ onDomReady(() => {
   });
   $("contents-expand")?.addEventListener("click", () => contentsSetAll(true));
   $("contents-collapse")?.addEventListener("click", () => contentsSetAll(false));
-});
+}));
 
 // Moved from app.js (its gzip cap): the Library's Activity cards are its one caller.
 // `confirmDialog`'s other missing sibling: show a whole piece of text with

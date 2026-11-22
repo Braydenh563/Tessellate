@@ -60,8 +60,25 @@ def test_a_port_held_by_a_working_searxng_is_not_a_problem(monkeypatch):
     assert "can use it as it is" in report["detail"]
 
 
-def test_the_status_endpoint_carries_the_port_answer(client):
-    body = client.get("/websearch/searxng/status").json()
+def test_the_status_endpoint_carries_the_port_answer(client, monkeypatch):
+    """The route keeps its last answer per data folder in module state and
+    answers 503 while a probe is still out (audit 1029 H6). Order-dependent on
+    CI (2026-11-12): a slow first `docker info` or another test's answer for
+    the same folder came back without "port". So: a fresh memory, no Docker
+    to ask, and the 200 the route gives once its probe is in."""
+    import time
+
+    from tessellate.api import routes_websearch
+
+    monkeypatch.setattr(routes_websearch, "_status_latest", {})
+    monkeypatch.setattr(searxng_manager, "docker_available", lambda: False)
+    deadline = time.monotonic() + 10
+    got = client.get("/websearch/searxng/status")
+    while got.status_code == 503 and time.monotonic() < deadline:
+        time.sleep(0.05)
+        got = client.get("/websearch/searxng/status")
+    assert got.status_code == 200, got.text
+    body = got.json()
     assert body["port"]["port"] == searxng_manager.HOST_PORT
     assert "free" in body["port"]
 

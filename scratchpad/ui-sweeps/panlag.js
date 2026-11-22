@@ -10,12 +10,12 @@
 //
 // Deliberately not a claim about latency. Chromium dispatches coalesced input
 // at the start of a frame and runs requestAnimationFrame later in that same
-// frame, so for input on that path the deferred write was already painting in
+// frame, so for input on that path the delayed write was already painting in
 // the right frame. What is asserted here is only what can be asserted here.
 //
 //   BASE=http://127.0.0.1:8803 SCRATCH=/tmp/mm-map9 \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/panlag.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 const results = [];
 function check(label, ok, detail) {
@@ -24,16 +24,7 @@ function check(label, ok, detail) {
 }
 
 async function newBoard(page, name, type) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  if (type === "map") await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, type);
   await page.keyboard.press("Escape");
 }
 

@@ -1184,7 +1184,9 @@ progress {
 .thinking-fold > :last-child > :last-child {
   margin-bottom: 0;
 }
-.thinking-fold > :last-child :is(p, ul, ol) {
+.thinking-fold > :last-child p,
+.thinking-fold > :last-child ul,
+.thinking-fold > :last-child ol {
   margin-block: 0 var(--space-2);
 }
 .answer {
@@ -2427,10 +2429,6 @@ button:not(.ghost) > .spinner {
    the reported "Links sub-tab filter and search aren't aligned", and an ID
    selector is why the toolbar's own `margin: 0` could not win. The row's
    `gap` provides the spacing this margin used to. */
-.bookmark-attach-picker {
-  width: auto;
-  max-width: 16rem;
-}
 .bookmark-group-chips {
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -3184,6 +3182,14 @@ li.link-source {
   font-size: var(--text-xs);
   white-space: nowrap;
 }
+/* The Documents tab's two reach-outs when the editor engine is missing (wiring.js `openGlobalFind`). */
+.global-find-docs {
+  display: flex;
+  gap: var(--space-1);
+}
+.global-find-docs[hidden] {
+  display: none;
+}
 mark.global-find-hit {
   background: var(--accent-soft);
   color: inherit;
@@ -3810,7 +3816,10 @@ html.modal-open body {
    gives each its own line box at its own size, so the words land in place.
    This line used to be `display: none` while empty for the same reason
    the banner jumped: nothing was there to keep the room. */
-:is(.dash-greeting, .dash-submessage, .dash-clock-time, .dash-clock-date):empty::before {
+.dash-greeting:empty::before,
+.dash-submessage:empty::before,
+.dash-clock-time:empty::before,
+.dash-clock-date:empty::before {
   content: "\a0";
 }
 /* The clock: the time large and in the accent, the date under it, both
@@ -5168,8 +5177,11 @@ select {
    hint dot all size themselves; a fixed row height is not theirs to set.
    A row that carries its own description (Help's tour rows, INBOX 804) is
    a tile by shape, so it is excluded with the tiles, inside the same `:not()`
-   so the rule's weight does not change. */
-#settings-modal .settings-section button:not([class*="card"]):not([class*="tile"], .tour-row):not([class*="swatch"]):not([class*="preview"]):not(.icon-only):not(.icon-button):not([class*="help"]):not([class*="hint"]):not(.linklike),
+   so the rule's weight does not change. A menu row is not a strip control
+   either: pinned here, the Logs menu's buttons stood at 32px beside its
+   switch rows at 34.9 (world-class menus.js at 1440); excluded, they take the
+   menu row recipe (08-consistency.css) like every other menu's. */
+#settings-modal .settings-section button:not([class*="card"]):not([class*="tile"], .tour-row, .doc-dock-menu-item):not([class*="swatch"]):not([class*="preview"]):not(.icon-only):not(.icon-button):not([class*="help"]):not([class*="hint"]):not(.linklike),
 #settings-modal .settings-section select,
 #settings-modal .settings-section .select-opener,
 #settings-modal .settings-section summary,

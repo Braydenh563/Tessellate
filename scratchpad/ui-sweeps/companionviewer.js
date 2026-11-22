@@ -27,7 +27,7 @@ const tag = `${process.env.KIND || "atlas"}${process.env.REDUCED ? "-reduced" : 
   const { browser, page } = await boot({ viewport: { width: Number(process.env.W || 1440), height: 900 }, ...(process.env.REDUCED ? { reducedMotion: "reduce" } : {}) });
   await page.evaluate((k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
+    const b = $("avatar-buddy");
     b.value = k;
     b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");

@@ -826,7 +826,6 @@ def test_polls_behind_a_silent_runner_do_not_each_wait_the_budget_again(client, 
     runner silent for a while costs the polls behind it nothing (53 to 62 ms
     a poll measured against a runner that takes 5 s)."""
     import threading
-    import time
 
     from tessellate.ai.ollama_client import OllamaClient
     from tessellate.api import routes_models
@@ -847,12 +846,27 @@ def test_polls_behind_a_silent_runner_do_not_each_wait_the_budget_again(client, 
     monkeypatch.setattr(ollama, "list_models", list_models)
     client.get("/models/status")
     client.get("/models/status")  # starts the stuck flight, pays the budget once
-    started = time.monotonic()
-    for _ in range(5):
-        client.get("/models/status")
-    elapsed = time.monotonic() - started
-    release.set()
-    assert elapsed < 0.4
+    #: Intent, not a wall clock: every poll behind it is offered no wait at all.
+    (flight,) = [f for f in routes_models._installed_flights.values() if not f.done.is_set()]
+    offered: list[float] = []
+    stuck = flight.done
+
+    class Spy:
+        def __getattr__(self, name):  # noqa: ANN204
+            return getattr(stuck, name)
+
+        def wait(self, timeout=None):  # noqa: ANN001, ANN202
+            offered.append(timeout)
+            return stuck.wait(timeout)
+
+    flight.done = Spy()
+    try:
+        for _ in range(5):
+            client.get("/models/status")
+    finally:
+        flight.done = stuck
+        release.set()
+    assert offered and offered == [0.0] * len(offered), offered
 
 
 def test_a_finished_download_is_in_the_installed_list_of_the_poll_that_reports_it(ai_client, fake_ollama, monkeypatch):

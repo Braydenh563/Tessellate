@@ -50,7 +50,12 @@
     ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"], ["[(", ")]", "cylinder"], ["[/", "/]", "parallelogram"],
     ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
   ];
-  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|\{\{\{)/;
+  //: L-documents-78: `A:::name` after an id or a shape is that node's class; `A@{ icon: "x", label: "L" }` is a node whose
+  //: properties are kept raw (`n.meta`), the label read from them. No icon pack is vendored (the app is offline), so the
+  //: node is drawn with its label and the properties print back as written.
+  const DGM_CLS = /^:::([\w-]+)/;
+  const DGM_META = /^@\{((?:[^{}"]|"[^"\n]*")*)\}/;
   const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
   const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
   //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.
@@ -68,9 +73,9 @@
     return text.replace(/#(quot|lt|gt|amp|\d{1,7});/g, (all, k) => DGM_ENTITY[k] ?? (Number(k) <= 0x10ffff ? String.fromCodePoint(Number(k)) : all));
   }
 
-  //: A line break in a label stays the `<br/>` Mermaid reads; every other `<` is a code.
+  //: A line break in a label stays the `<br/>` Mermaid reads (a newline written is one); every other `<` is a code.
   function dgmEscape(text, inBars = false) {
-    return String(text ?? "").replace(/\s*\n\s*/g, " ").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
+    return String(text ?? "").replace(/\s*\n\s*/g, "<br/>").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
   }
 
   function dgmUnquote(text) {
@@ -99,20 +104,21 @@
   }
 
   //: The text of a shape from after its opening mark: quoted (a backtick right
-  //: after the quote is a markdown string, which is kept) or up to the closing
-  //: mark. Null when it is not whole.
+  //: after the quote is a markdown string, `md`, its text kept raw) or up to the
+  //: closing mark. Null when it is not whole.
   function dgmShapeText(rest, close) {
     const lead = rest.length - rest.trimStart().length;
     if (rest[lead] !== '"') {
       const end = rest.indexOf(close);
       return end === -1 ? null : { text: dgmDecode(rest.slice(0, end).trim()), used: end + close.length };
     }
-    const end = rest.indexOf('"', lead + 1);
-    if (end === -1 || rest[lead + 1] === "`") return null;
+    const md = rest[lead + 1] === "`";
+    const end = md ? rest.indexOf('`"', lead + 2) + 1 || -1 : rest.indexOf('"', lead + 1);
+    if (end === -1) return null;
     const after = rest.slice(end + 1);
     const gap = after.length - after.trimStart().length;
     if (!after.startsWith(close, gap)) return null;
-    return { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
+    return md ? { text: rest.slice(lead + 2, end - 1), md: true, used: end + 1 + gap + close.length } : { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
   }
 
   //: One node reference: an id and, optionally, its shape and text.
@@ -123,28 +129,40 @@
     const i = at + id[0].length;
     const tail = src.slice(i);
     if (DGM_UNREAD_SHAPE.test(tail)) return null;
+    const classed = (ref) => {
+      const c = DGM_CLS.exec(src.slice(ref.end));
+      return c ? { ...ref, cls: c[1], end: ref.end + c[0].length } : ref;
+    };
+    const meta = DGM_META.exec(tail);
+    if (meta) {
+      const label = /\blabel:\s*"([^"\n]*)"/.exec(meta[1]);
+      return classed({ id: id[0], shape: null, text: label ? dgmDecode(label[1]) : null, meta: meta[1].trim(), end: i + meta[0].length });
+    }
     for (const [open, close, shape] of DGM_SHAPES) {
       if (!tail.startsWith(open)) continue;
       const body = dgmShapeText(tail.slice(open.length), close);
-      return body && { id: id[0], shape, text: body.text, end: i + open.length + body.used };
+      return body && classed({ id: id[0], shape, text: body.text, ...(body.md ? { md: true } : {}), end: i + open.length + body.used });
     }
-    return { id: id[0], shape: null, text: null, end: i };
+    return classed({ id: id[0], shape: null, text: null, end: i });
   }
 
   //: A link: `-->`, `-.->`, `==>` and their open forms, a label in bars after it
   //: or written inside it (`-- yes -->`).
-  function dgmLink(src, at) {
+  function dgmLink(src, at0) {
+    //: L-documents-58: `e1@-->` names the edge, so a later `e1@{ animate: true }` can reach it.
+    const named = /^([A-Za-z0-9_][\w-]*)@(?=[-=.<])/.exec(src.slice(at0));
+    const at = at0 + (named ? named[0].length : 0);
     const rest = src.slice(at);
     const worded = DGM_WORDED.exec(rest);
     if (worded) {
       const style = worded[1] === "-." ? "dotted" : worded[1] === "==" ? "thick" : "solid";
       const arrow = worded[3] === "-->" || worded[3] === ".->" || worded[3] === "==>";
-      return { style, arrow, label: dgmDecode(dgmUnquote(worded[2])), end: at + worded[0].length };
+      return { style, arrow, label: dgmDecode(dgmUnquote(worded[2])), end: at + worded[0].length, ...(named ? { id: named[1] } : {}) };
     }
     const hit = DGM_LINKS.find(([token]) => rest.startsWith(token));
     if (!hit) return null;
     const piped = /^\s*\|("[^"]*"|[^|]*)\|/.exec(src.slice(at + hit[0].length));
-    return { style: hit[1], arrow: hit[2], ...(hit[3] ? { both: true } : {}), label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0) };
+    return { style: hit[1], arrow: hit[2], ...(hit[3] ? { both: true } : {}), label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0), ...(named ? { id: named[1] } : {}) };
   }
 
   //: A node-and-link statement (chains `a --> b --> c`, fans `a & b --> c`) as
@@ -170,7 +188,8 @@
         at++;
         continue;
       }
-      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow, ...(pending.both ? { both: true } : {}) });
+      //: One id names one edge: a fan (`a & b --> c`) gives it to the first only.
+      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow, ...(pending.both ? { both: true } : {}), ...(pending.id && !links.some((l) => l.id === pending.id) ? { id: pending.id } : {}) });
       if (at >= src.length) return { refs, links };
       const link = dgmLink(src, at);
       if (!link) return null;
@@ -203,20 +222,35 @@
         const plain = /^[A-Za-z0-9_][\w-]*$/.test(g.id);
         const line = plain && g.title !== g.id ? `subgraph ${g.id} ["${dgmEscape(g.title)}"]` : `subgraph ${g.id}`;
         rows.push({ depth, line, unit: { t: "s", i } });
+        if (/^(?:TD|BT|LR|RL)$/.test(g.dir)) rows.push({ depth: depth + 1, line: `direction ${g.dir}`, unit: null });
         emit(g.id, depth + 1);
         rows.push({ depth, line: "end", unit: null });
       });
       m.nodes.forEach((n, i) => {
         if ((ids.has(n.group) ? n.group : null) !== group) return;
         const [open, close] = DGM_SHAPES.find((s) => s[2] === n.shape) || ["[", "]"];
-        rows.push({ depth, line: `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
+        //: A markdown string is written raw on one line; a text with a quote, a backtick or a `<br>` is plain.
+        const md = n.md && !/["`\n]|<br/i.test(n.text);
+        if (n.meta !== undefined && !/\n/.test(n.meta)) {
+          const meta = /\blabel:\s*"/.test(n.meta) && !/["\n]/.test(n.text) ? n.meta.replace(/\blabel:\s*"[^"\n]*"/, () => `label: "${dgmEscape(n.text)}"`) : n.meta;
+          rows.push({ depth, line: `${n.id}@{ ${meta} }`, unit: { t: "n", i } });
+          return;
+        }
+        rows.push({ depth, line: md ? `${n.id}${open}"\`${n.text}\`"${close}` : `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
       });
     };
     emit(null, 0);
+    const taken = new Set([...m.nodes.map((n) => n.id), ...m.subgraphs.map((g) => g.id), ...m.edges.map((e) => e.id).filter(Boolean)]);
     m.edges.forEach((e, i) => {
       const token = (DGM_LINKS.find(([, style, arrow, both]) => style === e.style && arrow === e.arrow && Boolean(both) === Boolean(e.both)) || DGM_LINKS[2])[0];
       const label = e.label ? `|"${dgmEscape(e.label, true)}"|` : "";
-      rows.push({ depth: 0, line: `${e.from} ${token}${label} ${e.to}`, unit: { t: "e", i } });
+      //: An animated edge needs an id; the first `e<n>` that no node or edge already has.
+      const mine = /^[A-Za-z0-9_][\w-]*$/.test(e.id || "") ? e.id : "";
+      const eid = mine || (/^(?:on|fast|slow)$/.test(e.animate || "") ? [...Array(m.edges.length + 1).keys()].map((k) => `e${k + 1}`).find((c) => !taken.has(c)) : "");
+      if (eid) taken.add(eid);
+      rows.push({ depth: 0, line: `${e.from} ${eid ? `${eid}@` : ""}${token}${label} ${e.to}`, unit: { t: "e", i } });
+      const props = [e.animate === "on" ? "animate: true" : /^(?:fast|slow)$/.test(e.animate || "") ? `animate: true, animation: ${e.animate}` : "", e.rest && !/\n/.test(e.rest) ? e.rest : ""].filter(Boolean).join(", ");
+      if (eid && props) rows.push({ depth: 0, line: `${eid}@{ ${props} }`, unit: null });
     });
     return rows;
   }
@@ -226,6 +260,14 @@
   //: other `style` stays a kept line, byte for byte.
   const dgmTint = (hue) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hue.slice(i, i + 2), 16) * 0.25 + 191.25).toString(16).padStart(2, "0")).join("");
   const DGM_STYLE = /^style\s+([\w-]+)\s+fill:(#[0-9a-f]{6}),stroke:(#[0-9a-f]{6}),color:#1a1a1a$/;
+
+  //: L-documents-55: `classDef name props` is `m.classes` (the props kept raw), `class a,b name` is `n.cls` and
+  //: `click id "url" "tip"` is `n.href` (+ `n.tip`) when the target is http(s) or a `[[note]]`; a callback, any other
+  //: scheme (`javascript:`) and every other form stay kept lines. The `:::name` shorthand also stays kept.
+  const DGM_CLASSDEF = /^classDef\s+([\w-]+)\s+(\S.*)$/;
+  const DGM_CLASS = /^class\s+([\w-]+(?:\s*,\s*[\w-]+)*)\s+([\w-]+)$/;
+  const DGM_CLICK = /^click\s+([\w-]+)\s+(?:href\s+)?"([^"]*)"(?:\s+"([^"]*)")?$/;
+  const dgmSafeTarget = (url) => /^(?:https?:\/\/[^\s"]+|\[\[[^\]"\n]+\]\])$/i.test(url);
 
   const DGM_LINKSTYLE = /^linkStyle\s+(\d+)\s+stroke:(#[0-9a-f]{6}),stroke-width:2px$/;
 
@@ -244,6 +286,12 @@
     }
     flush(Infinity, 0);
     for (const n of m.nodes) if (/^#[0-9a-f]{6}$/.test(n.fill || "")) out.push(`${indent(0)}style ${n.id} fill:${dgmTint(n.fill)},stroke:${n.fill},color:#1a1a1a`);
+    for (const c of m.classes || []) if (/^[\w-]+$/.test(c.name) && c.name !== "default" && c.css && !/[\n"]/.test(c.css)) out.push(`${indent(0)}classDef ${c.name} ${c.css}`);
+    for (const c of m.classes || []) {
+      const ids = m.nodes.filter((n) => n.cls === c.name).map((n) => n.id);
+      if (ids.length) out.push(`${indent(0)}class ${ids.join(",")} ${c.name}`);
+    }
+    for (const n of m.nodes) if (dgmSafeTarget(n.href || "")) out.push(`${indent(0)}click ${n.id} "${n.href}"${n.tip && !/["\n]/.test(n.tip) ? ` "${n.tip}"` : ""}`);
     //: An arrow's colour (1679 slice 10): `linkStyle N`, N the edge's place in the canonical order, which is `m.edges`' own.
     m.edges.forEach((e, i) => /^#[0-9a-f]{6}$/.test(e.colour || "") && out.push(`${indent(0)}linkStyle ${i} stroke:${e.colour},stroke-width:2px`));
     return out.join("\n") + "\n";
@@ -265,19 +313,24 @@
     const head = /^(flowchart|graph)(?:\s+(TD|TB|BT|LR|RL))?$/i.exec(statements[at] || "");
     if (!head && DGM_OTHER.test(statements[at] || "")) return null;
     if (head) at++;
-    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front };
+    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front, classes: [] };
     const byId = new Map();
     const born = new Map();
+    //: The `:::name` of each node, put on the model after the lift, once the `classDef`s are known.
+    const classed = new Map();
     const open = [];
     const snaps = [];
     const touch = (ref) => {
       let n = byId.get(ref.id);
       if (!n) {
-        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null };
+        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null, ...(ref.md ? { md: true } : {}) };
         byId.set(ref.id, n);
         born.set(ref.id, born.size);
         m.nodes.push(n);
-      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text });
+      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text, md: ref.md });
+      if (n.md === undefined || n.md === false) delete n.md;
+      if (ref.meta && n.meta === undefined) n.meta = ref.meta;
+      if (ref.cls) classed.set(ref.id, ref.cls);
       //: A node belongs to the first subgraph it is named inside.
       if (n.group == null && open.length) n.group = open[open.length - 1];
     };
@@ -287,7 +340,11 @@
     };
     for (const s of statements.slice(at)) {
       const sub = /^subgraph\s+(.+)$/.exec(s);
-      if (DGM_KEPT.test(s)) keep(s);
+      //: `direction` inside a subgraph is that group's own flow; at the top it stays a kept line.
+      const way = open.length && /^direction\s+(TD|TB|BT|LR|RL)$/i.exec(s);
+      if (way) m.subgraphs.find((g) => g.id === open[open.length - 1]).dir = way[1].toUpperCase().replace("TB", "TD");
+      else if (DGM_KEPT.test(s)) keep(s);
+      else if (dgmEdgeProps(m, s)) continue;
       else if (sub) {
         const g = dgmSubgraph(sub[1].trim(), open.length ? open[open.length - 1] : null);
         if (!m.subgraphs.some((o) => o.id === g.id)) m.subgraphs.push(g);
@@ -310,13 +367,49 @@
     snaps.forEach((snap, k) => {
       m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
     });
+    //: Twice: a `class` line ahead of its `classDef` is read on the second pass.
     dgmLift(m);
+    dgmLift(m);
+    //: A shorthand class that no `classDef` defines stays what it was: a kept `class` line, which prints the same meaning.
+    for (const [id, name] of classed) {
+      const n = m.nodes.find((o) => o.id === id);
+      if (!n || n.cls) continue;
+      if (m.classes.some((c) => c.name === name)) n.cls = name;
+      else m.kept.push({ at: dgmRows(m).filter((r) => r.unit).length, line: `class ${id} ${name}` });
+    }
     return m;
+  }
+
+  //: `e1@{ animate: true, animation: fast }` for an edge `e1@-->` already read: `e.animate` is on, fast or slow, any other key
+  //: of the line stays in `e.rest`. True when the line was one.
+  function dgmEdgeProps(m, line) {
+    const hit = /^([A-Za-z0-9_][\w-]*)@\{\s*([^{}\n]*?)\s*\}$/.exec(line);
+    const edge = hit && m.edges.find((e) => e.id === hit[1] && !e.animate && !e.rest);
+    if (!edge) return false;
+    const rest = [];
+    let animate = "";
+    for (const part of hit[2].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map((p) => p.trim()).filter(Boolean)) {
+      const speed = /^animation:\s*(fast|slow)$/.exec(part);
+      if (/^animate:\s*true$/.test(part)) animate = animate || "on";
+      else if (speed) animate = speed[1];
+      else rest.push(part);
+    }
+    if (animate) edge.animate = animate;
+    if (rest.length) edge.rest = rest.join(", ");
+    return Boolean(animate || rest.length);
   }
 
   //: The builder's own `style` and `linkStyle` lines become `fill` and `colour`; every other one stays a kept line.
   function dgmLift(m) {
     m.kept = m.kept.filter((k) => {
+      const def = DGM_CLASSDEF.exec(k.line);
+      if (def && def[1] !== "default" && !m.classes.some((c) => c.name === def[1])) return m.classes.push({ name: def[1], css: def[2].trim() }), false;
+      const put = DGM_CLASS.exec(k.line);
+      const ids = put && put[1].split(/\s*,\s*/).map((id) => m.nodes.find((n) => n.id === id));
+      if (ids && ids.every((n) => n && !n.cls) && m.classes.some((c) => c.name === put[2])) return ids.forEach((n) => (n.cls = put[2])), false;
+      const go = DGM_CLICK.exec(k.line);
+      const linked = go && dgmSafeTarget(go[2]) && m.nodes.find((n) => n.id === go[1] && !n.href);
+      if (linked) return (linked.href = go[2]), go[3] && (linked.tip = go[3]), false;
       const hit = DGM_STYLE.exec(k.line);
       const node = hit && dgmTint(hit[3]) === hit[2] && m.nodes.find((n) => n.id === hit[1]);
       if (node) node.fill = hit[3];
@@ -465,11 +558,11 @@
     }
     //: The fences once per text (DX1): a caret move rescanned the whole document.
     const blocksOf = new WeakMap();
-    const build = (state) => {
+    const build = (state, tr) => {
       let blocks = blocksOf.get(state.doc);
       if (!blocks) {
-        const text = docStr(state.doc);
-        blocks = text.includes("```mermaid") || /```[ \t]+mermaid/.test(text) ? docMermaidBlocks(text) : [];
+        //: An edit to a text with no opener asks only the lines it touched (`docStr.lacks`, L-documents-26).
+        blocks = docStr.lacks(state, /```[ \t]*mermaid/, tr) ? [] : docMermaidBlocks(docStr(state.doc));
         blocksOf.set(state.doc, blocks);
       }
       if (!blocks.length) return Decoration.none;
@@ -489,7 +582,7 @@
     };
     docPhase2State.mermaidFieldCache = StateField.define({
       create: (state) => build(state),
-      update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state) : value),
+      update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state, tr) : value),
       provide: (field) => EditorView.decorations.from(field),
     });
     return docPhase2State.mermaidFieldCache;
@@ -504,37 +597,16 @@
     return null;
   }
 
+  //: The sheet of existing diagrams and "New diagram" (diagram-suggest.js `choose`): a row, `true` for New, or null.
+  async function chooseDiagram(options) {
+    return (await ensureModule("diagramSuggest")) ? diagramModel.suggest.choose(options) : null;
+  }
+
   //: **The one door to the Diagram builder** (INBOX 1588). Every list that offers it (the palette, Find anything, Tools and
   //: features, Quick access, both "/" menus, Chat, the Library's Create, the board's Insert) ends here, through the `diagram`
   //: row of `POPUP_TOOLS`. Over a board or a mind map it is the board's own `wbEditDiagram` (a diagram object lands on Done);
   //: over a text box it opens the builder on the starter and makes a .mmd document and writes `![[Title]]` at the caret on Done (1621 D5); anywhere else (or `doc`) it
   //: opens the builder and saves a new .mmd document on Done. Cancel changes nothing; Done keeps what the dialog shows.
-  //: The `.mmd` rows, in the app's one picker (1679 slice 9): a row opens its page, the same as the Documents list does.
-  async function pickExistingDiagram() {
-    //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
-    //: The Library's list when it is in, else the server's.
-    let all = typeof docs !== "undefined" && Array.isArray(docs) && docs.length ? docs : null;
-    if (!all) {
-      try {
-        all = await apiPagedList("/documents", 200);
-      } catch (error) {
-        toast(`Couldn't load your diagrams: ${error?.message || error}`, "info");
-        return null;
-      }
-    }
-    const shell = pickerDialog({ title: "Open a diagram", placeholder: "Search your diagrams…", searchLabel: "Search your diagrams" });
-    const box = pickerListbox(shell, "Diagrams");
-    const rows = all.filter((d) => d.file_type === "mmd");
-    const paint = () => {
-      const needle = shell.search.value.trim().toLowerCase();
-      const items = rows.filter((d) => (d.title || "Untitled").toLowerCase().includes(needle)).map((d) => ({ icon: "ph:graph", label: d.title || "Untitled", about: "", value: d }));
-      box.fill(items, needle, { icon: "ph:graph", title: "No diagrams yet", text: "Make one with the blocks and it will be listed here." });
-    };
-    shell.search.addEventListener("input", paint);
-    paint();
-    return new Promise((resolve) => shell.open(resolve));
-  }
-
   //: A diagram made from the builder is a document the lists do not know yet: the Library's `docs` (the sidebar, the Live view's link
   //: resolver) and the `[[` picker's cache are given the row, so `![[Title]]` draws in Read view at once and not after a reload.
   function diagramMadeKnown(made) {
@@ -550,6 +622,13 @@
     if (onBoard && typeof wbEditDiagram === "function") return wbEditDiagram();
     //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
     const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
+    //: A text box asks first (R12, owner 2026-11-12): a diagram already made is embedded at once, "New diagram" opens the empty builder.
+    const pick = box ? await chooseDiagram({ verb: "Embed" }) : null;
+    if (box && !pick) return null;
+    if (box && pick !== true) {
+      box.focus?.();
+      return editorBlock(box, `![[${pick.title}]]`, "", "");
+    }
     //: **Anywhere else, the builder itself, then a .mmd document on Done** (the owner: "searching up and clicking
     //: the diagram builder in the find anything search took me to the documents editor and did nothing else, it
     //: didnt even show the panel"). A blank .mmd page is made by its first keystroke, so the door used to show
@@ -562,7 +641,7 @@
         title: "Diagram builder",
         named: true,
         draft: "new",
-        existing: { pick: pickExistingDiagram, open: async (row) => (await ensureModule("library"), switchTab("documents"), loadDocuments(row.id)) },
+        existing: { pick: () => chooseDiagram({ fresh: false }), open: async (row) => (await ensureModule("library"), switchTab("documents"), loadDocuments(row.id)) },
         //: The window's title names the document and the exports; blank is dated, so two Done presses are two names (DD-12, 1107).
         onDone: async (next, _changed, name) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
@@ -575,13 +654,14 @@
       });
     }
     return openDiagramBuilder({
-      source: diagramModel.starter,
+      source: "",
       title: "Diagram builder",
       named: true,
       draft: "new-embed",
       //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
       //: The window hands back a clean, unused title, so `![[Title]]` finds this row.
       onDone: async (next, _changed, name) => {
+        if (!String(next).trim()) return toast("Add a block first, or Cancel.", "info");
         const title = name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
         if (!made) return;
@@ -618,9 +698,9 @@
   }
 
   //: The file's whole surface: what documents.js and documents-export.js call.
-  Object.assign(window, { wireToolbarRoving, docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
+  Object.assign(window, { wireToolbarRoving, docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder, chooseDiagram });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/css/value-field.css", "/js/value-field.js", "/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"], diagramAi: ["/js/diagram-ai.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/css/value-field.css", "/js/value-field.js", "/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"], diagramAi: ["/js/diagram-ai.js"], diagramAiKinds: ["/js/diagram-ai-kinds.js"] });
 })();

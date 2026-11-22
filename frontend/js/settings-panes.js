@@ -410,7 +410,7 @@ function initComposerResize() {
   // the drag set it again, the observer fired again (reported: "it just
   // spasms and fails"). While the pointer is down on the grabber nothing
   // fights the drag; the final height is recorded once on release. The
-  // deferred frame stays: a synchronous autoGrow inside the callback is
+  // delayed frame stays: a synchronous autoGrow inside the callback is
   // the "ResizeObserver loop" console error.
   //: `pressed` is a pointer down on the box. Only a pointer resizes a textarea
   //: by hand, so a size change without one (the app's Ctrl +/- zoom, the
@@ -791,22 +791,6 @@ function markPrefsSaved() {
   if (note) note.classList.add("hidden");
 }
 
-//: The prompt reads the first 600 characters of About me
-//: (`librarian.PROFILE_ABOUT_CAP_CHARS`); the box stops there, and the count
-//: says how much is left. A profile saved before the cap may be longer, and
-//: then the line says which part Atlas reads rather than hiding the rest.
-const PROFILE_ABOUT_CAP = 600;
-
-function updateProfileCount() {
-  const line = $("pref-profile-count");
-  const box = $("pref-profile");
-  if (!line || !box) return;
-  const used = box.value.length;
-  line.textContent = used > PROFILE_ABOUT_CAP
-    ? `${used} characters; Atlas reads the first ${PROFILE_ABOUT_CAP}.`
-    : `${used} of ${PROFILE_ABOUT_CAP} characters.`;
-}
-
 // Downloads need the auth header, so plain <a href> won't do: fetch the
 // bytes and hand the browser a blob instead.
 async function downloadExport(kind) {
@@ -996,44 +980,8 @@ const POPUP_TOOLS = [
   },
 ];
 
-//: What the palette caught from the field it was opened over (`paletteCaught`,
-//: app-palette.js, lazy): nothing yet when that file is not in, so a caller
-//: other than the palette (Tools and features, audit 1031 Z17) cannot throw,
-//: and nothing once the row it ran has started (`live`, INBOX 1530 g).
-function paletteCaughtNow() {
-  return typeof paletteCaught === "undefined" || !paletteCaught.live ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
-}
-
-//: **A row's keycap: the way to run it without the palette.** A chord the
-//: row declares by its registry name (`chord`, read from the live
-//: `shortcuts` table, so a rebinding shows here as it is), the editor's own
-//: rows' `keys`, and for a tab the "t" then a letter jump. A palette that only
-//: performs an action teaches nobody the key for it.
-function paletteKeys(match) {
-  if (match.keys) return match.keys;
-  if (match.chord && typeof shortcuts !== "undefined") return shortcuts[match.chord]?.keys || "";
-  if (match.tab && typeof TAB_JUMP_KEYS !== "undefined") {
-    const letter = Object.keys(TAB_JUMP_KEYS).find((key) => TAB_JUMP_KEYS[key] === match.tab);
-    if (letter) return `T ${letter.toUpperCase()}`;
-  }
-  return "";
-}
-
-//: **A row's one line of what it does.** Its own `about` first; then the
-//: line "Tools and features" already writes for the same place (the rows
-//: share their `reveal` with `featureCatalog`, so the two lists cannot
-//: describe one control two ways); then the shortcut registry's label.
-function paletteAbouts() {
-  const abouts = new Map();
-  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
-  for (const group of catalog) {
-    for (const item of group.items || []) {
-      if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);
-    }
-  }
-  return abouts;
-}
-
+//: A palette row's parts. At boot, not in app-features.js beside `paletteKeys` and
+//: `paletteAbouts`: Atlas's tile face is drawn here (test_ui_recipes.py allows this file).
 function paletteRowParts(match, abouts) {
   const { icon, text } = richPickerSplitLabel(match.label);
   const chordLabel = match.chord && typeof shortcuts !== "undefined" ? shortcuts[match.chord]?.label : "";
@@ -1047,3 +995,12 @@ function paletteRowParts(match, abouts) {
     keys: paletteKeys(match),
   };
 }
+
+//: What the palette caught from the field it was opened over (`paletteCaught`,
+//: app-palette.js, lazy): nothing yet when that file is not in, so a caller
+//: other than the palette (Tools and features, audit 1031 Z17) cannot throw,
+//: and nothing once the row it ran has started (`live`, INBOX 1530 g).
+function paletteCaughtNow() {
+  return typeof paletteCaught === "undefined" || !paletteCaught.live ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
+}
+

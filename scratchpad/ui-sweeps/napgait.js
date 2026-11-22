@@ -9,7 +9,7 @@ const { boot } = require('./lib.js');
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  const setKind = (k) => page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, k);
+  const setKind = (k) => page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, k);
   const travel = () => page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');
     const bar = nameMarkBuddyLedges().bottom;
@@ -82,5 +82,7 @@ const { boot } = require('./lib.js');
   await browser.close();
   const ok = out.atlas.masculine.ms > out.atlas.feminine.ms && out.you.masculine.bob === 'nmb-bob-heavy' && out.you.feminine.bob === 'nmb-bob-light'
     && out.you.masculine.ms > out.you.feminine.ms && out.nap.inTheOpen === 'lie' && out.nap.lyingTransform && out.nap.unwinding && out.nap.squeezed === 'nap';
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log(!ok ? 'FAIL napgait: a measure above is out of bounds' : 'PASS napgait');
   process.exit(ok ? 0 : 1);
 })();

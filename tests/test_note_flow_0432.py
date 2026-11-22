@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 
 from tessellate.api import routes_entries
-from tests._app_js import with_pieces
+from tests._app_js import documents_text, with_pieces
 from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -69,7 +69,7 @@ def test_a_note_filed_by_the_person_says_user(client):
 
 
 def test_ctrl_enter_reaches_the_box_under_the_editor():
-    keymap = _function(_read("documents.js"), "noteSurfaceKeymap")
+    keymap = _function(documents_text(), "noteSurfaceKeymap")
     assert '"Mod-Enter"' in keymap
     assert "host.dispatchEvent" in keymap and "defaultPrevented" in keymap
     # The capture listener claims the chord (or the editor inserts a line too)
@@ -285,6 +285,8 @@ def test_the_selection_bar_does_what_one_notes_menu_does():
     for name in ("batchFavourite", "batchArchive", "batchPublish"):
         assert f"function {name}(" in skills, name
     assert "pushUndo(label, undo, redo)" in _function(skills, "batchEach")
+    #: A refusal partway keeps the Undo for the notes already changed.
+    assert "done.push(id)" in _function(skills, "batchEach") and "could not be changed" in _function(skills, "batchEach")
     assert "fillBatchMore();" in _function(skills, "enterSelectMode")
     assert 'id="batch-more-host"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
@@ -293,7 +295,7 @@ def test_note_boxes_are_live_with_a_source_switch_not_a_preview():
     """INBOX 430, the owner: "note forms use the live view with a source
     toggle, no Preview". Measured: Live hides `**` and `[[`, Source shows the
     markdown as typed, the same text and caret either way."""
-    docs = _read("documents.js")
+    docs = documents_text()
     ext = _function(docs, "noteSurfaceExtensions")
     #: INBOX 447: the Source choice only applies where the toggle is.
     assert "host.noteLiveSlot.of(noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live)" in ext
@@ -362,9 +364,9 @@ def test_every_note_the_page_creates_is_filed_in_the_background():
     # Scan 2026-10-11: a note created without `defer_filing` is filed before
     # the request returns, so it waits for the model. Against a model that
     # answers in 4 s, a mind map's Tab (a new topic) took 4.7 s and a draft
-    # save 4.8 s, against 0.6 s deferred; against one that never answers the
+    # save 4.8 s, against 0.6 s run after the reply; against one that never answers the
     # request held a database connection until the 180 s wait ended. Capture
-    # and the selection popup already deferred; the rest did not. A create
+    # and the selection popup already ran it after the reply; the rest did not. A create
     # that names its category or parent has nothing to wait for either.
     missing = []
     for path in sorted((FRONTEND / "js").glob("*.js")):
@@ -378,3 +380,20 @@ def test_every_note_the_page_creates_is_filed_in_the_background():
                 continue
             missing.append(f"{path.name}:{text[: match.start()].count(chr(10)) + 1}")
     assert not missing, f"POST /entries without defer_filing: {missing}"
+
+
+def test_the_new_note_box_has_live_source_read_with_live_by_default():
+    """L-documents-53: the capture strip's three-way switch; Read is not remembered; the edit box keeps Source only."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    seg = html[html.index('id="entry-view-seg"') : html.index('id="entry-content"')]
+    assert [seg.count(f'data-note-view="{v}"') for v in ("live", "source", "read")] == [1, 1, 1]
+    assert 'data-note-view="live" aria-label="Live" aria-pressed="true"' in seg, "Live is the default"
+    assert 'id="entry-read"' in html
+    wiring = _read("wiring.js")
+    body = _function(wiring, "setNoteSource")
+    assert 'on === "read"' in body and 'renderNoteText(pane, $("entry-content").value, [])' in body
+    assert 'prefs.set("note-source-view"' in body and body.index("if (!reading) try") < body.index("prefs.set")
+    clone = _function(_read("note-edit-panels.js"), "noteEditToolbar")
+    assert 'viewSeg?.replaceWith(viewSeg.querySelector("#entry-preview-toggle"))' in clone
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert ".note-composer.is-reading :is(.note-surface, #entry-content)" in css and ":not(#entry-view-seg)" in css

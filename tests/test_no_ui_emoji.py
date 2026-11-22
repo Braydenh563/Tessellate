@@ -87,7 +87,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "has no Phosphor font, never drawn in the app",
         ),
     ],
-    "frontend/js/documents.js": [
+    "frontend/js/documents-richpaste.js": [
         (
             "const DOC_RICH_TAGS",
             "the bullet marks a pasted Word paragraph starts with, matched to read it as "
@@ -100,11 +100,6 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
         ),
     ],
     "frontend/js/documents-prose.js": [
-        (
-            "block:const DOC_EMOJI_SOURCE",
-            "the Markdown :shortcode: table (user content: `:fire:` renders an emoji); "
-            "marked unslop-ignore in the file",
-        ),
         (
             "const PASTE_BULLET",
             "the bullet marks a pasted list arrives with (Word, Docs, web pages), "
@@ -147,7 +142,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "glyph is the redundant channel and the four marks must read as one family",
         ),
     ],
-    "frontend/js/whiteboard.js": [
+    "frontend/js/whiteboard-export.js": [
         (
             "obj.data?.task",
             "the exported SVG's task box: the icon font does not travel into the file "

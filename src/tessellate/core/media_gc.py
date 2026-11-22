@@ -121,7 +121,7 @@ def _conversation_referenced_ids(session: Session) -> set[int]:
     whiteboard content. Without this, `find_orphaned_media` would call
     every image ever attached to a chat message "orphaned", sent or not,
     and `delete_orphaned_media` would delete its file out from under a
-    conversation someone can still open and read.
+    conversation someone can open and read again.
     """
     ids: set[int] = set()
     for conversation in session.scalars(select(Conversation)):

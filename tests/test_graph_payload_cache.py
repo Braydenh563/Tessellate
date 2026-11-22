@@ -1,6 +1,6 @@
 """`/graph` serves its encoded payload from a cache while nothing in it moved.
 
-GRAPH_PLAN "Still open after KG1 to KG9": at 5,000 notes the payload was 0.7
+GRAPH_PLAN "After KG1 to KG9": at 5,000 notes the payload was 0.7
 to 1.0 s warm and 3 MB, rebuilt on every visit. The cache's key has to cover
 what moves a node without editing a note (pins, access counts, attachments,
 board members, the vault), or the map would show yesterday's picture; each

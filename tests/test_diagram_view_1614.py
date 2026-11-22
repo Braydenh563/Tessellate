@@ -135,3 +135,16 @@ def test_the_offer_is_one_line_under_the_toolbar_with_two_buttons_and_one_commit
     assert "dgm-sideways" in view and "Turn it sideways" in view and 'S.turn("LR")' in view
     assert "diagramModel.outline?.offer(S, f < 1 && math.sideways(" in (JS / "diagram-view.js").read_text(encoding="utf-8")
     assert "dgm-sideways" in (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+
+
+def test_a_drag_pan_reads_no_layout_in_its_move_handler_and_writes_the_scroll_once_a_frame():
+    """L-documents-89: the pan's `pointermove` summed its moves and wrote `scrollLeft` once a frame; it read `scrollWidth`
+    (a forced layout) and shut the menus on every move before."""
+    text = (JS / "diagram-view.js").read_text(encoding="utf-8")
+    start = text.index('fig.addEventListener("pointermove"')
+    handler = text[start : text.index("const lift = ", start)]
+    for forbidden in ("roomy()", "scrollLeft", "scrollTop", "scrollWidth", "clientWidth", "getBoundingClientRect"):
+        assert forbidden not in handler, forbidden
+    assert "nextFrame(pay)" in handler and "!held" in handler and "!shut" in handler
+    assert "room = roomy();" in text and "      pay();\n      start = null;" in text
+

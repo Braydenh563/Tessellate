@@ -13,6 +13,15 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from tessellate.core.database import Entry
+from tests._app_js import frontend_text
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _at(session, client, text, when):
@@ -28,7 +37,7 @@ def _ids(client, **params):
 
 
 def test_the_same_day_in_earlier_years_and_months(client, session):
-    now = datetime.now(timezone.utc)
+    now = SUITE_NOW
     year_ago = _at(session, client, "a year ago", now.replace(year=now.year - 1))
     two_years = _at(session, client, "two years ago", now.replace(year=now.year - 2))
     other_day = _at(session, client, "another day", now - timedelta(days=3))
@@ -67,8 +76,7 @@ def test_the_years_are_one_select_in_the_strip_head_not_a_row_of_chips():
     without them."""
     from pathlib import Path
 
-    from tests._app_js import frontend_text
-
+    
     html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
     head = html[html.index('class="timeline-daystrip-head"') :]
     head = head[: head.index('id="timeline-daystrip-days"')]

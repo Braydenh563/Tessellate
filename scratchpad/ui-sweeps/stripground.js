@@ -11,7 +11,12 @@ const [vw, vh] = (process.env.VIEWPORT || "1440x900").split("x").map(Number);
   await page.evaluate(() => switchTab("notes"));
   await page.waitForTimeout(1200);
   await page.evaluate(async () => {
-    const e = allEntries.find((x) => (x.content || "").includes("Edit form probe 1"));
+    // Its own note when the data dir has none (the seed it was written on had one).
+    let e = allEntries.find((x) => (x.content || "").includes("Edit form probe 1"));
+    if (!e) {
+      e = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: "Edit form probe 1" }) });
+      await loadEntries?.();
+    }
     await openNoteEditor(e.id);
   });
   await page.waitForTimeout(2000);

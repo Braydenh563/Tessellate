@@ -197,3 +197,16 @@ def test_debug_sends_tests_for_a_python_file_of_tests():
     core = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "run-core.js").read_text("utf-8")
     assert 'tests: runLooksLikeTests("py", String(request.source || ""))' in core
     assert "e.data.tests ? emitTest : null" in run_sandbox._PY_WORKER
+
+
+def test_a_variable_opens_into_children_of_children_and_stops_at_a_cycle():
+    """L312: Variables opened one level; a nested list or dict opens down to three, a cycle ends the walk."""
+    code = "data = {'a': [1, {'b': 2}], 'c': 3}\nloop = [1]\nloop.append(loop)\nx = 1\n"
+    _ended, stops, _rows = _session(code, [{"cmd": "stop"}], breaks=[{"line": 4}], watches=["data['a']"])
+    by = {row["name"]: row for row in stops[0]["locals"]}
+    a = next(c for c in by["data"]["children"] if c["name"] == "'a'")
+    assert [c["name"] for c in a["children"]] == ["[0]", "[1]"]
+    assert a["children"][1]["children"] == [{"name": "'b'", "value": "2", "type": "int"}]
+    loop = by["loop"]["children"]
+    assert loop[1]["value"] == "[1, [...]]" and "children" not in loop[1]
+    assert [c["name"] for c in stops[0]["watches"][0]["children"]] == ["[0]", "[1]"]

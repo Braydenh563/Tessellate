@@ -14,13 +14,13 @@ import json
 import logging
 import threading
 import time
-from datetime import datetime, timezone
 from typing import Callable, NamedTuple
 
 import requests
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from tessellate.core import clock
 from tessellate.api.this_computer import this_computer_only
 from tessellate.ai import bench, facts
 from tessellate.core import deps, jobruns, jobs
@@ -182,7 +182,7 @@ def _run(models: list[str], size: int, budget_seconds: float) -> None:
                 session, deps.get_ollama(), models, size=size, budget_seconds=budget_seconds,
                 stop=_stop, on_progress=lambda p: _state.__setitem__("progress", p),
             )
-            report["finished_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            report["finished_at"] = clock.utc().isoformat(timespec="seconds")
             atomic_write_text(_report_path(), json.dumps(report, indent=1))
             best = report.get("recommended")
             job.result = (

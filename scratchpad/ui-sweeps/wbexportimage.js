@@ -6,22 +6,14 @@
 // PNG button does (`wbRasterizeSvg`) and reads the pixel where the picture is.
 //
 //   BASE=http://127.0.0.1:8799 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node wbexportimage.js
-const { boot } = require('./lib.js');
+const { boot, newBoard: libNewBoard } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   let failed = 0;
   const ok = (name, pass, detail) => { if (!pass) failed++; console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}  ${detail || ''}`); };
   // Through the real UI: `openWhiteboardBoard` from script leaves the boards
   // landing showing (see whiteboard.js, `newBoard`).
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById('wb-boards-new').click());
-  await page.waitForTimeout(700);
-  await page.fill('#wb-template-name', 'Export picture');
-  await page.click('#wb-template-create');
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, 'Export picture', 'board');
   await page.keyboard.press('Escape');
   const made = await page.evaluate(async () => {
     const cv = document.createElement('canvas'); cv.width = cv.height = 32;

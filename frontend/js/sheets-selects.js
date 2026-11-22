@@ -322,8 +322,10 @@ function trackSeparatorValue(handle, panel, min, max, axis = "width") {
     handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
-  write(size() || min);
-  if (typeof ResizeObserver === "function") {
+  //: The observer's first delivery reports the width before the first paint, so the grip's setup reads no box (a read there forced a layout of the whole page, 110 ms on the Documents cold open, L-documents-106).
+  if (typeof ResizeObserver !== "function") write(size() || min);
+  else {
+    write(min);
     new ResizeObserver((entries) => {
       const box = entries[entries.length - 1].borderBoxSize?.[0];
       write((tall ? box?.blockSize : box?.inlineSize) ?? size());
@@ -801,6 +803,10 @@ function enhanceSelect(select) {
   select.classList.add("select-native-hidden");
   select.tabIndex = -1;
   select.setAttribute("aria-hidden", "true");
+  //: `select.focus()` anywhere in the app focused nothing, because the native
+  //: control is out of the tab order; it goes to the opener, which is what a
+  //: person would tab to.
+  select.focus = (options) => opener.focus(options);
 
   //: The name the select already has, wherever it was given: its own
   //: `aria-label`, the element `aria-labelledby` points at, or the `<label
@@ -1217,51 +1223,7 @@ function watchForSelects() {
 // stays where the finger held.
 const PHONE_ACTION_SHEET = "(max-width: 599.98px)";
 
-function openKebabSheet(menu, opener, label) {
-  closeActionMenus();
-  const home = menu.parentElement;
-  let closeSheet = null;
-  let sheetCard = null;
-  // A group's row and a level's back row move inside the sheet (`buildMenuGroupButton`), so they leave it open.
-  const onRow = (event) => {
-    const row = event.target.closest(".menu-item");
-    if (row && !row.matches(".has-submenu, .menu-back") && closeSheet) closeSheet();
-  };
-  closeSheet = openSheet({
-    label,
-    name: "action-menu",
-    returnFocus: opener,
-    build: (card) => {
-      card.classList.add("action-menu-card");
-      sheetCard = card;
-      menu._inSheet = true;
-      menu.style.left = "";
-      menu.style.top = "";
-      menu.classList.remove("hidden", "action-menu-flip", "action-menu-escaped");
-      card.appendChild(menu);
-      card.addEventListener("click", onRow, true);
-    },
-    onClose: () => {
-      closeSheet = null;
-      opener.setAttribute("aria-expanded", "false");
-    },
-    //: After the sheet's exit (`openSheet`'s `onGone`), so the card is not an
-    //: empty rectangle while it leaves. Skipped when the menu has already
-    //: been taken into a newer sheet (the same ⋯ pressed again inside the
-    //: exit window): sending it home then would empty the sheet that is open.
-    onGone: () => {
-      if (menu.parentElement !== sheetCard) return;
-      menu.classList.add("hidden");
-      if (home) home.appendChild(menu);
-      // After the observer has seen the class change above, so it does not
-      // escape a menu that is on its way home.
-      queueMicrotask(() => {
-        menu._inSheet = false;
-      });
-    },
-  });
-  opener.setAttribute("aria-expanded", "true");
-}
+//: `openKebabSheet` (a ⋯ menu as a phone's action sheet) is in the lazy gesture-kit.js: only a tap reaches it.
 
 //: **Which overflow glyph (INBOX 706).** `⋯` (`ph:dots-three`, horizontal) for
 //: an item's overflow in a row, a card or a bar of controls; `⋮`
@@ -2288,7 +2250,7 @@ async function loadChatSuggestions() {
   // Re-check after the await in case a message was sent while we waited
   if ($("chat-messages").querySelector(".msg")) return;
 
-  // batch-a.md's "left open" item: `#chat-suggest` is on loan to `.chat-empty`
+  // batch-a.md's last item: `#chat-suggest` is on loan to `.chat-empty`
   // (see the long comment on `openConversation` below) and `newChatConversation`
   // used to wipe `#chat-messages` with a bare `replaceChildren()` without
   // sending it home first, so a "+ New" click while this call was still

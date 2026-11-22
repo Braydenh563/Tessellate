@@ -1717,7 +1717,8 @@ def test_inbox_669_a_lean_held_by_a_rule_is_eased_back_too() -> None:
     after = blend.index("change();\n  for (const { anim, el, from } of held)")
     assert before < after
     tail = blend[after:]
-    assert "BODY.filter((key) => style[key] !== from[key])" in tail and "el.animate([{ ...moved, offset: 0 }]" in tail
+    #: Compared through `same` since an identity transform reads as no move (commit 415775215).
+    assert "BODY.filter((key) => !same(style[key], from[key]))" in tail and "el.animate([{ ...moved, offset: 0 }]" in tail
     # A part the held loop eased is read again for what else moved.
     assert "if (eased.has(el)) continue;" not in tail and "A part eased above is read again" in tail
 
@@ -1905,11 +1906,15 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
 def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
-    rule = css[css.index(":root.is-calm") :]
+    # L-world-class-126 moved the class from <html> to each figure (a whole-page restyle at
+    # rest); the intent, the same loops held after the same 20 s, is unchanged.
+    rule = css[css.index(".atl-figure-box.is-calm") :]
     rule = rule[: rule.index("{")]
     assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
-    assert "animation-play-state: paused" in css[css.index(":root.is-calm") :]
-    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV and 'toggle("is-calm", on)' in AV
+    assert "animation-play-state: paused" in css[css.index(".atl-figure-box.is-calm") :]
+    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV
+    assert 'querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on)' in AV
+    assert 'document.documentElement.classList.toggle("is-calm"' not in AV
     assert '"pointermove"' in AV
 
 

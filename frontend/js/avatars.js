@@ -7391,7 +7391,7 @@
   //: hanging) is within 2px of that line? Floating, peeking over the bar,
   //: leaning on a side or pinned where you put it is not a perch to check;
   //: what is drawn on a board, a map or the graph is never one.
-  const NMB_CANVAS = "#whiteboard-container, #graph-canvas, #graph-svg, #graph-pane-canvas, canvas";
+  const NMB_CANVAS = "#whiteboard-container, #graph-canvas, #graph-pane-canvas, canvas";
   function nameMarkBuddySupported() {
     if (nmb.pinned) return true;
     //: Peeking over a bar or leaning on a side holds on to its edge, which
@@ -7531,9 +7531,17 @@
   const NMB_IDLE_MARK_MS = 120000;
   const nmbClock = { timer: 0, inputAt: Date.now() };
   //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 08-consistency.css).
+  //: **On each figure, not on `<html>`** (L-world-class-126, the at-rest long
+  //: task): the class on the root restyled the whole page to pause 73 loops,
+  //: 26 to 41 ms at 1x and 130 to 250 ms at 4x CPU, once every calm; on the
+  //: figure it restyles the figure alone. The DOM is touched only when the
+  //: state changes, so a pointermove that finds it awake costs a timer.
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
-    document.documentElement.classList.toggle("is-calm", on);
+    if (on !== nmbClock.isCalm) {
+      nmbClock.isCalm = on;
+      for (const box of document.querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on);
+    }
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };
   nmbClock.setCalm(false);
@@ -9560,7 +9568,8 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
+    //: The list carries a long note cut short (`content_truncated`, 297 characters), so its length is not the note's.
+    else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));
@@ -10023,6 +10032,10 @@
     //: eases are skipped in the second.
     const eases = [];
     const eased = new Map();
+    //: A transform in a transition's delay reads as the identity matrix where it was "none": the same
+    //: pose, so not a move (else a lie-down's 240ms delay was bridged by a 300ms ease to its end pose,
+    //: then snapped back to start, 20px in one frame: companionacts.js).
+    const same = (x, y) => x === y || ((x === "none" || x === "matrix(1, 0, 0, 1, 0, 0)") && (y === "none" || y === "matrix(1, 0, 0, 1, 0, 0)"));
     //: **The read after `change()` cannot be made cheaper** (lag 1111, 4x CPU, Documents with 30k nodes): it pays
     //: the act's own restyle (20ms median, 95 for a cheer or a read, whose custom properties restyle the whole
     //: figure). `document.getAnimations()`, one element's `getAnimations()` and `getComputedStyle` cost the same,
@@ -10036,7 +10049,7 @@
       //: Only what moved (the body's note below says why).
       const style = getComputedStyle(el);
       const done = eased.get(el) || new Set();
-      const moved = Object.fromEntries(Object.keys(from).filter((key) => !done.has(key) && style[key] !== from[key]).map((key) => [key, from[key]]));
+      const moved = Object.fromEntries(Object.keys(from).filter((key) => !done.has(key) && !same(style[key], from[key])).map((key) => [key, from[key]]));
       if (!Object.keys(moved).length) continue;
       for (const key of Object.keys(moved)) done.add(key);
       eased.set(el, done);
@@ -10052,7 +10065,7 @@
       //: Only what moved: a key held at its old value that the next act
       //: animates from the same value (a hang's turn starting at 0) was
       //: pinned there for the whole blend and then jumped (atlas669-blendcheck.js).
-      const moved = Object.fromEntries(BODY.filter((key) => style[key] !== from[key]).filter((key) => !done?.has(key)).map((key) => [key, from[key]]));
+      const moved = Object.fromEntries(BODY.filter((key) => !same(style[key], from[key])).filter((key) => !done?.has(key)).map((key) => [key, from[key]]));
       if (!Object.keys(moved).length) continue;
       eases.push({ el, moved });
     }
@@ -11597,6 +11610,10 @@
   })();
   // pull-grab:end
 
+  //: The sweeps' hands on its mind (scratchpad/ui-sweeps: companionlife, wander, perchwords and the
+  //: others that read it): its own names, keyed as named, on the object already shared, so the
+  //: shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
+  nmb.sweep = { NMB_EXPR_EVENTS, NMB_SLEEP_MS, nameMarkBuddyBand, nameMarkBuddyBeat, nameMarkBuddyBellErrand, nameMarkBuddyChatErrand, nameMarkBuddyCheck, nameMarkBuddyChoose, nameMarkBuddyCovers, nameMarkBuddyDrift, nameMarkBuddyEase, nameMarkBuddyEdges, nameMarkBuddyErrand, nameMarkBuddyHeadAt, nameMarkBuddyHits, nameMarkBuddyKeepUp, nameMarkBuddyObstacles, nameMarkBuddyOrigin, nameMarkBuddyPerches, nameMarkBuddyPet, nameMarkBuddyRideBox, nameMarkBuddyScroller, nameMarkBuddySeen, nameMarkBuddyShape, nameMarkBuddyStillGood, nameMarkBuddySupported, nameMarkBuddyTick, nameMarkBuddyWander, nameMarkBuddyWordsUnder, nameMarkBuddyYoursObstacles };
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_BLEND_IN_MS, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });
 })();

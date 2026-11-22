@@ -20,7 +20,6 @@ lines), `chat_turn` (the streamed turn).
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import re
@@ -32,7 +31,6 @@ from itertools import chain
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
@@ -80,7 +78,7 @@ from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBod
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
-from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
+from tessellate.api.chat_agent import stop_when_gone, _agent_events, consent_events, run_card_events, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api import chat_chips
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
@@ -210,7 +208,7 @@ def _worked_out(question: str):
     if kind == "weather" and (deps.get_ollama().is_running() or utilities.web_on()):
         #: "The weather is not something this app knows" is the answer only with
         #: no model and no web; with either, the turn is a general question and
-        #: goes to them (the owner, 2026-10-27: a weather follow-up came back
+        #: goes to them (the owner, 2026-10-27: a weather follow-on came back
         #: from the composer with a model up and Web on).
         return intent.NOTES, None
     worked = None
@@ -855,7 +853,7 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     early = _filed_or_counted_events(req, asked, now)
     if early:
         return early
-    got = reading.read(asked, now=now)
+    got = reading.read(asked, now=now, context={"birthday": b} if (b := str(deps.get_config().get_preference("birthday", "") or "")) else None)
     if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS or composer_slots.asks_state(asked):
         return []  # "which tasks are done" is a checklist's state (E21), never the reminders list
     result = agent_tools.execute_tool(req.session, got.tool, {})
@@ -961,7 +959,7 @@ def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
 
 def _call_events(req: _StreamRequest) -> list[dict]:
     """A message that only called the assistant: here, and three things to
-    ask next as chips (an "ask" offer; the follow-up strip draws them)."""
+    ask next as chips (an "ask" offer; the follow-on strip draws them)."""
     recent, seed = _reply_seed(req)
     line = composer_smalltalk.call(req.address.names, recent=recent, seed=seed, voice=_composer_voice())
     return [
@@ -1329,7 +1327,7 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
 
 
 def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
-    """The composer's result with the follow-up it answered, the notes it read
+    """The composer's result with the follow-on it answered, the notes it read
     and the older ones those replaced."""
     follow = prepared.get("follow_on")
     #: A follow-on that is a question in its own right ("what about
@@ -1386,7 +1384,7 @@ def _composed_grounding_event(req: _StreamRequest, result: dict, asks: list[str]
 def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None, listed: bool = True) -> tuple[str, list[str]]:
     """The answer's next step: the screen-aware closing line when the screen
     is known, else the chips for the cited note (INBOX 1466: the prose offer
-    "Next, I can open ..." is the follow-up strip's now, not both). Left off
+    "Next, I can open ..." is the follow-on strip's now, not both). Left off
     by Quick and by an answer that already ends in a question."""
     if size == "short" or text.rstrip().endswith("?"):
         return text, []
@@ -1655,7 +1653,7 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
 
 def _forced_notes(req: _StreamRequest, follow: object) -> bool:
     """A turn that is about the notebook whatever its words read as: a reply
-    to the agent's question, a follow-up, and, in Ask, "list my work notes"
+    to the agent's question, a follow-on, and, in Ask, "list my work notes"
     (an act in Chat, the question it is here: the listing is the answer,
     CHAT_PLAN Phase 6 P12)."""
     if req.body.answering_agent or follow is not None:
@@ -1795,10 +1793,10 @@ def run_command(body: CommandRunBody, session: Session = Depends(get_session)) -
 
 
 def _spoken_act(req: _StreamRequest) -> str | None:
-    """A spoken follow-up that is an act ("and delete it", "same for
+    """A spoken follow-on that is an act ("and delete it", "same for
     Tuesday", "pin the other one"), resolved over the chat's last five turns
     (`reading.follow`, decision 59 step 3): the sentence it stands for, or
-    None so a question's follow-up stays `composer.follow_on`'s."""
+    None so a question's follow-on stays `composer.follow_on`'s."""
     from tessellate.ai import reading
 
     now = user_now(deps.get_config())
@@ -1845,7 +1843,7 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
 
 
 def _follow_up(req: _StreamRequest):
-    """The follow-up the turn before gives this one: a spoken act stands in
+    """The follow-on the turn before gives this one: a spoken act stands in
     for the question itself; a composed turn's "tell me more" is
     `composer.follow_on`'s; None otherwise."""
     if acts_on_listed_task(req.question, req.history, user_now(deps.get_config())):
@@ -1885,7 +1883,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     """Retrieval happens INSIDE the stream, not before it: that is the whole
     latency win. Nothing before this touches the model.
 
-    **A follow-up read against the turn before** (INBOX 725): "tell me more"
+    **A follow-on read against the turn before** (INBOX 725): "tell me more"
     or "the second one" means nothing searched on its own. Only for a turn the
     composer answers (Ask's From your notes, or any turn with no model), and
     only with a turn before it: a model reads the history itself, and the
@@ -2250,33 +2248,10 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
 
 
 async def _stop_when_gone(req, lines):  # noqa: ANN001
-    """The turn's lines, with the browser's Stop (or a closed tab) made the
-    model's Stop (audit 1028 E3). Starlette cancels this generator when the
-    client goes; the abort used to end only the HTTP response, so the model
-    kept generating to the end and the next question queued behind it. The
-    cancel sets the turn's stop flag, which cuts the upstream request
-    (`activity.stop_aware`); the sync generator is closed once its current
-    step returns, so its `finally` blocks run."""
-    source = iter(lines)
-    done = object()
-
-    def step():  # noqa: ANN202
-        return next(source, done)
-
-    try:
-        while True:
-            task = asyncio.ensure_future(run_in_threadpool(step))
-            try:
-                line = await asyncio.shield(task)
-            except asyncio.CancelledError:
-                req.stop.set()
-                task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
-                raise
-            if line is done:
-                return
-            yield line
-    finally:
-        req.stop.set()
+    """The chat turn's lines, with the browser's Stop made the model's Stop (audit 1028 E3);
+    the body is `chat_agent.stop_when_gone`, shared with the Guide and the writing room (L889)."""
+    async for line in stop_when_gone(req.stop, lines):
+        yield line
 
 
 def _interactive_lines(req):  # noqa: ANN001, ANN202

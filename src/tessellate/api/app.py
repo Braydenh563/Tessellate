@@ -119,11 +119,17 @@ from tessellate.api import (
     routes_websearch,
     routes_whiteboard,
     routes_board_library,
+    routes_board_convert,
     routes_code_snippets,
     routes_code_assist,
     routes_board_history,
+    routes_board_affinity,
+    routes_document_claims,
+    routes_document_story,
     routes_map_suggest,
     routes_map_from_notes,
+    routes_graph_projection,
+    routes_documents_from_notes,
 )
 from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
@@ -848,7 +854,7 @@ def _warm_routes(app) -> None:
     router under one lock: about 0.9 s here for ~240 paths, so the browser's
     boot burst (`/models/status` among them) all waited on it, 3.9 s on the
     owner's machine. One in-process `/health` takes that cost while the lock
-    screen is still open. On the pool's thread Jobs, not the event loop; a
+    screen is still up. On the pool's thread Jobs, not the event loop; a
     failure only means the first real request pays as before. Skipped under
     pytest, where every test app would pay a second for nothing.
     """
@@ -1325,6 +1331,8 @@ def _start_services() -> Path:
     #: gone (core/afterunlock.py), never beside it.
     if _has_password():
         afterunlock.arm()
+    else:
+        afterunlock.disarm()
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
     afterunlock.defer("resume-jobs", jobs.resume)
@@ -1587,6 +1595,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_resurface.router, LOCKED),
     (routes_insights.router, LOCKED),
     (routes_graph.router, LOCKED),
+    (routes_graph_projection.router, LOCKED),
     (routes_help.router, LOCKED),
     (routes_reminders.router, LOCKED),
     # A notification's Done and Snooze, pressed by the service worker with a
@@ -1607,11 +1616,16 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_whiteboard.router, LOCKED),
     (routes_whiteboard.media_router, MEDIA),
     (routes_board_library.router, LOCKED),
+    (routes_board_convert.router, LOCKED),
     (routes_code_snippets.router, LOCKED),
     (routes_code_assist.router, LOCKED),
     (routes_board_history.router, LOCKED),
     (routes_map_suggest.router, LOCKED),
+    (routes_board_affinity.router, LOCKED),
+    (routes_document_claims.router, LOCKED),
+    (routes_document_story.router, LOCKED),
     (routes_map_from_notes.router, LOCKED),
+    (routes_documents_from_notes.router, LOCKED),
     (routes_debug.router, LOCKED),
     (routes_privacy.router, LOCKED),
     (routes_capabilities.router, LOCKED),

@@ -1,6 +1,6 @@
 """`/graph?slim=1`: the map's own payload without what every reader assumes.
 
-GRAPH_PLAN "Still open after KG1 to KG9": at 5,000 notes `/graph` was 3.1 MB,
+GRAPH_PLAN "After KG1 to KG9": at 5,000 notes `/graph` was 3.1 MB,
 and the first visit after any change spent its time building and encoding
 it. Measured on that notebook (`scratchpad/kg1005_graph_bench.py`), a third
 of the bytes were values every note carries at its default (a null pin, a

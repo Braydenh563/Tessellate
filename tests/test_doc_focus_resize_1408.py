@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -19,7 +21,7 @@ def _read(*parts: str) -> str:
 
 
 def test_the_sidebar_grip_is_not_hidden_in_focus_mode() -> None:
-    css = _read("frontend", "css", "07-whiteboard-misc.css")
+    css = _read("frontend", "css", "library-lazy.css")  # moved with the Library bundle (L308)
     start = css.index(".doc-sidebar > .sidebar-collapse-toggle,")
     selectors = css[css.rfind("}", 0, start) + 1 : css.index("{", start)]
     assert "sidebar-resize" not in selectors, "the grip must stay drawn in focus mode"
@@ -34,5 +36,5 @@ def test_the_suggestions_grip_is_placed_in_focus_mode_and_hidden_on_a_phone() ->
     css = _read("frontend", "css", "library-lazy.css")
     assert "#tab-documents.doc-focus .doc-prose-resize.sidebar-resize {\n  position: fixed;" in css
     assert "#tab-documents.doc-focus .doc-prose-resize {\n  display: none;" not in css
-    js = _read("frontend", "js", "documents.js")
+    js = documents_text()
     assert "applyDocProseDock();" in js.split('tab.classList.toggle("doc-focus", on);')[1][:300]

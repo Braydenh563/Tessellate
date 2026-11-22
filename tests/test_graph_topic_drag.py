@@ -95,7 +95,7 @@ def test_a_plate_double_click_renames_in_place():
 def test_a_topic_drag_is_one_pin_write_with_its_core_note():
     """Ledger 931: the core note's pin went out as its own PUT /graph/pin
     beside the group's PUT /graph/pins. It now joins the group's write."""
-    end = CANVAS[CANVAS.index("function gcDragEnd(event)") : CANVAS.index('s.canvas.addEventListener("pointermove"')]
+    end = CANVAS[CANVAS.index("function gcDragEnd(event, s)") : CANVAS.index("function gcWirePointer(s)")]
     assert "if (pins.length) pins.push({ id: node.id, x: node.fx, y: node.fy });" in end
     assert "else graphPinSave(node.id, node.graph_pin_x, node.graph_pin_y)" in end, "the lone note goes through the one pin door"
     assert end.index("pins.push({ id: node.id") < end.rindex("if (pins.length) savePins();")
@@ -128,3 +128,36 @@ def test_the_floating_topic_rename_is_the_plate_s_height():
     assert "field.style.height = `${height}px`;" in body and "Math.round(plateH + 6)" in body
     rule = re.search(r"\.graph-topic-rename\.is-floating\s*\{([^}]*)\}", _css("graph-lazy.css")).group(1)
     assert "min-height: 0" in rule and "padding: 0 var(--space-2)" in rule
+
+
+def test_a_topic_rename_saves_on_blur_in_the_contents_outline_too():
+    """L1: the Contents heading's rename field saves when it loses focus, as
+    the graph's field does; Save and Cancel keep their mousedown off the field."""
+    lib = unwrapped((ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8"))
+    start = lib.index("function contentsRenameTopic(")
+    body = lib[start : lib.index("\n}\n", start)]
+    assert 'field.addEventListener("blur", () => finish(true));' in body
+    assert body.count('addEventListener("mousedown", (event) => event.preventDefault())') == 1
+
+
+def test_the_dead_graph_svg_element_is_gone():
+    """L-graph-4: the hidden SVG the removed renderer drew into, with its
+    handlers, styles and lock entry, left no reference in the frontend."""
+    from tests._app_js import app_js_text
+
+    assert "graph-svg" not in app_js_text()
+    for rel in ("index.html", "css/02-chat-graph.css", "css/motion-still.css"):
+        assert "graph-svg" not in (ROOT / "frontend" / rel).read_text(encoding="utf-8"), rel
+
+
+def test_a_topic_card_merges_removes_and_resets_as_saved_overrides():
+    """Ledger L711 and L11: merge and remove are a menu on the card, each one
+    undo of the same edits PUT; the card names the category most notes sit in."""
+    card = CANVAS[CANVAS.index("function gcShowTopic(") : CANVAS.index("async function gcSaveTopicName(")]
+    assert "kebabMenu(gcTopicMenuRows(topic)" in card
+    assert "Mostly in ${home}" in card and "home || topic.name" in card
+    assert '"ph:arrows-merge Merge with"' in CANVAS and '"ph:eye-slash Remove topic"' in CANVAS
+    assert 'pushRequestUndo(label, "/graph/topics/edits", "PUT", row.was, row.edits' in CANVAS
+    assert "Reset topic edits" in CANVAS
+    guide = help_chat_text()
+    assert "Merge with" in guide and "Remove topic" in guide and "Reset topic edits" in guide

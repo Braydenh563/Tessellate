@@ -19,13 +19,14 @@ import pytest
 
 from tessellate.api.run_sandbox import PY_RUNNER, RUN_SANDBOX_HTML, RUN_SANDBOX_PY_HTML
 from tests import _js_scope
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CODE = (JS / "documents-code.js").read_text(encoding="utf-8")
 #: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
 IDE = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 PALETTE = _js_scope.unwrapped((JS / "app-palette.js").read_text(encoding="utf-8"))
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
@@ -59,8 +60,8 @@ def test_the_head_is_a_dock_with_the_tabs_as_its_identity() -> None:
     assert '"cm-run-head dock"' in panel and '"dock-identity cm-run-identity"' in panel
     assert '"tabs-line cm-panel-tabs"' in panel and '"tablist"' in panel and '"tab"' in panel
     assert '"dock-actions cm-run-actions"' in panel
-    #: Worded ghosts first, the icon run (help, Close) last.
-    assert "actions.append(live, stdinButton, tests, again, stopButton, clear, help, close)" in panel
+    #: Worded ghosts first, the icon run (help, Close) last. L317 added the worded "Query as SQL" ghost for CSV.
+    assert "actions.append(live, stdinButton, tests, query, again, stopButton, clear, help, close)" in panel
     #: A count is the dock's quiet `.dock-chip`, never a pill.
     assert '"dock-chip cm-panel-count"' in panel
 
@@ -192,7 +193,7 @@ def test_the_new_styles_are_lazy() -> None:
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_html_has_a_check_for_problems() -> None:
-    """A stray closing tag and an element left open, the two HTML mistakes a
+    """A stray closing tag and an element never closed, the two HTML mistakes a
     parser that recovers from everything never reports."""
     cm = (ROOT / "frontend" / "vendor" / "codemirror" / "codemirror.min.js").read_text(encoding="utf-8")
     sets = CODE[CODE.index("const DOC_HTML_VOID") : CODE.index("const DOC_HTML_RAW")]

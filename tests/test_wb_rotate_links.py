@@ -6,10 +6,10 @@ grip, a box's grip, a selection's grip) set `rotation` and saved without it,
 so the link stayed on the unturned box until the next move. Measured by
 `scratchpad/ui-sweeps/wbrotatelinks.js`: FAIL before, PASS after."""
 
+from tests._app_js import frontend_text
 import re
-from pathlib import Path
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _body(name: str) -> str:

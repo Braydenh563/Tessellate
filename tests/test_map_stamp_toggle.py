@@ -8,6 +8,7 @@ press adds yours, the second takes yours back. The chip also has a menu
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,8 +17,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
+WB = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
@@ -108,8 +109,8 @@ def test_the_chip_is_a_toggle_with_a_menu_and_every_change_is_one_undo_step():
     paint = _body(MAP, "function wbMapPaintExtras(")
     assert "kebabMenu(" in paint and '"Remove one"' in paint and '"Clear all"' in paint
     assert 'wrap.className = "wb-map-stamp-wrap"' in paint
-    tags = MAP[MAP.index('el.append("div").attr("class", "wb-map-tags")') :][:700]
-    assert '.closest(".wb-map-stamp-wrap")' in tags and 'wbMapStampSet(wbMapLiveDatum(d), stamp.dataset.stamp, "toggle")' in tags
+    tags = MAP[MAP.index('case "tags":') :][:900]
+    assert '.closest(".wb-map-stamp-wrap")' in tags and 'wbMapStampSet(live(), stamp.dataset.stamp, "toggle")' in tags
     assert '"stamped"' in MAP[MAP.index("const WB_MAP_CONTENT_KEYS") :][:400], "yours is content: a look reset keeps it"
     assert 'wbMapStampSet(mapNode, name, "toggle")' in WB and "{ stamps: null, stamped: null }" in WB
     assert ".wb-map-stamp-wrap" in CSS and ".wb-map-stamp-wrap .kebab-opener" in CSS

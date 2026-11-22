@@ -11,7 +11,7 @@ const VH = Number(process.env.VH || 614);
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.evaluate(() => switchTab('chat'));
   await page.waitForTimeout(4500);
   const before = await page.evaluate(() => {

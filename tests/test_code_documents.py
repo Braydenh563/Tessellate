@@ -11,6 +11,7 @@ assistant panel's contracts. The UI itself is measured by
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -422,14 +423,14 @@ def test_python_variables_carry_their_children():
     assert by["xs"]["children"] == [
         {"name": "[0]", "value": "1", "type": "int"},
         {"name": "[1]", "value": "'a'", "type": "str"},
-        {"name": "[2]", "value": "[3]", "type": "list"},
+        {"name": "[2]", "value": "[3]", "type": "list", "children": [{"name": "[0]", "value": "3", "type": "int"}]},
     ]
     assert by["d"]["children"] == [{"name": "'k'", "value": "2", "type": "int"}]
     assert [c["name"] for c in by["p"]["children"]] == ["x", "y"]
     big = by["big"]["children"]
     assert len(big) == 51 and big[-1] == {"name": "...", "value": "10 more", "type": ""}
-    #: One level down only: a child's own children are its repr.
-    assert all("children" not in c for c in by["xs"]["children"])
+    #: L312 moved this from one level to three: a child that is a container opens too, and a plain value does not.
+    assert [("children" in c) for c in by["xs"]["children"]] == [False, False, True]
 
 
 def test_the_panel_draws_a_row_with_children_as_a_disclosure():
@@ -892,7 +893,8 @@ def test_a_code_file_spell_checks_comments_and_strings_only():
     assert "string|template" in mask and "comment" in mask
     spell = _fn(docs, "docCmSpellcheck")
     assert "!docFileType().previewable" in spell
-    assert "docOpenSuggestFor(finding, false, point)" in docs[docs.index("DOC_HOVER_SUGGEST_MS =") :]
+    #: The hover wiring stays in documents.js, the constant moved to documents-findings.js (L-documents-117): no slice order between them.
+    assert "DOC_HOVER_SUGGEST_MS =" in docs and "docOpenSuggestFor(finding, false, point)" in docs
 
 
 # Audit 1028 D8: the ASCII word regex split "café" into "caf" and "naïve" into
@@ -955,3 +957,20 @@ def test_a_template_fills_the_time_and_places_the_cursor():
     assert re.search(r"At \d{1,2}:\d{2}", with_cursor["content"])
     assert with_cursor["content"][with_cursor["cursor"] :].startswith("end")
     assert plain["cursor"] == -1
+
+
+# L349: a #tag in a document's Read view is a chip, and pressing it searches documents for it.
+def test_a_hash_tag_in_the_read_view_is_a_chip_that_searches_documents():
+    embeds = (JS / "documents-embeds.js").read_text(encoding="utf-8")
+    start = embeds.index("docEmbedFill.tagParts = ")
+    body = embeds[start : embeds.index("\n  };\n", start) + 6]
+    got = _node(
+        "const docEmbedFill = {};\n" + body,
+        "{ a: docEmbedFill.tagParts('fix #wip and C# plus ##x then #a-b, #9 done'),"
+        " b: docEmbedFill.tagParts('no tags here'), c: docEmbedFill.tagParts('#Start') }",
+    )
+    assert got["a"] == ["fix ", ["wip"], " and C# plus ##x then ", ["a-b"], ", #9 done"]
+    assert got["b"] == ["no tags here"] and got["c"] == [["Start"]]
+    assert "docEmbedFill.tagChips(preview)" in frontend_text("documents.js")
+    assert 'openFinder("#" + tag, { kind: "document" })' in embeds
+    assert "SKIP_TAG_CHIPS" in embeds and "closest(" in embeds

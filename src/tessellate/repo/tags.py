@@ -18,7 +18,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import events
-from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape
+from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape, writes
 from tessellate.entry.manager import entry_tags, log_action, mark_edited, note_is_sealed, record_revision, tags_from_json
 from tessellate.entry.tagnames import normalise_tags
 from tessellate.repo import NotFound
@@ -46,7 +46,8 @@ def _tag_fingerprint(session: Session) -> tuple:
     entry, an edit, a delete, or a restore. Same shape as routes_graph.py's
     `_graph_fingerprint`, `Entry.updated_at` has `onupdate=utcnow`, so any
     tag edit bumps it, and the live-entry count catches soft-delete/restore
-    even on the rare row an edit doesn't touch."""
+    even on the rare row an edit doesn't touch. `writes(Entry)` tells two
+    writes in one clock tick apart."""
     deps = importlib.import_module("tessellate.core.deps")
 
     live = Entry.is_deleted == False  # noqa: E712
@@ -54,6 +55,7 @@ def _tag_fingerprint(session: Session) -> tuple:
         str(deps.get_config().data_dir),
         session.scalar(select(func.count(Entry.id)).where(live)) or 0,
         session.scalar(select(func.max(Entry.updated_at)).where(live)),
+        writes(Entry),
     )
 
 
@@ -71,13 +73,13 @@ def _ensure_tag_cache_reset_registered() -> None:
     # already imports `deps` inside `record_dates` for the same reason.
     #
     # `importlib.import_module` rather than a plain `from ... import deps`
-    # statement even here, deferred as it already is: CodeQL's
+    # statement even here, function-local as it already is: CodeQL's
     # py/cyclic-import (three "Note"-severity alerts against this exact
     # shape, this file, closed together) flags the *import statement*
     # itself as beginning a cycle in the module dependency graph, it has
     # no way to know the statement only ever runs after startup, so
     # function-local didn't clear it. `importlib` performs the identical
-    # deferred lookup with no `import` statement for that static check to
+    # late lookup with no `import` statement for that static check to
     # see, which is why `ai/vision_ocr.py` already uses it for this same
     # module.
     if _tag_cache.reset_registered:

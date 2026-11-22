@@ -56,7 +56,7 @@ const SNIP = `Sum a range ${Date.now() % 100000}`;
         pageScroll: document.documentElement.scrollWidth > innerWidth,
       };
     });
-    ok("template dialog open with Writing and Code heads", dlg.open && J(dlg.heads) === J(["Writing", "Code"]), J(dlg));
+    ok("template dialog open with Writing, Planning and Code heads", dlg.open && J(dlg.heads) === J(["Writing", "Planning", "Code"]), J(dlg));
     ok("nine code templates listed", dlg.code === 9, dlg.code);
     ok("dialog inside the viewport, no page scroll", dlg.inView && !dlg.pageScroll, J(dlg));
     for (const [id, ext] of [["py-script", "py"], ["sql-schema", "sql"], ["html-page", "html"], ["js-module", "js"], ["notebook", "py"]]) {
@@ -163,7 +163,8 @@ const SNIP = `Sum a range ${Date.now() % 100000}`;
       panel: getComputedStyle(document.getElementById("doc-code-side")).display,
       editor: Math.round(document.querySelector(".cm-editor").getBoundingClientRect().width),
     }));
-    ok("a prose document hides the panel and its button", prose.button === "none" && prose.panel === "none", J(prose));
+    // INBOX 904 B18: a prose document keeps the tab, as Sections; only the panel stays shut until asked.
+    ok("a prose document keeps the Sections tab and shuts the panel", prose.button !== "none" && prose.panel === "none", J(prose));
     await open("Back to code", "py", "x = 1\n");
     const reopened = await page.evaluate(() => getComputedStyle(document.getElementById("doc-code-side")).display);
     //: A phone never has a sheet arrive unasked.
@@ -181,7 +182,8 @@ const SNIP = `Sum a range ${Date.now() % 100000}`;
     const shape = await page.evaluate(() => {
       const sec = document.getElementById("doc-code-assist");
       const side = document.getElementById("doc-code-side").getBoundingClientRect();
-      const kids = [...sec.querySelectorAll("button, input")].filter((e) => e.getBoundingClientRect().width > 0);
+      // The send button sits inside the Ask field at control height minus 8 px by design (library-lazy.css #doc-assist-send), so it is no target of its own.
+      const kids = [...sec.querySelectorAll("button, input")].filter((e) => e.getBoundingClientRect().width > 0 && e.id !== "doc-assist-send");
       const outside = kids.filter((e) => { const b = e.getBoundingClientRect(); return b.left < side.left - 1 || b.right > side.right + 1; }).map((e) => e.textContent.trim() || e.id);
       return {
         shown: !sec.classList.contains("hidden") && sec.getBoundingClientRect().height > 0,

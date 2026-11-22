@@ -47,7 +47,7 @@ function wireLongPress(target, handler, { selector = null } = {}) {
         //: about: measured on the graph at 390, holding a node opened its menu
         //: and lifting the finger opened that node's panel underneath it, so
         //: the gesture did two things and the second one took the focus the
-        //: menu had just been given (the menu was still open, and Escape
+        //: menu had just been given (the menu was still showing, and Escape
         //: closed the panel instead of it). Captured, so it never reaches the
         //: surface, and `once` so only that one click is taken; the timer is
         //: the belt for a press that ends in a `pointercancel` and therefore
@@ -698,7 +698,7 @@ function renderMarkdown(container, text, depth = 0) {
       }
       const li = document.createElement("li");
       let itemText = entry.text;
-      // GFM task list: "- [ ] todo" / "- [x] done" → a real checkbox.
+      // GFM task list: "- [ ] item" / "- [x] done" → a real checkbox.
       const task = itemText.match(/^\[([ xX])\]\s+(.*)$/);
       if (task) {
         li.className = "md-task";
@@ -830,7 +830,7 @@ function revealTab(name) {
   // and restored when that was reversed, the real fix for "documents feel
   // inaccessible" was giving them their own section in the Library instead of
   // leaving them inside a catch-all view called "Documents" that showed
-  // everything. Worth the note so the next session does not re-derive it.
+  // everything. Worth the note so nobody has to re-derive it.
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -1161,7 +1161,7 @@ async function openHistoryEntry(entry, { from = null } = {}) {
   // ever called recordTabVisit for it. Restoring a settings entry opens the
   // modal (or moves it to a different section) instead of going through
   // switchTab at all; restoring anything else closes it first if it was
-  // left open, the same way clicking Close would.
+  // kept open, the same way clicking Close would.
   if (entry.tab === "settings") {
     await openSettingsModal(entry.section || "models");
     paintTabHistory();
@@ -1530,13 +1530,17 @@ document.addEventListener(
     if (!open) return;
     event.preventDefault();
     event.stopPropagation();
+    //: A popup opened from inside it (a select's list, a row's own menu) is the innermost and closes
+    //: first, focus back on its opener: closing the dock menu here left the Logs More's "Which log"
+    //: list on screen, and the next Escape closed Settings (menus.js at 1440).
+    if ([...document.querySelectorAll(".action-menu:not(.hidden)")].some((m) => m.checkVisibility?.() && !open.contains(m))) return closeActionMenus();
     open.open = false;
     open.querySelector("summary")?.focus();
   },
   true
 );
 
-//: **The arrow keys, in every menu that is not built by `kebabMenu`.**
+//: **The arrow keys, in every menu `kebabMenu` does not make.**
 //: `wireMenuKeyboard` gives a built menu ↑, ↓, Home and End once the focus is
 //: inside it, and nothing gave any of that to the two other shapes: a
 //: `details` dock menu (twenty-odd of them, every ⋯ and Options in every dock)
@@ -1616,7 +1620,10 @@ document.addEventListener("keydown", (event) => {
     }
   }
   const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'])");
-  if (opener === target && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+  //: A row that opens a flyout (`role="menuitem"`, the dashboard Customise's View) is walked
+  //: by its own menu; ArrowRight opens it (APG). Taken for a closed menu button, ArrowDown
+  //: opened its flyout and left the focus on it (menus.js at 1440).
+  if (opener === target && opener.getAttribute("role") !== "menuitem" && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
     const menu = menuOfOpener(opener);
     const rows = menu ? menuRowsOf(menu) : [];
     //: A closed select standing as a row in a dock menu (the document's
@@ -1627,7 +1634,10 @@ document.addEventListener("keydown", (event) => {
       return;
     }
     //: The other half of the APG menu button: ↓ on a closed one opens it on the first row, ↑ on the last (Enter and Space already open it).
-    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false") {
+    //: Not a closed ⋯ standing as a row of an open menu (the board View's Workspaces): ArrowDown
+    //: walks past it to the next row, as past any row; it opened the ⋯ and trapped the focus
+    //: in its one row (menus.js at 1440).
+    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false" && !opener.parentElement?.closest('[role="menu"]')) {
       event.preventDefault();
       opener.click();
       const opened = menuOfOpener(opener) || document.activeElement?.closest('[role="menu"]');
@@ -1888,6 +1898,9 @@ async function switchTab(name) {
   // creates a fresh simulation on the next visit regardless of whether the
   // old one was still running or already stopped.
   const leavingGraph = prefs.get("activeTab", null) === "graph" && name !== "graph";
+  //: Leaving Notes forgets the last card clicked (L709): it is the open note only while you are there.
+  //: `getElementById`, not `$`: an unbuilt Notes surface has no card to forget, and `$` would build it (1,092 elements) on a Documents open.
+  if (name !== "notes") delete document.getElementById("entry-list")?.dataset.lastCard;
   recordTabVisit(name);
   //: The next 400ms belong to the page arriving (INBOX 580): the companion's
   //: paced animations hold still through them (`nameMarkBuddyTempo`), so the
@@ -2004,18 +2017,13 @@ async function switchTab(name) {
     const layoutSelect = $("graph-layout");
     if (layoutSelect) layoutSelect.value = layout;
     
-    // Same for what the colours mean: a saved setting the control does not
-    // show is a control that lies about the map beside it.
-    const savedColour = prefs.get("graph-colour", null);
-    const colourSelect = $("graph-colour");
-    if (savedColour && colourSelect && [...colourSelect.options].some((o) => o.value === savedColour)) {
-      colourSelect.value = savedColour;
-    }
-    //: And what the sizes mean (INBOX 430), the same way.
-    const savedSize = prefs.get("graph-size", null);
-    const sizeSelect = $("graph-size");
-    if (savedSize && sizeSelect && [...sizeSelect.options].some((o) => o.value === savedSize)) {
-      sizeSelect.value = savedSize;
+    // Same for what the colours mean (and, INBOX 430, what the sizes mean): a
+    // saved setting the control does not show is a control that lies about the
+    // map beside it.
+    for (const id of ["graph-colour", "graph-size"]) {
+      const saved = prefs.get(id, null);
+      const select = $(id);
+      if (saved && select && [...select.options].some((o) => o.value === saved)) select.value = saved;
     }
     // Match the saved layout on arrival, not only on change, otherwise a
     // notebook left on Tree comes back with two live-looking dead sliders.

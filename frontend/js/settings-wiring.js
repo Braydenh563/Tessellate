@@ -708,6 +708,8 @@ document.addEventListener("keydown", (e) => {
       //: Ctrl+/ and Ctrl+K (INBOX 402, 1559): the documents editor answers them
       //: first (comment toggle, link) and marks the press handled; a note box does not.
       if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
+      //: Ctrl+F likewise: a note's edit box opens its own find (L-world-class-127).
+      if (id === "find" && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
         if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();
@@ -953,18 +955,15 @@ document.addEventListener("pointerdown", (e) => {
 }, true);
 
 // Focus trapping (Wave L): while a modal is open, Tab cycles inside it.
-// The DOM is asked, not a list of ids (a hard-coded list of eight missed
-// eight more): a dialog that is `aria-modal="true"` is trapped, a popover
-// that is only `role="dialog"` is not (the page behind it stays live).
-// Topmost is the last match in document order, so a confirm opened from
-// Settings traps Tab, not Settings. Visibility is `.hidden` plus
-// `getClientRects()`, because a fixed overlay's `offsetParent` is null.
-//: A map topic whose editor is open counts as typing whether or not it holds
-//: the focus: an editor shown without it must not hand its keys to the
-//: chords (blind test 1031). The DOM is read here, not through the board's
-//: bundle, which may not have loaded.
+// The DOM is asked, not a list of ids (a list of eight missed eight more): an
+// `aria-modal="true"` dialog is trapped, a popover that is only `role="dialog"`
+// is not. Topmost is the last match in document order, so a confirm opened from
+// Settings traps Tab, not Settings. Visible is `.hidden` plus `getClientRects()`
+// (a fixed overlay's `offsetParent` is null).
+//: A map topic whose editor is open counts as typing, focused or not, so the
+//: chords stay off (blind test 1031). Not loaded means none is open.
 const mapEditorShown = () =>
-  Boolean(document.querySelector("#wb-html-layer .wb-map-text[contenteditable]:not([contenteditable=false])"));
+  window.wbInstances?.query("#wb-html-layer .wb-map-text[contenteditable]:not([contenteditable=false])");
 //: A text field, or a contenteditable host or its child, read from the markup: `isContentEditable` flushes style.
 const inEditable = (el) => el?.closest("input,textarea,[contenteditable]:not([contenteditable=false])");
 
@@ -1003,7 +1002,7 @@ function maybeShowOnboarding() {
   });
 }
 
-//: The third door into the tour, and it was the one left open (the owner,
+//: The third door into the tour, and it was the one missing the guard (the owner,
 //: 2026-09-21: "the take the tour again button in the about settings page
 //: isnt disabled"). Same flag, same words as the replay strip's buttons.
 //: **After the page has loaded, not now.** `TOUR_ENABLED` is a `const` in
@@ -1766,7 +1765,7 @@ onSurface("notes", () => {
     if (!box.draftTimer) return;
     clearTimeout(box.draftTimer);
     box.draftTimer = 0;
-    //: Whitespace alone is not a draft (INBOX 431 follow-up: the box came
+    //: Whitespace alone is not a draft (INBOX 431, second pass: the box came
     //: back holding three blank lines after a reload, which hid the empty
     //: placeholder). Newlines left behind by a removed image or a stray Enter
     //: must not be kept and restored as if they were writing.

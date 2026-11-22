@@ -12,7 +12,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, tzinfo
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Any
@@ -129,6 +129,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # pick, "north" or "south" (ai/recognise.py `configure_hemisphere`).
     "season_hemisphere": "auto",
     "season_locale": "",
+    # The person's birthday as YYYY-MM-DD (the year is free to be 2000), so "on my
+    # birthday" resolves without a note saying it (`ai/reading.py` `_known`). Empty: unset.
+    "birthday": "",
     # `before:` in a search leaves its own day out unless this is on (Q25;
     # search/query.py `configure_before`).
     "before_includes_day": False,
@@ -580,13 +583,22 @@ def user_now(config: "ConfigManager | None") -> datetime:
     which is right for the ordinary case of app and browser on one machine,
     and when there are no settings yet (a prompt built before the app starts).
     """
+    return on_users_clock(config, datetime.now(timezone.utc))
+
+
+def on_users_clock(config: "ConfigManager | None", instant: datetime, server: tzinfo | None = None) -> datetime:
+    """`instant` (timezone-aware) on the user's own clock: `user_now`'s zone
+    rule for any moment, so a test's pinned instant reads in the zone set.
+    With no zone set it is the server's: this machine's, or `server` (a
+    pinned clock's own zone stands for the machine it pretends to be)."""
     name = str(config.get_preference("timezone", "") or "").strip() if config else ""
     if name:
         try:
-            return datetime.now(ZoneInfo(name))
+            return instant.astimezone(ZoneInfo(name))
         except (ZoneInfoNotFoundError, ValueError):
             # A stale or hand-edited zone name must never break the app.
             logging.getLogger("tessellate.config").warning(
                 "unknown timezone %r in preferences; using the server's", name
             )
-    return datetime.now(timezone.utc).astimezone()
+    return instant.astimezone(server)
+

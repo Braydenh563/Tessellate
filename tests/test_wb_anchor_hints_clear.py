@@ -10,9 +10,9 @@ what is left (0/5 before, 5/5 after); these pin the four places that clear.
 
 from __future__ import annotations
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _body(signature: str, size: int = 900) -> str:

@@ -308,6 +308,10 @@ function speakText(text, button = null) {
   const utterance = new SpeechSynthesisUtterance(text);
   //: Kept on this device (Settings, Read aloud); anything else reads at normal speed (E71).
   utterance.rate = prefs.number("read-aloud-rate", 1, { min: 0.75, max: 1.5 });
+  //: The voice named in Settings, Read aloud (L333), when this browser still has it.
+  const named = prefs.get("read-aloud-voice-name", "");
+  const picked = named && speechSynthesis.getVoices().find((v) => v.name === named);
+  if (picked) utterance.voice = picked;
   if (button) {
     const rest = button.innerHTML;
     const paint = (on) => {

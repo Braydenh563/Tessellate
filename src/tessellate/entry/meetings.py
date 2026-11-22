@@ -23,8 +23,7 @@ shape now, this one:
     ## Agenda
     ## Notes
     ## Decisions
-    ## Action items
-    - [ ] Send the deck @Sam by Friday
+    ## Action items, then the task line `- [ ] Send the deck @Sam by Friday`
 
 **An action item is a task line** (`- [ ]`), which the editor already draws
 as a checkbox and the Dashboard's Outstanding widget already lists. Its owner
@@ -41,6 +40,7 @@ from __future__ import annotations
 
 import re
 
+from tessellate.core import clock
 from tessellate.entry import properties as note_properties
 
 MEETING_TYPE = "Meeting"
@@ -321,7 +321,7 @@ def reminder_text(item: dict) -> str:
 # Summarise used to answer 503 with no model, so "Find the decisions and
 # action items" was a dead control on every machine without one. These rules
 # read what a minute-taker reads: a sentence saying decided or agreed is a
-# decision, and one marked Action or TODO, or a person committing to a task,
+# decision, and one marked Action or To-do, or a person committing to a task,
 # is an action item. The day and the name are read by `ai/recognise.py`
 # (the one reader of dates); nothing here parses a date word. The model,
 # when there is one, rewrites the same list in its own words
@@ -337,7 +337,7 @@ _DECISION_WORDS = re.compile(
     re.I,
 )
 #: A person taking a task on: "Sam will", "Priya to book", "Alex needs to".
-#: A bare "Alex updates" counts only under an Action or TODO mark.
+#: A bare "Alex updates" counts only under an Action or To-do mark.
 _COMMIT = r"(?:will|'ll|to|needs to|need to|is going to|has to|must|should|agreed to|offered to)\b"
 _SUBJECT = re.compile(r"^@?([A-Z][a-z]+)(?:[ \t]+[A-Z][a-z]+)?[ \t]+" + _COMMIT)
 _MARKED_SUBJECT = re.compile(r"^@?([A-Z][a-z]+)\b")
@@ -429,13 +429,12 @@ def find_items(source: str, people: list[str] | None = None, now=None) -> dict: 
     by rules alone, in the shape `ai/meeting_summary.parse_reply` returns,
     so the sheet, the citations and `as_lines` treat both alike. `quote` is
     the sentence as written; each item is in the notes word for word."""
-    from datetime import datetime
 
     names = {str(p).lstrip("@").split(" ")[0].lower() for p in people or [] if p}
     found: dict[str, list[dict]] = {"decisions": [], "actions": []}
     seen: set[str] = set()
     for line in _sentences(source):
-        read = _read_line(line, now or datetime.now(), names)
+        read = _read_line(line, now or clock.wall(), names)
         key = line.lower()
         if read is None or key in seen:
             continue

@@ -25,7 +25,7 @@ def _wiring() -> str:
 
 
 def test_the_zoom_filter_lets_the_middle_button_pan() -> None:
-    wiring = _wiring()
+    wiring = SOURCE[SOURCE.index("function gcMakeZoom(") :]  # the zoom, made by gcWireInteraction
     start = wiring.index(".filter((event) => {")
     body = wiring[start : wiring.index(".on(\"start\"", start)]
     assert "event.button === 1" in body, "a middle press must reach the pan"

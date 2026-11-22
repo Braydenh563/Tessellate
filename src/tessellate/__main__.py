@@ -793,8 +793,8 @@ def _boot_and_swap(window) -> None:
         # here first and the owner asked for it back ("remove the delay on the
         # other splash loading screen in the main window"): the list a person
         # watches finish is the launcher's splash (`scripts/splash.ps1`), or on
-        # a packaged build the bootloader's (`_close_bootloader_splash`). A
-        # later pass added a 1.5s sleep here for packaged builds; it only made
+        # a packaged build the bootloader's (`_close_bootloader_splash`). One
+        # change added a 1.5s sleep here for packaged builds; it only made
         # every launch 1.5s slower, and the missing splash it was aimed at is
         # the pre-Python one, which this page cannot be.
         _mark_start_step_done(window)

@@ -227,7 +227,78 @@
     return out.slice(0, 20);
   }
 
-  const diagramAiPure = { find: dgaFind, apply: dgaApply, diff: dgaDiff, marked: dgaMarked, say: dgaSay, name: dgaName, lint: dgaLint, MAX_OPS: DGA_MAX_OPS };
+  //: Suggestions for the other kinds (L-documents-21): the same `{key, text, act}` rows, each with the `drop` (a block's uid) its Apply
+  //: removes. A mind map holds `children`, a sequence `steps` and a timeline `periods` then `events`; the kind's own printer writes the result.
+  const dgaKids = (n) => n.children || n.steps || n.periods || n.events || n.tasks || n.items || n.members || [];
+  function dgaKindLint(kind, m) {
+    const out = [];
+    const row = (drop, text, act) => out.push({ key: drop, text, act, drop });
+    const walk = (list, fn) => list.forEach((n) => (fn(n), walk(dgaKids(n), fn)));
+    if (kind === "mindmap") {
+      walk(m.root ? [m.root] : [], (n) => {
+        const seen = new Set();
+        for (const c of n.children || []) {
+          const f = dgaFold(c.text);
+          if (!f && !c.children.length) row(c.uid, `${n.text} has a branch with no words.`, "Remove the empty branch");
+          else if (seen.has(f) && !c.children.length) row(c.uid, `${n.text} has ${c.text} twice.`, "Remove the second");
+          seen.add(f);
+        }
+      });
+    } else if (kind === "timeline") {
+      const periods = (list) => list.forEach((p) => p.events.length || row(p.uid, `${dgaText(p.when, 60) || "A period"} has no events.`, "Remove the period"));
+      periods(m.free);
+      for (const s of m.sections) s.periods.length ? periods(s.periods) : row(s.uid, `The section ${dgaText(s.title, 60)} has no periods.`, "Remove the section");
+    } else if (kind === "sequence") {
+      const used = new Set();
+      walk(m.steps, (s) => {
+        if (s.type === "m") used.add(s.from).add(s.to);
+        else if (s.type === "t") s.who.forEach((w) => used.add(w));
+        else if (s.type === "b" && !s.steps.length) row(s.uid, `The ${s.kw} block holds no steps.`, "Remove the block");
+      });
+      for (const p of m.participants) used.has(p.id) || row(p.uid, `${dgaText(p.label, 60)} never sends or receives a message.`, "Remove the participant");
+    }
+    dgaChartLint(kind, m, row, walk);
+    return out.slice(0, 20);
+  }
+
+  //: The Gantt, pie, state, class and ER kinds (L-documents-86): what a block holds that nothing else shows is a block to take out.
+  function dgaChartLint(kind, m, row, walk) {
+    const twice = (n, key, text) => (seen.has(key) ? row(n.uid, text, "Remove the second") : seen.add(key));
+    const seen = new Set();
+    const items = m.items || [];
+    if (kind === "pie") items.forEach((n) => n.type === "s" && twice(n, dgaFold(n.label), `${dgaText(n.label, 60)} is on the pie twice.`));
+    else if (kind === "gantt") {
+      m.sections.forEach((s) => s.tasks.some((t) => t.type === "t") || row(s.uid, `The section ${dgaText(s.title, 60)} has no tasks.`, "Remove the section"));
+      m.free.filter((n) => n.type === "p" && n.key.toLowerCase() === "title").slice(1).forEach((n) => row(n.uid, "The chart has a second title.", "Remove the second title"));
+    } else if (kind === "state") {
+      const used = new Set();
+      walk(items, (n) => n.type === "x" && (used.add(n.from), used.add(n.to)));
+      walk(items, (n) => {
+        if (n.type === "x") twice(n, `${n.from}|${n.to}|${n.label}`, `${n.from} goes to ${n.to} twice.`);
+        else if (n.type === "c" && !n.items.some((x) => x.type !== "k")) row(n.uid, `The group ${n.id} holds nothing.`, "Remove the group");
+        else if (n.type === "s" && !used.has(n.id)) row(n.uid, `${dgaText(n.desc ?? n.id, 60)} has no transitions.`, "Remove the state");
+      });
+    } else if (kind === "class" || kind === "er") {
+      const used = new Set(items.flatMap((n) => (n.type === "r" ? [n.from, n.to] : [])));
+      items.forEach((n) => {
+        if (n.type === "r") twice(n, `${n.from}|${n.to}|${n.arrow || n.lc + n.rc}`, `${n.from} and ${n.to} are joined twice.`);
+        else if (n.type !== "k" && !n.members.some((x) => x.type !== "k") && !used.has(n.name)) row(n.uid, `${dgaText(String(n.name).replace(/"/g, ""), 60)} stands alone.`, `Remove the ${kind === "er" ? "entity" : "class"}`);
+      });
+    }
+  }
+
+  //: The model without the block `uid`, on a copy.
+  function dgaKindDrop(m, uid) {
+    const next = JSON.parse(JSON.stringify(m));
+    const cut = (list) => {
+      const at = list.findIndex((n) => n.uid === uid);
+      return at >= 0 ? !!list.splice(at, 1) : list.some((n) => cut(dgaKids(n)));
+    };
+    [next.participants, next.free, next.sections, next.steps, next.items, next.root ? [next.root] : null].some((list) => list && cut(list));
+    return next;
+  }
+
+  const diagramAiPure = { find: dgaFind, apply: dgaApply, diff: dgaDiff, marked: dgaMarked, say: dgaSay, name: dgaName, lint: dgaLint, kindLint: dgaKindLint, kindDrop: dgaKindDrop, MAX_OPS: DGA_MAX_OPS };
   // DIAGRAM-AI-END
 
   const copyOf = (m) => JSON.parse(JSON.stringify(m));
@@ -268,7 +339,7 @@
     icon.setAttribute("aria-hidden", "true");
     A.input = el("input", "search-field-input");
     //: The pane is narrow beside the picture (224 px at 1440): the example is the title, the placeholder two words.
-    Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: "For example: add Refund after In stock? No, or rename Warehouse to Fulfilment" });
+    Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: `For example: ${{ mindmap: "add Rent under Budget, or rename Hiring to Recruiting", timeline: "add event Launch under 2024, or add section Plans", sequence: "add participant Bank, or add message Pay from Shop to Bank", gantt: "add task Review under Build, or set Review to 5d", pie: "add slice Cats 30, or set Dogs to 45", state: "add state Done, or add transition from Idle to Done", class: "add class Order, or add relation from Order to Customer", er: "add entity Order, or add attribute total to Order" }[S.k?.name] || "add Refund after In stock? No, or rename Warehouse to Fulfilment"}` });
     A.input.setAttribute("aria-label", "Ask for a change to the diagram");
     const send = A.send = smallButton("ph:paper-plane-right", "Ask (Enter)", () => {}, false);
     send.type = "submit";
@@ -313,6 +384,7 @@
     const { S } = A;
     const words = A.input.value.trim();
     if (!words) return A.h.say(S, "Write what to change first.");
+    if (S.k) return askKind(A, words);
     const model = { nodes: S.m.nodes.map((n) => ({ id: n.id, text: String(n.text).slice(0, 200), shape: n.shape, group: n.group ?? null })), edges: S.m.edges.map((e) => ({ from: e.from, to: e.to, label: String(e.label || "").slice(0, 200) })), subgraphs: S.m.subgraphs.map((g) => ({ id: g.id, title: String(g.title || "").slice(0, 200), parent: g.parent ?? null })) };
     setBusy(A.send, true);
     let reply;
@@ -325,6 +397,20 @@
     }
     const by = reply.by === "model" ? "Written by the model." : "Read by rule, no model needed.";
     show(A, reply.ops || [], [reply.said, by].filter(Boolean).join(" "));
+  }
+
+  //: A mind map, timeline or sequence (L-documents-35): the lazy sibling flattens the blocks, asks, and plays the ops on a copy.
+  async function askKind(A, words) {
+    const { S } = A;
+    setBusy(A.send, true);
+    try {
+      if (!(await ensureModule("diagramAiKinds"))) return A.h.say(S, "The ask for this kind did not load.");
+      const got = await diagramModel.aiKinds.ask(S, words);
+      if (got.say) return A.h.say(S, got.say);
+      showKind(A, got.next, got.lines, got.said, `AI: ${got.lines[0]}`.slice(0, 120));
+    } finally {
+      setBusy(A.send, false);
+    }
   }
 
   //: The preview (F7): the ops on a copy, the picture of both, the lines, Apply or Discard.
@@ -348,7 +434,7 @@
   }
 
   function discard(A) {
-    A.ops = A.next = null;
+    A.ops = A.next = A.name = null;
     A.preview.classList.add("hidden");
     A.h.say(A.S, "Discarded. The diagram is as it was.");
     A.input.focus();
@@ -357,9 +443,9 @@
   async function applyPreview(A) {
     const { S, h } = A;
     if (!A.next) return;
-    const name = diagramAiPure.name(S.m, A.ops);
+    const name = A.name || diagramAiPure.name(S.m, A.ops);
     S.m = A.next;
-    A.ops = A.next = null;
+    A.ops = A.next = A.name = null;
     A.preview.classList.add("hidden");
     A.input.value = "";
     h.commit(S, `${name.replace(/^AI: /, "Applied: ")}. Undo puts it back.`);
@@ -373,16 +459,30 @@
     }
   }
 
+  //: A suggestion on another kind: the removal on a copy, the kind's own printer for the picture, then Apply or Discard as for a flowchart.
+  function showKind(A, next, lines, said, name) {
+    const { S } = A;
+    A.ops = [];
+    A.next = next;
+    A.name = name;
+    A.list.replaceChildren(...lines.map((line) => el("li", "", line)));
+    A.said.textContent = said;
+    A.preview.classList.remove("hidden");
+    draw(A.fig, S.k.print(next));
+    A.h.say(S, `Proposed: ${lines.join("; ").toLowerCase()}. Apply or Discard.`);
+    A.preview.querySelector(".dgm-ai-foot button")?.focus();
+  }
+
   function lint(A) {
     const { S } = A;
     if (!S.m || S.plain) return A.toggle.classList.add("hidden");
-    const found = diagramAiPure.lint(S.m, A.h.ops);
+    const found = S.k ? diagramAiPure.kindLint(S.k.name, S.m) : diagramAiPure.lint(S.m, A.h.ops);
     A.toggle.classList.toggle("hidden", !found.length);
     A.words.textContent = `Suggestions (${found.length})`;
     A.lints.replaceChildren(...found.map((f) => {
       const li = el("li", "dgm-ai-lint");
       const words = el("span", "dgm-ai-lint-text", f.text);
-      li.append(words, rowActions([{ label: f.act, title: `${f.act}: preview the change`, run: () => show(A, f.ops, "A suggestion, by rule.") }], "Suggestion"));
+      li.append(words, rowActions([{ label: f.act, title: `${f.act}: preview the change`, run: () => (S.k ? showKind(A, diagramAiPure.kindDrop(S.m, f.drop), [f.act], "1 block removed.", `AI: ${f.act.charAt(0).toLowerCase()}${f.act.slice(1)}`.slice(0, 120)) : show(A, f.ops, "A suggestion, by rule.")) }], "Suggestion"));
       return li;
     }));
   }
@@ -413,7 +513,7 @@
         const ordered = [...rows.filter((r) => r.name), ...rows.filter((r) => !r.name)];
         for (const row of ordered) {
           if (!row.name && rows.some((r) => r.name) && row === ordered.find((r) => !r.name)) list.append(el("li", "dgm-versions-head muted text-sm", "Saves"));
-          const li = el("li", "dgm-versions-row");
+          const li = el("li", row.name ? "dgm-versions-row" : "dgm-versions-row dgm-versions-save");
           const label = el("label", "dgm-versions-pick");
           const tick = el("input");
           tick.type = "checkbox";
@@ -428,7 +528,23 @@
           li.append(label, rowActions([{ label: "Restore", title: "Put the diagram back to this version (Undo takes it back)", run: () => (close(), restoreDocVersionWithUndo(row)) }], "Version"));
           list.append(li);
         }
-        card.append(lead, list, view, compare);
+        //: Named only (L321, as the document history has): shown only when the list holds both kinds. A save that was ticked and is now hidden is unticked, so Compare never uses a row that is not shown.
+        const mixed = rows.some((r) => r.name) && rows.some((r) => !r.name);
+        const only = el("input");
+        only.type = "checkbox";
+        only.addEventListener("change", () => {
+          list.classList.toggle("dgm-versions-named", only.checked);
+          if (only.checked) {
+            for (const row of rows.filter((r) => !r.name && r.tick?.checked)) {
+              row.tick.checked = false;
+              picked.splice(picked.indexOf(row), 1);
+            }
+            compare.disabled = !picked.length;
+          }
+        });
+        const filter = el("label", "dgm-versions-only text-sm");
+        filter.append(only, el("span", "", "Named only"));
+        card.append(lead, ...(mixed ? [filter] : []), list, view, compare);
       },
     });
   }
@@ -454,10 +570,10 @@
   }
 
   //: Every show: the Versions row in the ... menu on a Documents page (the builder rebuilds the menu after), and on a
-  //: flowchart the Ask box and Suggestions, built once per pane.
+  //: pane Suggestions, and on a flowchart the Ask box too, built once per pane.
   function wire(S, h) {
     if (docOf(S)) S.io.menu = [...(S.io.menu || []).filter((row) => row.label !== VERSIONS), { label: VERSIONS, run: () => versions(S) }];
-    if (S.k || S.ai) return;
+    if (S.ai) return;
     S.ai = build(S, h);
   }
 

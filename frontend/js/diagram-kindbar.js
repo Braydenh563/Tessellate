@@ -12,15 +12,28 @@
     ["sequence", "Sequence", "sequenceDiagram", "Who sends what to whom, in order"],
     ["mindmap", "Mind map", "mindmap", "One idea in the middle with branches"],
     ["timeline", "Timeline", "timeline", "Dates or periods in order, with their events"],
+    ["gantt", "Gantt", "gantt", "Tasks on a calendar, in sections"],
+    ["pie", "Pie", "pie", "Slices of a whole, by number"],
+    ["state", "State", "stateDiagram-v2", "States and the moves between them"],
+    ["class", "Class", "classDiagram", "Classes, their members and relations"],
+    ["er", "ER", "erDiagram", "Entities, their attributes and relationships"],
   ];
-  const NOUN = { flowchart: "flowchart", sequence: "sequence diagram", mindmap: "mind map", timeline: "timeline" };
+  const NOUN = { flowchart: "flowchart", sequence: "sequence diagram", mindmap: "mind map", timeline: "timeline", gantt: "Gantt chart", pie: "pie chart", state: "state diagram", class: "class diagram", er: "ER diagram" };
+  //: The five newest kinds open on a small example, so the picture is there to read and change (an empty one draws nothing).
+  const STARTERS = {
+    gantt: "gantt\n    title Plan\n    dateFormat YYYY-MM-DD\n    section Work\n    First task :a1, 2026-01-05, 3d\n    Second task :after a1, 4d\n",
+    pie: 'pie title Share\n    "Slice A" : 60\n    "Slice B" : 40\n',
+    state: "stateDiagram-v2\n    [*] --> Idle\n    Idle --> Busy : start\n    Busy --> Idle : done\n    Busy --> [*]\n",
+    class: "classDiagram\n    class Animal {\n        +String name\n        +eat()\n    }\n    class Dog\n    Animal <|-- Dog\n",
+    er: "erDiagram\n    CUSTOMER ||--o{ ORDER : places\n    CUSTOMER {\n        string name\n    }\n",
+  };
 
   //: A new empty source of `to`, keeping the front matter of the one it replaces.
   const fresh = (source, to) => {
     const front = diagramModel.front(String(source || "").replace(/\r/g, ""));
     const header = KINDS.find(([key]) => key === to)[2];
     const lead = front.front.length ? `${front.front.join("\n")}\n` : "";
-    return `${lead}${header}\n`;
+    return `${lead}${STARTERS[to] || `${header}\n`}`;
   };
 
   //: The kind just pressed: the pane is drawn again and the bar with it, so the new bar takes the focus the old one lost.
@@ -32,6 +45,11 @@
     sequence: "M3 2h12v6H3zM25 2h12v6H25zM9 8v18M31 8v18M9 15h21M27 12l3 3-3 3M31 21H10",
     mindmap: "M14 14a6 4 0 1 0 12 0a6 4 0 1 0-12 0M14 14H4M26 14h10M16 11 8 4M24 17l8 7M24 11l8-7",
     timeline: "M2 14h36M8 10v8M20 10v8M32 10v8M4 5h8M16 23h8M28 5h8",
+    gantt: "M3 4h14v5H3zM12 12h18v5H12zM22 20h15v5H22zM2 2v24",
+    pie: "M20 3a11 11 0 1 0 11 11H20zM24 3a11 11 0 0 1 7 7h-7z",
+    state: "M3 14a3 3 0 1 0 6 0a3 3 0 1 0-6 0M15 6h12v8H15zM21 14v8M25 22h12v4H25zM9 14h6",
+    class: "M4 3h14v22H4zM4 9h14M4 16h14M26 8h12v12H26zM18 12h8",
+    er: "M3 6h12v8H3zM25 14h12v8H25zM15 10h5v8h5M3 9h12",
   };
   function sample(key) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -167,5 +185,25 @@
     return button;
   }
 
-  diagramModel.kindbar = { mount, fresh, historyKey, expand, KINDS, SAMPLE };
+  //: The ... menu's rows for a narrow phone (L-documents-7): 480 px or less, Direction, Redo and Ask leave the dock (diagram-lazy.css).
+  //: 360 px or less, the dock drops the kind button's caret and its side padding to stay one row at 320.
+  const COMPACT = "(max-width: 599.98px), (pointer: coarse)";
+
+  function fold(S, DIRS, suggestMenu) {
+    const narrow = matchMedia("(max-width: 480px)").matches;
+    S.root.classList.toggle("dgm-narrow", narrow);
+    S.root.classList.toggle("dgm-tight", matchMedia("(max-width: 360px)").matches);
+    const ask = narrow && S.pane && (S.steps || S.k) && S.pane.querySelector(".dgm-ai-form");
+    const more = () => S.root.querySelector(".dgm-more button");
+    const rows = [];
+    if (S.suggestBtn && matchMedia(COMPACT).matches) rows.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, more() || S.suggestBtn) });
+    if (narrow) {
+      if (S.dirs) rows.push({ label: "ph:arrows-out-cardinal Direction…", group: "edit", run: () => { const r = (more() || S.root).getBoundingClientRect(); openMenuAtPoint(DIRS.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: () => S.turn(d) })), "Direction", r.right, r.bottom, more()); } });
+      rows.push({ label: "ph:arrow-clockwise Redo", group: "edit", run: () => S.io.redo() });
+      if (ask) rows.push({ label: "ph:sparkle Ask for a change…", group: "edit", run: () => S.root.querySelector(".dgm-askbtn")?.click() });
+    }
+    return { rows, key: (S.io.menu || []).map((row) => row.label).join("|") + (ask ? "|ask" : "") };
+  }
+
+  diagramModel.kindbar = { mount, fresh, historyKey, expand, fold, KINDS, SAMPLE };
 })();

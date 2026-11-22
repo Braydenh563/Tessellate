@@ -107,9 +107,10 @@ the tab draws a colour, a font or a card that the rest of the app does not.
     seven-control ceiling and the strip under it walks days; a range is what
     the choice is. The server filters (`/timeline?on=MM-DD&tz=`), in the
     reader's own day, today left out: the Dashboard widget's rule.
-13. **Date ranges as spans are not built** (EntryDate ranges in the feed):
-    a feed row is one moment by decision 3, and no measured notebook here
-    holds ranged notes; left until one does.
+13. **A written range is one row on its first day** ("3 to 7 March"): a feed row
+    stays one moment (decision 3), labelled with the range; the calendar draws a
+    "continues" ghost on each later day. Built 2026-11-12 (HISTORY, "Moved from
+    the plans, 2026-11-12 (TIMELINE spans)").
 
 ## 5. Phases
 
@@ -203,18 +204,7 @@ The rail circle bug is built and moved to HISTORY.md ("Moved from the plans, 202
 
 ### Placed from INBOX 561 (2026-10-17)
 
-The day strip rework (543) is merged and waits on the owner's look; INBOX 904 B72 widened it into the calendar view: built 2026-10-17, HISTORY.md, "Moved from the plans, 2026-10-17 (TIMELINE B72)".
-
-Item 561, **The owner, 2026-10-05, verbatim.** "I dont like this section in th
-     timeline, it needs redesigning, restructuring, moving ro smth"
-     (screenshot: the "Sep to Oct 2026" month button over a row of seven
-     boxed day cells, Tue 29 to Mon 5, each its own bordered tile).
-     Placed: the design agent, whose 543 rework of this strip is not merged
-     yet; it is told this is still not right.
-     Merged 2026-10-05 (543): the month sits between its arrows and the days
-     are one well to the dock's edge, one Tab stop, arrows walk them
-     (daystrip.js 44/44). Waits on the owner's look before closing.
-     Owner: TIMELINE_PLAN, UI_MODERNISATION_PLAN 12 (the day strip becomes the week row); built in 543 and waiting on the owner's look, so it stays here until then.
+Built (543, then B72's calendar view, HISTORY.md "Moved from the plans, 2026-10-17 (TIMELINE B72)"); the owner's look is parked in BACKLOG ("Timeline, parked 2026-11-12").
 
 ## 9. Phase 5: the calendar as the third view (Fable, 2026-10-10; WORLD_CLASS_PLAN 25, decision 47; Brief 55)
 
@@ -259,10 +249,12 @@ disagree.
     written); a note naming a clock sits on its hour in the week and the
     day. Numeric `3/4/2026` is not read: its order is the reader's locale.
     A document has no date of its own and stays on the day it was started.
-22. **No streak count, and no backfill of `done_at`** (tline-1011): the dock
-    is at its grammar and `.dock-chip-row` is held at zero uses, so a streak
-    has no surface; a reminder ticked before `done_at` existed has no known
-    moment, so it stays in no week rather than in an invented one.
+22. **No backfill of `done_at`** (tline-1011; moot by fact): a reminder
+    ticked before `done_at` existed has no known moment, so it stays in no
+    week rather than in an invented one. The streak half was reopened
+    2026-11-14 (it had only a session reason) and built as L495: a quiet
+    "N days in a row" in the journal strip's head, outside the dock
+    (`renderTimelineDayStrip`, `tests/test_daily_strip.py`).
 23. **A note naming two dates sits on the first and is "also on" the rest**
     (decision 2 holds: one row per note, so the feed, the table and the
     calendar cannot disagree about what a row is). `/timeline` rows carry
@@ -282,9 +274,10 @@ disagree.
     hovers and run logs) is gone and a test keeps it gone. 12 or 24 hours follows
     the locale; an app-level override would cost boot code for a setting every
     operating system already has.
-26. **No d3 time scale for the Timeline** (VC2): the labels are
-    `Intl.DateTimeFormat`, and loading the 280 KB d3 bundle to draw them would
-    undo the boot diet; the row stays a vendor-use lead, not a build.
+26. **The d3 time scale is lazy, never at boot** (VC2; superseded by fact):
+    the strip's labels were built on `d3.scaleTime` in `timeline-ticks.js`,
+    fetched with the first strip, so the boot diet holds (HISTORY.md, row 6,
+    `tests/test_timeline_ticks.py`).
 27. **No `events` table** (BACKLOG "Events as bands"): what an events table
     would hold is already on the grid as meetings (a note typed Meeting with a
     `date:`), reminders (at their time) and notes by the dates they name
@@ -298,10 +291,16 @@ disagree.
 | --- | --- | --- |
 | 1 to 4 | the month grid, the week and day grids and the phone agenda, reminders and day pages on the grid with drag and undo, ICS export and import | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" |
 
-Not verified (Brief 55, still): the dot density at 5,000 notes in one month
-(1,000 in a month is measured, HISTORY "TIMELINE timeline-1018"), and touch
-drag (HTML drag and drop has none on a phone, where the calendar is the
-agenda; a coarse pointer at 1024 keeps it).
+Measured 2026-11-12 (Brief 55's two checks): 5,007 items in one calendar
+month at 1440 paint in 1,422 ms with one 62 ms long task; the 28 busy cells hold
+144 to 205 notes each, show 3 chips and a "+N more" label (for example "+158
+more"), 0 cells fall back to dots, 2,376 nodes, no horizontal overflow. At 1024
+with a coarse pointer (`isMobile`, `hasTouch`; `(pointer: coarse)` and
+`(hover: none)` both match) the month keeps its 30 cells and a reminder chip is
+`draggable` (125 by 24 px); the dragstart, dragover and drop path moves it one
+day (Fri 13 to Sat 14, time kept, toast "Moved ... to Sat, Nov 14, 3:30 PM").
+The browser's own long-press-to-drag is the one step emulation cannot press;
+that is BACKLOG L910 (a real tablet).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
@@ -352,7 +351,7 @@ Same sweep and fixture. Today: 1 click at 1440, 2 taps at 390 (More); click
 to list 218 to 551 ms at 1440, 1,194 ms at 390; 88 to 93 controls at 1440, 79
 at 390. Quick add: "dentist friday at 9am" saved in 235 to 496 ms with
 "Added "Dentist": in 6 days" (the right Friday); 0 chips while typing
-(decision 50 unbuilt); at 390 the quick-add row was not visible and the
+(decision 50 since built, row 7); at 390 the quick-add row was not visible and the
 phone's compose was not driven. Overflow: 0 past the edge at both widths; 7
 overlaps at 1440, the closed presets menu ("Tonight 7pm", "Tomorrow 9am")
 laid out over the Open, All and Done chips (the closed-menu shape Brief 72a

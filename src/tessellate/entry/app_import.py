@@ -37,6 +37,7 @@ imported note is text from outside for the agent's injection guard.
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import hashlib
 import io
 import posixpath
@@ -307,7 +308,7 @@ def _enex_time(value: str | None) -> datetime | None:
 
 def _enml(content: str) -> str:
     """An ENML body as markdown: `en-media` (an attached file the export
-    carries as base64 elsewhere) and `en-todo` become words, the rest is
+    carries as base64 elsewhere) and the to-do tag become words, the rest is
     XHTML."""
     content = re.sub(r"<\?xml[^<>]*\?>|<!DOCTYPE[^<>]*>", "", content or "")
     content = re.sub(r"<en-todo\s+checked=\"true\"\s*/>", "[x] ", content)
@@ -430,7 +431,7 @@ def _absolute_day(text: str) -> datetime | None:
     relative to a moment the export does not record, so it is not read."""
     from tessellate.ai import recognise
 
-    for span in recognise.recognise(text, now=datetime.now(timezone.utc)):
+    for span in recognise.recognise(text, now=clock.utc()):
         if span.rank or span.kind not in ("date", "datetime") or not _YEAR.search(span.text):
             continue
         value = span.value
@@ -459,7 +460,7 @@ def people_and_places(body: str) -> dict:
     from tessellate.ai import recognise
 
     found: dict[str, set[str]] = {"person": set(), "place": set()}
-    for span in recognise.recognise((body or "")[:20000], now=datetime.now(timezone.utc)):
+    for span in recognise.recognise((body or "")[:20000], now=clock.utc()):
         if span.kind in found and not span.rank:
             found[span.kind].add(span.text)
     return {"people": sorted(found["person"]), "places": sorted(found["place"])}

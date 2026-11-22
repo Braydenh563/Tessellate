@@ -215,6 +215,15 @@ def _fixed_day(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _unpin_clock():
+    """A module imported under `pin_clock` keeps the pinned clock past the test."""
+    yield
+    from tests._clock import unpin_late_imports
+
+    unpin_late_imports()
+
+
+@pytest.fixture(autouse=True)
 def _forget_the_reported_locale():
     """A request's locale is kept in memory for readers that take none (`recognise.note_locale`); a test that
     posted "en-US" must not make the next test's "3/4" month first."""
@@ -543,6 +552,20 @@ def _forget_asked_image_readers():
     yield
     if module is not None:
         module._ASKED.clear()
+
+
+@pytest.fixture(autouse=True)
+def _forget_span_reviews():
+    """`routes_timeline` keeps a span's model review per process; a test's
+    note ids repeat in the next test's notebook."""
+    module = sys.modules.get("tessellate.api.routes_timeline")
+    if module is not None:
+        module._SPAN_SAID.clear()
+        module._SPAN_FLIGHTS.clear()
+    yield
+    if module is not None:
+        module._SPAN_SAID.clear()
+        module._SPAN_FLIGHTS.clear()
 
 
 @pytest.fixture(autouse=True)

@@ -186,6 +186,15 @@ async function boot(opts={}) {
     if (got !== want) console.log('BOOT-WARN: data-theme is', JSON.stringify(got), 'not', want);
   }
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
+  //: **Settings' listeners load on its first open** (the `settingsControls` bundle), so a sweep
+  //: that sets a Settings control and fires its `change` without opening Settings changed
+  //: nothing: 39 companion sweeps found no `#nm-buddy` (L554). Loaded here only for a sweep
+  //: whose text drives a Settings control that way, so every other boot stays as it was.
+  {
+    let text = '';
+    try { text = require('fs').readFileSync(require.main.filename, 'utf8'); } catch {}
+    if (/\$\('avatar-buddy/.test(text)) await page.evaluate(() => typeof ensureModule === 'function' && ensureModule('settingsControls')).catch(() => {});
+  }
   await page.waitForTimeout(800);
   //: **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked
   //: "Check for updates automatically?" after unlock, a dialog that would sit
@@ -196,7 +205,9 @@ async function boot(opts={}) {
     await page.waitForFunction(() => {
       const card = [...document.querySelectorAll('.confirm-overlay')]
         .find((o) => /Check for updates automatically/.test(o.textContent));
-      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made !== false) || document.readyState === 'complete';
+      //: Not `readyState`: the card comes after the page has loaded, and a
+      //: guard that stopped at load let it land over a sweep's first click.
+      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made === true);
       const no = [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
       if (no) no.click();
       return true;
@@ -235,6 +246,9 @@ async function openBoardsTab(page, fns = ['initWhiteboard', 'wbOpenSidebar'], ti
     if (!button.classList.contains('active')) { button.click(); return false; }
     return names.every((f) => typeof window[f] === 'function');
   }, { names: fns }, { timeout, polling: 100 });
+  // The bundle's files run one after another: `initWhiteboard` is there before
+  // the later files (`wbFmtState` in whiteboard-format.js), so wait for all of it.
+  await page.evaluate(() => ensureModule('boards'));
 }
 
 // After `openWhiteboardBoard(id)` has been called: wait until the board is on
@@ -273,4 +287,14 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// A new board or map by name, the way the app makes one (wbCreateBlankBoard): "New" makes an
+// untitled board at once now, and the template dialog the sweeps once filled
+// (#wb-template-name, #wb-template-create) is the split menu's, so they fill it no longer.
+async function newBoard(page, name, kind = 'board', timeout = 30000) {
+  await openBoardsTab(page, ['initWhiteboard', 'createNewBoard', 'wbShowCanvasView']);
+  await page.evaluate(([n, k]) => { wbShowCanvasView(); return createNewBoard.sweep.wbCreateBlankBoard(n, k); }, [name, kind === 'map' ? 'map' : 'board']);
+  await page.waitForFunction((k) => Boolean(window.currentBoardId) && (k !== 'map' || wbIsMap()), kind, { timeout, polling: 100 });
+  await waitForBoardOpen(page, 0, timeout);
+}
+
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, newBoard};

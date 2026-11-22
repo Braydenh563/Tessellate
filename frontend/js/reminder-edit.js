@@ -83,7 +83,13 @@
         }
         editingReminderId = null;
         try {
-          await reminderPutUndoably(reminder.id, "Edited a reminder", before, after);
+          const action = await reminderPutUndoably(reminder.id, "Edited a reminder", before, after);
+          //: The same Undo toast delete and snooze give (it was Ctrl+Z only).
+          toastAction(`Saved ${toastName(text, "the reminder")}.`, "Undo", async () => {
+            settleUndoFromToast(action);
+            await action.undo().catch((e) => toast(e.message, true));
+            toast(`Put back ${toastName(reminder.text, "the reminder")}.`);
+          });
         } catch (error) {
           //: A refusal (a new time already gone) says why and keeps the form.
           editingReminderId = reminder.id;
@@ -148,6 +154,35 @@
     });
   }
 
+  //: The new-reminder form as a sheet below 1100 (wiring.js `openReminderCompose` fetches this file first).
+  function reminderComposeOpen() {
+    const form = $("reminder-compose");
+    if (!form) return;
+    // The sentence box: its times need no model (UX-01).
+    const field = () => $("reminder-magic") || $("reminder-text");
+    if (!window.matchMedia(REMINDER_SHEET).matches) {
+      field()?.focus();
+      return;
+    }
+    if (reminderComposeSheetClose) return;
+    const home = form.parentElement;
+    const next = form.nextElementSibling;
+    reminderComposeSheetClose = openSheet({
+      label: "New reminder",
+      name: "reminder-compose",
+      returnFocus: $("reminders-new"),
+      build: (card) => {
+        card.classList.add("reminder-compose-card");
+        card.appendChild(form);
+      },
+      onClose: () => {
+        reminderComposeSheetClose = null;
+        home.insertBefore(form, next && next.parentElement === home ? next : null);
+      },
+    });
+    field()?.focus();
+  }
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { reminderEditForm, snoozeReminderTo });
+  Object.assign(window, { reminderEditForm, snoozeReminderTo, reminderComposeOpen });
 })();

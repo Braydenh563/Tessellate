@@ -7,7 +7,7 @@ twenty sections, nine concerns set from two or three of them, Models alone
 4,737px with search relevance set two sections away from the engine and the
 index it tunes.
 
-This file pins the decisions, so a later session cannot quietly undo them:
+This file pins the decisions, so no session after cannot quietly undo them:
 
 * the nav is six named groups in a fixed order;
 * every nav button names a section that exists and is in `SETTINGS_SECTIONS`

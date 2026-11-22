@@ -21,7 +21,8 @@ from tessellate.ai import address, backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
-from tessellate.core import companion_events, deps, jobs
+from tessellate.api.chat_agent import stop_when_gone
+from tessellate.core import activity, companion_events, deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
@@ -784,7 +785,11 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    cutoff = utcnow() - timedelta(days=7)
+    #: The user's clock, as the review it gates (`review_digest.week`) reads:
+    #: on the server's own clock the two disagreed about which week it was,
+    #: and "Nothing was saved" stood in for a week that had notes.
+    now = user_now(deps.get_config())
+    cutoff = (now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't
@@ -943,7 +948,12 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
             yield event({"type": "answer_final", "text": trimmed})
         yield event({"type": "done", "cacheable": True})
 
-    return StreamingResponse(lines(), media_type="application/x-ndjson")
+    #: L-documents-96: an async wrapper, or a closed tab leaves the model writing the week to the end.
+    stop = activity.StopEvent()
+    return StreamingResponse(
+        stop_when_gone(stop, activity.tracked_stream("generation", "Writing the weekly digest", lines(), stop_event=stop)),
+        media_type="application/x-ndjson",
+    )
 
 
 @router.post("/digest")

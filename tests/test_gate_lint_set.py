@@ -36,3 +36,14 @@ def test_every_sweep_the_sweeps_mode_names_exists():
     assert names, "gate.sh has no sweep list"
     missing = [n for n in names.group(1).split() if not (ROOT / "scratchpad" / "ui-sweeps" / f"{n}.js").is_file()]
     assert not missing, f"scripts/gate.sh --sweeps names sweeps that do not exist: {missing}"
+
+
+def test_a_hung_test_fails_by_name_rather_than_by_the_shell_timeout():
+    """The full suite stopped twice at 92% and 99% under -q with nothing named
+    (ledger 2026-11-12b). With pytest-timeout installed the targeted and full
+    runs carry a per-test limit, so a hang names its test and its stacks."""
+    text = (ROOT / "scripts" / "gate.sh").read_text(encoding="utf-8")
+    assert 'import pytest_timeout" 2>/dev/null && TIMEOUT=(--timeout=' in text
+    for step in ("step changed-tests", "step full-suite"):
+        line = next(ln for ln in text.splitlines() if step in ln and "pytest" in ln)
+        assert '"${TIMEOUT[@]}"' in line, f"{step} runs without the per-test limit"

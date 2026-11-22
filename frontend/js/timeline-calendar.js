@@ -62,6 +62,20 @@
   const TIMELINE_CAL_TIME = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
   const TIMELINE_CAL_HOUR = new Intl.DateTimeFormat(undefined, { hour: "numeric" });
 
+  //: The day keys after `fromKey` through `until` (both "YYYY-MM-DD"), capped
+  //: at a year like the reader (timewords `_span`).
+  function timelineCalSpanKeys(fromKey, until) {
+    const keys = [];
+    const day = new Date(`${fromKey}T00:00:00`);
+    for (let i = 0; i < 366; i++) {
+      day.setDate(day.getDate() + 1);
+      const key = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+      if (key > until) break;
+      keys.push(key);
+    }
+    return keys;
+  }
+
   function timelineCalDate(key) {
     return new Date(`${key}T00:00:00`);
   }
@@ -133,6 +147,18 @@
         if (!days.has(key)) days.set(key, { rows: [], items: [], dots: [], page: null });
         const day = days.get(key);
         const ghost = { ...row, key: `${row.key}@${key}`, also: true, when: timelineCalDate(key), allDay: true };
+        day.rows.push(ghost);
+        day.dots.push(ghost);
+      }
+    }
+    //: A written range ("3 to 7 March") sits on its first day and continues on
+    //: each day through its last (decision 13): the same ghost, said as a span.
+    for (const row of rows) {
+      if (!row.until) continue;
+      for (const key of timelineCalSpanKeys(timelineBucketKey(row.when, "day"), row.until)) {
+        if (!days.has(key)) days.set(key, { rows: [], items: [], dots: [], page: null });
+        const day = days.get(key);
+        const ghost = { ...row, key: `${row.key}@${key}`, also: true, span: true, from: row.when, when: timelineCalDate(key), allDay: true };
         day.rows.push(ghost);
         day.dots.push(ghost);
       }
@@ -558,6 +584,7 @@
   //: A row's glyph: a reminder's bell, a meeting's people, else the note's own
   //: (a note that talks about the day, a document, a map, or a note).
   function timelineCalGlyph(row) {
+    if (row.span) return "ph:arrows-horizontal";
     if (row.also) return "ph:arrow-bend-down-right";
     if (row.kind === "reminder") return "ph:bell-simple";
     if (row.placedBy === "meeting") return "ph:users-three";
@@ -570,7 +597,7 @@
     //: A written note's moment is when it was typed, which is not its time on the grid.
     const clocked = row.kind === "reminder" || row.placedBy === "meeting" || row.placedBy === "mentioned";
     const time = row.allDay || !clocked ? "" : TIMELINE_CAL_TIME.format(row.when);
-    const item = smallButton(`${timelineCalGlyph(row)} ${time ? `${time} ` : ""}${row.title}`, row.also ? `Also on this day: ${row.title}` : `${row.title}${time ? `, ${time}` : ""}${row.reminded ? ", with a reminder" : ""}`, () => timelineCalOpenRow(row));
+    const item = smallButton(`${timelineCalGlyph(row)} ${time ? `${time} ` : ""}${row.title}`, row.span ? `Continues, ${TIMELINE_ROW_FULL_DATE.span(row.from, row.until)}: ${row.title}` : row.also ? `Also on this day: ${row.title}` : `${row.title}${time ? `, ${time}` : ""}${row.reminded ? ", with a reminder" : ""}`, () => timelineCalOpenRow(row));
     item.classList.toggle("is-also", Boolean(row.also));
     const timed = row.kind === "reminder" || row.placedBy === "meeting";
     item.classList.add("timeline-cal-item", `is-${timed ? row.kind === "reminder" ? "reminder" : "meeting" : "note"}`);

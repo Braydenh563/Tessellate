@@ -65,7 +65,7 @@ for (const level of ["log", "info", "warn", "error"]) {
   };
 }
 //: "ResizeObserver loop completed with undelivered notifications" is the
-//: browser saying it deferred a resize callback one frame, not an
+//: browser saying it delayed a resize callback one frame, not an
 //: exception (no `e.error`, nothing thrown): logged as ERROR it filled the
 //: owner's console from the Library's Files view (release, 2026-09-27).
 //: The observer behind it is in the carry-over list; this only stops the
@@ -777,7 +777,6 @@ const LOCK_PURGE_IDS = [
   "timeline-table-body",
   "reminder-groups", // reminders
   "timeline-calendar",
-  "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
   "dash-glance", // the dashboard's recent note titles
@@ -1256,11 +1255,9 @@ function setBusy(button, busy, label = null) {
 // the button silently did nothing ("the recycle bin empty now button doesn't
 // work either"). This dialog is styled like the app and can mark danger.
 //: `checkbox` (`{label, title, checked}`) adds one optional second decision ("also take this picture out of the notes that show it") and resolves to `{ok, checked}`; without it callers still get a plain boolean. **The button says what it does**, never "OK" where a verb fits: with no label, the question's first word is used when it is one of these actions.
-const CONFIRM_VERBS = new Set([
-  "delete", "remove", "clear", "discard", "reset", "replace", "archive", "leave",
-  "disconnect", "overwrite", "restore", "empty", "forget", "unlink", "stop",
-  "merge", "move", "rename", "revert", "undo", "lock",
-]);
+const CONFIRM_VERBS = new Set(
+  "delete remove clear discard reset replace archive leave disconnect overwrite restore empty forget unlink stop merge move rename revert undo lock".split(" ")
+);
 function confirmVerb(message) {
   const first = String(message || "").trim().split(/\s+/)[0]?.replace(/[^A-Za-z]/g, "") || "";
   return CONFIRM_VERBS.has(first.toLowerCase())
@@ -1374,7 +1371,7 @@ function confirmDialog(message, options = {}) {
 // Resolves to the trimmed text, or "" for cancel/empty. "" rather than null so
 // every caller's guard is the same shape as the confirm one.
 //: `segment`, when given, adds **one** segmented control under the field: `{label, options: [{value, label, title}], value}`. The dialog then resolves `{text, choice}` instead of a bare string.  One extra control in the dialog that already exists, rather than a second dialog after this one. CLAUDE.md records why in as many words: bookmark URL editing was reported broken five times while working end-to-end every time, and the fault was never the handler, "a second modal that only appears *after* you commit the first is a bad way to expose a second field". Naming a new board and saying what kind of board it is are one decision.
-function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null } = {}) {
+function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null, cancelLabel = "Cancel" } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay confirm-overlay";
@@ -1472,7 +1469,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     const row = document.createElement("div");
     row.className = "row confirm-actions";
     row.append(
-      smallButton("Cancel", "Cancel", () => close("")),
+      smallButton(cancelLabel, cancelLabel, () => close("")),
       smallButton(confirmLabel, confirmLabel, () => input.reportValidity() && close(input.value.trim()), false)
     );
     card.append(head, input);
@@ -1589,7 +1586,7 @@ const LAZY_MODULES = {
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
-  libraryList: ["/css/library-lazy.css", "/js/undo-store.js", "/js/library.js"],
+  libraryList: ["/css/library-lazy.css", "/js/undo-store.js", "/js/library.js", "/js/library-links.js"],
   //: The Capture box's template picker (note-templates.js's header).
   noteTemplates: ["/js/note-templates.js"],
   meetings: ["/css/meetings-lazy.css", "/js/meetings.js"],
@@ -1639,6 +1636,7 @@ const LAZY_MODULES = {
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
   //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise. The whiteboard files and d3 are the `boards` bundle (lazy-entries.js), which lists these files first.
   library: [
+    "/js/documents-warm.js", //: First: the Documents open starts its list, file types, first document and engine fetches while the rest of the bundle is still arriving.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
@@ -1665,6 +1663,33 @@ const LAZY_MODULES = {
     "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
+    //: Wrapped pieces of documents.js (L335), before it: each only declares, and documents.js calls them (at load too).
+    "/js/documents-prose-check.js",
+    "/js/documents-suggest-panel.js",
+    "/js/documents-commands.js",
+    "/js/documents-templates.js",
+    "/js/documents-cm-load.js",
+    "/js/documents-tablemenu.js",
+    "/js/documents-preview.js",
+    "/js/documents-edit-keys.js",
+    "/js/documents-richpaste.js",
+    "/js/documents-block-ids.js",
+    "/js/documents-links-panels.js",
+    "/js/documents-save.js",
+    "/js/documents-scroll-status.js",
+    "/js/documents-check-ai.js",
+    "/js/documents-live-table.js",
+    "/js/documents-undo.js",
+    "/js/documents-surface.js",
+    "/js/documents-file-kind.js",
+    "/js/documents-export-ops.js",
+    "/js/documents-md-actions.js",
+    "/js/documents-toolbar.js",
+    "/js/documents-ai-edit.js",
+    "/js/documents-findings.js",
+    "/js/documents-focus.js",
+    "/js/documents-instruments.js",
+    "/js/documents-wiring.js",
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.
@@ -1870,7 +1895,7 @@ const LAZY_ENTRY_POINTS = {
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
-  tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
+  tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],

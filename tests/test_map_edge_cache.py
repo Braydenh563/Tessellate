@@ -12,6 +12,7 @@ matters: equal keys never hide different geometry.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -35,6 +36,8 @@ const ctx = {
   document: { querySelector: () => null, querySelectorAll: () => [], getElementById: () => null, addEventListener() {} },
   wbState: { objects: [] },
 };
+//: The page board, the default instance (L-whiteboard-53).
+ctx.wbInstances = { container: () => ctx.document.getElementById("whiteboard-container"), layer: (id) => ctx.document.getElementById(id), query: (s) => ctx.document.querySelector(s), queryAll: (s) => ctx.document.querySelectorAll(s) };
 ctx.window = ctx;
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), ctx, { filename: "whiteboard-map.js" });
@@ -89,6 +92,10 @@ const MUTATIONS = {
   edge_label: (s) => { s.child.data.edge_label = "because"; },
   edge_label_dx: (s) => { s.child.data.edge_label = "x"; s.child.data.edge_label_dx = 31; },
   edge_label_dy: (s) => { s.child.data.edge_label = "x"; s.child.data.edge_label_dy = 17; },
+  edge_label_size: (s) => { s.child.data.edge_label = "x"; s.child.data.edge_label_size = 20; },
+  edge_label_bold: (s) => { s.child.data.edge_label = "x"; s.child.data.edge_label_bold = true; },
+  edge_label_color: (s) => { s.child.data.edge_label = "x"; s.child.data.edge_label_color = "#aa0000"; },
+  edge_label_chip: (s) => { s.child.data.edge_label = "x"; s.child.data.edge_label_chip = true; },
   colour: (s) => { s.colors.set(2, "#aa5500"); },
   colour_removed: (s) => { s.colors.delete(2); },
   theme_edge_style: (s) => { window.wbMapState.theme = { edge_style: "elbow" }; },
@@ -110,8 +117,11 @@ def run(body: str):
         script = Path(tmp) / "body.js"
         harness.write_text(HARNESS, encoding="utf-8")
         script.write_text(SCENE + body, encoding="utf-8")
+        #: The edge-end maths moved to its own wrapped file (L286); the scene loads both as one script.
+        both = Path(tmp) / "whiteboard-map.js"
+        both.write_text(frontend_text("whiteboard-map.js"), encoding="utf-8")
         proc = subprocess.run(
-            ["node", str(harness), str(MAP_JS), str(script)], capture_output=True, text=True
+            ["node", str(harness), str(both), str(script)], capture_output=True, text=True
         )
     assert proc.returncode == 0, proc.stderr[-2000:]
     return json.loads(proc.stdout)
@@ -288,9 +298,30 @@ def test_an_unchanged_line_is_neither_recomputed_nor_rewritten() -> None:
 
 
 def test_the_render_compares_the_key_before_it_works_out_the_geometry() -> None:
-    src = MAP_JS.read_text(encoding="utf-8")
+    src = frontend_text("whiteboard-map.js")
     match = re.search(r"^function wbRenderMapEdges\(.*?^}\n", src, re.MULTILINE | re.DOTALL)
     assert match
     body = "\n".join(line for line in match.group(0).splitlines() if not line.lstrip().startswith("//"))
     assert body.index("held.key !== geomKey") < body.index("wbMapEdgeGeometry(")
     assert "wbMapEdgeKey(" in body
+
+
+def test_a_click_on_the_bend_dot_stays_off_the_canvas() -> None:
+    """L-mindmap-15: the first click of a double-click on the dot reached the
+    canvas, cleared the selection and stood the mid-line `+` back over the dot,
+    so the second click hit the `+` and the line never straightened."""
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    src = frontend_text("whiteboard-map.js")
+    start = src.index("function wbWireMapEdgeHandle(")
+    end = src.index("\nfunction ", start + 1)
+    script = src[start:end] + r"""
+const on = {};
+const handle = { addEventListener: (type, fn) => { on[type] = fn; } };
+wbWireMapEdgeHandle(handle, "p", "c");
+let stopped = false;
+on.click?.({ stopPropagation: () => { stopped = true; } });
+console.log(JSON.stringify({ wired: typeof on.click === "function", stopped }));
+"""
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
+    assert json.loads(out.stdout) == {"wired": True, "stopped": True}

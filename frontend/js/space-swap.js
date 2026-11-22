@@ -138,7 +138,7 @@
       window.wbLastCreatedBoard = null;
     },
     documents() {
-      if (typeof docs === "undefined") return;
+      if (typeof docsMadeThisSession === "undefined") return;
       docs = [];
       docBlockTextCache.clear();
       docHistories.clear();
@@ -155,6 +155,7 @@
   async function spaceLeave() {
     if (typeof docDirty !== "undefined" && docDirty) await saveDocument({ silent: true }).catch(() => {});
     if (typeof wbFlushNudge === "function") await wbFlushNudge().catch(() => {});
+    if (typeof docLastTranslateLanguage !== "undefined") docLastTranslateLanguage = "";
     if (typeof currentDoc !== "undefined" && currentDoc) {
       docDirty = false;
       showNoDocument();

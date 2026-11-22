@@ -29,6 +29,7 @@ import re
 from pathlib import Path
 
 from tests._css_paths import css_text
+from tests._app_js import frontend_text
 
 INDEX = Path(__file__).resolve().parents[1] / "frontend" / "index.html"
 
@@ -262,8 +263,7 @@ def test_agent_with_no_model_says_it_runs_the_apps_tools_only():
     intentional??" (INBOX 840). It is (CHAT_PLAN 22a), so the fix is
     learnability: the segment's title opens "Agent, app tools only", and the
     first choice of Agent with no model shows one line under the composer."""
-    from tests._app_js import frontend_text
-
+    
     js = frontend_text("status.js")
     assert '"Agent, app tools only. With no model' in js
     assert "function showAgentNoModelHint(" in js and 'prefs.has("agentNoModelHint")' in js

@@ -661,7 +661,14 @@ def related_entries(entry_id: int, session: Session = Depends(get_session)) -> l
         if not other.is_private and other.id not in linked and bool(other.is_draft) == bool(entry.is_draft)
     }
     ordered = [found[other_id] for other_id in wanted if other_id in found]
-    return [_to_out(session, e) for e in ordered[:3]]
+    return _with_reasons(session, entry.id, [_to_out(session, e) for e in ordered[:3]])
+
+
+def _with_reasons(session: Session, entry_id: int, rows: list[EntryOut]) -> list[EntryOut]:
+    """Each offered note says what it shares with this one, else "similar in meaning"."""
+    for row in rows:
+        row.link_reason = link_facts.reason_for(session, entry_id, row.id) or manager_links.AUTO_REASON_TEXT
+    return rows
 
 
 class AttachBookmarkBody(BaseModel):

@@ -463,14 +463,19 @@ function mdFillTocs(container) {
 //: line inside a paragraph, where only a bullet or a number opens a list.
 globalThis.mdList = {
   item(line, cur = null) {
-    const m = /^(\s*)(?:([-*+])(\s+)|(\d+)([.)])\s+|([a-z]{1,4})\.\s+)(.*)$/.exec(line);
+    const m = /^(\s*)(?:([-*+])(\s+)|(\d+)([.)])\s+|([a-z]{1,9})\.\s+)(.*)$/.exec(line);
     if (!m) return null;
     const [, indent, mark, gap, num, delim, token, text] = m;
     if (mark) return { key: "ul-" + ({ "*": "circle", "+": "square" }[mark] || (gap.length > 1 && gap.length < 4 && /\S/.test(text) && !/^\[[ xX]\]\s/.test(text) ? "dash" : "disc")), indent, text };
     if (num) return { key: "ol-1-" + (delim === "." ? "dot" : "paren"), number: +num, indent, text };
     if (cur === false) return null;
     const n = cur ? cur.count : 0;
-    const roman = ["", "x", "xx", "xxx", "xl", "l"][((n + 1) / 10) | 0] + ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix"][(n + 1) % 10];
+    //: Any count, not only to 59 (laglist-1108): the next numeral is built the way `docLists` builds it.
+    let roman = "";
+    for (let rest = n + 1, i = 0; rest > 0; i += 1) {
+      const [r, v] = [["m", 1000], ["cm", 900], ["d", 500], ["cd", 400], ["c", 100], ["xc", 90], ["l", 50], ["xl", 40], ["x", 10], ["ix", 9], ["v", 5], ["iv", 4], ["i", 1]][i];
+      while (rest >= v) { roman += r; rest -= v; }
+    }
     const run = (cur?.key === "ol-a-dot" && token === String.fromCharCode(97 + n) && "a") || (cur?.key === "ol-i-dot" && token === roman && "i");
     const start = token === "a" || token === "i" ? token : "";
     if (!run && (!start || (cur && indent.length > cur.indent.length))) return null;
@@ -1021,7 +1026,7 @@ function openMenuAtPoint(items, ariaLabel, x, y, returnFocus = null) {
   //: `scratchpad/ui-sweeps/graphphone.js`): `openActionMenu` focuses the
   //: first row, and while a touch gesture is still in flight Chromium takes
   //: it straight back out again (a `focusin` on the row followed immediately
-  //: by a `focusout` to nothing, with the menu still open and visible). The
+  //: by a `focusout` to nothing, with the menu still showing and visible). The
   //: cost is not cosmetic: Escape is bound on the menu, so a menu opened by a
   //: hold could not be closed by the keyboard, and the same press with the
   //: finger lifted first focuses perfectly. A frame later the same call

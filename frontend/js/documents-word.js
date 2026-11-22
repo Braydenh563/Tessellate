@@ -214,7 +214,7 @@
       const picture = await docWordBlob.diagram(code.textContent);
       if (picture) diagrams.set(code.closest("pre"), picture);
     }
-    const ctx = { mode: "", revision: 1, date: new Date().toISOString(), pictures, diagrams, holder, footnotes: {}, lists: 0, lines: marked.split("\n"), langs: new Set() };
+    const ctx = { mode: "", revision: 1, date: new Date().toISOString(), marks: typeof docSuggestParse === "function" ? docSuggestParse(text) : [], seen: 0, pictures, diagrams, holder, footnotes: {}, lists: 0, lines: marked.split("\n"), langs: new Set() };
     const children = docWordBlocks(D, holder, 0, ctx);
     const levels = Array.from({ length: 9 }, (_, level) => ({
       level,
@@ -285,12 +285,26 @@
 
   //: A formula as Word's own maths (OMML): the renderer's MathML walked into
   //: docx's maths parts, so Word can edit it. Fractions, roots, scripts and
-  //: sums and integrals are objects; a matrix, an accent or anything else is
-  //: its symbols in a row, which reads right and loses only the layout.
+  //: sums and integrals, a binomial (a fraction with no bar, in brackets), a
+  //: matrix and an accent are objects; anything else is its symbols in a row,
+  //: which reads right and loses only the layout.
   docWordBlob.math = (D, node) => {
     const run = (text) => new D.MathRun(text);
     const some = (parts) => (parts.length ? parts : [run("")]);
     const NARY = { "\u2211": D.MathSum, "\u222B": D.MathIntegral };
+    const BRACKETS = { "(": [")", D.MathRoundBrackets], "[": ["]", D.MathSquareBrackets], "{": ["}", D.MathCurlyBrackets] };
+    //: An OMML element docx has no class for: its children, and an `m:val` when given.
+    const part = (tag, kids, val) => {
+      const x = new D.XmlComponent(tag);
+      if (val !== undefined) {
+        const attr = new D.XmlAttributeComponent({ val });
+        attr.xmlKeys = { val: "m:val" };
+        x.root.push(attr);
+      }
+      x.root.push(...kids);
+      return x;
+    };
+    const noBar = (el) => el.localName === "mfrac" && el.getAttribute("linethickness") === "0";
     const walk = (kids) => {
       const out = [];
       for (let i = 0; i < kids.length; i += 1) {
@@ -305,7 +319,18 @@
           out.push(new nary({ children: some(walk(kids.slice(i + 1))), subScript: lower ? walk([lower]) : undefined, superScript: upper ? walk([upper]) : undefined }));
           break;
         }
-        if (tag === "mfrac") out.push(new D.MathFraction({ numerator: some(walk([inner[0]])), denominator: some(walk([inner[1]])) }));
+        const bracket = tag === "mrow" && inner.length === 3 && inner[0].localName === "mo" && BRACKETS[inner[0].textContent.trim()];
+        if (bracket && bracket[0] === inner[2].textContent.trim() && (noBar(inner[1]) || inner[1].localName === "mtable")) {
+          out.push(new bracket[1]({ children: walk([inner[1]]) }));
+        } else if (tag === "mfrac" && noBar(el)) {
+          const bar = part("m:fPr", [part("m:type", [], "noBar")]);
+          out.push(part("m:f", [bar, part("m:num", some(walk([inner[0]]))), part("m:den", some(walk([inner[1]])))]));
+        } else if (tag === "mtable") {
+          const rows = inner.map((row) => part("m:mr", [...row.children].map((cell) => part("m:e", some(walk([cell]))))));
+          out.push(part("m:m", rows));
+        } else if (tag === "mover" && el.getAttribute("accent") === "true" && inner[1]) {
+          out.push(part("m:acc", [part("m:accPr", [part("m:chr", [], inner[1].textContent.trim())]), part("m:e", some(walk([inner[0]])))]));
+        } else if (tag === "mfrac") out.push(new D.MathFraction({ numerator: some(walk([inner[0]])), denominator: some(walk([inner[1]])) }));
         else if (tag === "msqrt") out.push(new D.MathRadical({ children: some(walk(inner)) }));
         else if (tag === "mroot") out.push(new D.MathRadical({ children: some(walk([inner[0]])), degree: some(walk([inner[1]])) }));
         else if (tag === "msup") out.push(new D.MathSuperScript({ children: some(walk([inner[0]])), superScript: some(walk([inner[1]])) }));
@@ -339,13 +364,17 @@
   function docWordText(D, text, style, ctx) {
     const runs = [];
     for (const piece of text.split(/([-])/)) {
-      if (piece === DOC_WORD_INS_OPEN) ctx.mode = "ins";
-      else if (piece === DOC_WORD_DEL_OPEN) ctx.mode = "del";
-      else if (piece === DOC_WORD_INS_CLOSE || piece === DOC_WORD_DEL_CLOSE) ctx.mode = "";
+      //: Each opening marker is the next mark of the text in order, which is where its author and date are (the stamp after it).
+      if (piece === DOC_WORD_INS_OPEN || piece === DOC_WORD_DEL_OPEN) {
+        ctx.mode = piece === DOC_WORD_INS_OPEN ? "ins" : "del";
+        ctx.who = ctx.marks?.[ctx.seen] || null;
+        ctx.seen = (ctx.seen || 0) + 1;
+      } else if (piece === DOC_WORD_INS_CLOSE || piece === DOC_WORD_DEL_CLOSE) ctx.mode = "";
       else if (piece && !ctx.mode) runs.push(new D.TextRun({ text: piece, ...style }));
       else if (piece) {
         const Run = ctx.mode === "ins" ? D.InsertedTextRun : D.DeletedTextRun;
-        runs.push(new Run({ text: piece, id: ctx.revision, author: "Tessellate", date: ctx.date, ...style }));
+        const day = ctx.who?.date || "";
+        runs.push(new Run({ text: piece, id: ctx.revision, author: ctx.who?.author || "Tessellate", date: day.length === 10 ? `${day}T00:00:00Z` : day || ctx.date, ...style }));
         ctx.revision += 1;
       }
     }
@@ -414,7 +443,7 @@
   //: A callout's tint and edge in Word, by the colour family the page gives its
   //: kind (fill, then the left edge). Hex without "#", as Word writes it.
   const DOC_WORD_TONES = { blue: ["E3EDFB", "3B6FD4"], green: ["E1F3E6", "2E8B57"], amber: ["FFF2D9", "C98A0B"], red: ["FBE3E3", "C0392B"], grey: ["EEEEEE", "777777"] };
-  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", todo: "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
+  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", "todo": "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
 
   //: `[TOC]` as Word's own contents field over the headings written below it
   //: (three levels, as the page's list shows). Word refreshes the page numbers

@@ -17,6 +17,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import commands
+from tests._clock import pin_clock
 
 #: Tuesday 6 October 2026, 10:00 at UTC+10.
 NOW = datetime(2026, 10, 6, 10, 0, tzinfo=timezone(timedelta(hours=10)))
@@ -36,7 +37,7 @@ TABLE: list[tuple[str, str | None, dict]] = [
     ("make a reminder for the dentist on Friday at 3pm", "reminder", {"text": "The dentist", "due": _at(9, 15)}),
     ("add a reminder: water the plants tonight", "reminder", {"text": "Water the plants", "due": _at(6, 20)}),
     ("remind me about the passport renewal tomorrow morning", "reminder", {"text": "The passport renewal", "due": _at(7, 9)}),
-    ("please remind me to email Priya", "reminder", {"text": "Email Priya", "due": _at(7, 9), "time_given": False}),
+    ("please remind me to email Priya", "reminder", {"text": "Email Priya", "due": None, "time_given": False}),  # no time: asked once (L781)
     ("can you remind me to book flights on 14 October?", "reminder", {"text": "Book flights", "due": _at(14, 9)}),
     ("reminder: submit the tax return in 3 days", "reminder", {"text": "Submit the tax return", "due": _at(9, 10)}),
     ("set a reminder for Friday to collect the parcel", "reminder", {"text": "Collect the parcel", "due": _at(9, 9)}),
@@ -123,7 +124,8 @@ def _read(phrase: str) -> dict | None:
         return None
     out = dict(parsed)
     if "due_at" in out:
-        out["due"] = out.pop("due_at").strftime("%Y-%m-%d %H:%M")
+        due = out.pop("due_at")
+        out["due"] = due.strftime("%Y-%m-%d %H:%M") if due else None
     return out
 
 
@@ -217,11 +219,9 @@ def _stream(client, question: str, history: list | None = None) -> list[dict]:
 def test_a_reminder_with_no_time_is_asked_once_and_the_answer_sets_it(client, session, monkeypatch):
     """OPEN-ledger row 461 (decisions 48 and 50): no time said is asked,
     never guessed as tomorrow at 9; the next turn's time fills it."""
-    from tessellate.api import routes_chat
     from tessellate.core.database import Reminder
 
-    monkeypatch.setattr("tessellate.core.config.user_now", lambda _config: TASKS_NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config: TASKS_NOW)
+    pin_clock(monkeypatch, TASKS_NOW)
 
     asked = _stream(client, "remind me to call the dentist")
     text = "".join(e.get("delta", "") for e in asked if e["type"] == "answer")
@@ -293,3 +293,15 @@ def test_the_running_model_manager_is_never_its_module():
     env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
     ran = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True, timeout=120, env=env)
     assert ran.stdout.strip() == "False", ran.stdout + ran.stderr
+
+
+def test_a_reminder_with_no_time_has_no_due_and_asks_when_once(app_state):
+    """L781 (owner, 2026-11-12): no time said is a missing slot, not tomorrow
+    at 9; the reading asks "Remind you when?" and the reply fills it."""
+    from tessellate.ai import reading
+
+    parsed = commands.read("remind me to call mum", NOW)
+    assert parsed["due_at"] is None and parsed["time_given"] is False
+    got = reading.read("remind me to call mum", now=NOW)
+    assert got.question == "Remind you when?" and got.slots["due_at"] is None
+    assert "call mum" in commands.ask_when_for(parsed).lower()

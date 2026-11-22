@@ -1,4 +1,4 @@
-"""New document makes a new document, and that is the one left open (found
+"""New document makes a new document, and that is the one showing (found
 by the e2e suite, tests-e2e/specs/documents.spec.js, 2026-10-05).
 
 Library, Create, New document on a session that had not opened Documents
@@ -25,6 +25,8 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+
+from tests._app_js import documents_text
 
 import pytest
 
@@ -54,7 +56,7 @@ def _run(scenario: str) -> dict:
     `with` over a proxy answers any free name with a function that returns
     itself, so the scenario reads only which document ends up open. A
     document's fetch takes `delays[id]` ms; the list takes 30 ms."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     declarations = "\n".join(
         line for line in source.splitlines() if line.startswith(("let docOpenSeq", "const docLoadSeen"))
     )

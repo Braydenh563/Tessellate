@@ -45,6 +45,8 @@ out.alphaNotA = item("b. alone");
 out.romanStart = item("i. first");
 out.romanNext = item("ii. second", { key: "ol-i-dot", count: 1, indent: "" });
 out.romanFour = item("iv. fourth", { key: "ol-i-dot", count: 3, indent: "" });
+out.romanSixty = item("lx. sixtieth", { key: "ol-i-dot", count: 59, indent: "" });
+out.romanLong = item("lxxxviii. eighty-eighth", { key: "ol-i-dot", count: 87, indent: "" });
 out.iAfterH = item("i. ninth letter", { key: "ol-a-dot", count: 8, indent: "" });
 out.notRoman = item("iiii. nope", { key: "ol-i-dot", count: 3, indent: "" });
 out.sentence = item("A. Smith wrote it");
@@ -95,6 +97,9 @@ def test_letters_and_roman_numerals_are_a_list_only_as_a_run(r):
     assert r["iAfterH"]["key"] == "ol-a-dot" and not r["iAfterH"]["fresh"]
     #: A letter that is neither the start nor the next one is text.
     assert r["alphaGap"] is None and r["alphaNotA"] is None
+    # L307: the numeral keeps counting past 59 (it stopped at "l" before).
+    assert r["romanSixty"]["key"] == "ol-i-dot" and not r["romanSixty"]["fresh"]
+    assert r["romanLong"]["key"] == "ol-i-dot" and not r["romanLong"]["fresh"]
     assert r["notRoman"] is None and r["sentence"] is None and r["word"] is None
     #: A letter item under a deeper indent than the list is not a new list.
     assert r["nestedLetter"] is None

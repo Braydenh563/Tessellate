@@ -48,6 +48,8 @@ ALLOWED = {
     ("library.js", "https://${raw}"),
     # The same normalisation in `bookmarkKind`, moved to selection.js (572).
     ("selection.js", "https://${raw}"),
+    # The same, for the duplicate finder's comparison key (library-links.js sameKey).
+    ("library-links.js", "https://${raw}"),
 }
 
 #: Requests built into a vendored library, and why each never fires.

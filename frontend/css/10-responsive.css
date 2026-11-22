@@ -142,6 +142,15 @@
   #tab-bar .tab-label {
     font-size: var(--text-xs);
   }
+  /* The header holds the 44px strip in every mode. Centred, the strip is
+     absolutely placed and adds no height, so the header stayed at its 44px
+     row and the 48px strip ran 2px past its top and bottom (measured at 1184:
+     strip -2 to 46 in a 44px header; the tour's ring on it left the window).
+     This is the height the strip gives the header when it is in the flow
+     (56px at 1000), so the two modes are one height. */
+  header#top-bar {
+    min-height: calc(max(2.75rem, 44px) + 4px + 2 * var(--header-pad-y) + 1px);
+  }
 }
 /* A count on a tab is a badge on its glyph, not a word beside it, wherever the
    strip is narrow enough to care (everything below 1100: band 2's icons, band
@@ -290,9 +299,19 @@ header#top-bar[data-scrolled="1"],
 .action-menu:not(.hidden),
 .dock-menu[open] > .dock-menu-list,
 .help-popover,
-:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
-  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup, .selection-popup,
-  .doc-suggest-menu, .ocr-region-popover):not(.hidden) {
+:where(.space-menu):is(.space-menu, #status-clock-detail):not(.hidden),
+:where(.notif-panel):is(.notif-panel, #status-clock-detail):not(.hidden),
+#status-clock-detail:not(.hidden),
+:where(.nav-history-menu):is(.nav-history-menu, #status-clock-detail):not(.hidden),
+:where(.chat-model-panel):is(.chat-model-panel, #status-clock-detail):not(.hidden),
+:where(.global-find-bar):is(.global-find-bar, #status-clock-detail):not(.hidden),
+:where(.note-picker-panel):is(.note-picker-panel, #status-clock-detail):not(.hidden),
+:where(.chat-skills-panel):is(.chat-skills-panel, #status-clock-detail):not(.hidden),
+:where(.chat-dock-more-panel):is(.chat-dock-more-panel, #status-clock-detail):not(.hidden),
+:where(.graph-popup):is(.graph-popup, #status-clock-detail):not(.hidden),
+:where(.selection-popup):is(.selection-popup, #status-clock-detail):not(.hidden),
+:where(.doc-suggest-menu):is(.doc-suggest-menu, #status-clock-detail):not(.hidden),
+:where(.ocr-region-popover):is(.ocr-region-popover, #status-clock-detail):not(.hidden) {
   --menu-origin-x: 100%;
   --menu-origin-y: 0%;
   transform-origin: var(--menu-origin-x) var(--menu-origin-y);
@@ -301,14 +320,22 @@ header#top-bar[data-scrolled="1"],
 /* Flipped upward, so it grows out of the bottom of the button instead. */
 .action-menu.action-menu-flip:not(.hidden),
 .help-popover.help-popover-above,
-:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
+:where(.note-picker-panel):is(.note-picker-panel, #status-clock-detail):not(.hidden),
+:where(.chat-skills-panel):is(.chat-skills-panel, #status-clock-detail):not(.hidden),
+:where(.chat-dock-more-panel):is(.chat-dock-more-panel, #status-clock-detail):not(.hidden),
+:where(.nav-history-menu):is(.nav-history-menu, #status-clock-detail):not(.hidden),
+#status-clock-detail:not(.hidden) {
   --menu-origin-y: 100%;
 }
 /* A dock's `<details>` menu and a select's list hang under their opener's
    left edge; a help popover from its caret, above or below. */
 .dock-menu[open] > .dock-menu-list,
 .action-menu.action-menu-start,
-:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu, .doc-suggest-menu):not(.hidden) {
+.space-menu:not(.hidden),
+.note-picker-panel:not(.hidden),
+.chat-skills-panel:not(.hidden),
+.nav-history-menu:not(.hidden),
+.doc-suggest-menu:not(.hidden) {
   --menu-origin-x: 0%;
 }
 .help-popover {
@@ -1782,7 +1809,7 @@ header#top-bar[data-scrolled="1"],
    604px canvas); a desktop board takes the same row for itself now. The
    map's gesture hint names two keys a phone does not have; there the +
    handles on a selected node are the gesture, and they are already 44px. */
-#tab-library:has(> #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) #library-subtabs {
+#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) {
   display: none;
 }
 @media (max-width: 599.98px) and (pointer: coarse) {
@@ -2355,23 +2382,10 @@ header#top-bar[data-scrolled="1"],
     justify-content: center;
     padding-inline: 0;
   }
-  #tab-documents .doc-actions,
-  #tab-documents .doc-view-cluster {
-    gap: var(--space-1);
-  }
-  #tab-documents #doc-view-seg > button {
+    #tab-documents #doc-view-seg > button {
     padding-inline: var(--space-1) var(--space-2);
   }
-  #tab-documents .doc-statusbar {
-    overflow: hidden;
-  }
-  /* A phone's formatting is the bar at the thumb (below), always there in
-     Edit, so the dock's way back to the desktop strip (INBOX 574) would be a
-     second row of chrome for nothing. */
-  #doc-format-show {
-    display: none;
-  }
-  #tab-documents .doc-phone-bar {
+    #tab-documents .doc-phone-bar {
     bottom: max(
       calc(var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px)),
       env(keyboard-inset-height, 0px),
@@ -2760,7 +2774,8 @@ header#top-bar[data-scrolled="1"],
       join its buttons on the floor (band 1 above); a search well's input is
       the text inside the well, which is already the target. */
 @media (max-width: 819.98px), (pointer: coarse) {
-  :is(.modal-card, .space-dialog) :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], .search-field-input), textarea:not(.search-field-input)) {
+  :is(.modal-card, .space-dialog) :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], .search-field-input)),
+  :is(.modal-card, .space-dialog) :is(textarea:not(.search-field-input)) {
     min-height: var(--target-min);
   }
   .entry-meta.note-meta:not(.is-measuring) > .chip.is-icon {

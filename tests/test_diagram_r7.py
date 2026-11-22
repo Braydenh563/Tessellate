@@ -7,10 +7,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 MERMAID = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
 EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -52,7 +53,7 @@ def test_the_dialog_seg_is_picture_list_source_too():
 def test_done_from_the_door_inside_an_editor_makes_a_row_and_inserts_a_link():
     door = MERMAID[MERMAID.index("async function diagramDoor(") :]
     door = door[: door.index("diagramModel.starter =")]
-    tail = door[door.rindex("return openDiagramBuilder({\n      source: diagramModel.starter") :]
+    tail = door[door.rindex("return openDiagramBuilder({\n      source: \"\"") :]
     assert 'file_type: "mmd"' in tail and "![[" in tail
     # The slash menu's starter fence is untouched.
     assert "```mermaid" not in tail

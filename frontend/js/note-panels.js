@@ -329,7 +329,7 @@ function similarNoteRow(entry, other, onLinked) {
   //: Named by the note's first line, the way a person calls it.
   const name = noteNamePlain(preview) || preview;
   relChip.setAttribute("aria-label", `Link to ${name}`);
-  relChip.title = `Link this note to “${preview}”`;
+  relChip.title = `Link this note to “${preview}”${other.link_reason ? `: ${other.link_reason}` : ""}`;
   //: The same mark the menu item that opens this row wears, drawn the same
   //: way: an `<i class="ph">` rather than the character U+2248, which came
   //: out in the page font at the text's own weight beside Phosphor icons in

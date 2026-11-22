@@ -31,10 +31,10 @@ refuses to run with more than one worker (`deps.refuse_multiple_workers`), so
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import logging
 import threading
 from collections import deque
-from datetime import datetime, timezone
 
 logger = logging.getLogger("tessellate.taskhistory")
 
@@ -97,7 +97,7 @@ def record(
                     "label": label,
                     "outcome": outcome if outcome in OUTCOMES else "completed",
                     "detail": (detail or "")[:400],
-                    "at": datetime.now(timezone.utc).isoformat(),
+                    "at": clock.utc().isoformat(),
                     "duration_ms": (
                         round(duration_ms, 1)
                         if isinstance(duration_ms, (int, float)) and duration_ms >= 0

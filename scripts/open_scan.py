@@ -15,8 +15,10 @@ left are LEDGER rows for real-device checks the owner has agreed to move to BACK
 from __future__ import annotations
 
 import argparse
+import io
 import re
 import subprocess
+import tokenize
 from collections import Counter
 from pathlib import Path
 
@@ -26,7 +28,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SKIP = re.compile(
     r"^(docs/roadmap/(BACKLOG|HISTORY)\.md|CHANGELOG\.md|docs/CHANGELOG\.md|docs/CODEMAP\.md"
     r"|frontend/vendor/|frontend/fonts/|.*\.min\.(js|css)$|.*\.lock$|.*package-lock\.json$"
-    r"|\.claude/skills/ui-ux-pro-max/|scripts/open_scan\.py$|tests/fixtures/)"
+    r"|\.claude/skills/ui-ux-pro-max/|scripts/open_scan\.py$|tests/fixtures/"
+    #: A form a contributor ticks per PR: its empty boxes are the form.
+    r"|\.github/PULL_REQUEST_TEMPLATE\.md$)"
 )
 TEXT = re.compile(r"\.(md|txt|py|js|css|html|json|ya?ml|toml|sh|cfg|ini)$")
 
@@ -40,6 +44,100 @@ SIGNAL = re.compile(
     r"|xfail\(.*strict\s*=\s*True|mark\.skip\(",
     re.I,
 )
+
+#: A reminder's default text ("Follow up: <note>") is app copy, not work.
+COPY = re.compile(r"`Follow up: \$\{")
+#: An API's own keyword that shares a marker word: SQLAlchemy's
+#: `mapped_column(..., deferred=True)` loads a column on first read.
+API_WORD = re.compile(r"\bdeferred=True\b")
+#: Prose whose marker word is a plain verb, matched as the exact phrase
+#: (PR 242 review: teach the scan the phrase rather than bend the prose):
+#: a pass that "must still open it" (a file) and a button that a feature
+#: "had left open" (asked for). The match is within one line, so each
+#: phrase must stay on one line where it is written (a re-wrap brings the hit back).
+PROSE = re.compile(r"\bmust still open it\b|\bRun button had left open\b")
+#: Each exception strips only its own match, so a marker on the same line
+#: (`deferred=True)  # TODO`) is still reported.
+_EXCEPT = (API_WORD, PROSE)
+#: Text in quotes in a code file is copy a user reads (a checkbox's "Not
+#: done", a template's "## Still open", the `todo` callout), never a work
+#: marker; a marker lives in a comment or a docstring (owner, INBOX 1810).
+def _blank(lines: list[str], spans) -> list[str]:
+    """`lines` with each ((row, col), (row, col)) span, 1-based rows, blanked."""
+    rows = [list(line) for line in lines]
+    for (r0, c0), (r1, c1) in spans:
+        for r in range(r0, r1 + 1):
+            row = rows[r - 1] if r - 1 < len(rows) else []
+            for c in range(c0 if r == r0 else 0, c1 if r == r1 else len(row)):
+                if c < len(row):
+                    row[c] = " "
+    return ["".join(row) for row in rows]
+
+
+def _js_quoted(lines: list[str]) -> list[str]:
+    """JS lines with '...', "..." and `...` literals blanked; comments kept."""
+    out, mode = [], None  # mode: None, "/*", or the open quote mark
+    for line in lines:
+        chars, i = list(line), 0
+        while i < len(chars):
+            ch, nxt = chars[i], line[i + 1 : i + 2]
+            if mode == "/*":
+                mode, i = (None, i + 2) if ch == "*" and nxt == "/" else (mode, i + 1)
+            elif mode:
+                chars[i] = " "
+                if ch == "\\":
+                    if nxt:
+                        chars[i + 1] = " "
+                    i += 2
+                    continue
+                if ch == mode:
+                    mode = None
+                i += 1
+            elif ch == "/" and nxt == "/":
+                break
+            elif ch == "/" and nxt == "*":
+                mode, i = "/*", i + 2
+            elif ch in "'\"`":
+                mode, i = ch, i + 1
+            else:
+                i += 1
+        if mode in ("'", '"'):
+            mode = None  # a plain quote does not run past its line
+        out.append("".join(chars))
+    return out
+
+
+def _py_quoted(text: str, lines: list[str]) -> list[str]:
+    """Python lines with string literals blanked; docstrings kept."""
+    try:
+        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except (tokenize.TokenError, SyntaxError, IndentationError):
+        return lines
+    skip = {tokenize.NL, tokenize.COMMENT}
+    spans = []
+    for n, tok in enumerate(toks):
+        if tok.type == getattr(tokenize, "FSTRING_MIDDLE", -1):
+            spans.append((tok.start, tok.end))
+        if tok.type != tokenize.STRING:
+            continue
+        before = next((x for x in reversed(toks[:n]) if x.type not in skip), None)
+        after = next((x for x in toks[n + 1 :] if x.type not in skip), None)
+        alone = before is None or before.type in (tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.ENCODING)
+        if not (alone and after is not None and after.type in (tokenize.NEWLINE, tokenize.ENDMARKER)):
+            spans.append((tok.start, tok.end))
+    return _blank(lines, spans)
+
+
+#: An HTML attribute's value (`data-mode="todo"`, a title a person reads) is
+#: copy or data, the same ruling as a quoted string in code (INBOX 1810); a
+#: marker in an HTML file lives in a `<!-- comment -->`, which stays.
+_ATTR = re.compile(r'=\s*"[^"]*"')
+
+
+def _html_attrs(lines: list[str]) -> list[str]:
+    """HTML lines with every double-quoted attribute value blanked."""
+    return [_ATTR.sub(lambda m: " " * len(m.group(0)), line) for line in lines]
+
 
 #: Which plan session owns a path (anything else goes to the closing session).
 OWNERS = {
@@ -63,14 +161,24 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
     found = []
     for f in paths:
         try:
-            lines = (ROOT / f).read_text(encoding="utf-8").splitlines()
+            text = (ROOT / f).read_text(encoding="utf-8")
         except (UnicodeDecodeError, FileNotFoundError):
             continue
+        lines = text.splitlines()
+        seen = (
+            _js_quoted(lines) if f.endswith(".js")
+            else _py_quoted(text, lines) if f.endswith(".py")
+            else _html_attrs(lines) if f.endswith(".html")
+            else lines
+        )
         in_done_row = f == "docs/roadmap/LEDGER.md"
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):
                 continue
-            if SIGNAL.search(line):
+            rest = seen[i - 1]
+            for word in _EXCEPT:
+                rest = word.sub("", rest)
+            if SIGNAL.search(rest) and not COPY.search(line):
                 found.append((f, i, line.strip()[:200]))
     return found
 

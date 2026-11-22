@@ -11,6 +11,7 @@ pressed: Playwright reported the menu "intercepts pointer events"
 fixed the same way by taking the `wb-menu-item` class (see the listener's own
 comment); these rows are a label and a button, so they carry `data-wb-closes`.
 """
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from tests._css_paths import CSS_FILES
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-WHITEBOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD = frontend_text("whiteboard.js")
 
 #: Rows that do something once and are done with the menu. A switch or a
 #: stepper in the same menu (grid size, the panels) must stay open, so this is
@@ -28,6 +29,7 @@ ACTION_ROWS = (
     "wb-clear-board",
     "wb-add-to-note",
     "wb-map-to-doc",
+    "wb-board-to-doc",
     "wb-copy-link",
     "wb-delete-board",
 )
@@ -65,7 +67,8 @@ def test_the_board_menu_is_section_heads_and_plain_icon_rows_with_delete_last_an
     assert "wb-menu-row" not in menu and "wb-panel-danger" not in menu
     heads = re.findall(r'wb-panel-group-label">([^<]+)<', menu)
     assert heads == ["Boards", "This board", "Help", "Remove"]
-    for button_id in ("wb-export", "wb-board-kind", "wb-add-to-note", "wb-map-to-doc", "wb-map-study", "wb-copy-link", "wb-clear-board", "wb-delete-board"):
+    for button_id in ("wb-export", "wb-board-kind", "wb-add-to-note", "wb-map-to-doc",
+    "wb-board-to-doc", "wb-map-study", "wb-copy-link", "wb-clear-board", "wb-delete-board"):
         assert re.search(rf'<button id="{button_id}"[^>]*class="wb-menu-item', menu), button_id
     rows = re.findall(r'<button[^>]*id="(wb-[a-z-]+)"[^>]*>', menu)
     assert rows[-1] == "wb-delete-board", "what destroys is last"

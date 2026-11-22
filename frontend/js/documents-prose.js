@@ -95,11 +95,20 @@ async function docGrammarWhy() {
   return found.join("; ") || "every file it loads answered as JavaScript";
 }
 
-//: One lint of `text`, or null when there is no checker.
-function docGrammarAsk(text) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant() });
+//: One lint of `text`, or null when there is no checker. `ignored` is the grammar
+//: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
+//: `early` is given Harper's lints the moment they are in, before LanguageTool
+//: (which may be starting Java, 12.3 s cold) has answered. `stale`, when it says the text has
+//: been typed past by the time Harper answers, keeps LanguageTool out of it (L342): its merge
+//: splits and walks the whole text on whichever key the answer lands, for findings the pause
+//: replaces anyway. Harper's lints come back alone.
+function docGrammarAsk(text, early, stale) {
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [], bare: [...DOC_GRAMMAR_SKIP_KINDS] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
-  return asked.then((lints) => docSpell.languageTool(lints, text));
+  return asked.then((lints) => {
+    if (early && lints !== null) early(lints);
+    return stale && stale() ? lints : docSpell.languageTool(lints, text);
+  });
 }
 
 //: One message to the worker and its answer, or null when there is no checker
@@ -333,17 +342,31 @@ function docProseRemap(findings, from, to) {
 //: on the first document opened (or typed into) with grammar on.
 function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
-  if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
+  if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText() && !docGrammarCache.partial)) return;
   docGrammarWire.asking = text;
   const asked = performance.now();
-  docGrammarAsk(text).then((lints) => {
+  //: **Findings worked out when first read** (L342): an answer that lands
+  //: while keys keep coming is read only at the pause, and working it out
+  //: on arrival put a whole-document pass (4.3 ms at 4x CPU) on a key.
+  //: `partial`: Harper's alone, so the same text is asked again (typed past, then typed back).
+  const cached = (lints, partial) => {
+    let findings = null;
+    return { text, linkText: docCheckLinkText(), partial, get findings() { return findings || (findings = docGrammarFindings(lints, text)); } };
+  };
+  const typedPast = () => (docProse.typedAt || 0) > asked;
+  //: Harper's findings are drawn at once; the merged ones replace them.
+  const early = (first) => {
+    docGrammarCache = cached(first, true);
+    if (!typedPast()) renderDocProse(true);
+  };
+  docGrammarAsk(text, early, typedPast).then((lints) => {
     docGrammarWire.asking = null;
     //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
     //: here asked again, so while keys kept coming every answer started a
     //: prose pass of its own (37 passes in 60 keys at 4x CPU).
-    const typed = (docProse.typedAt || 0) > asked;
+    const typed = typedPast();
     if (lints === null) return typed ? undefined : renderDocProse(true);
-    docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
+    docGrammarCache = cached(lints, typed);
     if (!typed) renderDocProse(true);
   });
 }
@@ -556,14 +579,16 @@ function noteGrammarPlugin(CM) {
       check() {
         const text = docStr(this.view.state.doc);
         if (!text.trim() || text === this.checked) return;
-        docGrammarAsk(text).then((lints) => {
+        //: Harper's findings are drawn first (`early`), LanguageTool's join and replace them.
+        const draw = (lints, final) => {
           if (lints === null || this.destroyed) return;
-          if (docStr(this.view.state.doc) !== text) return this.schedule();
+          if (docStr(this.view.state.doc) !== text) return final ? this.schedule() : undefined;
           const skip = docProseSkipMask(text);
-          this.checked = text;
+          if (final) this.checked = text;
           this.findings = docGrammarFindings(lints, text).filter((finding) => skip[finding.start] !== 1);
           this.view.dispatch({ effects: effect.of(null) });
-        });
+        };
+        docGrammarAsk(text, (first) => draw(first, false)).then((lints) => draw(lints, true));
       }
       update(update) {
         if (update.docChanged) {
@@ -686,6 +711,12 @@ function docSuggestCodeMask(text) {
 
 //: Every suggestion in the text, in order: its kind, its whole span, and the
 //: span of what it suggests (between the three-character markers).
+//: **Who and when** (L-documents-34) is CriticMarkup's own comment right after the
+//: mark, `{>>name, 2026-11-14T09:30:00Z<<}`: part of the span (so accepting or
+//: rejecting takes it away), never of the body, and only read as a stamp when it
+//: ends in an ISO date, so a reviewer's `{>>why this?<<}` stays their comment.
+//: `opener`: the two marks it looks for first, as one line pattern for `docStr.lacks`.
+docSuggestParse.opener = /\{\+\+|\{--/;
 function docSuggestParse(text) {
   const src = String(text == null ? "" : text);
   //: Most documents hold no mark: two scans for the opener, not the code mask
@@ -694,24 +725,48 @@ function docSuggestParse(text) {
   if (!src.includes("{++") && !src.includes("{--")) return [];
   const code = docSuggestCodeMask(src);
   const pattern = /\{\+\+([\s\S]*?)\+\+\}|\{--([\s\S]*?)--\}/g;
+  const stamp = /\{>>(?:(.*?),\s*)?(\d{4}-\d\d-\d\d(?:T[\d:.]+(?:Z|[+-]\d\d:?\d\d)?)?)<<\}/y;
   const out = [];
   let match;
   while ((match = pattern.exec(src)) !== null) {
     if (code[match.index] === 1) continue;
     const ins = match[1] !== undefined;
     const start = match.index;
-    const end = start + match[0].length;
-    out.push({ kind: ins ? "ins" : "del", start, end, bodyStart: start + 3, bodyEnd: end - 3, body: ins ? match[1] : match[2] });
+    const core = start + match[0].length;
+    stamp.lastIndex = core;
+    const who = stamp.exec(src);
+    const end = who ? core + who[0].length : core;
+    pattern.lastIndex = end;
+    out.push({
+      kind: ins ? "ins" : "del", start, end, bodyStart: start + 3, bodyEnd: core - 3, body: ins ? match[1] : match[2],
+      author: who ? (who[1] || "").trim() : "", date: who ? who[2] : "",
+    });
   }
   return out;
 }
+
+//: **What a stamp is written as**: `who` is `{ author, date }`; null writes none (the
+//: callers that make no claim about who, and the tests that pin the old text). The
+//: name loses the characters that would end the comment early.
+docSuggestParse.stamp = (who) => {
+  if (!who || !who.date) return "";
+  const name = String(who.author || "").replace(/[<>{}\r\n]/g, "").trim();
+  return `{>>${name ? `${name}, ` : ""}${who.date}<<}`;
+};
+
+//: "name, date" for a menu or a tooltip; the date is the day, not the second.
+docSuggestParse.whoText = (mark) => {
+  const day = String(mark.date || "").slice(0, 10);
+  return [mark.author, day].filter(Boolean).join(", ");
+};
 
 //: Two marks of one kind that touch become one, and an empty mark goes, but
 //: only in `[lo, hi]`, around the edit that made them: a `--}{--` elsewhere
 //: is somebody's text. Returns the text and a function that moves an offset
 //: across what was taken out.
 function docSuggestNormalize(text, lo, hi) {
-  const pattern = /\{\+\+\+\+\}|\{----\}|--\}\{--|\+\+\}\{\+\+/g;
+  const stamp = String.raw`(?:\{>>[^<\n]*<<\})?`;
+  const pattern = new RegExp(String.raw`\{\+\+\+\+\}${stamp}|\{----\}${stamp}|--\}${stamp}\{--|\+\+\}${stamp}\{\+\+`, "g");
   const cuts = [];
   let match;
   while ((match = pattern.exec(text)) !== null) {
@@ -746,7 +801,7 @@ function docSuggestNormalize(text, lo, hi) {
 //: - A marker is never split; an edit that lands only on markers or on text
 //:   already suggested for deletion steps over it to the next real letter.
 //: - Typing inside an insertion extends it; anywhere else it opens one.
-function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
+function docSuggestEdit(text, from, to, insert, backward, who = null, depth = 0) {
   const src = String(text);
   const marks = docSuggestParse(src);
   const markAt = (i) => marks.find((mark) => mark.start <= i && i < mark.end);
@@ -754,7 +809,7 @@ function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
   let run = "";
   let changed = false;
   const flush = () => {
-    if (run) region += `{--${run}--}`;
+    if (run) region += `{--${run}--}${docSuggestParse.stamp(who)}`;
     run = "";
   };
   for (let i = from; i < to; i += 1) {
@@ -781,10 +836,10 @@ function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
     };
     if (backward) {
       while (q > 0 && kept(q - 1)) q -= 1;
-      if (q > 0) return docSuggestEdit(src, q - 1, q, "", true, 1);
+      if (q > 0) return docSuggestEdit(src, q - 1, q, "", true, who, 1);
     } else {
       while (q < src.length && kept(q)) q += 1;
-      if (q < src.length) return docSuggestEdit(src, q, q + 1, "", false, 1);
+      if (q < src.length) return docSuggestEdit(src, q, q + 1, "", false, who, 1);
     }
     return { text: src, caret: backward ? from : to };
   }
@@ -804,7 +859,7 @@ function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
       out = out.slice(0, p) + insert + out.slice(p);
       caret = p + insert.length;
     } else {
-      out = `${out.slice(0, p)}{++${insert}++}${out.slice(p)}`;
+      out = `${out.slice(0, p)}{++${insert}++}${docSuggestParse.stamp(who)}${out.slice(p)}`;
       caret = p + 3 + insert.length;
     }
     hi = Math.max(hi, caret + 3);
@@ -879,7 +934,9 @@ function docSuggestFindingFor(mark, findings, offset) {
 //: `run` supplies the actions: `one(accept)`, `all(accept)`, `next()`.
 function docSuggestMenuItems(mark, count, answers, run) {
   const what = mark.kind === "ins" ? "insertion" : "deletion";
+  const by = docSuggestParse.whoText(mark);
   const items = [
+    ...(by ? [{ group: "who", label: `ph:user ${by}`, disabled: true, run: () => {} }] : []),
     { group: "one", label: `ph:check Accept this ${what}`, run: run.one(true) },
     { group: "one", label: `ph:x Reject this ${what}`, run: run.one(false) },
   ];
@@ -992,6 +1049,14 @@ function docSuggestModes() {
   }
 }
 
+//: Who is suggesting and when, for the stamp a new change carries: the name the person
+//: gave Settings (none when they gave none: the date alone says less than a made-up
+//: "You" would claim), and the moment, whole seconds in UTC.
+docSuggestActive.who = (now = new Date()) => {
+  const author = (typeof prefsCache === "object" && prefsCache && prefsCache.display_name) || "";
+  return { author: String(author).trim(), date: now.toISOString().replace(/\.\d+Z$/, "Z") };
+};
+
 function docSuggestActive() {
   if (!currentDoc || !currentDoc.id || !docFileType().previewable) return false;
   return docSuggestModes()[currentDoc.id] === true;
@@ -1040,7 +1105,7 @@ function docSuggestExtensions(CM) {
     let caret = 0;
     for (let i = changes.length - 1; i >= 0; i -= 1) {
       const [from, to, insert] = changes[i];
-      const result = docSuggestEdit(text, from, to, insert, backward);
+      const result = docSuggestEdit(text, from, to, insert, backward, docSuggestActive.who());
       text = result.text;
       if (i === 0) caret = result.caret;
     }
@@ -1062,13 +1127,16 @@ function docSuggestExtensions(CM) {
     };
   });
 
-  function build(view) {
+  function build(view, update) {
     const marks = [];
     const hidden = [];
     const hide = docView === "live";
-    for (const mark of docSuggestParse(docStr(view.state.doc))) {
+    //: An edit to a text with no opener asks only the lines it touched (`docStr.lacks`, L-documents-26).
+    const none = docStr.lacks(view.state, docSuggestParse.opener, update);
+    for (const mark of none ? [] : docSuggestParse(docStr(view.state.doc))) {
       const cls = mark.kind === "ins" ? "cm-suggest-ins" : "cm-suggest-del";
-      const title = mark.kind === "ins" ? "Suggested insertion: click to accept or reject" : "Suggested deletion: click to accept or reject";
+      const by = docSuggestParse.whoText(mark);
+      const title = `Suggested ${mark.kind === "ins" ? "insertion" : "deletion"}${by ? ` by ${by}` : ""}: click to accept or reject`;
       const edges = [[mark.start, mark.bodyStart], [mark.bodyEnd, mark.end]];
       for (const [from, to] of edges) {
         hidden.push(Decoration.replace({}).range(from, to));
@@ -1094,7 +1162,7 @@ function docSuggestExtensions(CM) {
       update(update) {
         const told = update.transactions.some((tr) => tr.effects.length);
         if (update.docChanged || told) {
-          Object.assign(this, build(update.view));
+          Object.assign(this, build(update.view, update));
           renderDocSuggestState(true);
         }
       }
@@ -1130,7 +1198,7 @@ function docSuggestApply(view, edit, message) {
 //: The answers to one suggestion, at the pointer (or at the change, from the
 //: keyboard). Recomputed from the text at the press: the mark is found again
 //: by where it starts, and a mark no longer there says so.
-function docSuggestMenu(view, start, x, y) {
+async function docSuggestMenu(view, start, x, y) {
   const mark = docSuggestParse(docStr(view.state.doc)).find((m) => m.start === start);
   if (!mark || typeof openMenuAtPoint !== "function") return;
   const what = mark.kind === "ins" ? "insertion" : "deletion";
@@ -1150,7 +1218,7 @@ function docSuggestMenu(view, start, x, y) {
   const answers = finding
     ? [
         ...(said ? [{ label: `ph:info ${said.length > 60 ? `${said.slice(0, 57)}\u2026` : said}`, title: said, disabled: true, run: () => {} }] : []),
-        ...docFindingAnswerRows(finding),
+        ...(await docFindingAnswerRows(finding)),
       ]
     : [];
   const items = docSuggestMenuItems(mark, count, answers, {
@@ -1158,7 +1226,8 @@ function docSuggestMenu(view, start, x, y) {
     all: (accept) => () => docSuggestAll(accept),
     next: () => () => docSuggestNext(),
   });
-  openMenuAtPoint(items, `Suggested ${what}`, x, y);
+  const by = docSuggestParse.whoText(mark);
+  openMenuAtPoint(items, `Suggested ${what}${by ? `, ${by}` : ""}`, x, y);
 }
 
 function docSuggestAll(accept) {
@@ -1197,7 +1266,7 @@ function docSuggestNext() {
 //: structural change in the status bar that the `:has()` rules re-check).
 function renderDocSuggestState(typed = false) {
   const on = docSuggestActive();
-  const count = docCmView ? docSuggestParse(docStr(docCmView.state.doc)).length : 0;
+  const count = docCmView && !docStr.lacks(docCmView.state, docSuggestParse.opener) ? docSuggestParse(docStr(docCmView.state.doc)).length : 0;
   const key = `${on}|${count}|${currentDoc?.id}|${docFileType().previewable}`;
   if (typed === true && key === renderDocSuggestState.key) return;
   renderDocSuggestState.key = key;
@@ -1248,6 +1317,7 @@ function docSpeakable(text) {
   return String(text || "")
     .replace(/\{--[\s\S]*?--\}/g, "")
     .replace(/\{\+\+|\+\+\}/g, "")
+    .replace(/\{>>[^<\n]*<<\}/g, "")
     .replace(/%%[^%\n]*%%/g, "")
     .replace(/!\[([^[\]\n]*)\]\([^()\n]*\)/g, "$1")
     .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")
@@ -1305,6 +1375,10 @@ function docReadAloudVoice(lang) {
   if (!window.speechSynthesis) return null;
   const voices = window.speechSynthesis.getVoices() || [];
   const local = voices.filter((voice) => voice.localService !== false);
+  //: The voice named in Settings, Read aloud (L333) wins when this browser still has it.
+  const named = typeof prefs === "object" && prefs ? prefs.get("read-aloud-voice-name", "") : "";
+  const chosen = named && local.find((voice) => voice.name === named);
+  if (chosen) return chosen;
   const prefix = String(lang || "en").slice(0, 2).toLowerCase();
   return (
     local.find((voice) => voice.default && voice.lang.toLowerCase().startsWith(prefix)) ||
@@ -1475,7 +1549,7 @@ function docProseToolExtensions(CM) {
 //
 // - **Expansions**: `lorem` (a paragraph), `lorem20` (twenty words),
 //   `table 3x4` (three columns, four rows; `/table 3x4` too), and, on a line of
-//   their own, `today`, `date`, `now`, `time`, `iso`, `todo`, `callout`, `hr`,
+//   their own, `today`, `date`, `now`, `time`, `iso`, the task word, `callout`, `hr`,
 //   `toc` (the headings as links) and `sig` (the name from Settings). Tab or
 //   Enter takes the chosen row; its first line is drawn after the caret in
 //   muted ink first, as the code side's ghost text is.
@@ -1488,7 +1562,7 @@ function docProseToolExtensions(CM) {
 //   Preferences (the app's own no-em-dash rule is about the app's copy, not the
 //   writer's).
 //
-// **Why a bare word only counts on a line of its own.** `now`, `date`, `todo`
+// **Why a bare word only counts on a line of its own.** `now`, `date`, the task word
 // and `hr` are words people write. Offered after any occurrence, Enter at the
 // end of "I will do it now" would stamp a time into the sentence. A line that
 // is nothing but `now` is somebody asking. `lorem` and the shortcodes are not
@@ -1607,73 +1681,17 @@ function docFillSig(name) {
   };
 }
 
-//: The shortcodes, GitHub's names. One string, `name=glyph,` per entry, parsed
-//: once: a table of a few hundred glyphs is data, and a string whose every edge
-//: is a letter or a comma is not a glyph standing where an icon belongs
-//: (`tests/test_no_glyph_icons.py` reads string edges).
-const DOC_EMOJI_SOURCE =
-  "smile=\u{1F604},grin=\u{1F601},joy=\u{1F602},rofl=\u{1F923},smiley=\u{1F603},laughing=\u{1F606}," +
-  "sweat_smile=\u{1F605},wink=\u{1F609},blush=\u{1F60A},innocent=\u{1F607},slightly_smiling_face=\u{1F642}," +
-  "upside_down_face=\u{1F643},heart_eyes=\u{1F60D},star_struck=\u{1F929},kissing_heart=\u{1F618},yum=\u{1F60B}," +
-  "stuck_out_tongue=\u{1F61B},zany_face=\u{1F92A},hugs=\u{1F917},thinking=\u{1F914},shushing_face=\u{1F92B}," +
-  "zipper_mouth_face=\u{1F910},raised_eyebrow=\u{1F928},neutral_face=\u{1F610},expressionless=\u{1F611}," +
-  "no_mouth=\u{1F636},smirk=\u{1F60F},unamused=\u{1F612},roll_eyes=\u{1F644},grimacing=\u{1F62C}," +
-  "relieved=\u{1F60C},pensive=\u{1F614},sleepy=\u{1F62A},sleeping=\u{1F634},mask=\u{1F637}," +
-  "nerd_face=\u{1F913},face_with_monocle=\u{1F9D0},sunglasses=\u{1F60E},partying_face=\u{1F973}," +
-  "cowboy_hat_face=\u{1F920},confused=\u{1F615},worried=\u{1F61F},slightly_frowning_face=\u{1F641}," +
-  "open_mouth=\u{1F62E},astonished=\u{1F632},flushed=\u{1F633},pleading_face=\u{1F97A},cry=\u{1F622}," +
-  "sob=\u{1F62D},scream=\u{1F631},exploding_head=\u{1F92F},cold_sweat=\u{1F630},hot_face=\u{1F975}," +
-  "cold_face=\u{1F976},woozy_face=\u{1F974},confounded=\u{1F616},tired_face=\u{1F62B},yawning_face=\u{1F971}," +
-  "triumph=\u{1F624},rage=\u{1F621},angry=\u{1F620},money_mouth_face=\u{1F911},skull=\u{1F480}," +
-  "poop=\u{1F4A9},clown_face=\u{1F921},ghost=\u{1F47B},alien=\u{1F47D},robot=\u{1F916}," +
-  "see_no_evil=\u{1F648},hear_no_evil=\u{1F649},speak_no_evil=\u{1F64A},wave=\u{1F44B},raised_hand=✋," +
-  "ok_hand=\u{1F44C},v=✌️,crossed_fingers=\u{1F91E},point_up=☝️,point_right=\u{1F449}," +
-  "point_left=\u{1F448},point_down=\u{1F447},thumbsup=\u{1F44D},+1=\u{1F44D},thumbsdown=\u{1F44E},-1=\u{1F44E}," +
-  "fist=\u{1F44A},clap=\u{1F44F},raised_hands=\u{1F64C},open_hands=\u{1F450},pray=\u{1F64F}," +
-  "handshake=\u{1F91D},muscle=\u{1F4AA},writing_hand=✍️,eyes=\u{1F440},brain=\u{1F9E0}," +
-  "heart=❤️,orange_heart=\u{1F9E1},yellow_heart=\u{1F49B},green_heart=\u{1F49A},blue_heart=\u{1F499}," +
-  "purple_heart=\u{1F49C},black_heart=\u{1F5A4},broken_heart=\u{1F494},sparkling_heart=\u{1F496}," +
-  "100=\u{1F4AF},boom=\u{1F4A5},sparkles=✨,star=⭐,star2=\u{1F31F},dizzy=\u{1F4AB},fire=\u{1F525}," + // unslop-ignore: :shortcode: data, not icons
-  "zap=⚡,rainbow=\u{1F308},sunny=☀️,cloud=☁️,umbrella=☂️,snowflake=❄️," + // unslop-ignore
-  "droplet=\u{1F4A7},ocean=\u{1F30A},earth_africa=\u{1F30D},seedling=\u{1F331},evergreen_tree=\u{1F332}," +
-  "deciduous_tree=\u{1F333},four_leaf_clover=\u{1F340},rose=\u{1F339},sunflower=\u{1F33B}," +
-  "cherry_blossom=\u{1F338},apple=\u{1F34E},banana=\u{1F34C},avocado=\u{1F951},pizza=\u{1F355}," +
-  "hamburger=\u{1F354},taco=\u{1F32E},cake=\u{1F370},birthday=\u{1F382},coffee=☕,tea=\u{1F375}," +
-  "beer=\u{1F37A},wine_glass=\u{1F377},tada=\u{1F389},confetti_ball=\u{1F38A},balloon=\u{1F388}," +
-  "gift=\u{1F381},trophy=\u{1F3C6},medal_sports=\u{1F3C5},soccer=⚽,basketball=\u{1F3C0},dart=\u{1F3AF}," +
-  "video_game=\u{1F3AE},musical_note=\u{1F3B5},headphones=\u{1F3A7},art=\u{1F3A8},camera=\u{1F4F7}," +
-  "movie_camera=\u{1F3A5},tv=\u{1F4FA},computer=\u{1F4BB},keyboard=⌨️,iphone=\u{1F4F1}," +
-  "phone=☎️,bulb=\u{1F4A1},flashlight=\u{1F526},book=\u{1F4D6},books=\u{1F4DA},notebook=\u{1F4D3}," +
-  "memo=\u{1F4DD},pencil2=✏️,pen=\u{1F58A}️,paperclip=\u{1F4CE},pushpin=\u{1F4CC}," +
-  "scissors=✂️,calendar=\u{1F4C5},clipboard=\u{1F4CB},file_folder=\u{1F4C1}," +
-  "chart_with_upwards_trend=\u{1F4C8},chart_with_downwards_trend=\u{1F4C9},bar_chart=\u{1F4CA}," +
-  "email=\u{1F4E7},envelope=✉️,inbox_tray=\u{1F4E5},outbox_tray=\u{1F4E4},package=\u{1F4E6}," +
-  "bell=\u{1F514},mega=\u{1F4E3},lock=\u{1F512},unlock=\u{1F513},key=\u{1F511},hammer=\u{1F528}," +
-  "wrench=\u{1F527},gear=⚙️,link=\u{1F517},mag=\u{1F50D},hourglass=⌛,alarm_clock=⏰," +
-  "watch=⌚,money_with_wings=\u{1F4B8},moneybag=\u{1F4B0},dollar=\u{1F4B5},credit_card=\u{1F4B3}," +
-  "rocket=\u{1F680},airplane=✈️,car=\u{1F697},bike=\u{1F6B2},train=\u{1F686},house=\u{1F3E0}," +
-  "office=\u{1F3E2},school=\u{1F3EB},hospital=\u{1F3E5},globe_with_meridians=\u{1F310}," +
-  "world_map=\u{1F5FA}️,round_pushpin=\u{1F4CD},warning=⚠️,no_entry=⛔,x=❌," + // unslop-ignore
-  "heavy_check_mark=✔️,white_check_mark=✅,ballot_box_with_check=☑️," + // unslop-ignore
-  "question=❓,exclamation=❗,bangbang=‼️,heavy_plus_sign=➕,heavy_minus_sign=➖," +
-  "arrow_right=➡️,arrow_left=⬅️,arrow_up=⬆️,arrow_down=⬇️," +
-  "recycle=♻️,red_circle=\u{1F534},green_circle=\u{1F7E2},yellow_circle=\u{1F7E1}," +
-  "blue_circle=\u{1F535},white_circle=⚪,black_circle=⚫,cat=\u{1F431},dog=\u{1F436}," +
-  "fox_face=\u{1F98A},bear=\u{1F43B},panda_face=\u{1F43C},unicorn=\u{1F984},bee=\u{1F41D}," +
-  "butterfly=\u{1F98B},turtle=\u{1F422},snake=\u{1F40D},octopus=\u{1F419},whale=\u{1F433}," +
-  "penguin=\u{1F427},owl=\u{1F989},bug=\u{1F41B},checkered_flag=\u{1F3C1},triangular_flag_on_post=\u{1F6A9},";
-
-let docEmojiTable = null;
-
-//: `[name, glyph]` pairs, parsed on first use.
+//: `[name, glyph]` pairs. They are the icon picker's (`window.iconShortcodes`,
+//: icon-picker.js, GitHub's names as aliases of its emoji), which is a lazy
+//: script that this one cannot assume: until it is in the list is empty and
+//: asking loads it, so the next keystroke finds the names. Not kept across
+//: that gap, so a list read too early is never remembered as empty.
 function docEmojiList() {
-  if (!docEmojiTable) {
-    docEmojiTable = DOC_EMOJI_SOURCE.split(",").filter(Boolean).map((pair) => {
-      const at = pair.indexOf("=");
-      return [pair.slice(0, at), pair.slice(at + 1)];
-    });
+  if (!docEmojiList.table) {
+    docEmojiList.table = window.iconShortcodes?.() || null;
+    if (!docEmojiList.table) ensureModule("iconPicker");
   }
-  return docEmojiTable;
+  return docEmojiList.table || [];
 }
 
 //: The shortcodes matching what was typed after the colon: names that start
@@ -2388,45 +2406,22 @@ function docProseGhostSet(pos, text) {
 
 function docProseGhostPlugin(CM) {
   if (docProseGhostCache) return docProseGhostCache;
-  const { Decoration, ViewPlugin, WidgetType } = CM.view;
   docProseGhostEffect = CM.state.StateEffect.define();
-  class Ghost extends WidgetType {
-    constructor(text) {
-      super();
-      this.text = text;
+  docProseGhostCache = docGhostPlugin.make(CM, (state, ghost) => {
+    //: When the text changed, the ghost is worked out here, in the key's own update
+    //: (`docToolsOnInput.ghostAt`, L342); `docProseGhostSet` then finds it the same and dispatches
+    //: nothing.
+    if (state.doc !== docProseGhostPlugin.doc) {
+      const fresh = docProseGhostPlugin.doc !== undefined;
+      docProseGhostPlugin.doc = state.doc;
+      const at = window.docToolsOnInput?.ghostAt;
+      if (fresh && at) docProseGhost = at(state);
     }
-    eq(other) {
-      return other.text === this.text;
-    }
-    toDOM() {
-      const span = document.createElement("span");
-      //: The code side's own class, so the two ghosts are one look.
-      span.className = "cm-ghostText";
-      span.setAttribute("aria-hidden", "true");
-      span.textContent = this.text;
-      return span;
-    }
-    ignoreEvent() {
-      return true;
-    }
-  }
-  const build = (state) => {
     const g = docProseGhost;
     const range = state.selection.main;
-    if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return Decoration.none;
-    return Decoration.set([Decoration.widget({ widget: new Ghost(g.text), side: 1 }).range(g.pos)]);
-  };
-  docProseGhostCache = ViewPlugin.fromClass(
-    class {
-      constructor(view) {
-        this.decorations = build(view.state);
-      }
-      update(update) {
-        this.decorations = build(update.state);
-      }
-    },
-    { decorations: (plugin) => plugin.decorations }
-  );
+    if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return null;
+    return ghost(g.text, g.pos);
+  });
   return docProseGhostCache;
 }
 
@@ -2910,12 +2905,6 @@ function pasteUrl(text) {
   return PASTE_URL.test(value) ? value : "";
 }
 
-function pasteLinkLabel(url) {
-  if (/^mailto:/i.test(url)) return url.slice(7);
-  const m = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
-  return m ? m[1] : url;
-}
-
 function pasteLines(text) {
   return pasteClean(text).split("\n").filter((line) => line.trim());
 }
@@ -2943,11 +2932,29 @@ function pasteParseDelimited(text, delim) {
   return rows.map((row) => row.map((c) => c.replace(/\s*\n\s*/g, " ").trim()));
 }
 
+//: A Markdown (pipe) table: a header line, a `| --- | :-: |` rule, then rows.
+//: The rule is dropped, a `\|` stays a pipe inside a cell, short rows are
+//: padded to the header. Null for anything that is not one.
+//: Hung on pasteGrid (hoisted) so the shared scope gains no name (global-scope ratchet).
+pasteGrid.pipe = function (text) {
+  const lines = String(text || "").replace(/\r\n?/g, "\n").split("\n").map((l) => l.trim()).filter(Boolean);
+  const cells = (line) => line.replace(/^\|/, "").replace(/(?<!\\)\|$/, "").split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|").trim());
+  if (lines.length < 2 || !lines.every((l) => l.includes("|")) || !/^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(lines[1])) return null;
+  const head = cells(lines[0]);
+  if (head.length < 2 || cells(lines[1]).length !== head.length) return null;
+  return [head, ...lines.slice(2).map((l) => {
+    const row = cells(l);
+    return Array.from({ length: head.length }, (_, i) => row[i] || "");
+  })];
+};
+
 //: Rows and columns from a spreadsheet copy (tabs) or a CSV (commas, and then
 //: only when every row has the same number of cells). Null for anything else.
 function pasteGrid(text) {
   const clean = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
   if (!clean.trim()) return null;
+  const piped = pasteGrid.pipe(clean);
+  if (piped) return piped;
   const tabbed = clean.includes("\t");
   const rows = pasteParseDelimited(clean, tabbed ? "\t" : ",");
   if (!tabbed && (rows.length < 2 || rows[0].length < 2 || rows.some((r) => r.length !== rows[0].length))) return null;
@@ -3030,22 +3037,6 @@ function docPasteMatch(text, linePrefix) {
   return lines.map((line, i) => (i && line.trim() ? lead + line : line)).join("\n");
 }
 
-//: Block spacing: a table, a fence or a list needs its own lines. `kind` is
-//: "block" (a blank line either side) or "lines" (a line break either side).
-function docPasteBlockPad(doc, from, to, kind) {
-  const lineStart = doc.lastIndexOf("\n", from - 1) + 1;
-  const lineEnd = doc.indexOf("\n", to) === -1 ? doc.length : doc.indexOf("\n", to);
-  const textBefore = doc.slice(lineStart, from).trim();
-  const textAfter = doc.slice(to, lineEnd).trim();
-  const above = lineStart > 0 ? doc.slice(doc.lastIndexOf("\n", lineStart - 2) + 1, lineStart - 1).trim() : "";
-  const below = lineEnd < doc.length ? doc.slice(lineEnd + 1, doc.indexOf("\n", lineEnd + 1) === -1 ? doc.length : doc.indexOf("\n", lineEnd + 1)).trim() : "";
-  const gap = kind === "block" ? "\n\n" : "\n";
-  return {
-    before: textBefore ? gap : above && kind === "block" ? "\n" : "",
-    after: textAfter ? gap : below && kind === "block" ? "\n" : "",
-  };
-}
-
 const DOC_PASTE_MODES = {
   plain: (text) => pasteClean(text),
   source: (text) => String(text || "").replace(/\r\n?/g, "\n"),
@@ -3061,7 +3052,11 @@ const DOC_PASTE_MODES = {
   },
   link: (text, ctx) => {
     const url = pasteUrl(text);
-    return url ? `[${ctx.selected || pasteLinkLabel(url)}](${url})` : "";
+    if (!url) return "";
+    //: The label: the selection, else the address without its scheme (a host, or a mail address).
+    const host = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
+    const label = ctx.selected || (/^mailto:/i.test(url) ? url.slice(7) : host ? host[1] : url);
+    return `[${label}](${url})`;
   },
   match: (text, ctx) => docPasteMatch(text, ctx.linePrefix),
 };
@@ -3072,6 +3067,22 @@ const DOC_PASTE_PAD = { code: "block", table: "block", quote: "lines", checklist
 //: What `mode` writes for this clipboard text, padded for the document around
 //: the range it replaces. Empty when the clipboard cannot be read that way.
 function docPasteTransform(mode, text, doc, from, to) {
+  //: Block spacing: a table, a fence or a list needs its own lines. `kind` is
+  //: "block" (a blank line either side) or "lines" (a line break either side).
+  function docPasteBlockPad(doc, from, to, kind) {
+    const lineStart = doc.lastIndexOf("\n", from - 1) + 1;
+    const lineEnd = doc.indexOf("\n", to) === -1 ? doc.length : doc.indexOf("\n", to);
+    const textBefore = doc.slice(lineStart, from).trim();
+    const textAfter = doc.slice(to, lineEnd).trim();
+    const above = lineStart > 0 ? doc.slice(doc.lastIndexOf("\n", lineStart - 2) + 1, lineStart - 1).trim() : "";
+    const below = lineEnd < doc.length ? doc.slice(lineEnd + 1, doc.indexOf("\n", lineEnd + 1) === -1 ? doc.length : doc.indexOf("\n", lineEnd + 1)).trim() : "";
+    const gap = kind === "block" ? "\n\n" : "\n";
+    return {
+      before: textBefore ? gap : above && kind === "block" ? "\n" : "",
+      after: textAfter ? gap : below && kind === "block" ? "\n" : "",
+    };
+  }
+
   const ctx = {
     selected: doc.slice(from, to).replace(/\s+/g, " ").trim(),
     linePrefix: doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from),
@@ -3481,6 +3492,79 @@ async function docEditorPaste(view) {
   view.dispatch(view.state.replaceSelection(text.replace(/\r\n?/g, "\n")));
 }
 
+(() => {
+  //: **Selection to a note** (INBOX 1728, the owner: "highlight sections in a document and turn them into or
+  //: append them to a new or existing note"). One body for the selection bar, the right-click menu and the
+  //: code editor. The text goes in as a quote (a fenced block in a code file) with a `[[Title]]` line under it,
+  //: the back link the notes' wiki-link resolver and the document's backlinks already read. Both ends are one
+  //: Undo step: the new note is binned, the appended note gets its old text back.
+  function docSelectionNoteBlock(text, doc) {
+    const title = String(doc?.title || "this document").replace(/[[\]|\n]/g, " ").replace(/\s+/g, " ").trim() || "this document";
+    const code = doc && doc.file_type && doc.file_type !== "md" && doc.file_type !== "txt";
+    const body = code
+      ? `\`\`\`${doc.file_type}\n${text.replace(/\s+$/, "")}\n\`\`\``
+      : text.trim().split("\n").map((line) => (line ? `> ${line}` : ">")).join("\n");
+    return `${body}\n\nFrom [[${title}]]`;
+  }
+
+  async function docSelectionToNote(surface, mode) {
+    const text = surface.value.slice(surface.selectionStart, surface.selectionEnd);
+    if (!text.trim()) return void toast("Select some text first.", "info");
+    const block = docSelectionNoteBlock(text, currentDoc);
+    try {
+      if (mode === "new") {
+        const entry = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: block, defer_filing: true }) });
+        await refreshEntries([entry.id]);
+        const action = pushEntryCreateUndo(entry, "Made a note from a selection");
+        toastAction("Made a note from the selection.", "Undo", async () => {
+          settleUndoFromToast(action);
+          await action.undo();
+        }, { also: { label: "Open", run: () => flashEntry(entry.id) } });
+        return;
+      }
+      if (typeof pickLibraryItemDialog !== "function") return;
+      const chosen = await pickLibraryItemDialog("Add to which note?", { sources: ["note"] });
+      if (!chosen) return;
+      const whole = await fullEntry(chosen.id);
+      const before = { content: whole.content };
+      const after = { content: `${whole.content.replace(/\s+$/, "")}\n\n${block}` };
+      await apiJson(`/entries/${chosen.id}`, { method: "PUT", body: JSON.stringify(after) });
+      const put = (body) => async () => {
+        await api(`/entries/${chosen.id}`, { method: "PUT", body: JSON.stringify(body) });
+        await refreshEntries([chosen.id]);
+      };
+      const action = pushUndo("Added a selection to a note", put(before), put(after));
+      await refreshEntries([chosen.id]);
+      toastAction(`Added to \u201c${chosen.label}\u201d.`, "Undo", async () => {
+        settleUndoFromToast(action);
+        await action.undo();
+      }, { also: { label: "Open", run: () => flashEntry(chosen.id) } });
+    } catch (error) {
+      toast(error.message || "Couldn't save that to a note.", true);
+    }
+  }
+
+  function docSelectionNoteItems(surface) {
+    const none = surface.selectionStart === surface.selectionEnd;
+    const group = "Selection";
+    return [
+      { label: "New note from selection", group, disabled: none, title: "Start a note from the selected text, linked back here", run: () => docSelectionToNote(surface, "new") },
+      { label: "Add to note\u2026", group, disabled: none, title: "Append the selected text to a note you choose, linked back here", run: () => docSelectionToNote(surface, "add") },
+    ];
+  }
+
+  //: Under the selection bar's note button: a snapshot of the selection, because the menu takes focus.
+  function docSelectionNoteMenu(textarea, button) {
+    const frozen = { value: textarea.value, selectionStart: textarea.selectionStart, selectionEnd: textarea.selectionEnd };
+    const at = button.getBoundingClientRect();
+    openMenuAtPoint(docSelectionNoteItems(frozen), "Selection to a note", at.left, at.bottom);
+  }
+
+  //: The block's whole surface (ranked row 37a): what the bar, the menu and the code editor call.
+  Object.assign(window, { docSelectionNoteItems, docSelectionNoteMenu });
+
+})();
+
 function docEditorMenuItems(view, x, y) {
   const [cut, copy] = docClipboardMenuItems(view);
   return [
@@ -3497,6 +3581,7 @@ function docEditorMenuItems(view, x, y) {
         run: () => docPasteSpecial(id),
       })),
     },
+    ...docSelectionNoteItems(docSurface()),
     { label: "Turn into", group: "Block", title: "Change the block to a heading, list, quote or code", run: () => docTurnIntoMenu("doc-content", x, y) },
     {
       label: "Select all",

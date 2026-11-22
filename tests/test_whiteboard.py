@@ -3,11 +3,12 @@
 Written during the §40 audit, because the whiteboard shipped with no tests at
 all and four of the five things asserted here were broken. Each test names the
 failure it caught rather than the method it calls, a test called
-`test_create_node` tells the next session nothing about why it exists.
+`test_create_node` tells a reader nothing about why it exists.
 """
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import pytest
 from fastapi.testclient import TestClient
 
@@ -393,6 +394,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
     assert state["objects"][0]["data"] == {
         "content": "Meeting notes", "color": "#ffcc00", "font_size": 18, "url": None,
         "bg": None, "border_color": None,
+        # Added with the picture border (wbformat2); None until set.
+        "border_width": None,
         # Added with the Format panel's fill and line transparency; None until set.
         "bg_alpha": None,
         "line_alpha": None,
@@ -416,6 +419,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # Added with the Format panel's Direction and Text opacity (INBOX 1510a).
         "text_dir": None,
         "text_alpha": None,
+        # Added with the Format panel's Text shadow (L-whiteboard-38); None until set.
+        "text_shadow": None,
         # Added with the mind map's pinned line ends (K31); None until pinned.
         "edge_from": None,
         "edge_to": None,
@@ -435,6 +440,12 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "icon": None,
         "link": None,
         "edge_label": None,
+        "edge_label_dx": None,
+        "edge_label_dy": None,
+        "edge_label_size": None,
+        "edge_label_bold": None,
+        "edge_label_color": None,
+        "edge_label_chip": None,
         "edge_style": None,
         "edge_dashed": None,
         # And with the hand-resized topic (MINDMAP_PLAN.md item 177).
@@ -451,6 +462,7 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # And with a boundary and a summary (MINDMAP_PLAN decisions 19, 20).
         "boundary": None,
         "boundary_label": None,
+        "boundary_set": None,
         "summary": None,
         "summary_span": None,
         # And with a structure per branch (canvasdepth2, XMind's).
@@ -495,6 +507,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "header": None,
         # And a table's column widths (wb5).
         "col_widths": None,
+        # And with merged cells, striped rows and row heights (L273).
+        "merges": None, "stripes": None, "row_heights": None,
         # Its custom properties, the Format panel's Data tab (canvasdepth2).
         "props": None,
         "page": None,
@@ -503,6 +517,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "library_ref": None,
         #: A map topic's due day (MINDMAP decision 37); None on a board text.
         "due": None,
+        # Added with a map topic's due time (L371); None until set.
+        "due_time": None,
         #: Its start day (the Gantt view) and its audio note (a recording id); None on a board text.
         "start": None,
         "recording": None,
@@ -538,6 +554,10 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "contrast": None,
         # And with a board item's voting dots (INBOX 1313, plan row 14).
         "votes": None,
+        # And with tags, a frame's folded height (structure batch) and a lane's Stack (layouts batch).
+        "tags": None, "fold_h": None, "stack": None,
+        # And with a PDF page's file (L-whiteboard-2) and a frame's property binding (L-whiteboard-12).
+        "pdf": None, "pdf_name": None, "binds": None,
     }
 
     moved = board_client.put(
@@ -693,12 +713,11 @@ def test_moving_a_card_keeps_it_on_its_board(ai_client, session):
 
 def test_the_frontend_sends_the_board_when_it_moves_a_card():
     """The guard for the half of that bug that lives in the browser."""
-    from tessellate.api.app import FRONTEND_DIR
 
     # The whiteboard subsystem moved out of app.js into its own file, loaded
     # by a second <script> tag, see index.html, so this comment now lives
     # in whiteboard.js, not app.js.
-    whiteboard_js = (FRONTEND_DIR / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    whiteboard_js = frontend_text("whiteboard.js")
     save = whiteboard_js[whiteboard_js.index("// Sync back to API.") :][:900]
     assert "board_id" in save, "the coordinate save must carry the card's board"
 

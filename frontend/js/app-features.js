@@ -2,9 +2,43 @@
 // of dashboard.js (Brief bootdiet, 2026-10-10): about 195 lines of strings the
 // first screen never reads. Lazy (app.js `LAZY_MODULES.appPalette`); the
 // palette's bundle names it too, so `paletteFeatureRows` always finds it, and
-// `openFeatures`, Quick access and `paletteAbouts` (settings-panes.js) wait
+// `openFeatures`, Quick access and `paletteAbouts` (below) wait
 // for it. It is not a `LAZY_ENTRY_POINTS` stand-in on purpose: its callers read
 // the array straight away, and a stand-in returns a promise.
+//: Two of the palette's row helpers live here, not in settings-panes.js (boot): every caller
+//: (the palette, Quick access, Tools and features) loads this file first, and the boot
+//: scripts have no room (test_static_compression.py).
+//: **A row's keycap: the way to run it without the palette.** A chord the
+//: row declares by its registry name (`chord`, read from the live
+//: `shortcuts` table, so a rebinding shows here as it is), the editor's own
+//: rows' `keys`, and for a tab the "t" then a letter jump. A palette that only
+//: performs an action teaches nobody the key for it.
+function paletteKeys(match) {
+  if (match.keys) return match.keys;
+  if (match.chord && typeof shortcuts !== "undefined") return shortcuts[match.chord]?.keys || "";
+  if (match.tab && typeof TAB_JUMP_KEYS !== "undefined") {
+    const letter = Object.keys(TAB_JUMP_KEYS).find((key) => TAB_JUMP_KEYS[key] === match.tab);
+    if (letter) return `T ${letter.toUpperCase()}`;
+  }
+  return "";
+}
+
+//: **A row's one line of what it does.** Its own `about` first; then the
+//: line "Tools and features" already writes for the same place (the rows
+//: share their `reveal` with `featureCatalog`, so the two lists cannot
+//: describe one control two ways); then the shortcut registry's label.
+function paletteAbouts() {
+  const abouts = new Map();
+  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
+  for (const group of catalog) {
+    for (const item of group.items || []) {
+      if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);
+    }
+  }
+  return abouts;
+}
+
+
 // --- the "everything this app does" browser ----------------------------------
 // Grouped, searchable, and every entry either jumps you there or explains
 // itself: the fastest way to discover features you didn't know existed.
@@ -155,6 +189,7 @@ function featureCatalog() {
       { name: "Rediscover", desc: "Three faded notes a day, with the reason each one surfaced.", reveal: "widget-rediscover" },
       { name: "Loose ends", desc: "How much of the notebook is connected, and the oldest notes that are not.", reveal: "widget-orphans" },
       { name: "Unfinished", desc: "Notes with checklist items still waiting to be ticked.", reveal: "widget-unfinished" },
+      { name: "Category mix", desc: "What share of your notes each category holds, as a pie.", reveal: "widget-mix" },
       { name: "Writing pace", desc: "How many words you have written each day this fortnight.", reveal: "widget-pace" },
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
       { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },
@@ -403,7 +438,7 @@ function paletteCommands() {
       // started from a file you had already found, which is no answer to "I
       // want to read something". `openPageReader` (library.js) opens it on what
       // you were last reading, else your newest readable file; the decision and
-      // what was deliberately not built is in UI_MODERNISATION_PLAN.md, "how
+      // what was deliberately left out is in UI_MODERNISATION_PLAN.md, "how
       // the page reader is reached".
       //: "OCR" in the words (the owner, 2026-10-10: searching "ocr" in the
       //: palette, Find anything and Quick access's list found nothing).
@@ -590,7 +625,7 @@ function quickCatalogue(only = null) {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
     const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
-    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are not built (5 to 19 ms at 4x
+    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are skipped (5 to 19 ms at 4x
     //: on every return to the dashboard, which asked for five tiles; INBOX 1778 d).
     if (only && !only.has(key)) continue;
     const parts = key && paletteRowParts(row, abouts);

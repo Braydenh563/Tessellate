@@ -9,6 +9,7 @@ rules. Run in node against the source; the browser half is the pair sweep
 recorded in `docs/roadmap/agent-remaining/wbdog-1026.md`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -17,7 +18,7 @@ from pathlib import Path
 import pytest
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-SOURCE = "\n".join((JS / f"{name}.js").read_text(encoding="utf-8") for name in ("whiteboard", "whiteboard-library"))
+SOURCE = "\n".join(frontend_text(f"{name}.js") for name in ("whiteboard", "whiteboard-library"))
 
 
 def _function(name: str) -> str:
@@ -78,6 +79,15 @@ def test_a_tie_breaks_as_a_reload_paints_notes_then_objects_then_id() -> None:
     }
     assert _keys(state) == ["sketch:3", "sketch:9", "node:2", "node:20", "object:1"]
 
+
+def test_an_item_still_waiting_for_its_id_ties_as_the_newest() -> None:
+    """L-mindmap-13 (2026-11-13): a map topic is made at z 1 like its siblings
+    and holds a negative id until the server answers. By that id it tied below
+    every topic, so each Tab moved all 41 topics' stack rank up by one (41
+    z-index writes before the new topic was typeable) and back again on the
+    answer."""
+    state = {"sketches": [], "nodes": [], "objects": [{"id": 5, "kind": "topic", "z": 1}, {"id": 9, "kind": "topic", "z": 1}, {"id": -1, "kind": "topic", "z": 1}, {"id": -2, "kind": "topic", "z": 1}]}
+    assert _keys(state) == ["object:5", "object:9", "object:-1", "object:-2"]
 
 def test_a_card_over_a_stroke_and_a_stroke_over_a_card() -> None:
     state = {
@@ -172,6 +182,6 @@ def test_inserts_make_their_drawings_on_top_not_at_a_fixed_z() -> None:
 def test_the_live_stroke_paints_over_the_cards_while_it_is_drawn() -> None:
     """A new stroke lands on top, so the path drawn under the pointer is in
     the overlay layer above the cards, not the base layer under them."""
-    text = (JS / "whiteboard.js").read_text(encoding="utf-8")
-    assert 'document.getElementById("wb-zoom-group").appendChild(currentDrawPath)' not in text
-    assert 'document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath)' in text
+    text = frontend_text("whiteboard.js")
+    assert 'wbInstances.layer("wb-zoom-group").appendChild(wbPen.path)' not in text
+    assert 'wbInstances.layer("wb-overlay-zoom-group").appendChild(wbPen.path)' in text  # L634: the pen state is one `wbPen` holder

@@ -1003,6 +1003,12 @@ async function loadReminders() {
     count.className = "group-count";
     count.textContent = items.length;
     heading.append(text, count);
+    if (label === "Overdue") {
+      const triage = smallButton("ph:funnel Triage", "Keep, drop or reschedule each", () =>
+        loadReminders.act("triage", items)
+      );
+      heading.appendChild(triage);
+    }
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
@@ -1070,46 +1076,10 @@ function updateReminderBadge(reminders) {
   badge.title = `${nounCount(due, "reminder")} due`;
 }
 
-async function clearDoneReminders() {
-  //: To the end, or this clears the first page's done rows and reports that
-  //: count as if it were all of them.
-  const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Couldn't load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
-  const done = all.filter((r) => r.done);
-  if (!done.length) return;
-  if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
-    return;
-  }
-  //: One Undo for the lot (INBOX 537): they go to the recycle bin and come
-  //: back from it (WORLD_CLASS_PLAN 5 item 10).
-  //: Every delete is tried; how many failed is said once (audit 2026-10-05,
-  //: FE-12), where a silent catch let them come back unexplained, with a Try
-  //: again for just those rows.
-  const drop = async (rows = done) => {
-    const results = await Promise.all(
-      rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
-    );
-    const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't delete ${left.length} of the reminders.`, true, { action: ["Try again", () => drop(left)] });
-    loadReminders();
-  };
-  const remake = async (rows = done) => {
-    const results = await Promise.all(
-      rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
-    );
-    const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't bring back ${left.length} of the reminders.`, true, { action: ["Try again", () => remake(left)] });
-    loadReminders();
-  };
-  await drop();
-  const action = pushUndo(`Cleared ${done.length} completed reminders`, remake, drop);
-  toastAction(`Cleared ${done.length} completed reminder${done.length === 1 ? "" : "s"}.`, "Undo", async () => {
-    settleUndoFromToast(action);
-    await remake().catch((e) => toast(e.message, true));
-  });
-}
-
 let editingReminderId = null;
+
+//: Lazy acts (reminder-triage.js) arrive as events, so the file adds no global names.
+loadReminders.act = (name, detail) => lazyScript("/js/reminder-triage.js").then(() => document.dispatchEvent(new CustomEvent(`reminders:${name}`, { detail })));
 
 function reminderItem(reminder, label) {
   const li = document.createElement("li");
@@ -1152,11 +1122,15 @@ function reminderItem(reminder, label) {
       pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
       loadReminders();
       toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+      reminder.entry_id && loadReminders.act("outcome", reminder);
       return;
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
-    if (checkbox.checked) atlasOn("done");
+    if (checkbox.checked) {
+      atlasOn("done");
+      reminder.entry_id && loadReminders.act("outcome", reminder);
+    }
   });
   row.appendChild(checkbox);
 
@@ -1519,7 +1493,7 @@ async function reminderPutUndoably(id, label, before, after) {
   };
   await put(after)();
   //: `restore`: the time it goes back to may be past (an overdue one edited).
-  pushUndo(label, put({ ...before, restore: true }), put({ ...after, restore: true }));
+  return pushUndo(label, put({ ...before, restore: true }), put({ ...after, restore: true }));
 }
 
 //: Create's inverse is the bin, and its redo the bin's restore, so the

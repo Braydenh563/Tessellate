@@ -1,10 +1,9 @@
 // diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
-// `LAZY_MODULES.diagramBuilder` (documents-mermaid.js). Blocks, connector rows and the live picture; each gesture is one
-// model change printed to the source (`io.set`), so the source is the only state and its history the undo. Pure half:
-// diagram-ops.js; Add library: diagram-library.js; drag: diagram-pointer.js. Held to 12 KB gzipped: new behaviour goes
-// in lazy files. One closure, one export: `diagramModel.builder`.
+// `LAZY_MODULES.diagramBuilder`. Blocks, connector rows and the live picture; each gesture is one model change printed
+// to the source (`io.set`), so the source is the only state and its history the undo. Held to 12 KB gzipped: new
+// behaviour goes in lazy files. One export: `diagramModel.builder`.
 (() => {
-  //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
+  //: The pure half (diagram-ops.js): keys name blocks, every change is one call.
   let diagramOps;
 
   // ---------------------------------------------------------------------------
@@ -64,7 +63,7 @@
       const stamp = ++S.drawn;
       //: Empty: no block and only a header; a kept line is still drawn, so the picture says why.
       const blank = S.k ? S.k.blank(S.m) : S.m && !S.m.nodes.length;
-      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
+      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b|gantt\b|pie\b|stateDiagram|classDiagram|erDiagram\b)/i.test(l));
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
@@ -281,7 +280,7 @@
     return icon("ph-stack dgm-group-icon");
   }
 
-  //: A connector row: the words go to the block they point at (joins `go`); its ⋯ is a kebab kept off the whole row.
+  //: A connector row: the words go to the block they point at (joins `go`).
   function joinChip(S, edge, index) {
     const line = el("div", "dgm-joinline");
     const chip = el("button", "dgm-join");
@@ -315,6 +314,7 @@
         group: "edit",
       });
     }
+    items.push(...(diagramModel.style?.items?.(S, helpers, key) || []));
     items.push(
       { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },
       { label: "ph:arrow-down Move down", run: () => stepBlock(S, key, 1), group: "move" },
@@ -339,7 +339,7 @@
 
   //: A shape, or a group, added after the block `after`, inside the group `into`,
   //: or (neither) after the selection. `edit` opens its label for typing.
-  //: `from` is a block id to connect to the new one, in the same change (Connect to…, A new block).
+  //: `from` is a block id to connect to the new one, in the same change.
   function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = undefined, label = "" } = {}) {
     const m = S.m;
     const sel = after && !into ? after : null;
@@ -347,7 +347,7 @@
     const next = sel ? diagramOps.sisters(m, sel) : null;
     const sisters = next ? next.keys.filter((k) => k[0] === (group ? "g" : "n")) : [];
     const ahead = before !== undefined ? before : sel && sisters.includes(sel) ? sisters[sisters.indexOf(sel) + 1] || null : null;
-    //: Joined after the picked (or last) block, as "in the order the chart flows" says; a drop, a group or an explicit `from` is left as it is.
+    //: Joined after the picked (or last) block; a drop, a group or an explicit `from` is left as it is.
     if (from === undefined) from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null;
     const id = group ? diagramOps.addGroup(m, { parent, before: ahead }) : diagramOps.addNode(m, { shape, text, group: parent, before: ahead });
     if (!id) return say(S, group ? "That group cannot be added." : `A diagram holds at most ${diagramOps.MAX} blocks.`);
@@ -357,7 +357,10 @@
     if (from) diagramOps.join(m, from, id, { label });
     commit(S, `Added ${group ? "a group" : `a ${SHAPE_LABEL[shape].toLowerCase()}`}${sel ? ` after ${nameOf(S, sel)}` : ""}${from ? ` and connected ${titleOf(S, from)} to it` : ""}.`);
     //: List folded: named over the picture (1661 m, edges.js `askNode`).
-    if (edit) (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
+    const name = () => edit && (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
+    //: After a decision the arrow's words are asked first (R12), then the name.
+    const edge = from && !group && edit && m.edges.find((e) => e.from === from && e.to === id);
+    edge && diagramOps.needsLabel(m, edge) ? joins(S, "ask", edge).then(name) : name();
     return key;
   }
 
@@ -524,20 +527,19 @@
   //: exports. They run from diagram-embed.js, fetched on the first press.
   function more(S) {
     const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
-    const fold = [];
-    //: Suggest folds in here on a phone.
-    if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
+    //: Suggest folds in here on a phone; at 480 px or less Direction, Redo and Ask too (diagram-kindbar.js, L-documents-7).
+    const { rows: fold, key } = diagramModel.kindbar.fold(S, DIRS, suggestMenu);
     const mine = S.io.menu || [];
     const menu = kebabMenu([...mine, ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
-    menu.dataset.rows = mine.map((row) => row.label).join("|");
+    menu.dataset.rows = key;
     return menu;
   }
 
-  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt, keeping the Tab stop.
+  //: The host's rows can depend on the diagram: after a redraw that changes them the menu is rebuilt.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
-    if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;
+    if (!old || old.dataset.rows === diagramModel.kindbar.fold(S, DIRS).key) return;
     const next = more(S);
     next.querySelector("button").tabIndex = old.querySelector("button").tabIndex;
     old.replaceWith(next);
@@ -645,7 +647,7 @@
   //: flowchart path above never reads it. Any other text is a flowchart's, or a picture alone.
   function kindOf(text) {
     const first = diagramModel.front(String(text || "").replace(/\r/g, "")).rest.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("%%"));
-    const hit = /^(mindmap|timeline|sequenceDiagram)\b/i.exec(first || "");
+    const hit = /^(mindmap|timeline|sequenceDiagram|gantt|pie|stateDiagram|classDiagram|erDiagram)\b/i.exec(first || "");
     return hit ? hit[1].toLowerCase().replace("diagram", "") : "flowchart";
   }
   //: What the kinds' panes borrow: the same DOM helpers, so the two read as one pane.
@@ -657,17 +659,18 @@
     //: The renderer and the toolbar fetch with the first batch.
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
+    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline"), ensureModule("diagramStyle")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     Object.assign(SHAPE_LABEL, diagramOps.LABEL);
     Object.assign(SHAPE_TEXT, diagramOps.TEXT);
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
-    if (kind === "flowchart" && !(await early).every(Boolean)) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
+    if (!(await early).every(Boolean) && kind === "flowchart") return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
+      if (!(await diagramModel.kinds.load(kind))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
       S = diagramModel.kinds.show(host, io, text, kind, kit);
     } else {
       S = panes.get(host.querySelector(":scope > .dgm"));
@@ -679,7 +682,7 @@
     }
     if (S && (await ensureModule("diagramAi"))) diagramModel.ai.wire(S, helpers);
     if (S) refreshMore(S);
-    //: A diagram page (its io has the document's key; the dialog's has none) gets Export in its head (embed.headExport).
+    //: A diagram page (its io has a key; the dialog's has none) gets Export in its head.
     if (S && io.key && (await ensureModule("diagramEmbed"))) diagramModel.embed.headExport();
     //: The phone's palette sheet and pinch (diagram-touch.js).
     if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);

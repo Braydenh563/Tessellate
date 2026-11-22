@@ -1,15 +1,8 @@
 """CHAT_PLAN Phase 6, the deterministic engine (Brief 39): the executable spec.
 
-Strict-xfail until an Opus session builds each step (the contract of
-tests/test_events.py and tests/test_learned_spec.py). Every test here fails
-today, for the reason in its marker; when a step lands, its tests XPASS, which
-strict mode turns into a failure, and the session removes that marker, and
-only that marker, once the test passes on its own.
-
-Modules that do not exist yet (`ai.factgraph`, `ai.realise`, `ai.commands`)
-are imported inside the test body, so the test xfails with ImportError today
-and the file always collects. Names below are the contract; a session that
-needs a different shape changes the test in the same commit, with the reason.
+Written as strict-xfail spec tests before the engine existed (the contract
+of tests/test_events.py and tests/test_learned_spec.py); every step is built,
+so every marker is gone and each test passes on its own.
 Shared notes live in tests/fixtures/composer/phase6_seed.json (today is
 2026-10-06, a Tuesday).
 """
@@ -29,10 +22,6 @@ SEED = json.loads((Path(__file__).parent / "fixtures" / "composer" / "phase6_see
 TODAY = date.fromisoformat(SEED["today"])
 NOW = datetime(TODAY.year, TODAY.month, TODAY.day, 12, 0)
 NOTES = SEED["notes"]
-
-
-def _spec(reason: str):
-    return pytest.mark.xfail(strict=True, reason=reason)
 
 
 def _notes(*ids: int) -> list[dict]:
@@ -197,6 +186,72 @@ def test_no_insight_on_two_notes():
     assert [m for m in _measures(_ask("tell me about golf", _notes(3, 4, 5, 6))) if any(h in m for h in hedged)]
     result = _ask("tell me about golf", _notes(3, 4))
     assert not [m for m in _measures(result) if any(h in m for h in hedged)]
+
+
+# Owner decided 2026-11-12 (L783): keep all six insight rules. One spec case each
+# (the rules' fixed phrases and thresholds, a fixed TODAY); no behaviour change.
+
+
+def _day_note(i: int, content: str, day: str) -> dict:
+    return {"id": i, "content": content, "created_at": day, "tags": []}
+
+
+def test_insight_rule_streak_needs_three_consecutive_weeks_ending_now():
+    from tessellate.ai import insights
+
+    weekly = [_day_note(i, "# Run\n\nA run by the river.", d) for i, d in ((1, "2026-09-21"), (2, "2026-09-28"), (3, "2026-10-05"))]
+    assert insights.streak("run", weekly, TODAY).text == "You have written about run 3 weeks running."
+    assert insights.streak("run", weekly[:2], TODAY) is None
+
+
+def test_insight_rule_drift_is_a_plan_over_thirty_days_old_with_no_later_note():
+    from tessellate.ai import insights
+
+    plan = _day_note(1, "# Fence\n\nI plan to repaint the shed fence.", "2026-08-01")
+    found = insights.drift([plan], TODAY)
+    assert [i.rule for i in found] == ["drift"] and found[0].slots["since"] == "1 August"
+    assert not insights.drift([_day_note(1, plan["content"], "2026-09-30")], TODAY)
+
+
+def test_insight_rule_contrast_is_a_preference_then_the_other_way():
+    from tessellate.ai import insights
+
+    notes = [_day_note(1, "# Desk\n\nI like the standing desk.", "2026-08-01"),
+             _day_note(2, "# Desk again\n\nI don't like the standing desk any more.", "2026-09-30")]
+    found = insights.contrast(notes, TODAY)
+    assert [i.rule for i in found] == ["contrast"] and found[0].slots["first"] == "1 August" and found[0].slots["last"] == "30 September"
+    assert not insights.contrast(notes[:1], TODAY)
+
+
+def test_insight_rule_load_is_a_week_with_twice_the_median_and_four_notes():
+    from tessellate.ai import insights
+
+    quiet = [_day_note(i, "# Day\n\nA quiet day.", d) for i, d in ((1, "2026-09-07"), (2, "2026-09-14"), (3, "2026-09-21"))]
+    busy = [_day_note(10 + i, "# Busy\n\nA busy day.", "2026-09-29") for i in range(5)]
+    found = insights.load(quiet + busy, TODAY)
+    assert found.rule == "load" and found.slots["count"] == 5 and found.slots["usual"] == 1
+    assert insights.load(quiet + busy[:3], TODAY) is None  # under four notes: silence
+
+
+def test_insight_rule_time_of_day_needs_three_notes_that_say_after_work():
+    from tessellate.ai import insights
+
+    after = [_day_note(i, "# Golf\n\nGolf after work.", d) for i, d in ((1, "2026-09-05"), (2, "2026-09-15"), (3, "2026-09-25"))]
+    assert ", three of them after work" in insights.recurrence("golf", after, TODAY).text
+    mixed = [after[0], after[1], _day_note(3, "# Golf\n\nGolf on Saturday morning.", "2026-09-25")]
+    assert "after work" not in insights.recurrence("golf", mixed, TODAY).text
+
+
+def test_every_insight_template_slot_is_typed_and_fired_slots_hold_their_kind():
+    import string
+
+    from tessellate.ai import composer_tables, insights
+
+    for rule, template in composer_tables.INSIGHT_TEMPLATES.items():
+        names = {name for _lit, name, _spec, _conv in string.Formatter().parse(template) if name}
+        assert names and names <= set(composer_tables.INSIGHT_SLOTS), rule
+    found = insights.streak("run", [_day_note(i, "# Run\n\nA run.", d) for i, d in ((1, "2026-09-21"), (2, "2026-09-28"), (3, "2026-10-05"))], TODAY)
+    assert isinstance(found.slots["weeks"], int) and composer_tables.INSIGHT_SLOTS["weeks"] == "count"
 
 
 # --- Decision 33: the realiser --------------------------------------------------------

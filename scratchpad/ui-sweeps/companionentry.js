@@ -39,7 +39,7 @@ const REDUCED = !!process.env.REDUCED;
     const tick = () => {
       if (!hooked && typeof window.nameMarkBuddyPut === 'function') {
         hooked = true;
-        for (const name of ['nameMarkBuddyPut', 'nameMarkBuddyMoveTo', 'nameMarkBuddyEnter', 'syncNameMarkBuddy', 'nameMarkBuddyRideBox']) {
+        for (const name of ['nameMarkBuddyPut', 'nameMarkBuddyMoveTo', 'nameMarkBuddyEnter', 'syncNameMarkBuddy', 'nmb.sweep.nameMarkBuddyRideBox']) {
           const f = window[name];
           window[name] = function (...args) {
             const st = (new Error().stack || '').split('\n').slice(2, 6).map((s) => s.trim().replace(/^at /, '').replace(/\(.*\/(\w+\.js)\?[^:]*:(\d+):\d+\)/, '$1:$2')).join(' < ');

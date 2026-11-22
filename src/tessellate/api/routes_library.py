@@ -133,7 +133,7 @@ _CAPTION_ECHO = re.compile(r"^([^\n!][^\n]{0,200})\n+!\[\1\]\([^)\n]{0,500}\)[ \
 
 def _clip(text: str, limit: int = PREVIEW_CHARS) -> str:
     # A note's or document's `---` properties block is data about it, never
-    # its opening words (GRAPH_PLAN, "Still open after KG1 to KG9").
+    # its opening words (GRAPH_PLAN, "After KG1 to KG9").
     text = _CAPTION_ECHO.sub(r"\1", readable_embeds(strip_properties(text or "")))
     if len(text) > CLIP_WINDOW:
         end = text.rfind("\n", 0, CLIP_WINDOW)

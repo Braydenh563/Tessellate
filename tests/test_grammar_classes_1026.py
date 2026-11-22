@@ -4,7 +4,7 @@ The owner's reports were three cases of one thing: the checker marking what a
 note legitimately contains. "something" inside a link (K11), "10-20 min"
 read as "minimum" and whole pasted list lines underlined (K4b), and "the
 grammar and spellchecker need a major upgrade" (K4). Measured on
-`tests/grammar_fixture_1026.json`, 85 realistic note lines that contain no
+`tests/fixtures/grammar/grammar_fixture_1026.json`, 85 realistic note lines that contain no
 mistake and 33 that contain one, through `tests/_grammar_harness.js`: the
 page's own prose pipeline with the real Harper worker, in node. Before: 61
 findings on 39 clean lines (Harper 46, the dictionary 13, the rules 2) and
@@ -16,6 +16,7 @@ What the harness cannot see (the underline in the browser, the popover) is
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -27,7 +28,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS = ROOT / "tests" / "_grammar_harness.js"
-FIXTURE = ROOT / "tests" / "grammar_fixture_1026.json"
+FIXTURE = ROOT / "tests" / "fixtures" / "grammar" / "grammar_fixture_1026.json"
 JS = ROOT / "frontend" / "js"
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
@@ -218,7 +219,7 @@ def test_the_switch_is_in_settings_writing_and_the_dictionary_dialog() -> None:
     # The load side moved with loadPrefs into settings-prefs.js (Sh1 P12, fc806ad6d); the save side stays.
     prefs = (JS / "settings-prefs.js").read_text(encoding="utf-8")
     assert 'prefsCache.check_link_text === true' in prefs
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     assert 'check_link_text: event.currentTarget.checked' in docs
 
 

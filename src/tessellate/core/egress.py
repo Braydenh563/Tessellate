@@ -124,7 +124,7 @@ _own_names: frozenset[str] = frozenset()
 #: What the code reaching out was doing, in words (INBOX 807, the owner: "it
 #: isnt really clear exactly what these were for"): "Downloading the English
 #: OCR data", "Web search for 'gaming mouse'". Set by the caller around its
-#: request (`purpose`); per thread, with the newest one still open anywhere
+#: request (`purpose`); per thread, with the newest one still running anywhere
 #: as the fallback, because a library that downloads on its own worker
 #: threads (huggingface_hub) connects from a thread the caller never named.
 _purpose = threading.local()

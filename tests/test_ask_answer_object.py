@@ -2,7 +2,7 @@
 
 Three claims, none of which the DOM-blind suite could make before:
 
-1. A follow-up asked from the Ask tab carries the answer above it. The chips
+1. A next question asked from the Ask tab carries the answer above it. The chips
    under an answer call `askQuestion`, which sends `conversation` as history,
    so this is a claim about `/chat/stream`: the previous turn has to reach the
    model as its own messages, not be summarised into the system prompt or

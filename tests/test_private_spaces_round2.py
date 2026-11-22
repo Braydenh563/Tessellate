@@ -20,6 +20,7 @@ from tessellate.core import deps, spacelock
 
 PASSWORD = "first-pass"
 SECRET = "the locker code is 4715 behind the boathouse"
+#: Leak checks look for "boathouse": a timestamp's microseconds can hold "4715" (CI, 2026-11-12).
 QUESTION = "where is the locker code kept"
 PLACEHOLDER = "A private note"
 
@@ -111,7 +112,7 @@ def test_a_chat_anywhere_else_never_reads_them(ai_signed_in, fake_ollama):
         got = client.post("/chat", json={"question": QUESTION}, headers=_in(where))
         assert got.status_code == 200, got.text
         assert note_id not in [row["id"] for row in got.json()["raw_results"]]
-    assert "4715" not in _said_to_model(fake_ollama)
+    assert "boathouse" not in _said_to_model(fake_ollama)
 
 
 def test_a_chat_inside_a_locked_private_space_reads_nothing(ai_signed_in, fake_ollama):
@@ -122,7 +123,7 @@ def test_a_chat_inside_a_locked_private_space_reads_nothing(ai_signed_in, fake_o
     _lock(client)
     got = client.post("/chat", json={"question": QUESTION}, headers=_in(space))
     assert note_id not in [row["id"] for row in got.json().get("raw_results", [])]
-    assert "4715" not in _said_to_model(fake_ollama)
+    assert "boathouse" not in _said_to_model(fake_ollama)
 
 
 def test_the_chat_inside_keeps_nothing_in_the_clear(ai_signed_in, fake_ollama):
@@ -180,12 +181,12 @@ def test_the_note_view_shows_a_link_to_a_sealed_note_as_a_private_note(signed_in
     assert got.status_code == 200, got.text
     links = got.json()["links"]
     assert [link["preview"] for link in links if link["entry_id"] == secret] == [PLACEHOLDER]
-    assert "4715" not in got.text
+    assert "boathouse" not in got.text
     connections = client.get(f"/entries/{ordinary}/connections", headers=_in("default"))
     assert connections.status_code == 200, connections.text
     rows = connections.json()["outgoing"] + connections.json()["incoming"]
     assert [row["preview"] for row in rows if row["id"] == secret] == [PLACEHOLDER]
-    assert "4715" not in connections.text
+    assert "boathouse" not in connections.text
 
 
 def test_the_list_shows_it_the_same_way(signed_in):
@@ -202,7 +203,7 @@ def test_the_graph_draws_a_private_note_with_no_title(signed_in):
     for where in ("default", "all"):
         got = client.get("/graph", headers=_in(where))
         assert got.status_code == 200, got.text
-        assert "4715" not in got.text
+        assert "boathouse" not in got.text
         body = got.json()
         locked = [node for node in body["nodes"] if node.get("type") == "private"]
         assert [node["preview"] for node in locked] == [PLACEHOLDER]
@@ -220,7 +221,7 @@ def test_backlinks_show_a_sealed_source_as_a_private_note(signed_in):
     _lock(client)
     got = client.get(f"/entries/{ordinary}/backlinks", headers=_in("default"))
     assert got.status_code == 200, got.text
-    assert "4715" not in got.text
+    assert "boathouse" not in got.text
     assert [(row["kind"], row["title"]) for row in got.json()["links"] if row["id"] == secret] == [("private", PLACEHOLDER)]
 
 

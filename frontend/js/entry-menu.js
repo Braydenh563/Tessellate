@@ -6,10 +6,8 @@
 // finds it in. About 50 nodes per menu, built once per card on its first open.
 
 function fillEntryMenu(menu, entry) {
-  // Kept flat: the three actions used often enough, or serious enough (a
-  // delete), that burying them a level down would cost more than the
-  // grouping below saves. Everything else groups into three side flyouts, 
-  // asked for directly, to cut what had grown into a 15-item flat list.
+  // The note's own actions; the assembly at the end picks them into
+  // decision 64's four groups by label.
   const topLevel = [
     // Direct instruction: a way into multi-select from the row itself,
     // not only the toolbar's own "Select" button: which is real and
@@ -366,28 +364,46 @@ function fillEntryMenu(menu, entry) {
     run: () => binNoteWithUndo(entry),
   };
 
-  //: Three groups, broken by the same hairline `kebabMenu` draws for a
-  //: grouped menu (DESIGN.md: past five rows a menu is grouped): what you
-  //: do to this note, the three families that open further, and the two
-  //: that put it away. Ten rows read as one list before this (menus.js).
+  //: **Four groups, under nine rows** (WORLD_CLASS decision 64, L-world-class-129:
+  //: "a menu over nine items is grouped, and the note menu's groups are Atlas,
+  //: structure, share, destructive, in that order"). Measured before: ten rows
+  //: at the top, eleven with Headings. Now eight: Atlas; Select, Move to
+  //: category, Connect, Add; Share and export; Archive and Move to bin. Each
+  //: group is broken by the hairline `kebabMenu` draws for a grouped menu.
   const rule = () => {
     const sep = document.createElement("div");
     sep.className = "menu-sep";
     sep.setAttribute("role", "separator");
     return sep;
   };
-  //: History and Download .md are the two rarest rows: one flyout; Connections joins Connect (INBOX 1469).
-  const keep = topLevel.splice(-2);
-  const connections = topLevel.pop();
-  for (const item of topLevel) menu.appendChild(buildMenuItemButton(item));
-  menu.appendChild(buildMenuGroupButton("ph:clock-counter-clockwise History and export", keep));
-  menu.appendChild(rule());
+  const named = (items, word) => items.find((item) => item.label.endsWith(` ${word}`));
+  const select = named(topLevel, "Select");
+  const move = named(topLevel, "Move to category");
+  const headings = named(topLevel, "Headings");
+  const connections = named(topLevel, "Connections");
+  //: Who can read it, a copy of it and where it goes: the share group.
+  //: The Connect rows that send the note somewhere else join it; the rest
+  //: of Connect is links and places.
+  const shareWords = ["Add to a document", "Add to a board or map", "Expand into a document", "Copy wiki link", "Copy app link"];
+  const share = topLevel.filter((item) => ![select, move, headings, connections].includes(item));
+  const shareLinks = connectItems.filter((item) => shareWords.some((word) => item.label.endsWith(` ${word}`)));
+  const connect = connectItems.filter((item) => !shareLinks.includes(item));
   //: A private note never goes to a model: the server refuses retitling
   //: and re-filing one, so the menu does not offer what would only toast
   //: a refusal (sweep 1004).
-  if (aiItems.length) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions", aiItems));
-  menu.appendChild(buildMenuGroupButton("ph:link Connect", [connections, ...connectItems]));
+  if (aiItems.length) {
+    menu.appendChild(buildMenuGroupButton("ph:sparkle Atlas", aiItems));
+    menu.appendChild(rule());
+  }
+  //: A row found by its label may be missing (renamed, or not offered for
+  //: this note): it is skipped rather than throwing, which left the whole
+  //: menu empty (review 5907752577).
+  if (select) menu.appendChild(buildMenuItemButton(select));
+  if (move) menu.appendChild(buildMenuItemButton(move));
+  menu.appendChild(buildMenuGroupButton("ph:link Connect", [connections, headings, ...connect].filter(Boolean)));
   menu.appendChild(buildMenuGroupButton("ph:plus Add", addItems));
+  menu.appendChild(rule());
+  menu.appendChild(buildMenuGroupButton("ph:export Share and export", [...share, ...shareLinks]));
   menu.appendChild(rule());
   menu.appendChild(buildMenuItemButton(archive));
   menu.appendChild(buildMenuItemButton(danger));
@@ -562,4 +578,12 @@ async function translateNoteInDesk(entry) {
   saveDraftLocally();
   toast("Pick the language in the menu beside Draft, then press Draft.");
   $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
+}
+
+//: Start a chat about one note. Named by its title in the words a person
+//: would use, so the agent's own search tools find it, rather than pasting the
+//: whole note into the box.
+function askAtlasAboutNote(entry) {
+  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
+  askAtlasAboutThing("note", name);
 }

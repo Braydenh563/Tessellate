@@ -431,6 +431,7 @@ later; until then search uses keywords. To avoid the download, pull
 | A second grammar checker (LanguageTool) | Grammar and style findings from a local Java program, merged with the built-in checker's; about 252 MB, needs Java already installed |
 | French, German and Spanish spelling (Hunspell) | Spelling checks for a document whose language is set to one of them; a pinned download of 237 to 343 KB each that works offline |
 | Run Python files (Pyodide) | Runs a `.py` document in a sandbox; a pinned download that works offline |
+| Python lint (Ruff) | Underlines unused imports and undefined names in a `.py` document; a pinned download that works offline |
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
 | Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
 | Speaker labels, models (pyannote and WeSpeaker) | The two small models it reads, a pinned 34 MB download kept in the data folder; works offline |
@@ -533,7 +534,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 21,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 23,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

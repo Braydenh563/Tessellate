@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import offers, personal, reading
 from tessellate.core.database import utcnow
-from tessellate.core.deps import get_session
+from tessellate.core.deps import get_config, get_session
 
 router = APIRouter(tags=["reading"])
 
@@ -50,7 +50,7 @@ def read_text(
     one the notes give when none is sent."""
     clock = _clock(tz_offset_minutes, now)
     if not birthday and "birthday" in q.lower():
-        birthday = personal.birthday(personal.notes_of(session), clock.replace(tzinfo=None)) or ""
+        birthday = str(get_config().get_preference("birthday", "") or "") or personal.birthday(personal.notes_of(session), clock.replace(tzinfo=None)) or ""
     context = {key: value for key, value in (("locale", locale), ("surface", surface), ("birthday", birthday)) if value}
     return reading.read(q, now=clock, context=context).json()
 

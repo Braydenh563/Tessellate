@@ -1362,7 +1362,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   let lightboxPreviewSource = null;
 
   // **The AI/manage actions: gated on a media id, and only ever visible
-  // when one is present.** Reported directly, and left open on purpose the
+  // when one is present.** Reported directly, and left for later on purpose the
   // first time this bar was built: rename, describe with AI, read text (two
   // ways) and delete all need a real `MediaUpload` row, and of nine
   // `openLightbox` callers only the Library's own gallery has one to pass.
@@ -2340,7 +2340,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const above = document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden), .confirm-overlay:not(.hidden)");
     if (e.key === "Escape") {
       //: Escape in the zoom field puts its number back (value-field.js); it does not close the viewer.
-      if (!above && !e.target.closest?.(".value-field")) close();
+      //: Spent: closed in capture, the full screen map must not also leave (L-graph-13).
+      if (!above && !e.target.closest?.(".value-field")) (close(), (e.overlaySpent = true));
       return;
     }
     if (copyKey(e, above)) return;

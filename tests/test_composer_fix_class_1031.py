@@ -1,4 +1,4 @@
-"""Five classes the third composer agent left open (composer4-1031, the
+"""Five classes the third composer agent left unfixed (composer4-1031, the
 owner's INBOX 1357: fix the class, each tested several ways, on a fixed clock).
 
 1. A bare total ("what is my total time") asks what it is the total of, never

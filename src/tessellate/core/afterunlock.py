@@ -26,7 +26,7 @@ from tessellate.core import jobs
 
 logger = logging.getLogger("tessellate.afterunlock")
 
-#: How long after the token the deferred work waits, so the answer, the
+#: How long after the token the after-unlock work waits, so the answer, the
 #: browser's first burst of requests and the first paint go through first.
 SETTLE_SECONDS = 1.5
 
@@ -39,6 +39,16 @@ def arm() -> None:
     """The launch has a password: hold the work until someone unlocks."""
     with _lock:
         _state["armed"] = True
+        _state["fired"] = False
+        _pending.clear()
+
+
+def disarm() -> None:
+    """The launch has no password: hold nothing. An app built in the same
+    process after one that armed (the suite builds many) would otherwise
+    inherit the hold and never run its launch work."""
+    with _lock:
+        _state["armed"] = False
         _state["fired"] = False
         _pending.clear()
 

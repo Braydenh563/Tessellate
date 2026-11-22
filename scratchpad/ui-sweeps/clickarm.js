@@ -11,7 +11,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(([k, look]) => { if (look) localStorage.setItem('atlas-look', look); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, [process.env.KIND || 'atlas', process.env.LOOK || '']);
+  await page.evaluate(([k, look]) => { if (look) localStorage.setItem('atlas-look', look); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, [process.env.KIND || 'atlas', process.env.LOOK || '']);
   await page.waitForTimeout(4000);
   const rows = [];
   const bad = [];
@@ -49,7 +49,8 @@ const { boot } = require('./lib.js');
     for (const r of trace) for (const side of ['l', 'r']) {
       const a = r[side];
       const out = a && typeof a.sh === 'number' ? (side === 'r' ? -a.sh : a.sh) : 0;
-      if (out > 60 && a.el > 2) bad.push({ n, t: r.t, side, ...a, act: r.act });
+      // The resting inner bend is 4 to 5 degrees and a lowering arm eases back to it (3, 5, 5 at 87, 74, 61 out), so 2 flagged the settle; the reported bend was +40, so anything past 12 is the bug.
+      if (out > 60 && a.el > 12) bad.push({ n, t: r.t, side, ...a, act: r.act });
     }
     peak.push(Math.min(...trace.map((r) => Math.min(r.r.hy ?? 99, r.l.hy ?? 99))));
   }

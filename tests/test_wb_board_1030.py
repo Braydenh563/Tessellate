@@ -4,10 +4,11 @@ Source-shape checks, each naming the row; the browser numbers are in
 `scratchpad/ui-sweeps/wb1030-board.js`.
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _function(source: str, name: str) -> str:
@@ -62,10 +63,10 @@ def test_b17_link_lookups_parse_each_sketch_once_per_version_of_its_data() -> No
 
 
 def test_b14_branch_export_opens_the_one_export_dialog() -> None:
-    mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    mapjs = frontend_text("whiteboard-map.js")
     branch = _function(mapjs, "wbMapExportBranch")
-    assert "wbExportBoard();" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
-    assert BOARD.count("function wbExportBoard()") == 1
+    assert "wbExportBoard({ branch: true });" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
+    assert BOARD.count("function wbExportBoard(") == 1  # one dialog; it takes { branch } since L267
     assert 'overlay.className = "modal-overlay confirm-overlay wb-export-overlay"' in BOARD
     assert mapjs.count("wb-export-overlay") == 0, "no second export dialog in the map file"
 
@@ -74,3 +75,19 @@ def test_b19_an_arrow_end_on_a_shape_is_bound_to_it() -> None:
     bound = _function(BOARD, "wbBoundArrowData")
     assert 'type: "link-straight"' in bound and "`${name}Id`" in bound, "the end keeps the shape's id, so it reroutes"
     assert "wbBoundArrowData(sx, sy, x, y," in BOARD, "the Arrow and Line tools call it at draw time"
+
+
+def test_l267_a_branch_export_says_export_this_branch() -> None:
+    """L267: the branch's menu row said "Export this branch" and opened a
+    dialog headed "Export this board". The branch hands its title to the one
+    dialog for that one opening; every other way in keeps the board's."""
+    # Merged with the whiteboard branch's own L267 fix (2026-11-14): the branch passes `{ branch: true }`
+    # and the dialog picks its heading from it, so this reads that shape. The intent is unchanged.
+    mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    branch = _function(mapjs, "wbMapExportBranch")
+    assert "wbExportBoard({ branch: true });" in branch
+    dialog = (ROOT / "frontend" / "js" / "whiteboard-export.js").read_text(encoding="utf-8")
+    dialog = dialog[dialog.index("function wbExportBoard(") :]
+    assert 'const heading = branch ? "Export this branch" : "Export this board";' in dialog
+    assert 'overlay.setAttribute("aria-label", heading);' in dialog and "dialogHead(heading, close)" in dialog
+    assert "wbExportBoard.title" not in mapjs + dialog

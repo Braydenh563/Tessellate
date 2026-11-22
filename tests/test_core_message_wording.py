@@ -108,6 +108,7 @@ SOURCES: tuple[Source, ...] = (
     Source("ai/model_manager.py", raises=("ValueError",), functions=("known_feature",)),
     Source("ai/extractor.py", raises=("ValueError",), functions=("build_extraction",)),
     Source("ai/skills.py", raises=("SkillError",)),
+    Source("api/wb_config.py", raises=("ValueError",), consts=("WRONG_KIND",)),
     Source("ai/model_cards.py", returns=("inspect_model_name",), calls=("_bad",)),
     Source("ai/librarian.py", consts=("AI_FAILED_MESSAGE", "OFFLINE_MESSAGE")),
     Source("search/websearch.py", raises=("WebSearchError",)),
@@ -318,6 +319,8 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_board_library.py", "detail"): "_fail's callers pass literals and f-strings of counts and names, which collect() checks",
     ("routes_import.py", "str(exc)"): "TooBig from entry/app_import.py, one fixed sentence",
     ("routes_webclip.py", "NOT_A_PAGE"): "a constant in routes_webclip.py, checked below",
+    ("wb_config.py", "_refusal(exc)"): "api/wb_config.py: its validators' own ValueError sentences or WRONG_KIND, checked in SOURCES",
+    ("wb_convert.py", "detail"): "_refuse's callers pass literals and f-strings of size caps and the format's name",
     ("wb_import.py", "detail"): "one of two literal sentences, chosen by what the XMind archive holds",
     ("routes_backups.py", "str(exc)"): "FileNotFoundError and ValueError from core/backup.py restore_backup",
     ("routes_categories.py", "str(exc)"): "ToolError (ai/tools/categories.py) and ValueError (entry/manager.py)",
@@ -362,6 +365,10 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_voice.py", "message"): "the sentences ai/voice.py remove_model returns, checked in SOURCES",
     ("routes_voice.py", "str(exc)"): "RuntimeError from ai/voice.py transcribe",
     ("routes_webclip.py", "WEB_OFF"): "a constant in routes_webclip.py, checked below",
+    ("routes_bookmarks.py", "WEB_OFF"): "a constant in routes_bookmarks.py, checked below",
+    ("routes_bookmarks.py", "MOVED"): "a constant in routes_bookmarks.py, checked below",
+    ("routes_bookmarks.py", "str(exc)"): "ClipRefused from core/webclip.py, checked in SOURCES",
+    ("routes_webclip.py", "IMAGE_WEB_OFF"): "a constant in routes_webclip.py (a topic picture from a link), checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
     ("routes_chat.py", "why"): "ai/consent_store.py refusal_for_press, fixed sentences checked in SOURCES",
@@ -420,7 +427,7 @@ def test_no_route_literal_tells_the_person_to_run_a_command():
     assert not bad, f"a route detail carries developer vocabulary: {bad}"
 
 
-@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL"), ("routes_hello.py", "NOT_UNLOCKED"), ("routes_hello.py", "NO_LOCALHOST"), ("routes_sync.py", "NO_DEVICE")])
+@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "IMAGE_WEB_OFF"), ("routes_bookmarks.py", "WEB_OFF"), ("routes_bookmarks.py", "MOVED"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL"), ("routes_hello.py", "NOT_UNLOCKED"), ("routes_hello.py", "NO_LOCALHOST"), ("routes_sync.py", "NO_DEVICE")])
 def test_a_route_constant_reads_as_a_sentence(module, name):
     tree = ast.parse((API / module).read_text(encoding="utf-8"))
     texts = []

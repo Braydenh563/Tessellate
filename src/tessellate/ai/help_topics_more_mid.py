@@ -452,7 +452,8 @@ MID_TOPICS.extend(
                 "icons sit above the text, the rest behind More. Related notes "
                 "fold into one \"suggested links\" line until you open it. The foot "
                 "has Attach a link (pick a saved bookmark) and the word count at "
-                "the left and Cancel and Save at the right. On a focused note, F2 edits it, Delete deletes it, and "
+                "the left and Cancel and Save at the right. In the text, Ctrl+F finds and Ctrl+H replaces. "
+                "On a focused note, F2 edits it, Delete deletes it, and "
                 "Home and End jump to the ends of the list. In a window 1280 wide "
                 "or more, the note you are reading (the one you clicked, else the "
                 "one in view as you scroll) has a Connections column beside the "
@@ -519,23 +520,36 @@ MID_TOPICS.extend(
             "keywords": (
                 "bookmark", "bookmarks", "reading list", "saved links", "saved link",
                 "read later", "by site", "web links", "my links", "mark read",
-                "bookmark link",
+                "bookmark link", "link folder", "bookmark folder", "duplicate bookmarks", "cards view",
             ),
             "body": (
                 "Library, Bookmarks is a reading list of web links; Add bookmark "
                 "saves one. Unread and Pinned narrow the list (with counts), and "
-                "opening a link marks it read. Sort by newest, oldest, title or By "
-                "site, which groups links under their site in folds you can close. "
-                "Each link shows its kind, Details opens in place with a note "
-                "field, and selecting several offers Move to group, Mark read and "
+                "opening a link marks it read; the menu's Read later puts a read "
+                "link back. Sort by newest, oldest, title or By site, which groups "
+                "links under their site in folds you can close, and view the shelf "
+                "as a List or as Cards. Details opens a card: icon, title, "
+                "site, two lines of the page, the note, and Show page text, a "
+                "reading column with find. With "
+                "the web on (Settings, Web search) a save fetches the page for its "
+                "icon, excerpt and text, and Refresh fetches again; with it off "
+                "nothing is requested. Icon and colour, in a link's menu or its card, picks an icon "
+                "or emoji and a highlight colour; a folder has the same in its menu. "
+                "Folders: drag a link onto a folder chip, onto another link "
+                "(filed together) or onto All to take it out; drag a folder onto "
+                "another to nest it, one level; double-click or F2 renames in "
+                "place; New folder makes one. Duplicates appears when the same "
+                "address is saved twice (a www, a trailing slash or tracking marks "
+                "do not make it different) and Keep one of each deletes the extra "
+                "copies. Selecting several offers Move to folder, Mark read and "
                 "Pin; pinned links lead every order but By site, and every delete "
                 "has Undo. In a note or document, the / menu's Bookmark link "
                 "inserts a saved bookmark as a link. The ... menu's Import "
                 "bookmarks file adds the links of a file your browser exported, "
-                "folders as groups, skipping ones already saved, with Undo; "
+                "folders as folders, skipping ones already saved, with Undo; "
                 "Export bookmarks saves them all as a file a browser can import. "
                 "A link can carry tags (commas, in the Add form or Edit): each tag is a chip "
-                "that filters across groups, search finds them, and the file keeps them."
+                "that filters across folders, search finds them, and the file keeps them."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -932,7 +946,7 @@ MID_TOPICS.extend(
                 "The tray in the status bar holds cards across pages: "
                 "drop one on it (held over, it opens) "
                 "or choose Add to tray, then drag cards out or click "
-                "one to paste it where you were typing, or attach it to the chat. "
+                "one to paste it where you typed, or attach it to the chat or open it. "
                 "In a long card menu a row "
                 "with an arrow (Text and description on a picture, Copy and arrange "
                 "on a board) opens a list beside it: rest the pointer on it, click it, "
@@ -1028,8 +1042,9 @@ MID_TOPICS.extend(
                 "Not yet marks it and moves on. Branches with topics under "
                 "them are asked, and then each topic that has a note: its note is the "
                 "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
-                "for that map on this device, a branch you missed says so next "
-                "time, and the end says how many you recalled. Esc stops. "
+                "for that map on this device, and the next run is spaced: what you missed first, then what is due "
+                "again (a day, 3, a week, 2, a month), then new ones; the palette's Study the map in map order "
+                "asks in the map's order. The end says how many you recalled. Esc stops. "
                 "Build up branch by branch shows the centre, then each branch a level at a time; Previous takes the last part away, End shows the whole map to take it apart; the map is not changed."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1105,7 +1120,8 @@ MID_TOPICS.extend(
                 "Emoji and icons… keeps it open: press one to place it "
                 "in the middle of the view, or drag it where it goes. An emoji lands "
                 "as a sticker (no card, resize it like any item), an icon as a shape "
-                "you can recolour; dropped on a map topic, either becomes that "
+                "you can recolour (select one with copies, then Insert, Emoji and icons, "
+                "Match all copies, makes every copy look like it; Swap everywhere changes an icon or an emoji in every place); dropped on a map topic, either becomes that "
                 "topic's icon. Each is one Undo step. In a note or a document, the "
                 "smiley in a note's formatting toolbar, the Insert button or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
@@ -1151,7 +1167,7 @@ MID_TOPICS.extend(
                 "the Text menu's Icon row has eleven, and More icons and emoji… "
                 "opens every Phosphor icon and about 470 emoji, searchable, with "
                 "your recent ones first; an emoji or an icon, one per topic. How this map looks, Colour every level, "
-                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use."
+                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use. Save this look there names a map's whole look to apply to another map. In a topic's text, bold, italic, code, an equation and a link written in Markdown draw as such; Ctrl+click opens a link."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1175,12 +1191,13 @@ MID_TOPICS.extend(
                 "removed, not checked; SQL runs against a SQLite database made for "
                 "the run, each statement's result a table, and a CSV document the "
                 "query names is a table in it (Sales 2026.csv is sales_2026, its "
-                "first row the columns); Python runs "
+                "first row the columns; a CSV's panel has Query as SQL, which opens a SQL "
+                "document selecting its first 50 rows); Python runs "
                 "once Python is installed in Settings, Packages (until then Run is "
                 "greyed and the line beside it goes there), and input() reads its "
                 "lines from the panel's Input box. HTML, CSS (over a sample page), "
                 "SVG and a p5.js sketch (New from a template, p5.js sketch) show as "
-                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
+                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Grid edits a CSV or TSV as cells (see the CSV grid topic; Add and Delete row and column; Ctrl+Z undoes); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
                 "tests (describe, it and expect in JavaScript or TypeScript; "
                 "unittest or test_ functions in Python) runs its tests, each "
                 "listed with its time and a failure underlined on its line; Run "
@@ -1193,6 +1210,27 @@ MID_TOPICS.extend(
                 "a .py file and JavaScript for the rest, Up recalling the last. "
                 "Debug (F5) steps "
                 "JavaScript, TypeScript and Python; see the debugger."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L328 and L-documents-39: the csv and tsv grid (documents-csvgrid.js), in the words of its buttons and menu rows.
+        {
+            "id": "csv-grid",
+            "keywords": (
+                "csv grid", "grid", "csv", "tsv", "table editor", "sort a column", "sort the file",
+                "filter rows", "header row", "resize a column", "paste cells", "paste into a table",
+            ),
+            "body": (
+                "Grid edits a CSV or TSV as cells: Tab and the arrows move, Enter goes down, "
+                "Add and Delete row and column act on the cell you are in, and Ctrl+Z undoes. "
+                "A column's name sorts the view (A to Z, Z to A, then the file's own order) "
+                "and never changes the file; the column's ⋯ menu has Sort the file, which "
+                "rewrites the rows and can be undone. Filters adds a box under each name that "
+                "hides the rows without that text; they stay in the file. Header row says "
+                "whether row 1 is the header, kept for this document. Drag a column's edge to "
+                "resize it, or focus the edge and press Left or Right (Home resets it); widths "
+                "are not saved. Pasting tabbed text fills cells from the one you are in, adding "
+                "rows and columns as needed, as one undo step."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1214,21 +1252,21 @@ MID_TOPICS.extend(
                 "its breakpoints on this device after a reload. Press F5, or "
                 "Start debugging in the run panel's Debug tab; the stopped line is lit, and "
                 "the Debug tab shows Variables (the frame's names, then Globals; a "
-                "list, dict or object opens into its items), "
+                "list, dict or object opens into its items, three levels down; a Watch opens too), "
                 "Watch (type an expression under it; each stop evaluates it), the "
                 "Call stack (a row goes to its line) and Breakpoints. F10 steps "
                 "over a line, F11 into a call, Shift+F11 out of the function, F5 "
                 "continues and Shift+F5 stops; the same five are buttons at the "
                 "top of the tab. An error nothing catches stops on the line that "
                 "raised it, with its traceback and the frame's variables. A Python "
-                "file of tests debugs through its tests: a breakpoint inside one "
+                "file of tests, and a JavaScript or TypeScript one, debugs through its tests: a breakpoint inside one "
                 "stops there, and the Tests tab lists each result. Python's "
                 "input() asks in the panel mid-run. Python debugging needs a window "
                 "that gives SharedArrayBuffer (the app's own does); JavaScript is "
                 "stepped by an interpreter that reads ES5, so let, const, arrow "
-                "functions and template strings are rewritten for it, and a class, "
-                "destructuring or async code is named with its line and only Run "
-                "takes it. A script that uses the page debugs against a stand-in "
+                "functions, template strings, classes with fields, destructuring, "
+                "spread, getters and setters and private members are rewritten for it, "
+                "and generators, async and await, async generators, for await, top-level await, tagged templates and spread in new are stepped too. A script that uses the page debugs against a stand-in "
                 "document, so nothing is drawn."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1275,6 +1313,37 @@ MID_TOPICS.extend(
                 "row goes in at the caret or where you drop it, on its own lines "
                 "with a blank line round it, and one Ctrl+Z takes it out; Save "
                 "keeps the selected text as a section of your own."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-42: documents-json-schema.js.
+        {
+            "id": "json-schema",
+            "keywords": ("json schema", "$schema", "schema lint", "key completion", "validate json", "json keys"),
+            "body": (
+                "A .json file whose top-level object has a \"$schema\" naming another "
+                "JSON document in the Library (its title or file name) is checked "
+                "against it: a wrong type, a missing or unknown key, or a value "
+                "outside the list or range is underlined, and a quote where a key "
+                "goes (or Ctrl+Space) lists the schema's keys with their descriptions. "
+                "Nothing is fetched from the web; a schema not in the Library is one note."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-50: documents-code-lint.js, the Ruff extra.
+        {
+            "id": "code-lint",
+            "keywords": ("lint", "linter", "ruff", "unused import", "undefined name", "duplicate key", "unreachable code", "python lint"),
+            "body": (
+                "A .js or .ts file that parses is also checked for the mistakes that "
+                "parse: a duplicate key in an object, an assignment where a condition "
+                "goes, code after a return, a duplicate case, a comparison with NaN and "
+                "a typeof compared with a word it never gives, each underlined as a "
+                "warning. A .py file that compiles is checked by Ruff once you install "
+                "Python lint (Ruff) in Settings, Packages (a 3.7 MB download, 10 MB on "
+                "disk): an unused import or variable or a name that is not defined is "
+                "underlined, with Ruff's own fix in the hover card where it has one. "
+                "It runs on this computer and works offline."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

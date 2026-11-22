@@ -1,16 +1,16 @@
 """Rainbow every level (F3, MINDMAP_PLAN gap 10): the canvas's `wbMapColors` and
 the thumbnail's `_map_branch_colors` pick the same colour for every topic."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 
 from tessellate.api.wb_preview import MAP_BRANCH_PALETTE, _map_branch_colors
 
-MAP = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def _fn(name):
@@ -57,3 +57,17 @@ def test_rainbow_changes_the_third_level_and_off_does_not():
 def test_the_map_dialog_offers_it_as_a_check_in_the_whole_map_group():
     assert '{ key: "rainbow", label: "Colour every level", kind: "check" }' in MAP
     assert '"rainbow", "legend"]);' in MAP  # never merged onto a topic (WB_MAP_THEME_META)
+
+
+@pytest.mark.parametrize("rainbow", [False, True])
+def test_a_topic_still_waiting_for_its_id_is_the_newest_branch(rainbow):
+    """L-mindmap-13 (2026-11-13): a topic added before the server answers holds
+    a negative provisional id, and by that id it was the oldest branch on the
+    map: Tab on the root moved every later branch one colour along (41 of 41
+    topics repainted on a 41-topic map) until the real id came back."""
+    parents = {1: None, 2: 1, 3: 1, 4: 1, 5: 2}
+    before = _canvas(parents, rainbow)
+    after = _canvas({**parents, -1: 1, -2: None}, rainbow)
+    for node in parents:
+        assert after[node] == before[node], node
+    assert after[-1] == _canvas({**parents, 9: 1}, rainbow)[9]

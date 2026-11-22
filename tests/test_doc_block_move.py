@@ -18,9 +18,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 #: The heading scan and the section range moved to documents-outline.js, one closure (doc24-1102).
@@ -106,7 +107,7 @@ def _run() -> list:
     node = shutil.which("node")
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
-    source = "\n".join(_fn(name) for name in ("docScanHeadings", "docSectionRange", "docBlockMoveEdit"))
+    source = "\n".join(_fn(name) for name in ("docScanHeadings", "docSectionRange", "docMoveBlocks", "docBlockMoveEdit"))
     out = subprocess.run([node, "-e", source + DRIVER], capture_output=True, text=True, timeout=60, check=False)
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)
