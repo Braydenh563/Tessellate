@@ -18,7 +18,7 @@ def _block(opener: str, closer: str) -> str:
 
 
 def test_card_resize_drag_updates_arrows_and_links_each_frame():
-    drag = _block("  function nodeResizeDrag(handle) {", "  function nodeRotateDrag()")
+    drag = _block("renderWhiteboard.parts.nodeResizeDrag = function nodeResizeDrag(handle) {", "renderWhiteboard.parts.nodeRotateDrag =")
     assert '_linkedSketches = wbLinkedSketchesFor(d.id, "node")' in drag
     assert "wbUpdateLinkedSketches(d.id, d._linkedSketches)" in drag
     assert "wbQueueSelectionBar()" in drag
@@ -26,7 +26,7 @@ def test_card_resize_drag_updates_arrows_and_links_each_frame():
 
 
 def test_object_resize_drag_updates_arrows_and_links_each_frame():
-    drag = _block("  function resizeDrag(handle) {", "  function objectRotateDrag()")
+    drag = _block("function resizeDrag(handle) {", "function objectRotateDrag()")
     assert "wbUpdateLinkedSketches(d.id, d._linkedSketches)" in drag
     assert "wbQueueSelectionBar()" in drag
 

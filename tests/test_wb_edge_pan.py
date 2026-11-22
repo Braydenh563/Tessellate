@@ -16,8 +16,12 @@ WB = frontend_text("whiteboard.js")
 
 
 def _section() -> str:
-    start = WB.index("const wbEdgePan = {")
-    return WB[start:WB.index("// Anchor points weren't discoverable", start)]
+    #: The edge pan is the wanted/speed/tick functions plus the chunk that arms it (L-whiteboard-78 split wbInitPointer by job).
+    start = WB.index("function wbEdgePanWanted() {")
+    tick = WB.index("function wbEdgePanTick() {")
+    tick_end = WB.index("\n  }\n", tick)
+    chunk = WB.index("function wbInitEdgePanPointer() {")
+    return WB[start:tick_end] + WB[chunk:WB.index("function wbInitCanvasDblclick()", chunk)]
 
 
 def test_edge_pan_runs_for_a_marquee_and_an_item_drag_only():

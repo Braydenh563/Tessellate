@@ -60,7 +60,7 @@ def test_an_object_that_has_not_changed_is_not_repainted() -> None:
     path stores it: an object drawing what it already draws costs a string
     compare. Checked in order, because a key stored but never consulted, or
     consulted after the writes, is the cost this rule exists to stop."""
-    body = _code("renderWbObjects")
+    body = _code("wbPaintObject")  # one object's paint, called per object by `renderWbObjects`
     compare = body.index("this._wbPaintKey === key")
     store = body.index("this._wbPaintKey = key")
     #: The unchanged branch may still move the object (a drag changes its
@@ -90,14 +90,16 @@ def test_every_topic_is_measured_after_the_writes_never_between_them() -> None:
     interleaved with the writes flushes a fresh layout of the entire board:
     500 nodes cost 500 full layouts, which is where this render's
     superlinearity lived. The reads happen once, after the last write."""
-    body = _code("renderWbObjects")
-    last_write = body.rindex("wbPaintMapNode(")
-    exits = body.index("objectSelection.exit()")
-    measure = body.index("this.offsetHeight")
-    assert last_write < exits < measure
+    #: The writes are `wbPaintObject`, the reads `wbMeasureMapNodes`, and `renderWbObjects` runs them in that order.
+    paint = _code("wbPaintObject")
+    measure = _code("wbMeasureMapNodes")
+    render = _code("renderWbObjects")
+    assert "this.offsetHeight" not in paint and "this.offsetHeight" in measure
+    assert paint.rindex("wbPaintMapNode(") > 0
+    assert render.index("wbPaintObject.call(") < render.index("objectSelection.exit()") < render.index("wbMeasureMapNodes(")
     # And the same reads fill the size cache, because `wbRenderMapEdges` runs
     # next and asks for both ends of every edge.
-    assert "wbMapNodeSizeCache.set(d.id" in body
+    assert "wbMapNodeSizeCache.set(d.id" in measure
 
 
 def test_a_topic_the_pass_did_not_repaint_keeps_its_own_measured_height() -> None:
@@ -108,7 +110,7 @@ def test_a_topic_the_pass_did_not_repaint_keeps_its_own_measured_height() -> Non
     390 (`mapstrip.js`'s "first pan lands within 4px", 0 now). The element keeps
     the height it was last measured at and the cache takes that, not the
     stored one."""
-    body = _code("renderWbObjects")
+    body = _code("wbMeasureMapNodes")
     assert "this._wbMeasuredH = h;" in body, "the live read must record what it measured"
     skip = body[body.index("const known = this._wbMeasuredH;") :][:500]
     assert "h: known || d.height" in skip, "the cache takes the measured height before the stored one"

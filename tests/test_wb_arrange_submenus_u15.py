@@ -54,7 +54,7 @@ def test_the_board_folds_them_with_the_menu_recipe_and_not_a_second_builder() ->
 
 
 def test_closing_the_menu_closes_its_flyouts_and_a_nested_level() -> None:
-    close = BOARD[BOARD.index("const closeAllWbMenus = () => {") :]
+    close = BOARD[BOARD.index("closeAllWbMenus = () => {") :]
     close = close[: close.index("\n  };")]
     assert "menu-group-open" in close
     assert ".submenu" in close

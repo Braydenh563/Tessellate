@@ -22,20 +22,20 @@ import re
 
 def render_sketches() -> str:
     text = frontend_text("whiteboard.js")
-    start = text.index("sketchUpdate.each(function(d) {")
+    start = text.index("renderWhiteboard.parts.wbPaintSketch = function")
     return text[start : start + 1800]
 
 
 def test_a_stroke_has_a_paint_key_and_a_skip():
     body = render_sketches()
     assert "strokePaintKey(d)" in body
-    assert "return;" in body.split("let pathData = d.data;")[0]
+    assert "return;" in body.split("renderWhiteboard.parts.wbPaintSketchLook(")[0]
 
 
 def test_the_key_keeps_the_pen_and_highlighter_branch_with_ink_and_mode():
     text = frontend_text("whiteboard.js")
     start = text.index("const strokePaintKey = (d) =>")
-    fn = text[start : text.index("sketchUpdate.each(function(d) {", start)]
+    fn = text[start : text.index("renderWhiteboard.parts.wbSketchLook =", start)]
     assert "wbBoardBg()" in text[start - 600 : start]
     assert "draw|highlighter" in fn
     #: A connector's path comes from the items at its ends.
@@ -46,5 +46,5 @@ def test_the_key_keeps_the_pen_and_highlighter_branch_with_ink_and_mode():
 
 def test_a_moved_live_path_is_not_skipped():
     body = render_sketches()
-    skip = body.split("let pathData = d.data;")[0]
+    skip = body.split("renderWhiteboard.parts.wbPaintSketchLook(")[0]
     assert re.search(r'getAttribute\("d"\)', skip), "the skip must compare the drawn path"

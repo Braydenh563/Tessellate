@@ -1366,24 +1366,24 @@
   }
 
   function wbMeasureMapNodes(objectUpdate, repainted) {
-  //: **Every topic measured in one pass, after every write, never between
-  //: them** (MINDMAP_PLAN.md §13a). This loop used to be the last two lines
-  //: of the `.each` above, one `offsetHeight` read per node interleaved with
-  //: that node's own style writes. A style write invalidates layout for the
-  //: whole document, so each of those reads flushed a fresh layout of the
-  //: entire board: 500 nodes cost 500 full layouts, which is where this
-  //: render's superlinearity actually lived (renderWbObjects: 405.6ms of a
-  //: 527ms render at 500 topics, against 32.1ms for the painting itself).
-  //: Reads on their own flush once and are then free, so the same
-  //: information now costs one layout.
-  //:
-  //: The stored `height` is what the bounds, the alignment guides and the
-  //: tidy layout all read, and a map node's real height is whatever its text
-  //: needed; the value rides along to the server on the node's next real
-  //: save. The size cache is filled from the same reads because
-  //: `wbRenderMapEdges` runs next and asks for both ends of every edge: that
-  //: is what keeps `wbMapNodeSize` off `document.querySelector` for a board
-  //: whose elements this pass is holding already.
+    //: **Every topic measured in one pass, after every write, never between
+    //: them** (MINDMAP_PLAN.md §13a). This loop used to be the last two lines
+    //: of the `.each` above, one `offsetHeight` read per node interleaved with
+    //: that node's own style writes. A style write invalidates layout for the
+    //: whole document, so each of those reads flushed a fresh layout of the
+    //: entire board: 500 nodes cost 500 full layouts, which is where this
+    //: render's superlinearity actually lived (renderWbObjects: 405.6ms of a
+    //: 527ms render at 500 topics, against 32.1ms for the painting itself).
+    //: Reads on their own flush once and are then free, so the same
+    //: information now costs one layout.
+    //:
+    //: The stored `height` is what the bounds, the alignment guides and the
+    //: tidy layout all read, and a map node's real height is whatever its text
+    //: needed; the value rides along to the server on the node's next real
+    //: save. The size cache is filled from the same reads because
+    //: `wbRenderMapEdges` runs next and asks for both ends of every edge: that
+    //: is what keeps `wbMapNodeSize` off `document.querySelector` for a board
+    //: whose elements this pass is holding already.
     if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
     objectUpdate.each(function (d) {
       if (!WB_MAP_KINDS.has(d.kind)) return;

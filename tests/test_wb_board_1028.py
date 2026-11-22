@@ -70,7 +70,7 @@ def test_a_failed_delete_behaves_as_if_nothing_happened():
 def test_the_eraser_hit_tests_the_whole_pointer_path_not_only_enter_events():
     start = WB.index('wbInstances.on("pointermove", (e) => {\n    if (window.currentTool !== "eraser"')
     body = WB[start : start + 600]
-    body += WB[WB.index("  function wbEraseAt(") : start]
+    body += WB[WB.index("function wbEraseAt(") : start]
     # Every sample the browser coalesced, so a fast touch or pen stroke skips nothing.
     assert "getCoalescedEvents" in body
     assert "document.elementFromPoint" in body

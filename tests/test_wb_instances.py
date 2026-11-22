@@ -749,7 +749,7 @@ out.embed = calls.splice(0);
     assert embed_names == ["renderWhiteboard", "wbApplySearchHighlight", "wbMapPaintMarkerFilter"], embed_names
     assert all(c[1] == 5 for c in out["embed"])
     #: The empty hint and cue are the page board's: an embed's render leaves them be.
-    render = wb[wb.index("function renderWhiteboard() {") :]
+    render = wb[wb.index("renderWhiteboard.parts.wbSyncEmptyHint = function wbSyncEmptyHint() {") :]
     hint = render[: render.index('document.getElementById("wb-empty-cue")')]
     assert "if (!wbInstances.active.container) {" in hint[hint.rindex("const wbHintHidden") :]
     #: And draw() puts nothing back, so it schedules no page render after itself.

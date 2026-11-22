@@ -63,7 +63,7 @@ def test_b28_a_picture_pasted_as_markup_or_an_address_is_placed_or_refused_with_
     """B28: the board's paste took files and text only, and no picture was checked
     against the upload cap before the request."""
     source = _js("whiteboard.js")
-    assert "const wbPictureCap = 50 * 1024 * 1024;" in source
+    assert "wbPictureCap = 50 * 1024 * 1024;" in source
     assert "if (file.size > wbPictureCap) return wbPictureTooBig();" in source
     handler = _between(source, 'document.addEventListener("paste", (e) => {', 'document.addEventListener("copy"')
     assert "wbPastedPictureAddress(data, html)" in handler
