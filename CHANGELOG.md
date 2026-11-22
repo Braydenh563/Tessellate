@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Plans: WORLD_CLASS_PLAN 27.1 Notes and Spaces rows built or measured built (L-world-class-22 closed; HISTORY "wc22-1122").
 - Note templates: `{{weekday}}` fills today's weekday and `{{space}}` the space the note lands in (the default one under All spaces), in the Capture picker, the editor preview and Insert template; the Settings hint and the Guide name both.
 - Dashboard: in one space the line under the greeting starts with that space ("In Work"), since every count on it is that space's; under All spaces it is as before.
 - Spaces: every space, the default one too, has Export on its row in the space picker: the notebook folder of that space alone, named for it (`tessellate-work.zip`), whichever space is on screen. The picker is 17rem wide so a name keeps 87px beside the four buttons.
