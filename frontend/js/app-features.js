@@ -579,7 +579,7 @@ function paletteCommands() {
     { label: "ph:translate Translate this", keywords: "translate translation spanish french german italian portuguese language offline selection passage", about: "The selected passage into another language, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     //: L-world-class-780: the panel's other two tabs were four presses deep (rule 2).
-    { label: "ph:strategy Agent runs", keywords: "activity past runs agent steps plan tools", about: "The agent's past runs, step by step.", act: () => openActivity("runs") },
+    { label: "ph:list-checks Agent runs", keywords: "activity past runs agent steps plan tools", about: "The agent's past runs, step by step.", act: () => openActivity("runs") },
     { label: "ph:clock-counter-clockwise Job history", keywords: "activity history past jobs finished failed stopped log", about: "Jobs that finished, failed or were stopped.", act: () => openActivity("history") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
