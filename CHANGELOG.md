@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Notes, L-world-class-22 (templates): a note template also fills `{{title}}` (the Capture title), `{{weekday}}` and `{{space}}`, and `${Label}` is a prompted field asked once through the prompt dialog and put at every place the label stands (cancelling stops the use); the Settings popover and the insert-template Guide topic say so.
 Spaces, L-world-class-22 (export): the space picker gains "Export <name> as a folder" on every space, and the folder export is named after the space it is scoped to (`tessellate-<slug>.zip`, an ASCII slug), refusing a locked private space with 423.
 Laptop chrome, L-world-class-95: closed on its gate (4 whole note cards and the first dashboard widget above the fold at 1093x614@1.25); the sub-tab merge and status bar fold moved to BACKLOG.
 Notes sidebar, owner bugs 4 and 5 on #257: the categories are drawn on the first Notes open (the sidebar keeps its own render debt, `renderSidebar.owed`, which the tab bar's press no longer drops), so the fold caret is there to unfold them; the notes sidebar is wired when its surface is built, not about 10 s later; the collapsed rail's hover peek opens to the open width (260 at 1440, was 48) over the content without moving it, with nothing clipped (scratchpad/ui-sweeps/owner257.js, tests/test_notes_sidebar_257.py). The idle document-engine warm-up no longer throws (`docWarmed` read outside its closure; tests/test_doc_warm_chain.py).

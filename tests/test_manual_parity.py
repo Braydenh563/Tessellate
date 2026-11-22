@@ -178,7 +178,9 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
         entry = next((block for block in tools.split("\n  },") if f'name: "{label}"' in block), "")
         assert "about:" in entry, f"the palette's {label} row has no line of help"
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
-    assert 'data-help-for="templates-help"' in html and "insert template" in html.split('id="templates-help"', 1)[1][:1200]
+    assert 'data-help-for="templates-help"' in html and "insert template" in html.split('id="templates-help"', 1)[1][:2400]
+    #: The template variables and `${Label}` fields (L-world-class-22) are in that popover.
+    assert "${Label}" in html.split('id="templates-help"', 1)[1][:2400]
 
 
 #: **The manual finds every control named here** (WORLD_CLASS_PLAN 25c, its
