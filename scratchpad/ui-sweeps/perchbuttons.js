@@ -13,7 +13,7 @@ const VH = Number(process.env.VH || 900);
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
   await page.evaluate((t) => revealTab(t), process.env.TAB || 'dashboard');
   await page.waitForTimeout(6000);
   const targets = await page.evaluate(() => {

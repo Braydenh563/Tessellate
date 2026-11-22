@@ -26,7 +26,11 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from tessellate.ai.composer_ask import user_today
+
 MAX_NODES = 16
+#: The most of a note the line readers look at: a diagram shows 16 boxes, and the cap bounds every pattern's work (CodeQL, PR 234).
+INPUT_CHARS = 50_000
 #: A note's name in a box: the composer's own naming, cut shorter.
 NAME_CHARS = 40
 LABEL_CHARS = 60
@@ -41,17 +45,20 @@ _DATE = re.compile(
     rf"|{_MONTH}\.?\s+\d{{1,2}}(?:st|nd|rd|th)?(?:,?\s+\d{{4}})?|{_MONTH}\.?\s+\d{{4}}|(?:19|20)\d{{2}})\b",
     re.I,
 )
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*\S)\s*$")
-_ITEM = re.compile(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(.*\S)\s*$")
+#: These read a right-stripped line, so the words are `(\S.*)` after a space run with nothing
+#: after them: no two parts can take the same spaces (CodeQL's polynomial regex on many tabs).
+_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(\S.*)$")
+_ITEM = re.compile(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(\S.*)$")
 #: A checklist line: a bullet, then a `[ ]` or `[x]` box (1546 P3: a note of tasks is a flow).
-_TASK = re.compile(r"^(\s*)[-*+]\s+\[[ xX]\]\s+(.*\S)\s*$")
+_TASK = re.compile(r"^(\s*)[-*+]\s+\[[ xX]\]\s+(\S.*)$")
 _STEP_WORD = re.compile(r"^(?:first(?:ly)?|then|next|after that|afterwards|finally|lastly|step \d+)\b[,:]?\s*", re.I)
-_THEN = re.compile(r"(?:[,;.]\s*|\s+)(?:and\s+)?(?:then|after that|afterwards|next|finally)\b[,:]?\s+", re.I)
+#: Read over a sentence whose spaces are single (`_sentences`), so each space is one ` `.
+_THEN = re.compile(r"(?:[,;.] ?| )(?:and )?(?:then|after that|afterwards|next|finally)\b[,:]? ", re.I)
 
 
 @dataclass
 class Diagram:
-    shape: str  # "flowchart" | "timeline" | "mindmap"
+    shape: str  # "flowchart" | "timeline" | "mindmap" | "gantt" | "pie" | "state" | "class" | "er"
     source: str  # the Mermaid code, without the fence
     nodes: int
     note: str = ""
@@ -63,6 +70,11 @@ _WANT = (
     ("flowchart", re.compile(r"\b(?:flow\s?-?charts?|flow diagrams?|process (?:map|diagram)|steps? diagram)\b", re.I)),
     ("timeline", re.compile(r"\btime\s?-?lines?\b", re.I)),
     ("mindmap", re.compile(r"\b(?:mind\s?-?maps?|concept maps?|spider diagrams?)\b", re.I)),
+    ("gantt", re.compile(r"\bgantt(?:\s+charts?)?\b|\bproject (?:plan|schedule) chart\b", re.I)),
+    ("pie", re.compile(r"\bpie\s?-?\s?(?:charts?|graphs?)\b|\ba pie of\b", re.I)),
+    ("er", re.compile(r"\b(?:er|entity[- ]relationship|entity relation)\s+(?:diagrams?|models?)\b", re.I)),
+    ("class", re.compile(r"\b(?:uml\s+)?class\s+(?:diagrams?|models?)\b", re.I)),
+    ("state", re.compile(r"\b(?:state\s+(?:diagrams?|machines?|charts?)|status\s+diagram)\b", re.I)),
     ("", re.compile(r"\b(?:diagrams?|charts?|graphs?|mermaid|visual(?:i[sz]e)?)\b", re.I)),
 )
 #: A diagram is asked for by a drawing verb aimed at a diagram noun, with a
@@ -70,7 +82,7 @@ _WANT = (
 #: or "into": "make a flowchart of the move", "turn this into a mind map". A
 #: question that only mentions a diagram ("the project timeline", "notes on
 #: heart diagrams", "show me my mind map") is an ordinary question.
-_SHAPE = r"(?:flow\s?-?charts?|flow diagrams?|time\s?-?lines?|mind\s?-?maps?|concept maps?|diagrams?|charts?|mermaid)"
+_SHAPE = r"(?:gantt(?: charts?)?|pie(?: charts?)?|state (?:diagrams?|machines?)|er diagrams?|flow\s?-?charts?|flow diagrams?|time\s?-?lines?|mind\s?-?maps?|concept maps?|diagrams?|charts?|mermaid)"
 _ASK_MAKE = re.compile(
     r"\b(?:make|draw|sketch|create|build|generate|render|plot|map(?: out)?)\b[^.?!:\n]{0,30}?"
     rf"\b(?:an?|the|my|some|one)\s+(?:[a-z]+\s+){{0,2}}?{_SHAPE}"
@@ -143,7 +155,8 @@ def _lines(text: str) -> list[tuple[str, int, bool, str]]:
     """(kind, depth, numbered, words) per line: "heading", "item", "line"."""
     out = []
     indents: list[int] = []  # the open list levels' indents, outermost first
-    for raw in (text or "").replace("\r\n", "\n").split("\n"):
+    for raw in (text or "")[:INPUT_CHARS].replace("\r\n", "\n").split("\n"):
+        raw = raw.rstrip()
         if not raw.strip() or raw.strip().startswith("```"):
             continue
         heading = _HEADING.match(raw)
@@ -165,7 +178,7 @@ def _lines(text: str) -> list[tuple[str, int, bool, str]]:
 def _sentences(text: str) -> list[str]:
     from tessellate.ai import composer_write
 
-    return [s for kind, _d, _n, words in _lines(text) if kind == "line" for s in composer_write.sentences(words)]
+    return [" ".join(s.split()) for kind, _d, _n, words in _lines(text) if kind == "line" for s in composer_write.sentences(words)]
 
 
 def _listed_steps(lines: list) -> list[str]:
@@ -183,7 +196,7 @@ def _listed_steps(lines: list) -> list[str]:
 def _checklist(text: str) -> list[str]:
     """The top-level items of a checklist, in order, when there are at least
     two: tasks are done one after another, so they read as steps."""
-    rows = [m for m in (_TASK.match(raw) for raw in (text or "").replace("\r\n", "\n").split("\n")) if m]
+    rows = [m for m in (_TASK.match(raw.rstrip()) for raw in (text or "")[:INPUT_CHARS].replace("\r\n", "\n").split("\n")) if m]
     if not rows:
         return []
     top = min(len(m.group(1).expandtabs(4)) for m in rows)
@@ -469,8 +482,30 @@ def from_notes(notes: list[dict], want: str | None, subject: str = "") -> Diagra
 # --- the door --------------------------------------------------------------------------
 
 
-def _drawn(text: str, want: str | None) -> tuple[Diagram | None, str]:
+#: The five kinds of `composer_mermaid_kinds` (L-documents-101), by what each needs of the words.
+_NEEDS = {"gantt": "steps", "pie": "numbers", "state": "steps", "class": "headings with points", "er": "headings with points"}
+_SAID = {"flowchart": "a flowchart", "timeline": "a timeline", "mindmap": "a mind map", "gantt": "a Gantt chart", "pie": "a pie chart", "state": "a state diagram", "class": "a class diagram", "er": "an ER diagram"}
+
+
+def _kind(shape: str, text: str, today: date) -> Diagram | None:
+    from tessellate.ai import composer_mermaid_kinds as kinds
+
+    # The readers are passed in, so the kinds module never imports this one (no cycle).
+    read = (text, _lines(text), steps(text))
+    source = kinds.gantt(*read, today) if shape == "gantt" else getattr(kinds, {"class": "klass"}.get(shape, shape))(*read)
+    return Diagram(shape, source, source.count("\n") - 1) if source else None
+
+
+def _drawn(text: str, want: str | None, today: date | None = None) -> tuple[Diagram | None, str]:
     """The diagram of the shape asked for, else the first shape the text has."""
+    if want in _NEEDS:
+        made = _kind(want, text, today or user_today())
+        if made is not None:
+            return made, ""
+        wished = want
+        want = ""
+    else:
+        wished = ""
     by_shape = {
         "flowchart": lambda: (lambda s: flowchart(s) if s else None)(steps(text)),
         "timeline": lambda: (lambda d: timeline(d) if len(d) >= 2 else None)(dated(text)),
@@ -483,21 +518,22 @@ def _drawn(text: str, want: str | None) -> tuple[Diagram | None, str]:
     for shape in ("flowchart", "timeline", "mindmap"):
         made = by_shape[shape]()
         if made is not None:
-            missed = {"flowchart": "steps", "timeline": "dates"}.get(want or "", "")
-            why = f"There were no {missed} to draw a {want} from, so this is a {shape}." if missed else ""
+            missed = {"flowchart": "steps", "timeline": "dates"}.get(want or "", "") or _NEEDS.get(wished, "")
+            asked = wished or want
+            why = f"There were no {missed} to draw {_SAID[asked]} from, so this is a {shape}." if missed else ""
             return made, why
     return None, ""
 
 
-def diagram(text: str, *, want: str | None = "", notes: list[dict] | None = None, subject: str = "") -> Diagram | None:
+def diagram(text: str, *, want: str | None = "", notes: list[dict] | None = None, subject: str = "", today: date | None = None) -> Diagram | None:
     """The diagram for `text`, or for `notes` when there is no text; None
     when neither has anything to draw."""
-    made, why = _drawn(text, want) if (text or "").strip() else (None, "")
+    made, why = _drawn(text, want, today) if (text or "").strip() else (None, "")
     if made is None and notes:
         made = from_notes(notes, want, subject)
     if made is None:
         return None
-    said = {"flowchart": "a flowchart", "timeline": "a timeline", "mindmap": "a mind map"}[made.shape]
+    said = _SAID[made.shape]
     made.note = why or f"Drew {said} from your words by plain rule, with no model. A saved note shows it as a picture."
     return made
 
@@ -583,5 +619,5 @@ def answer(question: str, notes: list[dict], *, previous: str = "", opened: str 
         lead = _notes_lead(len(chosen), said)
     if made is None:
         return None  # nothing on the subject: the ordinary answer, not a drawing of other notes
-    shape = {"flowchart": "a flowchart", "timeline": "a timeline", "mindmap": "a mind map"}[made.shape]
+    shape = _SAID[made.shape]
     return {"text": lead.format(shape=shape) + "\n\n" + fenced(made), "grounding": [], "answered": True, "shape": "diagram", "next": []}

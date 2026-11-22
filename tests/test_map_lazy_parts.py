@@ -19,6 +19,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+#: The note, task, icon and picture painters moved here in the L286 split.
+MAP_NOTES = (ROOT / "frontend" / "js" / "whiteboard-map-notes.js").read_text(encoding="utf-8")
 PW = "/opt/node22/lib/node_modules/playwright"
 needs_pw = pytest.mark.skipif(
     not shutil.which("node") or not Path(PW).exists(), reason="needs node and playwright"
@@ -90,6 +92,8 @@ def test_a_new_topic_builds_only_what_it_shows():
 def test_painters_ask_the_accessor_and_hiding_never_creates():
     for name in ("task", "markers", "icon", "picture", "number", "progress", "note", "link", "callout", "tags",
                  "count", "collapse"):
-        assert f'wbMapCache.part(node, "{name}", ' in MAP, name
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+        # The painter moved to whiteboard-map-notes.js on the whiteboard branch (L286 carve); same assert.
+        assert f'wbMapCache.part(node, "{name}", ' in MAP + (ROOT / "frontend" / "js" / "whiteboard-map-notes.js").read_text(encoding="utf-8"), name
+    # The selection paint moved to whiteboard-bar.js on the whiteboard branch (L286 carve); same assert.
+    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "whiteboard-bar.js").read_text(encoding="utf-8")
     assert 'wbMapCache.part(el, "grip")' in wb

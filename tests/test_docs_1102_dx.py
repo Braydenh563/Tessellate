@@ -139,7 +139,7 @@ def test_dx8_print_drops_the_renderers_chrome_and_keeps_blocks_whole():
     # The exports drop the chrome too, from the one list (DX9): the two must not drift apart.
     word = (ROOT / "frontend/js/documents-word.js").read_text(encoding="utf-8")
     assert "querySelectorAll(`${DOC_EXPORT_STRIP}, button`)" in word
-    strip = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8").split("const DOC_EXPORT_STRIP = ")[1].split(";")[0]
+    strip = documents_text().split("const DOC_EXPORT_STRIP = ")[1].split(";")[0]
     for chrome in (".code-bar", ".entry-image-note", "a.md-fn-back"):
         assert chrome in strip
         assert chrome in lazy.split("body.printing-doc #doc-preview :is(")[1].split(")")[0]

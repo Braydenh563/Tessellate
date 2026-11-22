@@ -6,6 +6,7 @@ The browser half is `scratchpad/ui-sweeps/paint1026-groups.js` (seven boxes,
 reload, undo, redo, double-click into a group); this pins the pure functions.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -14,7 +15,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:

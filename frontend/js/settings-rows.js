@@ -31,6 +31,7 @@
     { key: "search_relative_z_margin", id: "pref-search-z-margin" },
     { key: "communication_style", id: "pref-style" },
     { key: "composer_voice", id: "pref-voice" },
+    { key: "writing_style", id: "pref-writing-style" },
     { key: "week_start", id: "pref-week-start" },
     { key: "season_hemisphere", id: "pref-season-hemisphere" },
     { key: "before_includes_day", id: "pref-before-includes-day" },

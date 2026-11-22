@@ -193,6 +193,7 @@ self.addEventListener("message", async (event) => {
     keepIgnored(linter, source, event.data.ignored);
     const lints = linter.lint(source, Language.Markdown, false, undefined, true, false);
     const out = [];
+    const bare = new Set(Array.isArray(event.data.bare) ? event.data.bare : []);
     const dropped = new Set((Array.isArray(event.data.groupsOff) ? event.data.groupsOff : []).flatMap((group) => KIND_GROUPS[group] || []));
     for (const lint of lints) {
       if (dropped.has(lint.lint_kind())) {
@@ -213,7 +214,10 @@ self.addEventListener("message", async (event) => {
       //: A dictionary that did not load leaves Harper's own lint standing
       //: rather than taking the grammar check down with it.
       const kept = await second.refined(made, dialect, source).catch(() => made);
-      if (kept) out.push(kept);
+      //: A kind the page drops comes as its span only (L342, `bare`): it reads only where those
+      //: are, so LanguageTool adds nothing over them. Whole, 1,500 spelling lints were 359 kB
+      //: copied into the page on whichever key they landed (about 10 ms of GC).
+      if (kept) out.push(bare.has(kept.kind) ? { start: kept.start, end: kept.end, kind: kept.kind } : kept);
     }
     self.postMessage({ id, ok: true, ms: Math.round(performance.now() - started), lints: out });
   } catch (error) {

@@ -119,11 +119,13 @@ from tessellate.api import (
     routes_websearch,
     routes_whiteboard,
     routes_board_library,
+    routes_board_convert,
     routes_code_snippets,
     routes_code_assist,
     routes_board_history,
     routes_board_affinity,
     routes_document_claims,
+    routes_document_story,
     routes_map_suggest,
     routes_map_from_notes,
     routes_graph_projection,
@@ -1329,6 +1331,8 @@ def _start_services() -> Path:
     #: gone (core/afterunlock.py), never beside it.
     if _has_password():
         afterunlock.arm()
+    else:
+        afterunlock.disarm()
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
     afterunlock.defer("resume-jobs", jobs.resume)
@@ -1612,12 +1616,14 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_whiteboard.router, LOCKED),
     (routes_whiteboard.media_router, MEDIA),
     (routes_board_library.router, LOCKED),
+    (routes_board_convert.router, LOCKED),
     (routes_code_snippets.router, LOCKED),
     (routes_code_assist.router, LOCKED),
     (routes_board_history.router, LOCKED),
     (routes_map_suggest.router, LOCKED),
     (routes_board_affinity.router, LOCKED),
     (routes_document_claims.router, LOCKED),
+    (routes_document_story.router, LOCKED),
     (routes_map_from_notes.router, LOCKED),
     (routes_documents_from_notes.router, LOCKED),
     (routes_debug.router, LOCKED),

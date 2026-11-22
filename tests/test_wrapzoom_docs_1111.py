@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import frontend_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -199,7 +200,7 @@ def test_the_format_panel_leaves_the_selection_bar_and_the_zoom_cluster_clear():
     assert "calc(100% - 18.5rem - 5rem)" in _rule(wide, "#wb-format:not(.hidden)) > #wb-context")
     mid = "".join(_at_blocks(css, "@media (min-width: 600px) and (max-width: 819.98px)"))
     assert "var(--target-min) + 2 * var(--space-1)" in _rule(mid, ".wb-format")
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     sig = next(line for line in js.splitlines() if "const foldSig =" in line)
     assert "fmtOpen" in sig
 

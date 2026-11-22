@@ -3,6 +3,7 @@ chevron touching its "?"."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 from tests import _js_scope
@@ -95,7 +96,7 @@ def test_a_connector_drag_never_leaves_the_delete_target_up():
     object was clicked. Measured (scratchpad wbtrash.js): before, the target
     and the move gesture were still live after release; after, both clear,
     and a card dropped on the target is still deleted."""
-    js = (ROOT / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     assert 'd._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);' in js
     net = js[js.index('window.addEventListener("pointerup", () => setTimeout(() => {'):][:160]
     assert "if (wbGesture?.move) wbGesture = null;" in net and "wbTrashHide();" in net

@@ -56,6 +56,13 @@ MEMBERS: tuple[tuple[str, str], ...] = (
     *((PREFIX + "libs/" + name, name) for name in _LIBS),
 )
 
+#: The language modules are not jars: the archive unpacks them as folders
+#: (`org/languagetool/...`, `META-INF/...`) beside the jars, and the server
+#: finds them on its class path through the folder itself. Without these it
+#: stops at start ("'es' is not a language code known"; measured 2026-11-14
+#: with the jars alone), so the grammar pass answered "unavailable" forever.
+TREES: tuple[tuple[str, str], ...] = ((PREFIX + "org/", "org"), (PREFIX + "META-INF/", "META-INF"))
+
 
 #: Java is found here, not in `languagetool.py`, so `extras.py` can ask for the reason without
 #: importing the module that imports it (CodeQL 2137, 2138: a cyclic import).
@@ -75,3 +82,16 @@ def java_reason() -> str:
     if java_path():
         return ""
     return "LanguageTool needs Java 17 or newer, and no java was found on this computer. Install Java, then come back."
+
+#: Only English is checked (`languagetool.check` asks for en-US), so the other
+#: languages' data is not kept: resource folders but for the `common_words.txt`
+#: the language identifier reads at start ("Common words file not found for
+#: Arabic" otherwise), and the rule data (grammar.xml, word lists) of every
+#: other language, keeping its classes (the server loads every language class).
+#: Measured 2026-11-14: 392 MB on disk before, 196 MB after, the real server
+#: starts and answers en-US.
+_LANG = r"[a-z]{2,3}(?:-[A-Za-z0-9-]+)?"
+TREE_SKIP = (
+    rf"^languagetool/resource/(?!en/){_LANG}/(?!common_words\.txt$)"
+    rf"|^languagetool/rules/(?!en/){_LANG}/(?!.*\.class$)"
+)

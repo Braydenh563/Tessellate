@@ -299,3 +299,53 @@ def test_with_a_model_the_model_draws_it(ai_client, fake_ollama):
     ai_client.post("/entries", json={"content": "# Garden\nTomatoes went in on 2 April."})
     fake_ollama.librarian_reply = "From the model."
     assert "drawn by plain rule" not in _answer(ai_client, "make a diagram of my notes on the garden")
+
+
+def test_the_line_readers_are_linear_on_long_tab_runs():
+    """CodeQL (PR 234): `(.*\\S)\\s*$` and `\\s+...\\s+` went quadratic on many tabs. The readers take
+    right-stripped lines and single-spaced sentences now; doubling the run at most about doubles the time."""
+    import time
+
+    from tessellate.ai import composer_mermaid
+
+    def took(n: int) -> float:
+        texts = ["\t" * n + "x" + "\t" * n, "*\t" + "\t\t" * n + "x", "*\t[ ]\t" + "\t\t" * n + "y", "a" + "\t" * n + "b then c" + "\t" * n]
+        start = time.perf_counter()
+        for t in texts:
+            composer_mermaid.steps(t)
+        return time.perf_counter() - start
+
+    took(1000)
+    small, big = min(took(20000) for _ in range(3)), min(took(40000) for _ in range(3))
+    assert big < small * 3 + 0.01, (small, big)
+    assert big < 0.5, big
+
+
+def test_no_line_pattern_has_nested_or_adjacent_unbounded_repeats():
+    """CodeQL (PR 234): a repeat inside a repeat, or two unbounded repeats that can match the same
+    characters side by side, backtrack polynomially. Read off the patterns' own source."""
+    from tessellate.ai import composer_mermaid
+
+    unbounded = r"(?:\\s|\.|\[[^\]]*\]|\\S|\\w)[*+]"
+    adjacent = re.compile(rf"{unbounded}\)?\??{unbounded}")
+    nested = re.compile(r"\((?:[^()]|\([^()]*\))*[*+]\)[*+]")
+    for name in ("_HEADING", "_ITEM", "_TASK", "_THEN", "_STEP_WORD"):
+        source = getattr(composer_mermaid, name).pattern
+        assert not adjacent.search(source), (name, source)
+        assert not nested.search(source), (name, source)
+
+
+def test_a_50k_adversarial_note_is_read_quickly():
+    """Every reader on 50,000 characters built to backtrack: tabs, spaces and list marks with no word."""
+    import time
+
+    from tessellate.ai import composer_mermaid
+
+    texts = ["\t" * 50_000 + "x", "* " + " \t" * 25_000, "- [ ]" + " " * 50_000 + "!", "#" + " " * 50_000, "a," + " then" * 10_000]
+    cpu = time.thread_time()  # CPU, not wall time (test_fixed_clock_lint)
+    for t in texts:
+        composer_mermaid.steps(t)
+        composer_mermaid.dated(t)
+        composer_mermaid.tree(t)
+    assert time.thread_time() - cpu < 2.0
+    assert composer_mermaid.INPUT_CHARS == 50_000

@@ -79,7 +79,8 @@ const { boot } = require('./lib.js');
   if (parseFloat(measured.word.fontWeight) < 600) {
     problems.push(`thinking word is not bold (font-weight ${measured.word.fontWeight})`);
   }
-  if (measured.dot.borderRadius !== '50%') {
+  // The radius token is a pill now (999px), which on a square dot is the same circle as 50%.
+  if (!(measured.dot.borderRadius === '50%' || parseFloat(measured.dot.borderRadius) >= 999)) {
     problems.push(`a real dot lost its own circle shape (border-radius ${measured.dot.borderRadius})`);
   }
   if (!measured.dot.animationName || measured.dot.animationName === 'none') {

@@ -62,6 +62,7 @@ TAIL_TOPICS.extend(
                 "remove from group",
                 "copy size",
                 "paste size",
+                "swap sizes",
                 "reverse a connector",
                 "auto size",
             ),
@@ -77,7 +78,7 @@ TAIL_TOPICS.extend(
                 "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (numbers and sliders type in), Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
-                "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
+                "the group, copy, paste and swap the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Groups nest (Ungroup takes off one level, a double-click goes in); a turn near upright snaps. "
                 "Selecting, menus, presenting: Whiteboard selection and menus."
             ),
@@ -193,11 +194,14 @@ TAIL_TOPICS.extend(
                 "moment being a run of changes up to two minutes long; the bar says when and what it "
                 "added, changed and removed. Nothing can be changed while the past is shown. Put back "
                 "restores the whole board as it was then, and the second button only what was selected "
-                "when History opened; either is one Undo step and is in the history too. Esc, or the "
+                "when History opened; either is one Undo step and is in the history too. The text button says in a sentence what "
+                "changed between that version and now (your local model words it when one runs; "
+                "private notes are never named). Esc, or the "
                 "slider's right end, comes back to now; the number beside it (3 of 12) types in to jump. Changes older than ninety days may be kept only "
                 "in summary, and such a moment cannot be shown. Board, Snapshots… names the board as it is "
                 "now (Snapshot and the time unless you type a name); each one shows its picture, and "
-                "Restore puts the board back as one Undo step."
+                "Restore puts the board back as one Undo step. When Atlas or another tab changes an item, "
+                "earlier Undo steps on that item leave the list so Ctrl+Z never undoes their work."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -296,6 +300,12 @@ TAIL_TOPICS.extend(
                 "map templates",
                 "this map tab",
                 "map stats",
+                "shape libraries",
+                "more shapes",
+                "update from the library",
+                "linked copy",
+                "unlink from the library",
+                "drop on a line",
             ),
             "body": (
                 "A board's sidebar (the Sidebar button in its top bar, or the rail on its left edge) has "
@@ -352,8 +362,7 @@ TAIL_TOPICS.extend(
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
-                "exports one. A placed item is an ordinary copy: changing the library later never changes "
-                "a board. In Agent mode the assistant can search the library and place from it, draw "
+                "exports one. A placed item is a copy until you choose Update from the library or Place linked. Drag a tile you made, or a Layers row, onto the bin that shows to delete it (Undo brings it back). In Agent mode the assistant can search the library and place from it, draw "
                 "shapes and frames, and move, edit or delete what is on a board, asking first. "
                 "A PNG export joins the image library only when Also add to the image library is ticked in the "
                 "export dialog, which opens on Whole board when nothing is selected (On screen is one press away); Board, Show hints brings the first-steps card back (an empty board keeps a one-line cue meanwhile). "
@@ -471,6 +480,10 @@ TAIL_TOPICS.extend(
                 "right angle",
                 "orthogonal",
                 "connector shape",
+                "arrow width",
+                "bend points",
+                "waypoint list",
+                "arrow head size",
                 "bend",
                 "waypoint",
                 "crow's foot",
@@ -514,7 +527,7 @@ TAIL_TOPICS.extend(
                 "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
                 "take it out. A straight line runs through its bends, a curved one curves through "
-                "them, an elbow turns at right angles round the shapes it joins; Entity relation and "
+                "them, an elbow turns at right angles; Entity relation and "
                 "Isometric take no bends; changing the line shape keeps them. "
                 "With Select, pointing at a shape, card or text box shows its connection points; drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
@@ -522,10 +535,35 @@ TAIL_TOPICS.extend(
                 "Drag a connector's label by its words to slide "
                 "it along the line; Format sets its size, colour, bold, a chip and a second label. With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; View, Connection arrows and Connection points hide them; "
-                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or to the first picked. Measure with a dimension line gives its length. Drag a connector's end square onto another shape to re-point it. "
+                "a note card's arrows make a new note there instead, joined. With two or more selected, Arrange, Tidy and connect joins them in a line or to the first picked. Measure with a dimension line gives its length. Drag a connector's end square onto a shape to re-point it, or onto another connector's line to hang on it. "
                 "Insert, Diagram, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-drawio",
+            "keywords": (
+                "draw.io",
+                "drawio",
+                "draw.io csv",
+                "csv import",
+                "draw.io library",
+                "mxlibrary",
+                "import a draw.io library",
+                "export for draw.io",
+                "place on this board",
+                "insert a template",
+                "templates from draw.io",
+            ),
+            "body": (
+                "Insert, Diagram, Mermaid, draw.io or board SVG also takes a draw.io CSV: its label, style and connect lines "
+                "make shapes and connectors, laid out as its layout line says (a vertical or horizontal tree or flow, else a grid). "
+                "A .drawio file keeps turns, gradients, shadows and pictures inside the file. "
+                "In the Library, the panel menu imports a draw.io library (.xml) and exports a library as one, "
+                "and a template's menu has Place on this board, which puts its shapes in the middle of the view. "
+                "The set Templates from draw.io holds forty, each credited: Template by JGraph, CC BY 4.0."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -571,6 +609,9 @@ TAIL_TOPICS.extend(
                 "space the connectors",
                 "two lines between the same shapes",
                 "flip the layout",
+                "org chart layout",
+                "radial layout",
+                "circle layout",
                 "mirror a diagram",
             ),
             "body": (
@@ -580,19 +621,76 @@ TAIL_TOPICS.extend(
                 "left to right: a shape no connector points into is a root, siblings keep their order, and "
                 "one Undo takes it back. It is offered once the selection holds a connector. Change the "
                 "shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another "
-                "kind (rectangle, ellipse, diamond, cylinder, cloud and the rest) in the same box, keeping "
+                "kind (rectangle, ellipse, cloud and the rest) in the same box, keeping "
                 "its text, colours, line and connectors. Link…, in a shape's, text box's or picture's More "
                 "and its right-click menu, links it to one of your notes, a page (frame) of this board or a web page (or an app link "
                 "from Copy app link); a small mark on its top-left corner opens it, and the same Link… changes or removes it. Fit, in the Format "
-                "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
-                "until they fit inside the shape, never past the size you gave them. "
+                "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), shrinks long words "
+                "to fit the shape, never past the size you gave them. "
                 "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
                 "Shift+Delete clears the labels of the selected shapes and connectors; one Undo puts them back. "
                 "In the find bar (Ctrl+H), Replace changes the current match and moves on; Replace all changes every one. "
                 "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it. "
                 "Arrange, Space parallel connectors fans the connectors that join the same two shapes so none hides another "
-                "(it leaves a connector with bends of its own alone), and Layout, left to right or top to bottom, "
-                "swaps the selected shapes' places across the middle of the group, with their connectors' bends, and turns no shape itself."
+                "(not one with bends of its own), and Arrange, Layout, flip left to right or top to bottom, "
+                "swaps the selected shapes' places across the middle, with their bends, turning no shape. "
+                "Layout also lays them out as a flow, a radial tree, an org chart, an organic network or a circle, one Undo step."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-interchange",
+            "keywords": (
+                "rack layout",
+                "server rack",
+                "stack as a rack",
+                "import graphml",
+                "graphml",
+                "import miro",
+                "miro board",
+                "import emf",
+                "emf file",
+                "plantuml",
+                "import plantuml",
+                "export plantuml",
+                "board configuration",
+                "board config json",
+                "default styles json",
+            ),
+            "body": (
+                "Layout, Rack stacks the two or more selected things in one column, each in a slot of whole 24-unit steps "
+                "with a gap between, like a server rack; it needs no connectors, and one Undo takes it back. "
+                "Import reads GraphML (yEd too), Miro API items JSON and PlantUML (class, sequence, activity or named boxes) "
+                "into shapes and connectors; the Mermaid export has a PlantUML twin in the Diagram menu. An EMF cannot be drawn "
+                "here, so it lands as a note with its size and a link to the original, kept as a note's file; open it in Inkscape or LibreOffice and save a PNG or SVG. "
+                "Files over the size cap or with XML entities are refused. Export board configuration saves the default styles, "
+                "grid, paper, palettes and which shape libraries are off as JSON, and Import board configuration applies one "
+                "after a check. It is data only; no plugin code runs. A connector hung on another connector travels with it in a board export and comes back joined; a .drawio file gets its end as a free point."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-draw-io-keys",
+            "keywords": (
+                "draw.io keys",
+                "board keyboard shortcuts",
+                "select none",
+                "select all shapes",
+                "copy as image",
+                "copy as svg",
+                "copy size",
+                "paste size",
+                "swap sizes",
+                "copy data",
+                "paste data",
+                "turn 90",
+                "resize with the keyboard",
+                "ctrl+m",
+                "f2",
+                "arrange on a phone",
+            ),
+            "body": (
+                "Keys on a board that draw.io has too: Ctrl+M edits the data, F2 writes in the shape like Enter, Ctrl+Shift+I selects all shapes, Ctrl+R turns 90 degrees, Ctrl+Shift+U ungroups, Ctrl+Shift+End opens a group and Ctrl+Shift+Home leaves it, Ctrl+Shift+Plus and Ctrl+Shift+Minus change the text size, Ctrl+Alt+X and Ctrl+Alt+Shift+X copy as an image or as SVG, Alt+Shift+F and V copy and paste a size, Alt+Shift+B and E copy and paste the data (properties, tooltip and link), Alt+Shift+R clears a connector's bends, Alt+Shift+L, T and N edit the link, the tooltip and the comment, Alt+Shift+K edits the tags (Ctrl+K stays the command palette), Ctrl+arrows resize by 1 px (Ctrl+Shift: further) and / goes to the Library search; Ctrl+F finds on the board. Ctrl+Shift+A, E, R and Y stay the app's keys, so select none, select all connectors, grow to fit and clear the default style are in the palette; Ctrl+R still reloads the page when nothing is selected. On a phone the Arrange groups (Order, Align, Distribute, Layout, Tidy, Group) are in the top bar's More sheet, each opening as its own level with a back row."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -667,6 +765,60 @@ TAIL_TOPICS.extend(
                 "with a topic selected become its child branches, indentation as depth, and the chip offers "
                 "the lines as one topic instead. If the browser will not let the app read the clipboard, "
                 "Paste special applies to your next Ctrl+V."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-pdf",
+            "keywords": (
+                "pdf on a board",
+                "put a pdf on a whiteboard",
+                "place pdf pages",
+                "attach a pdf to a board",
+                "document on a board",
+                "print out a pdf",
+            ),
+            "body": (
+                "Drop a PDF on a board, paste it, or choose it with the Image button on the tool rail, and the "
+                "board asks once. Place as pages puts each page on the board as its own picture, side by side "
+                "(the first 20 pages of a longer file), as one Undo step. Attach as one object puts the first "
+                "page on the board as one picture; double-click it to open the whole file. Either way the "
+                "pictures resize and move like any other. Escape places nothing. Without the Read scanned PDFs "
+                "extra (Settings, Packages) the file becomes a card with its name that still opens."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-frame-binds",
+            "keywords": (
+                "kanban",
+                "bind a frame",
+                "frame property",
+                "status column",
+                "move a card to done",
+                "board edits my notes",
+            ),
+            "body": (
+                "Right-click a frame and choose Bind to a property, then name the property (status, owner, phase). "
+                "A note card dropped in that frame gets the frame's title as that property's value on its note. "
+                "When a note's value changes elsewhere, its card moves to the matching frame the next time the "
+                "board opens. Right-click again to unbind. One property per frame; loose cards are never moved."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-suggest-name",
+            "keywords": (
+                "name a board",
+                "suggest a board name",
+                "rename a map automatically",
+                "ai name for a board",
+                "untitled board",
+            ),
+            "body": (
+                "In the Library, a board or map card's ... menu has Suggest a name. The model writes one from "
+                "what is on the board when it runs; without one, the board's own words are cut to a name, a "
+                "map's centre topic first. It renames at once, and Undo puts the old name back."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1053,10 +1205,12 @@ TAIL_TOPICS.extend(
                 "the caret is in it. Source view shows all of it. A fenced block that "
                 "names a language (python, js, html, css, sql and more) is coloured "
                 "as that language while you edit it, indents and closes brackets "
-                "as it does, and suggests its words as you type; typing the name "
+                "as it does, and suggests its words; typing a name "
                 "after the opening fence lists the languages. The block's corner "
                 "shows its title (title=\"fit.py\" on the fence) or language; press it "
-                "to pick another language."
+                "to pick another language. Ctrl+click (Command on a Mac) opens a link, "
+                "and holding the key thickens its underline. Hover or tap a code block "
+                "for Copy, which copies the code without the fences."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1208,28 +1362,27 @@ TAIL_TOPICS.extend(
                 "(F1) changes the selection's case, sorts its lines or drops "
                 "duplicates, numbers the headings (1, 1.1) or takes the numbers "
                 "off, inserts today's date or the time, and copies the page or the "
-                "selection as formatted text to paste into Word or an email. "
+                "selection as formatted text to paste into Word or email. "
                 "Text size (Ctrl+wheel too) and spacing: document menu. The document's menus hold History "
-                "(every version, and a way back to any), Connections, Extract "
+                "(every version, a way back, a summary), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
                 "connected, AI edit says why when pressed and "
                 "offers Set up a model. Footnotes show "
-                "as numbered notes at the foot in Read view, in print and in the "
+                "as numbered notes at the foot in Read view, print and the "
                 "HTML download. A page break (the / menu's Page break, written "
                 "\\newpage on its own line) starts what follows on a new page when "
                 "the document is printed or saved as a PDF. Writing checks: "
                 "spelling against your own dictionary, grammar checked on this "
                 "machine, an accessibility check (a skipped heading level, an "
                 'image with no description, link text like "click here"), Suggest '
-                "changes (tracked changes to accept or reject one at a time or "
+                "changes (tracked changes with who and when, accepted or rejected one at a time or "
                 "all at once), Read aloud (Esc stops), autocorrect, and word "
-                "suggestions (Tab accepts). Word: Download as .docx is written in "
-                "the app and keeps headings, emphasis, "
+                "suggestions (Tab accepts). Word: Download as .docx keeps headings, emphasis, "
                 "links, nested lists, tables, code (with its language), pictures, "
                 "task boxes, footnotes (as Word footnotes), formulas (as Word "
                 "equations), diagrams (as pictures), [TOC], callouts and columns (as Word's own) and suggested changes as "
-                "Word's tracked changes; a .docx added "
+                "Word's tracked changes with author and date; a .docx added "
                 "in the Library is read with its headings, lists, tables, code "
                 "and pictures, its tracked changes as suggestions; other downloads "
                 "are .md, .html, a .zip "
@@ -1664,6 +1817,7 @@ TAIL_TOPICS.extend(
             ),
             "body": (
                 "In Capture a thought, Ctrl+Enter saves, "
+                "the strip's Live, Source and Read buttons change how the box shows (Live by default, Read is the finished note), "
                 "/ (or Ctrl+/) opens the blocks and commands menu, Ctrl+J asks "
                 "Atlas to write at the cursor, and selecting text shows an actions "
                 "menu (Ctrl+Shift+E from the keyboard). From anywhere, Ctrl+Shift+N "

@@ -782,6 +782,9 @@ function noteEditToolbar(boxId) {
     //: **The Source button stays in the strip**, marked because the id is
     //: stripped two lines down and renderEditForm wires it (INBOX 430: it was
     //: Preview, a pane the box already is).
+    //: Only Source of the capture strip's Live, Source, Read segment is the edit box's.
+    const viewSeg = clone.querySelector("#entry-view-seg");
+    viewSeg?.replaceWith(viewSeg.querySelector("#entry-preview-toggle"));
     clone.querySelector("#entry-preview-toggle")?.setAttribute("data-note-preview", "1");
     //: **Every id goes.** A clone carries the capture strip's ids, and two
     //: elements with one id means `document.getElementById` hands back the

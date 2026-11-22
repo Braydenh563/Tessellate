@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import utilities
+from tests._app_js import documents_text
 from tessellate.core import cjk
 from tests._clock import SUITE_NOW, pin_clock
 
@@ -95,7 +96,7 @@ def test_reading_time_wording():
 
 
 def test_no_count_of_its_own_in_the_documents_bundle():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "READING_WPM" not in re.sub(r"//.*", "", docs)
     assert docs.count("textCounts(") >= 3
 
@@ -127,7 +128,7 @@ def test_the_document_status_bar_shows_lines_not_only_counts_them():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1] / "frontend"
-    source = (root / "js" / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     block = source[source.index("function renderDocCounts") : source.index("function renderDocStatusBar")]
     assert "docLineCount(" in block
     assert "line${" in block or "line\"" in block

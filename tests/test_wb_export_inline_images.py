@@ -9,6 +9,7 @@ pointed at an address that means nothing outside the app. Both now go through
 `wbInlineSvgImages`.
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 WHITEBOARD = Path(__file__).resolve().parent.parent / "frontend" / "js" / "whiteboard.js"
@@ -20,19 +21,19 @@ def _function(text: str, header: str) -> str:
 
 
 def test_every_rasterised_export_inlines_its_pictures_first():
-    text = WHITEBOARD.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     body = _function(text, "async function wbRasterizeSvg(")
     assert "await wbInlineSvgImages(" in body
 
 
 def test_the_saved_svg_is_self_contained_too():
-    text = WHITEBOARD.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     body = _function(text, "async function wbExportSvg(")
     assert "wbInlineSvgImages(svg)" in body
 
 
 def test_a_picture_that_cannot_be_fetched_keeps_its_address():
-    text = WHITEBOARD.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     body = _function(text, "async function wbInlineSvgImages(")
     # `api()` throws on a refusal (F5), and the catch keeps the address.
     assert "api(unescapeAttr(escaped), { silent: true })" in body

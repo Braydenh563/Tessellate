@@ -189,3 +189,21 @@ def test_a_pytorch_only_model_chosen_earlier_is_re_embedded_with_the_default(cli
     assert embeddings.backfill_missing(service, lambda: session) == 1
     session.expire_all()
     assert session.scalars(select(EmbeddingRecord.model_version)).all() == [real.backend_id()]
+
+
+def test_settings_list_reads_the_runners_models_it_was_handed_and_asks_nothing():
+    """Settings' list hands over the runner's models from the bounded list
+    flight, families included: a family-only embedder is still found, and the
+    runner is never asked (CI 137088970825)."""
+
+    asked: list[str] = []
+
+    class Untouchable:
+        def __getattr__(self, name):  # noqa: ANN204
+            asked.append(name)
+            raise AttributeError(name)
+
+    listed = [{"name": "house-encoder:7b", "details": {"families": ["nomic-bert"]}}, {"name": "llama3:8b"}]
+    rows = [row for row in embedfind.found(Untouchable(), listed) if row["backend"] == "ollama"]
+    assert [row["model"] for row in rows] == ["house-encoder:7b"]
+    assert asked == []

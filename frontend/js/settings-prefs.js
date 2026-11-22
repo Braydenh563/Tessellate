@@ -35,6 +35,7 @@ async function renderPrefs() {
   $("pref-search-z-margin").value = prefsCache.search_relative_z_margin;
   $("pref-style").value = prefsCache.communication_style;
   $("pref-voice").value = prefsCache.composer_voice;
+  $("pref-writing-style").value = prefsCache.writing_style || "notes";
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-birthday").value = prefsCache.birthday || "";
@@ -248,4 +249,20 @@ function syncEmbeddingPickerState(offline) {
   apply.title = usingOllama
     ? "Re-read every note with this model"
     : "Switch to the built-in model and re-read every note with it";
+}
+
+//: The prompt reads the first 600 characters of About me
+//: (`librarian.PROFILE_ABOUT_CAP_CHARS`); the box stops there, and the count
+//: says how much is left. A profile saved before the cap may be longer, and
+//: then the line says which part Atlas reads rather than hiding the rest.
+const PROFILE_ABOUT_CAP = 600;
+
+function updateProfileCount() {
+  const line = $("pref-profile-count");
+  const box = $("pref-profile");
+  if (!line || !box) return;
+  const used = box.value.length;
+  line.textContent = used > PROFILE_ABOUT_CAP
+    ? `${used} characters; Atlas reads the first ${PROFILE_ABOUT_CAP}.`
+    : `${used} of ${PROFILE_ABOUT_CAP} characters.`;
 }

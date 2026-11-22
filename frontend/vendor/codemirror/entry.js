@@ -33,11 +33,8 @@ export { dockerFile } from "@codemirror/legacy-modes/mode/dockerfile";
 export { swift } from "@codemirror/legacy-modes/mode/swift";
 export { r } from "@codemirror/legacy-modes/mode/r";
 export { properties } from "@codemirror/legacy-modes/mode/properties";
-// **PHP is deliberately absent**, and the number is the reason:
-// `@codemirror/lang-php` is not a legacy mode but a full Lezer grammar that
-// also pulls in lang-html (PHP is embedded in HTML), and it costs +98,144
-// bytes raw and +28,563 gzipped on its own, 10.6% of this bundle for one
-// language. DOCUMENTS_PLAN records the decision.
+// PHP is not here: it is the lazy php.min.js (entry-php.js, L-documents-63), 28,381 bytes gzipped that only a
+// .php file wants.
 // Added 2026-10-10 (Brief 42, each sized before it landed, gzip -9 against
 // this bundle): the merge view, to compare the editor with a saved version
 // and take or undo one hunk (+29,294 raw, +10,014 gzipped); the minimap, off
@@ -48,3 +45,10 @@ export * as merge from "@codemirror/merge";
 export { showMinimap } from "@replit/codemirror-minimap";
 export { vb } from "@codemirror/legacy-modes/mode/vb";
 export { vbScript } from "@codemirror/legacy-modes/mode/vbscript";
+// Added 2026-11-14 (L-documents-63): the Lezer runtime, so the lazy php.min.js
+// shares one copy of Tree, TreeBuffer and parseMixed with this bundle (PHP is
+// embedded in HTML, and two copies of @lezer/common break `instanceof` between
+// the HTML trees here and the PHP ones there). Measured: +413 bytes raw, +207
+// gzipped.
+export * as common from "@lezer/common";
+export * as lr from "@lezer/lr";

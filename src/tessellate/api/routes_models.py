@@ -239,7 +239,7 @@ def _installed_state(client, *, patient: bool = True) -> tuple[list[dict] | None
 def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:  # noqa: ANN001
     try:
         flight.result = [
-            {"name": m.get("name", ""), "size": m.get("size", 0), "uses": model_cards.installed_uses(m)}
+            {"name": m.get("name", ""), "size": m.get("size", 0), "uses": model_cards.installed_uses(m), "details": m.get("details") or {}}
             for m in client.list_models()
         ]
     except OllamaError:

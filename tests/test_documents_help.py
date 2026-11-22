@@ -44,6 +44,7 @@ DOCK_MENU_WORDS = {
     "doc-code-wrap-row": "wrap",
     "doc-whitespace-row": "whitespace",
     "doc-minimap-row": "minimap",
+    "doc-vim-row": "Vim keys",
     "doc-dim-others": "Dim all but this paragraph",
     "doc-typewriter": "Keep this line centred",
     "doc-margin-reader": "Margin reader",

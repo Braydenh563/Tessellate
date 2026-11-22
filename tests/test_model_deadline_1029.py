@@ -247,24 +247,95 @@ def silent():
     model.close()
 
 
-def test_decorating_routes_do_not_wait_on_a_silent_backend(app_state, silent):
+def _timed(api, path):
+    started = time.monotonic()
+    response = api.get(path)
+    return response, time.monotonic() - started
+
+
+#: The provider calls that reach the runner. A decorating route may only ask
+#: them from a probe or list thread of its own (`backend_hint`, `models-list`,
+#: the model manager's jobs), never on the thread serving the request.
+_NETWORK = {
+    "show", "capabilities", "is_running", "loaded_models", "unload", "list_models", "pull",
+    "delete", "chat", "chat_stream", "chat_tools_stream", "chat_tools", "embed",
+}
+_OFF_REQUEST = ("backend probe", "models-list", "mm-job-")
+
+
+class _Recorded(ollama_client.OllamaClient):
+    """The real client against the silent runner, noting which thread made each call."""
+
+    def __init__(self, base_url: str) -> None:
+        super().__init__(base_url=base_url)
+        self.calls: list[tuple[str, str]] = []
+
+    def __getattribute__(self, name):  # noqa: ANN001, ANN204
+        attr = super().__getattribute__(name)
+        if name not in _NETWORK:
+            return attr
+        calls = super().__getattribute__("calls")
+
+        def call(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+            calls.append((name, threading.current_thread().name))
+            return attr(*args, **kwargs)
+
+        return call
+
+
+class _HeldProbe(ollama_client.OllamaClient):
+    """A backend whose liveness probe never returns until released."""
+
+    def __init__(self) -> None:
+        super().__init__(base_url="http://127.0.0.1:9")
+        self.release = threading.Event()
+        self.callers: list[str] = []
+
+    def is_running(self) -> bool:
+        self.callers.append(threading.current_thread().name)
+        self.release.wait(HANG_GUARD)
+        return True
+
+
+def test_the_tensions_route_answers_while_the_backend_probe_is_still_held(app_state):
+    """No wall clock: the route answers twice while the only probe is still
+    blocked, the probe ran on its own thread, and nothing past the probe ran."""
     from tessellate.api.app import create_app
 
-    deps.override_ai(ollama=ollama_client.OllamaClient(base_url=silent.url))
+    held = _HeldProbe()
+    deps.override_ai(ollama=held)
+    readied = []
+    deps.get_embeddings().is_ready = lambda: readied.append(1) or True
+    api = TestClient(create_app())
+    try:
+        for _ in range(2):
+            response = api.get("/entries/tensions")
+            assert response.status_code == 200 and response.json()["status"] == "no_model"
+        assert not held.release.is_set()
+        assert held.callers == ["backend probe"] and readied == []
+    finally:
+        held.release.set()
+
+
+def test_decorating_routes_do_not_wait_on_a_silent_backend(app_state, silent):
+    """Intent, not a wall clock: no call to the silent runner is made on the
+    request's own thread (CI 137088970825: `/embedding-models/choices` probed
+    there and waited the 1 s probe read once the quiet mark lapsed)."""
+    from tessellate.api.app import create_app
+
+    client = _Recorded(silent.url)
+    deps.override_ai(ollama=client)
     api = TestClient(create_app())
     paths = [
         "/models/hardware", "/activity", "/embedding-models/choices", "/entries/tensions",
         "/insights/greeting", "/support-bundle",
     ]
-    for path in paths:  # the first pass may pay one short budget; the second is the steady state
-        api.get(path)
-    # Counted, not timed (L-general-70): in the steady state no route sends the
-    # silent backend a request to wait on (they waited 1 to 5 s on one each).
-    for path in paths:
-        held = silent.held
-        response = api.get(path)
-        assert response.status_code == 200, path
-        assert silent.held == held, path
+    for _ in range(2):  # the second pass is the steady state, with every cache warm
+        for path in paths:
+            client.calls.clear()
+            assert api.get(path).status_code == 200, path
+            on_request = [call for call in client.calls if not call[1].startswith(_OFF_REQUEST)]
+            assert on_request == [], (path, on_request)
 
 
 def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monkeypatch):

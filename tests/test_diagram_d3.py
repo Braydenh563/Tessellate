@@ -15,7 +15,8 @@ OPS = (ROOT / "frontend" / "js" / "diagram-ops.js").read_text(encoding="utf-8")
 
 
 def test_a_kind_the_blocks_do_not_draw_and_a_diagram_over_120_blocks_open_in_source_with_one_line_why():
-    for kind in ("state diagrams", "class diagrams", "pie charts", "Gantt charts", "user journeys", "ER diagrams", "C4 diagrams"):
+    # State, class, pie, Gantt and ER became block kinds (L-documents-57), so only these two still open in Source.
+    for kind in ("user journeys", "C4 diagrams"):
         assert f'"{kind}"' in OPS, kind
     assert "so it opens in Source with its picture." in BUILDER and "has more than ${diagramOps.MAX} blocks" in BUILDER
     assert "const DGB_MAX = 120;" in OPS
