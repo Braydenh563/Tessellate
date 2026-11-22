@@ -100,14 +100,17 @@ function ensureSettingsPaneTitle(box, name) {
 //: of one ("On this page", settings-find.js), so the walk, a computed style
 //: per ancestor and a forced style recalculation straight after a scroll,
 //: is done once per pane and window width (the phone band moves it).
+//: Kept on the panes' shared parent, not on each pane: the walk starts above the pane, so sibling panes
+//: find the same box, and a first show no longer forces the style of the pane it just built
+//: (L-world-class-355: 10 of the Appearance first show's 76 ms at 4x CPU).
 function settingsScroller(name) {
-  const box = $(`settings-${name}`);
-  if (box?._scroller?.contains(box) && box._scrollerAt === innerWidth) return box._scroller;
-  for (let el = box && box.parentElement; el; el = el.parentElement) {
+  const host = $(`settings-${name}`)?.parentElement;
+  if (host?._scroller?.contains(host) && host._scrollerAt === innerWidth) return host._scroller;
+  for (let el = host; el; el = el.parentElement) {
     const overflow = getComputedStyle(el).overflowY;
     if (overflow === "auto" || overflow === "scroll") {
-      box._scroller = el;
-      box._scrollerAt = innerWidth;
+      host._scroller = el;
+      host._scrollerAt = innerWidth;
       return el;
     }
   }
