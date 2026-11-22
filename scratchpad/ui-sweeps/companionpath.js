@@ -17,11 +17,11 @@ const CASES = [
 (async () => {
   if (process.env.ONLY) CASES.length = 0;
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block', reducedMotion: process.env.REDUCE ? 'reduce' : 'no-preference' });
-  await page.evaluate(async (k) => { localStorage.removeItem('nm-buddy-spots'); prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, KIND);
+  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   await page.evaluate(() => ensureModule('companionMenu')); await page.waitForTimeout(1500);
-  await page.evaluate(() => { for (const n of ['nameMarkBuddyTick', 'nameMarkBuddyDrift', 'nameMarkBuddyErrand', 'nameMarkBuddyBored']) if (typeof window[n] === 'function') window[n] = () => {}; });
+  await page.evaluate(() => { for (const n of ['nmb.sweep.nameMarkBuddyTick', 'nmb.sweep.nameMarkBuddyDrift', 'nmb.sweep.nameMarkBuddyErrand', 'nameMarkBuddyBored']) if (typeof window[n] === 'function') window[n] = () => {}; });
   await page.evaluate(() => {
     window.__s = { on: false, pts: [] };
     const loop = (t) => { if (__s.on) { const b = document.getElementById('nm-buddy'); const r = b.getBoundingClientRect(); __s.pts.push([t, r.left + r.width / 2, r.top + r.height / 2, +getComputedStyle(b).opacity, b.dataset.route || '']); } requestAnimationFrame(loop); };

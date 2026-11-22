@@ -27,7 +27,7 @@ const TAG = process.env.TAG || 'moodfx';
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
   await page.evaluate(() => {
-    const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
+    const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
     localStorage.removeItem('nm-buddy-spots');
   });
   await page.evaluate(() => revealTab('dashboard'));

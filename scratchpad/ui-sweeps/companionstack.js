@@ -17,7 +17,7 @@
 //   overBot   rows inside the bottom bar's rect;
 //   pastClip  rows outside the perch's own clip box (its scroll area's
 //             visible box under the top bar and any bar sticking in it, over
-//             the bottom bar: `nameMarkBuddyBand`).
+//             the bottom bar: `nmb.sweep.nameMarkBuddyBand`).
 // Each is judged only on the frames its perch (the card's top edge) has
 // itself gone under that line: "exactly like its perch". At rest, a head
 // over a bar is drawn whole, by design (the band is widened for it), so
@@ -57,7 +57,7 @@ const CARD = {
       }
     }, 32 - docs);
   }
-  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   if (SCALE !== 1) await page.evaluate((s) => nameMarkBuddySetSize(s, true), SCALE);
   let bad = 0;
@@ -68,7 +68,9 @@ const CARD = {
     if (tab === 'notes') await page.evaluate(() => typeof loadEntries === 'function' && loadEntries()).catch(() => {});
     if (tab === 'library') await page.evaluate(async () => { await ensureModule('library'); await loadLibrary(); }).catch(() => {});
     if (tab === 'chat') {
-      await page.evaluate(async () => { await ensureModule('chatTurn');
+      // addBubble is chat-turn.js's, a lazy bundle (lazy-entries.js chatTurn) a send would fetch.
+      await page.evaluate(async () => {
+        await ensureModule('chatTurn');
         if (document.querySelectorAll('#chat-messages > .msg').length > 20) return;
         for (let i = 0; i < 14; i += 1) {
           addBubble('user', `Question number ${i} about my notes, with a few more words`);
@@ -81,12 +83,12 @@ const CARD = {
       const setup = await page.evaluate(({ sel, where }) => {
         const cards = [...document.querySelectorAll(sel)].filter((el) => el.getBoundingClientRect().width > 200);
         if (!cards.length) return { error: `no ${sel}` };
-        const scroller = nmb.inner.nameMarkBuddyScroller(cards[0]);
+        const scroller = nmb.sweep.nameMarkBuddyScroller(cards[0]);
         if (!scroller) return { error: 'no scroller', n: cards.length };
         const card = cards[Math.min(cards.length - 1, Math.floor(cards.length * 0.5))];
         // The line its perch is cut at: the area's visible box, under the top
         // bar and any bar that sticks in the area, over the bottom bar.
-        const { lo: clipTop, hi: clipBot } = nmb.inner.nameMarkBuddyBand(scroller, card);
+        const { lo: clipTop, hi: clipBot } = nmb.sweep.nameMarkBuddyBand(scroller, card);
         // A card half way down the list, scrolled to where the case wants
         // its top edge: 260px under the area's top (low), or 20px (high), so
         // its figure's head is over whatever is above the area.
@@ -182,7 +184,7 @@ const CARD = {
       results.push(sum);
       console.log(JSON.stringify(sum));
       if (!ride.length || sum.overTopMax > 0 || sum.overBotMax > 0 || sum.pastClipMax > 0) bad += 1;
-      await page.evaluate(() => { const s = nmb.inner.nameMarkBuddyScroller(document.querySelector('[data-probe-card]')); if (s) s.scrollTop = 0; });
+      await page.evaluate(() => { const s = nmb.sweep.nameMarkBuddyScroller(document.querySelector('[data-probe-card]')); if (s) s.scrollTop = 0; });
       await page.waitForTimeout(400);
     }
   }
@@ -191,8 +193,8 @@ const CARD = {
     const buddy = document.getElementById('nm-buddy');
     const { top } = nameMarkBuddyLedges();
     nameMarkBuddyIndexReset();
-    const obstacles = nmb.inner.nameMarkBuddyObstacles(nameMarkBuddyTab());
-    const landed = nmb.inner.nameMarkBuddyPerches(nameMarkBuddyTab()).find((p) => p.kind === 'hang' && !nmb.inner.nameMarkBuddyHits(p.x, p.y, p.pose, obstacles, p.legs));
+    const obstacles = nmb.sweep.nameMarkBuddyObstacles(nameMarkBuddyTab());
+    const landed = nmb.sweep.nameMarkBuddyPerches(nameMarkBuddyTab()).find((p) => p.kind === 'hang' && !nmb.sweep.nameMarkBuddyHits(p.x, p.y, p.pose, obstacles, p.legs));
     if (!landed) return { error: 'no hang perch' };
     nameMarkBuddyMoveTo(buddy, landed, true);
     const band = document.getElementById('nm-buddy-band');

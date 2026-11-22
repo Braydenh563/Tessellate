@@ -7,21 +7,13 @@
 // far less than a notch.
 //
 //   BASE=http://127.0.0.1:8799 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node ctrlwheelzoom.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   let failed = 0;
   const ok = (name, pass, detail) => { if (!pass) failed++; console.log(`${pass ? "PASS" : "FAIL"}  ${name}  ${detail || ""}`); };
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", "Wheel zoom");
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, "Wheel zoom", 'board');
   await page.keyboard.press("Escape");
   const box = await page.evaluate(() => {
     const r = document.getElementById("whiteboard-container").getBoundingClientRect();

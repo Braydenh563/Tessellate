@@ -14,7 +14,9 @@ const { boot } = require("./lib.js");
   const { browser, page } = await boot({ viewport: { width: Number(process.env.W || 1440), height: 900 }, reducedMotion: "reduce" });
   await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy();
+    const b = $("avatar-buddy");
+    b.value = k;
+    b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");
   await page.waitForTimeout(3500);
   const r = await page.evaluate(async () => {

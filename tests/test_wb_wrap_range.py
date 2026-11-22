@@ -1,5 +1,6 @@
 """Bold and Italic from the Format panel wrap the selection by offsets, not the first match (wbdog-1026)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -8,7 +9,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _wrap(text: str, frm: int, to: int, marker: str):

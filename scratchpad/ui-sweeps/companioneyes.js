@@ -16,10 +16,10 @@ const { boot } = require('./lib.js');
   for (const look of ['masculine', 'feminine']) {
     await page.evaluate(async ([look]) => {
       localStorage.setItem('atlas-look', look);
-      prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy();
+      const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, [look]);
     await page.waitForTimeout(300);
-    await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
+    await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
     await page.waitForTimeout(2200);
     await page.evaluate(() => {
       clearTimeout(nmb.timer);
@@ -33,7 +33,7 @@ const { boot } = require('./lib.js');
           nameMarkBuddyRide(null, 700, 420);
           nameMarkBuddyMoveTo(buddy, { kind: 'card', pose, legs: '', x: 700, y: 420 }, true);
           setAtlasMood(mood, 0, { quiet: true });
-          const [cx, cy] = nmb.inner.nameMarkBuddyHeadAt();
+          const [cx, cy] = nmb.sweep.nameMarkBuddyHeadAt();
           return [cx, cy];
         }, [pose, mood]);
         await page.waitForTimeout(400);

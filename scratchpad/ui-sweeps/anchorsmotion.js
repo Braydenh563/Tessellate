@@ -163,12 +163,12 @@ const OPEN = {
     await page.waitForTimeout(1500);
     //: A step that points at a control (the first one may be a welcome).
     for (let i = 0; i < 4; i += 1) {
-      const has = await page.evaluate(() => Boolean(openTour.inspect().run && openTour.inspect().run.el));
+      const has = await page.evaluate(() => Boolean(openTour.sweep.run && openTour.sweep.run.el));
       if (has) break;
       await page.click('#tour-next').catch(() => null);
       await page.waitForTimeout(1200);
     }
-    await page.evaluate(() => { if (openTour.inspect().run?.el) openTour.inspect().run.el.dataset.sweepTour = '1'; });
+    await page.evaluate(() => { const run = openTour.sweep.run; if (run?.el) run.el.dataset.sweepTour = '1'; });
     return { anchorSel: '[data-sweep-tour="1"]', surfaceSel: '#tour-card:not(.hidden)', close: async () => { await page.evaluate(() => { document.querySelector('[data-sweep-tour]')?.removeAttribute('data-sweep-tour'); if (typeof closeTour === 'function') closeTour(); else document.getElementById('tour-skip')?.click(); }); } };
   },
   async palette(page) {
@@ -233,6 +233,8 @@ const OPEN = {
     await page.waitForTimeout(300);
     const face = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height * 0.45]; });
     await page.mouse.click(face[0], face[1], { button: 'right' });
+    // The menu is lazy (companion-menu.js): read it once its file has come.
+    await page.waitForFunction(() => nmb.menu && !nmb.menu.classList.contains('hidden'), null, { timeout: 15000 }).catch(() => null);
     return { anchorSel: '#nm-buddy .nm-buddy-face', surfaceSel: '.action-menu:not(.hidden)' };
   },
 };
@@ -330,7 +332,7 @@ async function openPeek(page) {
             const have = await apiJson('/entries?limit=10').catch(() => []);
             const n = (have.items || have).length;
             for (let i = n; i < notes.length; i += 1) await api('/entries', { method: 'POST', body: JSON.stringify({ content: notes[i] }) });
-            const b = document.getElementById('avatar-buddy');
+            const b = $('avatar-buddy');
             if (b) { b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); }
             if (withPeek) {
               await api('/models/provider', { method: 'POST', body: JSON.stringify({ provider: 'openai', base_url: base }) }).catch(() => null);

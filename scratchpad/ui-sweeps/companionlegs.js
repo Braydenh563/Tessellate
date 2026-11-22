@@ -14,10 +14,10 @@ const { boot } = require('./lib.js');
   await page.evaluate(async () => {
     localStorage.setItem('atlas-look', 'masculine'); localStorage.removeItem('nm-buddy-spots');
     const spec = ATLAS_LOOKS.masculine; spec.legs = true; delete spec.legPaths;
-    prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy();
+    const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
   });
   await page.waitForTimeout(500);
-  await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(3000);
   const route = process.env.ROUTE || 'leap';
   const info = await page.evaluate((route) => {

@@ -9,6 +9,7 @@ with Select, pointing at an item shows its points and dragging from one draws
 a connector. The browser half is `scratchpad/ui-sweeps/wbports.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -17,7 +18,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:
@@ -78,6 +79,6 @@ def test_a_stored_anchor_is_read_from_its_fraction() -> None:
 def test_select_shows_the_points_and_a_drag_from_one_connects() -> None:
     assert 'if (window.currentTool === "select" && !e.buttons) {\n      portHover(e);' in SOURCE
     block = SOURCE[SOURCE.index("// --- Connection points with Select") :]
-    block = block[: block.index("\n  });\n", block.index('containerEl.addEventListener("pointerup"')) + 6]
+    block = block[: block.index("\n  });\n", block.index('wbInstances.on("pointerup"')) + 6]
     for needle in ('route: "elbow"', 'endCap: "arrow"', "sourceAnchor: drag.anchor", "targetPoint", "wbPushUndo({ action: \"create\"", "e.preventDefault();", "wbSelectedKeys().has("):
         assert needle in block, needle

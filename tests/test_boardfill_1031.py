@@ -5,6 +5,7 @@ the server owns; the measured Playwright numbers are in the commit message."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -22,7 +23,7 @@ LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="
 
 
 def _wb_js() -> str:
-    return (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    return frontend_text("whiteboard.js")
 
 
 # --- opacity of the fill and of the line ----------------------------------------
@@ -98,13 +99,13 @@ def test_the_help_names_the_new_rows():
 def test_a_press_inside_the_selections_bounds_drags_the_whole_selection():
     src = _wb_js()
     assert "function wbPointInSelectionBounds(" in src
-    down = src.split('containerEl.addEventListener("pointerdown", (e) => {\n    //: A new press is a new gesture')[1].split("\n  });")[0]
+    down = src.split('wbInstances.on("pointerdown", (e) => {\n    //: A new press is a new gesture')[1].split("\n  });")[0]
     assert "wbPointInSelectionBounds(" in down and "pending: true, place, move" in down
 
 
 def test_a_click_inside_the_bounds_does_not_clear_the_selection():
     src = _wb_js()
-    click = src.split('containerEl.addEventListener("click", (e) => {')[1].split("// A text box is placed by clicking")[0]
+    click = src.split('wbInstances.on("click", (e) => {')[1].split("// A text box is placed by clicking")[0]
     assert "wbPointInSelectionBounds(" in click
 
 

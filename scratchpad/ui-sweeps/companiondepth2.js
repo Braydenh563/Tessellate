@@ -18,7 +18,7 @@ async function companionmoods() {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
     await page.evaluate(async (k) => {
       localStorage.removeItem('nm-buddy-spots');
-      prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy();
+      const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
       revealTab('dashboard');
     }, KIND);
     await page.waitForTimeout(5000);
@@ -70,7 +70,7 @@ async function companioncost() {
     const metric = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
     await page.evaluate(async ([k, look]) => {
       localStorage.setItem('atlas-look', look); localStorage.removeItem('nm-buddy-spots');
-      prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy();
+      const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, [KIND, process.env.LOOK || 'masculine']);
     await page.waitForTimeout(3000);
     await page.evaluate((r) => {
@@ -112,7 +112,7 @@ async function companionrecalcorder() {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
     await page.evaluate(async (look) => {
       localStorage.setItem('atlas-look', look); localStorage.removeItem('nm-buddy-spots');
-      prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy();
+      const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, process.env.LOOK || 'masculine');
     await page.waitForTimeout(3500);
     await page.evaluate(() => {

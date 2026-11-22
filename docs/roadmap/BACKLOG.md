@@ -2,49 +2,26 @@
 
 > **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [LEDGER.md](LEDGER.md) (every open item outside the plans; licence: AGPL-3.0) · [HISTORY.md](HISTORY.md) (already built).
 
-Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This
-file is the **standing backlog**: everything that is still work, numbered as it
-always was, so every §-reference elsewhere still resolves.
+Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This file is the **standing backlog**: everything that is still work, numbered as it always was, so every §-reference elsewhere still resolves.
 
-The live list: what to do next, and the two sections of freshly reported work
-(§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans
-are in [LEDGER.md](LEDGER.md); finished work is in [HISTORY.md](HISTORY.md).
+The live list: what to do next, and the two sections of freshly reported work (§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans are in [LEDGER.md](LEDGER.md); finished work is in [HISTORY.md](HISTORY.md).
 
-> **Status, 2026-09-07.** Every UI/UX item in this file (§2 quick wins, §15
-> Appearance, §16 Sweeping UI quality-of-life, §19 Accessibility, §24
-> Dashboard, §29b's visual rows, §64's editor chrome) is now governed by
-> [UI_MODERNISATION_PLAN.md](UI_MODERNISATION_PLAN.md), the top priority in
-> ROADMAP.md: do them through its phases, not one by one from here. §6 and
-> §63 are done (kept for their numbers). Everything else stands.
+> **Status, 2026-09-07.** Every UI/UX item in this file (§2 quick wins, §15 Appearance, §16 Sweeping UI quality-of-life, §19 Accessibility, §24 Dashboard, §29b's visual rows, §64's editor chrome) is now governed by [UI_MODERNISATION_PLAN.md](UI_MODERNISATION_PLAN.md), the top priority in ROADMAP.md: do them through its phases, not one by one from here. §6 and §63 are done (kept for their numbers). Everything else stands.
 
-> **Swept against the code, 2026-10-05.** Every open item was checked: built ones
-> are struck with the file and line that proves it, whiteboard, document, graph and
-> harness items point at the plan row that owns them (WHITEBOARD_PLAN, DOCUMENTS_PLAN,
-> GRAPH_PLAN, WORLD_CLASS_PLAN, `scratchpad/audit1005/features.md`), and each item
-> still open carries a one-line **Next:** naming the files, or says it is the
-> owner's call. Line numbers drift; the names beside them do not.
+> **Swept against the code, 2026-10-05.** Every open item was checked: built ones are struck with the file and line that proves it, whiteboard, document, graph and harness items point at the plan row that owns them (WHITEBOARD_PLAN, DOCUMENTS_PLAN, GRAPH_PLAN, WORLD_CLASS_PLAN, `scratchpad/audit1005/features.md`), and each item still open carries a one-line **Next:** naming the files, or says it is the owner's call. Line numbers drift; the names beside them do not.
 
-> The rule that governs all of it, unchanged: **check the running app before
-> building anything here.** Three sessions independently rebuilt something that
-> already existed, and an audit of §2 found four of its six "quick wins" done.
+> The rule that governs all of it, unchanged: **check the running app before building anything here.** Three sessions independently rebuilt something that already existed, and an audit of §2 found four of its six "quick wins" done.
 
 ## 1. Live log console (started, not finished)
 
 **Why.** Asked for directly: the Logs screen should read "like the terminal
-running in the background, with key errors flagged", not a list you refresh by
-hand.
+running in the background, with key errors flagged", not a list you refresh by hand.
 
 **What exists.** `core/logbuffer.py` is a 500-record ring buffer attached to the
-root logger and uvicorn's. It now sanitises each message to one printable line
-(so a chat question or a page title can't forge a row) and keeps tracebacks in a
-separate `trace` field for a fold.
+root logger and uvicorn's. It now sanitises each message to one printable line (so a chat question or a page title can't forge a row) and keeps tracebacks in a separate `trace` field for a fold.
 
 **What's left.** Streaming (NDJSON over `fetch`, not `EventSource`, see
-HISTORY.md for why), follow/tail with autoscroll, level/text/source
-filters, the `trace` fold, merging in `browserLogs`, and an error badge on
-the nav item are all **done**, see HISTORY.md. Also done: **exporting a
-support bundle** (an allowlist zip of the log buffer, scrubbed
-`preferences.json`, and model status).
+HISTORY.md for why), follow/tail with autoscroll, level/text/source filters, the `trace` fold, merging in `browserLogs`, and an error badge on the nav item are all **done**, see HISTORY.md. Also done: **exporting a support bundle** (an allowlist zip of the log buffer, scrubbed `preferences.json`, and model status).
 
 - **Getting one error OUT of the log** (asked for directly after the console
   landed: "make sure that if there is an error in the log that it can be
@@ -91,39 +68,20 @@ Moved to HISTORY.md ("Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, 
 
 ## 3. Chat page: Chat / Agent / Browse sub-tabs
 
-> **Status (audited this session, ROADMAP.md §38 item 5): substantially done,
-> via a different, and, on the evidence, better, shape than "three
-> sub-tabs".** Checked against the actual code rather than re-reading this
-> section's original wording as a spec:
+> **Status (audited this session, ROADMAP.md §38 item 5): substantially done, via a different, and, on the evidence, better, shape than "three sub-tabs".** Checked against the actual code rather than re-reading this section's original wording as a spec:
 >
 > - **Chat vs Agent** → the Ask/Agent mode toggle in the chat dock, not a
 >   tab switch. Same distinction, one click instead of a navigation.
 > - **Browse** → the web panel (§36G), a persistent column beside the
->   conversation rather than a third tab, and §36G's own reasoning
->   ("a reading surface cannot live inside a control strip... as a column it
->   needs no cap and sits beside the composer") is a real argument *against*
->   folding it back into a tab, not just a different implementation of the
->   same idea.
+>   conversation rather than a third tab, and §36G's own reasoning   ("a reading surface cannot live inside a control strip... as a column it   needs no cap and sits beside the composer") is a real argument *against*   folding it back into a tab, not just a different implementation of the   same idea.
 > - **Cross-linking** ("the agent hands a page to Browse, Browse hands a page
->   to chat") → `askAboutPage()` does the Browse-to-chat direction (💬 Ask
->   about this closes the panel, asks the agent to `read_url` the page).
+>   to chat") → `askAboutPage()` does the Browse-to-chat direction (💬 Ask   about this closes the panel, asks the agent to `read_url` the page).
 > - **Visible plan/progress** → `make_plan`'s ticked-step display, built
->   since (§35's "Next session: start here" item 1), satisfies this more
->   generally than a per-tab progress view would have.
+>   since (§35's "Next session: start here" item 1), satisfies this more   generally than a per-tab progress view would have.
 > - **Independent web-search gating** ("works even when the chat/agent
->   web_search tool is off") → there is one `web_search_enabled` pref
->   already, not two competing toggles to decouple; the panel opens
->   regardless and says plainly why a search won't work if it's off, rather
->   than being blocked by a separate "Agent mode" switch.
+>   web_search tool is off") → there is one `web_search_enabled` pref   already, not two competing toggles to decouple; the panel opens   regardless and says plainly why a search won't work if it's off, rather   than being blocked by a separate "Agent mode" switch.
 >
-> **The one genuine, real, small gap:** "which tools are allowed this turn,
-> max rounds" as a **user-facing** Agent-mode control. `agent.py`'s
-> `_agentic_reply` already takes `allowed_tools`/`max_rounds` as real
-> parameters, the backend has the knob, but nothing in `app.js` exposes it;
-> tool selection is automatic (`tools.focus_for`) with no manual override UI.
-> Worth building only if a real use case shows up wanting it (most users want
-> automatic selection, not a per-turn allowlist to manage); not worth a
-> session on its own.
+> **The one genuine, real, small gap:** "which tools are allowed this turn, max rounds" as a **user-facing** Agent-mode control. `agent.py`'s `_agentic_reply` already takes `allowed_tools`/`max_rounds` as real parameters, the backend has the knob, but nothing in `app.js` exposes it; tool selection is automatic (`tools.focus_for`) with no manual override UI. Worth building only if a real use case shows up wanting it (most users want automatic selection, not a per-turn allowlist to manage); not worth a session on its own.
 >
 > **Next:** `routes_chat.py:1595` already takes `allowed_tools` on the request and
 > `agent.py:1600` takes `max_rounds`; the missing piece is one control in the Agent
@@ -251,6 +209,7 @@ in the Library's Whiteboards gallery. **Pointer:** every open whiteboard questio
 [WHITEBOARD_PLAN.md](WHITEBOARD_PLAN.md) and `scratchpad/audit1005/features.md`
 section 4 (the gap matrix), section 5 (draw.io) and section 8 (the object library).
 The raster-versus-structured reasoning that stood here is in this file's git history.
+
 
 ---
 
@@ -4445,6 +4404,29 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L913, the look of the OS notification on real Windows and macOS.** The page's calls are measured with a stubbed `Notification` and a stubbed worker registration; how Windows (Action Center, Focus Assist) and macOS (Notification Center, Do Not Disturb) draw the "Reminder" title, the body, the Done and Snooze 10 minutes buttons, and the 12 s auto-close is the check left. On each: allow notifications, make a reminder due in a minute with the app in the background, and read what appears and whether the buttons act.
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
 
+## Whiteboard, parked 2026-11-13
+
+- **L-whiteboard-5, pen pressure on a real pen.** Built and measured with synthetic PointerEvents (pointerType "pen", pressure 0.15 and 0.9 give outlines 2.4 times apart in `scratchpad/ui-sweeps/wbink3.js`; `tests/test_wb_ink_more.py`). No Apple Pencil or Wacom was available. On a tablet with a pen: pick the Pen, draw a line pressing lightly then hard, and see the stroke thicken with pressure and stay smooth; do the same with a finger and a mouse and see the width follow speed instead.
+- **L279, owner input: the texts of U19, U20, U23, U30, U31, U36, U37, U39, U41, U45 and U49.** They came from `bs-1111.md`, a scratch file of the 2026-11-11 run that was never committed (`git log --all -- '*bs-1111*'` is empty). The repo and HISTORY hold other audits' items under the same numbers (U23, U36, U37 and U39 in audit 1028 copy, U41 the mind-map toast), so none can be matched to these 11 ids. Needs the owner to name what each item asked for; each then becomes a row on its surface's plan.
+
+- **Whiteboard device checks (moved from LEDGER 2026-11-14; each needs the named device, everything that runs headless is built and swept):**
+  - L872: Verify link-label blur and re-raster after zoom on a GPU compositor or desktop webview. From OPEN.md:1678; OPEN.md:2676. Evidence: Needs the owner's desktop webview / GPU; not reproducible headless
+  - L873: Verify pinch: board handles starting d3-drag on a second finger, on real touch. From OPEN.md:1717. Evidence: wbCancelGesture exists (whiteboard.js:8430) but the second-finger case needs real touch hardware
+  - L874: Verify touch drag from Library on real touch hardware. From OPEN.md:3524. Evidence: HTML5 DnD does not run on touch; needs touch hardware.
+  - L875: Verify real pointer flick, splat look and phone size. From OPEN.md:3856. Evidence: Needs a human with a pointer and phone
+  - L876: Verify Windows webview and drag-select outside Chromium. From OPEN.md:3904. Evidence: Needs the owner's Windows desktop and other browsers.
+  - L877: Verify trackpad middle-pan heuristic on a real trackpad. From OPEN.md:3905. Evidence: tests/test_wb_middle_pan.py exists with synthetic sequences; real trackpad needed.
+  - L878: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
+  - L282: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
+  - L-whiteboard-11: Check the real model's wording of "What changed" in the board history bar. Built with a fake transport (tests/test_board_narrate.py); with scratchpad/llama-dev.sh serve, narrate a board with 3 cards added and one moved, and confirm the sentence names nothing that is not in the composer text.
+  - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
+
+- **L-world-class-414, two sweeps that need what this sandbox lacks (moved from LEDGER 2026-11-21, the L554 run):** `scratchpad/ui-sweeps/pywarm.js` needs the Pyodide extra installed ("the Pyodide extra is not installed here"); `scratchpad/ui-sweeps/personamarks.js` needs a model server (`scratchpad/llama-dev.sh serve`; "the model server isn't running").
+
+## Whiteboard, parked 2026-11-14
+
+- **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
+- **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
 ## Placed from IDEAS.md, 2026-11-14
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
@@ -4486,3 +4468,19 @@ Each row is the one step that needs the owner's own machine, data or a recording
 - **L-ui-modernisation-45, Desk companion: the diagonal resize cursor over the size handle on X11.** Split from L-ui-modernisation-44. Windows has it (runner.py _hit_cursor, host.py _cursor); x11.py sets no cursor, and nothing can verify one without an X11 desktop. Hardware audit 2026-11-14: genuine, needs an X11 desktop session for the resize cursor.
 - **L-ui-modernisation-55, Pat over Atlas's head in the viewer lifts it 30 px (1606): needs the owner's window size and pose, or a recording.** Not reproduced headless: about 8 variations (fast, slow, jitter, 1440 and 2560 wide, float and stand), the figure's top moved at most 9.7 px, the buddy box 0. Recommendation check 2026-11-14: the viewer (companion-menu.js) has no pat handler; its stage answers a click (`nameMarkViewerFace`, an opacity crossfade) and its one pointer reaction is the follow look, at most 2.6 px (characters-lazy.css:497), so no code path in the viewer lifts the figure 30 px; the lift has to be reproduced from the owner's window and pose before anything is changed.
 - **L-ui-modernisation-56, Real Windows check of the desk companion fixes (1670, 1683, 1696, 1719, 1721; W15).** W15: the desk ride, perch gap, idle life, hops and 1696/1719 desk fixes are built and measured on FakeWin32 and Xvfb; none has run on real Windows. Hardware audit 2026-11-14: genuine, needs the real Windows desk companion (W15).
+
+## Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21
+
+- **viewerpose.js: the large view's arms are 130 degrees from rest at 300 ms.** `openNameMarkViewer(seed, { visit: true })` while Atlas hangs from the top bar reads arms at 159 and -158 against rest 28 and -50 (3 of 3 runs, 5 frames); they reach rest by about 1.2 s, a smooth fall at the 200 degrees/s spring cap (`ATLAS_RIG_MAX_SPEED`), so `rig.fresh` does not snap. Clearing `arm.hist` on a not-live frame did not change it, so the cause is elsewhere (suspect `nmb.visit.settle` is only assigned when `nmb.visit.pose !== nmb.pose`, which is already false). Needs an owner of atlas-motion.js and companion-menu.js.
+- **atlasmoodfx.js: 81 paints/s and 23 layouts/s against limits 1.5 and 2.** Measured, not random; relates to L-world-class-390. Not touched.
+- **companionacts.js: the lie out-step measures 12.3 against 12.** Measured on the real walk; the limit was not loosened.
+- **companiongaze.js: the left-side case flakes** (passes some runs, fails others) under load; needs a seeded gaze target before a limit can be judged.
+- **Not triaged in this pass:** viewerclash, companionsleeptab, locomotion, perchwords, perchall, perchtext, variety, napgait, companionmenu, companionmenulow, companionsmooth; throwfates climb, splat, wrap, grab and slip (a memory kill on the full run).
+
+## Sweeps still failing after two measured runs, L-world-class-413, 2026-11-22
+
+Moved from LEDGER (the hub: finish, or BACKLOG with two measured attempts). Run 1 is the 2026-11-21 r3 logs; run 2 is 2026-11-22 on a current head (scratchpad r6, dark theme, 1440x900). Pass on run 2, so out of this list: atlasmo1005-viewerlife, companionreact, companioninteract, companionemotes, companiongaze, perchtext, ux1005-tabstops, chatheads, profilelook, clickarm, companiontabswitch. Fixed: toolpop, wbrail's tool row (a pill again on one line; test_wb_rail_pill_413). Retired as stale: wbframes (a frame turns, decision 42), companionpin (the drawn place is the perch under the kept spot, INBOX 1640).
+
+- **Board:** mapmorezoom (the More box 42px off the drawn wedge at zoom 100 and 115, both runs); toolgrid (448.72px, both); connlabel (button not shown, both); wbrail (history and present bars draw the card radius and 8px padding while the tool row and zoom are pills at 4px/6.4px: a design call, which shape a one-row bar on the board takes).
+- **Shell and notes:** verify1011 (206: the document AI panel not shown; 218: stepper radii 2.4 on 36px buttons); laptopfold (1093: 3 whole cards for 4); iphone1011 (notes foot 752; sheets with overscroll contain/auto; run 2 timed out at 300s); anchorsmotion (rowmenu and graph surfaces not found at 1440x900 and 1440x600); libtlscroll (table); graphcoldlayout (tree stored and checked, physics not dimmed).
+- **Companion:** companionsleeptab, locomotion, companionsmooth, perchall (16 window-bar perches while a panel is free), companionmenulow (5 of 54 menus), viewerpose (an arm 131 degrees from rest at 300 ms), atlasaura (1), atlasmoodfx (paints/s, above), and the measure exits companionacts, napgait, peekdown, viewerclash; companioneyes (masculine look, lie and hang with thinking: 2 of 16 pupil-edge samples outside the white, 17 cases, worst 0.13).

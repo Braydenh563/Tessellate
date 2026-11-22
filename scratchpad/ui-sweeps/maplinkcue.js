@@ -11,7 +11,7 @@
 //
 //   BASE=http://127.0.0.1:8850 SCRATCH=/tmp/x \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/maplinkcue.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 let pass = 0;
 let fail = 0;
@@ -25,16 +25,7 @@ function ok(label, good, detail) {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", "Link cue sweep");
-  await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, "Link cue sweep", 'map');
   await page.keyboard.press("Escape");
 
   const ids = await page.evaluate(async () => {

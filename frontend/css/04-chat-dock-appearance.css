@@ -6689,8 +6689,14 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
 
 :is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
   :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
-:is(.action-menu, .doc-dock-menu-list)
-  .menu-item > span:first-child > .ph:first-child {
+:is(.action-menu, .doc-dock-menu-list, .wb-board-menu)
+  .menu-item > span:first-child > .ph:first-child,
+:is(.action-menu, .doc-dock-menu-list) .dock-menu-check > .ph-lead {
+  /* A switch row's icon follows its input in the markup (drawn at the end),
+     so it is not a first child: at its own 15.6px its words began 3.9px left
+     of the buttons' (menus.js at 1440, Logs and Timeline). The board's
+     menus are a shell of their own: their group rows (Diagram, Shapes and
+     icons) kept a 15.6px icon, words 4px left of the plain rows'. */
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
      where a width means nothing until the box is a block of its own. */

@@ -21,13 +21,14 @@ measurement.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 from tests._css_unwrap import split_top
 
 ROOT = Path(__file__).resolve().parents[1]
-WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB_JS = frontend_text("whiteboard.js")
 
 
 def function_text(name: str) -> str:

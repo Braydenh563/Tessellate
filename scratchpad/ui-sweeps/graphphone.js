@@ -142,8 +142,8 @@ async function touch(cdp, type, points) {
         const x = b.left + b.width * fx;
         const y = b.top + b.height * fy;
         if (document.elementFromPoint(x, y) !== canvas) continue;
-        const [wx, wy] = gcRequestDraw.inspect.gcWorldPoint({ clientX: x, clientY: y });
-        const node = gcRequestDraw.inspect.gcNodeAtWorld(wx, wy);
+        const [wx, wy] = renderGraphCanvas.sweep.worldPoint({ clientX: x, clientY: y });
+        const node = renderGraphCanvas.sweep.nodeAtWorld(wx, wy);
         if (node && !node.isGroup && !onNode) onNode = [Math.round(x), Math.round(y), node.id];
         if (!node && !empty) empty = [Math.round(x), Math.round(y)];
       }
@@ -208,7 +208,7 @@ async function touch(cdp, type, points) {
   if (points.empty) {
     await page.evaluate(() => {
       gcTab.selected.clear();
-      gcRequestDraw.inspect.gcSelectionChanged(gcTab);
+      renderGraphCanvas.sweep.selectionChanged(gcTab);
     });
     const [ex, ey] = points.empty;
     await hold(ex, ey);
@@ -257,7 +257,7 @@ async function touch(cdp, type, points) {
     check(lassoed.dock, 'the selection dock stayed hidden after a lasso');
     await page.evaluate(() => {
       gcTab.selected.clear();
-      gcRequestDraw.inspect.gcSelectionChanged(gcTab);
+      renderGraphCanvas.sweep.selectionChanged(gcTab);
     });
   }
 

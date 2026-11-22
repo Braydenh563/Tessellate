@@ -1,0 +1,89 @@
+/* board-lazy.css: rules only an open board's dialogs read, fetched with the
+   `boards` bundle (lazy-entries.js) instead of at boot (the boot CSS cap in
+   tests/test_boot_budget.py). Moved from 06-timeline-dialogs.css unchanged;
+   the utilitarian palette's override in 08-consistency.css still outranks
+   them (0,4,0 against 0,2,0), so arriving later in the cascade changes nothing. */
+/* --- the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) -----------
+   Two rows of segments, a line saying what the pair will do, and one primary
+   button, on the modal recipe. The dropdown this replaced painted its own
+   surface and placed itself against whichever button opened it, which is how
+   it came to run off the bottom of the window (INBOX 12). Its rules are gone;
+   the name still appears in some grouped selectors in 08-consistency.css that
+   cover every menu in the app, which cost nothing to leave. */
+.wb-export-card .wb-export-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* The segments wrap rather than shrinking their words: seven formats do not
+   fit one line of a 390px dialog, and a segment whose labels are ellipsised
+   is a row of guesses. */
+.wb-export-card .wb-export-seg {
+  flex-wrap: wrap;
+  width: 100%;
+}
+.wb-export-card .wb-export-note {
+  margin: 0;
+  color: var(--muted);
+}
+/* The "some of these notes are collapsed" line (INBOX 238). `--warn` rather
+   than `--error`, because nothing has gone wrong: the export will work, it
+   will just carry what the board is showing, which is the whole point of the
+   sentence. It sits under the format and scope note in the same column so it
+   reads as a second line of the same explanation rather than as an alert
+   bolted onto the dialog.
+   Written with `.wb-export-card` in front of it, and immediately after the
+   rule it has to beat, because the element carries both classes: a bare
+   `.wb-export-warning` is one class against that rule's two, so the muted
+   grey won and the line was measured rendering at rgb(76, 85, 99). */
+.wb-export-card .wb-export-warning {
+  color: var(--warn);
+}
+/* --- the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") -----------
+   One switch row per set on the modal recipe: the name, then its count at the
+   end. The list scrolls inside the card rather than growing past the window. */
+.wb-sets-card .wb-sets-hint {
+  margin: 0;
+}
+.wb-sets-card .wb-sets-list {
+  display: flex;
+  flex-direction: column;
+  max-height: min(60vh, 28rem);
+  overflow-y: auto;
+}
+.wb-sets-card .wb-sets-count {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+/* The shape picker's toggle and caret on the board's tool rail (moved with the dialogs). */
+/* A tighter gap than `.row`'s own default 0.6rem, for a colour swatch +
+   opacity slider + checkbox squeezed into one properties-panel row. Real
+   bug, caught live: a first pass used `style="gap: 0.4rem"` inline, which
+   this app's own CSP (`style-src 'self'`) silently refused: exactly the
+   trap CLAUDE.md already names ("inline style attributes, all rejected by
+   this app's own CSP, all invisible until a browser was pointed at them"),
+   reintroduced by this same session before being caught by driving it. */
+.wb-inline-controls {
+  gap: 0.4rem;
+}
+.wb-shape-toggle-icon {
+  pointer-events: none;
+}
+.wb-shape-caret {
+  margin-left: -2px;
+}
+/* A finger needs 44px, not the 10px glyph (L259): the caret's own box grows to the touch minimum with the glyph centred
+   in it (the toggle grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the
+   desktop rail does not move. A floor, not a px padding, so the spacing scale holds. */
+@media (pointer: coarse) {
+  .wb-shape-caret {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: var(--target-min);
+    min-height: var(--target-min);
+  }
+}

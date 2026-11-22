@@ -62,7 +62,8 @@ def test_a_selection_is_saved_by_one_request_per_gesture():
     for start, end in (
         ("async function wbFlushNudge() {", "function wbNudgeSelection"),
         ("async function wbSaveMultiSnapshot(rows) {", "function wbRenderMultiSelectionHandles"),
-        ("async function wbSaveBulkMove(origin) {", "// Copy/paste"),
+        #: The last function in whiteboard-gesture.js (L634): its body ends at the file's surface line.
+        ("async function wbSaveBulkMove(origin) {", "//: The file's surface"),
         ("async function wbFrameTurnEnd(d, primary) {", "function wbRotateGripTitle"),
     ):
         body = _between(wb, start, end)

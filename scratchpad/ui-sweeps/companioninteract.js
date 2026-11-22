@@ -8,14 +8,12 @@ const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.avatarFollow = 'on'; });
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3000);
-  // Atlas flies: set down standing in the air, its perch check found nothing under its feet and walked it off
-  // before the pet (L-ui-modernisation-96), so it is put there floating, which needs no perch.
-  const pose = process.env.KIND === 'atlas' ? 'float' : 'stand';
-  const put = (x, y) => page.evaluate(([px, py, pp]) => { const b = document.getElementById('nm-buddy'); nameMarkBuddyMoveTo(b, { kind: 'air', pose: pp, x: px, y: py }, true); clearTimeout(nmb.timer); nmb.placeTimer = 1; nameMarkBuddyAct(''); clearTimeout(nmb.timer); }, [x, y, pose]);
+  // INBOX 1640: the companion always ends on a perch, so an open-air pin is dropped on refit; it stands on the bottom bar at x (y is unused).
+  const put = (x, _y) => page.evaluate(([px, py]) => { const b = document.getElementById('nm-buddy'); const bar = nameMarkBuddyLedges().bottom; nameMarkBuddyMoveTo(b, { kind: 'bar', pose: 'stand', x: px, y: Math.round((bar ? bar.top : innerHeight) - NMB_FEET + 1) }, true); clearTimeout(nmb.timer); nmb.placeTimer = 1; nameMarkBuddyAct(''); clearTimeout(nmb.timer); }, [x, _y]);
   const faceMid = () => page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
   // Petted.
   await put(700, 420);
@@ -56,9 +54,8 @@ const { boot } = require('./lib.js');
   const off = [];
   // Slowly (a pointer passing, not a sudden flick, which still catches it).
   for (const dx of [-120, 120]) {
-    // 24 steps in a few ms is a flick (past 1800px/s and near it is `loud`, which still catches its eye, avatars.js nameMarkBuddyNotice), so each step waits.
-    const from = await page.evaluate(() => nmb.lastMove || [0, 0]);
-    for (let i = 1; i <= 24; i += 1) { await page.mouse.move(from[0] + ((f[0] + dx - from[0]) * i) / 24, from[1] + ((f[1] - 40 - from[1]) * i) / 24); await page.waitForTimeout(40); }
+    // A real slow pass: a Playwright move is instant, and a fast pointer inside 400px is loud (avatars.js: speed over 1800), which it follows whatever the setting says.
+    for (let i = 1; i <= 24; i += 1) { await page.mouse.move(f[0] + dx * (i / 24), f[1] - 40); await page.waitForTimeout(30); }
     await page.waitForTimeout(200);
     // Its eyes move only while it attends (the CSS keys the look on nmb-attend).
     off.push(await page.evaluate(() => { const looks = window.__microLooks.splice(0); return { attend: document.getElementById('nm-buddy').classList.contains('nmb-attend'), micro: looks.length, atPointer: looks.some(Boolean) }; }));
@@ -105,7 +102,7 @@ const { boot } = require('./lib.js');
   if (slow) fails.push('a slow let-go was tossed');
   // Still: no petting. `data-motion="reduced"` alone no longer stills it (avatars.js nameMarkBuddyMotion: its own setting decides), so use Avatar animation off.
   await page.mouse.move(100, 100);
-  await page.evaluate(() => { document.documentElement.dataset.avatarMotion = 'off'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.pet(); });
+  await page.evaluate(() => { document.documentElement.dataset.avatarMotion = 'off'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.sweep.nameMarkBuddyPet(); });
   const stillPet = await page.evaluate(() => nmb.act);
   await page.evaluate(() => { delete document.documentElement.dataset.avatarMotion; });
   if (stillPet === 'wiggle') fails.push('petted while still');

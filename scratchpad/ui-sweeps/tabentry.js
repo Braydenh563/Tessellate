@@ -17,7 +17,7 @@ const STATES = ['normal', 'perf', 'app-reduce', 'os-reduce'];
     const opts = { viewport: { width: 1093, height: 614 } };
     if (state === 'os-reduce') opts.reducedMotion = 'reduce';
     const { browser, page } = await boot(opts);
-    await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, 'me');
+    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, 'me');
     await page.evaluate((st) => {
       const root = document.documentElement;
       if (st === 'perf') { root.dataset.perf = 'on'; root.dataset.motion = 'reduced'; }

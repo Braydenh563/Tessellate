@@ -5,6 +5,7 @@ stays left of the causes above it (node `vm`, the layout and anchor functions)."
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -26,7 +27,8 @@ const extra={};
 for(let i=0;i<200;i++){
   const ctx={console,Math,Number,Object,Set,Map,JSON,Array,String,Promise,Boolean,RegExp,Date,
     setTimeout:()=>0,clearTimeout:()=>{},addEventListener:()=>{},
-    document:{querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,addEventListener:()=>{},documentElement:{dataset:{}}},...extra};
+    document:{querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,addEventListener:()=>{},documentElement:{dataset:{}}},
+    wbInstances:{query:()=>null,queryAll:()=>[],layer:()=>null,container:()=>null},...extra};
   ctx.window=ctx;ctx.__out=(v)=>process.stdout.write(JSON.stringify(v));vm.createContext(ctx);
   try{vm.runInContext(lib,ctx);vm.runInContext(probe,ctx);break;}
   catch(e){const m=/(\w+) is not defined/.exec(String(e.message));if(!m||extra[m[1]]!==undefined)throw e;extra[m[1]]=stub();}
@@ -36,7 +38,7 @@ for(let i=0;i<200;i++){
 
 def run(tmp_path, body):
     lib, probe = tmp_path / "lib.js", tmp_path / "probe.js"
-    lib.write_text(_js_scope.unwrapped(SRC.read_text(encoding="utf-8")), encoding="utf-8")
+    lib.write_text(_js_scope.unwrapped(frontend_text("whiteboard-map.js")), encoding="utf-8")
     probe.write_text(body, encoding="utf-8")
     proc = subprocess.run(["node", "-e", LOAD, str(lib), str(probe)], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr[-2000:]

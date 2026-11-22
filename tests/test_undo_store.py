@@ -9,13 +9,14 @@ relies on and the two rules that keep it safe.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 STORE = (JS / "undo-store.js").read_text(encoding="utf-8")
 APP = (JS / "app.js").read_text(encoding="utf-8")
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 DOCS = (JS / "documents.js").read_text(encoding="utf-8")
 
 
@@ -34,9 +35,13 @@ def test_it_keeps_a_hundred_steps_on_this_device():
 def test_a_board_writes_only_after_its_stored_history_was_read():
     """Otherwise an open quicker than the read would store an empty history
     over the real one."""
-    update = WB[WB.index("function wbUpdateUndoRedoButtons()"):][:600]
+    update = WB[WB.index("function wbUpdateUndoRedoButtons()"):][:900]
     assert "wbHistoryRead.has(wbHistoryBoard)" in update
-    assert "undoStorePut(`board:${wbHistoryBoard}`" in update
+    #: The key is picked first since L-whiteboard-70 (the page board's, or an embed's own),
+    #: each only once its stored copy was read; the write uses that key alone.
+    assert "wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== \"default\" ? `board:${wbHistoryBoard}` : null" in update
+    assert "live.historyRead ? live.undoKey : null" in update
+    assert "storeKey) undoStorePut(storeKey," in update
 
 
 def test_a_document_history_comes_back_only_over_its_own_text():

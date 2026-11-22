@@ -3099,6 +3099,13 @@ mark.lightbox-hit {
 .menu-item > .menu-item-words {
   display: flex;
   align-items: center;
+  /* A submenu row wraps its icon and words in this span, so the row's own
+     gap and the lead margin zeroing below never reached them: its words sat
+     0.9px left of every other row's (menu-rows.js, L-world-class-107). */
+  gap: var(--space-2);
+}
+.menu-item > .menu-item-words > .ph-lead {
+  margin-inline-end: 0;
 }
 
 .action-menu .menu-item.menu-item-unavailable:hover,

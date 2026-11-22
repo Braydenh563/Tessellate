@@ -26,7 +26,7 @@ const SHOT = process.env.SHOT || '';
       }
     }, 16 - have);
   }
-  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate((t) => revealTab(t), process.env.TAB || 'notes');
   await page.waitForTimeout(1000);
@@ -70,7 +70,7 @@ const SHOT = process.env.SHOT || '';
         return orig.call(this, kf, opts);
       };
       window.__cost = {};
-      for (const n of ['nameMarkBuddyBeat', 'placeNameMarkBuddy', 'nameMarkBuddyChoose', 'nameMarkBuddyObstacles', 'nameMarkBuddyMoveTo', 'nameMarkBuddyPerches', 'nameMarkBuddyEdges', 'nameMarkBuddyStillGood', 'nameMarkBuddyTick']) {
+      for (const n of ['nmb.sweep.nameMarkBuddyBeat', 'placeNameMarkBuddy', 'nmb.sweep.nameMarkBuddyChoose', 'nmb.sweep.nameMarkBuddyObstacles', 'nameMarkBuddyMoveTo', 'nmb.sweep.nameMarkBuddyPerches', 'nmb.sweep.nameMarkBuddyEdges', 'nmb.sweep.nameMarkBuddyStillGood', 'nmb.sweep.nameMarkBuddyTick']) {
         const f = window[n];
         if (typeof f !== 'function') continue;
         window[n] = function (...a) { const t = performance.now(); try { return f.apply(this, a); } finally { const d = performance.now() - t; const c = window.__cost[n] || (window.__cost[n] = { n: 0, ms: 0, max: 0 }); c.n += 1; c.ms += d; c.max = Math.max(c.max, d); } };

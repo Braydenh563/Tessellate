@@ -171,6 +171,7 @@
     if (width && document.activeElement !== width) wbFmtShowMixed(width, mixed((l) => l.width), first.width || "");
     const wrap = put("wb-fmt-lwrap", first.wrap, "checked");
     if (wrap) wrap.indeterminate = mixed((l) => l.wrap);
+    wbFmtState.richLabel?.sync(shapes);
     for (const [i, id] of ["wb-fmt-lpad0", "wb-fmt-lpad1", "wb-fmt-lpad2", "wb-fmt-lpad3"].entries()) {
       const el = document.getElementById(id);
       if (el && document.activeElement !== el) wbFmtShowMixed(el, mixed((l) => l.pad[i]), first.pad[i] || "");

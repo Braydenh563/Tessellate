@@ -7,16 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_companion_tick_and_pet_are_reachable_on_nmb():
+def test_companion_internals_the_sweeps_call_are_on_nmb_sweep():
+    """One handle object since the base's `nmb.sweep` (merged 2026-11-22): the tick and the pat ride on it."""
     text = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
-    assert "nmb.tick = nameMarkBuddyTick;" in text
-    assert "nmb.pet = nameMarkBuddyPet;" in text
-
-
-def test_companion_internals_the_sweeps_call_are_on_nmb_inner():
-    text = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
-    line = next(row for row in text.splitlines() if row.startswith("  nmb.inner = {"))
+    line = next(row for row in text.splitlines() if row.startswith("  nmb.sweep = {"))
     for name in (
+        "nameMarkBuddyTick",
+        "nameMarkBuddyPet",
+        "nameMarkBuddyIndexReset",
         "nameMarkBuddyBeat",
         "nameMarkBuddyCheck",
         "nameMarkBuddyDrift",
@@ -52,7 +50,9 @@ def test_floating_new_buttons_follow_their_surfaces_for_notes_and_library():
 
 def test_graph_hit_testing_is_reachable_for_the_sweeps():
     text = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
-    assert "gcRequestDraw.inspect = { gcBowPoint, gcCurvedLinks, gcEdgeAtWorld, gcNodeAtWorld, gcSelectionChanged, gcWorldPoint };" in text
+    line = next(row for row in text.splitlines() if row.startswith("  renderGraphCanvas.sweep = {"))
+    for name in ("gcBowPoint", "gcCurvedLinks", "gcEdgeAtWorld", "gcNodeAtWorld", "gcSelectionChanged", "gcWorldPoint"):
+        assert name in line
 
 
 def test_editor_hint_is_applied_as_each_surface_is_built():

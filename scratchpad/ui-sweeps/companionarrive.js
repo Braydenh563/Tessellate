@@ -21,7 +21,8 @@ const { boot } = require('./lib.js');
   for (let i = 0; i < runs; i += 1) {
     await page.evaluate(() => ensureModule("characters"));
     const r = await page.evaluate(() => new Promise((done) => {
-      prefs.set("avatar-buddy", "off"); syncNameMarkBuddy();
+      const sel = $('avatar-buddy');
+      sel.value = 'off'; sel.dispatchEvent(new Event('change', { bubbles: true }));
       setTimeout(() => {
         localStorage.removeItem('nm-buddy-spots');
         prefs.set("avatar-buddy", "atlas"); syncNameMarkBuddy();

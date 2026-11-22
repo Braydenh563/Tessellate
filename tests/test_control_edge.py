@@ -81,5 +81,6 @@ def test_a_selected_segment_and_a_chosen_option_carry_an_edge_not_only_a_tint() 
 
 def test_no_icon_is_dimmed_by_opacity_where_the_sweep_caught_one() -> None:
     assert "opacity" not in re.search(r"\.ph-trail\s*\{([^}]*)\}", _css("07-whiteboard-misc.css")).group(1)
-    caret = re.search(r"\.wb-shape-caret\s*\{([^}]*)\}", _css("06-timeline-dialogs.css"))
+    # The caret's rule moved to board-lazy.css with the board dialogs (boot CSS cap).
+    caret = re.search(r"\.wb-shape-caret\s*\{([^}]*)\}", _css("board-lazy.css"))
     assert caret and "opacity" not in caret.group(1)

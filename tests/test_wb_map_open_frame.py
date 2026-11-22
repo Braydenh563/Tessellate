@@ -8,6 +8,7 @@ the view at the content's edge unless that hides the root. The browser half is
 `scratchpad/ui-sweeps/mapopenframe.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 FREE = {"left": 60, "top": 60, "right": 780, "bottom": 480}

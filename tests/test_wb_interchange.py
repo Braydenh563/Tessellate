@@ -5,6 +5,7 @@ The pure parts run in node against the source; the browser half is
 `scratchpad/ui-sweeps/wb1005-interchange.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -14,7 +15,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
@@ -192,7 +193,7 @@ def test_the_import_makes_the_frames_and_joins_a_subgraph_edge_to_its_frame() ->
     # The frame's z is the creator's default, the stack's "under the frames
     # already there" (wbz-1026 replaced wbFrameZ with wbStackNewZ).
     assert 'wbCreateObject("frame"' in body and "wbFrameZ" not in body
-    assert 'z = wbStackNewZ("object", { kind })' in (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert 'z = wbStackNewZ("object", { kind })' in frontend_text("whiteboard.js")
     assert "frameIds.get(e.from)" in body and 'tKind = ids.has(e.to) ? "sketch" : "object"' in body
     assert "wbMermaidFrameOf" in SOURCE[SOURCE.index("async function wbExportMermaid(") :]
 

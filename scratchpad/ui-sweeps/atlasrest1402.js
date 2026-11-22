@@ -93,7 +93,7 @@ async function setup() {
   await page.evaluate((look) => {
     localStorage.removeItem('nm-buddy-spots');
     const sel = document.getElementById('atlas-look'); sel.value = look; sel.dispatchEvent(new Event('change', { bubbles: true }));
-    const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
+    const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
     revealTab('dashboard');
   }, LOOK);
   await page.waitForFunction(() => document.querySelector('#nm-buddy .atl-figure-box')?.atlasRig, null, { timeout: 20000 });

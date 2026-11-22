@@ -5200,8 +5200,11 @@ select {
    hint dot all size themselves; a fixed row height is not theirs to set.
    A row that carries its own description (Help's tour rows, INBOX 804) is
    a tile by shape, so it is excluded with the tiles, inside the same `:not()`
-   so the rule's weight does not change. */
-#settings-modal .settings-section button:not([class*="card"]):not([class*="tile"], .tour-row):not([class*="swatch"]):not([class*="preview"]):not(.icon-only):not(.icon-button):not([class*="help"]):not([class*="hint"]):not(.linklike),
+   so the rule's weight does not change. A menu row is not a strip control
+   either: pinned here, the Logs menu's buttons stood at 32px beside its
+   switch rows at 34.9 (world-class menus.js at 1440); excluded, they take the
+   menu row recipe (08-consistency.css) like every other menu's. */
+#settings-modal .settings-section button:not([class*="card"]):not([class*="tile"], .tour-row, .doc-dock-menu-item):not([class*="swatch"]):not([class*="preview"]):not(.icon-only):not(.icon-button):not([class*="help"]):not([class*="hint"]):not(.linklike),
 #settings-modal .settings-section select,
 #settings-modal .settings-section .select-opener,
 #settings-modal .settings-section summary,

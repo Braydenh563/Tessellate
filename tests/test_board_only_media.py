@@ -6,6 +6,7 @@ agent corner tab, until the person chooses Save to Library.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tessellate.ai import captioning, vision_ocr
 from tessellate.core import ocr
 from tessellate.core.database import MediaUpload
@@ -104,7 +105,7 @@ _JS = _ROOT / "frontend" / "js"
 
 
 def _js(name: str) -> str:
-    return (_JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (_JS / name).read_text(encoding="utf-8")
 
 
 def test_every_board_picture_upload_says_it_is_board_only():

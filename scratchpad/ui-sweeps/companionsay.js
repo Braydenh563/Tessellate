@@ -14,10 +14,10 @@ fs.mkdirSync(OUT, { recursive: true });
     for (const look of ['masculine', 'feminine']) {
       await page.evaluate(async ([look]) => {
         localStorage.setItem('atlas-look', look);
-        prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy();
+        const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
       }, [look]);
       await page.waitForTimeout(400);
-      await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
+      await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
       await page.waitForTimeout(2500);
       await page.evaluate(() => {
         clearTimeout(nmb.timer);

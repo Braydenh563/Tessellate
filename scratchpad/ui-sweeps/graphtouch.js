@@ -108,8 +108,8 @@ async function touch(cdp, type, points) {
         const x = rect[0] + rect[2] * fx;
         const y = rect[1] + rect[3] * fy;
         if (document.elementFromPoint(x, y) !== canvas) continue;
-        const [wx, wy] = gcRequestDraw.inspect.gcWorldPoint({ clientX: x, clientY: y });
-        if (gcRequestDraw.inspect.gcNodeAtWorld(wx, wy)) continue;
+        const [wx, wy] = renderGraphCanvas.sweep.worldPoint({ clientX: x, clientY: y });
+        if (renderGraphCanvas.sweep.nodeAtWorld(wx, wy)) continue;
         return [Math.round(x), Math.round(y)];
       }
     }

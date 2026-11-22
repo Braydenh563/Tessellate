@@ -284,8 +284,13 @@ const LIBRARY = ['showDetailDialog', 'calloutMenuItems', 'pickNotesDialog', 'add
 
   // --- The library bundle (Library, Documents, Whiteboard) ------------------------------------
   checks['library bundle: names not loaded at boot'] = noneReal(await types(LIBRARY));
-  await page.evaluate(() => switchTab('library'));
-  await page.waitForTimeout(3500);
+  // The bundle split since: showDetailDialog stays with the Library,
+  // calloutMenuItems is documents.js's and pickNotesDialog and addBoardToNote
+  // whiteboard.js's (lazy-entries.js), so each tab is opened in turn.
+  for (const tab of ['library', 'documents', 'whiteboard']) {
+    await page.evaluate((t) => switchTab(t), tab);
+    await page.waitForTimeout(3500);
+  }
   const lAfter = await types(LIBRARY);
   console.log('library after', JSON.stringify(lAfter));
   checks['library bundle: every moved name is real once the tab is open'] = allReal(lAfter);

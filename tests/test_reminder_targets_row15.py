@@ -9,6 +9,7 @@ Show in graph; the Library's note card has its twin's Remind me and Link to.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from datetime import timedelta
 from pathlib import Path
 import pytest
@@ -23,7 +24,7 @@ def _suite_clock(monkeypatch):
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
 #: The board code and the Boards & maps gallery split out of it (INBOX 1772).
-BOARDS = "".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "boards-gallery.js"))
+BOARDS = "".join(frontend_text(n) for n in ("whiteboard.js", "boards-gallery.js"))
 
 
 def _soon() -> str:

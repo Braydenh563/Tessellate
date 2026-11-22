@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
-WB = (FRONTEND / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 APP = app_js_text()
 
 

@@ -5,6 +5,7 @@ The pure parts run in node; the browser half is measured with Playwright
 (the wbs-1011 ledger names the numbers).
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:
@@ -103,9 +104,11 @@ def test_show_less_only_when_collapsing_would_hide_text() -> None:
 
 
 def test_each_grip_says_what_its_double_click_does() -> None:
-    script = _function("wbResizeHandleTitle") + "console.log(JSON.stringify(['frame','image','text','shape'].map(wbResizeHandleTitle)));"
-    frame, image, text, shape = _node(script)
+    script = _function("wbResizeHandleTitle") + "console.log(JSON.stringify(['frame','image','text','shape','table','diagram'].map(wbResizeHandleTitle)));"
+    frame, image, text, shape, table, diagram = _node(script)
     assert "fit this edge" in frame and "fits the picture" in image and "fits the text" in text and text == shape
+    # A table and a diagram have no words (L261): they fit the height to what is inside.
+    assert table == diagram and "fits the height to what is inside" in table and "text" not in table
 
 
 def test_a_shape_resize_moves_its_grips_and_shows_its_size_live() -> None:

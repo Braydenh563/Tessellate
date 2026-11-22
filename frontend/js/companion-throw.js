@@ -888,6 +888,9 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: The sweeps' seed for the rolls (throwfates.js, throwsettle1402.js), on the name already shared so the
+  //: shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
+  nameMarkBuddyThrow.sweep = { companionThrowSeed };
   Object.assign(window, { companionThrowPlan, nameMarkBuddyThrow });
   //: avatars.js asks for this on a carried panel's shake, the way it asks `nmb.travelPlay` (the file is lazy).
   nmb.shakenOff = nameMarkBuddyShaken;

@@ -66,12 +66,17 @@ async function coldPage(browser) {
 
   {
     const { ctx, page, errors } = await coldPage(browser);
-    const before = await page.evaluate(() => typeof graphSimulation);
-    await page.evaluate(() => {
+    // The graph pane's body is built when the tab first opens, so its Layout
+    // select arrives a beat after switchTab: the change is made the moment it
+    // is there, and graph.js is looked for at that moment.
+    const before = await page.evaluate(async () => {
       switchTab('graph');
+      for (let i = 0; i < 100 && !document.getElementById('graph-layout'); i += 1) await new Promise((r) => setTimeout(r, 20));
+      const was = typeof graphSimulation;
       const radio = document.getElementById('graph-layout');
       radio.value = 'tree';
       radio.dispatchEvent(new Event('change', { bubbles: true }));
+      return was;
     });
     await page.waitForTimeout(6000);
     const after = await page.evaluate(() => ({

@@ -5,7 +5,7 @@
 // Visits every tab, every Library sub-tab, an open whiteboard and an open
 // mind map, and on each measures, from the drawn box (not `nmb`):
 //   gap   the px between the line it touches its perch on (soles, seat or
-//         hands, `nameMarkBuddyOrigin`) and the edge of the surface it says
+//         hands, `nmb.sweep.nameMarkBuddyOrigin`) and the edge of the surface it says
 //         it is on (top edge, or underside when hanging);
 //   paint whether a painted surface actually starts within 4px of that line
 //         under its middle (elementsFromPoint, not the claim);
@@ -53,7 +53,7 @@ async function measure(page) {
     const b = buddy.getBoundingClientRect();
     const pose = buddy.dataset.pose || nmb.pose;
     const legs = buddy.dataset.legs || nmb.legs || "";
-    const [cx, line] = nmb.inner.nameMarkBuddyOrigin(b.left, b.top, pose);
+    const [cx, line] = nmb.sweep.nameMarkBuddyOrigin(b.left, b.top, pose);
     const name = (el) => (el ? `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}${el.classList.length ? `.${[...el.classList].slice(0, 2).join(".")}` : ""}` : "-");
     const glue = nmb.glue?.el;
     let claim = null;
@@ -94,7 +94,7 @@ async function measure(page) {
       }
       if (paint) break;
     }
-    const shape = nmb.inner.nameMarkBuddyShape(b.left, b.top, pose, legs);
+    const shape = nmb.sweep.nameMarkBuddyShape(b.left, b.top, pose, legs);
     const over = [];
     const sel = "button, a[href], input:not([type='hidden']), select, textarea, [role='tab'], [role='button']";
     for (const el of document.querySelectorAll(sel)) {
@@ -124,12 +124,12 @@ async function measure(page) {
     let free = null;
     if (["bar", "hang", "corner"].includes(nmb.perch)) {
       const tab = nameMarkBuddyTab();
-      nmb.inner.nameMarkBuddyIndexReset();
-      const ob = nmb.inner.nameMarkBuddyObstacles(tab);
-      for (const p of nmb.inner.nameMarkBuddyPerches(tab)) {
+      nameMarkBuddyIndexReset();
+      const ob = nmb.sweep.nameMarkBuddyObstacles(tab);
+      for (const p of nmb.sweep.nameMarkBuddyPerches(tab)) {
         if (["bar", "hang"].includes(p.kind) || p.y < 0 || p.y + NMB_H > innerHeight) continue;
-        if (nmb.inner.nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nmb.inner.nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
-        if (nmb.inner.nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
+        if (nmb.sweep.nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nmb.sweep.nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
+        if (nmb.sweep.nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
         free = `${p.kind} ${name(p.edge.el)} at ${p.x},${Math.round(p.y)}`;
         break;
       }
@@ -169,9 +169,9 @@ function verdict(r, label = "") {
   // choose the companion the way the other companion sweeps do: the pref, then the module.
   await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    prefs.set("avatar-buddy", k);
-    await ensureModule("characters");
-    syncNameMarkBuddy();
+    const b = $("avatar-buddy");
+    b.value = k;
+    b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");
   const boards = await page.evaluate(async () => {
     const r = await (await api("/whiteboard/boards")).json();

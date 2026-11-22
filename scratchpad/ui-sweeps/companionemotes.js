@@ -9,7 +9,7 @@ const { boot } = require('./lib.js');
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: Number(process.env.VW || 1440), height: Number(process.env.VH || 900) } });
-  await page.evaluate(async () => { prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy(); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(6000);
   const out = await page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');
@@ -44,5 +44,7 @@ const { boot } = require('./lib.js');
   console.log(JSON.stringify(out));
   await browser.close();
   const ok = new Set(out.zs).size > 1 && out.capAsleep > 0.9 && out.capAwake < 0.1 && out.figuresDuring === 2 && out.figuresAfter === 1 && out.q > 0.5 && out.spark > 0.5 && out.afterLaugh === 'happy';
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log(!ok ? 'FAIL companionemotes: a measure above is out of bounds' : 'PASS companionemotes');
   process.exit(ok ? 0 : 1);
 })();

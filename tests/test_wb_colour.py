@@ -10,13 +10,14 @@ the fill and border of a shape as two labelled halves with Same as and Swap
 instead of letting the press do what it would. The browser half is
 `scratchpad/ui-sweeps/wbcolour-well.js`."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 FORMAT = (JS / "whiteboard-format.js").read_text(encoding="utf-8")
-BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
