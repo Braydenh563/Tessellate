@@ -57,15 +57,17 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: and event-log reads, the bench's busiest board, the embedding coverage) to
 #: repo/categories.py, repo/recordings.py, repo/whiteboard.py and
 #: repo/graph_layers.py, with other sessions' moves since: 616; the spaces purge,
-#: move and restore to repo/spaces.py: 580; the Library's kinds to repo/library.py: 557.
-ORM_CALLS_CAP = 330
+#: move and restore to repo/spaces.py: 580; the Library's kinds to repo/library.py: 557; the graph routes' reads to
+#: repo/graph_layers.py: 284.
+ORM_CALLS_CAP = 284
 
 #: L625 (ARCHITECTURE.md section 2, principle 8): the plain query verbs in the
 #: route modules alone, the count the repository layer's progress is read by.
 #: 230 on 2026-11-21 before L625's first moves (categories, recordings, models,
 #: bench, board history), 215 after; the spaces purge, move and restore to
-#: repo/spaces.py: 190, the Library's kinds to repo/library.py: 172; it only falls.
-ROUTE_QUERIES_CAP = 35
+#: repo/spaces.py: 190, the Library's kinds to repo/library.py: 172; the graph routes' reads to
+#: repo/graph_layers.py (L-world-class-840): 0; it only falls.
+ROUTE_QUERIES_CAP = 0
 
 _ROUTE_QUERY = re.compile(r"\bsession\.query\(|\bselect\(|\bsession\.execute\(")
 
