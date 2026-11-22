@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8576, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11588, test files 2975, tests 23315, plan headings 688, app scripts 29, boot scripts 38, script files 324.
+Counts: frontend functions 8582, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11588, test files 2975, tests 23315, plan headings 688, app scripts 29, boot scripts 38, script files 325.
 
-## Frontend functions (8576)
+## Frontend functions (8582)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -107,18 +107,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:262 |
-| `charactersLost` | frontend/js/lazy-entries.js:271 |
-| `emblemHead` | frontend/js/lazy-entries.js:279 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:308 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:341 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:302 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:329 |
-| `onDomReady` | frontend/js/lazy-entries.js:352 |
-| `plainHead` | frontend/js/lazy-entries.js:285 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:293 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:364 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:388 |
+| `afterCharacters` | frontend/js/lazy-entries.js:265 |
+| `charactersLost` | frontend/js/lazy-entries.js:274 |
+| `emblemHead` | frontend/js/lazy-entries.js:282 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:311 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:344 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:305 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:332 |
+| `onDomReady` | frontend/js/lazy-entries.js:355 |
+| `plainHead` | frontend/js/lazy-entries.js:288 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:296 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:367 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:391 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -231,11 +231,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSelectionPopup` | frontend/js/selection.js:749 |
 | `wrapFieldSelection` | frontend/js/selection.js:484 |
 
-### frontend/js/notes-list.js (117)
+### frontend/js/notes-list.js (115)
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:3076 |
+| `_loadEntries` | frontend/js/notes-list.js:2890 |
 | `appendInline` | frontend/js/notes-list.js:1219 |
 | `appendInlineRun` | frontend/js/notes-list.js:971 |
 | `appendPictureBox` | frontend/js/notes-list.js:901 |
@@ -253,16 +253,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryColour` | frontend/js/notes-list.js:2591 |
 | `categoryColoursChanged` | frontend/js/notes-list.js:2608 |
 | `categoryDotColour` | frontend/js/notes-list.js:2601 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2893 |
-| `clearSkeletons` | frontend/js/notes-list.js:2994 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2831 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3617 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2707 |
+| `clearSkeletons` | frontend/js/notes-list.js:2808 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2650 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3431 |
 | `engineQueryIds` | frontend/js/notes-list.js:250 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3429 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3475 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3433 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3243 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3289 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3247 |
 | `entryListItems` | frontend/js/notes-list.js:2560 |
-| `entryListOrder` | frontend/js/notes-list.js:3177 |
+| `entryListOrder` | frontend/js/notes-list.js:2991 |
 | `entryNeedsReview` | frontend/js/notes-list.js:273 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:847 |
 | `fileCard` | frontend/js/notes-list.js:713 |
@@ -282,8 +282,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `liveQueryIds` | frontend/js/notes-list.js:201 |
 | `loadCategories` | frontend/js/notes-list.js:2617 |
 | `loadEmbedDocuments` | frontend/js/notes-list.js:1432 |
-| `loadEntries` | frontend/js/notes-list.js:3065 |
-| `markSidebarRowCurrent` | frontend/js/notes-list.js:2835 |
+| `loadEntries` | frontend/js/notes-list.js:2879 |
 | `matchesSearch` | frontend/js/notes-list.js:440 |
 | `matchesTagCount` | frontend/js/notes-list.js:419 |
 | `meaningEngineMissing` | frontend/js/notes-list.js:297 |
@@ -296,32 +295,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowStays` | frontend/js/notes-list.js:2032 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:436 |
 | `noteSortName` | frontend/js/notes-list.js:1803 |
-| `noteTopicChip` | frontend/js/notes-list.js:3356 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3610 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3527 |
-| `notesRailSync` | frontend/js/notes-list.js:3538 |
-| `notesRailWanted` | frontend/js/notes-list.js:3555 |
+| `noteTopicChip` | frontend/js/notes-list.js:3170 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3424 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3341 |
+| `notesRailSync` | frontend/js/notes-list.js:3352 |
+| `notesRailWanted` | frontend/js/notes-list.js:3369 |
 | `notesScroller` | frontend/js/notes-list.js:2017 |
 | `openNoteEditor` | frontend/js/notes-list.js:113 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2118 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:2084 |
 | `paintCategoryDot` | frontend/js/notes-list.js:2604 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:3030 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:2844 |
 | `parseNoteQuery` | frontend/js/notes-list.js:307 |
 | `propQuery` | frontend/js/notes-list.js:2323 |
 | `readableUrl` | frontend/js/notes-list.js:877 |
-| `referenceCountChip` | frontend/js/notes-list.js:3285 |
-| `referenceCountText` | frontend/js/notes-list.js:3273 |
-| `refreshEntries` | frontend/js/notes-list.js:3185 |
+| `referenceCountChip` | frontend/js/notes-list.js:3099 |
+| `referenceCountText` | frontend/js/notes-list.js:3087 |
+| `refreshEntries` | frontend/js/notes-list.js:2999 |
 | `rememberNoteFilter` | frontend/js/notes-list.js:2412 |
-| `reminderCountChip` | frontend/js/notes-list.js:3328 |
+| `reminderCountChip` | frontend/js/notes-list.js:3142 |
 | `remoteImageNote` | frontend/js/notes-list.js:911 |
 | `renderEntries` | frontend/js/notes-list.js:2424 |
-| `renderEntriesWhenShown` | frontend/js/notes-list.js:3043 |
+| `renderEntriesWhenShown` | frontend/js/notes-list.js:2857 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:927 |
 | `renderNoteInline` | frontend/js/notes-list.js:1608 |
 | `renderNoteText` | frontend/js/notes-list.js:1447 |
-| `renderNotesRail` | frontend/js/notes-list.js:3574 |
+| `renderNotesRail` | frontend/js/notes-list.js:3388 |
 | `renderSidebar` | frontend/js/notes-list.js:2632 |
 | `renderWindowed` | frontend/js/notes-list.js:2035 |
 | `resetNoteList` | frontend/js/notes-list.js:2386 |
@@ -331,27 +330,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreFocusTo` | frontend/js/notes-list.js:79 |
 | `restoreNoteControl` | frontend/js/notes-list.js:101 |
 | `safeHref` | frontend/js/notes-list.js:822 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:3058 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3550 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3623 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:2872 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3364 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3437 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2233 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2930 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2744 |
 | `showNotesFilter` | frontend/js/notes-list.js:284 |
-| `showSkeletons` | frontend/js/notes-list.js:2951 |
-| `sidebarRovingRows` | frontend/js/notes-list.js:2815 |
-| `skeletonRemember` | frontend/js/notes-list.js:2973 |
+| `showSkeletons` | frontend/js/notes-list.js:2765 |
+| `skeletonRemember` | frontend/js/notes-list.js:2787 |
 | `sortEntries` | frontend/js/notes-list.js:1807 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3563 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3377 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2222 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3350 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3164 |
 | `unlatex` | frontend/js/notes-list.js:757 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2202 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1784 |
 | `wikiForms` | frontend/js/notes-list.js:1265 |
 | `wikiStem` | frontend/js/notes-list.js:1283 |
 | `windowRows` | frontend/js/notes-list.js:1862 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2912 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2844 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2726 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2658 |
 
 ### frontend/js/capture-ask.js (43)
 
@@ -6733,6 +6731,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notesSpyActive` | frontend/js/notes-rail-spy.js:33 |
 | `notesSpyPick` | frontend/js/notes-rail-spy.js:45 |
 | `notesSpySchedule` | frontend/js/notes-rail-spy.js:83 |
+
+### frontend/js/notes-sidebar.js (8)
+
+| Name | File:line |
+|---|---|
+| `addRow` | frontend/js/notes-sidebar.js:27 |
+| `drawSidebar` | frontend/js/notes-sidebar.js:8 |
+| `filterRow` | frontend/js/notes-sidebar.js:93 |
+| `markSidebarRowCurrent` | frontend/js/notes-sidebar.js:193 |
+| `queryRow` | frontend/js/notes-sidebar.js:139 |
+| `sheetRow` | frontend/js/notes-sidebar.js:145 |
+| `sidebarRovingRows` | frontend/js/notes-sidebar.js:177 |
+| `toggleFilter` | frontend/js/notes-sidebar.js:110 |
 
 ### frontend/js/notes-sync.js (1)
 

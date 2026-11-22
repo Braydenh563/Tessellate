@@ -35,7 +35,7 @@ NOTES = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "notes-list.j
 def test_the_category_list_is_not_drawn_behind_another_tab() -> None:
     """The first page of notes drew the Notes tab's sidebar on the dashboard (11 and 29ms at 6x CPU)."""
     start = NOTES.index("function renderSidebar() {")
-    head = NOTES[start : NOTES.index("const counts = new Map();", start)]
+    head = NOTES[start : NOTES.index("return drawSidebar();", start)]
     assert '$("tab-notes").classList.contains("hidden")' in head
     assert 'dataset.stale = "1"' in head and "return;" in head, "owed with the list's own debt"
 
