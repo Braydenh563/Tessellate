@@ -414,6 +414,37 @@
     docOutlineFocusKey = docOutlineFoldKey(headings[index]);
     return docOutlineMoveSection(index, to, direction > 0);
   }
+
+  //: The blocks of a document from line `first` on: a fenced code block, a heading
+  //: line, or a run of text lines up to the next blank, heading or fence.
+  function docMoveBlocks(lines, first) {
+    const fence = /^\s{0,3}(```|~~~)/;
+    const atx = /^#{1,6}\s/;
+    const blocks = [];
+    for (let i = first; i < lines.length; ) {
+      const line = lines[i];
+      if (!line.trim()) {
+        i += 1;
+      } else if (fence.test(line)) {
+        const mark = line.trim().slice(0, 3);
+        let end = i + 1;
+        while (end < lines.length && !lines[end].trim().startsWith(mark)) end += 1;
+        end = Math.min(end + 1, lines.length);
+        blocks.push({ from: i, to: end, kind: "code" });
+        i = end;
+      } else if (atx.test(line)) {
+        blocks.push({ from: i, to: i + 1, kind: "heading" });
+        i += 1;
+      } else {
+        let end = i + 1;
+        while (end < lines.length && lines[end].trim() && !atx.test(lines[end]) && !fence.test(lines[end])) end += 1;
+        blocks.push({ from: i, to: end, kind: "text" });
+        i = end;
+      }
+    }
+    return blocks;
+  }
+
   //: **Alt+Up and Alt+Down in a markdown document move a block** (INBOX 904 B20,
   //: the owner's "manage mode for lined documents", taken as the keyboard half
   //: the owner's recommendation names). The editor's own line move is right for
@@ -450,30 +481,7 @@
       if (close > 0) first = close + 1;
     }
     if (row < first) return null;
-    const fence = /^\s{0,3}(```|~~~)/;
-    const atx = /^#{1,6}\s/;
-    const blocks = [];
-    for (let i = first; i < lines.length; ) {
-      const line = lines[i];
-      if (!line.trim()) {
-        i += 1;
-      } else if (fence.test(line)) {
-        const mark = line.trim().slice(0, 3);
-        let end = i + 1;
-        while (end < lines.length && !lines[end].trim().startsWith(mark)) end += 1;
-        end = Math.min(end + 1, lines.length);
-        blocks.push({ from: i, to: end, kind: "code" });
-        i = end;
-      } else if (atx.test(line)) {
-        blocks.push({ from: i, to: i + 1, kind: "heading" });
-        i += 1;
-      } else {
-        let end = i + 1;
-        while (end < lines.length && lines[end].trim() && !atx.test(lines[end]) && !fence.test(lines[end])) end += 1;
-        blocks.push({ from: i, to: end, kind: "text" });
-        i = end;
-      }
-    }
+    const blocks = docMoveBlocks(lines, first);
     const at = blocks.findIndex((block) => row >= block.from && row < block.to);
     if (at < 0) return null;
     const noop = { noop: true };
@@ -623,6 +631,46 @@
     if (!docCmView) return;
     docCmView.focus();
     if (!docBlockMoveRun(docCmView, delta)) announce("Put the caret in a paragraph, list item, table or section of a text document first.");
+  }
+  //: Drag to reorder: the listeners of one outline row, wired only when the row is a
+  //: section that may move (see the call in `renderDocOutline`).
+  function docOutlineWireDrag(li, heading, index) {
+    li.draggable = true;
+    li.addEventListener("dragstart", (event) => {
+      docOutlineDragIndex = index;
+      li.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+      //: Something has to be set or Firefox refuses to start the drag, and
+      //: the heading's own text is the honest thing to carry: dropped into
+      //: any other editor it reads as what was dragged.
+      event.dataTransfer.setData("text/plain", heading.text);
+    });
+    li.addEventListener("dragend", () => {
+      docOutlineDragIndex = -1;
+      li.classList.remove("is-dragging");
+      docOutlineClearDrop();
+    });
+    li.addEventListener("dragover", (event) => {
+      if (docOutlineDragIndex === -1 || docOutlineDragIndex === index) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      const after = docOutlineDropAfter(li, event.clientY);
+      docOutlineClearDrop();
+      li.classList.add(after ? "is-drop-after" : "is-drop-before");
+    });
+    li.addEventListener("dragleave", () => li.classList.remove("is-drop-before", "is-drop-after"));
+    li.addEventListener("drop", (event) => {
+      if (docOutlineDragIndex === -1 || docOutlineDragIndex === index) return;
+      event.preventDefault();
+      const from = docOutlineDragIndex;
+      const after = docOutlineDropAfter(li, event.clientY);
+      docOutlineDragIndex = -1;
+      docOutlineClearDrop();
+      if (!docOutlineMoveSection(from, index, after)) {
+        toast("That section cannot go inside itself.", "info");
+      }
+    });
+  
   }
   function renderDocOutline() {
     const list = $("doc-outline");
@@ -819,41 +867,7 @@
       //: take the lines up to the next symbol with it, which is not the
       //: function. Code rows jump; only headings move.
       if (!needle && !heading.symbol) {
-        li.draggable = true;
-        li.addEventListener("dragstart", (event) => {
-          docOutlineDragIndex = index;
-          li.classList.add("is-dragging");
-          event.dataTransfer.effectAllowed = "move";
-          //: Something has to be set or Firefox refuses to start the drag, and
-          //: the heading's own text is the honest thing to carry: dropped into
-          //: any other editor it reads as what was dragged.
-          event.dataTransfer.setData("text/plain", heading.text);
-        });
-        li.addEventListener("dragend", () => {
-          docOutlineDragIndex = -1;
-          li.classList.remove("is-dragging");
-          docOutlineClearDrop();
-        });
-        li.addEventListener("dragover", (event) => {
-          if (docOutlineDragIndex === -1 || docOutlineDragIndex === index) return;
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          const after = docOutlineDropAfter(li, event.clientY);
-          docOutlineClearDrop();
-          li.classList.add(after ? "is-drop-after" : "is-drop-before");
-        });
-        li.addEventListener("dragleave", () => li.classList.remove("is-drop-before", "is-drop-after"));
-        li.addEventListener("drop", (event) => {
-          if (docOutlineDragIndex === -1 || docOutlineDragIndex === index) return;
-          event.preventDefault();
-          const from = docOutlineDragIndex;
-          const after = docOutlineDropAfter(li, event.clientY);
-          docOutlineDragIndex = -1;
-          docOutlineClearDrop();
-          if (!docOutlineMoveSection(from, index, after)) {
-            toast("That section cannot go inside itself.", "info");
-          }
-        });
+        docOutlineWireDrag(li, heading, index);
       }
       button.addEventListener("keydown", (event) => {
         if (!event.altKey || (event.key !== "ArrowUp" && event.key !== "ArrowDown")) return;
