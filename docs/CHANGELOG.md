@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Note templates: `{{weekday}}` fills today's weekday and `{{space}}` the space the note lands in (the default one under All spaces), in the Capture picker, the editor preview and Insert template; the Settings hint and the Guide name both.
 - Dashboard: in one space the line under the greeting starts with that space ("In Work"), since every count on it is that space's; under All spaces it is as before.
 - Spaces: every space, the default one too, has Export on its row in the space picker: the notebook folder of that space alone, named for it (`tessellate-work.zip`), whichever space is on screen. The picker is 17rem wide so a name keeps 87px beside the four buttons.
 - Spaces: Move to space asks, when the notes link to notes staying behind, whether to bring those too ("Bring them too"), so the links stay in view; one Undo sends all of them back (the move answers with `linked`, and a link whose other end is already in the target space moves with it).

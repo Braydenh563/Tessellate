@@ -12,7 +12,13 @@ and a note template knew the date, the time, the clipboard and the caret.
 
 from __future__ import annotations
 
+import json
+import re
+import shutil
+import subprocess
 from pathlib import Path
+
+import pytest
 
 from tests._app_js import app_js_text
 
@@ -108,3 +114,33 @@ def test_the_dashboard_line_names_the_space_it_counts():
     body = dash.split("async function renderDashSubmessage(", 1)[1].split("\n}\n", 1)[0]
     assert '"space"' in body and "In ${" in body
     assert "SPACE_ALL" in body
+
+
+# --- template variables ------------------------------------------------------
+
+
+def _node_fill(template: str, space_name: str) -> str:
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    app = app_js_text()
+    fn = "function noteTemplateText(" + app.split("function noteTemplateText(", 1)[1].split("\n}\n", 1)[0] + "\n}\n"
+    stamp = re.search(r"const stampDate = .*\n", app).group(0)
+    script = (
+        "const SPACE_ALL = 'all';\n"
+        f"const spacesCache = [{{ id: 'work', name: {json.dumps(space_name)} }}];\n"
+        "const activeSpaceId = () => 'work';\n"
+        + stamp + fn
+        + f"process.stdout.write(noteTemplateText({json.dumps(template)}));\n"
+    )
+    return subprocess.run([node, "-e", script], capture_output=True, text=True, check=True, timeout=30).stdout
+
+
+def test_note_templates_fill_the_weekday_and_the_space():
+    out = _node_fill("{{weekday}} in {{space}}", "Work")
+    assert re.fullmatch(r"(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day in Work", out), out
+
+
+def test_the_template_hint_names_the_new_variables():
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "<code>{{weekday}}</code>" in html and "<code>{{space}}</code>" in html
