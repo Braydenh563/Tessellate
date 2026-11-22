@@ -26,7 +26,8 @@ def test_render_entries_defers_while_a_row_menu_is_open():
 def test_the_owed_draw_runs_once_when_the_menu_closes_or_its_row_goes():
     body = _body(frontend_text("js/notes-list.js"), "renderEntries.afterMenu = function (opener, appendOnly) {")
     assert "renderEntries.afterMenu.owed" in body  # one owed draw, however many were asked
-    assert 'attributeFilter: ["aria-expanded"]' in body
+    assert 'document.addEventListener(kind, look, true)' in body
+    assert 'document.removeEventListener(kind, look, true)' in body
+    assert "MutationObserver" not in body
     assert "opener.isConnected" in body
-    assert "watch.disconnect();" in body
     assert "resolve(renderEntries(state.appendOnly));" in body

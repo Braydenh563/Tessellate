@@ -3055,22 +3055,20 @@ function paintEntriesProgress(list = true) {
 //: the map index answering): drawn now if the tab is up, once on reveal if not.
 //: The debt is `data-stale` on the list itself, so it is no module state.
 //: One draw owed after a row's menu closes (or its row goes), whichever draws were asked meanwhile.
+//: A menu closes on a press or a key, so those are when it is looked at again (no observer: the
+//: wake-source ratchet, tests/test_frontend_wake_sources.py).
 renderEntries.afterMenu = function (opener, appendOnly) {
   const owed = renderEntries.afterMenu.owed;
-  if (owed) {
-    owed.appendOnly &&= appendOnly;
-    return owed.done;
-  }
+  if (owed) { owed.appendOnly &&= appendOnly; return owed.done; }
   const state = { appendOnly };
   state.done = new Promise((resolve) => {
-    const watch = new MutationObserver(() => {
+    const look = () => setTimeout(() => {
       if (opener.isConnected && opener.getAttribute("aria-expanded") === "true") return;
-      watch.disconnect();
+      for (const kind of ["pointerup", "keyup", "click"]) document.removeEventListener(kind, look, true);
       renderEntries.afterMenu.owed = null;
       resolve(renderEntries(state.appendOnly));
-    });
-    watch.observe(opener, { attributes: true, attributeFilter: ["aria-expanded"] });
-    watch.observe($("entry-list"), { childList: true, subtree: true });
+    }, 0);
+    for (const kind of ["pointerup", "keyup", "click"]) document.addEventListener(kind, look, true);
   });
   renderEntries.afterMenu.owed = state;
   return state.done;
