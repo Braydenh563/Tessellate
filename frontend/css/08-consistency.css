@@ -5024,6 +5024,8 @@ body .chip.item-label,
     min-width: 0;
     min-height: 0;
     margin-inline-end: 0;
+    padding: 2px;
+    background-clip: content-box;
   }
 }
 /* --- A note's time: the same corner on every card --- */

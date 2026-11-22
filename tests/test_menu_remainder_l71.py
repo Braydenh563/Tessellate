@@ -22,7 +22,7 @@ def _rule(text: str, selector: str) -> str:
 
 def test_a_switch_row_in_a_dock_menu_is_a_menu_row() -> None:
     css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
-    row = _rule(css, ".doc-dock-menu-list :is(.dock-menu-check, .doc-dock-menu-check)")
+    row = _rule(css, ".doc-dock-menu-list .dock-menu-check,\n.doc-dock-menu-list .doc-dock-menu-check")
     #: The button floor itself, so touch and phone widths get the 44px target too (390 stood at 34.5 against 44).
     assert "min-height: max(var(--target-min), var(--button-min-h))" in row
     assert "padding-block: 0" in _rule(css, "#settings-modal .settings-section .doc-dock-menu-list .dock-menu-check")
@@ -41,7 +41,7 @@ def test_escape_leaves_a_selects_open_list_to_close_first() -> None:
     nav = (JS / "navigation.js").read_text(encoding="utf-8")
     body = nav[nav.index("const DETAILS_MENU_OPEN"):]
     body = body[: body.index("true\n);")]
-    assert 'document.querySelector(".action-menu:not(.hidden)")' in body
+    assert 'document.querySelectorAll(".action-menu:not(.hidden)")' in body
     assert body.index("closeActionMenus()") < body.index("open.open = false")
 
 
@@ -53,7 +53,7 @@ def test_answer_length_is_filled_when_notes_is_built() -> None:
 def test_the_zoom_list_is_as_wide_as_its_numbers() -> None:
     js = (JS / "value-field.js").read_text(encoding="utf-8")
     assert '.classList.add("value-field-list")' in js
-    assert 'group: p.run ? "run" : "value"' in js
+    assert 'group: p.run ? "act" : "value"' in js
     assert "min-width: 0" in _rule((CSS / "value-field.css").read_text(encoding="utf-8"), ".action-menu.value-field-list")
 
 
@@ -72,7 +72,7 @@ def test_the_sweep_does_not_call_a_dialog_opener_or_a_lifted_list_a_finding() ->
 
 def test_the_board_view_menus_switch_rows_are_walked_by_the_arrows():
     """The View menu is two columns of switch rows: the arrows found one command and stopped."""
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = (JS / "whiteboard-clipboard.js").read_text(encoding="utf-8")
     menus = (JS / "menus.js").read_text(encoding="utf-8")
     assert '.wb-menu-row > input[type="checkbox"]' in board and '"menuitemcheckbox"' in board
     assert "':scope > .wb-menu-col > [role=\"group\"] > [role=\"menuitem\"], '" in menus

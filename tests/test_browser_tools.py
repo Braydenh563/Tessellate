@@ -226,4 +226,6 @@ def test_the_palette_agent_opens_the_same_page_in_the_web_panel():
 
     source = (JS_DIR / "palette.js").read_text(encoding="utf-8")
     on_tool = source[source.index("drawAnswerPanels(stepsHolder, panels, spot)") :][:600]
-    assert "openWebReader(event.panel_url)" in on_tool and 'event.tool !== "browser_read"' in on_tool
+    assert "cmdPaletteAsk.showBrowserPage(event)" in on_tool
+    show = source[source.index("cmdPaletteAsk.showBrowserPage = ") :][:400]
+    assert "openWebReader(event.panel_url)" in show and 'event.tool !== "browser_read"' in show

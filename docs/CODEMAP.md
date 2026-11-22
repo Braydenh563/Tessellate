@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9131, frontend ids 2862, CSS sections 532, backend routes 761, backend modules 11756, test files 3089, tests 24175, plan headings 691, app scripts 29, boot scripts 38, script files 424.
+Counts: frontend functions 9131, frontend ids 2862, CSS sections 532, backend routes 761, backend modules 11757, test files 3089, tests 24175, plan headings 691, app scripts 29, boot scripts 38, script files 424.
 
 ## Frontend functions (9131)
 
@@ -14118,17 +14118,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1214 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2479 |
 | A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4582 |
-| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:7327 |
+| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:7329 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4777 |
-| A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:5648 |
+| A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:5650 |
 | A diff of two versions of the same text (DOCUMENTS_PLAN Phase 5 items 2, 3) | frontend/css/09-editor.css:529 |
 | A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:7833 |
-| A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:6637 |
-| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:7168 |
-| A note's time: the same corner on every card | frontend/css/08-consistency.css:5029 |
+| A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:6639 |
+| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:7170 |
+| A note's time: the same corner on every card | frontend/css/08-consistency.css:5031 |
 | A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3400 |
-| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:7401 |
-| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:7311 |
+| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:7403 |
+| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:7313 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2864 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:3347 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1902 |
@@ -14170,8 +14170,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3196 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:799 |
 | On this day | frontend/css/03-dashboard-widgets.css:4359 |
-| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:7280 |
-| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:7361 |
+| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:7282 |
+| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:7363 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:6708 |
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3123 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:215 |
@@ -14202,7 +14202,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | RESPONSIVE, CONTINUED, AND THE LIQUID GLASS ADOPTIONS | frontend/css/10-responsive.css:1 |
 | Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:2875 |
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/08-consistency.css:4579 |
-| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:6869 |
+| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:6871 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3426 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1458 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:694 |
@@ -14228,12 +14228,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Templates (INBOX 715) | frontend/css/library-lazy.css:6072 |
 | Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:3948 |
 | The Activity popup (the Tasks popup) | frontend/css/popup-anatomy-lazy.css:115 |
-| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:6723 |
+| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:6725 |
 | The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:6918 |
 | The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:6419 |
 | The bordered card | frontend/css/popup-anatomy-lazy.css:59 |
 | The chat header stays one line (INBOX 91) | frontend/css/08-consistency.css:2347 |
-| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:7084 |
+| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:7086 |
 | The connection pill's menu button, concentric with the pill | frontend/css/08-consistency.css:5007 |
 | The documents editor: layout around the engine (DOCUMENTS_PLAN Phase 2) | frontend/css/09-editor.css:1 |
 | The five whiteboard menus (Insert, Edit, Arrange, View, Board) | frontend/css/08-consistency.css:1354 |
@@ -14249,7 +14249,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:161 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:3988 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2357 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:7634 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:7636 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:663 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1562 |
 | The two rows that still wrapped at 1024 | frontend/css/08-consistency.css:1428 |
@@ -14291,7 +14291,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a callout that folds (REDESIGN.md §R7.3 item 3) | frontend/css/05-sidebars-themes.css:1313 |
 | a card that opens does not inflate the six beside it | frontend/css/08-consistency.css:2598 |
 | a chip lane scrolls without drawing a scrollbar | frontend/css/07-whiteboard-misc.css:3200 |
-| a chosen radio option is outlined, not only tinted (INBOX 464) | frontend/css/08-consistency.css:6084 |
+| a chosen radio option is outlined, not only tinted (INBOX 464) | frontend/css/08-consistency.css:6086 |
 | a disclosure arrow that matches the app's own carets | frontend/css/07-whiteboard-misc.css:3219 |
 | a disclosure is a control, so it answers the pointer | frontend/css/07-whiteboard-misc.css:2809 |
 | a face drawn once (avatars.js, `nameMarkCompose`) | frontend/css/characters-lazy.css:281 |
@@ -14303,7 +14303,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:3687 |
 | a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:10236 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:5975 |
-| a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:5278 |
+| a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:5280 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5674 |
 | a named item in a Settings list: title, label, facts | frontend/css/08-consistency.css:3622 |
 | a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:4408 |
@@ -14351,7 +14351,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | chat tab (Wave C) | frontend/css/02-chat-graph.css:1 |
 | chat, de-vibecoded | frontend/css/08-consistency.css:3207 |
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2493 |
-| choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) | frontend/css/08-consistency.css:5215 |
+| choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) | frontend/css/08-consistency.css:5217 |
 | column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3020 |
 | compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:840 |
 | curated themes | frontend/css/01-forms-settings.css:3508 |
@@ -14399,23 +14399,23 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1602 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5934 |
 | motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:94 |
-| motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:6407 |
+| motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:6409 |
 | motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:85 |
-| motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:6264 |
-| motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:6244 |
+| motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:6266 |
+| motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:6246 |
 | motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:286 |
 | motion: a menu that hangs off a button grows from it (INBOX 1565) | frontend/css/ui-reveal-lazy.css:50 |
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:446 |
-| motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:6375 |
+| motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:6377 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
 | motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:10791 |
-| motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:6486 |
-| motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:6305 |
+| motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:6488 |
+| motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:6307 |
 | motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:10786 |
-| motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:6125 |
-| motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:6533 |
+| motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:6127 |
+| motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:6535 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:380 |
-| motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:6555 |
+| motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:6557 |
 | moved from 07-whiteboard-misc.css (L-world-class-71): the OCR workspace's own rules, in their old order. Every selector names | frontend/css/library-lazy.css:11997 |
 | moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:9186 |
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:7642 |
@@ -14432,7 +14432,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:4601 |
 | one gap under every card heading | frontend/css/01-forms-settings.css:4909 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2802 |
-| one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:5852 |
+| one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:5854 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4872 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2173 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4306 |
@@ -14470,8 +14470,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:842 |
 | the "?" head row and its help body | frontend/css/01-forms-settings.css:5436 |
-| the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:6565 |
-| the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:6038 |
+| the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:6567 |
+| the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:6040 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1572 |
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1290 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:2363 |
@@ -14542,7 +14542,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/board-lazy.css:6 |
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4518 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1058 |
-| the file picker, in the app's own clothes | frontend/css/08-consistency.css:5498 |
+| the file picker, in the app's own clothes | frontend/css/08-consistency.css:5500 |
 | the file type picker (INBOX 1482) | frontend/css/library-lazy.css:10721 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3762 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3887 |
@@ -14584,11 +14584,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:8678 |
 | the quick-nav chord's guide | frontend/css/chord-guide-lazy.css:5 |
 | the reader: one scroller, the page set as prose | frontend/css/03-dashboard-widgets.css:1414 |
-| the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:6101 |
+| the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:6103 |
 | the rich picker (rich-picker.js; DESIGN.md's recipe index) | frontend/css/05-sidebars-themes.css:882 |
 | the run list (AGENT_SKILLS_REFORM.md, Phase C) | frontend/css/agent-runs-lazy.css:4 |
 | the scroll container (§36A) | frontend/css/00-tokens-shell.css:1086 |
-| the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:5617 |
+| the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:5619 |
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:3568 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:8825 |
 | the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5569 |
@@ -14624,7 +14624,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | top bar polish | frontend/css/05-sidebars-themes.css:4229 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1641 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:8352 |
-| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:7456 |
+| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:7458 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1948 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:963 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3648 |
@@ -14649,12 +14649,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/05-sidebars-themes.css | 5983 |
 | frontend/css/06-timeline-dialogs.css | 3674 |
 | frontend/css/07-whiteboard-misc.css | 10199 |
-| frontend/css/08-consistency.css | 7660 |
+| frontend/css/08-consistency.css | 7662 |
 | frontend/css/09-editor.css | 983 |
 | frontend/css/10-responsive.css | 3159 |
 | frontend/css/agent-runs-lazy.css | 223 |
 | frontend/css/answer-foot-lazy.css | 165 |
-| frontend/css/appearance-panel-lazy.css | 337 |
+| frontend/css/appearance-panel-lazy.css | 343 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 313 |
 | frontend/css/atlas-lazy.css | 1248 |
@@ -14845,7 +14845,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1787 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1765 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1779 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:510 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:387 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1075 |
@@ -15005,7 +15005,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:1014 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:1022 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1728 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1742 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:261 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:253 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:397 |
@@ -15029,9 +15029,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:184 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:359 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1047 |
-| `/instance` | GET | `instance` | src/tessellate/api/app.py:1626 |
-| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1640 |
-| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1660 |
+| `/instance` | GET | `instance` | src/tessellate/api/app.py:1640 |
+| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1654 |
+| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1674 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:364 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:615 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1284 |
@@ -15126,7 +15126,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:132 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:380 |
-| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1707 |
+| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1721 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat_meta.py:132 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:523 |
@@ -15151,7 +15151,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1285 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1334 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:667 |
-| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1690 |
+| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1704 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:517 |
 | `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:95 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:640 |
@@ -15299,7 +15299,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sync/reset` | POST | `sync_reset` | src/tessellate/api/routes_sync.py:166 |
 | `/sync/segment` | GET | `sync_segment` | src/tessellate/api/routes_sync.py:46 |
 | `/sync/status` | GET | `sync_status` | src/tessellate/api/routes_sync.py:90 |
-| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1700 |
+| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1714 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1444 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
 | `/system/doctor` | GET | `run_doctor` | src/tessellate/api/routes_maintenance.py:44 |
@@ -15495,7 +15495,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11756)
+## Backend modules (11757)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22551,56 +22551,57 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `build_llm_client` | src/tessellate/ai/wiring.py:25 |
 | `register` | src/tessellate/ai/wiring.py:78 |
 
-### src/tessellate/api/app.py (46)
+### src/tessellate/api/app.py (47)
 
 | Name | File:line |
 |---|---|
-| `Layer` | src/tessellate/api/app.py:1336 |
-| `RequestPulse` | src/tessellate/api/app.py:1197 |
-| `RevalidatedStatic` | src/tessellate/api/app.py:262 |
-| `SpaceGuard` | src/tessellate/api/app.py:1124 |
-| `_UnversionedStatic` | src/tessellate/api/app.py:253 |
-| `__getattr__` | src/tessellate/api/app.py:1583 |
-| `_add_instance_routes` | src/tessellate/api/app.py:1623 |
-| `_add_middleware` | src/tessellate/api/app.py:1436 |
-| `_add_system_routes` | src/tessellate/api/app.py:1686 |
-| `_backup_if_due` | src/tessellate/api/app.py:724 |
-| `_check_data_folder` | src/tessellate/api/app.py:710 |
-| `_check_notebook_file` | src/tessellate/api/app.py:693 |
-| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:617 |
-| `_code_for_status` | src/tessellate/api/app.py:868 |
-| `_compact_event_log` | src/tessellate/api/app.py:535 |
-| `_compact_step` | src/tessellate/api/app.py:581 |
-| `_content_length` | src/tessellate/api/app.py:1176 |
-| `_has_password` | src/tessellate/api/app.py:1310 |
-| `_include_routers` | src/tessellate/api/app.py:1597 |
-| `_install_pending_extras` | src/tessellate/api/app.py:589 |
-| `_mend_category_names` | src/tessellate/api/app.py:661 |
-| `_purge_expired_bin_entries` | src/tessellate/api/app.py:511 |
-| `_purge_step` | src/tessellate/api/app.py:577 |
-| `_read_note_dates` | src/tessellate/api/app.py:672 |
-| `_register_client_error_handlers` | src/tessellate/api/app.py:879 |
-| `_register_error_handlers` | src/tessellate/api/app.py:1052 |
-| `_register_server_error_handlers` | src/tessellate/api/app.py:940 |
-| `_seed_companion_milestone` | src/tessellate/api/app.py:680 |
-| `_stamp_build` | src/tessellate/api/app.py:1591 |
-| `_stamp_for` | src/tessellate/api/app.py:168 |
-| `_start_autonomous_loop` | src/tessellate/api/app.py:823 |
-| `_start_searxng_if_asked` | src/tessellate/api/app.py:750 |
-| `_start_services` | src/tessellate/api/app.py:1234 |
-| `_startup_maintenance` | src/tessellate/api/app.py:628 |
-| `_static_gzip` | src/tessellate/api/app.py:450 |
-| `_sweep_sealed_leftovers` | src/tessellate/api/app.py:701 |
-| `_warm_routes` | src/tessellate/api/app.py:778 |
-| `_warm_search_at_launch` | src/tessellate/api/app.py:1325 |
-| `asset_hash` | src/tessellate/api/app.py:144 |
-| `asset_stamps` | src/tessellate/api/app.py:173 |
-| `clear_static_cache` | src/tessellate/api/app.py:491 |
-| `create_app` | src/tessellate/api/app.py:1801 |
-| `out_of_space_body` | src/tessellate/api/app.py:1093 |
-| `pin_static_mime_types` | src/tessellate/api/app.py:111 |
-| `served_index_html` | src/tessellate/api/app.py:218 |
-| `served_offline_html` | src/tessellate/api/app.py:202 |
+| `Layer` | src/tessellate/api/app.py:1350 |
+| `RequestPulse` | src/tessellate/api/app.py:1211 |
+| `RevalidatedStatic` | src/tessellate/api/app.py:264 |
+| `SpaceGuard` | src/tessellate/api/app.py:1138 |
+| `_UnversionedStatic` | src/tessellate/api/app.py:255 |
+| `__getattr__` | src/tessellate/api/app.py:1597 |
+| `_add_instance_routes` | src/tessellate/api/app.py:1637 |
+| `_add_middleware` | src/tessellate/api/app.py:1450 |
+| `_add_system_routes` | src/tessellate/api/app.py:1700 |
+| `_backup_if_due` | src/tessellate/api/app.py:726 |
+| `_check_data_folder` | src/tessellate/api/app.py:712 |
+| `_check_notebook_file` | src/tessellate/api/app.py:695 |
+| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:619 |
+| `_code_for_status` | src/tessellate/api/app.py:882 |
+| `_compact_event_log` | src/tessellate/api/app.py:537 |
+| `_compact_step` | src/tessellate/api/app.py:583 |
+| `_content_length` | src/tessellate/api/app.py:1190 |
+| `_has_password` | src/tessellate/api/app.py:1324 |
+| `_help_topics` | src/tessellate/api/app.py:780 |
+| `_include_routers` | src/tessellate/api/app.py:1611 |
+| `_install_pending_extras` | src/tessellate/api/app.py:591 |
+| `_mend_category_names` | src/tessellate/api/app.py:663 |
+| `_purge_expired_bin_entries` | src/tessellate/api/app.py:513 |
+| `_purge_step` | src/tessellate/api/app.py:579 |
+| `_read_note_dates` | src/tessellate/api/app.py:674 |
+| `_register_client_error_handlers` | src/tessellate/api/app.py:893 |
+| `_register_error_handlers` | src/tessellate/api/app.py:1066 |
+| `_register_server_error_handlers` | src/tessellate/api/app.py:954 |
+| `_seed_companion_milestone` | src/tessellate/api/app.py:682 |
+| `_stamp_build` | src/tessellate/api/app.py:1605 |
+| `_stamp_for` | src/tessellate/api/app.py:170 |
+| `_start_autonomous_loop` | src/tessellate/api/app.py:837 |
+| `_start_searxng_if_asked` | src/tessellate/api/app.py:752 |
+| `_start_services` | src/tessellate/api/app.py:1248 |
+| `_startup_maintenance` | src/tessellate/api/app.py:630 |
+| `_static_gzip` | src/tessellate/api/app.py:452 |
+| `_sweep_sealed_leftovers` | src/tessellate/api/app.py:703 |
+| `_warm_routes` | src/tessellate/api/app.py:792 |
+| `_warm_search_at_launch` | src/tessellate/api/app.py:1339 |
+| `asset_hash` | src/tessellate/api/app.py:146 |
+| `asset_stamps` | src/tessellate/api/app.py:175 |
+| `clear_static_cache` | src/tessellate/api/app.py:493 |
+| `create_app` | src/tessellate/api/app.py:1815 |
+| `out_of_space_body` | src/tessellate/api/app.py:1107 |
+| `pin_static_mime_types` | src/tessellate/api/app.py:113 |
+| `served_index_html` | src/tessellate/api/app.py:220 |
+| `served_offline_html` | src/tessellate/api/app.py:204 |
 
 ### src/tessellate/api/asset_strip.py (27)
 

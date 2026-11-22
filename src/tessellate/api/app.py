@@ -40,6 +40,8 @@ from tessellate.search import searxng_manager
 from tessellate.api import versioning
 from tessellate.api import asset_strip, lazy_routes, routes_auth, routes_models, routes_update
 from tessellate.ai.provider import ProviderError
+from tessellate.ai import spelling
+
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
 from tessellate.core import (
@@ -773,6 +775,18 @@ def _start_searxng_if_asked() -> None:
         logging.getLogger("tessellate.startup").warning(
             "SearXNG autostart didn't run this start", exc_info=True
         )
+
+
+def _help_topics() -> list:
+    """The help topics, loaded on the speller's first read. `routes_help` used to
+    register them by importing `help_chat` at boot; it is lazy now, so a question
+    read before any help request missed the app's own words ("dayz")."""
+    from tessellate.ai import help_topics_core
+
+    return [*help_topics_core.HELP_TOPICS, *help_topics_core.MORE_TOPICS]
+
+
+spelling.set_topic_source(_help_topics)
 
 
 def _warm_routes(app) -> None:
