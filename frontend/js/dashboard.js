@@ -582,8 +582,9 @@ function renderDashboardGreeting() {
   // open (WORLD_CLASS_PLAN section 10, F6: "0 timers while hidden"), and a
   // visible one was doing the same 59 times out of 60.
   startDashClock();
-  renderDashSubmessage().catch(() => {});
-  renderDashGlance().catch(() => {});
+  //: The opening curtain waits for these as well (`dashShown`): the line
+  //: grows one row to four as its reads land, above the grid.
+  window.dashHeroDrawn = Promise.allSettled([renderDashSubmessage(), renderDashGlance()]);
 }
 
 //: **The Focused hero's glance** (INBOX 675, the owner, with a screenshot at
@@ -1718,7 +1719,9 @@ function renderFirstStepsLazy() {
   if (prefs.get("getStartedHidden", null) === "1") return void host.replaceChildren();
   const skip = dashEditMode || (allEntries.length && prefs.get("firstStepsHidden", null) === "1");
   //: The Get started menu beside Customise is drawn whether or not the card is.
-  lazyScript("/js/first-run.js").then((ok) => ok && renderFirstSteps(host, skip));
+  dashLine.steps = lazyScript("/js/first-run.js")
+    .then((ok) => ok && renderFirstSteps(host, skip))
+    .then(() => dashLine.menu);
 }
 
 //: A widget that throws, or never draws, says so and offers Retry (INBOX
@@ -2022,6 +2025,12 @@ async function renderDashboard({ refresh = false } = {}) {
   //: that layout is the one the frame was going to do anyway. Two frames on, the settle takes
   //: it down, so it is always up before then.
   let outline = null;
+  //: What the opening curtain waits for (`curtainShell`): the widgets, and
+  //: the hero line and first steps above the grid, which landed after the
+  //: curtain lifted in 1 of 16 boots and moved the page 0.053 in view
+  //: (L-world-class-879). Each has its own end: `settled` its 1.2 s, the
+  //: curtain its cap.
+  window.dashShown = Promise.allSettled([settled, window.dashHeroDrawn, dashLine.steps]);
   afterFrames(() => {
     if (window.dashSettled === settled && grid.classList.contains("dash-filling")) outline = dashFillingSkeleton(grid, drawing.length);
   }, 1);

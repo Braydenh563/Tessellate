@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+The opening curtain waits for the hero line and first steps too (L-world-class-879): it lifted on the dashboard's widgets alone, and in 1 of 16 boots the hero line and the first-steps card and menu landed after it and moved the page 0.053 in view. `dashShown` holds all three; measured 16 boots at 390 px, 0 shift after the lift, median lift 692 ms.
 Boot reads the categories once, not twice (L-world-class-874): the notes list fetched `/categories` at its first page and again at its last; it now asks at the first page only (1 GET, was 2, at 500 notes).
 Duplicate scan at 5,000 near-identical notes, 29.7 s to 1.7 s CPU (L-world-class-872): words held by one note take no matrix column, pairs leave the matrix 16 rows at a time as arrays, and the groups join by array operations with one int64 key per root pair; the prefix-filter path hands pairs on in chunks.
 The speller knows the app's own words from the first question again: with route modules loaded at their first request, the app imports the help topics itself (about 5 ms), which routes_help used to do (`test_question_noise.py` cold-process test).
