@@ -342,10 +342,10 @@ def test_a_50k_adversarial_note_is_read_quickly():
     from tessellate.ai import composer_mermaid
 
     texts = ["\t" * 50_000 + "x", "* " + " \t" * 25_000, "- [ ]" + " " * 50_000 + "!", "#" + " " * 50_000, "a," + " then" * 10_000]
-    start = time.perf_counter()
+    cpu = time.thread_time()  # CPU, not wall time (test_fixed_clock_lint)
     for t in texts:
         composer_mermaid.steps(t)
         composer_mermaid.dated(t)
         composer_mermaid.tree(t)
-    assert time.perf_counter() - start < 2.0
+    assert time.thread_time() - cpu < 2.0
     assert composer_mermaid.INPUT_CHARS == 50_000

@@ -57,7 +57,7 @@ function routeHash(entry) {
     case "settings":
       return section ? `#/settings/${section}` : "#/settings";
     default:
-      return ROUTE_TABS[tab] === tab ? `#/${tab}` : "#/dashboard";
+      return ROUTE_TABS[tab] === tab || /^(Manual|Statistics)$/.test(tab) ? `#/${String(tab).toLowerCase()}` : "#/dashboard";
   }
 }
 

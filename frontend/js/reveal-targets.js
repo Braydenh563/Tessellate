@@ -437,6 +437,8 @@ const REVEAL_TARGETS = {
   "library-images": { tab: "library", open: () => revealLibrarySub('[data-media-kind="images"]'), el: "library-view-media", flash: false },
   "library-files": { tab: "library", open: () => revealLibrarySub('[data-media-kind="files"]'), el: "library-view-media", flash: false },
   "library-links": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-links"]'), el: "library-view-links", flash: false },
+  "library-boards": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-whiteboard"]'), el: "library-view-whiteboard", flash: false },
+  "library-recordings": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-recordings"]'), el: "library-view-recordings", flash: false },
   "library-skills": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-skills"]'), el: "library-view-skills", flash: false },
   "library-contents": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-contents"]'), el: "library-view-contents", flash: false },
 
@@ -528,6 +530,8 @@ const REVEAL_TARGETS = {
   // the OCR workspace's "RapidOCR, not installed" Install (INBOX 717).
   "extra-row": { settings: "extras", sel: "#extra-row-{arg}", built: "renderExtras", fallback: "settings-extras" },
   "workspace-new": { open: () => openSpaceCreate(), el: "space-create-dialog", flash: false },
+  "space-rename": { open: () => privateSpaces("edit", activeSpaceId() === SPACE_ALL ? "default" : activeSpaceId()), el: "space-edit-dialog", flash: false },
+  "board-layers": { open: async () => (await revealBoard(false)) && window.wbOpenSidebar("layers"), el: "wb-layers-tree", fallback: "wb-boards-new-menu" },
 
   // Data and control
   palette: { open: () => openPalette(), el: "palette-overlay", flash: false },
@@ -849,6 +853,13 @@ function openShortcuts() {
   if (onBoard) $("shortcut-head-whiteboard")?.scrollIntoView({ block: "start" });
   $("shortcuts-close").focus();
 }
+
+//: Closed, the sheet's lists were 240 idle nodes; `openShortcuts` draws them again (L676). `closeShortcuts`
+//: announces `sheet-closed` on every path that closes the sheet (the router's and the tour's go through it).
+document.addEventListener("sheet-closed", () => {
+  const overlay = $("shortcuts-overlay");
+  if (overlay.classList.contains("hidden")) for (const list of overlay.querySelectorAll(".shortcut-list")) list.replaceChildren();
+});
 
 //: Moved from settings-panes.js; the boot keeps a stand-in that loads this file.
 const revealTimers = new WeakMap();

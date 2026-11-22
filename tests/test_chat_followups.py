@@ -142,7 +142,8 @@ def test_the_timer_ticks_on_a_clock_not_on_stream_events():
     hung."""
     source = app_js_text()
     block = source.split("function startChatTimer()")[1].split("\nfunction stopChatTimer")[0]
-    assert "setInterval(paintChatTimer, 1000)" in block
+    # On the one shared second's clock (`secondTick`, prefs.js, L-world-class-15).
+    assert "secondTick.add(paintChatTimer)" in block
 
 
 def test_switching_chats_mid_stream_hides_the_timer():

@@ -13,6 +13,11 @@
     return [read, when, stopped].filter(Boolean).join(" · ");
   }
 
+  const NIGHT_ACCEPT = {
+    date: { icon: "ph:bell", title: "Remind me on this date", undo: "Made a reminder", done: "Reminder made", fail: "make that reminder" },
+    duplicate: { icon: "ph:arrows-merge", title: "Merge into the earlier note", undo: "Merged a repeated note", done: "Merged into the earlier note", fail: "merge those notes" },
+  };
+
   function nightFactRow(fact, onGone) {
     const li = document.createElement("li");
     li.className = "night-fact";
@@ -68,10 +73,39 @@
           toast("Linked as disagreeing");
         } catch (error) {
           keep.disabled = false;
-          toast(error.message || "Couldn't link those notes.", true);
+          toast(error.message || voiceLine("failed", { what: "link those notes" }), true);
         }
       });
       actions.append(keep);
+    }
+    //: Accept a date (a reminder that day) or a duplicate (Tidy's merge into the earlier note), by rule, no model.
+    const act = NIGHT_ACCEPT[fact.kind];
+    if (act) {
+      const accept = document.createElement("button");
+      accept.type = "button";
+      accept.className = "ghost small icon-only";
+      accept.title = act.title;
+      accept.setAttribute("aria-label", act.title);
+      setLabel(accept, act.icon);
+      accept.addEventListener("click", async () => {
+        accept.disabled = true;
+        try {
+          let done = await apiJson(`/learned/${fact.id}/accept`, { method: "POST" });
+          const back = () => api(done.kind === "merge" ? `/tidy/undo/${done.undo_id}` : `/reminders/${done.reminder_id}`, { method: done.kind === "merge" ? "POST" : "DELETE" });
+          pushUndo(
+            act.undo,
+            async () => { await back(); await api(`/learned/${fact.id}/restore`, { method: "POST" }); renderDashboard({ refresh: true }); },
+            async () => { done = await apiJson(`/learned/${fact.id}/accept`, { method: "POST" }); renderDashboard({ refresh: true }); }
+          );
+          toast(act.done);
+          li.remove();
+          onGone();
+        } catch (error) {
+          accept.disabled = false;
+          toast(error.message || voiceLine("failed", { what: act.fail }), true);
+        }
+      });
+      actions.append(accept);
     }
     const open = document.createElement("button");
     open.type = "button";
@@ -95,7 +129,7 @@
         onGone();
       } catch (error) {
         dismiss.disabled = false;
-        toast(error.message || "Couldn't dismiss that.", true);
+        toast(error.message || voiceLine("failed", { what: "dismiss that" }), true);
       }
     });
     actions.append(open, dismiss);
@@ -138,7 +172,7 @@
         offset += (reply.items || []).length;
         more.classList.toggle("hidden", offset >= (reply.total || 0));
       } catch (error) {
-        toast(error.message || "Couldn't read that list.", true);
+        toast(error.message || voiceLine("failed", { what: "read that list" }), true, { retry: page });
       } finally {
         more.disabled = false;
       }
@@ -162,13 +196,20 @@
   //: The card, then the open questions count and the oldest one (I3).
   async function renderNightWidget(body) {
     await renderNightCard(body);
+    //: I9: the card's own way into Settings, What it learned (all kinds); the
+    //: open-questions line below has its own, kept to questions.
+    const manageAll = () => body.appendChild(openSettingsModal.learnedLink(""));
     let summary;
     try {
       summary = await apiJson("/questions/summary", { silent: true });
     } catch {
+      manageAll();
       return;
     }
-    if (!summary || !summary.open) return;
+    if (!summary || !summary.open) {
+      manageAll();
+      return;
+    }
     const line = document.createElement("p");
     line.className = "muted night-questions";
     const oldest = summary.oldest;
@@ -186,8 +227,9 @@
     });
     const row = document.createElement("div");
     row.className = "row night-questions-row";
-    row.append(line, open);
+    row.append(line, open, openSettingsModal.learnedLink("question"));
     body.appendChild(row);
+    manageAll();
   }
 
   async function renderNightCard(body) {

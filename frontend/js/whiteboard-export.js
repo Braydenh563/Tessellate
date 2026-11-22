@@ -1070,7 +1070,7 @@
       //: it (W5). Everything else is text.
       content = format === "xmind" ? wbBase64(await file.arrayBuffer()) : await file.text();
     } catch {
-      toast(voiceLine("failed", { what: "read that file" }), true);
+      toast(voiceLine("failed", { what: "read that file" }), true, { action: ["Try again", () => wbImportOutlineFile({ target: { files: [file], value: "" } })] });
       return;
     }
     if (!content.trim()) {

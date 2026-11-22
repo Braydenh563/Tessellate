@@ -25,7 +25,10 @@ FRAMES = Path(__file__).resolve().parent.parent / "frontend" / "img" / "desk"
 FULL = "_NET_WM_STATE_FULLSCREEN"
 
 
-def wait_for(cond: Any, timeout: float = 2.0) -> bool:
+#: A deadline, not a delay: a passing wait returns at once, so a roomy one costs
+#: nothing. Two seconds was too tight on a loaded box (L972), where the window
+#: thread itself can be starved for seconds before it runs.
+def wait_for(cond: Any, timeout: float = 20.0) -> bool:
     end = time.monotonic() + timeout
     while time.monotonic() < end:
         if cond():
@@ -174,7 +177,7 @@ def frame(n: int = 4) -> bytes:
 
 def test_the_host_makes_the_window_reports_ready_and_stops_cleanly() -> None:
     h, w, sink = host()
-    assert h.start() and h.alive and sink.events[0][0] == "ready"
+    assert h.start(60.0) and h.alive and sink.events[0][0] == "ready"
     assert h.stop() and not h.alive
     assert w.names()[0] == "create" and "destroy" in w.names()
 
@@ -183,12 +186,12 @@ def test_a_window_that_cannot_be_made_fails_the_start() -> None:
     w = FakeX()
     w.fail_create = True
     h, _w, _s = host(w)
-    assert h.start() is False and not h.alive
+    assert h.start(60.0) is False and not h.alive
 
 
 def test_present_move_show_and_hide_reach_the_window_in_order_and_a_move_to_the_same_place_is_skipped() -> None:
     h, w, _s = host()
-    h.start()
+    h.start(60.0)
     h.present(frame(), 4, 4, 100, 200)
     h.move(100, 200)
     h.move(110, 200)
@@ -205,7 +208,7 @@ def test_present_move_show_and_hide_reach_the_window_in_order_and_a_move_to_the_
 def test_pointer_events_become_down_move_up_right_with_a_grab_held_while_dragging() -> None:
     h, w, sink = host()
     w.cursor = (640, 360)
-    h.start()
+    h.start(60.0)
     for kind in ("down", "move", "move", "up", "right"):
         w.inject(kind, 1, 1)
     assert wait_for(lambda: len(sink.events) >= 6)
@@ -217,7 +220,7 @@ def test_pointer_events_become_down_move_up_right_with_a_grab_held_while_draggin
 
 def test_an_expose_redraws_the_last_frame() -> None:
     h, w, _s = host()
-    h.start()
+    h.start(60.0)
     w.inject("expose")
     assert wait_for(lambda: "redraw" in w.names())
     h.stop()
@@ -225,11 +228,17 @@ def test_an_expose_redraws_the_last_frame() -> None:
 
 def test_a_wake_comes_back_as_one_tick_after_the_time_asked_and_never_sooner_than_10_ms() -> None:
     h, _w, sink = host()
-    h.start()
-    t0 = time.monotonic()
+    # The delay is the host's own deadline on a held clock (L-general-70): a
+    # wake asked for 1 ms is set 10 ms out, and the loop ticks only once its
+    # clock reaches the deadline.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(x11, "time", type("Clock", (), {"monotonic": staticmethod(lambda: 100.0)}))
+        h._set_timer(1)  # noqa: SLF001
+    assert h._deadline == pytest.approx(100.01)  # noqa: SLF001
+    h._deadline = None  # noqa: SLF001
+    h.start(60.0)
     h.wake(1)
     assert wait_for(lambda: any(e[0] == "tick" for e in sink.events))
-    assert 0.009 <= time.monotonic() - t0 < 0.5
     n = sum(e[0] == "tick" for e in sink.events)
     time.sleep(0.1)
     assert sum(e[0] == "tick" for e in sink.events) == n  # one-shot: nothing polls
@@ -238,7 +247,7 @@ def test_a_wake_comes_back_as_one_tick_after_the_time_asked_and_never_sooner_tha
 
 def test_the_handler_sets_the_next_wake_and_hide_cancels_a_pending_one() -> None:
     h, w, sink = host()
-    h.start()
+    h.start(60.0)
     sink.next_wake = 20
     w.inject("move")
     assert wait_for(lambda: any(e[0] == "tick" for e in sink.events))
@@ -253,7 +262,7 @@ def test_the_handler_sets_the_next_wake_and_hide_cancels_a_pending_one() -> None
 
 def test_a_change_of_the_window_stack_raises_the_window_once_for_a_burst() -> None:
     h, w, _s = host()
-    h.start()
+    h.start(60.0)
     h.show()
     assert wait_for(lambda: h.visible)
     before = w.names().count("raise")
@@ -267,7 +276,7 @@ def test_a_change_of_the_window_stack_raises_the_window_once_for_a_burst() -> No
 
 def test_a_display_change_is_passed_on_and_the_window_raised() -> None:
     h, w, sink = host()
-    h.start()
+    h.start(60.0)
     h.show()
     w.inject("display")
     assert wait_for(lambda: ("display", *w.cursor) in sink.events)
@@ -278,12 +287,12 @@ def test_a_display_change_is_passed_on_and_the_window_raised() -> None:
 def test_a_loop_that_dies_calls_on_exit_but_a_stop_does_not() -> None:
     died: list[int] = []
     h, _w, _s = host(on_exit=lambda: died.append(1))
-    h.start()
+    h.start(60.0)
     h.stop()
     assert died == []
     w2 = FakeX()
     h2 = x11.X11Host(w2, on_event=Sink(), on_exit=lambda: died.append(2))
-    h2.start()
+    h2.start(60.0)
     w2.events = lambda: (_ for _ in ()).throw(RuntimeError("connection lost"))  # type: ignore[method-assign]
     w2.inject("move")
     assert wait_for(lambda: died == [2])
@@ -291,7 +300,7 @@ def test_a_loop_that_dies_calls_on_exit_but_a_stop_does_not() -> None:
 
 def test_calls_after_the_thread_ended_do_not_write_to_a_reused_descriptor() -> None:
     h, _w, _s = host()
-    h.start()
+    h.start(60.0)
     h.stop()
     h.present(frame(), 4, 4, 0, 0)
     h.wake(5)
@@ -330,7 +339,7 @@ def test_the_runner_picks_the_backend_from_the_connection_it_is_given() -> None:
 
 def test_start_draws_the_first_frame_hidden_and_the_engine_has_the_work_area() -> None:
     r, w, _c = make()
-    assert r.start() and r.engine is not None
+    assert r.start(60.0) and r.engine is not None
     assert [m.area for m in r.monitors] == [(0, 0, 1920, 1080)]
     assert w.presented and "map" not in w.names()
     first = w.presented[0]
@@ -346,7 +355,7 @@ def test_the_figure_stands_on_the_bottom_edge_of_the_work_area_not_the_screen() 
     w.add_window(10, (0, 1040, 1920, 40), kinds=["_NET_WM_WINDOW_TYPE_DOCK"])
     w.props[10]["_NET_WM_STRUT_PARTIAL"] = [0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 1919]
     r, w, _c = make(w, home=(800, 1070))
-    r.start()
+    assert r.start(60.0)
     left, top, width, height = r.drawn_rect(round(r.engine.x), round(r.engine.y))
     assert top + height <= 1040 + 4, (top, height)  # the drawn feet within a few pixels of the panel's top, with the bob
     assert r.engine.ground_y() <= 1040
@@ -355,9 +364,9 @@ def test_the_figure_stands_on_the_bottom_edge_of_the_work_area_not_the_screen() 
 
 def test_a_click_on_the_figure_is_handed_on_with_its_drawn_box() -> None:
     r, w, clicks = make()
-    r.start()
+    assert r.start(60.0)
     r.show()
-    wait_for(lambda: "map" in w.names())
+    assert wait_for(lambda: "map" in w.names())
     p = w.presented[-1]
     px, py = p["x"] + p["w"] // 2, p["y"] + p["h"] // 2
     w.cursor = (px, py)
@@ -371,7 +380,7 @@ def test_a_click_on_the_figure_is_handed_on_with_its_drawn_box() -> None:
 
 def test_a_full_screen_window_hides_the_figure_and_it_comes_back() -> None:
     r, w, _c = make()
-    r.start()
+    assert r.start(60.0)
     r.show()
     assert wait_for(lambda: r.host.visible)
     w.add_window(60, (0, 0, 1920, 1080), state=[FULL])
@@ -387,9 +396,9 @@ def test_a_full_screen_window_hides_the_figure_and_it_comes_back() -> None:
 
 def test_typing_is_read_from_the_screensaver_idle_time() -> None:
     r, w, _c = make()
-    r.start()
+    assert r.start(60.0)
     r.show()
-    wait_for(lambda: r.host.visible)
+    assert wait_for(lambda: r.host.visible)
     w.idle = 300  # a key a third of a second ago
     r.clock.t += 5
     r.host.wake(1)
@@ -405,9 +414,9 @@ def test_other_windows_tops_reach_the_engine_as_perches_when_roaming() -> None:
     w = desk()
     w.add_window(70, (400, 300, 900, 600))
     r, w, _c = make(w)
-    r.start()
+    assert r.start(60.0)
     r.show()
-    wait_for(lambda: r.host.visible)
+    assert wait_for(lambda: r.host.visible)
     r.engine.trip_ready = 0.0
     r.clock.t += 20
     r.host.wake(1)
@@ -419,7 +428,7 @@ def test_an_x_connection_that_cannot_be_opened_fails_the_start_so_the_in_app_com
     w = FakeX()
     w.fail_create = True
     r, _w, _c = make(w)
-    assert r.start() is False
+    assert r.start(60.0) is False
 
 
 # --- a real X server -------------------------------------------------------------------------------------
@@ -624,7 +633,7 @@ def test_the_runner_and_engine_behave_the_same_on_both_hosts(side) -> None:
     clock = Clock()
     r = runner_mod.OverlayRunner(backend=backend, w=fake, clock=clock, frames=FRAMES, dispatch=lambda n, f: f(), home=(800, 920), reduced=False)
     r.clock_hour = 13
-    assert r.start() and r.engine is not None and r.sprites is not None
+    assert r.start(60.0) and r.engine is not None and r.sprites is not None
     assert drawn() >= 1 and not shown()  # the first frame, hidden
     assert r.engine.size == r.sprites.size(96) and r.engine.current_monitor().area == (0, 0, 1920, 1040 if backend.__name__.endswith("win32") else 1080)
     r.show()

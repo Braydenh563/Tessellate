@@ -879,6 +879,50 @@ class OllamaClient(Provider):
             break
         return response
 
+    def _tool_stream_failure(
+        self, exc: Exception, model: str, messages: list[dict], tools: list[dict], mode: str | None
+    ) -> Exception:
+        """The error a failed streamed tool turn raises."""
+        _note_failure(self.base_url, exc)
+        # A 5xx here may be an outage, or a model whose chat template
+        # breaks on the tools path, see _tools_path_is_broken, which
+        # settles it by asking rather than by reading the status code.
+        if tools and is_transient_server_error(exc) and self._tools_path_is_broken(model, messages, mode):
+            return ToolsUnsupportedError(f"'{model}' answers without tools but fails with them", declared=False)
+        # Same reasoning as `describe_http_error`: a 500 whose body says
+        # *why* must not reach the user as a bare status line. Only an
+        # HTTPError carries a response to read; everything else here
+        # (connection refused, a malformed chunk) is already self-
+        # describing in its own string.
+        if isinstance(exc, requests.HTTPError):
+            return OllamaError(describe_http_error(exc, model).replace("Chat with", "Tool chat with", 1))
+        return OllamaError(f"Tool chat with '{model}' failed: {exc}")
+
+    def _tool_stream_lines(self, response, model: str, splitter, emit, raw_calls: list[dict], stats: dict) -> Iterator[dict]:  # noqa: ANN001
+        """Each streamed line of a tool turn, routed through `emit`; tool calls
+        gathered in `raw_calls`, the closing numbers in `stats`."""
+        for line in activity.stop_aware(response, response.iter_lines()):
+            if not line:
+                continue
+            data = json.loads(line)
+            #: Ollama reports a failure after the 200 as an `error`
+            #: line (a tool call it could not parse, mid-answer); it
+            #: used to be skipped and the turn ended empty.
+            if data.get("error"):
+                raise OllamaError(f"{model}: {str(data['error'])[:300]}")
+            message = data.get("message", {})
+            if message.get("thinking"):  # native thinking models
+                yield from emit({"thinking_delta": message["thinking"]})
+            if message.get("tool_calls"):
+                raw_calls.extend(message["tool_calls"])
+            if message.get("content"):
+                for piece in splitter.feed(message["content"]):
+                    yield from emit(piece)
+            if data.get("done"):
+                for piece in splitter.flush():
+                    yield from emit(piece)
+                stats.update(self._stats_from(data, model))
+
     def chat_tools_stream(
         self,
         model: str,
@@ -933,55 +977,11 @@ class OllamaClient(Provider):
                         shown = True
                         yield {"content_delta": visible}
 
-                for line in activity.stop_aware(response, response.iter_lines()):
-                    if not line:
-                        continue
-                    data = json.loads(line)
-                    #: Ollama reports a failure after the 200 as an `error`
-                    #: line (a tool call it could not parse, mid-answer); it
-                    #: used to be skipped and the turn ended empty.
-                    if data.get("error"):
-                        raise OllamaError(f"{model}: {str(data['error'])[:300]}")
-                    message = data.get("message", {})
-                    if message.get("thinking"):  # native thinking models
-                        thinking += message["thinking"]
-                        yield {"thinking_delta": message["thinking"]}
-                    if message.get("tool_calls"):
-                        raw_calls.extend(message["tool_calls"])
-                    if message.get("content"):
-                        for piece in splitter.feed(message["content"]):
-                            yield from emit(piece)
-                    if data.get("done"):
-                        for piece in splitter.flush():
-                            yield from emit(piece)
-                        stats = self._stats_from(data, model)
+                yield from self._tool_stream_lines(response, model, splitter, emit, raw_calls, stats)
         except ToolsUnsupportedError:
             raise
         except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
-            _note_failure(self.base_url, exc)
-            # A 5xx here may be an outage, or a model whose chat template
-            # breaks on the tools path, see _tools_path_is_broken, which
-            # settles it by asking rather than by reading the status code.
-            if (
-                tools
-                and is_transient_server_error(exc)
-                and self._tools_path_is_broken(model, messages, mode)
-            ):
-                raise ToolsUnsupportedError(
-                    f"'{model}' answers without tools but fails with them", declared=False
-                ) from exc
-            # Same reasoning as `describe_http_error`: a 500 whose body says
-            # *why* must not reach the user as a bare status line. Only an
-            # HTTPError carries a response to read; everything else here
-            # (connection refused, a malformed chunk) is already self-
-            # describing in its own string.
-            if isinstance(exc, requests.HTTPError):
-                raise OllamaError(
-                    describe_http_error(exc, model).replace(
-                        "Chat with", "Tool chat with", 1
-                    )
-                ) from exc
-            raise OllamaError(f"Tool chat with '{model}' failed: {exc}") from exc
+            raise self._tool_stream_failure(exc, model, messages, tools, mode) from exc
 
         calls = self._normalise_tool_calls(raw_calls)
         clean = content

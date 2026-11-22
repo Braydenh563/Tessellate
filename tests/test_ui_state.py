@@ -18,7 +18,7 @@ server half; the frontend half is `watchMirroredUiKeys` and
 from __future__ import annotations
 
 import pytest
-from tests._app_js import app_js_text
+from tests._app_js import JS_DIR, app_js_text
 
 
 def test_ui_state_round_trips(client):
@@ -102,3 +102,25 @@ def test_the_frontend_watches_the_keys_it_promises_to(client):
     assert source.index("watchMirroredUiKeys();") < source.index(
         '\nrevealTab("dashboard");'
     ), "the watch must be installed before the boot revealTab writes activeTab"
+
+
+def test_every_appearance_row_follows_the_person_or_is_the_machines():
+    """WORLD_CLASS 25f, LEDGER L670: each Appearance row is mirrored to the
+    notebook (so a second browser gets it) unless it is the machine's: sizes
+    and places (`DEVICE_ONLY_KEYS`) and performance mode. Driven in two real
+    browsers on 2026-11-21: 31 of 31 mirrored rows reached the second one."""
+    import re
+
+    source = app_js_text()
+
+    def quoted(name: str) -> set[str]:
+        body = re.search(rf"const {name} = \[(.*?)\];", source, re.S).group(1)
+        return set(re.findall(r'"([^"]+)"', body))
+
+    rows_source = (JS_DIR / "settings-rows.js").read_text(encoding="utf-8")
+    rows = re.search(r"const LOOK_ROWS = \[(.*?)\n\s*\];", rows_source, re.S).group(1)
+    keys = set(re.findall(r'\{ key: "([^"]+)"', rows))
+    device = quoted("DEVICE_ONLY_KEYS")
+    mirrored = (quoted("OVERRIDABLE_KEYS") | {"bgArt"} | quoted("MIRRORED_UI_EXTRAS")) - device
+    assert len(keys) > 30
+    assert keys - mirrored - device == {"perf"}

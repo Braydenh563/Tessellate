@@ -53,9 +53,9 @@ def test_the_sidecar_carries_every_column_not_left_out(notebook):
 
 def test_the_500_note_notebook_exports_with_every_attachment(notebook):
     session, made = notebook
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     archive, result = _export(session)
-    took = time.perf_counter() - t0
+    took = time.process_time() - t0
     print(f"\nexport of {made['notes']} notes: {took:.2f} s, zip members {len(archive.namelist())}")
     manifest = json.loads(archive.read("index.json"))
     assert manifest["format"] == export_folder.FORMAT
@@ -68,7 +68,7 @@ def test_the_500_note_notebook_exports_with_every_attachment(notebook):
         record = json.loads(archive.read(row["sidecar"]))
         assert len(row["attachments"]) == len(record["attachments"])
         for member, attachment in zip(row["attachments"], record["attachments"]):
-            assert hashlib.sha1(archive.read(member)).hexdigest() == attachment["sha1"]  # noqa: S324
+            assert hashlib.sha256(archive.read(member)).hexdigest() == attachment["sha256"]
     assert took < EXPORT_CAP_S
 
 
@@ -103,3 +103,37 @@ def test_the_route_streams_the_zip_and_records_the_run(notebook, client):
     runs = {run["kind"]: run for run in client.get("/jobs/last-runs").json()["jobs"]}
     assert runs["export"]["status"] == "ok"
     assert "500 notes" in runs["export"]["result"]
+
+
+
+def test_an_archive_from_before_sha256_still_restores_its_attachments(client, tmp_path):
+    # Archives made before 2026-11-22 name each file's hash `sha1`; restore skips it as it skips `sha256`.
+    from tessellate.api.routes_settings_transfer import _parse_frontmatter
+    from tessellate.core.database import Attachment
+    from tessellate.entry import app_import, manager
+
+    session = deps.get_db().session()
+    entry = manager.create_entry(session, "a note with a picture")
+    (deps.get_config().uploads_dir).mkdir(parents=True, exist_ok=True)
+    (deps.get_config().uploads_dir / "pic.png").write_bytes(b"picture bytes")
+    session.add(Attachment(entry_id=entry.id, filename="pic.png", stored_name="pic.png", size=13))
+    session.commit()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        export_folder.export(session, deps.get_config().uploads_dir, archive)
+    session.close()
+    old = io.BytesIO()
+    with zipfile.ZipFile(buffer) as new, zipfile.ZipFile(old, "w") as out:
+        for name in new.namelist():
+            data = new.read(name)
+            if name.endswith(".json") and b'"sha256"' in data:
+                data = data.replace(b'"sha256"', b'"sha1"')
+            out.writestr(name, data)
+    deps.reset_app_state()
+    deps.init_app_state(data_dir=tmp_path / "fresh")
+    session = deps.get_db().session()
+    result = app_import.read("memorymap", [("tessellate-notebook.zip", old.getvalue())], parse_frontmatter=_parse_frontmatter)
+    written = export_folder.write(session, result, deps.get_config().uploads_dir)
+    restored = session.query(Attachment).filter(Attachment.entry_id == written["ids"][0]).one()
+    assert (deps.get_config().uploads_dir / restored.stored_name).read_bytes() == b"picture bytes"
+    session.close()

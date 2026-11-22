@@ -1,13 +1,13 @@
-# Not built in the sandbox (no Docker daemon); tests/test_docker_files.py reads
-# these files as text. The sizes in ANALYSIS.md come
-# from a venv measured with pip. Build from the repo root:
+# Built and run 2026-11-14 (L924): the default image is 560 MB, runs as mm,
+# answers / and /health on 8000 and writes the notebook to /data.
+# tests/test_docker_files.py reads these files as text. Build from the repo root:
 #   docker build -f docker/Dockerfile -t memorymap .
 #
 # Two variants from one file: the default has no built-in search model (the
 # deterministic engine, FTS5 search, an Ollama embedder on the host);
 # --build-arg WITH_EMBEDDER=1 adds fastembed and ONNX Runtime (about +120 MB
 # installed; the model itself, 67 MB, downloads after a yes in the app).
-FROM python:3.13-slim AS build
+FROM python:3.14-slim AS build
 ARG WITH_EMBEDDER=0
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /app
@@ -27,7 +27,7 @@ COPY migrations ./migrations
 COPY alembic.ini ./
 RUN /venv/bin/pip install --no-deps -e .
 
-FROM python:3.13-slim
+FROM python:3.14-slim
 RUN useradd --create-home --uid 1000 mm \
  && mkdir -p /data /models \
  && chown mm:mm /data /models

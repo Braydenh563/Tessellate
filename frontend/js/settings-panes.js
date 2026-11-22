@@ -291,6 +291,9 @@ function fitChatEmpty() {
   const pane = document.getElementById("chat-messages");
   const empty = pane?.querySelector(".chat-empty");
   if (!empty) return;
+  //: A hidden Chat has no room to read, and reading it forced the whole page's layout (the Notes tab's
+  //: 5,000 rows, 20ms) from the observer's frame as Chat went away. The class test costs no layout.
+  if (pane.closest(".tab-page.hidden")) return;
   const room = pane.clientHeight;
   if (!room) return;
   const short = empty.classList.contains("is-short");
@@ -656,7 +659,7 @@ async function setPreference(key, value) {
       $("autonomous-settings-panel")?.classList.toggle("hidden", !value);
     }
   } catch (error) {
-    toast(error.message || "Couldn't save that setting.", true);
+    toast(error.message || voiceLine("failed", { what: "save that setting" }), true);
   }
 }
 
@@ -785,10 +788,9 @@ function markPrefsDirty() {
 
 function markPrefsSaved() {
   prefsDirty = false;
-  const button = $("prefs-save");
-  if (button) button.classList.remove("primary");
-  const note = $("prefs-unsaved");
-  if (note) note.classList.add("hidden");
+  //: `getElementById`, not `$`: an unbuilt pane already looks saved, and `$` would build it (L675).
+  document.getElementById("prefs-save")?.classList.remove("primary");
+  document.getElementById("prefs-unsaved")?.classList.add("hidden");
 }
 
 // Downloads need the auth header, so plain <a href> won't do: fetch the
@@ -979,22 +981,6 @@ const POPUP_TOOLS = [
     guide: "diagram-builder", open: (t) => (t ? ensureModule("library") : lazyScript("/js/documents-mermaid.js")).then(() => diagramModel.door({ target: t || null })),
   },
 ];
-
-//: A palette row's parts. At boot, not in app-features.js beside `paletteKeys` and
-//: `paletteAbouts`: Atlas's tile face is drawn here (test_ui_recipes.py allows this file).
-function paletteRowParts(match, abouts) {
-  const { icon, text } = richPickerSplitLabel(match.label);
-  const chordLabel = match.chord && typeof shortcuts !== "undefined" ? shortcuts[match.chord]?.label : "";
-  return {
-    icon: icon || "ph:dot-outline",
-    //: Atlas's own face stands in its tile (the owner: "find anything
-    //: search" should have the avatar too).
-    face: match.mark === "atlas" && typeof atlasAvatar === "function" ? atlasAvatar(20) : null,
-    label: text,
-    about: match.about || abouts.get(match.reveal) || chordLabel || "",
-    keys: paletteKeys(match),
-  };
-}
 
 //: What the palette caught from the field it was opened over (`paletteCaught`,
 //: app-palette.js, lazy): nothing yet when that file is not in, so a caller

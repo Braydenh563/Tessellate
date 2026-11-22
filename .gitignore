@@ -19,6 +19,7 @@ uploads/
 !.claude/skills/**/data/
 # The taxonomy pack filing reads (ai/taxonomy.py) is shipped data, not a user's.
 !src/tessellate/ai/data/
+!src/tessellate/data/
 
 # Tooling caches
 .pytest_cache/

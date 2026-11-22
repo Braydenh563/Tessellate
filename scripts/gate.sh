@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The merge gate, in one command, so no merge skips a step it is tired of:
 #
-#   scripts/gate.sh            # lint set + node --check + ruff (about 40 s)
+#   scripts/gate.sh            # lint set + node --check + ruff (about 2 min: measured 2026-11-12,
+#                              # .gate/timings.txt holds each step's seconds)
 #   scripts/gate.sh --changed  # plus the tests that name files changed since
 #                              # the last push (the routine local gate;
 #                              # GATE_BASE=<ref> compares with another)

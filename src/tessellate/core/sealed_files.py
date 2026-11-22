@@ -1,0 +1,581 @@
+"""The bytes of a private space's files, sealed at rest (L-world-class-52).
+
+L697 sealed a private space's recordings, library uploads and note files in
+the database; their bytes (`data/recordings`, `data/media`, `data/uploads`)
+were still plain. This seals them with the same key and the same cipher as
+every sealed column (`crypto.encrypt`: the vault key, AES-GCM from
+`cryptography`), framed so a recording can grow ten seconds at a time and an
+audio Range read decrypts only the frames it touches.
+
+A sealed file is `MAGIC` (a prefix and a format version) then frames of
+`length (4 bytes) | nonce | ciphertext and tag`, each at most `FRAME` plain
+bytes. A frame's associated data is the magic, its index and whether it is
+the last, so frames cannot be reordered, dropped or swapped, and a file cut
+back (at a frame boundary or inside one) raises `SealedDamaged` instead of
+reading as a shorter file. An append writes its frames (the new last one
+flagged), then re-seals the old last frame as not last; a crash between the
+two leaves a "last" frame in the middle, which a reader accepts, since only
+the key holder can write one (an accepted trade-off). A crash part way
+through writing a frame leaves a partial frame at the end: readers ignore
+those bytes and the next append drops them. A reader works from a snapshot
+of the frames taken under the file's lock, so an append while it streams
+does not break it.
+
+A file without the magic is plain and is read as it is, so files written
+before this, or outside a private space, keep working; a plain write that
+starts with the prefix is refused (`LooksSealed`), so a plain file is never
+mistaken for a sealed one. `seal` and `unseal` rewrite one in place (a temp
+file in the same folder, fsynced, then `os.replace`). A reader that needs a
+path (a PDF renderer, Whisper) gets one through `readable`, a private temp
+copy under `data_dir/tmp`, removed when it is done and swept at boot.
+"""
+
+from __future__ import annotations
+
+import os
+import shutil
+import struct
+import tempfile
+import threading
+import time
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from pathlib import Path
+
+from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+from tessellate.core import crypto
+
+PREFIX = b"TSLSEAL"
+VERSION = 2
+MAGIC = PREFIX + bytes([VERSION])
+#: Plain bytes per frame: a Range read decrypts at most this much past its ends.
+FRAME = 1 << 20
+_LEN = struct.Struct(">I")
+_NONCE = crypto.NONCE_BYTES
+_TAG = 16
+_MAX = FRAME + _TAG
+OPEN_PREFIX = "tessellate-open-"
+TMP_GLOB = ".seal-*.tmp"
+
+
+class SealedError(RuntimeError):
+    """A sealed file that cannot be read for this caller."""
+
+
+class SealedLocked(SealedError):
+    """The file is sealed and this caller has no key: unlock first."""
+
+
+class SealedDamaged(SealedError):
+    """The file is sealed but does not open with this key, or was cut or changed."""
+
+
+class SealedChanged(SealedError):
+    """The file changed while a temp copy of it was open for writing."""
+
+
+class LooksSealed(ValueError):
+    """A plain file may not start the way a sealed one does."""
+
+
+LOCKED_DETAIL = "This private space is locked. Unlock it first."
+DAMAGED_DETAIL = "This file is damaged or does not open with this key."
+CHANGED_DETAIL = "This file changed while it was open. Try again."
+LOOKS_SEALED_DETAIL = "This file starts the way a sealed file does, so it can't be stored."
+BACKGROUND_LOCKED_DETAIL = "The private space locked before this finished. Open it and start again."
+
+_locks: dict[str, threading.RLock] = {}
+_locks_guard = threading.Lock()
+#: path -> (inode, size, mtime_ns, frame count, end of whole frames, last offset, last length)
+_layouts: dict[str, tuple[int, int, int, int, int, int, int]] = {}
+
+
+def _lock_for(path: Path) -> threading.RLock:
+    """One lock per file, so seal, unseal, append and a write-back never interleave."""
+    name = os.path.abspath(path)
+    with _locks_guard:
+        return _locks.setdefault(name, threading.RLock())
+
+
+def _key() -> bytes:
+    from tessellate.core import vault
+
+    key = vault.key()
+    if key is None:
+        raise SealedLocked(LOCKED_DETAIL)
+    return key
+
+
+def is_sealed(path: Path) -> bool:
+    """The magic with this version and a first frame length that can be one."""
+    try:
+        with open(path, "rb") as fh:
+            head = fh.read(len(MAGIC) + _LEN.size)
+    except OSError:
+        return False
+    if len(head) < len(MAGIC) + _LEN.size or head[: len(MAGIC)] != MAGIC:
+        return False
+    (length,) = _LEN.unpack(head[len(MAGIC) :])
+    return _TAG <= length <= _MAX
+
+
+def plain_file(path: Path) -> bool:
+    """A file that is there and not sealed: what a keyless background reader may open."""
+    return Path(path).is_file() and not is_sealed(path)
+
+
+def _aad(index: int, final: bool) -> bytes:
+    return MAGIC + index.to_bytes(8, "big") + (b"\x01" if final else b"\x00")
+
+
+def _frames(fh) -> Iterator[tuple[int, int, int]]:  # noqa: ANN001
+    """(index, offset of the nonce, ciphertext length) of each whole frame."""
+    size = os.fstat(fh.fileno()).st_size
+    at, index = len(MAGIC), 0
+    while at + _LEN.size <= size:
+        fh.seek(at)
+        (length,) = _LEN.unpack(fh.read(_LEN.size))
+        end = at + _LEN.size + _NONCE + length
+        if not _TAG <= length <= _MAX or end > size:
+            return
+        yield index, at + _LEN.size, length
+        at, index = end, index + 1
+
+
+def _whole(fh) -> list[tuple[int, int, int]]:  # noqa: ANN001
+    """Every whole frame, or SealedDamaged when there is none. Bytes after the
+    last whole frame are a partial frame a crash mid-append left (the next
+    append drops them) and are not read; a cut that leaves a whole frame last
+    is still refused, since that frame is not flagged as the last."""
+    frames = list(_frames(fh))
+    if not frames:
+        raise SealedDamaged(DAMAGED_DETAIL)
+    return frames
+
+
+def _layout(path: Path, fh) -> tuple[int, int, int, int]:  # noqa: ANN001
+    """(frame count, end of the whole frames, last offset, last length),
+    remembered per file so an append does not scan the headers again."""
+    st = os.fstat(fh.fileno())
+    known = _layouts.get(os.path.abspath(path))
+    if known and known[:3] == (st.st_ino, st.st_size, st.st_mtime_ns):
+        return known[3:]
+    count, end, last = 0, len(MAGIC), (0, 0)
+    for index, offset, length in _frames(fh):
+        count, end, last = index + 1, offset + _NONCE + length, (offset, length)
+    return count, end, *last
+
+
+def _remember(path: Path, fh, layout: tuple[int, int, int, int]) -> None:  # noqa: ANN001
+    st = os.fstat(fh.fileno())
+    _layouts[os.path.abspath(path)] = (st.st_ino, st.st_size, st.st_mtime_ns, *layout)
+
+
+def _encrypt(key: bytes, data: bytes, start: int) -> bytes:
+    """Frames for `data` from index `start`, the last flagged as the last."""
+    aead = AESGCM(key)
+    out = bytearray()
+    offsets = range(0, len(data), FRAME) or range(1)
+    for n, at in enumerate(offsets):
+        nonce = os.urandom(_NONCE)
+        body = aead.encrypt(nonce, data[at : at + FRAME], _aad(start + n, n == len(offsets) - 1))
+        out += _LEN.pack(len(body)) + nonce + body
+    return bytes(out)
+
+
+def _open_frame(aead: AESGCM, fh, index: int, offset: int, length: int, last: bool) -> bytes:  # noqa: ANN001
+    """The last frame must say it is the last; a middle one may (a crash
+    between an append and re-sealing the old last frame)."""
+    fh.seek(offset)
+    nonce, body = fh.read(_NONCE), fh.read(length)
+    for final in (True,) if last else (False, True):
+        try:
+            return aead.decrypt(nonce, body, _aad(index, final))
+        except InvalidTag:
+            continue
+    raise SealedDamaged(DAMAGED_DETAIL)
+
+
+def seal_bytes(data: bytes) -> bytes:
+    """`data` as a whole sealed file's contents."""
+    return MAGIC + _encrypt(_key(), data, 0)
+
+
+def open_plain(path: Path, start: int = 0, end: int | None = None) -> tuple[int, Iterator[bytes]]:
+    """(plain size, the plain bytes `start` to `end` inclusive a frame at a
+    time) of a sealed file, from one snapshot of its frames taken under the
+    file's lock, so the size and the stream agree while an append runs. The
+    key and the last frame are checked before this returns, so a locked or
+    cut file fails before a response starts, not part way."""
+    path = Path(path)
+    aead = AESGCM(_key())
+    with _lock_for(path):
+        fh = open(path, "rb")  # noqa: SIM115  # closed by the generator
+        try:
+            frames = _whole(fh)
+            _open_frame(aead, fh, *frames[-1], last=True)
+        except BaseException:
+            fh.close()
+            raise
+    total = sum(length - _TAG for _i, _o, length in frames)
+    return total, _stream(path, aead, fh, frames, start, end)
+
+
+def iter_plain(path: Path, start: int = 0, end: int | None = None) -> Iterator[bytes]:
+    """`open_plain` without the size."""
+    return open_plain(path, start, end)[1]
+
+
+def _open_snapshot_last(path: Path, aead: AESGCM, fh, frame: tuple[int, int, int]) -> bytes:  # noqa: ANN001
+    """The snapshot's last frame, read under the lock (an append re-seals it
+    in place). Once the file has grown past it, it is a middle frame: still
+    bound to its index, now flagged as not the last."""
+    index, offset, length = frame
+    with _lock_for(path):
+        grown = os.fstat(fh.fileno()).st_size > offset + _NONCE + length
+        if not grown:
+            return _open_frame(aead, fh, index, offset, length, True)
+        return _open_frame(aead, fh, index, offset, length, False)
+
+
+def _stream(path: Path, aead: AESGCM, fh, frames, start: int, end: int | None) -> Iterator[bytes]:  # noqa: ANN001
+    at = 0
+    with fh:
+        for index, offset, length in frames:
+            size = length - _TAG
+            if end is not None and at > end:
+                return
+            if at + size > start:
+                if index == len(frames) - 1:
+                    plain = _open_snapshot_last(path, aead, fh, (index, offset, length))
+                else:
+                    plain = _open_frame(aead, fh, index, offset, length, False)
+                yield plain[max(0, start - at) : None if end is None else end - at + 1]
+            at += size
+
+
+def read(path: Path) -> bytes:
+    """The plain bytes, sealed or not. SealedLocked without the key."""
+    path = Path(path)
+    with _lock_for(path):
+        if not is_sealed(path):
+            return path.read_bytes()
+        return b"".join(iter_plain(path))
+
+
+def plain_size(path: Path) -> int:
+    path = Path(path)
+    if not is_sealed(path):
+        return path.stat().st_size
+    with _lock_for(path), open(path, "rb") as fh:
+        return sum(length - _TAG for _i, _o, length in _whole(fh))
+
+
+def read_range(path: Path, start: int, end: int) -> bytes:
+    """Plain bytes `start` to `end` inclusive, decrypting only the frames they touch."""
+    path = Path(path)
+    if not is_sealed(path):
+        with open(path, "rb") as fh:
+            fh.seek(start)
+            return fh.read(end - start + 1)
+    with _lock_for(path):
+        return b"".join(iter_plain(path, start, end))
+
+
+def append(path: Path, data: bytes, *, sealed: bool) -> None:
+    """Add `data` to the end, sealed when the file is (or, new, when `sealed`).
+    A write cut short (a full disk) is cut back to where it was, and the error
+    goes on, so a retry starts where the saved bytes end."""
+    path = path if isinstance(path, Path) else Path(path)
+    with _lock_for(path):
+        before = _size(path)
+        if before and is_sealed(path):
+            _append_sealed(path, data)
+        elif not before and sealed:
+            _write_new_sealed(path, data)
+        else:
+            if not before and data.startswith(PREFIX):
+                raise LooksSealed(LOOKS_SEALED_DETAIL)
+            try:
+                with path.open("ab") as out:
+                    out.write(data)
+            except OSError:
+                with path.open("ab") as out:
+                    out.truncate(before)
+                raise
+
+
+def _size(path: Path) -> int:
+    """Bytes on disk now, 0 for no file, read from a handle (an upload's
+    size is counted as it streams, `test_media_size_backfill`)."""
+    try:
+        with open(path, "rb") as fh:
+            return fh.seek(0, os.SEEK_END)
+    except FileNotFoundError:
+        return 0
+
+
+def _write_new_sealed(path: Path, data: bytes) -> None:
+    blob = MAGIC + _encrypt(_key(), data, 0)
+    with open(path, "wb", buffering=0) as fh:
+        try:
+            fh.write(blob)
+            os.fsync(fh.fileno())
+        except OSError:
+            fh.truncate(0)
+            raise
+        last = _last_body(data)
+        _remember(path, fh, (max(1, -(-len(data) // FRAME)), len(blob), len(blob) - _NONCE - last, last))
+
+
+def _last_body(data: bytes) -> int:
+    """The ciphertext length of the last frame `_encrypt` writes for `data`."""
+    return ((len(data) - 1) % FRAME + 1 if data else 0) + _TAG
+
+
+def _append_sealed(path: Path, data: bytes) -> None:
+    """Drop a partial frame left at the end, write the new frames, then
+    re-seal the old last frame as not the last one."""
+    key = _key()
+    with open(path, "r+b", buffering=0) as fh:
+        count, end, last_offset, last_length = _layout(path, fh)
+        if end < os.fstat(fh.fileno()).st_size:
+            fh.truncate(end)
+            os.fsync(fh.fileno())
+        if not data:
+            _remember(path, fh, (count, end, last_offset, last_length))
+            return
+        #: The old last frame opened before anything is written: a wrong key
+        #: or a damaged frame fails here (SealedDamaged), not after new frames
+        #: under another key have gone on the end.
+        old_last = _open_frame(AESGCM(key), fh, count - 1, last_offset, last_length, False) if count else b""
+        blob = _encrypt(key, data, count)
+        try:
+            fh.seek(end)
+            fh.write(blob)
+            os.fsync(fh.fileno())
+        except OSError:
+            fh.truncate(end)
+            raise
+        if count:
+            _reseal_not_final(key, fh, count - 1, last_offset, old_last)
+        tail = _last_body(data)
+        added = -(-len(data) // FRAME)
+        _remember(path, fh, (count + added, end + len(blob), end + len(blob) - _NONCE - tail, tail))
+
+
+def _reseal_not_final(key: bytes, fh, index: int, offset: int, plain: bytes) -> None:  # noqa: ANN001
+    """The old last frame (`plain`, opened before the append), written again
+    in place (same length) as a middle one."""
+    aead = AESGCM(key)
+    fresh = os.urandom(_NONCE)
+    fh.seek(offset)
+    fh.write(fresh + aead.encrypt(fresh, plain, _aad(index, False)))
+    os.fsync(fh.fileno())
+
+
+def _fsync_folder(folder: Path) -> None:
+    try:
+        fd = os.open(folder, os.O_RDONLY)
+    except OSError:
+        return  # Windows cannot open a folder this way; its replace is durable enough.
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+#: Windows refuses `os.replace` over a file another handle holds open (a
+#: download streaming it, a virus scanner), as PermissionError; it clears
+#: when that handle closes, so the replace is tried again for about 2 s.
+_REPLACE_TRIES = 40
+_pause = time.sleep
+
+
+def _replace(tmp: str, path: Path) -> None:
+    for attempt in range(_REPLACE_TRIES):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if attempt == _REPLACE_TRIES - 1:
+                raise
+            _pause(0.05)
+
+
+def _rewrite(path: Path, contents: bytes) -> None:
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".seal-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as out:
+            out.write(contents)
+            out.flush()
+            os.fsync(out.fileno())
+        _replace(tmp, path)
+        _fsync_folder(path.parent)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+    finally:
+        _layouts.pop(os.path.abspath(path), None)
+
+
+def seal(path: Path) -> bool:
+    """Seal a plain file in place. True when it changed; a missing file is nothing."""
+    path = Path(path)
+    with _lock_for(path):
+        if not path.is_file() or is_sealed(path):
+            return False
+        _rewrite(path, seal_bytes(path.read_bytes()))
+        return True
+
+
+def unseal(path: Path) -> bool:
+    """Write a sealed file back plain (its item left the private space)."""
+    path = Path(path)
+    with _lock_for(path):
+        if not path.is_file() or not is_sealed(path):
+            return False
+        _rewrite(path, read(path))
+        return True
+
+
+#: Set by `deps` (as `board_thumbs.data_dir_source` is), so this module never
+#: imports `deps` and stays out of its import cycle.
+def _unset_data_dir() -> Path:
+    raise RuntimeError("sealed_files.data_dir_source not set")
+
+
+#: Never the working folder: plain copies of private files go only under the
+#: data folder, so an unset source is an error, not a guess.
+data_dir_source: Callable[[], Path] = _unset_data_dir
+
+
+def _tmp_root() -> Path:
+    root = data_dir_source() / "tmp"
+    root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return root
+
+
+def _stamp(path: Path) -> tuple[int, int]:
+    info = os.stat(path)
+    return info.st_size, info.st_mtime_ns
+
+
+@contextmanager
+def readable(path: Path, *, write: bool = False) -> Iterator[Path]:
+    """A path a path-only reader can open: the file itself when plain, else a
+    temp copy in a private folder (0700) under `data_dir/tmp`, removed when
+    the block ends. With `write`, what the block left in the copy is sealed
+    back over the file."""
+    path = Path(path)
+    if not is_sealed(path):
+        yield path
+        return
+    with _lock_for(path):
+        plain, seen = read(path), _stamp(path)
+    folder = tempfile.mkdtemp(prefix=OPEN_PREFIX, dir=_tmp_root())
+    try:
+        copy = Path(folder) / path.name
+        copy.write_bytes(plain)
+        yield copy
+        if write and copy.read_bytes() != plain:
+            with _lock_for(path):
+                #: An append (a recording's next chunk) since the read would
+                #: be lost under the copy, so the write-back is refused.
+                if _stamp(path) != seen:
+                    raise SealedChanged(CHANGED_DETAIL)
+                _rewrite(path, seal_bytes(copy.read_bytes()))
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+
+
+#: Seconds between the watcher's looks at a background job's door (SECURITY.md
+#: T28): the bound on how long a plain copy outlives a lock in the middle of
+#: one long step (a long whisper segment, `diarize.spans`).
+WATCH_SECONDS = 2.0
+
+
+def _wait(done: threading.Event, seconds: float) -> bool:
+    return done.wait(seconds)
+
+
+#: How the watcher waits between looks; True means the job's block ended. A
+#: test replaces it so each look is a tick it gives, never a real sleep.
+watch_wait: Callable[[threading.Event, float], bool] = _wait
+
+
+def _watch(token: str, folder: Path | None, done: threading.Event, shut: threading.Event) -> None:
+    """Look at the door every `WATCH_SECONDS` while the job runs; once it has
+    shut, remove the plain copy at once, mid-step, and mark the job shut, so
+    its next `check` stops it and whatever the step was doing fails closed."""
+    from tessellate.core import spacelock, vault
+
+    with vault.acting_for(token):
+        while not watch_wait(done, WATCH_SECONDS):
+            if not spacelock.opened(token):
+                shut.set()
+                if folder is not None:
+                    shutil.rmtree(folder, ignore_errors=True)
+
+
+@contextmanager
+def for_background(path: Path, token: str | None) -> Iterator[tuple[Path, Callable[[], None]]]:
+    """A background job's way into a private space's file (L-world-class-381,
+    SECURITY.md T28): `readable`, run as the session `token` that started the
+    job (`vault.acting_for`), and `check`, which raises `SealedLocked` once
+    that session's private-space door has shut (lock, idle, sign-out). The
+    job calls `check` between steps and immediately before it commits; a
+    watcher thread looks at the door every `WATCH_SECONDS` too and removes
+    the plain copy mid-step, and any error a step then raises is the locked
+    one. A step cannot be killed, so it runs to its end on what it already
+    read and its result is dropped. With no token: plain background work."""
+    from tessellate.core import jobs, spacelock, vault
+
+    shut, done = threading.Event(), threading.Event()
+
+    def check() -> None:
+        if token is not None and (shut.is_set() or not spacelock.opened(token)):
+            raise SealedLocked(BACKGROUND_LOCKED_DETAIL)
+
+    with vault.acting_for(token):
+        check()
+        with readable(path) as copy:
+            copy = Path(copy)
+            if token is not None:
+                folder = copy.parent if copy != Path(path) else None
+                jobs.thread("sealed-watch", lambda: _watch(token, folder, done, shut), stop=done.set)
+            try:
+                yield copy, check
+            except Exception as exc:
+                if shut.is_set() and not isinstance(exc, SealedLocked):
+                    raise SealedLocked(BACKGROUND_LOCKED_DETAIL) from exc
+                raise
+            finally:
+                done.set()
+
+
+def sweep_leftovers(data_dir: Path, folders: tuple[Path, ...] = ()) -> int:
+    """At boot: plain temp copies and half-written rewrites a crash left behind."""
+    data_dir = Path(data_dir)
+    gone = 0
+    for folder in (data_dir / "tmp").glob(OPEN_PREFIX + "*"):
+        shutil.rmtree(folder, ignore_errors=True)
+        gone += 1
+    roots = {data_dir / "uploads", data_dir / "media", data_dir / "recordings", *map(Path, folders)}
+    for root in roots:
+        for stray in root.rglob(TMP_GLOB) if root.is_dir() else ():
+            stray.unlink(missing_ok=True)
+            gone += 1
+    return gone
+
+
+def wanted(session, workspace_id: str | None) -> bool:  # noqa: ANN001
+    """Whether a file written now for a row of `workspace_id` is sealed."""
+    from tessellate.core import database
+
+    space = workspace_id or session.info.get("workspace_id") or "default"
+    return space in database._private_space_ids(session)

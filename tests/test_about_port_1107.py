@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_about_names_the_address_and_port_in_use():
-    js = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
     fill = js[js.index('const aboutHealth = await apiJson("/health")') :][:700]
     assert "location.host" in fill and "Running at" in fill and '$("about-version").textContent' in fill
 

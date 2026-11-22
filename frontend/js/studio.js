@@ -53,7 +53,7 @@
     } catch (error) {
       paint(false);
       handle.onerror?.();
-      toast(error.message || "Couldn't read that aloud.", true);
+      toast(error.message || voiceLine("failed", { what: "read that aloud" }), true);
     }
   }
 

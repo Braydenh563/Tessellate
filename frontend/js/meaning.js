@@ -175,8 +175,17 @@
     return rx;
   }
 
+  //: Remembered by the text: Settings search asks the same few hundred row texts and section texts again on every key
+  //: (meaningText was 397 ms of 1,034 ms over nine keys at 4x CPU, scratchpad/ui-sweeps/handlerlag.js).
+  const meaningTexts = new Map();
   function meaningText(text) {
-    return ` ${meaningWords(text).join(" ")} `;
+    let spaced = meaningTexts.get(text);
+    if (spaced === undefined) {
+      if (meaningTexts.size >= 6000) meaningTexts.clear();
+      spaced = ` ${meaningWords(text).join(" ")} `;
+      meaningTexts.set(text, spaced);
+    }
+    return spaced;
   }
 
   //: Where in its group the first word `text` holds is, or -1: the typed word

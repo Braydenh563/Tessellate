@@ -447,6 +447,8 @@
     for (const entry of shown) list.appendChild(docHistoryRow(entry));
   }
 
+  //: The dialog's body is a surface built here, as this file arrives on the first History press (index.html).
+  surfaceBuild("docHistory");
   for (const button of document.querySelectorAll("#doc-history-filter [data-history-filter]")) {
     button.addEventListener("click", () => {
       docHistoryFilter = button.dataset.historyFilter || "all";
@@ -511,7 +513,7 @@
       const full = await apiJson(
         `/documents/${currentDoc.id}/revisions/${entry.id}`
       ).catch(() => null);
-      if (!full) return toast("Couldn't open that version.", true, { action: ["Try again", () => view.click()] });
+      if (!full) return toast(voiceLine("failed", { what: "open that version" }), true, { action: ["Try again", () => view.click()] });
       $("doc-history-dialog").close();
       //: Through the lightbox, which is already the app's read-only viewer for
       //: a document's text: including its find bar, which is how anyone
@@ -542,7 +544,7 @@
         await restoreDocVersionWithUndo(entry);
         $("doc-history-dialog").close();
       } catch (error) {
-        toast(error.message || "Couldn't restore that version.", true);
+        toast(error.message || voiceLine("failed", { what: "restore that version" }), true);
       } finally {
         restore.disabled = false;
       }
@@ -583,26 +585,8 @@
     return kebabMenu(items, "More for this version", { vertical: true });
   }
 
-  //: **A prompt asked from inside the history dialog.** `promptDialog` mounts
-  //: its overlay on `<body>`, and a `showModal()` dialog makes everything
-  //: outside it inert, so the prompt opened beneath the history unreachable
-  //: (measured: the click at its centre landed on the history). Moved into the
-  //: open modal as soon as it is made (the executor runs synchronously), the
-  //: same escape `wireHelpPopover` makes for a "?". Done here rather than in
-  //: app.js, whose gzipped size is held by `test_static_compression.py`.
-  function docPromptInModal(message, initial) {
-    const asked = promptDialog(message, initial);
-    const overlay = document.body.lastElementChild;
-    const modal = document.querySelector("dialog:modal");
-    if (modal && overlay?.classList.contains("confirm-overlay")) {
-      modal.appendChild(overlay);
-      overlay.querySelector("input")?.select();
-    }
-    return asked;
-  }
-
   async function docNameVersion(entry) {
-    const next = await docPromptInModal(entry.name ? "Rename this version" : "Name this version", entry.name || "");
+    const next = await promptDialog(entry.name ? "Rename this version" : "Name this version", entry.name || "");
     if (next === null || next === undefined) return;
     await docSetVersionName(entry, next);
   }
@@ -618,7 +602,7 @@
     try {
       await put(name);
     } catch (error) {
-      return toast(error.message || "Couldn't name that version.", true);
+      return toast(error.message || voiceLine("failed", { what: "name that version" }), true);
     }
     offerUndo(name.trim() ? `Named a version “${clipText(name.trim(), 40)}”` : "Removed a version's name", name.trim() ? "Version named." : "Name removed.", () => put(before), () => put(name));
   }
@@ -627,7 +611,7 @@
   //: the name holds what is on screen.
   async function docNameCurrentVersion() {
     if (!currentDoc) return;
-    const name = await docPromptInModal("Name this version", "");
+    const name = await promptDialog("Name this version", "");
     if (!name || !name.trim()) return;
     if (docDirty) await saveDocument({ silent: true });
     const docId = currentDoc.id;
@@ -635,7 +619,7 @@
     try {
       made = await apiJson(`/documents/${docId}/revisions`, { method: "POST", body: JSON.stringify({ name }) });
     } catch (error) {
-      return toast(error.message || "Couldn't name this version.", true);
+      return toast(error.message || voiceLine("failed", { what: "name this version" }), true);
     }
     if ($("doc-history-dialog")?.open) await openDocHistory();
     const entry = { id: made.id, name: made.name };

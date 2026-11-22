@@ -40,8 +40,6 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import or_, select
-from sqlalchemy import func as sqlfunc
 from sqlalchemy.orm import Session
 
 from tessellate.core import clock
@@ -80,19 +78,10 @@ def _board_param(board_id: int | None) -> int | None:
     return board_id or None
 
 
-def _names_board(column: str, board_id: int | None):
-    """An event whose payload's `column` (after or before) names this board."""
-    path = f"$.{column}.board_id"
-    if board_id is None:
-        return sqlfunc.json_type(AuditLog.payload, path) == "null"
-    return sqlfunc.json_extract(AuditLog.payload, path) == board_id
-
-
 def _current_rows(db: Session, board_id: int | None) -> dict[str, object]:
     out: dict[str, object] = {}
     for kind, (_, model) in KINDS.items():
-        where = model.board_id.is_(None) if board_id is None else model.board_id == board_id
-        for row in db.scalars(select(model).where(where)):
+        for row in whiteboard_repo.rows_on(db, model, board_id):
             out[f"{kind}:{row.id}"] = row
     return out
 
@@ -112,12 +101,7 @@ def _board_events(db: Session, board_id: int | None, current: dict[str, object])
     for key in current:
         kind, raw = key.split(":")
         ids[kind].add(int(raw))
-    named = db.execute(
-        select(AuditLog.entity_type, AuditLog.entity_id).where(
-            AuditLog.entity_type.in_([etype for etype, _ in KINDS.values()]),
-            or_(_names_board("after", board_id), _names_board("before", board_id)),
-        )
-    )
+    named = whiteboard_repo.items_logged_on(db, [etype for etype, _ in KINDS.values()], board_id)
     for etype, entity_id in named:
         if entity_id is not None:
             ids[KIND_OF_TYPE[etype]].add(int(entity_id))
@@ -126,11 +110,7 @@ def _board_events(db: Session, board_id: int | None, current: dict[str, object])
         wanted = sorted(ids[kind])
         for start in range(0, len(wanted), 500):
             chunk = wanted[start : start + 500]
-            rows = db.scalars(
-                select(AuditLog)
-                .where(AuditLog.entity_type == etype, AuditLog.entity_id.in_(chunk))
-                .order_by(AuditLog.id.asc())
-            )
+            rows = whiteboard_repo.events_of(db, etype, chunk)
             for row in rows:
                 out.setdefault(f"{kind}:{row.entity_id}", []).append(row)
     #: **Only this board's part of each log.** SQLite gives a deleted row's id
@@ -176,6 +156,51 @@ def _is_delete(row: AuditLog) -> bool:
     return row.action == "deleted" or after == events.DELETED
 
 
+def _state_before_log(kind: str, first: AuditLog, row_now: object) -> tuple[bool, dict] | None:
+    """Whether an item was there before its log began, and as what: as its
+    first event's `before` says, or failing that as it is now (the nearest
+    thing known). None when it was there and nothing says how."""
+    if _begins(first):
+        return False, {}
+    before = (first.payload or {}).get("before")
+    if isinstance(before, dict):
+        return True, dict(before)
+    if row_now is not None:
+        return True, _state_of(kind, row_now)
+    return None
+
+
+def _replay(rows: list[AuditLog], event_id: int, present: bool, state: dict) -> tuple[bool, dict, bool]:
+    """One item's log played up to `event_id`: whether it is there, its
+    state, and whether a compacted run hides it."""
+    unknown = False
+    for row in rows:
+        if row.id > event_id:
+            break
+        payload = row.payload or {}
+        if events.is_compacted(row):
+            unknown = True
+            if _begins(row):
+                present = True
+            elif _is_delete(row):
+                present = False
+            continue
+        if _is_delete(row):
+            present, state, unknown = False, {}, False
+            continue
+        after = payload.get("after")
+        if isinstance(after, dict):
+            #: A `created` starts the row afresh: SQLite hands a deleted
+            #: row's id to the next row made (no AUTOINCREMENT), so one
+            #: id's log can hold two items, the second starting here.
+            if payload.get(events.COMPACTED) or _begins(row):
+                state, unknown = dict(after), False
+            else:
+                state.update(after)
+            present = True
+    return present, state, unknown
+
+
 def _states_at(
     board_id: int | None, current: dict[str, object], logs: dict[str, list[AuditLog]], event_id: int
 ) -> tuple[dict[str, dict], bool]:
@@ -192,44 +217,10 @@ def _states_at(
             if row_now is not None:
                 states[key] = _state_of(kind, row_now)
             continue
-        first = rows[0]
-        present = not _begins(first)
-        state: dict = {}
-        unknown = False
-        if present:
-            #: There before its log began: as its first event's `before` says,
-            #: or failing that as it is now (the nearest thing known).
-            before = (first.payload or {}).get("before")
-            if isinstance(before, dict):
-                state = dict(before)
-            elif row_now is not None:
-                state = _state_of(kind, row_now)
-            else:
-                continue
-        for row in rows:
-            if row.id > event_id:
-                break
-            payload = row.payload or {}
-            if events.is_compacted(row):
-                unknown = True
-                if _begins(row):
-                    present = True
-                elif _is_delete(row):
-                    present = False
-                continue
-            if _is_delete(row):
-                present, state, unknown = False, {}, False
-                continue
-            after = payload.get("after")
-            if isinstance(after, dict):
-                #: A `created` starts the row afresh: SQLite hands a deleted
-                #: row's id to the next row made (no AUTOINCREMENT), so one
-                #: id's log can hold two items, the second starting here.
-                if payload.get(events.COMPACTED) or _begins(row):
-                    state, unknown = dict(after), False
-                else:
-                    state.update(after)
-                present = True
+        start = _state_before_log(kind, rows[0], row_now)
+        if start is None:
+            continue
+        present, state, unknown = _replay(rows, event_id, *start)
         if not present:
             continue
         if unknown:

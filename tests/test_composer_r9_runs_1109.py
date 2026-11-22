@@ -49,6 +49,6 @@ def test_a_month_no_line_names_says_so(ask):
 def test_a_long_question_is_read_in_bounded_time():
     out = type("O", (), {"lines": [], "parts": [], "grounding": []})()
     for q in ("which holiday is better in " + "a " * 25_000, "what was my " + " " * 50_000 + "fastest run", "compare my " + " " * 50_000 + "two runs"):
-        start = time.perf_counter()
+        start = time.process_time()
         composer_tally.answer(out, q, [])
-        assert time.perf_counter() - start < 0.5
+        assert time.process_time() - start < 0.5

@@ -33,7 +33,7 @@ logger = logging.getLogger("tessellate.passes")
 PASS_KINDS = ("autonomous", "night-shift", "learned-audit", "backup", "resurface", "embeddings-backfill", "maintenance")
 
 #: Passes Stop can end part way, at their next step.
-STOPPABLE = frozenset({"autonomous", "maintenance", "embeddings-backfill"})
+STOPPABLE = frozenset({"autonomous", "backup", "maintenance", "embeddings-backfill", "night-shift", "resurface"})
 
 _lock = threading.Lock()
 _running: set[str] = set()
@@ -131,7 +131,13 @@ def _backup() -> None:
     config = deps.get_config()
     keep = int(config.get_preference("backup_retention_count", backup.KEEP_BACKUPS))
     with jobruns.job_run("backup") as run:
-        path = backup.backup_now(config.db_path, config.data_dir, keep, run, origin="manual")
+        try:
+            path = backup.backup_now(
+                config.db_path, config.data_dir, keep, run, origin="manual", should_stop=lambda: stop_requested("backup")
+            )
+        except backup.BackupStopped:
+            run.cancel("stopped before the backup was whole; nothing was kept")
+            return
         run.result = f"saved {path.name} (Run now)"
 
 
@@ -144,7 +150,10 @@ def _resurface() -> None:
         with jobruns.job_run("resurface") as run:
             written = resurface.compute_scores(session)
             session.commit()
-            run.result = f"scored {written} note{'' if written == 1 else 's'}"
+            if stop_requested("resurface"):
+                run.cancel(f"stopped after scoring {written} note{'' if written == 1 else 's'}")
+            else:
+                run.result = f"scored {written} note{'' if written == 1 else 's'}"
     finally:
         session.close()
 

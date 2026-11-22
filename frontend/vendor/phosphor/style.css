@@ -1,7 +1,18 @@
+/* The boot face is a subset to the icons the code names (scripts/subset_phosphor.py);
+   the full font is a second family in the `.ph` stack, so a glyph the subset lacks
+   (a picked or stored icon) falls back to it and the browser fetches it only then. */
 @font-face {
   font-family: "Phosphor";
+  src: url("./Phosphor.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Phosphor Full";
   src:
-    url("./Phosphor.woff2") format("woff2"),
+    url("./Phosphor-full.woff2") format("woff2"),
     url("./Phosphor.woff") format("woff"),
     url("./Phosphor.ttf") format("truetype");
   font-weight: normal;
@@ -11,7 +22,7 @@
 
 .ph {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: "Phosphor" !important;
+  font-family: "Phosphor", "Phosphor Full" !important;
   speak: never;
   font-style: normal;
   font-weight: normal;

@@ -17,6 +17,7 @@ import pytest
 
 from tessellate.api.routes_settings_transfer import _parse_frontmatter
 from tessellate.core import deps
+from tessellate.core.database import Entry
 from tessellate.entry import app_import, export_folder
 from tests.fixtures import notebook500
 from tests._clock import SUITE_NOW, pin_clock
@@ -159,6 +160,26 @@ def test_the_sidecar_wins_over_the_front_matter(exported):
     after = export_folder.snapshot(session, deps.get_config().uploads_dir)
     session.close()
     assert after["notes"][entry_id]["category"] == sidecar["category"]
+
+
+def test_a_sidecars_groups_and_extra_categories_come_back(exported):
+    """L-world-class-692: the export writes `groups` and `also_in`; the import restores them."""
+    from tessellate.repo import memberships
+
+    _, data = exported
+    source = zipfile.ZipFile(io.BytesIO(data))
+    row = json.loads(source.read("index.json"))["notes"][3]
+    edited = io.BytesIO()
+    with zipfile.ZipFile(edited, "w") as archive:
+        for name in source.namelist():
+            body = source.read(name)
+            if name == row["sidecar"]:
+                body = json.dumps({**json.loads(body), "also_in": ["Ideas"], "groups": ["Trip plan"]}).encode()
+            archive.writestr(name, body)
+    session, _, written = _import(edited.getvalue())
+    entry = session.get(Entry, written["idmap"][json.loads(source.read(row["sidecar"]))["id"]])
+    assert memberships.for_one(session, entry) == (["Ideas"], ["Trip plan"])
+    session.close()
 
 
 def test_a_note_with_no_sidecar_reads_its_front_matter(exported):

@@ -61,7 +61,9 @@ def test_settings_escape_never_steps_off_the_app():
     assert "history.pushState({ navId: entry.navId, depth: depth + 1 }" in router
     assert "history.replaceState({ navId: entry.navId, depth }" in router
     settle = LAZY[LAZY.index("function routerSettle"):]
-    assert "history.state?.depth > 0 && routerGo(-1)" in settle.split("\n}\n")[0]
+    #: Settings now steps off all its pane entries at once (L-world-class-356); the
+    #: guard is the same, as many of the app's own entries under it as steps taken.
+    assert "history.state?.depth >= steps && routerGo(-steps)" in settle.split("\n}\n")[0]
 
 
 def test_every_modal_overlay_closes_on_back_through_its_own_close_button():
@@ -102,3 +104,15 @@ def test_a_dialog_shown_as_a_phone_sheet_closes_by_its_own_x():
     hook = LAZY[LAZY.index("function routerCloseTopOverlay") :]
     sheet_branch = hook[hook.index("const sheets") : hook.index("const dialog")]
     assert "OVERLAY_CLOSE_BUTTONS[top.id]" in sheet_branch
+
+
+def test_back_closes_a_sheet_over_settings_before_settings():
+    """L-world-class-75, driven at 390 with phone emulation: a sheet, the
+    shortcuts overlay or a dialog opened over Settings stayed open after Back
+    while Settings closed under it (hash `#/library`, sheet still shown). The
+    hook used to return false whenever Settings was open, so the step was
+    spent on Settings. Settings is not a `.sheet-overlay` and is not in the
+    closer table, so asking the overlays first never closes it by mistake."""
+    hook = LAZY[LAZY.index("function routerBackHook") :]
+    assert "settingsModalOpen" not in hook[: hook.index("routerCloseTopOverlay()")]
+    assert "settings-modal" not in LAZY[LAZY.index("function routerCloseTopOverlay") : LAZY.index("function routerBackHook")]

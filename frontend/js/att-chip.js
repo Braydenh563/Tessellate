@@ -176,5 +176,11 @@
     return chipEl;
   }
 
-  Object.assign(window, { attachmentIconClass, attachmentExt, fileChip, formatFileSize, attachmentChip, isImageFile });
+  //: A markdown link to our own `/media/` or `/files/`, the one rule (L544). An `https://` image is
+  //: blocked by the CSP (`img-src 'self'`), so it would draw a broken frame.
+  const OWN_FILE_LINK = /(!?)\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\s]{1,500})\)/g;
+  //: Matches as `[all, bang, alt, url]`.
+  const ownFileLinks = (text) => [...String(text || "").matchAll(OWN_FILE_LINK)];
+
+  Object.assign(window, { attachmentIconClass, attachmentExt, fileChip, formatFileSize, attachmentChip, isImageFile, ownFileLinks });
 })();

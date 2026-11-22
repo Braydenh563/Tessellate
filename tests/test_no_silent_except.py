@@ -6,12 +6,10 @@ into silence, the shape behind "a feature that never ran once". Ruff's BLE001
 already makes every broad handler carry a reason; this finds the ones that
 say nothing at all.
 
-The seed is the 21 handlers found on 2026-10-10, keyed by file, enclosing
-function and position in that function so an edit elsewhere in the file does
-not move the key. A handler not in the seed fails the test; a seeded handler
-that now logs, narrows or is gone fails it too, so the list only shrinks.
-Fix one by logging with the reason and the way out, or by catching the
-named exception, then delete its line below.
+The seed was 60 handlers (21 found 2026-10-10, 39 fallbacks seeded 2026-11-12)
+and is now empty: every handler logs at debug with the reason and the way
+out, or catches the named exceptions. Keys, when one ever returns, are file,
+enclosing function and position in that function. Never add an exemption.
 """
 
 from __future__ import annotations
@@ -27,30 +25,8 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 #: own `_log*` helpers and the audit log.
 _LOG_NAMES = {"debug", "info", "warning", "warn", "error", "exception", "critical", "log", "log_action"}
 
-SEED = frozenset(
-    """
-src/tessellate/__main__.py::_bootloader_splash::1
-src/tessellate/ai/margin.py::_date_card::1
-src/tessellate/ai/tools/tool_web.py::prefetch_web.one::1
-src/tessellate/ai/tools/tool_schema.py::with_relation_types::1
-src/tessellate/ai/vision_ocr.py::pdf_reader_or_none::1
-src/tessellate/ai/vision_ocr.py::pdf_vision_ocr_and_store::1
-src/tessellate/api/app.py::out_of_space_body::1
-src/tessellate/api/chat_attach.py::_attachment_readings::1
-src/tessellate/api/routes_chat.py::_composer_embed::1
-src/tessellate/api/routes_models.py::_tools_engine::1
-src/tessellate/core/docview.py::_docx_part::1
-src/tessellate/core/egress.py::_hook::1
-src/tessellate/core/ocr.py::extract_and_store::1
-src/tessellate/core/webclip.py::_read::1
-src/tessellate/entry/app_import.py::read_evernote::1
-src/tessellate/entry/link_facts.py::reason_for::1
-src/tessellate/search/chunks.py::current::1
-src/tessellate/search/chunks.py::meaning_scorer::1
-src/tessellate/search/engine.py::_backend_id::1
-src/tessellate/search/search_manager.py::_named_category::1
-""".split()
-)
+#: Zero since L-world-class-122 (decision 57): every broad handler logs, narrows or re-raises.
+SEED: frozenset[str] = frozenset()
 
 
 def _says_something(body: list[ast.stmt]) -> bool:
@@ -69,9 +45,22 @@ def _ends_quiet(body: list[ast.stmt]) -> bool:
     last = body[-1]
     if isinstance(last, (ast.Pass, ast.Continue)):
         return True
-    return isinstance(last, ast.Return) and (
-        last.value is None or (isinstance(last.value, ast.Constant) and last.value.value is None)
-    )
+    # A fallback returned in place of the fault (`return ""`, `return []`,
+    # `return False`) is as silent as `return None` (L797, owner 2026-11-12:
+    # decision 57 covers them, ratchet them all).
+    return isinstance(last, ast.Return) and (last.value is None or _is_fallback(last.value))
+
+
+def _is_fallback(value: ast.expr) -> bool:
+    if isinstance(value, ast.Constant):
+        return True
+    if isinstance(value, (ast.List, ast.Tuple, ast.Set)):
+        return all(_is_fallback(e) for e in value.elts)
+    if isinstance(value, ast.Dict):
+        return not value.keys
+    if isinstance(value, ast.UnaryOp):
+        return isinstance(value.operand, ast.Constant)
+    return False
 
 
 def _is_broad(handler: ast.ExceptHandler) -> bool:

@@ -8,6 +8,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 from __future__ import annotations
 
 import json
+import logging
 import re
 
 from sqlalchemy.orm import Session
@@ -59,6 +60,7 @@ def with_relation_types(offered: list[dict], session: Session) -> list[dict]:
         except Exception:  # noqa: BLE001
             # A session that cannot list kinds (a test double, a closed
             # session) keeps the registry's own description: the built-ins.
+            logging.getLogger(__name__).debug("with_relation_types: fell back", exc_info=True)
             continue
         text = link_type_description(kinds)
         parameters = {

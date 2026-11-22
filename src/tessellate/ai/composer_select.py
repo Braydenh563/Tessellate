@@ -148,7 +148,7 @@ def superseded(terms: list[str], views: list) -> set[int]:
     return {id(v) for v in views if v.written and v.written < newest and any(_holds(_stem(t), v.words | v.title_words) for t in terms)}
 
 
-def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence]:
+def _score(shape: str, terms: list[str], views: list[NoteView], *, carrier: bool = False) -> list[Sentence]:
     """Every sentence scored: BM25 over the sentences of the notes found, plus
     the note's title, the question's shape and the note's retrieval rank.
 
@@ -160,7 +160,7 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
     pool = [s for view in views for s in view.sentences]
     if not pool:
         return []
-    scorer = _Scorer(shape, terms, views, pool)
+    scorer = _Scorer(shape, terms, views, pool, carrier)
     for s in pool:
         s.score = scorer.score(s)
     return [s for s in pool if s.score > 0]
@@ -172,8 +172,10 @@ class _Scorer:
     synonyms), how many sentences hold each word, the notes' recency and the
     notes a newer one corrects. `score` is then one sentence's number."""
 
-    def __init__(self, shape: str, terms: list[str], views: list[NoteView], pool: list[Sentence]) -> None:
+    def __init__(self, shape: str, terms: list[str], views: list[NoteView], pool: list[Sentence], carrier: bool = False) -> None:
         self.shape = shape
+        #: The model's brief: a title's weight goes only to the sentences that carry its words (L500).
+        self.carrier = carrier
         self.stems = [_stem(t) for t in terms]
         self.term_weight = _term_weights(self.stems)
         self.whole_title = sum(self.term_weight[term] for term in self.stems)
@@ -186,6 +188,7 @@ class _Scorer:
         self.idf: dict[str, float] = {}
         self.by_id = {view.id: view for view in views}
         self.headings: dict[int, tuple[float, float]] = {}
+        self.carriers: dict[int, bool] = {}
         self.outdated = _outdated(terms, views)
         dated = sorted((v for v in views if v.written), key=lambda v: v.written, reverse=True)
         self.recency = {v.id: 1.0 - i / max(1, len(dated)) for i, v in enumerate(dated)}
@@ -211,6 +214,15 @@ class _Scorer:
             total += best * self.term_weight[term]
         return total
 
+    def _carries(self, view: NoteView) -> bool:
+        """Whether some sentence of the note holds a question word that is also in its title."""
+        found = self.carriers.get(view.id)
+        if found is None:
+            found = self.carriers[view.id] = any(
+                _holds(t, view.title_words) and _holds(t, set(x.words)) for x in view.sentences for t in self.stems
+            )
+        return found
+
     def relevance(self, s: Sentence, view: NoteView) -> float:
         """BM25 plus the note's headings. A sentence under a heading that
         names the subject is about it even when it does not repeat the words:
@@ -220,8 +232,16 @@ class _Scorer:
         if hits is None:
             hits = self.headings[view.id] = _heading_hits(view, self.stems, self.term_weight)
         title_hits, filed_hits = hits
+        whole = bool(self.stems) and title_hits == self.whole_title
+        if self.carrier and title_hits and self._carries(view):
+            #: The model's brief: only the sentence that says the title's words takes the weight, so a
+            #: titled note's every sentence does not outrank an untitled note's best one (L500). A note
+            #: no sentence of which says them keeps the weight on all, or the brief would drop it.
+            own = set(s.words)
+            title_hits = sum(self.term_weight[t] for t in self.stems if _holds(t, view.title_words) and _holds(t, own))
+            whole = whole and title_hits == self.whole_title
         relevance = self.bm25(s) + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
-        if self.stems and title_hits == self.whole_title:
+        if whole:
             relevance += TITLE_WEIGHT
         return relevance
 
@@ -284,6 +304,7 @@ def select(
     meaning: "_Meaning | None" = None,
     per_note: int = MAX_PER_NOTE,
     said: str = "",
+    carrier: bool = False,
 ) -> list[Sentence]:
     """The sentences worth quoting, best first: over the floor, no two saying
     the same thing, no more than `per_note` from one note.
@@ -301,7 +322,7 @@ def select(
         #: None covering is a question the notes only half answer: every note
         #: stays in, and the closing line says which words none of them hold.
         views = covering or views
-    scored = sorted(_score(shape, terms, views), key=lambda s: (-s.score, s.rank, s.order))
+    scored = sorted(_score(shape, terms, views, carrier=carrier), key=lambda s: (-s.score, s.rank, s.order))
     if said:
         scored = [s for s in scored if not _was_said(s, said)]
     if not scored:

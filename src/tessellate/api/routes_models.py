@@ -150,6 +150,9 @@ class _ListFlight:
 
 _installed_lock = threading.Lock()
 _installed_known: dict[tuple[str, str], list[dict] | None] = {}
+#: When the request behind each `_installed_known` list was sent (monotonic): a download is only reported
+#: finished alongside a list asked after it finished (`_installed_after_pulls`).
+_installed_known_asked: dict[tuple[str, str], float] = {}
 _installed_flights: dict[tuple[str, str], _ListFlight] = {}
 #: Runners whose first, cold poll already waited `INSTALLED_COLD_BUDGET` and
 #: heard nothing: the polls after it do not wait again (INBOX 1492: a runner
@@ -247,6 +250,7 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
         with _installed_lock:
             if flight.error is None:
                 _installed_known[key] = flight.result
+                _installed_known_asked[key] = flight.started
                 _installed_cold_paid.discard(key)
             _installed_flights.pop(key, None)
         flight.done.set()
@@ -278,6 +282,14 @@ def _recent_pulls(pulls: dict[str, dict], now: float) -> tuple[list[str], list[s
 
 
 def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+    """The installed list to serve beside `pulls`, which it may change: a download the list does not show yet
+    is reported still running until a list asked after it finished has come back.
+
+    The wait below only shortens that: on a busy machine (CI on PR 222, 3.12) the list took longer than the
+    budget, and the poll said "success" beside the models from before the download, so the model the person
+    just downloaded read as missing. Holding the status for a poll costs a second of a full bar; a model the
+    runner never lists (a renamed tag) is released by the first fresh list, or by `PULL_LIST_RETRY_SECONDS`.
+    """
     now = time.monotonic()
     new, recent, since = _recent_pulls(pulls, now)
     fresh = [n for n in recent if not _name_matches(n, installed)]
@@ -295,7 +307,29 @@ def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]
             break
         if flight.started >= since:  # asked after the download finished: its answer, or what was known
             return flight.result if flight.error is None and flight.result is not None else installed
+    # A runner that refuses the list (OllamaError) has answered too; only an
+    # unexpected error leaves it unanswered, and then a finished pull reads
+    # "running" (bar full, its counts kept) for at most PULL_LIST_RETRY_SECONDS.
+    with _installed_lock:
+        answered = _installed_known_asked.get(key, float("-inf")) >= since
+    if not answered:
+        for name in fresh:
+            pulls[name] = {**pulls[name], "status": "running"}
     return installed
+
+
+def _pulls_as_listed(pulls: dict[str, dict], installed: list[dict]) -> dict[str, dict]:
+    """A download the runner has finished but does not list yet still reads as running, all of it done:
+    "Downloaded" beside a list without the model was the flake on PR 212, 216 and 222. Only for
+    `PULL_LIST_RETRY_SECONDS`, so a model the runner never lists (a renamed tag) does not spin for ever."""
+    now = time.monotonic()
+    with _installed_lock:
+        waiting = {
+            n for n, job in pulls.items()
+            if job.get("status") == "success" and now - _pull_done_seen.get(n, now) < PULL_LIST_RETRY_SECONDS
+        }
+    waiting = {n for n in waiting if not _name_matches(n, installed)}
+    return {n: ({**job, "status": "running"} if n in waiting else job) for n, job in pulls.items()}
 
 
 def _name_matches(wanted: str, installed: list[dict]) -> bool:
@@ -389,7 +423,7 @@ def warm_filing() -> dict:
     warm-up on the cpu lane so a note saved meanwhile is not queued behind
     it, the retry on the model lane with the filing it belongs to."""
     from tessellate.ai import janitor
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
     from tessellate.core import jobs
 
     #: The graphics card is read by starting a program (up to 3s, cached five
@@ -415,24 +449,18 @@ def warm_filing() -> dict:
     #: Only when a note is waiting: queued unconditionally, a launch with no
     #: notes still showed "Filing a note" in Activity and in the bell (scan
     #: 2026-10-11, one more row per page load).
-    if routes_entries.stand_ins_waiting():
-        jobs.enqueue("file-entry", routes_entries.retry_stand_ins, dedupe_key="retry-stand-ins")
+    if filing_background.stand_ins_waiting():
+        jobs.enqueue("file-entry", filing_background.retry_stand_ins, dedupe_key="retry-stand-ins")
     return {"status": "ok"}
 
 def _embedding_coverage(session: Session) -> dict:
     """How many live notes search by meaning can find, out of how many there
     are: the "how well" half of INBOX 431 (3). Two counts on the poll that
     already runs; the space filter applies as it does to every query."""
-    from sqlalchemy import func, select
+    from tessellate.repo import graph_layers
 
-    from tessellate.core.database import EmbeddingRecord, Entry
-
-    live = (Entry.is_deleted == False) & (Entry.is_draft == False)  # noqa: E712
-    total = session.scalar(select(func.count(Entry.id)).where(live)) or 0
-    indexed = session.scalar(
-        select(func.count(EmbeddingRecord.id)).join(Entry, Entry.id == EmbeddingRecord.entry_id).where(live)
-    ) or 0
-    return {"indexed": int(indexed), "total": int(total)}
+    indexed, total = graph_layers.embedding_coverage(session)
+    return {"indexed": indexed, "total": total}
 
 
 def _tools_engine() -> str | None:
@@ -441,6 +469,7 @@ def _tools_engine() -> str | None:
     try:
         return "needle" if extras.download_ready("needle") is not None else None
     except Exception:  # noqa: BLE001  # an unreadable extras folder is "not installed"
+        logging.getLogger(__name__).debug("_tools_engine: an unreadable extras folder is 'not installed'", exc_info=True)
         return None
 
 
@@ -503,6 +532,8 @@ def _status_chat_fields(  # noqa: ANN001
     chat_model, is_local, privacy_note, local_only, utility_resolved, utility_reason, resolved_vision,
 ) -> dict:
     """The chat backend half of /status: reachability, privacy, and the models in use."""
+    ready = _model_ready(running, installed, provider, chat_model)
+    tools_engine = None if running else _tools_engine()
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
         # backend is answering", which is the question the pill asks whoever
@@ -520,12 +551,17 @@ def _status_chat_fields(  # noqa: ANN001
         #: cannot write a reply. An OpenAI-dialect server answers with whatever
         #: it has loaded, so any listed model counts there. The Chat tab's
         #: Agent mode gates on this, not on `ollama_running`.
-        "model_ready": _model_ready(running, installed, provider, chat_model),
+        "model_ready": ready,
         #: What can still call tools with no model (INBOX 725): "needle" when
         #: its extra is on disk (`tool_fallback.for_tools`'s own test, a
         #: folder check, no import), so the Chat tab's Agent mode is greyed
         #: only when nothing could run it.
-        "tools_engine": None if running else _tools_engine(),
+        "tools_engine": tools_engine,
+        #: **The one "is the AI off" verdict** (L643): the runner did not
+        #: answer, or no model can write a reply and nothing (Needle) can call
+        #: tools. Every gated control reads this through `aiIsOff`, so the
+        #: clauses live here once instead of in 28 call sites.
+        "ai_off": running is False or (not ready and not tools_engine),
         "unreachable_hint": unreachable_hint,
         # Which dialect is actually in use (§6), so the UI can say so rather
         # than claiming Ollama when the answers came from LM Studio.
@@ -692,6 +728,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     pulls = jobs.pull_statuses()
     if running:
         installed = _installed_after_pulls(ollama, installed, pulls)
+        pulls = _pulls_as_listed(pulls, installed)
     chat_model = manager.chat_model()
     utility_resolved, utility_reason = manager.utility_resolution()
     # Resolved once. It walks the installed models asking each whether it can

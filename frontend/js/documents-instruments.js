@@ -674,70 +674,70 @@
     return finding.hint;
   };
 
-  $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
+  //: The dictionary dialog is a surface built on its first open (index.html), so its controls are wired then.
+  onSurface("docDictionary", () => {
+    $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
 
-  $("doc-spelling-variant")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
-    }).catch(() => prefsCache);
-    //: The variant decides which half of the pair table is a finding, so the
-    //: lookup has to be rebuilt before the next pass reads it.
-    docVariantFor = null;
-    //: And the grammar checker's dialect with it (British or American rules).
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    $("doc-spelling-variant")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
+      }).catch(() => prefsCache);
+      //: The variant decides which half of the pair table is a finding, so the lookup has to be rebuilt before the next pass reads it.
+      docVariantFor = null;
+      //: And the grammar checker's dialect with it (British or American rules).
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
-  //: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
-  $("doc-prose-groups")?.addEventListener("change", async (event) => {
-    const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ prose_kinds_off: off }),
-    }).catch(() => prefsCache);
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+    $("doc-prose-groups")?.addEventListener("change", async (event) => {
+      const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ prose_kinds_off: off }),
+      }).catch(() => prefsCache);
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  $("doc-link-offers")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ link_offers: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
-    DOC_LINK_OFFERS.text = null;
-    DOC_LINK_OFFERS.findings = [];
-    renderDocProse();
-  });
+    $("doc-link-offers")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ link_offers: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+      DOC_LINK_OFFERS.text = null;
+      DOC_LINK_OFFERS.findings = [];
+      renderDocProse();
+    });
 
-  //: Link text (K11): the same preference as Settings, Writing. The grammar
-  //: answer is thrown away because what it keeps depends on the switch.
-  $("doc-check-link-text")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    //: Link text (K11): the same preference as Settings, Writing. The grammar answer is thrown away because what it keeps depends on the switch.
+    $("doc-check-link-text")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  $("doc-grammar-check")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
-    docGrammarCache = { text: null, findings: [] };
-    renderDocProse();
-  });
+    $("doc-grammar-check")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+      docGrammarCache = { text: null, findings: [] };
+      renderDocProse();
+    });
 
-  //: The same preference Settings, Preferences sets (`smart_punctuation`), here
-  //: beside the other writing checks; saved on the change, as the two above are.
-  $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
-    }).catch(() => prefsCache);
+    //: The same preference Settings, Preferences sets (`smart_punctuation`), here
+    //: beside the other writing checks; saved on the change, as the two above are.
+    $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
+      }).catch(() => prefsCache);
+    });
   });
 
   for (const [name, id] of Object.entries(DOC_TOOL_KEYS)) {

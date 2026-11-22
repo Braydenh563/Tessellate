@@ -16,7 +16,6 @@ SET = re.compile(r"localStorage\.setItem\(")
 
 #: file -> direct setItem calls on 2026-10-11.
 CAPS = {
-    "app.js": 1,
     # A new file, not a raised count: the one-time origin carry copies the old
     # origin's raw storage bytes and its marker before prefs.js is loaded.
     "origin-bridge.js": 2,

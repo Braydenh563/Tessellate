@@ -70,9 +70,9 @@ def test_cost_at_10k_notes():
         edges += [(rng.choice(group), rng.choice(group)) for _ in range(60)]
     edges += [(rng.randrange(1, 10001), rng.randrange(1, 10001)) for _ in range(800)]
     index = _index(10000, [(a, b) for a, b in edges if a != b])
-    started = time.perf_counter()
+    started = time.process_time()
     found = topics.build(index, {})
-    took = time.perf_counter() - started
+    took = time.process_time() - started
     print(f"topics n=10000: {took * 1000:.0f} ms, {len(found)} topics")
     assert took < 5.0
     assert len(found) > 100
@@ -133,3 +133,20 @@ def test_a_topic_no_strong_term_names_takes_a_weak_one_then_its_core_title():
     long = topics.build(index, plain, {1: "A" * 60})
     assert long[0]["name"] == "Around " + "A" * 39 + "…"
     assert topics.build(index, plain, {})[0]["name"] == "Topic 1"
+
+
+def test_a_gym_note_linked_into_a_conversation_cluster_takes_the_clusters_name():
+    """L510: "#conversation" on a gym note. A topic is a link cluster named by
+    the terms its notes share, so the gym note's own words never name it: a
+    note with no links is in no topic, and one linked into two notes about
+    conversation is in the topic those notes name."""
+    terms = {
+        1: {("word", "conversation"), ("word", "questions")},
+        2: {("word", "conversation"), ("word", "questions")},
+        3: {("word", "gym"), ("word", "squats"), ("word", "conversation")},
+        4: {("word", "gym"), ("word", "squats")},
+    }
+    assert topics.build(_index(4, _clique([1, 2])), terms) == [], "under the three notes a topic needs"
+    joined = topics.build(_index(4, _clique([1, 2, 3])), terms)
+    assert len(joined) == 1 and joined[0]["name"] in {"conversation", "questions"}
+    assert 3 in joined[0]["ids"] and 4 not in joined[0]["ids"], "a lone gym note is in no topic"

@@ -31,13 +31,11 @@
 // half, and it is why `appendAgentLog` below is unchanged apart from no longer
 // forcing the panel open.
 (() => {
+  //: The panel's root is live; what is inside it is the `agentMonitor` surface, built when the panel first
+  //: opens or a run first lands in its list (L-world-class-530: 57 elements no boot drew). Each part is
+  //: asked for through `$`, which builds it at the first ask; log lines that arrive before are held.
   const agentMonitor = $("agent-monitor");
-  const agentMonitorLogs = $("agent-monitor-logs");
-  const agentMonitorRuns = $("agent-monitor-runs");
-  const agentMonitorEmpty = $("agent-monitor-empty");
-  const agentMonitorLogToggle = $("agent-monitor-log-toggle");
-  const agentMonitorClose = $("agent-monitor-close");
-  const agentMonitorClear = $("agent-monitor-clear");
+  const agentLogHeld = [];
 
   //: Runs kept in the panel for this session, oldest first. Twelve because the
   //: panel is 350px wide and a row is one line collapsed: past that it is a list
@@ -164,6 +162,7 @@
     //: is a thing that has actually happened here (CLAUDE.md, the static-cache
     //: header bug), and the failure mode must be "no run list", not a TypeError
     //: that takes the chat turn down with it.
+    const agentMonitorRuns = $("agent-monitor-runs");
     if (!agentMonitorRuns) return null;
     const run = {
       id: `run-${++agentRunSeq}`,
@@ -241,7 +240,7 @@
     }
     renderAgentRunSummary(run);
     renderActivityStatusItem();
-    agentMonitorEmpty?.classList.add("hidden");
+    $("agent-monitor-empty")?.classList.add("hidden");
     $("activity-count-runs").textContent = String(agentRuns.length);
     //: The list is chronological and it scrolls, so without this a run that
     //: starts while eight are already listed is appended out of sight, the
@@ -361,10 +360,11 @@
   }
 
   function setAgentMonitorLogVisible(show) {
-    if (!agentMonitorLogToggle || !agentMonitorRuns) return;
-    agentMonitorLogs.classList.toggle("hidden", !show);
-    agentMonitorRuns.classList.toggle("hidden", show);
-    agentMonitorEmpty?.classList.toggle("hidden", show || agentRuns.length > 0);
+    const agentMonitorLogToggle = $("agent-monitor-log-toggle");
+    if (!agentMonitorLogToggle) return;
+    $("agent-monitor-logs").classList.toggle("hidden", !show);
+    $("agent-monitor-runs").classList.toggle("hidden", show);
+    $("agent-monitor-empty")?.classList.toggle("hidden", show || agentRuns.length > 0);
     //: An icon button now (the head is the panel-head recipe), so what it
     //: will do is said in its name and its tooltip, and the glyph is the view
     //: it switches to.
@@ -373,12 +373,6 @@
     agentMonitorLogToggle.title = words;
     setLabel(agentMonitorLogToggle, show ? "ph:list-checks" : "ph:terminal-window");
     agentMonitorLogToggle.setAttribute("aria-expanded", show);
-  }
-
-  if (agentMonitorLogToggle) {
-    agentMonitorLogToggle.addEventListener("click", () => {
-      setAgentMonitorLogVisible(agentMonitorLogs.classList.contains("hidden"));
-    });
   }
 
   $("status-activity")?.addEventListener("click", () => {
@@ -419,6 +413,7 @@
   // that covers a fixed control is a broken control, so the app is told when the
   // monitor is showing and the whiteboard lifts its panel clear.
   function setAgentMonitorVisible(visible) {
+    if (visible) surfaceBuild("agentMonitor");
     agentMonitor.classList.toggle("hidden", !visible);
     document.body.classList.toggle("has-agent-monitor", visible);
     if (!visible) clearTimeout(agentMonitorIdleTimer);
@@ -480,8 +475,14 @@
   //: kept its backlog would be the sort of half-action that reads as broken.
   //: A run still going is kept: it is the live thing the panel is for, and
   //: removing its row would strand its end with nothing to draw it on.
-  if (agentMonitorClear) {
-    agentMonitorClear.addEventListener("click", () => {
+  //: The buttons inside the panel, wired when its surface is built; the held log lines go in then too.
+  onSurface("agentMonitor", () => {
+    const agentMonitorLogs = $("agent-monitor-logs");
+    agentMonitorLogs.append(...agentLogHeld.splice(0));
+    $("agent-monitor-log-toggle").addEventListener("click", () => {
+      setAgentMonitorLogVisible(agentMonitorLogs.classList.contains("hidden"));
+    });
+    $("agent-monitor-clear").addEventListener("click", () => {
       const kept = [];
       for (const run of agentRuns) {
         if (run.state === "running") kept.push(run);
@@ -491,30 +492,27 @@
       agentRuns.push(...kept);
       agentMonitorLogs.textContent = "";
       $("activity-count-runs").textContent = String(agentRuns.length);
-      agentMonitorEmpty?.classList.toggle(
+      $("agent-monitor-empty").classList.toggle(
         "hidden",
         agentRuns.length > 0 || !agentMonitorLogs.classList.contains("hidden"),
       );
       renderActivityStatusItem();
     });
-  }
-
-  if (agentMonitorClose) {
-    agentMonitorClose.addEventListener("click", () => {
+    $("agent-monitor-close").addEventListener("click", () => {
       agentMonitorDismissedAt = Date.now();
       agentMonitorPinned = false;
       setAgentMonitorVisible(false);
     });
-    //: Escape closes it when focus is inside it, as it closes every other
-    //: floating surface (OPEN.md, Chat and popup agent). Only from inside: the
-    //: panel is non-modal and never takes focus, so an Escape meant for the
-    //: editor behind it must not also dismiss it.
-    agentMonitor.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
-      event.preventDefault();
-      agentMonitorClose.click();
-    });
-  }
+  });
+  //: Escape closes it when focus is inside it, as it closes every other
+  //: floating surface (OPEN.md, Chat and popup agent). Only from inside: the
+  //: panel is non-modal and never takes focus, so an Escape meant for the
+  //: editor behind it must not also dismiss it.
+  agentMonitor.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented) return;
+    event.preventDefault();
+    $("agent-monitor-close").click();
+  });
 
   function appendAgentLog(record) {
     // **Agent lines only.** This used to read `if (!isAgent && record.level !==
@@ -542,6 +540,12 @@
     div.className = "monitor-log-item " + record.level.toLowerCase();
     div.textContent = record.message;
 
+    //: Not in the page yet: held, fifty at most, for the panel's first build.
+    const agentMonitorLogs = document.getElementById("agent-monitor-logs");
+    if (!agentMonitorLogs) {
+      if (agentLogHeld.push(div) > 50) agentLogHeld.shift();
+      return;
+    }
     agentMonitorLogs.appendChild(div);
 
     if (agentMonitorLogs.children.length > 50) {

@@ -949,6 +949,7 @@ def _names_an_existing_category(session: Session, question: str) -> bool:
 
         names = list(session.scalars(select(Category.name)))
     except Exception:  # noqa: BLE001
+        logging.getLogger(__name__).debug("_names_an_existing_category: fell back", exc_info=True)
         return False
     return any(
         name and re.search(r"\b" + re.escape(name) + r"\b", question, re.IGNORECASE)

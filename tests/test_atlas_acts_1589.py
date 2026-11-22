@@ -20,11 +20,12 @@ import math
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
 JS_DIR = ROOT / "frontend" / "js"
-CSS08 = (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = css08_text()
 LAZY = (CSS_DIR / "atlas-lazy.css").read_text(encoding="utf-8")
 ATLAS = (JS_DIR / "atlas.js").read_text(encoding="utf-8")
 MICRO = (JS_DIR / "atlas-micro.js").read_text(encoding="utf-8")

@@ -85,8 +85,7 @@ def hanging():
     model.close()
 
 
-#: Only a guard against a hung test, never a speed claim: the timed claims
-#: are the `took` and `started` asserts, unchanged.
+#: Only a guard against a hung test, never a speed claim.
 HANG_GUARD = 30.0
 
 
@@ -94,14 +93,55 @@ def _seen(event: threading.Event) -> bool:
     return event.wait(HANG_GUARD)
 
 
+@pytest.fixture()
+def causes(monkeypatch):
+    """Why a call ended, not how long it took (L-general-70). `fired` holds the
+    seconds of each route deadline that went off (the route's own timer, so its
+    budget is the table's number); `cut` holds each model call the flag cut.
+    A route that answered while its model was held, with its deadline fired and
+    the call cut, answered on its deadline: the held model never lets go."""
+    fired: list[float] = []
+    cut: list[str] = []
+
+    class Timer(threading.Timer):
+        def __init__(self, seconds, fn, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+            def go():
+                fired.append(seconds)
+                fn()
+
+            super().__init__(seconds, go, *args, **kwargs)
+
+    monkeypatch.setattr(deadline.threading, "Timer", Timer)
+    real = provider_http._send
+
+    def send(method, url, kwargs):  # noqa: ANN001, ANN202
+        try:
+            return real(method, url, kwargs)
+        except provider_http.Cancelled:
+            cut.append(url)
+            raise
+        except provider_http.RequestException:
+            # Any other ending of a held call is the model letting go (its 10 s
+            # socket guard): a route that waited for it. The app's own mm- threads
+            # (jobs, late filing) are not the route.
+            if not threading.current_thread().name.startswith("mm-"):
+                waited.append(url)
+            raise
+
+    waited: list[str] = []
+    monkeypatch.setattr(provider_http, "_send", send)
+    yield fired, cut, waited
+
+
+
 def test_stop_cuts_a_call_still_waiting_for_the_first_byte(hanging):
     event = activity.StopEvent()
     job = activity.Job("generation", "t", None, True, None, event)
-    threading.Timer(0.3, event.set).start()
-    started = time.monotonic()
-    with activity.bind(job), pytest.raises(provider_http.RequestException):
+    # Stop is pressed once the model holds the call, and the call ends as
+    # Cancelled, not on its own 60 s read timeout (L-general-70).
+    threading.Thread(target=lambda: _seen(hanging.holding) and event.set(), daemon=True).start()
+    with activity.bind(job), pytest.raises(provider_http.Cancelled):
         provider_http.post(f"{hanging.url}/api/chat", json={"x": 1}, stream=True, timeout=(3, 60))
-    assert time.monotonic() - started < 2.0
     assert _seen(hanging.client_closed) and hanging.closed_by_client == 1
 
 
@@ -118,18 +158,16 @@ def test_one_table_names_every_deadline():
     assert all(0 < seconds <= 60 for seconds in deadline.DEADLINES.values())
 
 
-def test_a_utility_route_answers_within_its_deadline_and_cuts_the_model(app_state, hanging, monkeypatch):
+def test_a_utility_route_answers_within_its_deadline_and_cuts_the_model(app_state, hanging, monkeypatch, causes):
     from tessellate.api.app import create_app
 
     monkeypatch.setitem(deadline.DEADLINES, ("POST", "/drafts/title"), 0.6)
     deps.override_ai(ollama=ollama_client.OllamaClient(base_url=hanging.url))
     api = TestClient(create_app())
-    api.get("/health")  # the app's first request pays its own warm-up; time the route alone
-    started = time.monotonic()
+    fired, cut, waited = causes
     response = api.post("/drafts/title", json={"draft": "A draft about the garden and the spring plan."})
-    took = time.monotonic() - started
     assert response.status_code == 200 and response.json()["title"] == ""
-    assert took < 4.0
+    assert 0.6 in fired and cut and not waited
     assert hanging.held >= 1 and _seen(hanging.client_closed)
 
 
@@ -309,7 +347,7 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     answered = threading.Event()
 
     def docker_available() -> bool:
-        release.wait(10)
+        release.wait(HANG_GUARD)
         answered.set()
         return False
 
@@ -319,9 +357,10 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     # The app's first request pays its own start-up; on a loaded CI runner that
     # alone was 2.3 s, so it is paid before the timed one (any route will do).
     api.get("/health")
-    first, took = _timed(api, "/websearch/searxng/status")
-    # Far under the 10 s hang, with room for a loaded runner (-n auto).
-    assert first.status_code == 503 and took < 2.0
+    # Held by an event, not timed (L-general-70): the route answered while the
+    # docker probe was still held.
+    first = api.get("/websearch/searxng/status")
+    assert first.status_code == 503 and not answered.is_set()
     release.set()
     assert _seen(answered)
     # The probe has answered; its result is stored a moment after it returns.
@@ -331,11 +370,17 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
         time.sleep(0.05)
     else:
         pytest.fail("the stored probe answer never reached the route")
-    second, took = _timed(api, "/websearch/searxng/status")
-    assert second.status_code == 200 and took < 1.0
+    # The stored answer is served while a fresh probe is held again.
+    release.clear()
+    answered.clear()
+    try:
+        second = api.get("/websearch/searxng/status")
+        assert second.status_code == 200 and not answered.is_set()
+    finally:
+        release.set()
 
 
-def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(app_state, hanging, monkeypatch):
+def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(app_state, hanging, monkeypatch, causes):
     """Audit 1031 HR3: `POST /chat` waited the hung runner's whole 25 s."""
     from tessellate.api.app import create_app
 
@@ -344,9 +389,10 @@ def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(ap
     deps.override_ai(ollama=ollama_client.OllamaClient(base_url=hanging.url))
     api = TestClient(create_app(), raise_server_exceptions=False)
     api.post("/entries", json={"content": "The sourdough starter needs feeding every morning."})
-    started = time.monotonic()
+    fired, cut, waited = causes
     response = api.post("/chat", json={"question": "what did I write about the starter", "use_tools": False})
-    took = time.monotonic() - started
     assert response.status_code in (200, 504), response.text[:200]
-    assert took < 5.0
+    # The route either asked the model and was cut on its deadline, or did not
+    # ask; it never waited for the held model to let go.
+    assert not waited and (0.6 in fired) == bool(cut)
     assert hanging.held >= 1 and _seen(hanging.client_closed)

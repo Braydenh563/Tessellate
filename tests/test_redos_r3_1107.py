@@ -39,9 +39,9 @@ READERS = {
 @pytest.mark.parametrize("run", RUNS)
 @pytest.mark.parametrize("reader", READERS)
 def test_each_reader_is_linear(reader, run):
-    started = time.perf_counter()
+    started = time.process_time()
     READERS[reader](RUNS[run])
-    assert time.perf_counter() - started < BOUND_S, (reader, run)
+    assert time.process_time() - started < BOUND_S, (reader, run)
 
 
 REGEXES = {
@@ -62,7 +62,7 @@ REGEXES = {
 @pytest.mark.parametrize("run", RUNS)
 @pytest.mark.parametrize("name", REGEXES)
 def test_each_new_pattern_is_linear(name, run):
-    started = time.perf_counter()
+    started = time.process_time()
     REGEXES[name].search(RUNS[run])
     REGEXES[name].match(RUNS[run])
-    assert time.perf_counter() - started < BOUND_S, (name, run)
+    assert time.process_time() - started < BOUND_S, (name, run)

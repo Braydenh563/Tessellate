@@ -82,7 +82,7 @@ const finderState = { corrected: "", notices: [], page: 1, more: false, timer: n
 //: function already knows a board opens its board and not the empty note the
 //: board is stored in, which is exactly the mistake a fresh copy would make.
 const FINDER_OPEN = {
-  note: (hit) => { switchTab("notes"); flashEntry(hit.id); },
+  note: (hit) => { switchTab("notes"); flashEntry(hit.id, { terms: finderState.terms() }); },
   document: (hit) => { switchTab("documents"); openDocument(hit.id); },
   board: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "board", id: hit.id })),
   map: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "map", id: hit.id })),
@@ -98,10 +98,23 @@ const FINDER_OPEN = {
       showNotesSection("ask");
       viewAskHistoryTurn(hit.id);
     } else {
+      //: L562: the index holds one row per chat, so the hit cannot say which turn matched. The chat opens, then
+      //: the first bubble holding a typed word is rung and scrolled to (`flashRevealed`), as a note hit marks its words.
       switchTab("chat");
-      openConversation(hit.id);
+      openConversation(hit.id).then(() => {
+        const terms = finderState.terms().map((term) => term.toLowerCase());
+        const bubbles = [...(document.getElementById("chat-messages")?.children || [])];
+        const turn = terms.length && bubbles.find((bubble) => terms.some((term) => (bubble.textContent || "").toLowerCase().includes(term)));
+        if (turn) flashRevealed(turn);
+      });
     }
   },
+};
+
+//: The query's words and phrases, as the Notes filter would mark them.
+finderState.terms = () => {
+  const query = parseNoteQuery(finderQuery);
+  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
 };
 
 function finderOverlay() { return document.getElementById("finder-overlay"); }
@@ -642,6 +655,7 @@ function finderMove(step) {
 //: asks for documents); a caller cannot set `finderKind` itself before this
 //: file has loaded.
 function openFinder(prefill = "", opts = {}) {
+  surfaceBuild("finder");
   const overlay = finderOverlay();
   if (!overlay) return;
   if (typeof opts.kind === "string") finderKind = opts.kind;
@@ -688,30 +702,34 @@ function syncFinderStar() {
 
 function wireFinder() {
   const overlay = finderOverlay();
-  const input = document.getElementById("finder-input");
-  if (!overlay || !input) return;
-  input.addEventListener("input", () => {
-    finderQuery = input.value;
-    syncFinderStar();
-    clearTimeout(finderState.timer);
-    //: Long enough that a typist does not fire a query per letter, short
-    //: enough that the list feels attached to the keyboard. The abort is the
-    //: `finderState.run` counter rather than an AbortController because the route
-    //: is cheap and a cancelled fetch mid-index-read is not.
-    finderState.timer = setTimeout(finderSearch, 180);
+  if (!overlay) return;
+  //: The box's own controls are wired when its surface is built (the first open, L-world-class-530);
+  //: the overlay's backdrop and Escape are live from load.
+  onSurface("finder", () => {
+    const input = document.getElementById("finder-input");
+    input.addEventListener("input", () => {
+      finderQuery = input.value;
+      syncFinderStar();
+      clearTimeout(finderState.timer);
+      //: Long enough that a typist does not fire a query per letter, short
+      //: enough that the list feels attached to the keyboard. The abort is the
+      //: `finderState.run` counter rather than an AbortController because the route
+      //: is cheap and a cancelled fetch mid-index-read is not.
+      finderState.timer = setTimeout(finderSearch, 180);
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") { event.preventDefault(); finderMove(1); }
+      else if (event.key === "ArrowUp") { event.preventDefault(); finderMove(-1); }
+      else if (event.key === "Enter") {
+        const rows = [...document.querySelectorAll("#finder-results .finder-row")];
+        const row = rows[finderState.active] || rows[0];
+        if (row) { event.preventDefault(); row.click(); }
+      }
+    });
+    document.getElementById("finder-sort")?.addEventListener("change", finderRender);
+    document.getElementById("finder-save")?.addEventListener("click", saveFinderSearch);
+    document.getElementById("finder-close")?.addEventListener("click", closeFinder);
   });
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowDown") { event.preventDefault(); finderMove(1); }
-    else if (event.key === "ArrowUp") { event.preventDefault(); finderMove(-1); }
-    else if (event.key === "Enter") {
-      const rows = [...document.querySelectorAll("#finder-results .finder-row")];
-      const row = rows[finderState.active] || rows[0];
-      if (row) { event.preventDefault(); row.click(); }
-    }
-  });
-  document.getElementById("finder-sort")?.addEventListener("change", finderRender);
-  document.getElementById("finder-save")?.addEventListener("click", saveFinderSearch);
-  document.getElementById("finder-close")?.addEventListener("click", closeFinder);
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) closeFinder();
   });
@@ -826,3 +844,23 @@ function renderSavedFinds() {
   }
 }
 renderSavedFinds();
+
+//: L592: the Notes sidebar's field. Enter hands its words to the finder, Escape clears it. The notes
+//: surface is built lazily, so the field is wired when it appears (or now, if it already has).
+//: A statement, not a named function: the shared scope is capped (test_global_scope_ratchet).
+onSurface("notes", () => {
+  renderSavedFinds(); // the sidebar list is built with the surface, after this file may have run (L-world-class-160)
+  const box = document.getElementById("sidebar-find");
+  if (!box || box.dataset.wired) return;
+  box.dataset.wired = "1";
+  box.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      openFinder(box.value.trim(), { kind: "" });
+      box.value = "";
+    } else if (event.key === "Escape" && box.value) {
+      event.stopPropagation();
+      box.value = "";
+    }
+  });
+});

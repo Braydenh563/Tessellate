@@ -116,7 +116,7 @@ def test_settings_names_the_button_for_what_it_does():
     lazy = _js_scope.unwrapped((ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8"))
     assert '"Replace it" : "Make a recovery key"' in _function(lazy, "recoveryAccountRow")
     controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
-    assert '$("account-recovery-make").addEventListener("click", () => makeRecoveryKey())' in controls
+    assert 'wire("account-recovery-make").addEventListener("click", () => makeRecoveryKey())' in controls
     assert "showRecoveryKey(result.recovery_key" in controls  # after a re-key
 
 

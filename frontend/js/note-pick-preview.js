@@ -15,7 +15,7 @@
 
 const NOTE_PICK_LINES = 3;
 const NOTE_PICK_LINE_CHARS = 120;
-const NOTE_PICK_IMAGE = /!\[[^\]\n]{0,200}\]\(([^)\s\n]{1,500})[^)\n]*\)/;
+const NOTE_PICK_IMAGE = /!\[[^\]\n]{0,200}\]\(([^)\s\n]{1,500})(?:\s[^)\n]{0,300})?\)/;
 
 function notePickText(line) {
   return notePreviewText(line.replace(new RegExp(NOTE_PICK_IMAGE.source, "g"), "")).replace(/\s+/g, " ").trim();

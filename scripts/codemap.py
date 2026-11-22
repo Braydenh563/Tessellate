@@ -127,11 +127,16 @@ def js_functions(lines: list[str]) -> list[tuple[str, int]]:
     return found
 
 
-def _frontend_ids(root: Path) -> list[tuple[str, int]]:
-    rel_lines = _lines(_read(root / "frontend" / "index.html"))
+def _frontend_ids(root: Path) -> list[tuple[str, str, int]]:
+    """Every id in the page and in the surfaces fetched on demand (`frontend/surfaces/*.html`, Settings' body).
+    The page is read as its bytes: tests see it with those surfaces put back inside (tests/conftest.py), and an id
+    would then be listed twice."""
     found = []
-    for number, line in enumerate(rel_lines, 1):
-        found.extend((match, number) for match in ID_ATTRIBUTE.findall(line))
+    pages = [root / "frontend" / "index.html", *sorted((root / "frontend" / "surfaces").glob("*.html"))]
+    for path in pages:
+        rel = _rel(root, path)
+        for number, line in enumerate(_lines(path.read_bytes().decode("utf-8", errors="replace")), 1):
+            found.extend((match, rel, number) for match in ID_ATTRIBUTE.findall(line))
     return sorted(found)
 
 
@@ -321,10 +326,10 @@ def build(root: Path, date: str) -> str:
     out += [
         f"## Frontend ids ({len(ids)})",
         "",
-        "Every `id=\"...\"` in `frontend/index.html`, sorted by id.",
+        "Every `id=\"...\"` in `frontend/index.html` and `frontend/surfaces/*.html`, sorted by id.",
         "",
     ]
-    out += _table(("Id", "File:line"), [(_code(name), f"frontend/index.html:{line}") for name, line in ids])
+    out += _table(("Id", "File:line"), [(_code(name), f"{rel}:{line}") for name, rel, line in ids])
     out.append("")
 
     out += [

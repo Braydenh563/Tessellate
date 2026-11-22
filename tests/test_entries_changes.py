@@ -5,7 +5,7 @@ update??").
 A save on the phone did not reach the computer's open list until a reload.
 The client now asks, every few seconds while visible and whenever the tab
 comes back, which notes changed since its last answer, and hands those ids to
-`refreshEntries` (notes-list.js `followNoteChanges`). These hold the server
+`refreshEntries` (notes-sync.js `followNoteChanges`). These hold the server
 half: the ids moved since the stamp, a stamp to ask from next, boards left
 out (the notes list does not hold them), and a cap with `more` so a bulk
 change tells the client to re-read the list rather than a long id list.
@@ -32,9 +32,9 @@ def test_first_call_is_a_stamp_with_no_ids(client):
 
 
 def test_an_edit_after_the_stamp_comes_back_and_an_old_one_does_not(client, monkeypatch):
-    from tessellate.api import routes_entries
+    from tessellate.entry import listing
 
-    monkeypatch.setattr(routes_entries, "CHANGES_OVERLAP_SECONDS", 0.01)
+    monkeypatch.setattr(listing, "CHANGES_OVERLAP_SECONDS", 0.01)
     old = _note(client, "old note")
     edited = _note(client, "will change")
     time.sleep(0.03)
@@ -96,9 +96,9 @@ def test_a_bad_stamp_is_refused_plainly(client):
 
 
 def test_more_than_the_cap_says_more(client, monkeypatch):
-    from tessellate.api import routes_entries
+    from tessellate.entry import listing
 
-    monkeypatch.setattr(routes_entries, "CHANGES_IDS_MAX", 2)
+    monkeypatch.setattr(listing, "CHANGES_IDS_MAX", 2)
     stamp = client.get("/entries/changes").json()["since"]
     time.sleep(0.02)
     for n in range(3):
@@ -111,18 +111,18 @@ def test_the_client_follows_changes_while_visible():
     """The client half, read from its source: polled while visible, at once
     when the tab comes back, and never over the note being edited (its save
     keeps the `base_hash` conflict prompt)."""
-    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-list.js").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-sync.js").read_text(encoding="utf-8")
     start = source.index("function followNoteChanges")
     body = source[start:start + 2500]
     assert "/entries/changes" in body
-    assert "editingId" in body
-    assert 'addEventListener("visibilitychange"' in source[start - 2000:start + 4000]
+    assert 'appState.get("note")' in body
+    assert 'addEventListener("visibilitychange"' in source[max(0, start - 2000):start + 4000]  # a negative start wrapped to the end
 
 
 def test_the_client_slows_down_after_four_empty_answers_and_stops_hidden():
     """Battery (INBOX 1351): the ask is 15 s, 30 s after four empty answers,
     restored by a change or by the tab coming back, and not made while hidden."""
-    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-list.js").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-sync.js").read_text(encoding="utf-8")
     body = source[source.index("async function followNoteChanges") :][:3000]
     assert "if (document.hidden) return;" in body
     assert "noteChanges.quiet >= 4 ? 2 : 1" in body and "noteChanges.quiet = body.ids.length ? 0" in body

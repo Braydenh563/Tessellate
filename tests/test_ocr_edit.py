@@ -8,6 +8,7 @@ corrected text is stored as the page's sections until the next read.
 from __future__ import annotations
 
 import base64
+import threading
 
 from tessellate.core import ocr
 
@@ -88,5 +89,36 @@ def test_clearing_the_text_leaves_nothing_stale(monkeypatch, client):
     _engine_ready(monkeypatch)
     client.post(f"/media/{media_id}/ocr", json={"text": "kept"})
     client.post(f"/media/{media_id}/ocr", json={"text": ""})
+    gone = client.get(f"/media/{media_id}/ocr-regions?auto=false").json()
+    assert gone["source"] == "none"
+
+
+def test_a_read_queued_before_a_clear_never_puts_the_text_back(monkeypatch, client):
+    """The upload's own background read, held until after the person clears
+    the text, stores nothing (CI py3.12 on 50462a6a: 'reading' == 'none')."""
+    _engine_ready(monkeypatch)
+    release, done = threading.Event(), threading.Event()
+    reads = []
+
+    def held_read(path):
+        reads.append(path)
+        release.wait(10)
+        return "machine words"
+
+    real_store = ocr.extract_and_store
+
+    def store_then_signal(*args):
+        try:
+            real_store(*args)
+        finally:
+            done.set()
+
+    monkeypatch.setattr(ocr, "extract_text", held_read)
+    monkeypatch.setattr(ocr, "extract_and_store", store_then_signal)
+    media_id = _upload(client)
+    client.post(f"/media/{media_id}/ocr", json={"text": ""})
+    release.set()
+    assert done.wait(10), "the background read never ran"
+    assert reads, "the upload queued no read"
     gone = client.get(f"/media/{media_id}/ocr-regions?auto=false").json()
     assert gone["source"] == "none"

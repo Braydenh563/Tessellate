@@ -37,6 +37,7 @@ tool names handed in by the caller rather than importing the registry, because
 from __future__ import annotations
 
 import json
+import logging
 import re
 import threading
 from pathlib import Path
@@ -1726,7 +1727,7 @@ BUILTIN_SKILLS: list[dict] = [
     # aimed at *building* a skill instead of *thinking through* an idea.
     {
         "name": "Build a skill",
-        "description": "Interviews you about a job you do often, then saves it as a real skill, with steps and an actual tool allowlist, not just a saved sentence.",
+        "description": "Interviews you about a job you do often, then saves it as a real skill with steps and a tool allowlist.",
         "when_to_use": "when something you keep asking the AI to do by hand should become a one-click skill instead",
         "prompt": "Help me turn {{task}} into a saved skill.",
         "steps": [
@@ -1770,6 +1771,43 @@ BUILTIN_SKILLS: list[dict] = [
         ],
         "inputs": [{"name": "task", "label": "What do you want to turn into a skill?"}],
         "tools": [*_READING_TOOLS, "ask_user", "list_skills", "save_skill"],
+    },
+    {
+        "name": "Tidy my chats",
+        "description": "Sorts and groups your saved chats and pins the ones worth keeping close.",
+        "when_to_use": "when the saved chats list has grown long, or I ask to sort, group or pin chats",
+        "prompt": "Look through my saved chats, group them, and pin the ones I keep coming back to.",
+        "steps": [
+            _step(
+                "List my saved chats, longest first, with search_chat_history "
+                "and sort set to turns.",
+                "tool_called",
+                "search_chat_history",
+            ),
+            _step(
+                "List them again grouped by month, with group_by set to month, "
+                "to see what each period holds.",
+                "tool_called",
+                "search_chat_history",
+            ),
+            _step(
+                "Pick the few chats that look worth keeping close, long ones "
+                "or ones that come up again. If none stand out, say so.",
+                "answer_only",
+            ),
+            _step(
+                "Pin each of them with pin_note and chat_id. Changes wait for "
+                "my confirmation.",
+                "tool_optional",
+                "pin_note",
+            ),
+            _step(
+                "Tell me which chats you pinned and why, and how the list is "
+                "grouped now.",
+                "answer_only",
+            ),
+        ],
+        "tools": ["search_chat_history", "pin_note"],
     },
 ]
 
@@ -1820,6 +1858,7 @@ def small_class(config) -> bool:
 
         return deps.get_model_manager().chat_model_is_small() is True
     except Exception:  # noqa: BLE001  # a label is not worth failing the list over
+        logging.getLogger(__name__).debug("small_class: a label is not worth failing the list over", exc_info=True)
         return False
 
 

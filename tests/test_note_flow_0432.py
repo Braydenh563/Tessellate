@@ -17,7 +17,7 @@ import re
 import time
 from pathlib import Path
 
-from tessellate.api import routes_entries
+from tessellate.entry import filing_background
 from tests._app_js import documents_text, with_pieces
 from tests import _js_scope
 
@@ -48,7 +48,7 @@ def _wait_settled(client, entry_id, timeout=10.0):
 
 
 def test_a_note_nothing_could_file_says_so(client, monkeypatch):
-    monkeypatch.setattr(routes_entries, "_file_entry_now", lambda *a, **k: ("Uncategorised", 0, "none"))
+    monkeypatch.setattr(filing_background, "_file_entry_now", lambda *a, **k: ("Uncategorised", 0, "none"))
     created = client.post("/entries", json={"content": "buy milk", "defer_filing": True}).json()
     status = _wait_settled(client, created["id"])
     assert status["filed_by"] == "none"
@@ -56,7 +56,7 @@ def test_a_note_nothing_could_file_says_so(client, monkeypatch):
 
 
 def test_a_note_the_model_filed_says_ai(client, monkeypatch):
-    monkeypatch.setattr(routes_entries, "_file_entry_now", lambda *a, **k: ("Groceries", 82, "llm"))
+    monkeypatch.setattr(filing_background, "_file_entry_now", lambda *a, **k: ("Groceries", 82, "llm"))
     created = client.post("/entries", json={"content": "buy milk", "defer_filing": True}).json()
     status = _wait_settled(client, created["id"])
     assert status["filed_by"] == "ai"
@@ -205,7 +205,7 @@ def test_the_rail_follows_the_note_being_read():
     owner: "what constitutes opening a note if I can see a whole note in the
     notes section") replaced that: a card chosen by hand is the subject, and
     otherwise the card in view as the list scrolls (notes-rail-spy.js)."""
-    notes = _read("notes-list.js")
+    notes = _read("notes-list.js") + _read("notes-wire.js")
     focus = notes[notes.index('list.addEventListener("focusin", (event) =>'):]
     focus = focus[: focus.index("\n  });\n")]
     assert "if (notesRailId == null) return;" not in focus
@@ -238,7 +238,7 @@ def test_archive_and_duplicate_behave():
 
 
 def test_recently_edited_sort_copy_link_and_list_keys():
-    notes = _read("notes-list.js")
+    notes = _read("notes-list.js") + _read("notes-wire.js")
     assert "edited: (a, b) => noteEditedTime(b) - noteEditedTime(a)" in _function(notes, "sortEntries")
     assert '<option value="edited">Recently edited</option>' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     keys = _function(notes, "initEntryListKeyboardNav")
@@ -259,7 +259,7 @@ def test_the_notes_chrome_says_less():
     # login (INBOX 653).
     for kind in ("embeddings", "embedding-model", "reindex", "job-caption"):
         assert f'"{kind}"' in status.split("const QUIET_TASK_KINDS", 1)[1].split("]);", 1)[0], kind
-    assert "if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);" in status
+    assert "if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);" in _read("status-tasks.js")  # moved (L-world-class-571)
     # The sidebar fold is remembered and its peek icon is a pin.
     sheets = _read("sheets-selects.js")
     assert "sidebarCollapsed:${aside.id}" in sheets and "ph-push-pin icon-peek" in sheets
@@ -311,7 +311,8 @@ def test_note_boxes_are_live_with_a_source_switch_not_a_preview():
 
 def test_tags_have_a_place_in_the_notes_sidebar():
     side = _function(_read("notes-list.js"), "renderSidebar")
-    assert 'setLabel(tagName, "ph:hash Tags")' in side and "openTagsSheet()" in side
+    # The Tags row is built by notes-list.js's `sheetRow` helper since the Groups row joined it (L-world-class-172).
+    assert 'sheetRow("ph:hash Tags"' in side and "openTagsSheet()" in side
     panel = _read("tag-manager.js")
     for name in ("openTagsSheet", "renameTagEverywhere", "removeTagsEverywhere", "mergeTagsInto"):
         assert f"function {name}(" in panel, name

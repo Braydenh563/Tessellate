@@ -7,11 +7,12 @@ saved just before the app closed came back "pending" with nothing behind it.
 that has already settled does nothing.
 """
 
+import threading
 import time
 
 import pytest
 
-from tessellate.api import routes_entries
+from tessellate.entry import filing_background
 from tessellate.core import jobs
 from tessellate.core.database import Entry
 
@@ -34,7 +35,7 @@ def test_a_deferred_note_settles(client):
 
 def test_a_note_orphaned_by_a_closed_app_is_filed_when_asked(client, session, monkeypatch):
     # The first job is dropped, as a closed app drops it.
-    monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: None)
+    monkeypatch.setattr(filing_background, "_queue_filing", lambda entry: None)
     created = client.post("/entries", json={"content": "call the dentist", "defer_filing": True}).json()
     monkeypatch.undo()
     entry = session.get(Entry, created["id"])
@@ -47,8 +48,8 @@ def test_a_settled_note_is_not_filed_again(client, session, monkeypatch):
     created = client.post("/entries", json={"content": "a settled note", "defer_filing": True}).json()
     assert _wait_settled(client, created["id"]) != "pending"
     calls = []
-    monkeypatch.setattr(routes_entries, "_file_entry_now", lambda *a, **k: calls.append(a))
-    routes_entries._file_entry_in_background(created["id"], "default")
+    monkeypatch.setattr(filing_background, "_file_entry_now", lambda *a, **k: calls.append(a))
+    filing_background._file_entry_in_background(created["id"], "default")
     assert calls == []
 
 
@@ -60,22 +61,28 @@ def test_filing_jobs_are_deduplicated_per_note(monkeypatch):
         id = 7
         workspace_id = "default"
 
-    routes_entries._queue_filing(_E())
+    filing_background._queue_filing(_E())
     assert keys == [("file-entry", 7)]
 
 
 def test_a_slow_model_does_not_hold_filing_past_the_deadline(monkeypatch):
     from tessellate.ai import janitor
 
+    # Held by an event, not timed (L-general-70): the deadline fired while the
+    # model was still held.
+    release = threading.Event()
+
     class _Slow:
         def chat(self, model, messages, mode=None):
-            time.sleep(5)
+            release.wait(30)
             return {"content": '{"category": "Late"}'}
 
-    started = time.time()
-    with pytest.raises(TimeoutError):
-        janitor._chat_within_deadline(_Slow(), "m", [], deadline=0.3)
-    assert time.time() - started < 2
+    try:
+        with pytest.raises(TimeoutError):
+            janitor._chat_within_deadline(_Slow(), "m", [], deadline=0.3)
+        assert not release.is_set()
+    finally:
+        release.set()
 
 
 def test_filing_asks_the_model_in_quick_mode():
@@ -99,7 +106,7 @@ def _category_of(client, entry_id):
 def test_the_models_late_answer_replaces_the_stand_in(client):
     created = client.post("/entries", json={"content": "late one", "category": "Stand in"}).json()
     client.put(f"/entries/{created['id']}", json={"content": "late one"})
-    late = routes_entries._LateFiling(created["id"], "default")
+    late = filing_background._LateFiling(created["id"], "default")
     # user_filed is set for a chosen category, so clear it: the stand-in is the AI's.
     from tessellate.core import deps
 
@@ -120,14 +127,14 @@ def test_a_note_moved_by_hand_keeps_its_place(client):
     with deps.get_db().session() as s:
         s.get(Entry, created["id"]).user_filed = False
         s.commit()
-    late = routes_entries._LateFiling(created["id"], "default")
+    late = filing_background._LateFiling(created["id"], "default")
     late.stand_in("Something else", 40, "semantic-match")
     late.arrived("Recipes", 90)
     assert _category_of(client, created["id"]) == "Mine"
 
 
 def test_an_answer_before_the_stand_in_is_used_instead(app_state):
-    late = routes_entries._LateFiling(1, "default")
+    late = filing_background._LateFiling(1, "default")
     late.arrived("Recipes", 90)
     assert late.stand_in("Stand in", 40, "semantic-match") == ("Recipes", 90, "llm")
 
@@ -170,7 +177,7 @@ def test_the_wait_is_a_clamped_preference(monkeypatch):
 
 
 def _pending_note(client, monkeypatch, content):
-    monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: None)
+    monkeypatch.setattr(filing_background, "_queue_filing", lambda entry: None)
     created = client.post("/entries", json={"content": content, "defer_filing": True}).json()
     monkeypatch.undo()
     return created
@@ -178,13 +185,13 @@ def _pending_note(client, monkeypatch, content):
 
 def test_stopping_leaves_a_note_where_it_is_and_no_late_answer_moves_it(client, session, monkeypatch):
     # Queue nothing, so the note stays pending until it is stopped.
-    monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: None)
+    monkeypatch.setattr(filing_background, "_queue_filing", lambda entry: None)
     created = client.post("/entries", json={"content": "stop me", "defer_filing": True}).json()
     stopped = client.post(f"/entries/{created['id']}/filing/stop", json={"action": "keep"}).json()
     assert stopped["stopped"] is True
     status = client.get(f"/entries/{created['id']}/filing").json()
     assert status["filing_state"] == "stopped"
-    late = routes_entries._LateFiling(created["id"], "default")
+    late = filing_background._LateFiling(created["id"], "default")
     late.stand_in(status["category"], 0, "none")
     late.arrived("Somewhere else", 90)
     assert _category_of(client, created["id"]) == status["category"]
@@ -196,7 +203,7 @@ def test_stop_rejects_an_unknown_action(client):
 
 
 def test_the_background_tasks_stop_files_every_pending_note(client, monkeypatch):
-    monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: None)
+    monkeypatch.setattr(filing_background, "_queue_filing", lambda entry: None)
     ids = [
         client.post("/entries", json={"content": f"note {i}", "defer_filing": True}).json()["id"]
         for i in range(2)
@@ -219,7 +226,7 @@ def test_a_filing_says_who_decided_in_the_notes_history(client, monkeypatch):
 
 
 def test_a_stopped_note_stays_open_to_re_evaluation(client, monkeypatch):
-    monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: None)
+    monkeypatch.setattr(filing_background, "_queue_filing", lambda entry: None)
     created = client.post("/entries", json={"content": "not now", "defer_filing": True}).json()
     client.post(f"/entries/{created['id']}/filing/stop", json={"action": "keep"})
     from tessellate.core import deps
@@ -292,11 +299,12 @@ def test_a_model_that_stalled_is_not_waited_for_again_note_after_note():
     hung = _Hung()
     with pytest.raises(TimeoutError):
         janitor._chat_within_deadline(hung, "m", [], deadline=0.1)
-    started = time.time()
+    # ModelStalled is raised before any wait (a waited call raises TimeoutError),
+    # and the model was asked once: the five cost no deadline (L-general-70).
     for _ in range(5):
         with pytest.raises(janitor.ModelStalled):
             janitor._chat_within_deadline(hung, "m", [], deadline=0.1)
-    assert time.time() - started < 0.5 and len(calls) == 1
+    assert len(calls) == 1
     #: A caller that chose to wait for the model (Tidy, the warm-up) still does.
     assert issubclass(janitor.ModelStalled, TimeoutError)
 
@@ -390,16 +398,42 @@ def test_a_note_filed_inline_waits_for_the_model_no_longer_than_the_wait(client,
     its database connection for the model's whole answer, three minutes by
     default; it now has the same bounded wait as the background pass."""
     seen = []
-    real = routes_entries._file_entry_now
+    real = filing_background._file_entry_now
 
-    def spy(session, content, on_late_llm=None, model_deadline=None):
+    def spy(session, content, on_late_llm=None, model_deadline=None, **kwargs):
         seen.append(model_deadline)
-        return real(session, content, on_late_llm=on_late_llm, model_deadline=model_deadline)
+        return real(session, content, on_late_llm=on_late_llm, model_deadline=model_deadline, **kwargs)
 
-    monkeypatch.setattr(routes_entries, "_file_entry_now", spy)
+    monkeypatch.setattr(filing_background, "_file_entry_now", spy)
     made = client.post("/entries", json={"content": "an inline note, no defer_filing"})
     assert made.status_code == 201
     from tessellate.ai import janitor
 
     assert seen == [janitor.filing_deadline()]
     assert janitor.filing_deadline() < janitor.BLOCKING_MODEL_DEADLINE_SECONDS
+
+
+def test_an_inline_create_holds_no_database_connection_while_the_model_thinks(client, monkeypatch):
+    """L690: a bare POST /entries (MCP, a script, an importer) kept its read
+    transaction, and so its pooled connection, open through the model's wait."""
+    from tessellate.ai import janitor
+
+    during = []
+
+    def spy(ollama, model, messages, **kwargs):
+        during.append(spy.session.in_transaction())
+        return {"content": '{"category": "Garden", "confidence": 90}'}
+
+    real_ask = janitor._ask_llm
+
+    def ask(session, *args, **kwargs):
+        spy.session = session
+        return real_ask(session, *args, **kwargs)
+
+    monkeypatch.setattr(janitor, "_chat_within_deadline", spy)
+    monkeypatch.setattr(janitor, "_ask_llm", ask)
+    monkeypatch.setattr(janitor, "_semantic_match", lambda *a, **k: None, raising=False)
+    monkeypatch.setattr(filing_background.deps.get_ollama(), "is_running", lambda: True, raising=False)
+    made = client.post("/entries", json={"content": "an inline note about the garden beds"})
+    assert made.status_code == 201
+    assert during == [False]

@@ -58,9 +58,9 @@ def test_r3_4_the_ordinal_reader_is_linear_on_long_runs():
     from tessellate.ai import composer_small
 
     for run in ("first note " * 4500, "the first note about " + "a " * 25_000, " " * 50_000, "last note about the " * 2500):
-        t0 = time.perf_counter()
+        t0 = time.process_time()
         composer_small.ordinal_about(run, [])
-        assert time.perf_counter() - t0 < 2.0, run[:30]
+        assert time.process_time() - t0 < 2.0, run[:30]
 
 
 

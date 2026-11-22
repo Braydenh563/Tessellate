@@ -42,7 +42,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from tessellate.core import clock
-from tessellate.core import paths
+from tessellate.core import paths, sealed_files
 
 FORMAT = "memorymap-folder"
 VERSION = 1
@@ -112,10 +112,19 @@ def _safe_name(name: str) -> str:
     return cleaned[:120] or "file"
 
 
-def _sha1_file(path: Path) -> str | None:
+def _sha256_file(path: Path) -> str | None:
+    """The file's identity in the manifest. SHA-256 since 2026-11-22: SHA-1 over a sealed file's
+    plain bytes sent CodeQL's weak-hash query on a ten-minute path walk; archives
+    made before carry `sha1`, which restore skips like this."""
     if not path.is_file():
         return None
-    digest = hashlib.sha1()  # noqa: S324  # an identity check, not security
+    digest = hashlib.sha256()
+    if sealed_files.is_sealed(path):
+        try:
+            digest.update(sealed_files.read(path))
+        except sealed_files.SealedError:
+            return None
+        return digest.hexdigest()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
@@ -154,7 +163,7 @@ def _attachment_names(attachments: list) -> list[str]:
 def _attachment_record(attachment, name: str, uploads_dir: Path) -> dict:  # noqa: ANN001
     record = _row(attachment, _ROW_LEFT_OUT | {"entry_id", "stored_name"})
     record["file"] = name
-    record["sha1"] = _sha1_file(uploads_dir / attachment.stored_name)
+    record["sha256"] = _sha256_file(uploads_dir / attachment.stored_name)
     return record
 
 
@@ -176,6 +185,9 @@ class _Related:
     reminders: dict = field(default_factory=dict)
     doc_reminders: dict = field(default_factory=dict)
     doc_links: dict = field(default_factory=dict)
+    #: Where a person also put each note, and its groups (L-world-class-172, 173): note id to names.
+    also_in: dict = field(default_factory=dict)
+    groups: dict = field(default_factory=dict)
 
 
 def _grouped(rows: list, key: str) -> dict:
@@ -190,8 +202,14 @@ def _related(session) -> _Related:  # noqa: ANN001
 
     from tessellate.core.database import Attachment, Category, DocumentLink, EntryLink, Reminder
 
+    from tessellate.core.database import Entry
+    from tessellate.repo import memberships
+
     reminders = list(session.scalars(select(Reminder).order_by(Reminder.id)))
+    every = list(session.execute(select(Entry.id, Entry.category_id)))
     return _Related(
+        also_in=memberships.also_in_bulk(session, every),
+        groups=memberships.groups_bulk(session, [e.id for e in every]),
         category={c.id: c.name for c in session.scalars(select(Category))},
         attachments=_grouped(list(session.scalars(select(Attachment).order_by(Attachment.id))), "entry_id"),
         links=_grouped(list(session.scalars(select(EntryLink).order_by(EntryLink.id))), "source_entry_id"),
@@ -210,6 +228,7 @@ def note_record(entry, related: _Related, uploads_dir: Path) -> dict:  # noqa: A
     attachments = [] if manager.note_is_sealed(entry.is_private) else related.attachments.get(entry.id, [])
     record = {"id": entry.id, "content": text, "sealed": sealed,
               "category": related.category.get(entry.category_id, manager.UNCATEGORISED),
+              "also_in": related.also_in.get(entry.id, []), "groups": related.groups.get(entry.id, []),
               "tags": manager.entry_tags(entry)}
     record.update(_row(entry, ENTRY_LEFT_OUT))
     record["attachments"] = [
@@ -361,9 +380,17 @@ def _write_note(archive: zipfile.ZipFile, record: dict, uploads_dir: Path, store
     for attachment in record["attachments"]:
         path = uploads_dir / stored[(record["id"], attachment["file"])]
         member = f"{base}/{attachment['file']}"
-        if path.is_file():
+        if path.is_file() and not sealed_files.is_sealed(path):
             archive.write(path, member)
             files.append(member)
+        elif path.is_file():
+            # An open private space the person chose to export: its notes
+            # go out readable, so its files do too (L-world-class-52).
+            try:
+                archive.writestr(member, sealed_files.read(path))
+                files.append(member)
+            except sealed_files.SealedError:
+                missing.append(member)
         else:
             missing.append(member)
     return {"id": record["id"], "md": f"{base}.md", "sidecar": f"{base}.json", "attachments": files}, missing
@@ -650,7 +677,7 @@ _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
-    from tessellate.entry import manager_private
+    from tessellate.entry import frontmatter_keys, manager_private
 
     entry = manager.create_entry(session, record["content"], category_name=record.get("category") or manager.UNCATEGORISED,
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
@@ -664,13 +691,15 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
         manager_private.set_private(session, entry, True)
     if entry.created_at is not None:
         manager.record_dates(session, entry)
+    frontmatter_keys.keep_exported_state(session, entry, {k: record.get(k) for k in ("also_in", "groups")})
     return entry
 
 
 def _fresh_bin_period(entry) -> None:  # noqa: ANN001
     """A binned note that came in already past the bin's days would be purged
     at the next start, so an import would lose what it just made: it gets a
-    full period from now instead (a note still inside its days keeps its date)."""
+    full period from now instead. `_restore` already restarts every stamp, so this
+    is the guard for a record whose `deleted_at` was missing or unreadable."""
     if not entry.is_deleted:
         return
     from tessellate.core import deps
@@ -698,7 +727,7 @@ def _write_attachments(session, entry, note, uploads_dir: Path) -> None:  # noqa
         stored = f"{uuid.uuid4().hex}{posixpath.splitext(record['file'])[1][:12].lower()}"
         (uploads_dir / stored).write_bytes(data)
         attachment = Attachment(entry_id=entry.id, filename=record.get("filename") or record["file"], stored_name=stored, size=len(data))
-        _restore(attachment, record, _ROW_LEFT_OUT | {"entry_id", "stored_name", "size", "file", "sha1"})
+        _restore(attachment, record, _ROW_LEFT_OUT | {"entry_id", "stored_name", "size", "file", "sha1", "sha256"})
         session.add(attachment)
 
 

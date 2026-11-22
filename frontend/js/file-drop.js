@@ -84,7 +84,7 @@ fileDrop.toNotes = async function (files) {
     else toast(body.found ? "Those notes were already here." : "No notes in what you dropped.");
     refreshEntries(body.ids || []).catch(() => {});
   } catch (error) {
-    toast(error.message || "Couldn't add those notes.", true);
+    toast(error.message || voiceLine("failed", { what: "add those notes" }), true);
   }
 };
 

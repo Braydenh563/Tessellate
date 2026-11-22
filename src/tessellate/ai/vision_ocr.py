@@ -238,6 +238,7 @@ def pdf_reader_or_none():
         if not ollama.is_running():
             return None
     except Exception:  # noqa: BLE001  # an unreachable backend is not an error
+        logger.debug("pdf_reader_or_none: an unreachable backend is not an error", exc_info=True)
         return None
     model = deps.get_model_manager().resolve_ocr_model(ollama)
     if not model:
@@ -319,6 +320,7 @@ def vision_ocr_and_store(upload_id: int, image_path: Path, force: bool = False) 
     started = time.monotonic()
     text = vision_ocr_text(image_path, model, deps.get_ollama())
     elapsed_ms = (time.monotonic() - started) * 1000
+    jobs.check_stop()  # Stop pressed during the model's read: nothing is stored
     with deps.get_db().session() as session:
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
@@ -400,6 +402,7 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
     try:
         text = (reader(pdf_path) or "").strip()
     except Exception:  # noqa: BLE001  # same reasoning as vision_ocr_text's own
+        logger.debug("pdf_vision_ocr_and_store: same reasoning as vision_ocr_text's own", exc_info=True)
         taskhistory.record(
             "vision_ocr",
             f"Reading text from {original}",
@@ -408,6 +411,7 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
         )
         return None
     elapsed_ms = (time.monotonic() - started) * 1000
+    jobs.check_stop()  # Stop pressed while the pages were read: nothing is stored
 
     model = deps.get_model_manager().resolve_ocr_model(deps.get_ollama()) or ""
     stored, standing = _store_pdf_read(upload_id, before, text, model)

@@ -19,6 +19,7 @@
 // button. `tests/test_ui_recipes.py` holds every contextmenu listener in
 // app.js and documents.js to a wireLongPress twin.
 const LONG_PRESS_MS = 500;
+//: A finger jitters: only a move past this many pixels cancels a hold.
 const LONG_PRESS_CANCELS = ["pointerup", "pointercancel", "pointermove"];
 
 function wireLongPress(target, handler, { selector = null } = {}) {
@@ -32,7 +33,8 @@ function wireLongPress(target, handler, { selector = null } = {}) {
         : target;
       if (!hit) return;
       const { clientX, clientY } = event;
-      const cancel = () => {
+      const cancel = (move) => {
+        if (move?.type === "pointermove" && Math.hypot(move.clientX - clientX, move.clientY - clientY) <= 8) return;
         clearTimeout(timer);
         for (const name of LONG_PRESS_CANCELS) {
           document.removeEventListener(name, cancel, true);
@@ -70,9 +72,12 @@ function wireLongPress(target, handler, { selector = null } = {}) {
           lift.stopPropagation();
           if (lift.type === "click") done();
         };
-        for (const type of swallowed) document.addEventListener(type, swallow, true);
-        setTimeout(done, 1200);
-        handler(event, { x: clientX, y: clientY, el: hit });
+        //: Before the swallow (it takes `opener.click()`), after a tick (a lifted card, obj-drag.js, swallows the next click first).
+        setTimeout(() => {
+          handler(event, { x: clientX, y: clientY, el: hit });
+          for (const type of swallowed) document.addEventListener(type, swallow, true);
+          setTimeout(done, 1200);
+        }, 0);
       }, LONG_PRESS_MS);
       for (const name of LONG_PRESS_CANCELS) {
         document.addEventListener(name, cancel, { capture: true, passive: true });
@@ -122,6 +127,13 @@ const ROW_MENU_HOSTS = [
   "#web-results .web-result",
   //: A document's snippet rows (OPEN 244).
   ".doc-snippet-item",
+  //: A row with its own ⋯ joins here (tests/test_row_menu_hosts_l103.py).
+  "#reminder-groups li",
+  ".skill-card",
+  ".manage-cat-row",
+  ".recording-row",
+  "#category-list li[data-category]",
+  ".model-card",
 ].join(", ");
 
 function rowMenuAtEvent(event) {
@@ -1462,7 +1474,9 @@ document.addEventListener(
   (event) => {
     const menu = event.target;
     if (!(menu instanceof HTMLElement)) return;
-    const isDock = menu.matches("details.dock-menu");
+    //: The document dock's kebab carries `.dock-menu` for the grammar lint
+    //: (its switches count as in a menu) but keeps its own placement below.
+    const isDock = menu.matches("details.dock-menu:not(#doc-dock-menu)");
     //: The dock kebab's own shape: a `.doc-dock-menu` that is neither a dock
     //: menu nor one of the editor toolbars `clampToolbarMenu` owns.
     const isDockKebab = !isDock && menu.matches("details.doc-dock-menu:not(.doc-toolbar-menu)");
@@ -1744,7 +1758,7 @@ const lazyTabsReady = new Set();
 // check below already uses for a lazy tab that was never visited.
 function hasUnsavedWork() {
   if (typeof docDirty !== "undefined" && docDirty) return true;
-  if (noteFormDirty && editingId !== null) return true;
+  if (noteFormDirty && appState.get("note") !== null) return true;
   //: Not the capture box: its text survives a tab switch (the box stays in
   //: the page) and a reload (the draft in localStorage), so leaving loses
   //: nothing, and asking "Leave without saving?" on every tab switch while a

@@ -165,11 +165,71 @@ def test_a_cancelled_queued_job_is_never_run(db, kinds):
     assert not stopped and "already finished" in detail
 
 
-def test_a_running_job_is_not_interrupted(db, kinds):
+#: A handler with a safe boundary between its items (L-world-class-66).
+STEPS: list[int] = []
+AT_THIRD = threading.Event()
+GO = threading.Event()
+
+
+def looping_call(n):  # noqa: ANN001, ANN201
+    for step in range(n):
+        jobs.check_stop()
+        STEPS.append(step)
+        if step == 2:
+            AT_THIRD.set()
+            GO.wait(5)
+
+
+def test_a_running_job_is_asked_to_stop_and_ends_cancelled_at_its_next_step(db, kinds, monkeypatch):
+    """Stop on a running job (B2): the handler's next `check_stop` ends it, the
+    row says cancelled not failed, and the steps after never run. Replaces the
+    test that a running job is not interrupted: its stated intent moved."""
+    monkeypatch.setitem(jobstore.HANDLERS, "test-loop", f"{__name__}:looping_call")
+    STEPS.clear()
+    AT_THIRD.clear()
+    GO.clear()
+    pool = jobs.Pool(widths={"cpu": 1})
+    monkeypatch.setattr(jobs, "_default", pool)
+    try:
+        with _patched_db(db):
+            pool.enqueue("test-loop", looping_call, 6, name="six")
+            assert AT_THIRD.wait(5)
+            job_id = _rows(db)[0].id
+            stopped, detail = jobstore.cancel(job_id, db=db)
+            GO.set()
+            assert _wait(lambda: _rows(db)[0].state == "cancelled")
+    finally:
+        GO.set()
+        pool.shutdown(deadline=2)
+    assert stopped and "next safe step" in detail
+    assert STEPS == [0, 1, 2]
+    row = _rows(db)[0]
+    assert row.error == "" and row.lease_until is None and "Stopped" in row.result
+
+
+def test_a_running_job_with_no_stop_asked_finishes_done(db, kinds, monkeypatch):
+    monkeypatch.setitem(jobstore.HANDLERS, "test-loop", f"{__name__}:looping_call")
+    STEPS.clear()
+    AT_THIRD.clear()
+    GO.set()
+    pool = jobs.Pool(widths={"cpu": 1})
+    try:
+        with _patched_db(db):
+            pool.enqueue("test-loop", looping_call, 4, name="four")
+            assert _wait(lambda: [r.state for r in _rows(db)] == ["done"])
+    finally:
+        pool.shutdown(deadline=2)
+    assert STEPS == [0, 1, 2, 3]
+
+
+def test_stop_is_false_outside_a_pool_job_and_for_a_job_that_has_ended(db, kinds, monkeypatch):
+    assert jobs.stop_requested() is False
+    jobs.check_stop()  # a script or a request: never raises
     job_id = jobstore.record("test-remember", (1, Path("/z")), {}, db=db)
     jobstore.lease(job_id, db=db)
+    monkeypatch.setattr(jobs, "_default", None)
     stopped, detail = jobstore.cancel(job_id, db=db)
-    assert not stopped and "will finish" in detail
+    assert not stopped and "already finished" in detail
     jobstore.finish(job_id, db=db)
 
 
@@ -411,3 +471,54 @@ class _patched_db:
         from tessellate.core import jobruns
 
         jobruns.set_database_source(self._before)
+
+
+def test_the_panels_stop_reaches_a_running_job_and_offers_the_button(client, kinds, monkeypatch):
+    monkeypatch.setitem(jobstore.HANDLERS, "test-loop", f"{__name__}:looping_call")
+    STEPS.clear()
+    AT_THIRD.clear()
+    GO.clear()
+    db = deps.get_db()
+    pool = jobs.Pool(widths={"cpu": 1})
+    monkeypatch.setattr(jobs, "_default", pool)
+    try:
+        pool.enqueue("test-loop", looping_call, 6, name="six")
+        assert AT_THIRD.wait(5)
+        from tessellate.api import routes_tasks
+
+        tasks = [dict(r) for r in pool.pending() if r["name"] == "six"]
+        routes_tasks._mark_cancellable(tasks)
+        assert tasks[0]["cancellable"] is True and not tasks[0]["queued"]
+        answer = client.post("/tasks/cancel", json={"kind": "job-test-loop", "name": "six"}).json()
+        GO.set()
+        assert _wait(lambda: _rows(db)[0].state == "cancelled")
+    finally:
+        GO.set()
+        pool.shutdown(deadline=2)
+    assert answer["stopped"] is True and "next safe step" in answer["detail"]
+    assert STEPS == [0, 1, 2]
+
+
+def test_a_filing_row_saved_before_the_move_resumes_on_the_new_handler(db):
+    """L-world-class-633: `file-entry` moved from the route module to
+    `entry/filing_background`. A row written by the old build (kind plus
+    payload, no handler name) is resumed on the new function, and a handler
+    named by the old dotted string still maps to it."""
+    from tessellate.entry import filing_background
+
+    row_id = jobstore.record("file-entry", (7, "default"), {}, db=db)
+    submitted = []
+    jobstore.resume(db=db, enqueue=lambda *call: submitted.append(call))
+    jobstore.stop()
+    assert [(c[1], c[2], c[6]) for c in submitted] == [(filing_background._file_entry_in_background, (7, "default"), row_id)]
+
+    old = "tessellate.api.routes_entries:_file_entry_in_background"
+    assert jobstore.RENAMED_TARGETS[old] == jobstore.HANDLERS["file-entry"]
+    saved = dict(jobstore.HANDLERS)
+    try:
+        jobstore.register("file-entry", old)
+        assert jobstore.resolve("file-entry") is filing_background._file_entry_in_background
+        assert jobstore.durable_kind("file-entry", filing_background._file_entry_in_background)
+    finally:
+        jobstore.HANDLERS.clear()
+        jobstore.HANDLERS.update(saved)

@@ -23,6 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Office/Business :: News/Diary",
 ]
 
@@ -50,6 +51,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 "tessellate.ai" = ["data/taxonomy/*.json", "data/skill_rates.json", "data/study_terms.json"]
 "tessellate.api" = ["run_sandbox_assets/*"]
+"tessellate.data" = ["*.json"]
 
 [tool.ruff]
 target-version = "py311"

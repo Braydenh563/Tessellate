@@ -2748,7 +2748,7 @@ function openGraphLinkPeek(edge, event, nodes) {
       try {
         await apiJson(`/entries/${sourceId}/links/${edge.id}`, { method: "PATCH", body: JSON.stringify({ two_way: next }) });
       } catch (error) {
-        toast(error.message || "Couldn't change the link's direction.", true);
+        toast(error.message || voiceLine("failed", { what: "change the link's direction" }), true);
         return;
       }
       pushRequestUndo(
@@ -2859,7 +2859,14 @@ function openGraphLinkPanel(edge, nodes) {
   card.appendChild(textarea);
 
   const returnFocus = document.activeElement;
+  //: Escape closes it as every dialog here does (tests/test_escape_closes.py).
+  const onKey = (event) => {
+    if (event.key !== "Escape") return;
+    event.stopPropagation();
+    close();
+  };
   const close = () => {
+    document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     returnFocus?.focus?.();
   };
@@ -2915,6 +2922,7 @@ function openGraphLinkPanel(edge, nodes) {
   card.appendChild(row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, () => close());
+  document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
   textarea.focus();
 }
@@ -2947,10 +2955,7 @@ function openGraphLinkPanel(edge, nodes) {
 //: same thing about the other direction), so a panel that reads only
 //: `entry.attachments` is blind to the commonest kind of image note there is.
 //:
-//: Only this app's own stored files, the same rule `noteFirstImage` keeps: an
-//: external `https://` image is blocked by the CSP (`img-src 'self' data:
-//: blob:`), so drawing one would guarantee a broken frame.
-const GRAPH_POPUP_MEDIA_REF = /(!?)\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\s]{1,500})\)/g;
+//: Only this app's own stored files: `ownFileLinks` (att-chip.js) is the one rule.
 
 function graphPopupMediaRefs(entry) {
   const refs = [];
@@ -2958,11 +2963,10 @@ function graphPopupMediaRefs(entry) {
   //: An attachment's own url is `/files/<id>`, and a note can both carry the
   //: file and link to it in its text. Same url, one card.
   for (const attachment of entry.attachments || []) seen.add(`/files/${attachment.id}`);
-  for (const match of (entry.content || "").matchAll(GRAPH_POPUP_MEDIA_REF)) {
-    const url = match[3];
+  for (const [, bang, alt, url] of ownFileLinks(entry.content)) {
     if (seen.has(url)) continue;
     seen.add(url);
-    refs.push({ image: match[1] === "!", name: match[2] || url.split("/").pop(), url });
+    refs.push({ image: !!bang, name: alt || url.split("/").pop(), url });
   }
   return refs;
 }
@@ -2974,11 +2978,6 @@ function graphPopupMediaRefs(entry) {
 //: thumbnail" without opening it. `formatFileSize` returns "" for an unknown
 //: or zero size, which is why nothing is appended in that case rather than a
 //: claim the panel cannot make.
-//: The attachment card states it itself now (INBOX 440 (2)), given the size.
-function graphPopupFileCard(name, url, size) {
-  return fileCard(name, url, size);
-}
-
 function renderGraphPopupMedia(entry) {
   const box = $("graph-popup-media");
   box.replaceChildren();
@@ -2991,7 +2990,7 @@ function renderGraphPopupMedia(entry) {
   if (!all.length && !refFiles.length) return;
   for (const attachment of files) {
     box.appendChild(
-      graphPopupFileCard(
+      fileCard(
         attachment.filename || attachment.name || "",
         attachment.url || `/files/${attachment.id}`,
         attachment.size
@@ -3319,9 +3318,9 @@ function graphPopupDragEnd(ev) {
 //: cannot.
 //: A note (or a document's node) found and framed on the map: the half of
 //: `showNoteInGraph` (note-cards.js) that runs once the bundle is here.
-async function graphShowNote(id, { document: isDocument = false } = {}) {
-  if (isDocument) {
-    const box = $("graph-documents");
+async function graphShowNote(id, { document: isDocument = false, maps = false } = {}) {
+  if (isDocument || maps) {
+    const box = isDocument ? $("graph-documents") : $("graph-maps");
     if (box && !box.checked) {
       box.checked = true;
       box.dispatchEvent(new Event("change", { bubbles: true }));
@@ -4021,7 +4020,7 @@ async function exportGraphPng() {
     await saveFile("graph.png", blob);
     toast("Graph exported as PNG.");
   } catch (error) {
-    toast(error.message || "Couldn't export the graph.", true);
+    toast(error.message || voiceLine("failed", { what: "export the graph" }), true);
   }
 }
 
@@ -5151,7 +5150,7 @@ function graphZoomRoving(strip) {
   const buttons = [...strip.querySelectorAll("button")];
   const rove = (to) => buttons.forEach((button) => { button.tabIndex = button === to ? 0 : -1; });
   strip.setAttribute("role", "toolbar");
-  strip.setAttribute("aria-orientation", "vertical");
+  strip.setAttribute("aria-orientation", "horizontal");
   rove(buttons[0]);
   strip.addEventListener("focusin", (event) => {
     if (buttons.includes(event.target)) rove(event.target);
@@ -5165,6 +5164,19 @@ function graphZoomRoving(strip) {
   });
 }
 graphZoomRoving($("graph-zoom"));
+//: **The same keys as the board** (L-world-class-351, `WB_ZOOM_KEYS`): Ctrl or
+//: Cmd with + or = zooms in, with - out, with 0 fits, while the map is the tab
+//: in view and nothing is being typed; the bare + - 0 on the focused map stay.
+//: Capture phase, so the app zoom does not take the same key as well.
+window.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey || document.body.dataset.tab !== "graph") return;
+  const run = { Equal: () => graphZoomBy(1.3), NumpadAdd: () => graphZoomBy(1.3), Minus: () => graphZoomBy(1 / 1.3), NumpadSubtract: () => graphZoomBy(1 / 1.3), Digit0: () => $("graph-zoom-fit").click(), Numpad0: () => $("graph-zoom-fit").click() }[event.code];
+  const typing = event.target?.closest?.("input, textarea, select, [contenteditable=true], dialog[open]");
+  if (!run || typing || document.querySelector("dialog[open]")) return;
+  event.preventDefault();
+  event.stopPropagation();
+  run();
+}, true);
 $("graph-zoom-in").addEventListener("click", () => graphZoomBy(1.3));
 $("graph-zoom-out").addEventListener("click", () => graphZoomBy(1 / 1.3));
 $("graph-zoom-fit").addEventListener("click", () => {
@@ -5196,11 +5208,11 @@ function toggleGraphFullscreen() {
     // now says which of its two jobs it will do next.
     const fsBtn = $("graph-fullscreen");
     if (fsBtn) {
-      fsBtn.title = isFull ? "Exit full screen" : "Full screen";
-      fsBtn.setAttribute("aria-label", fsBtn.title);
+      fsBtn.title = isFull ? "Leave full screen (Esc)" : "Full screen (Esc to leave)";
+      fsBtn.setAttribute("aria-label", isFull ? "Leave full screen" : "Full screen");
       fsBtn.setAttribute("aria-pressed", String(isFull));
       const icon = fsBtn.querySelector("i");
-      if (icon) icon.className = isFull ? "ph ph-arrows-in" : "ph ph-frame-corners";
+      if (icon) icon.className = isFull ? "ph ph-arrows-in" : "ph ph-arrows-out";
     }
     window.dispatchEvent(new Event('resize'));
     if (graphNodesRef && graphNodesRef.length) {
@@ -5506,7 +5518,7 @@ for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElemen
       () => graphUnpinAllNow()
     );
   } catch (error) {
-    toast(error.message || "Couldn't unpin the graph.", true);
+    toast(error.message || voiceLine("failed", { what: "unpin the graph" }), true);
   }
 });
 

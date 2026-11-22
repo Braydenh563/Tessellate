@@ -214,7 +214,7 @@ const SNIP = `Sum a range ${Date.now() % 100000}`;
     await page.route("**/code-assist", (route) => route.fulfill({ contentType: "application/json", body: JSON.stringify({ kind: "change", text: "Add now adds.", code: "def add(a, b):\n    return a + b\n", answered_by: "test-model" }) }));
     await page.evaluate(() => { const v = docCmView; v.dispatch({ selection: { anchor: 0, head: v.state.doc.line(2).to } }); });
     if (phone) { await page.evaluate(() => document.getElementById("doc-code-assist-open").click()); await page.waitForTimeout(700); }
-    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true }; syncModelGatedControls(); });
+    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: true, ai_off: false }; syncModelGatedControls(); });
     await page.evaluate(() => document.querySelector('#doc-code-assist [data-assist="refactor"]').click());
     await page.waitForTimeout(1200);
     const diff = await page.evaluate(() => {
@@ -235,7 +235,7 @@ const SNIP = `Sum a range ${Date.now() % 100000}`;
     await page.waitForTimeout(200);
     ok("one Ctrl+Z takes the applied change out", (await page.evaluate(() => docText())) === before);
     await page.unroute("**/code-assist");
-    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: false }; syncModelGatedControls(); });
+    await page.evaluate(() => { modelStatus = { ...(modelStatus || {}), ollama_running: false, ai_off: true }; syncModelGatedControls(); });
     if (!phone) await page.click("#doc-code-side-close");
   }
 

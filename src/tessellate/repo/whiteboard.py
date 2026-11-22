@@ -1,4 +1,5 @@
-"""Whiteboard: the board list's thumbnail fingerprints, read in bulk.
+"""Whiteboard: the board list's thumbnail fingerprints, read in bulk, and the
+board history's reads of its items and their event log.
 
 The rules every repository keeps are in `repo/__init__.py`: reads only, the
 route owns the transaction.
@@ -6,10 +7,10 @@ route owns the transaction.
 
 from __future__ import annotations
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
+from tessellate.core.database import AuditLog, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 
 
 def preview_stamps(db: Session, entries: list) -> dict[int | None, list]:
@@ -83,6 +84,55 @@ def text_objects(db: Session, board_id: int, ids: list[int]) -> list[WhiteboardO
     """The text objects (stickies) among `ids` that sit on this board."""
     where = (WhiteboardObject.board_id == board_id, WhiteboardObject.id.in_(set(ids)), WhiteboardObject.kind == "text")
     return list(db.scalars(select(WhiteboardObject).where(*where)).all())
+
+
+def busiest_board_id(db: Session) -> int | None:
+    """The board with the most objects (the performance budget's heavy board)."""
+    return db.execute(
+        select(WhiteboardObject.board_id).where(WhiteboardObject.board_id.is_not(None))
+        .group_by(WhiteboardObject.board_id).order_by(func.count().desc()).limit(1)
+    ).scalar()
+
+
+def rows_on(db: Session, model, board_id: int | None) -> list:  # noqa: ANN001
+    """Every row of one board-item table (card, drawing or object) on this
+    board, or on the default board when `board_id` is None."""
+    where = model.board_id.is_(None) if board_id is None else model.board_id == board_id
+    return list(db.scalars(select(model).where(where)))
+
+
+def _names_board(column: str, board_id: int | None):  # noqa: ANN202
+    """An event whose payload's `column` (after or before) names this board."""
+    path = f"$.{column}.board_id"
+    if board_id is None:
+        return func.json_type(AuditLog.payload, path) == "null"
+    return func.json_extract(AuditLog.payload, path) == board_id
+
+
+def items_logged_on(db: Session, entity_types: list[str], board_id: int | None) -> list[tuple[str, int | None]]:
+    """(entity type, id) of every event whose before or after names this board."""
+    return list(
+        db.execute(
+            select(AuditLog.entity_type, AuditLog.entity_id).where(
+                AuditLog.entity_type.in_(entity_types),
+                or_(_names_board("after", board_id), _names_board("before", board_id)),
+            )
+        )
+    )
+
+
+def events_of(db: Session, entity_type: str, ids: list[int]) -> list[AuditLog]:
+    """The named items' events, oldest first."""
+    return list(
+        db.scalars(
+            select(AuditLog).where(AuditLog.entity_type == entity_type, AuditLog.entity_id.in_(ids)).order_by(AuditLog.id.asc())
+        )
+    )
+
+
+def children_of(db: Session, parent_id: int) -> list[WhiteboardObject]:
+    """The objects directly under a topic, in no set order."""
+    return list(db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == parent_id)).all())
 
 
 def objects_of_kinds(db: Session, board_id: int | None, kinds: tuple[str, ...]) -> list[WhiteboardObject]:

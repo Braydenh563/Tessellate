@@ -346,7 +346,7 @@ def _tally(
     #: Naming the category is a vote of its own ("gym: new shoes").
     for name in notes_in:
         name_words = _name_words(name)
-        if notes_in[name] >= MIN_EXAMPLES and name_words and all(word in wanted for word in name_words):
+        if notes_in[name] >= MIN_EXAMPLES and _name_said(name_words, wanted):
             votes[name] = votes.get(name, 0.0) + NAME_VOTE
             supporters[name] = supporters.get(name, 0) + MIN_SUPPORT
 
@@ -524,6 +524,19 @@ def _name_words(name: str) -> tuple[str, ...]:
     return tuple(tokens(name))
 
 
+def _name_said(name_words: tuple[str, ...], wanted) -> bool:
+    """Every word of a category's name is in the note, as written or folded the
+    way tags fold ("running" for Run, "stats" for Statistics, "uni" for University)."""
+    if not name_words:
+        return False
+    if all(word in wanted for word in name_words):
+        return True
+    from tessellate.ai.tag_stem import stem
+
+    folded = {stem(word) for word in wanted}
+    return all(stem(word) in folded for word in name_words)
+
+
 def holds_sensitive(content: str, category: str | None = None) -> str | None:
     """The sensitive topic that keeps `content` from filing itself, or None.
 
@@ -660,18 +673,41 @@ def _corpus_view(session: Session, names: dict, exclude_entry_id: int | None, qu
     return lengths, held, profiles, sums, idf
 
 
-def _taught_topics(name: str, profile: dict, read: _NoteRead) -> list:
+def _taught_share(sent: dict[str, int], name: str, topic: str, profiles: dict) -> float:
+    """How specific a taught topic is to a category: its share of every
+    correction that used the topic plus every note's own words for it. A topic
+    sent to one category while another's notes already say it is not that
+    category's word alone (L-world-class-650)."""
+    if sent[name] >= LEXICON_MAX:
+        return 1.0  # said firmly (a move out of a category, a merge, three refiles)
+    own = {c: max(p.get(topic, 0.0), 0.0) for c, p in profiles.items()}
+    return (sent[name] + own.get(name, 0.0)) / (sum(sent.values()) + sum(own.values()))
+
+
+def _taught_weight(sent: dict[str, int], name: str, topic: str, profiles: dict) -> float:
+    """What one topic's teaching adds to a category's profile."""
+    weight = LEXICON_WEIGHT * min(sent[name], LEXICON_MAX) * _taught_share(sent, name, topic, profiles)
+    #: A teaching never outweighs what the category's own notes say, or a few
+    #: corrections drown the profile and move its other notes away.
+    return min(weight, max(profiles.get(name, {}).values(), default=weight))
+
+
+def _taught_topics(name: str, profile: dict, read: _NoteRead) -> dict[str, float]:
     """Add the person's own words for topics to the category's profile; the
-    topics that vote outright for it."""
-    taught = []
+    topics that vote outright for it, each with how specific it is."""
+    taught = {}
     for topic, sent in read.lexicon.items():
         if sent.get(name):
-            profile[topic] = profile.get(topic, 0.0) + LEXICON_WEIGHT * min(sent[name], LEXICON_MAX)
+            #: A teaching about a topic the note does not say adds nothing to the
+            #: comparison: it would only swell the profile and thin every note
+            #: the category already holds (corrections lowered accuracy).
+            if topic in read.note_topics:
+                profile[topic] = max(profile.get(topic, 0.0), _taught_weight(sent, name, topic, read.profiles))
             #: The outright vote only where the person's word for this
             #: topic is this category more than any other, and the note
             #: is really about it (a topic the pack accepts for it).
-            if topic in read.strong and sent[name] >= max(sent.values()):
-                taught.append(topic)
+            if topic in read.strong and sent[name] >= max(sent.values()) and sent[name] >= LEXICON_MAX:
+                taught[topic] = _taught_share(sent, name, topic, read.profiles)
     return taught
 
 
@@ -687,11 +723,11 @@ def _candidate_for(name: str, count: int, read: _NoteRead) -> Candidate | None:
     contributions = {word: read.query_vec[word] * shared[word] * read.idf[word] for word in shared if word in read.query_vec}
     centroid = sum(contributions.values()) / (read.query_norm * (read.lengths.get(name) or 1.0)) if contributions else 0.0
     name_words = _name_words(name)
-    named = bool(name_words) and all(word in read.wanted for word in name_words)
+    named = _name_said(name_words, read.wanted)
     #: The name's own vote (`NAME_VOTE`) is already in the neighbours'.
     score = W_NEIGHBOURS * read.knn_votes.get(name, 0.0) + W_CENTROID * centroid + W_TOPICS * topic_score
     if taught:
-        score += LEXICON_VOTE * sum(read.note_topics[t] for t in taught) / (sum(read.note_topics.values()) or 1.0)
+        score += LEXICON_VOTE * sum(read.note_topics[t] * share for t, share in taught.items()) / (sum(read.note_topics.values()) or 1.0)
     if score <= 0:
         return None
     return Candidate(
@@ -704,7 +740,7 @@ def _candidate_for(name: str, count: int, read: _NoteRead) -> Candidate | None:
             for topic in sorted(read.hits, key=lambda t: -profile.get(t, 0.0))
             if profile.get(topic, 0.0) >= TOPIC_OWN_SHARE * max(profile.values(), default=0.0) > 0
         },
-        notes=count, named=named, lexicon=taught,
+        notes=count, named=named, lexicon=list(taught),
     )
 
 
@@ -760,7 +796,7 @@ def decide(session: Session, content: str, exclude_entry_id: int | None = None) 
     #: footer says nothing about where it belongs (INBOX 781).
     content = clean(content)
     wanted = tokens(content)
-    hits = taxonomy.topic_hits(content)
+    hits = taxonomy.in_context(content, taxonomy.topic_hits(content))
     note_topics = taxonomy.topic_weights(content, hits)
     sensitive_set = taxonomy.sensitive_topics()
     strong = taxonomy.strong_topics(content, hits)
@@ -872,7 +908,7 @@ def category_profiles(session: Session) -> dict[str, tuple[int, dict[str, float]
             profile[topic] = profile.get(topic, 0.0) + NAME_TOPIC_WEIGHT * weight
         for topic, sent in lexicon.items():
             if sent.get(name):
-                profile[topic] = profile.get(topic, 0.0) + LEXICON_WEIGHT * min(sent[name], LEXICON_MAX)
+                profile[topic] = profile.get(topic, 0.0) + _taught_weight(sent, name, topic, profiles)
         out[name] = (count, profile, own)
     return out
 
@@ -911,7 +947,10 @@ def personal_lexicon(session: Session) -> dict[str, dict[str, int]]:
             #: weak word ("book" in a car note) taught the wrong rule.
             for topic in taxonomy.strong_topics(correction.excerpt):
                 sent = lexicon.setdefault(topic, {})
-                sent[to] = sent.get(to, 0) + 1
+                #: A move out of a named category ("Work, not Software")
+                #: says the old filing was wrong: it counts as firmly as a
+                #: Tidy merge; a note filed from nowhere counts once.
+                sent[to] = sent.get(to, 0) + (1 if correction.from_value in (None, "", UNCATEGORISED) else LEXICON_MAX)
         for correction in learning.corrections(session, kind="alias"):
             topic = str(correction.subject.get("topic") or "")
             if topic and correction.to_value:
@@ -1006,9 +1045,11 @@ def _category_aggregates(corpus, names, scope, scope_key):  # noqa: ANN001, ANN2
 # notes are read and tokenised again. Scoring then reads only the notes that
 # share a word with the one being filed, through an inverted index.
 #
-# The stamp is what an edit moves: `updated_at` (`onupdate`, so every ORM
-# write), and the tags and category themselves, because a notebook-wide tag
-# or category rename is one UPDATE statement that does not.
+# The stamp is what an edit moves: `edited_at` (set in one `before_flush` hook
+# for every write to a note's text, falling back to `created_at` for a note
+# never edited; not `updated_at`, which an open's access_count bump moves too),
+# and the tags and category themselves, because a notebook-wide tag or
+# category rename is one UPDATE statement that does not.
 
 
 @dataclass
@@ -1057,7 +1098,7 @@ class _Corpus:
         #: taken again the next time its doc is scored.
         self.epoch: dict[str, int] = {"words": 0, "tagged": 0}
         self._epoch_total: dict[str, int] = {"words": 0, "tagged": 0}
-        #: The newest `updated_at` read, and when the corpus was last read
+        #: The newest edit stamp read, and when the corpus was last read
         #: whole (`_corpus_for`).
         self.mark: str | None = None
         self.full_at = 0.0
@@ -1214,12 +1255,13 @@ def _make_doc(stamp: tuple, content: str, tags: list[str], workspace, category_i
 
 
 #: How often the corpus is read whole rather than by what changed. Between
-#: full reads only notes whose `updated_at` moved are read, which every ORM
-#: write does; a statement that writes round the ORM (a space deleted, its
+#: full reads only notes whose edit stamp moved are read, which every write
+#: to a note's text does; a statement that writes round the ORM (a space deleted, its
 #: notes moved, which calls `forget_corpus`; a hard purge) is caught here.
 FULL_REFRESH_SECONDS = 30.0
 
-_STAMP_COLUMNS = "id, updated_at, tags, category_id, user_filed, is_board, workspace_id"
+_STAMP = "COALESCE(edited_at, created_at)"
+_STAMP_COLUMNS = f"id, {_STAMP}, tags, category_id, user_filed, is_board, workspace_id"
 
 
 def _read_stamps(connection, corpus: _Corpus, now: float) -> dict[int, tuple]:  # noqa: ANN001
@@ -1236,13 +1278,13 @@ def _read_stamps(connection, corpus: _Corpus, now: float) -> dict[int, tuple]:  
             corpus.remove(gone)
         corpus.full_at = now
         return current
-    # What moved since the last read, binned and made private included:
-    # those leave the corpus. `>=`, so a write in the same instant as the
+    # What moved since the last read, binned and made private included
+    # (found by `updated_at`: neither is an edit, and both must leave the corpus now). `>=`, so a write in the same instant as the
     # mark is read again rather than missed; its stamp then matches.
     for row in connection.exec_driver_sql(
         f"SELECT {_STAMP_COLUMNS}, is_deleted, is_private FROM entries "  # noqa: S608  # constant columns
-        "WHERE updated_at >= ?",
-        (corpus.mark,),
+        f"WHERE {_STAMP} >= ? OR ((is_deleted = 1 OR is_private = 1) AND updated_at >= ?)",
+        (corpus.mark, corpus.mark),
     ).fetchall():
         entry_id = int(row[0])
         if row[7] or row[8]:

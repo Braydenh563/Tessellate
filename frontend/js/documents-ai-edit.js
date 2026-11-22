@@ -94,7 +94,7 @@
             toast("Reverted.");
             dialog.close();
           } catch (error) {
-            toast(error.message || "Couldn't revert that.", true);
+            toast(error.message || voiceLine("failed", { what: "revert that" }), true);
           } finally {
             revertBtn.disabled = false;
           }
@@ -117,7 +117,8 @@
   //: prompt wait on the same `lazyScript` before they draw a diff, so none of them
   //: can run ahead of `docRenderDiff`.
   for (const [id, name] of [["doc-history", "openDocHistory"], ["doc-history-name", "docNameCurrentVersion"]]) {
-    $(id)?.addEventListener("click", async () => {
+    //: `SURFACES.wire`: Name this version sits in the dialog's surface, so it is wired once that surface exists rather than made here.
+    SURFACES.wire(id, "click", async () => {
       if (!(await lazyScript("/js/documents-history.js"))) return toast("The history could not be loaded.", true, { action: ["Try again", () => $(id).click()] });
       return window[name]();
     });

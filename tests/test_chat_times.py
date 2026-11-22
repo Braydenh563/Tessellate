@@ -84,6 +84,7 @@ def _labels(pairs: list[tuple[str, str]]) -> list[str]:
     source = (ROOT / "frontend/js/chat-time.js").read_text(encoding="utf-8")
     head = source[: source.index("//: Put (or take away)")]
     script = (
+        "function clockOptions() { return {}; }  // the 12 or 24 hour setting at auto\n"
         "const parseServerTime = (s) => { const d = new Date(/[Zz]$|[+-]\\d{2}:?\\d{2}$/.test(s) ? s : s + 'Z'); return Number.isNaN(d.getTime()) ? null : d; };\n"
         + head
         + f"\nconst pairs = {json.dumps(pairs)};\n"

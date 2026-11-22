@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that notification setting.", true);
+    toast(error.message || voiceLine("failed", { what: "save that notification setting" }), true);
   }
   renderAgentActivityMode();
 });
@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+      toast(voiceLine("failed", { what: "go back to the space it was made in" }), "info", { retry: backThenRun });
     };
   }
   if (!record) return () => run();
@@ -1159,11 +1159,11 @@ const VOICE = {
 //: `toLocaleString()` printed seconds on version lists, notes' hovers and run
 //: logs while the Timeline and the reminders printed none, and 12 or 24 hours
 //: follows the locale's own rule everywhere.
-const WHEN_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 function whenText(value = new Date()) {
   const moment = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(moment.getTime()) ? "" : WHEN_FORMAT.format(moment);
+  return Number.isNaN(moment.getTime()) ? "" : whenText.format.format(moment);
 }
+whenText.format = clockOptions.formatter({ dateStyle: "medium", timeStyle: "short" });
 
 function toastName(text, fallback = "it", limit = 48) {
   const flat = String(text || "").replace(/\s+/g, " ").trim();
@@ -1177,7 +1177,7 @@ function voiceLine(key, slots = {}) {
   return shape.replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : String(slots[name] ?? "")));
 }
 
-function toast(message, isError = false, { exempt = false, action = null } = {}) {
+function toast(message, isError = false, { exempt = false, retry, action = retry && ["Try again", retry] } = {}) {
   //: A read dropped by a space switch (app.js, the request helper) is nothing to report.
   if (isError && String(message).endsWith("Space changed.")) return;
   if (isError === "info" || (isError === true && [...toast.refused].some((m) => String(message).includes(m)))) {
@@ -1388,14 +1388,16 @@ const SERVER_DOWN_RETRY_MIN_MS = 3000;
 const SERVER_DOWN_RETRY_MAX_MS = 30000;
 let serverDownRetryDelay = SERVER_DOWN_RETRY_MIN_MS;
 
+//: Answers the banner's words, which `api()` also gives a write it refuses while this is up (L-world-class-99).
 function showServerDownBanner() {
-  if (serverDownNote && serverDownNote.isConnected) return; // already up
+  const message = "Can't reach Tessellate. Retrying…";
+  if (serverDownNote && serverDownNote.isConnected) return message; // already up
   const box = $("toast-box");
   const note = document.createElement("div");
   note.className = "toast error server-down-toast";
   const text = document.createElement("span");
   text.className = "toast-msg";
-  text.textContent = "Can't reach Tessellate. Retrying…";
+  text.textContent = message;
   const button = document.createElement("button");
   button.className = "small toast-action";
   button.textContent = "Retry";
@@ -1403,6 +1405,7 @@ function showServerDownBanner() {
   note.append(text, toastActions(button), toastCloseButton(note, null));
   toastStack(box, () => box.appendChild(note));
   serverDownNote = note;
+  return message;
 }
 
 function noteServerDown() {
@@ -1708,7 +1711,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || `Couldn't undo “${action.label}”.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo “${action.label}”` }), true);
   }
   renderUndoBar();
 }
@@ -1729,7 +1732,7 @@ async function performRedoNow() {
     toast(`Redone: ${action.label}`);
   } catch (error) {
     redoStack.push(action);
-    toast(error.message || "Couldn't redo that.", true);
+    toast(error.message || voiceLine("failed", { what: "redo that" }), true);
   }
   renderUndoBar();
 }
@@ -1812,76 +1815,6 @@ document.addEventListener("mousedown", (event) => {
   }
 });
 
-// --- quick access: recent questions + most-used entries (Phase 5) -------------------
-
-async function loadRecentQuestions() {
-  const box = document.getElementById("recent-questions");
-  if (!box) return;
-  //: Shared with the dashboard's Recent questions widget (`cacheMs`), which
-  //: asks for the same list in the same second at boot. Any write clears it.
-  const questions = await apiJson("/chat/recent", { cacheMs: 30000 }).catch(() => []);
-  box.replaceChildren();
-  box.classList.toggle("hidden", questions.length === 0);
-  if (questions.length === 0) return;
-  const label = document.createElement("span");
-  label.className = "muted";
-  label.textContent = "Ask again:";
-  box.appendChild(label);
-  for (const question of questions) {
-    //: The clock is what says "you asked this before" (INBOX 394 a): the chip
-    //: is drawn like the suggestions beside it, so the icon carries the
-    //: difference the fill used to.
-    const short = question.length > 48 ? question.slice(0, 47) + "…" : question;
-    const again = chip(`ph:clock-counter-clockwise ${short}`, "", () => {
-      $("question").value = question;
-      askQuestion();
-    });
-    again.title = question;
-    box.appendChild(again);
-  }
-  ensureModule("askHistory").then(() => askAgainMenu(box, questions));
-}
-
-async function loadMostUsed() {
-  const box = document.getElementById("most-used-box");
-  const list = document.getElementById("most-used");
-  if (!box || !list) return;
-  const entries = await apiJson("/entries/most-accessed", { cacheMs: 30000 }).catch(() => []);
-  list.replaceChildren();
-  box.classList.toggle("hidden", entries.length === 0);
-  for (const entry of entries) {
-    const li = document.createElement("li");
-    li.title = entry.content;
-    const text = document.createElement("span");
-    // Reported directly: a clip landing mid-token (`` `code` `` cut before
-    // its closing backtick) left a stray `` ` `` sitting in the rendered
-    // text: `safeMdSlice` drops the dangling marker instead of the plain
-    // `slice(0, 25)` this used to do.
-    //
-    // Block syntax stripped first. renderInlineMarkdown is inline-only, so a
-    // note beginning "# Groceries" rendered the literal "# Groceries", the
-    // same gap the dashboard's mini-lists had, here too since this list uses
-    // the same two-function combination.
-    //: A picture's markdown is not words: cut at 25 characters it showed as a
-    //: raw `![Sketch...` (dog3-1026 row 15).
-    const flat = stripFrontmatter(entry.content)
-      .replace(/!\[[^\]\n]*\]\([^)\n]*\)/g, "")
-      .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
-      .trim() || "Picture";
-    const { text: sliced, truncated } = safeMdSlice(flat, 25);
-    renderInlineMarkdown(text, sliced, [], true);
-    if (truncated) text.appendChild(document.createTextNode("…"));
-    const count = document.createElement("span");
-    count.className = "count";
-    count.textContent = `×${entry.access_count}`;
-    //: What the number counts (blind test 2026-10-31: "x4, of what?").
-    count.title = `Opened or asked about ${entry.access_count} ${entry.access_count === 1 ? "time" : "times"}`;
-    li.append(text, count);
-    li.addEventListener("click", () => flashEntry(entry.id));
-    list.appendChild(li);
-  }
-}
-
 // --- model manager (Phase 3.5) ---------------------------------------------------
 
 let modelStatus = null; // latest /models/status payload
@@ -1890,16 +1823,8 @@ let modelStatus = null; // latest /models/status payload
 //: rather than guarding a function that may not exist yet.
 const settingsReadouts = {};
 
-//: **The start-up choice, said once with Change** (the owner, 2026-10-07: on
-//: a fresh install with five models it ran a llama3.2 it did not have). Once
-//: per chosen model in this browser; Settings, Models keeps the why.
-function sayChatModelChosen(status) {
-  const why = status?.chat_model_chosen_why;
-  if (!why) return;
-  const key = `chatModelChosen:${status.chat_model}`;
-  if (prefs.get(key)) return;
-  if (!prefs.set(key, "1")) return;
-  toastAction(`${aiNameNow()} now runs ${status.chat_model}: ${why}.`, "Change", () => openSettingsModal("models", "chat-model-select"));
+function sayChatModelChosen(s) { // the start-up choice, said once with Change (model-chosen.js, lazy; L671)
+  if (s.chat_model_chosen_why) ensureModule("modelChosen").then(() => settingsReadouts.chosen(s));
 }
 // Has the status endpoint ever answered? "We haven't asked yet" and "we asked
 // and got nothing" are both `modelStatus === null`, but they mean opposite
@@ -1957,11 +1882,10 @@ function settingsOpen() {
 // change, so no control has to remember: every `/preferences` answer passes the
 // wrapper below (the last one kept as text, so a PUT can be diffed against it),
 // and ai-tools.js reports a look key. All the rest (the diff, the list, the
-// Undo) is the lazy settings-data.js, loaded only when a change is made while
-// Settings is open: the boot scripts are at their gzip cap, and `apiJson` is
+// Undo) is the lazy settings-data.js, loaded on the first change: the boot scripts are at their gzip cap, and `apiJson` is
 // wrapped here rather than edited at its twenty callers.
 let settingsPrefsLast = null;
-//: `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
+//: A write with `noHistory` keeps its own Undo or is a setup step. `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
 //: not noted again.
 let settingsHistoryBusy = false;
 {
@@ -1971,7 +1895,7 @@ let settingsHistoryBusy = false;
     if (path === "/preferences") {
       const was = settingsPrefsLast;
       settingsPrefsLast = JSON.stringify(data);
-      if (was && options.method === "PUT" && !settingsHistoryBusy && settingsOpen()) {
+      if (was && options.method === "PUT" && !settingsHistoryBusy && !options.noHistory) {
         ensureModule("settingsData").then(() => settingsPrefsSeen(JSON.parse(was), data));
       }
     }
@@ -2135,12 +2059,11 @@ const AI_OFFLINE_HINT = "Connect a model in Settings";
 //:
 //: **Off means no model can answer, not only no server** (ledger 1521;
 //: INBOX 778: a reachable server with no chat model installed answers
-//: nothing). `model_ready` is the server's own verdict; the Needle engine
-//: (`tools_engine`) answers without one, so it keeps the gate open.
+//: nothing). The server folds the clauses (runner down, `model_ready`, the
+//: Needle `tools_engine` exemption) into one `ai_off` field (L643).
 function aiIsOff() {
-  if (!modelStatus) return false;
-  if (modelStatus.ollama_running === false) return true;
-  return modelStatus.model_ready === false && !modelStatus.tools_engine;
+  //: The server's one verdict (`ai_off`, routes_models.py); before the first poll, not off.
+  return modelStatus?.ai_off === true;
 }
 
 //: **Why this restores rather than enables.** The status poll runs this every
@@ -2565,56 +2488,9 @@ function renderAiPill() {
 }
 
 //: **A broken search engine is said where the person is, once** (owner,
-//: packaged app: "I didnt have sentence transformers installed ... I
-//: encountered errors and I saw no popup or anything to suggest that I
-//: switch to nomic-embed-text or install sentence transformers"). The fix
-//: sentence and its one-click button lived only in Settings, Models, which
-//: nobody opens to find out why search feels dull. So the first poll that
-//: carries `embedding_error` raises a toast with the way to fix it and leaves
-//: the same in the bell, keyed by the error so it is said once per problem,
-//: not once per poll.
-let embeddingNudgeSaid = "";
-
 //: An error without its closing full stops, so `${error}. Next` never reads ".." (X18).
 function withoutEndStop(text) {
   return String(text || "").trim().replace(/[.\s]+$/, "");
-}
-
-function embeddingProblemDetail(error) {
-  return `${withoutEndStop(error)}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
-}
-
-//: The toast is once per browser session (X24); the bell keeps every problem.
-//: Blocked storage falls back to `embeddingNudgeSaid`: once per page load.
-function embeddingToastDue() {
-  try {
-    if (sessionStorage.getItem("embeddingToastShown")) return false;
-    sessionStorage.setItem("embeddingToastShown", "1");
-  } catch {
-    // No storage: the in-memory once-per-problem guard above still holds.
-  }
-  return true;
-}
-
-function nudgeEmbeddingProblem() {
-  const error = modelStatus?.embedding_error;
-  if (!error || modelStatus.semantic_off || error === embeddingNudgeSaid) return;
-  embeddingNudgeSaid = error;
-  const installing = /being installed/.test(error);
-  const title = installing ? "Search by meaning is being installed" : "Search by meaning is not working";
-  const detail = installing
-    ? "Search uses keywords until it finishes. Or pick nomic-embed-text in Settings, Models."
-    : embeddingProblemDetail(error);
-  recordNotification({
-    kind: "assist",
-    title,
-    detail,
-    key: `embedding:${error}`,
-    action: { settings: "models" },
-  });
-  //: While the download question is up it already says keywords work
-  //: meanwhile: a second toast said it again, stacked over Settings (audit 1028 E40).
-  if (!installing && !modelStatus.semantic_offer && embeddingToastDue()) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
 }
 
 // --- the status bar (§36D) ---------------------------------------------------
@@ -2662,11 +2538,10 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
   if (title && rest) title = `${title}: ${rest}`;
   //: The same words again change nothing: the Undo and Redo pair repaints on every document keystroke, and rebuilding the buttons cost
   //: style and layout work a bare editor does not pay (L323: UpdateLayoutTree 7.7 ms a key at 4x, 2.3 bare). The last paint is kept on the
-  //: function, not a new global, and dropped if the button's children were replaced from outside.
-  const seen = (paintStatusItem.last ||= new WeakMap());
+  //: button (`paintSig`), not a new global, and dropped if the button's children were replaced from outside.
   const sig = [icon, value, label, title, tone].join("\u0001");
-  if (seen.get(button) === sig && button.firstChild) return;
-  seen.set(button, sig);
+  if (button.paintSig === sig && button.firstChild) return;
+  button.paintSig = sig;
   button.replaceChildren();
   if (icon) {
     const glyph = document.createElement("span");
@@ -2961,167 +2836,11 @@ async function setChatMode(mode) {
   }).catch(() => {});
 }
 
-function backendLabel(status) {
-  return status?.provider === "openai" ? "The model server" : "Ollama";
-}
-
 // True while the user is mid-edit, so a status poll doesn't overwrite the
 // address they are halfway through typing. The polling that keeps this screen
 // live is the reason: without it, a five-second refresh eats every third
 // keystroke.
 let backendFieldsDirty = false;
-
-
-function renderSettings() {
-  const status = modelStatus;
-  const ollamaLine = $("ollama-status");
-
-  //: **Only "can't reach" when it cannot** (INBOX 435): this said the
-  //: app's server was unreachable while the app was plainly running, on a
-  //: first open before the status had answered and whenever a slow model
-  //: server ran the poll past its budget.
-  if (!status) {
-    ollamaLine.textContent =
-      {
-        slow: "The model server is slow to answer. Checking again…",
-        error: "Couldn't read the models' status. Checking again…",
-        down: "Can't reach the Tessellate server.",
-      }[modelStatusProblem] || "Checking the models…";
-    ollamaLine.className = `status ${modelStatusProblem === "down" ? "off" : "is-checking"}`;
-    //: The pane's shape under the line while it waits, never the line alone
-    //: (DESIGN.md's list recipe). Not when the answer is a fault: a skeleton
-    //: says "on its way", and "can't reach" is not that.
-    if (modelStatusProblem === "down") clearSkeletons($("models-skeleton"));
-    else showSkeletons($("models-skeleton"), 2);
-    if (!modelStatusProblem) refreshModelStatus().then(() => settingsOpen() && renderSettings());
-    return;
-  }
-  clearSkeletons($("models-skeleton"));
-
-  // Name the backend that actually answered. Saying "Ollama not detected"
-  // when the app was pointed at LM Studio sends people to install the wrong
-  // thing (§6).
-  const backend = backendLabel(status);
-  //: The dot is the line's class, as on the search engine line under it,
-  //: not a typed "●"/"○" beside a CSS dot: two alphabets for one signal.
-  //: Section 21 row 12: an address the person typed that nothing answers is
-  //: a different problem from a server that is not started, and says so.
-  ollamaLine.textContent = status.ollama_running
-    ? `${backend} is running`
-    : status.unreachable_hint || `${backend} isn't running`;
-  ollamaLine.className = `status ${status.ollama_running ? "ok" : status.ollama_busy ? "is-checking" : "off"}`;
-  //: With no model server running, the two optional ways to run a model here
-  //: (extra-notice.js). Drawn when the answer changes, not on every poll.
-  const noServer = !status.ollama_running && !status.ollama_busy;
-  if (ollamaLine.dataset.noServer !== String(noServer)) {
-    ollamaLine.dataset.noServer = String(noServer);
-    for (const id of ["needle", "localllm"]) {
-      if (noServer) extraNoticeMount($(`xn-${id}`), id);
-      else $(`xn-${id}`)?.replaceChildren();
-    }
-  }
-  //: A slow poll keeps the last answer on screen (see refreshModelStatus), so
-  //: the line says so instead of presenting a stale answer as fresh.
-  if (modelStatusProblem === "slow") {
-    ollamaLine.textContent = "The model server is slow to answer. Showing the last answer.";
-    ollamaLine.className = "status is-checking";
-  }
-  //: K13: with no model, the line says what answers instead (ai/composer.py).
-  if (aiIsOff()) {
-    ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
-  }
-  renderBackendPicker(status);
-  //: The one-time question before search by meaning is downloaded
-  //: (semantic-notice.js, lazy): opened while the server says it is owed,
-  //: closed once it is answered.
-  if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved);
-  const embeddingError = $("embedding-error");
-  embeddingError.classList.toggle("hidden", !status.embedding_error);
-  //: A missing optional package arrives as a sentence the backend wrote for
-  //: people ("Search by meaning is being installed..."), not an exception, so
-  //: it is shown as it is with the one alternative that needs no install: an
-  //: Ollama embedding model. Said even when Ollama is not running, because
-  //: the owner's report was exactly that case ("no nomic-embed-text
-  //: suggested") and the button below only exists while it is.
-  //: The notice recipe's icon first (section 21 rows 1 and 2), then the line.
-  const say = (text) => setLabel(embeddingError, `ph:warning ${text}`);
-  if (status.embedding_error && /^Search by meaning/.test(status.embedding_error)) {
-    say(
-      `${withoutEndStop(status.embedding_error)}. ` +
-      (status.ollama_running
-        ? `Or switch the search engine to ${EMBEDDING_FALLBACK_MODEL} below: smaller, and offline.`
-        : `Or start Ollama and pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`)
-    );
-  } else if (status.embedding_error) {
-    say(
-      `Search engine problem: ${status.embedding_error}: semantic search is ` +
-      "falling back to keywords. Quick fix: switch the search engine below to " +
-      "an Ollama embedding model (download nomic-embed-text from the list), " +
-      "it runs fully offline. Full details in Settings, Logs."
-    );
-  }
-  // The one-click version of the "quick fix" sentence above: only offered
-  // when it can actually be carried out (Ollama has to be running to either
-  // pull or use an Ollama embedding model), and not while the fix is
-  // already running or already switched over.
-  const fixRow = $("embedding-error-fix-row");
-  const alreadyOnOllama = status.embedding_backend === "ollama"
-    && status.embedding_model === EMBEDDING_FALLBACK_MODEL;
-  fixRow.classList.toggle(
-    "hidden",
-    !status.embedding_error
-      || !status.ollama_running
-      || !status.supports_pull
-      || embeddingFallbackRunning
-      || alreadyOnOllama
-  );
-  stagePrimary("embedding-apply", "embedding-error-fix", !fixRow.classList.contains("hidden"));
-  renderSearchEngineHealth(status);
-  // The "install Ollama" advice only helps someone who chose Ollama.
-  $("ollama-help").classList.toggle(
-    "hidden",
-    status.ollama_running || status.provider !== "ollama"
-  );
-  $("models-config").classList.toggle("hidden", !status.ollama_running);
-  // Downloads are an Ollama capability. Every other backend is handed a model
-  // that is already on disk, so the panel hides rather than offering a button
-  // that cannot work. With Ollama simply not running (audit 1028 E38) the
-  // cards stay: choosing a model for this computer needs no backend, and
-  // each Download waits with the reason on it.
-  $("suggested-box").classList.toggle("hidden", status.supports_pull === false);
-
-  // The search engine is always adjustable: its recommended option is the
-  // built-in one, which needs no Ollama. Only the Ollama half of it depends
-  // on Ollama being up.
-  if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
-  //: Always, not only while a backend answers: the rows come from saved
-  //: settings, and a person with the server down still needs to see and clear
-  //: an override (WORLD_CLASS_PLAN 20, built).
-  renderFeatureModels(status);
-  settingsReadouts.smallModel?.();
-  if (status.ollama_running) {
-    renderChatModelPicker(status);
-    renderUtilityModelPicker(status);
-    renderVisionModelPicker(status);
-  renderOcrModelPicker(status);
-    renderAutonomousModelPicker(status);
-    //: Both live in the lazy `settingsUi` file: one check that it has loaded
-    //: covers the two (it has whenever Settings is open, the only time this runs).
-    if (typeof renderSuggested === "function") {
-      renderInstalledModels(status);
-      renderSuggested(status);
-    }
-    renderModelSpec(status.chat_model);
-  } else {
-    $("installed-box").classList.add("hidden");
-    $("model-spec").classList.add("hidden");
-    $("model-spec-health").classList.add("hidden");
-    //: The cards draw with no backend too (audit 1028 E38): what fits this
-    //: computer needs none. `window.` because the file is lazy, as above.
-    if (status.supports_pull !== false) window.renderSuggested?.(status);
-  }
-  renderReindex(status);
-}
 
 // GET /tasks, once per status poll, feeding everything that wants to know what
 // is running: the status bar's job slot, the Background tasks panel when it is
@@ -3187,44 +2906,6 @@ async function refreshBackgroundTasks() {
   } else renderTaskHistory(body?.history || []);
 }
 
-// --- a background job starting and finishing, said out loud --------------------
-//
-// Half of this existed and half did not, which is why it read as broken rather
-// than as missing: `renderTaskHistory` records every *finish* into the
-// notifications centre, but a **start** was recorded nowhere, and neither end
-// was ever said out loud. So kicking off a re-index or an extras install and
-// then going back to writing gave you no sign anything was happening and no
-// sign when it stopped, the only trace was a screen inside Settings and a
-// centre you had to open.
-//
-// What this adds is the transitions: a job appearing in `GET /tasks` and a job
-// disappearing from it.
-//
-// The rule that keeps it from becoming noise: **a toast only for a job whose
-// start this session actually saw.** These jobs run for minutes and the app
-// may well have been opened halfway through one; announcing the end of
-// something you were never told had begun is a notification about nothing.
-// The centre still records both ends either way, because that is a record
-// rather than an interruption.
-
-//: The jobs seen running on the previous poll, keyed the way `taskKey` keys
-//: them. A Map rather than a Set so a finish can name the job that ended
-//: without needing the poll it vanished from to still carry it.
-const seenRunningTasks = new Map();
-
-//: The activity panel's row for each of those jobs, keyed the same way. Kept
-//: beside `seenRunningTasks` rather than inside it because the two answer
-//: different questions: that map is "did this session see it start", which is
-//: what decides whether its end is announced, and this one is "which row on
-//: screen is it".
-const backgroundRunRows = new Map();
-
-function taskKey(task) {
-  // `name` distinguishes two downloads running at once; `kind` alone would
-  // merge them into one job that appears to start twice and finish once.
-  return `${task.kind || "job"}:${task.name || ""}`;
-}
-
 //: **Housekeeping is listed, not announced** (INBOX 432). Warming the filing
 //: model at launch opened the Agent activity panel over the notes and then
 //: flew "Finished: Warming up the filing model" past the corner, two signals
@@ -3238,90 +2919,6 @@ const QUIET_TASK_KINDS = new Set([
   "job-caption", "caption", "page-read", "pull", "extra",
   "job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup",
 ]);
-
-function noticeTaskTransitions(running, history) {
-  const now = new Map(running.map((task) => [taskKey(task), task]));
-
-  //: A running job's row keeps its fraction and its own status line up to
-  //: date. It is the same run list the chat's skill runs land in, an
-  //: autonomous pass rewriting tags in the background is exactly the "agent
-  //: model activity" the report was about, and reading it off `/tasks` is how
-  //: it gets a progress bar the chat runs cannot have.
-  for (const [key, task] of now) {
-    const run = backgroundRunRows.get(key);
-    if (!run) continue;
-    run.progress = typeof task.progress === "number" ? task.progress : null;
-    run.detail = task.detail || "";
-    renderAgentRunSummary(run);
-  }
-
-  for (const [key, task] of now) {
-    if (seenRunningTasks.has(key)) continue;
-    seenRunningTasks.set(key, task);
-    //: A chat answer, a transcription: the person is watching it where they
-    //: started it. The status bar and Running jobs list it; nothing announces it.
-    if (task.watched) continue;
-    const run = addAgentRun({
-      kind: "job",
-      name: task.label,
-      icon: "ph:gear",
-      detail: task.detail || "",
-    });
-    run.progress = typeof task.progress === "number" ? task.progress : null;
-    renderAgentRunSummary(run);
-    backgroundRunRows.set(key, run);
-    if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);
-    //: Upkeep the app starts itself is not news for the bell: only its
-    //: failure is, which agentActivityNotice records below (audit 1030 Y7).
-    if (!QUIET_TASK_KINDS.has(task.kind)) task.noticeId = recordNotification({
-      kind: "task",
-      title: `Started: ${task.label}`,
-      detail: task.detail || "",
-      runId: task.run_id || "",
-      // Keyed per *start*, not per job. It used to be `task-start:${key}`,
-      // which deduped against localStorage, so the second time the
-      // autonomous pass (or any recurring job) ran, its start recorded
-      // nothing at all, forever, because an entry with that exact id was
-      // already stored from the first run days earlier. The poll-repeat this
-      // was defending against is already handled by `seenRunningTasks` two
-      // lines up, which `continue`s before reaching here.
-      key: `task-start:${key}:${Date.now()}`,
-    });
-  }
-
-  for (const [key, task] of [...seenRunningTasks]) {
-    if (now.has(key)) continue;
-    seenRunningTasks.delete(key);
-    const row = backgroundRunRows.get(key);
-    backgroundRunRows.delete(key);
-    if (task.watched) continue;
-    // The outcome comes from the server's own history, on this same payload, 
-    // "it stopped appearing in the running list" is true of a job that died as
-    // much as one that succeeded, and a cheerful toast over a failure is how
-    // people learn to ignore toasts. Newest first, so `find` takes the ending
-    // that just happened rather than a previous run of the same job.
-    const ended =
-      history.find((item) => task.run_id && item.run_id === task.run_id) ||
-      history.find((item) => (item.kind || "job") === (task.kind || "job"));
-    //: Its "Started:" row now says how it ended (INBOX 811 item 4).
-    if (task.noticeId) {
-      const endKey = ended ? `task:${ended.kind || ended.label}:${ended.at}` : `${task.noticeId}:end`;
-      settleNotification(task.noticeId, { key: endKey, ...taskEndingWords(ended, task.label) });
-    }
-    if (ended?.outcome === "failed") {
-      endAgentRun(row, { state: "failed" });
-      agentActivityNotice(`Failed: ${ended.label || task.label}`, { isError: true });
-    } else if (ended?.outcome === "cancelled") {
-      endAgentRun(row, { state: "stalled", detail: "cancelled" });
-      // Not an error and not an achievement, the user stopped it and already
-      // knows. Recorded in the centre by renderTaskHistory; no toast.
-      continue;
-    } else {
-      endAgentRun(row, { state: "done" });
-      if (!QUIET_TASK_KINDS.has(task.kind)) agentActivityNotice(`Finished: ${ended?.label || task.label}`);
-    }
-  }
-}
 
 // --- optional extras and embedding models: Settings, Packages, is settings-packages.js (lazy, INBOX 595) ---
 
@@ -3369,4 +2966,3 @@ function startPrivacyChip() {
   chip.dataset.wired = "1";
   chip.addEventListener("click", () => openSettingsModal("privacy"));
 }
-

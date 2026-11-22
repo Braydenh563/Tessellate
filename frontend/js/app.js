@@ -128,7 +128,6 @@ let draftsOnly = false;
 // meaning (a group you can go to). The same note is in both readings.
 let favouritesOnly = false;
 let linkSource = null; // entry id waiting for its link partner
-let editingId = null; // entry id currently in inline-edit mode
 //: Set by the "No tags yet" chip: the next edit form for this id opens with
 //: its tags field focused. Read and cleared by renderEditForm.
 let focusTagsAfterRender = null;
@@ -371,6 +370,13 @@ async function api(path, options = {}) {
     fetchOptions.signal = fetchOptions.signal || controller.signal;
   }
   let response;
+  //: A write while the banner is up is refused, with its words, not sent (22.1 item 6): a TypeError, as a dropped
+  //: connection is, so held notes still queue. Reads, sign-in and `/health` go on (how the app sees the server return).
+  //: `serverUnreachable` (status.js) is read last: a request made at load, before that file runs, never gets to it.
+  if (fetchOptions.method && !/^(GET|HEAD)$/.test(fetchOptions.method) && !readOnly && !path.startsWith("/auth/") && !path.startsWith("/health") && serverUnreachable) {
+    retryServerNow();
+    throw new TypeError(showServerDownBanner());
+  }
   //: Rule 4: a network-level failure of a read (GET, HEAD) retries itself
   //: twice, 300 then 600 ms apart, before anything is said; `api.retries`
   //: counts them. A write is never resent: it may have arrived.
@@ -416,7 +422,7 @@ async function api(path, options = {}) {
       noteServerDown();
     }
     //: "Failed to fetch" and its kin go to the log above; the toast gets a sentence.
-    if (networkErr instanceof TypeError) networkErr.message = "Tessellate is not answering. Is it still running?";
+    if (networkErr instanceof TypeError) networkErr.message = showServerDownBanner();
     throw networkErr;
   } finally {
     if (timer) clearTimeout(timer);
@@ -425,6 +431,9 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
+  //: A write that landed tells the other windows (notes-sync.js hears it, L585) and the
+  //: timeline's streak (review of PR 222: only the composer's Save told it before).
+  if (response.ok && !readOnly && !/^(GET|HEAD)?$/.test(fetchOptions.method || "") && typeof document !== "undefined") document.dispatchEvent(new Event("notebook-written"));
   //: **A read that started in the old space is dropped here, for every loader at once.**
   //: Its rows are the old space's: applied after a switch they would sit in the new one's
   //: lists. The error is quiet (`isStale`: no toast, no log line), and a write is never
@@ -449,40 +458,7 @@ async function api(path, options = {}) {
     locked.isLockout = true;
     throw locked;
   }
-  if (!response.ok) {
-    const detail = await response.json().catch(() => ({}));
-    const rawMsg = typeof detail.detail === 'string' ? detail.detail : JSON.stringify(detail.detail);
-    let errMsg = plainHttpError(response.status, detail.detail);
-    //: **Out of space is the one failure the person can act on, so the part
-    //: that says how travels with it.** The server answers 507 with a
-    //: `hint` naming the folder, the room left and roughly how much to free
-    //: up (INBOX 266, item 6); every call site in this app toasts
-    //: `error.message` and nothing has ever read `hint`, so the actionable
-    //: half was being thrown away at this line. Appended here rather than
-    //: at fifty call sites, which is the only version that cannot be
-    //: forgotten by the next one.
-    if (response.status === 507 && typeof detail.hint === 'string' && detail.hint) {
-      errMsg = `${errMsg} ${detail.hint}`;
-    }
-    if (!silent) {
-      // Log HTTP errors so they always appear in Settings, Logs for debugging.
-      recordBrowserLog("ERROR", [
-        `[HTTP ${response.status}] ${fetchOptions.method || 'GET'} ${path}: ${rawMsg}`
-      ]);
-    }
-    //: The status and the structured detail travel on the error, so a
-    //: caller that has something to do with a particular refusal (an edit
-    //: conflict's 409 carries the text another window saved,
-    //: `editConflictPrompt`) can read it rather than parse a message.
-    //: A space deleted in another window falls back to "All spaces" (1031 BK3).
-    if (detail.code === "unknown_space") setActiveSpace(SPACE_ALL);
-    const error = new Error(errMsg);
-    error.status = response.status;
-    if (response.status < 500) toast.refused.add(errMsg);
-    error.detail = detail.detail;
-    error.body = detail;
-    throw error;
-  }
+  if (!response.ok) await api.refuse(response, path, fetchOptions, silent);
   //: A write that can leave a model running on a background thread gets the
   //: task poll looked at now, rather than up to ten seconds from now.
   //:
@@ -502,6 +478,41 @@ async function api(path, options = {}) {
 }
 api.retries = 0;
 api.epoch = 0;
+//: The refusal half of `api`: reads the server's detail, logs it, and always throws.
+api.refuse = async (response, path, fetchOptions, silent) => {
+  const detail = await response.json().catch(() => ({}));
+  const rawMsg = typeof detail.detail === 'string' ? detail.detail : JSON.stringify(detail.detail);
+  let errMsg = plainHttpError(response.status, detail.detail);
+  //: **Out of space is the one failure the person can act on, so the part
+  //: that says how travels with it.** The server answers 507 with a
+  //: `hint` naming the folder, the room left and roughly how much to free
+  //: up (INBOX 266, item 6); every call site in this app toasts
+  //: `error.message` and nothing has ever read `hint`, so the actionable
+  //: half was being thrown away at this line. Appended here rather than
+  //: at fifty call sites, which is the only version that cannot be
+  //: forgotten by the next one.
+  if (response.status === 507 && typeof detail.hint === 'string' && detail.hint) {
+    errMsg = `${errMsg} ${detail.hint}`;
+  }
+  if (!silent) {
+    // Log HTTP errors so they always appear in Settings, Logs for debugging.
+    recordBrowserLog("ERROR", [
+      `[HTTP ${response.status}] ${fetchOptions.method || 'GET'} ${path}: ${rawMsg}`
+    ]);
+  }
+  //: The status and the structured detail travel on the error, so a
+  //: caller that has something to do with a particular refusal (an edit
+  //: conflict's 409 carries the text another window saved,
+  //: `editConflictPrompt`) can read it rather than parse a message.
+  //: A space deleted in another window falls back to "All spaces" (1031 BK3).
+  if (detail.code === "unknown_space") setActiveSpace(SPACE_ALL);
+  const error = new Error(errMsg);
+  error.status = response.status;
+  if (response.status < 500) toast.refused.add(errMsg);
+  error.detail = detail.detail;
+  error.body = detail;
+  throw error;
+};
 // F5 (tests/test_no_bare_fetch.py)
 api.upload = (path, body, options) => api(path, { method: "POST", body, ...options });
 api.stream = api;
@@ -633,7 +644,7 @@ function startWithoutPassword() {
 }
 
 function enterWithoutPassword(body) {
-  localStorage.setItem("token", body.token);
+  prefs.set("token", body.token);
   vaultOpen = !!body.vault_open;
   lockedByHand = false;
   const opening = startApp();
@@ -941,12 +952,12 @@ function startApp() {
           // The lock screen already said what happened; a toast under it
           // repeating "Couldn't X: Locked" for every parallel step is noise
           // about one state dressed up as several failures.
-          if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+          if (!error.isLockout) toast(voiceLine("failed", { what: label, why: error.message }), true);
         });
       }
       return Promise.resolve(result);
     } catch (error) {
-      if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+      if (!error.isLockout) toast(voiceLine("failed", { what: label, why: error.message }), true);
       return Promise.resolve();
     }
   };
@@ -1532,9 +1543,12 @@ const LAZY_MODULES = {
   tagManager: ["/js/tag-manager.js"],
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
+  //: Groups of notes gathered by hand, and a note's further categories: see note-groups.js.
+  noteGroups: ["/js/note-groups.js"],
   noteHistory: ["/js/note-history.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
+  wikiPeek: ["/js/citation-peek.js", "/js/wiki-peek.js"],
   askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
@@ -1577,12 +1591,12 @@ const LAZY_MODULES = {
   attachTo: ["/js/pick-row.js", "/js/attach-to.js"],
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
-  iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
+  iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js", "/js/icon-picker-icons.js"],
   vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
-  webClip: ["/js/web-clip.js", "/js/web-results.js"],
+  webClip: ["/js/web-panel.js", "/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
@@ -1658,6 +1672,7 @@ const LAZY_MODULES = {
     "/js/documents-mermaid.js",
     "/js/documents-math.js",
     "/js/documents-comments.js",
+    "/js/documents-threads.js",
     "/js/documents-embeds.js",
     "/js/documents-tables.js",
     "/js/documents-columns.js",
@@ -1805,6 +1820,12 @@ document.addEventListener("focusin", (event) => {
   });
 });
 
+//: L573: a note's [[link]] previews its note on hover or focus (wiki-peek.js).
+for (const t of ["mouseover", "focusin"]) document.addEventListener(t, (e) => {
+  const el = e.target.closest?.(".wiki-link[data-wiki]");
+  if (el) ensureModule("wikiPeek").then((ok) => ok && wikiPeek(el, t == "focusin"));
+});
+
 //: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and dedenting across the app also doesnt come in the form it should"). The editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`) arrives with the Library bundle on a note box's first focus, and until it has, the box is a plain textarea: measured on a fresh boot, "- alpha" plus Tab moved focus to the tags field instead of indenting. This bridges that second or two with the same rule the editor applies: whole lines, two spaces, list items as blocks, Shift+Tab only when there is something to take off (so a flush-left caret still tabs backwards out of the box). Once the bundle is in, the textarea is replaced and this never runs.
 document.addEventListener("keydown", (event) => {
   const box = event.target;
@@ -1861,7 +1882,7 @@ const LAZY_ENTRY_POINTS = {
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
   settingsControls: ["refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
-  settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
+  settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument", "renderExportsList"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
   //: Each called for its effect when a figure mounts or moves; nothing reads a result.
@@ -1892,11 +1913,12 @@ const LAZY_ENTRY_POINTS = {
   //: Opened by a gesture; the closers are called only once it is open.
   search: ["openFinder"],
   statistics: ["openStatistics", "renderWeekWidget"],
-  meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
+  meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder", "noteRecording"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
+  noteGroups: ["openNoteGroupsSheet"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
   extraNotice: ["extraNoticeMount"],

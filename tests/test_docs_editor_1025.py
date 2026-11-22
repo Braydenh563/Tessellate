@@ -112,7 +112,7 @@ def test_history_dialog_keeps_the_head_to_title_and_close():
     # the filter and "Name this version" share a row that wraps at 420.
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     dlg = html[html.index('id="doc-history-dialog"') :]
-    dlg = dlg[: dlg.index("</dialog>")]
+    dlg = dlg[: dlg.index("</sheet-host>")]  # the dialog is a sheet-host now
     head = dlg[: dlg.index("</div>")]
     assert "doc-history-name" not in head
     bar = dlg[dlg.index('class="doc-history-bar"') :]

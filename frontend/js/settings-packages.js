@@ -165,7 +165,7 @@
         const done = await apiJson(`/voice/models/${encodeURIComponent(size)}`, { method: "DELETE" });
         toast(done.message);
       } catch (error) {
-        toast(error.message || "Couldn't remove that model.", true);
+        toast(error.message || voiceLine("failed", { what: "remove that model" }), true);
       }
       voiceModelsPaint();
     });
@@ -302,6 +302,16 @@
           );
           install.dataset.packagesFocus = `bundle-install-${bundle.id}`;
           actions.appendChild(install);
+        } else if (installed < members.length && !body.running) {
+          //: Audit 1029 W24 (L518): a count short of whole with no Install said
+          //: nothing about why; the package's own reason does.
+          const why = members.find((extra) => !extra.installed && extra.unavailable)?.unavailable;
+          if (why) {
+            const said = document.createElement("span");
+            said.className = "muted text-sm extras-bundle-why";
+            said.textContent = why;
+            actions.appendChild(said);
+          }
         }
         const reinstallable = members.filter((extra) => packagesCan(extra, "reinstall"));
         const removable = members.filter((extra) => packagesCan(extra, "uninstall"));

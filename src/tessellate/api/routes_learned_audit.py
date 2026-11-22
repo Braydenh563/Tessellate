@@ -9,7 +9,7 @@ would matter for no reason.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -55,6 +55,28 @@ def undo(body: UndoBody, session: Session = Depends(get_session)) -> dict:
     lifted = learned_audit_run.undo(session, body.run)
     session.commit()
     return {"restored": lifted}
+
+
+class KeepBody(BaseModel):
+    fact_id: int
+
+
+@router.post("/keep")
+def keep(body: KeepBody, session: Session = Depends(get_session)) -> dict:
+    """Keep it on one flagged row: the flag goes and later checks leave it be."""
+    if not learned_audit_run.keep(session, body.fact_id):
+        raise HTTPException(status_code=404, detail="That is not a flagged item.")
+    session.commit()
+    return {"kept": True}
+
+
+@router.post("/unkeep")
+def unkeep(body: KeepBody, session: Session = Depends(get_session)) -> dict:
+    """Undo of `/keep`: the flag is raised again."""
+    if not learned_audit_run.unkeep(session, body.fact_id):
+        raise HTTPException(status_code=404, detail="That is not a kept flag.")
+    session.commit()
+    return {"flagged": True}
 
 
 @router.post("/redo")

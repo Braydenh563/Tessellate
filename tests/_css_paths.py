@@ -40,9 +40,14 @@ CSS_FILES = [
     #: load order, which is what makes the concatenation above meaningful.
     CSS_DIR / "09-editor.css",
     CSS_DIR / "10-responsive.css",
+    #: The Atlas, companion and name-mark face rules moved out of 08 (L-world-class-364): the `characters` bundle's sheet.
+    CSS_DIR / "characters-lazy.css",
     #: Not linked by index.html: loaded with the Library bundle (app.js
     #: `LAZY_MODULES.library`), and so after every file above.
     CSS_DIR / "library-lazy.css",
+    #: The Activity panel's run list and the Connections sheet, moved out of 07 (L-world-class-350); each loads with its bundle.
+    CSS_DIR / "agent-runs-lazy.css",
+    CSS_DIR / "connections-lazy.css",
     #: Loaded with the boards bundle, after the Library's (`LAZY_MODULES.boards`).
     CSS_DIR / "board-lazy.css",
     #: Loaded with the back/forward list's rows (`LAZY_MODULES.navHistory`).
@@ -139,6 +144,7 @@ CSS_FILES = [
     CSS_DIR / "sketch-pad.css",
     #: A private chat's empty pane (chat-private.js, `LAZY_MODULES.chatPrivate`, INBOX 1481).
     CSS_DIR / "chat-private-lazy.css",
+    CSS_DIR / "chat-groups-lazy.css",
     #: The Notes sidebar's folds (C43).
     CSS_DIR / "sidebar-folds-lazy.css",
     #: The thrown companion's fates (companion-throw.js loads it, D6).
@@ -187,3 +193,8 @@ def css_text() -> str:
     `cat`'d concatenation of CSS_FILES, to confirm.
     """
     return "".join(p.read_text(encoding="utf-8") for p in CSS_FILES)
+
+
+def css08_text() -> str:
+    """08-consistency.css and the sheet the Atlas and companion rules moved to (L-world-class-364): one text, in load order."""
+    return (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8") + "\n" + (CSS_DIR / "characters-lazy.css").read_text(encoding="utf-8")

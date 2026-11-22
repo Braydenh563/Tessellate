@@ -527,11 +527,11 @@ const TIMELINE_FIRST = 100;
 //: superseded range must not stop the new range asking for its own. `total`:
 //: how many rows the whole range holds (the first page's `total`), null until it lands.
 //: `streak`: the strip's streak ask, kept per today (review 5907787263): walking the
-//: strip asked for 366 days on every step. Asked again on a new day or a timeline
-//: load (`fresh`), or after a note is saved (`tessellate:note-saved`).
+//: strip asked for 366 days on every step. Asked again on a new day, a timeline load
+//: (`fresh`), any write (`notebook-written`, from `api`) or a failed ask.
 const timelineRenders = { n: 0, pagingFor: 0, total: null, streak: null };
-//: A note saved (today's daily note among them) asks the streak again on the next strip step.
-document.addEventListener("tessellate:note-saved", () => {
+//: Any write that lands (a note saved, today's daily note among them) asks the streak again.
+document.addEventListener("notebook-written", () => {
   timelineRenders.streak = null;
 });
 // Counts per day for the whole range (not just the loaded pages), which is
@@ -1316,6 +1316,7 @@ async function renderTimelineDayStrip({ fresh = false } = {}) {
     timelineDayPages(first, end),
     timelineRenders.streak.asked,
   ]);
+  if (journal === null) timelineRenders.streak = null; //: review of PR 222
   //: Stale answer: the person walked on while this was in flight.
   if (end !== timelineStripEnd) return;
   const streak = $("timeline-streak");
@@ -1550,9 +1551,9 @@ function applyTimelineRowTabOrder() {
 //: the 62ms the feed took to build was this function's own time, nearly all
 //: of it in those calls. A formatter made with the same locale and options
 //: formats identically, so the text is unchanged.
-const TIMELINE_ROW_TIME = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+const TIMELINE_ROW_TIME = clockOptions.formatter({ hour: "numeric", minute: "2-digit" });
 const TIMELINE_ROW_DAY = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
-const TIMELINE_ROW_WRITTEN = new Intl.DateTimeFormat(undefined, {
+const TIMELINE_ROW_WRITTEN = clockOptions.formatter({
   year: "numeric", month: "numeric", day: "numeric",
   hour: "numeric", minute: "numeric", second: "numeric",
 });
@@ -1946,7 +1947,7 @@ const timelineSpans = {
     //: The rows are connections.js's (lazy, the Connections sheet's own bundle).
     const [body] = await Promise.all([
       apiJson(`/timeline/digest?start=${start}&end=${end}`).catch(() => null),
-      lazyScript("/js/connections.js"),
+      ensureModule("connections"),
     ]);
     if (!body) return;
     const day = (key) => new Date(`${key}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });

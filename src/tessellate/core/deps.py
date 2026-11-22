@@ -28,7 +28,7 @@ from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.ai.provider import Provider
 from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
-from tessellate.core import board_thumbs
+from tessellate.core import board_thumbs, sealed_files
 from tessellate.core.database import Entry
 from tessellate.core.database_manager import DatabaseManager
 
@@ -333,6 +333,7 @@ def get_config() -> ConfigManager:
 
 spacelock.config_source = get_config
 board_thumbs.data_dir_source = lambda: get_config().data_dir
+sealed_files.data_dir_source = lambda: get_config().data_dir
 
 
 def get_db() -> DatabaseManager:
@@ -681,6 +682,23 @@ def store_quietly(session: Session, entry: Entry) -> bool:
             exc_info=True,
         )
         return False
+
+def store_quietly_many(session: Session, entries: list[Entry]) -> int:
+    """`store_quietly` for a batch: one encode and one commit for the lot.
+
+    A bulk import used to call `store_quietly` per note, and that commits, so
+    5,000 notes paid 5,000 fsyncs (L508). Returns how many vectors were stored.
+    """
+    try:
+        return get_embeddings().store_for_entries(session, entries)
+    except Exception:  # noqa: BLE001  # nothing here may fail the import
+        logging.getLogger("tessellate.embeddings").warning(
+            "couldn't embed a batch of %s entries; they stay keyword-searchable only",
+            len(entries),
+            exc_info=True,
+        )
+        return 0
+
 
 #: How many notes have to arrive or vanish at once before the app says the
 #: search index is worth rebuilding. Twenty is roughly "an import or a restore

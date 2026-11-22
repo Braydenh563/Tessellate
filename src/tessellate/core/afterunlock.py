@@ -35,10 +35,12 @@ _state = {"armed": False, "fired": False}
 _pending: list[tuple[str, Callable[[], None]]] = []
 
 
-def arm() -> None:
-    """The launch has a password: hold the work until someone unlocks."""
+def arm(held: bool = True) -> None:
+    """The launch has a password: hold the work until someone unlocks. A
+    launch without one passes `False`, so an earlier app in the same process
+    cannot leave it waiting for an unlock that never comes."""
     with _lock:
-        _state["armed"] = True
+        _state["armed"] = held
         _state["fired"] = False
         _pending.clear()
 

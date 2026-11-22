@@ -10,6 +10,7 @@ layer list in `routes_chat.py`'s docstring, never back to `routes_chat`.
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import timezone
 from pathlib import Path
@@ -17,7 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import starter_acts, vision_ocr
-from tessellate.core import deps, docview
+from tessellate.core import deps, docview, sealed_files
 from tessellate.core.config import days_from_today
 from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.repo import documents as documents_repo
@@ -181,10 +182,8 @@ def _attached_files(session: Session, file_ids: list[int]) -> list[dict]:
             continue
         body = ""
         try:
-            viewed = docview.extract(
-                uploads / attachment.stored_name,
-                vision_reader=vision_ocr.pdf_reader_or_none(),
-            )
+            with sealed_files.readable(uploads / attachment.stored_name) as plain:
+                viewed = docview.extract(plain, vision_reader=vision_ocr.pdf_reader_or_none())
             body = (viewed.text or "").strip()
         except Exception:  # noqa: BLE001 - an unreadable file is still worth naming
             body = ""
@@ -232,7 +231,8 @@ def _attached_media_files(session: Session, media_ids: list[int]) -> list[dict]:
         if upload is None or _upload_is_sealed(session, upload, None):
             continue
         try:
-            body = (docview.extract(media_dir / upload.filename, vision_reader=vision_ocr.pdf_reader_or_none()).text or "").strip()
+            with sealed_files.readable(media_dir / upload.filename) as plain:
+                body = (docview.extract(plain, vision_reader=vision_ocr.pdf_reader_or_none()).text or "").strip()
         except Exception:  # noqa: BLE001 - an unreadable file is still worth naming
             body = ""
         body = (body or (upload.ocr_text or "").strip())[:ATTACHED_FILE_CHARS]
@@ -589,8 +589,10 @@ def _attachment_readings(session: Session, entry_id: int) -> str:
         if not path.is_file():
             continue
         try:
-            viewed = docview.extract(path)
+            with sealed_files.readable(path) as plain:
+                viewed = docview.extract(plain)
         except Exception:  # noqa: BLE001  # a bad file must not cost the answer
+            logging.getLogger(__name__).debug("_attachment_readings: a bad file must not cost the answer", exc_info=True)
             continue
         text = viewed.text.strip()
         if not text:

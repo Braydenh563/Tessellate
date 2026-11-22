@@ -20,7 +20,7 @@ from tessellate.core import clock
 from tessellate.ai import captions
 from tessellate.api import routes_entries
 from tessellate.api.schemas import EntryCreate
-from tessellate.core import recordings, transcript
+from tessellate.core import recordings, sealed_files, transcript
 from tessellate.core.database import Recording
 from tessellate.core.deps import get_session
 from tessellate.entry.manager import log_action
@@ -53,6 +53,16 @@ def _save(session: captions.Session, db: DbSession) -> dict:
         session.discard_audio()
 
 
+def _seal_if_private(db: DbSession, row: Recording, dest) -> None:  # noqa: ANN001
+    """A private space's kept audio is sealed as it is saved (L-world-class-52);
+    without the key here, the next unlock seals it."""
+    try:
+        if sealed_files.wanted(db, row.workspace_id):
+            sealed_files.seal(dest)
+    except sealed_files.SealedError:
+        pass
+
+
 def _keep_audio(session: captions.Session, db: DbSession, entry_id: int, stamp: str) -> int | None:
     """The spool written out as a WAV Recording, or None when audio was not
     asked for or a take had nothing in it. A failure here never costs the note."""
@@ -79,6 +89,7 @@ def _keep_audio(session: captions.Session, db: DbSession, entry_id: int, stamp: 
         )
         db.add(row)
         db.flush()
+        _seal_if_private(db, row, dest)
         log_action(db, "created", "recording", row.id, detail="live captions")
         return row.id
     except Exception:  # noqa: BLE001 - the note is the record; the audio is the extra

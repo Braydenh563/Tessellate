@@ -335,3 +335,13 @@ def test_the_ocr_workspace_is_found_by_its_name_and_pinches():
     # (WORLD_CLASS_PLAN 28.4 row 3, scratchpad/ui-sweeps/ocr79.js).
     assert "ocrZoomAbout(ocrShownZoom() * Math.exp(-delta / 500), event.clientX, event.clientY);" in lib
     assert '$("ocr-page-pane")?.addEventListener("touchmove", (event) => {' in lib
+
+
+def test_reading_fold_reads_files_readings_322():
+    """L-world-class-322: the Library card fold reads GET /files/readings as the lightbox does."""
+
+    js = frontend_text("library.js")
+    start = js.index("function ocrRenderOtherReadings")
+    body = js[start : start + 1600]
+    assert "/files/readings?source=" in body
+    assert "ocrRenderOtherReadings(body, rows)" in body

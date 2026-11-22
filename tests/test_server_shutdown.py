@@ -41,6 +41,8 @@ import socket
 import threading
 import time
 
+import pytest
+
 from tessellate.__main__ import _stop_lingering_worker_threads
 
 
@@ -136,6 +138,22 @@ def _leftover_worker() -> threading.Thread:
         loop.close()
 
 
+def _stop_counting_joins() -> list[float | None]:
+    """Stop the workers and return every join's timeout, not a stopwatch
+    (L-general-70): the stop waits at most what its joins allow it."""
+    allowed: list[float | None] = []
+    real = threading.Thread.join
+
+    def join(self, timeout=None):  # noqa: ANN001, ANN202
+        allowed.append(timeout)
+        return real(self, timeout)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(threading.Thread, "join", join)
+        _stop_lingering_worker_threads(timeout=1.0)
+    return allowed
+
+
 def test_a_leftover_non_daemon_worker_thread_is_cleared_by_the_fix(app_state) -> None:
     """The fix, proven against a leftover worker: first any the real server
     left (the race, when it lands), then one built in exactly that state, so
@@ -153,20 +171,17 @@ def test_a_leftover_non_daemon_worker_thread_is_cleared_by_the_fix(app_state) ->
     worker = _leftover_worker()
     assert worker.is_alive() and not worker.daemon, "the built leftover should match the race's state"
 
-    started = time.monotonic()
-    _stop_lingering_worker_threads(timeout=1.0)
-    elapsed = time.monotonic() - started
+    joins = _stop_counting_joins()
 
-    assert elapsed < 1.1, f"took {elapsed:.2f}s, over the 1s budget plus slack"
+    assert joins and all(t is not None and t <= 1.0 for t in joins), f"joins allowed {joins}, over the 1s budget"
     assert not _anyio_worker_threads(), "a worker thread is still alive after being asked to stop"
 
 
 def test_stop_lingering_worker_threads_is_a_quiet_no_op_with_nothing_to_stop() -> None:
     """Called on every server-mode exit, whether or not any sync route was
     ever actually hit: must never raise or hang when there is nothing to do."""
-    started = time.monotonic()
-    _stop_lingering_worker_threads(timeout=1.0)
-    assert time.monotonic() - started < 0.5
+    joins = _stop_counting_joins()
+    assert sum(t or 0 for t in joins) < 0.5 and None not in joins
 
 
 def test_only_the_named_anyio_class_is_touched() -> None:

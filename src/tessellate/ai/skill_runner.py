@@ -50,11 +50,15 @@ from dataclasses import field as dc_field
 from sqlalchemy.orm import Session
 
 from tessellate.ai import presets
-from tessellate.ai import agent, budget as run_budget, plan_writes, skills, tools
+from tessellate.ai.lazy import LazyModule
+from tessellate.ai import budget as run_budget, plan_writes, skills, tools
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 
 logger = logging.getLogger("tessellate.skills")
+
+agent = LazyModule("tessellate.ai.agent")
+
 
 # Rounds a single step may take before it has to earn more. Lower than a free
 # chat turn on purpose: a step is one instruction, and a model still looping

@@ -167,7 +167,7 @@
               const name = spec.name || "image";
               await saveFile(blob.type === "image/png" && !/\.png$/i.test(name) ? name.replace(/\.[A-Za-z0-9]{1,5}$/, "") + ".png" : name, blob);
             } catch (error) {
-              toast(error.message || "Couldn't save that picture.", true);
+              toast(error.message || voiceLine("failed", { what: "save that picture" }), true);
             }
           },
         },
@@ -214,7 +214,7 @@
       try {
         await saveFile(attachmentLabel(spec), await attachmentBlob(spec));
       } catch (error) {
-        toast(error.message || `Couldn't save “${attachmentLabel(spec)}”.`, true);
+        toast(error.message || voiceLine("failed", { what: `save “${attachmentLabel(spec)}”` }), true);
       }
     },
 
@@ -249,7 +249,7 @@
         }
         toast(`Renamed to “${next}”.`);
       } catch (error) {
-        toast(error.message || "Couldn't rename that file.", true);
+        toast(error.message || voiceLine("failed", { what: "rename that file" }), true);
       }
     },
 
@@ -271,7 +271,7 @@
         }
         toast(row.caption ? `Description: ${row.caption}` : "No description came back.");
       } catch (error) {
-        toast(error.message || "Couldn't describe that file.", true);
+        toast(error.message || voiceLine("failed", { what: "describe that file" }), true);
       }
     },
 
@@ -290,7 +290,7 @@
           : await apiJson(`/media/${current.id}/caption`, { method: "POST", body: JSON.stringify({ text: typed }) });
         toast(row.caption ? "Description saved." : "Description cleared.");
       } catch (error) {
-        toast(error.message || "Couldn't save that description.", true);
+        toast(error.message || voiceLine("failed", { what: "save that description" }), true);
       }
     },
 
@@ -301,7 +301,7 @@
         const blob = await attachmentBlob(spec);
         await openSketch({ image: blob, caption: `Notes on ${attachmentLabel(spec)}` });
       } catch (error) {
-        toast(error.message || "Couldn't open that picture for drawing.", true);
+        toast(error.message || voiceLine("failed", { what: "open that picture for drawing" }), true);
       }
     },
 
@@ -332,7 +332,7 @@
           pushTokenUndo(`Deleted “${label}”`, [{ del: [`/files/${id}`, "DELETE"], restore: "/files/restore", token: gone.undo_token }], () => spec.onChange?.(), `Deleted “${label}”.`);
           spec.onChange?.();
         } catch (error) {
-          toast(error.message || `Couldn't delete “${label}”.`, true);
+          toast(error.message || voiceLine("failed", { what: `delete “${label}”` }), true);
         }
         return;
       }

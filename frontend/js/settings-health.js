@@ -96,7 +96,7 @@
     //: Rule 14 (WORLD_CLASS_PLAN 28.1): each field present and dated.
     const trust = health.trust || {};
     const when = (iso) => (iso ? `${relativeTime(iso)} (${whenText(iso)})` : "");
-    const asOf = ` as of ${new Date(trust.checked_at || Date.now()).toLocaleTimeString()}`;
+    const asOf = ` as of ${new Date(trust.checked_at || Date.now()).toLocaleTimeString(undefined, clockOptions())}`;
     $("health-checked").textContent = `Checked${asOf}.`;
     const backup = trust.last_backup || {};
     $("health-last-backup").textContent = backup.at ? `${when(backup.at)} · ${backup.name}` : `No backup yet${asOf}`;
@@ -230,6 +230,27 @@
     }
   }
 
+  // Dragging a slider fires `input` on every pixel. Saved on a trailing
+  // timer rather than per event, the same shape every other debounced
+  // control in this app uses, since there is no shared helper.
+  function scheduleSamplingSave() {
+    clearTimeout(samplingSaveTimer);
+    samplingSaveTimer = setTimeout(async () => {
+      try {
+        const now = { ...samplingState.overrides };
+        await apiJson("/models/sampling", { method: "PUT", body: JSON.stringify({ overrides: now }) });
+        //: A drag is one step back to where it began (L694).
+        if (samplingState.was && JSON.stringify(samplingState.was) !== JSON.stringify(now)) {
+          pushRequestUndo("A sampling setting", "/models/sampling", "PUT", { overrides: samplingState.was }, { overrides: now }, loadSamplingSettings);
+        }
+        samplingState.was = null;
+      } catch {
+        toast(voiceLine("failed", { what: "save that setting" }), true, { action: ["Reload them", loadSamplingSettings] });
+      }
+      await loadSamplingSettings();
+    }, 400);
+  }
+
   function renderSamplingRows() {
     const host = $("sampling-rows");
     if (!host || !samplingState) return;
@@ -345,23 +366,7 @@
         if (!reset.disabled) reset.click();
       });
 
-      // Dragging a slider fires `input` on every pixel. Saved on a trailing
-      // timer rather than per event, the same shape every other debounced
-      // control in this app uses, since there is no shared helper.
-      const save = () => {
-        clearTimeout(samplingSaveTimer);
-        samplingSaveTimer = setTimeout(async () => {
-          try {
-            await apiJson("/models/sampling", {
-              method: "PUT",
-              body: JSON.stringify({ overrides: samplingState.overrides }),
-            });
-          } catch {
-            toast("Couldn't save that setting.", true);
-          }
-          await loadSamplingSettings();
-        }, 400);
-      };
+      const save = scheduleSamplingSave;
 
       //: One place that applies a value, so the slider and the box cannot
       //: disagree about what "set" means (rounding, the integer knobs, which
@@ -369,6 +374,7 @@
       const applyValue = (raw) => {
         const clamped = Math.min(Math.max(raw, Number(knob.min)), Number(knob.max));
         const value = knob.integer ? Math.round(clamped) : Number(clamped.toFixed(4));
+        samplingState.was ??= { ...samplingState.overrides };
         samplingState.overrides[knob.name] = value;
         samplingState.effective[knob.name] = value;
         samplingState.sources[knob.name] = "you";
@@ -383,6 +389,7 @@
       //: same act as the reset button beside it.
       number.addEventListener("change", () => {
         if (number.value.trim() === "") {
+          samplingState.was ??= { ...samplingState.overrides };
           delete samplingState.overrides[knob.name];
           paint();
           save();
@@ -395,14 +402,16 @@
       reset.addEventListener("click", async () => {
         // Deleting the override *is* the reset, there is no separate stored
         // "default", which is what lets a different model bring its own.
+        const before = { ...samplingState.overrides };
         delete samplingState.overrides[knob.name];
         try {
           await apiJson("/models/sampling", {
             method: "PUT",
             body: JSON.stringify({ overrides: samplingState.overrides }),
           });
+          pushRequestUndo("Reset a sampling setting", "/models/sampling", "PUT", { overrides: before }, { overrides: { ...samplingState.overrides } }, loadSamplingSettings);
         } catch {
-          toast("Couldn't reset that setting.", true);
+          toast(voiceLine("failed", { what: "reset that setting" }), true, { action: ["Reload them", loadSamplingSettings] });
         }
         await loadSamplingSettings();
       });

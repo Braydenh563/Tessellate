@@ -97,6 +97,6 @@ def test_condition_and_hedge_patterns_stay_linear_on_long_whitespace():
     from tessellate.ai import reminder_parser
 
     text = "x" + "\t" * 20000 + "y"
-    start = time.perf_counter()
+    start = time.process_time()
     reminder_parser.without_conditions(text)
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5

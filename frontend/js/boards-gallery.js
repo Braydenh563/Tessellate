@@ -201,15 +201,7 @@ function drawLibraryBoardsGallery(listed) {
   }
   surfaceRecovered(empty);
   nounCount.dock("library-boards", boards.length, "board or map", "boards and maps");
-  // See `createNewBoard`'s own comment: a board with nothing on it yet
-  // doesn't come back from the server at all.
-  const created = window.wbLastCreatedBoard;
-  if (created && !boards.some((b) => b.id === created.id)) {
-    boards.push({ ...created, node_count: 0, sketch_count: 0, object_count: 0 });
-  }
-  // Counted before the filter, so each chip says how many it *would* show.
-  const counts = { all: boards.length, map: 0, board: 0 };
-  for (const b of boards) counts[b.type === "map" ? "map" : "board"] += 1;
+  const counts = drawLibraryBoardsGallery.counts(boards);
   renderBoardTypeFilter(counts);
   //: The picker's static "Default board" row is not a board while the gallery
   //: counts none: count and list say the same thing (audit 1018, item 11).
@@ -341,6 +333,10 @@ function drawLibraryBoardsGallery(listed) {
           ),
           //: A board is an `Entry`, so its reminder is an `entry_id` one; the
           //: row in Reminders opens the board (WORLD_CLASS_PLAN 1.3, row 15).
+          //: The graph draws a board or map as a node while its Maps switch is on.
+          makeMenuItem("ph:graph Show in graph", "Open the graph centred on this board or map", () =>
+            showNoteInGraph(board.id, { maps: true })
+          ),
           makeMenuItem("ph:alarm Remind me", "Set a reminder about this board or map", () =>
             remindAbout({ title: board.title, entryId: board.id })
           ),
@@ -392,6 +388,19 @@ function drawLibraryBoardsGallery(listed) {
     grid.appendChild(card);
   }
 }
+//: The boards counted per type, with the just-made empty one added back; split from `drawLibraryBoardsGallery`.
+drawLibraryBoardsGallery.counts = (boards) => {
+  // See `createNewBoard`'s own comment: a board with nothing on it yet
+  // doesn't come back from the server at all.
+  const created = window.wbLastCreatedBoard;
+  if (created && !boards.some((b) => b.id === created.id)) {
+    boards.push({ ...created, node_count: 0, sketch_count: 0, object_count: 0 });
+  }
+  // Counted before the filter, so each chip says how many it *would* show.
+  const counts = { all: boards.length, map: 0, board: 0 };
+  for (const b of boards) counts[b.type === "map" ? "map" : "board"] += 1;
+  return counts;
+};
 
 //: **New's arrow** (INBOX 1520): the main press makes a blank board, and this
 //: menu holds the other starts. A map is made at once and named "Untitled map

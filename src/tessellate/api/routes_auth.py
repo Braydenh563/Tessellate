@@ -31,7 +31,6 @@ import bcrypt
 from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import (
@@ -41,6 +40,7 @@ from tessellate.core import (
     diskspace,
     hellostore,
     lanlive,
+    lanserve,
     lantrust,
     netbind,
     password_reset,
@@ -52,10 +52,11 @@ from tessellate.core import (
 )
 from tessellate.core.config import ConfigManager
 from tessellate.core.deps import brief_session, get_config, get_session, register_cache_reset
-from tessellate.core.database import Entry, User, Vault
+from tessellate.core.database import User
 from tessellate.entry import manager_private
 from tessellate.entry.manager import log_action
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
+from tessellate.repo import auth as auth_repo
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -677,7 +678,7 @@ class PasswordBody(BaseModel):
 
 
 def _get_user(session: Session) -> User | None:
-    return session.scalar(select(User))
+    return auth_repo.user(session)
 
 
 #: **The gate's "is there a password" answer, remembered for a few seconds,
@@ -930,8 +931,11 @@ def _device_cookie(request: Request) -> str:
     return raw if 20 <= len(raw) <= 100 and raw.replace("-", "").replace("_", "").isalnum() else ""
 
 
-def _set_device_cookie(response: Response, raw: str) -> None:
-    #: Only the LAN port is https, and only a device on the network has one.
+def _set_device_cookie(response: Response, raw: str, *, secure: bool = True) -> None:
+    #: A device on the network has one. Over the LAN port's https it is
+    #: `Secure`; in plain-http mode (`secure=False`, `_cookie_secure`) a
+    #: `Secure` cookie is dropped by the phone, which was then asked about
+    #: on every sign-in (review 5883463715).
     #: Written only with an id this server minted, never echoed back from a
     #: request (CodeQL: cookie built from user input), so it lasts 400 days
     #: from first issue and an older device is asked about once again.
@@ -939,7 +943,7 @@ def _set_device_cookie(response: Response, raw: str) -> None:
         return
     response.set_cookie(
         lantrust.DEVICE_COOKIE, raw, max_age=400 * 24 * 3600, path="/auth",
-        httponly=True, secure=True, samesite="strict",
+        httponly=True, secure=secure, samesite="strict",
     )
 
 
@@ -969,7 +973,7 @@ def _hold_new_device(request: Request, device: str, config: ConfigManager) -> JS
     """Hold this sign-in until this computer answers; None once allowed."""
     minted = "" if device else secrets.token_urlsafe(32)
     raw = device or minted
-    lantrust.hold(raw, lantrust.device_name(request.headers.get("user-agent")), _client_key(request))
+    lantrust.hold(raw, lantrust.device_name(request.headers.get("user-agent")), _client_key(request), config.data_dir)
     decision = None
     if _device_waits.acquire(blocking=False):
         try:
@@ -990,12 +994,12 @@ def _hold_new_device(request: Request, device: str, config: ConfigManager) -> JS
         )
     refused = JSONResponse(status_code=403, content={"detail": detail, "device_pending": decision is None})
     if minted:
-        _set_device_cookie(refused, minted)
+        _set_device_cookie(refused, minted, secure=_cookie_secure(request))
     return refused
 
 
 def _pin_binding(session: Session, user: User) -> bytes | None:
-    row = session.scalar(select(Vault))
+    row = auth_repo.vault(session)
     if row is None:
         return None
     return pinstore.binding(user.password_hash, bytes(row.kdf_salt), bytes(row.wrapped_dek))
@@ -1300,6 +1304,11 @@ def _lan_state(config: ConfigManager, request: Request) -> dict:
         #: who is waiting. Devices and requests are this computer's to see.
         "any_network": trust["any_network"],
         "ask_new_devices": trust["ask_new_devices"],
+        #: Brief 40: the app over plain http (off), the plain address a phone's
+        #: camera opens for the trust page, and the handshakes refused so far.
+        "plain_http": trust["plain_http"],
+        "trust_urls": netbind.trust_urls(config, request.url.port),
+        "failed_handshakes": lanserve.handshake_failures(),
         #: One row per network (`lantrust.listed`): a Wi-Fi name over its
         #: subnet, whichever of its records were read more or less fully.
         "networks": lantrust.listed(trust["networks"], here_key),
@@ -1333,6 +1342,15 @@ def _current_network_key(config: ConfigManager) -> str:
 def lan_access(request: Request, config: ConfigManager = Depends(get_config)) -> dict:
     """What Settings says about "Allow other devices on this network"."""
     return _lan_state(config, request)
+
+
+@router.post("/lan-trust-page", dependencies=[Depends(require_unlock)])
+def open_lan_trust_page(request: Request) -> dict:
+    """Open the plain-http `/lan/trust` page for a quarter of an hour (the QR
+    code's window, core/lanserve.py). This computer's call: it is the one
+    that hands the certificate to a phone."""
+    _require_this_computer(request)
+    return {"open_seconds": int(lanserve.open_trust_page())}
 
 
 @router.get("/lan-certificate.pem")
@@ -1395,7 +1413,7 @@ class LanPasswordBody(BaseModel):
 
 
 class LanOptionBody(BaseModel):
-    name: str = Field(pattern="^(any_network|ask_new_devices)$")
+    name: str = Field(pattern="^(any_network|ask_new_devices|plain_http)$")
     enabled: bool
     current_password: str | None = Field(default=None, max_length=MAX_PASSWORD_CHARS)
 
@@ -1484,7 +1502,7 @@ def set_lan_option(
 ) -> dict:
     """"Allow on any network" and "Ask before a new device signs in". The
     looser setting of each asks for the password; the safer needs nothing."""
-    looser = body.enabled if body.name == "any_network" else not body.enabled
+    looser = body.enabled if body.name in ("any_network", "plain_http") else not body.enabled
     if looser:
         # The looser direction is this computer's call (secscan-1011), as
         # `answer_device` is; the safer one is open to any signed-in device.
@@ -2002,7 +2020,7 @@ def rotate_vault_key(
     session.info["workspace_id"] = "all"
     private_entries = [
         entry
-        for entry in session.scalars(select(Entry))
+        for entry in auth_repo.every_entry(session)
         if crypto.is_encrypted(entry.content)
     ]
 
@@ -2044,7 +2062,7 @@ def rotate_vault_key(
         entry.content = new_ciphertext
     manager_private.rekey_private_extras(session, old_key, new_key)
 
-    vault_row = session.scalar(select(Vault))
+    vault_row = auth_repo.vault(session)
     new_salt = crypto.new_salt()
     vault_row.kdf_salt = new_salt
     vault_row.wrapped_dek = crypto.wrap_dek(new_key, body.current_password, new_salt)

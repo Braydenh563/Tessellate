@@ -18,9 +18,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tests._js_scope import unwrapped
-
 import pytest
+
+from tests._js_scope import unwrapped
+from tests._surface_assets import inline_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
@@ -28,7 +29,12 @@ INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
 BODY_JS = (FRONTEND / "js" / "settings-body.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
-TEMPLATE = re.search(r'<template id="settings-body-template" data-surface="settings">(.*?)</template>', INDEX, re.S)
+#: The raw file, not the conftest's view of it: that turns each surface script into a `<template>`, and
+#: since each pane holds a `<template>` of its own (L675) a lazy match would stop at the first pane's end.
+with open(FRONTEND / "index.html", encoding="utf-8") as _page:
+    #: Settings' body is a fetched file now (L-world-class-760); put back in its script as it once sat.
+    RAW = inline_surfaces(_page.read())
+TEMPLATE = re.search(r'<script type="text/x-surface" id="settings-body-template" data-surface="settings"[^>]*>(.*?)</script>', RAW, re.S)
 
 
 def _template() -> str:
@@ -50,7 +56,7 @@ def test_the_sections_sit_in_one_template_inside_the_modal_content():
     assert len(re.findall(r'<section class="settings-section"', body)) == len(
         re.findall(r'class="settings-section"', INDEX)
     ), "every settings section is in the template, none outside it"
-    before = INDEX[: TEMPLATE.start()]
+    before = RAW[: TEMPLATE.start()]
     assert 'class="modal-content" tabindex="-1"' in before[-1200:], "the template is the content of the modal"
     assert INDEX.count('id="settings-body-template"') == 1
 

@@ -26,4 +26,5 @@ def test_a_narrow_sidebar_drops_the_lane_and_the_pull_up():
     block = "".join(t[t.index(q) : t.index("\n}\n", t.index(q))] for t in (CSS, LAZY))
     assert "padding-right: 0" in block
     assert "var(--sidebar-toggle-size)" in block and "margin-top" in block
-    assert "padding-inline: var(--space-2)" in block
+    #: --space-1 since L-world-class-39: at --space-2 the strip ran 5px past the sidebar.
+    assert "padding-inline: var(--space-1)" in block

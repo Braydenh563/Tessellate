@@ -64,7 +64,7 @@ def test_documents_dock_closes_up_so_the_more_menu_stays_on_the_row():
 
 
 def test_companion_blocks_browser_touch_scroll_so_a_drag_is_not_cancelled():
-    text = _css("08-consistency.css")
+    text = _css("characters-lazy.css")
     assert "#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }" in text
 
 

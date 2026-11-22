@@ -243,3 +243,18 @@ def test_no_typed_glyph_stands_in_for_an_icon():
     offenders += _scan("index.html", _html_outside_comments(html), html.splitlines())
     offenders += _scan("index.html", _html_element_text(html), html.splitlines())
     assert not offenders, "\n".join(offenders)
+
+
+def test_one_phosphor_weight_everywhere():
+    """The vendored Phosphor is the regular weight only (frontend/vendor/phosphor
+    has one font file and no `.ph-fill` rule), so `ph-fill`, `ph-bold`, `ph-light`,
+    `ph-thin` or `ph-duotone` on an icon draws nothing different: a pinned state
+    that said `ph-fill` looked the same as an unpinned one (L-world-class-105)."""
+    weight = re.compile(r"(?<![\w-])ph-(?:fill|bold|light|thin|duotone)(?![\w-])")
+    frontend = ROOT / "frontend"
+    hits = [
+        f"{path.relative_to(ROOT)}: {m.group(0)}"
+        for path in [*frontend.glob("*.html"), *(frontend / "js").glob("*.js"), *(frontend / "css").glob("*.css")]
+        for m in weight.finditer(path.read_text(encoding="utf-8"))
+    ]
+    assert not hits, f"the one vendored weight is regular: {hits}"

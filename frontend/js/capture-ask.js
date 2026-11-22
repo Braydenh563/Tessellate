@@ -443,7 +443,7 @@ function noteTemplateText(raw, clipboard = "[clipboard]") {
   const now = new Date();
   return String(raw || "")
     .replace(/\{\{?date\}\}?/g, stampDate(now))
-    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
+    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }))
     .replaceAll("{{clipboard}}", clipboard);
 }
 
@@ -457,7 +457,7 @@ async function noteTemplateForUse(template) {
     try {
       clipboard = (await navigator.clipboard.readText()) || "";
     } catch {
-      toast("Couldn't read the clipboard, so that part of the template is empty.", "info");
+      toast(voiceLine("failed", { what: "read the clipboard", why: "that part of the template is empty" }), "info");
     }
   }
   const full = noteTemplateText(raw, clipboard);
@@ -615,16 +615,19 @@ function captureNeedsWords() {
 }
 
 //: **The server is gone, not the note** (INBOX 434): held in the outbox
-//: (quick-note.js) and the box cleared. Staged files cannot be held, so then
-//: the words stay, saying why. Answers whether it said anything.
+//: (quick-note.js) and the box cleared; staged pictures and files go with it
+//: (IndexedDB, L-world-class-115). When storage refuses, the words stay, saying
+//: why. Answers whether it said anything.
 async function heldOffline(error, body, contentBox, titleBox) {
   if (!(error instanceof TypeError)) return false;
   const status = $("save-status");
-  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd(body))) {
+  if (!(await noteOutboxAdd(body, { images: captureStagedImages, files: captureStagedFiles }))) {
     status.textContent = "The server is not answering. Your note is kept here; save again when it is back.";
     status.classList.add("error");
     return true;
   }
+  clearStagedImages();
+  captureStagedFiles = [];
   resetCaptureForm(contentBox, titleBox);
   focusCaptureBox();
   status.textContent = "Saved on this device. It goes into your notebook as soon as the server answers.";
@@ -689,9 +692,6 @@ async function saveEntry() {
     payload.content = rewriteStagedUrls(content, stagedUrls);
     const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) });
     clearStagedImages();
-    //: Whoever keeps an answer a new note changes hears of it: the timeline's
-    //: streak, when this is the day's note (review 5907787263).
-    document.dispatchEvent(new CustomEvent("tessellate:note-saved", { detail: { id: saved.id } }));
     status.textContent = filedByText(saved);
     //: Which note this line is about: three notes saved in a row each poll
     //: for their own filing, and the first answer used to overwrite the
@@ -901,8 +901,10 @@ function scrollEditingEntryIntoView(id) {
   if (rect.top < 0) window.scrollBy(0, rect.top - 8);
 }
 
-async function flashEntry(id) {
+async function flashEntry(id, { terms = [] } = {}) {
   lastOpenedEntryId = id;
+  //: Cleared with the filter below, so the finder hands its words over: that note's card marks them.
+  noteEngine.opened = { id, terms };
   switchTab("notes");
   // The Notes tab is split into sub-tabs, and the note list lives in "browse".
   // Without this the card is found and scrolled to while its whole section is
@@ -1376,22 +1378,7 @@ onSurface("notes", () => {
 //: answer switch). The Ask scope it sets stays here: `askQuestion` reads it.
 let askScope = null;
 
-function showAskAsOf(on) {
-  const row = $("ask-as-of-row");
-  const box = $("ask-as-of");
-  if (!row || !box) return;
-  row.classList.toggle("hidden", !on);
-  $("ask-time-travel")?.setAttribute("aria-pressed", on ? "true" : "false");
-  if (on) {
-    //: Nothing after today: the future has no notes to read.
-    const today = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    box.max = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
-    box.focus();
-  } else {
-    box.value = "";
-  }
-}
+//: `showAskAsOf` is in the lazy gesture-kit.js (a stand-in, lazy-entries.js).
 
 //: From app.js (its cap), 2026-10-06; read at call time only.
 // --- capture templates (Wave B) ---------------------------------------------------

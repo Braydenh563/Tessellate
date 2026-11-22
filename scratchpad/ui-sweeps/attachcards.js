@@ -113,7 +113,7 @@ const phone = W < 600;
   }
 
   // Surface 2: the edit form of the same note.
-  await page.evaluate((id) => { editingId = id; renderEntries(); }, ids.id);
+  await page.evaluate((id) => { setEditingNote(id); renderEntries(); }, ids.id);
   await page.waitForTimeout(1500);
   const editHost = "#entry-edit-attachment-chips";
   console.log(JSON.stringify({ surface: "edit", ...(await measure(editHost)) }));

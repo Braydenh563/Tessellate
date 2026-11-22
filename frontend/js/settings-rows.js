@@ -36,6 +36,7 @@
     { key: "season_hemisphere", id: "pref-season-hemisphere" },
     { key: "before_includes_day", id: "pref-before-includes-day" },
     { key: "date_order", id: "pref-date-order" },
+    { key: "time_format", id: "pref-time-format" },
     { key: "birthday", id: "pref-birthday" },
     { key: "insight_level", id: "pref-insight" },
     { key: "smart_punctuation", id: "pref-smart-punctuation" },
@@ -62,6 +63,7 @@
     { key: "auto_link_enabled", id: "pref-auto-link" },
     { key: "auto_dedupe_enabled", id: "pref-auto-dedupe" },
     { key: "auto_stale_review_enabled", id: "pref-auto-stale-review" },
+    { key: "learned_audit_enabled", id: "pref-learned-audit" },
     { key: "auto_capture_enabled", id: "pref-auto-capture" },
     { key: "mcp_writes_enabled", id: "pref-mcp-writes" },
     { key: "autonomous_tasks_interval_hours", id: "pref-autonomous-interval" },
@@ -318,7 +320,7 @@
 
   function settingRowsIn(pane) {
     return allSettingRows().filter((row) => {
-      const el = $(row.id);
+      const el = document.getElementById(row.id);
       return el && pane.contains(el);
     });
   }
@@ -332,7 +334,7 @@
       kept.length === 1 ? "1 name is not offered as a link." : `${kept.length} names are not offered as links.`;
   }
 
-  $("pref-link-ignored-reset").addEventListener("click", async () => {
+  SURFACES.wire("pref-link-ignored-reset", "click", async () => {
     const before = Array.isArray(prefsCache?.link_offer_ignored) ? [...prefsCache.link_offer_ignored] : [];
     const put = async (names) => {
       prefsCache = await apiJson("/preferences", {
@@ -346,7 +348,7 @@
   });
 
   function paintSettingRows(name) {
-    renderLinkIgnoredRow();
+    if (name === "general") renderLinkIgnoredRow();
     const pane = $(`settings-${name}`);
     if (!pane) return;
     const changed = settingRowsIn(pane).filter((row) => paintSettingRow(row, pane));
@@ -432,11 +434,11 @@
         if (event.target.closest?.(".seg button")) repaint();
       });
       wireSettingsFile();
-      $("sync-now")?.addEventListener("click", syncNow);
-      $("sync-pair")?.addEventListener("click", syncPair);
-      $("sync-unpair")?.addEventListener("click", syncUnpair);
-      $("sync-reset")?.addEventListener("click", syncReset);
-      $("sync-folder-open")?.addEventListener("click", () => openFolderSync());
+      SURFACES.wire("sync-now", "click", syncNow);
+      SURFACES.wire("sync-pair", "click", syncPair);
+      SURFACES.wire("sync-unpair", "click", syncUnpair);
+      SURFACES.wire("sync-reset", "click", syncReset);
+      SURFACES.wire("sync-folder-open", "click", () => openFolderSync());
       // The folder's sheet says when it has run: the one last-synced line follows (decision 14).
       document.addEventListener("sync-folder-done", () => paintSync(() => apiJson("/sync/status")));
     }
@@ -534,10 +536,9 @@
   }
 
   function wireSettingsFile() {
-    const input = $("settings-file-input");
-    $("settings-file-export")?.addEventListener("click", exportSettingsFile);
-    $("settings-file-import")?.addEventListener("click", () => input?.click());
-    input?.addEventListener("change", () => {
+    SURFACES.wire("settings-file-export", "click", exportSettingsFile);
+    SURFACES.wire("settings-file-import", "click", () => $("settings-file-input").click());
+    SURFACES.wire("settings-file-input", "change", ({ target: input }) => {
       const chosen = input.files?.[0];
       input.value = "";
       if (chosen) importSettingsFile(chosen);
@@ -621,7 +622,7 @@
   //: panel-movable.js): kept on this device, like Interface animations.
   //: Settings, Account, "Show timers and reminders on the lock screen" (INBOX 1553): off until turned
   //: on, on this device (utility-tools.js lists them on the lock card). The key goes when it is off.
-  {
+  onSurface("settings-account", () => {
     const box = $("lock-notices-toggle");
     box.checked = prefs.get("lock-notices", null) === "on";
     box.addEventListener("change", () => {
@@ -629,14 +630,15 @@
       else prefs.remove("lock-notices");
       ensureModule("utilities").then(() => lockNotices.refresh());
     });
-  }
+  });
 
-  for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-pos"], ["panel-push-toggle", "panel-push"]]) {
-    const box = $(id);
-    if (!box) continue;
-    box.checked = prefs.get(key, "on") !== "off";
-    box.addEventListener("change", () => prefs.set(key, box.checked ? "on" : "off"));
-  }
+  onSurface("settings-appearance", () => {
+    for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-pos"], ["panel-push-toggle", "panel-push"]]) {
+      const box = $(id);
+      box.checked = prefs.get(key, "on") !== "off";
+      box.addEventListener("change", () => prefs.set(key, box.checked ? "on" : "off"));
+    }
+  });
 
   Object.assign(window, { paintSettingRow, settingDefaults, settingRowsIn, settingRowsWatch });
 })();

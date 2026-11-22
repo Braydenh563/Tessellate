@@ -526,9 +526,12 @@ _NO_CATEGORY = frozenset({"", "none", "uncategorised", "uncategorized"})
 
 
 def category_hint(note: dict) -> str:
-    """" [Health]", or "" for a note in no category."""
+    """" [Health]", or "" for a note in no category; a note also put in
+    others by hand reads " [Health, Travel]"."""
     name = str(note.get("category") or "").strip()
-    return "" if name.lower() in _NO_CATEGORY else f" [{name}]"
+    names = [] if name.lower() in _NO_CATEGORY else [name]
+    names += [str(c) for c in note.get("also_in") or []]
+    return f" [{', '.join(names)}]" if names else ""
 
 
 def _written_hint(note: dict) -> str:
@@ -1492,12 +1495,19 @@ def evidence_note(session, content: str, already: str = "", exclude_entry_id: in
 
     if not runner_enabled("corrections"):
         return ""
+    from tessellate.ai import verdicts
+
+    known = verdicts.known(session)
     lines: list[str] = []
     seen_moves: list[str] = []
     for item in learning.filing_evidence(
         session, content, limit=FILING_EVIDENCE_ROWS, exclude_entry_id=exclude_entry_id
     ):
-        excerpt = str(item.get("excerpt") or "")[:CORRECTION_EXCERPT_CHARS]
+        excerpt = str(item.get("excerpt") or "")
+        if item["kind"] == "neighbour" and known:
+            #: I7: a neighbour is quoted without the sentences marked wrong.
+            excerpt = " ".join(verdicts.without_wrong(excerpt, item["entry_id"], known).split())
+        excerpt = excerpt[:CORRECTION_EXCERPT_CHARS]
         #: Another note's words, fenced as data like the note itself (audit HR5).
         quoted = fence.inline("note", excerpt)
         if item["kind"] == "neighbour":
@@ -1539,6 +1549,14 @@ def filing_prompt(
     neighbour paths in the janitor never ask a model anything and have nothing
     to put them in.
     """
+    if exclude_entry_id is not None:
+        from tessellate.ai import verdicts
+
+        #: I7: a note re-filed is read without the sentences the person
+        #: marked wrong (on an evidence card or a cited line's peek).
+        known = verdicts.known(session)
+        if known:
+            content = verdicts.without_wrong(content, exclude_entry_id, known)
     parts = [f"Existing categories: {', '.join(categories) if categories else '(none yet)'}"]
     style = filing_style_note()
     if style:

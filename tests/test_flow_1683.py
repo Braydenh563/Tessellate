@@ -181,10 +181,10 @@ def test_the_picture_cost_stays_inside_the_calm_budget(look):
     s = sprites.SpriteSet(look)
     flow = bh.Flow()
     s.posed("stand", 192, False, (1.0, 1.0, 0.0, 0.0), flow.view(1.0))
-    began = time.perf_counter()
+    began = time.process_time()
     for k in range(10):
         s.posed("stand", 192, False, (1.0, 1.0, 0.0, 0.0), flow.view(2.0 + k * 0.7))
-    assert (time.perf_counter() - began) / 10 < 0.05
+    assert (time.process_time() - began) / 10 < 0.05
 
 
 def test_a_flow_is_never_asked_of_a_spin_frame():

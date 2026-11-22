@@ -1105,293 +1105,316 @@ function atlasTuneSegs(segs, root, k, curlDeg, from) {
 //: The glints' sizes along a wisp, so no two neighbours match (INBOX 550).
 const ATLAS_GLINT_K = [1.3, 0.55, 0.9, 0.7, 1.1];
 
+//: **Each look is built on its first read** (L-world-class-354): building
+//: both at eval was 52 of atlas.js's 86 ms eval task at 4x CPU. `atlasBuild`
+//: takes the tune and marks every look stale; `ATLAS_LOOKS.<look>` is a getter
+//: (installed below) that builds that look with this tune the first time it
+//: is read, and each look is warmed in a task of its own after the eval
+//: (`atlasWarmLook`), so a drawing rarely pays for it.
 function atlasBuild() {
-  const tune = atlasTune();
+  atlasBuild.tune = atlasTune();
+  atlasBuild.built.clear();
+  return atlasBuild.tune;
+}
+atlasBuild.built = new Set();
+
+function atlasBuildLook(spec) {
+  atlasBuild.built.add(spec);
+  const tune = atlasBuild.tune || (atlasBuild.tune = atlasTune());
   const lock = (l, round) => ({ fill: atlasStem(l.seg, atlasTaper(l.w[0], l.w[1]), { samples: 10, cap: false, round }), light: atlasStemEdge(l.seg, atlasTaper(l.w[0], l.w[1]), 10), mass: !!l.mass });
-  for (const spec of Object.values(ATLAS_LOOKS)) {
-    const root = [spec.tail[0][0], spec.tail[0][1]];
-    const tail = atlasTuneSegs(spec.tail, root, tune.tailLength, tune.tailCurl, spec.tail.length - 1);
-    spec.tailPath = atlasStem(tail, spec.tailWidth, { samples: 14, round: !!spec.tailRound });
-    spec.tailSegsNow = tail;
-    //: Her tail's filaments (INBOX 565): open lines along it at fixed
-    //: fractions of its half-width, from a fifth of the way to near the tip.
-    spec.tailFilamentPaths = (spec.tailFilaments || []).map((k) => {
-      const pts = atlasStemSides(tail, () => 0, 14, (t) => (spec.tailWidth(t) / 2) * k).left;
-      const run = pts.slice(Math.round(pts.length * 0.18), Math.round(pts.length * 0.92));
-      return `M${atlasFix(run[0][0])} ${atlasFix(run[0][1])}${atlasSmooth(run)}`;
-    }).join("");
-    spec.streamPath = atlasStem(tail, (t) => spec.tailWidth(t) * 0.26, { samples: 14, shift: (t) => spec.tailWidth(t) * 0.22 * Math.sin(Math.PI * 2.6 * t) });
-    spec.silkPath = atlasStem(tail, (t) => spec.tailWidth(t) * 0.24, { samples: 14, shift: (t) => -spec.tailWidth(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1) });
-    //: The stars ride the tail's scale; the tip is the tuned tail's end.
-    spec.tailStarsNow = spec.tailStars.map(([x, y, r]) => [+(root[0] + (x - root[0]) * tune.tailLength).toFixed(2), +(root[1] + (y - root[1]) * tune.tailLength).toFixed(2), r]);
-    const last = tail[tail.length - 1];
-    spec.tailTipNow = [last[6], last[7]];
-    const n = tune.lockCount > 0 ? Math.round(tune.lockCount) : spec.locks.length;
-    spec.lockPaths = spec.locks.slice(0, n).map((l) => lock(l, !!spec.roundLocks));
-    spec.headPaths = spec.head.slice(0, n).map((l) => lock(l, !!spec.roundLocks));
-    //: **Lustre** (INBOX 550): a look with a fringe (the feminine) wears a
-    //: highlight band along each lock of the mane, inside its lit edge and
-    //: thin at both ends (`sheen`, drawn on its own lock); the masculine none.
-    if (spec.fringe) {
-      const sheen = (l) => atlasStem(l.seg, (t) => 0.1 + l.w[0] * 0.2 * Math.sin(Math.PI * t) ** 0.8, { samples: 10, round: true, shift: (t) => -atlasTaper(l.w[0], l.w[1])(t) * 0.2 });
-      for (const [list, paths] of [[spec.locks, spec.lockPaths], [spec.head, spec.headPaths]]) paths.forEach((p, i) => { if (!p.mass) p.sheen = sheen(list[i]); });
-      //: The fringe: each lock from its broad root to a round tip half a
-      //: unit across, both ends round (`round`); its shadow a little
-      //: wider; its highlight a band thin at both ends on the side the
-      //: lock curves away from, the light's side.
-      spec.fringePaths = spec.fringe.map(({ seg, w: [a, b] }) => {
-        const width = (t) => b + (a - b) * (1 - t ** 1.5);
-        const side = seg.at(-1)[6] < seg[0][0] ? 1 : -1;
-        const band = (k) => atlasStem(seg, (t) => 0.12 + a * k * Math.sin(Math.PI * t) ** 0.9, { samples: 12, round: true, shift: (t) => side * width(t) * 0.18 });
-        return { fill: atlasStem(seg, width, { samples: 12, round: true }), under: atlasStem(seg, (t) => width(t) * 1.12 + 0.2, { samples: 12, round: true }), soft: band(0.3), bright: band(0.12) };
-      });
-    }
-    spec.torsoNow = atlasScalePathX(spec.torso || ATLAS_TORSO_PATH, tune.bodyWidth, 31);
-    spec.torsoEdgeNow = atlasScalePathX(atlasTorsoEdge(spec.torso || ATLAS_TORSO_PATH), tune.bodyWidth, 31);
-    if (spec.lowers) {
-      //: Every wisp starts 6 units higher, straight up inside the torso,
-      //: so its root is under the body's fade (the `lowerin` mask) rather
-      //: than a flat end showing through it at the waist.
-      const rooted = (seg) => {
-        const [x, y] = seg[0];
-        return [[x, y - 6, x, y - 4, x, y - 2, x, y], ...seg];
+  const root = [spec.tail[0][0], spec.tail[0][1]];
+  const tail = atlasTuneSegs(spec.tail, root, tune.tailLength, tune.tailCurl, spec.tail.length - 1);
+  spec.tailPath = atlasStem(tail, spec.tailWidth, { samples: 14, round: !!spec.tailRound });
+  spec.tailSegsNow = tail;
+  //: Her tail's filaments (INBOX 565): open lines along it at fixed
+  //: fractions of its half-width, from a fifth of the way to near the tip.
+  spec.tailFilamentPaths = (spec.tailFilaments || []).map((k) => {
+    const pts = atlasStemSides(tail, () => 0, 14, (t) => (spec.tailWidth(t) / 2) * k).left;
+    const run = pts.slice(Math.round(pts.length * 0.18), Math.round(pts.length * 0.92));
+    return `M${atlasFix(run[0][0])} ${atlasFix(run[0][1])}${atlasSmooth(run)}`;
+  }).join("");
+  spec.streamPath = atlasStem(tail, (t) => spec.tailWidth(t) * 0.26, { samples: 14, shift: (t) => spec.tailWidth(t) * 0.22 * Math.sin(Math.PI * 2.6 * t) });
+  spec.silkPath = atlasStem(tail, (t) => spec.tailWidth(t) * 0.24, { samples: 14, shift: (t) => -spec.tailWidth(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1) });
+  //: The stars ride the tail's scale; the tip is the tuned tail's end.
+  spec.tailStarsNow = spec.tailStars.map(([x, y, r]) => [+(root[0] + (x - root[0]) * tune.tailLength).toFixed(2), +(root[1] + (y - root[1]) * tune.tailLength).toFixed(2), r]);
+  const last = tail[tail.length - 1];
+  spec.tailTipNow = [last[6], last[7]];
+  const n = tune.lockCount > 0 ? Math.round(tune.lockCount) : spec.locks.length;
+  spec.lockPaths = spec.locks.slice(0, n).map((l) => lock(l, !!spec.roundLocks));
+  spec.headPaths = spec.head.slice(0, n).map((l) => lock(l, !!spec.roundLocks));
+  //: **Lustre** (INBOX 550): a look with a fringe (the feminine) wears a
+  //: highlight band along each lock of the mane, inside its lit edge and
+  //: thin at both ends (`sheen`, drawn on its own lock); the masculine none.
+  if (spec.fringe) {
+    const sheen = (l) => atlasStem(l.seg, (t) => 0.1 + l.w[0] * 0.2 * Math.sin(Math.PI * t) ** 0.8, { samples: 10, round: true, shift: (t) => -atlasTaper(l.w[0], l.w[1])(t) * 0.2 });
+    for (const [list, paths] of [[spec.locks, spec.lockPaths], [spec.head, spec.headPaths]]) paths.forEach((p, i) => { if (!p.mass) p.sheen = sheen(list[i]); });
+    //: The fringe: each lock from its broad root to a round tip half a
+    //: unit across, both ends round (`round`); its shadow a little
+    //: wider; its highlight a band thin at both ends on the side the
+    //: lock curves away from, the light's side.
+    spec.fringePaths = spec.fringe.map(({ seg, w: [a, b] }) => {
+      const width = (t) => b + (a - b) * (1 - t ** 1.5);
+      const side = seg.at(-1)[6] < seg[0][0] ? 1 : -1;
+      const band = (k) => atlasStem(seg, (t) => 0.12 + a * k * Math.sin(Math.PI * t) ** 0.9, { samples: 12, round: true, shift: (t) => side * width(t) * 0.18 });
+      return { fill: atlasStem(seg, width, { samples: 12, round: true }), under: atlasStem(seg, (t) => width(t) * 1.12 + 0.2, { samples: 12, round: true }), soft: band(0.3), bright: band(0.12) };
+    });
+  }
+  spec.torsoNow = atlasScalePathX(spec.torso || ATLAS_TORSO_PATH, tune.bodyWidth, 31);
+  spec.torsoEdgeNow = atlasScalePathX(atlasTorsoEdge(spec.torso || ATLAS_TORSO_PATH), tune.bodyWidth, 31);
+  if (spec.lowers) {
+    atlasBuild.lowers(spec);
+  }
+  if (spec.arm) {
+    //: The left arm hangs with the body on its right normal; the right
+    //: arm is held out, palm down, the thumb along its upper edge.
+    //: Round 6: the same shoulder inside the chest and the same mitten
+    //: as the main look, a little slighter (5 to 2.3), not the 3.9 to 1.9
+    //: stick with a small knob that the owner's screenshot showed.
+    //: Round 9: a look may name its arms' widths, each hand's thumb side
+    //: and the mitten's size (the masculine arms hang, both thumbs in).
+    const [w0, w1] = spec.armWidth || [5, 2.3];
+    const [thumbL, thumbR] = spec.armHands || [-1, -1];
+    const k = spec.handScale || 1.05;
+    //: The jointed arm (`atlasArmPath`): each arm's two drawn segments,
+    //: its width and its hand, for the rig to bend at the elbow and the
+    //: wrist. At rest (no bend) it draws exactly `armPaths`.
+    spec.armRig = { l: { segs: spec.armL, width: atlasLimbTo(w0, w1), hand: atlasHand(thumbL, k) }, r: { segs: spec.arm, width: atlasLimbTo(w0, w1), hand: atlasHand(thumbR, k) } };
+    spec.armPaths = ["l", "r"].map((side) => [side, atlasArmPath(spec.armRig[side], 0, 0)]);
+  }
+  if (spec.legs === false) spec.legPaths = [];
+  //: **The astral wisps, tapered and lit** (INBOX 550, the owner of flat
+  //: lavender bands with dot sparkles: "improve the whisps"). Each is a
+  //: ribbon that swells fast from a fine, round root to 2.95 across a
+  //: third of the way along and tapers to a fine, round tip; a glow 2.6
+  //: times as wide under it; a lit edge along its outer side; painted
+  //: with a gradient of nebula hues along it (`wisp<i>`, the defs) and
+  //: faded out at both ends (`wispends`). Its sparkles are four-point
+  //: glints in five sizes (`ATLAS_GLINT_K`), each a little off the
+  //: centreline, alternately to either side.
+  if (spec.wisps) {
+    atlasBuild.wisps(spec);
+  }
+}
+//: The lower body (the trail, the cloak or the dress), split from `atlasBuildLook`.
+atlasBuild.lowers = (spec) => {
+  //: Every wisp starts 6 units higher, straight up inside the torso,
+  //: so its root is under the body's fade (the `lowerin` mask) rather
+  //: than a flat end showing through it at the waist.
+  const rooted = (seg) => {
+    const [x, y] = seg[0];
+    return [[x, y - 6, x, y - 4, x, y - 2, x, y], ...seg];
+  };
+  if (spec.lowerTaper === "wisp") {
+    //: The masculine trail (`lowers`, above). The main wisp leaves the
+    //: torso as wide as the body is at the hips (`hip`, 16 inside the
+    //: torso, 14.3 at y 56 where the torso's flanks are 14.4 apart), so
+    //: its outline carries straight on from the body's with no pinch at
+    //: the waist (the owner: "the bottom body whisps need to fit better
+    //: to the full width of the main body"); the flare goes by a
+    //: quarter of the way down (y 70), and from there it is a trunk `w`
+    //: across tapering evenly to a round tip 1.6 across, twice the width
+    //: of each sub-wisp where that one branches ("the middle isnt now
+    //: really bigger than the subwhisps"). A sub-wisp is built the same
+    //: way at its own width: full where it leaves the main wisp,
+    //: tapering evenly to a round tip 0.9 across, from inside the main
+    //: wisp so its root is part of the trunk.
+    const ease = (a, b, t) => {
+      const k = Math.min(1, Math.max(0, (t - a) / (b - a)));
+      return k * k * (3 - 2 * k);
+    };
+    const main = (w, hip) => (t) => 1.6 + (w - 1.6) * (1 - t) ** 0.8 + (hip - w) * (1 - ease(0.28, 0.48, t));
+    //: **A cloak** (INBOX 564, "same with the lower body"; the brief: "a
+    //: cloak-like trailing form in his register, in the same celestial
+    //: material"). With `cloak` [hip, peak, tip] the main wisp is his
+    //: cloak: as wide as the torso where it leaves it (y 56, the rooted
+    //: run's first quarter is inside the body), swelling to `peak` a
+    //: third of the way down as cloth falls away from the hips, then
+    //: tapering along the same S to a soft lobe (`hemTip`); the
+    //: sub-wisps are its trailing tatters, in the same material.
+    const cloak = spec.cloak ? (([hip, peak, tip]) => (t) => {
+      const u = Math.max(0, (t - 0.25) / 0.75);
+      return u < 0.32 ? hip + (peak - hip) * Math.sin((Math.PI / 2) * (u / 0.32)) : tip + (peak - tip) * ((1 - u) / 0.68) ** 1.2;
+    })(spec.cloak) : null;
+    const sub = (w) => (t) => 0.9 + (w - 0.9) * (1 - t) ** 0.95;
+    const parts = spec.lowers.map(({ main: isMain, side, seg: drawn, w, hip, specks }) => {
+      const seg = drawn[0][1] < 62 ? rooted(drawn) : drawn;
+      const width = isMain ? cloak || main(w, hip) : sub(w);
+      return {
+        side: side || 0,
+        seg,
+        width,
+        fill: atlasStem(seg, width, { samples: 14, cap: true, tip: isMain && cloak ? atlasHemTip : null }),
+        stream: atlasStem(seg, (t) => width(t) * 0.26, { samples: 14, cap: true, shift: (t) => width(t) * 0.2 * Math.sin(Math.PI * 2.4 * t + 0.4) }),
+        //: Specks ride the drawn centreline, at [t, r].
+        specks: specks.map(([t, r]) => [...atlasSegsAt(drawn, t).map(atlasFix), r]),
       };
-      if (spec.lowerTaper === "wisp") {
-        //: The masculine trail (`lowers`, above). The main wisp leaves the
-        //: torso as wide as the body is at the hips (`hip`, 16 inside the
-        //: torso, 14.3 at y 56 where the torso's flanks are 14.4 apart), so
-        //: its outline carries straight on from the body's with no pinch at
-        //: the waist (the owner: "the bottom body whisps need to fit better
-        //: to the full width of the main body"); the flare goes by a
-        //: quarter of the way down (y 70), and from there it is a trunk `w`
-        //: across tapering evenly to a round tip 1.6 across, twice the width
-        //: of each sub-wisp where that one branches ("the middle isnt now
-        //: really bigger than the subwhisps"). A sub-wisp is built the same
-        //: way at its own width: full where it leaves the main wisp,
-        //: tapering evenly to a round tip 0.9 across, from inside the main
-        //: wisp so its root is part of the trunk.
-        const ease = (a, b, t) => {
-          const k = Math.min(1, Math.max(0, (t - a) / (b - a)));
-          return k * k * (3 - 2 * k);
-        };
-        const main = (w, hip) => (t) => 1.6 + (w - 1.6) * (1 - t) ** 0.8 + (hip - w) * (1 - ease(0.28, 0.48, t));
-        //: **A cloak** (INBOX 564, "same with the lower body"; the brief: "a
-        //: cloak-like trailing form in his register, in the same celestial
-        //: material"). With `cloak` [hip, peak, tip] the main wisp is his
-        //: cloak: as wide as the torso where it leaves it (y 56, the rooted
-        //: run's first quarter is inside the body), swelling to `peak` a
-        //: third of the way down as cloth falls away from the hips, then
-        //: tapering along the same S to a soft lobe (`hemTip`); the
-        //: sub-wisps are its trailing tatters, in the same material.
-        const cloak = spec.cloak ? (([hip, peak, tip]) => (t) => {
-          const u = Math.max(0, (t - 0.25) / 0.75);
-          return u < 0.32 ? hip + (peak - hip) * Math.sin((Math.PI / 2) * (u / 0.32)) : tip + (peak - tip) * ((1 - u) / 0.68) ** 1.2;
-        })(spec.cloak) : null;
-        const sub = (w) => (t) => 0.9 + (w - 0.9) * (1 - t) ** 0.95;
-        const parts = spec.lowers.map(({ main: isMain, side, seg: drawn, w, hip, specks }) => {
-          const seg = drawn[0][1] < 62 ? rooted(drawn) : drawn;
-          const width = isMain ? cloak || main(w, hip) : sub(w);
-          return {
-            side: side || 0,
-            seg,
-            width,
-            fill: atlasStem(seg, width, { samples: 14, cap: true, tip: isMain && cloak ? atlasHemTip : null }),
-            stream: atlasStem(seg, (t) => width(t) * 0.26, { samples: 14, cap: true, shift: (t) => width(t) * 0.2 * Math.sin(Math.PI * 2.4 * t + 0.4) }),
-            //: Specks ride the drawn centreline, at [t, r].
-            specks: specks.map(([t, r]) => [...atlasSegsAt(drawn, t).map(atlasFix), r]),
-          };
-        });
-        spec.lowerPaths = parts;
-        //: **One silhouette** (the owner: "make sure that they are properly
-        //: and cleanly integrated with the body and not obviously separate
-        //: shapes"). Each translucent paint is one path holding every
-        //: wisp as a subpath: every stem is walked the same way round, so
-        //: the nonzero fill paints where they overlap once, and a sub-wisp
-        //: grows out of the main wisp with no brighter band, no line and no
-        //: change of opacity at the join; drawn as separate paths, the
-        //: overlap of two translucent fills showed as a lighter patch where
-        //: each branch left the trunk. No veil: a haze round the trail drawn
-        //: as a wider shape showed its own edge a unit outside the wisps, a
-        //: second outline; and no lit edge is stroked along the main wisp
-        //: (it ran across the roots of the branches).
-        const join = (key) => parts.map((p) => p[key]).join("");
-        if (!cloak) spec.trail = { fill: join("fill"), stream: join("stream"), specks: parts.flatMap((p) => p.specks) };
-        else {
-          //: Her dress's material (`spec.sower`, drawn by `atlasBody`): the
-          //: flow's paint with a nebula in it, two soft sweeps of light for
-          //: the cloak's folds, a rim light on its outer side, star dust,
-          //: two glints, and past the hem the motes it breaks into; the
-          //: whole silhouette one path, so tatter and cloak are one shape.
-          const m = parts.find((p, i) => spec.lowers[i].main);
-          const at = (t, across) => {
-            const [x, y] = atlasSegsAt(m.seg, t);
-            const [x1, y1] = atlasSegsAt(m.seg, Math.min(1, t + 0.01));
-            const len = Math.hypot(x1 - x, y1 - y) || 1;
-            const o = (across * m.width(t)) / 2;
-            return [atlasFix(x - ((y1 - y) / len) * o), atlasFix(y + ((x1 - x) / len) * o)];
-          };
-          const sweep = (t0, t1, from, to, k) => {
-            const { segs, at: g } = atlasSegsCut(m.seg, t0, t1);
-            return atlasStem(segs, (t) => 0.1 + m.width(g(t)) * k * Math.sin(Math.PI * t) ** 1.2, { samples: 8, round: true, shift: (t) => m.width(g(t)) * (from + (to - from) * t) });
-          };
-          const [tx, ty] = m.seg.at(-1).slice(6, 8);
-          const c = spec.cloakDust;
-          spec.sower = {
-            fill: join("fill"),
-            sheen: sweep(0.3, 0.72, -0.3, 0.22, 0.3) + sweep(0.55, 0.92, 0.26, -0.18, 0.2),
-            rim: atlasStem(m.seg.slice(1), (t) => (0.08 + m.width(0.25 + 0.75 * t) * 0.08) * Math.sin(Math.PI * t) ** 0.7, { samples: 16, round: true, shift: (t) => -m.width(0.25 + 0.75 * t) * 0.42 }),
-            dust: c.dust.map(([t, a, r]) => [...at(t, a), r]),
-            glints: c.glints.map(([t, a, k]) => [...at(t, a), k]),
-            motes: c.motes.map(([x, y, r, g]) => [atlasFix(tx + x), atlasFix(ty + y), r, g]),
-            glow: parts.map((p, i) => atlasStem(p.seg, (t) => p.width(t) + 1.3, { samples: 14, cap: true, tip: spec.lowers[i].main ? atlasHemTip : null })).join(""),
-          };
-        }
-      } else if (spec.lowerTaper === "sower") {
-        //: The Seed Sower's tail, now a dress (INBOX 535, 559): the hips'
-        //: width where it leaves them, eased (no pinch) to a long taper and
-        //: a soft lobe `tip` across.
-        const [{ seg, tip, dust, glints, motes }] = spec.lowers;
-        //: The torso's left flank below the waist (its second curve), as
-        //: the half-width at each height, down to the hips' widest.
-        const torso = spec.torsoNow.match(/-?[0-9.]+/g).map(Number);
-        const flank = [torso.slice(6, 8), torso.slice(8, 10), torso.slice(10, 12), torso.slice(12, 14)];
-        const half = [];
-        for (let i = 0; i <= 120; i += 1) {
-          const u = i / 120;
-          const v = 1 - u;
-          const k = [v * v * v, 3 * v * v * u, 3 * v * u * u, u * u * u];
-          half.push([k.reduce((a, c, j) => a + c * flank[j][1], 0), 31 - k.reduce((a, c, j) => a + c * flank[j][0], 0)]);
-        }
-        const widest = half.reduce((a, b) => (b[1] > a[1] ? b : a));
-        const hipAt = (y) => {
-          for (let i = 1; i < half.length; i += 1) {
-            if (half[i][0] >= y) {
-              const [y0, h0] = half[i - 1];
-              const [y1, h1] = half[i];
-              return 2 * (h0 + ((h1 - h0) * (y - y0)) / Math.max(1e-6, y1 - y0));
-            }
-          }
-          return 2 * widest[1];
-        };
-        let tHip = 0;
-        for (let i = 0; i <= 400; i += 1) {
-          if (atlasSegsAt(seg, i / 400)[1] >= widest[0]) {
-            tHip = i / 400;
-            break;
-          }
-        }
-        const w = 2 * widest[1];
-        const width = (t) => (t <= tHip ? hipAt(atlasSegsAt(seg, t)[1]) : tip + (w - tip) * ((1 - t) / (1 - tHip)) ** 1.15);
-        //: **A dress, not a tooth** (INBOX 554, the owner: "the lower body
-        //: still looks too sharp like a tooth"; 559). The tooth was its end:
-        //: `cap`'s arc bulges inward (`atlasStem`), a notch with two horns.
-        //: Now the end is one soft lobe a little longer than it is wide,
-        //: a little fuller on the side it curls from, leaving each side
-        //: along it, so nothing on the outline is a corner; and the last
-        //: third of the dress dissolves into light (`hemfade`, the defs).
-        const hemTip = atlasHemTip;
-        //: A point `across` of the half-width off the centreline at `t`.
-        const at = (t, across) => {
-          const [x, y] = atlasSegsAt(seg, t);
-          const [x1, y1] = atlasSegsAt(seg, Math.min(1, t + 0.01));
-          const len = Math.hypot(x1 - x, y1 - y) || 1;
-          const o = (across * width(t)) / 2;
-          return [atlasFix(x - ((y1 - y) / len) * o), atlasFix(y + ((x1 - x) / len) * o)];
-        };
-        //: A fold's light (INBOX 559: "one or two broad, soft, diagonal sheen
-        //: sweeps ... never parallel stripes"): a broad band over part of
-        //: the dress, thin at both ends, that crosses it from one side to
-        //: the other along the way.
-        const sweep = (t0, t1, from, to, k) => {
-          const { segs, at: g } = atlasSegsCut(seg, t0, t1);
-          return atlasStem(segs, (t) => 0.1 + width(g(t)) * k * Math.sin(Math.PI * t) ** 1.2, { samples: 8, round: true, shift: (t) => width(g(t)) * (from + (to - from) * t) });
-        };
-        //: The shape test reads the stem as built (`seg`, `width`).
-        spec.lowerPaths = [{ side: 0, seg, width, specks: [] }];
-        spec.sower = {
-          fill: atlasStem(seg, width, { samples: 18, round: true, tip: hemTip }),
-          sheen: sweep(0.18, 0.7, 0.3, -0.26, 0.34) + sweep(0.48, 0.9, -0.24, 0.22, 0.22),
-          //: A rim light on the outer side only (a stem's negative shift is
-          //: the side away from its bend), thin at both ends.
-          rim: atlasStem(seg, (t) => (0.08 + width(t) * 0.09) * Math.sin(Math.PI * t) ** 0.7, { samples: 18, round: true, shift: (t) => -width(t) * 0.42 }),
-          dust: dust.map(([t, a, r]) => [...at(t, a), r]),
-          glints: glints.map(([t, a, k]) => [...at(t, a), k]),
-          motes,
-          width,
-          seg,
-          tipAt: seg[seg.length - 1].slice(6, 8),
-          //: The body's edge glow carried down the dress: the stroke's 0.65
-          //: outside the torso's flank, as a fill 1.3 wider, round its end.
-          glow: atlasStem(seg, (t) => width(t) + 1.3, { samples: 18, round: true, tip: hemTip }),
-        };
+    });
+    spec.lowerPaths = parts;
+    //: **One silhouette** (the owner: "make sure that they are properly
+    //: and cleanly integrated with the body and not obviously separate
+    //: shapes"). Each translucent paint is one path holding every
+    //: wisp as a subpath: every stem is walked the same way round, so
+    //: the nonzero fill paints where they overlap once, and a sub-wisp
+    //: grows out of the main wisp with no brighter band, no line and no
+    //: change of opacity at the join; drawn as separate paths, the
+    //: overlap of two translucent fills showed as a lighter patch where
+    //: each branch left the trunk. No veil: a haze round the trail drawn
+    //: as a wider shape showed its own edge a unit outside the wisps, a
+    //: second outline; and no lit edge is stroked along the main wisp
+    //: (it ran across the roots of the branches).
+    const join = (key) => parts.map((p) => p[key]).join("");
+    if (!cloak) spec.trail = { fill: join("fill"), stream: join("stream"), specks: parts.flatMap((p) => p.specks) };
+    else {
+      //: Her dress's material (`spec.sower`, drawn by `atlasBody`): the
+      //: flow's paint with a nebula in it, two soft sweeps of light for
+      //: the cloak's folds, a rim light on its outer side, star dust,
+      //: two glints, and past the hem the motes it breaks into; the
+      //: whole silhouette one path, so tatter and cloak are one shape.
+      const m = parts.find((p, i) => spec.lowers[i].main);
+      const at = (t, across) => {
+        const [x, y] = atlasSegsAt(m.seg, t);
+        const [x1, y1] = atlasSegsAt(m.seg, Math.min(1, t + 0.01));
+        const len = Math.hypot(x1 - x, y1 - y) || 1;
+        const o = (across * m.width(t)) / 2;
+        return [atlasFix(x - ((y1 - y) / len) * o), atlasFix(y + ((x1 - x) / len) * o)];
+      };
+      const sweep = (t0, t1, from, to, k) => {
+        const { segs, at: g } = atlasSegsCut(m.seg, t0, t1);
+        return atlasStem(segs, (t) => 0.1 + m.width(g(t)) * k * Math.sin(Math.PI * t) ** 1.2, { samples: 8, round: true, shift: (t) => m.width(g(t)) * (from + (to - from) * t) });
+      };
+      const [tx, ty] = m.seg.at(-1).slice(6, 8);
+      const c = spec.cloakDust;
+      spec.sower = {
+        fill: join("fill"),
+        sheen: sweep(0.3, 0.72, -0.3, 0.22, 0.3) + sweep(0.55, 0.92, 0.26, -0.18, 0.2),
+        rim: atlasStem(m.seg.slice(1), (t) => (0.08 + m.width(0.25 + 0.75 * t) * 0.08) * Math.sin(Math.PI * t) ** 0.7, { samples: 16, round: true, shift: (t) => -m.width(0.25 + 0.75 * t) * 0.42 }),
+        dust: c.dust.map(([t, a, r]) => [...at(t, a), r]),
+        glints: c.glints.map(([t, a, k]) => [...at(t, a), k]),
+        motes: c.motes.map(([x, y, r, g]) => [atlasFix(tx + x), atlasFix(ty + y), r, g]),
+        glow: parts.map((p, i) => atlasStem(p.seg, (t) => p.width(t) + 1.3, { samples: 14, cap: true, tip: spec.lowers[i].main ? atlasHemTip : null })).join(""),
+      };
+    }
+  } else if (spec.lowerTaper === "sower") {
+    atlasBuild.sower(spec);
+  }
+};
+//: The Seed Sower's dress, split from `atlasBuild.lowers`.
+atlasBuild.sower = (spec) => {
+  //: The Seed Sower's tail, now a dress (INBOX 535, 559): the hips'
+  //: width where it leaves them, eased (no pinch) to a long taper and
+  //: a soft lobe `tip` across.
+  const [{ seg, tip, dust, glints, motes }] = spec.lowers;
+  //: The torso's left flank below the waist (its second curve), as
+  //: the half-width at each height, down to the hips' widest.
+  const torso = spec.torsoNow.match(/-?[0-9.]+/g).map(Number);
+  const flank = [torso.slice(6, 8), torso.slice(8, 10), torso.slice(10, 12), torso.slice(12, 14)];
+  const half = [];
+  for (let i = 0; i <= 120; i += 1) {
+    const u = i / 120;
+    const v = 1 - u;
+    const k = [v * v * v, 3 * v * v * u, 3 * v * u * u, u * u * u];
+    half.push([k.reduce((a, c, j) => a + c * flank[j][1], 0), 31 - k.reduce((a, c, j) => a + c * flank[j][0], 0)]);
+  }
+  const widest = half.reduce((a, b) => (b[1] > a[1] ? b : a));
+  const hipAt = (y) => {
+    for (let i = 1; i < half.length; i += 1) {
+      if (half[i][0] >= y) {
+        const [y0, h0] = half[i - 1];
+        const [y1, h1] = half[i];
+        return 2 * (h0 + ((h1 - h0) * (y - y0)) / Math.max(1e-6, y1 - y0));
       }
     }
-    if (spec.arm) {
-      //: The left arm hangs with the body on its right normal; the right
-      //: arm is held out, palm down, the thumb along its upper edge.
-      //: Round 6: the same shoulder inside the chest and the same mitten
-      //: as the main look, a little slighter (5 to 2.3), not the 3.9 to 1.9
-      //: stick with a small knob that the owner's screenshot showed.
-      //: Round 9: a look may name its arms' widths, each hand's thumb side
-      //: and the mitten's size (the masculine arms hang, both thumbs in).
-      const [w0, w1] = spec.armWidth || [5, 2.3];
-      const [thumbL, thumbR] = spec.armHands || [-1, -1];
-      const k = spec.handScale || 1.05;
-      //: The jointed arm (`atlasArmPath`): each arm's two drawn segments,
-      //: its width and its hand, for the rig to bend at the elbow and the
-      //: wrist. At rest (no bend) it draws exactly `armPaths`.
-      spec.armRig = { l: { segs: spec.armL, width: atlasLimbTo(w0, w1), hand: atlasHand(thumbL, k) }, r: { segs: spec.arm, width: atlasLimbTo(w0, w1), hand: atlasHand(thumbR, k) } };
-      spec.armPaths = ["l", "r"].map((side) => [side, atlasArmPath(spec.armRig[side], 0, 0)]);
-    }
-    if (spec.legs === false) spec.legPaths = [];
-    //: **The astral wisps, tapered and lit** (INBOX 550, the owner of flat
-    //: lavender bands with dot sparkles: "improve the whisps"). Each is a
-    //: ribbon that swells fast from a fine, round root to 2.95 across a
-    //: third of the way along and tapers to a fine, round tip; a glow 2.6
-    //: times as wide under it; a lit edge along its outer side; painted
-    //: with a gradient of nebula hues along it (`wisp<i>`, the defs) and
-    //: faded out at both ends (`wispends`). Its sparkles are four-point
-    //: glints in five sizes (`ATLAS_GLINT_K`), each a little off the
-    //: centreline, alternately to either side.
-    if (spec.wisps) {
-      const ribbon = (t) => 0.45 + 2.5 * Math.sin(Math.PI * t ** 0.65) ** 1.2;
-      const lit = (t) => 0.1 + 0.36 * Math.sin(Math.PI * t ** 0.65) ** 1.2;
-      //: One run of a wisp, `t0` to `t1`, its widths those of the whole.
-      const piece = (seg, t0, t1) => {
-        const { segs, at } = atlasSegsCut(seg, t0, t1);
-        const k = Math.max(4, Math.round(16 / segs.length));
-        return {
-          core: atlasStem(segs, (t) => ribbon(at(t)), { samples: k, round: true }),
-          glow: atlasStem(segs, (t) => ribbon(at(t)) * 2.6 + 0.6, { samples: k, round: true }),
-          edge: atlasStem(segs, (t) => lit(at(t)), { samples: k, round: true, shift: (t) => (ribbon(at(t)) - lit(at(t))) / 2 }),
-        };
-      };
-      spec.wispPaths = spec.wisps.map(({ seg, sparkles, low, back = [] }) => {
-        const front = [];
-        let from = 0;
-        for (const [a, b] of back) {
-          if (a > from) front.push([from, a]);
-          from = b;
-        }
-        if (from < 1) front.push([from, 1]);
-        const behind = (t) => back.some(([a, b]) => t >= a && t <= b);
-        return {
-          low: !!low,
-          front: front.map(([a, b]) => piece(seg, a, b)),
-          back: back.map(([a, b]) => piece(seg, a, b)),
-          glints: sparkles.map((t, i) => {
-            const [x, y] = atlasSegsAt(seg, t);
-            const [x1, y1] = atlasSegsAt(seg, Math.min(1, t + 0.01));
-            const len = Math.hypot(x1 - x, y1 - y) || 1;
-            const off = (i % 2 ? -1 : 1) * ribbon(t) * 0.22;
-            return [atlasFix(x - ((y1 - y) / len) * off), atlasFix(y + ((x1 - x) / len) * off), ATLAS_GLINT_K[i % ATLAS_GLINT_K.length], behind(t)];
-          }),
-        };
-      });
+    return 2 * widest[1];
+  };
+  let tHip = 0;
+  for (let i = 0; i <= 400; i += 1) {
+    if (atlasSegsAt(seg, i / 400)[1] >= widest[0]) {
+      tHip = i / 400;
+      break;
     }
   }
-  return tune;
-}
+  const w = 2 * widest[1];
+  const width = (t) => (t <= tHip ? hipAt(atlasSegsAt(seg, t)[1]) : tip + (w - tip) * ((1 - t) / (1 - tHip)) ** 1.15);
+  //: **A dress, not a tooth** (INBOX 554, the owner: "the lower body
+  //: still looks too sharp like a tooth"; 559). The tooth was its end:
+  //: `cap`'s arc bulges inward (`atlasStem`), a notch with two horns.
+  //: Now the end is one soft lobe a little longer than it is wide,
+  //: a little fuller on the side it curls from, leaving each side
+  //: along it, so nothing on the outline is a corner; and the last
+  //: third of the dress dissolves into light (`hemfade`, the defs).
+  const hemTip = atlasHemTip;
+  //: A point `across` of the half-width off the centreline at `t`.
+  const at = (t, across) => {
+    const [x, y] = atlasSegsAt(seg, t);
+    const [x1, y1] = atlasSegsAt(seg, Math.min(1, t + 0.01));
+    const len = Math.hypot(x1 - x, y1 - y) || 1;
+    const o = (across * width(t)) / 2;
+    return [atlasFix(x - ((y1 - y) / len) * o), atlasFix(y + ((x1 - x) / len) * o)];
+  };
+  //: A fold's light (INBOX 559: "one or two broad, soft, diagonal sheen
+  //: sweeps ... never parallel stripes"): a broad band over part of
+  //: the dress, thin at both ends, that crosses it from one side to
+  //: the other along the way.
+  const sweep = (t0, t1, from, to, k) => {
+    const { segs, at: g } = atlasSegsCut(seg, t0, t1);
+    return atlasStem(segs, (t) => 0.1 + width(g(t)) * k * Math.sin(Math.PI * t) ** 1.2, { samples: 8, round: true, shift: (t) => width(g(t)) * (from + (to - from) * t) });
+  };
+  //: The shape test reads the stem as built (`seg`, `width`).
+  spec.lowerPaths = [{ side: 0, seg, width, specks: [] }];
+  spec.sower = {
+    fill: atlasStem(seg, width, { samples: 18, round: true, tip: hemTip }),
+    sheen: sweep(0.18, 0.7, 0.3, -0.26, 0.34) + sweep(0.48, 0.9, -0.24, 0.22, 0.22),
+    //: A rim light on the outer side only (a stem's negative shift is
+    //: the side away from its bend), thin at both ends.
+    rim: atlasStem(seg, (t) => (0.08 + width(t) * 0.09) * Math.sin(Math.PI * t) ** 0.7, { samples: 18, round: true, shift: (t) => -width(t) * 0.42 }),
+    dust: dust.map(([t, a, r]) => [...at(t, a), r]),
+    glints: glints.map(([t, a, k]) => [...at(t, a), k]),
+    motes,
+    width,
+    seg,
+    tipAt: seg[seg.length - 1].slice(6, 8),
+    //: The body's edge glow carried down the dress: the stroke's 0.65
+    //: outside the torso's flank, as a fill 1.3 wider, round its end.
+    glow: atlasStem(seg, (t) => width(t) + 1.3, { samples: 18, round: true, tip: hemTip }),
+  };
+};
+//: The wisps' ribbons, pieces and glints, split from `atlasBuildLook`.
+atlasBuild.wisps = (spec) => {
+  const ribbon = (t) => 0.45 + 2.5 * Math.sin(Math.PI * t ** 0.65) ** 1.2;
+  const lit = (t) => 0.1 + 0.36 * Math.sin(Math.PI * t ** 0.65) ** 1.2;
+  //: One run of a wisp, `t0` to `t1`, its widths those of the whole.
+  const piece = (seg, t0, t1) => {
+    const { segs, at } = atlasSegsCut(seg, t0, t1);
+    const k = Math.max(4, Math.round(16 / segs.length));
+    return {
+      core: atlasStem(segs, (t) => ribbon(at(t)), { samples: k, round: true }),
+      glow: atlasStem(segs, (t) => ribbon(at(t)) * 2.6 + 0.6, { samples: k, round: true }),
+      edge: atlasStem(segs, (t) => lit(at(t)), { samples: k, round: true, shift: (t) => (ribbon(at(t)) - lit(at(t))) / 2 }),
+    };
+  };
+  spec.wispPaths = spec.wisps.map(({ seg, sparkles, low, back = [] }) => {
+    const front = [];
+    let from = 0;
+    for (const [a, b] of back) {
+      if (a > from) front.push([from, a]);
+      from = b;
+    }
+    if (from < 1) front.push([from, 1]);
+    const behind = (t) => back.some(([a, b]) => t >= a && t <= b);
+    return {
+      low: !!low,
+      front: front.map(([a, b]) => piece(seg, a, b)),
+      back: back.map(([a, b]) => piece(seg, a, b)),
+      glints: sparkles.map((t, i) => {
+        const [x, y] = atlasSegsAt(seg, t);
+        const [x1, y1] = atlasSegsAt(seg, Math.min(1, t + 0.01));
+        const len = Math.hypot(x1 - x, y1 - y) || 1;
+        const off = (i % 2 ? -1 : 1) * ribbon(t) * 0.22;
+        return [atlasFix(x - ((y1 - y) / len) * off), atlasFix(y + ((x1 - x) / len) * off), ATLAS_GLINT_K[i % ATLAS_GLINT_K.length], behind(t)];
+      }),
+    };
+  });
+};
 
 //: Scales a hand-drawn path's x about a centre line (the torso's width).
 function atlasScalePathX(d, k, cx) {
@@ -1412,6 +1435,18 @@ function atlasRetune(next) {
   return tune;
 }
 
+for (const [name, spec] of Object.entries(ATLAS_LOOKS)) {
+  Object.defineProperty(ATLAS_LOOKS, name, {
+    enumerable: true,
+    get() {
+      if (!atlasBuild.built.has(spec)) atlasBuildLook(spec);
+      return spec;
+    },
+  });
+  setTimeout(function atlasWarmLook() {
+    if (!atlasBuild.built.has(spec)) atlasBuildLook(spec);
+  }, 0);
+}
 atlasBuild();
 const ATLAS_WISPS = ATLAS_GEO.wisps.map(([seg, w0, w1]) => atlasStem([seg], atlasTaper(w0, w1), { samples: 8, cap: false }));
 
@@ -4187,7 +4222,9 @@ else atlasDressMarks();
 //: chat heads' dressing, 60ms of the 65 at 6x CPU). The task only opens the queue; the first job is the
 //: next task, so the arrival's own timer holds the page for a few lines only.
 function charactersArrived() {
-  setTimeout(function charactersArrivedTask() {
+  //: The bundle's sheet (characters-lazy.css, L-world-class-364) is in before the first face is drawn: a figure built a frame ahead of its rules shows every layer at once.
+  const sheet = typeof lazyFileLoads === "object" ? lazyFileLoads.get("/css/characters-lazy.css") : null;
+  (sheet || Promise.resolve()).then(() => setTimeout(function charactersArrivedTask() {
     charactersLoaded = true;
     const jobs = [...characterWaiters].map((fn) => [fn, []]);
     for (const [name, args] of characterBacklog) jobs.push([name, args]);
@@ -4203,7 +4240,7 @@ function charactersArrived() {
       setTimeout(step, 0);
     };
     setTimeout(step, 0);
-  }, 0);
+  }, 0));
 }
 
 //: **Older replies wear their face at rest** (D9, s58left3-1110). A chat

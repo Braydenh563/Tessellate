@@ -1,0 +1,124 @@
+/* connections-lazy.css: the Connections sheet, moved from 07-whiteboard-misc.css (L-world-class-350) to load
+   with the `connections` bundle. */
+
+/* --- the Connections dialog (REDESIGN.md §R7.3) ------------------------------- */
+/* Five groups of one-line rows, and the thing that makes it readable is that
+   a group heading and its rows are visibly one unit, a flat list of fifteen
+   rows with five grey labels loose among them is the "everything at equal
+   weight" failure this app has already measured once (§36B.3).
+   The rows are buttons because they navigate, and `.connection-row` overrides
+   `button.small`'s centring rather than adding a new button class: a row of
+   text that starts at a different x than the row above it is the single
+   thing that made this dialog's first draft read as noise. */
+#connections-card {
+  max-width: 44rem;
+  width: min(44rem, 92vw);
+}
+
+.connection-group+.connection-group {
+  margin-top: var(--space-6);
+}
+
+/* **The list recipe** (INBOX 784, the owner: "redesign Connections in both
+   forms ... rows with icon, title, a muted subline, hover background, no heavy
+   borders per row; section headers with counts; the stats as chips at the
+   top"). `connectionRowEl` (menus.js) draws every row, in the sheet and in the
+   Notes rail, so there is one set of rules. */
+#connections-status:empty {
+  display: none;
+}
+
+.connection-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+}
+
+.connection-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* The group's count, a quiet number at the end of the heading. */
+.connection-count {
+  margin-inline-start: auto;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.connection-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* A backlink's sentence and an unlinked mention's Link (GRAPH_PLAN KG1) sit
+   under their row, indented to its text, on the document panel's recipe. */
+.connection-rows > .doc-backlink-context,
+.connection-rows > .doc-backlink-foot {
+  padding-left: calc(var(--space-3) + 1.25rem + var(--space-3));
+}
+
+.connection-rows > .doc-backlink-foot {
+  margin-bottom: var(--space-2);
+}
+
+button.connection-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--control-h-lg);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  font-weight: 400;
+  text-align: left;
+}
+
+button.connection-row:is(:hover, :focus-visible) {
+  background: var(--hover-veil);
+}
+
+.connection-row-icon {
+  flex: 0 0 1.25rem;
+  font-size: var(--text-lg);
+  color: var(--muted);
+}
+
+.connection-row-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* A preview is a clip of another note's first line and can be long: it gives
+   way with an ellipsis rather than wrapping, so the left edge stays one line. */
+.connection-row-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The subline: the kind, the category or day, the reason. Whole where it fits,
+   an ellipsis where it does not. */
+.connection-row-cue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}

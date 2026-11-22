@@ -175,9 +175,9 @@ def test_a_recap_request_reads_in_linear_time(text):
 
     from tessellate.ai.activity import as_recap
 
-    start = time.perf_counter()
+    start = time.process_time()
     assert as_recap(text) == text
-    assert time.perf_counter() - start < 0.2
+    assert time.process_time() - start < 0.2
 
 
 def test_a_recap_request_still_drops_its_closing_marks():

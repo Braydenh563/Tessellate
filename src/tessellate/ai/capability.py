@@ -16,9 +16,11 @@ question stops at the thing ("the web", "maths", "reminders").
 from __future__ import annotations
 
 import re
+
+from tessellate.core.lazyre import lazy_compile
 from dataclasses import dataclass
 
-_LEAD = re.compile(
+_LEAD = lazy_compile(
     r"^(?:hey |so |ok |okay )?(?:atlas,? )?"
     r"(?:can|could|will|would|do|does) (?:you|u|atlas|it|the app|this app)(?: (?:actually|even|also|ever|still))?"
     r"(?: be able to)? (?P<rest>\S.*)$"
@@ -27,7 +29,7 @@ _LEAD = re.compile(
     r"|^(?:do you (?:know how to|have|support)|have you got) (?P<rest4>.+)$",
     re.I,
 )
-_OVERVIEW = re.compile(
+_OVERVIEW = lazy_compile(
     r"^(?:what|which things?) (?:else )?(?:can|could|do) (?:you|u|atlas|i)(?: (?:even|actually|really|also|else))? (?:do|help (?:me )?with)(?: (?:here|for me|in (?:this|the) app|on (?:this|the) app|with (?:you|this|it)))?$"
     r"|^what (?:are|r) (?:you|u) (?:able to do|capable of|good at|for)$"
     r"|^what (?:are )?(?:your|atlas'?s?) (?:abilities|capabilities|features|skills|powers|tools)$"
@@ -57,7 +59,7 @@ def _overview_in_other_words(text: str) -> bool:
     return to_you and (bool(named & _TOPIC_WORDS) or {"able", "help"} <= named) and bool(named & _SKILL_WORDS)
 
 #: What turns a capability question into a request: an object of its own.
-_REQUEST = re.compile(
+_REQUEST = lazy_compile(
     r"\b(?:for|about|abt|regarding|mentioned|wrote|written|called|named|that says|me to|this note|these|those)\b|\bthe (?:\w+ )?note\b"
     r"|\bmy (?!notes?\b|history\b|files?\b|reminders\b|stuff\b|things\b)|\"|“",
     re.I,
@@ -128,8 +130,8 @@ CAPABILITIES: tuple[Capability, ...] = (
 #: the groups the request and its length call for, what a model adds, and one
 #: thing to try; each part has several phrasings and `phrasing.choose` picks
 #: the one unlike the last replies.
-_SHORT = re.compile(r"\b(?:briefly|brief|quick(?:ly)?|short(?:ly)?|tl;?dr|in a word|one line|summary|nutshell)\b", re.I)
-_LONG = re.compile(
+_SHORT = lazy_compile(r"\b(?:briefly|brief|quick(?:ly)?|short(?:ly)?|tl;?dr|in a word|one line|summary|nutshell)\b", re.I)
+_LONG = lazy_compile(
     r"\b(?:everything|all (?:of )?(?:it|your|the)|in detail|detailed|full|complete|list|every|properly|fully|explain)\b", re.I
 )
 
@@ -228,7 +230,7 @@ def overview(
 #: and does not change what is asked. Stripped with `endswith`, not a regex:
 #: an end-anchored run is polynomial on a long input (CodeQL).
 _TAILS = ("briefly", "in short", "in brief", "quickly", "please", "pls", "in detail", "in full", "thanks")
-_RUNDOWN = re.compile(
+_RUNDOWN = lazy_compile(
     r"^(?:please |pls )?(?:tell me|show me|list|give me|explain|describe)(?: me)? (?:everything|all|a list of everything|what)"
     r"(?: that)?(?: you (?:can|could|are able to) do| you do)$",
     re.I,
@@ -239,7 +241,7 @@ _RUNDOWN = re.compile(
 #: you can do", "what cool stuff can you do"): read past, never asked about
 #: (INBOX 1561). Whole-word, so "what can you do" is untouched.
 _PRAISE = r"(?:(?:really |very |pretty |that(?: is|'s) )?(?:interesting|cool|fun|neat|useful|good|great|nice|awesome|amazing|impressive|special|best|fancy|clever|handy|helpful|exciting|different|new|else|other|more|all|any) ?)"
-_SELF_FORMS = re.compile(
+_SELF_FORMS = lazy_compile(
     r"^(?:(?:is|are) there |have you got |got )?(?:any ?thing|some ?thing|some|any|one thing|a few things|a thing) " + _PRAISE + r"*(?:(?:that )?(?:you|u) (?:can|could|are able to|do))(?: do)?(?: for me| here)?$"
     r"|^(?:tell|show|give|name|list)(?: me)? (?:one |a few |any ?thing |some ?thing |some |a )?" + _PRAISE + r"*(?:things?|stuff|tricks?|features?|ways)?(?: that)? (?:you|u) (?:can|could|are able to) do(?: for me| here)?$"
     r"|^(?:what|which)(?: are| is)? " + _PRAISE + r"*(?:things|stuff|tricks|features|abilities|functions|capabilities|skills|tools|options)(?: that)? (?:can|could|do|are|will)? ?(?:you|u)(?: do| have| offer| able to do)?(?: for me| here)?$"
@@ -275,7 +277,7 @@ def _clean(question: str) -> str:
 
 #: "do my notes go online", "is my data private", "where are my notes
 #: stored": a question about where the notes go, answered by "privacy".
-_PRIVACY = re.compile(
+_PRIVACY = lazy_compile(
     r"^(?:do|does|will|would|are|is|can|could) (?:my|your|the|all my) (?:notes?|data|stuff|files|information|info|entries)\b.*"
     r"\b(?:go|leave|sent|send|online|cloud|private|safe|secure|shared|uploaded|stored|seen)\b"
     r"|^(?:is|are) (?:this|it|the app|this app|atlas|memorymap) (?:private|safe|secure|online|offline|local)\b"

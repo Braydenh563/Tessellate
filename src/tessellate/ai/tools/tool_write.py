@@ -203,6 +203,10 @@ def _tag_note(session: Session, args: dict) -> dict:
 
 
 def _pin_note(session: Session, args: dict) -> dict:
+    if args.get("chat_id") is not None and args.get("note_id") is None:
+        from tessellate.ai.tools.chats import _pin_chat
+
+        return _pin_chat(session, args)
     entry = _require_note(session, args)
     pinned = bool(args.get("pinned", True))
     if pinned != entry.pinned:

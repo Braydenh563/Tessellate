@@ -66,19 +66,22 @@ def test_past_the_cap_notes_are_sampled_evenly_not_the_oldest_first():
     assert set(proj.project(vectors, cap=10)) == set(picked)
 
 
-def test_the_projection_of_a_large_notebook_is_quick():
+def test_the_projection_of_a_large_notebook_is_quick(monkeypatch):
     """Review 5883476033 (3): float32 and the d x d covariance, not an SVD of
     the whole matrix. 5,000 notes of 384 floats, the cap and the default
-    model's width; it took 0.03 s here, so 3 s is room for a loaded runner."""
-    import time
+    model's width. Counted, not timed: CPU time adds up every BLAS thread, so
+    a loaded runner read 3.6 s for 0.03 s of work. The budget is the shape of
+    the work: one eigh of a d x d float32 matrix and no SVD at all."""
+    seen = []
+    real_eigh = np.linalg.eigh
+    monkeypatch.setattr(np.linalg, "eigh", lambda m: seen.append((m.shape, m.dtype)) or real_eigh(m))
+    monkeypatch.setattr(np.linalg, "svd", lambda *a, **k: (_ for _ in ()).throw(AssertionError("svd")))
 
     rng = np.random.default_rng(3)
     vectors = {i: row for i, row in enumerate(rng.normal(size=(proj.MAX_PROJECTED, 384)).astype("float32"))}
-    started = time.perf_counter()
     pts = proj.project(vectors)
-    took = time.perf_counter() - started
     assert len(pts) == proj.MAX_PROJECTED
-    assert took < 3.0, took
+    assert seen == [((384, 384), np.dtype("float32"))], seen
 
 
 def test_the_projection_cache_follows_a_new_vector_with_no_note_edit(ai_client, session):

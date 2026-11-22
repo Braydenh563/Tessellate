@@ -1,7 +1,7 @@
 """The second kind of optional extra: a pinned download (INBOX 404, 302).
 
 The owner, 2026-09-24, on two decisions the repository read and the code
-editor's Run button had left open: "Run Python files: yes, as an opt-in
+editor's Run button had left undecided: "Run Python files: yes, as an opt-in
 extra" and, for needle, "Yes, as an extra". Neither one is a pip package.
 Pyodide is a WebAssembly build of CPython that runs in the browser, shipped
 as a release archive; needle is a native engine and a weights file on

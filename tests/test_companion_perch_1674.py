@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pytest
 from tests._js_scope import unwrapped
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -87,7 +88,7 @@ def test_leaving_during_a_visit_keeps_the_one_frame_cut() -> None:
     changed = _fn("nameMarkBuddyTabChanged")
     assert 'buddy.classList.add("nmb-away")' in changed and "nmb.absent = true" in changed
     assert "if (!nmb.absent) nmb.absentAt = Date.now()" in changed
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert ".nmb-away" in css and "transition: none" in css[css.index(".nmb-away") : css.index(".nmb-away") + 1500]
 
 

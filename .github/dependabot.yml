@@ -42,3 +42,8 @@ updates:
       interval: weekly
       day: monday
     labels: [dependencies]
+    # The image's Python follows the CI matrix: a newer one is untested and a
+    # wheel (onnxruntime) may not exist for it yet (Dependabot's #243 wanted 3.15).
+    ignore:
+      - dependency-name: python
+        versions: [">=3.15"]

@@ -567,6 +567,7 @@ def _read(page: str, url: str, junk: bool) -> tuple[_Tree, str]:
         tree.feed(page)
         tree.close()
     except Exception:  # noqa: BLE001  # a malformed page is still a page
+        logger.debug("_read: a malformed page is still a page", exc_info=True)
         pass
     md = _Markdown(url)
     md.block(_main(tree))

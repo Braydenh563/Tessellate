@@ -59,7 +59,7 @@
 .manual-jump[aria-current="location"] {
   box-shadow: inset 2px 0 0 var(--accent);
   color: var(--ink);
-  font-weight: 650;
+  font-weight: 600;
 }
 /* Positioned, so a topic's `offsetTop` is measured from here (the jumps). */
 .manual-topics {
@@ -93,6 +93,15 @@
   font-size: var(--text-sm);
   line-height: 1.5;
   max-width: 70ch;
+}
+/* A topic's picture (L-world-class-785): the file's own size is the cap, so it is never upscaled. */
+.manual-topic img.manual-picture {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--space-2) 0;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
 }
 /* The topic's one line (INBOX 1612), first under its title. */
 .manual-topic p.manual-lead {

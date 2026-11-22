@@ -241,13 +241,13 @@ def test_the_task_list_marks_the_kinds_that_can_be_quit(ai_client):
         assert task["cancellable"] == (task["kind"] in quittable)
 
 
-def test_the_warmup_says_why_it_has_no_quit_button():
-    """A missing button with no explanation reads as a missing feature."""
+def test_the_warmup_says_what_its_quit_button_cannot_do():
+    """Stop ends the download and what follows the load, not the load itself (L650)."""
     from tessellate.api import routes_tasks
 
     source = _source_of(routes_tasks)
-    assert "can't be " in source and "stopped part-way" in source
-    assert "embeddings" not in jobs.CANCELLABLE_KINDS
+    assert "can't be stopped part-way" in source
+    assert "embeddings" in jobs.CANCELLABLE_KINDS
 
 
 def test_a_quit_pass_is_skipped_by_the_scheduler_until_the_hold_expires():
@@ -281,3 +281,18 @@ def test_a_hold_does_not_burn_down_while_the_feature_is_off():
     assert abs(autonomous.snoozed_for() - frozen) <= 1
     autonomous.clear_snooze()
     assert autonomous.snoozed_for() == 0
+
+
+def test_stopping_the_warmup_asks_the_download_and_skips_what_follows(monkeypatch):
+    """L650: Stop on the embedding load flags the warm-up and the model download."""
+    from tessellate.ai import embeddings as embeddings_module
+    from tessellate.core import embedmodels
+
+    assert embeddings_module.stop_warmup() == (False, "The embedding model is not loading.")
+    asked = []
+    monkeypatch.setitem(embeddings_module._warmup, "running", True)
+    monkeypatch.setitem(embeddings_module._warmup, "cancel", False)
+    monkeypatch.setattr(embedmodels, "cancel", lambda name="": asked.append(name) or (True, ""))
+    acted, _message = embeddings_module.stop_warmup()
+    assert acted and embeddings_module._warmup["cancel"] is True and asked == [""]
+    assert jobs.cancel_kind("embeddings")[0] is True

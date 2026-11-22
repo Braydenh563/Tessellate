@@ -42,8 +42,8 @@ def _last_answer(history: list[dict] | None) -> str:
 
 def _plain(text: str) -> str:
     """The words without links, bold, quoted-source brackets or lists."""
-    text = re.sub(r"\[([^\]]+)\]\(([^)]*)\)", r"\1", text)
-    text = re.sub(r"\[[“\"][^\]]*[”\"]\]", "", text)
+    text = re.sub(r"\[([^\]]{1,300})\]\(([^)]{0,1000})\)", r"\1", text)
+    text = re.sub(r"\[[“\"][^\]]{0,300}[”\"]\]", "", text)
     text = re.sub(r"[*_`]+", "", text)
     return re.sub(r"[ \t]+", " ", text).strip()
 
@@ -296,7 +296,7 @@ _RE_SOURCE = re.compile(
 _RE_DETAIL = re.compile(rf"^{_POLITE}(?:(?:give me |tell me |show me |i want |with )?(?:a bit |a little )?more (?:detail|details|info|information)|in (?:more )?detail|elaborate|expand(?: on (?:that|it))?|go into (?:more )?detail|can you elaborate){_END}")
 _RE_FIRST = re.compile(rf"^(?:what|which) (?:was|is) (?:my|the) (?:very )?first (?:question|message|thing i (?:asked|said))(?: (?:to you|today|here))?{_END}")
 
-_LINK = re.compile(r"\[([^\]]+)\]\(#/notes/\d+\)")
+_LINK = re.compile(r"\[([^\]]{1,300})\]\(#/notes/\d+\)")
 _CITED = re.compile(r"\bfrom your (?P<t>.+?) note\b|\[\*\*(?P<b>[^*\]]+)\*\*\]", re.I)
 
 _SURE_LINES = [

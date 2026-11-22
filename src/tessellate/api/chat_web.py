@@ -9,6 +9,8 @@ layer list in `routes_chat.py`'s docstring, never back to `routes_chat`.
 
 from __future__ import annotations
 
+import logging
+
 from tessellate.ai import composer, composer_money, composer_unplaced, composer_web, note_rank, personal, toolwords
 from tessellate.api.chat_request import _StreamRequest, _composed
 from tessellate.core import deps
@@ -57,6 +59,7 @@ def _web_allowed(req: _StreamRequest) -> bool:
         own = personal.about_own_notes(q) or composer_money.asks(q) or (personal.about_own_record(q) and not toolwords.asks_web(q))
         return on and not own
     except Exception:  # noqa: BLE001  # no preference is off
+        logging.getLogger(__name__).debug("_web_allowed: no preference is off", exc_info=True)
         return False
 
 
@@ -65,6 +68,7 @@ def _web_pref_on() -> bool:
     try:
         return bool(deps.get_config().get_preference("web_search_enabled", False))
     except Exception:  # noqa: BLE001  # no preference is off
+        logging.getLogger(__name__).debug("_web_pref_on: no preference is off", exc_info=True)
         return False
 
 
@@ -120,6 +124,7 @@ def _search_service() -> tuple[str, str]:
     try:
         return websearch.settings_from(deps.get_config())
     except Exception:  # noqa: BLE001  # an unreadable setting is no address
+        logging.getLogger(__name__).debug("_search_service: an unreadable setting is no address", exc_info=True)
         return "", ""
 
 

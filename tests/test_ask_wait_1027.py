@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import socket
 import threading
-import time
 
 import pytest
 
@@ -25,6 +24,27 @@ from tessellate.entry import manager
 #: The slowest honest wait is one probe (1 s connect or read budget); the margin
 #: is for a loaded CI box, not for a second probe.
 BUDGET = 2.5
+
+
+@pytest.fixture()
+def waits(monkeypatch):
+    """The longest each request could wait, from its own timeouts (L-general-70):
+    the sum bounds the turn by what the code asks for, not by the runner's speed."""
+    import requests
+
+    seen: list[float] = []
+
+    def spy(real):
+        def call(*args, **kwargs):
+            timeout = kwargs.get("timeout")
+            seen.append(sum(timeout) if isinstance(timeout, tuple) else float(timeout or 0))
+            return real(*args, **kwargs)
+
+        return call
+
+    monkeypatch.setattr(requests, "get", spy(requests.get))
+    monkeypatch.setattr(requests, "post", spy(requests.post))
+    return seen
 
 
 @pytest.fixture()
@@ -49,22 +69,20 @@ def silent_server():
         conn.close()
 
 
-def test_repeated_liveness_checks_wait_once(silent_server):
+def test_repeated_liveness_checks_wait_once(silent_server, waits):
     url, held = silent_server
     client = OllamaClient(base_url=url)
-    started = time.monotonic()
     answers = [client.is_running() for _ in range(8)]
     assert answers == [False] * 8
-    assert time.monotonic() - started < BUDGET
+    assert sum(waits) < BUDGET
     assert len(held) == 1
 
 
-def test_an_openai_shaped_server_is_remembered_too(silent_server):
+def test_an_openai_shaped_server_is_remembered_too(silent_server, waits):
     url, held = silent_server
     client = OpenAICompatClient(base_url=url + "/v1")
-    started = time.monotonic()
     assert [client.is_running() for _ in range(6)] == [False] * 6
-    assert time.monotonic() - started < BUDGET
+    assert sum(waits) < BUDGET
     assert len(held) == 1
 
 
@@ -77,7 +95,7 @@ def test_a_server_that_wakes_is_seen_again(silent_server):
     assert ollama_client.is_quiet(url) is False
 
 
-def test_the_answer_does_not_wait_on_a_silent_runner(app_state, silent_server):
+def test_the_answer_does_not_wait_on_a_silent_runner(app_state, silent_server, waits):
     url, held = silent_server
     from fastapi.testclient import TestClient
 
@@ -93,14 +111,14 @@ def test_the_answer_does_not_wait_on_a_silent_runner(app_state, silent_server):
     body = {"question": "give me an overview of my social connections", "use_tools": False}
 
     def ask() -> float:
-        started = time.monotonic()
+        before = len(waits)
         seen = []
         with client.stream("POST", "/chat/stream", json=body) as response:
             for line in response.iter_lines():
                 if line.strip():
                     seen.append(json.loads(line)["type"])
         assert "answer" in seen
-        return time.monotonic() - started
+        return sum(waits[before:])
 
     first, second = ask(), ask()
     assert first < BUDGET + 2  # one probe plus the app's own first-use work

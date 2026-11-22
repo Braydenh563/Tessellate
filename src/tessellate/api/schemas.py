@@ -6,7 +6,7 @@ import re
 from datetime import date, datetime
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
 
 from tessellate.core.validation_copy import Said
 from tessellate.entry.cleantext import is_blank
@@ -204,6 +204,10 @@ class EntryUpdate(BaseModel):
     #: than silently overwriting it (api/edit_conflicts.py). Optional: a
     #: writer that sends none is not checked.
     base_hash: str | None = Field(default=None, max_length=64)
+    #: The tags this edit started from, for a writer that edits tags from a
+    #: copy it read earlier (the graph): refused (409) when the note's tags
+    #: have since changed to something else than what this save sets.
+    base_tags: list[str] | None = Field(default=None, max_length=200)
     #: The text includes an Atlas suggestion the person applied before saving
     #: (Improve writing in the form): the edit is recorded as theirs and
     #: Atlas's together, so the history can say so (INBOX 446).
@@ -314,6 +318,12 @@ class EntryOut(BaseModel):
     # go out of sync with the content it's supposedly titling.
     title: str | None = None
     category: str
+    #: The categories a person also put the note in (L-world-class-173), never its own.
+    also_in: list[str] = []
+    #: The note groups it is in (L-world-class-172). Both lists are left out
+    #: of the reply when empty (`_drop_empty_memberships`): most notes have
+    #: neither, and `/entries` has a byte budget (tests/test_perf_budget.py).
+    groups: list[str] = []
     tags: list[str]
     ai_confidence: int
     #: Offered at filing, not yet taken or discarded (INBOX 440).
@@ -394,6 +404,14 @@ class EntryOut(BaseModel):
     # still write `[[old]]`: {"old", "new", "notes"}, for the offer to
     # rewrite them (`POST /entries/{id}/wiki-rename`).
     wiki_rename: dict | None = None
+
+    @model_serializer(mode="wrap")
+    def _drop_empty_memberships(self, handler):  # noqa: ANN001, ANN202
+        out = handler(self)
+        for key in ("also_in", "groups"):
+            if key in out and not out[key]:
+                del out[key]
+        return out
 
 
 #: Lives here, not in chat_request, so routes_conversations can read it

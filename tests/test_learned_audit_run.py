@@ -223,3 +223,70 @@ def test_the_night_shift_does_not_learn_out_of_context_in_the_first_place(sessio
     learned = {row.text for row in session.scalars(select(DerivedFact))}
     assert REAL in learned and JOKE not in learned
     assert not [text for text in learned if "said the man" in text or "early train to work, said" in text]
+
+
+def test_keep_it_clears_a_flag_and_the_next_check_leaves_it_alone(session):
+    """L584: a flag's Keep it is the person's word that the row stands."""
+    text = "The passport renewal is due on 3 March 2026 at the office."
+    fid = _learn(session, _note(session, text), text)
+    run.run_check(session, TODAY)
+    session.commit()
+    assert fid in run.flags(session)
+    assert run.keep(session, fid) is True
+    session.commit()
+    assert run.flags(session) == {}
+    assert run.last_run(session)["flagged"] == []
+    done = run.run_check(session, TODAY)
+    session.commit()
+    assert done["flagged"] == [] and run.flags(session) == {}
+
+
+def test_unkeep_only_lifts_a_kept_flag_never_an_undone_retirement(session):
+    fid, _ = _seed(session)
+    done = run.run_check(session, TODAY)
+    session.commit()
+    assert done["retired"] == [fid]
+    run.undo(session, done["run"])
+    session.commit()
+    assert run.unkeep(session, fid) is False
+
+
+def test_keep_it_refuses_a_row_that_is_not_flagged(session):
+    joke = _note(session, JOKE, tags=["joke"])
+    fid = _learn(session, joke, JOKE)
+    assert run.keep(session, fid) is False
+    assert run.keep(session, 999999) is False
+
+
+def test_the_keep_route_and_the_missing_fact(client, session):
+    text = "The passport renewal is due on 3 March 2026 at the office."
+    fid = _learn(session, _note(session, text), text)
+    run.run_check(session, TODAY)
+    session.commit()
+    kept = client.post("/learned/audit/keep", json={"fact_id": fid})
+    assert kept.json() == {"kept": True}
+    flags = client.get("/learned/audit/flags")
+    assert flags.json() == {"flags": {}}
+    again = client.post("/learned/audit/keep", json={"fact_id": fid})
+    assert again.status_code == 404
+    # Undo of Keep it: the flag is back, and Keep it again clears it (redo).
+    back = client.post("/learned/audit/unkeep", json={"fact_id": fid})
+    assert back.json() == {"flagged": True}
+    flags = client.get("/learned/audit/flags")
+    assert str(fid) in flags.json()["flags"]
+    redo = client.post("/learned/audit/keep", json={"fact_id": fid})
+    assert redo.status_code == 200
+
+
+def test_the_scheduled_check_has_its_own_switch_in_settings(session, monkeypatch):
+    from tessellate.ai import autonomous
+
+    calls = []
+    monkeypatch.setattr(run, "run_job", lambda: calls.append(1))
+
+    class Config:
+        def get_preference(self, key, default=None):
+            return False if key == "learned_audit_enabled" else default
+
+    autonomous._stage_learned_audit(Config())
+    assert calls == []

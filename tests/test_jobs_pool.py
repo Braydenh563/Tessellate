@@ -71,7 +71,7 @@ def test_shutdown_returns_inside_its_deadline_with_jobs_pending() -> None:
 
     def slow() -> None:
         started.set()
-        release.wait(5)
+        release.wait(30)
         ran.append("slow")
 
     def never() -> None:  # pragma: no cover - the point is that it does not run
@@ -83,15 +83,16 @@ def test_shutdown_returns_inside_its_deadline_with_jobs_pending() -> None:
         pool.enqueue("ocr", never)
 
     assert pool.queued_count() > 100
-    began = time.monotonic()
+    # Held by an event, not timed (L-general-70): shutdown came back while the
+    # in-flight job was still held, so it kept its deadline, not the job's time.
     clean = pool.shutdown(deadline=0.4)
-    elapsed = time.monotonic() - began
+    held = "slow" not in ran
     release.set()
 
     # The in-flight job is still blocked, so this is the honest "not clean"
     # answer: the workers are daemons and die with the process.
     assert clean is False
-    assert elapsed < 2.0, f"shutdown took {elapsed:.2f}s against a 0.4s deadline"
+    assert held, "shutdown waited for the in-flight job"
     assert "never" not in ran
     assert pool.queued_count() == 0
 

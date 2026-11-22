@@ -1703,6 +1703,8 @@ window.addEventListener("pointercancel", () => { wbBulkBarBounds = null; }, true
 //: travel and save nothing when it is released. `restore` is written by the
 //: drag that begins the gesture, because only it knows what it changed.
 let wbGesture = null;
+//: A card, box or shape in the pointer is written only on release, so the page asks before a reload or a close takes it (L-world-class-97). A listener here, not a call in navigation.js: that file is boot, and this one loads lazily.
+window.addEventListener("beforeunload", (event) => wbGesture?.move && !wbGesture.cancelled && event.preventDefault());
 
 //: **A finger carries nothing until it has travelled, and a second finger
 //: carries nothing at all** (INBOX 888, the owner: "I tried pinching to zoom
