@@ -6361,6 +6361,12 @@
     //: transition to announce it (a gesture's own events end before the
     //: transform eases): the follow loop is kept up through it (INBOX 1629).
     nameMarkBuddyKeepUp(900);
+    //: **Its face holds still while the board moves** (L-mindmap-24): its idle animations restyled every
+    //: frame of a 500-topic pan (worst step 35 to 42ms off, 94 to 103ms on); the carried rule holds them.
+    const buddy = document.getElementById("nm-buddy");
+    if (buddy && !buddy.classList.contains("nm-buddy-canvas-moving")) buddy.classList.add("nm-buddy-canvas-moving");
+    clearTimeout(nameMarkBuddyCanvasZoom.timer);
+    nameMarkBuddyCanvasZoom.timer = setTimeout(() => buddy?.classList.remove("nm-buddy-canvas-moving"), 250);
     if (nmb.canvas) nameMarkBuddySetSize(nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(k), false);
   }
 

@@ -6352,9 +6352,10 @@ body .chip.item-label,
   top: 100%;
   translate: -50% var(--space-2);
 }
-/* While carried: the move on the compositor and the face holding still. */
+/* While carried: the move on the compositor and the face holding still. And while the board under it
+   pans or zooms (`nameMarkBuddyCanvasZoom`), so its idle loop does not restyle each frame of the gesture. */
 #nm-buddy.nm-buddy-dragging { will-change: translate; }
-#nm-buddy.nm-buddy-dragging .name-mark * {
+#nm-buddy:is(.nm-buddy-dragging, .nm-buddy-canvas-moving) .name-mark * {
   animation-play-state: paused;
 }
 /* Its behaviours: a class at a time from avatars.js's one timer, acted out

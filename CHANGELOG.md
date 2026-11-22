@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: its face holds still while the board under it pans or zooms, so its idle loop stops restyling each frame; worst pan step at 500 topics with it on went from 94 to 103ms to 45 to 57ms, and on a long-lived notebook from 466 to 523ms to 68 to 77ms (mapperf).
 - Mind map: a zoom step leaves the small-topic grip marks to the settle, so the worst zoom step at 500 topics went from 64 to 96ms back to 41 to 48ms (mapperf, two fresh runs).
 - Sweeps: a sweep booting on a shared server no longer answers the search-by-meaning question again, which wrote off over deepflows settings' switch mid-run (1 failure in 3 runs; passes with a sweep booted mid-flow).
 - Notes: a note saved from Extract on a document now carries its provenance chip, "Extracted from <title>" (a generic label once the document is purged), from a new nullable `origin_document_id` on entries and its revision; a note with a transcribed recording, meetings included, already reads "Transcribed from audio" (L-general-42).
