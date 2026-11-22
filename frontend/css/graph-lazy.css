@@ -355,8 +355,11 @@
   font-size: var(--text-sm);
   white-space: nowrap;
 }
+/* --muted, not --border: the border token is a 10% hairline and drew the
+   arrow at 1.2:1; the muted ink is the quiet text colour (5:1 or better). */
 .graph-trace-arrow-icon {
-  color: var(--border);
+  color: var(--muted);
+  flex: none;
 }
 .graph-trace-step {
   color: var(--muted);
@@ -603,6 +606,18 @@
    `.ph-caret-down`). The graph does not load the Library's sheet. */
 .graph-trace-story[open] > summary > .doc-toolbar-menu-caret {
   transform: rotate(180deg);
+}
+/* The standard chevron: the opener's own size and full ink, not the Library
+   toolbar's 0.7em at 70% that read as a speck. */
+.graph-trace-story > summary > .doc-toolbar-menu-caret {
+  font-size: 1em;
+  opacity: 1;
+}
+/* Reduced motion keeps the open state (the turned chevron) and drops only the turn. */
+@media (prefers-reduced-motion: reduce) {
+  .graph-trace-story > summary > .doc-toolbar-menu-caret {
+    transition: none;
+  }
 }
 
 /* **A notebook with nothing to map has nothing to key or zoom** (unslop 1103,
