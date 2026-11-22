@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 62 | 2 | 59 | 432 |
-| whiteboard | 0 | 0 | 0 | 0 | 0 | 0 |
+| whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 0 | 0 | 0 | 0 | 4 | 0 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
-| general | 0 | 2 | 0 | 0 | 3 | 2 |
-| all | 376 | 385 | 121 | 2 | 158 | 882 |
+| general | 0 | 1 | 0 | 0 | 3 | 1 |
+| all | 376 | 384 | 122 | 2 | 158 | 882 |
 
 ## graph
 
@@ -281,6 +281,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-28** `chat` open, M: Group saved chats (by model or folder), with an agent tool and skill to manage them. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; sorting is built (sortConversations), grouping is not. Verify in code first.
 
 ## whiteboard
+- [ ] **L-whiteboard-78** `whiteboard` partly, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only Progress 2026-11-22: the ratchet is built (tests/test_js_function_size.py, 146 bodies seeded over 150 lines). Left: the five closures, split so every new piece is under 150 lines (about 40 carves; tool: scratchpad carve2/extract.js with SRC and HOST).
 
 ## documents
 
@@ -546,7 +547,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## general
 
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
-- [ ] **L-general-71** `general` open, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only
 
 ## Owner calls
 
