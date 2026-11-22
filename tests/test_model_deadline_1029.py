@@ -7,6 +7,7 @@ request has no response object to close and only the socket can end it.
 
 from __future__ import annotations
 
+import gc
 import json
 import socket
 import threading
@@ -210,9 +211,52 @@ def silent():
 
 
 def _timed(api, path):
-    started = time.monotonic()
-    response = api.get(path)
-    return response, time.monotonic() - started
+    """One request's wall time with the cyclic collector held off: a full
+    collection of a worker that has run thousands of tests is seconds on a CI
+    runner and belongs to no route (CI 44977602492: 2.79 s for a route that
+    returns in 14 ms here)."""
+    gc.collect()
+    gc.disable()
+    try:
+        started = time.monotonic()
+        response = api.get(path)
+        return response, time.monotonic() - started
+    finally:
+        gc.enable()
+
+
+class _HeldProbe(ollama_client.OllamaClient):
+    """A backend whose liveness probe never returns until released."""
+
+    def __init__(self) -> None:
+        super().__init__(base_url="http://127.0.0.1:9")
+        self.release = threading.Event()
+        self.callers: list[str] = []
+
+    def is_running(self) -> bool:
+        self.callers.append(threading.current_thread().name)
+        self.release.wait(HANG_GUARD)
+        return True
+
+
+def test_the_tensions_route_answers_while_the_backend_probe_is_still_held(app_state):
+    """No wall clock: the route answers twice while the only probe is still
+    blocked, the probe ran on its own thread, and nothing past the probe ran."""
+    from tessellate.api.app import create_app
+
+    held = _HeldProbe()
+    deps.override_ai(ollama=held)
+    readied = []
+    deps.get_embeddings().is_ready = lambda: readied.append(1) or True
+    api = TestClient(create_app())
+    try:
+        for _ in range(2):
+            response = api.get("/entries/tensions")
+            assert response.status_code == 200 and response.json()["status"] == "no_model"
+        assert not held.release.is_set()
+        assert held.callers == ["backend probe"] and readied == []
+    finally:
+        held.release.set()
 
 
 def test_decorating_routes_do_not_wait_on_a_silent_backend(app_state, silent):

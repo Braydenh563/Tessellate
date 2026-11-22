@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9000, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11056, test files 2883, tests 23111, plan headings 693, app scripts 29, boot scripts 38, script files 382.
+Counts: frontend functions 9000, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11056, test files 2883, tests 23112, plan headings 693, app scripts 29, boot scripts 38, script files 382.
 
 ## Frontend functions (9000)
 
@@ -29218,7 +29218,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23111)
+## Tests (23112)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30948,7 +30948,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_cards.py | 24 |
 | tests/test_model_connect_timeout.py | 2 |
 | tests/test_model_context_z70.py | 3 |
-| tests/test_model_deadline_1029.py | 10 |
+| tests/test_model_deadline_1029.py | 11 |
 | tests/test_model_delete.py | 3 |
 | tests/test_model_facts_left_1111.py | 14 |
 | tests/test_model_gate.py | 4 |
