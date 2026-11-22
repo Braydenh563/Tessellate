@@ -225,7 +225,7 @@
   const KM_ER_ENT = '[\\w-]+|"[^"]+"';
   const KM_ER_LEFT = { "||": "Exactly one", "|o": "Zero or one", "}o": "Zero or more", "}|": "One or more" };
   const KM_ER_RIGHT = { "||": "Exactly one", "o|": "Zero or one", "o{": "Zero or more", "|{": "One or more" };
-  const KM_ER_REL = new RegExp(`^(${KM_ER_ENT})\\s+(\\|\\||\\|o|\\}o|\\}\\|)(--|\\.\\.)(\\|\\||o\\||o\\{|\\|\\{)\\s+(${KM_ER_ENT})(?:\\s*:\\s*(.*))?$`);
+  const KM_ER_REL = new RegExp("^(" + KM_ER_ENT + ")\\s+(\\|\\||\\|o|\\}o|\\}\\|)(--|\\.\\.)(\\|\\||o\\||o\\{|\\|\\{)\\s+(" + KM_ER_ENT + ")(?:\\s*:\\s*(.*))?$");
   const kmErShow = (t) => String(t).replace(/^"|"$/g, "");
   const kmErToken = (t) => (/^[\w-]+$/.test(t) ? t : `"${t.replace(/"/g, "")}"`);
   function kmErParse(source) {
@@ -240,7 +240,7 @@
       if (open) {
         if (s === "}") open = null;
         else open.members.push(kmMake(m, "a", { text: s }));
-      } else if ((hit = new RegExp(`^(${KM_ER_ENT})(\\s*\\[[^\\]]*\\])?\\s*\\{\\s*(\\})?$`).exec(s))) {
+      } else if ((hit = new RegExp("^(" + KM_ER_ENT + ")(\\s*\\[[^\\]]*\\])?\\s*\\{\\s*(\\})?$").exec(s))) {
         const e = kmMake(m, "e", { name: hit[1], alias: hit[2] || "", members: [], braced: true });
         m.items.push(e);
         if (!hit[3]) open = e;
