@@ -1373,6 +1373,8 @@ function buildMenuItemButton(item) {
   button.className = "menu-item" + (item.danger ? " menu-danger" : "") + (item.disabled ? " menu-item-unavailable" : "");
   setLabel(button, item.label);
   if (item.title) button.title = item.title;
+  //: `current` marks the chosen row of a choice or the "on" row of a setting, as `kebabMenu.rows` does.
+  if (item.current) button.setAttribute("aria-current", "true");
   if (item.disabled) button.setAttribute("aria-disabled", "true");
   button.addEventListener("click", () => {
     closeActionMenus();

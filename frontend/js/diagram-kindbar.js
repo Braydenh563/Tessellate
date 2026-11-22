@@ -184,7 +184,9 @@
       rows.push({ label: "ph:arrow-clockwise Redo", group: "edit", run: () => S.io.redo() });
       if (ask) rows.push({ label: "ph:sparkle Ask for a change…", group: "edit", run: () => S.root.querySelector(".dgm-askbtn")?.click() });
     }
-    return { rows, key: (S.io.menu || []).map((row) => row.label).join("|") + (ask ? "|ask" : "") };
+    //: A chosen row is part of the key, so a menu that shows a setting is drawn again when the setting changes.
+    const sig = (row) => row.label + (row.current ? "*" : "") + (row.items ? `(${row.items.map(sig).join(",")})` : "");
+    return { rows, key: (S.io.menu || []).map(sig).join("|") + (ask ? "|ask" : "") };
   }
 
   diagramModel.kindbar = { mount, fresh, historyKey, expand, fold, KINDS, SAMPLE };
