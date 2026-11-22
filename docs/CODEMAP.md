@@ -7513,15 +7513,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `binReminder` | frontend/js/reminder-triage.js:61 |
+| `binReminder` | frontend/js/reminder-triage.js:75 |
 | `clearDoneReminders` | frontend/js/reminder-triage.js:225 |
 | `dayValue` | frontend/js/reminder-triage.js:50 |
 | `openReminderTriage` | frontend/js/reminder-triage.js:78 |
-| `putReminder` | frontend/js/reminder-triage.js:59 |
+| `putReminder` | frontend/js/reminder-triage.js:73 |
 | `reminderOutcomePrompt` | frontend/js/reminder-triage.js:10 |
 | `triageDueFor` | frontend/js/reminder-triage.js:53 |
-| `triageRowText` | frontend/js/reminder-triage.js:65 |
-| `unbinReminder` | frontend/js/reminder-triage.js:62 |
+| `triageRowText` | frontend/js/reminder-triage.js:60 |
+| `unbinReminder` | frontend/js/reminder-triage.js:76 |
 
 ### frontend/js/reply-kit.js (42)
 
