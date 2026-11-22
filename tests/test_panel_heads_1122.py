@@ -58,7 +58,8 @@ def test_an_outside_press_closes_every_modal_dialog_unless_it_is_kept_or_typed_i
     assert len(tags) >= 18
     kept = sorted(re.search(r'id="([^"]+)"', t).group(1) for t in tags if "data-keep-open" in t)
     assert kept == ["recovery-key-dialog"]
-    built = [p.name for p in (ROOT / "frontend" / "js").glob("*.js") if p.name != "app.js" and "data-keep-open" in p.read_text(encoding="utf-8")]
+    # The rule that reads the mark (menus.js) is the one script that names it.
+    built = [p.name for p in (ROOT / "frontend" / "js").glob("*.js") if p.name != "menus.js" and "data-keep-open" in p.read_text(encoding="utf-8")]
     assert built == []
     # The Dictionary's own copy went: one rule, not two.
     assert "pointerdown" not in DICT

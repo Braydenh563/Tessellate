@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1273 |
 | `confirmVerb` | frontend/js/app.js:1261 |
-| `ensureModule` | frontend/js/app.js:1814 |
+| `ensureModule` | frontend/js/app.js:1767 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1985 |
-| `lazyAssetStamp` | frontend/js/app.js:1771 |
-| `lazyScript` | frontend/js/app.js:1793 |
+| `installStandIns` | frontend/js/app.js:1938 |
+| `lazyAssetStamp` | frontend/js/app.js:1724 |
+| `lazyScript` | frontend/js/app.js:1746 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1838 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1791 |
 | `promptDialog` | frontend/js/app.js:1377 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -72,13 +72,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settleLockPrompt` | frontend/js/app.js:656 |
 | `show` | frontend/js/app.js:162 |
 | `showLockScreen` | frontend/js/app.js:699 |
-| `smallButton` | frontend/js/app.js:1553 |
+| `smallButton` | frontend/js/app.js:1506 |
 | `spinnerEl` | frontend/js/app.js:1218 |
 | `stagePrimary` | frontend/js/app.js:1212 |
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1752 |
+| `whenScriptsLoaded` | frontend/js/app.js:1705 |
 | `wireBackdropClose` | frontend/js/app.js:1493 |
 
 ### frontend/js/prefs.js (6)
@@ -13947,9 +13947,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2778 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2762 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/07-whiteboard-misc.css:15113 |
-| Atlas, the assistant's own character (atlas.js) | frontend/css/05-sidebars-themes.css:5476 |
+| Atlas, the assistant's own character (atlas.js) | frontend/css/05-sidebars-themes.css:5473 |
 | BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:6717 |
-| BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:5283 |
+| BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:5280 |
 | Boards, 2026-10-10 (boardmap-1010): lazy with the board, off the boot | frontend/css/library-lazy.css:13049 |
 | Capture: the add tools as a quiet toolbar (INBOX 395) | frontend/css/07-whiteboard-misc.css:15724 |
 | Capture: the two labelled rows under the note box | frontend/css/07-whiteboard-misc.css:2454 |
@@ -14142,8 +14142,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1892 |
 | activity log | frontend/css/01-forms-settings.css:2734 |
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:11817 |
-| an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:5332 |
-| and inside a small phone | frontend/css/05-sidebars-themes.css:5200 |
+| an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:5329 |
+| and inside a small phone | frontend/css/05-sidebars-themes.css:5197 |
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1955 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4211 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2896 |
@@ -14410,7 +14410,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the page scrollers scroll on the compositor | frontend/css/07-whiteboard-misc.css:12183 |
 | the page shell (§35L) | frontend/css/00-tokens-shell.css:2971 |
 | the palette on a touch screen (INBOX 464) | frontend/css/05-sidebars-themes.css:1214 |
-| the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5169 |
+| the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5166 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3548 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:11153 |
 | the quick-nav chord's guide | frontend/css/chord-guide-lazy.css:5 |
@@ -14476,7 +14476,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/02-chat-graph.css | 5476 |
 | frontend/css/03-dashboard-widgets.css | 5225 |
 | frontend/css/04-chat-dock-appearance.css | 6611 |
-| frontend/css/05-sidebars-themes.css | 5733 |
+| frontend/css/05-sidebars-themes.css | 5730 |
 | frontend/css/06-timeline-dialogs.css | 3733 |
 | frontend/css/07-whiteboard-misc.css | 19283 |
 | frontend/css/09-editor.css | 1697 |
