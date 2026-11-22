@@ -1601,15 +1601,17 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Select a passage in a note, a document or a reading and run "
             "Translate this from the command palette (Ctrl+K): it turns "
-            "English into Spanish on this computer, with no model, in about a "
+            "English into Spanish (or French, German, Italian or Portuguese, and "
+            "back) on this computer, with no model, in about a "
             "second, and Copy or Replace the selection puts it to use. With "
             "nothing selected it takes the whole editor you were in. It needs "
-            "Translate offline, a 27 MB download in Settings, Packages "
+            "Translate offline, a 54 MB download in Settings, Packages "
             "(Languages); until then the row says so and opens that page. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "
             "With more than one language pair installed the sheet shows a "
-            "picker. Other languages: the Writing room translates with your model."
+            "picker; each pair after the first is a language package (French, German, "
+            "Italian, Portuguese). Other languages: the Writing room translates with your model."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },

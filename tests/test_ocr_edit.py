@@ -9,11 +9,21 @@ from __future__ import annotations
 
 import base64
 
+import pytest
+
 from tessellate.core import ocr
 
 _PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 )
+
+
+@pytest.fixture(autouse=True)
+def _no_upload_read(monkeypatch):
+    """The upload's own background read is a second writer these tests do not
+    drive: queued on the pool, it could land after a test's clear and store
+    the patched engine's words (CI py3.12 on 50462a6a, 'reading' == 'none')."""
+    monkeypatch.setattr(ocr, "extract_in_background", lambda *a, **k: None)
 
 
 def _upload(client) -> int:

@@ -97,8 +97,21 @@ function translateAligned(bytes, alignment) {
   return memory;
 }
 
+//: One pair loaded at a time (L-world-class-41): each model is about 37 MB in
+//: the engine's 32-bit heap, and the fifth pair kept beside four others
+//: aborted the engine (measured in Chromium, 2026-11-22), which then failed
+//: every later call. Switching pairs costs one load, about 2 s.
+function translateDropOthers(key) {
+  for (const [other, loading] of translateEngine.models) {
+    if (other === key) continue;
+    translateEngine.models.delete(other);
+    loading.then((model) => model.delete()).catch(() => {});
+  }
+}
+
 async function translateModel(pair) {
   const key = `${pair.from}-${pair.to}`;
+  translateDropOthers(key);
   if (!translateEngine.models.has(key)) {
     const loading = Promise.all([translateBytes(pair.model), translateBytes(pair.lex), translateBytes(pair.vocab)]).then(
       ([model, lex, vocab]) => {
