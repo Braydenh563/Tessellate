@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9138, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2927, tests 23323, plan headings 694, app scripts 29, boot scripts 38, script files 403.
+Counts: frontend functions 9140, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2927, tests 23325, plan headings 694, app scripts 29, boot scripts 38, script files 403.
 
-## Frontend functions (9138)
+## Frontend functions (9140)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -9949,27 +9949,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSideState` | frontend/js/whiteboard-library.js:51 |
 | `wbSyncSidebarKind` | frontend/js/whiteboard-library.js:137 |
 
-### frontend/js/whiteboard-link-edge.js (18)
+### frontend/js/whiteboard-link-edge.js (20)
 
 | Name | File:line |
 |---|---|
-| `afterDelete` | frontend/js/whiteboard-link-edge.js:157 |
-| `beforeDelete` | frontend/js/whiteboard-link-edge.js:143 |
+| `afterDelete` | frontend/js/whiteboard-link-edge.js:183 |
+| `beforeDelete` | frontend/js/whiteboard-link-edge.js:169 |
 | `clamp01` | frontend/js/whiteboard-link-edge.js:26 |
-| `cue` | frontend/js/whiteboard-link-edge.js:186 |
+| `cue` | frontend/js/whiteboard-link-edge.js:212 |
 | `dependents` | frontend/js/whiteboard-link-edge.js:118 |
+| `dependentsThisPass` | frontend/js/whiteboard-link-edge.js:136 |
 | `edgeOf` | frontend/js/whiteboard-link-edge.js:30 |
-| `follow` | frontend/js/whiteboard-link-edge.js:130 |
+| `follow` | frontend/js/whiteboard-link-edge.js:156 |
 | `hangsOn` | frontend/js/whiteboard-link-edge.js:77 |
 | `hitAt` | frontend/js/whiteboard-link-edge.js:87 |
-| `keptRows` | frontend/js/whiteboard-link-edge.js:225 |
+| `indexStillHolds` | frontend/js/whiteboard-link-edge.js:135 |
+| `keptRows` | frontend/js/whiteboard-link-edge.js:251 |
 | `lineD` | frontend/js/whiteboard-link-edge.js:37 |
 | `pinned` | frontend/js/whiteboard-link-edge.js:61 |
-| `place` | frontend/js/whiteboard-link-edge.js:259 |
+| `place` | frontend/js/whiteboard-link-edge.js:285 |
 | `pointOn` | frontend/js/whiteboard-link-edge.js:45 |
-| `reattach` | frontend/js/whiteboard-link-edge.js:178 |
+| `reattach` | frontend/js/whiteboard-link-edge.js:204 |
 | `round` | frontend/js/whiteboard-link-edge.js:27 |
-| `saveEnds` | frontend/js/whiteboard-link-edge.js:163 |
+| `saveEnds` | frontend/js/whiteboard-link-edge.js:189 |
 | `zoomK` | frontend/js/whiteboard-link-edge.js:25 |
 
 ### frontend/js/whiteboard-locks.js (19)
@@ -29515,7 +29517,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23323)
+## Tests (23325)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32298,7 +32300,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_library_scroll.py | 1 |
 | tests/test_wb_line_ends.py | 5 |
 | tests/test_wb_line_style.py | 5 |
-| tests/test_wb_link_edge.py | 14 |
+| tests/test_wb_link_edge.py | 16 |
 | tests/test_wb_link_label_look_w19.py | 2 |
 | tests/test_wb_loop.py | 5 |
 | tests/test_wb_map_open_frame.py | 3 |

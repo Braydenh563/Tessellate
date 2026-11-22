@@ -56,6 +56,20 @@ const VIEWPORT = (() => {
   return { width: w || 1440, height: h || 900 };
 })();
 
+//: DROP_PROFILE=1 prints a drop's heaviest functions by self time (a diagnosis aid; off in CI).
+async function profiled(page, label, fn) {
+  const cdp = process.env.DROP_PROFILE ? await page.context().newCDPSession(page) : null;
+  if (cdp) { await cdp.send("Profiler.enable"); await cdp.send("Profiler.setSamplingInterval", { interval: 100 }); await cdp.send("Profiler.start"); }
+  await fn();
+  if (!cdp) return;
+  const { profile } = await cdp.send("Profiler.stop");
+  const self = new Map();
+  const dt = profile.timeDeltas || [];
+  const byId = new Map(profile.nodes.map((nd) => [nd.id, nd]));
+  (profile.samples || []).forEach((id, i) => { const f = byId.get(id).callFrame; const k = `${f.functionName || "(anon)"} ${f.url.split("/").pop().replace(/\?.*/, "")}:${f.lineNumber + 1}`; self.set(k, (self.get(k) || 0) + (dt[i] || 0) / 1000); });
+  console.log(`DROP ${label}\n  ` + [...self].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => `${v.toFixed(1)}ms ${k}`).join("\n  "));
+}
+
 const SIZES = (process.env.SIZES || "50,200,500").split(",").map(Number);
 
 const results = [];
@@ -341,8 +355,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
         await page.mouse.move(node.x + i * 6, node.y + i * 3);
         await stepDone();
       }
-      await page.mouse.up();
-      await stepDone();
+      await profiled(page, `drag ${n}`, async () => { await page.mouse.up(); await stepDone(); });
       dragFrames = stopFrames();
       await page.waitForTimeout(500);
     }
@@ -410,8 +423,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
         await page.mouse.move(pt.x + i * 6, pt.y + i * 3);
         await stepDone();
       }
-      await page.mouse.up();
-      await stepDone();
+      await profiled(page, `branch ${n}`, async () => { await page.mouse.up(); await stepDone(); });
       const frames = stopFrames();
       await page.waitForTimeout(400);
       const after = await at(pt.id);
@@ -485,6 +497,10 @@ const r1 = (x) => Math.round(x * 10) / 10;
       branchSize: plain.size,
       branchWorst: r1(Math.max(0, ...plain.frames)),
       branchLinkedWorst: r1(Math.max(0, ...linked.frames)),
+      // Which step of the linked drag is worst (0 the press, 26 the drop),
+      // and the frames themselves, so a ratio that moves can be placed.
+      branchLinkedFrames: linked.frames.map(r1),
+      branchFrames: plain.frames.map(r1),
       // The pick-up: the press and the first move, booked as one step.
       dragPickup: r1(dragFrames[0] || 0),
       branchPickup: r1(Math.max(plain.frames[0] || 0, linked.frames[0] || 0)),

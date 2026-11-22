@@ -126,10 +126,36 @@
     return out;
   }
 
+  //: `follow` runs once per connector a gesture redraws, so asking `dependents` each time scanned every sketch per
+  //: connector: a branch drop with 300 links spent 24ms of a 72ms frame there (mapperf, 2026-11-22). The index of
+  //: them by the connector they hang on is kept while every sketch still holds the same `data` (edits replace it,
+  //: in place or not), which is a reference compare per sketch rather than a parse. `dependents` stays a fresh
+  //: scan for the one-off callers (`beforeDelete`).
+  let passIndex = null;
+  const indexStillHolds = (list) => passIndex && passIndex.items.length === list.length && list.every((s, i) => s === passIndex.items[i] && s.data === passIndex.datas[i]);
+  function dependentsThisPass(id) {
+    const list = wbState.sketches || [];
+    if (!indexStillHolds(list)) {
+      const byId = new Map();
+      for (const sketch of list) {
+        const raw = sketch.data;
+        if (typeof raw !== "string" || !(raw.includes('"sourceEdge"') || raw.includes('"targetEdge"'))) continue;
+        const parsed = wbParsedLink(sketch);
+        if (!parsed) continue;
+        for (const on of new Set(ENDS.map((end) => edgeOf(parsed, end)?.id).filter((v) => v != null))) {
+          if (!byId.has(on)) byId.set(on, []);
+          byId.get(on).push({ sketch, parsed });
+        }
+      }
+      passIndex = { items: list.slice(), datas: list.map((s) => s.data), byId };
+    }
+    return passIndex.byId.get(id) || [];
+  }
+
   //: Called as a gesture redraws connector `id`: redraws the ones attached to it (`update` is wbUpdateLinkedSketches).
   function follow(id, update) {
     if (following >= MAX_DEPTH) return;
-    const deps = dependents(id);
+    const deps = dependentsThisPass(id);
     if (!deps.length) return;
     following += 1;
     try {
