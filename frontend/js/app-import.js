@@ -26,6 +26,8 @@ function importPreview({ label, rows, more = 0 }) {
       answered = true;
       resolve(value);
     };
+    //: Each row's tick, read by Import and set by Select all; the boxes write it.
+    const ticked = rows.map((row) => !row.already);
     const boxes = [];
     openSheet({
       label: "Import preview",
@@ -38,17 +40,18 @@ function importPreview({ label, rows, more = 0 }) {
         summary.className = "import-report-counts";
         summary.setAttribute("aria-live", "polite");
         const run = smallButton("ph:check Import", "Bring the ticked notes in", () => {
-          answer(rows.filter((row, at) => !boxes[at].checked).map((row) => row.key));
+          answer(rows.filter((row, at) => !ticked[at]).map((row) => row.key));
           close();
         }, false);
         run.classList.add("accent");
         const refresh = () => {
-          const n = boxes.filter((box) => box.checked).length + more;
+          const n = ticked.filter(Boolean).length + more;
           summary.textContent = `${nounCount(n, "note")} will be imported.` + (more ? ` The ${more} past the first ${rows.length} come too.` : "");
           setLabel(run, `ph:check Import ${n}`);
           run.disabled = n === 0;
         };
         const all = (on) => () => {
+          ticked.fill(on);
           boxes.forEach((box) => { box.checked = on; });
           refresh();
         };
@@ -60,14 +63,17 @@ function importPreview({ label, rows, more = 0 }) {
         );
         const list = document.createElement("ul");
         list.className = "entry-list import-report-list";
-        rows.forEach((row) => {
+        const item = (row, at) => {
           const li = document.createElement("li");
           const tick = document.createElement("label");
           tick.className = "row align-center checkbox-label small";
           const box = document.createElement("input");
           box.type = "checkbox";
-          box.checked = !row.already;
-          box.addEventListener("change", refresh);
+          box.checked = ticked[at];
+          box.addEventListener("change", () => {
+            ticked[at] = box.checked;
+            refresh();
+          });
           boxes.push(box);
           const name = document.createElement("strong");
           name.textContent = row.title || "Untitled";
@@ -76,8 +82,21 @@ function importPreview({ label, rows, more = 0 }) {
           detail.className = "muted task-detail";
           detail.textContent = (row.already ? "Already here. " : "") + (row.snippet || "");
           li.append(tick, detail);
-          list.appendChild(li);
-        });
+          return li;
+        };
+        //: A screenful now and the rest a hundred a frame: a thousand rows built
+        //: at once were one long task of 125 to 229 ms idle, 1.1 s on a loaded
+        //: host (L-world-class-870). The ticks live in `ticked`, so Import and
+        //: Select all are right before the last row lands.
+        const IMPORT_PREVIEW_FIRST = 40;
+        const IMPORT_PREVIEW_CHUNK = 100;
+        const append = (from, to) => {
+          const part = document.createDocumentFragment();
+          for (let at = from; at < Math.min(to, rows.length); at += 1) part.appendChild(item(rows[at], at));
+          list.appendChild(part);
+          if (to < rows.length && !answered) requestAnimationFrame(() => append(to, to + IMPORT_PREVIEW_CHUNK));
+        };
+        append(0, IMPORT_PREVIEW_FIRST);
         const actions = document.createElement("div");
         actions.className = "row right space-dialog-actions";
         actions.append(smallButton("Cancel", "Import nothing", close), run);
