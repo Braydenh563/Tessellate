@@ -2379,7 +2379,11 @@ function refreshArtForTheme() {
 //: A colour chosen while the dashboard is showing redraws it, after the frames
 //: (INBOX 1516: asked by its class, not by `checkVisibility`, a layout flush
 //: that was billed to the list's `loadCategories` continuation).
+//: Not before the first draw (L603): categories load while the opening render is still
+//: on its way, and that render reads the colours as it draws, so a second one only
+//: threw the first away (every widget fetched and built twice, 80 ms apart at boot).
 document.addEventListener("categorycolours", () => {
+  if (!window.dashSettled) return;
   if (!$("tab-dashboard")?.classList.contains("hidden")) afterFrames(renderDashboard);
 });
 
