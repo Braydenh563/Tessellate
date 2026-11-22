@@ -3884,19 +3884,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmHighlight` | frontend/js/documents-cm-load.js:376 |
-| `docCmLanguageFor` | frontend/js/documents-cm-load.js:147 |
-| `docCmSearchCount` | frontend/js/documents-cm-load.js:316 |
-| `docCmViewShown` | frontend/js/documents-cm-load.js:504 |
-| `docHistoryPersist` | frontend/js/documents-cm-load.js:488 |
-| `docHistoryRestore` | frontend/js/documents-cm-load.js:472 |
-| `docListGuides` | frontend/js/documents-cm-load.js:287 |
+| `docCmHighlight` | frontend/js/documents-cm-load.js:379 |
+| `docCmLanguageFor` | frontend/js/documents-cm-load.js:150 |
+| `docCmSearchCount` | frontend/js/documents-cm-load.js:319 |
+| `docCmViewShown` | frontend/js/documents-cm-load.js:507 |
+| `docHistoryPersist` | frontend/js/documents-cm-load.js:491 |
+| `docHistoryRestore` | frontend/js/documents-cm-load.js:475 |
+| `docListGuides` | frontend/js/documents-cm-load.js:290 |
 | `docRedo` | frontend/js/documents-cm-load.js:20 |
-| `docResetDocument` | frontend/js/documents-cm-load.js:431 |
-| `docSearchCountText` | frontend/js/documents-cm-load.js:308 |
-| `docTableGridRules` | frontend/js/documents-cm-load.js:228 |
-| `docWatchLock` | frontend/js/documents-cm-load.js:508 |
-| `loadCodeMirror` | frontend/js/documents-cm-load.js:51 |
+| `docResetDocument` | frontend/js/documents-cm-load.js:434 |
+| `docSearchCountText` | frontend/js/documents-cm-load.js:311 |
+| `docTableGridRules` | frontend/js/documents-cm-load.js:231 |
+| `docWatchLock` | frontend/js/documents-cm-load.js:511 |
+| `loadCodeMirror` | frontend/js/documents-cm-load.js:54 |
 | `warmDocumentEngine` | frontend/js/documents-cm-load.js:34 |
 
 ### frontend/js/documents-cm-theme.js (1)
