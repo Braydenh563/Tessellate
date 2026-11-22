@@ -1763,14 +1763,23 @@ function lazyScript(file) {
   return lazyFileLoads.get(file);
 }
 
+//: Bundles whose every file has run. A bundle's real functions replace their stand-ins file by file,
+//: so a caller in the gap between can reach one whose neighbours have not run yet (the edit form's
+//: `mountGutterFor` before `docGutterPref`, note-edit-panels.js).
 function ensureModule(name) {
   const files = LAZY_MODULES[name];
   if (!files) return Promise.resolve(false);
   if (!lazyModuleLoads.has(name)) {
-    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean) || !lazyModuleLoads.delete(name)));
+    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => {
+      const ok = results.every(Boolean);
+      if (ok) ensureModule.ready.add(name);
+      else lazyModuleLoads.delete(name);
+      return ok;
+    }));
   }
   return lazyModuleLoads.get(name);
 }
+ensureModule.ready = new Set();
 
 //: **The note editor's door, kept at boot.** The rendering editor every note box gets (documents.js's `NOTE_SURFACES` table and `mountNoteSurface`) mounts on the box's first focus through a listener *in documents.js*, which is in the Library bundle now. So on a fresh boot the capture box, the edit form, the draft and the graph's popup all stayed bare textareas until the Library tab had been visited once (the owner: "the graph popup panels no longer auto render the md and images"). This listener is the half that has to live in the file that is always loaded: it fetches the bundle on the first focus of a note box and hands the mount over. Once the bundle is in, its own listener runs on every later focus and this one steps aside. `NOTE_SURFACE_IDS` mirrors the table's keys, and `tests/test_note_surface.py` fails when the two drift.
 const NOTE_SURFACE_IDS = new Set([

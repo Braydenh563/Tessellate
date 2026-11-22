@@ -613,7 +613,9 @@ ${textarea.value}`));
   //: the notes page goes blank". The mount is awaited so the strip exists
   //: when the pressed state is set.
   //: The same wait mounts the margin reader (the bundle holds it; margin-reader.js).
-  Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => { applyDocGutter(); document.dispatchEvent(new CustomEvent("note-margin-mount", { detail: { textarea, host: marginHost, button: marginBtn, entryId: entry.id } })); }));
+  //: Synchronous once the bundle is in; until then it waits for all of it, not just mountGutterFor's own file.
+  const gutterMounted = ensureModule.ready.has("library") ? Promise.resolve(mountGutterFor(textarea)) : ensureModule("library").then(() => mountGutterFor(textarea));
+  gutterMounted.then(() => requestAnimationFrame(() => { applyDocGutter(); document.dispatchEvent(new CustomEvent("note-margin-mount", { detail: { textarea, host: marginHost, button: marginBtn, entryId: entry.id } })); }));
   renderEntryAttachmentChips(textarea, chipsHost);
   textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost, { paced: true }));
   renderRelatedWhileEditing(li, entry);

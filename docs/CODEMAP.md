@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9062, frontend ids 2847, CSS sections 546, backend routes 722, backend modules 11094, test files 2999, tests 23524, plan headings 692, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9062, frontend ids 2847, CSS sections 546, backend routes 722, backend modules 11094, test files 3000, tests 23526, plan headings 692, app scripts 29, boot scripts 38, script files 402.
 
 ## Frontend functions (9062)
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1273 |
 | `confirmVerb` | frontend/js/app.js:1261 |
-| `ensureModule` | frontend/js/app.js:1766 |
+| `ensureModule` | frontend/js/app.js:1769 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1937 |
+| `installStandIns` | frontend/js/app.js:1946 |
 | `lazyAssetStamp` | frontend/js/app.js:1723 |
 | `lazyScript` | frontend/js/app.js:1745 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1790 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1799 |
 | `promptDialog` | frontend/js/app.js:1377 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -6964,13 +6964,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeNoteForm` | frontend/js/note-edit-panels.js:640 |
-| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:667 |
-| `holdNoteEdit` | frontend/js/note-edit-panels.js:626 |
-| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:663 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:763 |
+| `closeNoteForm` | frontend/js/note-edit-panels.js:642 |
+| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:669 |
+| `holdNoteEdit` | frontend/js/note-edit-panels.js:628 |
+| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:665 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:765 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
-| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:693 |
+| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:695 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
 | `renderEditForm` | frontend/js/note-edit-panels.js:224 |
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
@@ -29470,7 +29470,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23524)
+## Tests (23526)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30583,6 +30583,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_edit_conflicts.py | 7 |
 | tests/test_edit_conflicts_ui.py | 3 |
 | tests/test_edit_embeds_off_request.py | 3 |
+| tests/test_edit_form_gutter_waits_for_bundle.py | 2 |
 | tests/test_edit_form_survives_redraw.py | 1 |
 | tests/test_egress_call_sites.py | 2 |
 | tests/test_egress_ledger_writes.py | 7 |
