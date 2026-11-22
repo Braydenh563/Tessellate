@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Spaces: every space, the default one too, has Export on its row in the space picker: the notebook folder of that space alone, named for it (`tessellate-work.zip`), whichever space is on screen. The picker is 17rem wide so a name keeps 87px beside the four buttons.
 - Spaces: Move to space asks, when the notes link to notes staying behind, whether to bring those too ("Bring them too"), so the links stay in view; one Undo sends all of them back (the move answers with `linked`, and a link whose other end is already in the target space moves with it).
 - Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
 - Sweeps: companioninteract passes above the face for its follow-off check (the old path crossed the face, and a pointer on the face is a touch that looks with the setting off too).

@@ -72,3 +72,29 @@ def test_the_move_offers_to_bring_the_linked_notes():
     assert "Bring them too" in body
     #: One Undo for both moves: the second move's `from` joins the first's.
     assert body.index("Bring them too") < body.index("pushUndo(")
+
+
+# --- a space's own export ----------------------------------------------------
+
+
+def test_the_space_menu_exports_every_space():
+    menu = app_js_text().split("function spaceMenuOption(", 1)[1].split("\n}\n", 1)[0]
+    assert "Export ${name}" in menu
+    #: Not only the deletable ones: the default space is a space too.
+    assert menu.index("Export ${name}") < menu.index("if (deletable)")
+    lazy = (JS / "batch-space.js").read_text(encoding="utf-8")
+    body = lazy.split("async function exportSpace(", 1)[1].split("\n}\n", 1)[0]
+    assert '"/export/folder"' in body and '"X-Workspace-ID": id' in body
+
+
+def test_a_space_export_carries_only_that_space(client):
+    import io
+    import zipfile
+
+    _note(client, "Kept in the default space")
+    _note(client, "Kept in the work space", space="work")
+    response = client.get("/export/folder", headers={"X-Workspace-ID": "work"})
+    assert response.status_code == 200
+    with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+        text = " ".join(archive.read(n).decode("utf-8", "ignore") for n in archive.namelist() if n.endswith(".md"))
+    assert "Kept in the work space" in text and "Kept in the default space" not in text

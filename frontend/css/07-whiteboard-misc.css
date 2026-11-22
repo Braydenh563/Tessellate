@@ -2578,9 +2578,9 @@ body.scroll-top-visible .skills-split > .tab-main {
   left: 0;
   z-index: 60;
   /* Wide enough that a name never sits against the edge, and wide enough that
-     the row's trailing edit/delete buttons do not crowd it. Reported: popup
+     the row's four trailing buttons (hide, rename, export, delete) leave a name room. Reported: popup
      text with no gap from the edge. */
-  min-width: 15rem;
+  min-width: 17rem;
   max-width: min(20rem, calc(100vw - var(--space-8)));
   max-height: 60vh;
   overflow-y: auto;
