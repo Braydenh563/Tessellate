@@ -173,8 +173,8 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert", "meeting prep", "last notes"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
-            "Done. To add one, type it in plain words on the Magic add line at the top "
-            'of the tab and press the sparkle (hedges such as "probably '
+            "Done. To add one, type it in plain words on the Magic add line atop "
+            'the Reminders tab and press the sparkle (hedges such as "probably '
             'around 7pm" are read as the time, and a place like "when I get '
             'home" is left out of the title), or fill in Remind me to, the '
             "date and the time, then Add. Overdue has Triage: keep, drop or reschedule each, or all at once "

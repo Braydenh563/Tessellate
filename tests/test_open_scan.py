@@ -119,3 +119,12 @@ def test_an_html_attribute_value_is_data_and_an_html_comment_is_not(tmp_path, mo
     monkeypatch.setattr(open_scan, "ROOT", tmp_path)
     assert [i for _, i, _ in open_scan.hits(["frontend/index.html"])] == [2]
 
+
+
+def test_the_prose_phrases_are_said_to_stay_on_one_line():
+    """PR 242 review 6008792697 (3): `PROSE` matches within a line, so a
+    re-wrapped comment brings the false positive back; the comment beside it
+    says so."""
+    src = (ROOT / "scripts" / "open_scan.py").read_text(encoding="utf-8")
+    above = src[: src.index("PROSE = re.compile(")].rsplit("\n\n", 1)[-1]
+    assert "one line" in above

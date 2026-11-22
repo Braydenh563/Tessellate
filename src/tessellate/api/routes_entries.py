@@ -329,6 +329,18 @@ def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  #
     entry.suggested_tags = json.dumps(keep[: tagging.TAG_LIMIT])
 
 
+def _keep_suggestions_safely(session: Session, entry, entry_id: int, filed_by: str | None) -> None:  # noqa: ANN001
+    """`_keep_suggestions` in a savepoint: a database error in it (a failed
+    flush, a locked table) rolls back the suggestions alone, so the commit
+    after it still settles the filing (PR 242 review: the session was left
+    in a failed transaction and the whole filing was marked failed)."""
+    try:
+        with session.begin_nested():
+            _keep_suggestions(session, entry, filed_by)
+    except Exception:
+        logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
+
+
 def _engine_tags(session: Session, content: str, have: list[str], model: list[str], entry_id: int | None) -> list[str]:
     """One engine on every path (INBOX 781): a model's tags kept only where
     the note has a word for them (WORLD_CLASS 23, decision 5: its reply to
@@ -659,12 +671,10 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 # **Suggestions in the same commit as the settled state.**
                 # Kept after it, a reader polling `/entries/{id}/filing`
                 # saw the note settled and read `suggested_tags` as []
-                # (review of PR 240). They need the notebook's tags, not
-                # this note's vector, so they need not wait for the embed.
-                try:
-                    _keep_suggestions(session, entry, filed_by)
-                except Exception:
-                    logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
+                # (review of PR 240). The notebook's own only: the model's
+                # are a round-trip, and the state must not wait for one
+                # (PR 242 review); they land in a second commit below.
+                _keep_suggestions_safely(session, entry, entry_id, None)
                 # **Settled first, embedded after.** The vector and the
                 # near-duplicate search used to land before `filing_state`
                 # did, so the card said "Filing…" for as long as the
@@ -674,6 +684,9 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 # anything to compare against; a duplicate found after the
                 # poller has stopped is simply not toasted.
                 session.commit()
+                if filed_by == "llm":
+                    _keep_suggestions_safely(session, entry, entry_id, filed_by)
+                    session.commit()
                 _embed_and_tidy(session, entry, entry_id, filed_by, run)
     except Exception:
         logger.warning("background filing failed for entry %s", entry_id, exc_info=True)
