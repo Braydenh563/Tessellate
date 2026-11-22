@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 42 | 1 | 0 | 0 | 43 |
+| world-class | 0 | 43 | 1 | 0 | 0 | 44 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 433 | 76 | 2 | 111 | 881 |
+| all | 372 | 434 | 76 | 2 | 111 | 882 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -465,7 +465,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
-- [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L559** `chat` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
@@ -516,6 +515,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 - [ ] **L-world-class-870** `world-class` open, M: Folder import: preview long task of 1.1 s at 1,000 rows, and a 1,000-file multipart cap under /import/app's 5,000. From scratchpad/ui-sweeps/folder5000.js (L979). Evidence: settings-data.js markdownPreview renders 1000 rows in one 1,127 ms long task; /import/app takes MAX_FILES 5000 but Starlette refuses over 1000 files (400)
+- [ ] **L-world-class-878** `world-class` open, M: Budgets UI: show the six interaction budgets (measured, cap, live server share) somewhere a person can read them; needs a recipe-compliant home first (a Health pane row in Settings once its files are free, with a data-help-for line and the Guide topic). From L603 (budgets UI half). Evidence: docs/DESIGN.md recipe index has no readout or diagnostics recipe outside Settings; Statistics tab is note statistics; Settings markup and settings-body.js are off-limits this pass; the data is ready: GET /models/bench/budgets (routes_bench.py) serves the six budgets and ?live=true times the server share
+- [ ] **L-world-class-879** `world-class` open, M: Boot: the opening curtain waits for the slowest dashboard widget (digest, week); lift it on the visible first row, or serve those two widgets' data in one request, without bringing back the layout shift INBOX 577 fixed. From L603 (boot cost left). Evidence: scratch trace at phone width, 500 notes: the opening curtain lifts about 0.9 to 1.2 s after load, when the slowest dashboard widget settles (digest 340 to 400 ms and week 360 to 440 ms of server-bound fetches on a busy 4-core box; boards 370, art 260); widgets draw in parallel so the curtain waits for the longest
 
 ## general
 
