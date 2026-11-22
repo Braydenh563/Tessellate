@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- /health says which commit the server was started from, when, an id for its data folder and whether it can write there (L-general-6).
 - Tests: a new test that reads source text must say why in its docstring (a ratchet at 3,669 without one), and the gate prints the count (L-general-9).
 - Docker: the image reports its health from /health, and the build reads its ignore file, so the local virtualenv, git history and notebook are no longer sent with every build (L-general-5).
 - Maintenance: the scheduled database tidy clears a note's near-duplicate pointer when the note it named has been purged (L-general-21).

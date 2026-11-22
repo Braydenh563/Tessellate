@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8571, frontend ids 2805, CSS sections 528, backend routes 746, backend modules 11515, test files 2961, tests 23239, plan headings 686, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8571, frontend ids 2805, CSS sections 528, backend routes 746, backend modules 11519, test files 2962, tests 23244, plan headings 686, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8571)
 
@@ -13713,7 +13713,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1787 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1862 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1869 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:510 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:387 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1075 |
@@ -14353,7 +14353,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11515)
+## Backend modules (11519)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21370,7 +21370,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `asset_hash` | src/tessellate/api/app.py:150 |
 | `asset_stamps` | src/tessellate/api/app.py:179 |
 | `clear_static_cache` | src/tessellate/api/app.py:497 |
-| `create_app` | src/tessellate/api/app.py:1898 |
+| `create_app` | src/tessellate/api/app.py:1905 |
 | `load_all_routes` | src/tessellate/api/app.py:1701 |
 | `out_of_space_body` | src/tessellate/api/app.py:1105 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:117 |
@@ -24564,6 +24564,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stored_fp` | src/tessellate/core/board_thumbs.py:72 |
 | `thumb_dir` | src/tessellate/core/board_thumbs.py:28 |
 | `valid_fp` | src/tessellate/core/board_thumbs.py:37 |
+
+### src/tessellate/core/buildstamp.py (4)
+
+| Name | File:line |
+|---|---|
+| `_read` | src/tessellate/core/buildstamp.py:25 |
+| `data_dir_id` | src/tessellate/core/buildstamp.py:59 |
+| `read_commit` | src/tessellate/core/buildstamp.py:32 |
+| `writable` | src/tessellate/core/buildstamp.py:65 |
 
 ### src/tessellate/core/cjk.py (2)
 
@@ -29177,7 +29186,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23239)
+## Tests (23244)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29433,6 +29442,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_breakpoints.py | 3 |
 | tests/test_buddy_grip_cursor_1107.py | 1 |
 | tests/test_budgets.py | 6 |
+| tests/test_build_stamp.py | 5 |
 | tests/test_bundle_says_why_no_install_l518.py | 2 |
 | tests/test_calc_fit_1622.py | 5 |
 | tests/test_calc_panel_1102.py | 13 |
