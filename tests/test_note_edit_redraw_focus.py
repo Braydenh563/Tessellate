@@ -1,4 +1,6 @@
-"""A list redraw keeps the edit form's caret (notes.spec.js:61 on CI, #224).
+"""Source text: the caret hand-off happens inside a browser redraw, which needs a running page; the behaviour is measured by scratchpad/ui-sweeps/note-edit-rerender.js (CI), so this pins the code that does it.
+
+A list redraw keeps the edit form's caret (notes.spec.js:61 on CI, #224).
 
 Filing's refresh just after a capture redrew the list with the edit form open; the form was rebuilt
 and the caret in it went with the old one, so nothing was focused and the editor never mounted.

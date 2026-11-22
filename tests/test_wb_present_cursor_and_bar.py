@@ -1,4 +1,6 @@
-"""Presenting a board (the owner, 2026-11-22): over the slide the cursor is the plain
+"""Source text: a cursor and a fold are only seen in a running browser; the behaviour is measured by scratchpad/ui-sweeps/wbpresent-cursor.js (CI), so this pins the rules and code that make it.
+
+Presenting a board (the owner, 2026-11-22): over the slide the cursor is the plain
 arrow and hides at rest, over the bar it is the normal one; H or the bar's caret
 folds the bar to a handle, kept in this browser; the paging keys are in the bar's
 tooltips. Measured in the app by scratchpad/ui-sweeps/wbpresent-cursor.js (CI)."""
