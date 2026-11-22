@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
-| whiteboard | 0 | 0 | 0 | 0 | 0 | 0 |
+| whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
-| general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 402 | 504 | 123 | 2 | 153 | 1029 |
+| general | 0 | 23 | 2 | 0 | 5 | 25 |
+| all | 402 | 503 | 124 | 2 | 153 | 1029 |
 
 ## graph
 
@@ -277,6 +277,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
 
 ## whiteboard
+- [ ] **L-whiteboard-78** `whiteboard` partly, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only Progress 2026-11-22: the ratchet is built (tests/test_js_function_size.py, 146 bodies seeded over 150 lines). Left: the five closures, split so every new piece is under 150 lines (about 40 carves; tool: scratchpad carve2/extract.js with SRC and HOST).
 
 ## documents
 
@@ -667,7 +668,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
-- [ ] **L-general-71** `general` open, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only
 
 ## Owner calls
 

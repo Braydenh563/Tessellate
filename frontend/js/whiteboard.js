@@ -1928,10 +1928,15 @@ let wbCommentState = null;
 // whiteboard-frames.js: whiteboard-frames.js: frames: create, fit, turn, title, draw (decision 14). (moved out, L286).
 const WB_PLACE_MIN = { text: { w: 60, h: 32 }, sticky: { w: 80, h: 60 }, frame: { w: 120, h: 80 } };
 
+//: **The whole bundle before the wiring** (owner report on #222): a board restored with the
+//: page opens while the later files are still arriving, and the wiring reaches into them
+//: (`wbFmtState` in whiteboard-format.js); a throw there left no handler wired, stuck on one
+//: tool. The flag is set first, so a second call adds nothing (tests/test_wb_init_order.py).
 async function initWhiteboard() {
   surfaceBuild("board");
   if (wbInitialized) return;
   wbInitialized = true;
+  await ensureModule("boards");
   //: Two hooks `selectWbTool` calls, set further down this closure: refreshing
   //: the "Line ends" control when the tool switches between Line and Arrow, and
   //: the phone tools opener's label. Locals since L-whiteboard-53 (nothing
@@ -1939,7 +1944,6 @@ async function initWhiteboard() {
   let wbRefreshArrowStyleControlRef = null;
   //: A holder, not a `let`, so the tools sheet (whiteboard-toolsheet.js) can set it.
   const wbToolsOpenerSync = { fn: null };
-  
   //: Pan, zoom and gesture listeners (whiteboard-pan.js): it shares only the names passed and returned here.
   wbInitPan({ selectWbTool });
   //: The pen's state in one holder, not four `let`s, so the stroke handlers
@@ -3853,6 +3857,8 @@ function wbCancelBoardTimers() {
 
 // Jump to the real whiteboard canvas with a specific board loaded.
 async function openWhiteboardBoard(boardId, opts = null) {
+  //: A board restored with the page gets here mid-bundle; its timers and Library side are later files (INBOX 1530 f, #222).
+  await ensureModule("boards");
   //: Opening a board is the page board's; an embed that was live gives its globals back first (L-whiteboard-53).
   wbInstances.activate(wbInstances.page);
   wbRememberBoardView();
@@ -3882,9 +3888,6 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbNavState.stale = true;
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
-  //: A board restored with the page gets here while the boards bundle is still loading; the
-  //: Library side (`wbSideState`, the tiles) is later in it (INBOX 1530 f).
-  await ensureModule("boards");
   window.currentBoardId = boardId ?? null;
   wbUpdateUndoRedoButtons();
   // Anything a previous board's selection drag left behind goes now. The
