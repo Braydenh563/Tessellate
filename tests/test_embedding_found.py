@@ -196,10 +196,14 @@ def test_settings_list_reads_the_runners_models_it_was_handed_and_asks_nothing()
     flight, families included: a family-only embedder is still found, and the
     runner is never asked (CI 137088970825)."""
 
+    asked: list[str] = []
+
     class Untouchable:
         def __getattr__(self, name):  # noqa: ANN204
-            raise AssertionError(f"asked the runner: {name}")
+            asked.append(name)
+            raise AttributeError(name)
 
     listed = [{"name": "house-encoder:7b", "details": {"families": ["nomic-bert"]}}, {"name": "llama3:8b"}]
     rows = [row for row in embedfind.found(Untouchable(), listed) if row["backend"] == "ollama"]
     assert [row["model"] for row in rows] == ["house-encoder:7b"]
+    assert asked == []
