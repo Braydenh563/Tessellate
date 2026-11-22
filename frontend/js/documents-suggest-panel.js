@@ -24,10 +24,12 @@
   //: initialization` the moment the dictionary and the spelling tables were
   //: added below: a real crash, caught in the browser, that no amount of
   //: reading the function would have shown.
-  function renderDocTools() {
+  //: `stillOpen`, from an open: the prose pass runs in idle, if that document is still the one on screen.
+  function renderDocTools(stillOpen = null) {
     docCompleteWords = null;
     renderDocStatusBar();
-    renderDocProse();
+    if (!stillOpen) renderDocProse();
+    else requestIdleCallback(() => stillOpen() && renderDocProse(), { timeout: 500 });
   }
   //: **US and UK, as an explicit list rather than a rule.** The rules everyone
   //: reaches for are wrong often enough to be useless: `-ise/-ize` turns "size"

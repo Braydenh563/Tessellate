@@ -917,7 +917,9 @@
     //: writes (INBOX 1530 c), and the status bar and prose check need no layout.
     docAfterFirstPaint(seq, () => {
       renderDocOutline();
-      renderDocTools();
+      //: The prose pass waits for idle: it is the one whole-document walk here (19 ms of the open, 7 after),
+      //: and its chip can arrive a moment late (L-world-class-40: two frames 251 to 240 ms median, 8 A/B pairs).
+      renderDocTools(() => seq === docOpenSeq);
       renderDocNotes();
       renderDocBacklinks();
       renderDocBookmarks();

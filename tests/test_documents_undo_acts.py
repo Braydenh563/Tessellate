@@ -109,7 +109,8 @@ def test_the_open_paints_the_text_before_the_panels():
     opener = _body("openDocument")
     assert "docAfterFirstPaint(seq, () => {" in opener
     after_paint = opener[opener.index("docAfterFirstPaint(seq"):]
-    assert "renderDocOutline();" in after_paint and "renderDocTools();" in after_paint
+    #: The prose pass goes further, to idle, on an open (L-world-class-40); still after the paint.
+    assert "renderDocOutline();" in after_paint and "renderDocTools(() => seq === docOpenSeq);" in after_paint
     assert "if (seq === docOpenSeq) paint();" in _body("docAfterFirstPaint")
     assert "docCmPartIs(docCmParts.live, on)" in _body("docSetLiveDecorations")
     assert "docCmPartIs(docCmParts.gutter, docFenceGutterOn())" in _body("docCmSyncGutter")
