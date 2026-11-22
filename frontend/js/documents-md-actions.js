@@ -248,6 +248,61 @@
     finishMarkdownEdit(box, boxId);
   }
 
+  //: The `pre`/`post` actions (a pair around the selection): a second press takes the pair off.
+  function mdApplyPair(box, boxId, action, selection) {
+    const { start, end, value, selected } = selection;
+    //: A second press takes the pair off, as Bold does: the selection sits
+    //: inside the pair, or is the pair with its words.
+    const post = action.post || "";
+    if (selected && value.slice(start - action.pre.length, start) === action.pre && value.slice(end, end + post.length) === post) {
+      box.value = value.slice(0, start - action.pre.length) + selected + value.slice(end + post.length);
+      box.setSelectionRange(start - action.pre.length, end - action.pre.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
+    if (selected.length > action.pre.length + post.length && selected.startsWith(action.pre) && selected.endsWith(post)) {
+      const bare = selected.slice(action.pre.length, selected.length - post.length);
+      box.value = value.slice(0, start) + bare + value.slice(end);
+      box.setSelectionRange(start, start + bare.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
+    const body = selected || action.placeholder || "";
+    insertAround(box, start, end, action.pre, action.post || "", body, action.pre.length);
+    finishMarkdownEdit(box, boxId);
+  }
+
+  //: The line, link, block and plain-insert actions: one edit, caret placed for the next keystroke.
+  function mdApplyPlain(box, kind, action, selection) {
+    const { start, end, value, selected } = selection;
+    if (action.line) {
+      // Every selected line, or the current one when nothing is selected.
+      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+      const lineEnd = end + (value.slice(end).indexOf("\n") === -1 ? 0 : value.slice(end).indexOf("\n"));
+      const to = Math.max(lineEnd, end);
+      const prefixed = mdLinePrefixEdit(value.slice(lineStart, to), kind);
+      box.value = value.slice(0, lineStart) + prefixed + value.slice(to);
+      box.setSelectionRange(lineStart, lineStart + prefixed.length);
+    } else if (action.custom === "link") {
+      const label = selected || "link text";
+      const inserted = `[${label}](https://)`;
+      box.value = value.slice(0, start) + inserted + value.slice(end);
+      // Land the caret in the URL, which is the part you still have to type.
+      const at = start + label.length + 3;
+      box.setSelectionRange(at, at + 8);
+    } else if (action.block) {
+      const body = selected || action.placeholder;
+      const inserted = action.block + body + action.suffix;
+      box.value = value.slice(0, start) + inserted + value.slice(end);
+      const at = start + action.block.length;
+      box.setSelectionRange(at, at + body.length);
+    } else if (action.insert) {
+      box.value = value.slice(0, start) + action.insert + value.slice(end);
+      const at = start + action.insert.length;
+      box.setSelectionRange(at, at);
+    }
+  }
+
   function applyMarkdown(kind, boxId = "doc-content") {
     const action = MD_ACTIONS[kind];
     const box = docSurfaceById(boxId);
@@ -373,54 +428,12 @@
       finishMarkdownEdit(box, boxId);
       return;
     }
+    const selection = { start, end, value, selected };
     if (action.pre) {
-      //: A second press takes the pair off, as Bold does: the selection sits
-      //: inside the pair, or is the pair with its words.
-      const post = action.post || "";
-      if (selected && value.slice(start - action.pre.length, start) === action.pre && value.slice(end, end + post.length) === post) {
-        box.value = value.slice(0, start - action.pre.length) + selected + value.slice(end + post.length);
-        box.setSelectionRange(start - action.pre.length, end - action.pre.length);
-        finishMarkdownEdit(box, boxId);
-        return;
-      }
-      if (selected.length > action.pre.length + post.length && selected.startsWith(action.pre) && selected.endsWith(post)) {
-        const bare = selected.slice(action.pre.length, selected.length - post.length);
-        box.value = value.slice(0, start) + bare + value.slice(end);
-        box.setSelectionRange(start, start + bare.length);
-        finishMarkdownEdit(box, boxId);
-        return;
-      }
-      const body = selected || action.placeholder || "";
-      insertAround(box, start, end, action.pre, action.post || "", body, action.pre.length);
-      finishMarkdownEdit(box, boxId);
+      mdApplyPair(box, boxId, action, selection);
       return;
     }
-    if (action.line) {
-      // Every selected line, or the current one when nothing is selected.
-      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-      const lineEnd = end + (value.slice(end).indexOf("\n") === -1 ? 0 : value.slice(end).indexOf("\n"));
-      const to = Math.max(lineEnd, end);
-      const prefixed = mdLinePrefixEdit(value.slice(lineStart, to), kind);
-      box.value = value.slice(0, lineStart) + prefixed + value.slice(to);
-      box.setSelectionRange(lineStart, lineStart + prefixed.length);
-    } else if (action.custom === "link") {
-      const label = selected || "link text";
-      const inserted = `[${label}](https://)`;
-      box.value = value.slice(0, start) + inserted + value.slice(end);
-      // Land the caret in the URL, which is the part you still have to type.
-      const at = start + label.length + 3;
-      box.setSelectionRange(at, at + 8);
-    } else if (action.block) {
-      const body = selected || action.placeholder;
-      const inserted = action.block + body + action.suffix;
-      box.value = value.slice(0, start) + inserted + value.slice(end);
-      const at = start + action.block.length;
-      box.setSelectionRange(at, at + body.length);
-    } else if (action.insert) {
-      box.value = value.slice(0, start) + action.insert + value.slice(end);
-      const at = start + action.insert.length;
-      box.setSelectionRange(at, at);
-    }
+    mdApplyPlain(box, kind, action, selection);
     finishMarkdownEdit(box, boxId);
   }
 
