@@ -796,11 +796,12 @@ def test_sub_pages_are_in_the_guide_and_the_popovers_in_the_controls_words() -> 
 
 
 def test_a_board_window_in_a_document_is_in_the_guide_in_its_buttons_words() -> None:
-    """L-documents-11 (decision 83): Show live, Refresh and the window's zoom are named in the Guide as the buttons say them."""
+    """L-documents-11 (decision 83), then L-documents-104: Edit in place, the fallback window's Refresh and its zoom are named
+    in the Guide as the buttons say them (Show live became Edit in place when the board's instances landed)."""
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "document-board"))
     js = (FRONTEND / "js" / "documents-embeds.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "documents-board.js").read_text(encoding="utf-8")
-    for label in ("Show live", "Refresh", "Edit here"):
+    for label in ("Edit in place", "Refresh", "Edit here"):
         assert f"{label}" in js and label in body, label
     assert "zoom and pan" in body and "plus and minus" in body

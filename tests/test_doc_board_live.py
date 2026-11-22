@@ -22,9 +22,11 @@ def code_of(text: str) -> str:
     return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("//"))
 
 
-def test_each_board_card_offers_show_live_next_to_edit_here() -> None:
+def test_each_board_card_offers_edit_in_place_next_to_edit_here() -> None:
+    # L-documents-104 moved this test's intent: the second button is now Edit in place (an instance of the board, its
+    # bundle loaded on the press); the read-only window this file covers is its fallback when that bundle cannot load.
     embeds = read("documents-embeds.js")
-    assert "Show live" in embeds and '"board-live"' in embeds
+    assert "Edit in place" in embeds and '"board-live"' in embeds and 'ensureModule("boards")' in embeds
     assert 'live.classList.add("doc-embed-board-live")' in embeds
     assert 'live.setAttribute("aria-pressed", "false")' in embeds
 
@@ -55,8 +57,8 @@ def test_the_window_has_a_height_and_stays_out_of_print() -> None:
     assert "@media print {\n  .doc-embed-board-live,\n  .doc-board-live {\n    display: none;" in css
 
 
-def test_the_guide_says_show_live() -> None:
+def test_the_guide_says_edit_in_place_and_its_read_only_fallback() -> None:
     body = help_more_text()
     start = body.index('"id": "document-board"')
     topic = body[start:start + 2400]
-    assert "Show live" in topic and "Refresh" in topic
+    assert "Edit in place" in topic and "Refresh" in topic

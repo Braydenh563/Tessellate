@@ -212,7 +212,6 @@ def test_a_card_pressed_off_while_the_instance_is_still_being_made_destroys_it_w
     assert r["destroyed"] == 1 and r["pressed"] == "false"
 
 
-@pytest.mark.xfail(strict=True, reason="L-whiteboard-54: the board's tools do not honour an embed's `editable` yet")
 def test_an_embed_opened_editable_is_edited_by_the_boards_own_tools():
     """L-documents-104 stays partly until this passes: the mount API
     (L-whiteboard-53) stores `inst.editable`, and the board's tools must read it
@@ -222,6 +221,38 @@ def test_an_embed_opened_editable_is_edited_by_the_boards_own_tools():
 
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
     text = "\n".join(p.read_text(encoding="utf-8") for p in sorted(root.glob("whiteboard*.js")))
-    assert "inst.editable = opts.editable === true;" in text, "the mount API stores the flag"
+    # The mount API landed (#223) as `createEmbed` reading `opts.editable === true` and `mountInstance` storing it on the
+    # instance; the spelling moved, the intent (stored, then read by the tools) did not. Behaviour: test_wb_instances.py
+    # (two editable embeds edit apart; a read-only one pans and zooms only).
+    assert "const editable = opts.editable === true;" in text and "inst.editable = editable;" in text, "the mount API stores the flag"
     reads = [m for m in re.finditer(r"(?<!opts)\.editable\b(?!\s*=[^=])", text)]
     assert reads, "a board tool reads the embed's editable flag"
+
+
+def test_a_card_the_live_editor_drops_takes_its_instance_without_a_save():
+    """L-documents-104: CodeMirror removing a card's widget is heard through `doc-embed-gone` (documents-cm.js), not
+    only on the next save; the reap waits for the editor's update, so a card drawn again in it keeps its instance."""
+    r = _run("""
+      const a = card(21), b = card(22); press(a); press(b); await tick();
+      out.listening = (DOC.ls["doc-embed-gone"] || []).length;
+      a.remove(); made[0].host.remove();
+      b.remove(); made[1].host.remove(); const again = card(22);   // b's card drawn again in the same update
+      for (const f of [...(DOC.ls["doc-embed-gone"] || [])]) f({});
+      out.before = made[0].destroyed; await tick();
+      out.after = [made[0].destroyed, made[1].destroyed, again.nextElementSibling === made[1].host];
+      press(again); await tick();
+      out.left = (DOC.ls["doc-embed-gone"] || []).length;
+    """)
+    assert r["listening"] == 1 and r["before"] == 0
+    assert r["after"] == [1, 0, True]
+    assert r["left"] == 0
+
+
+def test_the_live_editors_embed_widget_says_when_a_board_card_goes():
+    """The widget half of the hook above: DocEmbedWidget's `destroy` dispatches `doc-embed-gone` only for a card holding
+    a live board, so other embeds cost nothing."""
+    cm = (ROOT / "frontend/js/documents-cm.js").read_text(encoding="utf-8")
+    widget = cm[cm.index("class DocEmbedWidget extends WidgetType") :]
+    widget = widget[: widget.index("\n    }\n")]
+    body = widget[widget.index("destroy(dom) {") :]
+    assert 'dom.querySelector(".doc-board-live")' in body and 'new CustomEvent("doc-embed-gone")' in body

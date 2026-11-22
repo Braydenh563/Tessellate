@@ -3207,7 +3207,7 @@ MORE_TOPICS.append({
     "id": "document-board",
     "keywords": (
         "board in a document", "embed a board", "edit a board here", "whiteboard in a document", "mind map in a document",
-        "![[board", "![[map", "edit here", "canvas block", "show live", "board window",
+        "![[board", "![[map", "edit here", "canvas block", "edit in place", "show live", "board window",
     ),
     "body": (
         "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
@@ -3217,15 +3217,17 @@ MORE_TOPICS.append({
         "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
         "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
         "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
-        "was, on the board it had open or on its list of boards. Show live, beside Edit here, draws the board in the "
-        "document itself, to read: zoom and pan it with the corner buttons, Ctrl and the wheel or plus and minus, and press "
-        "Refresh to read it again. Each card has its own window, so two boards side by side keep their own zoom, and a "
-        "window changes nothing; closing Edit here redraws the windows on that board. The other way: a board's Board menu, Write as a document, "
+        "was, on the board it had open or on its list of boards. Edit in place, beside Edit here, opens the board in the "
+        "document itself with the board's own tools, saved as you make each change. Each card has its own board, so two "
+        "cards keep their own zoom, selection and undo, and two cards of one board show each other's edits. Typing there "
+        "never goes into the document's undo; Escape returns to the button, and pressing Edit in place again closes it. "
+        "If the board's tools cannot load, the card shows the board to read instead: zoom and pan it with the corner "
+        "buttons, Ctrl and the wheel or plus and minus, and press Refresh to read it again. The other way: a board's Board menu, Write as a document, "
         "makes a draft with a heading for each frame and a paragraph for each sticky, text box or note card in it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here or Show live"}
+TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here or Edit in place"}
 
 #: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
 MORE_TOPICS.append({

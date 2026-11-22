@@ -84,9 +84,9 @@
     }));
     edit.classList.add("doc-embed-board-edit");
     edit.dataset.boardId = String(id);
-    //: Show live draws the board in a window of its own after the button, read-only (decision 83): documents-board.js mounts it.
-    const inPlace = Boolean(window.wbInstance?.create);
-    const live = smallButton(inPlace ? "ph:pencil-simple Edit in place" : "ph:eye Show live", inPlace ? "Edit this board here, in the text" : "Show this board here, to zoom and pan; Edit here changes it", () => ensureModule("docBoard").then(() => {
+    //: Edit in place draws the board after the button as an instance of its own (L-documents-104): the press loads the boards
+    //: bundle, whose `wbInstance.create` documents-board.js mounts; if the bundle cannot load, the read-only window (decision 83).
+    const live = smallButton("ph:pencil-simple Edit in place", "Edit this board here, in the text", () => Promise.all([ensureModule("docBoard"), ensureModule("boards")]).then(() => {
       live.dispatchEvent(new CustomEvent("board-live", { bubbles: true, detail: { id } }));
     }));
     live.classList.add("doc-embed-board-live");

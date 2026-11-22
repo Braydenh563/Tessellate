@@ -18,8 +18,8 @@
 //   - `focus()`: puts the focus inside the board. `onChange(fn)`: `fn()` after each saved edit; returns an unsubscribe function.
 //   - `reload?()`: optional, reads the board again; without it a sibling card of the same board is destroyed and created again.
 // Here: one instance per card, behind the card's button ("Edit in place"); destroyed when the button is pressed again, when the
-// card leaves the page (redraw, deleted, document closed: found on `doc-shown`, `doc-saved` and `board-edited`, listened to only while
-// an instance is live; no observer, the wake-source ratchet), and at pagehide.
+// card leaves the page (redraw, deleted, document closed: found on `doc-shown`, `doc-saved`, `board-edited` and the live editor's
+// `doc-embed-gone`, listened to only while an instance is live; no observer, the wake-source ratchet), and at pagehide.
 // Escape the board leaves unhandled returns the focus to the card's button. Key and input events stop at the host, so typing in
 // the board is never part of the document's undo. Siblings of one board follow through `onChange`.
 // Lazy: `LAZY_MODULES.docBoard`; documents-embeds.js draws the buttons and asks for this file on the first press. It adds no global name.
@@ -260,6 +260,9 @@
       }
     }
   };
+  //: The live editor's card widget says when CodeMirror drops it (`doc-embed-gone`, documents-cm.js): reaped once the editor's own
+  //: update has settled, so a card it drew again in the same update keeps the instance.
+  const reapSoon = () => setTimeout(reap, 0);
   function destroy(win) {
     if (win.gone) return;
     win.gone = true;
@@ -274,6 +277,7 @@
       watching = false;
       document.removeEventListener("doc-shown", reap);
       document.removeEventListener("doc-saved", reap);
+      document.removeEventListener("doc-embed-gone", reapSoon);
       window.removeEventListener("pagehide", destroyAll);
     }
   }
@@ -327,6 +331,7 @@
       watching = true;
       document.addEventListener("doc-shown", reap);
       document.addEventListener("doc-saved", reap);
+      document.addEventListener("doc-embed-gone", reapSoon);
       window.addEventListener("pagehide", destroyAll);
     }
     await build(win, create);

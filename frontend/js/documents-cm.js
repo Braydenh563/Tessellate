@@ -696,6 +696,11 @@
         });
         return host;
       }
+      //: A board edited in place inside this card ends with it (L-documents-104): CodeMirror removing the card is no event the
+      //: board's file hears, so the card says so; documents-board.js checks its windows once the update is done.
+      destroy(dom) {
+        if (dom.querySelector(".doc-board-live")) document.dispatchEvent(new CustomEvent("doc-embed-gone"));
+      }
     }
 
     //: **Where a block is shown elsewhere, its own document says so** (DOCUMENTS_PLAN 26, decision 82 b). A block carrying `^id`
