@@ -19,7 +19,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const PY = process.env.SWEEP_PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
+const PY = process.env.SWEEP_PY || require('./lib.js').venvPython();
 const TAG = process.env.TAG || 'now';
 const FIXTURE = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'gold_answers.json'), 'utf8'));
 

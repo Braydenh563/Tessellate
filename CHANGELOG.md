@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: every sweep that runs a python seed takes it from one helper (`venvPython` in lib.js: VENV, else the repo .venv, else python3), so asktab and twelve others no longer spawn a .venv/bin/python CI does not have.
 - Sweeps: the seeded sweeps run the python CI gives them (VENV) rather than a .venv CI does not have, and libtlscroll seeds its own thousand notes once per data dir (in a shared CI dir it found 15 rows and no scroller).
 - Sweeps: deepflows finds Make private and Make readable under Share and export (the grouped note menu), and the library readings are seeded until their own files are there, so uitrio after libreader in one CI job still has its Files box.
 - Sweeps: companionmenu seeds 20 notes so the dashboard scrolls at its hard sizes (a fresh one was 796px of content in a 796px page, nothing to ride; L-general-48), and companionpin waits for the companion menu after its reload, when the menu module is lazy again and opens about 37ms after the right-click (L-general-45).

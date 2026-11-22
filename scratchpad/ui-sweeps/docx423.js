@@ -30,7 +30,7 @@ const TEXT = [
   });
   const file = path.join(os.tmpdir(), `docx423-${process.pid}.docx`);
   fs.writeFileSync(file, Buffer.from(b64, 'base64'));
-  const py = path.resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
+  const py = require('./lib.js').venvPython();
   const out = execFileSync(py, ['-I', '-c', `
 import re, sys, zipfile
 z = zipfile.ZipFile(sys.argv[1])

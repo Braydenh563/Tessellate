@@ -341,10 +341,15 @@ async function seedLibtextIfEmpty(page) {
   return true;
 }
 
-//: CI has no .venv: ci_sweeps.sh is run with VENV (the python prefix), as serve.sh is.
+//: The python a sweep runs its seeds with: VENV (the python prefix CI passes
+//: ci_sweeps.sh, as serve.sh reads it), else the repo's .venv, else python3.
+//: CI has no .venv (asktab, libreadingfoot: spawn ENOENT).
 function venvPython() {
+  const fs = require('fs');
   const path = require('path');
-  return path.join(process.env.VENV || path.join(__dirname, '..', '..', '.venv'), 'bin', 'python');
+  if (process.env.VENV) return path.join(process.env.VENV, 'bin', 'python');
+  const local = path.resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
+  return fs.existsSync(local) ? local : 'python3';
 }
 
 //: A sweep about long lists seeds its own thousand notes (seed-timeline-bulk.py)

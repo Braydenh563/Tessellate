@@ -23,7 +23,7 @@ const CHIP = { note: 'Note', document: 'Document', board: 'Board', map: 'Mind ma
 
 (async () => {
   if (process.env.DATA) {
-    execFileSync(path.join(ROOT, '.venv/bin/python'), [path.join(__dirname, 'search-seed.py')], {
+    execFileSync(require('./lib.js').venvPython(), [path.join(__dirname, 'search-seed.py')], {
       env: { ...process.env, TESSELLATE_DATA_DIR: process.env.DATA, PYTHONPATH: path.join(ROOT, 'src') },
       stdio: 'ignore',
     });
