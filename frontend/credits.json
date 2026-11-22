@@ -114,7 +114,7 @@
      "source": "https://github.com/browsermt/bergamot-translator"
     },
     {
-     "name": "Firefox Translations model, English to Spanish",
+     "name": "Firefox Translations models, English to and from Spanish, French, German, Italian and Portuguese",
      "licence": "MPL-2.0",
      "source": "https://github.com/mozilla/translations"
     },

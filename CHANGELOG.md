@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Translate offline in five languages (L-world-class-41, INBOX 1863): the engine's package now carries Spanish both ways (54 MB), and French, German, Italian and Portuguese are packages of their own in Settings, Packages (Languages), each both directions, 51 to 53 MB, pinned to the Mozilla release files by sha256. Each of the ten directions translated a sentence in Chromium. The worker keeps one pair loaded, since a fifth model beside four others aborted the engine.
 A VS Code extension (L-world-class-183, INBOX 1862): `tools/vscode/` searches notes into a quick pick that opens the note in the app, saves the selection as a note, and registers the HTTP tool server for VS Code's chat, all over `POST /mcp` with a token from Settings; tests/test_vscode_extension.py replays its requests against the real route.
 README OCR shot (L917): `ocr.png` replaces the 0.3.2 capture with the OCR workspace on a scanned invoice, taken in the dark theme at 1440 by 900 with Tesseract 5.3.4 installed from apt; all five regions read as printed (96, 96, 90, 96 and 96 percent confidence).
 README tour shots (L916): Chat with no model connected (`chat-empty.png`) and the page reader on a three-page scanned PDF (`reader.png`), both taken headless in the dark theme at 1440 by 900 against the showcase notebook with Tesseract reading the pages; neither needs a model.
