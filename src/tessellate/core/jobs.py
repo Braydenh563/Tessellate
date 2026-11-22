@@ -243,36 +243,6 @@ def label_for(kind: str) -> str:
 ANOTHER_DEVICE = "another-device"
 
 
-#: The pool job this worker thread is running, so a handler deep in a loop can
-#: ask `stop_requested()` without the job being threaded through its signature.
-_here = threading.local()
-
-
-class JobStopped(Exception):
-    """Raised by `check_stop` at a handler's safe boundary once Stop was
-    pressed. The worker records it as a stop, never as a failure."""
-
-
-def stop_requested() -> bool:
-    """True when Stop was pressed on the pool job this thread is running.
-    Always False outside a pool job (a script, a request, a test)."""
-    job = getattr(_here, "job", None)
-    return job is not None and job.cancel.is_set()
-
-
-def check_stop() -> None:
-    """The handler's boundary: call between items, before a write. Raises
-    `JobStopped` when Stop was pressed, so the step after it never happens."""
-    if stop_requested():
-        raise JobStopped("stopped at its next safe step")
-
-
-#: Kinds with no boundary to stop at: one short write that must settle (a
-#: note's filing state is read as "still working" until it does), so Stop on a
-#: running one is answered plainly and the job finishes (B2).
-ONE_STEP_KINDS = frozenset({"file-entry"})
-
-
 class Job:
     """One piece of background work, wherever it runs (INBOX 1502, audit AR6).
 
@@ -530,37 +500,6 @@ class Pool:
                     return True
         return False
 
-    def stop_running(self, kind: str, name: str = "", durable_id: int | None = None) -> tuple[bool, str]:
-        """Ask a running job to stop at its next safe step (B2, L-world-class-66).
-        Matched by its `jobs` row, or by kind and name as the panel knows it.
-        Sets the job's token for handlers that call `check_stop`, and calls
-        the kind's own stopper where it has one (a pass's flag, a pull's
-        cancel). Nothing is killed: a thread cannot be stopped safely, and
-        the work writes to a notebook someone cares about."""
-        with self._lock:
-            job = next(
-                (
-                    j for j in self._running.values()
-                    if (durable_id is not None and j.durable_id == durable_id)
-                    or (durable_id is None and j.kind == kind and (not name or j.name == name))
-                ),
-                None,
-            )
-        if job is None:
-            return False, "It had already finished."
-        if job.kind in ONE_STEP_KINDS:
-            return False, "It is one short step with nothing to stop between; it finishes in a moment."
-        job.stop()
-        try:
-            if job.kind == "pass":
-                #: By dotted path, as the cancellers are: `passes` imports this module.
-                _resolve("tessellate.core.passes:stop")(_resolve("tessellate.core.passes:kind_for_label")(job.name))
-            elif job.kind in CANCELLERS:
-                cancel_kind(job.kind, job.name)
-        except Exception:  # noqa: BLE001  # the token is set; a failed kind stopper is not a 500
-            logger.debug("the %s stopper failed", job.kind, exc_info=True)
-        return True, "Stopping at its next safe step. What it already saved stays."
-
     # -- the worker ---------------------------------------------------------
 
     def _work(self, lane: str) -> None:
@@ -583,45 +522,34 @@ class Pool:
                     with self._lock:
                         self._running.pop(job.seq, None)
                     continue
-                self._run(job)
+                error = ""
+                run = job.open_run()
+                try:
+                    with origin.acting_for(job.another_device), jobruns.bound(run):
+                        job.func(*job.args, **job.kwargs)
+                except Exception as exc:
+                    # One bad job used to be one dead thread and no record.
+                    # `exc_info` because the stack is the whole value here:
+                    # these run with no request to attach an error to.
+                    logger.warning("background %s job failed", job.kind, exc_info=True)
+                    error = str(exc) or type(exc).__name__
+                    if run is not None:
+                        run.fail(error)
+                except BaseException:
+                    #: A stop from outside the job (a shutdown): not a failure,
+                    #: and never left saying "running" (B77).
+                    if run is not None:
+                        run.cancel("stopped before it finished")
+                    raise
+                finally:
+                    if run is not None:
+                        run.finish()
+                    with self._lock:
+                        self._running.pop(job.seq, None)
+                    if job.durable_id is not None:
+                        jobstore.finish(job.durable_id, error=error, db=job.durable_db)
             finally:
                 work_queue.task_done()
-
-    def _run(self, job: Job) -> None:
-        """Run one leased job and record how it ended (done, failed, or stopped)."""
-        error = ""
-        stopped = False
-        run = job.open_run()
-        try:
-            _here.job = job
-            with origin.acting_for(job.another_device), jobruns.bound(run):
-                job.func(*job.args, **job.kwargs)
-        except JobStopped:
-            stopped = True
-            if run is not None:
-                run.cancel("stopped at its next safe step")
-        except Exception as exc:
-            # One bad job used to be one dead thread and no record.
-            # `exc_info` because the stack is the whole value here:
-            # these run with no request to attach an error to.
-            logger.warning("background %s job failed", job.kind, exc_info=True)
-            error = str(exc) or type(exc).__name__
-            if run is not None:
-                run.fail(error)
-        except BaseException:
-            #: A stop from outside the job (a shutdown): not a failure,
-            #: and never left saying "running" (B77).
-            if run is not None:
-                run.cancel("stopped before it finished")
-            raise
-        finally:
-            _here.job = None
-            if run is not None:
-                run.finish()
-            with self._lock:
-                self._running.pop(job.seq, None)
-            if job.durable_id is not None:
-                jobstore.finish(job.durable_id, error=error, stopped=stopped, db=job.durable_db)
 
     def _admit(self, job: Job) -> bool:
         """Move a job from queued to running, once the pool is not held; False
@@ -1059,15 +987,7 @@ def resume(db=None) -> dict:  # noqa: ANN001
     return jobstore.resume(db=database, enqueue=again)
 
 
-def stop_running(kind: str, name: str = "", durable_id: int | None = None) -> tuple[bool, str]:
-    """`Pool.stop_running` on the singleton, without making one."""
-    with _default_lock:
-        current = _default
-    return current.stop_running(kind, name, durable_id) if current is not None else (False, "It had already finished.")
-
-
 jobstore.set_forget(forget)
-jobstore.set_stop_running(stop_running)
 
 
 def shutdown(deadline: float = 5.0) -> bool:

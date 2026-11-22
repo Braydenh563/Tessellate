@@ -1102,7 +1102,6 @@ def extract_and_store(upload_id: int, image_path: Path) -> None:
     text = extract_text(image_path)
     if not text:
         return
-    jobs.check_stop()  # Stop pressed while Tesseract read: the text is not stored
     # Imported here, not at module level: this file has to stay importable
     # (for `tesseract_available()`/`extract_text()` alone) without pulling
     # in the whole app's dependency graph just to check whether a binary

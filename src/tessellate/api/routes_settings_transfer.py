@@ -388,7 +388,6 @@ def _run_directory_import(directory_path: str):
     (INBOX 438), because a 202 Accepted answers nobody about how it went."""
     with jobruns.job_run("import", origin="you") as run:
         _import_directory_files(directory_path, run)
-    jobs.check_stop()  # the row ends cancelled when Stop cut the walk short
 
 
 #: Stands for "this path is a private note": matched without its text.
@@ -432,15 +431,6 @@ def _directory_import_detail(imported: int, already: int, skipped: int, skipped_
     return detail
 
 
-def _until_stopped(files):  # noqa: ANN001, ANN202
-    """The walk, ended between files once Stop is pressed (L-world-class-66):
-    what came in stays, and running the import again finishes the rest."""
-    for f in files:
-        if jobs.stop_requested():
-            return
-        yield f
-
-
 def _import_directory_files(directory_path: str, run: "jobruns.Run"):
     try:
         p = _validated_import_directory(directory_path)
@@ -454,7 +444,7 @@ def _import_directory_files(directory_path: str, run: "jobruns.Run"):
         already = 0
         made = []
         known = _already_imported(session)
-        for f in _until_stopped(p.rglob("*.md")):
+        for f in p.rglob("*.md"):
             if not _inside(p, f):
                 skipped += 1
                 continue

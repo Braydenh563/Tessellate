@@ -38,10 +38,9 @@ otherwise crash every launch after it, which is the one way durability can
 make an app worse than forgetting.
 
 **Cancel** stops a queued job (the row goes to `cancelled` and the worker's
-lease then fails). A running job is asked to stop, never killed (Python
-cannot stop a thread safely, and the work writes to a notebook someone cares
-about): its handler calls `jobs.check_stop()` at a safe boundary, and the
-row ends `cancelled` (L-world-class-66). A one-step kind says so instead.
+lease then fails). A running job is not interrupted, for the reason
+`jobs.cancel_kind` gives: Python cannot stop a thread safely, and the work
+writes to a notebook someone cares about. The answer says so.
 
 **Bookkeeping never breaks the job**, the rule `core/jobruns.py` set: every
 write here is wrapped, and a failure costs the durability of one job, never
@@ -302,7 +301,7 @@ def lease(job_id: int, db=None) -> bool:  # noqa: ANN001
         return True
 
 
-def finish(job_id: int, error: str = "", result: str = "", stopped: bool = False, db=None) -> None:  # noqa: ANN001
+def finish(job_id: int, error: str = "", result: str = "", db=None) -> None:  # noqa: ANN001
     """Record the ending of a job this process leased."""
     db = _database(db)
     _release(job_id)
@@ -318,9 +317,9 @@ def finish(job_id: int, error: str = "", result: str = "", stopped: bool = False
                 update(DurableJob)
                 .where(DurableJob.id == job_id, DurableJob.owner == OWNER, DurableJob.state == "running")
                 .values(
-                    state="failed" if error else ("cancelled" if stopped else "done"),
+                    state="failed" if error else "done",
                     error=_clip(error),
-                    result=_clip(result or ("Stopped at its next safe step." if stopped and not error else "")),
+                    result=_clip(result),
                     finished_at=_now(),
                     lease_until=None,
                 )
@@ -355,7 +354,7 @@ def supersede(job_id: int, db=None) -> None:  # noqa: ANN001
 
 
 def cancel(job_id: int, db=None) -> tuple[bool, str]:  # noqa: ANN001
-    """Stop a queued job, or ask a running one to stop at its next safe step. (stopped, sentence); never raises."""
+    """Stop a queued job. (stopped, sentence); never raises."""
     db = _database(db)
     if db is None:
         return False, "No job with that number."
@@ -369,11 +368,7 @@ def cancel(job_id: int, db=None) -> tuple[bool, str]:  # noqa: ANN001
             if row is None:
                 return False, "No job with that number."
             if row.state == "running":
-                #: A job this process runs is asked to stop at its next safe
-                #: step (`jobs.check_stop`); another server's is not ours to stop.
-                if row.owner != OWNER:
-                    return False, "It is running in another copy of the app and will finish there."
-                return _stop_running(row.kind, row.name or "", job_id)
+                return False, "It is already running and will finish: a running job is not interrupted."
             if row.state != "queued":
                 return False, "It had already finished."
             stopped = session.execute(
@@ -425,16 +420,6 @@ _forget = lambda job_id: None  # noqa: E731
 def set_forget(callback) -> None:  # noqa: ANN001
     global _forget
     _forget = callback
-
-
-#: Asks the pool to stop a running job: (kind, name, row id) -> (acted, sentence).
-#: `core/jobs.py` sets it, as it sets `_forget`.
-_stop_running = lambda kind, name, job_id: (False, "It had already finished.")  # noqa: E731
-
-
-def set_stop_running(callback) -> None:  # noqa: ANN001
-    global _stop_running
-    _stop_running = callback
 
 
 # -- the heartbeat ------------------------------------------------------------
