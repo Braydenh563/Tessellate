@@ -314,6 +314,9 @@ class OverlayHost:
         self.visible = False
         if self._proc in _CALLBACKS:
             _CALLBACKS.remove(self._proc)
+        #: The callback holds this host's bound method and the host holds it: Python 3.11 cannot collect
+        #: through a ctypes thunk, so the host, its runner and their pictures were never freed (L-general-71).
+        self._proc = None
 
     # --- the window procedure ----------------------------------------------------------
 

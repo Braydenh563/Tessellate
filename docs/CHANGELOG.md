@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: a stopped desktop companion is freed on Python 3.11 (its window procedure and the host held each other through a ctypes callback the 3.11 collector cannot see through); a test worker reached 6.1 GB over 20 runners and was killed, which lost CI's 3.11 leg 1 runner.
 - Notes: a list redraw waits while a note row's menu is open, so a save landing a moment after an action no longer closes the menu being read (deepflows private and link failed 2 of 14 runs at 1440, now 0 of 14).
 - Sweeps: deepflows' settings flow presses a switch by its id and puts away the toast a press raised, which sat over the next switch at 390 (Keep Atlas on this machine over the hide-notices switch; failed 3 of 3 after asktab and companionmenu, now passes).
 - Sweeps: companionreact puts the graph layout back after its layout check (it is saved server-side, so the next sweep drew a tree); companionsmooth measures a note card, not a sidebar category row; deepflows reads a pressed Settings switch back by its id; every boot sweep resets the font fontmatrix leaves.

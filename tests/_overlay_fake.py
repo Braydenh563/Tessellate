@@ -66,7 +66,9 @@ class FakeWin32:
         self.messages.put((1234, msg, wparam, lparam))
 
     def call(self, dll: str, fn: str, args: tuple[Any, ...]) -> Any:
-        self.calls.append((dll, fn, args))
+        #: A byref is logged as the object it points at: Python 3.11's collector cannot see through a byref, so a
+        #: logged one kept the window class, its procedure and so the whole runner alive (L-general-71).
+        self.calls.append((dll, fn, tuple(a._obj if type(a).__name__ == "CArgObject" else a for a in args)))
         self.threads.setdefault(fn, set()).add(threading.get_ident())
         handler = getattr(self, f"_{fn}", None)
         return handler(*args) if handler else 1
@@ -74,6 +76,10 @@ class FakeWin32:
     # --- the few calls with behaviour -------------------------------------------------
     def _RegisterClassExW(self, ref: Any) -> int:
         self.wndproc = ref._obj.lpfnWndProc
+        return 1
+
+    def _UnregisterClassW(self, *args: Any) -> int:
+        self.wndproc = None  # as Windows: the class, and with it the procedure, is let go
         return 1
 
     def _CreateWindowExW(self, *args: Any) -> int:
