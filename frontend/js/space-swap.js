@@ -142,7 +142,7 @@
       window.wbLastCreatedBoard = null;
     },
     documents() {
-      if (typeof docs === "undefined") return;
+      if (typeof docsMadeThisSession === "undefined") return;
       docs = [];
       docBlockTextCache.clear();
       docHistories.clear();

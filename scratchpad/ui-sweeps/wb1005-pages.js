@@ -35,7 +35,7 @@ const W = Number(process.env.W || 1440);
   await page.waitForTimeout(900);
   const moved = await page.evaluate(() => ({
     rows: [...document.querySelectorAll("#wb-pages-list [role='treeitem']")].map((r) => r.getAttribute("aria-label")),
-    steps: wbPresentSteps().map((s) => s.title()),
+    steps: wbStartPresenting.sweep.steps().map((s) => s.title()),
     focus: document.activeElement?.getAttribute("aria-label"),
     said: document.getElementById("wb-announcer")?.textContent,
   }));
@@ -44,7 +44,7 @@ const W = Number(process.env.W || 1440);
   check("the focus stays on the moved page, and it is announced", moved.focus === "Page 2: Intro" && /page 2 of 3/.test(moved.said || ""), moved);
   await page.evaluate(() => wbUndo());
   await page.waitForTimeout(900);
-  const back = await page.evaluate(() => wbPresentSteps().map((s) => s.title()));
+  const back = await page.evaluate(() => wbStartPresenting.sweep.steps().map((s) => s.title()));
   check("one Undo puts the order back", JSON.stringify(back) === JSON.stringify(["Intro", "Middle", "End"]), back);
 
   // Hover lock.

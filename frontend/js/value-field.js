@@ -107,8 +107,8 @@ function valueField(host, opts = {}) {
   if (presets.length) {
     const rows = presets.map((p) => ({
       label: p.label || format(p.value),
-      //: The numbers, then the commands ("Fit") under a hairline: kebabMenu draws one where the group changes.
-      group: p.run ? "do" : "value",
+      //: The values are one group and a command (the board's Fit) another, parted by the recipe's hairline.
+      group: p.run ? "act" : "value",
       run: () => {
         if (p.run) return p.run();
         value = clamp(p.value);
@@ -118,8 +118,7 @@ function valueField(host, opts = {}) {
     }));
     const menu = kebabMenu(rows, `${opts.label || "Value"}: choose`);
     menu.classList.add("value-field-menu");
-    //: The list of presets is as wide as its numbers, not the 12.5rem a menu of sentences takes (L-world-class-107: 200px for 80px).
-    menu.querySelector(":scope > .action-menu")?.classList.add("value-field-list");
+    menu.querySelector(".action-menu")?.classList.add("value-field-list");
     const opener = menu.querySelector(":scope > button");
     opener.classList.add("value-field-chevron");
     opener.title = "Choose a value";

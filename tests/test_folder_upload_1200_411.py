@@ -1,11 +1,12 @@
 """L-world-class-411: Starlette's multipart reader stops at 1,000 files with
 a bare 400 before the route runs, so a vault picked as a folder of more never
-reached `/import/app`'s own cap. The import router reads up to
-`FOLDER_UPLOAD_PARSE_MAX_FILES` (bounds.FolderUploadRoute)."""
+reached `/import/app`'s own cap. The import router parses the form with the
+import's own cap first (`routes_import._ManyFilesRoute`, the base's fix; this
+branch's `bounds.FolderUploadRoute` was the same fix and gave way to it)."""
 
 from __future__ import annotations
 
-from tessellate.api import bounds, routes_import
+from tessellate.api import routes_import
 
 
 def test_twelve_hundred_files_reach_the_route(client):
@@ -13,4 +14,4 @@ def test_twelve_hundred_files_reach_the_route(client):
     response = client.post("/import/app?source=obsidian", files=files)
     assert response.status_code == 201, response.text[:200]
     assert response.json()["imported"] == 1200
-    assert bounds.FOLDER_UPLOAD_PARSE_MAX_FILES > routes_import.MAX_FILES, "the parser must sit above the route's own cap"
+    assert routes_import.router.route_class is routes_import._ManyFilesRoute, "the import router parses with its own cap"

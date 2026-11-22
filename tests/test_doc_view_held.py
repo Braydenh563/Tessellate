@@ -15,11 +15,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 DOCS_JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
 
 
 def _function(name: str) -> str:
-    text = DOCS_JS.read_text(encoding="utf-8")
+    text = documents_text()
     start = text.index(f"function {name}(")
     end = text.index("\n}\n", start)
     return text[start:end]
@@ -46,7 +48,7 @@ def test_changing_back_to_a_markdown_type_restores_the_chosen_view():
 def test_default_view_is_live_and_shared_by_boot():
     body = _function("docDefaultView")
     assert '"live"' in body and "DOC_VIEW_KEY" in body
-    text = DOCS_JS.read_text(encoding="utf-8")
+    text = documents_text()
     assert "setDocView(docDefaultView())" in text
 
 
@@ -61,7 +63,7 @@ def test_stored_view_from_before_the_version_key_resets_to_live_once():
     node = shutil.which("node")
     if not node:
         pytest.skip("node not installed")
-    text = DOCS_JS.read_text(encoding="utf-8")
+    text = documents_text()
     migrate = _function("docViewMigrate")
     default = _function("docDefaultView")
     script = f"""

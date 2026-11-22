@@ -201,11 +201,11 @@
       }
     }
 
-    const build = (state) => {
-      const text = docStr(state.doc);
+    const build = (state, tr) => {
       //: The cheap test first: a document with no `:::` in it at all is most of
-      //: them, and this runs on every keystroke.
-      if (!text.includes(":::")) return Decoration.none;
+      //: them, and this runs on every keystroke, so an edit asks only its own lines (`docStr.lacks`).
+      if (docStr.lacks ? docStr.lacks(state, /:::/, tr) : !docStr(state.doc).includes(":::")) return Decoration.none;
+      const text = docStr(state.doc);
       const sel = state.selection.main;
       const ranges = [];
       for (const block of docColumnsBlocks(text)) {
@@ -228,7 +228,7 @@
       //: was handed a Transaction where a RangeSet belonged, and the view died
       //: with "Cannot read properties of undefined (reading 'isEmpty')" on the
       //: next paint, nowhere near this line.
-      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state, tr) : value),
       provide: (field) => EditorView.decorations.from(field),
     });
     return docColumnsFieldCache;

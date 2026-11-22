@@ -48,6 +48,8 @@ CSS_FILES = [
     #: The Activity panel's run list and the Connections sheet, moved out of 07 (L-world-class-350); each loads with its bundle.
     CSS_DIR / "agent-runs-lazy.css",
     CSS_DIR / "connections-lazy.css",
+    #: Loaded with the boards bundle, after the Library's (`LAZY_MODULES.boards`).
+    CSS_DIR / "board-lazy.css",
     #: Loaded with the back/forward list's rows (`LAZY_MODULES.navHistory`).
     CSS_DIR / "nav-history-lazy.css",
     #: Not linked by index.html either: loaded with the icon picker (app.js

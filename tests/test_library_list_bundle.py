@@ -12,6 +12,7 @@ editors, a document opened, no page errors.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -41,7 +42,7 @@ def test_every_editor_call_from_the_list_is_a_stand_in():
     #: A file the list bundle itself loads is present whenever library.js is.
     listed = re.search(r"libraryList: \[(.*?)\]", _table("LAZY_MODULES")).group(1)
     for name in [n for n in EDITORS if f'"/js/{n}"' not in listed]:
-        defined |= set(re.findall(r"^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)", (JS / name).read_text(encoding="utf-8"), re.M))
+        defined |= set(re.findall(r"^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)", frontend_text(name), re.M))
     code = "\n".join(
         line for line in (JS / "library.js").read_text(encoding="utf-8").splitlines() if not line.lstrip().startswith("//")
     )

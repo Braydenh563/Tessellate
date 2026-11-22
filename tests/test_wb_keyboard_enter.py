@@ -1,5 +1,6 @@
 """Enter places a held tool's box and edits a selected one (wbdog-1026: N then Enter did nothing, WCAG 2.1.1)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -8,7 +9,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _run(tool: str, selected: dict | None, focus_id: str | None = "whiteboard-container"):
@@ -23,6 +24,7 @@ def _run(tool: str, selected: dict | None, focus_id: str | None = "whiteboard-co
         f"const focus = {json.dumps(focus_id)} === null ? {{ id: 'wb-undo' }} : {{ id: {json.dumps(focus_id)} }};"
         "const words = {};"
         "global.document = { body: {}, activeElement: focus, querySelector: () => words, createRange: () => ({ selectNodeContents() {}, collapse() {} }) };"
+        "const wbInstances = { query: (sel) => document.querySelector(sel), layer: () => null };"
         "const wbCreateTextBox = (x, y) => calls.push(['text', x, y]);"
         "const wbCreateSticky = (x, y) => calls.push(['sticky', x, y]);"
         "const wbCreateFrame = (x, y) => calls.push(['frame', x, y]);"

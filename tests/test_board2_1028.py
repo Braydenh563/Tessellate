@@ -16,13 +16,13 @@ from pathlib import Path
 
 import pytest
 
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
 
 def _read(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 # ---- U4: Move under... ------------------------------------------------------

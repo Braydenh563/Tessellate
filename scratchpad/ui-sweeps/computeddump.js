@@ -48,7 +48,7 @@ const { boot } = require('./lib.js');
     });
     return out;
   }, sel);
-  fs.writeFileSync(process.env.OUT, JSON.stringify(dump));
+  fs.writeFileSync(process.env.OUT || require('path').join(require('os').tmpdir(), 'computed-dump.json'), JSON.stringify(dump));
   console.log(Object.keys(dump).length, 'elements');
   await browser.close();
 })();

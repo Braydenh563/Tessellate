@@ -6,6 +6,7 @@ runs in node here; the popover and the outline cells are driven in a browser.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -14,7 +15,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
 
 
 def _run(expr: str) -> object:

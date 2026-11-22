@@ -18,6 +18,7 @@ because the suite cannot open a board; if one fails, the question to ask is
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -26,7 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 #: whiteboard-map.js verbatim on 2026-09-24, and the renderer and the
 #: gestures that call into it stayed in whiteboard.js.
 WB = "\n".join(
-    (ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "whiteboard-map.js")
+    frontend_text(n) for n in ("whiteboard.js", "whiteboard-map.js")
 )
 
 
@@ -62,7 +63,7 @@ def test_a_topic_is_measured_from_a_cache_before_the_dom() -> None:
     one 500-topic drag, ahead of all of the edge maths that calls them."""
     body = _body("wbMapNodeSize")
     cache_at = body.index("wbMapNodeSizeCache")
-    query_at = body.index("document.querySelector")
+    query_at = body.index("wbInstances.query")
     assert cache_at < query_at, "the cache has to be consulted before the DOM"
 
 
@@ -101,7 +102,7 @@ def test_the_moved_elements_are_found_once_not_once_a_frame() -> None:
     query per item per frame is five hundred walks of the document a frame for
     elements that cannot have changed."""
     body = _code("wbApplyBulkMove")
-    assert "document.querySelector(" not in body
+    assert "document.querySelector(" not in body and "wbInstances.query(" not in body
     assert "wbBulkMoveElement(entry" in body
     # And the re-lookup still has to be real: a render between frames replaces
     # the element, and a stale reference would be updated invisibly forever.
@@ -113,7 +114,7 @@ def test_an_edge_finds_its_three_lines_in_one_pass() -> None:
     document-wide attribute queries per edge inside it is thousands of walks
     before the pointer has moved."""
     body = _code("wbMapEdgesFor")
-    assert "document.querySelector" not in body
+    assert "document.querySelector" not in body and "wbInstances.query" not in body
     assert "els.get(" in body
     # And the index, the layout and the elements come in from the caller, so a
     # capture builds them once rather than once per member.
@@ -125,7 +126,7 @@ def test_a_map_takes_every_element_and_box_in_one_walk() -> None:
     `querySelectorAll` plus one batch of reads is one walk and one layout
     flush instead of a thousand of each."""
     body = _body("wbIndexMapNodeElements")
-    assert 'document.querySelectorAll(".wb-object[data-id]")' in body
+    assert 'wbInstances.queryAll(".wb-object[data-id]")' in body
     assert "wbIndexMapNodeElements()" in _body("wbCaptureBulkMoveOrigin")
 
 
@@ -188,7 +189,7 @@ def test_an_item_box_finds_its_element_once() -> None:
     """`wbItemBBox` goes through the element cache, which re-queries only for an
     element a render has replaced, and every render empties it."""
     bbox = _code("wbItemBBox")
-    assert "document.querySelector(" not in bbox
+    assert "document.querySelector(" not in bbox and "wbInstances.query(" not in bbox
     element = _code("wbItemElement")
     assert "isConnected" in element
     assert "wbItemElCache.clear();" in _code("renderWhiteboard")

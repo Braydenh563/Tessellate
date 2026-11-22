@@ -8,13 +8,13 @@ without it fails here rather than quietly losing the route.
 from __future__ import annotations
 
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
 APP = app_js_text()
 LIBRARY = (FRONTEND / "js" / "library.js").read_text(encoding="utf-8")
 #: The board code and the Boards & maps gallery split out of it (INBOX 1772).
-BOARDS = "".join((FRONTEND / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "boards-gallery.js"))
+BOARDS = "".join(frontend_text(n) for n in ("whiteboard.js", "boards-gallery.js"))
 
 
 def _block(source: str, start: str, end: str) -> str:

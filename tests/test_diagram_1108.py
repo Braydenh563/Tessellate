@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
@@ -69,7 +71,7 @@ def test_a_press_on_empty_canvas_and_escape_clear_the_selection():
 
 
 def test_the_views_are_named_for_what_they_are_with_a_hint_and_a_guide_line():
-    docs = _js("documents.js")
+    docs = documents_text()
     embed = _js("diagram-embed.js")
     for words in ('"Picture", "Picture first:', '"List", "List first:'):
         assert words in docs, words

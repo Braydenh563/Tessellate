@@ -295,12 +295,56 @@ async function mapxmind() {
     await browser.close();
 }
 
+// canvasdepth2: Redo after each map gesture, measured: add a topic, collapse a
+// branch, delete a subtree; each Undo restores the map as it was and each Redo
+// puts the gesture's result back, compared topic by topic (ids aside).
+//   BASE=http://127.0.0.1:8860 W=1440 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/mapdepth2.js mapredo
+async function mapredo() {
+  const { openFresh, checker, openMap } = require("./cd2lib.js");
+    const W = Number(process.env.W || 1440);
+    const { browser, page, errors } = await openFresh({ width: W });
+    const { check, summary } = checker();
+    await openMap(page, ["# Plan", "- Plan", "  - Alpha", "    - A1", "  - Beta", "    - B1"].join("\n"));
+    const state = () => page.evaluate(() => {
+      const idx = wbMapIndex();
+      const name = (n) => (n ? String(wbMapLabel(n) || "").trim() : null);
+      return idx.nodes.map((n) => `${name(n)}<${name(idx.byId.get(n.parent_id)) ?? "-"} ${Math.round(n.x)},${Math.round(n.y)} ${n.data?.collapsed ? "c" : ""}`).sort().join(" | ");
+    });
+    const named = (label) => page.evaluate((l) => wbMapIndex().nodes.find((o) => wbMapLabel(o) === l)?.id, label);
+    const settle = () => page.waitForTimeout(900);
+    const gestures = {
+      "add a topic": async () => { await page.evaluate(async (id) => { await wbMapAddChild(id); }, await named("Beta")); },
+      "collapse a branch": async () => { await page.evaluate(async (id) => { await wbMapToggleCollapse(id); }, await named("Alpha")); },
+      "delete a subtree": async () => { await page.evaluate(async (id) => { await wbMapDeleteSubtree(id); }, await named("Beta")); },
+    };
+    for (const [label, run] of Object.entries(gestures)) {
+      const start = await state();
+      await run();
+      await settle();
+      const done = await state();
+      check(`${label}: the map changed`, done !== start);
+      await page.evaluate(() => wbUndo());
+      await settle();
+      check(`${label}: Undo restores the map`, (await state()) === start);
+      await page.evaluate(() => wbRedo());
+      await settle();
+      check(`${label}: Redo puts the result back`, (await state()) === done);
+      await page.evaluate(() => wbUndo());
+      await settle();
+      check(`${label}: Undo again restores the map`, (await state()) === start);
+    }
+    check("no page errors", errors.length === 0, errors.slice(0, 3));
+    summary();
+    await browser.close();
+}
+
 const CASES = {
   mapbranchstructure,
   mapcallout,
   maplabels,
   mapstamps,
   mapxmind,
+  mapredo,
 };
 const names = process.argv.slice(2);
 const unknown = names.filter((n) => !Object.prototype.hasOwnProperty.call(CASES, n));

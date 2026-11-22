@@ -10,11 +10,10 @@ Runs the real functions under node.
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
-DOCS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 
 
@@ -24,7 +23,7 @@ def _function(source: str, head: str) -> str:
 
 
 def _run(steps: str) -> dict:
-    source = DOCS.read_text(encoding="utf-8")
+    source = documents_text()
     heads = (
         "function docKeptDrafts() {",
         "function keepDocEditLocally() {",

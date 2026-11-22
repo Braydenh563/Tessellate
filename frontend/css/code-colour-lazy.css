@@ -5,20 +5,30 @@
   color: var(--accent-text);
   font-weight: 600;
 }
-.code-block code :is(.tok-atom, .tok-bool, .tok-number, .tok-literal) {
+.code-block code .tok-atom,
+.code-block code .tok-bool,
+.code-block code .tok-number,
+.code-block code .tok-literal {
   color: var(--ok);
 }
-.code-block code :is(.tok-string, .tok-string2, .tok-regexp) {
+.code-block code .tok-string,
+.code-block code .tok-string2,
+.code-block code .tok-regexp {
   color: var(--warn);
 }
 .code-block code .tok-comment {
   color: var(--muted);
   font-style: italic;
 }
-.code-block code :is(.tok-typeName, .tok-className, .tok-namespace, .tok-macroName) {
+.code-block code .tok-typeName,
+.code-block code .tok-className,
+.code-block code .tok-namespace,
+.code-block code .tok-macroName {
   color: var(--accent-text);
 }
-.code-block code :is(.tok-punctuation, .tok-operator, .tok-meta) {
+.code-block code .tok-punctuation,
+.code-block code .tok-operator,
+.code-block code .tok-meta {
   color: var(--muted);
 }
 .code-block code .tok-invalid {

@@ -1718,7 +1718,8 @@ def test_inbox_669_a_lean_held_by_a_rule_is_eased_back_too() -> None:
     after = blend.index("change();\n  for (const { anim, el, from } of held)")
     assert before < after
     tail = blend[after:]
-    assert "BODY.filter((key) => style[key] !== from[key])" in tail and "el.animate([{ ...moved, offset: 0 }]" in tail
+    #: Compared through `same` since an identity transform reads as no move (commit 415775215).
+    assert "BODY.filter((key) => !same(style[key], from[key]))" in tail and "el.animate([{ ...moved, offset: 0 }]" in tail
     # A part the held loop eased is read again for what else moved.
     assert "if (eased.has(el)) continue;" not in tail and "A part eased above is read again" in tail
 

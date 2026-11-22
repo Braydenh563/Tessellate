@@ -13,8 +13,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 
 
 def _body(name: str) -> str:

@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import pytest
 
+from tests._app_js import documents_text
+
 
 def test_create_read_update_delete(client):
     created = client.post(
@@ -686,7 +688,7 @@ def test_every_export_format_names_the_file_the_same_way():
     if not node:
         pytest.skip("node is not installed")
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    source = (root / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     start = source.index("function docExportName")
     fn = source[start : source.index("\n}\n", start) + 3]
     titles = '["Sleep essay", "a/b: c?", "", "  ", "Caf\u00e9 notes", "x".repeat(80)]'

@@ -265,6 +265,27 @@ function imageLayout(img) {
   if (window.matchMedia?.("(pointer: coarse)").matches) queueMicrotask(() => imageWirePicture(img));
 }
 
+//: **A video in a document** (L-documents-68): `![name](/media/x.mp4)` is a player, not a picture. Methods of `imageLayout`
+//: like the caption below, since the shared scope's name count has no slack. The `<video>` asks the server for its first
+//: bytes only (`preload="metadata"`), is served from this origin (`media-src 'self'`), and seeks by Range. The name line is
+//: hidden on screen and is what a print or an export keeps in the video's place (09-editor.css, `docExportClean.figures`).
+imageLayout.isVideo = (url) => /\.(?:mp4|webm)(?:[?#]|$)/i.test(String(url || ""));
+imageLayout.video = function (url, alt) {
+  const name = String(alt || "").split("|")[0].trim() || decodeURIComponent(String(url).split(/[?#]/)[0].split("/").pop());
+  const box = document.createElement("span");
+  box.className = "doc-video";
+  const player = document.createElement("video");
+  player.controls = true;
+  player.preload = "metadata";
+  player.src = mediaSrc(url);
+  player.setAttribute("aria-label", `Video: ${name}`);
+  const line = document.createElement("span");
+  line.className = "doc-video-name";
+  line.textContent = `Video: ${name}`;
+  box.append(player, line);
+  return box;
+};
+
 //: **A saved picture's caption as one muted line under it** (owner-1026b K18: the board's Show caption pref,
 //: `wb-show-captions`, drawn the same under a note's own pictures in a note card and in a graph popup). Methods of
 //: `imageLayout`, not globals of their own: the shared scope is counted. Only a `/media/` picture has a caption (an

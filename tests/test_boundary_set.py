@@ -1,5 +1,6 @@
 """A boundary round a lasso'd set of topics (MINDMAP_PLAN 12.2 item 1, decision 19 extended)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -10,9 +11,9 @@ import pytest
 from tessellate.api.wb_model import WhiteboardObjectData
 
 ROOT = Path(__file__).resolve().parents[1]
-MORE = (ROOT / "frontend" / "js" / "whiteboard-map-marks.js").read_text(encoding="utf-8")
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+MORE = (ROOT / "frontend" / "js" / "whiteboard-map-stamps.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

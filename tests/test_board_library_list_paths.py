@@ -57,7 +57,16 @@ def test_builtin_matches_are_capped_at_two_hundred(client):
     assert len(client.get("/board-library?q=a").json()["builtins"]) == 200
 
 
-def test_unreadable_built_in_sets_list_as_empty(client, monkeypatch, tmp_path):
+def _clear_builtin_caches():
+    for cached in (library._shape_sets, library._builtin_index, library._icons):
+        cached.cache_clear()
+
+
+def test_unreadable_built_in_sets_list_as_empty(client, monkeypatch, tmp_path, request):
+    #: The built-in readers cache once per process: cleared before so the empty folder is read, and after so
+    #: the next test in this worker does not inherit an empty list (test_board_shape_sets saw `{}`).
+    _clear_builtin_caches()
     monkeypatch.setattr(library, "BUILTIN_DIR", tmp_path)
+    request.addfinalizer(_clear_builtin_caches)
     listed = client.get("/board-library").json()
     assert listed["sets"] == []

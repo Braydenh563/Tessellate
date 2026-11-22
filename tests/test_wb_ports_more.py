@@ -16,7 +16,7 @@ from tests import _js_scope
 from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:
@@ -110,6 +110,8 @@ def test_a_named_port_says_so_on_its_dot_and_beside_it_when_lit():
     got = _node(
         "const wbFmtState = {}; const onSurface = () => {};"
         "const d3 = { zoomTransform: () => ({ k: 2 }) };"
+        # The container comes through the active instance since L-whiteboard-53.
+        "const wbInstances = { container: () => document.getElementById('whiteboard-container') };"
         "const document = { getElementById: () => ({}), createElementNS: () => ({ attrs: {}, setAttribute(k, v) { this.attrs[k] = v; } }) };"
         + frontend_text("whiteboard-draw-more.js")
         + "\nconst layer = { kids: [], appendChild(c) { this.kids.push(c); } }; wbFmtState.drawMore.nameBeside(layer, 'Out', 100, 50);"
@@ -137,6 +139,8 @@ EDITOR = (
     "const wbSaveSketchProps = async (i, props) => { calls.push(['save', props.ports === undefined ? null : props.ports]); };"
     "const d3 = { zoomTransform: () => ({ k: 1 }) };"
     "const container = { addEventListener: (n, f) => { listeners[n] = f; } };"
+    # The board's container is found through the active instance since L-whiteboard-53; the page one is by id.
+    "const wbInstances = { container: () => document.getElementById('whiteboard-container'), layer: (id) => document.getElementById(id) };"
     "const document = { getElementById: () => container, addEventListener: (n, f) => { listeners['doc-' + n] = f; } };"
     "const wbFmtState = {}; const onSurface = (s, f) => f();"
     "const press = (x, y) => { let stopped = false; listeners.pointerdown({ button: 0, clientX: x, clientY: y, preventDefault() {}, stopPropagation() { stopped = true; } }); return stopped; };"

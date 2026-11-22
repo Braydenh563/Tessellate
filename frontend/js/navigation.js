@@ -1544,6 +1544,10 @@ document.addEventListener(
     if (!open) return;
     event.preventDefault();
     event.stopPropagation();
+    //: A popup opened from inside it (a select's list, a row's own menu) is the innermost and closes
+    //: first, focus back on its opener: closing the dock menu here left the Logs More's "Which log"
+    //: list on screen, and the next Escape closed Settings (menus.js at 1440).
+    if ([...document.querySelectorAll(".action-menu:not(.hidden)")].some((m) => m.checkVisibility?.() && !open.contains(m))) return closeActionMenus();
     open.open = false;
     open.querySelector("summary")?.focus();
   },
@@ -1629,12 +1633,11 @@ document.addEventListener("keydown", (event) => {
       return;
     }
   }
-  //: A submenu's row (`role="menuitem"` with `aria-haspopup`, `buildMenuGroupButton`) is a row of the open
-  //: menu, not a closed menu button: ↓ walks past it and → opens it (APG). Taken as an opener it clicked its
-  //: flyout open and put the focus back on itself, after the menu's own walker had moved it on (menus.js
-  //: sweep, L-world-class-875: ↓ stayed on "View" in Dashboard, Customise).
-  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'], [role='menuitem'])");
-  if (opener === target && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'])");
+  //: A row that opens a flyout (`role="menuitem"`, the dashboard Customise's View) is walked
+  //: by its own menu; ArrowRight opens it (APG). Taken for a closed menu button, ArrowDown
+  //: opened its flyout and left the focus on it (menus.js at 1440).
+  if (opener === target && opener.getAttribute("role") !== "menuitem" && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
     const menu = menuOfOpener(opener);
     const rows = menu ? menuRowsOf(menu) : [];
     //: A closed select standing as a row in a dock menu (the document's
@@ -1645,7 +1648,10 @@ document.addEventListener("keydown", (event) => {
       return;
     }
     //: The other half of the APG menu button: ↓ on a closed one opens it on the first row, ↑ on the last (Enter and Space already open it).
-    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false") {
+    //: Not a closed ⋯ standing as a row of an open menu (the board View's Workspaces): ArrowDown
+    //: walks past it to the next row, as past any row; it opened the ⋯ and trapped the focus
+    //: in its one row (menus.js at 1440).
+    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false" && !opener.parentElement?.closest('[role="menu"]')) {
       event.preventDefault();
       opener.click();
       const opened = menuOfOpener(opener) || document.activeElement?.closest('[role="menu"]');
@@ -1907,7 +1913,8 @@ async function switchTab(name) {
   // old one was still running or already stopped.
   const leavingGraph = prefs.get("activeTab", null) === "graph" && name !== "graph";
   //: Leaving Notes forgets the last card clicked (L709): it is the open note only while you are there.
-  if (name !== "notes") delete $("entry-list")?.dataset.lastCard;
+  //: `getElementById`, not `$`: an unbuilt Notes surface has no card to forget, and `$` would build it (1,092 elements) on a Documents open.
+  if (name !== "notes") delete document.getElementById("entry-list")?.dataset.lastCard;
   recordTabVisit(name);
   //: The next 400ms belong to the page arriving (INBOX 580): the companion's
   //: paced animations hold still through them (`nameMarkBuddyTempo`), so the
@@ -2024,18 +2031,13 @@ async function switchTab(name) {
     const layoutSelect = $("graph-layout");
     if (layoutSelect) layoutSelect.value = layout;
     
-    // Same for what the colours mean: a saved setting the control does not
-    // show is a control that lies about the map beside it.
-    const savedColour = prefs.get("graph-colour", null);
-    const colourSelect = $("graph-colour");
-    if (savedColour && colourSelect && [...colourSelect.options].some((o) => o.value === savedColour)) {
-      colourSelect.value = savedColour;
-    }
-    //: And what the sizes mean (INBOX 430), the same way.
-    const savedSize = prefs.get("graph-size", null);
-    const sizeSelect = $("graph-size");
-    if (savedSize && sizeSelect && [...sizeSelect.options].some((o) => o.value === savedSize)) {
-      sizeSelect.value = savedSize;
+    // Same for what the colours mean (and, INBOX 430, what the sizes mean): a
+    // saved setting the control does not show is a control that lies about the
+    // map beside it.
+    for (const id of ["graph-colour", "graph-size"]) {
+      const saved = prefs.get(id, null);
+      const select = $(id);
+      if (saved && select && [...select.options].some((o) => o.value === saved)) select.value = saved;
     }
     // Match the saved layout on arrival, not only on change, otherwise a
     // notebook left on Tree comes back with two live-looking dead sliders.
