@@ -14305,7 +14305,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:53 |
 | `/export/board-folder` | POST | `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:311 |
-| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:890 |
+| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:892 |
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:186 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:77 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:205 |
@@ -14387,9 +14387,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:612 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:488 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:118 |
-| `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:667 |
-| `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:794 |
-| `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:687 |
+| `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:669 |
+| `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:796 |
+| `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:689 |
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:177 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1647 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1030 |
@@ -24046,39 +24046,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ImportDirectoryRequest` | src/tessellate/api/routes_settings_transfer.py:426 |
-| `_already_imported` | src/tessellate/api/routes_settings_transfer.py:524 |
+| `ImportDirectoryRequest` | src/tessellate/api/routes_settings_transfer.py:428 |
+| `_already_imported` | src/tessellate/api/routes_settings_transfer.py:526 |
 | `_check_upload` | src/tessellate/api/routes_settings_transfer.py:244 |
 | `_copy_into` | src/tessellate/api/routes_settings_transfer.py:262 |
-| `_create_document_notes` | src/tessellate/api/routes_settings_transfer.py:865 |
+| `_create_document_notes` | src/tessellate/api/routes_settings_transfer.py:867 |
 | `_export_rows` | src/tessellate/api/routes_settings_transfer.py:42 |
-| `_exported_created` | src/tessellate/api/routes_settings_transfer.py:359 |
-| `_import_directory_files` | src/tessellate/api/routes_settings_transfer.py:544 |
-| `_import_markdown_files` | src/tessellate/api/routes_settings_transfer.py:722 |
-| `_import_root_for` | src/tessellate/api/routes_settings_transfer.py:489 |
-| `_import_roots` | src/tessellate/api/routes_settings_transfer.py:473 |
-| `_inside` | src/tessellate/api/routes_settings_transfer.py:497 |
+| `_exported_created` | src/tessellate/api/routes_settings_transfer.py:361 |
+| `_import_directory_files` | src/tessellate/api/routes_settings_transfer.py:546 |
+| `_import_markdown_files` | src/tessellate/api/routes_settings_transfer.py:724 |
+| `_import_root_for` | src/tessellate/api/routes_settings_transfer.py:491 |
+| `_import_roots` | src/tessellate/api/routes_settings_transfer.py:475 |
+| `_inside` | src/tessellate/api/routes_settings_transfer.py:499 |
 | `_is_png` | src/tessellate/api/routes_settings_transfer.py:258 |
 | `_is_svg` | src/tessellate/api/routes_settings_transfer.py:254 |
-| `_keep_exported_state` | src/tessellate/api/routes_settings_transfer.py:376 |
-| `_link_imported` | src/tessellate/api/routes_settings_transfer.py:708 |
-| `_parse_frontmatter` | src/tessellate/api/routes_settings_transfer.py:386 |
-| `_run_directory_import` | src/tessellate/api/routes_settings_transfer.py:509 |
+| `_keep_exported_state` | src/tessellate/api/routes_settings_transfer.py:378 |
+| `_link_imported` | src/tessellate/api/routes_settings_transfer.py:710 |
+| `_parse_frontmatter` | src/tessellate/api/routes_settings_transfer.py:388 |
+| `_run_directory_import` | src/tessellate/api/routes_settings_transfer.py:511 |
 | `_stream_and_close` | src/tessellate/api/routes_settings_transfer.py:303 |
-| `_text_hash` | src/tessellate/api/routes_settings_transfer.py:520 |
-| `_under_root` | src/tessellate/api/routes_settings_transfer.py:484 |
+| `_text_hash` | src/tessellate/api/routes_settings_transfer.py:522 |
+| `_under_root` | src/tessellate/api/routes_settings_transfer.py:486 |
 | `_upload_size` | src/tessellate/api/routes_settings_transfer.py:237 |
-| `_validated_import_directory` | src/tessellate/api/routes_settings_transfer.py:429 |
+| `_validated_import_directory` | src/tessellate/api/routes_settings_transfer.py:431 |
 | `build_board_folder` | src/tessellate/api/routes_settings_transfer.py:283 |
 | `build_markdown_export` | src/tessellate/api/routes_settings_transfer.py:147 |
 | `export_backup` | src/tessellate/api/routes_settings_transfer.py:54 |
 | `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:312 |
-| `export_csv` | src/tessellate/api/routes_settings_transfer.py:891 |
+| `export_csv` | src/tessellate/api/routes_settings_transfer.py:893 |
 | `export_json` | src/tessellate/api/routes_settings_transfer.py:79 |
 | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:206 |
-| `import_directory` | src/tessellate/api/routes_settings_transfer.py:668 |
-| `import_document` | src/tessellate/api/routes_settings_transfer.py:795 |
-| `import_markdown` | src/tessellate/api/routes_settings_transfer.py:689 |
+| `import_directory` | src/tessellate/api/routes_settings_transfer.py:670 |
+| `import_document` | src/tessellate/api/routes_settings_transfer.py:797 |
+| `import_markdown` | src/tessellate/api/routes_settings_transfer.py:691 |
 
 ### src/tessellate/api/routes_spaces.py (28)
 

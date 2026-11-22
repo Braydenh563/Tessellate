@@ -241,14 +241,14 @@ def _upload_size(upload: UploadFile) -> int:
     return size
 
 
-def _check_upload(upload: UploadFile, limit: int, what: str, magic, refusal: str) -> None:
-    """The cap and the first bytes, without reading the file into memory."""
+def _check_upload(upload: UploadFile, limit: int, what: str, magic) -> bool:
+    """The cap, then whether the first bytes are the kind asked for, without
+    reading the file into memory. The caller names the refusal, a fixed sentence."""
     if _upload_size(upload) > limit:
         raise HTTPException(status_code=413, detail=f"The {what} is too large to export.")
     head = upload.file.read(1024)
     upload.file.seek(0)
-    if not magic(head):
-        raise HTTPException(status_code=422, detail=refusal)
+    return bool(magic(head))
 
 
 def _is_svg(head: bytes) -> bool:
@@ -327,9 +327,11 @@ def export_board_folder(
         raise HTTPException(status_code=422, detail="The note list could not be read.") from None
     if len(note_ids) > 5000:
         raise HTTPException(status_code=422, detail="That is too many notes for one export.")
-    _check_upload(svg, BOARD_SVG_MAX, "picture", _is_svg, "That is not an SVG picture.")
+    if not _check_upload(svg, BOARD_SVG_MAX, "picture", _is_svg):
+        raise HTTPException(status_code=422, detail="That is not an SVG picture.")
     if png is not None:
-        _check_upload(png, BOARD_PNG_MAX, "PNG", _is_png, "The PNG could not be read.")
+        if not _check_upload(png, BOARD_PNG_MAX, "PNG", _is_png):
+            raise HTTPException(status_code=422, detail="The PNG could not be read.")
     #: The ASCII form: it names the download in a header, which is Latin-1.
     slug = paths.slug(name, 60, ascii_only=True, fallback="board")
     notes_zip = build_markdown_export(session, note_ids) if note_ids else None
