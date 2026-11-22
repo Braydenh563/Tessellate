@@ -278,8 +278,14 @@ async function boot(opts={}) {
   //: findings, landing mid-run, so it cannot be dismissed at boot). Answered
   //: "No thanks" up front, with the same preference write the toast makes, so
   //: it is never asked; SEMANTIC_ASK=1 leaves it for a sweep that measures it.
+  //: Only while unanswered: a sweep booting on a shared server mid-run of another
+  //: wrote false over deepflows settings' switch ("went back to off", 1 in 3 runs).
   if (!process.env.SEMANTIC_ASK) {
-    await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => null));
+    await page.evaluate(async () => {
+      const p = await apiJson('/preferences', { silent: true }).catch(() => null);
+      if (p && p.semantic_choice_made) return;
+      await apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => null);
+    });
   }
   //: SWEEP_EAGER=1 loads every lazy module (app.js ensureModule) before the sweep starts, for the
   //: older sweeps written when the Settings, whiteboard and map code was eager (L554).

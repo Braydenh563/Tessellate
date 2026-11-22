@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: a sweep booting on a shared server no longer answers the search-by-meaning question again, which wrote off over deepflows settings' switch mid-run (1 failure in 3 runs; passes with a sweep booted mid-flow).
 - Notes: a note saved from Extract on a document now carries its provenance chip, "Extracted from <title>" (a generic label once the document is purged), from a new nullable `origin_document_id` on entries and its revision; a note with a transcribed recording, meetings included, already reads "Transcribed from audio" (L-general-42).
 - Desktop companion: a prop act keeps its drawn prop layer instead of redrawing and resizing it on most ticks (L-general-72); act ticks at dpi 192 went from a 31 ms median to 9 ms. A load-order test checks every name documents.js calls at load is defined before it.
 - Boards: the board gallery scrolls on its own, so a board past the fold can be reached; the view around it clipped, and at 390 with forty boards everything below 712px was out of reach.
