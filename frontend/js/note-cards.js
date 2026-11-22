@@ -359,7 +359,9 @@ async function binNoteWithUndo(entry) {
   const list = document.getElementById("entry-list");
   const rows = list ? entryListItems(list) : [];
   const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
-  const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
+  //: A neighbour folded into a run (L-world-class-873) is opened for its edge row.
+  const near = rows[at + 1] || rows[at - 1];
+  const heirId = near && (near.dataset.id ?? noteWindow.fill(near, near === rows[at - 1]).dataset.id);
   await api(`/entries/${entry.id}`, { method: "DELETE" });
   await refreshEntries([entry.id]);
   const held = document.activeElement;

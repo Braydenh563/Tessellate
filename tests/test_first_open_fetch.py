@@ -43,3 +43,48 @@ def test_the_view_is_mounted_empty_in_idle_after_the_editor_has_loaded():
     # since `docWarmed` is local to documents-cm-load.js (CI E2E on 392de364f: "docWarmed is not defined").
     assert "window.warmDocumentEngine() && window.loadCodeMirror()" in tail
     assert "docWarmed" not in tail
+
+
+def test_the_file_type_table_is_fetched_in_the_warm():
+    # loadDocuments awaits the table before it asks for the list, so a cold table was a serial fetch in the click.
+    tail = _tail()
+    assert tail.index("ensureDocEditor()") < tail.index("loadDocTypeTable()")
+
+
+def test_a_tab_visit_runs_the_prose_pass_only_when_the_type_table_has_just_landed():
+    # With the table already in hand, openDocument's renderDocTools runs the pass, so the visit ran it twice.
+    js = frontend_text("documents.js")
+    body = js[js.index("async function loadDocFileTypes()") :][:900]
+    assert "const had = docFileTypes.length > 0;" in body
+    assert body.index("const had") < body.index("await loadDocTypeTable()")
+    assert "syncDocFileType({ prose: !had });" in body
+
+
+def test_the_panels_after_first_paint_are_separate_tasks():
+    # The six panels in one task were a 180 ms frame between the text and the next key.
+    js = frontend_text("documents.js")
+    helper = js[js.index("function docAfterFirstPaint(seq, ...paints)") :][:400]
+    assert "paints.shift()" in helper and "requestAnimationFrame(() =>" in helper and "step();" in helper
+    opener = js[js.index("docAfterFirstPaint(seq, () => {") :][:400]
+    assert opener.count("}, () => {") >= 3
+
+
+def test_the_prose_rerun_after_the_word_list_is_a_frame_after_the_set():
+    # The 93,000-word set and the re-run in one task were a 267 ms frame after a document's first paint.
+    js = frontend_text("documents.js")
+    later = js[js.index("function docWordlistReadyNow(words)") :][:1500]
+    assert "docWordlist = words;" in later
+    assert later.index("afterFrames(() => setTimeout(() => {") < later.index("renderDocProse();")
+
+
+def test_the_word_list_set_is_built_in_slices():
+    # The 93,000 words in one task were up to 178 ms of the frame after first paint under load.
+    # The slicing lives in documents-spell.js (`docSpellWordsSliced`; documents-instruments.js is at its size cap).
+    js = frontend_text("documents.js")
+    loader = js[js.index("function docLoadWordlist()") :][:4000]
+    assert "docSpellWordsSliced(text, words, () => docWordlistReadyNow(words))" in loader
+    assert 'text.split("\\n")' not in loader
+    spell = frontend_text("documents-spell.js")
+    sliced = spell[spell.index("function docSpellWordsSliced(") :][:900]
+    assert "performance.now() + 8" in sliced and "setTimeout(slice)" in sliced
+    assert sliced.index("setTimeout(slice)") < sliced.index("done();")

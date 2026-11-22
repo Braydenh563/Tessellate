@@ -818,14 +818,16 @@
     if (docView === "rendered") setDocView("live", { persist: false });
   }
 
-  //: Runs `paint` once the frame with the new text has been drawn, if no later
-  //: open has started since (`docOpenSeq`).
-  function docAfterFirstPaint(seq, paint) {
-    requestAnimationFrame(() =>
-      setTimeout(() => {
+  //: Each of `paints` a frame apart once the text is drawn, unless a later open began (`docOpenSeq`; L-world-class-40).
+  function docAfterFirstPaint(seq, ...paints) {
+    const step = () => {
+      const paint = paints.shift();
+      if (paint) requestAnimationFrame(() => setTimeout(() => {
         if (seq === docOpenSeq) paint();
-      }, 0)
-    );
+        step();
+      }));
+    };
+    step();
   }
 
   async function openDocument(id) {
@@ -900,18 +902,16 @@
     renderDocPreview();
     renderDocStats();
     renderDocProperties();
-    //: **The first screen first** (DOCUMENTS 25 row 7). The prose check, the
-    //: outline and the side panels belong to the document and are repainted
-    //: with it, a frame after the text is painted rather than before: each
-    //: lays the editor out again (the outline asks which line the caret shows),
-    //: measured at 390 as 607ms of a 1,286ms open for the outline alone.
-    //: The outline first: it reads where the caret is before anything here
-    //: writes (INBOX 1530 c), and the status bar and prose check need no layout.
+    //: **The first screen first** (DOCUMENTS 25 row 7): each panel lays the editor out again (the outline was 607 of 1,286ms
+    //: at 390), so they paint after the text; the outline first, reading the caret before any write (INBOX 1530 c).
     docAfterFirstPaint(seq, () => {
       renderDocOutline();
+    }, () => {
       renderDocTools();
+    }, () => {
       renderDocNotes();
       renderDocBacklinks();
+    }, () => {
       renderDocBookmarks();
       renderDocComments();
     });

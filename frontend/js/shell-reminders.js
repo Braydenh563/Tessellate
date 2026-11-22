@@ -1692,8 +1692,9 @@ function curtainShell(ready) {
       loadCharactersIdle();
     }));
   };
-  //: And the dashboard's widgets, when it is the first tab (`dashSettled`).
-  Promise.resolve(ready).then(() => window.dashSettled).then(lift, lift);
+  //: And the dashboard, when it is the first tab (`dashShown`): its widgets,
+  //: its hero line and its first steps (L-world-class-879).
+  Promise.resolve(ready).then(() => window.dashShown || window.dashSettled).then(lift, lift);
   setTimeout(lift, SHELL_CURTAIN_MAX_MS);
 }
 

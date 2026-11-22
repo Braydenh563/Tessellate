@@ -493,7 +493,7 @@ vulnerability, see [SECURITY.md](SECURITY.md).
 Each interaction has a time budget, held by a test that fails when it is
 exceeded (`tests/test_budgets.py` for the server, `tests-e2e/specs/budgets.spec.js`
 in a real browser; the table is `BUDGETS` in `src/tessellate/api/routes_bench.py`).
-Measured in headless Chromium on an idle four-core machine, on a 500-note
+Measured in headless Chromium on a four-core machine at idle (load under 2 before each run), on a 500-note
 notebook with a board of 500 objects and a document of 50,000 words. Each
 measured figure is the slowest of four runs' medians; the budget is 1.5 times it.
 
@@ -501,7 +501,7 @@ measured figure is the slowest of four runs' medians; the budget is 1.5 times it
 | --- | --- | --- |
 | Boot to first paint | 302 | 460 |
 | First interaction | 2035 | 3060 |
-| List paint | 71 | 110 |
+| List paint | 65 | 100 |
 | Search | 23 | 40 |
 | Board open | 108 | 170 |
 | Document open | 116 | 180 |
@@ -511,10 +511,10 @@ dwarf the rest):
 
 | Interaction | Measured | |
 | --- | --- | --- |
-| Boot to first paint | 302 ms | ██████ |
-| Document open | 116 ms | ██ |
-| Board open | 108 ms | ██ |
-| List paint | 71 ms | █ |
+| Boot to first paint | 302 ms | ██████████████ |
+| Document open | 116 ms | █████ |
+| Board open | 108 ms | █████ |
+| List paint | 65 ms | ███ |
 | Search | 23 ms | █ |
 
 The first interaction is the first click the app answers after a cold start,

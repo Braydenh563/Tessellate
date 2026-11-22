@@ -42,6 +42,10 @@ const only = new Set((process.env.ONLY || '').split(',').filter(Boolean));
 const skip = new Set((process.env.SKIP || '').split(',').filter(Boolean));
 const wanted = (file) => (!only.size || only.has(file)) && !skip.has(file);
 
+//: The page the OCR shot reads: a stand-up's whiteboard, typed so the read
+//: is checkable against the words written here.
+const OCR_PAGE = `<!doctype html><meta charset="utf-8"><body style="margin:0;width:900px;height:560px;background:#fbfaf6;font-family:Arial,sans-serif;color:#1b1b1b"><div style="padding:44px 56px;font-size:30px;line-height:1.55"><b style="font-size:38px">Harbor stand-up, Tuesday</b><br>Ship the offline banner by Friday.<br>Priya reviews the import report.<br>Book the demo room for 3 pm.<br>Next: price the beta and email the pilot users.</div></body>`;
+
 const SHOTS = [
   { file: 'dashboard', tab: 'dashboard' },
   { file: 'notes', tab: 'notes', sub: 'notes' },
@@ -52,6 +56,7 @@ const SHOTS = [
   { file: 'reminders', tab: 'reminders' },
   { file: 'documents', tab: 'library', sub: 'documents' },
   { file: 'focus', tab: 'library', sub: 'focus' },
+  { file: 'ocr', tab: 'library', sub: 'ocr' },
   { file: 'whiteboard', tab: 'library', sub: 'board', board: 'Harbor launch board' },
   { file: 'map', tab: 'library', sub: 'board', board: 'Portugal trip' },
   { file: 'palette', tab: 'notes', sub: 'palette' },
@@ -268,6 +273,41 @@ async function stage(page, shot) {
       await page.evaluate(() => wbZoomToFit({ animate: false }));
       await page.waitForTimeout(1500);
       break;
+    case 'ocr': {
+      //: A real read (L917): a page drawn here, uploaded the way the
+      //: Library's Upload does, and read by the Tesseract program, which this
+      //: shot needs on PATH with pytesseract (`apt-get install tesseract-ocr`).
+      const scan = await (await page.context().browser().newContext()).newPage();
+      await scan.setViewportSize({ width: 900, height: 560 });
+      await scan.setContent(OCR_PAGE);
+      const png = (await scan.screenshot({ type: 'png' })).toString('base64');
+      await scan.context().close();
+      const media = await page.evaluate(async (b64) => {
+        const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const fd = new FormData();
+        fd.append('file', new File([bytes], 'harbor-standup-whiteboard.png', { type: 'image/png' }));
+        fd.append('direct', 'true');
+        const r = await fetch('/media/upload', { method: 'POST', body: fd, headers: { 'X-Auth-Token': authToken(), 'X-Workspace-ID': activeSpaceId() } });
+        return r.json();
+      }, png);
+      await page.evaluate(async (m) => {
+        const row = await apiJson(`/media/meta/${encodeURIComponent(m.url.split('/').pop())}`);
+        openOcrWorkspace({ ...row, _isImage: true }, [{ ...row, _isImage: true }]);
+      }, media);
+      await page.waitForTimeout(2500);
+      await page.evaluate(() => document.getElementById('ocr-read-page').click());
+      await page.waitForFunction(() => !document.getElementById('ocr-read-page').disabled
+        && document.querySelectorAll('#ocr-region-list > li').length >= 1, null, { timeout: 30000 });
+      //: Checked, not assumed: the shot is only of a read that matches the page.
+      const read = await page.evaluate(() => document.getElementById('ocr-region-list').textContent.replace(/\s+/g, ' '));
+      if (!/Harbor stand-up, Tuesday Ship the offline banner by Friday\. Priya reviews the import report\./.test(read)) throw new Error(`ocr read: ${read}`);
+      console.log('ocr read:', read.trim());
+      //: On a fresh data dir the update question can land after sign-in's
+      //: answer (it did, over this shot); answered here as signIn answers it.
+      await page.getByRole('button', { name: "Don't check" }).click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      break;
+    }
     case 'palette':
       //: The Notes sidebar fills after the tab opens; shot before it did, the
       //: palette sat over an empty Categories column (2026-11-21).

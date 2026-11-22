@@ -29,10 +29,9 @@ JS = ROOT / "frontend" / "js"
 
 #: file -> bare `fetch(` calls it may make, and why.
 ALLOWED = {
-    # The door itself (`(send || fetch)(path`, not counted: it may hand the
-    # request to the upload worker) and the sign-in call before a session
-    # exists whose refusal is an answer rather than a lockout.
-    "app.js": 1,
+    # The door itself, and the two sign-in calls before a session exists
+    # whose refusal is an answer rather than a lockout.
+    "app.js": 2,
     # Loaded before app.js to report a page that failed to start; `api()` may
     # not exist when it runs.
     "boot-guard.js": 1,
@@ -58,9 +57,6 @@ ALLOWED = {
     # A Web Worker (the offline translator, Brief 83) has no app.js and so no
     # `api()`: its engine (.wasm) and model files, from an open route.
     "translate-worker.js": 2,
-    # The import upload worker (L-world-class-891): no app.js, so no `api()`;
-    # app.js's api() hands it the request (`send`), its lock and errors.
-    "upload-worker.js": 1,
     # The spelling second opinion's files (the dictionaries and the frequency
     # list), in the grammar worker that imports it: a static read from the
     # open /vendor mount, one helper.

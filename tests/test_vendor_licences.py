@@ -86,7 +86,11 @@ def test_the_loader_trims_each_entry() -> None:
     """
     source = (VENDOR.parent / "js" / "documents-instruments.js").read_text(encoding="utf-8")
     loader = source[source.index("function docLoadWordlist()") :][:2000]
-    assert "line.trim()" in loader, (
+    #: The loader hands the text to `docSpellWordsSliced` (documents-spell.js), which splits and trims it.
+    assert "docSpellWordsSliced(text, words," in loader
+    spell = (VENDOR.parent / "js" / "documents-spell.js").read_text(encoding="utf-8")
+    sliced = spell[spell.index("function docSpellWordsSliced(") :][:900]
+    assert "line.trim()" in sliced, (
         "docLoadWordlist must trim each line: an untrimmed CRLF checkout makes "
         "all 92,972 entries miss and flags the entire language"
     )

@@ -26,6 +26,8 @@ function importPreview({ label, rows, more = 0 }) {
       answered = true;
       resolve(value);
     };
+    //: Each row's tick, read by Import and set by Select all; the boxes write it.
+    const ticked = rows.map((row) => !row.already);
     const boxes = [];
     openSheet({
       label: "Import preview",
@@ -38,17 +40,18 @@ function importPreview({ label, rows, more = 0 }) {
         summary.className = "import-report-counts";
         summary.setAttribute("aria-live", "polite");
         const run = smallButton("ph:check Import", "Bring the ticked notes in", () => {
-          answer(rows.filter((row, at) => !boxes[at].checked).map((row) => row.key));
+          answer(rows.filter((row, at) => !ticked[at]).map((row) => row.key));
           close();
         }, false);
         run.classList.add("accent");
         const refresh = () => {
-          const n = boxes.filter((box) => box.checked).length + more;
+          const n = ticked.filter(Boolean).length + more;
           summary.textContent = `${nounCount(n, "note")} will be imported.` + (more ? ` The ${more} past the first ${rows.length} come too.` : "");
           setLabel(run, `ph:check Import ${n}`);
           run.disabled = n === 0;
         };
         const all = (on) => () => {
+          ticked.fill(on);
           boxes.forEach((box) => { box.checked = on; });
           refresh();
         };
@@ -60,14 +63,17 @@ function importPreview({ label, rows, more = 0 }) {
         );
         const list = document.createElement("ul");
         list.className = "entry-list import-report-list";
-        rows.forEach((row) => {
+        const item = (row, at) => {
           const li = document.createElement("li");
           const tick = document.createElement("label");
           tick.className = "row align-center checkbox-label small";
           const box = document.createElement("input");
           box.type = "checkbox";
-          box.checked = !row.already;
-          box.addEventListener("change", refresh);
+          box.checked = ticked[at];
+          box.addEventListener("change", () => {
+            ticked[at] = box.checked;
+            refresh();
+          });
           boxes.push(box);
           const name = document.createElement("strong");
           name.textContent = row.title || "Untitled";
@@ -76,8 +82,21 @@ function importPreview({ label, rows, more = 0 }) {
           detail.className = "muted task-detail";
           detail.textContent = (row.already ? "Already here. " : "") + (row.snippet || "");
           li.append(tick, detail);
-          list.appendChild(li);
-        });
+          return li;
+        };
+        //: A screenful now and the rest a hundred a task: a thousand rows built
+        //: at once were one long task of 125 to 229 ms idle, 1.1 s on a loaded
+        //: host (L-world-class-870). The ticks live in `ticked`, so Import and
+        //: Select all are right before the last row lands.
+        const IMPORT_PREVIEW_FIRST = 40;
+        const IMPORT_PREVIEW_CHUNK = 100;
+        const append = (from, to) => {
+          const part = document.createDocumentFragment();
+          for (let at = from; at < Math.min(to, rows.length); at += 1) part.appendChild(item(rows[at], at));
+          list.appendChild(part);
+          if (to < rows.length && !answered) setTimeout(() => append(to, to + IMPORT_PREVIEW_CHUNK));
+        };
+        append(0, IMPORT_PREVIEW_FIRST);
         const actions = document.createElement("div");
         actions.className = "row right space-dialog-actions";
         actions.append(smallButton("Cancel", "Import nothing", close), run);
@@ -96,42 +115,6 @@ const APP_IMPORTS = [
   { source: "memorymap", button: "import-memorymap", input: "import-memorymap-file", label: "Tessellate" },
 ];
 
-//: L-world-class-891: the browser builds a multipart body on the page's
-//: thread inside `fetch` (2.9 s and 1.4 s of frozen page at 5,000 files), so
-//: the files go to upload-worker.js by reference and `api()` takes its answer
-//: as the response. Without workers the body is built here, as before.
-let importWorker = null;
-//: Hands the chosen files to the worker in chunks, a task each, once per import.
-async function importStage(named) {
-  if (typeof Worker === "undefined") return named;
-  importWorker ||= new Worker(`/js/upload-worker.js${lazyAssetStamp("/js/upload-worker.js")}`);
-  for (let at = 0; at < named.length || at === 0; at += 200) {
-    importWorker.postMessage({ stage: named.slice(at, at + 200), first: at === 0 });
-    await new Promise((resolve) => setTimeout(resolve));
-  }
-  return null;
-}
-function importUpload(path, named, fields = []) {
-  if (named) {
-    const form = new FormData();
-    for (const [file, name] of named) form.append("files", file, name);
-    for (const [key, value] of fields) form.append(key, value);
-    return api.upload(path, form);
-  }
-  const send = (url, init) => new Promise((resolve, reject) => {
-    const id = Math.random();
-    const heard = ({ data }) => {
-      if (data.id !== id) return;
-      importWorker.removeEventListener("message", heard);
-      if (data.failed) reject(new TypeError(data.failed));
-      else resolve(new Response([101, 204, 205, 304].includes(data.status) ? null : data.text, { status: data.status, statusText: data.statusText, headers: data.headers }));
-    };
-    importWorker.addEventListener("message", heard);
-    importWorker.postMessage({ id, path: url, headers: init.headers, fields });
-  });
-  return api(path, { method: "POST", send });
-}
-
 async function importFromApp(spec) {
   const input = $(spec.input);
   const status = $("import-app-status");
@@ -144,32 +127,49 @@ async function importFromApp(spec) {
     $("import-app-status").textContent = `No ${spec.label} notes in what you chose.`;
     return;
   }
-  setLabel(status, `ph:spin Reading ${spec.label}…`);
-  //: `named` stays only where there is no worker; otherwise the worker holds the files.
-  const named = await importStage(files.map((file) => [file, file.webkitRelativePath || file.name]));
+  //: **Sent in parts** (L-world-class-891): one body of 5,000 files took the
+  //: page 1.4s to build, and it was built twice (the preview, then the
+  //: import). Parts of `PART` go to a batch the server stages; the preview and
+  //: the import both name it, so the files cross the wire once.
+  const PART = 200;
+  let batch = "";
+  const drop = () => batch && api(`/import/app/batches/${batch}`, { method: "DELETE", silent: true }).catch(() => {});
   let left = [];
   try {
-    const seen = await (await importUpload(`/import/app?source=${spec.source}&dry_run=1`, named)).json();
+    setLabel(status, `ph:spin Reading ${spec.label}…`);
+    batch = (await (await api.upload("/import/app/batches")).json()).batch;
+    for (let at = 0; at < files.length; at += PART) {
+      if (files.length > PART) setLabel(status, `ph:spin Reading ${spec.label}: ${Math.min(at + PART, files.length)} of ${nounCount(files.length, "file")}…`);
+      const part = new FormData();
+      for (const file of files.slice(at, at + PART)) part.append("files", file, file.webkitRelativePath || file.name);
+      await api.upload(`/import/app/batches/${batch}`, part);
+    }
+    const seen = await (await api.upload(`/import/app?source=${spec.source}&dry_run=1&batch=${batch}`)).json();
     if (!seen.found) {
+      drop();
       status.textContent = `No ${spec.label} notes in what you chose.`;
       return;
     }
     const chosen = await importPreview({ label: spec.label, rows: seen.notes, more: seen.more });
     if (chosen === null) {
+      drop();
       status.textContent = "Nothing was imported.";
       return;
     }
     left = chosen;
   } catch (error) {
+    drop();
     status.textContent = error.message || `Couldn't read ${spec.label}.`;
     status.classList.add("error");
     return;
   }
+  const form = new FormData();
+  if (left.length) form.append("exclude", JSON.stringify(left));
   setLabel(status, `ph:spin Importing from ${spec.label}…`);
   try {
     //: `api.upload` throws the server's own words on a refusal; the catch
     //: below shows them.
-    const response = await importUpload(`/import/app?source=${spec.source}`, named, left.length ? [["exclude", JSON.stringify(left)]] : []);
+    const response = await api.upload(`/import/app?source=${spec.source}&batch=${batch}`, form);
     const body = await response.json().catch(() => ({}));
     const parts = [`Imported ${nounCount(body.imported, "note")} from ${spec.label}.`];
     if (body.already) parts.push(`${body.already} ${body.already === 1 ? "was" : "were"} already here.`);

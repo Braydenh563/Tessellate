@@ -672,7 +672,7 @@ function passageRange(root, passage) {
 async function markNotePassage(id, from) {
   const passage = await notePassageFor(id, from);
   if (!passage || !window.Highlight) return false;
-  const body = await revealWait(() => document.querySelector(`#entry-list li[data-id="${id}"] .entry-content`), 2000);
+  const body = await revealWait(() => noteRowFor(id)?.querySelector(".entry-content"), 2000);
   let range = body && passageRange(body, passage);
   //: A passage past a clipped card's first lines: open the card, which fills in the whole note, and look again.
   const more = !range && !expandedNotes.has(id) && body?.parentNode.querySelector(":scope > .entry-more");

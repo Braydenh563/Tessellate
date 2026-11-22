@@ -241,6 +241,17 @@
     ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
   };
 
+  //: **One theme per mode** (L-world-class-890): `EditorView.theme` mounts a
+  //: new style module each call and CodeMirror keeps every module it has
+  //: mounted, so building one per editor kept about 90KB of rules for every
+  //: note opened (a ten-minute loop grew the heap 0.5MB a minute). The
+  //: rules read only the mode and the guide count, so those are the key.
+  const kept = new Map();
+  function docCmThemeKept(CM) {
+    const key = `${document.documentElement.dataset.mode === "dark"}:${docIndentGuides.levels}`;
+    if (kept.get(CM)?.key !== key) kept.set(CM, { key, theme: docCmTheme(CM) });
+    return kept.get(CM).theme;
+  }
   function docCmTheme(CM) {
     const dark = document.documentElement.dataset.mode === "dark";
     return CM.view.EditorView.theme(
@@ -1181,5 +1192,5 @@
     );
   }
 
-  Object.assign(window, { docCmTheme });
+  Object.assign(window, { docCmThemeKept });
 })();

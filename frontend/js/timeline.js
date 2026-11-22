@@ -845,7 +845,8 @@ function timelineRowEls() {
 //: A row by key, built if it was a shell (focus needs a row that is drawn).
 function timelineRowByKey(key) {
   if (!key) return null;
-  const row = $("timeline-scroll").querySelector(`:is(.timeline-row, .row-shell)[data-key="${CSS.escape(key)}"]`);
+  //: The window's own map first (`rowFor`, L-world-class-873), the same lookup Notes uses.
+  const row = timelineWindow.win?.rowFor(key) || $("timeline-scroll").querySelector(`:is(.timeline-row, .row-shell)[data-key="${CSS.escape(key)}"]`);
   return row && (timelineWindow.win?.fill(row) ?? row);
 }
 

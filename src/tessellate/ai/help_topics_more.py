@@ -2002,11 +2002,11 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch", "assistant-browser",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "mcp-links", "autonomous", "websearch", "searxng", "assistant-browser",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "sign-in", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -2168,12 +2168,13 @@ MORE_TOPICS.append({
     "badge": {"label": "Account & security", "section": "account"},
 })
 TOPIC_META.update({
+    "searxng": {"title": "SearXNG", "path": "Settings, Web search, SearXNG"},
+    "sign-in": {"title": "Signing in", "path": "Settings, Account & security, Signing in"},
     "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
     "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
     "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
-    "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
-                       "target": "settings-file-group"},
+    "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings", "target": "settings-file-group"},
     "encryption": {"title": "What is encrypted", "path": "Settings, Account & security"},
     "delete-data": {"title": "Deleting your data", "path": "Settings, General, Bin"},
     "share-note": {"title": "Sharing a note", "path": "A note's menu, Download .md"},

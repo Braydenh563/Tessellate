@@ -357,7 +357,7 @@ function activeSpaceId() {
 
 async function api(path, options = {}) {
   // `silent`: a background poll (model status, reminders): a 401 must not yank the user to the lock screen mid-session (Wave O fix for a long-standing intermittent re-lock). Only an explicit user action shows the lock screen on 401. `timeoutMs`: opt-in abort so a call can't hang the UI forever (used by the startup probe). Off by default, so long-running requests, model pulls, blocking chat: are unaffected. `ownsAuthErrors`: this call treats 401 as part of its own result rather than as an expired session. Change-password answers 401 for "that isn't your current password", a typo there must show a message beside the field, not throw the user out to the lock screen. `readOnly`: a POST that writes nothing (the code checker in documents.js sends a file's text in a body because a query string cannot carry it). Without it every pause in typing a .py file would empty the read cache for the whole app, which is a write's job, not a read's.
-  const { silent, timeoutMs, ownsAuthErrors, readOnly, send, ...fetchOptions } = options;
+  const { silent, timeoutMs, ownsAuthErrors, readOnly, ...fetchOptions } = options;
   //: Locked by hand and no key: a loader that wakes after Lock (the
   //: dashboard's and chat's idle fetches) is refused here rather than sent,
   //: since each answered 401 and logged an error behind the lock (L529).
@@ -387,8 +387,7 @@ async function api(path, options = {}) {
   //: twice, 300 then 600 ms apart, before anything is said; `api.retries`
   //: counts them. A write is never resent: it may have arrived.
   for (let attempt = 0; ; attempt++) try {
-    //: `send` stands in for `fetch` (app-import.js sends a folder through upload-worker.js).
-    response = await (send || fetch)(path, {
+    response = await fetch(path, {
       ...fetchOptions,
       headers: {
         ...(fetchOptions.body instanceof FormData ? {} : { "Content-Type": "application/json" }),

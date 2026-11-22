@@ -174,6 +174,18 @@ def _reference_groups(prepared, threshold):
     return sorted((group, top[root(group[0])]) for group in members.values() if len(group) > 1)
 
 
+
+def _grouped(prepared, threshold):
+    """Groups of two or more and each group's best score, from `_groups`. Its
+    signature moved in the base merge (array blocks in, roots and scores out,
+    L-world-class-872); what is asserted of it here is unchanged."""
+    roots, top = duplicates._groups(len(prepared), duplicates._scan_blocks(prepared, threshold))
+    members = {}
+    for index, group in enumerate(roots):
+        members.setdefault(group, []).append(index)
+    return [(group, top[root]) for root, group in members.items() if len(group) > 1]
+
+
 @pytest.mark.parametrize("threshold", [0.4, 0.72, 1.0])
 @pytest.mark.parametrize("texts", ["numbered", "mixed"])
 def test_groups_match_a_union_find_over_every_pair(threshold, texts):
@@ -186,7 +198,7 @@ def test_groups_match_a_union_find_over_every_pair(threshold, texts):
         words = [f"w{n}" for n in range(400)]
         sample = [" ".join(rng.sample(words, rng.randint(2, 6))) for _ in range(300)] + ["x y", "x y z"]
     prepared = [duplicates._prepare(t) for t in sample]
-    got = sorted(duplicates._groups(prepared, threshold))
+    got = sorted(_grouped(prepared, threshold))
     assert [g for g, _s in got] == [g for g, _s in _reference_groups(prepared, threshold)]
     assert [s for _g, s in got] == pytest.approx([s for _g, s in _reference_groups(prepared, threshold)])
 
@@ -199,6 +211,6 @@ def test_millions_of_alike_pairs_group_in_seconds():
     sample = [f"note{n} " + " ".join(rng.sample(words, rng.randint(8, 14))) for n in range(2500)]
     prepared = [duplicates._prepare(t) for t in sample]
     started = time.perf_counter()
-    groups = duplicates._groups(prepared, 0.4)
+    groups = _grouped(prepared, 0.4)
     assert time.perf_counter() - started < 10.0
     assert sum(len(g) for g, _s in groups) > 2000

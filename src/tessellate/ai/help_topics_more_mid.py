@@ -1382,5 +1382,30 @@ MID_TOPICS.extend(
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
+        {
+            "id": "searxng",  # this and sign-in: Settings popovers with no Guide topic (L-world-class-781)
+            "keywords": ("searxng", "install searxng", "run searxng", "start searxng", "self-hosted search", "let tessellate run searxng", "search engine on my computer"),
+            "body": (
+                "Settings, Web search, SearXNG: the recommended way to search. It is a self-hosted search "
+                "engine the app installs and runs for you in one click, with no Docker, account or setup of "
+                "your own. It gives better results than scraping DuckDuckGo, cannot be rate-limited the way "
+                "scraping can, and the query never leaves your own network. It has to be on this computer or "
+                "your own network: the app never sends searches to somebody else's instance, and the one it "
+                "runs for you listens on 127.0.0.1 only."
+            ),
+            "badge": {"label": "Web search", "section": "websearch"},
+        },
+        {
+            "id": "sign-in",
+            "keywords": ("signing in", "sign in", "password when the app opens", "ask for a password", "open without a password", "skip the password", "no password on open"),
+            "body": (
+                "Settings, Account & security, Signing in. Ask for a password when the app opens is on by "
+                "default. Turned off, the app opens on this computer without asking; another device on your "
+                "network still needs the password, and so do private notes, which stay encrypted and ask for "
+                "it when you open one. Turning it off asks for your current password. The app is single-user: "
+                "one notebook, one password; for a separate notebook, run it with another data folder."
+            ),
+            "badge": {"label": "Account & security", "section": "account"},
+        },
     ]
 )

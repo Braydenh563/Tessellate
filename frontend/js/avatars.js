@@ -7564,31 +7564,34 @@
   const NMB_IDLE_MARK_MS = 120000;
   const nmbClock = { timer: 0, inputAt: Date.now() };
   //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 08-consistency.css).
-  //: Held by Web Animations, not by a class: `is-calm` on the root restyled the figure's 77 loops in one
-  //: task (250 ms at 4x CPU, L-world-class-390); `pause()` is 0 to 1 ms. The CSS `animation-play-state`
-  //: rules (`atl-off`, `data-atlas-hidden`) stay and still apply to a loop whenever their value changes.
-  const NMB_CALM_LOOPS = ".atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*=\"atl-lw-pose-\"], [class*=\"atl-lw-pose-\"] > svg";
-  nmbClock.held = [];
+  //: **On each figure, not on `<html>`** (L-world-class-126, the at-rest long
+  //: task): the class on the root restyled the whole page to pause 73 loops,
+  //: 26 to 41 ms at 1x and 130 to 250 ms at 4x CPU, once every calm; on the
+  //: figure it restyles the figure alone. The DOM is touched only when the
+  //: state changes, so a pointermove that finds it awake costs a timer.
+  //: **On the loops, a quarter a task** (L-world-class-390): the class on the
+  //: figure paused all 95 in one frame, whose paint was 117 to 206 ms at 4x
+  //: CPU; four tasks of a quarter each stay under 50. Web Animations' pause()
+  //: costs nothing but takes the loops from CSS for good (atl-off and
+  //: data-atlas-hidden would stop holding them), so it is not used.
+  const NMB_CALM_LOOPS = '.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg';
+  const nmbCalmLoops = (on) => {
+    const run = (nmbClock.calmRun = (nmbClock.calmRun || 0) + 1);
+    const loops = [];
+    for (const box of document.querySelectorAll(".atl-figure-box")) loops.push(...box.querySelectorAll(NMB_CALM_LOOPS));
+    const per = Math.ceil(loops.length / 4);
+    const step = (from) => {
+      if (run !== nmbClock.calmRun) return; // woken or calmed again: the newer run has them
+      for (const loop of loops.slice(from, from + per)) loop.classList.toggle("atl-calm", on);
+      if (from + per < loops.length) setTimeout(step, 20, from + per);
+    };
+    step(0);
+  };
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
-    const root = document.documentElement;
-    if (root.classList.contains("is-calm") !== on) {
-      root.classList.toggle("is-calm", on);
-      if (on) {
-        for (const box of document.querySelectorAll(".atl-figure-box")) {
-          for (const anim of box.getAnimations({ subtree: true })) {
-            if (anim.playState === "running" && anim.effect?.target?.matches?.(NMB_CALM_LOOPS)) {
-              anim.pause();
-              nmbClock.held.push(anim);
-            }
-          }
-        }
-      } else {
-        //: Not one the CSS holds (off screen, hidden window): its value changing starts it then.
-        const away = (anim) => anim.effect.target.closest(".atl-off") || root.hasAttribute("data-atlas-hidden");
-        for (const anim of nmbClock.held) if (anim.playState === "paused" && anim.effect && !away(anim)) anim.play();
-        nmbClock.held = [];
-      }
+    if (on !== nmbClock.isCalm) {
+      nmbClock.isCalm = on;
+      nmbCalmLoops(on);
     }
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };
@@ -9614,7 +9617,8 @@
   function nameMarkBuddyNoteOpened(id) {
     const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => String(e.id) === String(id)) : null;
     if (!entry) return;
-    const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
+    const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"]`)
+      || (typeof noteRowFor === "function" ? noteRowFor(id) : null) || document.querySelector(`li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
     //: The list carries a long note cut short (`content_truncated`, 297 characters), so its length is not the note's.
     else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);

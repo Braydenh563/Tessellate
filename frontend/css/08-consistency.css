@@ -5332,7 +5332,10 @@ body .chip.item-label,
      icons) kept a 15.6px icon, words 4px left of the plain rows'. */
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
-     where a width means nothing until the box is a block of its own. */
+     where a width means nothing until the box is a block of its own. The
+     board's menus were missing from this list: their submenu rows drew the
+     icon at 15.6px against 19.5 and the words began 3.9px early (menus.js,
+     L-world-class-107). */
   display: inline-block;
   width: 1.25em;
   text-align: center;

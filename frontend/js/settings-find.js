@@ -137,6 +137,13 @@
     //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
     const topics = document.getElementById("help-topics");
     if (topics && (!topics.firstElementChild || topics.dataset.dropping)) renderHelpTopics();
+    //: A pane not yet in the page is built first, one a slot (L-world-class-355): `filterSettings` builds every pane on
+    //: the first query, and with twenty-two to build that key was 400 ms at 4x CPU even after a pause on the box.
+    const settingIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 500 }) : setTimeout(fn, 50));
+    if (typeof SETTINGS_SECTIONS !== "undefined" && SETTINGS_SECTIONS.some((name) => surfaceBuild(`settings-${name}`))) {
+      settingIdle(settingRowsWarm);
+      return;
+    }
     const words = settingRowsWarm.words;
     if (words) {
       settingRowsWarm.words = null;
@@ -144,8 +151,7 @@
       settingVocab(words.rows);
       for (const row of words.rows) meaningMissing([], row.haystack);
       meaningMissing([], settingsSectionText(words.pane));
-      if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
-      else setTimeout(settingRowsWarm, 50);
+      settingIdle(settingRowsWarm);
       return;
     }
     //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
@@ -160,8 +166,7 @@
       settingRowsScan.panes.set(pane, rows);
       settingRowsWarm.words = { pane, rows };
     }
-    if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
-    else setTimeout(settingRowsWarm, 50);
+    settingIdle(settingRowsWarm);
   }
   //: Started when Settings opens and when the box is focused, and again (`settingRowsWarmSoon`, called by the
   //: pane observer in settings.js) a moment after a pane changes, so a key after a visit to a pane finds the rows

@@ -1906,17 +1906,18 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
 
 def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
-    # L-world-class-390: by Web Animations `pause()` (0 to 1 ms), not a `:root.is-calm` class whose restyle of the
-    # loops was one 250 ms task at 4x CPU. The intent (loops hold, by part, resume on input) is unchanged.
     css = css08_text()
-    assert ":root.is-calm" not in css and ".is-calm :is(" not in css
-    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV and 'toggle("is-calm", on)' in AV
-    calm = AV[AV.index("nmbClock.setCalm = (on)") :]
-    calm = calm[: calm.index("nmbClock.setCalm(false);")]
-    assert "NMB_CALM_LOOPS" in AV and ".atl-orbits *" in AV and ".atl-lw-tail" in AV and ".atl-layer-neb" in AV
-    assert "anim.pause()" in calm and "anim.play()" in calm
-    # what CSS holds (off screen, hidden window) is not started by a wake
-    assert "atl-off" in calm and "data-atlas-hidden" in calm
+    # L-world-class-126 moved the class from <html> to each figure (a whole-page restyle at
+    # rest), and L-world-class-390 from the figure to each loop, a quarter a task (one frame
+    # repainted all 95); the intent, the same loops held after the same 20 s, is unchanged.
+    css = css + (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
+    assert "animation-play-state: paused" in css[css.index(".atl-figure-box .atl-calm") :].split("}")[0]
+    loops = AV[AV.index("const NMB_CALM_LOOPS") :].split("\n")[0]
+    assert ".atl-orbits *" in loops and ".atl-lw-tail" in loops and ".atl-layer-neb" in loops
+    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV
+    assert 'loop.classList.toggle("atl-calm", on)' in AV and "loops.length / 4" in AV
+    assert "requestAnimationFrame" not in AV[AV.index("const nmbCalmLoops") : AV.index("nmbClock.setCalm = ")]
+    assert 'document.documentElement.classList.toggle("is-calm"' not in AV
     assert '"pointermove"' in AV
 
 

@@ -574,19 +574,19 @@ function paintReminderList(all) {
   return due;
 }
 
-//: **Ask small first** (audit 1028 K32). `/reminders/due` answers a stamp over
-//: the open list in about a hundred bytes; the list itself is fetched only when
-//: the stamp moved, so an idle notebook no longer pulls a page of rows a minute.
-//: What time does to a cached list (a reminder coming due) is worked out here
-//: from `due_at`, as it always was. A stamp that cannot be had falls back to
-//: asking for the list.
+//: **Ask small first** (audit 1028 K32). `/reminders/due` answers a stamp over the open list in about a
+//: hundred bytes; the list is fetched only when the stamp moved, so an idle notebook no longer pulls a page
+//: of rows a minute. A reminder coming due in a cached list is worked out here from `due_at`, as it always
+//: was; a stamp that cannot be had falls back to asking for the list.
 const openReminderList = (() => {
   let cache = { stamp: "", all: null };
   return async () => {
     const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
     if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false, open: look?.open };
-    //: A month covers the longest early alert (43200 minutes); later ones are not announced yet.
-    const all = await apiJson("/reminders?include_done=false&due_within_days=31", { silent: true }).catch(() => null);
+    const month = Date.now() + 31 * 86400000; // the longest early alert is 43200 minutes; later ones are not announced yet
+    const all = cache.all
+      ? await apiJson("/reminders?include_done=false&due_within_days=31", { silent: true }).catch(() => null)
+      : await openReminders().then((rows) => rows.filter((r) => r.due_at && Date.parse(r.due_at) <= month), () => null); // first look: the open-reminders slice (store.js) the dashboard and bell join, one boot GET (L-world-class-879)
     if (!all) return null;
     //: The stamp was read first, so a change in between leaves the cache looking
     //: older than the list, and the next look fetches again: the safe side.
