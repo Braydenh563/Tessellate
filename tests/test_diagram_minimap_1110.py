@@ -53,15 +53,26 @@ def test_the_window_is_the_part_of_the_picture_in_view() -> None:
     got = _run("m.window({x: 0, y: 0, w: 2000, h: 1000}, {left: 500, top: 250, w: 500, h: 250})")
     assert got == {"x": 0.25, "y": 0.25, "w": 0.25, "h": 0.25}
     # A picture that fits one way fills the window that way, never over 1.
-    assert _run("m.window({x: 0, y: 0, w: 400, h: 1000}, {left: 0, top: 0, w: 500, h: 250})") == {"x": 0, "y": 0, "w": 1, "h": 0.25}
+    assert _run("m.window({x: 0, y: 0, w: 400, h: 1000}, {left: 0, top: 0, w: 500, h: 250})") == {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.25,
+    }
 
 
 @needs_node
 def test_a_press_centres_the_pane_on_that_spot_and_stays_inside_the_picture() -> None:
     mid = _run("m.scrollFor({x: 0, y: 0, w: 2000, h: 1000}, {w: 500, h: 250}, 0.5, 0.5)")
     assert mid == {"left": 750, "top": 375}
-    assert _run("m.scrollFor({x: 0, y: 0, w: 2000, h: 1000}, {w: 500, h: 250}, 0, 0)") == {"left": 0, "top": 0}
-    assert _run("m.scrollFor({x: 0, y: 0, w: 2000, h: 1000}, {w: 500, h: 250}, 1, 1)") == {"left": 1500, "top": 750}
+    assert _run("m.scrollFor({x: 0, y: 0, w: 2000, h: 1000}, {w: 500, h: 250}, 0, 0)") == {
+        "left": 0,
+        "top": 0,
+    }
+    assert _run("m.scrollFor({x: 0, y: 0, w: 2000, h: 1000}, {w: 500, h: 250}, 1, 1)") == {
+        "left": 1500,
+        "top": 750,
+    }
 
 
 def test_the_view_asks_for_it_once_and_the_file_makes_a_plain_corner_dock() -> None:
@@ -76,10 +87,11 @@ def test_the_view_asks_for_it_once_and_the_file_makes_a_plain_corner_dock() -> N
 def test_the_minimap_sits_in_the_corner_the_other_controls_leave_free() -> None:
     rule = CSS[CSS.index(".dgm-minimap {") : CSS.index("}", CSS.index(".dgm-minimap {"))]
     assert "position: absolute" in rule
-    assert "inset-block-end: var(--space-5)" in rule and "inset-inline-start: var(--space-5)" in rule
+    assert (
+        "inset-block-end: var(--space-5)" in rule and "inset-inline-start: var(--space-5)" in rule
+    )
     assert "var(--modal-bg)" in rule and "var(--shadow-md)" in rule
     assert "px" not in rule.replace("1px solid", "")
-
 
 
 def test_the_overview_lifts_above_the_sideways_offer():
@@ -87,7 +99,11 @@ def test_the_overview_lifts_above_the_sideways_offer():
     corner. While the offer shows, diagram-outline.js raises the overview by the offer's height; kept, turned or hidden,
     the inline inset is cleared. On a phone the offer is absolute at the top, so the overview keeps its corner."""
     outline = (JS / "diagram-outline.js").read_text(encoding="utf-8")
-    assert 'querySelector(":scope > .dgm-minimap")' in outline and "lift(true)" in outline and outline.count("lift(false)") == 2
+    assert (
+        'querySelector(":scope > .dgm-minimap")' in outline
+        and "lift(true)" in outline
+        and outline.count("lift(false)") == 2
+    )
     assert 'getComputedStyle?.(S.sideways).position !== "absolute"' in outline
     assert "map.style.insetBlockEnd = below ?" in outline
 
@@ -99,7 +115,15 @@ def test_a_scroll_moves_the_frame_with_a_transform_and_reads_no_layout():
     text = (ROOT / "frontend" / "js" / "diagram-minimap.js").read_text(encoding="utf-8")
     assert 'fig.addEventListener("scroll", pan, { passive: true })' in text
     pan = text[text.index("const pan = ") : text.index("//: Press, and drag")]
-    for forbidden in ("offsetWidth", "offsetLeft", "scrollWidth", "getBoundingClientRect", ".style.left", ".style.top", "place("):
+    for forbidden in (
+        "offsetWidth",
+        "offsetLeft",
+        "scrollWidth",
+        "getBoundingClientRect",
+        ".style.left",
+        ".style.top",
+        "place(",
+    ):
         assert forbidden not in pan, forbidden
     assert "translate(" in pan
 
@@ -157,7 +181,12 @@ def test_a_zoom_or_resize_places_the_frame_at_once_and_a_removed_overview_stops(
     zoom; and a trailing timer outlived the overview. A zoom now places the frame in the same call, and a pan that finds
     the overview gone clears its timer and its scroll listener."""
     script = _WIRE
-    run = subprocess.run(["node", "-e", script, str(JS / "diagram-minimap.js")], capture_output=True, text=True, check=True)
+    run = subprocess.run(
+        ["node", "-e", script, str(JS / "diagram-minimap.js")],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
     got = json.loads(run.stdout)
     assert got["resizeNow"] == "translate(18px, 0px)", got
     assert got["pending"] == 1, "a scroll inside 48 ms still waits for the trailing call"

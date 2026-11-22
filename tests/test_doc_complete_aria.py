@@ -20,11 +20,20 @@ def _function(head: str) -> str:
 def test_each_row_has_a_stable_id_and_the_editor_points_at_the_lit_one():
     render = _function("  function renderDocComplete(")
     assert "li.id = `doc-complete-opt-${index}`;" in render
-    assert "docCompleteAria(view ? view.contentDOM : box.el, `doc-complete-opt-${docCompleteIndex}`);" in render
+    assert (
+        "docCompleteAria(view ? view.contentDOM : box.el, `doc-complete-opt-${docCompleteIndex}`);"
+        in render
+    )
     aria = _function("  function docCompleteAria(")
-    for attr in ("aria-activedescendant", 'aria-controls", "doc-complete-list"', 'aria-expanded", "true"'):
+    for attr in (
+        "aria-activedescendant",
+        'aria-controls", "doc-complete-list"',
+        'aria-expanded", "true"',
+    ):
         assert attr in aria, attr
-    assert 'getAttribute("aria-activedescendant") === id) return;' in aria, "a key that keeps the lit row writes nothing"
+    assert 'getAttribute("aria-activedescendant") === id) return;' in aria, (
+        "a key that keeps the lit row writes nothing"
+    )
 
 
 def test_closing_the_list_clears_the_pointer():

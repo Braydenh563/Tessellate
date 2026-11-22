@@ -72,13 +72,18 @@ _PAGE = re.search(r"<script>\n(.*?)</script>", run_sandbox.RUN_SANDBOX_HTML, re.
 
 def _run(cases: dict) -> dict:
     src = _HARNESS % {"page": json.dumps(_PAGE), "cases": json.dumps(cases)}
-    done = subprocess.run(["node", "-"], input=src, capture_output=True, text=True, timeout=60, check=False)
+    done = subprocess.run(
+        ["node", "-"], input=src, capture_output=True, text=True, timeout=60, check=False
+    )
     assert done.returncode == 0, done.stderr[-2000:]
     return json.loads(done.stdout.strip().splitlines()[-1])
 
 
 CASES = {
-    "tla": ["const wait = (v) => new Promise((r) => setTimeout(() => r(v), 5));\nconsole.log('start');\nconst v = await wait(10);\nconsole.log('got', v);\n", None],
+    "tla": [
+        "const wait = (v) => new Promise((r) => setTimeout(() => r(v), 5));\nconsole.log('start');\nconst v = await wait(10);\nconsole.log('got', v);\n",
+        None,
+    ],
     "tla_throw": ["console.log('a');\nawait null;\nthrow new Error('late');\n", None],
     "plain": ["var x = 1;\nconsole.log('x', x);\n", None],
     "offset": ["await null;\nconsole.log('here');\n", {"lineOffset": 4}],
@@ -93,7 +98,9 @@ def test_top_level_await_runs_and_reports_document_lines():
     assert any(m["t"] == "done" for m in out["tla"]["logs"])
     late = [m for m in out["tla_throw"]["logs"] if m["t"] == "log" and m["level"] == "error"]
     assert late and "late" in late[0]["text"] and late[0]["line"] == 3, out["tla_throw"]
-    assert any(m["t"] == "done" for m in out["tla_throw"]["logs"]), "the top level must still report it ended"
+    assert any(m["t"] == "done" for m in out["tla_throw"]["logs"]), (
+        "the top level must still report it ended"
+    )
     off = [m for m in out["offset"]["logs"] if m["t"] == "log"]
     assert [(m["text"], m["line"]) for m in off] == [("here", 6)], out["offset"]
 
@@ -107,7 +114,15 @@ def test_a_plain_script_keeps_its_global_names_and_await_as_a_name():
 
 def test_top_level_await_is_found_whatever_the_engine_calls_the_syntax_error():
     """Review 6008801452: the check compares a script parse with an async-body parse; the error's text is not read."""
-    out = _run({"vague": ["await null;\nconsole.log('here');\n", {"vague": True}], "plainvague": ["var x = 1;\nconsole.log('x', x);\n", {"vague": True}]})
+    out = _run(
+        {
+            "vague": ["await null;\nconsole.log('here');\n", {"vague": True}],
+            "plainvague": ["var x = 1;\nconsole.log('x', x);\n", {"vague": True}],
+        }
+    )
     assert [m["text"] for m in out["vague"]["logs"] if m["t"] == "log"] == ["here"], out["vague"]
     assert out["plainvague"]["hasX"]
-    assert "e.message" not in _PAGE[_PAGE.index("function topLevelAwait") : _PAGE.index("function runJs")]
+    assert (
+        "e.message"
+        not in _PAGE[_PAGE.index("function topLevelAwait") : _PAGE.index("function runJs")]
+    )

@@ -108,7 +108,9 @@ def test_the_server_is_started_with_the_folder_on_its_class_path(monkeypatch, tm
     monkeypatch.setattr(languagetool, "installed_folder", lambda: tmp_path)
     monkeypatch.setattr(languagetool, "java_path", lambda: "/usr/bin/java")
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
-    with pytest.raises(OSError, match="stop here"):  # the fake Popen stops the start once the command is seen
+    with pytest.raises(
+        OSError, match="stop here"
+    ):  # the fake Popen stops the start once the command is seen
         languagetool._start()
     classpath = seen["command"][seen["command"].index("-cp") + 1]
     assert str(tmp_path) in classpath.split(languagetool.os.pathsep)
@@ -259,10 +261,21 @@ def test_only_english_data_is_kept_but_every_language_class_and_the_identifier_w
     from tessellate.core.extra_downloads import _unpack_tree
 
     p = languagetool_files.PREFIX + "org/languagetool/"
-    kept = ["resource/en/x.dict", "resource/de/common_words.txt", "rules/de/Rule.class",
-            "rules/en/grammar.xml", "rules/Rule.class", "language/German.class", "rules/pt-BR/A.class"]
-    dropped = ["resource/de/german.dict", "resource/pt/hunspell/a.dic", "rules/de/grammar.xml",
-               "rules/pt-BR/grammar.xml"]
+    kept = [
+        "resource/en/x.dict",
+        "resource/de/common_words.txt",
+        "rules/de/Rule.class",
+        "rules/en/grammar.xml",
+        "rules/Rule.class",
+        "language/German.class",
+        "rules/pt-BR/A.class",
+    ]
+    dropped = [
+        "resource/de/german.dict",
+        "resource/pt/hunspell/a.dic",
+        "rules/de/grammar.xml",
+        "rules/pt-BR/grammar.xml",
+    ]
     path = tmp_path / "a.zip"
     with zipfile.ZipFile(path, "w") as archive:
         for name in kept + dropped:
@@ -270,11 +283,20 @@ def test_only_english_data_is_kept_but_every_language_class_and_the_identifier_w
     staging = tmp_path / "s"
     staging.mkdir()
     with zipfile.ZipFile(path) as archive:
-        _unpack_tree(archive, languagetool_files.PREFIX + "org/", "org", staging,
-                     languagetool_files.TREE_SKIP)
-    got = {str(f.relative_to(staging / "org/languagetool")) for f in staging.rglob("*") if f.is_file()}
+        _unpack_tree(
+            archive,
+            languagetool_files.PREFIX + "org/",
+            "org",
+            staging,
+            languagetool_files.TREE_SKIP,
+        )
+    got = {
+        str(f.relative_to(staging / "org/languagetool")) for f in staging.rglob("*") if f.is_file()
+    }
     assert got == set(kept)
-    assert extras.EXTRAS_BY_ID["languagetool"].downloads[0].tree_skip == languagetool_files.TREE_SKIP
+    assert (
+        extras.EXTRAS_BY_ID["languagetool"].downloads[0].tree_skip == languagetool_files.TREE_SKIP
+    )
     assert "~200 MB on disk" in extras.EXTRAS_BY_ID["languagetool"].size
 
 
@@ -295,7 +317,10 @@ def test_overlapping_matches_are_one_underline_and_the_cold_start_wait_is_shown_
     out = subprocess.run(["node", "-e", script, path], capture_output=True, text=True, check=True)
     got = json.loads(out.stdout)
     assert got["spans"] == [[0, 8], [20, 24]]
-    assert got["during"] == "Starting the second grammar checker, which takes a few seconds the first time."
+    assert (
+        got["during"]
+        == "Starting the second grammar checker, which takes a few seconds the first time."
+    )
     assert got["after"] == ""
 
 
@@ -307,7 +332,10 @@ def test_harper_findings_are_drawn_before_languagetool_answers():
 
 def test_the_note_editor_and_whiteboard_draw_harper_first_too():
     note = (ROOT / "frontend/js/documents-prose.js").read_text()
-    assert "docGrammarAsk(text, (first) => draw(first, false)).then((lints) => draw(lints, true))" in note
+    assert (
+        "docGrammarAsk(text, (first) => draw(first, false)).then((lints) => draw(lints, true))"
+        in note
+    )
     assert "docGrammarAsk(text).then" not in note
     board = (ROOT / "frontend/js/whiteboard-map-more.js").read_text()
     assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); })" in board
