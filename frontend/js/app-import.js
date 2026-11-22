@@ -84,7 +84,7 @@ function importPreview({ label, rows, more = 0 }) {
           li.append(tick, detail);
           return li;
         };
-        //: A screenful now and the rest a hundred a frame: a thousand rows built
+        //: A screenful now and the rest a hundred a task: a thousand rows built
         //: at once were one long task of 125 to 229 ms idle, 1.1 s on a loaded
         //: host (L-world-class-870). The ticks live in `ticked`, so Import and
         //: Select all are right before the last row lands.
@@ -94,7 +94,7 @@ function importPreview({ label, rows, more = 0 }) {
           const part = document.createDocumentFragment();
           for (let at = from; at < Math.min(to, rows.length); at += 1) part.appendChild(item(rows[at], at));
           list.appendChild(part);
-          if (to < rows.length && !answered) requestAnimationFrame(() => append(to, to + IMPORT_PREVIEW_CHUNK));
+          if (to < rows.length && !answered) setTimeout(() => append(to, to + IMPORT_PREVIEW_CHUNK));
         };
         append(0, IMPORT_PREVIEW_FIRST);
         const actions = document.createElement("div");
