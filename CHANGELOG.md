@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Filing settles a note before the model's tag suggestions are asked for, keeping the notebook's own in the same commit and the model's in a second; a suggestion that fails is rolled back in a savepoint and no longer fails the filing (PR 242 review).
+- Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the strict xfails on chat row L150 and on L-timeline-9, which PR 241 builds); the PR 216 work order closed (L-general-33); open_scan skips the PR template form, and strips SQLAlchemy's `deferred=True` and two exact verb phrases before it looks, so a marker on the same line is still found.
+- Filing keeps a note's tag suggestions in the same commit as its settled `filing_state`, so a reader that stops polling on the settled state no longer reads them as empty; `jobs.in_flight(None)` is False.
 - Chat: the last two chat strict xfails pass (L-chat-9: a bare "and the dentist" keeps the when ask; L-chat-10: a quote marks a skipped sentence with "…"); the empty OPEN xfail sets in four composer class files are gone; chat tests and chat API files read as open work 0 times to the open-work scan (75 hits to 0).
 - Plans: rows L-ui-modernisation-201 and 202 (Atlas idle and scroll CPU) move to BACKLOG after four attempts, each attempt's numbers on the entry (hub ruling 2026-11-22).
 - Companion: while the page scrolls under Atlas, no new idle variant, saccade, blink, micro act or nod starts; each waits for the scroll hold to end (L-ui-modernisation-202: companioncpu.js RUNS=5, +2.59 and +2.11 to +1.60 ms/step over off).

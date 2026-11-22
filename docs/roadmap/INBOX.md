@@ -10,7 +10,7 @@ boundary only, the inbox is triaged in one pass:
 2. A bug elsewhere becomes a LEDGER row (`python scripts/ledger.py add`)
    with the owner's words, scheduled by impact.
 3. A feature or design request becomes a LEDGER row, or a row in the plan it
-   belongs to; it is not built ad hoc. INBOX is intake only: a triaged item
+   belongs to; it is never built ad hoc. INBOX is intake only: a triaged item
    becomes a LEDGER row or HISTORY.
 4. An opinion or a decision is recorded in the plan it affects and
    followed from then on.
