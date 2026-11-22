@@ -76,6 +76,15 @@ const { boot } = require("./lib.js");
     }, n);
     for (const f of flush) fails.push("settings: " + f);
   }
+  // Skill logs peek: no sideways scroll at the peek width (its empty line kept the rail's nowrap).
+  await page.keyboard.press("Escape"); await page.waitForTimeout(300);
+  await page.evaluate(() => switchTab("library")); await page.waitForTimeout(1500);
+  await page.click('[data-target="library-view-skills"]'); await page.waitForTimeout(1500);
+  await page.click("#skills-sidebar .sidebar-collapse-toggle"); await page.waitForTimeout(400);
+  const sk = await page.locator("#skills-sidebar").boundingBox(); await page.mouse.move(sk.x + 20, sk.y + 100); await page.waitForTimeout(1000);
+  const skh = await page.evaluate(() => [...document.querySelectorAll("#skills-sidebar, #skills-sidebar *")].filter((e) => e.scrollWidth > e.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(e).overflowX)).map((e) => e.id || e.className));
+  ok(!skh.length, `6: skill logs peek scrolls sideways in ${skh.join(",")}`);
+  await page.mouse.move(700, 400); await page.click("#skills-sidebar .sidebar-collapse-toggle");
   await page.keyboard.press("Escape");
   // Documents sidebar at the default and the minimum width: New shows its icon (it was a blank
   // 26px), nothing scrolls sideways, the tabs fit, card meta keeps one line, and both All in

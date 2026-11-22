@@ -115,6 +115,9 @@
 .layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:hover,
 .layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
   width: var(--saved-width);
+  /* The rail's `nowrap` is for the 48px strip only: kept in the peek, Skill logs' "No skill runs
+     yet..." ran on one line and scrolled sideways (owner 2026-11-22 on #257). */
+  white-space: normal;
 }
 /* Notes' sidebar stays sticky while peeked (owner bug 5 on #257: the peek stayed 48px). Its own
    `#tab-notes #sidebar` (2,0,0) and rail (2,1,0) rules outrank the peek above, so the hover set
@@ -1984,6 +1987,11 @@ dialog::backdrop {
   grid-template-columns: repeat(auto-fill, minmax(max(2.25rem, var(--target-min)), 1fr));
   gap: var(--space-2);
   margin-top: var(--space-2);
+}
+/* The Private switch card sat flush on the picker grid (0px, owner 2026-11-22 on #257): the same
+   section gap as a Settings group's. */
+.space-icon-picker + input[type="hidden"] + .space-private-row {
+  margin-top: var(--space-6);
 }
 .space-icon-picker button {
   display: flex;

@@ -99,3 +99,15 @@ def test_doc_card_meta_keeps_one_line():
 def test_browse_all_links_use_the_token_gap():
     css = _css()
     assert re.search(r"\.conv-browse-all \{[^}]*align-items: center;[^}]*gap: var\(--space-2\)", css)
+
+
+def test_a_peek_lays_out_at_its_own_width():
+    # The rail's nowrap stayed in the peek, so Skill logs' empty line scrolled sideways.
+    css = _css()
+    rule = re.search(r"#skills-sidebar, \.sidebar-collapsed\)\.sidebar-collapsed:is\(:focus-visible, :has\(:focus-visible\)\) \{([^}]*)\}", css)
+    assert rule and "white-space: normal" in rule.group(1)
+
+
+def test_space_private_row_has_the_section_gap():
+    css = _css()
+    assert re.search(r"\.space-icon-picker \+ input\[type=\"hidden\"\] \+ \.space-private-row \{\s*margin-top: var\(--space-6\)", css)

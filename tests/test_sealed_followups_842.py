@@ -7,17 +7,15 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.core import deps, sealed_files, spacelock, vault
+from tessellate.core import deps, sealed_files
 from tessellate.core.database import Document, Entry, impersonate_workspace
+from tests import test_sealed_writes_670 as _w670
 from tests.test_captions import CHUNK
-from tests.test_sealed_writes_670 import (  # noqa: F401  (fixtures)
-    PASSWORD,
-    _recording_files,
-    _speech,
-    _spools,
-    helper,
-    signed_in,
-)
+from tests.test_sealed_writes_670 import _recording_files, _speech, _spools
+
+# The L670 fixtures, bound by assignment so pytest finds them here; an import would read as unused.
+helper = _w670.helper
+signed_in = _w670.signed_in
 
 
 def _entry(entry_id: int) -> Entry:
@@ -101,9 +99,8 @@ def test_a_kept_wav_is_never_left_plain_when_the_space_key_is_missing(signed_in,
         "/voice/captions/start", json={"keep_audio": True}, headers=client.space
     ).json()["id"]
     for i in range(0, len(pcm), CHUNK):
-        assert client.post(
-            f"/voice/captions/{sid}/audio", content=pcm[i : i + CHUNK], headers=client.space
-        ).status_code == 200
+        sent = client.post(f"/voice/captions/{sid}/audio", content=pcm[i : i + CHUNK], headers=client.space)
+        assert sent.status_code == 200
     before = _recording_files()
     client.post("/private-spaces/lock")  # the key goes before Stop
     done = client.post(f"/voice/captions/{sid}/stop", headers=client.space)
@@ -139,9 +136,8 @@ def test_a_shut_door_in_feed_is_a_clean_423_and_writes_nothing_plain(signed_in, 
     sid = client.post(
         "/voice/captions/start", json={"keep_audio": True}, headers=client.space
     ).json()["id"]
-    assert client.post(
-        f"/voice/captions/{sid}/audio", content=pcm[:CHUNK], headers=client.space
-    ).status_code == 200
+    sent = client.post(f"/voice/captions/{sid}/audio", content=pcm[:CHUNK], headers=client.space)
+    assert sent.status_code == 200
     client.post("/private-spaces/lock")
     got = client.post(f"/voice/captions/{sid}/audio", content=pcm[CHUNK : 2 * CHUNK], headers=client.space)
     assert got.status_code == 423, got.text
