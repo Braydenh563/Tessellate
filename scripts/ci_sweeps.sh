@@ -19,18 +19,31 @@ STABLE=(docks contrast leaks keyboard diskspace vibecheck graphminimap wbgroupgu
   doccodecopy dockeyboard graphphone slashicons wbexportimage ctrlwheelzoom companionfade companiontabs doctoolbarstate profilelook iconfloor
   errors@1440,1024 errors@820,390 asktab noteobject canvasconventions
   maplinkcue maplayouts mapmidpan wbpresent-cursor note-edit-rerender)
+# CI runs two legs at once (SHARD=1 or 2), each with a fresh notebook: leg 1 the
+# list up to SPLIT_AT and then deepflows, leg 2 the rest (about 14 min each on
+# 12a37347, where one job ran 28 min of sweeps against its 30 min limit). Each leg
+# keeps the list's order, so a sweep that reads an earlier one's state still runs
+# after it. No SHARD runs everything, as before.
+SPLIT_AT=companionbeats
+SHARD="${SHARD:-0}"
+run=()
+for name in "${STABLE[@]}"; do
+  [ "$name" = "$SPLIT_AT" ] && leg=2
+  if [ "$SHARD" = 0 ] || [ "$SHARD" = "${leg:-1}" ]; then run+=("$name"); fi
+done
 failed=()
 bash "$ROOT/scratchpad/ui-sweeps/serve.sh" ${SWEEP_PORT:-8781} "$DIR/sweeps" || exit 1
-for name in "${STABLE[@]}"; do
+for name in "${run[@]}"; do
   start=$SECONDS
   # `sweep@1440,1024` runs the sweep at those widths only (errors.js takes 205s at four, so it is two entries).
   file="${name%%@*}"; widths=""; [[ "$name" == *@* ]] && widths="${name#*@}"
   if env BASE=http://127.0.0.1:${SWEEP_PORT:-8781} ${widths:+WIDTHS=$widths} timeout 180 node "$ROOT/scratchpad/ui-sweeps/$file.js" > "$DIR/${name//[@,]/_}.log" 2>&1; then
     echo "ok   $name $((SECONDS - start))s"
   else
-    echo "FAIL $name $((SECONDS - start))s"; tail -n 20 "$DIR/$name.log"; failed+=("$name")
+    echo "FAIL $name $((SECONDS - start))s"; tail -n 20 "$DIR/${name//[@,]/_}.log"; failed+=("$name")
   fi
 done
+[ "$SHARD" != 2 ] || { [ ${#failed[@]} -eq 0 ] || { echo "failed: ${failed[*]}"; exit 1; }; exit 0; }
 bash "$ROOT/scratchpad/ui-sweeps/serve.sh" ${FLOW_PORT:-8802} "$DIR/deepflows" || exit 1
 if BASE=http://127.0.0.1:${FLOW_PORT:-8802} node "$ROOT/scratchpad/ui-sweeps/deepflows-seed.js" > "$DIR/seed.log" 2>&1 \
   && BASE=http://127.0.0.1:${FLOW_PORT:-8802} ONLY=$FLOWS WIDTHS=1440 THEMES=light timeout 900 node "$ROOT/scratchpad/ui-sweeps/deepflows.js" > "$DIR/deepflows.log" 2>&1; then

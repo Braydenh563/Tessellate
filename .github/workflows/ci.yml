@@ -265,9 +265,14 @@ jobs:
     # `gate.sh --sweeps`; the steady ones and deepflows.js now run on every
     # push against fresh notebooks (L-general-20). The list is in
     # scripts/ci_sweeps.sh; a repaired sweep joins it (L-ui-modernisation-75).
-    name: UI sweeps (Playwright)
+    name: UI sweeps (Playwright, leg ${{ matrix.shard }} of 2)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # Two legs at once: one job ran 28 min of sweeps against this limit.
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
         with:
@@ -297,6 +302,8 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run the sweeps and deepflows
+        env:
+          SHARD: ${{ matrix.shard }}
         run: |
           export VENV="$(python -c 'import sys; print(sys.prefix)')"
           export NODE_PATH="$PWD/tests-e2e/node_modules"

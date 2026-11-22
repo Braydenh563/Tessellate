@@ -27,3 +27,17 @@ def test_every_listed_sweep_exists_and_deepflows_runs_last():
         assert (ROOT / "scratchpad" / "ui-sweeps" / f"{file}.js").exists(), name
     text = (ROOT / "scripts" / "ci_sweeps.sh").read_text(encoding="utf-8")
     assert text.index("deepflows-seed.js") > text.index("for name in")
+
+
+def test_the_sweeps_run_in_two_legs_that_cover_the_list_once():
+    # The one job ran 28 min of sweeps plus deepflows against a 30 min limit
+    # (12a37347); two legs of about 14 min each keep the limit and every sweep.
+    text = (ROOT / "scripts" / "ci_sweeps.sh").read_text(encoding="utf-8")
+    split = re.search(r'SPLIT_AT=(\S+)', text).group(1)
+    names = _stable()
+    assert split in names and 0 < names.index(split) < len(names)
+    assert 'SHARD:-' in text and '"$SHARD" != 2' in text  # deepflows in leg 1, not leg 2
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    job = ci[ci.index("  ui-sweeps:"):]
+    assert "shard: [1, 2]" in job and "SHARD: ${{ matrix.shard }}" in job
+    assert "timeout-minutes: 30" in job.split("steps:")[0]

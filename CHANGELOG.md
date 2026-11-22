@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: the UI sweeps run as two legs at once, each under the same 30 minute limit (one job had reached 28 minutes of sweeps); leg 1 runs the list up to companionbeats and then deepflows, leg 2 the rest, each in the list's order.
 - Notes: a list redraw while a note's edit form is open (filing finishing just after a capture) keeps the caret in the form, so its editor still mounts and typing carries on.
 - Boards: presenting hides the cursor over the slide once the mouse rests (the plain arrow on a move, never an item's hover cursor; the bar keeps the normal one), H or the bar's caret folds the bar to a small handle and the choice is kept, and the bar's tooltips name the paging keys.
 - Tests: no test bounds a wall-clock difference any more; CPU work is timed in CPU time, waits are held fakes, op counts or the join timeouts offered, and a lint with no file list keeps it so (L-general-70).
