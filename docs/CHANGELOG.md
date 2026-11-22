@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: the torso's breath now runs on a box of its own (`.atl-lw-torso`, a layer of the figure) on the compositor, free; the held and stepped copy the dress tick drove at 10 Hz (`atlasBreathFrame.pace`) is gone. Idle main-thread CPU over off, fresh data dir, companioncpu RUNS=3 desktop: +180 to +162 ms/s (within the 50 ms/s noise); the micro head tilts on SVG groups (about 80 ms/s) and the 10 Hz morph (30 to 80) are what is left (L-ui-modernisation-201).
 - Notes: a list redraw while a note's edit form is open (filing finishing just after a capture) keeps the caret in the form, so its editor still mounts and typing carries on.
 - Boards: presenting hides the cursor over the slide once the mouse rests (the plain arrow on a move, never an item's hover cursor; the bar keeps the normal one), H or the bar's caret folds the bar to a small handle and the choice is kept, and the bar's tooltips name the paging keys.
 - Tests: no test bounds a wall-clock difference any more; CPU work is timed in CPU time, waits are held fakes, op counts or the join timeouts offered, and a lint with no file list keeps it so (L-general-70).

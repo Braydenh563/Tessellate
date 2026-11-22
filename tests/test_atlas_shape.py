@@ -374,7 +374,7 @@ def test_a_blink_is_a_lid_sweeping_down_not_a_patch_fading_in():
             body = _keyframes(name).split("{", 1)[1]
             assert set(re.findall(r"([a-z-]+)\s*:", body)) == {"opacity"}, name
     assert ".nm-atlas.atl-layer-lidf-1.atl-blinking { animation: atl-blink-f1 320ms linear; }" in CSS
-    assert '"hair", "body", "lidf-1", "lidf-2", "lids",' in ATLAS
+    assert '"hair", "torso", "body", "lidf-1", "lidf-2", "lids",' in ATLAS
     assert "atlasLids(layers[\"lidf-1\"].rig, look, 0.38);" in ATLAS and "atlasLids(layers[\"lidf-2\"].rig, look, 0.72);" in ATLAS
     body = _keyframes("atl-lid-blink").split("{", 1)[1]
     assert set(re.findall(r"([a-z-]+)\s*:", body)) <= {"translate", "animation-timing-function"}
@@ -1194,7 +1194,7 @@ def test_the_hair_and_her_tail_move_on_the_compositor():
     # a layer of its own whose box trails the body's sway; her tail is drawn
     # as a root half and a tip half whose box sways a quarter behind (the
     # wave runs tipward); none of it under reduced motion.
-    assert '"hair", "body", "lidf-1", "lidf-2", "lids",' in ATLAS and 'hairBox.className = "atl-lw atl-lw-hair";' in ATLAS
+    assert '"hair", "torso", "body", "lidf-1", "lidf-2", "lids",' in ATLAS and 'hairBox.className = "atl-lw atl-lw-hair";' in ATLAS
     assert 'tip.className = "atl-lw atl-lw-tip";' in ATLAS and "tailWave: { t: 0.5, zone: [0.42, 0.58] }," in _look("feminine")
     assert "& .atl-lw-tip { animation: atl-tail-wave 8.3s ease-in-out -2.05s infinite alternate; }" in CSS
     assert "& .atl-lw-tail { animation-delay: -4.15s; }" in CSS

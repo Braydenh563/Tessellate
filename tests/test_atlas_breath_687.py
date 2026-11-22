@@ -18,9 +18,12 @@ it comes back from being still. The shape (a few percent, wider than tall, on
 the rise's clock, at rest when still) is what the tests below still hold.
 
 Intent moved again (L-ui-modernisation-201): on the companion the running
-transform laid out and repainted the body on every frame the page drew, so
-while the dress's morph ticks the torsos are held and set to the rise's own
-time on each tick (`atlasBreathFrame.pace`), and let go on its start time at rest.
+transform on an SVG group laid out and repainted the body on every frame the
+page drew (a held and stepped copy cost 4.7 ms a frame, a free one 9.5). The
+torso is now a layer of its own (`.atl-lw-torso`, atlas.js) and the one
+animation runs on that HTML box, on the compositor; the shape, the clock and
+the start time the tests below hold are unchanged, and the held-and-stepped
+path (`atlasBreathFrame.pace`) is gone.
 """
 
 from __future__ import annotations
@@ -60,7 +63,7 @@ def _run(body: str):
 
 FAKE = """
 const made = (look, rise) => {
-  const torsos = [0, 1].map(() => ({ animated: [], animate(frames, opts) { const a = { frames, opts, started: null, cancelled: false, cancel() { this.cancelled = true; } }; this.animated.push(a); return a; } }));
+  const torsos = [0].map(() => ({ animated: [], animate(frames, opts) { const a = { frames, opts, started: null, cancelled: false, cancel() { this.cancelled = true; } }; this.animated.push(a); return a; } }));
   return {
     dataset: { atlasLook: look },
     querySelectorAll: () => torsos,
@@ -96,11 +99,11 @@ res.cleared = still.atlasBreath === null;
 process.stdout.write(JSON.stringify(res));
 """
     )
-    assert out["n"] == [1, 1], "one animation per torso"
+    assert out["n"] == [1], "one animation on the torso box"
     assert out["frames"] == ["scale(1, 1)", "scale(1.035, 1.025)", "scale(1, 1)"], "starts and ends at rest; the peak is a few percent, wider than tall"
     assert out["duration"] == 4600 and out["start"] == 1234 and out["iterations"], "the rise's period and start time: one clock"
     assert out["fem"] == 4000, "her breath is 4 s when no rise is running"
-    assert out["still"] == [True, True] and out["cleared"], "still by setting, off screen or hidden: back at rest"
+    assert out["still"] == [True] and out["cleared"], "still by setting, off screen or hidden: back at rest"
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -117,8 +120,8 @@ const retuned = box.atlasTorsos.map((t) => [t.animated.length, t.animated[0].can
 process.stdout.write(JSON.stringify({ steady, retuned }));
 """
     )
-    assert out["steady"] == [1, 1], "300 steps at rest start one animation, not 300 writes"
-    assert out["retuned"] == [[2, True], [2, True]], "a new look (a new period) replaces it"
+    assert out["steady"] == [1], "300 steps at rest start one animation, not 300 writes"
+    assert out["retuned"] == [[2, True]], "a new look (a new period) replaces it"
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -134,15 +137,15 @@ globalThis.getComputedStyle = () => ({ opacity });
 const box = made("masculine", anim(4600, 0));
 box.closest = () => ({});
 atlasBreathFrame(box, true);
-const early = box.atlasTorsos ? box.atlasTorsos.map((t) => t.animated.length) : [0, 0];
+const early = box.atlasTorsos ? box.atlasTorsos.map((t) => t.animated.length) : [0];
 opacity = "1";
 atlasBreathFrame(box, true);
 atlasBreathFrame(box, true);
 process.stdout.write(JSON.stringify({ early, late: box.atlasTorsos.map((t) => t.animated.length) }));
 """
     )
-    assert out["early"] == [0, 0], "nothing is started while the figure is faded out"
-    assert out["late"] == [1, 1], "started once, on the first beat after the fade"
+    assert out["early"] == [0], "nothing is started while the figure is faded out"
+    assert out["late"] == [1], "started once, on the first beat after the fade"
 
 
 def test_it_rides_the_tail_loop_which_knows_the_motion_gates():
@@ -156,11 +159,12 @@ def test_it_rides_the_tail_loop_which_knows_the_motion_gates():
 
 def test_only_the_torso_breathes_and_it_composes():
     body = _fn("atlasBreathFrame")
-    assert '".atl-layer-body .nmb-torso"' in body
+    assert '".atl-lw-torso"' in body
     # A `transform` animation, not the individual `scale`: that is refused on an svg box (compositeFailed bit 19).
     assert "transform:" in body and "el.animate(" in body
     assert "style.scale" not in body and "composite" not in body, "not an add: tests/test_atlas_composite_1101.py"
-    assert ".atl-layer-body .nmb-torso { transform-origin: 31px 60px; }" in CSS, "about the hips (ATLAS_GEO.hips, y 60)"
+    assert re.search(r"\.atl-lw-torso \{[^}]*transform-origin: 31px 60px;[^}]*will-change: transform;", CSS), "about the hips (ATLAS_GEO.hips, y 60), on its own layer"
+    assert "pace" not in body, "no held-and-stepped copy: the compositor runs it"
     # Nothing in the stylesheet animates the torso: one breath, here.
     assert not re.search(r"nmb-torso[^{]*\{[^}]*animation", CSS)
 
@@ -201,47 +205,10 @@ def test_the_pacer_leaves_the_breath_on_the_compositor():
     assert 'id: "atl-breath"' in LIFE
 
 
-def _pace() -> str:
-    match = re.search(r"^atlasBreathFrame\.pace = \(box, on\) => \{.*?^\};", LIFE, re.S | re.M)
-    assert match, "atlasBreathFrame.pace is gone from atlas-life.js"
-    return match.group(0)
-
-
-@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
-def test_the_companion_chest_is_stepped_on_the_rise_clock_and_let_go_at_rest():
-    # L-ui-modernisation-201: a running transform on an SVG group lays out and repaints the body
-    # layer on every frame the page draws (traced, script frozen: 9.5 ms a frame running, 4.7 held).
-    # Held and set to the rise's own time on the dress's tick, it costs only frames that tick draws.
-    out = _run(
-        FAKE
-        + _pace()
-        + """
-const torso = () => ({ playState: "running", currentTime: 0, startTime: 5, pause() { this.playState = "paused"; this.startTime = null; this.pauses = (this.pauses || 0) + 1; }, play() { this.playState = "running"; } });
-const rise = { currentTime: 1234.5, startTime: 77 };
-const box = { atlasBreath: { anims: [torso(), torso()], rise, paced: false } };
-atlasBreathFrame.pace(box, true);
-rise.currentTime = 1334.5;
-atlasBreathFrame.pace(box, true);
-const held = box.atlasBreath.anims.map((a) => [a.playState, a.currentTime, a.pauses]);
-atlasBreathFrame.pace(box, false);
-const free = box.atlasBreath.anims.map((a) => a.startTime);
-const none = { atlasBreath: { anims: [torso()], rise: null, paced: false } };
-atlasBreathFrame.pace(none, true);
-atlasBreathFrame.pace({ atlasBreath: null }, true);
-process.stdout.write(JSON.stringify({ held, free, paced: box.atlasBreath.paced, alone: none.atlasBreath.anims[0].playState }));
-"""
-    )
-    assert out["held"] == [["paused", 1334.5, 1], ["paused", 1334.5, 1]], "held once, then set to the rise's time each tick"
-    assert out["free"] == [77, 77] and out["paced"] is False, "let go on the rise's own start time: never behind it"
-    assert out["alone"] == "running", "with no rise to follow it runs free, as before"
-
-
-def test_the_dress_tick_steps_the_companion_chest_and_lets_it_go():
+def test_the_chest_is_never_held_or_stepped_by_the_dress_tick():
+    # The torso box runs its breath on the compositor, free; nothing holds it (L-ui-modernisation-201).
+    assert "atlasBreathFrame.pace" not in LIFE
     run = LIFE[LIFE.index("atlasRigLower.morph.run = (rig, buddy) => {") :]
     run = run[: run.index("m.wake = () => {")]
-    # Not live (off screen, hidden, the lite set, carried) and at rest: let go.
-    assert run.count("atlasBreathFrame.pace(box, false);") == 2
-    # Each live tick: the companion only (the large view is the one thing on screen and runs it free).
-    assert 'atlasBreathFrame.pace(box, !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure"));' in run
-    # The tick draws (through `M.pass`, which draws only what has moved, L-ui-modernisation-202) before it paces.
-    assert run.index("M.pass(m, ") < run.index("atlasBreathFrame.pace(box, !!box")
+    assert "atlasBreathFrame" not in run
+
