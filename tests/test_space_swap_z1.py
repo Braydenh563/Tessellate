@@ -415,6 +415,8 @@ const ctx = {
   refuseStagedUrls() {}, clearApiCache() {}, authToken: () => "t", activeSpaceId: () => "alpha",
   noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
   kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
+  //: `api` tells the page of a note write (`tessellate:note-saved`, review of PR 222).
+  document: { dispatchEvent() {} }, CustomEvent: class {},
   toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
   //: A fetch that answers when the test says so, with the kind of body it is told.
   fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),
