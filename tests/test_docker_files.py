@@ -44,26 +44,3 @@ def test_the_data_and_model_folders_belong_to_the_user_the_app_runs_as():
 
 def test_the_proxy_host_variable_is_offered_in_compose():
     assert "TESSELLATE_ALLOWED_HOSTS" in COMPOSE
-
-
-def test_the_ignore_file_is_the_one_a_root_context_build_reads():
-    """The build context is the repo root, and Docker reads either
-    `<context>/.dockerignore` or `<Dockerfile>.dockerignore` beside the
-    Dockerfile; `docker/.dockerignore` is read by neither, so `.venv`, `.git`
-    and the local `data/` notebook were sent with every build (L-general-5)."""
-    assert not (ROOT / "docker" / ".dockerignore").exists()
-    ignore = (ROOT / "docker" / "Dockerfile.dockerignore").read_text(encoding="utf-8").split()
-    for heavy in (".venv", ".git", "data", "tests", "scratchpad"):
-        assert heavy in ignore, heavy
-
-
-def test_the_image_reports_its_health_from_the_health_route():
-    """A HEALTHCHECK on /health so `docker ps` and compose's depends_on see a
-    hung server, with Python (the slim image has no curl) on the port the app
-    binds."""
-    match = re.search(r"^HEALTHCHECK (.+?)(?<!\\)$", DOCKERFILE.replace("\\\n", " "), re.M)
-    assert match, "no HEALTHCHECK"
-    check = match.group(1)
-    assert "/health" in check and "TESSELLATE_PORT" in check
-    assert "python" in check and "curl" not in check
-    assert DOCKERFILE.index("HEALTHCHECK") > DOCKERFILE.index("TESSELLATE_PORT=8000")

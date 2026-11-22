@@ -89,8 +89,6 @@ The app need not be running. Settings, Tools it can use shows the exact config f
 
 **The token.** The server answers only a client that passes this notebook's token as `TESSELLATE_MCP_TOKEN` (only `ping` works without it). The token is made the first time Settings shows the snippet and is kept as a secret setting (the operating system's protected store, or an owner-only file under `secrets/` in the data folder). A client without it, or with a wrong one, is told to copy the snippet from Settings, Tools it can use.
 
-**From a script.** `python -m tessellate tool NAME --json '{"query": "tea"}'` runs one offered tool and prints its result as JSON (exit 0, 1 when the tool fails or is not offered, 2 for bad arguments or a missing token); `python -m tessellate tool` lists them. Same token, same offered list.
-
 ## Client configuration
 
 All three take the same `command`, `args` and `env` shape. Source checkout, with your own paths:

@@ -1824,9 +1824,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
 
     @app.get("/health", tags=["system"])
     async def health(request: Request) -> dict[str, str | bool]:
-        from tessellate.core import buildstamp, instance_lock, reminder_notifier
-
-        data_dir = deps.get_config().data_dir
+        from tessellate.core import instance_lock, reminder_notifier
 
         #: The desktop shell and its notifier belong to this computer. A phone
         #: that read `desktop: true` saved its exports onto this disk and
@@ -1852,11 +1850,6 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             #: the token): Settings, Running copies tells a copy that really
             #: holds its port from a leftover record of one that is gone.
             "instance": instance_lock.current_instance_id(),
-            #: Which build, since when, on which folder (`core/buildstamp.py`).
-            "source_commit": buildstamp.SOURCE_COMMIT,
-            "started_at": buildstamp.STARTED_AT,
-            "data_dir_id": buildstamp.data_dir_id(data_dir),
-            "data_dir_writable": buildstamp.writable(data_dir),
         }
 
     _add_instance_routes(app)

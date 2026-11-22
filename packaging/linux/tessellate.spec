@@ -153,10 +153,6 @@ a = Analysis(
         # The About panel's release notes, read from the bundle root when
         # frozen (api/app.py `/changelog`); the Windows spec says more.
         (str(REPO_ROOT / "CHANGELOG.md"), "."),
-        # The licence and the third-party notices (AGPL section 4; the CC BY-SA
-        # and MIT notices), at the bundle root of every copy (L-general-3).
-        (str(REPO_ROOT / "LICENSE"), "."),
-        (str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),
         # The taxonomy pack filing reads (ai/taxonomy.py `DATA_DIR`): JSON
         # beside the module, so it goes where the module's package is.
         (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data" / "taxonomy"), "tessellate/ai/data/taxonomy"),

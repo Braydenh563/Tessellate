@@ -6,13 +6,6 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- The installer, the MSI, the Linux tarball and zip and the Docker image now carry LICENSE and THIRD_PARTY.md (L-general-3).
-- `tessellate tool NAME --json ARGS` runs one of the notebook's tools from a script and prints its result as JSON, behind the same token as the MCP server (L-general-8).
-- /health says which commit the server was started from, when, an id for its data folder and whether it can write there (L-general-6).
-- Tests: a new test that reads source text must say why in its docstring (a ratchet at 3,669 without one), and the gate prints the count (L-general-9).
-- Docker: the image reports its health from /health, and the build reads its ignore file, so the local virtualenv, git history and notebook are no longer sent with every build (L-general-5).
-- Maintenance: the scheduled database tidy clears a note's near-duplicate pointer when the note it named has been purged (L-general-21).
-- Security: the outbound fetch guard reads a NAT64 address (64:ff9b::/96) by the IPv4 address inside it, so the metadata service and loopback can no longer be reached that way (L-general-1).
 - Documents: the spelling list's 93,000-word set is built in short slices, so opening a document from the Library paints in about 190 ms with no script-heavy frame after it (L-world-class-40).
 - Settings: the first letter typed in the search box answers in about 150 ms at 4x CPU, from about 400; the panes are built while the box waits (L-world-class-355).
 - Documents: opening a document paints its text sooner (first frame median 347 to 240 ms); the side panels and the spelling re-check follow a frame at a time (L-world-class-40).

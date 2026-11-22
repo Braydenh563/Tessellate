@@ -37,6 +37,7 @@ DOCS = [
     "README.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
+    "IDEAS.md",
     "docs/INSTALL.md",
     "docs/MODELS.md",
     "docs/PRIVACY.md",

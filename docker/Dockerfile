@@ -25,8 +25,6 @@ COPY src ./src
 COPY frontend ./frontend
 COPY migrations ./migrations
 COPY alembic.ini ./
-# The licence and third-party notices travel with the image (L-general-3).
-COPY LICENSE docs/THIRD_PARTY.md ./
 RUN /venv/bin/pip install --no-deps -e .
 
 FROM python:3.13-slim
@@ -54,7 +52,4 @@ USER mm
 # TESSELLATE_ALLOWED_HOSTS (comma-separated, names only) or the app answers 421.
 ENV TESSELLATE_BIND=0.0.0.0 \
     TESSELLATE_PORT=8000
-# The slim image has no curl, so Python asks /health on the port the app binds.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('TESSELLATE_PORT', '8000') + '/health', timeout=4)"
 CMD ["python", "-m", "tessellate"]

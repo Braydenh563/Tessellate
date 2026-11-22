@@ -554,28 +554,3 @@ def test_a_card_whose_note_was_purged_is_swept_up(ai_client, session):
     assert autonomous.clean_orphaned_board_cards() == 1
     session.expire_all()
     assert [n.entry_id for n in session.query(WhiteboardNode).all()] == [kept.id]
-
-
-def test_a_near_duplicate_pointer_to_a_purged_note_is_cleared(ai_client, session):
-    """`filing_similar_id` is not a foreign key on purpose, so purging the note
-    it names leaves the pointer dangling; the maintenance pass clears it and
-    leaves a live one alone (L-general-21)."""
-    from tessellate.core.database import Entry
-
-    def _note(content, similar=None):
-        entry = Entry(content=content, filing_similar_id=similar)
-        session.add(entry)
-        session.commit()
-        return entry
-
-    live, doomed = _note("the original"), _note("a note about to be purged")
-    keeps = _note("a copy of the original", similar=live.id)
-    loses = _note("a copy of the purged note", similar=doomed.id)
-    session.execute(text("DELETE FROM entries WHERE id = :id"), {"id": doomed.id})
-    session.commit()
-
-    assert autonomous.clean_dangling_similar_ids() == 1
-    session.expire_all()
-    assert session.get(Entry, keeps.id).filing_similar_id == live.id
-    assert session.get(Entry, loses.id).filing_similar_id is None
-    assert autonomous.clean_dangling_similar_ids() == 0

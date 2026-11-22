@@ -757,7 +757,6 @@ def _vacuum() -> None:
 
     embeddings.clean_orphaned_vectors(deps.get_db().session)
     clean_orphaned_board_cards()
-    clean_dangling_similar_ids()
     purge_old_conversations()
 
 
@@ -846,30 +845,6 @@ def clean_orphaned_board_cards() -> int:
     if orphans:
         logger.info("removed %d whiteboard card(s) whose note no longer exists", len(orphans))
     return len(orphans)
-
-
-def clean_dangling_similar_ids() -> int:
-    """Clear `filing_similar_id` where the note it names is gone.
-
-    The pointer is advisory and deliberately not a foreign key (see its
-    comment in `core/database.py`), so purging the near-duplicate leaves it
-    naming nothing. Reading it already shrugs; clearing it here keeps the
-    column honest for anything that counts it. Raw SQL so the sweep spans
-    every space and does not bump `updated_at` on notes nobody edited.
-    """
-    with deps.get_db().session() as session:
-        cleared = session.execute(
-            text(
-                "UPDATE entries SET filing_similar_id = NULL "
-                "WHERE filing_similar_id IS NOT NULL "
-                "AND filing_similar_id NOT IN (SELECT id FROM entries)"
-            )
-        ).rowcount
-        if cleared:
-            session.commit()
-    if cleared:
-        logger.info("cleared %d near-duplicate pointer(s) to notes that no longer exist", cleared)
-    return cleared
 
 
 def _loop(stop_event: threading.Event, wake_event: threading.Event) -> None:
