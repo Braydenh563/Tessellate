@@ -898,7 +898,33 @@
     ring.classList.remove("hidden");
     ring.style.width = `${d}px`;
     ring.style.height = `${d}px`;
+    tintRing(ring);
     ring.style.transform = `translate(${p.x * S.zoom - d / 2}px, ${p.y * S.zoom - d / 2}px)`;
+  }
+
+  //: The ring takes the ink's colour (the eraser keeps the theme's own ink: it
+  //: lays down none). A halo in whichever of the theme's two tokens (`--ink`,
+  //: `--modal-bg-opaque`) stands further from the paper keeps it seen when the
+  //: ink is close to the paper. Redone only when colour, paper, tool or theme moves.
+  function tintRing(ring) {
+    const root = document.documentElement;
+    const erase = S.tool === "eraser";
+    const key = [erase ? "" : S.ink, S.paper, root.getAttribute("data-theme"), root.className].join("|");
+    if (ring.dataset.tint === key) return;
+    ring.dataset.tint = key;
+    const cs = getComputedStyle(root);
+    const paper = spLuma(S.paper);
+    const gap = (token) => Math.abs(spLuma(cs.getPropertyValue(token)) - paper);
+    ring.style.setProperty("--sp-ring-ink", erase ? "var(--ink)" : S.ink);
+    ring.style.setProperty("--sp-ring-halo", gap("--ink") >= gap("--modal-bg-opaque") ? "var(--ink)" : "var(--modal-bg-opaque)");
+  }
+
+  //: Relative luminance of a `#rrggbb` or `rgb(...)` string, 0 to 1.
+  function spLuma(colour) {
+    const text = String(colour).trim();
+    const rgb = text.startsWith("#") ? spRgb(text) : (text.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
+    const [r, g, b] = rgb.map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }
 
   function brushWidth(e) {

@@ -490,9 +490,9 @@
   position: absolute;
   left: 0;
   top: 0;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--sp-ring-ink, var(--ink));
   border-radius: var(--radius-pill);
-  box-shadow: 0 0 0 1px var(--modal-bg-opaque);
+  box-shadow: 0 0 0 1px var(--sp-ring-halo, var(--modal-bg-opaque));
   will-change: transform;
 }
 .sp-ring.hidden {
