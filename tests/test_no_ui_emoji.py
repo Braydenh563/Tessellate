@@ -142,7 +142,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "glyph is the redundant channel and the four marks must read as one family",
         ),
     ],
-    "frontend/js/whiteboard.js": [
+    "frontend/js/whiteboard-export.js": [
         (
             "obj.data?.task",
             "the exported SVG's task box: the icon font does not travel into the file "

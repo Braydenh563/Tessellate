@@ -11,23 +11,14 @@
 //
 //   BASE=http://127.0.0.1:8798 SCRATCH=/tmp/mm-wb-a08 \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/wbaudit.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 const TARGET = Number(process.env.TARGET || 80);
 const SOAK = Number(process.env.SOAK || 120);
 const PARTS = process.env.PARTS || "ABC";
 
 async function newBoard(page, name, type) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  if (type === "map") await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, type);
   await page.keyboard.press("Escape");
 }
 

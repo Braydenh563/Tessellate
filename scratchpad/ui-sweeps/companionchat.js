@@ -77,7 +77,7 @@ async function sample(page, label) {
       over,
       //: Whether its own placement thinks this place is clear: a cover
       //: the sweep sees and this misses is the shape being wrong.
-      hits: nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nameMarkBuddyObstacles("chat"), nmb.legs),
+      hits: nmb.sweep.nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nmb.sweep.nameMarkBuddyObstacles("chat"), nmb.legs),
       stopBox: r(box(document.getElementById("chat-stop"))),
       at: [nmb.x, nmb.y].map(Math.round),
       //: On its way between two places (a walk, a poof, a crossfade): a
@@ -94,7 +94,7 @@ async function sample(page, label) {
   await page.evaluate(async (port) => apiJson("/models/provider", { method: "POST", body: JSON.stringify({ provider: "openai", base_url: `http://127.0.0.1:${port}/v1` }) }).catch((e) => ({ error: String(e) })), fake);
   await page.evaluate((k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
+    const b = $("avatar-buddy");
     b.value = k;
     b.dispatchEvent(new Event("change", { bubbles: true }));
   }, process.env.KIND || "atlas");

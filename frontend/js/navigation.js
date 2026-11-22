@@ -1544,6 +1544,10 @@ document.addEventListener(
     if (!open) return;
     event.preventDefault();
     event.stopPropagation();
+    //: A popup opened from inside it (a select's list, a row's own menu) is the innermost and closes
+    //: first, focus back on its opener: closing the dock menu here left the Logs More's "Which log"
+    //: list on screen, and the next Escape closed Settings (menus.js at 1440).
+    if ([...document.querySelectorAll(".action-menu:not(.hidden)")].some((m) => m.checkVisibility?.() && !open.contains(m))) return closeActionMenus();
     open.open = false;
     open.querySelector("summary")?.focus();
   },
@@ -1630,7 +1634,10 @@ document.addEventListener("keydown", (event) => {
     }
   }
   const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'])");
-  if (opener === target && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+  //: A row that opens a flyout (`role="menuitem"`, the dashboard Customise's View) is walked
+  //: by its own menu; ArrowRight opens it (APG). Taken for a closed menu button, ArrowDown
+  //: opened its flyout and left the focus on it (menus.js at 1440).
+  if (opener === target && opener.getAttribute("role") !== "menuitem" && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
     const menu = menuOfOpener(opener);
     const rows = menu ? menuRowsOf(menu) : [];
     //: A closed select standing as a row in a dock menu (the document's
@@ -1641,7 +1648,10 @@ document.addEventListener("keydown", (event) => {
       return;
     }
     //: The other half of the APG menu button: ↓ on a closed one opens it on the first row, ↑ on the last (Enter and Space already open it).
-    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false") {
+    //: Not a closed ⋯ standing as a row of an open menu (the board View's Workspaces): ArrowDown
+    //: walks past it to the next row, as past any row; it opened the ⋯ and trapped the focus
+    //: in its one row (menus.js at 1440).
+    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false" && !opener.parentElement?.closest('[role="menu"]')) {
       event.preventDefault();
       opener.click();
       const opened = menuOfOpener(opener) || document.activeElement?.closest('[role="menu"]');

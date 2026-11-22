@@ -503,7 +503,7 @@
 
   function wbBrainstormStart(minutes = 5) {
     wbBrainstormStop();
-    const host = document.getElementById("whiteboard-container");
+    const host = wbInstances.container();
     if (!host) return;
     const chip = document.createElement("div");
     chip.className = "wb-map-brainstorm dock";
@@ -743,7 +743,7 @@
   }
 
   function wbGrammarRepaint() {
-    for (const el of document.querySelectorAll(".wb-map-node")) {
+    for (const el of wbInstances.queryAll(".wb-map-node")) {
       const datum = (wbState.objects || []).find((o) => String(o.id) === el.dataset.id);
       if (datum) wbGrammarPaint(el, datum);
     }

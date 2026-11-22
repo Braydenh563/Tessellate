@@ -16,6 +16,7 @@ Stored as `data.fill`, one of three values, and nothing at all by default:
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -31,7 +32,7 @@ WHITEBOARD_MAP_JS = ROOT / "frontend" / "js" / "whiteboard-map.js"
 
 
 def _whiteboard_text() -> str:
-    return WHITEBOARD_MAP_JS.read_text(encoding="utf-8") + WHITEBOARD_JS.read_text(encoding="utf-8")
+    return frontend_text("whiteboard-map.js") + frontend_text("whiteboard.js")
 INDEX_HTML = ROOT / "frontend" / "index.html"
 MAP_CSS = ROOT / "frontend" / "css" / "07-whiteboard-misc.css"
 

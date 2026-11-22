@@ -3,6 +3,7 @@ to a panel over the document. Static checks of the wiring; the behaviour was dri
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -11,7 +12,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def read(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 def test_both_views_offer_edit_here_and_ask_for_the_lazy_panel() -> None:

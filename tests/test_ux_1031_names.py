@@ -7,6 +7,7 @@ Class 30 (SH4, DC5, UX7, BD4): a name starts with the words drawn on the control
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -15,7 +16,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def _js(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 def test_the_smallest_text_token_is_twelve_pixels():

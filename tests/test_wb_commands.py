@@ -9,6 +9,7 @@ holds each row's words and key to the table's, so renaming a control renames
 it everywhere (standing order 13).
 """
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text
 import re
 from pathlib import Path
@@ -17,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _table() -> dict:
@@ -86,9 +87,8 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     digit on a map, by three palette rows and by the keys sheet's row.
     bm1005-mapmulti.js check 5: Alt+1 1 topic shown, Alt+2 5, Alt+3 all 6,
     one Ctrl+Z puts the folds back; 1440 light and 390 dark."""
-    js = ROOT / "frontend" / "js"
-    board = (js / "whiteboard.js").read_text(encoding="utf-8")
-    mapjs = (js / "whiteboard-map.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
+    mapjs = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     assert "async function wbMapFoldToLevel(level)" in mapjs
     assert '"wbMapFoldToLevel"' in board[board.index("const WB_RECORDED = [") :][:900]
     assert "/^Digit[1-9]$/.test(e.code) && wbIsMap()" in board

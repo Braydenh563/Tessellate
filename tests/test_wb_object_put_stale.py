@@ -7,6 +7,7 @@ StaleDataError out of the commit. The server now rolls back and answers the same
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 from sqlalchemy import delete
@@ -61,7 +62,7 @@ def test_a_put_for_an_item_deleted_after_its_update_is_a_404(ai_client, monkeypa
 
 
 def test_the_client_drops_a_put_for_an_object_it_is_undoing():
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     save = js[js.index("async function wbSaveObject(d)") :][:700]
     assert "if (d._undoing) return;" in save
     undo = js[js.index("This entry means \"remove what was created\"") :][:2400]

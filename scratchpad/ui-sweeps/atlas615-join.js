@@ -23,7 +23,7 @@ const { boot } = require('./lib.js');
       localStorage.setItem('atlas-look', look);
       document.documentElement.dataset.avatarMotion = 'always';
       localStorage.removeItem('nm-buddy-spots');
-      const b = document.getElementById('avatar-buddy');
+      const b = $('avatar-buddy');
       b.value = 'atlas';
       b.dispatchEvent(new Event('change', { bubbles: true }));
     }, look);

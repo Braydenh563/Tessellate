@@ -10,7 +10,7 @@
 // panel with one control height; no tool button has its own border.
 //
 // VIEWPORT=390x844 and THEME=dark both work (lib.js reads the theme).
-const { boot, OUT } = require("./lib.js");
+const { boot, OUT, newBoard: libNewBoard } = require("./lib.js");
 const { execSync } = require("child_process");
 
 const [VW, VH] = (process.env.VIEWPORT || "1440x900").split("x").map(Number);
@@ -33,16 +33,7 @@ function ok(name, good, detail) {
 // never opens (archive/agent-remaining/mindmap.md, "what the next run should not
 // repeat").
 async function newBoard(page, name, type) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  if (type === "map") await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, type);
   await page.keyboard.press("Escape");
 }
 

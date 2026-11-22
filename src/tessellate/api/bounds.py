@@ -9,8 +9,7 @@ from __future__ import annotations
 import re
 from typing import Annotated
 
-from fastapi import HTTPException, Request
-from fastapi.routing import APIRoute
+from fastapi import HTTPException
 from pydantic import Field
 
 #: A stored display name (an attachment, a media upload): long enough for any
@@ -100,28 +99,3 @@ def check_image_upload(head: bytes, size: int, suffix: str = "") -> None:
         raise HTTPException(status_code=422, detail="That file is empty.")
     if head.lstrip()[:1] == b"<" or not _is_its_type(head, suffix):
         raise HTTPException(status_code=415, detail="That file is not an image or PDF.")
-
-
-#: Files the multipart parser reads per request on a folder-import route.
-#: Starlette stops at 1,000 by default, answering a bare 400 before the route
-#: runs, so a 5,000-file vault never reached the route's own cap and its own
-#: message (L979). The route still refuses a count over its own limit; this
-#: only has to sit above it.
-FOLDER_UPLOAD_PARSE_MAX_FILES = 10_000
-
-
-class _FolderRequest(Request):
-    def form(self, *, max_files: int | float = FOLDER_UPLOAD_PARSE_MAX_FILES, **kwargs):  # noqa: ANN003, ANN202
-        return super().form(max_files=max_files, **kwargs)
-
-
-class FolderUploadRoute(APIRoute):
-    """Use as `APIRouter(route_class=FolderUploadRoute)` where a folder is uploaded."""
-
-    def get_route_handler(self):  # noqa: ANN201
-        handler = super().get_route_handler()
-
-        async def with_big_form(request: Request):  # noqa: ANN202
-            return await handler(_FolderRequest(request.scope, request.receive))
-
-        return with_big_form

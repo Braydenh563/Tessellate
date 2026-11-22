@@ -60,6 +60,8 @@ EXPECTED = {
         '"Tick the notes to move first."',
     ],
     'chat-turn.js': [
+        # Moved with `askSkillInputs` from skills.js (the boot gzip cap); the same toast.
+        '`“${skill.name}” needs ${item.label || item.name}.`',
         '"The model returned nothing that time. Try again."',
     ],
     'web-panel.js': [
@@ -165,7 +167,6 @@ EXPECTED = {
         '"Microphone access was blocked, allow it in your browser."',
     ],
     'skills.js': [
-        '`“${skill.name}” needs ${item.label || item.name}.`',
         '"Tick some notes first."',
     ],
     'suggestions-inbox.js': [
@@ -185,23 +186,39 @@ EXPECTED = {
         '"That file is too large to be a library (8 MB at most)."',
         '"That file is not a Tessellate library."',
     ],
-    'whiteboard-map.js': [
-        '"That topic\'s link is not a web address."',
-        '"A topic\'s link has to be an http, https or mailto address."',
-        '"That file is not a picture."',
-        '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
-        '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
-        '"A summary covers topics side by side under one parent."',
+    'whiteboard-map-marks.js': [
         '"That time has gone: pick a later due date for a reminder."',
     ],
-    'whiteboard.js': [
-        '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
+    'whiteboard-map-notes.js': [
+        '"That topic\'s link is not a web address."',
+    ],
+    'whiteboard-map-strip.js': [
+        '"A topic\'s link has to be an http, https or mailto address."',
+        '"That file is not a picture."',
+    ],
+    #: Moved with their commands out of whiteboard-map.js (L-whiteboard-49).
+    'whiteboard-map-record.js': [
+        '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
+        '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
+    ],
+    'whiteboard-map.js': [
+        '"A summary covers topics side by side under one parent."',
+    ],
+    'whiteboard-comments.js': [
         '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',
+    ],
+    'whiteboard-export.js': [
         '"There is nothing in the outline to build."',
         '"That file is empty."',
         '`That outline is ${content.length.toLocaleString()} characters: the limit is ${WB_MAX_IMPORT_CHARS.toLocaleString()}.`',
-        '"Allow pop-ups to export as PDF, it opens Print, then Save as PDF."',
+    ],
+    'whiteboard-paint.js': [
+        '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
+    ],
+    'whiteboard-menus.js': [
         '"The default board cannot change kind. Make a new board to start a mind map."',
+    ],
+    'whiteboard.js': [
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',
     ],
@@ -303,13 +320,26 @@ FAULTS = {
     'update-dialogs.js': {
         'text.textContent || voiceLine("failed", { what: "apply the update" })': "the update step failed; the text is the step's own error",
     },
-    'whiteboard.js': {
-        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+    'whiteboard-textedit.js': {
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
-        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
+    },
+    'whiteboard-export.js': {
         'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
+    },
+    #: Moved with `wbDeleteFailed` out of whiteboard.js (L-whiteboard-52).
+    'whiteboard-undo.js': {
+        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
+    },
+    #: Moved with the board list, item saves and the drag out of whiteboard.js (L634).
+    'whiteboard-boards.js': {
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
+    },
+    'whiteboard-items.js': {
+        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+    },
+    'whiteboard-drag.js': {
+        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
     },
 }
 
@@ -321,7 +351,7 @@ DYNAMIC = {
     #: A failed request is red; the server's own refusal (started or removed false) is a plain notice.
     "settings-packages.js": {'result.failed ? true : result.started ? false : "info"', 'result.failed ? true : result.removed ? false : "info"'},
     "suggestions-inbox.js": {"linked < sure.length"},  # a partial link run
-    "whiteboard.js": {"Boolean(left)"},  # a clear that left items behind
+    "whiteboard-clipboard.js": {"Boolean(left)"},  # a clear that left items behind
     "library.js": {'described?.caption ? false : "info"'},  # no caption written is plain
 }
 
