@@ -947,7 +947,17 @@ function wbPublishInvZoom(el, inv, inst = wbInstances.page) {
 //: its most specific argument's weight (an id), so an embed's own scale wins
 //: over the page's inside it (L-whiteboard-56).
 function wbInvZoomRules() {
-  const grips = WB_INV_ZOOM_GRIPS.join(", ");
+  //: **A topic's action row takes it only while it shows** (mapcpu 500 at 4x):
+  //: every topic has one, `visibility: hidden` until the topic is pointed at,
+  //: selected or focused (library-lazy.css), and naming the bare row re-styled
+  //: all 500 rows and their buttons on each publish, the zoom's 60 to 80ms task.
+  //: Named by those states, a publish re-styles the row on screen; a hidden row
+  //: keeps the root's 1, which nothing sees.
+  const WB_INV_ZOOM_SHOWN = [
+    ".wb-map-node:is(:hover, .wb-selected, :focus-visible) .wb-map-actions",
+    ".wb-map-actions:focus-within",
+  ];
+  const grips = [...WB_INV_ZOOM_GRIPS.filter((sel) => !sel.endsWith(".wb-map-actions")), ...WB_INV_ZOOM_SHOWN].join(", ");
   return wbInstances.list.map((inst) => (inst.container
     ? `[data-wb-embed="${inst.key}"] :is(${grips}) { --wb-inv-zoom: ${inst.invZoom}; }`
     : `${grips} { --wb-inv-zoom: ${inst.invZoom}; }`)).join("\n");

@@ -140,3 +140,23 @@ def test_the_zoom_level_keeps_its_width_so_a_zoom_does_not_restyle_the_board() -
     rule = re.search(r"\.whiteboard-floating-panel \.wb-zoom-level \.value-field-input \{([^}]*)\}", css)
     assert rule, "the zoom level's input has no width rule"
     assert "min-inline-size: 5ch" in rule.group(1)
+
+
+def test_a_map_topics_hidden_action_row_is_not_restyled_by_a_zoom() -> None:
+    """Source text: the inverse zoom reaches a topic's action row only while it shows.
+
+    mapcpu at 500 topics (4x): each publish re-styled all 500 `.wb-map-actions`
+    rows and their link buttons (a style rule change on 1,000 elements, the
+    zoom's 60 to 80ms task), though a row is `visibility: hidden` unless its
+    topic is pointed at, selected or focused. The rule names those states, so a
+    zoom re-styles the one row on screen; a hidden row keeps the root's 1.
+    """
+    rules = function_text("wbInvZoomRules")
+    assert "...WB_INV_ZOOM_SHOWN]" in rules
+    shown = re.search(r"const WB_INV_ZOOM_SHOWN = \[(.*?)\];", rules, re.S)
+    assert shown
+    names = shown.group(1)
+    for state in (":hover", ".wb-selected", ":focus-visible", ".wb-map-actions:focus-within"):
+        assert state in names
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"(?m)^\.wb-map-actions \{\n  visibility: hidden;", css)
