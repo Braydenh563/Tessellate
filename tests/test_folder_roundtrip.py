@@ -346,10 +346,10 @@ def test_a_private_space_is_matched_by_privacy_and_skipped_while_locked(client, 
     session.add_all([Space(id="t255-open", name="Desk 255"), Space(id="t255-priv", name="Desk 255", is_private=True)])
     session.flush()
     monkeypatch.setattr(vault, "key", lambda: None)
-    assert export_folder._space_for(session, {"name": "Desk 255", "is_private": True}, {}) is None
-    assert export_folder._space_for(session, {"name": "Desk 255"}, {}) == "t255-open"
+    assert export_folder.space_for(session, {"name": "Desk 255", "is_private": True}, {}) is None
+    assert export_folder.space_for(session, {"name": "Desk 255"}, {}) == "t255-open"
     monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
-    assert export_folder._space_for(session, {"name": "Desk 255", "is_private": True}, {}) == "t255-priv"
+    assert export_folder.space_for(session, {"name": "Desk 255", "is_private": True}, {}) == "t255-priv"
     session.rollback()
     session.close()
 
@@ -379,12 +379,12 @@ def test_a_nameless_private_space_comes_back_as_the_vaults_private_space(client,
     session = deps.get_db().session()
     nameless = {"is_private": True}
     monkeypatch.setattr(vault, "key", lambda: None)
-    assert export_folder._space_for(session, nameless, {}) is None
+    assert export_folder.space_for(session, nameless, {}) is None
     monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
-    made = session.get(Space, export_folder._space_for(session, nameless, {}))
+    made = session.get(Space, export_folder.space_for(session, nameless, {}))
     assert made.is_private and made.name == "Private"
     session.add(Space(id="aaa-871", name="Vault 871", is_private=True))
     session.flush()
-    assert export_folder._space_for(session, nameless, {}) == "aaa-871"
+    assert export_folder.space_for(session, nameless, {}) == "aaa-871"
     session.rollback()
     session.close()

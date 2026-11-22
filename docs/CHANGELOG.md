@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Internal: windowRows moves to row-window.js and the folder import spaces to entry/import_spaces.py, so notes-list.js and export_folder.py stay under their size caps; no change to what the app does.
 - Palette: Activity, Agent runs and Activity, History open those tabs directly; they were four presses deep (L-world-class-780).
 - Palette: Rename this chat is a command while Chat is the tab, and the Atlas suggestion's tooltip starts Ask Atlas, so both are found by their names (L-world-class-876).
 - Documents: the spelling list's 93,000-word set is built in short slices, so opening a document from the Library paints in about 190 ms with no script-heavy frame after it (L-world-class-40).

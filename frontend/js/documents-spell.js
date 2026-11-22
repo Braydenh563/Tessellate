@@ -245,6 +245,46 @@
   //: Settings, Packages or the notice installed or removed something: ask again now.
   window.addEventListener("tessellate:extras-changed", () => packProbe(true));
 
+  //: The dictionary file into `words`, one word a line, in 8 ms slices, then `done`.
+  //: **`trim()`, and it is the whole bug report.** Reported with a
+  //: screenshot of 268 suggestions on a 298-word document, every one of
+  //: them a real English word: "litterally everything isnt in the
+  //: dictionary". The list loads, so the no-dictionary guard in
+  //: `docWordKnown` never fires; it just matches nothing.
+  //:
+  //: The file is committed with unix line endings and this sandbox reads
+  //: it that way, which is why `docs-spell.js` measured six findings over
+  //: 8,000 characters with no false positives. Git on Windows checks text
+  //: out with CRLF by default, so every entry arrives as `"offline\r"`,
+  //: and `Set.has("offline")` is false for all 92,972 of them. One
+  //: checkout on one platform turns the checker into a machine that flags
+  //: the entire language.
+  //:
+  //: Trimming here rather than only pinning the file in `.gitattributes`
+  //: (which this commit does as well): the attribute fixes the checkout,
+  //: and this fixes every copy that already exists, plus any future list
+  //: that arrives with trailing whitespace from wherever it was built.
+  //: 8 ms slices, a task each (L-world-class-40): the 93,000 words in one go were up to 178 ms of the frame
+  //: after a document's first paint at 4 cores under load. `loading` stays set until the set is whole.
+  function docSpellWordsSliced(text, words, done) {
+    let at = 0;
+    const slice = () => {
+      const stop = performance.now() + 8;
+      while (at < text.length && performance.now() < stop) {
+        for (let n = 0; n < 1000 && at < text.length; n++) {
+          const next = text.indexOf("\n", at) + 1 || text.length + 1;
+          const word = text.slice(at, next - 1).trim();
+          at = next;
+          if (word) words.add(word);
+        }
+      }
+      if (at < text.length) return void setTimeout(slice);
+      done();
+    };
+    slice();
+  }
+  window.docSpellWordsSliced = docSpellWordsSliced;
+
   window.docSpell = {
     ownWordsSend: docOwnWordsSend,
     answer: docSecondAnswer,

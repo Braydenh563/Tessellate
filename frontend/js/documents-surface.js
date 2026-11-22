@@ -818,21 +818,14 @@
     if (docView === "rendered") setDocView("live", { persist: false });
   }
 
-  //: Runs `paint` once the frame with the new text has been drawn, if no later
-  //: open has started since (`docOpenSeq`).
-  //: Each paint is its own task after the frame, so the panels never make one long task between the text and the next
-  //: key (L-world-class-40: the six in one task were a 180 ms frame at 4 cores under load).
+  //: Each of `paints` a frame apart once the text is drawn, unless a later open began (`docOpenSeq`; L-world-class-40).
   function docAfterFirstPaint(seq, ...paints) {
     const step = () => {
       const paint = paints.shift();
-      if (!paint) return;
-      //: A frame apart, not just a task apart: timeouts chained at 0 ms all ran before the next render.
-      requestAnimationFrame(() =>
-        setTimeout(() => {
-          if (seq === docOpenSeq) paint();
-          step();
-        }, 0)
-      );
+      if (paint) requestAnimationFrame(() => setTimeout(() => {
+        if (seq === docOpenSeq) paint();
+        step();
+      }));
     };
     step();
   }
@@ -909,13 +902,8 @@
     renderDocPreview();
     renderDocStats();
     renderDocProperties();
-    //: **The first screen first** (DOCUMENTS 25 row 7). The prose check, the
-    //: outline and the side panels belong to the document and are repainted
-    //: with it, a frame after the text is painted rather than before: each
-    //: lays the editor out again (the outline asks which line the caret shows),
-    //: measured at 390 as 607ms of a 1,286ms open for the outline alone.
-    //: The outline first: it reads where the caret is before anything here
-    //: writes (INBOX 1530 c), and the status bar and prose check need no layout.
+    //: **The first screen first** (DOCUMENTS 25 row 7): each panel lays the editor out again (the outline was 607 of 1,286ms
+    //: at 390), so they paint after the text; the outline first, reading the caret before any write (INBOX 1530 c).
     docAfterFirstPaint(seq, () => {
       renderDocOutline();
     }, () => {

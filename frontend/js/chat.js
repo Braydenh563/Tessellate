@@ -571,9 +571,7 @@ const RESPONSE_MODE_SELECTS = ["response-mode-select", "ask-mode-select"];
 
 // The response presets, fetched once. Served by /chat/modes rather than
 // listed here so adding a fourth is a change to `ai/presets.py` alone (§11).
-//: The answer is read once and painted again when either picker's surface is built: Ask's picker lives on
-//: the Notes surface, and painting only on Chat's left it with no rows whenever Notes was built after the
-//: answer came (menus.js sweep, L-world-class-875).
+//: Read once, painted again when either picker's surface is built (Ask's is on Notes; L-world-class-875).
 const loadResponseModes = (() => {
   let body = null;
   const paint = () => {

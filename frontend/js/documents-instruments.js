@@ -223,42 +223,7 @@
       .then((response) => response.text())
       .then((text) => {
         const words = new Set(DOC_EXTRA_WORDS);
-        //: **`trim()`, and it is the whole bug report.** Reported with a
-        //: screenshot of 268 suggestions on a 298-word document, every one of
-        //: them a real English word: "litterally everything isnt in the
-        //: dictionary". The list loads, so the no-dictionary guard in
-        //: `docWordKnown` never fires; it just matches nothing.
-        //:
-        //: The file is committed with unix line endings and this sandbox reads
-        //: it that way, which is why `docs-spell.js` measured six findings over
-        //: 8,000 characters with no false positives. Git on Windows checks text
-        //: out with CRLF by default, so every entry arrives as `"offline\r"`,
-        //: and `Set.has("offline")` is false for all 92,972 of them. One
-        //: checkout on one platform turns the checker into a machine that flags
-        //: the entire language.
-        //:
-        //: Trimming here rather than only pinning the file in `.gitattributes`
-        //: (which this commit does as well): the attribute fixes the checkout,
-        //: and this fixes every copy that already exists, plus any future list
-        //: that arrives with trailing whitespace from wherever it was built.
-        let at = 0;
-        const slice = () => {
-          const stop = performance.now() + 8;
-          while (at < text.length && performance.now() < stop) {
-            for (let n = 0; n < 1000 && at < text.length; n++) {
-              const next = text.indexOf("\n", at) + 1 || text.length + 1;
-              const line = text.slice(at, next - 1);
-              const word = line.trim();
-              at = next;
-              if (word) words.add(word);
-            }
-          }
-          //: 8 ms slices, a task each (L-world-class-40): the 93,000 words in one go were up to 178 ms of the frame
-          //: after a document's first paint at 4 cores under load. `loading` stays set until the set is whole.
-          if (at < text.length) return void setTimeout(slice);
-          docWordlistReadyNow(words);
-        };
-        slice();
+        docSpellWordsSliced(text, words, () => docWordlistReadyNow(words)); // trimmed, in 8 ms slices (documents-spell.js)
       })
       .catch(() => {
         //: Once, not on a loop: a failed fetch here means the file is missing
@@ -273,11 +238,8 @@
   function docWordlistReadyNow(words) {
     docWordlist = words;
     docWordlistState.loading = false;
-    //: The ranked suggestions are drawn from the same pool, so it has to be
-    //: rebuilt, and the pass that ran without a dictionary has to run again
-    //: now that there is one. A frame after the 93,000-word set, not in its
-    //: task: the two together were a 267 ms frame after a document's first
-    //: paint (L-world-class-40).
+    //: The suggestions share the pool, so it is rebuilt, and the pass that ran without a dictionary runs again, a frame
+    //: after the set and not in its task: the two together were a 267 ms frame after a first paint (L-world-class-40).
     docKnownWordsCache = null;
     docSpellCache = new Map();
     afterFrames(() => setTimeout(() => {

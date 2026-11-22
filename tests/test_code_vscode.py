@@ -200,8 +200,8 @@ def test_ctrl_slash_has_one_owner_per_surface():
     comment owns the chord; in a note box the blocks menu does."""
     app = app_js_text()
     #: DX16 (a29j, 132bf47) put Ctrl+K's palette on the same guard; the rule
-    #: for Ctrl+/ is unchanged.
-    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;' in app
+    #: for Ctrl+/ is unchanged. The check moved to `typingBurst.skips` (a split of the keydown handler): it returns.
+    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) return true;' in app
     notes = _function("noteSurfaceKeymap")
     # A note binds Ctrl+/ itself now, ahead of the engine's defaultKeymap,
     # whose own comment toggle wrote `<!--  -->` into a markdown note. The

@@ -79,8 +79,12 @@ def test_the_prose_rerun_after_the_word_list_is_a_frame_after_the_set():
 
 def test_the_word_list_set_is_built_in_slices():
     # The 93,000 words in one task were up to 178 ms of the frame after first paint under load.
+    # The slicing lives in documents-spell.js (`docSpellWordsSliced`; documents-instruments.js is at its size cap).
     js = frontend_text("documents.js")
     loader = js[js.index("function docLoadWordlist()") :][:4000]
-    assert "performance.now() + 8" in loader and "setTimeout(slice)" in loader
-    assert loader.index("setTimeout(slice)") < loader.index("docWordlistReadyNow(words)")
+    assert "docSpellWordsSliced(text, words, () => docWordlistReadyNow(words))" in loader
     assert 'text.split("\\n")' not in loader
+    spell = frontend_text("documents-spell.js")
+    sliced = spell[spell.index("function docSpellWordsSliced(") :][:900]
+    assert "performance.now() + 8" in sliced and "setTimeout(slice)" in sliced
+    assert sliced.index("setTimeout(slice)") < sliced.index("done();")

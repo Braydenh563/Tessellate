@@ -1661,7 +1661,7 @@ class _LazyRouters(BaseRoute):
             try:
                 router = row.router()
             except Exception:  # noqa: BLE001  # one broken module must not take down the rows after it
-                self._fail(index, row)
+                self._log_failure(index, row)
                 continue
             with self._lock:
                 if self.settled[index]:
@@ -1670,7 +1670,7 @@ class _LazyRouters(BaseRoute):
                 try:
                     self.app.include_router(router, dependencies=self.gates[row.gate])
                 except Exception:  # noqa: BLE001
-                    self._fail(index, row)
+                    self._log_failure(index, row)
                     continue
                 included = routes.pop()
                 # In place, not a new list: the request that called `matches` is
@@ -1680,7 +1680,7 @@ class _LazyRouters(BaseRoute):
                 self.loaded[index] = True
                 self.settled[index] = True
 
-    def _fail(self, index: int, row: Row) -> None:
+    def _log_failure(self, index: int, row: Row) -> None:
         """Its paths answer 404 from here on, and the log names the module, once, at error
         level, so a broken route module is not a quiet 500 per request or a debug line."""
         self.settled[index] = True

@@ -1,6 +1,6 @@
 """One windowed list serves the Notes list and the Timeline feed (audit 1028 S16, S53).
 
-`windowRows` (notes-list.js) holds every row as a one-element shell and builds
+`windowRows` (row-window.js) holds every row as a one-element shell and builds
 only the ones near the reader. These tests run it under node against a small
 fake DOM, a fake `IntersectionObserver` and a fixed clock (timers are queued
 and fired by the test, never waited for), so the rules are pinned without a
@@ -75,9 +75,9 @@ const shells = (list) => list.kids.filter((k) => k.classList.contains('row-shell
 
 
 def _run(probes: str) -> dict:
-    source = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    source = (JS_DIR / "row-window.js").read_text(encoding="utf-8")
     match = re.search(r"^const ROW_WINDOW_MARGIN.*?^function windowRows\(.*?^\}\n", source, re.S | re.M)
-    assert match, "windowRows is gone from notes-list.js"
+    assert match, "windowRows is gone from row-window.js (moved out of notes-list.js whole)"
     script = HARNESS % {"source": match.group(0), "probes": probes}
     done = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=False)
     assert done.returncode == 0, done.stderr[-800:]

@@ -117,7 +117,7 @@
   //: prompt wait on the same `lazyScript` before they draw a diff, so none of them
   //: can run ahead of `docRenderDiff`.
   for (const [id, name] of [["doc-history", "openDocHistory"], ["doc-history-name", "docNameCurrentVersion"]]) {
-    //: `SURFACES.wire`: Name this version is in the dialog's surface, wired once it is built, not built for this.
+    //: `SURFACES.wire`: Name this version is in the dialog's surface and is wired when that surface is built.
     SURFACES.wire(id, "click", async () => {
       if (!(await lazyScript("/js/documents-history.js"))) return toast("The history could not be loaded.", true, { action: ["Try again", () => $(id).click()] });
       return window[name]();

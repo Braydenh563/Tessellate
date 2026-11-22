@@ -135,7 +135,7 @@ PLAIN_WRITES = {
     "entry/export_folder.py::write": "an import",
     "entry/export_folder.py::_write_attachments": "an import",
     "entry/sync_extras_apply.py::file": "a file from the other computer, never a sealed space's",
-    "api/routes_import.py::import_app": "an import",
+    "api/routes_import.py::_import": "an import (the body `import_app` hands to)",
 }
 
 
