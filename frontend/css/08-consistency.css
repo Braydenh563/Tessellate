@@ -72,16 +72,63 @@
   .nav-history-menu,
   .library-image-menu-list,
   .wb-board-menu
-) :is(
-  .menu-item,
-  .doc-dock-menu-item,
-  .nav-history-item,
-  .library-image-menu-item,
-  .action-menu-item,
-  .wb-menu-item,
-  .select-option,
-  .dock-menu-check
-) {
+) .menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .doc-dock-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .nav-history-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .library-image-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .action-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .wb-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .select-option,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .dock-menu-check {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -141,16 +188,63 @@
     .nav-history-menu,
     .library-image-menu-list,
     .wb-board-menu
-  ) :is(
-    .menu-item,
-    .doc-dock-menu-item,
-    .nav-history-item,
-    .library-image-menu-item,
-    .action-menu-item,
-    .wb-menu-item,
-    .select-option,
-    .dock-menu-check
-  ) {
+  ) .menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .doc-dock-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .nav-history-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .library-image-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .action-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .wb-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .select-option,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .dock-menu-check {
     min-height: var(--target-min);
   }
 }
