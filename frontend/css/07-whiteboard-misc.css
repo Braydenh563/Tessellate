@@ -523,7 +523,7 @@ textarea.drag-over {
      ~110px, the graph's own toolbar ~80px, and this panel ~130px, leaving
      192px of a 568px viewport for the canvas that is the entire point of the
      tab. Every other tab was given breathing room by padding its scroll
-     container (see `has-agent-monitor` below), but the Graph is a pan/zoom
+     container, since removed (the owner, 2026-11-22), but the Graph is a pan/zoom
      canvas with no document-flow scroller, so that fix cannot reach it and
      the panel simply sits on top of the map.
      So: on a narrow screen the log area collapses to roughly two lines
@@ -534,96 +534,9 @@ textarea.drag-over {
     max-height: 3.5rem;
   }
 }
-/* `document.body.classList.toggle("has-agent-monitor", …)` (app.js) sets this
-   with no CSS ever consuming it, the fixed-position panel above just sat on
-   top of whatever a tab's own scroll container put underneath it, live-
-   verified overlapping real content on every tab at a 320px width (mobile
-   audit). The panel's own height is bounded (.monitor-header +
-   .monitor-logs's own 12.5rem max-height + padding), so a fixed buffer here
-   is enough for the active tab to scroll its content clear of the panel's
-   footprint rather than leaving anything permanently hidden behind it.
-   `.tab-page` is the scroll container for most tabs, but not all of them:
-   Notes and Chat (`04-chat-dock-appearance.css`) make `.tab-page` a plain
-   flex column and move the actual `overflow-y: auto` onto their own nested
-   `.layout > .tab-main` instead: padding the outer element there does nothing
-   for the inner one that's really scrolling, confirmed live (padding-bottom
-   on #tab-notes stayed unchanged after adding the class until this second
-   selector was added). Graph has no document-flow scroll container at all
-   (it's a pan/zoom canvas), so it gets no buffer: the panel floats over its
-   corner and the map pans out from under it.
-   The buffer itself is `--space-9 * 9` (18rem) rather than a bare number, 
-   not a spacing rhythm value in the usual sense (it's standing in for
-   another element's height, not a gap between two things), but
-   `test_style_scale.py` scans literal rem numbers inside any padding
-   declaration regardless of what they mean, so composing it from the scale
-   is what keeps this off the test's ALLOWED list, which is for cases where
-   even a token composition can't fit: this one can. */
-/* **Opt-in, one scroll container at a time, never the tab page by default.**
-   This used to be `body.has-agent-monitor .tab-page` for every tab, with a
-   reset for each tab found to be squashed by it (Documents, Notes, Chat,
-   Library, each reported separately). Graph and Timeline were never reset,
-   and they are the two tabs where `.tab-page` is a fixed-height flex column
-   with a card that fills it: the 18rem came straight out of the card.
-   Reported with a screenshot at ~2000x1076 ("the graph card ends around
-   y=525 and everything below is empty"), measured at 1440x900: #graph-card
-   767 -> 479 and the Timeline card 751 -> 463 the moment the panel opened.
-   A floating panel floats; it does not get to resize the surface under it.
-   So the buffer now goes only where something really scrolls, named here,
-   and a new tab gets no padding until someone decides it scrolls. The
-   pan/zoom canvases (the Graph, an open board) get none: the panel sits
-   over their corner and the canvas pans out from under it. Every rule
-   below is measured by scratchpad/ui-sweeps/activitypanel.js, which fails
-   if any tab's surface changes height by more than 2px when the panel
-   opens.
-   Dashboard and Reminders: `.tab-page` itself is the scroller. */
-body.has-agent-monitor #tab-dashboard,
-body.has-agent-monitor #tab-reminders {
-  padding-bottom: calc(var(--page-bottom) + var(--space-9) * 9);
-}
-/* Notes, Documents, Library and Timeline scroll one level down, so the room
-   goes on that box and the tab page keeps its height. Why each is the
-   scroller is written at its own rule (Notes: 04-chat-dock-appearance.css;
-   Library: `.library-view-section` in this file; Timeline: `.timeline-scroll`
-   in 05-sidebars-themes.css). The Documents list was measured: #tab-documents
-   is a plain flex column, and padding it shrank the card grid instead of
-   protecting anything ("the documents sidebar/main panel need to be full
-   height like chat"); the Library view was 423px of an 807px tab with the
-   buffer on the tab and 711px with it here.
-   `#library-view-whiteboard` is a `.library-view-section` too but not a
-   scroller (`overflow: clip`, 06-timeline-dialogs.css: a board pans, it never
-   scrolls), and it has no floor on its height, so the padding grew it past
-   the tab by 40px on the boards list (711 -> 751 at 1440x900). An open
-   board measured unchanged (its canvas is absolutely placed), but a canvas
-   has nothing to scroll clear of the panel either, so the view is excluded
-   whole, like the Graph. */
-body.has-agent-monitor #tab-notes .layout > .tab-main,
-body.has-agent-monitor .doc-sidebar .doc-list,
-body.has-agent-monitor #tab-library .library-view-section:not(#library-view-whiteboard),
-body.has-agent-monitor #timeline-scroll {
-  padding-bottom: calc(var(--space-9) * 9);
-}
-/* Chat used to be listed alongside Notes above (`#tab-chat .layout > .tab-main`)
-   and that was a real, user-reported bug, reproduced live: opening the
-   Agent Activity monitor visibly shoved the whole chat card up the page, 
-   the Send button's own Y position moved by ~113px. `#tab-notes .layout >
-   main` IS Notes' own `overflow-y: auto` scroll box
-   (04-chat-dock-appearance.css), so padding-bottom there just grows its
-   scrollable area. Chat's equivalent, `#chat-main`, is NOT a scroll
-   container: `#chat-messages` (a `flex: 1 1 auto` child two levels down)
-   is: and padding on any ancestor above that point either shrinks the
-   whole fixed-height card (the original bug) or, tried and measured next,
-   still doesn't cleanly translate into extra scroll room without the
-   composer's own fixed-size flex sibling absorbing part of the push.
-   Removed for Chat entirely instead of chasing a third selector blind, the
-   monitor is `left: 20px; width: 350px` (07-whiteboard-misc.css above): 
-   measured live, that footprint lands on the "Chats" sidebar column
-   (`.layout > aside`), not `.layout > .tab-main` at all (`main`'s own `x` starts
-   at 348px in a 1024px-wide test window, past the monitor's right edge).
-   Nothing in the conversation column needs protecting from an overlay that
-   never covers it; the only thing actually behind the monitor is the
-   bottom of the chat list, and unlike a hidden composer control, a chat you
-   can't currently see in the list is one scroll or one click on "New" away,
-   not a broken control. */
+/* **A floating panel takes no room** (the owner, 2026-11-22: with Agent runs open the dashboard's scroll grew at the
+   bottom and shrank back on close). The 18rem of padding the open panel gave each tab's scroller is gone: the panel
+   floats over the corner and the page keeps its layout and scroll height (tests/test_floating_panel_room_1122.py). */
 .monitor-log-item {
   animation: fade-in var(--ui-slow) ease-out;
   border-left: 3px solid var(--accent);
