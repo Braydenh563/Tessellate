@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 1 | 0 | 0 | 0 | 1 |
+| ui-modernisation | 0 | 0 | 0 | 0 | 0 | 0 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 0 | 0 | 0 | 1 | 0 |
-| all | 306 | 372 | 121 | 2 | 132 | 799 |
+| all | 306 | 371 | 121 | 2 | 132 | 798 |
 
 ## graph
 
@@ -289,7 +289,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 
 ## ui-modernisation
-- [ ] **L-ui-modernisation-201** `ui-modernisation` open, M: Atlas idle: find and cut the 30 style recalcs a second at rest (companion_idle_cpu stays a strict xfail until then). From hub 2026-11-22, row 95 decision (a). Evidence: Atlas idle after an 8 s settle, marker off, 4 runs: medians 189, 215, 343, 201 ms/s over off (cap 120). Settled 3 s trace: style recalc 30 a second (about 30 ms/s), paint, prepaint and layerize about 41 ms/s, JS 12. The morph's tick is not it (225 ms gave no gain in an A/B); the orbit, ring and figure loops are composited. Likely the same class and mood writes that restyle the figure (companion_forced_cpu in tab-budgets.spec.js).
 
 ## timeline
 
