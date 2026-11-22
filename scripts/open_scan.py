@@ -53,7 +53,8 @@ API_WORD = re.compile(r"\bdeferred=True\b")
 #: Prose whose marker word is a plain verb, matched as the exact phrase
 #: (PR 242 review: teach the scan the phrase rather than bend the prose):
 #: a pass that "must still open it" (a file) and a button that a feature
-#: "had left open" (asked for).
+#: "had left open" (asked for). The match is within one line, so each
+#: phrase must stay on one line where it is written (a re-wrap brings the hit back).
 PROSE = re.compile(r"\bmust still open it\b|\bRun button had left open\b")
 #: Each exception strips only its own match, so a marker on the same line
 #: (`deferred=True)  # TODO`) is still reported.
