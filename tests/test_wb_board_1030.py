@@ -79,17 +79,15 @@ def test_b19_an_arrow_end_on_a_shape_is_bound_to_it() -> None:
 
 def test_l267_a_branch_export_says_export_this_branch() -> None:
     """L267: the branch's menu row said "Export this branch" and opened a
-    dialog headed "Export this board". The branch asks for the branch heading;
-    every other way in keeps the board's. (The whiteboard side built this as
-    `wbExportBoard({ branch: true })` in the L286 split; the mind map side's
-    duplicate title hand-over was dropped at the merge.)"""
+    dialog headed "Export this board". The branch hands its title to the one
+    dialog for that one opening; every other way in keeps the board's."""
+    # Merged with the whiteboard branch's own L267 fix (2026-11-14): the branch passes `{ branch: true }`
+    # and the dialog picks its heading from it, so this reads that shape. The intent is unchanged.
     mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     branch = _function(mapjs, "wbMapExportBranch")
     assert "wbExportBoard({ branch: true });" in branch
-    export = (ROOT / "frontend" / "js" / "whiteboard-export.js").read_text(encoding="utf-8")
-    dialog = export[export.index("function wbExportBoard(") :]
-    dialog = dialog[: dialog.index("\n  }\n") + 4]
+    dialog = (ROOT / "frontend" / "js" / "whiteboard-export.js").read_text(encoding="utf-8")
+    dialog = dialog[dialog.index("function wbExportBoard(") :]
     assert 'const heading = branch ? "Export this branch" : "Export this board";' in dialog
-    assert 'overlay.setAttribute("aria-label", heading);' in dialog
-    assert "dialogHead(heading, close)" in dialog
-    assert dialog.count('"Export this board"') == 1
+    assert 'overlay.setAttribute("aria-label", heading);' in dialog and "dialogHead(heading, close)" in dialog
+    assert "wbExportBoard.title" not in mapjs + dialog

@@ -204,7 +204,7 @@
     }
     const focus = wbHist.focus;
     wbHist.focus = null;
-    (focus && document.contains(focus) ? focus : document.getElementById("whiteboard-container"))?.focus?.({ preventScroll: true });
+    (focus && document.contains(focus) ? focus : wbInstances.container())?.focus?.({ preventScroll: true });
   }
 
   //: Put the board, or only what was selected, back as it was at the moment
@@ -367,7 +367,7 @@
     for (const key of before.keys()) if (!after.has(key)) touched.add(key);
     if (!touched.size) return 0;
     let dropped = 0;
-    for (const stack of [wbUndoStack, wbRedoStack]) {
+    for (const stack of [wbStacks.undo, wbStacks.redo]) {
       for (let i = stack.length - 1; i >= 0; i -= 1) {
         if (stack[i] === keep) continue;
         const keys = wbEntryKeys(stack[i]);
@@ -385,21 +385,21 @@
   async function wbTakeChangeFromElsewhere(boardId, source) {
     const open = window.currentBoardId ?? null;
     if (wbHist.open || !wbState || String(open) !== String(boardId ?? null)) return 0;
-    if (wbElsewhere.busy || wbRecordDepth > 0) {
+    if (wbElsewhere.busy || wbStacks.depth > 0) {
       wbElsewhere.pending = { boardId, source };
       return 0;
     }
     wbElsewhere.busy = true;
     let count = 0;
     try {
-      const top = wbUndoStack[wbUndoStack.length - 1];
+      const top = wbStacks.undo[wbStacks.undo.length - 1];
       //: The write came past this tab's `api`, so its read cache never heard.
       clearApiCache();
       const rowsBefore = wbBoardRows();
       await wbRecordGesture(async () => {
         await fetchWhiteboardState();
       });
-      const entry = wbUndoStack[wbUndoStack.length - 1];
+      const entry = wbStacks.undo[wbStacks.undo.length - 1];
       if (entry && entry !== top) {
         count = entry.action === "batch" ? entry.entries.length : 1;
         entry.label = `${source} changed ${count} ${count === 1 ? "item" : "items"}`;

@@ -154,7 +154,7 @@ def test_every_undo_door_leads_to_the_board_while_one_is_open() -> None:
     assert app.count("const surface = surfaceHistory(\"redo\");") >= 1
     assert "canUndo: window.wbCanUndo, canRedo: window.wbCanRedo" in app
     assert "canUndo: window.docCanUndo, canRedo: window.docCanRedo" in app
-    assert "window.wbCanUndo = () => (wbHistoryFor(), wbUndoStack.length > 0);" in WB
+    assert "window.wbCanUndo = () => (wbHistoryFor(), wbStacks.undo.length > 0);" in WB  # L-whiteboard-52: read through the wbStacks surface
     #: Each board keeps its own pair of stacks for the session.
     assert "const wbHistoryByBoard = new Map();" in WB
 

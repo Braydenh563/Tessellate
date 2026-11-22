@@ -39,7 +39,8 @@ def test_every_failed_delete_goes_through_one_toasting_restore():
         catch = tail[tail.index("} catch (e) {") : tail.index("} finally {")]
         assert "wbDeleteFailed(entry, redoBefore, e, () => wbDelete" in catch  # renamed by B7 (top-level)
         assert "console.error" not in catch
-        assert "const redoBefore = wbRedoStack;" in WB[at - 400 : at]
+        #: L-whiteboard-52: the redo stack is read through `wbStacks` now.
+        assert "const redoBefore = wbStacks.redo;" in WB[at - 400 : at]
 
 
 def test_a_failed_delete_drops_the_entry_keeps_redo_and_tells_the_person():
@@ -67,7 +68,7 @@ def test_a_failed_delete_behaves_as_if_nothing_happened():
 
 
 def test_the_eraser_hit_tests_the_whole_pointer_path_not_only_enter_events():
-    start = WB.index('containerEl.addEventListener("pointermove", (e) => {\n    if (window.currentTool !== "eraser"')
+    start = WB.index('wbInstances.on("pointermove", (e) => {\n    if (window.currentTool !== "eraser"')
     body = WB[start : start + 600]
     body += WB[WB.index("  function wbEraseAt(") : start]
     # Every sample the browser coalesced, so a fast touch or pen stroke skips nothing.
@@ -83,7 +84,7 @@ def test_the_unthrottled_container_pointermoves_share_one_frame_gate():
     assert "function wbOnFrame(" in WB
     gate = _function(WB, "wbOnFrame")
     assert "requestAnimationFrame" in gate
-    for marker in ('containerEl.addEventListener("pointermove", wbOnFrame(', ):
+    for marker in ('wbInstances.on("pointermove", wbOnFrame(', ):
         assert marker in WB
 
 
@@ -190,7 +191,7 @@ def test_the_node_action_buttons_floor_is_24_not_20():
 def test_far_out_the_fold_chevron_waits_for_the_zoom_or_the_selection():
     """INBOX 1450, the owner: "buttons get oversized at zoom". Below half zoom a
     24px chevron is wider than its topic, so only a selected topic keeps it."""
-    assert "#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {\n  display: none;" in LAZY
+    assert "#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse,\n.wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {\n  display: none;" in LAZY
 
 
 # B33 -------------------------------------------------------------------------

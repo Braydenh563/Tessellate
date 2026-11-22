@@ -453,14 +453,23 @@ function wbCommandMenuRow(id) {
 //: Whether the board is the thing on screen, with a board in it: the
 //: palette's "This board" group shows only then.
 function wbCommandsLive() {
+  //: Focus inside an embed: its board takes the command if it may be edited
+  //: (L-whiteboard-54), and becomes the live one so the command acts on it.
+  const embed = wbInstances.embedFor(document.activeElement);
+  if (embed) {
+    if (embed.editable) wbInstances.activate(embed);
+    return embed.editable;
+  }
   const view = document.getElementById("library-view-whiteboard");
   const canvas = document.getElementById("wb-canvas-view");
   //: Rendered, not only un-hidden: the Library tab hides by its own panel,
-  //: so a board left open there kept these classes while Notes or Ask was on
+  //: so a board still showing there kept these classes while Notes or Ask was on
   //: screen, and a stray Ctrl+V dropped an image onto the unseen board (and
   //: started captioning it). `getClientRects()` is empty under any hidden
   //: ancestor.
-  return Boolean(view && !view.classList.contains("hidden") && canvas && !canvas.classList.contains("hidden") && canvas.getClientRects().length);
+  const live = Boolean(view && !view.classList.contains("hidden") && canvas && !canvas.classList.contains("hidden") && canvas.getClientRects().length);
+  if (live) wbInstances.activate(wbInstances.page);
+  return live;
 }
 
 //: The command palette's rows (palette.js, through `paletteCommands` in
@@ -1377,7 +1386,7 @@ function wbPasteLook() {
 //: no pointer event since the canvas last moved (wb5: 16px left, 60px high).
 function wbBoardToClient(x, y) {
   wbClearCanvasRectCache();
-  return wbBoardToScreen(x, y, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
+  return wbBoardToScreen(x, y, wbCanvasOrigin(), d3.zoomTransform(wbInstances.container()));
 }
 
 function wbPasteChipClose() {
@@ -1408,7 +1417,7 @@ function wbPasteChipPlace(chip) {
 //: board that has moved on since (the top undo step is not the paste) closes
 //: the chip rather than undo something else.
 async function wbPasteChipChoose(chip, variant) {
-  if (wbUndoStack[wbUndoStack.length - 1] !== chip.entry) {
+  if (wbStacks.undo[wbStacks.undo.length - 1] !== chip.entry) {
     wbPasteChipClose();
     return;
   }
@@ -1416,7 +1425,7 @@ async function wbPasteChipChoose(chip, variant) {
   const next = await chip.apply(variant.id);
   if (!next || wbPasteChip !== chip) return;
   chip.current = variant.id;
-  chip.entry = wbUndoStack[wbUndoStack.length - 1];
+  chip.entry = wbStacks.undo[wbStacks.undo.length - 1];
   chip.at = next.at || chip.at;
   wbPasteChipPlace(chip);
 }
@@ -1537,7 +1546,7 @@ async function wbPasteText(text, at) {
   const made = await wbPasteMake(first, text, at);
   if (!made) return 0;
   const variants = wbPasteVariantList([first, ...ids.filter((id) => id !== first)]);
-  wbPasteChipOffer(variants, first, made.at, wbUndoStack[wbUndoStack.length - 1], (id) => wbPasteMake(id, text, at));
+  wbPasteChipOffer(variants, first, made.at, wbStacks.undo[wbStacks.undo.length - 1], (id) => wbPasteMake(id, text, at));
   return made.count;
 }
 
@@ -1569,7 +1578,7 @@ async function wbPasteSpecialApply(id) {
     return;
   }
   const made = await wbPasteMake(id, text, null);
-  if (made) wbPasteChipOffer(wbPasteVariantList(wbPasteVariants(text)), id, made.at, wbUndoStack[wbUndoStack.length - 1], (v) => wbPasteMake(v, text, null));
+  if (made) wbPasteChipOffer(wbPasteVariantList(wbPasteVariants(text)), id, made.at, wbStacks.undo[wbStacks.undo.length - 1], (v) => wbPasteMake(v, text, null));
 }
 
 const WB_PASTE_SPECIAL = ["stickies", "textbox", "bullets", "branch", "table", "plain"];
@@ -1627,7 +1636,7 @@ async function wbMapPasteWithChip(text) {
   if (!n) return;
   const variants = ["branches", "oneTopic"].map((id) => ({ id, label: WB_MAP_PASTE_LABELS[id], key: WB_MAP_PASTE_KEYS[id] }));
   const [x, y] = wbViewCentre();
-  wbPasteChipOffer(variants, "branches", [x, y], wbUndoStack[wbUndoStack.length - 1], (id) => wbMapPasteMake(id, text));
+  wbPasteChipOffer(variants, "branches", [x, y], wbStacks.undo[wbStacks.undo.length - 1], (id) => wbMapPasteMake(id, text));
 }
 
 async function wbMapPasteSpecial() {

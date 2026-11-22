@@ -31,7 +31,8 @@ def test_a_lost_pointer_cancels_the_gesture_and_lets_d3_go():
 
 def test_a_tool_switch_drops_a_drag_in_flight():
     sw = WB[WB.index("function selectWbTool(tool)") :][:500]
-    assert "wbDropLostGesture()" in sw
+    #: L634: reached through `wbPen` since the helper moved to whiteboard-strokes.js.
+    assert "wbPen.dropLost?.()" in sw
 
 
 def test_a_move_that_cannot_be_saved_goes_back():

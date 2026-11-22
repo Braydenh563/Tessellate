@@ -98,8 +98,8 @@
   //: run under the topics they join. Returns the groups in paint order, which
   //: the line jumps read.
   function wbPlaceSketchBands(groups, order = wbStackOrder()) {
-    const base = document.getElementById("wb-zoom-group");
-    const layer = document.getElementById("wb-html-layer");
+    const base = wbInstances.layer("wb-zoom-group");
+    const layer = wbInstances.layer("wb-html-layer");
     const sketches = order.filter((e) => e.kind === "sketch");
     const plan = wbIsMap() ? { base: sketches.map((e) => e.item.id), bands: [] } : wbSketchBands(order);
     const nodes = (ids) => ids.map((id) => groups.get(id)).filter(Boolean);
@@ -447,7 +447,7 @@
     //: on a 61-topic branch drag, 47ms of `querySelectorAll` in 40 moves.
     let groups = origin?.chromeGroups;
     if (!groups || groups.some((group) => !group.isConnected)) {
-      groups = [...document.querySelectorAll(
+      groups = [...wbInstances.queryAll(
         "#wb-zoom-group > .wb-sketch-handle-group, #wb-overlay-zoom-group > .wb-sketch-handle-group"
       )];
       if (origin) origin.chromeGroups = groups;

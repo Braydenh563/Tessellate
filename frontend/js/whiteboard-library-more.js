@@ -116,7 +116,7 @@
   //: Where the pointer last was on the canvas, as a client point, else the middle of the canvas.
   function pointerClient() {
     if (typeof wbPointerClient !== "undefined" && wbPointerClient) return { x: wbPointerClient.clientX, y: wbPointerClient.clientY };
-    const rect = document.getElementById("whiteboard-container")?.getBoundingClientRect();
+    const rect = wbInstances.container()?.getBoundingClientRect();
     return rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   }
 

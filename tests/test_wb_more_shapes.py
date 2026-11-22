@@ -74,7 +74,7 @@ def test_the_shapes_caret_opens_the_list():
     """OPEN row 847: `.wb-shape-caret` had `pointer-events: none`, so the
     toggle's `closest(".wb-shape-caret")` never matched and the caret picked
     the tool. The caret takes the press, and so does the toggle's right 14px."""
-    caret = re.search(r"\.wb-shape-caret\s*\{([^}]*)\}", _css("06-timeline-dialogs.css"))
+    caret = re.search(r"\.wb-shape-caret\s*\{([^}]*)\}", _css("board-lazy.css"))  # moved with the board dialogs (boot CSS cap)
     assert caret and "pointer-events" not in caret.group(1)
     start = WB.index("function wbToggleCaretHit(")
     hit = WB[start : WB.index("\n  }\n", start)]

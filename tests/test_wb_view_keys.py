@@ -22,6 +22,7 @@ const document = {
   getElementById: (id) => (id === "library-view-whiteboard" ? view : id === "whiteboard-container" ? { id } : null),
   activeElement: %(active)s,
 };
+const wbInstances = { container: () => document.getElementById("whiteboard-container"), layer: (id) => document.getElementById(id) };  // the page board, the default instance (L-whiteboard-53)
 const handlers = {};
 const window = { addEventListener: (t, fn, cap) => (handlers[t] = { fn, cap }) };
 const d3 = {

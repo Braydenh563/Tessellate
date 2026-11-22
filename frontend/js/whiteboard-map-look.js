@@ -90,13 +90,17 @@
   //: every render (`wbMapIndex`) and a Tab keypress redraws immediately instead
   //: of waiting on a round trip to be told what it already knows. This call is
   //: for the two facts only the server has.
-  async function wbRefreshMapState() {
-    const boardId = window.currentBoardId ?? null;
+  //: `forId`: an embed's board (whiteboard-instances.js), whose state is
+  //: returned and never made live; the active board's is set on `window`.
+  async function wbRefreshMapState(forId) {
+    const own = forId === undefined;
+    const boardId = own ? window.currentBoardId ?? null : forId;
+    let state = null;
     if (!boardId) {
       // The default scratch board has no note behind it, so it has nowhere to
       // store settings and is always an ordinary board (`list_boards`' own
       // comment says so). Nothing to ask for.
-      window.wbMapState = null;
+      if (own) window.wbMapState = null;
       return null;
     }
     try {
@@ -125,7 +129,7 @@
         }
         frontier.push(...(node.children || []));
       }
-      window.wbMapState = {
+      state = {
         type: tree.type,
         layout: tree.layout,
         theme: tree.theme && typeof tree.theme === "object" ? tree.theme : {},
@@ -142,9 +146,10 @@
       // A board that 404s here (the default board; a note deleted mid-session)
       // is simply not a map. Failing soft matters because this runs on every
       // board load: an ordinary whiteboard must not break because of it.
-      window.wbMapState = null;
+      state = null;
     }
-    return window.wbMapState;
+    if (own) window.wbMapState = state;
+    return state;
   }
 
   // --- Phase 5: perspectives, focus, metrics, templates ------------------------

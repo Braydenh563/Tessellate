@@ -785,7 +785,11 @@ def test_every_board_tool_names_its_own_cursor() -> None:
     js = frontend_text("whiteboard.js")
     tools = set(re.findall(r'data-tool="([a-z-]+)"', html))
     assert len(tools) >= 18, tools
-    body = js[js.index("function wbCursorForTool(") : js.index("// The visible half of Select")]
+    # The function's own closing brace ends the slice: L634 moved it into
+    # whiteboard-caps.js, away from the comment that used to follow it.
+    start = js.index("function wbCursorForTool(")
+    indent = js[js.rindex("\n", 0, start) + 1 : start]
+    body = js[start : js.index("\n" + indent + "}\n", start)]
     brushes = set(re.findall(r'"([a-z]+)"', js[js.index("const WB_BRUSH_TOOLS"):js.index("const WB_HIGHLIGHTER_ALPHA")]))
     # The flyout's further shapes are brushes by the spread of their table's
     # keys; the keys are read off the table, so a new one is still checked.
@@ -2330,7 +2334,9 @@ def test_every_right_click_menu_has_a_long_press_twin():
     #: whiteboard.js (2026-09-24); its node and edge menus came with it.
     for name in ("app.js", "documents.js", "graph-canvas.js", "whiteboard.js", "whiteboard-map.js"):
         text = frontend_text(name)
-        right_clicks = len(re.findall(r'addEventListener\(\s*"contextmenu"', text))
+        #: `wbInstances.on` is how the board binds its container's listeners since
+        #: L-whiteboard-54 (one copy per board instance); it is a right-click all the same.
+        right_clicks = len(re.findall(r'(?:addEventListener|wbInstances\.on)\(\s*"contextmenu"', text))
         #: The selection bubble's return is not a menu: a finger already has the
         #: system's own selection bar, and the helper steps aside for touch.
         right_clicks -= text.count('addEventListener("contextmenu", selectionRestoreOnContextMenu)')
@@ -4351,7 +4357,7 @@ def test_a_maps_boundaries_and_summaries_are_drawn_in_one_pass() -> None:
     the topic's one undo step; both reach the image export; neither takes the
     pointer; and a theme reset keeps them."""
     wb = frontend_text("whiteboard.js")
-    wm = frontend_text("whiteboard-map.js")
+    wm = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     render = wb[wb.index("function renderWhiteboard()") :]
     assert render.index("wbRenderMapStructure();") > render.index("wbRenderMapEdges();")
@@ -4369,7 +4375,7 @@ def test_a_topics_markers_are_one_row_from_one_icon_set() -> None:
     by one function into one row from the paint pass, the icons come from a
     fixed Phosphor set with no emoji in it, every change is the topic's one
     undo step, and the markers are content (a branch copy keeps them)."""
-    wm = frontend_text("whiteboard-map.js")
+    wm = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     paint = wm[wm.index("function wbPaintMapNodeStyle(") :][:6000]
     assert "wbMapPaintMarkers(markers, d.data || {});" in paint
     painter = wm[wm.index("function wbMapPaintMarkers(") :]
@@ -7984,6 +7990,7 @@ def test_a_tool_rail_is_one_tab_stop_per_section() -> None:
     assert "tabIndex = button === keep ? 0 : -1" in src and '"Home"' in src and '"End"' in src
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "A toolbar of many tools" in design and "whiteboard-toolbar.js" in design
+
 
 def test_a_note_s_provenance_is_one_chip_built_in_the_note_card() -> None:
     """L-general-13: the origin chip is drawn once, in entry-card.js, from the server's `source_kind`;

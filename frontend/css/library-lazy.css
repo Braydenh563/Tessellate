@@ -1317,7 +1317,8 @@ button.outline-twist {
   pointer-events: auto;
 }
 
-#wb-html-layer > .wb-culled {
+#wb-html-layer > .wb-culled,
+[data-wb-layer="wb-html-layer"] > .wb-culled {
   content-visibility: hidden;
 }
 
@@ -1326,7 +1327,8 @@ button.outline-twist {
    z-index set in JS between the cards' ranks. Its width and height are 1
    (attributes, set in JS), not 0: a zero-size `<svg>` draws nothing;
    overflow shows the strokes wherever they are. */
-#wb-html-layer > .wb-sketch-band {
+#wb-html-layer > .wb-sketch-band,
+[data-wb-layer="wb-html-layer"] > .wb-sketch-band {
   position: absolute;
   left: 0;
   top: 0;
@@ -4144,17 +4146,20 @@ body.printing-doc #doc-preview p,
 }
 /* Below half zoom only the + stays: two buttons of 20px are wider than the
    topic they hang from. `wbPublishInvZoom` sets the attribute. */
-#whiteboard-container[data-wb-zoom-far] .wb-map-ref {
+#whiteboard-container[data-wb-zoom-far] .wb-map-ref,
+.wb-embed[data-wb-zoom-far] .wb-map-ref {
   display: none;
 }
 /* The one + left at far zoom is 20px and hangs flush on the topic's edge: a
    level is 76 units apart, 19px at 25%, so the 24px button 8px off the box
    covered the parent by 9px (L360, mapactions.js). */
-#whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+#whiteboard-container[data-wb-zoom-far] .wb-map-actions,
+.wb-embed[data-wb-zoom-far] .wb-map-actions {
   transform: scale(calc(20 / 28 * var(--wb-inv-zoom)));
   right: calc(100% + 2px * var(--wb-inv-zoom));
 }
-#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions {
+#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions,
+.wb-embed .wb-map-node[data-flow=down] .wb-map-actions {
   transform-origin: 50% 0;
   right: auto;
   left: 50%;
@@ -4162,7 +4167,8 @@ body.printing-doc #doc-preview p,
   translate: -50% 0;
 }
 @media (pointer: coarse) {
-  #whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+  #whiteboard-container[data-wb-zoom-far] .wb-map-actions,
+  .wb-embed[data-wb-zoom-far] .wb-map-actions {
     transform: scale(calc(20 / 44 * var(--wb-inv-zoom)));
   }
 }
@@ -4174,7 +4180,8 @@ body.printing-doc #doc-preview p,
    Below half zoom a 24px chevron is wider than the topic it sits on (30%:
    a topic 17px tall carried one on every branch), so it waits for the zoom
    or for the topic to be selected. */
-#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
+#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse,
+.wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
   display: none;
 }
 
@@ -8140,6 +8147,14 @@ button.ghost.doc-template-choice.wb-template-choice {
    more shapes"): nine tools as a grid of five, so the flyout stays about as
    wide as the four boxes and the two lines above them rather than a row of
    nine. */
+/* In a phone's Tools sheet the kind menu opens below its button: above it,
+   the sheet card's overflow cut it off and a tap on Line fell through to the
+   overlay (toolpop.js at 390: menu top 267, card top 299). A board rule, so
+   it loads with the board, not at boot. */
+.sheet-card .wb-shape-menu {
+  bottom: auto;
+  top: calc(100% + 0.5rem);
+}
 .wb-shape-menu-more {
   display: grid;
   grid-template-columns: repeat(5, auto);
@@ -11255,21 +11270,10 @@ input[type="color"].wb-mixed {
   }
 }
 
-/* --- the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") -----------
-   Lazy: the boards bundle loads this sheet. One switch row per set on the modal recipe: the name, then its count at the
-   end. The list scrolls inside the card rather than growing past the window. */
-.wb-sets-card .wb-sets-hint {
-  margin: 0;
-}
-.wb-sets-card .wb-sets-list {
-  display: flex;
-  flex-direction: column;
-  max-height: min(60vh, 28rem);
-  overflow-y: auto;
-}
-.wb-sets-card .wb-sets-count {
-  margin-inline-start: auto;
-  font-variant-numeric: tabular-nums;
+/* A read-only embed pans and zooms only (L-whiteboard-54; with the boards bundle, as the embed is): its layers take no
+   pointer, so no card's drag starts and every press reaches the box's zoom. */
+.wb-embed-readonly > [data-wb-layer] {
+  pointer-events: none;
 }
 
 /* --- board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. */

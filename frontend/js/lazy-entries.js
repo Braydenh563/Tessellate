@@ -7,7 +7,9 @@ Object.assign(LAZY_MODULES, {
   //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
   boards: [
     ...LAZY_MODULES.library,
+    "/css/board-lazy.css", //: The board dialogs' rules (export, shape libraries), out of the boot CSS.
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/js/whiteboard-undo.js", //: Before whiteboard-map.js: the undo stacks (`wbStacks`) and the gesture recorder.
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-strip.js", //: After whiteboard-map.js: the topic strip and radial ring; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-waypoints.js", //: After whiteboard-map.js: map line waypoints and link handles; wrapped, names the other board files at run time only.
@@ -15,8 +17,27 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-edges.js", //: After whiteboard-map.js: line geometry, ribbons and edge paint; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-notes.js", //: After whiteboard-map.js: map note topics and folding; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-look.js", //: After whiteboard-map.js: topic fill, focus and look helpers; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-record.js", //: After whiteboard-map.js: the Undo-recorded map commands, bound through `wbRecorded` (defined there); wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
+    "/js/whiteboard-boards.js", //: After whiteboard.js: the board list, loading, renaming and new boards; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-handles.js", //: After whiteboard.js: path transforms, end caps and the selection grips; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-items.js", //: After whiteboard.js: painting, fitting, saving and deleting items; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-drag.js", //: After whiteboard.js: the link index and dragging; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-guides.js", //: After whiteboard.js: alignment guides, spacing and grid; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-paint.js", //: After whiteboard.js: background, cursors, highlighter, votes and timer; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-caps.js", //: After whiteboard.js: shape paths and arrow heads; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-groups.js", //: After whiteboard.js: groups, item boxes and zoom to fit; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-style.js", //: After whiteboard.js: tool settings, copied styles and context menu rows; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-tree.js", //: After whiteboard.js: the mind-map tree on a board; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-gesture.js", //: After whiteboard.js: gestures, the bin target and drag finishing; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-clipboard.js", //: After whiteboard.js: copy, paste and the item grips; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-pointer.js", //: After whiteboard.js: drawing, erasing, marquee and lasso select; wrapped, initWhiteboard calls it once.
+    "/js/whiteboard-pan.js", //: After whiteboard.js: pan, zoom and the board settings controls; wrapped, initWhiteboard calls it once.
+    "/js/whiteboard-menus.js", //: After whiteboard.js: the board menus and keyboard shortcuts; wrapped, initWhiteboard calls it once.
+    "/js/whiteboard-toolsheet.js", //: After whiteboard.js: the phone tools sheet and docked tool menus; wrapped, initWhiteboard calls it once.
+    "/js/whiteboard-strokes.js", //: After whiteboard.js: the pen stroke handlers; wrapped, initWhiteboard calls it once.
+    "/js/whiteboard-instances.js", //: After whiteboard.js: board state per instance (an embed's own state, selection, undo and zoom); wrapped, reads whiteboard.js's `wbZoom` at load.
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-frames.js", //: After whiteboard.js: frame creation, painting and turning; wrapped, names whiteboard.js at run time only.
@@ -124,7 +145,7 @@ Object.assign(LAZY_MODULES, {
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
   mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
-  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save, dictation (gesture-kit.js's header).
+  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save, dictation, the phone ⋯ sheet (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
   chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
@@ -196,7 +217,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation", "openKebabSheet"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
@@ -214,7 +235,8 @@ document.addEventListener("keydown", (event) => {
   if (!event.altKey || event.ctrlKey || event.metaKey || event.code !== "Equal") return;
   const box = event.target;
   //: By the box's id while the adapters are still on their way (maths1527: about 1 s after a fresh note box's first focus, Alt+= did nothing).
-  const kind = (typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
+  //: editor.js is a boot script, so by the first key press `editorSurfaceKind` is defined.
+  const kind = editorSurfaceKind(box) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
   if (box?.id !== "question" && !["note", "document", "chat", "board"].includes(kind)) return;
   event.preventDefault();
   openMathEditor({ target: box });

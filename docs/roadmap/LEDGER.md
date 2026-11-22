@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
-| whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
+| whiteboard | 0 | 0 | 0 | 0 | 0 | 0 |
 | documents | 0 | 0 | 1 | 0 | 0 | 1 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 402 | 506 | 124 | 2 | 153 | 1032 |
+| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
+| general | 0 | 24 | 2 | 0 | 5 | 26 |
+| all | 402 | 504 | 124 | 2 | 153 | 1030 |
 
 ## graph
 
@@ -278,8 +278,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 
-- [ ] **L-whiteboard-49** `whiteboard` open, M: Carve the Undo-recorded map commands out of whiteboard-map.js after moving the recorder wrap into a registry. From L286 (D24) remainder. Evidence: whiteboard.js 15,907 and whiteboard-map.js 7,732 lines; global names 7,180. Left: the WB_RECORDED functions (whiteboard-map.js 800-1630 and 4130-6750 areas) and the history/undo block cannot move into a wrapped file until wbRecordGesture wraps by name inside the file, not by replacing window[name]; the 10,000-line onDomReady body in whiteboard.js holds one function.
-
 ## documents
 
 - [ ] **L-documents-104** `documents` partly, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile; documents side built behind boardInstance stub, 2349346a1; waits on #223's instance API Left for the wiring step: a card that CodeMirror removes is noticed only on the next doc-shown, doc-saved or board-edited (no MutationObserver, test_frontend_wake_sources), so the embed widget's destroy hook should end its instance; help and manual parity move then.
@@ -464,7 +462,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L551** `world-class` open, S: Update p5 API list in vendor_use.py from 1.9.4 to 1.11.13. From OPEN.md:3587. Evidence: scratchpad/vendor_use.py:15 still says pinned to 1.9.4; regenerate
 - [ ] **L552** `world-class` open, S: Flake: test_composer_age_today_e17 fails only after other tests. From a28x-1102.md Left. Evidence: No later fix commit found; order dependence noted
 - [ ] **L553** `world-class` open, S: 1662 key lint misses key.toLowerCase() === 'x' and switch(e.key). From a30c-1102.md Still open small. Evidence: No lint test matching toLowerCase() === in tests/test_key*.py
-- [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
 - [ ] **L556** `world-class` open, S: test_consent_1110 reads the real clock; use a fixed clock. From sm-1111.md Found. Evidence: tests/test_consent_1110.py still reads clock; standing rule says fixed clock
 - [ ] **L557** `world-class` open, S: test_static_compression ratchet red (250664 vs 250450). From w34-gap3-1111.md Found. Evidence: Source: red on base; not re-run (read-only)
@@ -543,7 +540,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L631** `world-class` open, L: Allow reading of uploaded PDF documents outside the app (ocr_media 415). From OPEN.md:1449; OPEN.md:2424. Evidence: routes_files.py:~2125 ocr_media still 415 'Only images can be read this way' for non-image suffixes
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
 - [ ] **L633** `world-class` open, L: Build a per-site retry for the toast(e.message, true) calls (plainHttpError gives the why, no retry param exists). From OPEN.md:1397; OPEN.md:3665. Evidence: status.js:1085 plainHttpError gives the why; per-site retry not built (no retry param found)
-- [ ] **L634** `world-class` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
 - [ ] **L635** `world-class` open, L: Isolate search engine latency from HTTP load. From OPEN.md:943. Evidence: Loaded GET /search 1.8-5.0s figure only; no isolated benchmark found
 - [ ] **L636** `world-class` open, L: Sweep coverage: open board/map, graph popup at 390, print dialog, lightbox, confirm, looks, contrast, forced colours. From OPEN.md:1244; OPEN.md:3503. Evidence: No sweeps listed for these surfaces; print dialog also not automatable.
 - [ ] **L637** `world-class` open, L: ARCH-02: POST /entries p50 210 ms at 5,000 notes, get under 150. From OPEN.md:1480; OPEN.md:3246. Evidence: HISTORY covers search/similar_pairs wins only; no POST /entries 5k result under 150ms found
@@ -672,6 +668,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
+- [ ] **L-general-71** `general` open, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only
 
 ## Owner calls
 

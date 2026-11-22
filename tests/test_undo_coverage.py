@@ -44,6 +44,8 @@ SEEDS = {
     "docUndo", "wbUndo", "wbPushUndo", "wbPushDragUndo", "wbPushMoveBatch", "wbPushCall",
     #: Records the board rows before and after its callback and pushes the diff (whiteboard.js).
     "wbRecordGesture",
+    #: Binds a command to `wbRecordGesture` once, wherever it is called from (whiteboard-map.js, L-whiteboard-49).
+    "wbRecorded",
     #: Chat loads its helpers (chat-undo.js) on the first write and names one.
     "chatWriteRecord",
     #: Takes an act and its inverse and puts the step on the stack (skills.js).
@@ -555,10 +557,10 @@ EXEMPT: dict[str, str] = {
     "dashboard.js:(anonymous /recordings/recover)": "job: starts or stops work or a model; deletes no user data",
     "app.js:(anonymous path)": "read: the api.upload shorthand itself; each caller is scanned as its own site",
     "whiteboard-pdf.js:upload": "board: the PDF is placed by wbCreateObject inside one wbRecordGesture, so Undo takes the pages back; the file stays on disk like a placed picture",
-    "whiteboard.js:wbPlaceUploadedImage":"board: the image is placed by wbCreateObject, which pushes the board's create step; the file stays in the Library",
+    "whiteboard-pointer.js:wbPlaceUploadedImage":"board: the image is placed by wbCreateObject, which pushes the board's create step; the file stays in the Library",
     "whiteboard-textedit.js:wbApplyHistoryEntry": "inverse: applies the board history's own undo and redo",
     "whiteboard.js:openWhiteboardBoard": "board: the bind sync moves cards to match notes edited elsewhere, the notes' state, not a user edit to undo",
-    "whiteboard.js:initWhiteboard": "board: the background image is set through wbSetBackground, which pushes the board step; the file stays in the Library",
+    "whiteboard-pan.js:wbInitPan": "board: the background image is set through wbSetBackground, which pushes the board step; the file stays in the Library",
     "whiteboard-map-strip.js:wbMapTakePicture": "board: the picture is set on the topic through wbMapSetNodeStyle, which pushes the board step; the file stays in the Library",
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",
     "library-links.js:refresh": "job: fetches the page again and refills its icon and excerpt; nothing the person wrote changes",
@@ -569,9 +571,8 @@ EXEMPT: dict[str, str] = {
     "chat-edit.js:regenerateFrom": "send: cuts the turns after the question it re-asks, as Regenerate always replaced them; asks first when an answer wrote",
     "chat.js:compressChatContext": "read: asks the model to shorten the chat's context; writes nothing",
     "graph.js:graphPinSave": "inverse: the one door for pin writes; each caller pushes its pin step (graphPinStep) and graphSetPin replays it for Undo and Redo",
-    "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
+    "whiteboard-clipboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
     "whiteboard-map.js:wbMapRestoreRows": "inverse: puts back a deleted branch for the board history's own Undo and Redo",
-    "whiteboard-map.js:wbMapAdoptProvisional": "board: gives a topic already on the board's history (its create step is remapped to the server id)",
     #: The note's create step is now pushed before the staged files go (INBOX e2e "Undo takes a new note back"), so the
     #: pictures uploaded first sit inside the step and the files attached after it are the exempt send.
     "settings-wiring.js:uploadStagedFiles": "send: attaches the staged files to the note just saved; the save is the step (Undo bins the note with them)",
@@ -754,12 +755,12 @@ EXEMPT: dict[str, str] = {
     "whiteboard-map-marks.js:wbMapSummariseBranch": "read: asks the model for a summary",
     "whiteboard-export.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
     "whiteboard-export.js:wbExportBoardFolder": "job: a board export the person asked for, built on the server and saved as a download; it writes and deletes nothing",
-    "whiteboard.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
-    "whiteboard.js:wbPaintStickyDates": "read: reads dates out of sticky text",
-    "whiteboard.js:wbSaveManyBatch": "board: low-level board save of a selection in one request; its callers push wbPushUndo, as they did around the per-item saves it replaced",
-    "whiteboard.js:wbSaveMapBulkMove": "board: low-level board save; its callers push wbPushUndo",
-    "whiteboard.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
-    "whiteboard.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
+    "whiteboard-gesture.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
+    "whiteboard-items.js:wbPaintStickyDates": "read: reads dates out of sticky text",
+    "whiteboard-items.js:wbSaveManyBatch": "board: low-level board save of a selection in one request; its callers push wbPushUndo, as they did around the per-item saves it replaced",
+    "whiteboard-gesture.js:wbSaveMapBulkMove": "board: low-level board save; its callers push wbPushUndo",
+    "whiteboard-items.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
+    "whiteboard-items.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard-sketch-text.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
     "documents-languagetool.js:ask": "read: sends a document's paragraphs to the local grammar checker; shows matches, writes nothing",
     "whiteboard-format.js:(anonymous /media/upload)": "board: Replace picture uploads the file; the address swap is wbFmtApply's one board Undo step",
@@ -905,4 +906,5 @@ def test_a_history_remap_translates_each_id_once():
         "items brought back reuse the ids just deleted (8 comes back as 9 and 9 as 8); "
         "a second translation of an already translated id duplicates and drops steps"
     )
-    assert 'wbRemapSeen.set(made, new Set(["id"]))' in board, "a recreated item's own step is already in the new ids"
+    #: L-whiteboard-52: the remap memory is read through the `wbStacks` surface outside whiteboard-undo.js.
+    assert 'wbStacks.remapSeen.set(made, new Set(["id"]))' in board, "a recreated item's own step is already in the new ids"

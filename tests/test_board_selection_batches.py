@@ -44,7 +44,7 @@ ALLOWED = {
     "wbMapRemoveKeepingBranchNow": "fallback for a server without move-many; one move per child",
     "wbSaveMapBulkMove": "the chunked move-many batch itself, and its per-object fallback",
     "wbSaveMany": "the batch itself; a topic still being created is saved the old way",
-    "initWhiteboard": "wires one click handler per button; the write runs on the click",
+    "wbInitPan": "wires one click handler per button; the write runs on the click (carved out of initWhiteboard, L634)",
     "wbRenderLinkEndpointHandles": "draws two handles; the write runs on the drag's end",
     "wbDrawSketchHandles": "draws the grips; the write runs on the drag's end",
     "drawLibraryBoardsGallery": "draws one card per board; the write runs on a menu choice",

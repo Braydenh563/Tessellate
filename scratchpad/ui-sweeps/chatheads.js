@@ -51,7 +51,8 @@ const TURNS = Number(process.env.TURNS || 150);
       const head = heads[i]?.firstElementChild;
       const writer = m.dataset.persona;
       const atlas = writer === aiNameNow();
-      const isAtlas = !!head && head.classList.contains('nm-atlas');
+      // Older replies' Atlas heads are retired to a shared-symbol copy (atl-rest, atlas.js retireOlder).
+      const isAtlas = !!head && (head.classList.contains('nm-atlas') || head.classList.contains('atl-rest'));
       if (atlas !== isAtlas) mismatch.push(`${i}:${writer}:${head?.getAttribute('class')}`);
     });
     const distinct = new Set(heads.map((h) => h?.innerHTML.length)).size;

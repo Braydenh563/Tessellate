@@ -188,3 +188,25 @@ def test_the_binding_logs_carry_no_request_values():
     assert calls
     for call in calls:
         assert len(call.args) == 1 and isinstance(call.args[0], ast.Constant), ast.dump(call)
+
+
+def test_a_stored_binding_with_a_bad_name_or_value_is_skipped(session):
+    """L-whiteboard-71: a frame row written past the API keeps no binding."""
+    import json as _json
+
+    from tessellate.api import wb_binds
+    from tessellate.core.database import WhiteboardObject
+
+    rows = [
+        {"property": "status", "value": "Done"},
+        {"property": "a:b", "value": "x"},
+        {"property": "status", "value": ["Done"]},
+        {"property": 3, "value": "x"},
+        {"property": "tags", "value": "x"},
+        {"property": "status", "value": "a\nb"},
+    ]
+    for n, binds in enumerate(rows):
+        session.add(WhiteboardObject(kind="frame", data=_json.dumps({"binds": binds}), x=n * 400, y=0, width=300, height=300))
+    session.commit()
+    found = [binds for _, binds in wb_binds.bound_frames(session, None)]
+    assert found == [{"property": "status", "value": "Done"}]

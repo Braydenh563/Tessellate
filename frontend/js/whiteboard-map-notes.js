@@ -62,9 +62,9 @@
       });
     }
     if (restoreFocus) {
-      const mark = document.querySelector(`.wb-object[data-id="${state.id}"] .wb-map-note`);
+      const mark = wbInstances.query(`.wb-object[data-id="${state.id}"] .wb-map-note`);
       if (mark && !mark.hidden) mark.focus({ preventScroll: true });
-      else document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+      else wbInstances.container()?.focus({ preventScroll: true });
     }
   }
 
@@ -192,6 +192,7 @@
         if (icon.textContent) icon.textContent = "";
         icon.className = name ? `ph ph-${name} wb-map-node-icon` : "wb-map-node-icon";
       }
+      }
     }
       }
 
@@ -296,7 +297,7 @@
   function wbMapStartResizeDrag(grip, event, d) {
     const node = grip.closest(".wb-object");
     if (!node) return;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const k = container ? d3.zoomTransform(container).k : 1;
     const startX = event.clientX;
     const startY = event.clientY;

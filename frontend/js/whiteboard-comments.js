@@ -128,7 +128,7 @@
   //: with them: a pin at the item's top-left corner, the button up and left of
   //: it, clear of the resize grip.
   function wbPaintLinkMarks() {
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     if (!layer) return;
     let host = document.getElementById("wb-link-marks");
     const wanted = [];
@@ -197,7 +197,7 @@
   //: the button up and to the right of the corner, clear of the resize handle.
   function wbPaintCommentMarks() {
     wbPaintLinkMarks();
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     if (!layer) return;
     //: A thread open on an item that is gone (deleted, another board) goes too.
     if (wbCommentState && !wbFindItem(wbCommentState.kind, wbCommentState.id)) wbCloseComments();
@@ -205,7 +205,7 @@
     const wanted = [];
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        //: The mark counts what is still open; a thread that is all resolved
+        //: The mark counts unresolved threads; a thread that is all resolved
         //: keeps a quiet tick, so it can still be opened and read.
         //: A reply is as open as the comment it answers.
         const thread = wbItemComments(kind, item);
@@ -660,7 +660,7 @@
     if (state.anchor.classList.contains("wb-comment-mark")) state.anchor.setAttribute("aria-expanded", "false");
     if (restoreFocus) {
       const mark = document.querySelector(`.wb-comment-pin[data-comment-key="${state.key}"] .wb-comment-mark`);
-      (mark || document.getElementById("whiteboard-container"))?.focus({ preventScroll: true });
+      (mark || wbInstances.container())?.focus({ preventScroll: true });
     }
   }
 

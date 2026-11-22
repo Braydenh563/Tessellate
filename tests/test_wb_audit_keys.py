@@ -72,7 +72,7 @@ def test_escape_leaves_a_text_box_selected_rather_than_typing_on():
     assert 'selectWbItem("object", d.id)' in esc
 
 
-MAP = frontend_text("whiteboard-map.js")
+MAP = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
 
 
 def test_siblings_sort_by_their_order_key_and_colours_by_creation():
@@ -257,9 +257,11 @@ def test_nothing_outside_the_boards_setup_calls_its_private_tool_picker():
     # `selectWbTool` is declared inside `initWhiteboard`; a top-level function
     # that calls it by name throws (the topic menu's "Connect this topic to
     # another" did, 2026-10-04). Outside, the handle is `wbSelectToolRef`.
-    init = _function_body(WB, "initWhiteboard")
+    # The sections carved out of it (L634) are handed it as a parameter
+    # (`function wbInitPan({ selectWbTool })`), so their calls count as inside.
     code = re.sub(r"(?m)^\s*//.*$", "", WB)
-    inside = len(re.findall(r"\bselectWbTool\(", re.sub(r"(?m)^\s*//.*$", "", init)))
+    owners = ["initWhiteboard"] + re.findall(r"function (\w+)\(\{[^}]*\bselectWbTool\b[^}]*\}\)", code)
+    inside = sum(len(re.findall(r"\bselectWbTool\(", re.sub(r"(?m)^\s*//.*$", "", _function_body(WB, n)))) for n in owners)
     assert len(re.findall(r"\bselectWbTool\(", code)) == inside
 
 

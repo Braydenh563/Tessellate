@@ -147,6 +147,8 @@ ROWS = (
     "  addEventListener(n, f) { this.listeners[n] = f; }, replaceChildren(...c) { this.children = c; }, append(...c) { this.children.push(...c); } });"
     "for (const id of ['wb-fmt-port', 'wb-fmt-port-add', 'wb-fmt-port-del', 'wb-fmt-port-perim', 'wb-fmt-port-dx', 'wb-fmt-port-dy']) mk(id);"
     "const rows = [{ hidden: true }, { hidden: true }, { hidden: true }];"
+    # The board's container is found through the active instance since L-whiteboard-53; the page one is by id.
+    "const wbInstances = { container: () => document.getElementById('whiteboard-container'), layer: (id) => document.getElementById(id) };"
     "const document = { getElementById: (id) => els[id] || null, querySelectorAll: (q) => (q === '[data-fmt=\"ports\"]' ? rows : []), activeElement: null,"
     "  createElement: (t) => ({ tag: t, value: '', textContent: '' }), addEventListener() {} };"
     "const calls = []; const toast = () => {}; const onSurface = (s, f) => f(); const wbFmtState = {};"

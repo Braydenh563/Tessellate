@@ -78,6 +78,9 @@
       rulersDrawn = false;
       return;
     }
+    //: **The page board's only** (L-whiteboard-60): an embed is a small board inside a document, with no room for a
+    //: 20px strip on two sides, so a frame from its zoom leaves the page's rulers on the page board's transform.
+    if (wbInstances.active !== wbInstances.page) return;
     rulersDrawn = true;
     const tf = t || d3.zoomTransform(host);
     const width = host.clientWidth, height = host.clientHeight;
@@ -142,8 +145,9 @@
   const MAX_PAGES = 100;
   let pagesKey = "";
   function drawPages(bg) {
-    const zoom = $("wb-zoom-group");
-    let group = $("wb-page-view");
+    //: The active board's zoom group and its page view inside it (L-whiteboard-56).
+    const zoom = wbInstances.layer("wb-zoom-group");
+    let group = zoom?.querySelector(".wb-page-view") || null;
     if (!zoom || bg.page_view !== true || typeof wbContentBounds !== "function") {
       group?.remove();
       pagesKey = "";
@@ -158,7 +162,7 @@
     pagesKey = key;
     if (!group) {
       group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      group.setAttribute("id", "wb-page-view");
+      group.setAttribute("class", "wb-page-view");
       group.setAttribute("aria-hidden", "true");
     }
     if (group.parentNode !== zoom || zoom.firstChild !== group) zoom.insertBefore(group, zoom.firstChild);
@@ -229,6 +233,13 @@
   }
 
   //: After each board render: the page frames follow content that has grown past the last page.
-  wbFmtState.opts = { sync, afterRender: () => drawPages(wbBoardBackground()), show, read, ticks, drawRulers };
+  //: The unit and the page view's key are this board's (L-whiteboard-67): `view()` reads them, `view(v)` sets them and returns the old pair,
+  //: which `wbInstances` swaps with the rest of a board's state.
+  function view(next = null) {
+    const was = { unit, pagesKey };
+    if (next) ({ unit, pagesKey } = next);
+    return was;
+  }
+  wbFmtState.opts = { sync, view, afterRender: () => drawPages(wbBoardBackground()), show, read, ticks, drawRulers };
   onSurface("board", wire);
 })();

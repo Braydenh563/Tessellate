@@ -46,7 +46,7 @@ const { openFresh, checker } = require("./cdlib.js");
     });
     check(`${width}: the View switches open and close Find and Overview`, sw.searchOn && sw.searchOff && sw.navOn && sw.navOff, sw);
 
-    const titles = await page.evaluate(() => ({ table: wbResizeHandleTitle("table"), diagram: wbResizeHandleTitle("diagram"), text: wbResizeHandleTitle("text") }));
+    const titles = await page.evaluate(() => ({ table: renderWbObjects.sweep.wbResizeHandleTitle("table"), diagram: renderWbObjects.sweep.wbResizeHandleTitle("diagram"), text: renderWbObjects.sweep.wbResizeHandleTitle("text") }));
     check(`${width}: a table's and a diagram's grip say what the double-click fits`, !/text/.test(titles.table) && !/text/.test(titles.diagram) && /text/.test(titles.text), titles);
 
     // --- L269: a roving tab stop per rail section -----------------------------------------------------------

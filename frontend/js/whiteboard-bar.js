@@ -232,7 +232,7 @@
     const { kind, item, box } = items[next];
     wbMultiSelection.clear();
     selectWbItem(kind, item.id);
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (container) {
       const t = d3.zoomTransform(container);
       const view = container.getBoundingClientRect();
@@ -265,7 +265,7 @@
     if (!wbSelectedItem && wbMultiSelection.size === 0) return;
     wbSelectedItem = null;
     wbMultiSelection.clear();
-    document.getElementById("whiteboard-container")?.removeAttribute("aria-activedescendant");
+    wbInstances.container()?.removeAttribute("aria-activedescendant");
     wbApplySelectionHighlight();
     wbSyncMapToolState();
     wbUpdateSelectionBar();
@@ -368,7 +368,7 @@
   //: When none is clear it takes the one that covers least. The topic's own
   //: buttons (+ and link) count as the topic, since they hang off it.
   function wbMapStripMenuOffTopic(menu, toggle) {
-    const el = wbMapStripNodeId != null && document.querySelector(`.wb-object[data-id="${wbMapStripNodeId}"]`);
+    const el = wbMapStripNodeId != null && wbInstances.query(`.wb-object[data-id="${wbMapStripNodeId}"]`);
     if (!el) return;
     //: Back to its natural place first when an earlier frame moved it, so the
     //: door follows the bar on a pan and the answer is never stale.
@@ -463,7 +463,7 @@
   //: the strip is what was asked for. One rect read, and not during a drag
   //: (`held`), where nothing about the line changes against the bar.
   function wbMapStripClearOfHandle(node, { left, y, w, h, hostRect, gapBelow, bottom, minY, maxY }) {
-    const handle = node && document.querySelector(`.wb-map-edges .wb-map-edge-handle[data-child="${node.id}"]`);
+    const handle = node && wbInstances.query(`.wb-map-edges .wb-map-edge-handle[data-child="${node.id}"]`);
     if (!handle) return [left, y];
     const hb = handle.getBoundingClientRect();
     if (!hb.width) return [left, y];
@@ -663,7 +663,7 @@
     // one shift-clicked item and this hid it again, so that selection had an
     // arrange row nobody could see. `wbSelectionBounds` is happy with one.
     const multi = wbMultiSelection.size > 0;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const host = document.getElementById("library-view-whiteboard");
     //: **A map node gets the map's own strip, in the board bar's place**
     //: (MINDMAP_PLAN.md §12.1 item 2). One bar above a node, never two: two
@@ -839,7 +839,7 @@
     const gripsBottom = grips ? grips.getBoundingClientRect().bottom - hostRect.top : bottom;
     if (y < floor) y = Math.max(bottom, gripsBottom) + gapBelow;
     //: **At phone width the board bar is pinned to the top of the canvas**
-    //: (WHITEBOARD_PLAN section 7's open question, answered 2026-09-20 by
+    //: (WHITEBOARD_PLAN section 7's question, answered 2026-09-20 by
     //: building both and measuring them: `scratchpad/ui-sweeps/wbcontextphone.js`,
     //: five kinds high and low on the board, ten selections each way).
     //:

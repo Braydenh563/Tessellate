@@ -45,6 +45,7 @@ const wbSaveSketchProps = async (sketch, partial) => {
 const wbSaveMany = async (rows) => rows.length;
 const d3 = { zoomTransform: () => ({ k: 1 }) };
 var document = { getElementById: () => ({}) };
+const wbInstances = { container: () => document.getElementById("whiteboard-container"), layer: (id) => document.getElementById(id) };  // the page board, the default instance (L-whiteboard-53)
 const add = (id, data) => sketches.push({ id, data: JSON.stringify({ type: 'link-straight', ...data }) });
 const dataOf = (id) => JSON.parse(sketches.find((s) => s.id === id).data);
 const L = () => wbFmtState.linkEdge;

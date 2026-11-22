@@ -25,7 +25,7 @@ def test_both_menus_carry_the_twin_with_the_twin_icon():
 def test_the_twin_is_the_level_one_fold_not_new_folding_code():
     wb = frontend_text("whiteboard.js")
     lib = _read("frontend", "js", "whiteboard-library.js")
-    mp = frontend_text("whiteboard-map.js")
+    mp = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     assert '$("wb-map-fold-all")?.addEventListener("click", () => wbMapFoldToLevel(1))' in wb
     assert 'getElementById("wb-side-map-fold")?.addEventListener("click", () => wbMapFoldToLevel(1))' in lib
     assert "Fold every branch" in wb and "Fold every branch" in mp
@@ -35,7 +35,7 @@ def test_the_twin_is_the_level_one_fold_not_new_folding_code():
 
 
 def test_enabled_only_when_it_would_change_something():
-    mp = frontend_text("whiteboard-map.js")
+    mp = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     sync = mp[mp.index("wbMapFoldToLevel.sync = ") :].split("\n};")[0]
     assert "wb-map-fold-all" in sync and "wb-side-map-fold" in sync
     assert "wb-map-expand-all" in sync and "wb-side-map-expand" in sync

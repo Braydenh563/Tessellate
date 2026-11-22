@@ -183,5 +183,5 @@ def test_the_live_stroke_paints_over_the_cards_while_it_is_drawn() -> None:
     """A new stroke lands on top, so the path drawn under the pointer is in
     the overlay layer above the cards, not the base layer under them."""
     text = frontend_text("whiteboard.js")
-    assert 'document.getElementById("wb-zoom-group").appendChild(currentDrawPath)' not in text
-    assert 'document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath)' in text
+    assert 'wbInstances.layer("wb-zoom-group").appendChild(wbPen.path)' not in text
+    assert 'wbInstances.layer("wb-overlay-zoom-group").appendChild(wbPen.path)' in text  # L634: the pen state is one `wbPen` holder

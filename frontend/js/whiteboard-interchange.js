@@ -1690,7 +1690,7 @@ async function wbThumbFlush() {
   clearTimeout(wbThumbState.timer);
   const id = wbThumbState.pending;
   wbThumbState.pending = null;
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (id === null || wbThumbState.busy || String(wbThumbBoardId()) !== String(id)) return;
   if (!container || container.offsetParent === null) return;
   if (!(wbState.nodes?.length || wbState.sketches?.length || wbState.objects?.length)) return;
@@ -1728,7 +1728,7 @@ async function wbThumbFlush() {
 
 //: It watches the board canvas, built when a board first opens (row 21).
 onSurface("board", function wbThumbWatch() {
-  const container = document.getElementById("whiteboard-container");
+  const container = document.getElementById("whiteboard-container"); // page wiring, at load (L-whiteboard-53)
   if (!container) return;
   new MutationObserver(wbThumbMark).observe(container, { childList: true, subtree: true, attributes: true });
   document.addEventListener(

@@ -101,4 +101,4 @@ def test_the_layer_menu_the_bundle_and_the_help_agree():
     assert "/js/whiteboard-layers-more.js" in script_file_text("lazy-entries.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
     #: Duplicate is one Undo step: the copy, the new layer and the move are bundled.
-    assert 'action: "batch"' in src and "wbUndoStack.splice(mark)" in src
+    assert 'action: "batch"' in src and "wbStacks.undo.splice(mark)" in src  # L-whiteboard-52: read through the wbStacks surface

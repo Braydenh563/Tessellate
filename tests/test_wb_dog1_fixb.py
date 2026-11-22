@@ -166,7 +166,7 @@ def test_a_connection_point_lights_and_grabs_at_the_same_distance():
     assert "Math.min(9, side * 0.2)" not in WB
 
 
-MAP = frontend_text("whiteboard-map.js")
+MAP = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
 
 
 def test_a_new_topic_is_brought_into_view_when_it_is_out_of_it():

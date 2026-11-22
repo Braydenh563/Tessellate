@@ -1331,6 +1331,8 @@ def _start_services() -> Path:
     #: gone (core/afterunlock.py), never beside it.
     if _has_password():
         afterunlock.arm()
+    else:
+        afterunlock.disarm()
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
     afterunlock.defer("resume-jobs", jobs.resume)

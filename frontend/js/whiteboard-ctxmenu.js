@@ -149,13 +149,13 @@
         //: already has the notebook's note behind it.
         if (mapNode.kind === "note" && Number.isInteger(mapNode.data?.ref_id)) {
           sub("Edit the note's text…", "Change the notebook's note from here; Ctrl+Z undoes it", () =>
-            wbMapOpenNote(mapNode.id, document.querySelector(`.wb-object[data-id="${mapNode.id}"]`)));
+            wbMapOpenNote(mapNode.id, wbInstances.query(`.wb-object[data-id="${mapNode.id}"]`)));
         }
         if (!WB_MAP_REFERENCE_KINDS.has(mapNode.kind)) {
           const hasNote = Boolean(mapNode.data?.note);
           sub(hasNote ? "Open the note…" : "Add a note…",
             hasNote ? "Or press the note mark on the topic" : "Longer text behind the topic, shown when you open it",
-            () => wbMapOpenNote(mapNode.id, document.querySelector(`.wb-object[data-id="${mapNode.id}"] .wb-map-note`)));
+            () => wbMapOpenNote(mapNode.id, wbInstances.query(`.wb-object[data-id="${mapNode.id}"] .wb-map-note`)));
           if (hasNote) {
             sub("Remove the note", "The topic stays; Ctrl+Z brings the note back", async () => {
               await wbMapSetNodeStyle(mapNode, { note: null });
@@ -548,7 +548,7 @@
 
   //: The topic's own box on screen, the last honest anchor a node's menu has.
   function wbMapNodeScreenBox(node) {
-    const box = document.querySelector(`.wb-object[data-id="${node?.id}"]`)?.getBoundingClientRect();
+    const box = wbInstances.query(`.wb-object[data-id="${node?.id}"]`)?.getBoundingClientRect();
     return wbMenuAnchorOk(box) ? box : null;
   }
 
@@ -752,7 +752,7 @@
     //: A gesture with no point (0,0, as a menu key or a synthetic event
     //: carries) opens by the item it was made on, never in the corner.
     if (!(clientX > 0 || clientY > 0)) {
-      const el = document.querySelector(`[data-id="${CSS.escape(String(id))}"]`);
+      const el = wbInstances.query(`[data-id="${CSS.escape(String(id))}"]`);
       const box = el?.getBoundingClientRect();
       if (!wbMenuAnchorOk(box)) {
         console.warn("[whiteboard] refused to open a context menu at (0,0): no anchor to place it by", { kind, id });
@@ -882,5 +882,5 @@
   }
 
   //: The file's surface: what other files call (L286).
-  Object.assign(window, { wbKeepMenuBesideBar, wbCloseContextMenu, wbMenuAnchorOk, wbMapNodeScreenBox, wbOpenMapNodeMenu, wbIsEditingTarget, wbWireContextMenu });
+  Object.assign(window, { wbKeepMenuBesideBar, wbCloseContextMenu, wbMenuAnchorOk, wbMapNodeScreenBox, wbOpenMapNodeMenu, wbIsEditingTarget, wbWireContextMenu, wbOpenContextMenuFor });
 })();

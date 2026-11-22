@@ -8,7 +8,7 @@ const { boot } = require('./lib.js');
 (async () => {
   const phone = !!process.env.PHONE;
   const { browser, page } = await boot({ viewport: phone ? { width: 390, height: 844 } : { width: 1440, height: 900 } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
   await page.waitForTimeout(4000);
   await page.evaluate(() => { const b = document.getElementById('nm-buddy'); DOMTokenList.prototype.remove.call(b.classList, 'nmb-sleep', 'nmb-drowsy'); openNameMarkViewer(b.dataset.seed || '', { visit: true }); });
   await page.waitForTimeout(1500);

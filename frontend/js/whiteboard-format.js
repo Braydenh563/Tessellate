@@ -486,7 +486,7 @@ wbFmtState.paintCaptions = function () {
     //: A board picture, or a map topic that carries one.
     const url = (o.kind === "image" ? o.data?.url : WB_MAP_KINDS.has(o.kind) ? o.data?.image : "") || "";
     if (!url) continue;
-    const el = document.querySelector(`#wb-html-layer .wb-object[data-id="${o.id}"]`);
+    const el = wbInstances.query(`#wb-html-layer .wb-object[data-id="${o.id}"]`);
     if (!el) continue;
     let line = el.querySelector(":scope > .wb-object-caption");
     if (show && url && !cache.has(url)) {
@@ -548,7 +548,7 @@ function wbFormatClose({ restoreFocus = true } = {}) {
   } catch {
     /* nothing to forget */
   }
-  if (restoreFocus && hadFocus) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+  if (restoreFocus && hadFocus) wbInstances.container()?.focus({ preventScroll: true });
 }
 
 //: The top bar's Format button mirrors the panel, as Library's does.
@@ -1108,7 +1108,7 @@ onSurface("board", () => {
   };
   const cropOpen = () => {
     const entry = wbFmtEntries().find((e) => e.kind === "object" && e.item.kind === "image");
-    const el = entry && document.querySelector(`#wb-html-layer .wb-object[data-id="${entry.id}"]`);
+    const el = entry && wbInstances.query(`#wb-html-layer .wb-object[data-id="${entry.id}"]`);
     if (!el) return;
     const frame = document.createElement("div");
     frame.className = "wb-crop-frame";
@@ -1697,7 +1697,7 @@ async function wbGrowShapeToLabel(sketch) {
   if (wbSketchParsedData(sketch)?.label_pos) return false;
   let changed = false;
   for (let round = 0; round < 4; round += 1) {
-    const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const group = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
     const label = group?.querySelector(":scope > .sketch-label");
     const placed = label ? wbShapeLabelPlace(group, label) : null;
     const parsed = wbSketchParsedData(sketch);
@@ -2383,7 +2383,7 @@ async function wbSetTable(d, cells, size = null, said = "", patch = {}) {
 
 function wbEditTableCell(id, r, c) {
   const d = (wbState.objects || []).find((o) => o.id === id);
-  const node = document.querySelector(`.wb-object[data-id="${id}"]`);
+  const node = wbInstances.query(`.wb-object[data-id="${id}"]`);
   const cell = node?.querySelector(`.wb-table-cell[data-r="${r}"][data-c="${c}"]`);
   if (!d || !cell || wbIsLocked("object", d)) return;
   wbFmtState.tableCell = { id, r, c };
@@ -3039,7 +3039,7 @@ const wbColour = (() => {
 
   //: A box the popover holds for the saved palettes, one labelled row of swatches each. The library
   //: index is fetched here when the Library panel has not (`/board-library`, one small request), and
-  //: the rows fill in when it lands, if the popover is still open.
+  //: the rows fill in when it lands, if the popover is still showing.
   function wbColourPalettes(pick, current) {
     const box = document.createElement("div");
     box.className = "wb-colour-palettes";

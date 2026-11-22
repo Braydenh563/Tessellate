@@ -11,12 +11,14 @@ WB = frontend_text("whiteboard.js")
 def test_abandon_helper_clears_every_piece_of_the_stroke():
     body = WB[WB.index("function wbAbandonStroke()") :]
     body = body[: body.index("\n  }\n")]
-    for part in ("isDrawing = false", "currentDrawPath?.remove()", "currentDrawPath = null", "currentDrawData = []"):
+    #: L634 moved the four pen `let`s into one `wbPen` holder (whiteboard-strokes.js reads it).
+    for part in ("wbPen.drawing = false", "wbPen.path?.remove()", "wbPen.path = null", "wbPen.data = []"):
         assert part in body
 
 
 def test_tool_switch_and_lost_gesture_abandon_the_stroke():
     sw = WB[WB.index("function selectWbTool(tool)") :]
-    assert "wbAbandonStroke()" in sw[:400]
+    #: L634: the stroke helpers live in whiteboard-strokes.js and are reached through `wbPen`.
+    assert "wbPen.abandon?.()" in sw[:400]
     assert 'window.addEventListener("pointercancel", wbAbandonStroke)' in WB
     assert 'window.addEventListener("pointerup", wbAbandonStroke)' in WB

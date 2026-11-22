@@ -416,13 +416,13 @@
     const key = pushed.map((p) => `${p.kind}:${p.id}`).sort().join(",");
     const burst = wbBoardState.resizeBurst;
     const joining = burst && burst.key === key && Date.now() - burst.at < WB_NUDGE_BURST_MS
-      && wbUndoStack[wbUndoStack.length - 1] === burst.entry;
+      && wbStacks.undo[wbStacks.undo.length - 1] === burst.entry;
     if (joining) {
       burst.at = Date.now();
       await wbSaveMany(rows);
     } else if (await wbSaveMany(rows) && pushed.length) {
       wbPushMoveBatch(pushed);
-      wbBoardState.resizeBurst = { key, at: Date.now(), entry: wbUndoStack[wbUndoStack.length - 1] };
+      wbBoardState.resizeBurst = { key, at: Date.now(), entry: wbStacks.undo[wbStacks.undo.length - 1] };
     }
     wbScheduleRender();
   };
@@ -535,7 +535,7 @@
     wbFmtState.keys?.record({ kind: "move", dx, dy });
     const key = entries.map((e) => wbMultiKey(e.kind, e.id)).sort().join(",");
     const joining = wbNudgeBurst && wbNudgeBurst.key === key
-      && wbUndoStack[wbUndoStack.length - 1] === wbNudgeBurst.entry;
+      && wbStacks.undo[wbStacks.undo.length - 1] === wbNudgeBurst.entry;
     if (!joining) {
       wbFlushNudge();
       const moves = entries.map((e) => ({

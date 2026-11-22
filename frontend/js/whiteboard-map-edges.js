@@ -560,7 +560,7 @@
   //: in the branch rather than quadratic in the board.
   function wbMapEdgeContext() {
     const els = new Map();
-    const group = document.querySelector(".wb-map-edges");
+    const group = wbInstances.query(".wb-map-edges");
     if (group) {
       for (const el of group.querySelectorAll(
         ".wb-map-edge, .wb-map-edge-hit, .wb-map-edge-handle, .wb-map-edge-label"
@@ -676,7 +676,7 @@
   //: The group is the first child of the zoom group so edges sit *under* every
   //: sketch and node, which is the only z-order a tree reads correctly in.
   function wbRenderMapEdges({ only = null } = {}) {
-    const zoomGroup = document.getElementById("wb-zoom-group");
+    const zoomGroup = wbInstances.layer("wb-zoom-group");
     if (!zoomGroup) return;
     let group = zoomGroup.querySelector(".wb-map-edges");
     if (!wbIsMap()) {

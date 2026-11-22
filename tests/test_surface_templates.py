@@ -331,7 +331,7 @@ def test_a_resize_before_the_first_board_open_does_not_read_the_unbuilt_canvas()
     template not yet stamped (`getBoundingClientRect` of null, two page errors per resize)."""
     js = frontend_text("whiteboard.js")
     body = js[js.index("function wbCanvasOriginRect() {") :][:500]
-    assert 'getElementById("whiteboard-container")?.getBoundingClientRect() ?? null' in body
+    assert 'wbInstances.container()?.getBoundingClientRect() ?? null' in body
     assert "if (rect) wbCullNow(undefined, { width: rect.width, height: rect.height });" in js
 
 

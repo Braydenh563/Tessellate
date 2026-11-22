@@ -60,7 +60,9 @@ def test_every_select_on_the_bar_is_drawn_as_a_row_of_presses():
     stepper = _body("whiteboard-map.js", "wbMapSizeStepper")
     assert '"stepper wb-map-size-stepper"' in stepper and "stepper-unit" in stepper
     assert 'select.dispatchEvent(new Event("change", { bubbles: true }))' in stepper
-    assert "wbWireMapChoices();" in _body("whiteboard.js", "initWhiteboard")
+    #: L634: the wiring calls moved into wbInitPan (whiteboard-pan.js), which initWhiteboard calls once.
+    assert "wbInitPan({" in _body("whiteboard.js", "initWhiteboard")
+    assert "wbWireMapChoices();" in frontend_text("whiteboard-pan.js")
     # Redrawn whenever the strip syncs to a new topic.
     assert "for (const draw of WB_MAP_CHOICE_REDRAWS) draw();" in _body("whiteboard-map.js", "wbSyncMapStrip")
     # The follow rows are marked where they are named.
@@ -244,7 +246,7 @@ def test_the_board_layers_are_rasterised_again_when_a_zoom_settles():
     refresh = wb[wb.index("function wbRefreshRaster") :][:600]
     assert 'style.willChange = "auto"' in refresh and 'style.willChange = ""' in refresh
     publish = wb[wb.index("function wbPublishInvZoom") :][:200]
-    assert "wbRefreshRaster()" in publish
+    assert "wbRefreshRaster(el)" in publish
 
 
 def _slice(js: str, name: str, span: int = 2500) -> str:

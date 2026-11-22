@@ -15,22 +15,43 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
-from typing import BinaryIO
+from typing import Any, BinaryIO, Callable, Coroutine
 
 import json
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse
+from fastapi.routing import APIRoute
 from sqlalchemy.orm import Session
 
 from tessellate.core import activity, deps, jobruns
 from tessellate.core.deps import get_session
 from tessellate.entry import app_import, export_folder, import_report, manager
 
-router = APIRouter(tags=["import"])
-
 #: Files in one request: a vault picked as a folder is many files.
 MAX_FILES = 5000
+
+
+class _ManyFilesRoute(APIRoute):
+    """Parses a multipart body with this import's own file cap before FastAPI
+    reads it (L-world-class-411). Starlette refuses more than 1,000 file parts
+    by default, so a folder of 5,000 notes got "Too many files" before
+    `MAX_FILES` was read. The form is cached on the request, so FastAPI's own
+    `request.form()` returns this one; one over the cap is let through so
+    `_received` refuses it in the import's own words."""
+
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        handler = super().get_route_handler()
+
+        async def handle(request: Request) -> Response:
+            if request.headers.get("content-type", "").startswith("multipart/form-data"):
+                await request.form(max_files=MAX_FILES + 1)
+            return await handler(request)
+
+        return handle
+
+
+router = APIRouter(tags=["import"], route_class=_ManyFilesRoute)
 
 
 def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:

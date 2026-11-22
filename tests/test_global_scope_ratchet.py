@@ -96,7 +96,12 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-14 L286 (D24): map strip, waypoints and marks carved out of whiteboard-map.js and wrapped whole. Measured 7,203.
 #: 2026-11-14 L286 (D24): map edges, notes and look carved out of whiteboard-map.js and wrapped whole. Measured 7,180 (WB_MAP_FONTS is read at load by whiteboard-sketch-text.js).
 #: 2026-11-14 L335 (D24): twelve whole sections carved out of documents.js and wrapped (documents-prose-check, -suggest-panel, -commands, -templates, -cm-load, -tablemenu, -preview, -edit-keys, -richpaste, -block-ids, -links-panels, -save). Measured 7,028.
-GLOBAL_NAMES_CAP = 6885  # findings (L-documents-117)
+#: 2026-11-14 L-whiteboard-49: the Undo-recorded map commands carved out of whiteboard-map.js into whiteboard-map-record.js and wrapped whole (wbRecorded registry added). Measured 7,163.
+#: 2026-11-14 L-whiteboard-52: the undo and redo stacks, the history swap and the gesture recorder carved out of whiteboard.js into whiteboard-undo.js and wrapped whole; two top-level lets and a const leave the scope and `wbStacks` joins it. Measured 7,153.
+#: 2026-11-21 L634: the board list, the handles, item paint and save, and the drag carved out of whiteboard.js into four wrapped files (whiteboard-boards, -handles, -items, -drag). Measured 7,122.
+#: 2026-11-21 L634: guides, paint, caps, groups, style, tree, gesture and clipboard carved out of whiteboard.js into eight wrapped files. Measured 7,071.
+#: 2026-11-22 merge of the whiteboard carve (#223) with the documents carve (L335): measured 6,694.
+GLOBAL_NAMES_CAP = 6694
 
 
 @functools.lru_cache(maxsize=None)

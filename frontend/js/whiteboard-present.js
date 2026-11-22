@@ -59,7 +59,7 @@
       return;
     }
     const host = document.getElementById("library-view-whiteboard");
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!host || !container) return;
     clearWbSelection();
     wbPresent = {
@@ -111,7 +111,7 @@
     }
     wbPresent.pageField.set(at + 1);
     const box = steps[at].box();
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const rect = container.getBoundingClientRect();
     const pad = Math.min(48, rect.width * 0.05);
     //: And the bar keeps its own strip at the foot, so it never sits on the frame.
@@ -295,7 +295,7 @@
   }
 
   function wbPresentLaser(on = null) {
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const show = on ?? !container?.classList.contains("wb-laser-on");
     if (!container || (show && !wbPresent)) return;
     //: The tool's cursor is set inline (`updateWbCursor`), so it is kept and
@@ -374,7 +374,7 @@
     document.getElementById("wb-present-bar")?.classList.add("hidden");
     if (!wasFull) toggleWhiteboardFullscreen(false);
     //: Back to where the board was looked at from before.
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (container && camera) d3.select(container).call(wbZoom.transform, camera);
     //: Only an element on screen: Present starts from a menu item, in a menu that
     //: has closed by now, and focusing it left focus on `<body>` (boardfix-1108).
@@ -443,5 +443,8 @@
   });
 
   //: The file's surface: what other files call (L286).
+  //: The sweeps' hands on its own names (scratchpad/ui-sweeps/wb1005-pages), on a name already shared so
+  //: the shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
+  wbStartPresenting.sweep = { steps: wbPresentSteps };
   Object.assign(window, { wbFramesInOrder, wbStartPresenting, wbPresentShow, wbStopPresenting });
 })();

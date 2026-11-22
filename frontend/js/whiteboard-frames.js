@@ -24,7 +24,7 @@
   async function wbCreateFrame(x, y, box = null) {
     //: Never wider than most of what is on screen: on a phone the default is a
     //: frame whose edges are off both sides, which reads as no frame at all.
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const k = container ? d3.zoomTransform(container).k : 1;
     const fit = container
       ? Math.min(1, (0.8 * container.clientWidth) / k / WB_FRAME_SIZE.w, (0.6 * container.clientHeight) / k / WB_FRAME_SIZE.h)
@@ -88,7 +88,7 @@
     }
     for (const [linkId, ends] of touching) {
       if (ends < 2) continue;
-      const path = document.querySelector(`.sketch-group[data-id="${linkId}"] .sketch-hitbox`);
+      const path = wbInstances.query(`.sketch-group[data-id="${linkId}"] .sketch-hitbox`);
       const b = path?.getBBox?.();
       if (b && (b.width || b.height)) boxes.push({ minX: b.x, minY: b.y, maxX: b.x + b.width, maxY: b.y + b.height });
     }
@@ -114,7 +114,7 @@
     frame.y = nextTop;
     frame.width = nextRight - nextLeft;
     frame.height = nextBottom - nextTop;
-    const el = document.querySelector(`.wb-object[data-id="${frame.id}"]`);
+    const el = wbInstances.query(`.wb-object[data-id="${frame.id}"]`);
     const still = reducedMotionWanted();
     if (el && !still) {
       el.style.transition = "transform 150ms ease-out, width 150ms ease-out, height 150ms ease-out";

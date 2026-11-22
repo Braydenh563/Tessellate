@@ -38,7 +38,9 @@ def test_the_bar_has_a_map_group_for_several_topics():
     assert '"mapmulti"' in js[js.index("const WB_CONTEXT_GROUPS") :][:300]
     fill = _body("whiteboard.js", "wbFillContextBar")
     assert "wbMapMultiTopics()" in fill and "WB_CONTEXT_CONTROLS.mapmulti" in fill
-    assert "wbWireMapMulti();" in _body("whiteboard.js", "initWhiteboard")
+    #: L634: the wiring calls moved into wbInitPan (whiteboard-pan.js), which initWhiteboard calls once.
+    assert "wbInitPan({" in _body("whiteboard.js", "initWhiteboard")
+    assert "wbWireMapMulti();" in frontend_text("whiteboard-pan.js")
 
 
 def test_no_group_box_and_no_topic_grips_for_a_map_selection():

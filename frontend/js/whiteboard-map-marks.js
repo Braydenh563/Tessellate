@@ -72,7 +72,7 @@
     wbMarkerUi.pop = null;
     document.removeEventListener("pointerdown", state.outside, true);
     state.panel.remove();
-    if (restoreFocus) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+    if (restoreFocus) wbInstances.container()?.focus({ preventScroll: true });
   }
 
   //: A row of previews, one pressed at a time (INBOX 665): each choice drawn
@@ -162,7 +162,7 @@
       return;
     }
     wbMapCloseMarkers();
-    const target = anchor?.isConnected ? anchor : document.querySelector(`.wb-object[data-id="${id}"]`);
+    const target = anchor?.isConnected ? anchor : wbInstances.query(`.wb-object[data-id="${id}"]`);
     if (!target) return;
     const panel = document.createElement("div");
     panel.className = "help-popover wb-map-markers-pop";
@@ -334,7 +334,7 @@
       toast("No topic on this map has a marker or a label yet. A topic's menu, Content, Markers adds one.");
       return;
     }
-    const target = anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container");
+    const target = anchor || document.querySelector('[aria-controls="wb-view-menu"]') || wbInstances.container();
     const panel = document.createElement("div");
     panel.className = "help-popover wb-map-markers-pop wb-map-filter-pop";
     panel.setAttribute("role", "dialog");
@@ -406,7 +406,7 @@
     const bar = document.getElementById("wb-map-filter");
     const on = wbMarkerUi.filters.size > 0;
     wbAnnounce(on ? `Showing the topics marked ${wbMarkerUi.match.words(wbMarkerUi.filters).toLowerCase()}.` : "Showing every topic.");
-    if (bar && !on) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+    if (bar && !on) wbInstances.container()?.focus({ preventScroll: true });
   }
 
   //: After every render (`wbMapAfterRender`): a class on each topic the filter
@@ -446,7 +446,7 @@
         if (label) label.textContent = `Marked: ${wbMarkerUi.match.words(wbMarkerUi.filters)}`;
       }
     }
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return;
     const index = wbIsMap() ? wbMapIndex() : null;
     const lit = on ? null : index && wbMapDimLit(index);
@@ -470,8 +470,9 @@
 
   //: What follows every render of a map: the outline and the marker filter.
   function wbMapAfterRender() {
-    wbOutlineSync();
-    if (wbMarkerUi.filters.size || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+    //: The outline panel lists the page board's map, never an embed's (L-whiteboard-58).
+    if (!wbInstances.active.container) wbOutlineSync();
+    if (wbMarkerUi.filters.size || wbMapDim.on || wbInstances.container()?.classList.contains("wb-map-filtering")) {
       wbMapPaintMarkerFilter();
     }
   }
