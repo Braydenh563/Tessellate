@@ -573,9 +573,29 @@
       const current = list.querySelector('[aria-current="location"]');
       if (current) settingsNavFollow(current);
     });
-    head.append(Object.assign(document.createElement("span"), { textContent: "On this page" }), toggle);
+    //: **The head folds the whole list away** (the owner: "I cant collapse the sections
+    //: below each settings page"): a disclosure, remembered per page on this device.
+    const folded = String(prefs.get("settings-nav-folded", "") || "").split(",").filter(Boolean);
+    list.id = `settings-nav-groups-${name}`;
+    const fold = document.createElement("button");
+    fold.type = "button";
+    fold.className = "ghost disclosure-row settings-nav-fold";
+    fold.setAttribute("aria-controls", list.id);
+    fold.innerHTML = '<i class="ph ph-caret-down contents-caret" aria-hidden="true"></i><span>On this page</span>';
+    const paintFold = (shut) => {
+      list.classList.toggle("is-folded", shut);
+      fold.setAttribute("aria-expanded", String(!shut));
+    };
+    fold.addEventListener("click", () => {
+      const shut = !list.classList.contains("is-folded");
+      const rest = String(prefs.get("settings-nav-folded", "") || "").split(",").filter((n) => n && n !== name);
+      prefs.set("settings-nav-folded", (shut ? [...rest, name] : rest).join(","));
+      paintFold(shut);
+    });
+    head.append(fold, toggle);
     list.appendChild(head);
     paint();
+    paintFold(folded.includes(name));
     for (const { el, label } of heads) {
       const link = document.createElement("button");
       link.type = "button";

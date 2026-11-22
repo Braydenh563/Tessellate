@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9058, frontend ids 2845, CSS sections 546, backend routes 722, backend modules 11094, test files 2996, tests 23510, plan headings 692, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9058, frontend ids 2845, CSS sections 546, backend routes 722, backend modules 11094, test files 2997, tests 23515, plan headings 692, app scripts 29, boot scripts 38, script files 402.
 
 ## Frontend functions (9058)
 
@@ -7940,20 +7940,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:159 |
-| `helpAlternation` | frontend/js/settings-find.js:690 |
-| `helpApplySearch` | frontend/js/settings-find.js:819 |
-| `helpEmphasis` | frontend/js/settings-find.js:696 |
-| `helpFill` | frontend/js/settings-find.js:717 |
-| `helpMarks` | frontend/js/settings-find.js:730 |
-| `helpMatches` | frontend/js/settings-find.js:803 |
-| `helpQueryTerms` | frontend/js/settings-find.js:795 |
-| `helpSearchBind` | frontend/js/settings-find.js:876 |
-| `helpTopicLink` | frontend/js/settings-find.js:657 |
-| `helpTopicPaint` | frontend/js/settings-find.js:744 |
-| `helpTopicRow` | frontend/js/settings-find.js:761 |
+| `helpAlternation` | frontend/js/settings-find.js:710 |
+| `helpApplySearch` | frontend/js/settings-find.js:839 |
+| `helpEmphasis` | frontend/js/settings-find.js:716 |
+| `helpFill` | frontend/js/settings-find.js:737 |
+| `helpMarks` | frontend/js/settings-find.js:750 |
+| `helpMatches` | frontend/js/settings-find.js:823 |
+| `helpQueryTerms` | frontend/js/settings-find.js:815 |
+| `helpSearchBind` | frontend/js/settings-find.js:896 |
+| `helpTopicLink` | frontend/js/settings-find.js:677 |
+| `helpTopicPaint` | frontend/js/settings-find.js:764 |
+| `helpTopicRow` | frontend/js/settings-find.js:781 |
 | `openSettingRow` | frontend/js/settings-find.js:230 |
-| `renderCredits` | frontend/js/settings-find.js:899 |
-| `renderHelpTopics` | frontend/js/settings-find.js:947 |
+| `renderCredits` | frontend/js/settings-find.js:919 |
+| `renderHelpTopics` | frontend/js/settings-find.js:967 |
 | `renderSettingResults` | frontend/js/settings-find.js:282 |
 | `settingNearAdd` | frontend/js/settings-find.js:297 |
 | `settingQueryAlts` | frontend/js/settings-find.js:140 |
@@ -7972,7 +7972,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsIndexList` | frontend/js/settings-find.js:396 |
 | `settingsIndexMark` | frontend/js/settings-find.js:453 |
 | `settingsIndexOffset` | frontend/js/settings-find.js:390 |
-| `settingsIndexWatchSection` | frontend/js/settings-find.js:620 |
+| `settingsIndexWatchSection` | frontend/js/settings-find.js:640 |
 | `settingsNavFollow` | frontend/js/settings-find.js:432 |
 | `settingsPaneTitleHead` | frontend/js/settings-find.js:382 |
 
@@ -13940,7 +13940,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/07-whiteboard-misc.css:1557 |
 | A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/07-whiteboard-misc.css:18302 |
 | A note's time: the same corner on every card | frontend/css/07-whiteboard-misc.css:9677 |
-| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3404 |
+| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3426 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:18762 |
 | A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:18618 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2778 |
@@ -14079,8 +14079,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Timeline: the table view (TIMELINE_PLAN.md Phase 2) | frontend/css/06-timeline-dialogs.css:439 |
 | Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:1814 |
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/04-chat-dock-appearance.css:2740 |
-| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3179 |
-| WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2455 |
+| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3201 |
+| WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2477 |
 | Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:438 |
 | Wave E: graph view | frontend/css/02-chat-graph.css:959 |
 | Wave F: command palette | frontend/css/02-chat-graph.css:1298 |
@@ -14257,7 +14257,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) | frontend/css/library-lazy.css:3646 |
 | moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) | frontend/css/library-lazy.css:3654 |
 | narrow windows | frontend/css/sketch-pad.css:669 |
-| note card density (§36B) | frontend/css/06-timeline-dialogs.css:1682 |
+| note card density (§36B) | frontend/css/06-timeline-dialogs.css:1704 |
 | note history | frontend/css/05-sidebars-themes.css:1859 |
 | notes page polish | frontend/css/03-dashboard-widgets.css:2106 |
 | nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:3987 |
@@ -14268,7 +14268,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one line of facts: a note's meta row | frontend/css/01-forms-settings.css:6564 |
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/07-whiteboard-misc.css:17312 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4901 |
-| one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2217 |
+| one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2239 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:3631 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1723 |
 | page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2453 |
@@ -14347,7 +14347,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the chat dock follows its own width (INBOX 694) | frontend/css/04-chat-dock-appearance.css:6507 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1412 |
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4963 |
-| the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1549 |
+| the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1571 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3837 |
 | the code editor: gutter + monospace | frontend/css/library-lazy.css:7398 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:13670 |
@@ -14397,13 +14397,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:11588 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8778 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:9078 |
-| the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1599 |
-| the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1779 |
+| the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1621 |
+| the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1801 |
 | the one control in a dock that was not the dock's height | frontend/css/07-whiteboard-misc.css:5471 |
 | the one generating animation | frontend/css/01-forms-settings.css:4843 |
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:843 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:8389 |
-| the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1761 |
+| the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1783 |
 | the overview strip | frontend/css/00-tokens-shell.css:1932 |
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/07-whiteboard-misc.css:12265 |
@@ -14438,7 +14438,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:8219 |
 | the timeline, de-vibecoded | frontend/css/06-timeline-dialogs.css:236 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:11993 |
-| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2840 |
+| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2862 |
 | the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4709 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
 | the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3826 |
@@ -14476,7 +14476,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/03-dashboard-widgets.css | 5225 |
 | frontend/css/04-chat-dock-appearance.css | 6611 |
 | frontend/css/05-sidebars-themes.css | 5706 |
-| frontend/css/06-timeline-dialogs.css | 3711 |
+| frontend/css/06-timeline-dialogs.css | 3733 |
 | frontend/css/07-whiteboard-misc.css | 19362 |
 | frontend/css/09-editor.css | 1697 |
 | frontend/css/10-responsive.css | 534 |
@@ -19245,8 +19245,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2753 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2906 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2754 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2907 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -29464,7 +29464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23510)
+## Tests (23515)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31863,6 +31863,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_ia.py | 7 |
 | tests/test_settings_index_layout_free.py | 2 |
 | tests/test_settings_lag_1696.py | 5 |
+| tests/test_settings_nav_fold.py | 5 |
 | tests/test_settings_no_sideways.py | 4 |
 | tests/test_settings_open_weight_1108.py | 5 |
 | tests/test_settings_pane_actions.py | 3 |
