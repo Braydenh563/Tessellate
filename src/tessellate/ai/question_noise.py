@@ -52,8 +52,8 @@ SLANG: dict[str, str] = LazyTable("noise_slang.json")
 #: branch additions (3973 entries; a key that is itself a word in `REAL_WORDS` or the shipped
 #: word list is left out, since repairing it would "correct" a correctly spelt word, and so is a
 #: key with a space, which `repair` never looks up) and the first table's tail. The common
-#: misspellings look to come from Wikipedia's "Lists of common misspellings" (CC BY-SA):
-#: see docs/THIRD_PARTY.md.
+#: misspellings come from Wikipedia's "Lists of common misspellings" (CC BY-SA 4.0,
+#: confirmed 2026-11-22): see docs/THIRD_PARTY.md.
 
 #: Words that are small talk on their own: a message made only of these is
 #: answered as small talk (`composer.social`), never searched for. The value
