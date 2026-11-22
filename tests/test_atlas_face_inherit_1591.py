@@ -99,3 +99,13 @@ def test_the_readers_rule_has_no_weight():
         if selector.strip().startswith(":where(.nm-atlas :not(:empty),"):
             return
     raise AssertionError("the face's inherit rule is missing")
+
+
+def test_the_face_numbers_are_registered_at_boot_not_in_the_lazy_sheet():
+    """L-whiteboard-79: registered in atlas-lazy.css, the sheet landing mid-session
+    invalidated every element's style (572 to 737ms at 4x over a 500-topic map,
+    a first-zoom jank); at boot the registration happens before there is a document."""
+    lazy = re.sub(r"/\*.*?\*/", "", (CSS_DIR / "atlas-lazy.css").read_text(encoding="utf-8"), flags=re.S)
+    boot = re.sub(r"/\*.*?\*/", "", (CSS_DIR / "07-whiteboard-misc.css").read_text(encoding="utf-8"), flags=re.S)
+    assert "@property" not in lazy
+    assert len(re.findall(r"@property\s+--atl-[\w-]+\s*\{\s*syntax:\s*\"\*\";\s*inherits:\s*false;\s*\}", boot)) == 57

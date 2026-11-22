@@ -16237,6 +16237,67 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 
 @property --nmb-hx { syntax: "<number>"; inherits: false; initial-value: 0; }
 
+/* **Atlas's face numbers are registered at boot** (L-whiteboard-79): atlas-lazy.css passes them
+   down by `inherit` ("The face's numbers do not inherit either", INBOX 1591). Registered in that
+   lazy sheet, its landing invalidated every element's style: 572 to 737ms at 4x over a 500-topic map. */
+@property --atl-al0 { syntax: "*"; inherits: false; }
+@property --atl-al1 { syntax: "*"; inherits: false; }
+@property --atl-al2 { syntax: "*"; inherits: false; }
+@property --atl-ar0 { syntax: "*"; inherits: false; }
+@property --atl-ar1 { syntax: "*"; inherits: false; }
+@property --atl-ar2 { syntax: "*"; inherits: false; }
+@property --atl-bl-r { syntax: "*"; inherits: false; }
+@property --atl-bl-y { syntax: "*"; inherits: false; }
+@property --atl-br-r { syntax: "*"; inherits: false; }
+@property --atl-br-y { syntax: "*"; inherits: false; }
+@property --atl-brow-y { syntax: "*"; inherits: false; }
+@property --atl-cheek { syntax: "*"; inherits: false; }
+@property --atl-chin0 { syntax: "*"; inherits: false; }
+@property --atl-chin1 { syntax: "*"; inherits: false; }
+@property --atl-chin2 { syntax: "*"; inherits: false; }
+@property --atl-crest { syntax: "*"; inherits: false; }
+@property --atl-doze { syntax: "*"; inherits: false; }
+@property --atl-eye-s { syntax: "*"; inherits: false; }
+@property --atl-fx-bang { syntax: "*"; inherits: false; }
+@property --atl-fx-dots { syntax: "*"; inherits: false; }
+@property --atl-fx-hearts { syntax: "*"; inherits: false; }
+@property --atl-fx-q { syntax: "*"; inherits: false; }
+@property --atl-fx-sparkle { syntax: "*"; inherits: false; }
+@property --atl-fx-sweat { syntax: "*"; inherits: false; }
+@property --atl-fx-tear { syntax: "*"; inherits: false; }
+@property --atl-fx-zz { syntax: "*"; inherits: false; }
+@property --atl-glow { syntax: "*"; inherits: false; }
+@property --atl-halo-o { syntax: "*"; inherits: false; }
+@property --atl-happy { syntax: "*"; inherits: false; }
+@property --atl-head-y { syntax: "*"; inherits: false; }
+@property --atl-hearteye { syntax: "*"; inherits: false; }
+@property --atl-knit { syntax: "*"; inherits: false; }
+@property --atl-lid { syntax: "*"; inherits: false; }
+@property --atl-lid-r { syntax: "*"; inherits: false; }
+@property --atl-low { syntax: "*"; inherits: false; }
+@property --atl-m-big { syntax: "*"; inherits: false; }
+@property --atl-m-cat { syntax: "*"; inherits: false; }
+@property --atl-m-frown { syntax: "*"; inherits: false; }
+@property --atl-m-grin { syntax: "*"; inherits: false; }
+@property --atl-m-hmm { syntax: "*"; inherits: false; }
+@property --atl-m-laugh { syntax: "*"; inherits: false; }
+@property --atl-m-o { syntax: "*"; inherits: false; }
+@property --atl-m-rest { syntax: "*"; inherits: false; }
+@property --atl-m-set { syntax: "*"; inherits: false; }
+@property --atl-m-smile { syntax: "*"; inherits: false; }
+@property --atl-m-smug { syntax: "*"; inherits: false; }
+@property --atl-m-tinyo { syntax: "*"; inherits: false; }
+@property --atl-m-wavy { syntax: "*"; inherits: false; }
+@property --atl-nightcap { syntax: "*"; inherits: false; }
+@property --atl-open { syntax: "*"; inherits: false; }
+@property --atl-ps { syntax: "*"; inherits: false; }
+@property --atl-px { syntax: "*"; inherits: false; }
+@property --atl-py { syntax: "*"; inherits: false; }
+@property --atl-shut { syntax: "*"; inherits: false; }
+@property --atl-squeeze { syntax: "*"; inherits: false; }
+@property --atl-star { syntax: "*"; inherits: false; }
+@property --atl-tilt { syntax: "*"; inherits: false; }
+
 #nm-buddy:is(.nmb-act-onehand, [data-pose="hang"]:is(.nmb-act-scratch, .nmb-sleep)) .nmb-arm-r { opacity: 1; }
 
 /* The prop slots (avatars.js, the character interface): drawn hidden,
