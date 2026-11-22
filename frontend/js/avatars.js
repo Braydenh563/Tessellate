@@ -9609,8 +9609,8 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    //: The list carries a long note cut short (`content_truncated`, 297 characters), so its length is not the note's.
-    else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
+    //: A list row holds the first 300 characters (`content_truncated`), so its length says nothing: the server's word count does (about six characters a word).
+    else if ((entry.content_truncated ? (entry.word_count || 0) * 6 : String(entry.content || "").length) > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));

@@ -14,5 +14,7 @@ AVATARS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js
 def test_read_reaction_counts_a_truncated_note_as_long():
     m = re.search(r"function nameMarkBuddyNoteOpened\(.*?\n  \}\n", AVATARS, re.S)
     assert m, "nameMarkBuddyNoteOpened moved"
-    assert "entry.content_truncated ||" in m.group(0)
+    #: A cut row is judged by the server's whole-text word count (routes_entries keeps it on the row), so a
+    #: long note reads along and a short one cut at 300 characters does not (test_clipped_readers_1525c runs it).
+    assert "entry.content_truncated ? (entry.word_count" in m.group(0)
     assert 'nameMarkBuddyReact("read", row)' in m.group(0)
