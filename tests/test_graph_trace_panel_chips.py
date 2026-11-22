@@ -44,7 +44,9 @@ def test_the_story_chevron_is_standard_size_and_turns_open_and_only_the_turn_is_
     caret = _rule(css, ".graph-trace-story > summary > .doc-toolbar-menu-caret")
     assert "font-size: 1em" in caret
     assert "opacity: 1" in caret
-    reduced = css.split("@media (prefers-reduced-motion: reduce)")[1]
-    # The turned chevron is the open state, so reduced motion keeps it and drops only the animation.
-    assert ".graph-trace-story > summary > .doc-toolbar-menu-caret" in reduced
-    assert "transition: none" in reduced and "transform: none" not in reduced.split("}")[0]
+    # The turned chevron is the open state, so reduced motion keeps it. The
+    # caret has no transition of its own, so there is no turn to drop: a
+    # reduced-only rule here was a no-op, and the motion lints
+    # (test_motion_resolved, test_motion_tokens) leave the polish to `--ui-*`.
+    assert "transform: none" not in caret and "transition" not in caret
+    assert "prefers-reduced-motion" not in css
