@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 27 | 0 | 0 | 1 | 27 |
+| world-class | 0 | 27 | 1 | 0 | 1 | 28 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 272 | 367 | 71 | 2 | 85 | 710 |
+| all | 272 | 367 | 72 | 2 | 85 | 711 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -428,6 +428,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L691** `chat` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L700** `graph` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
+- [ ] **L-world-class-95** `world-class` partly, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245) Partly 2026-11-22: density built and the gate met (4 whole cards, widget at 380 over a 577 floor at 1093x614@1.25); the sub-tab merge and status bar fold are not built.
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-634** `chat` open, L: Chat service (`chat/service.py`, decision 55): routes_chat.py (2,281 lines) still runs the turn. From L-world-class-123. Evidence: about 100 tests patch `routes_chat.user_now` (tests/test_acts.py:190, test_composer_*.py) and others `_prepare`, `_retrieve_for`, `_check_refs`, `_answer_lines`, `_answer_voice`, `_meaning_off`, `WEB_PAGES_DEADLINE` (test_related_elsewhere.py:124, test_turn_once_682.py:27, test_audit_1030_ai_web.py:99); about 12 tests read routes_chat.py's source text (test_answer_support.py:96, test_composer_688.py:463, test_composer_725.py:304, test_guide_social_1414.py:187, test_failure_remedies.py:153, test_needle_provider.py:325, test_recency_questions.py:129, test_agent_no_model_801.py:248, test_composer_uni_1420.py:35). Recommendation: the route reads the clock once and passes `now` to the service, and those tests move to the service by a recorded call, since unchanged they pin the code in the route.
