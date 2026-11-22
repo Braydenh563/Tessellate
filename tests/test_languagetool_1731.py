@@ -1,4 +1,6 @@
-"""LanguageTool as an optional download (INBOX 1731 (f)).
+"""Source text: the download routes are driven; the browser's prose check has no runner here, so it is read as text.
+
+LanguageTool as an optional download (INBOX 1731 (f)).
 
 The owner, 2026-11-10: "can we like incorporate all of it or whatever you
 suggest??". Every test runs against a fake file server and a fake local

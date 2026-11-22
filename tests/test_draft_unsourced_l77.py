@@ -1,4 +1,6 @@
-"""L-documents-77: a real 1.5B model wrote "meet at the lake at 9 AM" from
+"""Source text: the draft guard is driven; the writing desk's browser wiring has no runner here, so it is read as text.
+
+L-documents-77: a real 1.5B model wrote "meet at the lake at 9 AM" from
 thoughts that held no time, though the prompt forbids invented details
 (drafter.py:62). A prompt cannot make a small model obey, so the finished pass
 names the times, numbers and placeholders the thoughts, the old draft and the

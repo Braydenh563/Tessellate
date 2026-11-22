@@ -1,4 +1,6 @@
-"""The documents plan holds no open work of its own (the hub, 2026-11-14:
+"""Source text: the rule is about the plan documents' words, so they are read as text.
+
+The documents plan holds no open work of its own (the hub, 2026-11-14:
 "turn each of those 20 into a row ... so the plan cell is 0 and pinned by a
 test"). The 20 from scratchpad/docs-audit-1114.md section 1 are rows
 (L-documents-6, 11, 46 to 62, 79), so the LEDGER counts table says 0 for the

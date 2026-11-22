@@ -1,4 +1,6 @@
-"""L-documents-74: a `![[Doc#^id]]` drawn before the document list lands redraws when it does.
+"""Source text: the redraw is a browser listener with no runner here, so its wiring is read as text.
+
+L-documents-74: a `![[Doc#^id]]` drawn before the document list lands redraws when it does.
 
 Seen in a second window: docEmbedTarget resolves a block through `docs`, which is empty until the list loads,
 so the widget stayed a chip. Runs documents-embeds.js in node against a stand-in page.

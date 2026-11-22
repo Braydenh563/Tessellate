@@ -1,4 +1,6 @@
-"""A board edited in place in a document (L-documents-104), against a stub instance API.
+"""Source text: the instance API is stubbed in node; the document's wiring of it is read as text.
+
+A board edited in place in a document (L-documents-104), against a stub instance API.
 
 The whiteboard's per-instance API (PR 223) is not built yet, so `window.wbInstance.create` here is a stub that counts what it
 is given; the page was not driven. documents-board.js runs in node over a small fake DOM.

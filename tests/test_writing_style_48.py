@@ -1,4 +1,6 @@
-"""L-documents-48: the long-form choice at first run. One preference, `writing_style`, picks the surface New opens and the
+"""Source text: the first-run choice is markup and browser code with no runner here, so they are read as text.
+
+L-documents-48: the long-form choice at first run. One preference, `writing_style`, picks the surface New opens and the
 default document page style; the welcome's preferences card asks it once and Settings, General keeps it changeable."""
 
 from __future__ import annotations

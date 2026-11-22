@@ -1,4 +1,6 @@
-"""A document's history in a few sentences (L-documents-5):
+"""Source text: the route is driven; the browser's history panel has no runner here, so it is read as text.
+
+A document's history in a few sentences (L-documents-5):
 `POST /documents/{id}/revisions/summary` walks the newest saved versions pair by
 pair and reports what was added and removed and in which sections. A model (a
 fake transport here) is shown only the budgeted changed lines and writes the

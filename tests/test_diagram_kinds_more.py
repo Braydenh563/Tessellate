@@ -1,4 +1,6 @@
-"""Gantt, pie, state, class and ER as block kinds (L-documents-57, INBOX 1679 gap 3).
+"""Source text: the block kinds are browser code with no runner here, so the builder and kind bar are read as text.
+
+Gantt, pie, state, class and ER as block kinds (L-documents-57, INBOX 1679 gap 3).
 
 `DIAGRAM-KINDS-MORE-BEGIN` to `-END` in diagram-kinds-more.js is the pure half, run in node beside
 the model's region and the engine's (diagram-kinds.js). For each kind: a source in the docs' own

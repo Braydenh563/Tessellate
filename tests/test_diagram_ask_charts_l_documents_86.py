@@ -1,4 +1,6 @@
-"""The Ask box and Suggestions for Gantt, pie, state, class and ER blocks (L-documents-86).
+"""Source text: the backend is driven through its route; the browser's menu wiring has no runner here, so it is read as text.
+
+The Ask box and Suggestions for Gantt, pie, state, class and ER blocks (L-documents-86).
 
 Backend: `diagram_ask_kinds` reads each kind by rule and checks a model's ops (fake transport; real inference is not
 exercised here). Client: diagram-ai-kinds.js flattens the blocks and plays the ops on a copy with the kind's own

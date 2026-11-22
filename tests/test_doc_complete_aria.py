@@ -1,4 +1,6 @@
-"""Review 6008801452 (1): the word list is announced. Focus stays in the editor while Up and Down light a row, so the
+"""Source text: the word list's ARIA wiring is browser code with no runner here, so it is read as text.
+
+Review 6008801452 (1): the word list is announced. Focus stays in the editor while Up and Down light a row, so the
 lit row is the editor's `aria-activedescendant` (each row has a stable id), with `aria-controls` and `aria-expanded`;
 closing the list clears it. Checked in the app (2026-11-22, an md document, "lorem"): `aria-activedescendant` names
 `doc-complete-opt-0`, whose `aria-selected` is true, with `aria-expanded` true; after Escape it is gone and

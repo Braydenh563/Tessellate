@@ -1,4 +1,6 @@
-"""L-documents-60: `direction` inside a subgraph is that group's own `dir`; at the top it stays a kept line."""
+"""Source text: the subgraph parser is browser code with no runner here, so it is read as text.
+
+L-documents-60: `direction` inside a subgraph is that group's own `dir`; at the top it stays a kept line."""
 
 from __future__ import annotations
 

@@ -1,4 +1,6 @@
-"""L-documents-59: a markdown string and a line break in a node name are model fields, not kept lines."""
+"""Source text: the diagram model is browser code with no runner here, so its parser is read as text.
+
+L-documents-59: a markdown string and a line break in a node name are model fields, not kept lines."""
 
 from __future__ import annotations
 

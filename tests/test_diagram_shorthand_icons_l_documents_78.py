@@ -1,4 +1,6 @@
-"""L-documents-78: `:::class` shorthand and `@{ icon }` nodes are the model's own; a linked node on a document's picture is a hit area."""
+"""Source text: the shorthand parser and its styles are browser code with no runner here, so they are read as text.
+
+L-documents-78: `:::class` shorthand and `@{ icon }` nodes are the model's own; a linked node on a document's picture is a hit area."""
 
 from __future__ import annotations
 

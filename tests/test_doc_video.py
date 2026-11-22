@@ -1,4 +1,6 @@
-"""L-documents-68: a video in a document, played from this app's own origin.
+"""Source text: the video tag is drawn by browser code with no runner here, so the renderer and its CSS are read as text.
+
+L-documents-68: a video in a document, played from this app's own origin.
 
 `![name](/media/x.mp4)` is a `<video controls preload="metadata">` in Read and
 Live; the upload takes MP4 and WebM only, by what the bytes open with, and the

@@ -1,4 +1,6 @@
-"""Labelled and linked sections, and the ```sections block (L-documents-49; DOCUMENTS_PLAN 24 row 10).
+"""Source text: the sections block is browser code and lazy CSS with no runner here, so they are read as text.
+
+Labelled and linked sections, and the ```sections block (L-documents-49; DOCUMENTS_PLAN 24 row 10).
 
 The owner: "on long form notes and documents, you can define topics, or use special characters, commands etc to label and
 link sections of documents ... visually connect ideas across the current document and link them, with reasons, you can

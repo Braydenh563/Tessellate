@@ -1,4 +1,6 @@
-"""L-documents-66: a Live view link chip's underline thickens while Ctrl (Meta on a Mac) is held.
+"""Source text: the key-held styling is browser code with no runner here, so it is read as text.
+
+L-documents-66: a Live view link chip's underline thickens while Ctrl (Meta on a Mac) is held.
 
 Measured 2026-11-14 (scratchpad t646-mod.js, 1440x900): idle underline thickness auto; Ctrl down 2px with the
 `doc-mod-held` class on `.cm-editor`; released auto; Ctrl held then a window blur auto.
