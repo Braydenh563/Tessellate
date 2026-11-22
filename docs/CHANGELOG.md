@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: Ask can be chosen again in the Ask | Agent switch. Its click handler was bound at load, before the chat surface was built, so it bound nothing; the surface lint now checks top-level loops too (the owner, 2026-11-22).
 - Deep-audit skill: its steps brief from and write LEDGER rows, matching its checklist, not the retired ranked files (L-general-26).
 - CONTRIBUTING: "Replace, do not layer" replaces the old "Additive only" rule, and the test count matches the README (L-general-27).
 - RELEASING: the version check, the installer's left-out packages and the 1.0 criterion now say what is true (L-general-24).

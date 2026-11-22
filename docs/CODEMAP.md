@@ -1081,7 +1081,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `buildSettingsJumpList` | frontend/js/phone-shell.js:1815 |
-| `clearAppCache` | frontend/js/phone-shell.js:2294 |
+| `clearAppCache` | frontend/js/phone-shell.js:2298 |
 | `closeNotePageIfGone` | frontend/js/phone-shell.js:1123 |
 | `dockArrangeLabel` | frontend/js/phone-shell.js:1979 |
 | `dockArrangeSlot` | frontend/js/phone-shell.js:1968 |
@@ -1104,7 +1104,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `foldDockArrange` | frontend/js/phone-shell.js:2076 |
 | `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2023 |
 | `foldZoneIntoMenu` | frontend/js/phone-shell.js:1991 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2309 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2313 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:678 |
 | `initDockFolding` | frontend/js/phone-shell.js:2198 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
@@ -1132,14 +1132,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderBrandLogo` | frontend/js/phone-shell.js:218 |
 | `renderEmblem` | frontend/js/phone-shell.js:174 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:255 |
-| `renderExportsList` | frontend/js/phone-shell.js:2320 |
+| `renderExportsList` | frontend/js/phone-shell.js:2324 |
 | `sheetRow` | frontend/js/phone-shell.js:1620 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
 | `syncPhoneMoreButton` | frontend/js/phone-shell.js:1690 |
 | `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1655 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2356 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2360 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:790 |
 

@@ -183,15 +183,18 @@ def test_opening_the_surface_builds_it_before_reading_it(name):
 
 def _load_time_blocks(text: str):
     """Top-level statements that run when the file loads: `onDomReady(...)`
-    blocks, bare `document.getElementById(...)` and `$(...)` lines and IIFEs, with their text."""
+    blocks, bare `document.getElementById(...)` and `$(...)` lines, IIFEs and top-level `for` loops, with their text.
+
+    The loop is the owner's 2026-11-22 report: `for (const button of document.querySelectorAll("#chat-mode-seg
+    button"))` ran at load over the unbuilt chat surface, bound nothing, and Ask could not be chosen."""
     lines = text.split("\n")
     i = 0
     while i < len(lines):
         line = lines[i]
-        if line.startswith(("onDomReady(", "document.getElementById(", "$(", "onSurface(", "(function", "(() =>", "try {")):
-            # The statement ends at the first unindented line closing it (a `try`, at its closing brace).
+        if line.startswith(("onDomReady(", "document.getElementById(", "$(", "onSurface(", "(function", "(() =>", "try {", "for (")):
+            # The statement ends at the first unindented line closing it (a `try` or a `for`, at its closing brace).
             j = i
-            if line.startswith("try {"):
+            if line.startswith(("try {", "for (")) and line.rstrip().endswith("{"):
                 while j < len(lines) - 1 and not (lines[j] == "}" and j > i):
                     j += 1
             else:
@@ -246,6 +249,10 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
             if (path.name, name) in INSIDE_FUNCTIONS:
                 continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
+            if head.startswith("for ("):
+                # Only a query in the loop's head runs over the page at load; its body binds handlers that
+                # run later, and a selector handed on (`warmOnFirst`) is matched at event time.
+                reached = " ".join(re.findall(r"""querySelector(?:All)?\(\s*["'`].*?["'`]\s*\)""", head))
             if head.startswith("onSurface("):
                 # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
                 # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.
