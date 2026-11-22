@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 25 | 1 | 0 | 0 | 26 |
-| general | 0 | 9 | 5 | 0 | 5 | 14 |
-| all | 372 | 402 | 79 | 2 | 111 | 853 |
+| general | 0 | 8 | 5 | 0 | 5 | 13 |
+| all | 372 | 401 | 79 | 2 | 111 | 852 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -506,7 +506,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
 - [ ] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it
-- [ ] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text
 - [ ] **L-general-4** `general` open, M: Add frontend/vendor/PROVENANCE.json (path, sha256, size, version, upstream URL, licence, notice) with a test that recomputes the hashes. From ANALYSIS.md:4262. Evidence: frontend/vendor/PROVENANCE.json does not exist; no doc holds the item
 - [ ] **L-general-5** `general` partly, S: Add a Docker HEALTHCHECK on /health, hadolint in CI, and a static test for the Dockerfile (context, chown, dockerignore, healthcheck). From ANALYSIS.md:4351. Evidence: docker/Dockerfile has mkdir/chown (line 32) and compose context '..' but no HEALTHCHECK; no hadolint anywhere in .github or docker; no docker static test Built 2026-11-22: a HEALTHCHECK asks /health with Python on $TESSELLATE_PORT (the probe line returns 200 against a local server), and the ignore file moved from docker/.dockerignore, which a repo-root context never reads, to docker/Dockerfile.dockerignore with data added (tests/test_docker_files.py, two tests). Not built-run in Docker (no daemon here). Left: hadolint in CI, unverified against this Dockerfile because the binary could not be fetched in this session.
 - [ ] **L-general-6** `general` partly, S: Put a running-build stamp (source_commit, started_at, data dir id) and data_dir_writable in /health and Settings > About. From ANALYSIS.md:4352. Evidence: grep source_commit src returns nothing; app.py:1734 health() returns status/app/version/desktop only Built 2026-11-22: /health carries source_commit (read from .git as files, worktrees and packed-refs included, "" in a packaged build), started_at, data_dir_id (12 hex of the resolved path, never the path) and data_dir_writable (core/buildstamp.py, tests/test_build_stamp.py, 5 tests). Left: the Settings > About line, which waits on #224 (Settings markup is held).

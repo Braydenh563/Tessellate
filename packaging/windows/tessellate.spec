@@ -169,6 +169,10 @@ a = Analysis(
         # reads it from the bundle root when frozen). Without it the panel
         # was empty on every packaged build.
         (str(CHANGELOG), "."),
+        # The licence and the third-party notices (AGPL section 4; the CC BY-SA
+        # and MIT notices), at the bundle root of every copy (L-general-3).
+        (str(REPO_ROOT / "LICENSE"), "."),
+        (str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),
         # The taxonomy pack filing reads (ai/taxonomy.py `DATA_DIR`): JSON
         # beside the module, so it goes where the module's package is.
         (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data" / "taxonomy"), "tessellate/ai/data/taxonomy"),
