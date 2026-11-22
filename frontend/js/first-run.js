@@ -272,7 +272,9 @@ function firstStepsCard(host, state) {
 }
 
 async function renderFirstSteps(host, cardOff = false) {
-  renderGetStarted();
+  //: Held for the opening curtain (`dashShown`): the menu joins the dock a
+  //: moment after the page, and moved its buttons in view (L-world-class-879).
+  dashLine.menu = renderGetStarted();
   if (cardOff) return void host.replaceChildren();
   lazyScript("/css/first-run-lazy.css");
   const state = await firstStepsState();

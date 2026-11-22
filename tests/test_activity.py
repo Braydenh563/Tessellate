@@ -164,7 +164,7 @@ REQUEST_BOUND_LONG = {
     ("api/routes_reminders.py", "import_ics"): "import",
     ("api/routes_bookmarks.py", "import_bookmarks"): "import",
     ("api/routes_meetings.py", "_model_pass"): "generation",
-    ("api/routes_import.py", "import_app"): "import",
+    ("api/routes_import.py", "_import"): "import",
     ("api/routes_documents.py", "import_document"): "import",
     ("api/routes_settings_transfer.py", "import_markdown"): "import",
 }

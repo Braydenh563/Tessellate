@@ -212,7 +212,7 @@ function atlasSuggestion(question, label = `Ask Atlas: ${question}`) {
   ask.type = "button";
   ask.className = "atlas-suggest";
   setLabel(ask, `ph:compass ${label}`);
-  ask.title = "Opens Atlas with this question";
+  ask.title = "Ask Atlas: opens Chat with this question";
   ask.addEventListener("click", () => askAtlasAbout(question));
   line.appendChild(ask);
   return line;
@@ -571,7 +571,7 @@ const RESPONSE_MODE_SELECTS = ["response-mode-select", "ask-mode-select"];
 
 // The response presets, fetched once. Served by /chat/modes rather than
 // listed here so adding a fourth is a change to `ai/presets.py` alone (§11).
-//: The answer is read once and painted again when the Chat pane is built.
+//: Read once, painted again when either picker's surface is built (Ask's is on Notes; L-world-class-875).
 const loadResponseModes = (() => {
   let body = null;
   const paint = () => {

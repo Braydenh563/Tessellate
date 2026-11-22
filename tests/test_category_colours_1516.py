@@ -26,3 +26,11 @@ def test_the_graph_asks_its_page_class_and_redraws_after_the_frames():
     body = _listener(frontend_text("graph.js"))
     assert 'getElementById("tab-graph")' in body and "afterFrames(renderGraph)" in body
     assert "checkVisibility" not in body
+
+
+def test_the_dashboard_waits_for_its_first_draw_before_a_colour_redraws_it():
+    """L603: categories load while the opening render is on its way, and a second
+    full render 80 ms later threw the first away (every widget fetched and built
+    twice at boot). Counted by its guard; the boot sweep measured the renders."""
+    body = _listener(frontend_text("dashboard.js"))
+    assert body.index("window.dashSettled") < body.index("afterFrames(renderDashboard)")

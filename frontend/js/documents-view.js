@@ -410,7 +410,7 @@ function docCmExtensions(CM) {
     CM.view.crosshairCursor(),
     docCmParts.wrap.of(docCmDrawFor(CM, type)),
     docCmParts.language.of(docCmViewLanguage(CM)),
-    docCmParts.theme.of(docCmTheme(CM)),
+    docCmParts.theme.of(docCmThemeKept(CM)),
     docCmHighlight(CM),
     docCmParts.placeholder.of(CM.view.placeholder(docPlaceholderText || "")),
     //: This app's chords first, then CodeMirror's own defaults, so a binding
@@ -780,7 +780,7 @@ function docWatchAppearance() {
   if (docAppearanceWatcher || typeof MutationObserver !== "function") return;
   docAppearanceWatcher = new MutationObserver(() => {
     if (!docCmView || !window.CM6 || !docCmParts.theme) return;
-    docCmView.dispatch({ effects: docCmParts.theme.reconfigure(docCmTheme(window.CM6)) });
+    docCmView.dispatch({ effects: docCmParts.theme.reconfigure(docCmThemeKept(window.CM6)) });
   });
   docAppearanceWatcher.observe(document.documentElement, {
     attributes: true,

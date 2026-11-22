@@ -52,3 +52,9 @@
 .graph-option-row > .value-field-range {
   flex: 0 0 auto;
 }
+/* The presets list sizes to its numbers ("25%", "Fit"): the action menu's
+   12.5rem floor is for rows of words, and it stood 200px wide for 80px of
+   content under the board's zoom (menus.js, L-world-class-107). */
+.action-menu.value-field-list {
+  min-width: 0;
+}

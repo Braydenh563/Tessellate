@@ -59,7 +59,7 @@ function toggleRowExpanded(id) {
     //: the local map already learned not to be.
     if (notesRailId === id) notesRailId = null;
   }
-  const li = document.querySelector(`#entry-list > li[data-id="${id}"]`);
+  const li = noteRowFor(id);
   if (!li) return renderEntries();
   //: **In place, and animated** (INBOX 676, the owner: "the dropdown and
   //: collapse should be a smooth animation adn not sudden and janky"). This
