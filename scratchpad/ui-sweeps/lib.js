@@ -71,6 +71,13 @@ const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const CTX_OPTS = ['hasTouch', 'isMobile', 'deviceScaleFactor', 'locale',
   'timezoneId', 'colorScheme', 'reducedMotion', 'forcedColors', 'userAgent', 'permissions',
   'serviceWorkers'];
+//: An Etc zone where the hour now is about 13:00 (Etc/GMT-N is UTC+N; they run -14 to +12).
+function daytimeZone(now = new Date()) {
+  let off = 13 - now.getUTCHours();
+  if (off > 12) off -= 24;
+  if (off < -11) off += 24;
+  return off === 0 ? 'Etc/UTC' : `Etc/GMT${off > 0 ? '-' : '+'}${Math.abs(off)}`;
+}
 async function boot(opts={}) {
   //: SCROLLBARS=1 draws real scrollbars, as Windows does (17px, taking
   //: layout width). Headless Chromium hides them by default, which is the
@@ -85,6 +92,10 @@ async function boot(opts={}) {
   });
   const ctxOpts = {viewport: opts.viewport||{width:1440,height:900}, deviceScaleFactor: opts.scale || 1};
   for (const k of CTX_OPTS) if (opts[k] !== undefined) ctxOpts[k] = opts[k];
+  //: `daytime: true` puts the page's clock in the early afternoon, whatever the real hour: the
+  //: companion yawns at night (22:00 to 06:00) in place of a drift or a pick, so a sweep run at
+  //: night failed on a fresh data dir (2026-11-22, companionlife "drift: no change" at 05:53Z).
+  if (opts.daytime && opts.timezoneId === undefined) ctxOpts.timezoneId = daytimeZone();
   const ctx = await browser.newContext(ctxOpts);
   // Deterministic theme: the app remembers the last theme server-side, so a
   // sweep after a dark screenshot run would otherwise measure dark. THEME=dark

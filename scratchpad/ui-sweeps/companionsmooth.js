@@ -22,7 +22,7 @@ const { boot } = require('./lib.js');
 const OUT = process.env.OUT || `${os.tmpdir()}/companion-smooth.json`;
 const BUSY = Number(process.env.BUSY || 12);
 (async () => {
-  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  const { browser, page } = await boot({ daytime: true, viewport: { width: 1440, height: 900 } });
   const decoder = await page.context().newPage();
   await decoder.setContent('<canvas id="c"></canvas>');
   const have = await page.evaluate(async () => (await apiJson('/entries?limit=50')).length || 0).catch(() => -1);

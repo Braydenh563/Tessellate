@@ -6,7 +6,7 @@
 // (drawn ahead in idle time) takes over 4ms, or coming back does not wave.
 const { boot } = require('./lib.js');
 (async () => {
-  const { browser, page } = await boot({ timerFns: true, viewport: { width: 1440, height: 900 } });
+  const { browser, page } = await boot({ timerFns: true, daytime: true, viewport: { width: 1440, height: 900 } });
   await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
