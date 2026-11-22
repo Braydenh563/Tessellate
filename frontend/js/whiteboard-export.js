@@ -444,13 +444,13 @@
 
   function wbBuildExportSvg(scope, { transparent = false, pad = 0, skipSketches = null } = {}) {
     //: A selection export is the selection plus 24px, not the bar's 40.
-    const bounds = scope === "selection" ? wbSelectionBounds(24)
-      : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
+    const bounds = scope === "selection" ? wbSelectionBounds(24) : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
     //: `pad`: the PNG dialog's border, board units of ground all round the content.
     const box = bounds || wbBoardBounds();
     const minX = box.minX - pad, minY = box.minY - pad, width = box.width + pad * 2, height = box.height + pad * 2;
     const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
-    //: Everything read off the drawn page comes through this one object.
+    //: Everything read off the drawn page comes through this one object, once a drop's held links are drawn.
+    wbMapDragLayer.settle();
     const look = wbExportLook();
     const bgColor = look.background;
 

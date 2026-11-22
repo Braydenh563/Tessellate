@@ -2182,8 +2182,60 @@ const wbMapDragLayer = {
       for (const [id, size] of layer.sizes) if (!wbMapNodeSizeCache.has(id)) wbMapNodeSizeCache.set(id, size);
     }
     if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges, { onScreen: true });
-    for (const pair of layer.links) pair.el?.removeAttribute("transform");
-    if (layer.links.length) wbUpdateLinkedSketches(layer.grabbed.id, layer.links);
+    const redraw = wbMapDragLayer.holdLinks(layer);
+    for (const pair of redraw) pair.el?.removeAttribute("transform");
+    if (redraw.length) wbUpdateLinkedSketches(layer.grabbed.id, redraw);
+  },
+
+  //: **A link the whole drop carried keeps its translate** (L-mindmap-25: redrawing the 300 links
+  //: inside a 500-topic branch was 45 to 80ms of its drop frame, mapperf). Both its ends moved by
+  //: the drop's one delta, so the line it would be drawn as is the one it shows, moved by that
+  //: delta: a map cross-link's drawing reads only its two ends' boxes, and a whole-tenth delta
+  //: moves every number its ribbon prints by exactly that much. Bent, waypointed or carrying a
+  //: connector's end, or a delta off the tenth, it is drawn now. A held link is drawn from its data
+  //: when the page is next idle, by the next writer of its path (`wbUpdateLinkedSketches`, a
+  //: render), or before anything reads it (a press, a key, the export). Returns the ones to draw.
+  held: new Map(),
+  holdLinks(layer) {
+    const dx = layer.dx || 0;
+    const dy = layer.dy || 0;
+    const tenth = (v) => Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
+    if ((!dx && !dy) || !tenth(dx) || !tenth(dy) || !layer.links.length) return layer.links;
+    const edgy = (wbState.sketches || []).some((s) => typeof s.data === "string" && (s.data.includes('"sourceEdge"') || s.data.includes('"targetEdge"')));
+    const redraw = [];
+    for (const pair of layer.links) {
+      const parsed = pair.parsed;
+      const plain = pair.el?.isConnected && !(parsed.bend && (parsed.bend.x || parsed.bend.y)) && !parsed.points?.length && wbMapCrossLinkLook.ends(parsed);
+      if (plain && !(edgy && wbFmtState.linkEdge?.dependents(pair.sketch.id).length)) wbMapDragLayer.held.set(pair.el, pair);
+      else redraw.push(pair);
+    }
+    //: Not before the drop's own frame is painted: an idle slice there landed in it (mapperf 500, 84 to 98ms).
+    //: A timer rather than a frame loop, so the page gains no wake source (`test_frontend_wake_sources`).
+    if (wbMapDragLayer.held.size) setTimeout(() => wbMapDragLayer.settleLater(), 150);
+    return redraw;
+  },
+
+  //: Draws the held links now; with an idle `deadline`, as many as its time allows.
+  settle(deadline = null) {
+    for (const pair of wbMapDragLayer.held.values()) {
+      if (deadline && deadline.timeRemaining() < 2) return wbMapDragLayer.settleLater();
+      wbUpdateLinkedSketches(null, [pair]);
+    }
+  },
+
+  //: The render writes every link's path itself, so it only takes the translates off first.
+  release() {
+    for (const el of wbMapDragLayer.held.keys()) el.removeAttribute("transform");
+    wbMapDragLayer.held.clear();
+  },
+
+  settleLater() {
+    if (!wbMapDragLayer.armed) {
+      wbMapDragLayer.armed = true;
+      for (const type of ["pointerdown", "keydown"]) document.addEventListener(type, () => wbMapDragLayer.settle(), true);
+    }
+    const later = window.requestIdleCallback || ((fn) => setTimeout(fn, 120));
+    later((deadline) => wbMapDragLayer.settle(deadline), { timeout: 1000 });
   },
 };
 
@@ -4696,10 +4748,9 @@ const WB_CONNECT_WORDS = {
 //: for every link and the index and colours are a walk of the whole map.
 let wbMapCrossLinkMemo = null;
 function wbMapCrossLinkLook(parsed) {
-  if (!wbIsMap() || !parsed?.type?.startsWith("link-")) return null;
-  const source = wbLinkItem(parsed.sourceKind || "node", parsed.sourceId);
-  const target = wbLinkItem(parsed.targetKind || "node", parsed.targetId);
-  if (!source || !target || !WB_MAP_KINDS.has(source.kind) || !WB_MAP_KINDS.has(target.kind)) return null;
+  const ends = wbMapCrossLinkLook.ends(parsed);
+  if (!ends) return null;
+  const { source, target } = ends;
   if (!wbMapCrossLinkMemo) {
     const index = wbMapIndex();
     wbMapCrossLinkMemo = { index, colors: wbMapNodeColors(index), layout: wbMapLayout(), looks: new Map() };
@@ -4723,6 +4774,14 @@ function wbMapCrossLinkLook(parsed) {
   if (stamp) wbMapCrossLinkMemo.looks.set(stamp, found);
   return found;
 }
+
+//: Whether a link is drawn by the map (both ends topics on a map), without drawing it.
+wbMapCrossLinkLook.ends = function (parsed) {
+  if (!wbIsMap() || !parsed?.type?.startsWith("link-")) return null;
+  const source = wbLinkItem(parsed.sourceKind || "node", parsed.sourceId);
+  const target = wbLinkItem(parsed.targetKind || "node", parsed.targetId);
+  return source && target && WB_MAP_KINDS.has(source.kind) && WB_MAP_KINDS.has(target.kind) ? { source, target } : null;
+};
 
 wbMapCrossLinkLook.built = function (parsed, source, target, index, colors, layout) {
   //: A leaf has no colour of its own (null in the map): it wears its

@@ -152,8 +152,15 @@
       //: `wbBulkMoveElement` already uses: a sketch deleted mid-gesture is gone
       //: from the document and has to be looked for again rather than written
       //: to invisibly for ever.
+      //: The one writer of a link's path a drop may have left on its translate (`wbMapDragLayer.held`).
+      if (entry.el && wbMapDragLayer.held.delete(entry.el)) entry.el.removeAttribute("transform");
       if (!entry.el || !entry.el.isConnected) {
         entry.el = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
+        entry.path = undefined;
+      }
+      //: A group found by another pass (the branch layer's one walk) comes without its two paths:
+      //: a drop wrote to neither and left its inside links where the branch was (mapperf 500, all 300).
+      if (entry.path === undefined) {
         entry.path = entry.el?.querySelector(".sketch-path") || null;
         entry.hitbox = entry.el?.querySelector(".sketch-hitbox") || null;
       }

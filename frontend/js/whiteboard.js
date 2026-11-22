@@ -3530,6 +3530,7 @@ renderWhiteboard.parts.wbUpdateCards = function wbUpdateCards(nodeSelection, nod
 function renderWhiteboard() {
   if (wbMapDragLayer.live) wbMapDragLayer.close();
   wbPruneSelection();
+  wbMapDragLayer.release();
   //: A render replaces every map node's element, so every measurement taken
   //: from the previous set is about to describe something that is gone.
   wbClearMapNodeSizeCache();

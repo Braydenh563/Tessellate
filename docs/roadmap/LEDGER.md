@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
 | whiteboard | 0 | 0 | 0 | 0 | 0 | 0 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
-| mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
+| mindmap | 0 | 3 | 0 | 0 | 0 | 3 |
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 178 | 58 | 0 | 72 | 366 |
 | general | 0 | 3 | 0 | 0 | 5 | 3 |
-| all | 402 | 489 | 121 | 2 | 153 | 1012 |
+| all | 402 | 490 | 121 | 2 | 153 | 1013 |
 
 ## graph
 
@@ -284,6 +284,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 - [ ] **L-mindmap-20** `mindmap` open, M: Map branch drop: the release of a large branch drag redraws every inside line and link from scratch; draw them as a translation of what is on screen, or spread the redraw. From L-mindmap-18 (agent). Evidence: mapperf.js fresh runs: branch drag worst frame is the drop (dragWorstAt 1), 487 to 704ms at 500 topics; profile of a 200-topic drop: wbMapDragLayer.close 96 to 108ms, of it wbMapRibbonD 65ms over every inside line and wbMapCrossLinkLook 44ms over 300 inside links. The links-ratio check (links do not double the worst frame) now sits close at 50 and 200 because the plain drop got cheaper: failed in three of seven fresh runs (50: 37 vs 97 before the size fix; 200: 91.6 vs 193.3 after it), passed in the last two.
 - [ ] **L-mindmap-21** `mindmap` open, S: Map branch pick-up for a branch about half the board: still lifts every member; measure a mid-size branch in mapperf and pick the cheaper side by element count. From L-mindmap-18 (agent). Evidence: wbMapDragLayer.open stays only when the branch has 32 topics or more and is more than half the board layer; a branch of about half a 500-topic board still lifts every member (about 50us an element of style recalc, so about 12ms per 250 topics), unmeasured by mapperf, whose branches are the whole map.
+- [ ] **L-mindmap-28** `mindmap` open, S: Map cross-links drawn by a drag or drop end up to 9 units from where a render draws them (topic height read differently inside the render). From L-mindmap-25 drop probe 2026-11-22. Evidence: mapperf 500/300: after a render, wbUpdateLinkedSketches over all 300 links draws 298 differently from the render; link 16003 to 16018 ends at y 3029 (topic 3007 plus half of 44) against the render's 3038 (half of 62): wbMapNodeSize answers a different height inside renderWhiteboard
 
 ## ui-modernisation
 
