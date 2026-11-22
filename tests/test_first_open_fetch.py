@@ -40,3 +40,9 @@ def test_the_view_is_mounted_empty_in_idle_after_the_editor_has_loaded():
     tail = _tail()
     assert tail.index("warmDocumentEngine()") < tail.index("loadCodeMirror()") < tail.index("ensureDocEditor()")
     assert "docWarmed" in tail  # the phone and data-saving guard of the warm is the guard of the mount too
+
+
+def test_the_file_type_table_is_fetched_in_the_warm():
+    # loadDocuments awaits the table before it asks for the list, so a cold table was a serial fetch in the click.
+    tail = _tail()
+    assert tail.index("ensureDocEditor()") < tail.index("loadDocTypeTable()")
