@@ -26,9 +26,14 @@ def test_no_new_function_over_the_cap() -> None:
 
 def test_no_seeded_function_grew() -> None:
     grew = sorted(f"{k}: {NOW[k]} lines, seeded {n}" for k, n in SEED.items() if NOW.get(k, 0) > n)
-    assert not grew, "longer than its seed; split it rather than raise the row:\n  " + "\n  ".join(grew)
+    assert not grew, "longer than its seed; split it rather than raise the row:\n  " + "\n  ".join(
+        grew
+    )
 
 
 def test_the_seed_only_shrinks() -> None:
     stale = sorted(k for k in SEED if k not in NOW)
-    assert not stale, f"now under {CAP} lines or gone; delete the row in js_size_seed.json:\n  " + "\n  ".join(stale)
+    assert not stale, (
+        f"now under {CAP} lines or gone; delete the row in js_size_seed.json:\n  "
+        + "\n  ".join(stale)
+    )
