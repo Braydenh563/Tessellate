@@ -1980,7 +1980,7 @@ mobile first, as the owner's web design class teaches. Measured with
 ### 22.1 Large gaps (what every professional app has)
 
 1. ~~**No URLs.**~~ **Built:** `router.js` gives every view a hash (`#/notes/12`, `#/chat/45`, `#/docs/7`, `#/library/images`, `#/settings/appearance`), the in-app Back and Forward run on `popstate`, a reload restores the view and the window title names it (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
-2. **The laptop screen is mostly chrome.** Partly built 2026-11-22: height-aware density (Compact under 700px of height) meets the gate, 4 whole note cards and the first dashboard widget at 380px above a 577px floor at 1093x614@1.25 (`scratchpad/ui-sweeps/laptopfold.js`). Open: sub-tabs merged into the list toolbar where a surface has both, and the status bar folding into the top bar under 680px. LEDGER L-world-class-95.
+2. ~~**The laptop screen is mostly chrome.**~~ Built 2026-11-22: height-aware density (Compact under 700px of height) meets the gate, 4 whole note cards and the first dashboard widget at 380px above a 577px floor at 1093x614@1.25 (`scratchpad/ui-sweeps/laptopfold.js`). The sub-tab merge and status bar fold are parked in BACKLOG section 5 after two measured attempts each.
 3. ~~**Tabs lose their names on a laptop.**~~ Built 2026-11-14: the captions hold from 820px up (measured at 1024, 1100 and 1280: every label 34 to 83px wide), and every tab's tooltip names its chord (`t then n`, from `TAB_JUMP_KEYS`; `tests/test_tab_tooltips_96.py`).
 4. **Leaving with unsaved work.** Built 2026-09-27 for the note edit form,
    the Capture box and a document mid-autosave, the three surfaces with a

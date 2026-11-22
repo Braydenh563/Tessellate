@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Laptop chrome, L-world-class-95: density meets the gate (4 whole note cards and the first dashboard widget above the fold at 1093x614@1.25); the sub-tab merge and status bar fold are in BACKLOG after two measured attempts each.
 Notes, L-world-class-22 (templates): a note template also fills `{{title}}` (the Capture title), `{{weekday}}` and `{{space}}`, and `${Label}` is a prompted field asked once through the prompt dialog and put at every place the label stands (cancelling stops the use); the Settings popover and the insert-template Guide topic say so.
 Spaces, L-world-class-22 (export): the space picker gains "Export <name> as a folder" on every space, and the folder export is named after the space it is scoped to (`tessellate-<slug>.zip`, an ASCII slug), refusing a locked private space with 423.
 Spaces, L-world-class-22 (the dashboard): in a named space the dashboard's sub line leads with its name, its note count and the note last edited in it with its age, and a press opens the note (no new route: the stats and the loaded notes; tests/test_dashboard_space_line_row22a.py).
