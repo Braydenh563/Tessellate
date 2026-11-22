@@ -523,7 +523,7 @@ share of each against your own notebook.
 
 The budget's boot is a cold start at desktop width. The second start and a phone
 are faster. These were measured on the same notebook in one run, at machine load 1.4, as the p50 of five
-(`scratchpad/ui-sweeps/bootwarm.js`):
+(`tests-e2e/boot-warm-measure.js`):
 
 | Start | First paint | App ready |
 | --- | --- | --- |

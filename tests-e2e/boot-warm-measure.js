@@ -8,9 +8,9 @@
 // Each reports first contentful paint and app up (splash and lock gone), the
 // p50 of RUNS runs. Phone stops at app up: its shell has no Notes tab button.
 //
-//   BASE=http://127.0.0.1:8852 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/bootwarm.js
+//   BASE=http://127.0.0.1:8852 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tests-e2e/boot-warm-measure.js
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
-const m = require('../../tests-e2e/budget-measure.js');
+const m = require('./budget-measure.js');
 const BASE = process.env.BASE || 'http://127.0.0.1:8852';
 const PW = 'testpassword123';
 const RUNS = +(process.env.RUNS || 5);

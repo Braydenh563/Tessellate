@@ -226,13 +226,14 @@ def test_the_caption_spool_of_an_ordinary_space_stays_plain(signed_in, helper):
 # --- an import ---------------------------------------------------------------------
 
 
-def _folder_with_a_file(client):
-    note = client.post("/entries", json={"content": "host note"}, headers=client.space)
+def _folder_with_a_file(client, space=None):
+    space = client.space if space is None else space
+    note = client.post("/entries", json={"content": "host note"}, headers=space)
     nid = note.json()["id"]
     got = client.post(
         f"/entries/{nid}/files",
         files={"file": ("plan.txt", SECRET, "text/plain")},
-        headers=client.space,
+        headers=space,
     )
     assert got.status_code == 201, got.text
     exported = client.get(
@@ -273,7 +274,12 @@ def test_an_imported_note_file_in_a_private_space_is_written_sealed(signed_in):
 
 def test_an_import_into_an_ordinary_space_writes_the_file_plain(signed_in):
     client = signed_in
-    data = _folder_with_a_file(client)
+    #: Exported from an ordinary space: a note exported from Vault now goes back
+    #: to Vault on import (import_spaces.space_for, L979), so it would be sealed.
+    made = client.post("/spaces", json={"name": "Harbour"})
+    assert made.status_code in (200, 201), made.text
+    work = made.json()["id"]
+    data = _folder_with_a_file(client, {"X-Workspace-ID": work})
     before = set(_attachment_files())
     got = _import(client, data, {"X-Workspace-ID": "default"})
     assert got.status_code == 201, got.text

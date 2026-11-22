@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+CI, 12dc7752f: the ordinary-space import test exports from an ordinary space (an export from Vault now goes back to Vault, L979), and the L531 boot sweep moves to tests-e2e/boot-warm-measure.js beside the measure it reads (scratchpad cap 766).
 Lag, L-world-class-355: a third attempt on the Appearance first show: the Settings scroller is found once on the panes' shared parent (Data into Appearance 175-191 to 120 ms at 4x); deferring the selects did nothing and was reverted; the row stays in BACKLOG with the numbers.
 CI, 2a263b28c: the OCR refused Read writes its message line again (L529, lost in a merge); the export name reads its space through repo.spaces (ORM cap 330); the dashboard space fact takes a failed read as null (catch cap 35); two tests follow a split handler and pick the running pass row.
 Search, L628: the Library and graph search boxes read words by meaning, as Settings does: "sourdogh" and "my sourdough notes" find Sourdough, "launches" finds launch.
