@@ -689,9 +689,6 @@ async function saveEntry() {
     payload.content = rewriteStagedUrls(content, stagedUrls);
     const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) });
     clearStagedImages();
-    //: Whoever keeps an answer a new note changes hears of it: the timeline's
-    //: streak, when this is the day's note (review 5907787263).
-    document.dispatchEvent(new CustomEvent("tessellate:note-saved", { detail: { id: saved.id } }));
     status.textContent = filedByText(saved);
     //: Which note this line is about: three notes saved in a row each poll
     //: for their own filing, and the first answer used to overwrite the

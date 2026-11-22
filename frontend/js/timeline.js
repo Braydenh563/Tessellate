@@ -528,7 +528,8 @@ const TIMELINE_FIRST = 100;
 //: how many rows the whole range holds (the first page's `total`), null until it lands.
 //: `streak`: the strip's streak ask, kept per today (review 5907787263): walking the
 //: strip asked for 366 days on every step. Asked again on a new day or a timeline
-//: load (`fresh`), or after a note is saved (`tessellate:note-saved`).
+//: load (`fresh`), after any note write (`tessellate:note-saved`, from `api`), or
+//: when the last ask failed.
 const timelineRenders = { n: 0, pagingFor: 0, total: null, streak: null };
 //: A note saved (today's daily note among them) asks the streak again on the next strip step.
 document.addEventListener("tessellate:note-saved", () => {
@@ -1316,6 +1317,8 @@ async function renderTimelineDayStrip({ fresh = false } = {}) {
     timelineDayPages(first, end),
     timelineRenders.streak.asked,
   ]);
+  //: A failed ask is not kept for the day (review of PR 222): the next step asks again.
+  if (journal === null) timelineRenders.streak = null;
   //: Stale answer: the person walked on while this was in flight.
   if (end !== timelineStripEnd) return;
   const streak = $("timeline-streak");

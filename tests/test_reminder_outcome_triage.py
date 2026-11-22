@@ -57,3 +57,15 @@ def test_overdue_has_a_triage_with_keep_drop_move_and_bulk() -> None:
     #: drop is the bin (restorable), never a purge; a move keeps the due time inside the future
     assert 'method: "DELETE"' in TRIAGE and "/restore" in TRIAGE and "purge" not in TRIAGE
     assert "triageDueFor" in TRIAGE
+
+
+def test_the_triage_review_of_pr_222_holds() -> None:
+    """Review of PR 222: a part-failed bulk act keeps an Undo for the rows done;
+    a cleared date field cannot move anything; focus and the count survive a
+    repaint; Undo of an outcome takes off only its line, so later edits stay."""
+    assert "done = todo.filter((r) => r.gone);" in TRIAGE and "if (done.length) undoFor(done, when, back, apply);" in TRIAGE
+    assert 'if (kind === "move" && !value) return;' in TRIAGE and "move.disabled = !dateInput.value;" in TRIAGE
+    assert "bulk[0].disabled = !todo.length || !dateInput.value;" in TRIAGE
+    assert 'note.setAttribute("role", "status");' in TRIAGE and '(row?.querySelector("button:not(:disabled)") || note).focus();' in TRIAGE
+    assert "if (!now.endsWith(added)) throw" in TRIAGE and 'pushUndo("Added an outcome to a note", takeOff, putBack)' in TRIAGE
+    assert "put(before.content)" not in TRIAGE

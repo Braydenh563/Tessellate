@@ -498,6 +498,12 @@ async function api(path, options = {}) {
   if (fetchOptions.method && fetchOptions.method !== "GET" && JOB_STARTING_PATH.test(path)) {
     kickBackgroundTaskPoll();
   }
+  //: Every note write passes here, so whoever keeps an answer a note changes
+  //: hears of it from one place: the timeline's streak (review of PR 222: only
+  //: the composer's Save sent it, so the editor and the daily note did not).
+  if (fetchOptions.method && fetchOptions.method !== "GET" && !readOnly && /^\/entries(?=[/?]|$)/.test(path)) {
+    document.dispatchEvent(new CustomEvent("tessellate:note-saved", { detail: { path } }));
+  }
   return response;
 }
 api.retries = 0;

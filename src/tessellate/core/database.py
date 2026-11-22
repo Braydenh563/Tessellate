@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -299,18 +300,41 @@ def _forget_private_spaces(session, flush_context, instances):
 #: Flushes that wrote each model, for this process. A cache keyed on
 #: `max(updated_at)` alone serves a stale answer when two writes share a clock
 #: tick (a pinned clock always does), so every such fingerprint carries this.
+#: The count moves at the flush (this session reads its own write) and again at
+#: the commit: a reader in another session that fingerprinted between the two
+#: cached the old rows under the flush's count, which the commit retires
+#: (review of PR 222). Request threads share it, hence the lock.
 _writes: dict[type, int] = {}
+_writes_lock = threading.Lock()
+_WRITTEN = "tessellate_written_models"
 
 
 def writes(model: type) -> int:
-    """How many flushes so far added, changed or deleted a `model` row."""
+    """How many flushes and commits so far added, changed or deleted a `model` row."""
     return _writes.get(model, 0)
+
+
+def _bump_writes(models) -> None:  # noqa: ANN001
+    with _writes_lock:
+        for model in models:
+            _writes[model] = _writes.get(model, 0) + 1
 
 
 @event.listens_for(Session, "before_flush")
 def _count_writes(session, flush_context, instances):
-    for model in {type(obj) for obj in (*session.new, *session.dirty, *session.deleted)}:
-        _writes[model] = _writes.get(model, 0) + 1
+    models = {type(obj) for obj in (*session.new, *session.dirty, *session.deleted)}
+    _bump_writes(models)
+    session.info.setdefault(_WRITTEN, set()).update(models)
+
+
+@event.listens_for(Session, "after_commit")
+def _count_committed_writes(session):
+    _bump_writes(session.info.pop(_WRITTEN, ()))
+
+
+@event.listens_for(Session, "after_rollback")
+def _forget_uncommitted_writes(session):
+    session.info.pop(_WRITTEN, None)
 
 
 def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
