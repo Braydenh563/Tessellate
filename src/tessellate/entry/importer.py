@@ -12,6 +12,8 @@ import importlib.util
 import re
 from pathlib import Path
 
+from tessellate.core import parse_guard
+
 INSTALL_HINT = (
     "Importing documents needs an add-on that isn't installed yet. Install "
     "“Import documents” in Settings, Packages, then restart the app."
@@ -28,27 +30,18 @@ def markitdown_available() -> bool:
     return importlib.util.find_spec("markitdown") is not None
 
 
-#: Seconds markitdown may take on one file before its child is killed. A
-#: long .docx converts in a second or two; magika's model loads once per child.
-CONVERT_TIMEOUT = 120.0
-
-
+@parse_guard.isolated("document", timeout=180)
 def convert_to_markdown(path: Path) -> str:
     """The file's text, as markdown. Raises RuntimeError with the install
-    hint when markitdown isn't available, and `parse_sandbox.ParseRefused`
-    (a RuntimeError, its `str()` a sentence for a person) when the file could
-    not be read.
-
-    markitdown runs in `core/parse_sandbox.py`'s child, with a time and
-    memory limit (L-world-class-321, SECURITY.md T19): a crafted Word file
-    that hangs or crashes a converter costs that child, not the server.
-    """
+    hint when markitdown isn't available, and `parse_guard.ParseStopped`
+    when the file hung, crashed or overfilled the reader's child process
+    (L-world-class-321)."""
     if not markitdown_available():
         raise RuntimeError(INSTALL_HINT)
-    from tessellate.core import parse_sandbox
+    from markitdown import MarkItDown  # imported only when present
 
-    text = parse_sandbox.call("tessellate.core.parse_jobs:markdown", str(path), timeout=CONVERT_TIMEOUT)
-    return text if isinstance(text, str) else ""
+    result = MarkItDown().convert(str(path))
+    return (result.text_content or "").strip()
 
 
 def split_into_sections(text: str) -> list[str]:

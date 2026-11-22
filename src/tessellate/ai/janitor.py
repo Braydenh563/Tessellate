@@ -177,7 +177,7 @@ def categorise(
     `on_late_llm.arrived(category, confidence)`, when given, is called on the model's
     thread if the model answers after `FILING_MODEL_DEADLINE_SECONDS`: what
     this returned was a stand-in, and the model's answer is applied when it
-    lands (`_file_entry_in_background`). `model_deadline` is that wait; the
+    lands (`filing_background._file_entry_in_background`). `model_deadline` is that wait; the
     default is `BLOCKING_MODEL_DEADLINE_SECONDS`, because every other caller
     (re-evaluate, adding context, the agent's own notes, extraction) keeps
     what it gets, and a short wait there would swap the model's answer for

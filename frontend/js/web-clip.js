@@ -56,7 +56,8 @@
       t: "A sample page",
       s: "This is a sample. On a real page the window shows the page's main text, or only what you had selected, and Save as a note keeps it with its address.",
     };
-    const opened = window.open(`/clip.html#${encodeURIComponent(JSON.stringify(sample))}`, "memorymap-clip", "width=560,height=520");
+    //: The clip window is a static page, not a locked route, opened by its full address as the bookmarklet does.
+    const opened = window.open(`${location.origin}/clip.html#${encodeURIComponent(JSON.stringify(sample))}`, "memorymap-clip", "width=560,height=520");
     $("web-clip-status").textContent = opened
       ? "This is the window the bookmark opens. Close it when you have looked."
       : "Your browser blocked the window. Allow pop-ups for this address, then try again.";

@@ -18,6 +18,10 @@
 //     before, because the build is the whole surface at once);
 //   - `onSurface(name, run)` runs wiring that needs the elements once they exist.
 //
+// Settings' body is the one surface kept in a file of its own (`/surfaces/settings.html`, named by `data-src`;
+// L-world-class-760): the page lists its ids in `data-ids`, `SURFACES.load` fetches it at the first sign of an
+// open, and `openSettingsModal` waits for it when it opens first.
+//
 // A script that runs at load must not ask for an element of a surface (that
 // would build it at boot): its listeners are wired from `onSurface`.
 // `tests/test_settings_body_1501.py` and `tests/test_surface_templates.py` hold
@@ -34,9 +38,7 @@ const SURFACES = Object.assign(new Map(), {
   register(root, parent) {
     for (const tpl of root.querySelectorAll?.("script[data-surface], template[data-surface]") ?? []) {
       const name = tpl.dataset.surface;
-      //: `data-in`: a surface kept outside its parent's text (a script cannot hold a script) and moved
-      //: into the parent's `<template data-surface-slot>` when the parent is built (Settings' body).
-      const entry = SURFACES.get(name) ?? { after: [], parent: parent ?? tpl.dataset.in, done: false };
+      const entry = SURFACES.get(name) ?? { after: [], parent, done: false };
       entry.tpl = tpl;
       SURFACES.set(name, entry);
       for (const nested of (tpl.dataset.nests ?? "").split(" ")) {
@@ -45,18 +47,68 @@ const SURFACES = Object.assign(new Map(), {
     }
   },
 
+  //: **A surface fetched, not shipped** (L-world-class-760): Settings' body is 355 KB, a file of its own
+  //: (`/surfaces/settings.html`, stamped by its bytes like a lazy script) that the script names in `data-src`. Its
+  //: ids sit in `data-ids`, so `holds` and `owner` answer for a body that is not here yet. The text comes from
+  //: `load` (asynchronously, on the first sign of an open: the gear under the pointer or in focus, the open itself)
+  //: and, for the caller that asks for one of its ids first, from a synchronous read (a request to this one origin,
+  //: from the cache once it has been fetched): never a null where the body used to be built on the spot.
+  text(entry) {
+    const src = entry.tpl.dataset?.src;
+    if (!src) return entry.tpl.text;
+    if (entry.fetched == null) {
+      try {
+        const request = new XMLHttpRequest();
+        request.open("GET", src, false);
+        request.send();
+        if (request.status === 200) entry.fetched = request.responseText;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return entry.fetched;
+  },
+
+  //: Whether a fetched surface is still to be had: named by a script, its text not yet in, not built.
+  pending(name) {
+    const entry = SURFACES.get(name);
+    return !!entry?.tpl?.dataset?.src && entry.fetched == null && !entry.frag && !entry.done;
+  },
+
+  //: The fetch, begun once; resolves when the text is in (or the fetch failed, which `text` then tries again).
+  load(name) {
+    const entry = SURFACES.get(name);
+    const src = entry?.tpl?.dataset?.src;
+    if (!src || entry.fetched != null || entry.frag) return Promise.resolve();
+    entry.fetching ||= api(src, { silent: true })
+      .then((response) => (response.ok ? response.text() : null))
+      .then((text) => {
+        if (text == null || entry.done || entry.frag) return;
+        entry.fetched = text;
+        SURFACES.warmLater(0);
+      })
+      .catch(() => {})
+      .finally(() => (entry.fetching = null));
+    return entry.fetching;
+  },
+
   //: The surface's markup as a fragment, parsed once (a script's text is parsed here, on the first need).
+  //: Null when its text cannot be had (a surface fetched from a server that did not answer).
   fragment(name, entry) {
     if (!entry.frag && entry.tpl) {
       if (entry.tpl.content) entry.frag = entry.tpl.content;
       else if (SURFACES.splitMark(entry)) {
+        if (SURFACES.text(entry) == null) return null;
         SURFACES.parseNext(entry, Infinity);
         entry.frag = entry.partial;
       } else {
+        const text = SURFACES.text(entry);
+        if (text == null) return null;
         const holder = document.createElement("template");
-        holder.innerHTML = entry.tpl.text;
+        holder.innerHTML = text;
         entry.frag = holder.content;
       }
+      entry.fetched = null;
       SURFACES.register(entry.frag, name);
     }
     return entry.frag;
@@ -71,7 +123,7 @@ const SURFACES = Object.assign(new Map(), {
 
   parseNext(entry, budget) {
     const mark = SURFACES.splitMark(entry);
-    entry.pieces ||= entry.tpl.text.split(mark).map((piece, i) => (i ? mark + piece : piece));
+    entry.pieces ||= SURFACES.text(entry).split(mark).map((piece, i) => (i ? mark + piece : piece));
     entry.partial ||= document.createDocumentFragment();
     const start = performance.now();
     const holder = document.createElement("template");
@@ -82,11 +134,12 @@ const SURFACES = Object.assign(new Map(), {
     return !entry.pieces.length;
   },
 
-  //: Whether the unbuilt surface holds the id: its parsed fragment when it has one, else the ids named in
+  //: Whether the surface not yet drawn holds the id: its parsed fragment when it has one, else the ids named in
   //: its raw text, listed once (a pass over 700 KB at the first miss, then a lookup).
   holds(name, entry, id) {
     if (entry.frag || entry.tpl.content) return !!SURFACES.fragment(name, entry).getElementById(id);
-    entry.ids ??= new Set(Array.from(entry.tpl.text.matchAll(/\sid="([^"]+)"/g), (m) => m[1]));
+    //: A fetched surface names its ids in the page (`tests/test_settings_surface_760.py` holds the list to the file).
+    entry.ids ??= new Set(entry.tpl.dataset?.src ? entry.tpl.dataset.ids.split(" ") : Array.from(entry.tpl.text.matchAll(/\sid="([^"]+)"/g), (m) => m[1]));
     return entry.ids.has(id);
   },
 
@@ -96,7 +149,7 @@ const SURFACES = Object.assign(new Map(), {
     const entry = SURFACES.get(name);
     const live = document.getElementById(id);
     if (live || !entry || entry.done || !entry.tpl) return live;
-    return SURFACES.fragment(name, entry).getElementById(id);
+    return SURFACES.fragment(name, entry)?.getElementById(id) ?? null;
   },
 
   //: **Parse ahead, in idle time.** Keeping a surface as text moved its parse from the boot to its first open: at 4x
@@ -104,7 +157,8 @@ const SURFACES = Object.assign(new Map(), {
   //: parsed (not put in the page) in an idle slot a few seconds after load, Settings first, and a later open
   //: only moves the ready fragment in. A surface opened before its turn simply parses then, as before.
   warm() {
-    const waiting = [...SURFACES].filter(([, entry]) => entry.tpl && !entry.frag && !entry.done && !entry.tpl.content);
+    //: A fetched surface is parsed ahead only once its text is in: the fetch itself waits for a sign of an open.
+    const waiting = [...SURFACES].filter(([, entry]) => entry.tpl && !entry.frag && !entry.done && !entry.tpl.content && (entry.fetched != null || !entry.tpl.dataset?.src));
     //: Notes before Settings (L603): the Notes press is the first interaction, and parsing
     //: its surface inside the press was 41 to 105ms of a 55 to 124ms click at 5,000 notes.
     const next = waiting.find(([name]) => name === "notes") ?? waiting.find(([name]) => name === "settings") ?? waiting[0];
@@ -168,12 +222,12 @@ function surfaceBuild(name) {
   if (entry.parent) surfaceBuild(entry.parent);
   if (!entry.tpl) return false;
   const frag = SURFACES.fragment(name, entry);
+  if (!frag) return false;
   const { tpl } = entry;
   entry.done = true;
   entry.tpl = entry.frag = null;
   const host = tpl.parentNode;
   tpl.replaceWith(frag);
-  for (const slot of host.querySelectorAll?.("template[data-surface-slot]") ?? []) slot.replaceWith(SURFACES.get(slot.dataset.surfaceSlot).tpl);
   // The sweeps the page ran over every element at boot, now over the ones that
   // just arrived: help popovers, closed dock-menu lists, tooltip chords.
   window.initHelpToggles?.(host);

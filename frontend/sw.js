@@ -16,7 +16,7 @@
 //    local script and stylesheet URL is `?v=<version>-<hash of that file>`
 //    (`_stamp_for` in api/app.py). A cache keyed on the full URL cannot hand
 //    back a stale file: an edited file is a different key. So stamped
-//    `/js/*` and `/css/*`, the vendored libraries, the icons and the manifest
+//    `/js/*`, `/css/*` and `/surfaces/*` (a surface's markup fetched on its first open), the vendored libraries, the icons and the manifest
 //    are cache-first, and a reload no longer waits on the disk cache's
 //    revalidation.
 //
@@ -41,7 +41,7 @@ const CACHE = CACHE_PREFIX + VERSION;
 const OFFLINE_PATH = "/offline.html";
 
 // Unstamped files that change only with a release, so the per-version cache
-// is their staleness bound. /css and /js are cached only when stamped.
+// is their staleness bound. /css, /js and /surfaces are cached only when stamped.
 const FIXED_PATHS = new Set([
   "/favicon.svg",
   "/icon-maskable.svg",
@@ -56,7 +56,7 @@ const FIXED_PATHS = new Set([
 function cacheable(url) {
   if (url.origin !== self.location.origin) return false;
   const path = url.pathname;
-  if (path.startsWith("/js/") || path.startsWith("/css/")) return url.searchParams.has("v");
+  if (path.startsWith("/js/") || path.startsWith("/css/") || path.startsWith("/surfaces/")) return url.searchParams.has("v");
   return path.startsWith("/vendor/") || FIXED_PATHS.has(path);
 }
 

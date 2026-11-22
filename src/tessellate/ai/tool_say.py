@@ -513,12 +513,23 @@ def _tool_described(result: dict, args: dict) -> Said:
 
 
 def _chat_history(result: dict, args: dict) -> Said:
+    if "sort" in result:
+        return _chats_listed(result, args)
     found = [c for c in result.get("conversations") or [] if isinstance(c, dict)]
     about = f" about “{args['query']}”" if args.get("query") else ""
     if not found:
         return f"No earlier chat mentions that{about and ''}." if not about else f"No earlier chat was{about}.", "", _chips(("Open Chat", CHATS))
     rows = [_chat_row(c) for c in found[:6]]
     return f"I found {count_noun(len(found), 'earlier chat')}{about}.", "\n".join(rows), ""
+
+
+def _chats_listed(result: dict, args: dict) -> Said:
+    shown = [c for g in result.get("groups") or [{"chats": result.get("chats") or []}] for c in g.get("chats") or []]
+    if not shown:
+        return "There are no saved chats yet.", "", _chips(("Open Chat", CHATS))
+    rows = "\n".join(f"- {link(c.get('title') or 'A chat', '#/chat/' + str(int(c['id'])))}" for c in shown[:8] if _number(c.get("id")))
+    lead = f"{count_noun(result.get('total') or len(shown), 'saved chat')}, by {result.get('sort', 'recent')}."
+    return lead[0].upper() + lead[1:], rows, ""
 
 
 def _chat_row(chat: dict) -> str:
@@ -675,6 +686,9 @@ def _tagged(result: dict, args: dict) -> Said:
 
 
 def _pinned(result: dict, args: dict) -> Said:
+    if args.get("chat_id") is not None and _number(result.get("id")):
+        at = f"#/chat/{int(result['id'])}"
+        return f"{'Pinned' if result.get('pinned', True) else 'Unpinned'} {link(result.get('title') or 'the chat', at)}.", "", _chips(("Open it", at))
     if not _number(result.get("id") or args.get("note_id")) and result.get("label"):
         return _sentence(_plain(result["label"])), "", ""
     at = note_at(result.get("id") or args.get("note_id"))

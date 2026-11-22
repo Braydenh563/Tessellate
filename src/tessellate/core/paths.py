@@ -9,7 +9,18 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from pathlib import Path
+
+
+def bundle_root() -> Path:
+    """The folder `frontend/` lives in: the checkout's root, or a packaged
+    build's extraction root. Here so `core/overlay` can find the frontend
+    without importing the app (L-world-class-791); the rule's reasons are
+    in `api/app.py`."""
+    if getattr(sys, "frozen", False):
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+    return Path(__file__).resolve().parents[3]
 
 
 class OutsideFolder(ValueError):

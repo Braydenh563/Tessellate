@@ -154,7 +154,7 @@ def test_a_long_history_pages_and_says_so(client):
     took the first page and dropped the cursor, so a note with more changes
     than one page showed its newest fifty and looked complete.
     """
-    from tessellate.api.routes_entries import HISTORY_PAGE
+    from tessellate.api.routes_entries_history import HISTORY_PAGE
 
     entry = _make(client, "edit 0")
     for i in range(1, HISTORY_PAGE + 10):
@@ -186,7 +186,7 @@ def test_every_row_of_a_long_history_shows_its_own_version(client):
     would show a row somebody else's text, which looks like the history
     being wrong about what was written rather than like a bug in a loop.
     """
-    from tessellate.api.routes_entries import HISTORY_PAGE
+    from tessellate.api.routes_entries_history import HISTORY_PAGE
 
     edits = HISTORY_PAGE + 9
     entry = _make(client, "edit 0")

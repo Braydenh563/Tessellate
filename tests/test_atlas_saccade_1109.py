@@ -25,7 +25,7 @@ const buddy = { classList: { contains: (c) => c === "nmb-attend" && attend }, qu
 const ctx = {
   Math: Object.assign(Object.create(Math), { random: rnd }), Number,
   nmb: { ex: 0.4, ey: -0.2 }, document: { hidden: false, getElementById: () => buddy },
-  atlasMotionOK: () => true, atlasBlink: () => {},
+  atlasMotionOK: () => true, atlasBlink: () => {}, nameMarkBuddyBehindCover: () => false,
   setTimeout: (fn, ms) => { queue.push([clock + ms, fn]); return queue.length; },
 };
 vm.createContext(ctx);

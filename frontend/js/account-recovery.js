@@ -88,6 +88,7 @@
   //: to do this instead and offers nothing to type: the server would refuse it
   //: (`_from_this_computer`), and a form that cannot work is a worse answer.
   async function openForgotPassword() {
+    surfaceBuild("lockForgot");
     wireForgotCard();
     //: Asked now rather than kept from the boot: `reset_here` is about this
     //: caller only, and costs one local round trip. Unknown reads as here,
@@ -279,6 +280,7 @@
   }
 
   function wireRecoveryDialog() {
+    surfaceBuild("recoveryKey");
     const dialog = $("recovery-key-dialog");
     if (RECOVERY.dialogWired) return dialog;
     RECOVERY.dialogWired = true;

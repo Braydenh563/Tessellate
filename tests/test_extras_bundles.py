@@ -49,9 +49,7 @@ class _FakePip:
 
     def __init__(self, command, **kwargs):
         type(self).commands.append(list(command))
-        # A name matches with or without its version range (L-world-class-320).
-        bare = {re.split(r"[<>=]", part)[0] for part in command}
-        self._code = 1 if any(name in bare for name in type(self).failing) else 0
+        self._code = 1 if any(name in command for name in type(self).failing) else 0
         self.stdout = ["ERROR: No matching distribution found"] if self._code else ["Successfully installed"]
 
     def wait(self):
@@ -80,7 +78,7 @@ def _installed(monkeypatch, ids):
 def _pip_packages(command):
     """The package names a recorded pip command was given."""
     start = command.index("install") + 1 if "install" in command else command.index("uninstall") + 1
-    return [re.split(r"[<>=]", part)[0] for part in command[start:] if not part.startswith("-") and not part.endswith(".txt")]
+    return [part for part in command[start:] if not part.startswith("-") and not part.endswith(".txt")]
 
 
 # --- the catalogue ----------------------------------------------------------

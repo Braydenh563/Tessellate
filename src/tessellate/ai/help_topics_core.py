@@ -174,17 +174,18 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
-            "Done. To add, make or set a reminder, go to the top of the Reminders tab: type it in plain words on the "
-            'Magic add line and press the sparkle (a hedge such as "around 7pm" '
-            "is read as the time), or fill in Remind me to, the "
+            "Done. To add or set a reminder, at the top of Reminders, type it in plain words on the "
+            'Magic add line and press the sparkle (hedges such as "probably '
+            'around 7pm" are read as the time, and a place like "when I get '
+            'home" is left out of the title), or fill in Remind me to, the '
             "date and the time, then Add. Overdue has Triage: keep, drop or reschedule each, or all at once "
-            "(Undo restores). Ticking off a reminder from a note asks how it went and adds that line to the note "
+            "(Undo restores). Ticking off a reminder from a note asks how it went and adds that line to it "
             "(Skip adds nothing). Set a priority, snooze, edit inline, or make one recurring: "
             '"every weekday", "every 2 weeks", "the last Friday of the month", '
             'with an early alert such as "1 day before". '
             "The date and time fields open a month and the day's times, and "
             'read a typed day such as "next friday". '
-            'You can also just say "call mum tomorrow evening" in a note and '
+            'Or say "call mum tomorrow evening" in a note and '
             'let the AI schedule it. In the chat, "remind me two hours before '
             'midnight" works too: Atlas passes your words and the app works '
             "out the time on your own clock. Notifications fire on the minute "
@@ -541,7 +542,7 @@ HELP_TOPICS: list[dict] = [
             "Cmd works in place of Ctrl. A button with a "
             "shortcut shows it in its tooltip, in your own binding. Everywhere: Ctrl+K "
             "the command palette, Ctrl+P find anything, Ctrl+F find on this "
-            "page (inside a note you are editing, in that note), / jump to search (the chat box on Chat), Ctrl+Z undo, "
+            "page (in a note you are editing, that note), / jump to search (the chat box on Chat), Ctrl+Z undo, "
             "Ctrl+Shift+Z redo (on a phone, More then Commands opens the "
             "palette), Alt+Left and Alt+Right back and forward, a double-click "
             "on Notes or Library in the top bar back to its first sub-tab, Ctrl+, "
@@ -558,8 +559,9 @@ HELP_TOPICS: list[dict] = [
             "Ctrl+Shift+A the popup agent, Ctrl+Shift+H ask Atlas about the app, "
             "Ctrl+Shift+O a new chat, Ctrl+Shift+G agent mode on or off, Ctrl+. "
             "stop the answer, Ctrl+Shift+P clip a note to your next question. "
-            "Press t then a letter to jump to a tab (m works too); the panel that appears lists "
-            "each letter beside its name and takes a click."
+            "Press t then a letter to jump to a tab (m works too); the panel lists "
+            "Go to and Do with each letter, marks the tab you are "
+            "on, and takes a click."
         ),
         "badge": {"label": "Keyboard shortcuts", "section": "shortcuts"},
     },
@@ -1053,7 +1055,9 @@ HELP_TOPICS: list[dict] = [
             "remembers your choice. Read this page "
             "reads what is on screen; its menu reads every page or a range like "
             "1-5. Ask sends the page to the chat as a chip on your next "
-            "message. A read keeps running if you "
+            "message. A PDF with a password asks for it once and keeps it "
+            "until the app closes, never saved; a PDF's own bookmarks are under "
+            "Contents beside Pages. A read keeps running if you "
             "close the window: it shows in Settings, Background tasks (a range read counts pages as it goes) and can "
             "be stopped from there or from the workspace, and every page that "
             "has been read is remembered, so reopening the document shows the "

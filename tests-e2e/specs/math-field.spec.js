@@ -53,6 +53,9 @@ test("Escape leaves the text byte for byte as it was, and the LaTeX box edits th
   await page.locator(".cm-md-math-block").click();
   const pop = page.locator(".math-field-pop");
   await expect(pop.locator("math-field")).toBeVisible({ timeout: 20_000 });
+  // Visible is not focused: the first open after a cold start (the field's script still settling) took the
+  // keys before the field had focus, so Escape reached the page and the pop stayed (1 failure in 3 cold runs).
+  await expect.poll(() => page.evaluate(() => document.activeElement?.tagName)).toBe("MATH-FIELD");
   await page.keyboard.type("+7");
   await page.keyboard.press("Escape");
   await expect(pop).toHaveCount(0);

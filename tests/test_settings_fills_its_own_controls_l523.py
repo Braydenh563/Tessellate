@@ -32,3 +32,16 @@ def test_each_control_outside_background_tasks_is_filled_when_its_pane_opens():
         branch = show[show.index(f'if (name === "{pane}")') :]
         branch = branch[: branch.index("\n  }\n")]
         assert f'$("{control}").checked' in branch, f"{pane} opens without filling {control}"
+
+
+def test_every_prefs_fill_reads_the_cache_not_an_argument():
+    """`renderPrefs` calls each reader with no argument, so a `(p) => p.x`
+    reader threw and stopped the fill there (L-world-class-132, found by
+    undo.js: "Cannot read properties of undefined (reading
+    'notifications_muted_except_reminders')"); the fields after it kept stale
+    values."""
+    prefs = (JS / "settings-prefs.js").read_text(encoding="utf-8")
+    fills = prefs[prefs.index("const PREFS_FILLS = [") :]
+    fills = fills[: fills.index("\n];\n")]
+    assert "(p) =>" not in fills
+    assert "const value = read();" in prefs

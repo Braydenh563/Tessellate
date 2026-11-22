@@ -17,7 +17,7 @@ import pytest
 from sqlalchemy import event
 
 from tessellate.ai.embeddings import EmbeddingService
-from tessellate.api import routes_entries
+from tessellate.entry import filing_background
 from tessellate.core import deps
 from tessellate.core.database import Entry
 
@@ -82,11 +82,11 @@ def _file_one(client, session, text: str) -> list[str]:
     """Save one note for background filing and run its filing job inline; returns the
     the SQL statements the job issued."""
 
-    routes_entries._queue_filing, original = (lambda entry: None), routes_entries._queue_filing
+    filing_background._queue_filing, original = (lambda entry: None), filing_background._queue_filing
     try:
         created = client.post("/entries", json={"content": text, "defer_filing": True}).json()
     finally:
-        routes_entries._queue_filing = original
+        filing_background._queue_filing = original
     statements = []
     engine = deps.get_db().engine
 
@@ -95,7 +95,7 @@ def _file_one(client, session, text: str) -> list[str]:
 
     event.listen(engine, "before_cursor_execute", count)
     try:
-        routes_entries._file_entry_in_background(created["id"], "default")
+        filing_background._file_entry_in_background(created["id"], "default")
     finally:
         event.remove(engine, "before_cursor_execute", count)
     session.expire_all()

@@ -460,12 +460,24 @@ function numberMatchingRecords(target, numberFor) {
     li.insertBefore(mark, li.firstChild);
   }
   //: In number order, the uncited after them (INBOX 1524: the search ranked
-  //: source 2 between 11 and 12, so "2" read as missing).
-  const rows = [...list.querySelectorAll(":scope > li[data-id]")];
+  //: source 2 between 11 and 12, so "2" read as missing); within each month
+  //: when an as-of answer grouped them (`askAsOf.monthGroups`), so a row never
+  //: leaves its month's head.
+  const runs = [[]];
+  for (const li of list.children) {
+    if (li.classList.contains("as-of-month")) runs.push([]);
+    else if (li.dataset.id) runs[runs.length - 1].push(li);
+  }
+  runs.forEach(numberMatchingRecords.sortRun);
+}
+
+//: One run of rows into number order (a property, not a new shared name).
+numberMatchingRecords.sortRun = (rows) => {
+  if (!rows.length) return;
   const at = (li) => Number(li.querySelector(":scope > .record-index")?.textContent) || Infinity;
   const sorted = rows.map((li, i) => [at(li), i, li]).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
   if (sorted.some(([, i], k) => i !== k)) rows[0].before(...sorted.map(([, , li]) => li));
-}
+};
 
 //: How much of an answer the notebook backed, said out loud (CHAT_PLAN
 //: Phase 1, Brief 12): under half the sentences supported, the app says so,

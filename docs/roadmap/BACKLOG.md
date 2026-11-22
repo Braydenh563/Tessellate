@@ -364,9 +364,7 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
 
 ---
 
-## 6. OpenAI-compatible backends: **done**
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+## 6. OpenAI-compatible backends: **done**; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ## 7. Desktop packaging
 
@@ -937,7 +935,7 @@ trusting it).
 
 - **L-world-class-230 (moved from LEDGER 2026-11-21, parked for an owner call):** App import, the route build. Lazy router host: register route modules at their first request, not at import. Profiled under cProfile on create_app (wc-slice, 2026-11-21): 728 route decorators make 1,732 FastAPI ModelFields, each building a pydantic TypeAdapter; that is 1.2 s of the 2.4 s profiled route build (create_model_field, fastapi/utils.py:58), about 825 ms of the 2.06 s import unprofiled (L-world-class-150). Two ways, both the owner's call: (1) a lazy router host that imports a router module on its first request, which changes what /openapi.json and route listings show before first use and touches the auth gates, the route-listing tests and CODEMAP routes; (2) patching FastAPI internals to defer or share the ModelField builds, which every FastAPI upgrade can break. Neither is taken without the owner.
 - **L-world-class-95 rest (moved from LEDGER 2026-11-21, parked for an owner call):** Laptop fold, four whole note cards at 1093x614@1.25. Built: links share the details line in card view (two pills), laptopfold 2 whole and 3 in part. Chrome measured on the showcase: top bar 0 to 44, sub-tabs 56 to 92, browse card 99, dock 112 to 154, capture bar 166 to 210, first card 222, status bar from 577; cards 89 to 186px with 6px gaps, the 165 and 186px ones are 3-line previews (compact, owner INBOX 473). Four whole 111px cards need 462px; 355px is there (222 to 577). Sub-tabs into the dock do not fit one row (tabs 421px, the dock row 825px with 773 used, 52px slack; icon-only tabs still 180px); a section switcher in the dock identity (a caret menu at 700px of height or less) saves 43px, to 398, still short, and hides a visible tab strip. The status bar is one 37px row already (x12 to 1081), so trimming it to four items gains nothing alone. Options: (ii) at 700px of height or less in card view, hide the capture bar behind its button and float the status cluster, a start near 123 and a floor of 614, which fits four; (iii) the owner relaxes the gate to three whole cards while 3-line previews stay (INBOX 473). The owner's call.
-- **L-world-class-320 rest: `--require-hashes` for the pip extras (2026-11-21, parked: the lock files cost more than they protect).** Built: each pip extra goes to pip with a version range (`core/extras.py` `PIP_BOUNDS`, `pip_requirements`) and each embedding weights file is pinned to a Hub commit and a sha256, refused on mismatch (`core/embedmodels.py` `verify_digests`). Blocker, measured with `pip install --dry-run --report` on Linux, Python 3.13: pip's hash mode needs a sha256 for every transitive dependency, and the sets are 23 packages for voice, 29 for documents (lxml, cryptography, onnxruntime, numpy, pillow), 12 for RapidOCR, each with different wheels per OS, CPU and Python 3.11 to 3.13 plus the frozen build's `--platform` list; a lock per extra would be about 9 platform files each, regenerated at every bump. If taken: `pip-compile --generate-hashes` per extra per platform in CI, and `--require-hashes` in `_run_install`.
+- **L-world-class-320 rest: `--require-hashes` for the pip extras (2026-11-21, parked: the lock files cost more than they protect).** Built: each pip extra goes to pip bounded by a constraint (`core/extras.py` `EXTRA_BOUNDS`) and each catalogue embedding model is fetched at a pinned commit, its weights checked against pinned hashes (SECURITY.md T23); the open row is L-world-class-691. Blocker, measured with `pip install --dry-run --report` on Linux, Python 3.13: pip's hash mode needs a sha256 for every transitive dependency, and the sets are 23 packages for voice, 29 for documents (lxml, cryptography, onnxruntime, numpy, pillow), 12 for RapidOCR, each with different wheels per OS, CPU and Python 3.11 to 3.13 plus the frozen build's `--platform` list; a lock per extra would be about 9 platform files each, regenerated at every bump. If taken: `pip-compile --generate-hashes` per extra per platform in CI, and `--require-hashes` in `_run_install`.
 
 ---
 
@@ -1816,9 +1814,7 @@ before testing), so this is about what it covers, not whether it exists.
 
 ---
 
-## 28. In-app help: an AI that knows the docs, built
-
-Built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md. Kept for its number.
+## 28. In-app help: an AI that knows the docs, built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md, kept for its number
 
 ---
 
@@ -2054,14 +2050,9 @@ resolution note in [HISTORY.md](HISTORY.md).
 link-reasoning judgement against a real model, this sandbox has no Ollama, so
 only the fake-transport tests exercise it.
 
-## 63. Ship a starter skills library, DONE, this claim was stale
+## 63. Ship a starter skills library, DONE, this claim was stale; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
-
-## 64. Documents editor: built, moved to HISTORY.md
-
-The slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`)
-both exist; the rest of the pass lives in DOCUMENTS_PLAN.md. Kept for its number.
+## 64. Documents editor: built, moved to HISTORY.md; the slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`) exist, the rest lives in DOCUMENTS_PLAN.md
 
 ## 65. Highlight/web-clip capture
 
@@ -2749,9 +2740,7 @@ Reported live across several messages. The lightbox half is **partly built**
 (see HANDOVER.md); the upload half is **logged, not built**, and is the
 larger piece.
 
-### What was built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### What was built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### Still open: the upload split, and what it collides with
 
@@ -3421,13 +3410,9 @@ that proved each one** (not a reading of the source), the twelve-item
 competitor gap analysis triaged against what this app already has, and a
 brainstormed list of what is missing that nobody has asked for yet.
 
-### 109.1 Fixed, and how each was actually proven
+### 109.1 Fixed, and how each was actually proven; built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"), kept for its number
 
-Built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"). Kept for its number.
-
-### 109.2 Text highlighting: built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### 109.2 Text highlighting: built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### 109.3 The competitor gap analysis, triaged
 
@@ -3501,9 +3486,7 @@ Genuinely open, ranked by value-per-effort:
 
 ## §110: the toolbar round: formatting in Notes, and five more measured bugs
 
-### 110.1 Built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### 110.1 Built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### 110.2 The five bugs, and the measurement that found each
 
@@ -4383,12 +4366,14 @@ Each row is the one step left of a built item; everything that runs here is buil
 - **L-world-class-134 (moved from LEDGER 2026-11-14):** Live captions on real hardware. Check: a ten-minute captioned recording on the reference laptop (lag under 2 s, CPU under 60%), then the Windows, macOS and aarch64 wheels each caption one clip. Recommendation: wheels first, the laptop run after; the fake-engine tests cover the pipeline.
 - **L950 (moved from LEDGER 2026-11-14):** Packaged captions helper. Check: with release assets published, the per-platform pin downloads, its hash matches, and the supervisor restarts a killed whisper-server on the Windows desktop. Recommendation: build it with the first release that ships captions; it needs the assets to exist.
 - **L971 (moved from LEDGER 2026-11-14):** Boot forced layout, canvas pointerout, most-accessed render (1667i). Check: a Performance trace from the owner's browser at boot on the dashboard; the three long tasks named in w34-fix2-1111.md are gone or under 50 ms. Recommendation: the owner records one trace; no reproduction here at 4x CPU.
+- **Boot long tasks at 4x, owner browser (from L-world-class-354 and 364, measured 2026-11-21 here):** Chromium trace at dashboard boot, 4x CPU, empty notebook, five runs each: UpdateLayoutTree total median 945 ms (max single 99), Layout 205, ParseHTML 407 (most of it parser-blocking script execution inside ParseHTML; markup parse itself is about 100 ms: index.html 1.2 MB, lines 0-64 head 81 ms, 94-267 47 ms). Two pure style tasks with no script remain: the first recalc (5 elements, 18 `@property` registrations, 132 ms: the boot stylesheet's rule set build) and the dashboard's first full draw (836 to 856 elements, 118 to 170 ms, `Related style rule` subtree invalidations, scheduled by the splash leaving and the skeleton swap); a later body class toggle costs 2 to 5 ms, so no selector reaches the whole tree. `bootlongtasks.js` at 1x: per-run longest 50, 0, 0, 0, 60 ms (4 of 5 runs under 50, the 60 has no script); at 4x median longest 179 ms (phone-shell timer 136 ms with 130 ms forced style and layout, app.js fetch.then 93, atlas atlasWarmLook 66). A probe with `content-visibility: auto` on `#dash-grid > .dash-widget` took the UTL total median 945 to 794 ms and the longest 99 to 74 but is unsafe: `sizeDashWidgetSpan` (dashboard.js:870) measures card heights for the masonry. Check: the owner records one trace on their own notebook; only an owner-sized notebook shows whether the dashboard recalc stays over 50 ms at 1x.
 - **L976 (moved from LEDGER 2026-11-14):** Text metrics and the wrap sweep beyond Chromium. Check: the wrap sweep in Firefox and WebKit at 360, 768 and 1440; no clipped label, no overflow. Recommendation: run it when Firefox and WebKit builds are installed (only Chromium is here).
 - **L-world-class-109 (moved from LEDGER 2026-11-14):** Back opened Settings (421 j). Check: the owner's exact clicks before Back opened Settings; replay them in the sweep and assert Back returns to the previous tab. Recommendation: keep the history stack as built; one cause found and fixed 2026-11-14 (pane changes inside Settings, then close, then Back reopened it; L-world-class-356, sweep `backtabs.js`); replay the owner's path against that sweep.
 - **L-world-class-112 (moved from LEDGER 2026-11-14):** Atlas's anatomy, rounds 3 and 4 (427 1). Check: the owner looks at Atlas at rest and talking, light and dark, and says keep or redo. Recommendation: keep rounds 3 and 4 as built; this is taste, so no change is made on the owner's behalf.
 - **Real phones on the LAN trust page and plain http (Brief 40):** Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used
 - **L915 (moved from LEDGER 2026-11-12):** Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
 - **L918 (moved from LEDGER 2026-11-12):** Run CHAT evals gate on a 3B model. From OPEN.md:616. Evidence: Needs real-model run (pytest -m evals, scratchpad/llama-dev.sh)
+- **L-world-class-26 real-model half (time travel, I5):** the claim-pair judge (`timetravel.model_judge`, `JUDGE_PROMPT`) and the as-of meaning rank (`timetravel.past_vectors`, the search's meaning floor) run only on fakes. Check: with `scratchpad/llama-dev.sh serve` and the built-in embedder, add an evals case in `tests/eval/` (the I5 fixture: one revised, one reworded-same, one contradicted pair; a note found as of March only by its past meaning) and run `pytest -m evals`; record the verdicts right of 3 and the then-note's rank.
 - **L919 (moved from LEDGER 2026-11-12):** Verify iPhone profile install, Windows network category and macOS readers on real machines. From OPEN.md:577. Evidence: Needs real iPhone, Windows and macOS machines; parsed from fixtures only Also L588 (a Windows machine): The merge of skills, personas and templates on Settings import is built and tested (routes_settings.py `_MERGED_LISTS`, tests/test_settings_rows.py). The check left: in the Windows desktop app, press Export settings and Import settings, and see the native save dialog open on the folder chosen in Settings, and that an imported file keeps this notebook's other personas, skills and templates. Needs a Windows machine; unverified here. Also, from L-world-class-75: Back with a sheet over Settings on a physical phone (the hardware Back gesture); the 390 emulation passes.
 - **L920 (moved from LEDGER 2026-11-12):** Run provider checks against a real model instead of the fake transport. From OPEN.md:612. Evidence: Standing caveat CLAUDE.md s4; needs real model
 - **L921 (moved from LEDGER 2026-11-12):** Verify real built-in embedding model load, Ollama pulls and dark theme for new rows. From OPEN.md:619; OPEN.md:3540. Evidence: No sentence-transformers here (CLAUDE.md s7); needs real model
@@ -4473,7 +4458,6 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
 - **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
 
-
 ## From the general plan's frontend rows, 2026-11-21
 
 - **Provenance for extracted notes** (L-general-37, found building L-general-13). A note saved by `/extract/commit` (routes_entries.py `extract_commit`) records nothing about where its text came from, so it gets no provenance chip. **Why it waits:** no column can say "extracted from document X" without a migration. `source_path` would mark the note as outside text for the agent's injection guard (`manager.came_from_outside`), which is wrong for the person's own document. **Next:** a nullable `origin_document_id` on entries (migration, full suite), set by `extract_commit` when `source_document_id` is given, read by `entry/provenance.py` as kind `document` with "Extracted from <title>". **Check:** `tests/test_note_provenance.py` gains a case where a note committed with `source_document_id` returns `source_kind == "document"`, and a hand-typed note still returns none.
@@ -4483,3 +4467,5 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L704, the companion's Tempo look flushes the style other code dirtied.** `nameMarkBuddyTempo`'s `getAnimations` still shows 3 to 11 forced style flushes per tab-flip run (median 17 ms, max 46 ms at 4x). Measured with invalidation tracking: the dirt is the tab's own (timeline rows' class and rule changes, 168 elements in the 21 ms one) plus running animations, not the companion's writes. Three variants changed nothing (look taken inside the idle callback: median 25.7 ms; looks every 4 s when the last found nothing: 30.5 ms; idle callback held while `nmb.pageAt` is under 300 ms old: 38.1 ms, all against 17.4 ms before, n=6 each), so none was kept. **The check:** `scratchpad/w`-style trace (CPU 4, `disabled-by-default-devtools.timeline.stack`), five tab clicks, `UpdateLayoutTree` events whose top frame is `nameMarkBuddyTempo`; the fix must come from the pages that dirty (batch the timeline rows' class writes) or from listing the figure's animations without `getAnimations`.
 - **L707, the companion adds layouts to a tab switch that no listener of its own causes.** With the Atlas companion on, a tab click to chat counts a median 102 Layout events against 25 with it off, reminders 136 against 7 (4x CPU, six fresh loads each). A traced chat switch (four loads) splits 355 Layouts into 266 unforced, the figure's own frame-stepped drawing and walk, and 89 forced, the largest being `atlasRigRead` 10, `check@:7321` 8, the composer's `autoGrow` 20, `nameMarkBuddySupported` 5. Swallowing `transitionrun`, `transitionend`, `transitioncancel`, `animationstart` and `animationend` before the keep-up sees them gave 387 Layouts (305 unforced), so the keep-up is not the cause and no change to it was made. **The check:** `scratchpad/ui-sweeps/companionperf.js`-style trace (CPU 4, stack category), tab clicks with `prefs.set('avatar-buddy','atlas')` against `'off'`, count `Layout`; the fix must come from stepping the figure's layers on the compositor or from the forced readers above (`atlasRigRead`, `nameMarkBuddyBlend`, `rect@avatars.js:5484`).
 - **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).
+- **L690 device check: Windows memory cap.** Run a crafted document through the parse child on a real Windows machine and confirm the job object (`JOB_OBJECT_LIMIT_PROCESS_MEMORY`, `parse_guard._limit_memory_windows`) turns a huge allocation into the "too large to read" answer; only a fake ctypes was tested here.
+- **L695 (moved from LEDGER 2026-11-21, needs the owner):** a custom domain for the site, and the diagram dive that only Fable may run (opt-in by the owner, CLAUDE.md order 4). Sync, studio and pet are built (dec4ec1a5, 603ba7780, 3ef770475). From INBOX.md:1748 Q34, OPEN O54.

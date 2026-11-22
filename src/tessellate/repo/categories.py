@@ -75,3 +75,22 @@ def names_by_id(session: Session, category_ids: set[int]) -> dict[int, str]:
     if not category_ids:
         return {}
     return dict(session.execute(select(Category.id, Category.name).where(Category.id.in_(category_ids))).all())
+
+
+def note_ids_in(session: Session, category_id: int) -> list[int]:
+    """Every note filed in the category, binned ones included (a merge names
+    them all for its undo)."""
+    return list(session.scalars(select(Entry.id).where(Entry.category_id == category_id)))
+
+
+def live_notes(session: Session, entry_ids: list[int]) -> list[Entry]:
+    """The named notes that are not in the bin, wherever they are filed."""
+    return list(session.scalars(select(Entry).where(Entry.id.in_(entry_ids), Entry.is_deleted == False)))  # noqa: E712
+
+
+def notes_in(session: Session, category_id: int, entry_ids: list[int] | None = None) -> list[Entry]:
+    """The category's notes: the named ones (binned included, as a split
+    moves what was asked), or with no names every live one."""
+    where = [Entry.category_id == category_id]
+    where.append(Entry.id.in_(entry_ids) if entry_ids is not None else Entry.is_deleted == False)  # noqa: E712
+    return list(session.scalars(select(Entry).where(*where)))

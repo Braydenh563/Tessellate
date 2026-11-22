@@ -571,10 +571,10 @@ def alternative(word: str, chosen: str, vocabulary) -> str | None:  # noqa: ANN0
 
 
 def _split(word: str) -> str | None:
-    """"whenis" is "when is", "howmany" is "how many": a run-together word
-    whose two halves are an asking word and a vocabulary word."""
+    """"whenis" is "when is": an asking word run into a vocabulary word, never
+    a word of the English list ("wherein", "canon": VC8)."""
     low = word.lower()
-    if len(low) < 5 or low in VOCABULARY or low in REAL_WORDS:
+    if len(low) < 5 or low in VOCABULARY or low in REAL_WORDS or spelling.is_word(low, strict=True):
         return None
     #: The head is an asking word, so only cuts up to the longest one are tried (each cut copies the word).
     for cut in range(2, min(len(low) - 1, max(map(len, ASKING)) + 1)):
@@ -852,7 +852,7 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
         if fixed is not None:
             fixed.append((word, chosen))
         return True
-    run_on = _run_on_reading(word, known)
+    run_on = None if spelling.is_word(word.lower(), known, strict=True) else _run_on_reading(word, known)
     if not run_on:
         return False
     out.append(" ".join(run_on) + tail)

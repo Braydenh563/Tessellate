@@ -184,7 +184,7 @@ def test_a_close_tag_split_across_chunks_is_still_caught():
 
 
 def test_qwen_small_doubled_opening_brace_is_still_the_call():
-    """L-world-class-630, measured: Qwen2.5-1.5B on its own chat template in
+    """L-world-class-842, measured: Qwen2.5-1.5B on its own chat template in
     llama-cpp-python wrote this for "Open https://bread.example/", one `{`
     more than it closed. It read as no call, and the raw tag was the answer."""
     text = '<tool_call>\n{{"name": "search_notes", "arguments": {"query": "bread"}}\n</tool_call>'

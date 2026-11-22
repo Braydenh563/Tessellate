@@ -21,7 +21,6 @@ from fastapi.responses import StreamingResponse
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, safe_filename
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
@@ -29,8 +28,6 @@ from tessellate.ai import drafter, utilities, vision_ocr
 from tessellate.core import activity, cjk, deps, docexport, docmeta, docthreads, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
-    LIKE_ESCAPE,
-    Entry,
     utcnow,
     like_escape,
 )
@@ -50,6 +47,7 @@ from tessellate.entry.mentions import (
 from tessellate.entry.manager import entries_for_document, get_entry, link_document, log_action, unlink_document
 from tessellate.entry.manager_text import join_blocks, readable_embeds, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.repo import notes as notes_repo
 
 logger = logging.getLogger(__name__)
 
@@ -907,19 +905,7 @@ def _backlinks(session: Session, document: Document) -> dict:
         ("document", row.id, row.title or "Untitled", row.content or "")
         for row in document_repo.mentioning(session, document.id, like, BACKLINK_SOURCES_MAX)
     )
-    note_rows = session.scalars(
-        select(Entry)
-        .where(
-            Entry.is_deleted == False,  # noqa: E712
-            # A private note is encrypted at rest, so its content would not
-            # match the LIKE anyway; the filter is here so that stays true by
-            # decision rather than by side effect.
-            Entry.is_private == False,  # noqa: E712
-            Entry.content.ilike(like, escape=LIKE_ESCAPE),
-        )
-        .order_by(Entry.id.desc())
-        .limit(BACKLINK_SOURCES_MAX)
-    )
+    note_rows = notes_repo.mentioning(session, [like], BACKLINK_SOURCES_MAX)
     sources.extend(
         ("note", row.id, plain_label(row.content, 60) or "Untitled note", row.content or "")
         for row in note_rows
@@ -953,7 +939,7 @@ def document_connections(document_id: int, session: Session = Depends(get_sessio
     endpoint, and the images a document embeds were listed nowhere, you
     could only find them by reading the markdown. One shape, one request.
     """
-    from tessellate.api.routes_entries import _connected_files
+    from tessellate.entry.service import connected_files
 
     document = _existing(session, document_id)
     bookmarks = [
@@ -961,7 +947,7 @@ def document_connections(document_id: int, session: Session = Depends(get_sessio
         for row in bookmark_repo.attached_to_document(session, document.id, by_title=True)
     ]
     notes = _linked_notes(session, document.id)
-    files = _connected_files(session, document.content)
+    files = connected_files(session, document.content)
     return {
         "notes": notes,
         "bookmarks": bookmarks,

@@ -1,82 +1,111 @@
-"""Cutting a part out of a recorded wav (ledger L685, D18).
+"""Cut a span out of a recording on the server (L632).
 
-The app has no muxer for webm, ogg or mp4, but it writes and reads the PCM
-wav the tab-side trim makes, and the standard library's `wave` can cut one
-without decoding it into memory: the header is written for the kept length,
-then the kept frames stream across in blocks. The cut keeps the source's
-rate, channels and sample width (the same container), and never touches the
-source file."""
+The page used to decode the whole take with the Web Audio API (about 12 MB a
+minute of memory) to write the part kept. Here PyAV (the voice add-on's
+decoder) reads the file packet by packet and only the span is kept, mixed to
+one channel as 16-bit wav. A wav needs no decoder at all: with PyAV missing it
+is cut with the standard library; any other container asks for the add-on.
+"""
 
 from __future__ import annotations
 
-import json
-import struct
+import importlib.util
+import io
 import wave
-from collections.abc import Iterator
 from pathlib import Path
 
-#: Frames read at a time: a megabyte or so of 16-bit stereo.
-BLOCK_FRAMES = 262_144
+NEEDS_ADDON = "Trimming this recording needs the voice add-on's audio reader. Install it in Settings, Packages, then try again."
 
 
-class NotTrimmable(ValueError):
-    """The file is not a PCM wav this module can cut."""
+class TrimError(RuntimeError):
+    """The cut could not be made; the message is a sentence for the person."""
+
+    @property
+    def sentence(self) -> str:
+        #: A name of its own, so the wording lint can tell this text (checked
+        #: in its SOURCES) from any other `str(exc)` in the route file.
+        return str(self)
 
 
-def span(path: Path) -> tuple[int, int, int, int]:
-    """`(channels, width, rate, frames)` of a PCM wav, or `NotTrimmable`."""
+def available() -> bool:
+    return importlib.util.find_spec("av") is not None
+
+
+def _wav_bytes(rate: int, samples: bytes) -> bytes:
+    out = io.BytesIO()
+    with wave.open(out, "wb") as audio:
+        audio.setnchannels(1)
+        audio.setsampwidth(2)
+        audio.setframerate(rate)
+        audio.writeframes(samples)
+    return out.getvalue()
+
+
+def _cut_wav(path: Path, start_ms: int, end_ms: int) -> bytes:
+    """A 16-bit wav cut with `wave`, one channel kept (the first, or the mean for two)."""
+    import array
+
     try:
-        with wave.open(str(path), "rb") as src:
-            return src.getnchannels(), src.getsampwidth(), src.getframerate(), src.getnframes()
+        with wave.open(str(path)) as audio:
+            rate, width, channels = audio.getframerate(), audio.getsampwidth(), audio.getnchannels()
+            if width != 2:
+                raise TrimError(NEEDS_ADDON)
+            first = min(audio.getnframes(), start_ms * rate // 1000)
+            audio.setpos(first)
+            want = max(0, min(audio.getnframes(), end_ms * rate // 1000) - first)
+            data = audio.readframes(want)
+            #: A cut-off file (a crash mid-take) keeps the header's length: the
+            #: frames past the break are not there, so the span is refused rather
+            #: than written shorter than it says (ported from L685).
+            if len(data) < want * width * channels:
+                raise TrimError("That recording is shorter than its header says.")
     except (wave.Error, EOFError) as exc:
-        raise NotTrimmable("That recording isn't a plain wav the app can cut.") from exc
+        raise TrimError("That recording's audio couldn't be read.") from exc
+    samples = array.array("h")
+    samples.frombytes(data[: len(data) // 2 * 2])
+    if channels > 1:
+        samples = array.array("h", (sum(samples[i : i + channels]) // channels for i in range(0, len(samples) - channels + 1, channels)))
+    return _wav_bytes(rate, samples.tobytes())
 
 
-def frame_range(rate: int, frames: int, start_ms: int, end_ms: int) -> tuple[int, int]:
-    """The kept frames `[first, last)`, clamped to the file."""
-    first = min(frames, max(0, start_ms * rate // 1000))
-    last = min(frames, max(first, end_ms * rate // 1000))
-    return first, last
+def _cut_av(path: Path, start_ms: int, end_ms: int) -> bytes:
+    import av
+
+    chunks: list[bytes] = []
+    rate = 0
+    try:
+        with av.open(str(path), mode="r") as container:
+            stream = container.streams.audio[0]
+            rate = stream.rate or stream.codec_context.sample_rate
+            resampler = av.AudioResampler(format="s16", layout="mono", rate=rate)
+            #: Seek to the span's start (a keyframe before it), then drop what
+            #: precedes it frame by frame; stop at the end, never decode past it.
+            if start_ms > 0:
+                container.seek(int(start_ms * 1000), any_frame=False, backward=True)
+            want_from, want_to = start_ms * rate // 1000, end_ms * rate // 1000
+            pos = 0  #: absolute sample index of the next frame
+            for frame in container.decode(stream):
+                if frame.time is not None:
+                    pos = round(float(frame.time) * rate)
+                if pos >= want_to:
+                    break
+                for out in resampler.resample(frame):
+                    chunk = out.to_ndarray().reshape(-1)
+                    part = chunk[max(0, want_from - pos) : max(0, want_to - pos)]
+                    if len(part):
+                        chunks.append(part.tobytes())
+                    pos += len(chunk)
+    except (av.error.FFmpegError, IndexError, ValueError) as exc:
+        raise TrimError("That recording's audio couldn't be read.") from exc
+    return _wav_bytes(rate or 16000, b"".join(chunks))
 
 
-def header(channels: int, width: int, rate: int, frames: int) -> bytes:
-    """The 44-byte header of a PCM wav of `frames` frames."""
-    size = frames * channels * width
-    return (
-        b"RIFF" + struct.pack("<I", 36 + size) + b"WAVEfmt "
-        + struct.pack("<IHHIIHH", 16, 1, channels, rate, rate * channels * width, channels * width, width * 8)
-        + b"data" + struct.pack("<I", size)
-    )
-
-
-def cut(path: Path, first: int, last: int) -> Iterator[bytes]:
-    """The header, then the frames `[first, last)` in blocks."""
-    channels, width, rate, _frames = span(path)
-    yield header(channels, width, rate, last - first)
-    with wave.open(str(path), "rb") as src:
-        src.setpos(first)
-        left = last - first
-        while left > 0:
-            block = src.readframes(min(BLOCK_FRAMES, left))
-            if not block:
-                # The header promised frames the file does not hold.
-                raise NotTrimmable("That recording is shorter than its header says.")
-            left -= len(block) // (channels * width)
-            yield block
-
-
-def kept_peaks(peaks_json: str, duration_ms: int, start_ms: int, end_ms: int) -> list[float]:
-    """The bars of the part kept (the tab's slice, by the same arithmetic)."""
-    peaks = json.loads(peaks_json or "[]")
-    span_ms = duration_ms or 1
-    return peaks[int(start_ms / span_ms * len(peaks)) : -(-end_ms * len(peaks) // span_ms)]
-
-
-def kept_markers(marks: list[dict], start_ms: int, end_ms: int) -> list[float | dict]:
-    """The marks inside the part, moved to count from its start."""
-    out: list[float | dict] = []
-    for mark in marks:
-        if start_ms <= mark["at"] <= end_ms:
-            at = mark["at"] - start_ms
-            out.append({"at": at, "note": mark["note"]} if mark.get("note") else at)
-    return out
+def cut(path: Path, start_ms: int, end_ms: int) -> bytes:
+    """The audio of `path` from `start_ms` to `end_ms`, as a mono 16-bit wav."""
+    if end_ms <= start_ms:
+        raise TrimError("The end must come after the start.")
+    if available():
+        return _cut_av(path, start_ms, end_ms)
+    if path.suffix.lower() == ".wav":
+        return _cut_wav(path, start_ms, end_ms)
+    raise TrimError(NEEDS_ADDON)

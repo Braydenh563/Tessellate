@@ -116,7 +116,8 @@ NAMED = {
     "/documents/outline": ("routes_documents.py", "document_repo.live(session, limit=OUTLINE_DOCUMENTS)"),
     # The rows drawn are capped; `ids` stays whole on purpose: it is the Notes
     # filter's answer, and a filter that drops matches hides notes.
-    "/entries/query": ("routes_entries.py", "shown = ids[:QUERY_ROWS_MAX]"),
+    "/entries/query": ("../entry/listing.py", "shown = ids[:QUERY_ROWS_MAX]"),
+    "/entries/changes": ("../entry/listing.py", ".limit(CHANGES_IDS_MAX + 1)"),
     # The graph draws every note by design; documents are capped and the
     # encoded payload is cached while nothing moves (`_payload_key`).
     "/graph": ("routes_graph.py", ".limit(GRAPH_DOCUMENT_CAP)"),

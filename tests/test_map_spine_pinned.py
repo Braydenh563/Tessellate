@@ -13,7 +13,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+# The pin rules moved to library-lazy.css (L-world-class-364), which loads after the boot sheet, so
+# the two read in load order are the cascade the bar rules are checked against.
+_CSS_DIR = Path(__file__).resolve().parents[1] / "frontend" / "css"
+CSS = "\n".join((_CSS_DIR / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
 CSS = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
 
 

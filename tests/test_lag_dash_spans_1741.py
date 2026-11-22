@@ -21,8 +21,9 @@ def _body(head: str) -> str:
 
 def test_the_observer_does_not_size_behind_the_veil() -> None:
     body = _body("function watchDashWidgets(")
-    frame = body[body.index("requestAnimationFrame(() => {") :]
-    assert 'if (!grid.classList.contains("dash-filling")) sizeDashWidgets();' in frame
+    # Sized in the observer's own callback since L-world-class-620 (no frame hop), still not while the grid is veiled.
+    assert 'if (!grid.classList.contains("dash-filling")) sizeDashWidgets();' in body
+    assert "requestAnimationFrame" not in body
 
 
 def test_the_settle_sizes_once_before_the_veil_lifts() -> None:

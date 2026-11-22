@@ -46,9 +46,9 @@ def test_the_web_panel_draws_its_menu_before_the_status_call():
     """10c(3): the "..." was built only after /websearch/searxng/status
     answered (44 to 108ms here, seconds while Docker answers); now it is
     built in the same task that opens the panel (visible in 5ms)."""
-    chat = _read("web-results.js")
+    chat = _read("web-panel.js")
     body = chat[chat.index("function toggleWebPanel") :]
-    body = body[: body.index("\n  }\n")]
+    body = body[: body.index("\n}\n")]
     assert body.index("renderWebPanelMenu(webEngineInfo);") < body.index("refreshWebSearxngStrip();")
 
 

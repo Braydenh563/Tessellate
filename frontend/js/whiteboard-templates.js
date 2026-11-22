@@ -434,6 +434,7 @@ async function wbUntitledNames() {
 
 //: Resolves `{name, kind, ref}` (ref null for blank) or null when cancelled.
 async function wbOpenTemplateGallery(kind = "board") {
+  surfaceBuild("wbTemplate");
   const dialog = document.getElementById("wb-template-dialog");
   const list = document.getElementById("wb-template-list");
   const preview = document.getElementById("wb-template-preview");

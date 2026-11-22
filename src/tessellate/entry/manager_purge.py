@@ -27,10 +27,12 @@ from tessellate.core.database import (
     DerivedFact,
     DocumentLink,
     EntryBookmark,
+    EntryCategory,
     EntryDate,
     EntryOpen,
     EntryLink,
     EntryProperty,
+    NoteGroupMember,
     EntryRevision,
     NoteScore,
     Reminder,
@@ -87,7 +89,7 @@ def seal_private_events(session: Session, ids: list[int]) -> None:
     """Mark every event about these (private) notes as sealed, and empty it.
 
     The activity export leaves out events about a private note by looking the
-    note up (`routes_settings._not_private_events`), and a purged note is
+    note up (`repo.audit.not_private`), and a purged note is
     gone, so that lookup stops matching and its events, which carry a title or
     a clip of it in `detail` and the whole text in `payload`, would be handed
     over. A purge seals them first: `detail` dropped, `payload` replaced by
@@ -197,6 +199,9 @@ def _delete_entry_dependents(session: Session, ids: list[int]) -> None:
     session.execute(delete(EntryProperty).where(EntryProperty.entry_id.in_(ids)))
     # Section 17 row 5: the day-by-day open counts are about the note.
     session.execute(delete(EntryOpen).where(EntryOpen.entry_id.in_(ids)))
+    # L-world-class-172/173: a note's groups and further categories are about the note.
+    session.execute(delete(EntryCategory).where(EntryCategory.entry_id.in_(ids)))
+    session.execute(delete(NoteGroupMember).where(NoteGroupMember.entry_id.in_(ids)))
     # An eighth, added with the derived facts table (I9): what the app
     # worked out about a note is about the note, so it goes when the note
     # does. Keeping it would also leave the "what the notebook learned"

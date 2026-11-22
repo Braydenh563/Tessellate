@@ -21,6 +21,7 @@ from tessellate.ai import composer_ask, composer_property, composer_tables
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload, writes
+from tessellate.repo import memberships
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
@@ -120,7 +121,7 @@ def _with_neighbours(session: Session, question: str, entries: list, scope: str 
 
 def _with_open(session: Session, question: str, entries: list) -> list:
     """For "what do I need to buy" and "what's left", the notes that hold
-    something unfinished: an unticked box, "still to" or "need to", and, for
+    something outstanding: an unticked box, "still to" or "need to", and, for
     buying, the shopping notes by tag or category. Search by the words of the
     question ("buy") finds none of them."""
     clauses = [Entry.content.like("%- [ ]%"), Entry.content.like("%still to %"), Entry.content.like("%need to %")]
@@ -128,7 +129,7 @@ def _with_open(session: Session, question: str, entries: list) -> list:
         shops = ("grocer", "shopping", "shop list")
         clauses += tags_repo.mentioning(list(shops))
         named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops)))
-        clauses.append(Entry.category_id.in_(named))
+        clauses.append(memberships.in_any_category(named))
     found = session.scalars(
         select(Entry)
         .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, or_(*clauses))  # noqa: E712
@@ -160,7 +161,7 @@ def _filed_under(session: Session, terms: list[str], limit: int = OVERVIEW_LIMIT
     #: A word at the start of the name or after a space in it ("study" is in "Courses & study").
     said = [like_escape(w.rstrip("s")) for w in words]
     named = select(Category.id).where(or_(*(func.lower(Category.name).like(pattern, escape=LIKE_ESCAPE) for w in said for pattern in (f"{w}%", f"% {w}%"))))
-    clauses.append(Entry.category_id.in_(named))
+    clauses.append(memberships.in_any_category(named))
     query = (
         select(Entry)
         .where(Entry.is_deleted == False, Entry.is_private == False, or_(*clauses))  # noqa: E712
@@ -225,6 +226,8 @@ class _NoteCtx:
     as_of: "date | None"
     #: Category names for every entry in one query, not one per note.
     category_names: dict = field(default_factory=dict)
+    #: The categories a person also put each note in (L-world-class-173).
+    also_in: dict = field(default_factory=dict)
 
 
 def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001
@@ -475,12 +478,12 @@ def _stats_out(stats) -> dict | None:  # noqa: ANN001
 
 
 def _raw_results(session: Session, found: _Found) -> list:
-    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
+    from tessellate.api.entry_out import to_out_bulk  # avoids a route-module cycle
 
     rows = []
-    #: In a fixed number of queries: one `_to_out` per note was five queries
+    #: In a fixed number of queries: one `to_out` per note was five queries
     #: each, 120 for a 24-note answer (2026-11-02).
-    for entry, out in zip(found.entries, _to_out_bulk(session, list(found.entries)), strict=True):
+    for entry, out in zip(found.entries, to_out_bulk(session, list(found.entries)), strict=True):
         if entry.id in found.as_of_then:
             out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
         rows.append(out)
@@ -506,6 +509,8 @@ def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as
         #: (None for a note that read the same then as now).
         "as_of": as_of.isoformat() if as_of is not None else None,
         "as_of_revisions": {str(i): then.revision_id for i, then in found.as_of_then.items()},
+        #: When each note's version then was written: Ask groups the cards by its month (H8).
+        "as_of_written": {str(i): then.since.isoformat() if then.since else None for i, then in found.as_of_then.items()},
         #: Words for each retrieved note's pictures, for the thumbnails an
         #: answer draws beside a citation (INBOX 502, `_picture_alts`).
         "picture_alts": _picture_alts(session, found.entries),

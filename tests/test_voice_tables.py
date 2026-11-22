@@ -75,6 +75,7 @@ MOVED = (
     "quick-note.js",
     "quickadd.js",
     "reminder-edit.js",
+    "reminder-triage.js",  # clear-done and triage moved here from reminder-edit.js (#222)
     "reply-kit.js",
     "selection.js",
     "semantic-notice.js",

@@ -1,19 +1,15 @@
 import re
-from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
 from tessellate.core import deps, paths, spacelock, vault
-from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
+from tessellate.core.database import Entry, Space
 from tessellate.core.database import impersonate_workspace
 from tessellate.core.deps import get_session
 from tessellate.repo import spaces as space_repo
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
-from sqlalchemy import delete as sa_delete
-from sqlalchemy import select as sa_select
-from sqlalchemy import update as sa_update
 from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Spaces"])
@@ -154,67 +150,14 @@ def update_space(space_id: str, space_in: SpaceUpdate, session: Session = Depend
 
 
 def _move_space_contents(session: Session, source: str, target: str) -> dict:
-    """Every row of `source` becomes `target`'s. Categories are the one
-    per-space unique name: a category the target already has is merged
-    into it (its notes re-pointed, the duplicate dropped); the rest move.
-
-    Answers with what it did, row by row, for Undo (undo-1005): the ids it
-    moved per table, and each merged category as it was with the notes that
-    pointed at it. Afterwards the moved rows cannot be told from the
-    target's own, so this list is the only way back."""
-    with impersonate_workspace(session, source):
-        doomed = session.query(Category).filter(Category.workspace_id == source).all()
-    with impersonate_workspace(session, target):
-        existing = {
-            c.name: c.id
-            for c in session.query(Category).filter(Category.workspace_id == target).all()
-        }
-    entries = Entry.__table__
-    merged: list[dict] = []
-    for category in doomed:
-        if category.name in existing:
-            pointing = [
-                row_id
-                for (row_id,) in session.execute(
-                    sa_select(entries.c.id).where(entries.c.category_id == category.id)
-                )
-            ]
-            merged.append({
-                "id": category.id, "name": category.name, "description": category.description,
-                "colour": category.colour,
-                "created_at": category.created_at.isoformat() if category.created_at else None,
-                "into": existing[category.name], "entry_ids": pointing,
-            })
-            session.execute(
-                sa_update(entries)
-                .where(entries.c.category_id == category.id)
-                .values(category_id=existing[category.name])
-            )
-            _detach_references(session, Category.__table__, [category.id])
-            session.execute(sa_delete(Category.__table__).where(Category.__table__.c.id == category.id))
-    moved: dict[str, list[int]] = {}
-    for model in workspace_scoped_models():
-        table = model.__table__
-        ids = [row_id for (row_id,) in session.execute(sa_select(table.c.id).where(table.c.workspace_id == source))]
-        if ids:
-            moved[table.name] = ids
-        session.execute(
-            sa_update(table).where(table.c.workspace_id == source).values(workspace_id=target)
-        )
+    """Every row of `source` becomes `target`'s (see `repo.spaces.move_contents`)."""
+    manifest = space_repo.move_contents(session, source, target)
     # These statements move notes round the ORM, so `updated_at` stays put
     # and the filing corpus's diff would not see them (`lexical_filing`).
     from tessellate.ai import lexical_filing
 
     lexical_filing.forget_corpus()
-    return {"moved": moved, "merged": merged}
-
-
-def _space_has_rows(session: Session, space_id: str) -> bool:
-    for model in workspace_scoped_models():
-        table = model.__table__
-        if session.execute(sa_select(table.c.id).where(table.c.workspace_id == space_id).limit(1)).first():
-            return True
-    return False
+    return manifest
 
 
 class SpaceRestore(BaseModel):
@@ -268,35 +211,7 @@ def restore_space(
 
 def _move_back(session: Session, body: SpaceRestore, sid: str) -> None:
     """Every row the delete moved out, moved back, and each merged category made again."""
-    tables = {model.__table__.name: model.__table__ for model in workspace_scoped_models()}
-    categories, entries = Category.__table__, Entry.__table__
-    for item in body.merged:
-        cid = int(item["id"])
-        if session.execute(sa_select(categories.c.id).where(categories.c.id == cid)).first():
-            continue
-        created = item.get("created_at")
-        session.execute(categories.insert().values(
-            id=cid, name=str(item["name"])[:100], description=item.get("description"),
-            colour=item.get("colour"), workspace_id=sid,
-            **({"created_at": datetime.fromisoformat(created)} if created else {}),
-        ))
-        ids = [int(i) for i in item.get("entry_ids") or []]
-        for start in range(0, len(ids), 500):
-            session.execute(
-                sa_update(entries)
-                .where(entries.c.id.in_(ids[start:start + 500]), entries.c.category_id == int(item["into"]))
-                .values(category_id=cid)
-            )
-    for name_, ids in body.moved.items():
-        table = tables.get(name_)
-        if table is None:
-            continue
-        for start in range(0, len(ids), 500):
-            session.execute(
-                sa_update(table)
-                .where(table.c.id.in_(ids[start:start + 500]), table.c.workspace_id == body.move_to)
-                .values(workspace_id=sid)
-            )
+    space_repo.move_back(session, body.merged, body.moved, body.move_to, sid)
     from tessellate.ai import lexical_filing
     from tessellate.search import index as search_index
 
@@ -312,36 +227,6 @@ def _seal_restored(session: Session, sid: str) -> None:
 
     session.expire_all()  # moved back by statement: read them as they are now
     private_space.seal_space_members(session, sid)
-
-
-def _detach_references(session: Session, table, ids: list, depth: int = 0) -> None:  # noqa: ANN001
-    """Clear every foreign key that points at `ids` in `table`: set a nullable
-    one to NULL, delete the row holding a required one (and, for that row,
-    whatever points at it in turn, a few levels deep)."""
-    if not ids or depth > 4:
-        return
-    for other in Base.metadata.sorted_tables:
-        for fk in other.foreign_keys:
-            if fk.column.table is not table:
-                continue
-            column = fk.parent
-            for start in range(0, len(ids), 500):
-                chunk = ids[start:start + 500]
-                if column.nullable:
-                    session.execute(
-                        sa_update(other).where(column.in_(chunk)).values({column.name: None})
-                    )
-                else:
-                    if "id" in other.c and other is not table:
-                        child_ids = [
-                            row_id
-                            for (row_id,) in session.execute(
-                                sa_select(other.c.id).where(column.in_(chunk))
-                            )
-                        ]
-                        _detach_references(session, other, child_ids, depth + 1)
-                    if other is not table:
-                        session.execute(sa_delete(other).where(column.in_(chunk)))
 
 
 class SpaceDeleted(SpaceResponse):
@@ -371,41 +256,15 @@ def _delete_space_moving(session: Session, space: Space, move_to: str) -> SpaceD
     )
 
 
-def _space_rows(session: Session, model, space_id: str):  # noqa: ANN001
-    return session.query(model).filter_by(workspace_id=space_id)
-
-
-def _purge_ids(session: Session, model, column, ids: list) -> None:  # noqa: ANN001
-    if ids:
-        session.query(model).filter(column.in_(ids)).delete(synchronize_session=False)
-
-
 def _purge_collect(session: Session, space_id: str) -> tuple[dict[str, list], list]:
     """The ids of what a purge takes, and the files on disk it unlinks after
     the commit. Read with the space's bin included: a binned document or
     reminder is hidden from every ordinary read."""
-    from tessellate.core.database import (
-        Attachment, Bookmark, Document, MediaUpload, Reminder,
-    )
-
     config = deps.get_config()
-    attachments = _space_rows(session, Attachment, space_id).all()
-    uploads = _space_rows(session, MediaUpload, space_id).all()
+    attachments, uploads, ids = space_repo.purge_sources(session, space_id)
     files = [config.uploads_dir / a.stored_name for a in attachments]
     files += [config.data_dir / "media" / u.filename for u in uploads]
-
-    def ids_of(model):  # noqa: ANN001
-        return [row.id for row in _space_rows(session, model, space_id).all()]
-
-    return {
-        "attachment": [a.id for a in attachments],
-        "upload": [u.id for u in uploads],
-        "document": ids_of(Document),
-        "entry": ids_of(Entry),
-        "bookmark": ids_of(Bookmark),
-        "reminder": ids_of(Reminder),
-        "category": ids_of(Category),
-    }, files
+    return ids, files
 
 
 def _purge_forget_index(session: Session, ids: dict[str, list]) -> None:
@@ -424,81 +283,6 @@ def _purge_forget_index(session: Session, ids: dict[str, list]) -> None:
     ):
         search_index.forget(session, model, ids[key])
 
-
-def _purge_side_tables(session: Session, ids: dict[str, list]) -> None:
-    """The unscoped side tables: no workspace column of their own, only a
-    foreign key into a row that is about to go. Each is the table a plain
-    DELETE of its parent tripped over (real FKs, enforced)."""
-    from tessellate.core.database import (
-        DocumentAiEdit, DocumentBookmark, DocumentLink, DocumentRevision, EmbeddingRecord,
-        EntityMention, EntryBookmark, EntryDate, EntryOpen, EntryProperty, EntryRevision, PageRead,
-    )
-
-    for model, column in (
-        (EntityMention, EntityMention.entry_id),
-        (EmbeddingRecord, EmbeddingRecord.entry_id),
-        (EntryRevision, EntryRevision.entry_id),
-        (EntryDate, EntryDate.entry_id),
-        (EntryProperty, EntryProperty.entry_id),
-        (EntryOpen, EntryOpen.entry_id),
-        (EntryBookmark, EntryBookmark.entry_id),
-        (DocumentLink, DocumentLink.entry_id),
-    ):
-        _purge_ids(session, model, column, ids["entry"])
-    for model, column in (
-        (DocumentBookmark, DocumentBookmark.document_id),
-        (DocumentLink, DocumentLink.document_id),
-        (DocumentAiEdit, DocumentAiEdit.document_id),
-        (DocumentRevision, DocumentRevision.document_id),
-    ):
-        _purge_ids(session, model, column, ids["document"])
-    _purge_ids(session, EntryBookmark, EntryBookmark.bookmark_id, ids["bookmark"])
-    _purge_ids(session, DocumentBookmark, DocumentBookmark.bookmark_id, ids["bookmark"])
-    for kind, key in (("attachment", "attachment"), ("media", "upload")):
-        if ids[key]:
-            session.query(PageRead).filter(
-                PageRead.kind == kind, PageRead.source_id.in_(ids[key])
-            ).delete(synchronize_session=False)
-
-
-def _purge_rows(session: Session, space_id: str, category_ids: list) -> None:
-    """The space's own rows, parents after dependents.
-
-    A note in *another* space can point at one of this space's categories
-    (the reason the old reassign code merged categories by name). Those notes
-    are not ours to delete; they just lose the pointer, the same as if the
-    category had been deleted on its own.
-
-    **Every reference into a doomed row is found from the schema, not a
-    list.** The owner's delete of a space still failed on `DELETE FROM
-    entries` with "FOREIGN KEY constraint failed" (0.3.31), from a table that
-    points at notes and was on no list. Whatever the schema says points at a
-    row about to go is cleared first: a nullable pointer is emptied, a
-    required one takes its row with it."""
-    from tessellate.core.database import (
-        Attachment, AskTurn, Bookmark, Conversation, Document, EntryLink, MediaUpload,
-        Reminder, WhiteboardNode, WhiteboardObject, WhiteboardSketch,
-    )
-
-    if category_ids:
-        session.query(Entry).filter(Entry.category_id.in_(category_ids)).update(
-            {"category_id": None}, synchronize_session=False
-        )
-    doomed_models = (
-        EntryLink, Attachment, AskTurn, Conversation, Reminder, Bookmark,
-        WhiteboardSketch, WhiteboardObject, WhiteboardNode, Document,
-        Entry, Category, MediaUpload,
-    )
-    for model in (*doomed_models, *workspace_scoped_models()):
-        rows = _space_rows(session, model, space_id)
-        ids = [row_id for (row_id,) in rows.with_entities(model.id).all()] if hasattr(model, "id") else []
-        _detach_references(session, model.__table__, ids)
-    for model in doomed_models:
-        _space_rows(session, model, space_id).delete(synchronize_session=False)
-    # Anything with WorkspaceMixin that the ordered list above does not name:
-    # a model added later must not survive its space.
-    for model in workspace_scoped_models():
-        _space_rows(session, model, space_id).delete(synchronize_session=False)
 
 
 def _purge_space(session: Session, space: Space) -> SpaceDeleted:
@@ -521,13 +305,13 @@ def _purge_space(session: Session, space: Space) -> SpaceDeleted:
     body = SpaceResponse.model_validate(space).model_dump()
     # An empty space has nothing to lose, so its delete can be undone; one
     # with contents deletes them for good (files on disk included).
-    restorable = not _space_has_rows(session, space_id)
+    restorable = not space_repo.has_rows(session, space_id)
     response = SpaceDeleted(**body, restore={"space": body} if restorable else None)
     with impersonate_workspace(session, "all"), other_bin.including_binned(session):
         ids, to_unlink = _purge_collect(session, space_id)
         _purge_forget_index(session, ids)
-        _purge_side_tables(session, ids)
-        _purge_rows(session, space_id, ids["category"])
+        space_repo.purge_side_tables(session, ids)
+        space_repo.purge_rows(session, space_id, ids["category"])
     session.delete(space)
     session.commit()
     for path in to_unlink:

@@ -1927,6 +1927,9 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       } catch {
         info = null;
       }
+      //: A locked PDF asks for its password once a visit (L-world-class-133);
+      //: once it opens, the server keeps it in memory and never asks again.
+      if (info?.locked) info = await askPdfPassword(infoUrl.replace("/pdf-info", "/pdf-unlock"));
       if (info && info.available && info.pages > 0) {
         docBody.classList.add("hidden");
         find.classList.add("hidden"); // nothing here is text to search yet

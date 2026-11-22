@@ -878,6 +878,18 @@ def _apply_merge_notes(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa
     return len(undo), {"merged": undo}
 
 
+def merge_pair(session, keep_id: int, fold_id: int) -> dict:  # noqa: ANN001
+    """Tidy's own merge of two notes (the Duplicates review's), for a caller that already
+    knows the pair: the fact that one note says what another does. Same undo as the review's."""
+    with events.acting_as(ACTOR):
+        applied, undo = _apply_merge_notes(session, [{"id": f"dupe:{keep_id}-{fold_id}"}])
+    if not applied:
+        raise ValueError("One of those notes is gone, so nothing was merged.")
+    row = _log(session, "duplicates", applied, undo)
+    session.flush()
+    return {"undo_id": row.id if row is not None else None, "keeper": keep_id, "binned": [fold_id]}
+
+
 def _apply_merge_categories(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa: ANN001
     """Fold each ticked category into the other, and write the folded name's
     topics as the person's alias for the kept one (decision 7), so the next

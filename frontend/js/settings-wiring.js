@@ -637,6 +637,8 @@ document.addEventListener("keydown", (e) => {
       //: Ctrl+/ and Ctrl+K (INBOX 402, 1559): the documents editor answers them
       //: first (comment toggle, link) and marks the press handled; a note box does not.
       if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
+      //: Ctrl+F likewise: a note's edit box opens its own find (L-world-class-127).
+      if (id === "find" && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
         if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();

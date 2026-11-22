@@ -103,23 +103,54 @@ SURFACES = {
         ("openMeetingRecorder",),
         ("meeting-card", "meeting-close", "meeting-title", "meeting-transcript", "meeting-done"),
     ),
+    #: L-world-class-530: the hidden dialogs built on first open.
     "finder": (
         "finder-overlay",
-        ("search.js", "search-suggest.js", "wiring.js", "settings-wiring.js", "reveal-targets.js", "router-overlays.js", "vault-unlock.js"),
+        ("search.js", "wiring.js", "settings-wiring.js", "router-overlays.js", "reveal-targets.js", "spaces-find.js"),
         ("openFinder",),
-        ("finder-input", "finder-results", "finder-summary", "finder-filters", "finder-sort", "finder-save", "finder-close", "finder-help"),
+        ("finder-input", "finder-results", "finder-summary", "finder-sort", "finder-save", "finder-close", "finder-filters"),
     ),
     "agentMonitor": (
         "agent-monitor",
-        ("agent-activity.js", "activity-panel.js", "app-features.js"),
+        ("agent-activity.js", "dashboard.js", "status.js", "phone-shell.js"),
         ("setAgentMonitorVisible",),
-        ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-more", "activity-list"),
+        ("agent-monitor-runs", "agent-monitor-logs", "agent-monitor-close", "agent-monitor-clear", "activity-tabs", "activity-list"),
     ),
-    "settingsShell": (
-        "settings-modal",
-        ("<boot>",),
-        ("openSettingsModal",),
-        ("settings-close", "settings-search", "settings-nav", "settings-results", "settings-nav-back", "settings-peek", "settings-guide-btn"),
+    "lockForgot": (
+        "lock-forgot-card",
+        ("account-recovery.js", "settings-wiring.js", "utility-tools.js"),
+        ("openForgotPassword",),
+        ("lock-forgot-close", "lock-recovery-key", "lock-reset-submit", "lock-forgot-error"),
+    ),
+    "recoveryKey": (
+        "recovery-key-dialog",
+        ("account-recovery.js", "settings-controls.js"),
+        ("wireRecoveryDialog",),
+        ("recovery-key-title", "recovery-key-value", "recovery-key-done", "recovery-key-offer"),
+    ),
+    "docReplace": (
+        "doc-replace-dialog",
+        ("documents-replace.js", "documents*.js"),
+        ("docReplaceOpen",),
+        ("doc-replace-find", "doc-replace-with", "doc-replace-run", "doc-replace-list", "doc-replace-summary"),
+    ),
+    "spaceDelete": (
+        "space-delete-dialog",
+        ("batch-space.js", "private-spaces.js", "spaces-find.js"),
+        ("rmSpace",),
+        ("space-delete-id", "space-delete-fate", "space-delete-submit", "space-delete-confirm"),
+    ),
+    "wbTemplate": (
+        "wb-template-dialog",
+        ("whiteboard*.js",),
+        ("wbOpenTemplateGallery",),
+        ("wb-template-list", "wb-template-preview", "wb-template-name", "wb-template-create"),
+    ),
+    "wbImport": (
+        "wb-import-dialog",
+        ("whiteboard*.js",),
+        ("wbOpenImportDialog",),
+        ("wb-import-text", "wb-import-file", "wb-import-go", "wb-import-choose"),
     ),
     "shortcuts": (
         "shortcuts-overlay",
@@ -176,7 +207,7 @@ def test_the_surface_sits_in_one_template_inside_its_live_root(name):
     before, body = _template(name)
     # The root stays live (checks of "is it open" never build it); the template
     # is its first child, comments aside.
-    opening = re.search(rf'<(?:div|dialog|sheet-host|aside)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
+    opening = re.search(rf'<(?:div|dialog|sheet-host)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
     assert opening, f"the {name} template is not the first child of #{root}"
     ids = _ids(body)
     assert root not in ids
@@ -256,7 +287,7 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
     """A load-time block (and the top-level functions it calls) may not name an id, or select a class,
     that exists only in the surface's template: the selector finds nothing and the wiring is silently
     dropped (row 21 review: the board's More menu and colour wells)."""
-    _, globs, openers, _ = SURFACES[name]
+    _, globs, _, _ = SURFACES[name]
     _, body = _template(name)
     ids = _ids(body)
     classes = _template_only_classes(name)
@@ -269,10 +300,7 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
                 continue
             if (path.name, name) in INSIDE_FUNCTIONS:
                 continue
-            # An opener builds the surface before it reads it (held by the test above), so a handler
-            # that calls one does not reach the unbuilt template through it.
-            called = set(re.findall(r"\b(\w+)\(", block)) - set(openers)
-            reached = block + "".join(functions.get(f, "") for f in called)
+            reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
             if head.startswith("onSurface("):
                 # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
                 # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.

@@ -523,11 +523,20 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
     return _swap_reading(text, previous)
 
 
+#: "and the dentist" with no "?" is still the ask before, of a new thing (L-chat-9): a short thing, never a
+#: sentence ("and the meeting went well") or an act ("and delete it").
+_BARE_THING = lazy_compile(r"(?:the|my|our|a|an) [a-z][\w'-]*(?: [a-z][\w'-]*)?|[A-Z][\w'-]*(?: [A-Z][\w'-]*)?")
+
+
+def _swap_asks(text: str, swap: Any) -> bool:
+    """An "and X" is a swap when asked ("?") or when X is a bare thing (L-chat-9)."""
+    y = swap.group("y")
+    return y is None or text.rstrip().endswith("?") or bool(_BARE_THING.fullmatch(y.strip()))
+
+
 def _swap_reading(text: str, previous: str) -> Any:
     swap = _SWAP.match(text) or _SWAP.match(rephrase(text))
-    if swap and swap.group("y") is not None and not text.rstrip().endswith("?"):
-        swap = None
-    if not swap:
+    if not swap or not _swap_asks(text, swap):
         return _NOT_THIS
     other = (swap.group("x") or swap.group("y") or "").rstrip(" \t?.!").strip()
     subject = _asked_span(previous, subject_terms(previous))

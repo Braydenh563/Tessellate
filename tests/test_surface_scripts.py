@@ -26,10 +26,12 @@ import pytest
 
 from tessellate.api.asset_strip import strip_html
 from tessellate.core import security
+from tests._surface_assets import inline_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
-RAW = (FRONTEND / "index.html").read_bytes().decode("utf-8")
+#: Settings' body is a fetched file (L-world-class-760); put back in its script as it once sat.
+RAW = inline_surfaces((FRONTEND / "index.html").read_bytes().decode("utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 SCRIPTS = list(re.finditer(r'<script type="text/x-surface"([^>]*)>(.*?)</script>', RAW, re.S))
@@ -44,10 +46,11 @@ def test_every_inline_script_in_the_page_is_a_surface():
     assert all('data-surface="' in tag for tag in inline), inline
 
 
-def test_the_eighteen_top_level_surfaces_are_scripts_and_no_template_is_left_at_the_top():
+def test_the_top_level_surfaces_are_scripts_and_no_template_is_left_at_the_top():
     names = [re.search(r'data-surface="(\w+)"', m.group(1)).group(1) for m in SCRIPTS]
     assert sorted(names) == sorted(
-        "atlasChat palette quickNote notes chat timeline graph documents reminders library ocr settings shortcuts meeting docDictionary finder agentMonitor settingsShell".split()
+        "atlasChat palette quickNote notes chat timeline graph documents reminders library ocr settings shortcuts meeting docDictionary"
+        " finder agentMonitor lockForgot recoveryKey docReplace spaceDelete wbTemplate wbImport".split()
     )
     outside = re.sub(r'<script type="text/x-surface".*?</script>', "", RAW, flags=re.S)
     assert "<template data-surface" not in outside, "a surface is a template at the top again: it is parsed at boot"

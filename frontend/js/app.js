@@ -437,6 +437,8 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
+  //: A write that landed tells the other windows (notes-sync.js hears it, L585).
+  if (response.ok && !readOnly && !/^(GET|HEAD)?$/.test(fetchOptions.method || "") && typeof document !== "undefined") document.dispatchEvent(new Event("notebook-written"));
   //: **A read that started in the old space is dropped here, for every loader at once.**
   //: Its rows are the old space's: applied after a switch they would sit in the new one's
   //: lists. The error is quiet (`isStale`: no toast, no log line), and a write is never
@@ -707,6 +709,26 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
     overlay.classList.remove("hidden");
   });
 }
+
+//: A locked PDF asks once (L-world-class-133): `unlockUrl` keeps the password
+//: in memory for this run; the PDF's info on success, null on Not now.
+async function askPdfPassword(unlockUrl) {
+  //: A locked PDF asks once a visit (L-world-class-133), whichever surface
+  //: opened it; once it opens, the server keeps the password in memory.
+  if (askPdfPassword.asked.has(unlockUrl)) return null;
+  askPdfPassword.asked.add(unlockUrl);
+  let info = null;
+  const opened = await askPasswordPrompt({
+    title: "This PDF has a password",
+    message: "Enter it to see the pages. It is kept until the app closes, never saved.",
+    submitLabel: "Open",
+    submit: async (password) => {
+      info = await apiJson(unlockUrl, { method: "POST", body: JSON.stringify({ password }) });
+    },
+  });
+  return opened ? info : null;
+}
+askPdfPassword.asked = new Set();
 
 function showLockScreen(setupMode) {
   settleLockPrompt(false);
@@ -1546,6 +1568,8 @@ const LAZY_MODULES = {
   tagManager: ["/js/tag-manager.js"],
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
+  //: Groups of notes gathered by hand, and a note's further categories: see note-groups.js.
+  noteGroups: ["/js/note-groups.js"],
   noteHistory: ["/js/note-history.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
@@ -1597,7 +1621,7 @@ const LAZY_MODULES = {
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
-  webClip: ["/js/web-clip.js", "/js/web-results.js"],
+  webClip: ["/js/web-panel.js", "/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
@@ -1865,7 +1889,7 @@ const LAZY_ENTRY_POINTS = {
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
   batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace"],
   notifications: ["openNotifications"],
-  webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng", "renderWebPanelMenu", "toggleWebPanel", "closeWebReader", "stopWebRequest", "refreshWebSearxngStrip", "clearWebSearchHistory", "askAboutPage", "openWebReader", "citeWebPage"],
+  webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],
@@ -1891,6 +1915,7 @@ const LAZY_ENTRY_POINTS = {
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
+  noteGroups: ["openNoteGroupsSheet"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
   extraNotice: ["extraNoticeMount"],

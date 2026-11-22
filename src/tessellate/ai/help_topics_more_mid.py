@@ -158,14 +158,18 @@ MID_TOPICS.extend(
             "keywords": (
                 "search chats", "search my chats", "find a chat", "find an old chat", "old chats",
                 "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
+                "group chats", "group my chats", "tidy my chats",
             ),
             "body": (
                 "The Chats list beside the chat shows your last eight saved chats. "
                 "The search box above it finds a chat by its title or by anything "
                 "said in it and lists up to 32 matches. Sort "
                 "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
-                "chat stays first. Each chat's menu renames, pins, archives or "
-                "deletes it. All in Library opens every chat, with the full search."
+                "chat stays first. The rows button beside it groups the list by "
+                "day, month or length, with Pinned always on top; your choice is "
+                "kept. Each chat's menu renames, pins, archives or "
+                "deletes it. All in Library opens every chat, with the full search. "
+                "Ask the agent to sort, group or pin chats, or run the Tidy my chats skill."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -375,6 +379,29 @@ MID_TOPICS.extend(
             "badge": {"label": "Notes", "tab": "notes"},
         },
         {
+            "id": "note-groups",
+            "keywords": (
+                "group notes", "groups", "note group", "note groups", "gather notes",
+                "collect notes", "put notes together", "group notes together",
+                "also file under", "more than one category", "two categories",
+                "multiple categories", "note in two categories", "second category",
+            ),
+            "body": (
+                "A group is a set of notes you gather by hand, apart from "
+                "categories and tags: nothing files into it and no sorting moves "
+                "a note out of it. Click a note's category chip and choose Add to "
+                "a group to put it in one (or make a new one); the Groups row in "
+                "the notes sidebar lists them, and a group's menu shows its notes, "
+                "renames it or deletes it (the notes are kept). In the Notes box, "
+                "group:\"Trip plans\" shows one group's notes. A note keeps the "
+                "one category it is filed under and can also sit in others: the "
+                "same chip menu's Also file under puts it in more categories, "
+                "which only you set. It then shows under each one in the sidebar "
+                "and in a category filter, search, Ask and exports."
+            ),
+            "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
             "id": "manage-categories",
             "keywords": (
                 "manage categories", "merge categories", "merge two categories",
@@ -421,9 +448,10 @@ MID_TOPICS.extend(
                 "writing suggestion), with the exact time on hover, and any "
                 "earlier version can be put back; Then and now on an earlier "
                 "version sets what it said against what the note says today, "
-                "sentence by sentence (Changed, No longer says, Says now). In Ask, "
+                "sentence by sentence (Changed, Contradicts then, No longer says, "
+                "Says now); with a model on, the model judges each pair. In Ask, "
                 "the clock button answers from your notes as they were on a day "
-                "you pick, by date or by sliding back through the days, and Back to now returns to today. It also says who "
+                "you pick, by date or by sliding back through the days, and Back to now returns to today; its notes are grouped by the month each version was written. It also says who "
                 "filed the note "
                 "and how sure, and a change made by an AI tool names the model "
                 "that made it. When the same note or document is edited in two "

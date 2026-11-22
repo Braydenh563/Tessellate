@@ -87,6 +87,7 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-11 D24 scope-wrap-1111b: avatars.js (113 exports) and graph-canvas.js (21) wrapped whole; the tests read them through `unwrapped`, and the shared readers in `tests/_app_js.py` unwrap every file. Measured 7,878.
 #: 2026-11-11 D24 scope-wrap-1111b, second group: meetings.js, bg-art.js, settings-controls.js, settings-find.js, settings-models.js, atlas-life.js, companion-menu.js and companion-throw.js wrapped whole. Measured 7,406.
 #: 2026-11-22 L700 D24: file-drop.js (no exports) and note-pick-preview.js (one) wrapped whole. Measured 7,385.
+#: 2026-11-22 the CD merge: world-class-plan's web panel, groups and bulk bar brought 12 names; mermaid-frame.js (its own document) wrapped whole for 8. Measured 7,385.
 GLOBAL_NAMES_CAP = 7385
 
 

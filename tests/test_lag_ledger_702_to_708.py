@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -46,7 +47,7 @@ def test_l705_timeline_scroll_to_today_lays_out_once():
 
 
 def test_l705_notes_rail_measures_after_layout():
-    text = (JS / "notes-list.js").read_text()
+    text = (JS / "notes-list.js").read_text() + (JS / "notes-wire.js").read_text()
     render = _fn(text, "async function renderNotesRail")
     assert 'renderNotesRail.ro?.observe($("entry-list"))' in render
     assert "getBoundingClientRect" not in render
@@ -66,4 +67,5 @@ def test_l706_the_look_is_never_written_on_the_companion_itself():
     text = (JS / "avatars.js").read_text()
     assert not re.search(r'buddy\.style\.setProperty\("--nmb-(ex|ey|hx)"', text)
     assert "nameMarkBuddyAim.set = (buddy, name, value) => {" in text
-    assert re.search(r'@property --nmb-ex \{ syntax: "<number>"; inherits: false;', (CSS / "08-consistency.css").read_text())
+    #: The rule moved with the companion's CSS into the characters sheet; css08_text reads both.
+    assert re.search(r'@property --nmb-ex \{ syntax: "<number>"; inherits: false;', css08_text())

@@ -59,18 +59,14 @@ from tessellate.ai.grounding import (
 )
 from tessellate.api import chat_extra, chat_web, once_routes
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
-from tessellate.core.database import (
-    Entry,
-)
 from tessellate.core.config import user_now
 from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager, private_space
-from tessellate.search import chunks as search_chunks
-from tessellate.search import search_manager
-from sqlalchemy import func
+from tessellate.search import chunks as search_chunks, search_manager
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
 from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, _StreamRequest, _Turn, take_up_offer, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
+from tessellate.repo import memberships
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, _feature_for
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
@@ -78,6 +74,7 @@ from tessellate.api.chat_agent import _agent_events, consent_events, run_card_ev
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api import chat_chips
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
+from tessellate.repo import notes as notes_repo
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -255,10 +252,8 @@ def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale:
         return
     from tessellate.ai import timetravel
 
-    hit = search_manager.retrieve_detailed(session, question, deps.get_embeddings(), limit=20, locale=locale)
-    candidates = hit.entries + timetravel.revision_candidates(session, question)
-    zone = user_now(deps.get_config()).tzinfo
-    rewound = timetravel.rewind(session, question, timetravel.end_of_day(as_of, zone), candidates, limit=5)
+    when = timetravel.end_of_day(as_of, user_now(deps.get_config()).tzinfo)
+    rewound = timetravel.rewind_question(session, question, when, locale, deps.get_embeddings())
     found.entries, found.mode = [then.entry for then in rewound], "as of"
     found.connected_ids, found.match_info = set(), {}
     found.as_of_then = {then.entry.id: then for then in rewound}
@@ -294,6 +289,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         #: answer shows them beside this note's citation (INBOX 502).
         "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
         "category": ctx.category_names.get(entry.category_id, manager.UNCATEGORISED),
+        "also_in": ctx.also_in.get(entry.id, []),
         # Marked so the prompt can say which notes the user chose.
         "attached": entry.id in ctx.attached_ids,
         # Clipped from the web or imported (SEC-02): the agent starts the turn
@@ -338,6 +334,7 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
         session, found, attached_ids, now.tzinfo, now.date(),
         manager.entry_dates_bulk(session, ids), _files_on(session, ids), as_of,
         manager.bulk_category_names(session, found.entries),
+        memberships.also_in_bulk(session, found.entries),
     )
     notes = [_context_note(ctx, entry) for entry in found.entries]
     #: Listed newest first for "my last note": said on the first, which a small
@@ -989,7 +986,7 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
 
     from tessellate.ai.tools._common import _visible
 
-    first, last = req.session.query(func.min(Entry.created_at), func.max(Entry.created_at)).filter(*_visible()).one()
+    first, last = notes_repo.created_span(req.session, _visible())
     return composer_empty.empty_window(
         planned.window_phrase,
         first.date() if first else None,

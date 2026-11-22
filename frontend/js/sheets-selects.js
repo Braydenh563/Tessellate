@@ -1935,6 +1935,7 @@ async function loadConversationList() {
     const li = document.createElement("li");
     if (conversation.id === chatConv.id) li.classList.add("active-conv");
     if (conversation.pinned) li.classList.add("pinned-conv");
+    Object.assign(li.dataset, { at: conversation.last_at, turns: conversation.turns });
 
     //: **The whole row opens the chat, not just the words in it.** Reported:
     //: "I clicked on other chat conversations in the chat sidebar but the
@@ -2070,6 +2071,8 @@ async function loadConversationList() {
     li.append(title, actions);
     list.appendChild(li);
   }
+  //: The Group by control and the section headings (lazy, chat-groups.js).
+  lazyScript("/js/chat-groups.js").then((ok) => ok && chatGroups(list));
 }
 
 // An edited answer is labelled, always. A transcript that silently presents

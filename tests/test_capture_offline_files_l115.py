@@ -52,4 +52,4 @@ def test_the_outbox_stores_blobs_in_indexeddb_and_flushes_them_in_order():
 def test_the_item_sent_never_carries_the_blob_marker():
     flush = _src("quick-note.js")
     flush = flush[flush.index("function flushNoteOutbox"):]
-    assert re.search(r"queued_at: _queuedAt, [^}]*blobs: hasFiles, \.\.\.payload", flush)
+    assert re.search(r"queued_at: _queuedAt, [^}]*blobs: hasFiles, [^}]*\.\.\.payload", flush)

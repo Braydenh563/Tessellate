@@ -2103,6 +2103,17 @@ function wbBuildMapNode(el, d) {
       //: (the canvas's own Enter and Shift+Enter, MINDMAP_PLAN 3), and
       //: Escape, a press elsewhere or Ctrl+S's blur keep the name.
       const id = Number(this.closest(".wb-object")?.dataset.id);
+      //: **Ctrl+Z on a topic just added, its name untouched, takes the topic
+      //: away** (L-world-class-672): the editor holds focus and keeps the
+      //: chord for its own history, which has nothing to undo yet, so the
+      //: press did nothing. Once a letter is typed it is the field's again.
+      const fresh = (wbState.objects || []).find((o) => o.id === id);
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "z" && fresh?._fresh && wbEditedText(this).replace(/\s+$/, "") === fresh.data.content) {
+        event.preventDefault();
+        this.blur();
+        Promise.resolve(fresh._creating).then(() => wbUndo());
+        return;
+      }
       if (event.key === "Escape") {
         event.preventDefault();
         this.blur();

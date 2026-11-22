@@ -56,7 +56,7 @@ def test_the_notice_is_the_recipe_and_dismissal_ends_on_a_state_change() -> None
 def test_surfaces_mount_it_and_nobody_builds_a_second_one() -> None:
     lightbox = (ROOT / "frontend" / "js" / "lightbox-view.js").read_text(encoding="utf-8")
     library = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-    chat = (ROOT / "frontend" / "js" / "web-results.js").read_text(encoding="utf-8")
+    chat = (ROOT / "frontend" / "js" / "web-panel.js").read_text(encoding="utf-8")
     assert 'extraNoticeMount(doc, "pdfpages")' in lightbox
     assert re.search(r'extraNoticeMount\([^)]*"rapidocr"', library)
     assert 'extraNoticeMount(' in chat and '"searxng"' in chat

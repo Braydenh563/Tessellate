@@ -1,42 +1,49 @@
-"""Fake parsers for `tests/test_parse_sandbox.py`, run inside the sandbox's
-child process (imported there by name, so they live in a module of their own,
-not in the test file)."""
+"""Crafted-file stand-ins for `tests/test_parse_guard.py`: parsers that loop,
+allocate without end, crash the interpreter or fail, run through
+`parse_guard.isolated` the way the real readers are. Module-level, so the
+child process imports them by name."""
 
 from __future__ import annotations
 
 import os
-import time
+import signal
+
+from tessellate.core import parse_guard
 
 
-def echo(*args):  # noqa: ANN002, ANN201  # whatever the wire carries comes back
-    return list(args)
+@parse_guard.isolated("test", timeout=20)
+def whose_process(value: str) -> tuple[int, str]:
+    return os.getpid(), value
 
 
-def hang() -> None:
-    time.sleep(3600)
-
-
-def spin() -> None:
+@parse_guard.isolated("test", timeout=1.5)
+def loops_forever(path: str) -> str:
     while True:
         pass
 
 
-def blow_up() -> bytes:
-    return bytes(8 * 1024 * 1024 * 1024)
+@parse_guard.isolated("test", timeout=20)
+def allocates(size: int) -> int:
+    return len(bytearray(size))
 
 
-def crash() -> None:
-    os.abort()
+@parse_guard.isolated("test", timeout=20)
+def crashes() -> None:
+    os.kill(os.getpid(), signal.SIGSEGV)
 
 
-def fail() -> None:
-    raise ValueError("not a PDF at all")
+@parse_guard.isolated("test", timeout=20)
+def fails() -> None:
+    raise ValueError("not a real document")
 
 
-def chatter() -> str:
-    print("a parser that prints to stdout")
-    return "still read"
+@parse_guard.isolated("test", timeout=1.5, on_stop=list)
+def pages_forever(path: str) -> list[bytes]:
+    while True:
+        pass
 
 
-def pid() -> int:
-    return os.getpid()
+@parse_guard.isolated("document", timeout=1.5)
+def convert_forever(path) -> str:  # noqa: ANN001
+    while True:
+        pass

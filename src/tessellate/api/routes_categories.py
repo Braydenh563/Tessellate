@@ -26,12 +26,10 @@ from collections import Counter
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.tools._common import ToolError
 from tessellate.ai.tools.categories import _create_category, _merge_categories
-from tessellate.core.database import Entry
 from tessellate.core import deps
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, moving
@@ -124,10 +122,6 @@ def _same_space(source, target) -> None:  # noqa: ANN001
         )
 
 
-def _ids_in(session: Session, category_id: int) -> list[int]:
-    return list(session.scalars(select(Entry.id).where(Entry.category_id == category_id)))
-
-
 def _move(session: Session, entries: list, name: str, user_filed: bool | None = None) -> list[dict]:
     """Move notes into a category by name (made if new); `entry/moving.py`."""
     return moving.to_category(session, entries, name, user_filed)
@@ -164,7 +158,7 @@ def create_category(body: CreateBody, session: Session = Depends(get_session)) -
 @router.post("/move")
 def move_notes(body: MoveBody, session: Session = Depends(get_session)) -> dict:
     """Move chosen notes into a category, made if it does not exist yet."""
-    entries = list(session.scalars(select(Entry).where(Entry.id.in_(body.entry_ids), Entry.is_deleted == False)))  # noqa: E712
+    entries = categories_repo.live_notes(session, body.entry_ids)
     previous = _move(session, entries, body.category.strip(), body.user_filed)
     return {"category": body.category.strip(), "moved": len(previous), "previous": previous}
 
@@ -175,7 +169,7 @@ def merge_category(category_id: int, body: MergeBody, session: Session = Depends
     source = _existing_category(session, category_id)
     target = _existing_category(session, body.into)
     _same_space(source, target)
-    moved_ids = _ids_in(session, source.id)
+    moved_ids = categories_repo.note_ids_in(session, source.id)
     try:
         result = _merge_categories(session, {"from": source.name, "into": target.name})
     except ToolError as exc:
@@ -187,9 +181,7 @@ def merge_category(category_id: int, body: MergeBody, session: Session = Depends
 def split_category(category_id: int, body: SplitBody, session: Session = Depends(get_session)) -> dict:
     """Move the chosen notes of this category into a new (or existing) one."""
     source = _existing_category(session, category_id)
-    entries = list(
-        session.scalars(select(Entry).where(Entry.id.in_(body.entry_ids), Entry.category_id == source.id))
-    )
+    entries = categories_repo.notes_in(session, source.id, body.entry_ids)
     previous = _move(session, entries, body.name.strip())
     return {"from": source.name, "name": body.name.strip(), "moved_ids": [p["id"] for p in previous]}
 
@@ -282,9 +274,7 @@ def propose_split(
     apply.
     """
     source = _existing_category(session, category_id)
-    entries = list(
-        session.scalars(select(Entry).where(Entry.category_id == source.id, Entry.is_deleted == False))  # noqa: E712
-    )
+    entries = categories_repo.notes_in(session, source.id)
     if ai:
         proposed = _ai_groups(source, entries)
         if proposed:
@@ -344,7 +334,7 @@ def delete_category(
     """Remove a category; its notes move to `into`, or survive as Uncategorised."""
     category = _existing_category(session, category_id)
     name = category.name
-    moved_ids = _ids_in(session, category.id)
+    moved_ids = categories_repo.note_ids_in(session, category.id)
     if into is not None:
         target = _existing_category(session, into)
         if target.id == category.id:

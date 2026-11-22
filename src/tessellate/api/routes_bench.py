@@ -90,15 +90,9 @@ def heavy_ids(session) -> dict[str, int]:  # noqa: ANN001
     """The board with the most objects and the longest document: the two
     items the budget names, found rather than assumed so the live reading
     works on any notebook."""
-    from sqlalchemy import func, select
+    from tessellate.repo import documents, whiteboard
 
-    from tessellate.core.database import WhiteboardObject
-    from tessellate.repo import documents
-
-    board = session.execute(
-        select(WhiteboardObject.board_id).where(WhiteboardObject.board_id.is_not(None))
-        .group_by(WhiteboardObject.board_id).order_by(func.count().desc()).limit(1)
-    ).scalar()
+    board = whiteboard.busiest_board_id(session)
     document = documents.largest_id(session)
     return {"board": board or 0, "document": document or 0}
 

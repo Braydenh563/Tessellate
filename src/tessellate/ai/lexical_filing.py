@@ -673,18 +673,41 @@ def _corpus_view(session: Session, names: dict, exclude_entry_id: int | None, qu
     return lengths, held, profiles, sums, idf
 
 
-def _taught_topics(name: str, profile: dict, read: _NoteRead) -> list:
+def _taught_share(sent: dict[str, int], name: str, topic: str, profiles: dict) -> float:
+    """How specific a taught topic is to a category: its share of every
+    correction that used the topic plus every note's own words for it. A topic
+    sent to one category while another's notes already say it is not that
+    category's word alone (L-world-class-650)."""
+    if sent[name] >= LEXICON_MAX:
+        return 1.0  # said firmly (a move out of a category, a merge, three refiles)
+    own = {c: max(p.get(topic, 0.0), 0.0) for c, p in profiles.items()}
+    return (sent[name] + own.get(name, 0.0)) / (sum(sent.values()) + sum(own.values()))
+
+
+def _taught_weight(sent: dict[str, int], name: str, topic: str, profiles: dict) -> float:
+    """What one topic's teaching adds to a category's profile."""
+    weight = LEXICON_WEIGHT * min(sent[name], LEXICON_MAX) * _taught_share(sent, name, topic, profiles)
+    #: A teaching never outweighs what the category's own notes say, or a few
+    #: corrections drown the profile and move its other notes away.
+    return min(weight, max(profiles.get(name, {}).values(), default=weight))
+
+
+def _taught_topics(name: str, profile: dict, read: _NoteRead) -> dict[str, float]:
     """Add the person's own words for topics to the category's profile; the
-    topics that vote outright for it."""
-    taught = []
+    topics that vote outright for it, each with how specific it is."""
+    taught = {}
     for topic, sent in read.lexicon.items():
         if sent.get(name):
-            profile[topic] = profile.get(topic, 0.0) + LEXICON_WEIGHT * min(sent[name], LEXICON_MAX)
+            #: A teaching about a topic the note does not say adds nothing to the
+            #: comparison: it would only swell the profile and thin every note
+            #: the category already holds (corrections lowered accuracy).
+            if topic in read.note_topics:
+                profile[topic] = max(profile.get(topic, 0.0), _taught_weight(sent, name, topic, read.profiles))
             #: The outright vote only where the person's word for this
             #: topic is this category more than any other, and the note
             #: is really about it (a topic the pack accepts for it).
-            if topic in read.strong and sent[name] >= max(sent.values()):
-                taught.append(topic)
+            if topic in read.strong and sent[name] >= max(sent.values()) and sent[name] >= LEXICON_MAX:
+                taught[topic] = _taught_share(sent, name, topic, read.profiles)
     return taught
 
 
@@ -704,7 +727,7 @@ def _candidate_for(name: str, count: int, read: _NoteRead) -> Candidate | None:
     #: The name's own vote (`NAME_VOTE`) is already in the neighbours'.
     score = W_NEIGHBOURS * read.knn_votes.get(name, 0.0) + W_CENTROID * centroid + W_TOPICS * topic_score
     if taught:
-        score += LEXICON_VOTE * sum(read.note_topics[t] for t in taught) / (sum(read.note_topics.values()) or 1.0)
+        score += LEXICON_VOTE * sum(read.note_topics[t] * share for t, share in taught.items()) / (sum(read.note_topics.values()) or 1.0)
     if score <= 0:
         return None
     return Candidate(
@@ -717,7 +740,7 @@ def _candidate_for(name: str, count: int, read: _NoteRead) -> Candidate | None:
             for topic in sorted(read.hits, key=lambda t: -profile.get(t, 0.0))
             if profile.get(topic, 0.0) >= TOPIC_OWN_SHARE * max(profile.values(), default=0.0) > 0
         },
-        notes=count, named=named, lexicon=taught,
+        notes=count, named=named, lexicon=list(taught),
     )
 
 
@@ -885,7 +908,7 @@ def category_profiles(session: Session) -> dict[str, tuple[int, dict[str, float]
             profile[topic] = profile.get(topic, 0.0) + NAME_TOPIC_WEIGHT * weight
         for topic, sent in lexicon.items():
             if sent.get(name):
-                profile[topic] = profile.get(topic, 0.0) + LEXICON_WEIGHT * min(sent[name], LEXICON_MAX)
+                profile[topic] = profile.get(topic, 0.0) + _taught_weight(sent, name, topic, profiles)
         out[name] = (count, profile, own)
     return out
 
@@ -924,7 +947,10 @@ def personal_lexicon(session: Session) -> dict[str, dict[str, int]]:
             #: weak word ("book" in a car note) taught the wrong rule.
             for topic in taxonomy.strong_topics(correction.excerpt):
                 sent = lexicon.setdefault(topic, {})
-                sent[to] = sent.get(to, 0) + 1
+                #: A move out of a named category ("Work, not Software")
+                #: says the old filing was wrong: it counts as firmly as a
+                #: Tidy merge; a note filed from nowhere counts once.
+                sent[to] = sent.get(to, 0) + (1 if correction.from_value in (None, "", UNCATEGORISED) else LEXICON_MAX)
         for correction in learning.corrections(session, kind="alias"):
             topic = str(correction.subject.get("topic") or "")
             if topic and correction.to_value:

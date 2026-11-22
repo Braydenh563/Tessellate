@@ -40,39 +40,35 @@ let currentSettingsSection = "models";
 //: in every settings window people know: Up and Down go to the previous and
 //: next pane and open it, Home and End to the first and last. Tab still
 //: leaves the list for the pane, so nothing a keyboard user relied on moves.
-//: The window's head and nav are a surface built on the first open (L-world-class-530): wired then.
-onSurface("settingsShell", () => {
-  $("settings-nav").addEventListener("keydown", (event) => {
-    //: Page Up and Page Down still read the pane from the list (INBOX 426 u's
-    //: reading keys, now that a click leaves the focus here: INBOX 467).
-    if ((event.key === "PageDown" || event.key === "PageUp") && document.activeElement?.closest("#settings-nav")) {
-      const scroller = settingsScroller(currentSettingsSection);
-      if (scroller) {
-        event.preventDefault();
-        scroller.scrollBy({ top: (event.key === "PageDown" ? 1 : -1) * scroller.clientHeight * 0.9 });
-      }
-      return;
+document.getElementById("settings-nav")?.addEventListener("keydown", (event) => {
+  //: Page Up and Page Down still read the pane from the list (INBOX 426 u's
+  //: reading keys, now that a click leaves the focus here: INBOX 467).
+  if ((event.key === "PageDown" || event.key === "PageUp") && document.activeElement?.closest("#settings-nav")) {
+    const scroller = settingsScroller(currentSettingsSection);
+    if (scroller) {
+      event.preventDefault();
+      scroller.scrollBy({ top: (event.key === "PageDown" ? 1 : -1) * scroller.clientHeight * 0.9 });
     }
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-    const buttons = [...document.querySelectorAll("#settings-nav button[data-section]")]
-      .filter((b) => b.getClientRects().length);
-    const at = buttons.indexOf(document.activeElement);
-    if (at < 0) return;
-    event.preventDefault();
-    const next =
-      event.key === "Home" ? 0
-        : event.key === "End" ? buttons.length - 1
-          : Math.max(0, Math.min(buttons.length - 1, at + (event.key === "ArrowDown" ? 1 : -1)));
-    buttons[next].focus();
-    //: Walking the list keeps the focus in it (the next arrow has to land on the
-    //: next entry); only choosing one by Enter, Space or the pointer hands the
-    //: focus on to the section's heading (`focusSettingsHeading`).
-    settingsNavWalking = true;
-    buttons[next].click();
-    settingsNavWalking = false;
-  });
+    return;
+  }
+  if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+  const buttons = [...document.querySelectorAll("#settings-nav button[data-section]")]
+    .filter((b) => b.getClientRects().length);
+  const at = buttons.indexOf(document.activeElement);
+  if (at < 0) return;
+  event.preventDefault();
+  const next =
+    event.key === "Home" ? 0
+      : event.key === "End" ? buttons.length - 1
+        : Math.max(0, Math.min(buttons.length - 1, at + (event.key === "ArrowDown" ? 1 : -1)));
+  buttons[next].focus();
+  //: Walking the list keeps the focus in it (the next arrow has to land on the
+  //: next entry); only choosing one by Enter, Space or the pointer hands the
+  //: focus on to the section's heading (`focusSettingsHeading`).
+  settingsNavWalking = true;
+  buttons[next].click();
+  settingsNavWalking = false;
 });
-
 let settingsNavWalking = false;
 
 function ensureSettingsPaneTitle(box, name) {
@@ -309,7 +305,7 @@ function showSettingsSection(name) {
 // panel left semi-transparent on the Logs screen just looks broken.
 function setSettingsPeek(on) {
   const modal = $("settings-modal");
-  const button = document.getElementById("settings-peek");
+  const button = $("settings-peek");
   modal.classList.toggle("peeking", !!on);
   // A button that toggles has to *say* it is pressed, the class on the modal
   // is the visible half, and `aria-pressed` is the half a screen reader hears.
@@ -338,13 +334,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: that no longer held it. The control is the truth, so the section is read
   //: from where it sits now, and the one the caller named is only the answer
   //: when the control is not in the markup at all.
+  overlayReturnFocus = document.activeElement;
+  window.uiSettlingUntil = performance.now() + 400;
+  //: The body is a file fetched on the first open (L-world-class-760), begun at the gear under the pointer; only
+  //: an open that comes first, from the palette, a link or a key, waits for it. Later opens stay synchronous.
+  if (SURFACES.pending("settings")) await SURFACES.load("settings");
   if (scrollToId) {
     const holder = $(scrollToId)?.closest(".settings-section");
     if (holder?.id.startsWith("settings-")) section = holder.id.slice("settings-".length);
   }
-  overlayReturnFocus = document.activeElement;
-  window.uiSettlingUntil = performance.now() + 400;
-  surfaceBuild("settingsShell");
   surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
@@ -354,6 +352,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     await ensureModule("settingsControls");
   }
   $("settings-modal").classList.remove("hidden");
+  document.body.classList.add("settings-open");
   //: The window's own selects outside a pane; each pane wraps its own when shown (L-world-class-14).
   for (const select of $("settings-modal").querySelectorAll("select")) if (!select.closest(".settings-section")) enhanceSelect(select);
   // Runs on open rather than once at load: several sections are built
@@ -703,7 +702,7 @@ function filterSettings(term) {
 function closeSettingsModal() {
   //: The address and the title go back to the tab under it (router.js).
   ensureModule("quickNote").then(() => routerSettle());
-  const search = document.getElementById("settings-search");
+  const search = $("settings-search");
   //: Only a box that was typed in needs putting back (perf audit 1108 P12: the empty pass was a 396 ms task at 4x).
   if (search?.value) {
     search.value = "";
@@ -720,6 +719,7 @@ function closeSettingsModal() {
   focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
   $("settings-modal").classList.add("hidden");
+  document.body.classList.remove("settings-open");
 }
 
 // --- logs viewer (Wave A) ---------------------------------------------------------
@@ -3423,10 +3423,12 @@ document.addEventListener("motionchange", () => {
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
-onSurface("settingsShell", () => {
-  $("settings-close").addEventListener("click", () => closeSettingsModal());
-  $("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
-});
+//: The first sign Settings is about to open (the gear under the pointer, in focus or touched) starts the fetch of its
+//: body (L-world-class-760), which then parses ahead in idle slots while the click lands. Settings opened any
+//: other way (the palette, a link, a key) fetches in `openSettingsModal` before it builds.
+for (const type of ["pointerover", "focusin", "touchstart"]) $("settings-btn").addEventListener(type, () => SURFACES.load("settings"), { passive: true });
+$("settings-close").addEventListener("click", () => closeSettingsModal());
+$("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 
 
 wireBackdropClose($("settings-modal"), () => closeSettingsModal()); // backdrop click
@@ -3458,52 +3460,50 @@ function focusSettingsHeading(name) {
 
 //: A group heading (INBOX 697) is in the loop too: a press on it opens its
 //: group's first page rather than doing nothing.
-onSurface("settingsShell", () => {
-  for (const button of document.querySelectorAll("#settings-nav button, #settings-nav .nav-group-label")) {
-    button.addEventListener("click", (event) => {
-      const name = (button.dataset.section ? button : button.nextElementSibling.querySelector("[data-section]:not(.hidden)")).dataset.section;
-      showSettingsSection(name);
-      //: **A pointer click keeps the focus in the list** (INBOX 467, the owner:
-      //: "I cant navigate on the settings navigation side bar with arrows"),
-      //: so Up and Down walk on from the section clicked, as in every settings
-      //: window's sidebar; a click in the pane gives the reading keys to the
-      //: pane. Enter or Space (`detail` 0) still hands the focus to the
-      //: section's heading, where a keyboard user reads on.
-      if (!settingsNavWalking && event.detail === 0) focusSettingsHeading(name);
-      else if (!settingsNavWalking) button.focus({ preventScroll: true });
-    });
+for (const button of document.querySelectorAll("#settings-nav button, #settings-nav .nav-group-label")) {
+  button.addEventListener("click", (event) => {
+    const name = (button.dataset.section ? button : button.nextElementSibling.querySelector("[data-section]:not(.hidden)")).dataset.section;
+    showSettingsSection(name);
+    //: **A pointer click keeps the focus in the list** (INBOX 467, the owner:
+    //: "I cant navigate on the settings navigation side bar with arrows"),
+    //: so Up and Down walk on from the section clicked, as in every settings
+    //: window's sidebar; a click in the pane gives the reading keys to the
+    //: pane. Enter or Space (`detail` 0) still hands the focus to the
+    //: section's heading, where a keyboard user reads on.
+    if (!settingsNavWalking && event.detail === 0) focusSettingsHeading(name);
+    else if (!settingsNavWalking) button.focus({ preventScroll: true });
+  });
+}
+$("settings-search")?.addEventListener("input", (e) => filterSettings(e.target.value));
+$("settings-search")?.addEventListener("keydown", (e) => {
+  // Escape clears the filter rather than closing the whole panel, closing on
+  // Escape while someone is mid-search loses both the search and their place.
+  if (e.key === "Escape" && e.target.value) {
+    e.stopPropagation();
+    e.target.value = "";
+    filterSettings("");
+    return;
   }
-  $("settings-search")?.addEventListener("input", (e) => filterSettings(e.target.value));
-  $("settings-search")?.addEventListener("keydown", (e) => {
-    // Escape clears the filter rather than closing the whole panel, closing on
-    // Escape while someone is mid-search loses both the search and their place.
-    if (e.key === "Escape" && e.target.value) {
-      e.stopPropagation();
-      e.target.value = "";
-      filterSettings("");
-      return;
-    }
-    //: Down walks into the results; Enter opens the first one.
-    if (e.key === "ArrowDown" && typeof settingResultsKey === "function" && settingResultsKey(e)) {
-      e.preventDefault();
-    } else if (e.key === "Enter") {
-      document.querySelector("#settings-results .settings-result")?.click();
-    }
-  });
-  $("settings-results")?.addEventListener("keydown", (e) => {
-    if (typeof settingResultsKey === "function" && settingResultsKey(e)) e.preventDefault();
-  });
+  //: Down walks into the results; Enter opens the first one.
+  if (e.key === "ArrowDown" && typeof settingResultsKey === "function" && settingResultsKey(e)) {
+    e.preventDefault();
+  } else if (e.key === "Enter") {
+    document.querySelector("#settings-results .settings-result")?.click();
+  }
+});
+$("settings-results")?.addEventListener("keydown", (e) => {
+  if (typeof settingResultsKey === "function" && settingResultsKey(e)) e.preventDefault();
 });
 // Cross-links between settings screens ("web search lives over there").
-// Delegated, so a link added to the markup later needs no wiring; added with the window's shell.
-onSurface("settingsShell", () => $("settings-modal").addEventListener("click", (event) => {
+// Delegated, so a link added to the markup later needs no wiring.
+$("settings-modal").addEventListener("click", (event) => {
   const link = event.target.closest("[data-goto-section]");
   if (!link) return;
   //: `data-goto-target` lands on one row of that section, scrolled to and
   //: flashed the way the catalogue's deep links are, rather than on its top.
   if (link.dataset.gotoTarget) openSettingsModal(link.dataset.gotoSection, link.dataset.gotoTarget);
   else showSettingsSection(link.dataset.gotoSection);
-}));
+});
 // Same idea, one step further: a Help topic about a *tab* (Reminders,
 // Graph, Library…) should be able to send you there directly, not just to
 // whatever Settings section happens to mention it, asked for directly,
@@ -3781,12 +3781,9 @@ const GUIDE_LINE = "Answers from the app's own help";
 //: The header's '?' became the status bar's Guide slot with INBOX 207;
 //: app.js binds that one, because the status bar is its markup and it can
 //: reach this function through `window` by the time a click happens.
-onSurface("settingsShell", () => {
-  $("settings-guide-btn").addEventListener("click", () => openHelpChat());
-  //: The avatar in the Settings head is the way to the profile from every pane.
-  $("settings-profile-btn").addEventListener("click", () => showSettingsSection("preferences"));
-  renderLogErrorBadge(); // errors logged before the nav existed
-});
+$("settings-guide-btn")?.addEventListener("click", () => openHelpChat());
+//: The avatar in the Settings head is the way to the profile from every pane.
+$("settings-profile-btn")?.addEventListener("click", () => showSettingsSection("preferences"));
 
 
 

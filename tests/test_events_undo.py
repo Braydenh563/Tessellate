@@ -180,14 +180,14 @@ def _pick(category: str, method: str = "llm"):
 
 def test_capture_filing_is_an_event_the_filer_owns_and_undo_reverses(client, session, monkeypatch):
     from tessellate.ai import janitor
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
 
     entry = manager.create_entry(session, "Repot the fig before it gets root bound")
     entry.filing_state = "pending"  # as a save still to land leaves it
     session.commit()
     mark = _last_event_id(session)
     monkeypatch.setattr(janitor, "categorise", _pick("Garden"))
-    routes_entries._file_entry_in_background(entry.id, "default")
+    filing_background._file_entry_in_background(entry.id, "default")
     session.expire_all()
     row = session.scalars(
         select(AuditLog).where(AuditLog.entity_id == entry.id, AuditLog.id > mark)
@@ -204,14 +204,14 @@ def test_capture_filing_is_an_event_the_filer_owns_and_undo_reverses(client, ses
 
 def test_a_filing_that_changes_nothing_writes_nothing(session, monkeypatch):
     from tessellate.ai import janitor
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
 
     entry = manager.create_entry(session, "Repot the fig", category_name="Garden")
     entry.filing_state = "pending"
     session.commit()
     mark = _last_event_id(session)
     monkeypatch.setattr(janitor, "categorise", _pick("Garden"))
-    routes_entries._file_entry_in_background(entry.id, "default")
+    filing_background._file_entry_in_background(entry.id, "default")
     session.expire_all()
     assert _last_event_id(session) == mark
 

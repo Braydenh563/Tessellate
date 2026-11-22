@@ -1386,7 +1386,7 @@ def _tagged_calls(content: str, tool_names: set[str]) -> _Recovered:
         # or just two objects back to back) still means every call, not only
         # the first it wrote.
         inside = tag_match.group(1)
-        #: **A doubled opening brace** (L-world-class-630): Qwen2.5-1.5B on
+        #: **A doubled opening brace** (L-world-class-842): Qwen2.5-1.5B on
         #: its own chat template writes `{{"name": ..., "arguments": {...}}`,
         #: the template's escaped brace copied literally, one `{` more than it
         #: closes. Nothing balanced, so the call was dropped and the tag shown

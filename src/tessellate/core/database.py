@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import zlib
 from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -48,6 +49,8 @@ from sqlalchemy.orm import (
     with_loader_criteria,
 )
 from sqlalchemy.orm.attributes import flag_modified
+
+from tessellate.core.packed_vector import PackedVector
 
 
 
@@ -310,23 +313,6 @@ def _forget_private_spaces(session, flush_context, instances):
         session.info.pop(PRIVATE_SPACES, None)
 
 
-#: Flushes that wrote each model, for this process. A cache keyed on
-#: `max(updated_at)` alone serves a stale answer when two writes share a clock
-#: tick (a pinned clock always does), so every such fingerprint carries this.
-_writes: dict[type, int] = {}
-
-
-def writes(model: type) -> int:
-    """How many flushes so far added, changed or deleted a `model` row."""
-    return _writes.get(model, 0)
-
-
-@event.listens_for(Session, "before_flush")
-def _count_writes(session, flush_context, instances):
-    for model in {type(obj) for obj in (*session.new, *session.dirty, *session.deleted)}:
-        _writes[model] = _writes.get(model, 0) + 1
-
-
 @event.listens_for(Session, "before_flush")
 def _stamp_edited_at(session, flush_context, instances):
     """Every write that changes a saved note's text stamps `Entry.edited_at`
@@ -345,6 +331,23 @@ def _stamp_edited_at(session, flush_context, instances):
             continue
         if attrs["content"].history.has_changes() and not attrs["is_private"].history.has_changes():
             obj.edited_at = utcnow()
+
+
+#: Flushes that wrote each model, for this process. A cache keyed on
+#: `max(updated_at)` alone serves a stale answer when two writes share a clock
+#: tick (a pinned clock always does), so every such fingerprint carries this.
+_writes: dict[type, int] = {}
+
+
+def writes(model: type) -> int:
+    """How many flushes so far added, changed or deleted a `model` row."""
+    return _writes.get(model, 0)
+
+
+@event.listens_for(Session, "before_flush")
+def _count_writes(session, flush_context, instances):
+    for model in {type(obj) for obj in (*session.new, *session.dirty, *session.deleted)}:
+        _writes[model] = _writes.get(model, 0) + 1
 
 
 def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
@@ -558,6 +561,44 @@ class Category(Base, WorkspaceMixin):
     #: no clean-up pass. `_rebuild_categories_unique_constraint` copies it.
     colour: Mapped[str | None] = mapped_column(String(16), default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
+
+
+class EntryCategory(Base):
+    """A note's further categories (L-world-class-173): `entries.category_id`
+    stays the one the filer decides; a row here is a second place the person
+    put the note. Only people write it, so the janitor's single centroid rule
+    is untouched. Both keys cascade, so deleting a note or a category needs no
+    clean-up pass; a row naming the note's own primary category is never read
+    (`entry/memberships.py`)."""
+
+    __tablename__ = "entry_categories"
+
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id", ondelete="CASCADE"), primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+
+
+class NoteGroup(Base, WorkspaceMixin):
+    """A set of notes a person gathered by hand (L-world-class-172), apart from
+    categories and tags: no model files into it and no rule re-sorts it."""
+
+    __tablename__ = "note_groups"
+    __table_args__ = (UniqueConstraint("workspace_id", "name", name="uq_note_groups_workspace_name"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class NoteGroupMember(Base):
+    __tablename__ = "note_group_members"
+
+    group_id: Mapped[int] = mapped_column(ForeignKey("note_groups.id", ondelete="CASCADE"), primary_key=True)
+    entry_id: Mapped[int] = mapped_column(
+        ForeignKey("entries.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    added_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class Entry(Base, WorkspaceMixin):
@@ -1225,7 +1266,7 @@ class EmbeddingRecord(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
@@ -1274,7 +1315,7 @@ class ChunkVector(Base):
     start: Mapped[int] = mapped_column(Integer)
     end: Mapped[int] = mapped_column(Integer)
     digest: Mapped[str] = mapped_column(String(32))
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
 
@@ -1300,7 +1341,7 @@ class StagedEmbedding(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(Integer, unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
@@ -1739,6 +1780,30 @@ class NightRun(Base):
     counts: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+class PackedText(TypeDecorator):
+    """Text stored zlib-compressed when that is smaller (L-world-class-696):
+    a revision is a whole older copy of a note, so a notebook's history was
+    most of its size. A value is kept as bytes behind `_MAGIC`; text that does
+    not shrink, and every row written before this type, stays plain text and
+    reads back unchanged, so no migration is needed (SQLite keeps either in a
+    TEXT column). Not searchable with SQL: readers filter in Python."""
+
+    impl = Text
+    cache_ok = True
+    _MAGIC = b"\x01tz1"
+
+    def process_bind_param(self, value, dialect):
+        if not isinstance(value, str) or len(value) < 120:
+            return value
+        packed = self._MAGIC + zlib.compress(value.encode("utf-8"), 6)
+        return packed if len(packed) < len(value.encode("utf-8")) else value
+
+    def process_result_value(self, value, dialect):
+        if isinstance(value, (bytes, bytearray, memoryview)) and bytes(value[:4]) == self._MAGIC:
+            return zlib.decompress(bytes(value[4:])).decode("utf-8")
+        return value
+
+
 class EntryRevision(Base):
     """A note's text as it was before an edit.
 
@@ -1752,7 +1817,7 @@ class EntryRevision(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), index=True)
-    content: Mapped[str] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(PackedText)
     tags: Mapped[str] = mapped_column(Text, default="[]")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
@@ -1845,6 +1910,13 @@ class Document(Base, WorkspaceMixin):
     #: In the recycle bin since then (WORLD_CLASS_PLAN 5 item 10); null is live.
     #: Hidden from every read by `_hide_binned`; a purge is the hard delete.
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    #: What a person files it under, as a note's own are (WORLD_CLASS_PLAN
+    #: decision 65, L-world-class-393): tags a JSON string array, the category
+    #: by id, properties a JSON object of name to text. Additive: "[]", null and
+    #: "{}" are what every older row reads, and the selection bars write them.
+    tags: Mapped[str] = mapped_column(Text, default="[]", server_default=sql_text("'[]'"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), default=None)
+    properties: Mapped[str] = mapped_column(Text, default="{}", server_default=sql_text("'{}'"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=stamp)
 
@@ -2396,6 +2468,13 @@ class MediaUpload(Base, WorkspaceMixin):
     #: Library row, no search hit, no caption or reading job, until the person
     #: chooses Save to Library (`POST /media/{id}/library`), which clears this.
     board_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: What a person files it under, as a note's own are (WORLD_CLASS_PLAN
+    #: decision 65, L-world-class-393): tags a JSON string array, the category
+    #: by id, properties a JSON object of name to text. Additive: "[]", null and
+    #: "{}" are what every older row reads, and the selection bars write them.
+    tags: Mapped[str] = mapped_column(Text, default="[]", server_default=sql_text("'[]'"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), default=None)
+    properties: Mapped[str] = mapped_column(Text, default="{}", server_default=sql_text("'{}'"))
 
 
 class JobRun(Base):

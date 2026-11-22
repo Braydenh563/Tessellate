@@ -157,47 +157,6 @@
     });
   }
 
-  //: Clear completed (moved from shell-reminders.js for the boot-script gzip
-  //: budget, L-world-class-81): only its button reaches it, and wiring.js loads
-  //: this file first.
-  async function clearDoneReminders() {
-    //: To the end, or this clears the first page's done rows and reports that
-    //: count as if it were all of them.
-    const done = await apiPagedList("/reminders?only_done=true", 200).catch(() => null);
-    if (!done) return toast(voiceLine("failed", { what: "load your reminders" }), true, { retry: clearDoneReminders });
-    if (!done.length) return;
-    if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
-      return;
-    }
-    //: One Undo for the lot (INBOX 537): they go to the recycle bin and come
-    //: back from it (WORLD_CLASS_PLAN 5 item 10).
-    //: Every delete is tried; how many failed is said once (audit 2026-10-05,
-    //: FE-12), where a silent catch let them come back unexplained, with a Try
-    //: again for just those rows.
-    const drop = async (rows = done) => {
-      const results = await Promise.all(
-        rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
-      );
-      const left = rows.filter((_, i) => !results[i]);
-      if (left.length) toast(voiceLine("failed", { what: `delete ${left.length} of the reminders` }), true, { retry: () => drop(left) });
-      loadReminders();
-    };
-    const remake = async (rows = done) => {
-      const results = await Promise.all(
-        rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
-      );
-      const left = rows.filter((_, i) => !results[i]);
-      if (left.length) toast(voiceLine("failed", { what: `bring back ${left.length} of the reminders` }), true, { retry: () => remake(left) });
-      loadReminders();
-    };
-    await drop();
-    const action = pushUndo(`Cleared ${done.length} completed reminders`, remake, drop);
-    toastAction(`Cleared ${done.length} completed reminder${done.length === 1 ? "" : "s"}.`, "Undo", async () => {
-      settleUndoFromToast(action);
-      await remake().catch((e) => toast(e.message, true));
-    });
-  }
-
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { reminderEditForm, snoozeReminderTo, clearDoneReminders });
+  Object.assign(window, { reminderEditForm, snoozeReminderTo });
 })();

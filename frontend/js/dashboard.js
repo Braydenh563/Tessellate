@@ -487,7 +487,7 @@ function fetchDashGraph() {
 async function dashEntries() {
   if (entriesEverLoaded) return allEntries;
   const notes = await appState.when("notes", 8000);
-  return notes || apiJson("/entries", { cacheMs: 4000 });
+  return notes || apiJson("/entries?preview=300", { cacheMs: 4000 });
 }
 
 //: **The sub line is composed and rotates** (INBOX 1300, the owner: "Maybe the
@@ -840,6 +840,7 @@ function renderNameNudge(greetingEl) {
 // inside a row instead of being stretched to match the tallest one.
 
 let dashResizeObserver = null;
+
 //: **Three passes, not one per card** (INBOX 400). Written per card, the
 //: loop set a card's span, read its height and set it again, so every card
 //: after the first read a layout the previous card had just dirtied: one
@@ -874,34 +875,23 @@ function sizeDashWidgets() {
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
   //: reads go before any write.
-  //: **The observer's sizes first** (L-world-class-620): a card's border box as `watchDashWidgets`'s
-  //: ResizeObserver last delivered it, measured by the frame's own layout, so the call reads no layout of
-  //: its own; the rect read after the fills had dirtied it was 49 to 307ms at 4x. A card the observer has
-  //: not reported yet (or reported hidden, 0px) is read. One the fills change after it is reported fires
-  //: the observer again, which sizes it again a frame on, while the grid is still fading in from 0.
-  const heights = cards.map((card) => sizeDashWidgets.heights.get(card) || card.getBoundingClientRect().height);
+  //: A height the grid's observer has already reported is used as it is (L-world-class-620): the rect read here
+  //: laid the page out whole, 49 to 307 ms at 4x on 500 notes, because the fills had dirtied it. A card the
+  //: observer has not reported yet is read.
+  const known = sizeDashWidgets.heights;
+  const heights = cards.map((card) => known.get(card) ?? card.getBoundingClientRect().height);
   if (!heights.some(Boolean)) return;
-  //: The grid's unit and gaps as the observer last read them, where style was clean; read here
-  //: after the fills, `getComputedStyle` was the forced style pass (45 to 119ms at 4x, 5,000 notes).
-  const { rowUnit, rowGap, cardGap } = sizeDashWidgets.metrics || sizeDashWidgets.read(grid);
+  const styles = getComputedStyle(grid);
+  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
+  const rowGap = Number.parseFloat(styles.rowGap) || 0;
+  const cardGap = Number.parseFloat(styles.columnGap) || 16;
   cards.forEach((card, i) => {
     card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
 }
 
-//: State on the function, not three more shared names (the global-scope ratchet): each card's border box as
-//: the observer last delivered it, and the grid's unit and gaps as read where style was clean.
 sizeDashWidgets.heights = new WeakMap();
-sizeDashWidgets.metrics = null;
-sizeDashWidgets.read = (grid) => {
-  const styles = getComputedStyle(grid);
-  return {
-    rowUnit: Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1,
-    rowGap: Number.parseFloat(styles.rowGap) || 0,
-    cardGap: Number.parseFloat(styles.columnGap) || 16,
-  };
-};
 
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
 // size rather than only once at render time.
@@ -912,21 +902,15 @@ function watchDashWidgets() {
     return;
   }
   dashResizeObserver?.disconnect();
-  let queued = false;
   dashResizeObserver = new ResizeObserver((entries) => {
-    //: First, before anything here writes: in an observer callback style and layout are clean, so this
-    //: read is free. A resize or a density change resizes the cards, so it is read again then.
-    sizeDashWidgets.metrics = sizeDashWidgets.read(grid);
-    for (const entry of entries) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.target.getBoundingClientRect().height);
+    //: The sizes arrive with the entries, after the frame's layout, so sizing here reads nothing back (L-world-class-620).
+    for (const entry of entries) {
+      if (entry.target.classList.contains("dash-widget")) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+    }
     dashResizeObserver.follow?.();
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
-      //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
-      if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
-    });
+    //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
+    //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
+    if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
   });
   //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
   //: with the widgets drawn rather than empty: sizing here as well was a whole-page layout

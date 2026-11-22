@@ -18,9 +18,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tests._js_scope import unwrapped
-
 import pytest
+
+from tests._js_scope import unwrapped
+from tests._surface_assets import inline_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
@@ -31,7 +32,8 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 #: The raw file, not the conftest's view of it: that turns each surface script into a `<template>`, and
 #: since each pane holds a `<template>` of its own (L675) a lazy match would stop at the first pane's end.
 with open(FRONTEND / "index.html", encoding="utf-8") as _page:
-    RAW = _page.read()
+    #: Settings' body is a fetched file now (L-world-class-760); put back in its script as it once sat.
+    RAW = inline_surfaces(_page.read())
 TEMPLATE = re.search(r'<script type="text/x-surface" id="settings-body-template" data-surface="settings"[^>]*>(.*?)</script>', RAW, re.S)
 
 
@@ -57,12 +59,6 @@ def test_the_sections_sit_in_one_template_inside_the_modal_content():
     before = RAW[: TEMPLATE.start()]
     assert 'class="modal-content" tabindex="-1"' in before[-1200:], "the template is the content of the modal"
     assert INDEX.count('id="settings-body-template"') == 1
-    # L-world-class-530: the head and nav are a surface of their own (a script cannot hold a script), so the
-    # body sits after it, named `data-in`, and is moved into the slot in `.modal-content` when the shell is built.
-    shell = re.search(r'<script type="text/x-surface" data-surface="settingsShell">(.*?)</script>', RAW, re.S)
-    assert shell and re.search(r'class="modal-content" tabindex="-1">\s*<template data-surface-slot="settings"></template>', shell.group(1))
-    assert re.match(r'<script[^>]*\bdata-in="settingsShell"', RAW[TEMPLATE.start() :])
-    assert "slot.replaceWith(SURFACES.get(slot.dataset.surfaceSlot).tpl)" in BODY_JS
 
 
 def test_the_template_is_not_the_nav_or_the_search_or_the_close():

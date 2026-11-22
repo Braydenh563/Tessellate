@@ -3964,7 +3964,7 @@ def test_a_settings_pane_lists_its_groups_in_the_sidebar() -> None:
     link = _css_block("#settings-nav .settings-nav-group")
     assert "background: transparent" in link and "box-shadow: none" in link
     current = _css_block('#settings-nav .settings-nav-group[aria-current="location"]')
-    assert "var(--accent)" in current and "font-weight: 650" in current
+    assert "var(--accent)" in current and "font-weight: 600" in current
     assert "--accent-surface" not in current and "background" not in current
     code = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert "scrollIntoView" not in re.sub(r"//.*", "", code), "scroll the pane's own scrollTop"
@@ -8052,7 +8052,7 @@ HELP_ACCORDIONS = (
 #: Topics whose own title does not bring the Guide's chat to them (the Guide ranks by
 #: keywords, and these titles are phrased for a reader of the list, not an asker).
 #: May only fall: LEDGER L-world-class-420 gives each its keywords.
-GUIDE_MISSES_BY_TITLE = 51
+GUIDE_MISSES_BY_TITLE = 0
 
 
 def test_the_help_accordion_is_thirteen_named_groups_drawn_by_one_builder() -> None:
@@ -8112,10 +8112,9 @@ POPUP_KINDS = {
     "doc-word-goal-dialog": "sheet",
     "doc-dictionary-dialog": "sheet",
     "dash-widgets-dialog": "sheet",
+    "doc-replace-dialog": "sheet",
+    "doc-stats-dialog": "sheet",
 }
-#: Two dialogs the table does not rule (added after it was written): LEDGER L-world-class-421.
-#: May only fall.
-UNRULED_DIALOGS = {"doc-replace-dialog", "doc-stats-dialog"}
 
 
 def test_each_popup_is_the_kind_the_table_rules() -> None:
@@ -8123,7 +8122,7 @@ def test_each_popup_is_the_kind_the_table_rules() -> None:
     markup = re.sub(r"<!--.*?-->", "", html, flags=re.S)
     native = set(re.findall(r'<dialog\b[^>]*\bid="([^"]+)"', markup))
     hosts = dict(re.findall(r'<sheet-host\b[^>]*\bid="([^"]+)"([^>]*)>', markup))
-    assert native == {i for i, kind in POPUP_KINDS.items() if kind == "dialog"} | UNRULED_DIALOGS, (
+    assert native == {i for i, kind in POPUP_KINDS.items() if kind == "dialog"}, (
         f"a popup is a native <dialog> only when it must interrupt: {sorted(native)}"
     )
     assert set(hosts) == {i for i, kind in POPUP_KINDS.items() if kind != "dialog"}, sorted(hosts)
@@ -8175,6 +8174,18 @@ def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-triage.js").read_text(encoding="utf-8")
     assert "openSheet({" in js
     assert 'createElement("dialog")' not in js and "modal-overlay" not in js
-    #: Clear done lives in reminder-edit.js (the merge with L-world-class-81 kept that copy), so two here.
-    assert js.count("pushUndo(") == 2  # the outcome append, the one triage act (a row or all rows)
+    assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
     assert ".style." not in js and "style=" not in js
+
+
+def test_no_stylesheet_declares_the_weight_650() -> None:
+    """A font with static weights (Segoe UI and most system faces) has no 650 and
+    resolves it to Bold 700, so a head set at 650 drew a step heavier than the 600
+    the recipes name (DESIGN.md, `.card h2`). Group heads, nav rows and titles are
+    600; measured at 1366x768 the Settings heads were 600 and 650 side by side
+    (L-world-class-105)."""
+    hits = []
+    for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
+        css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
+    assert not hits, f"declare 600, not 650: {hits}"

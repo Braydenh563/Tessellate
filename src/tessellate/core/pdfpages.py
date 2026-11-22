@@ -25,32 +25,37 @@ Deliberately not Tesseract, by direct instruction: *"I basically dont want to
 download tesseract and only want to use an ai vision learning and ocr model for
 images and scanned documents."* Nothing here reads text. It produces pixels and
 hands them to the model.
-
-**PDFium runs in a child process** (L-world-class-321, SECURITY.md T19):
-every open, count and render here is a `core/parse_sandbox.py` call into
-`core/parse_jobs.py`, with a time and memory limit, so a crafted PDF that
-crashes or hangs PDFium costs one child, not the server. The child serves one
-job at a time, which is also what PDFium needs: several threads in it at once
-corrupted its heap (`corrupted double-linked list`, SIGABRT, from a browser
-fetching every page of a PDF at once), which is why this module held a lock
-before the child existed.
 """
 
 from __future__ import annotations
 
-import importlib.util
+import hashlib
 import logging
 import threading
 import time
 from collections import OrderedDict
 from pathlib import Path
 
-from tessellate.core import parse_sandbox
+from tessellate.core import parse_guard
 from tessellate.core.deps import register_cache_reset
 
 logger = logging.getLogger(__name__)
 
-_JOBS = "tessellate.core.parse_jobs"
+#: Serialises every call into pypdfium2. Not a performance nicety, a real
+#: crash, reproduced and confirmed: FastAPI's sync routes run in an anyio
+#: threadpool, and a browser viewing a multi-page PDF fires several
+#: `GET /media/pdf-page/{n}` requests concurrently (one per `<img>`,
+#: unthrottled by `loading="lazy"` for anything near the viewport). Hammering
+#: `pdfium.PdfDocument()`/`.render()` from several threads at once, even
+#: against independently opened documents, corrupts PDFium's C-level heap:
+#: reproduced locally as `corrupted double-linked list` and a hard process
+#: abort (SIGABRT), which no Python `except` clause can catch, since it never
+#: raises a Python exception at all. Reported live, from a real PDF: several
+#: pages 404ing at once and "it crashed... i couldnt scroll." The render
+#: itself is ~20ms (this module's own docstring), so serialising it costs
+#: nothing perceptible: an 8-page view goes from "mostly-parallel" to
+#: "160ms sequential," not from fast to slow.
+_pdfium_lock = threading.Lock()
 
 #: How many pages of one PDF are ever rendered.
 #:
@@ -75,48 +80,176 @@ RENDER_SCALE = 2.0
 #: can declare a page a metre wide.
 MAX_PIXELS = 40_000_000
 
-#: Seconds one page may take in the child before it is killed. A letter page
-#: at 2x draws in ~116 ms; a page that takes this long is a file built to hang.
-PAGE_TIMEOUT = 30.0
-COUNT_TIMEOUT = 15.0
+
+#: PDFium's "this file needs a password" load error (`FPDF_ERR_PASSWORD`).
+FPDF_ERR_PASSWORD = 4
+#: Passwords that opened a locked PDF this run (L-world-class-133), so a locked
+#: PDF asks once: in memory only, never written, gone at a restart. Keyed by a
+#: fingerprint of the bytes, not the path: a private space's file is opened
+#: through a temp copy whose path changes every time.
+_passwords: dict[str, str] = {}
+MAX_PASSWORDS = 32
+#: How many outline entries are listed; a book's index can hold thousands.
+MAX_OUTLINE = 300
+
+
+def _fingerprint(path: Path) -> str:
+    """The size, the first and the last 64 KB: cheap, and distinct per file."""
+    with open(path, "rb") as fh:
+        head = fh.read(1 << 16)
+        size = fh.seek(0, 2)
+        fh.seek(max(0, size - (1 << 16)))
+        tail = fh.read()
+    return hashlib.sha256(str(size).encode() + head + tail).hexdigest()
+
+
+def _locked_error(exc: Exception) -> bool:
+    return getattr(exc, "err_code", None) == FPDF_ERR_PASSWORD
+
+
+def _open(pdfium, path: Path):  # noqa: ANN001, ANN202  # the module and its document
+    """`PdfDocument`, with the password this run already has for the file.
+    Called under `_pdfium_lock`."""
+    try:
+        return pdfium.PdfDocument(str(path))
+    except pdfium.PdfiumError as exc:
+        known = _passwords.get(_fingerprint(path)) if _locked_error(exc) else None
+        if known is None:
+            raise
+        return pdfium.PdfDocument(str(path), password=known)
+
+
+def _outline(document) -> list[dict]:  # noqa: ANN001
+    found = []
+    for item in document.get_toc():
+        if len(found) >= MAX_OUTLINE:
+            break
+        title = " ".join(str(item.get_title() or "").split())[:200]
+        dest = item.get_dest()
+        page = dest.get_index() if dest is not None else None
+        if title and page is not None:
+            found.append({"title": title, "page": int(page), "level": int(item.level)})
+    return found
+
+
+def details(path: Path) -> dict:
+    """`pages`, whether it is `locked` (it needs a password this run does
+    not have), and its `outline` (the PDF's own bookmarks: title, page and
+    level, at most `MAX_OUTLINE`). Pages 0 and not locked: unreadable."""
+    if not available():
+        return {"pages": 0, "locked": False, "outline": []}
+    try:
+        import pypdfium2 as pdfium
+
+        with _pdfium_lock:
+            document = _open(pdfium, path)
+            try:
+                return {"pages": len(document), "locked": False, "outline": _outline(document)}
+            finally:
+                document.close()
+    except Exception as exc:  # noqa: BLE001  # a viewer must not 500 on a bad file
+        logger.debug("couldn't open %r: %s", path, exc)
+        return {"pages": 0, "locked": _locked_error(exc), "outline": []}
+
+
+def unlock(path: Path, password: str) -> bool:
+    """Whether `password` opens the PDF at `path`; if so, it is kept for this run."""
+    if not available() or not password:
+        return False
+    import pypdfium2 as pdfium
+
+    try:
+        with _pdfium_lock:
+            pdfium.PdfDocument(str(path), password=password).close()
+    except Exception as exc:  # noqa: BLE001  # a wrong password, or a file that will not open at all
+        # The type only: the message could echo the file's path, never the password.
+        logger.debug("unlock: the PDF did not open with that password (%s); not kept", type(exc).__name__)
+        return False
+    if len(_passwords) >= MAX_PASSWORDS:
+        _passwords.pop(next(iter(_passwords)))
+    _passwords[_fingerprint(path)] = password
+    return True
 
 
 def available() -> bool:
-    """Is there a rasteriser the child can import?
+    """Is there a rasteriser in this interpreter?
 
-    `find_spec`, not an import: the server process no longer loads PDFium at
-    all, and the child sees the server's `sys.path` (`parse_sandbox`).
+    Import rather than `pip show`, same reasoning as `extras.is_installed`:
+    what matters is whether this process can use it.
     """
-    return all(importlib.util.find_spec(name) is not None for name in ("pypdfium2", "PIL"))
+    try:
+        import pypdfium2  # noqa: F401
+        import PIL  # noqa: F401
+    except ImportError:
+        return False
+    return True
 
 
 def page_count(path: Path) -> int:
     """How many pages, or 0 if it cannot be read at all."""
     if not available():
         return 0
+    return _count_pages(path)
+
+
+@parse_guard.isolated("pdf", timeout=60, on_stop=int)
+def _count_pages(path: Path) -> int:
+    """`page_count`'s pdfium half, in the reader's child (L-world-class-321)."""
     try:
-        return int(parse_sandbox.call(f"{_JOBS}:pdf_page_count", str(path), timeout=COUNT_TIMEOUT))
-    except parse_sandbox.ParseRefused as exc:  # a viewer must not 500 on a bad file
+        import pypdfium2 as pdfium
+
+        with _pdfium_lock:
+            document = _open(pdfium, path)
+            try:
+                return len(document)
+            finally:
+                document.close()
+    except Exception as exc:  # noqa: BLE001  # a viewer must not 500 on a bad file
         # `%r`, not `%s`, on `path` throughout this file: flagged by CodeQL
         # (py/log-injection) even though `path` is always `attachment.stored_name`
         # (a hash this app generated itself, see routes_files.py), never the
-        # uploaded file's own name. `%r` closes the gap for free either way:
-        # repr() escapes newlines and control characters.
-        logger.debug("couldn't count pages in %r: %s (%s)", path, exc.kind, exc.detail)
+        # uploaded file's own name. CodeQL can't see that far through the call
+        # chain, and `%r` closes the gap for free either way: repr() escapes
+        # newlines and control characters, so nothing reaching this logger can
+        # forge a second log line no matter where the value came from.
+        logger.debug("couldn't count pages in %r: %s", path, exc)
         return 0
 
 
-def _draw(path: Path, index: int, *, greyscale: bool, scale: float = RENDER_SCALE) -> bytes | None:
-    """One page to PNG bytes in the child, or None (past the end, or over
-    `MAX_PIXELS`). Raises `ParseRefused`. Shared by `render_pages` (the
-    vision-OCR batch) and `render_page` (the viewer)."""
-    png = parse_sandbox.call(
-        f"{_JOBS}:pdf_page", str(path), int(index), bool(greyscale), float(scale), MAX_PIXELS,
-        timeout=PAGE_TIMEOUT,
-    )
-    if png is None:
-        logger.info("page %d of %r was not drawn: past the end or over the pixel limit", index + 1, path.name)
-    return png if isinstance(png, bytes) else None
+def _render_one(
+    page, path: Path, index: int, *, greyscale: bool, scale: float = RENDER_SCALE
+) -> bytes | None:
+    """One already-open `pdfium` page to PNG bytes, or None if it is too
+    large to render safely. Shared by `render_pages` (the vision-OCR batch)
+    and `render_page` (one page, for the viewer) so the pixel-limit check
+    and the encoding choice live in exactly one place."""
+    import io
+
+    width, height = page.get_size()
+    if (width * scale) * (height * scale) > MAX_PIXELS:
+        logger.info(
+            "skipping page %d of %r: %dx%d at %.1fx exceeds the pixel limit",
+            index + 1, path.name, width, height, scale,
+        )
+        return None
+    image = page.render(scale=scale).to_pil()
+    try:
+        buffer = io.BytesIO()
+        if greyscale:
+            # Greyscale before PNG: a scanned page carries no colour worth
+            # keeping for a vision model, and this is roughly a third of the
+            # bytes for it to encode. The page *viewer* (render_page) keeps
+            # colour: a person reading their own document is not paying a
+            # token budget the way a model prompt is.
+            image = image.convert("L")
+        #: **No recompression pass.** `optimize=True` was 340 of the 456 ms a
+        #: page took (measured, a letter page at 2x) for 3% fewer bytes, spent
+        #: under `_pdfium_lock`, which every other page and the page count wait
+        #: for: 24 rail thumbnails held a page view for three seconds.
+        image.save(buffer, format="PNG")
+        return buffer.getvalue()
+    finally:
+        image.close()
 
 
 def render_pages(path: Path, limit: int = MAX_PAGES) -> list[bytes]:
@@ -127,24 +260,56 @@ def render_pages(path: Path, limit: int = MAX_PAGES) -> list[bytes]:
     the honest answer is "no pages", which the caller already has a message
     for.
 
-    **One page per child job, not the whole batch** (attach-1026 O2, the
-    owner: "I think it waits for rapid ocr or tesserract to read the whole
-    document first before loading the other pages"). Each page is its own
-    call, and the thread yields between pages, so a page view or a rail
-    thumbnail takes its turn in the child instead of waiting behind the lot.
+    Pages are rendered one at a time and released as they go: holding eight
+    decoded bitmaps at once is the difference between tens and hundreds of
+    megabytes on a large scan.
     """
     if not available():
         return []
+    return _render_all(path, limit)
+
+
+@parse_guard.isolated("pdf", timeout=180, on_stop=list)
+def _render_all(path: Path, limit: int) -> list[bytes]:
+    """`render_pages`'s pdfium half, in the reader's child (L-world-class-321)."""
+    try:
+        import pypdfium2 as pdfium
+    except ImportError:
+        return []
+
     pages: list[bytes] = []
+    #: **One page per hold of the lock, not the whole batch** (attach-1026 O2,
+    #: the owner: "I think it waits for rapid ocr or tesserract to read the
+    #: whole document first before loading the other pages"). The document was
+    #: opened once and all eight pages rendered inside one `with`, so a page
+    #: view or a rail thumbnail waited behind the lot (~3.6 s measured, 456 ms a
+    #: page). Each page now opens, draws and closes the document under its own
+    #: hold (opening is ~0.1 ms), and the thread yields between pages so a
+    #: waiting viewer takes its turn instead of being barged past.
     count = min(page_count(path), max(0, limit))
     for index in range(count):
         try:
-            png = _draw(path, index, greyscale=True)
-        except parse_sandbox.ParseRefused as exc:  # see the docstring
-            logger.info("couldn't rasterise %r: %s (%s)", path, exc.kind, exc.detail)
+            with _pdfium_lock:
+                # Closed inside the lock, for the reason `render_page` gives
+                # below: a close outside it races another thread's open in
+                # pdfium's global state.
+                document = _open(pdfium, path)
+                try:
+                    page = document[index]
+                    try:
+                        png = _render_one(page, path, index, greyscale=True)
+                    finally:
+                        page.close()
+                finally:
+                    try:
+                        document.close()
+                    except Exception:  # noqa: BLE001  # nothing left to release
+                        logger.debug("closing %r after rasterising failed", path, exc_info=True)
+            if png is not None:
+                pages.append(png)
+        except Exception as exc:  # noqa: BLE001  # see the docstring
+            logger.info("couldn't rasterise %r: %s", path, exc)
             return pages
-        if png is not None:
-            pages.append(png)
         time.sleep(0.001)
     return pages
 
@@ -193,6 +358,7 @@ def _cache_clear() -> None:
     with _page_cache_lock:
         _page_cache.clear()
         _page_cache_bytes = 0
+    _passwords.clear()
 
 
 #: Dropped with the app's singletons, so one test's pages never answer the next
@@ -203,19 +369,23 @@ register_cache_reset(_cache_clear)
 def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
     """One page, by number, as PNG bytes, for *viewing* a PDF rather than
     reading it with a model. Kept apart from `render_pages`/`MAX_PAGES`
-    deliberately: that cap exists to bound vision-model cost, and has nothing
-    to do with how many pages a person can scroll past for free. In colour,
-    unlike `render_pages`.
+    deliberately: that cap exists to bound vision-model cost (a model reads
+    a page in seconds, so eight pages is already a lot of GPU time), and has
+    nothing to do with how many pages a person can scroll past for free. In
+    colour, unlike `render_pages`, nothing here is paying a model's token
+    budget for the file.
 
-    None on any failure (page out of range, a file PDFium can't open, an
-    oversized page, a child stopped at its limit): the caller,
-    `routes_files.pdf_page`, turns that into a 404, the same "no pages"
-    contract `render_pages` already keeps.
+    None on any failure (page out of range, a file pdfium can't open, an
+    oversized page): the caller, `routes_files.pdf_page`, turns that into
+    a 404, the same "no pages" contract `render_pages` already keeps.
     """
-    # CodeQL (py/log-injection) flags `index` itself here: it can't see that
-    # FastAPI's `index: int` route parameter already rejects anything
-    # non-numeric. An explicit int() re-cast into a fresh local breaks that
-    # taint chain for CodeQL and costs nothing at runtime.
+    # CodeQL (py/log-injection) flags `index` itself here, not just `path`:
+    # it can't see that FastAPI's `index: int` route parameter already
+    # rejects anything non-numeric before this function is ever called, so
+    # it treats the value reaching `logger.info` below as still tainted.
+    # An explicit int() re-cast into a fresh local breaks that taint chain
+    # for CodeQL and costs nothing at runtime, a real int passes through
+    # unchanged, and the `except` mirrors the `index < 0` guard it replaces.
     try:
         safe_index = int(index)
     except (TypeError, ValueError):
@@ -231,11 +401,47 @@ def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
         hit = _cache_get(key)
         if hit is not None:
             return hit
-    try:
-        png = _draw(path, safe_index, greyscale=False, scale=THUMB_SCALE if thumb else RENDER_SCALE)
-    except parse_sandbox.ParseRefused as exc:  # a viewer must not 500 on a bad file
-        logger.info("couldn't rasterise page %d of %r: %s (%s)", safe_index, path, exc.kind, exc.detail)
-        return None
+    png = _draw_page(path, safe_index, bool(thumb))
     if png is not None and key is not None:
         _cache_put(key, png)
     return png
+
+
+@parse_guard.isolated("pdf", timeout=60, on_stop=lambda: None)
+def _draw_page(path: Path, safe_index: int, thumb: bool) -> bytes | None:
+    """`render_page`'s pdfium half, in the reader's child (L-world-class-321);
+    the cache stays in the server, so a page seen again costs no round trip."""
+    import pypdfium2 as pdfium
+
+    # The document is closed INSIDE the lock. It used to be closed in an
+    # outer `finally`, after the `with` had released the lock, so one thread
+    # could be tearing a document down in pdfium while another was opening
+    # or rendering under the lock. pdfium keeps global state, and that is a
+    # segmentation fault, not an exception: the full suite died at 64% in
+    # `test_concurrent_page_renders_do_not_corrupt_or_crash`, the test
+    # written for exactly this shape, on a run where `-x` could not catch
+    # it. Everything pdfium touches, open to close, now happens under the
+    # one lock; the PNG bytes are the only thing that leaves it.
+    try:
+        with _pdfium_lock:
+            document = _open(pdfium, path)
+            try:
+                if safe_index >= len(document):
+                    return None
+                page = document[safe_index]
+                try:
+                    png = _render_one(
+                        page, path, safe_index, greyscale=False,
+                        scale=THUMB_SCALE if thumb else RENDER_SCALE,
+                    )
+                finally:
+                    page.close()
+                return png
+            finally:
+                try:
+                    document.close()
+                except Exception:  # noqa: BLE001  # already rendered or already failed
+                    logger.debug("closing %r after one page failed", path, exc_info=True)
+    except Exception as exc:  # noqa: BLE001  # a viewer must not 500 on a bad file
+        logger.info("couldn't rasterise page %d of %r: %s", safe_index, path, exc)
+        return None

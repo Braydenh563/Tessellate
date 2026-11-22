@@ -27,6 +27,7 @@ happen. Every deletion is checked to be inside the cache root as well.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import importlib.util
 import json
@@ -74,20 +75,19 @@ class OnnxBuild:
     `Qdrant/...`, for most of the catalogue); `model_file` and `extra_files`
     are what a snapshot must hold besides its tokenizer and config. `pooling`
     is empty for a model fastembed knows by name, else how the loader
-    registers it ("CLS", "MEAN"), with `dim` its width."""
+    registers it ("CLS", "MEAN"), with `dim` its width.
+
+    `revision` and `sha256` pin a catalogue build (L-world-class-320, T23):
+    the commit it is fetched at and each weight file's sha256 (the Hub's LFS
+    oid, read 2026-11-21). A typed repo has neither: it is fetched at `main`."""
 
     source: str
     model_file: str = "onnx/model.onnx"
     extra_files: tuple[str, ...] = ()
     pooling: str = ""
     dim: int = 0
-    #: The Hub commit the files are fetched at and the sha256 of each weights
-    #: file (name, hex), read from the Hub's own file list (LFS oid) 2026-11-21.
-    #: Empty for a typed repo, which has nothing to compare against. **To bump:**
-    #: take the repo's newest commit from `/api/models/<repo>`, and each file's
-    #: `lfs.oid` from `/api/models/<repo>/tree/<commit>?recursive=1`.
     revision: str = ""
-    digests: tuple[tuple[str, str], ...] = ()
+    sha256: tuple[tuple[str, str], ...] = ()
 
 
 #: The small files every snapshot is fetched with: fastembed reads the
@@ -158,7 +158,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             "Qdrant/all-MiniLM-L6-v2-onnx",
             "model.onnx",
             revision="d13954661f83248295ba75c1ed411eef3b7b936e",
-            digests=(("model.onnx", "bbd7b466f6d58e646fdc2bd5fd67b2f5e93c0b687011bd4548c420f7bd46f0c5"),),
+            sha256=(("model.onnx", "bbd7b466f6d58e646fdc2bd5fd67b2f5e93c0b687011bd4548c420f7bd46f0c5"),),
         ),
     ),
     EmbedModel(
@@ -176,7 +176,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             "Qdrant/bge-small-en-v1.5-onnx-Q",
             "model_optimized.onnx",
             revision="aa8f8b060edb00e03bfdd08813a2949946c8ba55",
-            digests=(("model_optimized.onnx", "51f1bd0addd6e859e42c2c8021a5e5461385bb676a649f4b269aa445449f2431"),),
+            sha256=(("model_optimized.onnx", "51f1bd0addd6e859e42c2c8021a5e5461385bb676a649f4b269aa445449f2431"),),
         ),
     ),
     EmbedModel(
@@ -196,7 +196,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             pooling="MEAN",
             dim=384,
             revision="614241f622f53c4eeff9890bdc4f31cfecc418b3",
-            digests=(("onnx/model.onnx", "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"),),
+            sha256=(("onnx/model.onnx", "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"),),
         ),
     ),
     EmbedModel(
@@ -213,7 +213,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             "Qdrant/bge-base-en-v1.5-onnx-Q",
             "model_optimized.onnx",
             revision="199291fdd1aa89faf9c20b722dc72ad5e17aa0d0",
-            digests=(("model_optimized.onnx", "4e556722bc4f65716c544c8a931f1e90fb3f866e5741fd93a96f051d673339c7"),),
+            sha256=(("model_optimized.onnx", "4e556722bc4f65716c544c8a931f1e90fb3f866e5741fd93a96f051d673339c7"),),
         ),
     ),
     EmbedModel(
@@ -234,7 +234,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         onnx=OnnxBuild(
             "nomic-ai/nomic-embed-text-v1.5",
             revision="e9b6763023c676ca8431644204f50c2b100d9aab",
-            digests=(("onnx/model.onnx", "147d5aa88c2101237358e17796cf3a227cead1ec304ec34b465bb08e9d952965"),),
+            sha256=(("onnx/model.onnx", "147d5aa88c2101237358e17796cf3a227cead1ec304ec34b465bb08e9d952965"),),
         ),
     ),
     EmbedModel(
@@ -253,7 +253,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             "Qdrant/Qwen3-Embedding-0.6B-onnx",
             extra_files=("onnx/model.onnx_data",),
             revision="af95f2c416ffe9379369ad64f9113e865db6112c",
-            digests=(
+            sha256=(
                 ("onnx/model.onnx", "754d6ba1c7a323d7b3af0d85b8268f8b716b0cd362ce73295e0f71d3dd831639"),
                 ("onnx/model.onnx_data", "15d02a315e3b95296700c73d72a436e79facf4e17d919345bed730e98433bcb4"),
             ),
@@ -276,9 +276,10 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             pooling="CLS",
             dim=1024,
             revision="5617a9f61b028005a4858fdac845db406aefb181",
-            digests=(
+            sha256=(
                 ("onnx/model.onnx", "f84251230831afb359ab26d9fd37d5936d4d9bb5d1d5410e66442f630f24435b"),
                 ("onnx/model.onnx_data", "1eebfb28493f67bba03ce0ef64bfdc7fc5a3bd9d7493f818bb1d78cd798416b4"),
+                ("onnx/Constant_7_attr__value", "cdf16f72c5d07b36484056e601ed9687f78477e5d85cee85a34f2406b7fb5906"),
             ),
         ),
     ),
@@ -300,7 +301,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
             "onnx-community/embeddinggemma-300m-ONNX",
             extra_files=("onnx/model.onnx_data",),
             revision="5090578d9565bb06545b4552f76e6bc2c93e4a66",
-            digests=(
+            sha256=(
                 ("onnx/model.onnx", "ea91fd315a7c152d427d231746f0f811a1ac93beaba656abfdf2b24e091265e4"),
                 ("onnx/model.onnx_data", "ef835ae565d8695236652475903078e8ed794c7c35faf1164d78ec3238e8a88d"),
             ),
@@ -759,7 +760,10 @@ def snapshot_path(repo: str) -> Path | None:
     if cache_health(repo)["state"] != "complete":
         return None
     floor = _weights_floor(repo)
-    return next((snap for snap in _snapshots(build.source) if not _snapshot_missing(snap, build, floor)), None)
+    #: The pinned commit's snapshot first (L-world-class-320): one fetched
+    #: from `main` before the pin stays usable until the verified one is there.
+    snapshots = sorted(_snapshots(build.source), key=lambda snap: snap.name != build.revision)
+    return next((snap for snap in snapshots if not _snapshot_missing(snap, build, floor)), None)
 
 
 def _read_json(path: Path) -> dict:
@@ -809,42 +813,37 @@ def fetch(repo: str, build: OnnxBuild | None = None) -> None:
             cache_dir=str(cache_root()),
             revision=build.revision or None,
         )
-    bad = verify_digests(repo, build)
-    if bad:
-        raise WeightsDigestMismatch(
-            f"{', '.join(bad)} did not match the checksum this app expects, so it was removed and not used."
-        )
 
 
-class WeightsDigestMismatch(Exception):
-    """A weights file whose sha256 is not the pinned one: refused, as a download extra's is."""
+def _sha256_of(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
-def verify_digests(repo: str, build: OnnxBuild | None = None) -> list[str]:
-    """The pinned weights files of `repo` whose sha256 does not match, each one
-    deleted (link and blob) so a bad file is never loaded. A build with no
-    digests (a typed repo) has nothing to check. A missing file is left to
-    `cache_health`."""
-    build = build or build_for(repo)
-    bad: list[str] = []
-    for snapshot in _snapshots(build.source):
-        if build.revision and snapshot.name != build.revision:
-            continue
-        for name, want in build.digests:
-            path = snapshot / name
-            if not path.is_file():
+def weights_differ(build: OnnxBuild) -> bool:
+    """Whether a pinned build's snapshot holds weights other than the pinned
+    ones; each such file is removed (its link and the blob behind it) so the
+    next download fetches it again rather than resuming from it."""
+    if not build.sha256:
+        return False
+    snapshot = _folder_for(build.source) / "snapshots" / build.revision
+    differ = False
+    for name, expected in build.sha256:
+        path = snapshot / name
+        try:
+            if _sha256_of(path) == expected:
                 continue
-            digest = hashlib.sha256()
-            with path.open("rb") as handle:
-                while chunk := handle.read(1 << 20):
-                    digest.update(chunk)
-            if digest.hexdigest() != want:
-                bad.append(name)
-                blob = path.resolve()
-                path.unlink(missing_ok=True)
-                if blob.is_file() and blob != path:
-                    blob.unlink(missing_ok=True)
-    return bad
+        except OSError:
+            pass  # absent or unreadable: not the pinned file either
+        differ = True
+        logger.warning("%s's %s does not match its pinned sha256: removed", build.source, name)
+        for doomed in {path.resolve(), path}:
+            with contextlib.suppress(OSError):
+                doomed.unlink()
+    return differ
 
 
 def _dir_size(path: Path) -> int:
@@ -990,6 +989,23 @@ def _looks_like_a_dropped_connection(exc: Exception) -> bool:
     return any(word in str(exc).lower() for word in _CONNECTION_WORDS)
 
 
+def _arrival_problem(model: EmbedModel) -> str:
+    """Why a finished download cannot be used, in one sentence, or "".
+    Verified, not assumed (INBOX 700, "Reinstall re-downloads and verifies"):
+    the weights must be in the snapshot, and a pinned build's must hash to
+    its pins (L-world-class-320)."""
+    arrived = cache_health(model.repo)
+    if arrived["state"] != "complete":
+        gaps = ", ".join(arrived["missing"][:3]) or "its files"
+        return f"{model.label} arrived without {gaps}. Reinstall fetches it again."
+    if weights_differ(model.onnx):
+        return (
+            f"{model.label} arrived with weights that differ from the ones this app was checked "
+            "with, so they were removed. Download again, or report it if it keeps happening."
+        )
+    return ""
+
+
 def _run_download(model: EmbedModel) -> None:
     try:
         last: Exception | None = None
@@ -1009,13 +1025,10 @@ def _run_download(model: EmbedModel) -> None:
                     _state.outcome = "cancelled"
                     _state.step = "Stopped just as it finished, the files are on disk."
                     return
-                #: Verified, not assumed (INBOX 700, "Reinstall re-downloads
-                #: and verifies"): the weights must be in the snapshot.
-                arrived = cache_health(model.repo)
-                if arrived["state"] != "complete":
+                problem = _arrival_problem(model)
+                if problem:
                     _state.outcome = "failed"
-                    gaps = ", ".join(arrived["missing"][:3]) or "its files"
-                    _state.step = f"{model.label} arrived without {gaps}. Reinstall fetches it again."
+                    _state.step = problem
                     return
                 _state.outcome = "completed"
                 _state.step = (

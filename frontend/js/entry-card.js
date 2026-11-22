@@ -669,6 +669,14 @@ function entryItem(entry, options = {}) {
       });
     }
     meta.appendChild(categoryEl);
+    //: The categories a person also put it in, and its groups (L-world-class-172, 173).
+    for (const name of entry.also_in || []) {
+      const also = chip("", "category");
+      also.append(Object.assign(document.createElement("span"), { className: "ph-text", textContent: name }));
+      paintCategoryDot(also, name);
+      meta.appendChild(also);
+    }
+    for (const name of entry.groups || []) meta.appendChild(chip(`ph:folders ${name}`, "tag"));
   }
   //: `hashtag` marks a real tag: `tag` alone is also the quiet look the
   //: documents, the source and the space borrow, and only a tag gets the #.

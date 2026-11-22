@@ -6,11 +6,7 @@ from on a fresh page load (driven: 4017 ms with the call held 4000 ms)."""
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from tests._app_js import app_js_text
-
-ROOT = Path(__file__).resolve().parents[1]
+from tests._app_js import app_js_text, with_pieces
 
 
 def _chat_js() -> str:
@@ -25,6 +21,7 @@ def test_the_engine_starts_from_the_remembered_state():
 
 
 def test_a_settled_status_is_remembered():
-    body = (ROOT / "frontend" / "js" / "web-results.js").read_text(encoding="utf-8")
+    # The strip's code lives in the lazy web-panel.js (moved out of chat.js).
+    body = with_pieces("chat.js")
     refresh = body[body.index("async function refreshWebSearxngStrip()") :]
     assert 'prefs.setJSON("webEngine", webEngineInfo)' in refresh

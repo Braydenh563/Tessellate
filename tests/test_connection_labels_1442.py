@@ -24,7 +24,7 @@ def test_a_connection_label_is_plain_words(content, label):
     entry = E()
     entry.content, entry.is_private = content, False
     assert manager_text.plain_label(content) == label
-    assert "*" not in routes_entries._preview(content, 80) and "`" not in routes_entries._preview(content, 80)
+    assert "*" not in manager_text.preview(content, 80) and "`" not in manager_text.preview(content, 80)
 
 
 def test_the_column_and_the_forgotten_list_use_the_one_label():

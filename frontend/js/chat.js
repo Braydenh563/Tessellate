@@ -364,20 +364,9 @@ function clearChatEmptyState() {
   empty.remove();
 }
 
-// --- web panel: search + reader view ----------------------------------------
-// Deliberately not an embedded browser. Pages are fetched and stripped to
-// text by the backend, so nothing from a third-party site ever executes here.
-//
-//: **A reading pane, not a form** (the owner, 2026-09-24: "the web browser
-//: sidebar needs a major improved modern and professional redesign and
-//: feature improvement"). Measured before with
-//: `scratchpad/ui-sweeps/webpanel.js`: four boxed controls above the results
-//: in two heights and two radii, the engine's state as a box with its own
-//: boxed Stop, three worded buttons stacked over the page, and the page text
-//: in a bordered box that scrolled inside a column that also scrolled. The
-//: shape now is the one every reader pane the owner compares it to shares
-//: (Arc's side panel, Safari's reader, Perplexity's sources): a quiet head, one
-//: field, a list, and a page.
+// --- web panel: state and the two synchronous readers -------------------------
+// The panel's code is the lazy web-panel.js (`LAZY_MODULES.webClip`; stand-ins in
+// lazy-entries.js), so only what boot code reads on the spot stays here.
 
 let webReaderPage = null; // the page currently open in the reader
 //: The request in flight, a search or a page, so Stop can cancel it and a
@@ -385,23 +374,8 @@ let webReaderPage = null; // the page currently open in the reader
 //: slow first answer could land after a fast second one and replace it.
 let webRequest = null;
 
-function webRequestStart() {
-  webRequest?.abort();
-  const controller = new AbortController();
-  webRequest = controller;
-  $("web-stop").classList.remove("hidden");
-  $("web-panel").setAttribute("aria-busy", "true");
-  return controller;
-}
-
-function webRequestEnd(controller) {
-  //: Only the request that is still current may clear the busy state: an
-  //: aborted one finishing late must not hide the Stop of its successor.
-  if (webRequest !== controller) return false;
-  webRequest = null;
-  $("web-stop").classList.add("hidden");
-  $("web-panel").removeAttribute("aria-busy");
-  return true;
+function webReaderIsOpen() {
+  return !$("web-reader").classList.contains("hidden");
 }
 
 //: **The engine's last known state, so the menu is not empty while Docker
@@ -427,47 +401,13 @@ function webPageMarkdown(page) {
     .trim();
 }
 
-// --- citing a web page in the chat ---------------------------------------------
-//: **Cite in chat** attaches a page to the next message as a chip, the way a
-//: selection or a note does, so the question is yours rather than the canned
-//: one "Ask about this" sends. What the model is given is the text the reader
-//: already fetched, so it needs no tool call and no second fetch, and it works
-//: in Ask mode as well as Agent.
-//:
-//: One page at a time, like a selection: a citation is "this, about which I
-//: am about to ask", not a collection.
+
 let attachedWebPage = null;
 //: The page the last answer cited, for a follow-up about it (`webFollowUp`).
 //: A field rather than a top-level `let` (the global-scope ratchet): it was
 //: taken out as "never read" while chat-attach.js still read it, so every
 //: Chat send threw a ReferenceError (found by Brief 67's sweep).
 const chatWeb = { lastUrl: null };
-//: The budget for the page's text in the prompt. A long article runs to
-//: tens of thousands of characters; the opening of a page is where its claim
-//: is, and a local model's context is the scarcest thing in the round.
-const WEB_CITE_CHARS = 6000;
-
-function renderWebPageAttachment() {
-  const box = $("chat-web-attachment");
-  if (!box) return;
-  box.replaceChildren();
-  box.classList.toggle("hidden", !attachedWebPage);
-  if (!attachedWebPage) return;
-  box.appendChild(
-    attachmentChip({
-      name: attachedWebPage.title,
-      icon: "ph-globe",
-      facts: attachedWebPage.domain || "Page",
-      title: `${attachedWebPage.title} (${attachedWebPage.url})`,
-      removeTitle: "Don't send this page with your message",
-      onRemove: () => {
-        attachedWebPage = null;
-        renderWebPageAttachment();
-        announce("Page removed.");
-      },
-    }),
-  );
-}
 
 // What the backend says about the model in use. Fetched when the Models
 // screen is drawn rather than polled: none of it changes while the app runs.

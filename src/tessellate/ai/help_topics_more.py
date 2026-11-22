@@ -396,9 +396,9 @@ MORE_TOPICS: list[dict] = [
             "open, two claims in different notes that disagree, a question a "
             "later note answers), where What it remembers is what you told it. "
             "The Dashboard's While you were away card counts each kind from the "
-            "last read; a pair shows the other sentence under it, a button to "
-            "open the other note and, for a disagreement, one to link the two "
-            "notes as disagreeing. Every row "
+            "last read; a pair shows the other sentence and a button to open "
+            "its note; other buttons link a disagreement, remind you on a "
+            "date, or merge a repeated note. Every row "
             "says which note it came from, which model decided it and how sure "
             "it was. Edit a row and no later run overwrites it; delete one and "
             "it is never worked out again. What may run switches each kind off; "
@@ -1395,7 +1395,7 @@ MORE_TOPICS: list[dict] = [
             "A private space seals everything in it with your vault password, "
             "as a private note is: its notes, documents and boards, and on disk "
             "the bytes of its recordings, library pictures and note files. Turn on "
-            "Private in New space, or in Edit space (the pencil beside a space "
+            "Private in New space, or in Edit space (Ctrl+K, Rename space, or the pencil beside a space "
             "in the picker); turning it on asks once with the count of what "
             "gets sealed. A locked private space shows its name with a lock and "
             "nothing else: its notes, documents and boards are out of search, "
@@ -1415,8 +1415,8 @@ MORE_TOPICS: list[dict] = [
             "private note while it is locked. A locked private space cannot "
             "be deleted or brought back with Undo. An export leaves it out "
             "unless it is unlocked and you ask, and backups keep it encrypted. "
-            "Its recordings can't be transcribed yet; its pictures and files "
-            "are read only when you press Read again or Describe. "
+            "Its recordings and files are read in the background while it is "
+            "open; its pictures only when you press Read again. "
             "New notes start private (Account & security, off by default) seals "
             "each new note from its first save, unfiled and unindexed. Make all "
             "notes private, beside it, locks every ordinary note after a confirm, "
@@ -1956,6 +1956,7 @@ TOPIC_META: dict[str, dict] = {
     "filing-settings": {"title": "Filing switches, and asking when unsure", "path": "Settings, Background tasks; Capture, the Filing options menu"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
+    "note-groups": {"title": "Groups, and a note in more than one category", "path": "A note's category chip, then Add to a group or Also file under"},
     "tidy": {"title": "Tidy: reviews with no AI", "path": "Notes tab, the broom in the dock"},
     "manage-categories": {"title": "Managing categories", "path": "Notes tab, the Categories head in the sidebar"},
     "note-history": {"title": "A note's history", "path": "A note's menu, History"},
@@ -1998,7 +1999,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "audio-overview", "folder-sync", "meetings",
     )),
     ("Filing, tags and categories", (
-        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
+        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "note-groups", "tidy",
     )),
     ("Asking Atlas", (
         "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
@@ -2288,7 +2289,7 @@ MORE_TOPICS.extend([
             "active layer", "which layer", "layer new items go on", "layer to the front", "send layer to back", "duplicate a layer",
         ),
         "body": (
-            "The current layer, as in draw.io: in a board's sidebar, Layers, press a "
+            "The current layer, as in draw.io: in a board's sidebar, Layers (also Ctrl+K, Board layers), press a "
             "named layer's name and everything new (drawn, typed, pasted, imported "
             "or placed from the library) goes on it; the row is tinted while it is "
             "current. Press the name again, or its ⋯ menu's Stop drawing on it, "

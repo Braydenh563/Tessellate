@@ -497,6 +497,15 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   padding: 0 0 var(--space-3);
   border-top: 0;
 }
+/* A topic's picture in Settings, Help (L-world-class-785), as the manual's. */
+.help-accordion > details > img.help-picture {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--space-2) 0;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
+}
 /* The topic's one line (INBOX 1612): first under its title, on the body's
    edge, in the ink at the worded-control weight so it reads as the summary
    and the body as the detail under it. */
@@ -5242,7 +5251,9 @@ body .chip.item-label,
   body:not([data-tab=chat]) #toast-box {
     top: auto;
     left: auto;
-    right: var(--space-4);
+    /* The desktop's own 1rem, not a density step: at 1093x614 (compact) the
+       toast sat 7px from the edge against 16px at 1366 (L-world-class-105). */
+    right: 1rem;
     bottom: calc(var(--status-bar-h) + var(--space-3));
     align-items: flex-end;
   }

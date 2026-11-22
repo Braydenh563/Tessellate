@@ -23,10 +23,10 @@ def test_a_persons_own_value_wins():
 def test_tag_reason_is_the_same_with_the_note_cleaned_once():
     """L-world-class-20: `_reasons_for` cleans and stems a note once, not once per tag."""
     from tessellate.ai import tagging
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_reasons
 
     text = "Booked the dentist for a check-up on Tuesday and paid the invoice for the tax return."
     tags = ("dentist", "invoice", "tax", "garden")
     slow = tuple((tag, why) for tag in tags if (why := tagging.reason(tag, text)))
-    assert routes_entries._reasons_for(text, tags) == slow
+    assert tag_reasons._reasons_for(text, tags) == slow
     assert slow, "the fixture must ground at least one tag"

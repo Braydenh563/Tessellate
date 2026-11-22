@@ -1,4 +1,4 @@
-"""L-world-class-630: does a real local model pick the browser tools well.
+"""L-world-class-842: does a real local model pick the browser tools well.
 
 The browser tools (L-world-class-182) are tested against a fake transport in
 `tests/test_browser_tools.py`; this is the same check with a real model, the

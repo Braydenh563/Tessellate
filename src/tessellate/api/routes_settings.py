@@ -8,7 +8,6 @@ import csv
 import io
 import json
 import logging
-import importlib
 import os
 import platform
 import re
@@ -22,20 +21,22 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 
 from tessellate.api import paging
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.ai import budget as run_budget
 from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, deps, events, events_redo, logbuffer, security
+from tessellate.core import backup, deps, desktop_entry, events, events_redo, logbuffer, security
 from tessellate.core.config import default_preferences
-from tessellate.core.database import AuditLog, Entry, utcnow
+from tessellate.core.database import AuditLog, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import manager_purge
+from tessellate.repo import audit as audit_repo
 from tessellate.repo import categories as categories_repo
+from tessellate.repo import preferences as preferences_repo
+from tessellate.repo import diagnostics as diagnostics_repo
 from tessellate.repo import relations
 from tessellate.search import searxng_manager, websearch
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
@@ -1475,11 +1476,8 @@ def set_console_mode(
         and os.getenv("TESSELLATE_DESKTOP") == "1"
         and sys.platform == "win32"
     ):
-        # `importlib`, not an `import` statement: `tessellate.__main__` imports
-        # `api.app`, which imports this module, so a statement here closes a
-        # CodeQL py/cyclic-import loop: and deferring it into the function
-        # body does not clear that, only dropping the statement does. The
-        # desktop entry point is the caller here, not a dependency.
+        # The desktop entry point is the caller here, not a dependency: it
+        # registers itself in `core/desktop_entry.py`.
         restart_in_console_mode = _desktop_entry().restart_in_console_mode
 
         restarting = True
@@ -1488,21 +1486,9 @@ def set_console_mode(
 
 
 def _desktop_entry():
-    """The desktop entry module, the one actually running.
-
-    `sys.modules["__main__"]` first: a packaged build runs `__main__.py` as
-    `__main__`, and PyInstaller bundles no second copy under the name
-    `tessellate.__main__` (nothing imports it by that name, so its analysis
-    never sees it), so `import_module` alone raised there and Settings'
-    Restart answered 500. From source, `python -m tessellate` is the same
-    module under the same key, and reusing it avoids importing a second copy
-    of the launcher. The import is the fallback for everything else (tests,
-    `uvicorn --factory`), where the running `__main__` is not ours.
-    """
-    running = sys.modules.get("__main__")
-    if running is not None and hasattr(running, "restart_in_console_mode"):
-        return running
-    return importlib.import_module("tessellate.__main__")
+    """The launcher module (`core/desktop_entry.py`): it registers itself, so
+    this module never imports it."""
+    return desktop_entry.current()
 
 
 @router.post("/system/restart", dependencies=[Depends(this_computer_only)])
@@ -1523,7 +1509,7 @@ def restart_app(background_tasks: BackgroundTasks) -> dict:
     #: `uvicorn --factory` or the tests have no launcher to start a new copy.
     if os.getenv("TESSELLATE_LAUNCHED") != "1" and os.getenv("TESSELLATE_DESKTOP") != "1":
         return {"restarting": False}
-    background_tasks.add_task(_desktop_entry().restart_app)  # same cycle break
+    background_tasks.add_task(_desktop_entry().restart_app)  
     return {"restarting": True}
 
 
@@ -1735,17 +1721,7 @@ def list_memory(
 ) -> dict:
     """A page of what the AI has been told to remember, newest first."""
     offset = paging.start(cursor, offset)
-    from tessellate.core.database import UserPreference
-
-    total = session.scalar(select(func.count(UserPreference.id))) or 0
-    rows = list(
-        session.scalars(
-            select(UserPreference)
-            .order_by(UserPreference.created_at.desc(), UserPreference.id.desc())
-            .limit(limit)
-            .offset(offset)
-        )
-    )
+    total, rows = preferences_repo.page(session, limit, offset)
     paging.finish(response, offset, limit, total)
     return {
         "preferences": [_preference_out(r) for r in rows],
@@ -1773,17 +1749,12 @@ def add_memory(body: PreferenceBody, session: Session = Depends(get_session)) ->
     true whoever typed it.
     """
     from tessellate.ai.tools import MAX_ACTIVE_PREFERENCES
-    from tessellate.core.database import UserPreference
 
     text_ = (body.content or "").strip()
     if not text_:
         raise HTTPException(status_code=422, detail="A preference can't be empty.")
 
-    active = list(
-        session.scalars(
-            select(UserPreference).where(UserPreference.active == True)  # noqa: E712
-        )
-    )
+    active = preferences_repo.active(session)
     if any((row.content or "").strip().lower() == text_.lower() for row in active):
         raise HTTPException(status_code=409, detail="That one is already saved.")
     if len(active) >= MAX_ACTIVE_PREFERENCES:
@@ -1795,8 +1766,7 @@ def add_memory(body: PreferenceBody, session: Session = Depends(get_session)) ->
             ),
         )
 
-    row = UserPreference(content=text_)
-    session.add(row)
+    row = preferences_repo.add(session, text_)
     session.commit()
     session.refresh(row)
     return _preference_out(row)
@@ -1862,7 +1832,7 @@ def forget_memory(preference_id: int, session: Session = Depends(get_session)) -
     from tessellate.core.database import UserPreference
 
     row = deps.get_or_404(session, UserPreference, preference_id, "That preference could not be found.")
-    session.delete(row)
+    preferences_repo.delete(session, row)
     session.commit()
     return {"status": "ok"}
 
@@ -1890,12 +1860,7 @@ def audit_log(
     This route never clips (`detail` below is the raw column), so re-fetching
     one row by id is what a click-to-expand needs, without a second endpoint.
     """
-    query = select(AuditLog)
-    if id is not None:
-        query = query.where(AuditLog.id == id)
-    elif entity_type:
-        query = query.where(AuditLog.entity_type == entity_type)
-    rows = session.scalars(query.order_by(AuditLog.id.desc()).limit(limit))
+    rows = audit_repo.events_page(session, id, entity_type, limit)
     return [
         {
             "id": row.id,
@@ -1932,32 +1897,6 @@ def _csv_safe(value: object) -> object:
     return value
 
 
-def _not_private_events(query):
-    """Drop every event about a private note, and the vault's own.
-
-    The file leaves the app, and a private note exists so that nothing about
-    what it says does. An event on one carries its title or a clip of it in
-    `detail`; the vault's events (unlocking, re-keying) say that private notes
-    exist and when they were opened. Neither is part of a hand-over file.
-
-    Two ways an event is about a private note: the note is still there and
-    private (looked up by id), or it was purged, and its id matches nothing
-    any more. A purge seals the events it leaves behind with a `private` flag
-    in their payload (`manager_purge.seal_private_events`), and that flag is the
-    second test. `is_(True)` rather than `== True`, so an event with no
-    payload at all (SQL null) is kept rather than dropped by a null compare.
-    """
-    private_ids = select(Entry.id).where(Entry.is_private == True)  # noqa: E712
-    return query.where(
-        AuditLog.entity_type != "vault",
-        ~(
-            AuditLog.entity_type.in_(("entry", "note", "entries"))
-            & AuditLog.entity_id.in_(private_ids)
-        ),
-        ~AuditLog.payload["private"].as_boolean().is_(True),
-    )
-
-
 @router.get("/audit/export.csv")
 def audit_export_csv(
     limit: int = Query(default=AUDIT_EXPORT_MAX_ROWS, ge=1, le=AUDIT_EXPORT_MAX_ROWS),
@@ -1970,18 +1909,14 @@ def audit_export_csv(
 
     Oldest first (a trail reads forward), six columns, and never a payload
     value: a payload holds whole note texts. Events about private notes are
-    left out (`_not_private_events`). Every cell is defanged against CSV
+    left out (`repo.audit.not_private`). Every cell is defanged against CSV
     formula injection (`_csv_safe`): the log carries free text a person, or a
     web page the agent read, wrote. `limit` and `offset` page it and
     `X-Total-Count` is the size of the same filtered set. The export is itself
     logged, so the trail records who took it.
     """
     offset = paging.start(cursor, offset)
-    query = _not_private_events(select(AuditLog))
-    if entity_type:
-        query = query.where(AuditLog.entity_type == entity_type)
-    total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
-    rows = session.scalars(query.order_by(AuditLog.id).limit(limit).offset(offset))
+    total, rows = audit_repo.export_page(session, entity_type, limit, offset)
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(AUDIT_EXPORT_COLUMNS)
@@ -2150,19 +2085,12 @@ def event_feed(
     and both are what a strip needs to render a run of folded history as
     one line rather than as a burst of edits.
     """
-    query = select(AuditLog).where(AuditLog.id > since)
     #: One type or a comma list: a strip about the notebook's content wants
     #: notes, documents, boards and reminders, and not the preference toggles
     #: and model downloads that would otherwise fill its last ten rows.
     types = [part.strip() for part in entity_type.split(",") if part.strip()]
-    if types:
-        query = query.where(AuditLog.entity_type.in_(types))
-    if not include_quiet:
-        query = query.where(AuditLog.action.notin_(sorted(events.QUIET_ACTIONS)))
-    if tail:
-        rows = list(session.scalars(query.order_by(AuditLog.id.desc()).limit(tail)))[::-1]
-    else:
-        rows = list(session.scalars(query.order_by(AuditLog.id.asc()).limit(limit)))
+    quiet = None if include_quiet else sorted(events.QUIET_ACTIONS)
+    rows = audit_repo.feed(session, since, types, quiet, tail, limit)
     return {"items": [_feed_item(row) for row in rows], "cursor": rows[-1].id if rows else since}
 
 
@@ -2177,7 +2105,7 @@ def clear_audit_log(
     decryption events: real accountability history, not a scrollback
     buffer someone would want to blank), only one filtered slice of it at a
     time, the same scope `GET /audit?entity_type=` already reads."""
-    deleted = session.query(AuditLog).filter(AuditLog.entity_type == entity_type).delete()
+    deleted = audit_repo.clear_type(session, entity_type)
     session.commit()
     return {"deleted": deleted}
 
@@ -2324,15 +2252,7 @@ def support_bundle(session: Session = Depends(get_session)) -> Response:
     }
     counts = _safely(
         lambda: {
-            "entries": session.scalar(select(func.count(Entry.id))) or 0,
-            "entries_deleted": session.scalar(
-                select(func.count(Entry.id)).where(Entry.is_deleted == True)  # noqa: E712
-            )
-            or 0,
-            "entries_private": session.scalar(
-                select(func.count(Entry.id)).where(Entry.is_private == True)  # noqa: E712
-            )
-            or 0,
+            **diagnostics_repo.entry_counts(session),
             "categories": categories_repo.count(session),
             "links": relations.count(session),
         },

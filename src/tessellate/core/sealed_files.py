@@ -84,6 +84,7 @@ LOCKED_DETAIL = "This private space is locked. Unlock it first."
 DAMAGED_DETAIL = "This file is damaged or does not open with this key."
 CHANGED_DETAIL = "This file changed while it was open. Try again."
 LOOKS_SEALED_DETAIL = "This file starts the way a sealed file does, so it can't be stored."
+BACKGROUND_LOCKED_DETAIL = "The private space locked before this finished. Open it and start again."
 
 _locks: dict[str, threading.RLock] = {}
 _locks_guard = threading.Lock()
@@ -490,6 +491,71 @@ def readable(path: Path, *, write: bool = False) -> Iterator[Path]:
                 _rewrite(path, seal_bytes(copy.read_bytes()))
     finally:
         shutil.rmtree(folder, ignore_errors=True)
+
+
+#: Seconds between the watcher's looks at a background job's door (SECURITY.md
+#: T28): the bound on how long a plain copy outlives a lock in the middle of
+#: one long step (a long whisper segment, `diarize.spans`).
+WATCH_SECONDS = 2.0
+
+
+def _wait(done: threading.Event, seconds: float) -> bool:
+    return done.wait(seconds)
+
+
+#: How the watcher waits between looks; True means the job's block ended. A
+#: test replaces it so each look is a tick it gives, never a real sleep.
+watch_wait: Callable[[threading.Event, float], bool] = _wait
+
+
+def _watch(token: str, folder: Path | None, done: threading.Event, shut: threading.Event) -> None:
+    """Look at the door every `WATCH_SECONDS` while the job runs; once it has
+    shut, remove the plain copy at once, mid-step, and mark the job shut, so
+    its next `check` stops it and whatever the step was doing fails closed."""
+    from tessellate.core import spacelock, vault
+
+    with vault.acting_for(token):
+        while not watch_wait(done, WATCH_SECONDS):
+            if not spacelock.opened(token):
+                shut.set()
+                if folder is not None:
+                    shutil.rmtree(folder, ignore_errors=True)
+
+
+@contextmanager
+def for_background(path: Path, token: str | None) -> Iterator[tuple[Path, Callable[[], None]]]:
+    """A background job's way into a private space's file (L-world-class-381,
+    SECURITY.md T28): `readable`, run as the session `token` that started the
+    job (`vault.acting_for`), and `check`, which raises `SealedLocked` once
+    that session's private-space door has shut (lock, idle, sign-out). The
+    job calls `check` between steps and immediately before it commits; a
+    watcher thread looks at the door every `WATCH_SECONDS` too and removes
+    the plain copy mid-step, and any error a step then raises is the locked
+    one. A step cannot be killed, so it runs to its end on what it already
+    read and its result is dropped. With no token: plain background work."""
+    from tessellate.core import jobs, spacelock, vault
+
+    shut, done = threading.Event(), threading.Event()
+
+    def check() -> None:
+        if token is not None and (shut.is_set() or not spacelock.opened(token)):
+            raise SealedLocked(BACKGROUND_LOCKED_DETAIL)
+
+    with vault.acting_for(token):
+        check()
+        with readable(path) as copy:
+            copy = Path(copy)
+            if token is not None:
+                folder = copy.parent if copy != Path(path) else None
+                jobs.thread("sealed-watch", lambda: _watch(token, folder, done, shut), stop=done.set)
+            try:
+                yield copy, check
+            except Exception as exc:
+                if shut.is_set() and not isinstance(exc, SealedLocked):
+                    raise SealedLocked(BACKGROUND_LOCKED_DETAIL) from exc
+                raise
+            finally:
+                done.set()
 
 
 def sweep_leftovers(data_dir: Path, folders: tuple[Path, ...] = ()) -> int:

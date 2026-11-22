@@ -25,7 +25,8 @@ def test_no_job_runs_inside_the_arrival_timer() -> None:
     body = _body()
     task = body[: body.index("const step = () => {")]
     assert "runCharacterJob(" not in task
-    assert "    setTimeout(step, 0);\n  }, 0);" in body, "the queue opens on a task of its own"
+    # L-world-class-364 waits for the bundle's sheet first (`}, 0));`): the same task, one call deeper.
+    assert "    setTimeout(step, 0);\n  }, 0)" in body, "the queue opens on a task of its own"
 
 
 NOTES = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8")

@@ -7,14 +7,13 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from tests._clock import pin_clock
-
 import pytest
 
 from tessellate.core import backup, deps, passes
+from tests._clock import pin_clock
 
 
-_FIXED = datetime(2026, 11, 12, 3, 0, 0, tzinfo=timezone.utc)
+FIXED = datetime(2026, 11, 12, 3, 0, 0, tzinfo=timezone.utc)
 
 
 def _leftovers(config) -> list[str]:
@@ -23,7 +22,7 @@ def _leftovers(config) -> list[str]:
 
 @pytest.mark.parametrize("stop_at", [1, 2])
 def test_a_stop_between_steps_leaves_nothing_behind(client, tmp_path, monkeypatch, stop_at):
-    pin_clock(monkeypatch, _FIXED)
+    pin_clock(monkeypatch, FIXED)
     aside = tmp_path / "drive"
     aside.mkdir()
     client.put("/preferences", json={"backup_copy_dir": str(aside)})
@@ -44,7 +43,7 @@ def test_a_stop_between_steps_leaves_nothing_behind(client, tmp_path, monkeypatc
 
 
 def test_without_a_stop_the_backup_is_whole(client, monkeypatch):
-    pin_clock(monkeypatch, _FIXED)
+    pin_clock(monkeypatch, FIXED)
     config = deps.get_config()
     config.db_path.touch()
     path = backup.backup_now(config.db_path, config.data_dir, origin="manual", should_stop=lambda: False)
