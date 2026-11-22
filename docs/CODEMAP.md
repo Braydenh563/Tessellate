@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8583, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2974, tests 23323, plan headings 688, app scripts 29, boot scripts 38, script files 326.
+Counts: frontend functions 8583, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11597, test files 2974, tests 23325, plan headings 688, app scripts 29, boot scripts 38, script files 326.
 
 ## Frontend functions (8583)
 
@@ -13811,11 +13811,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/embedding-backend` | POST | `set_embedding_backend` | src/tessellate/api/routes_models.py:1299 |
 | `/embedding-models` | GET | `list_embedding_models` | src/tessellate/api/routes_settings_extras.py:86 |
 | `/embedding-models/choices` | GET | `embedding_model_choices` | src/tessellate/api/routes_settings_extras.py:125 |
-| `/embedding-models/legacy/{item_id}` | DELETE | `remove_legacy_search_files` | src/tessellate/api/routes_settings_extras.py:243 |
-| `/embedding-models/pull` | POST | `pull_embedding_model` | src/tessellate/api/routes_settings_extras.py:186 |
-| `/embedding-models/use` | POST | `use_embedding_model` | src/tessellate/api/routes_settings_extras.py:163 |
-| `/embedding-models/{model_id}` | DELETE | `remove_embedding_model` | src/tessellate/api/routes_settings_extras.py:259 |
-| `/embedding-models/{model_id}/download` | POST | `download_embedding_model` | src/tessellate/api/routes_settings_extras.py:223 |
+| `/embedding-models/legacy/{item_id}` | DELETE | `remove_legacy_search_files` | src/tessellate/api/routes_settings_extras.py:246 |
+| `/embedding-models/pull` | POST | `pull_embedding_model` | src/tessellate/api/routes_settings_extras.py:189 |
+| `/embedding-models/use` | POST | `use_embedding_model` | src/tessellate/api/routes_settings_extras.py:166 |
+| `/embedding-models/{model_id}` | DELETE | `remove_embedding_model` | src/tessellate/api/routes_settings_extras.py:262 |
+| `/embedding-models/{model_id}/download` | POST | `download_embedding_model` | src/tessellate/api/routes_settings_extras.py:226 |
 | `/enrol/begin` | POST | `enrol_begin` | src/tessellate/api/routes_hello.py:99 |
 | `/enrol/finish` | POST | `enrol_finish` | src/tessellate/api/routes_hello.py:142 |
 | `/entries/{entry_id}/also-in` | PUT | `set_also_in` | src/tessellate/api/routes_groups.py:86 |
@@ -14394,7 +14394,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11596)
+## Backend modules (11597)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23833,20 +23833,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `EmbeddingChoiceBody` | src/tessellate/api/routes_settings_extras.py:108 |
-| `EmbeddingPullBody` | src/tessellate/api/routes_settings_extras.py:182 |
+| `EmbeddingPullBody` | src/tessellate/api/routes_settings_extras.py:185 |
 | `ExtrasBulkBody` | src/tessellate/api/routes_settings_extras.py:45 |
 | `_legacy_search_files` | src/tessellate/api/routes_settings_extras.py:113 |
 | `bulk_extras` | src/tessellate/api/routes_settings_extras.py:55 |
-| `download_embedding_model` | src/tessellate/api/routes_settings_extras.py:224 |
+| `download_embedding_model` | src/tessellate/api/routes_settings_extras.py:227 |
 | `embedding_model_choices` | src/tessellate/api/routes_settings_extras.py:126 |
 | `install_extra` | src/tessellate/api/routes_settings_extras.py:64 |
 | `list_embedding_models` | src/tessellate/api/routes_settings_extras.py:87 |
 | `list_extras` | src/tessellate/api/routes_settings_extras.py:20 |
-| `pull_embedding_model` | src/tessellate/api/routes_settings_extras.py:187 |
-| `remove_embedding_model` | src/tessellate/api/routes_settings_extras.py:260 |
-| `remove_legacy_search_files` | src/tessellate/api/routes_settings_extras.py:244 |
+| `pull_embedding_model` | src/tessellate/api/routes_settings_extras.py:190 |
+| `remove_embedding_model` | src/tessellate/api/routes_settings_extras.py:263 |
+| `remove_legacy_search_files` | src/tessellate/api/routes_settings_extras.py:247 |
 | `uninstall_extra` | src/tessellate/api/routes_settings_extras.py:77 |
-| `use_embedding_model` | src/tessellate/api/routes_settings_extras.py:164 |
+| `use_embedding_model` | src/tessellate/api/routes_settings_extras.py:167 |
 
 ### src/tessellate/api/routes_settings_logs.py (7)
 
@@ -25118,7 +25118,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `totals` | src/tessellate/core/egress.py:391 |
 | `verdict` | src/tessellate/core/egress.py:430 |
 
-### src/tessellate/core/embedfind.py (16)
+### src/tessellate/core/embedfind.py (17)
 
 | Name | File:line |
 |---|---|
@@ -25127,17 +25127,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_hub_rows` | src/tessellate/core/embedfind.py:108 |
 | `_is_embedding_model` | src/tessellate/core/embedfind.py:85 |
 | `_legacy_rows` | src/tessellate/core/embedfind.py:132 |
+| `_live_ollama_models` | src/tessellate/core/embedfind.py:181 |
 | `_lmstudio_roots` | src/tessellate/core/embedfind.py:53 |
 | `_lmstudio_rows` | src/tessellate/core/embedfind.py:155 |
 | `_needs_own_code` | src/tessellate/core/embedfind.py:100 |
-| `_ollama_rows` | src/tessellate/core/embedfind.py:181 |
-| `_row` | src/tessellate/core/embedfind.py:206 |
+| `_ollama_rows` | src/tessellate/core/embedfind.py:192 |
+| `_row` | src/tessellate/core/embedfind.py:211 |
 | `_sentence_transformers_home` | src/tessellate/core/embedfind.py:48 |
 | `_snapshot` | src/tessellate/core/embedfind.py:60 |
 | `_why_not` | src/tessellate/core/embedfind.py:89 |
-| `found` | src/tessellate/core/embedfind.py:218 |
-| `resolve` | src/tessellate/core/embedfind.py:236 |
-| `usable_repo` | src/tessellate/core/embedfind.py:231 |
+| `found` | src/tessellate/core/embedfind.py:223 |
+| `resolve` | src/tessellate/core/embedfind.py:242 |
+| `usable_repo` | src/tessellate/core/embedfind.py:237 |
 
 ### src/tessellate/core/embedmodels.py (66)
 
@@ -29344,7 +29345,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23323)
+## Tests (23325)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30423,7 +30424,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_embedding_batches_reindex.py | 2 |
 | tests/test_embedding_cache_health.py | 20 |
 | tests/test_embedding_errors.py | 6 |
-| tests/test_embedding_found.py | 11 |
+| tests/test_embedding_found.py | 12 |
 | tests/test_embedding_models.py | 15 |
 | tests/test_embedding_offline.py | 11 |
 | tests/test_embedding_pins_320.py | 5 |
@@ -31121,7 +31122,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_cards.py | 30 |
 | tests/test_model_connect_timeout.py | 2 |
 | tests/test_model_context_z70.py | 3 |
-| tests/test_model_deadline_1029.py | 10 |
+| tests/test_model_deadline_1029.py | 11 |
 | tests/test_model_delete.py | 3 |
 | tests/test_model_facts_left_1111.py | 14 |
 | tests/test_model_gate.py | 4 |
