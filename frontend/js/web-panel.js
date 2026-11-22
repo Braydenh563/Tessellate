@@ -216,6 +216,42 @@ function renderWebPanelMenu(engine) {
 }
 
 
+//: **Said at open, not after a search fails** (the owner 2026-11-22: "nothing
+//: tells the user that SearXNG isn't running until a search fails"). A `.notice`
+//: between the head and the field while SearXNG is installed but stopped (or
+//: starting) and the provider would use it; its words are the dot's, so the two
+//: never disagree. Absent is the package notice's (`extraNoticeMount`), and
+//: DuckDuckGo or web access off never touch SearXNG, so none is drawn there.
+function renderWebEngineNotice(state, provider) {
+  const panel = $("web-panel");
+  let notice = panel.querySelector(".web-engine-notice");
+  const show =
+    (!prefsCache || prefsCache.web_search_enabled) &&
+    provider !== "duckduckgo" &&
+    (state === "stopped" || state === "starting");
+  if (!show) {
+    notice?.remove();
+    return;
+  }
+  if (!notice) {
+    notice = document.createElement("p");
+    notice.className = "notice web-engine-notice";
+    notice.setAttribute("role", "status");
+    panel.querySelector(".web-search-field").before(notice);
+  }
+  const words = document.createElement("span");
+  setLabel(words, `ph:${state === "starting" ? "hourglass" : "power"} ${provider === "searxng" && state === "stopped" ? "Web search is off: SearXNG is stopped" : webEngineWords(state, provider)}`);
+  const parts = [words];
+  if (state === "stopped") {
+    const start = smallButton("ph:play Start", "Start the local SearXNG instance", () => {
+      start.disabled = true;
+      setWebSearxngRunning(true);
+    });
+    parts.push(start);
+  }
+  notice.replaceChildren(...parts);
+}
+
 async function refreshWebSearxngStrip() {
   await ensureModule("webClip");
   const provider = (prefsCache && prefsCache.search_provider) || "auto";
@@ -234,6 +270,7 @@ async function refreshWebSearxngStrip() {
     // → Web search explains why; there is nothing to start from here.
     webEngineInfo = null;
     if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot("remote", provider);
+    renderWebEngineNotice(null, provider);
     renderWebPanelMenu(null);
     return;
   }
@@ -246,6 +283,7 @@ async function refreshWebSearxngStrip() {
   webEngineInfo = { state, running };
   prefs.setJSON("webEngine", webEngineInfo);
   if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot(provider === "duckduckgo" ? "remote" : state, provider);
+  renderWebEngineNotice(state, provider);
   renderWebPanelMenu(webEngineInfo);
   // Keep polling while it settles, same as Settings' own richer view:
   // otherwise "starting" can stick with no way to tell it's still moving.

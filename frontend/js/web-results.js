@@ -375,12 +375,21 @@
       status.classList.add("error");
       //: With the way out beside it (the owner, 2026-10-10: "there should be a
       //: retry button for failed web searches").
+      //: The message, then its ways out in one row under it at the same left
+      //: edge (the toast's two rows; the owner 2026-11-22: Try again and Start
+      //: SearXNG "start at different x positions").
       const again = smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch());
-      status.replaceChildren(`${error.message} `, again);
+      const actions = document.createElement("span");
+      actions.className = "web-status-actions";
+      actions.append(again);
+      const message = document.createElement("span");
+      message.className = "web-status-message";
+      message.textContent = error.message;
+      status.replaceChildren(message, actions);
       //: SearXNG down is told by the code the server sends, never by the words.
       if (error.body?.code === "searxng_down") {
         searxngDownRow({ onRunning: () => runWebSearch() }).then((row) => {
-          if (status.contains(again)) status.append(row);
+          if (status.contains(again)) actions.append(row);
         });
       }
       return;

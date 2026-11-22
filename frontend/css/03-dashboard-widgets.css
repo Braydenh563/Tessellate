@@ -1146,6 +1146,45 @@ header#top-bar select,
   margin-top: var(--space-2);
 }
 
+/* The line is empty until a press says something, and an empty flex item
+   still takes a gap, which pushed Start a gap right of everything else. */
+.searxng-down-line:empty {
+  display: none;
+}
+
+/* A failed search's ways out: one row under the message, starting at its
+   left edge; Start SearXNG joins Try again in it, not a row of its own. */
+.web-panel #web-status.error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.web-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  /* The toast's pull-back (.toast-actions, 02-chat-graph.css): the quiet
+     action's side padding is taken back so its icon starts on the message's
+     left edge, which is the field's. */
+  margin-inline-start: calc(var(--space-2) * -1);
+}
+
+.web-status-actions button {
+  padding-inline: var(--space-2);
+}
+
+.web-status-actions > .searxng-down {
+  margin-top: 0;
+}
+
+.web-engine-notice {
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* Two lines by design: "12 results via SearXNG (local)" is the answer, and
    "nothing left your machine but the query" is the reassurance under it. Glued
    together with a " · " they wrapped mid-phrase in a narrow panel. */

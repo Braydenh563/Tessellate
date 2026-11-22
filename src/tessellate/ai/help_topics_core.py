@@ -699,6 +699,8 @@ HELP_TOPICS: list[dict] = [
             "Paste a link and ask to read it: with web search on and no model "
             "the page is fetched and told back as its main points, key terms "
             "and sections; with it off you are told so and given the setting. "
+            "When SearXNG is stopped, the Web panel says so as it opens, with a Start button, and "
+            "its dot's tooltip names the engine's state (green when running). "
             "If a web search cannot run because SearXNG is down, the reply and the Web panel offer "
             '"Start SearXNG" ("Install SearXNG" when absent; the reply also has "Set it up in '
             'Settings", "Open the web panel" and "Use another provider"), and the panel '
