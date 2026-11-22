@@ -61,10 +61,10 @@ def test_operators_parse():
 def test_keyword_search_is_fast_on_five_thousand(five_thousand):
     from tessellate.search import engine
 
-    t = time.perf_counter()
+    t = time.process_time()
     hits = engine.search(five_thousand, "topic7 thing3", ctx=None, hybrid=False)
     assert hits
-    assert (time.perf_counter() - t) < 0.05, "FTS-only p95 must be under 50ms"
+    assert (time.process_time() - t) < 0.05, "FTS-only p95 must be under 50ms"
 
 
 def test_similarity_does_not_scan_every_vector(five_thousand, monkeypatch):

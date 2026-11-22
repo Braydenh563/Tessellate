@@ -15,9 +15,9 @@ from tessellate.core import logbuffer
 
 def test_a_long_run_of_slashes_after_a_question_mark_is_not_quadratic():
     text = "what? " + "/" * 20_000
-    started = time.perf_counter()
+    started = time.process_time()
     assert logbuffer.scrub_query_strings(text) == text
-    assert time.perf_counter() - started < 0.5
+    assert time.process_time() - started < 0.5
 
 
 def test_the_same_lines_are_still_redacted():

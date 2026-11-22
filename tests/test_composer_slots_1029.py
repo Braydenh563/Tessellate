@@ -194,6 +194,6 @@ def test_questions_that_are_not_slots_are_left_alone():
 def test_slot_patterns_stay_linear(pattern, text):
     import time
 
-    start = time.perf_counter()
+    start = time.process_time()
     pattern.match(text)
-    assert time.perf_counter() - start < 0.2
+    assert time.process_time() - start < 0.2

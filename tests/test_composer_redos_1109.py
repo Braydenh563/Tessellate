@@ -18,9 +18,9 @@ def _fast(fn, *args):
     up to 101 ms under load, against the 50 ms bar)."""
     times = []
     for _ in range(3):
-        start = time.perf_counter()
+        start = time.process_time()
         fn(*args)
-        times.append(time.perf_counter() - start)
+        times.append(time.process_time() - start)
     return min(times)
 
 

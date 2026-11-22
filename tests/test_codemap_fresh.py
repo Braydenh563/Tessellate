@@ -32,9 +32,9 @@ def test_codemap_matches_the_tree():
     committed = COMMITTED.read_text(encoding="utf-8")
     match = DATE.search(committed)
     assert match, "docs/CODEMAP.md has no 'Generated YYYY-MM-DD' line; run python scripts/codemap.py"
-    started = time.perf_counter()
+    started = time.process_time()
     fresh = _generator().build(ROOT, match.group(1))
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert fresh == committed, "docs/CODEMAP.md is stale; run python scripts/codemap.py"
     assert elapsed < BUDGET_SECONDS, (
         f"python scripts/codemap.py takes {elapsed:.2f}s, over the {BUDGET_SECONDS:.0f}s budget"

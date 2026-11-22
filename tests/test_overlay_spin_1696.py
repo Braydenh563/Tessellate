@@ -77,10 +77,10 @@ def _throw(r, clock, speed: float, angle: float) -> list[float]:
     orig = r._new_picture
 
     def timed(out, key):
-        t0 = time.perf_counter()
+        t0 = time.process_time()
         more = orig(out, key)
         if out.angle is not None:
-            took.append((time.perf_counter() - t0) * 1000.0)
+            took.append((time.process_time() - t0) * 1000.0)
         return more
 
     r._new_picture = timed

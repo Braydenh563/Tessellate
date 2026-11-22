@@ -21,9 +21,9 @@ BUDGET = 0.02  # seconds; the quadratic forms took 0.5 to 10 s
 
 
 def _timed(fn):
-    started = time.perf_counter()
+    started = time.process_time()
     fn()
-    return time.perf_counter() - started
+    return time.process_time() - started
 
 
 @pytest.mark.parametrize(

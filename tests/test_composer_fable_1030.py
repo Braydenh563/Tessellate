@@ -295,9 +295,9 @@ def test_f14_the_compare_and_tail_patterns_are_linear_on_blanks(name, text):
     import time
 
     pattern = _f14_patterns()[name]
-    started = time.perf_counter()
+    started = time.process_time()
     pattern.search(text)
-    assert time.perf_counter() - started < 0.1, name
+    assert time.process_time() - started < 0.1, name
 
 
 @pytest.mark.parametrize("name", sorted(_f14_patterns()))

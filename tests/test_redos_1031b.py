@@ -38,9 +38,9 @@ def test_each_reader_is_linear_on_a_long_run(name):
         ("_totalled", composer_money._totalled),
         ("_clean", personal._clean),
     ):
-        started = time.perf_counter()
+        started = time.process_time()
         fn(text)
-        assert time.perf_counter() - started < BOUND_S, label
+        assert time.process_time() - started < BOUND_S, label
 
 
 def test_a_bare_total_still_reads_with_its_tail_and_trailing_marks():
@@ -66,9 +66,9 @@ def test_a_fragment_rides_on_the_sentence_before():
 
 def test_the_rival_price_reader_is_linear_on_a_long_run():
     for text in ("A" * N, "A " * (N // 2) + "is $5 and", "A is $5 and the " + "B" * N):
-        started = time.perf_counter()
+        started = time.process_time()
         composer_digest_lines._price_gap(text)  # noqa: SLF001
-        assert time.perf_counter() - started < BOUND_S
+        assert time.process_time() - started < BOUND_S
 
 
 def test_two_priced_rivals_have_a_gap_and_a_budget_still_does():

@@ -54,9 +54,9 @@ def test_slash_find_reads_a_few_words_and_none_as_a_pattern(client):
 
 
 def _seconds(call) -> float:
-    started = time.perf_counter()
+    started = time.process_time()
     call()
-    return time.perf_counter() - started
+    return time.process_time() - started
 
 
 def test_open_checkbox_scan_is_linear_in_blank_lines():

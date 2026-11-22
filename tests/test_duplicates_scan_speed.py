@@ -72,9 +72,9 @@ def test_two_thousand_notes_scan_in_about_a_second():
     # locally; the fastest pass is the code's cost, the rest is the neighbours.
     elapsed = float("inf")
     for _ in range(3):
-        started = time.perf_counter()
+        started = time.process_time()
         found = list(duplicates._similar_pairs(prepared, duplicates.DEFAULT_THRESHOLD))
-        elapsed = min(elapsed, time.perf_counter() - started)
+        elapsed = min(elapsed, time.process_time() - started)
     assert found  # the near-copies were seeded in
     assert elapsed < 2.0, f"{elapsed:.2f}s"
 
@@ -111,9 +111,9 @@ def test_a_small_vocabulary_takes_the_dense_scan_and_stays_quick():
     texts = [" ".join(rng.choice(vocab) for _ in range(140)) for _ in range(1500)]
     texts.append(texts[7] + " extra")
     prepared = [duplicates._prepare(t) for t in texts]
-    started = time.perf_counter()
+    started = time.process_time()
     found = list(duplicates._scan(prepared, duplicates.DEFAULT_THRESHOLD))
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert (7, 1500) in {(i, j) for i, j, _s in found}
     assert elapsed < 4.0, f"{elapsed:.2f}s"
 

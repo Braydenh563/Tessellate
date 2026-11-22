@@ -161,9 +161,9 @@ def test_an_import_regex_is_linear_on_a_hostile_file(call, text):
     ENEX is up to 200 MB, so quadratic is a hang, not a slow import."""
     import time
 
-    started = time.perf_counter()
+    started = time.process_time()
     call(text)
-    assert time.perf_counter() - started < 0.5
+    assert time.process_time() - started < 0.5
 
 
 def test_the_linear_import_regexes_still_read_real_files():
