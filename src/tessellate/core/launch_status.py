@@ -140,7 +140,7 @@ def summarise(steps: list[Step]) -> list[Step]:
 def percent(steps: list[Step]) -> int:
     """Steps finished over total, 0 to 100.
 
-    The active step counts as not yet done, which is why this is a count
+    The active step counts as unfinished, which is why this is a count
     of `done` rather than the current step number: a bar that jumps to
     100% while the last and longest phase is still running is the lie the
     old marquee existed to avoid. A failed step does not count as done

@@ -308,7 +308,7 @@ def _enex_time(value: str | None) -> datetime | None:
 
 def _enml(content: str) -> str:
     """An ENML body as markdown: `en-media` (an attached file the export
-    carries as base64 elsewhere) and `en-todo` become words, the rest is
+    carries as base64 elsewhere) and the to-do tag become words, the rest is
     XHTML."""
     content = re.sub(r"<\?xml[^<>]*\?>|<!DOCTYPE[^<>]*>", "", content or "")
     content = re.sub(r"<en-todo\s+checked=\"true\"\s*/>", "[x] ", content)
