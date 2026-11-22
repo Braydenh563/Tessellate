@@ -34,12 +34,13 @@ CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
 FROZEN_STICKY_CARD_GROUND = {".timeline-table thead th"}
 
 #: The sticky elements the recipe makes bare at rest (heads stick to the top,
-#: the two feet to the bottom).
+#: the three feet to the bottom).
 BARE_STICKY = {
     "#sidebar > .sidebar-head",
     ".contents-heading",
     ".timeline-bucket-head",
     ".note-edit-foot",
+    ".ocr-card .ocr-regions-foot",
     "#capture .capture-commit-row",
     ".agent-monitor > .monitor-header",
 }

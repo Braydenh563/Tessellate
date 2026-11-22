@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 #: Files that hold no open work by definition, or are not ours to edit.
 SKIP = re.compile(
-    r"^(docs/roadmap/(BACKLOG|HISTORY)\.md|CHANGELOG\.md|docs/CHANGELOG\.md|docs/CODEMAP\.md"
+    r"^(docs/roadmap/(BACKLOG|HISTORY)\.md|CHANGELOG\.md|docs/CODEMAP\.md"
     r"|frontend/vendor/|frontend/fonts/|.*\.min\.(js|css)$|.*\.lock$|.*package-lock\.json$"
     r"|\.claude/skills/ui-ux-pro-max/|scripts/open_scan\.py$|tests/fixtures/)"
 )

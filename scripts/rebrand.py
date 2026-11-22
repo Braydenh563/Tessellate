@@ -46,7 +46,6 @@ DEFAULT_REPO = "Braydenh563/Tessellate"
 
 SKIP_FILES = {
     "CHANGELOG.md",
-    "docs/CHANGELOG.md",
     "docs/roadmap/HISTORY.md",
     "scripts/rebrand.py",
     "tests/test_brand_name.py",

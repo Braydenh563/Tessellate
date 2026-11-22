@@ -7640,9 +7640,7 @@ input[type="color"].wb-mixed {
   border-style: dashed;
 }
 .ocr-region-list {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  flex: none;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -10590,11 +10588,23 @@ input[type="color"].wb-mixed {
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
+/* **The column scrolls as one** (L806). The section list used to be the
+   column's only shrinkable child, so a long description, the status line and
+   a second reading above it crushed it to 0 px at 1366x768 (84 px at
+   1440x900). Now the column is the scroller, the list keeps its height, and
+   the reading's actions stick to the column's foot. */
 .ocr-regions {
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.ocr-card .ocr-regions-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
 }
 .ocr-region:hover {
   border-color: var(--accent);

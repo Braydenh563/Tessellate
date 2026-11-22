@@ -23,15 +23,13 @@ For when you have done this before and need the commands:
 #    frontend/index.html, capture.html and clip.html, and the README's
 #    "Version 0.x.y." line
 
-# 2. Rename the changelog header (both copies)
-#    CHANGELOG.md and docs/CHANGELOG.md:
+# 2. Rename the changelog header in CHANGELOG.md:
 #    "## [Unreleased]"  ->  "## [0.4.0] - 2026-10-20"
-cp CHANGELOG.md docs/CHANGELOG.md
 
 # 3. Commit
 git add src/tessellate/__init__.py pyproject.toml README.md \
   frontend/index.html frontend/capture.html frontend/clip.html \
-  CHANGELOG.md docs/CHANGELOG.md
+  CHANGELOG.md
 git commit -m "Release 0.4.0" && git push
 
 # 4. Tag and push the tag: this is what triggers the release
@@ -100,14 +98,6 @@ Then add a fresh, empty `## [Unreleased]` above it for the next round of work:
 ## [0.4.0] - 2026-10-20
 ### Added
 ...
-```
-
-**Do this in `docs/CHANGELOG.md` too.** It is a byte-for-byte mirror of the root
-file, because GitHub Pages only serves `/docs`, and
-`tests/test_docs_site.py` fails the build if the two ever differ:
-
-```
-cp CHANGELOG.md docs/CHANGELOG.md
 ```
 
 This matters beyond bookkeeping. The `github-release` job searches
