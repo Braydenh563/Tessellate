@@ -6964,13 +6964,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeNoteForm` | frontend/js/note-edit-panels.js:642 |
-| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:669 |
-| `holdNoteEdit` | frontend/js/note-edit-panels.js:628 |
-| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:665 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:765 |
+| `closeNoteForm` | frontend/js/note-edit-panels.js:640 |
+| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:667 |
+| `holdNoteEdit` | frontend/js/note-edit-panels.js:626 |
+| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:663 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:763 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
-| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:695 |
+| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:693 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
 | `renderEditForm` | frontend/js/note-edit-panels.js:224 |
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
