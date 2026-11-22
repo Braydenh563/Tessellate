@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat: the last two chat strict xfails pass (L-chat-9: a bare "and the dentist" keeps the when ask; L-chat-10: a quote marks a skipped sentence with "…"); the empty OPEN xfail sets in four composer class files are gone; chat tests and chat API files read as open work 0 times to the open-work scan (75 hits to 0).
+- Plans: rows L-ui-modernisation-201 and 202 (Atlas idle and scroll CPU) move to BACKLOG after four attempts, each attempt's numbers on the entry (hub ruling 2026-11-22).
 - Companion: while the page scrolls under Atlas, no new idle variant, saccade, blink, micro act or nod starts; each waits for the scroll hold to end (L-ui-modernisation-202: companioncpu.js RUNS=5, +2.59 and +2.11 to +1.60 ms/step over off).
 - Idle CPU re-measured after the emblem's CSS rotation: 0.48% of one core over 180 s (tab 0.14%, server 0.33%), under the 1 percent target (L-general-18).
 - Companion: a wheel scroll now holds the figure's loops once for the whole scroll. Chromium ends a discrete wheel scroll at every step, and each end had played every loop back and paused it again (66 times in 72 steps); the hold now ends after 200 ms with no scroll (L-ui-modernisation-202).
