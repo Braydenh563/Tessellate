@@ -2017,18 +2017,13 @@ async function switchTab(name) {
     const layoutSelect = $("graph-layout");
     if (layoutSelect) layoutSelect.value = layout;
     
-    // Same for what the colours mean: a saved setting the control does not
-    // show is a control that lies about the map beside it.
-    const savedColour = prefs.get("graph-colour", null);
-    const colourSelect = $("graph-colour");
-    if (savedColour && colourSelect && [...colourSelect.options].some((o) => o.value === savedColour)) {
-      colourSelect.value = savedColour;
-    }
-    //: And what the sizes mean (INBOX 430), the same way.
-    const savedSize = prefs.get("graph-size", null);
-    const sizeSelect = $("graph-size");
-    if (savedSize && sizeSelect && [...sizeSelect.options].some((o) => o.value === savedSize)) {
-      sizeSelect.value = savedSize;
+    // Same for what the colours mean (and, INBOX 430, what the sizes mean): a
+    // saved setting the control does not show is a control that lies about the
+    // map beside it.
+    for (const id of ["graph-colour", "graph-size"]) {
+      const saved = prefs.get(id, null);
+      const select = $(id);
+      if (saved && select && [...select.options].some((o) => o.value === saved)) select.value = saved;
     }
     // Match the saved layout on arrival, not only on change, otherwise a
     // notebook left on Tree comes back with two live-looking dead sliders.
