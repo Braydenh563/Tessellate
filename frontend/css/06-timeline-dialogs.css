@@ -668,11 +668,6 @@
 }
 /* The notes a document draws on, beside its outline. The row is the note plus
    a detach button, so the two can't run into each other on a long preview. */
-#doc-notes li {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
 /* The chat box grows with the question (capped by AUTOGROW_MAX_PX in JS).
    It replaced an <input>, so it has to keep an input's shape: one line to
    start with, and no manual resize handle fighting the auto-grow. */

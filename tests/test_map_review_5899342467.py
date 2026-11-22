@@ -6,6 +6,8 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
 MORE = (JS / "whiteboard-map-more.js").read_text(encoding="utf-8")
 WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+#: The text editor moved here, inside the file's wrapper, in the L286 split.
+TEXTEDIT = (JS / "whiteboard-textedit.js").read_text(encoding="utf-8")
 
 
 def _block(text: str, start: str, end: str = "\n}\n") -> str:

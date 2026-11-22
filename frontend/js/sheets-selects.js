@@ -322,8 +322,10 @@ function trackSeparatorValue(handle, panel, min, max, axis = "width") {
     handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
-  write(size() || min);
-  if (typeof ResizeObserver === "function") {
+  //: The observer's first delivery reports the width before the first paint, so the grip's setup reads no box (a read there forced a layout of the whole page, 110 ms on the Documents cold open, L-documents-106).
+  if (typeof ResizeObserver !== "function") write(size() || min);
+  else {
+    write(min);
     new ResizeObserver((entries) => {
       const box = entries[entries.length - 1].borderBoxSize?.[0];
       write((tall ? box?.blockSize : box?.inlineSize) ?? size());

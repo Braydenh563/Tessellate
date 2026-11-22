@@ -191,10 +191,7 @@
   }
 }
 @media (max-width: 819.98px) {
-  .doc-layout {
-    grid-template-columns: 1fr;
-  }
-  /* The heading row does not wrap. In a 260px column "Recent documents" broke
+    /* The heading row does not wrap. In a 260px column "Recent documents" broke
    over two lines and took "＋ New" with it, so the sidebar opened with a
    three-line header above a three-item list. The heading is the part that
    gives way: the button is a fixed hit target. */
@@ -1209,7 +1206,8 @@ button.map-chip:focus-visible {
 /* Muted words on the lit row's tint fell to 3.5 to 4.4:1 in most looks (the
    keycap and the one-line description, contrastui.js, INBOX 464): on the
    row that is being chosen they take the ink. */
-.rich-picker-row.active :is(.rich-picker-about, .rich-picker-keys) {
+.rich-picker-row.active .rich-picker-about,
+.rich-picker-row.active .rich-picker-keys {
   color: var(--ink);
 }
 
@@ -1430,42 +1428,72 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
    change still moves every callout with the rest of the page. The Live view's
    line classes (`.cm-md-callout-{kind}`) and label chips read the same ink,
    so a kind is one colour in all three views. */
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-note"],
+.callout[class*="-note"],
+.cm-md-callout[class*="-note"],
+.cm-md-callout-label[class*="-note"],
+.doc-block-kind[class*="-note"],
 /* The to-do kind has no rule: it wears the default ink, as note and info do. */
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-info"] {
+.callout[class*="-info"],
+.cm-md-callout[class*="-info"],
+.cm-md-callout-label[class*="-info"],
+.doc-block-kind[class*="-info"] {
   --callout-accent: var(--accent);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-abstract"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-tip"] {
+.callout[class*="-abstract"],
+.cm-md-callout[class*="-abstract"],
+.cm-md-callout-label[class*="-abstract"],
+.doc-block-kind[class*="-abstract"],
+.callout[class*="-tip"],
+.cm-md-callout[class*="-tip"],
+.cm-md-callout-label[class*="-tip"],
+.doc-block-kind[class*="-tip"] {
   --callout-accent: color-mix(in oklab, var(--accent) 45%, var(--ok));
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-success"] {
+.callout[class*="-success"],
+.cm-md-callout[class*="-success"],
+.cm-md-callout-label[class*="-success"],
+.doc-block-kind[class*="-success"] {
   --callout-accent: var(--ok);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-question"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-warning"] {
+.callout[class*="-question"],
+.cm-md-callout[class*="-question"],
+.cm-md-callout-label[class*="-question"],
+.doc-block-kind[class*="-question"],
+.callout[class*="-warning"],
+.cm-md-callout[class*="-warning"],
+.cm-md-callout-label[class*="-warning"],
+.doc-block-kind[class*="-warning"] {
   --callout-accent: var(--warn);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-failure"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-danger"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-bug"] {
+.callout[class*="-failure"],
+.cm-md-callout[class*="-failure"],
+.cm-md-callout-label[class*="-failure"],
+.doc-block-kind[class*="-failure"],
+.callout[class*="-danger"],
+.cm-md-callout[class*="-danger"],
+.cm-md-callout-label[class*="-danger"],
+.doc-block-kind[class*="-danger"],
+.callout[class*="-bug"],
+.cm-md-callout[class*="-bug"],
+.cm-md-callout-label[class*="-bug"],
+.doc-block-kind[class*="-bug"] {
   --callout-accent: var(--error);
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-example"] {
+.callout[class*="-example"],
+.cm-md-callout[class*="-example"],
+.cm-md-callout-label[class*="-example"],
+.doc-block-kind[class*="-example"] {
   --callout-accent: color-mix(in oklab, var(--accent) 55%, var(--error));
 }
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-quote"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-toggle"] {
+.callout[class*="-quote"],
+.cm-md-callout[class*="-quote"],
+.cm-md-callout-label[class*="-quote"],
+.doc-block-kind[class*="-quote"],
+.callout[class*="-toggle"],
+.cm-md-callout[class*="-toggle"],
+.cm-md-callout-label[class*="-toggle"],
+.doc-block-kind[class*="-toggle"] {
   --callout-accent: var(--muted);
-}
-/* A toggle is a disclosure, not a box: no tint, no edge, only the caret and
-   an indent that says what belongs to it (Notion's toggle, spelled as a
-   callout so it stays a quote anywhere else). */
-.callout-toggle {
-  --callout-tint: transparent;
-  --callout-edge: transparent;
-  padding: var(--space-1) 0;
-  border-left-color: transparent;
 }
 .callout-toggle > .callout-head {
   flex-direction: row-reverse;
@@ -1473,13 +1501,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 }
 .callout-toggle > .callout-head .callout-icon {
   display: none;
-}
-.callout-toggle > .callout-head::after {
-  margin-left: 0;
-  transform: rotate(-45deg);
-}
-.callout-toggle[open] > .callout-head::after {
-  transform: rotate(45deg);
 }
 .callout-toggle > .callout-body {
   padding-left: var(--space-5);
@@ -1508,11 +1529,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   text-align: center;
   color: var(--muted);
   line-height: 1;
-}
-.md-rule-dots::before {
-  content: "\2022\2003\2022\2003\2022";
-  font-size: var(--text-md);
-  letter-spacing: 0.1em;
 }
 /* A quote with its attribution: the words, then the name on its own line,
    set small and muted, under the quote's own edge. */
@@ -1568,9 +1584,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   color: var(--accent-text);
   text-decoration: underline;
 }
-.md-toc-depth-1 { padding-left: var(--space-5); }
-.md-toc-depth-2 { padding-left: var(--space-7); }
-.md-toc-depth-3 { padding-left: var(--space-9); }
 .md-toc-empty {
   font-size: var(--text-sm);
   color: var(--muted);
@@ -2258,13 +2271,15 @@ body.resizing-sidebar {
    rest of its height back to the thing you are writing. Not `display: none` on
    the toolbar itself: a control that hides the control that brings it back is
    a trap. */
-.doc-toolbar.is-collapsed > *:not(.doc-toolbar-tools):not(#entry-preview-toggle):not([data-note-preview]) {
+.doc-toolbar.is-collapsed > *:not(.doc-toolbar-tools):not(#entry-preview-toggle):not([data-note-preview]):not(#entry-view-seg) {
   display: none;
 }
 /* A note strip's Live/Source switch stays out while the strip is folded
    (INBOX 430): it is how the box reads, not a formatting tool, and folding
    the tools (the default) would otherwise hide the one way to the source. */
-.doc-toolbar.is-collapsed > :is(#entry-preview-toggle, [data-note-preview]) {
+.doc-toolbar.is-collapsed > #entry-preview-toggle,
+.doc-toolbar.is-collapsed > :where([data-note-preview]):is([data-note-preview], #entry-preview-toggle),
+.doc-toolbar.is-collapsed > #entry-view-seg {
   order: 2;
   margin-left: var(--space-2);
 }
@@ -2405,7 +2420,8 @@ body.resizing-sidebar {
   margin: 0 var(--space-1);
   background: none;
 }
-.note-toolbar :is(.doc-toolbar-collapse, .doc-toolbar-layout) {
+.note-toolbar .doc-toolbar-collapse,
+.note-toolbar .doc-toolbar-layout {
   display: none;
 }
 /* **One chrome for the whole strip, whatever element a control happens to be.**
@@ -2903,32 +2919,6 @@ body.resizing-sidebar {
   align-self: stretch;
   justify-content: center;
 }
-/* **An empty section does not reserve a heading and a button.** Measured with
-   no references attached: `#doc-bookmarks-wrap` was 69.4px of column for a
-   12px uppercase "REFERENCES" eyebrow and a full-width "Attach a link" over
-   nothing, sitting above roughly 290px of empty sidebar. Backlinks and "notes
-   it draws on" already hide themselves when they have nothing to list
-   (`renderDocBacklinks`, `renderDocNotes`); References cannot, because the
-   way to attach the first one is inside it.
-   So the section empties out instead: the eyebrow goes, the empty list goes,
-   the rule above it goes, the 4rem floor every section otherwise keeps goes,
-   and what is left is one quiet action at the panel's left edge, the same
-   weight and the same muted ink as the storage help below it, which is the
-   only other thing down there. Written with `:has` against the list's own
-   emptiness rather than a class from JS: the three renderers all end in
-   `replaceChildren()`, so the DOM already knows, and a class would be a
-   fourth thing to keep in step.
-   `#doc-outline-wrap` is deliberately not in this list. It is what the tab is
-   called, so it keeps its heading and answers with a sentence instead
-   (`#doc-outline-empty`), which `docoutline.js` asserts. */
-#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
-#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline-title,
-#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
-#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline,
-#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline,
-#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline {
-  display: none;
-}
 #doc-bookmarks-wrap:has(> .doc-outline:empty) {
   margin-top: var(--space-3);
   padding-top: 0;
@@ -2945,21 +2935,6 @@ body.resizing-sidebar {
      `0 1 auto` and its 4rem floor, which is the rule this is the exception
      to. */
   flex: 0 0 auto;
-}
-#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark {
-  margin-top: 0;
-  padding-left: 0;
-  padding-right: 0;
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--muted);
-  font-weight: 400;
-}
-#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:hover,
-#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:focus-visible {
-  color: var(--accent-text);
-  text-decoration: underline;
 }
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
@@ -2985,12 +2960,6 @@ body.resizing-sidebar {
 /* The line that says what fills an empty outline. One sentence, the muted
    ink, and the same left edge as the entries that will replace it, so the
    panel does not shift sideways the moment a heading is written. */
-.doc-outline-empty {
-  margin: 0 0 var(--space-2);
-  padding-left: 0.25rem;
-  font-size: var(--text-base);
-  line-height: 1.45;
-}
 /* The heading's own count, beside the word rather than under it. */
 .doc-outline-count:not(:empty) {
   color: var(--muted);
@@ -3566,7 +3535,8 @@ body.resizing-sidebar {
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .dash-hero {
   background: var(--card);
 }
-:root[data-palette="paper"] :is(.card, .dash-hero) {
+:root[data-palette="paper"] .card,
+:root[data-palette="paper"] .dash-hero {
   box-shadow: none;
 }
 /* The mono look's one rule beyond colour: numbers and small print in the
@@ -3623,7 +3593,9 @@ body.resizing-sidebar {
   justify-content: flex-start;
 }
 .theme-card > span,
-.theme-card :is(strong, small, p) {
+.theme-card strong,
+.theme-card small,
+.theme-card p {
   min-width: 0;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -4421,10 +4393,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   color: var(--muted);
   font-size: var(--text-xs);
 }
-.doc-statusbar-fact {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 .doc-statusbar > * {
   flex: 0 0 auto;
 }
@@ -4436,15 +4404,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
        put the file type button 7px past the strip at 390px. */
     gap: var(--space-1);
   }
-}
-#doc-counts {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.doc-statusbar-spacer {
-  flex: 1 1 auto;
 }
 .doc-statusbar-button {
   display: inline-flex;
@@ -4689,7 +4648,8 @@ html[data-chrome="native"] #top-bar #brand-logo {
        one (muted, `--ok` once read), and the fold keeps its tonal ground,
        which is the app's rule for a disclosure, at the width of its words
        rather than as a 1,200px bar. */
-:is(.doc-list-title, .bookmark-title),
+.doc-list-title,
+.bookmark-title,
 .library-file-rows .library-image-tile > figcaption {
   font-size: var(--text-lg);
   font-weight: 600;
@@ -4720,6 +4680,13 @@ html[data-chrome="native"] #top-bar #brand-logo {
   background: var(--modal-bg-opaque);
   box-shadow: var(--shadow-lg);
   font-size: var(--text-sm);
+}
+/* A candidate under a finger is the touch floor tall: the rows measured 28px at 390
+   with touch emulation (docsverify-suggest.js, a long press on a flagged word). */
+@media (pointer: coarse) {
+  .doc-suggest-menu .doc-suggest-item {
+    min-height: var(--target-min);
+  }
 }
 
 /* **The writing dictionary as a settings sheet** (INBOX 410: "ugly and needs a
@@ -4847,10 +4814,8 @@ html[data-chrome="native"] #top-bar #brand-logo {
        a hairline edge, so a chip has a shape again without a fill that
        shouts. Only chips that are still chips; a fact that became text in
        the first pass stays text. */
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(
-  .skill-card-facts > .skill-fact,
-  .library-image-tile .chip-interactive.library-image-usage-chip
-) {
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :where(.skill-card-facts > .skill-fact):is(.skill-card-facts > .skill-fact, .library-image-tile .chip-interactive.library-image-usage-chip),
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.library-image-tile .chip-interactive.library-image-usage-chip) {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
 }
 /* A narrow panel: Fix N gives up its words too (the `.toolbar-word` way,
@@ -5028,7 +4993,9 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.doc-template-page :is(.md-h1, .md-h2, .md-h3) {
+.doc-template-page .md-h1,
+.doc-template-page .md-h2,
+.doc-template-page .md-h3 {
   margin: var(--space-3) 0 var(--space-1);
   line-height: 1.25;
 }
@@ -5041,7 +5008,8 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   margin-top: 0;
   font-size: var(--text-h3);
 }
-.doc-template-page :is(.md-h2, .md-h3) {
+.doc-template-page .md-h2,
+.doc-template-page .md-h3 {
   font-size: var(--text-md);
 }
 /* A task box is a 28px control in a note; in a picture of a page it is a
@@ -5325,17 +5293,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-crumbs::-webkit-scrollbar {
   display: none;
 }
-.doc-crumbs-list {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  /* A trail is one line: a document nested five headings deep scrolls
-     sideways rather than growing the row and shifting the writing down. */
-  white-space: nowrap;
-}
 /* The separator belongs to the list, not to the buttons: a crumb rendered
    with a trailing character of its own would put that character inside the
    button's hit area and read it out as part of the heading's name. */
@@ -5344,12 +5301,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-crumbs-list > li {
   display: flex;
   align-items: center;
-}
-.doc-crumbs-list li + li::before {
-  content: "\203A";
-  color: var(--muted);
-  opacity: 0.7;
-  padding: 0 0.15rem;
 }
 /* --- an embedded document, drawn as a card (INBOX 421 b) ---------------------
    One button: the document's tile, its title over one facts line and its
@@ -5725,7 +5676,16 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 .nm-atlas .atl-nightcap { opacity: var(--atl-nightcap); transition: opacity var(--motion-slow) var(--ease-out); }
 
 /* Between expressions every part eases; nothing here moves a layout box. */
-.nm-atlas :is(.atl-eye, .atl-pupil, .atl-lid, .atl-lid-low, .atl-brow, .atl-head, .atl-pose, .atl-crest, .atl-tail, .atl-star) {
+.nm-atlas .atl-eye,
+.nm-atlas .atl-pupil,
+.nm-atlas .atl-lid,
+.nm-atlas .atl-lid-low,
+.nm-atlas .atl-brow,
+.nm-atlas .atl-head,
+.nm-atlas .atl-pose,
+.nm-atlas .atl-crest,
+.nm-atlas .atl-tail,
+.nm-atlas .atl-star {
   transition: transform var(--motion-slow) var(--ease-out);
 }
 
@@ -5733,3 +5693,14 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    `atlasHeadProps`, `atlasHandProps`); avatars.js shows each slot. Outside
    the companion they never show. */
 .nm-atlas:not(.atl-figure) .nmp { opacity: 0; }
+/* L-documents-53 */
+#entry-view-seg {
+  margin: 0;
+}
+.note-composer.is-reading :is(.note-surface, #entry-content) {
+  display: none;
+}
+.entry-read {
+  min-height: 11rem;
+  padding: var(--space-3);
+}

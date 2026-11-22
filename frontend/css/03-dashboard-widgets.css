@@ -3300,10 +3300,13 @@ button.answer-figure-open {
   animation-delay: 1.6s;
 }
 
-
 /* Off screen (`watchEmblemVisibility`) or two minutes idle (`nmbTick`, :root.is-idle), held where it is. Last, and as
    specific as the rules above, so it wins over their shorthand. */
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) :is(.emblem-float, .emblem-shadow-breathe, .emblem-rise, .emblem-cell-c, .emblem-shadow) {
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-float,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-shadow-breathe,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-rise,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-cell-c,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-shadow {
   animation-play-state: paused;
 }
 
@@ -3556,15 +3559,26 @@ button.answer-figure-open {
   font-weight: 600;
 }
 
-:root[data-palette="utilitarian"] :is(
-  .card h3, .eyebrow, .nav-group-label, .launch-label,
-  .contents-heading, .msg-role,
-  #palette-list li.palette-group-header, .features-group, .reminder-group-head,
-  .rich-picker-group, .note-embed-head, .doc-prose-group,
-  .wb-export-card .wb-export-label, .wb-tool-section-label,
-  .dash-widgets-group-label, .wb-panel-group-label, .connection-heading,
-  .wb-help-section-head, .finder-group, .chord-guide-title
-) {
+:root[data-palette="utilitarian"] :where(.card h3):is(.card h3, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.eyebrow):is(.eyebrow, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.nav-group-label):is(.nav-group-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.launch-label):is(.launch-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.contents-heading):is(.contents-heading, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.msg-role):is(.msg-role, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :is(#palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.features-group):is(.features-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.reminder-group-head):is(.reminder-group-head, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.rich-picker-group):is(.rich-picker-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.note-embed-head):is(.note-embed-head, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.doc-prose-group):is(.doc-prose-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-export-card .wb-export-label):is(.wb-export-card .wb-export-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-tool-section-label):is(.wb-tool-section-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.dash-widgets-group-label):is(.dash-widgets-group-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-panel-group-label):is(.wb-panel-group-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.connection-heading):is(.connection-heading, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-help-section-head):is(.wb-help-section-head, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.finder-group):is(.finder-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.chord-guide-title):is(.chord-guide-title, #palette-list li.palette-group-header) {
   text-transform: none;
   letter-spacing: 0;
 }

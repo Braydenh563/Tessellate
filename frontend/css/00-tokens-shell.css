@@ -2244,7 +2244,12 @@ button.scroll-row-arrow[hidden] {
   text-decoration: line-through;
 }
 
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.library-note, .library-document, .library-chat, .library-file, .library-tag, .library-archived) {
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-note,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-document,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chat,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-file,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-tag,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-archived {
   box-shadow: none;
 }
 
@@ -2483,15 +2488,13 @@ button.scroll-row-arrow[hidden] {
    `data-scrolling` on <html> for the length of a scroll gesture; the trace
    is written there). The rows themselves only: a descendant selector here
    would restyle every node of every list twice per gesture. */
-:root[data-scrolling] :is(
-  #entry-list > li,
-  .library-card,
-  .doc-list-item,
-  .bookmark-row,
-  .library-image-tile,
-  .timeline-row,
-  .skill-card
-) {
+:root[data-scrolling] :is(#entry-list > li),
+:root[data-scrolling] :where(.library-card):is(.library-card, #entry-list > li),
+:root[data-scrolling] :where(.doc-list-item):is(.doc-list-item, #entry-list > li),
+:root[data-scrolling] :where(.bookmark-row):is(.bookmark-row, #entry-list > li),
+:root[data-scrolling] :where(.library-image-tile):is(.library-image-tile, #entry-list > li),
+:root[data-scrolling] :where(.timeline-row):is(.timeline-row, #entry-list > li),
+:root[data-scrolling] :where(.skill-card):is(.skill-card, #entry-list > li) {
   transition: none;
 }
 

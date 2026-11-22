@@ -45,7 +45,23 @@
    is on groups that have none: `.nm-body` (the head and everything on it),
    `.nm-blinks` (the eyes), and the extras. `transform-box: fill-box` makes
    each one turn and scale about its own middle, not the SVG's corner. */
-.name-mark :is(.nm-body, .nm-blinks, .nm-tear, .nm-sweat, .nm-z, .nm-spark, .nm-vein, .nm-heart, .nm-q, .nm-bulb, .nm-halo, .nm-steam, .nm-table, .nm-balloon, .nm-bow, .nm-pompom, .nm-gem) {
+.name-mark .nm-body,
+.name-mark .nm-blinks,
+.name-mark .nm-tear,
+.name-mark .nm-sweat,
+.name-mark .nm-z,
+.name-mark .nm-spark,
+.name-mark .nm-vein,
+.name-mark .nm-heart,
+.name-mark .nm-q,
+.name-mark .nm-bulb,
+.name-mark .nm-halo,
+.name-mark .nm-steam,
+.name-mark .nm-table,
+.name-mark .nm-balloon,
+.name-mark .nm-bow,
+.name-mark .nm-pompom,
+.name-mark .nm-gem {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -58,7 +74,13 @@
   transform-origin: 50% 100%;
 }
 
-.name-mark :is(.nm-wing, .nm-tentacle, .nm-foot, .nm-flame, .nm-tail, .nm-starfield, .nm-aura) {
+.name-mark .nm-wing,
+.name-mark .nm-tentacle,
+.name-mark .nm-foot,
+.name-mark .nm-flame,
+.name-mark .nm-tail,
+.name-mark .nm-starfield,
+.name-mark .nm-aura {
   transform-box: fill-box;
 }
 
@@ -66,15 +88,18 @@
 
 .name-mark .nm-wing-r { transform-origin: 0% 100%; }
 
-.name-mark :is(.nm-tentacle, .nm-tail) { transform-origin: 50% 0%; }
+.name-mark .nm-tentacle,
+.name-mark .nm-tail { transform-origin: 50% 0%; }
 
 .name-mark .nm-flame { transform-origin: 50% 100%; }
 
-.name-mark :is(.nm-starfield, .nm-aura) { transform-origin: 50% 50%; }
+.name-mark .nm-starfield,
+.name-mark .nm-aura { transform-origin: 50% 50%; }
 
 .name-mark .nm-foot { transform-origin: 50% 100%; }
 
-.name-mark :is(.nm-earring, .nm-tails) { transform-box: fill-box; transform-origin: 50% 0%; }
+.name-mark .nm-earring,
+.name-mark .nm-tails { transform-box: fill-box; transform-origin: 50% 0%; }
 
 /* A googly pupil rolls round its eye, not round itself: its origin is the
    eye's centre, set per pupil in SVG units (`nameMark`). */
@@ -642,11 +667,13 @@
    round (head to the right), for variety. Held transforms at rest. */
 #nm-buddy .nm-figure { translate: var(--nmb-lie-shift); transition: transform var(--motion-slow) var(--ease-out), rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out), translate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 
-#nm-buddy :is(.atl-lw-root-neb, .atl-lw-root-neb-front) {
+#nm-buddy .atl-lw-root-neb,
+#nm-buddy .atl-lw-root-neb-front {
   transition: rotate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast), scale calc(var(--motion-slow) * 4) var(--ease-in-out), translate calc(var(--motion-slow) * 4) var(--ease-in-out);
 }
 
-#nm-buddy :is(.atl-layer-fx-1, .atl-layer-fx-2) { transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
+#nm-buddy .atl-layer-fx-1,
+#nm-buddy .atl-layer-fx-2 { transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 
 #nm-buddy[data-pose="lie-1"] .nm-figure { --nmb-lean-pose: calc(-24deg + 48deg * var(--atl-v1)); --nmb-lie-shift: 0 0; }
 
@@ -1076,7 +1103,19 @@
    above, whose selectors out-rank this one; the app-wide kill in
    02-chat-graph.css used to hide that by freezing everything first, and
    now leaves faces and the companion to this block. */
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :is(.nm-buddy-char, .nm-figure, .nm-buddy-head, .nmp-lantern-glow, .nmb-leg-l, .nmb-leg-r, .nmb-arm-l, .nmb-arm-r, .nmb-hold-l, .nmb-hold-r, .nm-buddy-think i, .nm-buddy-z, .nm-buddy-z i) {
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nm-buddy-char):is(.nm-buddy-char, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nm-figure):is(.nm-figure, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nm-buddy-head):is(.nm-buddy-head, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmp-lantern-glow):is(.nmp-lantern-glow, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmb-leg-l):is(.nmb-leg-l, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmb-leg-r):is(.nmb-leg-r, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmb-arm-l):is(.nmb-arm-l, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmb-arm-r):is(.nmb-arm-r, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmb-hold-l):is(.nmb-hold-l, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nmb-hold-r):is(.nmb-hold-r, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :is(.nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :where(.nm-buddy-z):is(.nm-buddy-z, .nm-buddy-think i),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :is(.nm-buddy-z i) {
   animation-duration: 6s !important;
 }
 
@@ -1960,9 +1999,16 @@
 #nm-buddy.nmb-act-startle .atl-figure .nmp-bubble { opacity: 1; }
 
 /* Offline: a dark navy silhouette, the constellation and the eyes faint. */
-#nm-buddy.nmb-offline .atl-figure :is(.atl-skin, .atl-lock) { fill: var(--atl-navy); }
+#nm-buddy.nmb-offline .atl-figure .atl-skin,
+#nm-buddy.nmb-offline .atl-figure .atl-lock { fill: var(--atl-navy); }
 
-#nm-buddy.nmb-offline .atl-figure :is(.atl-sheen, .atl-belly, .atl-rim-head, .atl-rim-body, .atl-rim-limb, .atl-ear-in, .atl-hair-neb) { opacity: 0; }
+#nm-buddy.nmb-offline .atl-figure .atl-sheen,
+#nm-buddy.nmb-offline .atl-figure .atl-belly,
+#nm-buddy.nmb-offline .atl-figure .atl-rim-head,
+#nm-buddy.nmb-offline .atl-figure .atl-rim-body,
+#nm-buddy.nmb-offline .atl-figure .atl-rim-limb,
+#nm-buddy.nmb-offline .atl-figure .atl-ear-in,
+#nm-buddy.nmb-offline .atl-figure .atl-hair-neb { opacity: 0; }
 
 #nm-buddy.nmb-offline .atl-figure :is(.atl-core, .atl-tail-core) { opacity: 0.4; }
 
@@ -2150,7 +2196,8 @@
 
 .nm-atlas .atl-st-ink-0 { stop-color: black; stop-opacity: 0; }
 
-.nm-atlas :is(.atl-wisp-glint, .atl-band-glint) { fill: white; }
+.nm-atlas .atl-wisp-glint,
+.nm-atlas .atl-band-glint { fill: white; }
 
 .nm-atlas .atl-glint-halo { fill: var(--atl-tip); opacity: 0.85; }
 
@@ -2348,7 +2395,16 @@
    0.2s read as a cut on a face that changes its mood by itself, so its
    parts cross over 0.6s, eased in and out. The eased wake and doze below
    (1.8s) still win. */
-#nm-buddy .nm-atlas :is(.atl-eye, .atl-pupil, .atl-lid, .atl-lid-low, .atl-brow, .atl-head, .atl-pose, .atl-crest, .atl-tail, .atl-star) {
+#nm-buddy .nm-atlas .atl-eye,
+#nm-buddy .nm-atlas .atl-pupil,
+#nm-buddy .nm-atlas .atl-lid,
+#nm-buddy .nm-atlas .atl-lid-low,
+#nm-buddy .nm-atlas .atl-brow,
+#nm-buddy .nm-atlas .atl-head,
+#nm-buddy .nm-atlas .atl-pose,
+#nm-buddy .nm-atlas .atl-crest,
+#nm-buddy .nm-atlas .atl-tail,
+#nm-buddy .nm-atlas .atl-star {
   transition: transform calc(var(--motion-slow) * 3) var(--ease-in-out);
 }
 
@@ -2613,9 +2669,15 @@
    there and could not be made out. Each prop now has a dark keyline under
    its own colour, 3 to 1 or more against the body in both looks, and the
    moon on its ear, 9px, is drawn at 14px. */
-.nm-atlas :is(.atl-prop-bell, .atl-prop-moon, .atl-prop-page, .atl-juggle-star) { stroke: var(--atl-navy); stroke-width: 1.1; stroke-linejoin: round; paint-order: stroke fill; }
+.nm-atlas .atl-prop-bell,
+.nm-atlas .atl-prop-moon,
+.nm-atlas .atl-prop-page,
+.nm-atlas .atl-juggle-star { stroke: var(--atl-navy); stroke-width: 1.1; stroke-linejoin: round; paint-order: stroke fill; }
 
-.nm-atlas :is(.atl-prop-zap, .atl-prop-link, .atl-prop-rim, .atl-prop-lens) { stroke: var(--atl-line); }
+.nm-atlas .atl-prop-zap,
+.nm-atlas .atl-prop-link,
+.nm-atlas .atl-prop-rim,
+.nm-atlas .atl-prop-lens { stroke: var(--atl-line); }
 
 .nm-atlas .nmp-nightcap:has(> .atl-prop-moon) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.6; }
 
@@ -2852,7 +2914,9 @@
     & .atl-lw-neb-front { animation-delay: -2.95s; }
     /* Her astral wisps drift on their own slow clock (INBOX 535). */
     & .atl-lw-wisps { animation: atl-wisp-drift 6.8s ease-in-out -3.4s infinite alternate; }
-    & :is(.atl-lw-glint-a, .atl-lw-glint-b, .atl-lw-wisps-back) { animation: atl-wisp-drift 6.8s ease-in-out -3.4s infinite alternate; }
+    & .atl-lw-glint-a,
+    & .atl-lw-glint-b,
+    & .atl-lw-wisps-back { animation: atl-wisp-drift 6.8s ease-in-out -3.4s infinite alternate; }
     /* INBOX 554 (the owner: "dynamic and organic movement ... like an azur
        lane character"): her idle in layers on clocks that never line up,
        breath 3.7s, float 5.3s, wisps 6.8s, the dress's wind 7.1s, sway
@@ -2915,7 +2979,9 @@
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-neb-front,
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-wisps { animation: none !important; }
 
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) :is(.atl-lw-glint-a, .atl-lw-glint-b, .atl-lw-wisps-back),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-glint-a,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-glint-b,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-wisps-back,
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas:is(.atl-layer-glint-a, .atl-layer-glint-b) { animation: none !important; }
 
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="feminine"],

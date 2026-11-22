@@ -3,6 +3,7 @@
 import re
 from pathlib import Path
 from tests._css_unwrap import unwrap_all
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parent.parent / "frontend"
 
@@ -13,7 +14,7 @@ def _rule(css: str, selector: str) -> str:
 
 
 def test_download_is_the_first_row_of_the_more_menu_u32():
-    js = (ROOT / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()  # moved into the documents pieces (L-documents-117)
     assert "const docDownloadGroup = foldDocMenuGroup(" in js
     assert "docDownloadGroup?.parentElement?.prepend(docDownloadGroup);" in js
     # moved after the three folds' sources are known, and before any other group is inserted

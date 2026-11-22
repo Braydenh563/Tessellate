@@ -96,9 +96,9 @@ def test_a_selection_move_that_flips_no_span_needs_no_rebuild():
 
 
 def _build() -> str:
-    start = DOCUMENTS_JS.index("function docLivePlugin(CM)")
-    body = DOCUMENTS_JS[start: DOCUMENTS_JS.index("docLivePluginCache = ViewPlugin.fromClass(", start)]
-    return body[body.index("  function build(view, record"):]
+    # The build is the passes (L-documents-62) plus the context `build` hands them: one text, so a rule moving between them keeps its test.
+    start = DOCUMENTS_JS.index("const docLiveTreePass")
+    return DOCUMENTS_JS[start: DOCUMENTS_JS.index("docLivePluginCache = ViewPlugin.fromClass(", start)]
 
 
 def test_inline_spans_reveal_through_the_span_rule():

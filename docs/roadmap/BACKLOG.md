@@ -210,7 +210,6 @@ in the Library's Whiteboards gallery. **Pointer:** every open whiteboard questio
 section 4 (the gap matrix), section 5 (draw.io) and section 8 (the object library).
 The raster-versus-structured reasoning that stood here is in this file's git history.
 
-
 ---
 
 ## 4b. Templates and base layouts (boards, maps, documents)
@@ -336,6 +335,9 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   are (it is a hub over them, which is exactly what `document_links` records);
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
+- **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
+- **Adding a block to a large flowchart in one short task** (L-documents-112). Owner decided 2026-11-21: parked until Mermaid offers incremental layout. Measured 2026-11-21 at 390 px, load about 2: the first task of each add to a 40-block flowchart is 100 to 174 ms (102, 100, 174, 141), later ones 60 to 83 ms; the first is the single `mermaid.render` layout with no yield point (htmlLabels already off, mermaid-frame.js:101; the redundant parse removed). Check: `scratchpad/ui-sweeps/dgm40.js` at 390, every task under 50 ms, when Mermaid offers incremental layout.
+- **Diagram pan p95 under 16 ms** (L-documents-102). Owner decided 2026-11-21: parked; what is left is the browser's scroll commit of the picture layer. Measured 2026-11-21 at 1440 and 4x CPU, 5 interleaved runs: p50 median 7.0 ms (met), p95 median 19.6 to 22.9 ms; the minimap frame is throttled; a 0.4x raster during the pan gave 19.2, and 2048 px tiles gave 25.0 to 29.5 (worse). Check: `scratchpad/ui-sweeps/diagram-pan-latency.js` at 1440 and 4x CPU on a quiet box, p95 under 16 ms.
 
 ---
 
@@ -4427,11 +4429,16 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 
 - **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
 - **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
+
+- **Documents device checks (moved from LEDGER 2026-11-14; each needs the named device or person, everything that runs headless is built and swept):**
+  - A real phone: L884: Verify phone selection menus and selection bar placement with a real finger on iOS and Android. From OPEN.md:738; OPEN.md:3122; OPEN.md:3861. Evidence: iOS/Android native selection UI; cannot be emulated headless. Blocked: needs a real finger on iOS and Android native selection UI, which no headless browser reproduces. | L-documents-93: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested | L-documents-95: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
+  - A real desktop, browser or Word: L-documents-91: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here | L-documents-92: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code | L891: Device check: a real print dialog, Safari, Firefox (not installed here: /opt/pw-browsers has only Chromium), a screen reader and a phone IME over the documents editor. From L891. Evidence: Measured 2026-11-14 in Chromium: an image pasted through the real clipboard with Ctrl+V lands as an attachment 4/4 (hw891.js); Harper p2-harper.js 16/16, cold first lint 1,797 ms, warm 111 ms for 1,401 words, nothing at boot | L894: Device check: ClearType greyscale on a real Windows display. From L894. Evidence: The CodeMirror per-key cost is measured and tracked in L-documents-26; only the Windows display is left
+  - A person with a screen reader, or real inference: L887: Run a screen reader over aria-current=location in the documents outline. From OPEN.md:1483; OPEN.md:3402. Evidence: Needs a human with a screen reader; documents-comments.js:438 sets aria-current. Blocked: needs a human with a screen reader; documents-comments.js:438 sets aria-current but speech cannot be checked headless. | L893: Device check: the diagram builder with real inference, on Windows, and under a screen reader. From L893. Evidence: Measured 2026-11-14 at 390 light with CDP touch (diagram-touch.js, rewritten for the Add split and the phone's Blocks sheet): Add menu 10 rows 44 px hit-tested, a block added, pinch to 5x, zoom kept on redraw, pan 264 px, double tap fits; light contrast 8 of 8 texts at 4.5 or more; 40 blocks open 2.5 s, an added block repaints in 483 ms (long tasks 114 and 115 ms on a loaded box, see the new row); print to PDF one page with all four labels and no chrome
+
 ## Placed from IDEAS.md, 2026-11-14
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
 - **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
-
 
 ## From the general plan's frontend rows, 2026-11-21
 

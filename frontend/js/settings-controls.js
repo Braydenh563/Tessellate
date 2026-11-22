@@ -664,6 +664,7 @@
   $("pref-warm-search-model").addEventListener("change", (e) =>
     setPreference("warm_search_model_at_launch", e.target.checked)
   );
+  $("pref-writing-style").addEventListener("change", (e) => setPreference("writing_style", e.target.value));
   $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
   $("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
   $("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));

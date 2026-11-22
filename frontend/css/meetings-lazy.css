@@ -7,8 +7,10 @@
    recorder named for what it makes, its transcript saved as a plain note.
    Here rather than beside `.meeting-into` (02-chat-graph.css) for the boot
    budget: the recorder opens only after this bundle has loaded. */
-#meeting-overlay.voice-note :is(.meeting-kind-meeting, .meeting-save-new),
-#meeting-overlay:not(.voice-note) :is(.meeting-kind-voice, .meeting-save-voice) {
+#meeting-overlay.voice-note .meeting-kind-meeting,
+#meeting-overlay.voice-note .meeting-save-new,
+#meeting-overlay:not(.voice-note) .meeting-kind-voice,
+#meeting-overlay:not(.voice-note) .meeting-save-voice {
   display: none;
 }
 

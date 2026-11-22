@@ -24,9 +24,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 LIB = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

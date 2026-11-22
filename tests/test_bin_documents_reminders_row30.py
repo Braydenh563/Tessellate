@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 import pytest
+
+from tests._app_js import documents_text
 from tests._clock import SUITE_NOW, pin_clock
 
 
@@ -19,6 +21,7 @@ from tests._clock import SUITE_NOW, pin_clock
 def _suite_clock(monkeypatch):
     """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
     pin_clock(monkeypatch, SUITE_NOW)
+
 
 
 def _soon() -> str:
@@ -108,7 +111,7 @@ def test_the_frontend_restores_rather_than_recreating():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    documents = (root / "documents.js").read_text(encoding="utf-8")
+    documents = documents_text()
     undo = documents.split("async function deleteDocumentWithUndo(", 1)[1].split("\n}\n", 1)[0]
     assert "/restore" in undo and 'method: "POST",\n      body' not in undo
     # The row's Delete loads its handler on the press (reminder-edit.js, boot scripts' cap).

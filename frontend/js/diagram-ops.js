@@ -17,7 +17,7 @@
   const DGB_TEXT = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare", cylinder: "Store", parallelogram: "Input" };
   const DGB_MAX = 120;
   //: The kinds a person meets that the blocks do not draw (D3): named in the one line that sends them to Source.
-  const DGB_PLAIN = [[/^stateDiagram/i, "state diagrams"], [/^classDiagram/i, "class diagrams"], [/^pie$/i, "pie charts"], [/^gantt$/i, "Gantt charts"], [/^journey$/i, "user journeys"], [/^erDiagram/i, "ER diagrams"], [/^C4/i, "C4 diagrams"]];
+  const DGB_PLAIN = [[/^journey$/i, "user journeys"], [/^C4/i, "C4 diagrams"]];
 
   const dgbKey = (type, id) => `${type}:${id}`;
   const dgbSplit = (key) => [key.slice(0, 1), key.slice(2)];

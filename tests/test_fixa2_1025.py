@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from tests._js_scope import unwrapped
 from tests._css_paths import sheets
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
@@ -22,7 +23,7 @@ def test_capture_box_scrolls_inside_so_save_stays_in_view():
     assert "#capture .capture-commit-row {\n  position: sticky;" in LAZY_CSS
 
 
-DOCS_JS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()
 
 
 def _body(head: str) -> str:

@@ -494,11 +494,13 @@ MORE_TOPICS: list[dict] = [
             "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
-            "The welcome's last card offers the same three choices once, and Skip passes them by. "
+            "The welcome's preferences card offers the same choices once, and Skip passes them by. "
             "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
-            "Notifications: mute everything except reminders. Writing: smart "
+            "Notifications: mute everything except reminders. Writing: New starts with (short notes, the default, or long "
+            "documents: New then opens a blank document, which reads in a serif until you choose otherwise; the Notes "
+            "tab's own New note button still makes a note; the welcome asks it too), smart "
             "quotes and dashes in documents, Check link text (spelling and grammar skip the words "
             "of a link unless it is on), Kinds of suggestion in a document's writing sheet (switch off style, "
             "punctuation, capital letters or word choice), and offers to turn a named note or document into a link "
@@ -1840,13 +1842,16 @@ TOPIC_META: dict[str, dict] = {
     "translate": {"title": "Translating", "path": "Notes tab, Writing room"},
     "tags-categories": {"title": "Tags and categories", "path": "A note's own row, or Capture's Filing menu"},
     "code-files": {"title": "Code documents", "path": "Library tab, Documents"},
+    "csv-grid": {"title": "A CSV file as a grid", "path": "A .csv or .tsv document, Grid"},
+    "json-schema": {"title": "JSON schema checks", "path": "Library tab, Documents"},
     "code-completions": {"title": "Completions and snippets in code", "path": "A code document, as you type"},
     "code-tabs": {"title": "Tabs for open code files", "path": "A code document, the strip above the editor"},
+    "vim-keys": {"title": "Vim keys in the editor", "path": "A document, the ... menu, Vim keys"},
     "code-run": {"title": "Running, previewing and testing code", "path": "A code document, Run", "steps": (
         "Open a code document (.js, .ts, .sql, .py, .html, .css, .svg).",
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
-        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
+        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays. A script with top-level await runs as one async body, so the console sees only what it put on self.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
     "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
@@ -1973,8 +1978,8 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
-        "debugger", "code-panel", "margin-reader",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "diagram-chart-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-sections", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run", "csv-grid",
+        "debugger", "code-panel", "code-lint", "margin-reader",
     )),
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-interchange", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "board-frame-binds", "board-suggest-name", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
@@ -2487,19 +2492,19 @@ MORE_TOPICS.extend([
             "mmd", "flowchart", "insert a diagram", "diagram in a note", "diagram on a board", "mind map diagram",
         ),
         "body": (
-            "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
-            "blocks. Mermaid is only its file format. Every door is the same row, "
-            "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
-            "and features and Quick access list it too. Over a note, a document or a Chat box, "
+            "The Diagram builder makes a flowchart, mind map, timeline, sequence, Gantt, pie, state, class or ER diagram "
+            "from blocks. Mermaid is only its file format. Every door is the same row, "
+            "Diagram builder, with the same icon; in Documents and the Library's document list, the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "and features and Quick access list it too. Over a note, document or Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
+            "opens the builder empty, and Done saves a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
-            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
+            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects). "
             "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -2590,6 +2595,23 @@ MORE_TOPICS.extend([
             "from the keyboard, Insert in the blocks list adds a step under the selected one, + on the picture. "
             "A suggestion of its own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-chart-kinds",
+        "keywords": (
+            "gantt blocks", "pie chart blocks", "state diagram blocks", "class diagram blocks", "er diagram blocks",
+            "gantt title", "date format", "pie title", "chart title", "ask for a pie slice", "ask for a transition",
+        ),
+        "body": (
+            "A Gantt chart, pie chart, state, class or ER diagram is blocks too, and the bar offers that kind's own. "
+            "On a Gantt chart and a pie chart, Title is a block of its own, and a Gantt chart's Date format is another: "
+            "press Title or Date format in the bar, then rename it like any block. The source keeps what you wrote until you change that block. "
+            "The Ask box works on all five: add task Test under Build, add slice Cats 30, set Review to 5d, add transition from Idle to Done, "
+            "add relation from Order to Customer. Suggestions list a slice named twice, an empty section, a second title, "
+            "or a state, class or entity with nothing joined to it, each with a button that removes it. "
+            "Suggest, Templates has one starter for each kind: Launch plan, Where the time goes, Order states, Shop classes and Shop data."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2984,7 +3006,29 @@ MORE_TOPICS.append({
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
 
 
-#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a read-only table of notes by property.
+#: L-documents-49: labelled and linked sections, and the sections block (documents-sections.js).
+MORE_TOPICS.append({
+    "id": "document-sections",
+    "keywords": (
+        "label a section", "link sections", "section links", "linked ideas", "local graph of a document",
+        "section graph", "connect ideas", "topics in a document", "```sections", "link with a reason",
+    ),
+    "body": (
+        "Label a section by ending its heading or paragraph with ^ and a name, such as # Method ^method "
+        "(or use Link to this block in the / menu, which adds one). Link to it from another labelled section with "
+        "[[#^method|the numbers come from it]]: the words after the bar are the reason, and are what the link shows. "
+        "Press the link to go to that section; in Read the block is ringed where it is and the view stays Read. The Outline "
+        "tab's Section links lists every link with its reason; hover a row or a graph arrow to mark both sections, press a row "
+        "to select them. Type /section graph, or write a code block marked sections, to draw the labelled "
+        "sections as boxes and the links as arrows with their reasons; press a box to go to it. A title: line in the "
+        "block is its caption. A link to a name that is not in the document is listed and not drawn."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-sections"] = {"title": "Label, link and graph a document's sections", "path": "A document, the / menu, Section graph"}
+
+
+#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a table, board or calendar of notes by property.
 MORE_TOPICS.append({
     "id": "document-base",
     "keywords": (
@@ -2996,13 +3040,32 @@ MORE_TOPICS.append({
         "type: Book lists the notes whose properties say type: Book. where: status = read narrows it (any number of "
         "these, all must hold; a list property matches any of its values). columns: author, rating chooses what to show, "
         "sort: rating desc orders it (numbers and dates sort as such), and limit: 50 caps the rows at 300. "
-        "The first column is the note's name: press it to open the note. The table is read-only: a value is changed in "
-        "the note's own properties, and the refresh button reads the notes again. Private notes never appear. "
-        "It is a table only; boards and calendars are not built."
+        "The first column is the note's name: press it to open the note. Table, Board and Calendar on the block "
+        "switch the view and are kept in a view: line. A board groups by group: status (a select or a list such as tags); drag "
+        "a card to another column, or use its menu, to change that property in the note. A calendar places notes by date: due. "
+        "Private notes never appear."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-base"] = {"title": "A table of notes in a document", "path": "A document, the / menu, Notes table"}
+TOPIC_META["document-base"] = {"title": "A table, board or calendar of notes", "path": "A document, the / menu, Notes table"}
+
+
+#: L-documents-43: the query block (documents-base.js), a saved search kept live in a document.
+MORE_TOPICS.append({
+    "id": "document-query",
+    "keywords": (
+        "query block", "saved search in a document", "live search", "search results in a document", "```query",
+        "saved search block", "live list of notes",
+    ),
+    "body": (
+        "Type /saved search in a document, or write a code block marked query, to keep a search's results as a list "
+        "in the page. Write the name of one of your saved searches (saved: Reading list), or search: and the words or "
+        "operators to look for, and limit: 20 to show more or fewer (50 at most). The list shows notes and documents; "
+        "press a title to open it. It reads again each time the document saves, and the refresh button reads it on demand."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-query"] = {"title": "A saved search in a document", "path": "A document, the / menu, Saved search"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
@@ -3028,6 +3091,25 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing, the page menu and the overview of a diagram", "path": "A diagram document, the ... menu"}
+
+
+MORE_TOPICS.append({
+    "id": "diagram-styling",
+    "keywords": (
+        "diagram markdown text", "sequence autonumber", "sequence box", "create participant", "destroy participant", "diagram line break", "group direction", "subgraph direction", "diagram class", "classdef", "diagram link", "click link in diagram", "diagram class shorthand", "diagram icon", "animate an arrow", "arrow animation", "diagram bold name", "br in a diagram",
+    ),
+    "body": (
+        "A block's menu has Markdown text, which draws bold (two asterisks each side) and italic (one) in its name; write <br/> in a name for a line break. "
+        "A group's menu has Direction: its blocks flow that way inside it (Mermaid ignores it when a block in the group is joined to one outside). "
+        "A block's menu also has Class (a name; a new one gets a pale blue look, written as a classDef line you can edit in Source) and Link (an https address or [[a note]]); Open link follows it. "
+        "In a document, a block with a link is a button on the picture: it opens the link the same way. A callback or javascript: click line stays a locked line. "
+        "Name:::class after a block is read as its class. A node written with @{ icon: ... } is drawn with its label and its line is kept as written: no icon pack is bundled, so the icon itself is not drawn. "
+        "An arrow's menu has Animation (still, moving, slowly or quickly), written as e1@--> and an e1@{ animate: true } line; the picture holds still when motion is reduced. Mermaid has no setting for where an arrow's label sits. "
+        "On a sequence diagram, a participant's menu has Box (a named frame round it) and Number the messages; a message's menu has Lifetime (it creates or destroys a participant); a highlight block has Colour."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["diagram-styling"] = {"title": "Names, groups and styles of a diagram's blocks", "path": "A diagram document, Blocks, a block's menu"}
 
 
 #: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).
@@ -3084,25 +3166,51 @@ MORE_TOPICS.append({
     ),
     "body": (
         "A paragraph can live in one document and be shown in others. In its own document, put the caret in it and "
-        "choose Link to this block in the / menu: it gets a short id at the end of its last line. In another document "
-        "write ![[Document title#^the-id]] and the paragraph appears there, quoted, with a line naming where it comes "
-        "from (press it to open that document). Hover the quote and press the pencil to change the paragraph where "
-        "you are: Save writes it into the document it lives in, so there is only ever one copy, every other place that "
-        "shows it follows, and that document's History has the change. Other edits to that document in the meantime "
-        "stay; if the paragraph itself was changed somewhere else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is "
-        "not allowed, and an empty one cannot be saved. In the document the paragraph lives in, the pencil is not "
-        "shown: there the text is simply the text."
+        "choose Copy as synced block in the / menu (or Link to this block for a plain link): it gets a short id at the "
+        "end of its last line and ![[Document title#^the-id]] is copied. In another document paste it, or choose Paste "
+        "synced block, and the paragraph appears there as text you can press to edit; the line under it names where it "
+        "comes from (press that to open the document). Save writes it into the document it lives in, so there is only "
+        "ever one copy, every other place that shows it follows at once (in other open windows too), and that "
+        "document's History has the change. In the paragraph's own document, a small pencil with a number appears where "
+        "the id is hidden when other documents or notes show it: it opens the same box, and Save changes the text you "
+        "are writing. Other edits to a document in the meantime stay; if the paragraph itself was changed somewhere "
+        "else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is not "
+        "allowed, and an empty one cannot be saved."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Link to this block"}
+TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Copy as synced block"}
+
+#: DOCUMENTS_PLAN D14 (L-documents-44): sub-pages, the Library's tree and the head's breadcrumb (documents-subpages.js).
+MORE_TOPICS.append({
+    "id": "document-subpages",
+    "keywords": (
+        "sub-page", "sub-pages", "subpage", "child page", "nested pages", "page tree", "move under",
+        "new sub-page", "parent document", "breadcrumb", "/subpage",
+    ),
+    "body": (
+        "A document can sit under another one. In the Library's Documents list, a document's ... menu has New sub-page "
+        "(a document under it, opened at once) and Move under (pick the document to put it under; "
+        "Move to the top level takes it out again). In a document, type /subpage: it makes a sub-page and puts a link to it where you "
+        "typed. A document with sub-pages has a small arrow before it in the list: press it to show or hide the pages "
+        "under it (the list starts with them hidden, and remembers which you opened). A search shows its matches as a "
+        "flat list. At the top of a sub-page, its parents are shown after Documents: press one to open it (on a phone the "
+        "nearest parent shows on a line under the title, and its ... menu lists them all). A page cannot "
+        "go under itself or one of its own sub-pages, and Move under does not list them. Sub-pages stay under their "
+        "parents when two computers sync. Deleting a document moves its sub-pages to the bin with it, and "
+        "restoring it brings them back; deleting it for good leaves its sub-pages at the top level. Each move and each "
+        "new sub-page can be undone."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-subpages"] = {"title": "Sub-pages", "path": "Library tab, Documents, a document's ... menu, New sub-page or Move under; type /subpage in a document"}
 
 #: DOCUMENTS_PLAN 26, gap row 10: a board shown in a document is edited from it (documents-board.js).
 MORE_TOPICS.append({
     "id": "document-board",
     "keywords": (
         "board in a document", "embed a board", "edit a board here", "whiteboard in a document", "mind map in a document",
-        "![[board", "![[map", "edit here", "canvas block",
+        "![[board", "![[map", "edit here", "canvas block", "edit in place", "show live", "board window",
     ),
     "body": (
         "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
@@ -3112,12 +3220,17 @@ MORE_TOPICS.append({
         "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
         "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
         "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
-        "was, on the board it had open or on its list of boards. The other way: a board's Board menu, Write as a document, "
+        "was, on the board it had open or on its list of boards. Edit in place, beside Edit here, opens the board in the "
+        "document itself with the board's own tools, saved as you make each change. Each card has its own board, so two "
+        "cards keep their own zoom, selection and undo, and two cards of one board show each other's edits. Typing there "
+        "never goes into the document's undo; Escape returns to the button, and pressing Edit in place again closes it. "
+        "If the board's tools cannot load, the card shows the board to read instead: zoom and pan it with the corner "
+        "buttons, Ctrl and the wheel or plus and minus, and press Refresh to read it again. The other way: a board's Board menu, Write as a document, "
         "makes a draft with a heading for each frame and a paragraph for each sticky, text box or note card in it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
+TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here or Edit in place"}
 
 #: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
 MORE_TOPICS.append({
@@ -3145,3 +3258,5 @@ MORE_TOPICS.append({
     "badge": {"label": "Whiteboard", "tab": "library"},
 })
 TOPIC_META["board-format-options"] = {"title": "Board format options", "path": "Whiteboard, Format panel"}
+TOPIC_META["code-lint"] = {"title": "Lint warnings in a code file", "path": "A .js, .ts or .py file in the Library; Settings, Packages for Ruff"}
+TOPIC_META["diagram-chart-kinds"] = {"title": "Blocks for Gantt, pie, state, class and ER diagrams", "path": "A diagram document, Blocks"}

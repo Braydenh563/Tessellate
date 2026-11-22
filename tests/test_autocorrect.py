@@ -21,6 +21,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
@@ -80,7 +81,7 @@ def test_one_switch_in_settings_on_by_default(client):
 def test_it_loads_on_the_first_focus_of_a_box_it_serves():
     wiring = (JS / "wiring.js").read_text(encoding="utf-8")
     assert 'lazyScript("/js/autocorrect.js")' in wiring
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     #: The note boxes are CodeMirror once mounted; a typed change is handed
     #: over as an event rather than a call into a file that may not be in.
     assert '"note-typed"' in docs and '"note-typed"' in SOURCE
@@ -164,7 +165,7 @@ def test_the_dictionary_and_a_word_put_back_are_never_rewritten():
 
 
 def test_the_table_holds_the_editors_and_the_owners_typos():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     #: Audit 1031 N42: the documents' own copy (42 rows, which had drifted from this
     #: table's 89) is gone; the editor's rows are this table's first block, kept by name.
     assert "const DOC_AUTOCORRECT = AUTOCORRECT_TYPOS;" in docs
@@ -227,7 +228,7 @@ def test_the_document_editor_shows_the_same_underline_and_menu():
     # hands its correction to autocorrect.js (`autocorrectShow`), which draws the
     # underline over the CodeMirror view and offers Keep, Put back, Edit. Ctrl+Z
     # stays the document's own (its history step), so the entry is `native`.
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     fn = docs[docs.index("function docAutocorrectAt(") :]
     fn = fn[: fn.index("\n}\n")]
     assert 'lazyScript("/js/autocorrect.js")' in fn

@@ -567,18 +567,6 @@
    (the panel is a dialog with a textarea and two buttons under it, and the diff
    may not push them off the bottom), and the answer stays the taller of the
    two: what is being accepted is the text. */
-.doc-ai-diff-block {
-  margin-bottom: var(--space-3);
-}
-
-.doc-ai-diff {
-  max-height: min(14rem, 32vh);
-}
-
-.doc-ai-diff-head {
-  margin: 0 0 var(--space-1);
-  font-size: var(--text-sm);
-}
 
 /* A serif for the rendered page only, and a little more leading with it: a
    serif at the app's own line height reads tighter than the same size of
@@ -616,66 +604,8 @@
   max-width: 82ch;
 }
 
-/* --- the assistant's three verbs (INBOX 192) --------------------------------
-   "change the style of and redesign this edit, write, remove ai assistant
-   toggle row as it is ugly and needs a better visual and more modern look".
-
-   Not a fourth treatment, and not a new recipe (standing order 11). DESIGN.md
-   already says what this control is: "the radio-backed form
-   (`.segmented-control`: `#doc-ai-verb`) is the same object as the
-   button-backed one (`.seg`) and the recipe index has no room for a second
-   reading of it". What was still true when the owner looked at it is that it
-   was not drawn with `.seg`'s numbers. Measured beside `#doc-view-seg`, the
-   choice control on the same screen: track corner 11.2px against 15.4px,
-   segment corner 6px against 15.4px, segments 30px tall inside a 32px track
-   with the slack unevenly split, and three segments 73.4 / 82.7 / 101.2px
-   wide, so the row read as three different-sized shapes with three different
-   corners from everything around it. (INBOX 101's note that `--radius-inner`
-   "lands within 2.4px of `.seg button`'s own radius" was true when `.seg
-   button` was 8.4px; the dock's own rule has since made every `.seg` 15.4px.)
-
-   Four numbers, no new colours: the selected segment stays `--accent-surface`
-   behind `--on-accent`, which is the line DESIGN.md settles for both forms. */
-#doc-ai-verb {
-  /* The choice control's row of the radius table (DESIGN.md). */
-  border-radius: var(--radius-choice);
-  /* **A grid, so the three verbs are one width.** As a flex row they measured
-     73.4 / 82.7 / 101.2px, and `flex: 1 1 0` cannot equalise them: the track
-     is content-width by an earlier decision, so every segment sits clamped at
-     its own min-content and the free space to share is nil. One `1fr` column
-     each is the shape that reads as a segmented control, and in a
-     content-width grid `1fr` tracks all take the widest segment's size. */
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  align-items: stretch;
-}
-
-/* The same specificity as the height rule in 04-chat-dock-appearance.css, in a
-   sheet that loads after it: that rule gives the segment `height: 100%`, which
-   a percentage against an auto-height track resolves to its own content, and
-   the segment then sat 30px inside a 32px well. */
-.doc-ai-card > #doc-ai-verb label {
-  /* Concentric with the track: the track's radius less the padding that sits
-     between them (`--space-1` of padding and the track's own 1px edge), which
-     is the relationship `--radius-inner` was picked for and the arithmetic it
-     can no longer express here. */
-  border-radius: calc(var(--radius) * 0.5 + var(--radius-md) - var(--space-1) - 1px);
-  /* Centred in the column the grid above gives it: sized to their words the
-     three read as three different shapes, and the eye takes the widest for
-     the important one. */
-  justify-content: center;
-  /* Fill the track rather than floating 1px inside it. */
-  align-self: stretch;
-  height: auto;
-}
-
 /* The radio is visually hidden for the native arrow-key walk, so without this
    there is no visible focus anywhere in the group for a keyboard. */
-#doc-ai-verb label:has(input[type="radio"]:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
 
 /* =============================================================================
    The thumb bar (DESIGN.md's recipe index: a bar of actions above the
@@ -1046,6 +976,16 @@
     margin: 2cm;
   }
 
+  /* A video has no picture to print: its name line stands in, with no poster. */
+  /* Past the screen rule in library-lazy.css, which loads later. */
+  #doc-preview .doc-video video {
+    display: none;
+  }
+  #doc-preview .doc-video-name {
+    display: block;
+    font-style: italic;
+  }
+
   /* `\newpage` (DOCUMENTS_PLAN D4): the next part on a new page, and no
      trace of the on-screen line. */
   .md-page-break {
@@ -1195,10 +1135,7 @@
 }
 
 @media (max-width: 1099.98px) {
-  .doc-source-wrap.has-margin {
-    flex-wrap: wrap;
-  }
-
+  
   .doc-margin {
     flex: 1 1 100%;
     max-height: 14rem;

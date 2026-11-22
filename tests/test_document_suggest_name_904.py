@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parent.parent
 BODY = "Packed the tent and the stove for the coast trip on Friday. We leave at dawn and drive north."
 
@@ -48,6 +50,6 @@ def test_an_empty_document_has_nothing_to_name_it_from(client):
 
 
 def test_the_documents_menu_offers_it_and_renames_with_undo():
-    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     item = js[js.index('"ph:sparkle Suggest a name"'):].split("appLinkMenuItem", 1)[0]
     assert "/suggest-title" in item and "renameDocumentWithUndo(doc" in item

@@ -45,14 +45,16 @@ def test_graph_options_sections_pad_both_sides_equally():
 
 def test_boards_filter_gap_is_set_after_the_ring_room_rule():
     text = "\n".join(_css(n) for n in ("02-chat-graph.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css", "characters-lazy.css"))
-    ring = text.index(":is(.launch-row, .library-filters, #chat-suggest) {")
-    gap = text.index(":is(#library-boards-filter, #reminder-filter) {")
+    # One selector per row, each filed under its class or id (L342).
+    ring = text.index(":where(.launch-row):is(.launch-row, #chat-suggest),\n:where(.library-filters):is(.library-filters, #chat-suggest),\n#chat-suggest {")
+    gap = text.index("#library-boards-filter,\n#reminder-filter {")
     assert gap > ring, "the gap must come after the `:is()` whose #chat-suggest id outranks a lone id"
-    body = _rule(text, ":is(#library-boards-filter, #reminder-filter)")
+    body = _rule(text, "#library-boards-filter,\n#reminder-filter")
     assert "margin-bottom: calc(var(--space-6) - var(--ring-room))" in body
     # The earlier lone-id rules never applied; they must not come back.
     assert not re.search(r"(?m)^#library-boards-filter\s*\{", _css("00-tokens-shell.css"))
-    assert not re.search(r"(?m)^#reminder-filter\s*\{", _css("07-whiteboard-misc.css"))
+    # A lone rule, not the second line of the split group above (now in 07 since 08 dissolved).
+    assert not re.search(r"(?m)(?<!,\n)^#reminder-filter\s*\{", _css("07-whiteboard-misc.css"))
 
 
 def test_autonomous_pass_jobs_have_no_rule_above_the_second_switch():
@@ -122,7 +124,7 @@ def test_a_new_full_screen_class_must_be_watched():
 
 def test_the_browsers_own_full_screen_is_only_asked_for_by_a_watched_surface():
     callers = [p.name for p in JS.glob("*.js") if "requestFullscreen(" in p.read_text(encoding="utf-8")]
-    assert callers == ["documents.js"], f"a new requestFullscreen caller needs its own flag: {callers}"
+    assert callers == ["documents-focus.js"]  # the same caller, moved out of documents.js (L-documents-117), f"a new requestFullscreen caller needs its own flag: {callers}"
 
 
 def test_every_viewer_overlay_that_covers_the_window_sets_the_flag():
@@ -150,7 +152,7 @@ def test_a_link_row_underlines_its_words_not_its_icon():
     assert "text-decoration" not in plain
     # An always-underlined link that holds an icon is not a flex row.
     chat = _css("04-chat-dock-appearance.css")
-    assert ":is(.linklike, .link-button):has(> .ph) {\n  display: inline-block;" in chat
+    assert ".linklike:has(> .ph),\n.link-button:has(> .ph) {\n  display: inline-block;" in chat
 
 
 def test_the_snippets_bar_is_one_height_and_its_label_one_line():

@@ -24,4 +24,5 @@ def test_a_click_or_focus_on_a_card_remembers_it() -> None:
 def test_search_falls_back_to_it_and_leaving_notes_forgets_it() -> None:
     assert '|| Number($("entry-list")?.dataset.lastCard) || null;' in JS
     assert '(open ? `&entry_id=${open}` : "")' in JS
-    assert 'if (name !== "notes") delete $("entry-list")?.dataset.lastCard;' in JS
+    #: Read through getElementById so leaving a tab never builds the unbuilt Notes page (L-documents-83).
+    assert 'if (name !== "notes") delete document.getElementById("entry-list")?.dataset.lastCard;' in JS

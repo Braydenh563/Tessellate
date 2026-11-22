@@ -13,10 +13,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 

@@ -2588,15 +2588,6 @@ kbd {
 .select-menu.action-menu-escaped {
   min-width: 0;
 }
-/* The whiteboard's right-click/long-press selection menu (ROADMAP §89.12).
-   Appended straight to <body> and positioned at the pointer, same reasoning
-   as `wbOpenDockedMenu`'s reparent: a fixed pixel position rather than
-   `.action-menu`'s default `absolute; right:0` anchored to a `.menu-wrap`
-   ancestor it doesn't have here. */
-.wb-ctx-menu {
-  position: fixed;
-  z-index: 200;
-}
 /* **One menu row, everywhere.** Reported: "make the documents ellipse kebab
    button dropdown menu the same ui style as the one in the chat tab", with
    both screenshots side by side. The difference was never the panel -- that
@@ -4282,7 +4273,8 @@ mark.lightbox-hit {
   background: var(--chip-bg);
   color: var(--ink);
 }
-details[open] > :is(.agent-step-group-summary, .fold-summary) {
+details[open] > .agent-step-group-summary,
+details[open] > .fold-summary {
   color: var(--ink);
 }
 /* **A fold that is a full-width panel open is a full-width row closed**
@@ -4294,7 +4286,8 @@ details[open] > :is(.agent-step-group-summary, .fold-summary) {
    answers), so the row is the flex default (no width of its own) and the affordance, the caret,
    sits at its end (drawn by the one disclosure rule, 02-chat-graph.css). The steps group and Sources are the same row (the owner: the
    other chat places too), their caret at the end as well. */
-:is(.fold-summary, .agent-step-group-summary)::after,
+.fold-summary::after,
+.agent-step-group-summary::after,
 .chat-sources-summary::before {
   order: 1;
   margin-inline-start: auto;
@@ -4319,7 +4312,8 @@ details[open] > :is(.agent-step-group-summary, .fold-summary) {
 .advanced-css > summary:not(.icon-only):not(.icon-button)::before,
 .task-log > summary:not(.icon-only):not(.icon-button)::before,
 .chat-sources > .chat-sources-summary::before,
-:is(.fold-summary, .agent-step-group-summary)::after {
+.fold-summary::after,
+.agent-step-group-summary::after {
   content: "\e136"; /* ph-caret-down, as `.contents-caret` */
   display: inline-block;
   flex: none;

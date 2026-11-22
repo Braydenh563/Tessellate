@@ -161,6 +161,7 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "settings-panes.js:paletteKeys": "inside paletteRowParts, whose only callers are app-palette.js and app-features.js (the palette, Quick access, Tools and features), and every bundle that holds either names app-features.js, which defines paletteKeys (boot cut, 2026-11-21)",
     "wiring.js:docFindInDocuments": "a click on the All documents button in the find bar, which openGlobalFind shows only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:openDocReplace": "a click on the Replace in all button in the find bar, shown only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",
@@ -441,9 +442,12 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "documents-synced.js:docText": "fetched only by a synced block's pencil in documents-embeds.js/documents-cm.js (`ensureModule(\"docSynced\")`), so documents.js is in; the `window.docBlockFind` guard names a global that moved to documents-block-ids.js with the rest of documents.js (L335)",
+    "documents-synced.js:docSurface": "fetched only by a synced block's pencil in documents-embeds.js/documents-cm.js (`ensureModule(\"docSynced\")`), so documents.js is in; the `window.docBlockFind` guard names a global that moved to documents-block-ids.js with the rest of documents.js (L335)",
+    "documents-synced.js:docTableDispatch": "fetched only by a synced block's pencil in documents-embeds.js/documents-cm.js (`ensureModule(\"docSynced\")`), so documents.js is in; the `window.docBlockFind` guard names a global that moved to documents-block-ids.js with the rest of documents.js (L335)",
+    "documents-math.js:docText": "the Section links stand-in (`docMathRender.sections.links`) is called only by documents-commands.js `renderDocOutline`, an open document's facts pass, so documents.js is in",
     "documents-csvgrid.js:docSurface": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:docCmView": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
-    "documents-csvgrid.js:currentDoc": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:docFileType": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "documents-csvgrid.js:docViewState": "fetched only by documents.js's Grid button (`ensureModule(\"docCsvGrid\")`), so documents.js has loaded",
     "reveal-targets.js:wbToggleNavigator": "the `board-overview` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
@@ -478,9 +482,8 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "documents-codekit.js:docDiffLines": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
     "documents-codekit.js:docRenderDiff": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
     "documents-export.js:mermaidInlineForExport": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
+    "documents-mermaid.js:renderDocList": "behind `if ($(\"doc-list\"))`: the list exists only once the documents page is built, which loads documents-surface.js (where renderDocList lives) before it; the Diagram builder door loads this file alone, with no page",
     "documents-mermaid.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
-    "documents-mermaid.js:currentDoc": "the Live figure and the fence renderer run inside the document editor (docRenderMermaidIn, docMermaidField's widgets), which exists only once documents.js is in; the diagramDoor module (INBOX 1722) loads this file without the editor and never calls them",
-    "documents-mermaid.js:docPhase2State": "the Live figure and the fence renderer run inside the document editor (docRenderMermaidIn, docMermaidField's widgets), which exists only once documents.js is in; the diagramDoor module (INBOX 1722) loads this file without the editor and never calls them",
     "documents-mermaid.js:docStr": "the Live figure and the fence renderer run inside the document editor (docRenderMermaidIn, docMermaidField's widgets), which exists only once documents.js is in; the diagramDoor module (INBOX 1722) loads this file without the editor and never calls them",
     "documents-mermaid.js:wbEditDiagram": "behind `window.wbCommandsLive?.()` in diagramDoor (true only once the board's files are in); the Diagram builder door (INBOX 1722) loads this file alone, with no board",
     "graph-canvas.js:refreshBoardList": "typeof-guarded refresh of a list that exists only once the library bundle is on screen (lazy-entries.js rule 2)",

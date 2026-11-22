@@ -27,10 +27,6 @@
 #library-view-whiteboard.wb-presenting .wb-tools-opener {
   display: none;
 }
-#library-view-whiteboard.wb-presenting #wb-html-layer,
-#library-view-whiteboard.wb-presenting #wb-svg-layer {
-  pointer-events: none;
-}
 .wb-present-bar {
   left: 50%;
   bottom: var(--space-5);
@@ -1840,7 +1836,8 @@ body.scroll-top-visible .skills-split > .tab-main {
   flex-wrap: wrap;
 }
 
-:is(.persona-row, .skill-row) {
+.persona-row,
+.skill-row {
   row-gap: var(--space-1);
 }
 .skill-blurb {
@@ -1855,7 +1852,8 @@ body.scroll-top-visible .skills-split > .tab-main {
    line of their own under the description: hidden until pointed at, that
    own line was a band of empty space at the foot of every persona and
    custom skill. The description takes the full width below. */
-:is(.persona-row, .skill-row) > :is(.persona-preview, .skill-blurb) {
+:is(.persona-row, .skill-row) > .persona-preview,
+:is(.persona-row, .skill-row) > .skill-blurb {
   order: 10;
 }
 /* --- whiteboard fixes (§41) ---------------------------------------------------
@@ -1935,41 +1933,6 @@ body.scroll-top-visible .skills-split > .tab-main {
   /* About four documents, so the list is still a list at its smallest. */
   min-height: 9rem;
 }
-/* Reported directly, with screenshots: the Outline visibly disappeared
-   whenever the "Where are my documents kept?" disclosure below it was
-   opened. The comment above this block already said the help disclosure
-   should "give up its space first", but `flex: 0 0 auto` means
-   flex-shrink: 0, which is the opposite of giving anything up; it is
-   *exempt* from shrinking, so the whole deficit landed on the one sibling
-   that could shrink and had no floor of its own. Measured live before
-   fixing: 10 headings' worth of outline went from 258px tall to exactly
-   0px the instant the disclosure opened. */
-.doc-sidebar-tabs {
-  /* This is now the first thing in the card, which puts it exactly where
-     .sidebar-head used to sit, so it needs .sidebar-head's own two fixes
-     for the same reason (05-sidebars-themes.css): pulled up to sit level
-     with the collapse toggle (positioned against the card's border box,
-     one --space-6 above where this card's content box starts), and a
-     reserved lane past the toggle so the tab strip doesn't run under it.
-     Reported live: the strip was sitting under/clipped by the toggle. */
-  margin-top: calc(var(--sidebar-toggle-inset) - var(--space-6));
-  /* The bare lane (toggle width + one --space-2) put "Outline" close enough
-     to read as crowding the toggle at narrower sidebar widths, reported
-     directly. An extra --space-3 of clearance on top of the lane everywhere
-     else already reserves. */
-  padding-right: calc(var(--sidebar-toggle-lane) + var(--space-3));
-  min-height: var(--sidebar-toggle-size);
-  /* The sidebar's own row gap is the space under the strip: a margin on top of
-     it was a band of 18px between the strip and the first heading. */
-  margin-bottom: 0;
-  flex: 0 0 auto;
-  /* Redesigned away from .seg's filled-pill look (reported live, with a
-     photo): it is the app's one underline recipe, `.tabs-line`
-     (05-sidebars-themes.css), now shared by the Notes and Library strips,
-     which supplies the hairline, the tab metrics and the 2px line. */
-  padding-left: 0;
-  gap: var(--space-1);
-}
 /* **A narrow sidebar puts the strip under the toggle, not beside it**
    (audit 2026-10-05, FE-19; DOCUMENTS_PLAN, decisions). "Documents" and
    "Outline" need 182px and the toggle's lane 46px more; the sidebar is 192px
@@ -1986,11 +1949,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   container: doc-sidebar / inline-size;
 }
 @container doc-sidebar (width < 14rem) {
-  .doc-sidebar-tabs {
-    margin-top: calc(var(--sidebar-toggle-inset) + var(--sidebar-toggle-size) + var(--space-2) - var(--space-6));
-    padding-right: 0;
-  }
-  /* At 192px even the whole width is 160px against the two tabs' 182: the
+    /* At 192px even the whole width is 160px against the two tabs' 182: the
      tabs-line's --space-5 of side room drops to --space-2 here only. */
   .doc-sidebar-tabs > [role="tab"] {
     padding-inline: var(--space-2);
@@ -2031,23 +1990,6 @@ body.scroll-top-visible .skills-split > .tab-main {
    holds three actions that do not shrink, and the sub-pixel overflow came out
    of the heading. `flex: none` keeps the heading its own width; the actions
    are the ones with room to spare here (the column has no collapse lane). */
-#doc-sidebar-list .sidebar-head h2 {
-  flex: none;
-}
-/* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
-   auto` below still has a flex context stretching the height the tab strip
-   left behind: the same nested-flex-column shape .doc-sidebar itself uses
-   against the page. */
-.doc-sidebar-section {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-.doc-sidebar-section.hidden {
-  display: none;
-}
 /* **A section is as tall as what is in it.** Measured with a two-heading
    document open at 1440: `#doc-outline-wrap` was 312.4px tall around 68.3px of
    content and `#doc-bookmarks-wrap` 296.5px around 46px, so 243.1px of empty
@@ -4640,7 +4582,9 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
    the position so a tick an earlier rule pins `absolute` keeps it; the
    stacking order is all this adds, at a weight above the hover-revealed
    tick's own `.library-card .library-card-tick` (z-index 1). */
-:where(.library-card-tick, .doc-list-tick, .library-card-preview a) {
+:where(.library-card-tick),
+:where(.doc-list-tick),
+:where(.library-card-preview a) {
   position: relative;
 }
 
@@ -5437,6 +5381,10 @@ rect.board-minimap-card,
      the point it happens, rather than adding a second, competing rule. */
   .draft-columns {
     grid-template-columns: 1fr;
+  }
+  /* One column: the boxes are not beside each other, so the foot keeps its own height. */
+  .draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
+    min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 2 * 0.4rem);
   }
   /* The attach row is a label, a select and five labelled buttons in about
      675px. Re-merging it with the commit row below is the one fix ruled out:
@@ -6627,9 +6575,6 @@ button.connection-row:is(:hover, :focus-visible) {
 /* The sidebar's width is an inline `grid-template-columns` on this grid (the
    resizer writes it, app.js), which no stylesheet track list beats without
    `!important`; so the page spans every track instead of redefining them. */
-#tab-documents.doc-focus > .doc-layout {
-  gap: 0;
-}
 /* The sidebar is the other half of "everything but the page", recent
    documents and the outline are for finding your place, not for the moment
    you are already writing. The dock, the strip, the breadcrumbs, the status
@@ -6679,12 +6624,6 @@ button.connection-row:is(:hover, :focus-visible) {
   /* Clears the bar (54px tall at the touch floor). */
   padding-block: calc(2rem + max(var(--control-h-lg), var(--target-min))) 0;
 }
-/* The floating dock. A `.card.glass` pill, the recipe for a panel floating
-   over a surface, parked at the top centre of the window. Hidden whenever the
-   mode is off. */
-.doc-focus-bar {
-  display: none;
-}
 #tab-documents.doc-focus > .doc-focus-bar {
   display: flex;
   align-items: center;
@@ -6704,9 +6643,6 @@ button.connection-row:is(:hover, :focus-visible) {
 }
 /* Not the polish set: an idle fade of a whole bar, which keeps reduced
    motion (DESIGN.md, the whole-window mode). */
-:where(:root[data-motion="reduced"]) #tab-documents.doc-focus > .doc-focus-bar {
-  transition: none;
-}
 .doc-focus-title {
   min-width: 0;
   max-width: 28ch;
@@ -6716,45 +6652,8 @@ button.connection-row:is(:hover, :focus-visible) {
   font-weight: 600;
   color: var(--ink);
 }
-.doc-focus-facts {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
 .doc-focus-facts > span:empty {
   display: none;
-}
-.doc-focus-facts > span + span:not(:empty)::before {
-  content: "\00B7";
-  margin-inline-end: var(--space-2);
-}
-#tab-documents.doc-focus > .doc-focus-bar .ghost.small {
-  height: var(--control-h-lg);
-  border-radius: var(--radius-pill);
-}
-#tab-documents.doc-focus > .doc-focus-bar .icon-only {
-  width: var(--control-h-lg);
-}
-/* **Tools, inside the mode** (INBOX 426 a). The owner: "in the documents
-   full screen mode, I cant access the formatting toolbar or any of the other
-   key tools or controls". The dock (view, AI edit, the document's menu) and
-   the formatting strip come back in their own places above the page, at the
-   window's width, under the floating dock's band; the sidebar, the app's own
-   bars and the status bar stay away, so this is still the page with nothing
-   around it. A collapsed strip stays collapsed (its rule in
-   07-whiteboard-misc.css), which is why pressing Tools also expands it. */
-#tab-documents.doc-focus.doc-focus-tools .doc-dock {
-  display: flex;
-}
-#tab-documents.doc-focus.doc-focus-tools #doc-toolbar:not(.is-collapsed) {
-  display: flex;
-}
-#tab-documents.doc-focus > .doc-focus-bar [aria-pressed="true"] {
-  background: var(--accent-soft);
-  color: var(--accent-text);
 }
 /* **The suggestions, as a side panel** (INBOX 426 b). Whichever side the
    panel is docked to on the page, in focus mode it is a column fixed to the
@@ -6826,28 +6725,6 @@ button.connection-row:is(:hover, :focus-visible) {
 #tab-documents.doc-focus {
   --doc-focus-sidebar-w: min(20rem, 40vw);
 }
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
-  display: flex;
-  position: fixed;
-  top: var(--doc-focus-panel-top);
-  left: var(--space-4);
-  bottom: var(--space-4);
-  z-index: 2;
-  width: var(--doc-focus-sidebar-w);
-  height: auto;
-  max-height: none;
-  margin: 0;
-  background: var(--modal-bg-opaque);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  overflow: hidden;
-  /* Below 820 the sidebar is an edge sheet (translated off screen, its rows
-     `visibility: hidden`, a rail left showing); here it is the panel, so the
-     sheet's own state is put back. */
-  transform: none;
-  border-radius: var(--radius);
-}
 #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > * {
   opacity: 1;
   pointer-events: auto;
@@ -6875,16 +6752,9 @@ button.connection-row:is(:hover, :focus-visible) {
    kept the right arm hanging. */
 .nm-atlas.atl-full .atl-chin-hand,
 #nm-buddy:not([data-pose="hang"], [data-pose="sit"], [data-travel="climb"], .nm-buddy-dragging, .nmb-arms) .nm-atlas .atl-chin-hand { opacity: var(--atl-chin); }
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-collapse-toggle,
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-rail-name {
-  display: none;
-}
 /* The phone's floating formatting bar (fixed, above the keyboard) is drawn
    over a panel that reaches the bottom of the window, cutting its last row;
    the panel is for finding a document, not for writing, so the bar waits. */
-#tab-documents.doc-focus.doc-focus-sidebar .doc-phone-bar {
-  display: none;
-}
 
 @media (max-width: 599.98px) {
   #tab-documents:has(#doc-panes.reading) .doc-phone-bar {
@@ -6913,25 +6783,6 @@ button.connection-row:is(:hover, :focus-visible) {
 /* On a phone the floating dock is one line with no room for words: the
    toggles keep their icon, and their name is the `aria-label` and title
    they carry at every width. */
-@media (max-width: 819.98px) {
-  /* Four toggles and the way out beside the facts is 29px more than a 390
-     window holds at the desktop gap (INBOX 453 (1) added the fifth), so the
-     pill tightens its gaps and its leading pad here. */
-  #tab-documents.doc-focus > .doc-focus-bar {
-    gap: var(--space-1);
-    padding-left: var(--space-3);
-  }
-  #tab-documents.doc-focus > .doc-focus-bar .doc-focus-word {
-    display: none;
-  }
-  #tab-documents.doc-focus > .doc-focus-bar button:has(.doc-focus-word) {
-    width: var(--control-h-lg);
-    padding-inline: 0;
-  }
-  #tab-documents.doc-focus > .doc-focus-bar button > .ph-lead:has(~ .doc-focus-word) {
-    margin: 0;
-  }
-}
 /* At 360 the five buttons leave no room for the word count as well as the
    save state, so the count goes first: whether the page is safe matters
    more than how long it is, and the count is one tap away in the status bar
@@ -6945,11 +6796,6 @@ button.connection-row:is(:hover, :focus-visible) {
   }
 }
 /* And at 320 the save state goes too: the five controls are the pill. */
-@media (max-width: 340px) {
-  #tab-documents.doc-focus > .doc-focus-bar .doc-focus-facts {
-    display: none;
-  }
-}
 /* ================= BOARD NAVIGATOR AND BOARD SEARCH =======================
    Two ways of getting around a board bigger than the screen. Neither existed:
    the only `minimap` in this codebase was the static thumbnail drawn on a
@@ -8682,15 +8528,6 @@ header#top-bar > #tab-bar {
 #tab-notes .doc-toolbar {
   top: var(--notes-sticky-top);
 }
-.doc-statusbar {
-  background: var(--surface-2);
-  border-color: transparent;
-}
-.doc-statusbar-button {
-  min-height: var(--target-min);
-  border-radius: var(--radius-md);
-  box-shadow: none;
-}
 .doc-dock-menu-check {
   background: none;
   border-color: transparent;
@@ -9778,9 +9615,6 @@ input[type="file"] {
    anything in it reads as a panel with nothing in it (menus.js, the only
    menu past 2x). The floor it gets is the width of its longest row plus air,
    not a new size of its own. */
-.doc-view-menu > .doc-dock-menu-list {
-  min-width: 10rem;
-}
 .dock-more > .dock-menu-list,
 .dock-menu-flip > .dock-menu-list {
   left: auto;
@@ -10093,7 +9927,13 @@ summary > .ph-lead,
    climb out of the card it sits in, and the card *after* it paints over the
    open list: measured on Reminders: the Quick set menu opened under the
    list card and nothing in it could be clicked. */
-.card:has(details.dock-menu[open]) {
+/* Not the document's card (L342): a `:has()` over a descendant walks the
+   card's whole subtree, the editor included, and marks every node in it, so
+   each keystroke's write inside the editor re-checked the rule and restyled
+   the card and `.doc-layout` (about 2 ms a key at 4x CPU). Its one such
+   menu, #doc-view-menu, sets the class from its toggle (documents-file-kind.js). */
+.card:not(.doc-main):has(details.dock-menu[open]),
+.card.doc-main.doc-view-menu-open {
   position: relative;
   z-index: 30;
 }
@@ -10229,7 +10069,8 @@ summary > .ph-lead,
       join its buttons on the floor (band 1 above); a search well's input is
       the text inside the well, which is already the target. */
 @media (max-width: 819.98px), (pointer: coarse) {
-  :is(.modal-card, .space-dialog) :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], .search-field-input), textarea:not(.search-field-input)) {
+  :is(.modal-card, .space-dialog) :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], .search-field-input)),
+  :is(.modal-card, .space-dialog) :is(textarea:not(.search-field-input)) {
     min-height: var(--target-min);
   }
 }
@@ -10666,13 +10507,7 @@ header#top-bar {
    `grid-column: 2` by a rule written to survive the sidebar being hidden;
    with the sidebar out of flow there is no track two, so they move to one. */
 @media (max-width: 819.98px) {
-  .doc-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .doc-layout > :not(.sidebar-panel) {
-    grid-column: 1;
-  }
-  /* **By id, and that is not decoration.** `#chat-sidebar` and `#doc-sidebar`
+      /* **By id, and that is not decoration.** `#chat-sidebar` and `#doc-sidebar`
      already carry `position: relative` from the phone block in
      05-sidebars-themes.css and `position: sticky` from their own id rules, and
      an id beats any class selector however late it is declared. Written as
@@ -10870,7 +10705,8 @@ header#top-bar {
     opacity: 0;
     transition: opacity var(--ui-fast) var(--ease-out);
   }
-  :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark) {
+  :is(.doc-list-top, .bookmark-row) > .doc-list-icon,
+  :is(.doc-list-top, .bookmark-row) > .bookmark-mark {
     transition: opacity var(--ui-fast) var(--ease-out);
   }
   :is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) .doc-list-tick,
@@ -10882,8 +10718,10 @@ header#top-bar {
     opacity: 1;
   }
   :is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark),
-  :is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > :is(.doc-list-icon, .bookmark-mark),
-  :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) :is(.doc-list-icon, .bookmark-mark) {
+  :is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > .doc-list-icon,
+  :is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > .bookmark-mark,
+  :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) .doc-list-icon,
+  :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) .bookmark-mark {
     opacity: 0;
   }
 }
@@ -11058,7 +10896,10 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   margin-left: auto;
 }
 
-:is(.library-card, .doc-list-item) :is(.library-card-tick, .doc-list-tick, .menu-wrap, .library-card-preview a) {
+:is(.library-card, .doc-list-item) :where(.library-card-tick):is(.library-card-tick, .library-card-preview a),
+:is(.library-card, .doc-list-item) :where(.doc-list-tick):is(.doc-list-tick, .library-card-preview a),
+:is(.library-card, .doc-list-item) :where(.menu-wrap):is(.menu-wrap, .library-card-preview a),
+:is(.library-card, .doc-list-item) :is(.library-card-preview a) {
   z-index: 2;
 }
 .graph-popup-actions .graph-popup-tool-shown > button:not(.icon-only) {
@@ -11370,7 +11211,11 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 
 /* The fill and the corner each family's chosen option was drawn with: the
    defaults at zero specificity, so each family below wins. */
-:where(.seg, #settings-nav, #tab-bar, .tabs-line, .settings-nav-groups) {
+:where(.seg),
+:where(#settings-nav),
+:where(#tab-bar),
+:where(.tabs-line),
+:where(.settings-nav-groups) {
   --glide-x: 0px;
   --glide-y: 0px;
   --glide-w: 0px;
@@ -11382,7 +11227,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 
 /* The control edge, as `.seg button.active` and the radio form's chosen
    option draw it (INBOX 464, 621). */
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.seg, #tab-bar) {
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :where(.seg):is(.seg, #tab-bar),
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) #tab-bar {
   --glide-fill: color-mix(in srgb, var(--ink) 11%, transparent);
   --glide-ring: inset 0 0 0 1px var(--control-edge);
 }
@@ -12091,11 +11937,15 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
    apart by colour and weight at once (DESIGN.md: weight, colour and case
    before another size step). Paper and Mono keep their capitals and are
    untouched. */
-:root[data-palette="utilitarian"] :is(
-  .card h3, .eyebrow, .nav-group-label, .launch-label,
-  .features-group, .reminder-group-head,
-  .dash-widgets-group-label, .connection-heading, .finder-group
-) {
+:root[data-palette="utilitarian"] :is(.card h3),
+:root[data-palette="utilitarian"] :where(.eyebrow):is(.eyebrow, .card h3),
+:root[data-palette="utilitarian"] :where(.nav-group-label):is(.nav-group-label, .card h3),
+:root[data-palette="utilitarian"] :where(.launch-label):is(.launch-label, .card h3),
+:root[data-palette="utilitarian"] :where(.features-group):is(.features-group, .card h3),
+:root[data-palette="utilitarian"] :where(.reminder-group-head):is(.reminder-group-head, .card h3),
+:root[data-palette="utilitarian"] :where(.dash-widgets-group-label):is(.dash-widgets-group-label, .card h3),
+:root[data-palette="utilitarian"] :where(.connection-heading):is(.connection-heading, .card h3),
+:root[data-palette="utilitarian"] :where(.finder-group):is(.finder-group, .card h3) {
   color: var(--ink);
 }
 
@@ -15010,16 +14860,63 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   .nav-history-menu,
   .library-image-menu-list,
   .wb-board-menu
-) :is(
-  .menu-item,
-  .doc-dock-menu-item,
-  .nav-history-item,
-  .library-image-menu-item,
-  .action-menu-item,
-  .wb-menu-item,
-  .select-option,
-  .dock-menu-check
-) {
+) .menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .doc-dock-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .nav-history-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .library-image-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .action-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .wb-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .select-option,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .dock-menu-check {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -15080,16 +14977,63 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
     .nav-history-menu,
     .library-image-menu-list,
     .wb-board-menu
-  ) :is(
-    .menu-item,
-    .doc-dock-menu-item,
-    .nav-history-item,
-    .library-image-menu-item,
-    .action-menu-item,
-    .wb-menu-item,
-    .select-option,
-    .dock-menu-check
-  ) {
+  ) .menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .doc-dock-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .nav-history-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .library-image-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .action-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .wb-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .select-option,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .dock-menu-check {
     min-height: var(--target-min);
   }
 }
@@ -15239,11 +15183,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   width: var(--control-h-lg);
 }
 
-.doc-view-cluster {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
 
 .doc-view-menu > summary {
   width: var(--control-h-lg);
@@ -15757,7 +15696,8 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   }
 }
 
-.graph-group-add-row > :is(input, button) {
+.graph-group-add-row > input,
+.graph-group-add-row > button {
   height: auto;
   min-height: var(--control-h);
 }
@@ -15916,9 +15856,19 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .action-menu:not(.hidden),
 .dock-menu[open] > .dock-menu-list,
 .help-popover,
-:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
-  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup, .selection-popup,
-  .doc-suggest-menu, .ocr-region-popover):not(.hidden) {
+:where(.space-menu):is(.space-menu, #status-clock-detail):not(.hidden),
+:where(.notif-panel):is(.notif-panel, #status-clock-detail):not(.hidden),
+#status-clock-detail:not(.hidden),
+:where(.nav-history-menu):is(.nav-history-menu, #status-clock-detail):not(.hidden),
+:where(.chat-model-panel):is(.chat-model-panel, #status-clock-detail):not(.hidden),
+:where(.global-find-bar):is(.global-find-bar, #status-clock-detail):not(.hidden),
+:where(.note-picker-panel):is(.note-picker-panel, #status-clock-detail):not(.hidden),
+:where(.chat-skills-panel):is(.chat-skills-panel, #status-clock-detail):not(.hidden),
+:where(.chat-dock-more-panel):is(.chat-dock-more-panel, #status-clock-detail):not(.hidden),
+:where(.graph-popup):is(.graph-popup, #status-clock-detail):not(.hidden),
+:where(.selection-popup):is(.selection-popup, #status-clock-detail):not(.hidden),
+:where(.doc-suggest-menu):is(.doc-suggest-menu, #status-clock-detail):not(.hidden),
+:where(.ocr-region-popover):is(.ocr-region-popover, #status-clock-detail):not(.hidden) {
   --menu-origin-x: 100%;
   --menu-origin-y: 0%;
   transform-origin: var(--menu-origin-x) var(--menu-origin-y);
@@ -15928,7 +15878,11 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 /* Flipped upward, so it grows out of the bottom of the button instead. */
 .action-menu.action-menu-flip:not(.hidden),
 .help-popover.help-popover-above,
-:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
+:where(.note-picker-panel):is(.note-picker-panel, #status-clock-detail):not(.hidden),
+:where(.chat-skills-panel):is(.chat-skills-panel, #status-clock-detail):not(.hidden),
+:where(.chat-dock-more-panel):is(.chat-dock-more-panel, #status-clock-detail):not(.hidden),
+:where(.nav-history-menu):is(.nav-history-menu, #status-clock-detail):not(.hidden),
+#status-clock-detail:not(.hidden) {
   --menu-origin-y: 100%;
 }
 
@@ -15936,7 +15890,11 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    left edge; a help popover from its caret, above or below. */
 .dock-menu[open] > .dock-menu-list,
 .action-menu.action-menu-start,
-:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu, .doc-suggest-menu):not(.hidden) {
+.space-menu:not(.hidden),
+.note-picker-panel:not(.hidden),
+.chat-skills-panel:not(.hidden),
+.nav-history-menu:not(.hidden),
+.doc-suggest-menu:not(.hidden) {
   --menu-origin-x: 0%;
 }
 
@@ -16395,10 +16353,12 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
     /* Its gait by look (avatars.js, `nameMarkBuddyGait`): heavier steps,
        slower and deeper; lighter ones, quicker with a sway. */
     &[data-gait="masculine"].nmb-walking .nm-buddy-char { animation: nmb-bob-heavy 0.4s ease-in-out infinite alternate; }
-    &[data-gait="masculine"].nmb-walking :is(.nmb-leg-l, .nmb-leg-r) { animation-duration: 0.4s; }
+    &[data-gait="masculine"].nmb-walking .nmb-leg-l,
+    &[data-gait="masculine"].nmb-walking .nmb-leg-r { animation-duration: 0.4s; }
     &[data-gait="masculine"].nmb-walking .nmb-leg-r { animation-delay: -0.4s; }
     &[data-gait="feminine"].nmb-walking .nm-buddy-char { animation: nmb-bob-light 0.3s ease-in-out infinite alternate; }
-    &[data-gait="feminine"].nmb-walking :is(.nmb-leg-l, .nmb-leg-r) { animation-duration: 0.3s; }
+    &[data-gait="feminine"].nmb-walking .nmb-leg-l,
+    &[data-gait="feminine"].nmb-walking .nmb-leg-r { animation-duration: 0.3s; }
     &[data-gait="feminine"].nmb-walking .nmb-leg-r { animation-delay: -0.3s; }
     &.nm-buddy-dragging .nmb-leg-l { animation: nmb-kick 0.42s ease-in-out infinite alternate; }
     &.nm-buddy-dragging .nmb-leg-r { animation: nmb-kick 0.42s ease-in-out -0.42s infinite alternate; }
@@ -16753,7 +16713,34 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    above, whose selectors out-rank this one; the app-wide kill in
    02-chat-graph.css used to hide that by freezing everything first, and
    now leaves faces and the companion to this block. */
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark :is(.nm-body, .nm-blinks, .nm-tear, .nm-sweat, .nm-z, .nm-spark, .nm-vein, .nm-heart, .nm-q, .nm-bulb, .nm-halo, .nm-pupil, .nm-wave, .nm-steam, .nm-table, .nm-balloon, .nm-wing-l, .nm-wing-r, .nm-tentacle, .nm-earring, .nm-tails, .nm-bow, .nm-pompom, .nm-gem, .nm-flame, .nm-tail, .nm-starfield, .nm-aura) {
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-body,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-blinks,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-tear,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-sweat,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-z,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-spark,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-vein,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-heart,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-q,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-bulb,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-halo,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-pupil,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-wave,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-steam,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-table,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-balloon,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-wing-l,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-wing-r,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-tentacle,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-earring,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-tails,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-bow,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-pompom,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-gem,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-flame,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-tail,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-starfield,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark .nm-aura {
   /* Calmer, not still: every loop takes six seconds. */
   animation-duration: 6s !important;
 }
@@ -17307,7 +17294,8 @@ input[type="file"]:active::file-selector-button {
    --button-min-h)`, 01-forms-settings.css) beats `height`, so under touch
    both are 44 like every other dialog foot; an id-weight min-height here
    held them at 32 (design-rows-1005, `improvefoot.js`). */
-:is(#improve-apply, #improve-retry) {
+#improve-apply,
+#improve-retry {
   height: var(--control-h);
   padding-block: 0;
 }
@@ -17390,7 +17378,9 @@ input[type="file"]:active::file-selector-button {
   /* The chosen option is the indicator's now; its own fill, line or rail
      as well would draw it twice. `:not(#glide)` lifts this over every rule
      that paints a chosen option (the flat looks' top tab is (1,3,1)). */
-  :root .has-glide > :is(.active, [aria-selected="true"], [aria-current="location"]):not(#glide):not(#glide),
+  :root .has-glide > .active:not(#glide):not(#glide),
+  :root .has-glide > [aria-selected="true"]:not(#glide):not(#glide),
+  :root .has-glide > [aria-current="location"]:not(#glide):not(#glide),
   :root .has-glide > [role="group"] > .active:not(#glide):not(#glide) {
     background: transparent;
     box-shadow: none;
@@ -17691,7 +17681,9 @@ input[type="file"]:active::file-selector-button {
    hidden simply goes. `:where()` so the recipe is zero-weight: a dialog with
    motion of its own (Settings' peek) keeps it. The lock screen is not in
    it: it is the boot's curtain, which fades out (below) rather than in. */
-:where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {
+:where(.modal-overlay):not(.hidden),
+:where(.lock-overlay:not(#lock-overlay)):not(.hidden),
+:where(#palette-overlay):not(.hidden) {
   transition: opacity var(--ui-base) var(--ease-out);
   & > * {
     transition: translate var(--ui-slow) var(--ease-out), scale var(--ui-slow) var(--ease-out);
@@ -17946,18 +17938,18 @@ input[type="file"]:active::file-selector-button {
    their edge. Across, the room is padding with the same negative margin, so
    nothing moves; at the start and the end of the scroll it is padding alone
    (a few pixels the first control and the last one stand in). */
-:is(
-  .doc-sidebar-section,
-  .doc-sidebar .doc-outline-wrap,
-  .library-view-section,
-  .doc-list,
-  .wb-side-section
-) {
+:where(.doc-sidebar-section):is(.doc-sidebar-section, .doc-sidebar .doc-outline-wrap),
+:is(.doc-sidebar .doc-outline-wrap),
+:where(.library-view-section):is(.library-view-section, .doc-sidebar .doc-outline-wrap),
+:where(.doc-list):is(.doc-list, .doc-sidebar .doc-outline-wrap),
+:where(.wb-side-section):is(.wb-side-section, .doc-sidebar .doc-outline-wrap) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
 
-:is(.doc-sidebar-section, .library-view-section, .doc-list) {
+.doc-sidebar-section,
+.library-view-section,
+.doc-list {
   padding-block: var(--ring-room);
 }
 
@@ -17975,7 +17967,10 @@ input[type="file"]:active::file-selector-button {
    on all four sides, the layout unmoved; the section above holds the same
    room across, so the list's negative margin lands in the section's padding
    and not past its edge (the sweep read that as an overflow). */
-:is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree) {
+:where(.wb-lib-list):is(.wb-lib-list, .wb-side-section .wb-library-list),
+:is(.wb-side-section .wb-library-list),
+:where(.wb-layers-tree):is(.wb-layers-tree, .wb-side-section .wb-library-list),
+:where(.wb-outline-tree):is(.wb-outline-tree, .wb-side-section .wb-library-list) {
   padding: var(--ring-room);
   margin: calc(-1 * var(--ring-room));
 }
@@ -18259,7 +18254,9 @@ input[type="file"]:active::file-selector-button {
 /* Room: strips of chips and tiles that scroll across (`overflow-x: auto`
    clips down as well), and the notes page, whose cards stand on its edges
    under 600. */
-:is(.launch-row, .library-filters, #tab-notes .layout > .tab-main) {
+:where(.launch-row):is(.launch-row, #tab-notes .layout > .tab-main),
+:where(.library-filters):is(.library-filters, #tab-notes .layout > .tab-main),
+:is(#tab-notes .layout > .tab-main) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
@@ -18287,7 +18284,9 @@ input[type="file"]:active::file-selector-button {
   }
 }
 
-:is(.launch-row, .library-filters, #chat-suggest) {
+:where(.launch-row):is(.launch-row, #chat-suggest),
+:where(.library-filters):is(.library-filters, #chat-suggest),
+#chat-suggest {
   padding-block: var(--ring-room);
   margin-block: calc(-1 * var(--ring-room));
 }
@@ -18422,7 +18421,8 @@ input[type="file"]:active::file-selector-button {
    its chips (17px measured to the card's edge), so the row is given that:
    `--space-6` visible, less the 4px of ring room the padding already
    supplies. */
-:is(#library-boards-filter, #reminder-filter) {
+#library-boards-filter,
+#reminder-filter {
   margin-bottom: calc(var(--space-6) - var(--ring-room));
 }
 
@@ -18738,7 +18738,8 @@ input[type="file"]:active::file-selector-button {
 
 @media (hover: none) {
   #conversation-list li .conv-title,
-  .doc-item :is(.doc-item-title, .doc-item-meta) {
+  .doc-item .doc-item-title,
+  .doc-item .doc-item-meta {
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--target-min) - var(--space-2)), transparent calc(100% - var(--space-5)));
     mask-image: linear-gradient(to right, #000 calc(100% - var(--target-min) - var(--space-2)), transparent calc(100% - var(--space-5)));
   }

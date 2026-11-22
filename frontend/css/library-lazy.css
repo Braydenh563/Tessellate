@@ -3199,6 +3199,9 @@ math .math-cancel:where(:not(.code-block pre, :is( .action-menu, .select-menu, .
 .doc-item:focus-within .doc-item-menu {
   opacity: 1;
 }
+.doc-status {
+  margin: 0;
+}
 }
 
 @media (hover: hover) {
@@ -5626,6 +5629,12 @@ mark.text-highlight-yellow { background: var(--warn-soft); }
 .doc-attach-row > .doc-outline-row-action {
   flex: 0 0 auto;
 }
+.doc-outline-empty {
+  margin: 0 0 var(--space-2);
+  padding-left: 0.25rem;
+  font-size: var(--text-base);
+  line-height: 1.45;
+}
 
 /* **The PDF's first page covers the tile; it does not sit on top of it.**
    Reported with a screenshot: "in the files tab, the file type logo gets cut
@@ -6507,26 +6516,20 @@ mark.text-highlight-yellow { background: var(--warn-soft); }
   }
 }
 
-/* Out of sight only because a folded frame holds it: quiet, not struck through. */
-.wb-layer-row.is-folded .wb-layer-name {
-  color: var(--muted);
-  font-style: italic;
-}
-.wb-layer-row:hover .wb-layer-eye,
-.wb-layer-row:hover .wb-layer-lock,
-.wb-layer-row:focus-within .wb-layer-eye,
-.wb-layer-row:focus-within .wb-layer-lock,
-.wb-layer-row:focus .wb-layer-eye,
-.wb-layer-row:focus .wb-layer-lock,
-.wb-layer-row.is-hidden .wb-layer-eye,
-.wb-layer-row.is-folded .wb-layer-eye,
-.wb-layer-row.is-locked .wb-layer-lock {
-  opacity: 1;
-}
 
 .wb-clone-grip:hover,
 .wb-clone-grip:is(:focus-visible, :has(:focus-visible)) {
   fill-opacity: 1;
+}
+.doc-layout:has(> #doc-sidebar.hidden),
+.doc-layout:has(> #doc-sidebar[hidden]),
+.doc-layout:not(:has(> #doc-sidebar)) {
+  /* `!important` on purpose, and measured: the sidebar's resize handle
+     writes the column widths *inline* (`260px 965px` was the computed value
+     with the sidebar hidden), and an inline style beats every selector
+     there is except this. Without it the editor was pinned to a column that
+     still existed at the sidebar's saved width. */
+  grid-template-columns: 1fr !important;
 }
 
 /* An image tile's kebab sits on the photo, where a bare glyph is lost (the
@@ -6599,31 +6602,6 @@ mark.text-highlight-yellow { background: var(--warn-soft); }
 .note-surface-box .cm-editor .cm-scroller {
   min-height: 9rem;
   max-height: 22rem;
-}
-
-/* **A box the page was stretching keeps its height when the engine arrives**
-   (INBOX 240). `mountNoteSurface` stamps this class when the textarea it is
-   wrapping was a growing item of a flex parent, which the wrapper then has to
-   be instead: see that function's comment for the 330.3px to 146px the two
-   Writing Room boxes lost without it.
-
-   The three rules below are the same idea at each level: the wrapper grows,
-   the editor fills the wrapper, and the scroller stops holding a height of its
-   own. `min-height: 0` on the first two because a flex item's default
-   `min-height: auto` refuses to shrink below its content, which is what turns
-   a long note into a column that pushes its own footer off the page instead of
-   scrolling. These have to sort after the two blocks above (same specificity,
-   and `.note-surface-box` is on the same element), so they stay here. */
-.note-surface-stretch {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.note-surface-stretch .cm-editor {
-  flex: 1 1 auto;
-  min-height: 0;
 }
 
 .doc-block-bar {
@@ -7321,16 +7299,6 @@ textarea.has-gutter {
 
 /* The Live view's kind picker is a tile the size of a letter, so under a
    finger its target grows past its box without moving the line (INBOX 486). */
-@media (pointer: coarse) {
-  .cm-md-callout-kindbtn {
-    position: relative;
-  }
-  .cm-md-callout-kindbtn::after {
-    content: "";
-    position: absolute;
-    inset: calc((var(--target-min) - 1.5em) / -2);
-  }
-}
 
 /* A numbered display equation, `\tag{1}`: the formula stays centred and its
    number sits at the right edge of the line. */
@@ -7349,6 +7317,623 @@ textarea.has-gutter {
   align-items: center;
   gap: var(--space-1);
 }
+/* The whiteboard's right-click/long-press selection menu (ROADMAP §89.12).
+   Appended straight to <body> and positioned at the pointer, same reasoning
+   as `wbOpenDockedMenu`'s reparent: a fixed pixel position rather than
+   `.action-menu`'s default `absolute; right:0` anchored to a `.menu-wrap`
+   ancestor it doesn't have here. */
+.wb-ctx-menu {
+  position: fixed;
+  z-index: 200;
+}
+#library-view-whiteboard.wb-presenting #wb-html-layer,
+#library-view-whiteboard.wb-presenting #wb-svg-layer {
+  pointer-events: none;
+}
+.wb-layer-row:hover .wb-layer-eye,
+.wb-layer-row:hover .wb-layer-lock,
+.wb-layer-row:focus-within .wb-layer-eye,
+.wb-layer-row:focus-within .wb-layer-lock,
+.wb-layer-row:focus .wb-layer-eye,
+.wb-layer-row:focus .wb-layer-lock,
+.wb-layer-row.is-hidden .wb-layer-eye,
+.wb-layer-row.is-locked .wb-layer-lock {
+  opacity: 1;
+}
+.doc-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--space-6);
+  /* `start` here is what shrink-wrapped the sidebar. `stretch` makes both
+     columns the height of the row, which the flex chain below makes the height
+     of the page: the same arrangement #tab-chat already uses. */
+  align-items: stretch;
+  min-height: 0;
+  padding: 0;
+}
+
+@media (hover: none) {
+.doc-item-menu {
+    opacity: 1;
+  }
+}
+.doc-dock-identity {
+  --identity-h: 2.75rem;
+}
+/* Status facts as one group, so a narrow window breaks the bar between the
+   status and the actions instead of between two buttons that belong
+   together. `margin-right: auto` is what puts the group on the left of that
+   row and everything else on the right, the dock's own `space-between` only
+   ever separated the title from all of this. */
+.doc-dock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+}
+.doc-saved {
+  /* Reserved so "Saving…" → "Saved" does not shift the controls to its right
+     by a few pixels twice a minute while someone types. Left-aligned and
+     sitting directly against the stats: right-aligning it inside its own
+     reserved box is what produced the empty channel that got reported. */
+  min-width: 4rem;
+  text-align: left;
+}
+.doc-title-input {
+  flex: 1 1 12rem;
+  /* Was min-width: 0, which let the title absorb all of a narrow window's
+     shortfall before .doc-toolbar's own flex-wrap ever kicked in, .doc-
+     actions' row of buttons wraps internally instead of shrinking, so the
+     title had nowhere to stop and was crushed to a few illegible pixels
+     (reported live, screenshotted). This floor forces the toolbar to wrap
+     the actions onto their own row once the title would otherwise go below
+     a readable width, instead of shrinking the title toward zero. */
+  min-width: 8rem;
+  font-size: var(--text-h3);
+  font-weight: 600;
+  border: 1px solid transparent;
+  background: none;
+}
+/* --- the code editor: gutter + monospace ------------------------------------ */
+
+/* The textarea and its line-number gutter, as one unit. #doc-panes lays out
+   *this* beside the preview now, not the bare textarea. */
+.doc-source-wrap {
+  display: flex;
+  flex: 1 1 auto;
+  /* A positioning context of its own, so anything absolutely placed inside
+     this pane is placed against the pane. The Phase 0 backdrop needed it and
+     is gone; CodeMirror's own panels and tooltips need the same thing, and
+     without it their offsetParent is whatever ancestor happens to be
+     positioned (measured, at the time: an element 219px to the left and 72px
+     up from where it should have been). */
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  gap: 0;
+}
+.doc-source-wrap.hidden {
+  display: none;
+}
+#doc-content.doc-content-code {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-lg);
+}
+/* **The code pane must not soft-wrap, or the numbers cannot be right.**
+   Reported: "the document line numbers in the documents dont actually work or
+   go all the way". A `<textarea>` wraps by default, so one logical line can
+   occupy three visual rows; the gutter prints one number per *logical* line
+   (`white-space: pre`), so from the first wrapped line onwards every number is
+   against the wrong row, and the column ends short of the bottom of the text
+   by however many rows the wrapping added. Matching the font and line-height
+   -- which the rule above is careful about -- cannot fix that on its own.
+
+   Horizontal scrolling is the accepted trade in every editor that shows line
+   numbers, and it is what makes the two columns agree line for line. */
+#doc-content.doc-content-code {
+  white-space: pre;
+  overflow-x: auto;
+}
+.doc-hint {
+  /* <p> carries the UA default `margin: 1em 0`, nothing here ever zeroed it,
+     so it stacked with .doc-main's own `gap` and #doc-status's identical
+     unreset margin above it. Live-reproduced: the gap between the editor and
+     this hint measured ~65px and was present on a fresh, never-resized load, 
+     unrelated to the #doc-panes-manual resize mechanism right above this rule
+     despite looking like the same symptom. */
+  margin: 0;
+  font-size: var(--text-base);
+}
+.doc-ai-result-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+.doc-ai-result-block.hidden {
+  display: none;
+}
+.doc-ai-result-actions {
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+.doc-ai-card > #doc-ai-verb label > .ph {
+  color: var(--muted);
+}
+.doc-ai-card > #doc-ai-verb label:has(input:checked) {
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.doc-ai-card > #doc-ai-verb label > input:checked + .ph {
+  color: var(--accent-text);
+}
+.doc-ai-card > #doc-ai-verb label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+input.doc-title-input::placeholder {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* From 05-sidebars-themes.css */
+@media (max-width: 819.98px) {
+.doc-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (pointer: coarse) {
+.cm-md-callout-kindbtn {
+    position: relative;
+  }
+.cm-md-callout-kindbtn::after {
+    content: "";
+    position: absolute;
+    inset: calc((var(--target-min) - 1.5em) / -2);
+  }
+}
+
+/* A toggle is a disclosure, not a box: no tint, no edge, only the caret and
+   an indent that says what belongs to it (Notion's toggle, spelled as a
+   callout so it stays a quote anywhere else). */
+.callout-toggle {
+  --callout-tint: transparent;
+  --callout-edge: transparent;
+  padding: var(--space-1) 0;
+  border-left-color: transparent;
+}
+.callout-toggle > .callout-head::after {
+  margin-left: 0;
+  transform: rotate(-45deg);
+}
+.callout-toggle[open] > .callout-head::after {
+  transform: rotate(45deg);
+}
+.md-rule-dots::before {
+  content: "\2022\2003\2022\2003\2022";
+  font-size: var(--text-md);
+  letter-spacing: 0.1em;
+}
+.md-toc-depth-1 { padding-left: var(--space-5); }
+.md-toc-depth-2 { padding-left: var(--space-7); }
+.md-toc-depth-3 { padding-left: var(--space-9); }
+/* **An empty section does not reserve a heading and a button.** Measured with
+   no references attached: `#doc-bookmarks-wrap` was 69.4px of column for a
+   12px uppercase "REFERENCES" eyebrow and a full-width "Attach a link" over
+   nothing, sitting above roughly 290px of empty sidebar. Backlinks and "notes
+   it draws on" already hide themselves when they have nothing to list
+   (`renderDocBacklinks`, `renderDocNotes`); References cannot, because the
+   way to attach the first one is inside it.
+   So the section empties out instead: the eyebrow goes, the empty list goes,
+   the rule above it goes, the 4rem floor every section otherwise keeps goes,
+   and what is left is one quiet action at the panel's left edge, the same
+   weight and the same muted ink as the storage help below it, which is the
+   only other thing down there. Written with `:has` against the list's own
+   emptiness rather than a class from JS: the three renderers all end in
+   `replaceChildren()`, so the DOM already knows, and a class would be a
+   fourth thing to keep in step.
+   `#doc-outline-wrap` is deliberately not in this list. It is what the tab is
+   called, so it keeps its heading and answers with a sentence instead
+   (`#doc-outline-empty`), which `docoutline.js` asserts. */
+#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
+#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline-title,
+#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
+#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline,
+#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline,
+#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline {
+  display: none;
+}
+#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark {
+  margin-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-weight: 400;
+}
+#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:hover,
+#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:focus-visible {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+.doc-statusbar-fact {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#doc-counts {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doc-statusbar-spacer {
+  flex: 1 1 auto;
+}
+
+@media (hover: none) {
+.doc-dictionary-remove {
+    opacity: 1;
+  }
+}
+.doc-crumbs-list {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* A trail is one line: a document nested five headings deep scrolls
+     sideways rather than growing the row and shifting the writing down. */
+  white-space: nowrap;
+}
+.doc-crumbs-list li + li::before {
+  content: "\203A";
+  color: var(--muted);
+  opacity: 0.7;
+  padding: 0 0.15rem;
+}
+#doc-notes li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* From 07-whiteboard-misc.css */
+/* Reported directly, with screenshots: the Outline visibly disappeared
+   whenever the "Where are my documents kept?" disclosure below it was
+   opened. The comment above this block already said the help disclosure
+   should "give up its space first", but `flex: 0 0 auto` means
+   flex-shrink: 0, which is the opposite of giving anything up; it is
+   *exempt* from shrinking, so the whole deficit landed on the one sibling
+   that could shrink and had no floor of its own. Measured live before
+   fixing: 10 headings' worth of outline went from 258px tall to exactly
+   0px the instant the disclosure opened. */
+.doc-sidebar-tabs {
+  /* This is now the first thing in the card, which puts it exactly where
+     .sidebar-head used to sit, so it needs .sidebar-head's own two fixes
+     for the same reason (05-sidebars-themes.css): pulled up to sit level
+     with the collapse toggle (positioned against the card's border box,
+     one --space-6 above where this card's content box starts), and a
+     reserved lane past the toggle so the tab strip doesn't run under it.
+     Reported live: the strip was sitting under/clipped by the toggle. */
+  margin-top: calc(var(--sidebar-toggle-inset) - var(--space-6));
+  /* The bare lane (toggle width + one --space-2) put "Outline" close enough
+     to read as crowding the toggle at narrower sidebar widths, reported
+     directly. An extra --space-3 of clearance on top of the lane everywhere
+     else already reserves. */
+  padding-right: calc(var(--sidebar-toggle-lane) + var(--space-3));
+  min-height: var(--sidebar-toggle-size);
+  /* The sidebar's own row gap is the space under the strip: a margin on top of
+     it was a band of 18px between the strip and the first heading. */
+  margin-bottom: 0;
+  flex: 0 0 auto;
+  /* Redesigned away from .seg's filled-pill look (reported live, with a
+     photo): it is the app's one underline recipe, `.tabs-line`
+     (05-sidebars-themes.css), now shared by the Notes and Library strips,
+     which supplies the hairline, the tab metrics and the 2px line. */
+  padding-left: 0;
+  gap: var(--space-1);
+}
+
+@container doc-sidebar (width < 14rem) {
+.doc-sidebar-tabs {
+    margin-top: calc(var(--sidebar-toggle-inset) + var(--sidebar-toggle-size) + var(--space-2) - var(--space-6));
+    padding-right: 0;
+  }
+}
+
+#doc-sidebar-list .sidebar-head h2 {
+  flex: none;
+}
+/* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
+   auto` below still has a flex context stretching the height the tab strip
+   left behind: the same nested-flex-column shape .doc-sidebar itself uses
+   against the page. */
+.doc-sidebar-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.doc-sidebar-section.hidden {
+  display: none;
+}
+#tab-documents.doc-focus > .doc-layout {
+  gap: 0;
+}
+/* The floating dock. A `.card.glass` pill, the recipe for a panel floating
+   over a surface, parked at the top centre of the window. Hidden whenever the
+   mode is off. */
+.doc-focus-bar {
+  display: none;
+}
+:where(:root[data-motion="reduced"]) #tab-documents.doc-focus > .doc-focus-bar {
+  transition: none;
+}
+.doc-focus-facts {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.doc-focus-facts > span + span:not(:empty)::before {
+  content: "\00B7";
+  margin-inline-end: var(--space-2);
+}
+#tab-documents.doc-focus > .doc-focus-bar .ghost.small {
+  height: var(--control-h-lg);
+  border-radius: var(--radius-pill);
+}
+#tab-documents.doc-focus > .doc-focus-bar .icon-only {
+  width: var(--control-h-lg);
+}
+/* **Tools, inside the mode** (INBOX 426 a). The owner: "in the documents
+   full screen mode, I cant access the formatting toolbar or any of the other
+   key tools or controls". The dock (view, AI edit, the document's menu) and
+   the formatting strip come back in their own places above the page, at the
+   window's width, under the floating dock's band; the sidebar, the app's own
+   bars and the status bar stay away, so this is still the page with nothing
+   around it. A collapsed strip stays collapsed (its rule in
+   07-whiteboard-misc.css), which is why pressing Tools also expands it. */
+#tab-documents.doc-focus.doc-focus-tools .doc-dock {
+  display: flex;
+}
+#tab-documents.doc-focus.doc-focus-tools #doc-toolbar:not(.is-collapsed) {
+  display: flex;
+}
+#tab-documents.doc-focus > .doc-focus-bar [aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
+  display: flex;
+  position: fixed;
+  top: var(--doc-focus-panel-top);
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 2;
+  width: var(--doc-focus-sidebar-w);
+  height: auto;
+  max-height: none;
+  margin: 0;
+  background: var(--modal-bg-opaque);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: hidden;
+  /* Below 820 the sidebar is an edge sheet (translated off screen, its rows
+     `visibility: hidden`, a rail left showing); here it is the panel, so the
+     sheet's own state is put back. */
+  transform: none;
+  border-radius: var(--radius);
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-collapse-toggle,
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-rail-name {
+  display: none;
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-phone-bar {
+  display: none;
+}
+
+@media (max-width: 819.98px) {
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
+    right: var(--space-4);
+    width: auto;
+  }
+}
+
+@media (min-width: 820px) {
+#tab-documents.doc-focus.doc-focus-sidebar .doc-main {
+    padding-left: calc(var(--doc-focus-sidebar-w) + var(--space-4) * 2);
+  }
+}
+
+@media (max-width: 819.98px) {
+#tab-documents.doc-focus > .doc-focus-bar {
+    gap: var(--space-1);
+    padding-left: var(--space-3);
+  }
+#tab-documents.doc-focus > .doc-focus-bar .doc-focus-word {
+    display: none;
+  }
+#tab-documents.doc-focus > .doc-focus-bar button:has(.doc-focus-word) {
+    width: var(--control-h-lg);
+    padding-inline: 0;
+  }
+#tab-documents.doc-focus > .doc-focus-bar button > .ph-lead:has(~ .doc-focus-word) {
+    margin: 0;
+  }
+}
+
+@media (max-width: 340px) {
+#tab-documents.doc-focus > .doc-focus-bar .doc-focus-facts {
+    display: none;
+  }
+}
+.doc-statusbar {
+  background: var(--surface-2);
+  border-color: transparent;
+}
+.doc-statusbar-button {
+  min-height: var(--target-min);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+@media (max-width: 819.98px) {
+.doc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+.doc-layout > :not(.sidebar-panel) {
+    grid-column: 1;
+  }
+.doc-view-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.doc-view-menu > .doc-dock-menu-list {
+  min-width: 10rem;
+}
+}
+.doc-prop-row:hover > .doc-prop-btn,
+.doc-prop-row:focus-within > .doc-prop-btn {
+  opacity: 1;
+}
+.doc-prop-check {
+  margin: 0;
+}
+.doc-prop-new {
+  display: flex;
+  align-items: center;
+}
+.doc-props-read {
+  border-bottom: 1px solid var(--border);
+  padding-inline: 0;
+}
+.doc-ai-diff-block {
+  margin-bottom: var(--space-3);
+}
+.doc-ai-diff {
+  max-height: min(14rem, 32vh);
+}
+.doc-ai-diff-head {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-sm);
+}
+/* --- the assistant's three verbs (INBOX 192) --------------------------------
+   "change the style of and redesign this edit, write, remove ai assistant
+   toggle row as it is ugly and needs a better visual and more modern look".
+
+   Not a fourth treatment, and not a new recipe (standing order 11). DESIGN.md
+   already says what this control is: "the radio-backed form
+   (`.segmented-control`: `#doc-ai-verb`) is the same object as the
+   button-backed one (`.seg`) and the recipe index has no room for a second
+   reading of it". What was still true when the owner looked at it is that it
+   was not drawn with `.seg`'s numbers. Measured beside `#doc-view-seg`, the
+   choice control on the same screen: track corner 11.2px against 15.4px,
+   segment corner 6px against 15.4px, segments 30px tall inside a 32px track
+   with the slack unevenly split, and three segments 73.4 / 82.7 / 101.2px
+   wide, so the row read as three different-sized shapes with three different
+   corners from everything around it. (INBOX 101's note that `--radius-inner`
+   "lands within 2.4px of `.seg button`'s own radius" was true when `.seg
+   button` was 8.4px; the dock's own rule has since made every `.seg` 15.4px.)
+
+   Four numbers, no new colours: the selected segment stays `--accent-surface`
+   behind `--on-accent`, which is the line DESIGN.md settles for both forms. */
+#doc-ai-verb {
+  /* The choice control's row of the radius table (DESIGN.md). */
+  border-radius: var(--radius-choice);
+  /* **A grid, so the three verbs are one width.** As a flex row they measured
+     73.4 / 82.7 / 101.2px, and `flex: 1 1 0` cannot equalise them: the track
+     is content-width by an earlier decision, so every segment sits clamped at
+     its own min-content and the free space to share is nil. One `1fr` column
+     each is the shape that reads as a segmented control, and in a
+     content-width grid `1fr` tracks all take the widest segment's size. */
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: stretch;
+}
+/* The same specificity as the height rule in 04-chat-dock-appearance.css, in a
+   sheet that loads after it: that rule gives the segment `height: 100%`, which
+   a percentage against an auto-height track resolves to its own content, and
+   the segment then sat 30px inside a 32px well. */
+.doc-ai-card > #doc-ai-verb label {
+  /* Concentric with the track: the track's radius less the padding that sits
+     between them (`--space-1` of padding and the track's own 1px edge), which
+     is the relationship `--radius-inner` was picked for and the arithmetic it
+     can no longer express here. */
+  border-radius: calc(var(--radius) * 0.5 + var(--radius-md) - var(--space-1) - 1px);
+  /* Centred in the column the grid above gives it: sized to their words the
+     three read as three different shapes, and the eye takes the widest for
+     the important one. */
+  justify-content: center;
+  /* Fill the track rather than floating 1px inside it. */
+  align-self: stretch;
+  height: auto;
+}
+#doc-ai-verb label:has(input[type="radio"]:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* **A box the page was stretching keeps its height when the engine arrives**
+   (INBOX 240). `mountNoteSurface` stamps this class when the textarea it is
+   wrapping was a growing item of a flex parent, which the wrapper then has to
+   be instead: see that function's comment for the 330.3px to 146px the two
+   Writing Room boxes lost without it.
+
+   The three rules below are the same idea at each level: the wrapper grows,
+   the editor fills the wrapper, and the scroller stops holding a height of its
+   own. `min-height: 0` on the first two because a flex item's default
+   `min-height: auto` refuses to shrink below its content, which is what turns
+   a long note into a column that pushes its own footer off the page instead of
+   scrolling. These have to sort after the two blocks above (same specificity,
+   and `.note-surface-box` is on the same element), so they stay here. */
+.note-surface-stretch {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+.note-surface-stretch .cm-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 1099.98px) {
+.doc-source-wrap.has-margin {
+    flex-wrap: wrap;
+  }
+}
+
+/* From 10-responsive.css */
+@media (max-width: 599.98px) {
+#tab-documents .doc-actions,
+  #tab-documents .doc-view-cluster {
+    gap: var(--space-1);
+  }
+#tab-documents .doc-statusbar {
+    overflow: hidden;
+  }
+  /* A phone's formatting is the bar at the thumb (below), always there in
+     Edit, so the dock's way back to the desktop strip (INBOX 574) would be a
+     second row of chrome for nothing. */
+  
+#doc-format-show {
+    display: none;
+  }
+}
+
+/* --- moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library
+   bundle's own classes, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
 /* **The fold gutter** (DOCUMENTS_PLAN Phase 4 item 3). One column, the same
    width on every row whether or not that row has anything to fold, because
@@ -7737,7 +8322,9 @@ textarea.has-gutter {
   line-height: 1.5;
 }
 
-.library-file-rows .library-image-tile > :is(figcaption, .library-file-facts, .library-image-fields) {
+.library-file-rows .library-image-tile > :where(figcaption):is(figcaption, .library-file-facts),
+.library-file-rows .library-image-tile > .library-file-facts,
+.library-file-rows .library-image-tile > .library-image-fields {
   padding-inline-start: var(--space-2);
 }
 
@@ -7802,25 +8389,7 @@ textarea.has-gutter {
   background: none;
 }
 
-.doc-prop-row:hover > .doc-prop-btn,
-.doc-prop-row:focus-within > .doc-prop-btn {
-  opacity: 1;
-}
-
-.doc-prop-check {
-  margin: 0;
-}
-
-.doc-prop-new {
-  display: flex;
-  align-items: center;
-}
-
 /* Read view: the same rows without the fields. */
-.doc-props-read {
-  border-bottom: 1px solid var(--border);
-  padding-inline: 0;
-}
 
 /* An image with a caption or an alignment: `![A river|400|center](…)` and
    `![[river.jpg|400|center]]` both land here. Without either option an image
@@ -8010,7 +8579,11 @@ Every other embed in this editor draws an *object* through the renderer
   background: var(--accent-soft);
 }
 
-.library-file-rows .library-image-tile > .library-file-facts :is(.library-file-meta, .library-read-strip, .library-read-badge, .library-image-usage, .library-image-usage > .muted) {
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-file-meta):is(.library-file-meta, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-read-strip):is(.library-read-strip, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-read-badge):is(.library-read-badge, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-image-usage):is(.library-image-usage, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :is(.library-image-usage > .muted) {
   font-size: inherit;
   line-height: inherit;
 }
@@ -8018,7 +8591,8 @@ Every other embed in this editor draws an *object* through the renderer
 /* Each group's own gap is the space after its dot: the dot is a flex item
    of the group it opens, so the group's gap already stands between the two,
    and a symmetric margin put 15px after the dot against 8px before it. */
-.library-file-rows .library-image-tile > .library-file-facts > :is(.library-read-strip, .library-image-usage) {
+.library-file-rows .library-image-tile > .library-file-facts > .library-read-strip,
+.library-file-rows .library-image-tile > .library-file-facts > .library-image-usage {
   padding-top: 0;
   column-gap: var(--space-2);
 }
@@ -8232,6 +8806,86 @@ Every other embed in this editor draws an *object* through the renderer
 /* The Library's board is loaded again behind the closing panel: laid out, not seen. */
 .doc-board-closing {
   visibility: hidden;
+}
+
+/* Show live (decision 83): a board card's own read-only window, drawn by documents-board.js and zoomed by the diagram view.
+   Two classes, because diagram-lazy.css arrives later and makes `.dgm` its parent's height. */
+.doc-embed-board-live {
+  margin-block-start: var(--space-2);
+  margin-inline-start: var(--space-2);
+}
+.doc-board-live.dgm {
+  display: flex;
+  height: min(28rem, 70dvh);
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+/* In Live the card is a 320 px inline box (documents-cm-theme.js); with its window open it takes the line's width. */
+.cm-editor .cm-md-embed:has(.doc-board-live) {
+  display: block;
+}
+.cm-editor .cm-md-embed .doc-embed-map:has(> .doc-board-live) {
+  width: 100%;
+}
+.doc-board-live > .dgm-stage {
+  flex: 1 1 auto;
+}
+.doc-board-live-head {
+  display: flex;
+  justify-content: flex-end;
+}
+.doc-board-svg {
+  overflow: visible;
+}
+.doc-board-shape {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.doc-board-frame .doc-board-shape {
+  fill: none;
+  stroke-dasharray: 6 4;
+}
+/* A sticky's paper in the theme's warm tint, so its words keep the theme's ink. */
+.doc-board-sticky .doc-board-shape {
+  fill: var(--warn-soft);
+  stroke: none;
+}
+.doc-board-words {
+  fill: var(--text);
+  font-family: inherit;
+}
+.doc-board-frame .doc-board-words {
+  fill: var(--muted);
+}
+.doc-board-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media print {
+  .doc-embed-board-live,
+  .doc-board-live {
+    display: none;
+  }
+}
+
+/* A video in a document (`![name](/media/x.mp4)`, image-layout.js `imageLayout.video`): the browser's own controls, no wider
+   than the column. The name line is for paper and exports (09-editor.css), not the screen. */
+.doc-video {
+  display: block;
+  margin: var(--space-2) 0;
+  max-width: 100%;
+}
+.doc-video video {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.doc-video-name {
+  display: none;
 }
 
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
@@ -9225,6 +9879,62 @@ body.printing-doc #doc-preview p,
   color: var(--muted);
   font-size: var(--text-base);
   line-height: 1.5;
+}
+
+/* A document's page (INBOX 1325, L-documents-54; DESIGN.md "A document in a list"): the heading and the opening lines on a
+   3:4 leaf, laid out 12rem wide and scaled down to 3.5rem (0.2917 is the one over the other; plain lengths, not tokens), so it
+   reads as a page of text rather than a line of grey. Decoration: the row's own words say the same in full. */
+.doc-list-page {
+  flex: 0 0 auto;
+  inline-size: 3.5rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--page);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  position: relative;
+}
+.doc-list-page-leaf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  inline-size: 12rem;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-5);
+  transform: scale(0.2917);
+  transform-origin: top left;
+  line-height: 1.4;
+  text-align: left;
+}
+.doc-list-page-cover {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.doc-list-page-head {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.doc-list-page-lines {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+  line-clamp: 9;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-base);
 }
 
 .wb-map-legend-title {
@@ -11549,7 +12259,14 @@ body.printing-doc #doc-preview p,
 
 /* The pictures (`wbMapThumbSpec`, `wbBoardThumbSpec`): one hairline at any
    size, colours from the theme. */
-.wb-lib-thumb :is(.wb-thumb-line, .wb-thumb-label, .wb-thumb-node, .wb-thumb-root, .wb-thumb-leafbox, .wb-thumb-frame, .wb-thumb-frame-plain, .wb-thumb-blank) {
+.wb-lib-thumb .wb-thumb-line,
+.wb-lib-thumb .wb-thumb-label,
+.wb-lib-thumb .wb-thumb-node,
+.wb-lib-thumb .wb-thumb-root,
+.wb-lib-thumb .wb-thumb-leafbox,
+.wb-lib-thumb .wb-thumb-frame,
+.wb-lib-thumb .wb-thumb-frame-plain,
+.wb-lib-thumb .wb-thumb-blank {
   vector-effect: non-scaling-stroke;
   stroke-width: 1px;
 }
@@ -11637,7 +12354,8 @@ body.printing-doc #doc-preview p,
   stroke: var(--thumb-b);
 }
 
-.wb-lib-thumb :is(.wb-thumb-leaf, .wb-thumb-leafbox)[class*="wb-thumb-b"] {
+.wb-lib-thumb .wb-thumb-leaf[class*="wb-thumb-b"],
+.wb-lib-thumb .wb-thumb-leafbox[class*="wb-thumb-b"] {
   fill: var(--thumb-b);
   fill-opacity: 0.7;
 }
@@ -12174,7 +12892,8 @@ button.ghost.doc-template-choice.wb-template-choice {
     white-space: nowrap;
   }
 
-  .ocr-regions-foot > :is(#ocr-copy-all, #ocr-to-chat) {
+  .ocr-regions-foot > #ocr-copy-all,
+  .ocr-regions-foot > #ocr-to-chat {
     width: var(--control-h);
     padding-inline: 0;
     justify-content: center;
@@ -12712,11 +13431,15 @@ button.ghost.doc-template-choice.wb-template-choice {
   }
 }
 
-/* The breakpoint lane under a finger (Brief 70): wider, so a tap beside a
-   line number lands on it rather than on the fold arrow or the text. */
+/* The breakpoint lane under a finger (Brief 70): the touch floor wide, so a tap
+   beside a line number lands on it rather than on the fold arrow or the text.
+   The editor theme sets the lane's 0.875rem at three classes, so this names
+   four: at one class less the 1.5rem it was never applied (docsverify-lane.js
+   measured 14px under a coarse pointer). A row is one line tall, the line
+   pitch, so the width is the target. */
 @media (pointer: coarse) {
-  .cm-debug-gutter .cm-gutterElement {
-    width: 1.5rem;
+  .cm-editor .cm-gutters .cm-debug-gutter .cm-gutterElement {
+    width: var(--target-min);
   }
 }
 
@@ -12785,6 +13508,12 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .doc-history-name {
   font-weight: 600;
+}
+
+/* The account keeps the server's line breaks: one line per version after the total. */
+.doc-history-story {
+  white-space: pre-line;
+  margin: var(--space-2) 0;
 }
 
 /* Room for the pair: the history is wider than the AI log it shares a class
@@ -12979,7 +13708,8 @@ button.ghost.doc-template-choice.wb-template-choice {
 .doc-main {
   --doc-code-cap: 78ch;
 }
-#tab-documents.doc-is-code:not(.doc-wide) :is(.doc-statusbar, .doc-hint) {
+#tab-documents.doc-is-code:not(.doc-wide) .doc-statusbar,
+#tab-documents.doc-is-code:not(.doc-wide) .doc-hint {
   width: 100%;
   max-width: var(--doc-code-cap);
   margin-inline: auto;
@@ -14541,7 +15271,10 @@ input[type="color"].wb-mixed {
    every pan frame; while the board moves they are plain translucent panels
    (the ground is still `--modal-bg`), and the blur returns 180 ms after the
    last step. The same surfaces Glass off clears for good. */
-#wb-canvas-view.wb-moving :is(.wb-topbar, .whiteboard-floating-panel, .wb-map-strip, .wb-sidebar) {
+#wb-canvas-view.wb-moving .wb-topbar,
+#wb-canvas-view.wb-moving .whiteboard-floating-panel,
+#wb-canvas-view.wb-moving .wb-map-strip,
+#wb-canvas-view.wb-moving .wb-sidebar {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -15118,7 +15851,8 @@ input[type="color"].wb-mixed {
     min-width: 5rem;
   }
   #doc-code-snippets-open,
-  #tab-documents.doc-is-code :is(#doc-code-assist-open, #doc-code-format) {
+  #tab-documents.doc-is-code #doc-code-assist-open,
+  #tab-documents.doc-is-code #doc-code-format {
     flex: 0 0 var(--target-min);
     justify-content: center;
     padding-inline: 0;
@@ -15150,7 +15884,9 @@ input[type="color"].wb-mixed {
 #tab-documents.doc-is-code .doc-dock.doc-run-why :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
   display: none;
 }
-#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-snippets-open,
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-assist-open,
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-format {
   flex: 0 0 var(--target-min);
   justify-content: center;
   padding-inline: 0;
@@ -16171,7 +16907,8 @@ input[type="color"].wb-mixed {
 }
 
 /* --- motion: an Insert menu's chevron turns open, as a select's does ------- */
-:is([aria-expanded="true"], [open] > summary) > :is(.doc-toolbar-menu-caret, .wb-menu-caret) {
+:is([aria-expanded="true"], [open] > summary) > .doc-toolbar-menu-caret,
+:is([aria-expanded="true"], [open] > summary) > .wb-menu-caret {
   transform: rotate(180deg);
 }
 /* --- motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in
@@ -17486,6 +18223,94 @@ input[type="color"].wb-mixed {
   flex: 0 0 auto;
 }
 
+/* A synced block reads as a copy: the text is the way in (documents-embeds.js), and the marker in the block's own document (documents-cm.js). */
+.doc-embed-synced .doc-embed-block-body {
+  cursor: text;
+}
+
+.cm-md-blockuse {
+  margin-inline-start: var(--space-2);
+}
+
+.doc-block-use {
+  vertical-align: baseline;
+}
+
+.doc-synced-own {
+  position: fixed;
+  z-index: 2;
+  inline-size: min(22rem, calc(100vw - var(--space-4)));
+  padding: var(--space-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") ---------------
+   A child row steps in by one `--space-7` per level from its parent; the parent's disclosure is a quiet icon button
+   before the tick whose caret turns a quarter with `aria-expanded`, as `.disclosure-row`'s does. */
+#library-docs-list > li.doc-tree-child {
+  /* One level; `decorate` writes deeper levels on the row as a multiple of the same token. */
+  margin-inline-start: var(--space-7);
+}
+.doc-list-top > .doc-tree-toggle {
+  flex: 0 0 auto;
+}
+.doc-tree-toggle .ph {
+  transition: transform var(--ui-fast) var(--ease-out);
+}
+.doc-tree-toggle[aria-expanded="true"] .ph {
+  transform: rotate(90deg);
+}
+/* The breadcrumb in the document head: the parents after the way back, each a quiet link that clips its own long
+   title, so the row stays one row and the title field keeps the room. */
+.doc-dock-identity > .doc-crumbs {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: var(--space-1);
+  margin-inline-end: var(--space-2);
+}
+.doc-crumbs > .doc-crumb {
+  min-width: 0;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.doc-crumbs > .doc-crumb:hover,
+.doc-crumbs > .doc-crumb:is(:focus-visible, :has(:focus-visible)) {
+  color: var(--ink);
+}
+/* A phone has 143px beside the back button for a title and a trail (measured at 390: the nav 49px, the title 21px), so a
+   sub-page's trail takes the row under them: a menu of every parent, then the nearest parent, cut to what is left. */
+.doc-crumb-more {
+  display: none;
+}
+@media (max-width: 599.98px) {
+  .doc-dock-identity:has(> .doc-crumbs) {
+    flex-wrap: wrap;
+  }
+  .doc-dock-identity > .doc-crumbs {
+    order: 3;
+    flex: 1 0 100%;
+    overflow: visible;
+  }
+  .doc-crumbs > .doc-crumb.doc-crumb-far,
+  .doc-crumbs > .doc-crumb-sep {
+    display: none;
+  }
+  .doc-crumbs > .doc-crumb-more {
+    display: inline-flex;
+  }
+  .doc-crumbs > .doc-crumb {
+    flex: 0 1 auto;
+    max-width: none;
+  }
+}
 /* Board only, so out of the boot sheets: library-lazy.css loads with the boards bundle. */
 /* Page view (Format > Board): the printed page frames, under the cards. */
 .wb-page-frame {
@@ -17555,5 +18380,31 @@ input[type="color"].wb-mixed {
 /* A read-only embed pans and zooms only (L-whiteboard-54; with the boards bundle, as the embed is): its layers take no
    pointer, so no card's drag starts and every press reaches the box's zoom. */
 .wb-embed-readonly > [data-wb-layer] {
+  pointer-events: none;
+}
+
+/* --- board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. */
+/* Out of sight only because a folded frame holds it: quiet, not struck through. */
+.wb-layer-row.is-folded .wb-layer-name {
+  color: var(--muted);
+  font-style: italic;
+}
+.wb-layer-row.is-folded .wb-layer-eye {
+  opacity: 1;
+}
+/* K18: a saved picture's caption, one muted line under it (Show captions). Lazy: out of the boot sheet. */
+.wb-object-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
   pointer-events: none;
 }

@@ -1242,7 +1242,9 @@ progress {
 .thinking-fold > :last-child > :last-child {
   margin-bottom: 0;
 }
-.thinking-fold > :last-child :is(p, ul, ol) {
+.thinking-fold > :last-child p,
+.thinking-fold > :last-child ul,
+.thinking-fold > :last-child ol {
   margin-block: 0 var(--space-2);
 }
 .answer {
@@ -2507,7 +2509,8 @@ button:not(.ghost) > .spinner {
    own arrival and its rows are in 10-responsive.css (`ui-grow` on the
    overshoot, `ui-row` eight deep). The reduced-motion sheet switches the
    overshoot, the stagger and the plus's turn off (motion-still.css). */
-:where(.ph-caret-down, .contents-caret) {
+:where(.ph-caret-down),
+:where(.contents-caret) {
   transition: transform var(--ui-base) var(--ease-out);
 }
 
@@ -3821,7 +3824,10 @@ html.modal-open body {
    gives each its own line box at its own size, so the words land in place.
    This line used to be `display: none` while empty for the same reason
    the banner jumped: nothing was there to keep the room. */
-:is(.dash-greeting, .dash-submessage, .dash-clock-time, .dash-clock-date):empty::before {
+.dash-greeting:empty::before,
+.dash-submessage:empty::before,
+.dash-clock-time:empty::before,
+.dash-clock-date:empty::before {
   content: "\a0";
 }
 /* The clock: the time large and in the accent, the date under it, both
@@ -6121,7 +6127,8 @@ select {
 
 .entry-meta.note-meta > .chip.category + .chip.filing-sure,
 .entry-meta.note-meta > .chip.tag + .chip.tag,
-.entry-meta.note-meta > .chip.tag + :is(.chip.untagged, .chip.untagged-ai),
+.entry-meta.note-meta > .chip.tag + .chip.untagged,
+.entry-meta.note-meta > .chip.tag + .chip.untagged-ai,
 .entry-meta.note-meta > .chip.untagged + .chip.untagged-ai {
   margin-inline-start: calc(var(--space-3) - var(--space-6) - var(--space-1));
 }

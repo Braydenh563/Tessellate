@@ -25,7 +25,11 @@ CSS = FRONTEND / "css"
 def _read(name: str) -> str:
     text = frontend_text(name) if name.startswith("whiteboard") else (FRONTEND / ("js/" + name if name.endswith(".js") else name)).read_text(encoding="utf-8")
     #: documents.js and its CodeMirror view glue (documents-view.js, D21) are one file to these checks.
-    return text + _read("documents-view.js") if name == "documents.js" else text
+    if name == "documents.js":
+        from tests._app_js import documents_text
+
+        return documents_text() + _read("documents-view.js")
+    return text
 
 
 def _function(source: str, name: str) -> str:

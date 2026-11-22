@@ -14,5 +14,6 @@ from tests._app_js import script_file_text
 
 
 def test_a_notes_row_leads_with_the_note_icon():
-    body = re.search(r"function renderDocNotes\(\) \{(.*?)\n\}\n", script_file_text("documents.js"), re.S).group(1)
+    # renderDocNotes moved to documents-links-panels.js, inside its IIFE (L308).
+    body = re.search(r"function renderDocNotes\(\) \{(.*?)\n  \}\n", script_file_text("documents-links-panels.js"), re.S).group(1)
     assert 'ph-note ph-lead' in body
