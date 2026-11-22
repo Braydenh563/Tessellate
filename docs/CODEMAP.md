@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11488, test files 2944, tests 23160, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11492, test files 2946, tests 23168, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -1144,52 +1144,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:904 |
-| `captureCountText` | frontend/js/settings-wiring.js:1688 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1408 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2091 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1203 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1438 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1239 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2076 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1939 |
-| `flashSaved` | frontend/js/settings-wiring.js:527 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2123 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1221 |
-| `inEditable` | frontend/js/settings-wiring.js:902 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1538 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1073 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1116 |
+| `activeOverlay` | frontend/js/settings-wiring.js:913 |
+| `captureCountText` | frontend/js/settings-wiring.js:1697 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1417 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2100 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1212 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1447 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1248 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2085 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1948 |
+| `flashSaved` | frontend/js/settings-wiring.js:536 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2132 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1230 |
+| `inEditable` | frontend/js/settings-wiring.js:911 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1547 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1082 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1125 |
 | `lockFail` | frontend/js/settings-wiring.js:286 |
 | `lockFailed` | frontend/js/settings-wiring.js:298 |
-| `lockOpened` | frontend/js/settings-wiring.js:354 |
-| `lockRequest` | frontend/js/settings-wiring.js:398 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:899 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1257 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:925 |
-| `notebookLocked` | frontend/js/settings-wiring.js:512 |
+| `lockOpened` | frontend/js/settings-wiring.js:363 |
+| `lockRequest` | frontend/js/settings-wiring.js:407 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:908 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1266 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:934 |
+| `notebookLocked` | frontend/js/settings-wiring.js:521 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1653 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1620 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1861 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1662 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1629 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1870 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1375 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1126 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2064 |
-| `runShortcut` | frontend/js/settings-wiring.js:1266 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1384 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1135 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2073 |
+| `runShortcut` | frontend/js/settings-wiring.js:1275 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1227 |
-| `saveWhatIsInFront` | frontend/js/settings-wiring.js:576 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1236 |
+| `saveWhatIsInFront` | frontend/js/settings-wiring.js:585 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1392 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1399 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2250 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2041 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1102 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1401 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1408 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2259 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2050 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1111 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1678 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2100 |
-| `wordCount` | frontend/js/settings-wiring.js:1673 |
+| `textCounts` | frontend/js/settings-wiring.js:1687 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2109 |
+| `wordCount` | frontend/js/settings-wiring.js:1682 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -14346,7 +14346,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11488)
+## Backend modules (11492)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25769,17 +25769,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sealed_only` | src/tessellate/core/media_gc.py:280 |
 | `usage_map` | src/tessellate/core/media_gc.py:195 |
 
-### src/tessellate/core/media_process.py (7)
+### src/tessellate/core/media_process.py (8)
 
 | Name | File:line |
 |---|---|
 | `_due` | src/tessellate/core/media_process.py:60 |
 | `_module` | src/tessellate/core/media_process.py:37 |
 | `_read_marker` | src/tessellate/core/media_process.py:72 |
-| `media_text_for` | src/tessellate/core/media_process.py:160 |
-| `process_committed_upload` | src/tessellate/core/media_process.py:78 |
-| `process_committed_upload_ids` | src/tessellate/core/media_process.py:142 |
-| `process_referenced_uploads` | src/tessellate/core/media_process.py:128 |
+| `_read_sealed` | src/tessellate/core/media_process.py:78 |
+| `media_text_for` | src/tessellate/core/media_process.py:175 |
+| `process_committed_upload` | src/tessellate/core/media_process.py:89 |
+| `process_committed_upload_ids` | src/tessellate/core/media_process.py:157 |
+| `process_referenced_uploads` | src/tessellate/core/media_process.py:143 |
 
 ### src/tessellate/core/model_gate.py (3)
 
@@ -25880,12 +25881,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_macos` | src/tessellate/core/netid.py:234 |
 | `read_windows` | src/tessellate/core/netid.py:323 |
 
-### src/tessellate/core/ocr.py (48)
+### src/tessellate/core/ocr.py (51)
 
 | Name | File:line |
 |---|---|
 | `_adopt_tesseract` | src/tessellate/core/ocr.py:136 |
-| `_binary_install_attempt` | src/tessellate/core/ocr.py:1185 |
+| `_binary_install_attempt` | src/tessellate/core/ocr.py:1251 |
 | `_block_regions` | src/tessellate/core/ocr.py:530 |
 | `_extra_size` | src/tessellate/core/ocr.py:639 |
 | `_image_size` | src/tessellate/core/ocr.py:471 |
@@ -25910,7 +25911,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_region_data` | src/tessellate/core/ocr.py:823 |
 | `_registry_tesseract_dir` | src/tessellate/core/ocr.py:75 |
 | `_word_box` | src/tessellate/core/ocr.py:959 |
-| `attempt_binary_install` | src/tessellate/core/ocr.py:1210 |
+| `attempt_binary_install` | src/tessellate/core/ocr.py:1276 |
 | `clear_language_cache` | src/tessellate/core/ocr.py:251 |
 | `effective_language` | src/tessellate/core/ocr.py:315 |
 | `engine` | src/tessellate/core/ocr.py:382 |
@@ -25919,9 +25920,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `extra_size` | src/tessellate/core/ocr.py:631 |
 | `extract_and_store` | src/tessellate/core/ocr.py:1087 |
 | `extract_in_background` | src/tessellate/core/ocr.py:1143 |
+| `extract_private_and_store` | src/tessellate/core/ocr.py:1187 |
+| `extract_private_in_background` | src/tessellate/core/ocr.py:1173 |
 | `extract_region_text` | src/tessellate/core/ocr.py:785 |
 | `extract_regions` | src/tessellate/core/ocr.py:841 |
 | `extract_text` | src/tessellate/core/ocr.py:705 |
+| `forget_sessions` | src/tessellate/core/ocr.py:1162 |
 | `installed_languages` | src/tessellate/core/ocr.py:213 |
 | `local_available` | src/tessellate/core/ocr.py:408 |
 | `packages_available` | src/tessellate/core/ocr.py:335 |
@@ -29143,7 +29147,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23160)
+## Tests (23168)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30762,6 +30766,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lock_boundary.py | 9 |
 | tests/test_lock_device_wait.py | 3 |
 | tests/test_lock_document_panels_1031.py | 5 |
+| tests/test_lock_empty_529.py | 1 |
 | tests/test_lock_reveal.py | 1 |
 | tests/test_lock_screen_notices_1553.py | 14 |
 | tests/test_locked_downloads.py | 2 |
@@ -31466,6 +31471,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_listener_cost.py | 7 |
 | tests/test_sealed_background_381.py | 24 |
 | tests/test_sealed_files_format.py | 18 |
+| tests/test_sealed_ocr_671.py | 7 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |
 | tests/test_search_box.py | 23 |
