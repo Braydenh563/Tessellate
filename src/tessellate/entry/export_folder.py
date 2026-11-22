@@ -722,7 +722,10 @@ def _write_attachments(session, entry, note, uploads_dir: Path) -> None:  # noqa
         if data is None:
             continue
         stored = f"{uuid.uuid4().hex}{posixpath.splitext(record['file'])[1][:12].lower()}"
-        (uploads_dir / stored).write_bytes(data)
+        #: A private space's file goes down sealed (L-world-class-670); locked, this raises and writes nothing plain.
+        (uploads_dir / stored).write_bytes(
+            sealed_files.seal_bytes(data) if sealed_files.wanted(session, entry.workspace_id) else data
+        )
         attachment = Attachment(entry_id=entry.id, filename=record.get("filename") or record["file"], stored_name=stored, size=len(data))
         _restore(attachment, record, _ROW_LEFT_OUT | {"entry_id", "stored_name", "size", "file", "sha1"})
         session.add(attachment)

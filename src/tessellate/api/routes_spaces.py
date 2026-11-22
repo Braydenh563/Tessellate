@@ -217,8 +217,12 @@ def _delete_space_moving(session: Session, space: Space, move_to: str) -> SpaceD
     space_id = space.id
     if move_to == space_id:
         raise HTTPException(400, "Pick a different space to move its contents to.")
-    deps.get_or_404(session, Space, move_to, "The space to move to could not be found.")
+    target = deps.get_or_404(session, Space, move_to, "The space to move to could not be found.")
     response = SpaceResponse.model_validate(space)
+    if space.is_private and not target.is_private:
+        from tessellate.entry import private_space
+
+        private_space.unseal_space_files(session, space_id)
     manifest = _move_space_contents(session, space_id, move_to)
     session.delete(space)
     session.commit()

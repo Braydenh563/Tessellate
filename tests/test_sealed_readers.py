@@ -61,6 +61,8 @@ THROUGH = {
     "api/routes_recordings.py::transcribe_recording",
     "core/docexport.py::bundle",
     "core/media_process.py::process_committed_upload",
+    "core/recording_make.py::save_generated",
+    "entry/export_folder.py::_write_attachments",
     "entry/export_folder.py::_write_note",
     "entry/sync_extras.py::file_bytes",
 }
@@ -84,7 +86,10 @@ HANDS_ON = {
     "api/wb_items.py::create_object": "media_process skips a sealed file",
     "core/media_process.py::process_committed_upload_ids": "process_committed_upload skips a sealed file",
     "core/media_process.py::process_referenced_uploads": "process_committed_upload skips a sealed file",
+    "ai/captions.py::begin": "names the spool; _hear appends it sealed in a private space (L-world-class-670)",
     "entry/export_folder.py::export": "_write_note reads through sealed_files",
+    "entry/export_folder.py::write": "_write_attachments seals a private space's file (L-world-class-670)",
+    "api/routes_import.py::import_app": "export_folder.write seals a private space's file (L-world-class-670)",
     "entry/export_folder.py::note_record": "_attachment_record hashes with _sha1_file, sealed-aware",
     "entry/export_folder.py::snapshot": "note_record, as above",
     "entry/export_folder.py::_attachment_record": "_sha1_file hashes the plain bytes of a sealed file",
@@ -127,15 +132,10 @@ PATHS_ONLY = {
     "entry/sync_segments.py::withdraw": "deletes",
 }
 
-#: Writes plain bytes from a thread or an import that has no key; the next
-#: unlock seals them (`private_space.seal_space_members` from `_open_spaces`).
+#: Writes plain bytes from a sync from another computer that has no key; the
+#: next unlock seals them (`private_space.seal_space_members` from `_open_spaces`).
 PLAIN_WRITES = {
-    "ai/captions.py::begin": "the live-caption PCM spool, removed when the take ends (L-world-class-670)",
-    "core/recording_make.py::save_generated": "a background thread's WAV",
-    "entry/export_folder.py::write": "an import",
-    "entry/export_folder.py::_write_attachments": "an import",
     "entry/sync_extras_apply.py::file": "a file from the other computer, never a sealed space's",
-    "api/routes_import.py::import_app": "an import",
 }
 
 

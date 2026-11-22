@@ -357,6 +357,13 @@ def unseal_space_members(session: Session, space_id: str) -> int:
     return count + sum(int(unseal_document(session, document)) for document in documents)
 
 
+def unseal_space_files(session: Session, space_id: str) -> int:
+    """The files of a private space's own rows written back plain, and nothing
+    else: its rows move out to an ordinary space that has no key to read them
+    with (L-world-class-670)."""
+    return _seal_files(_owned_rows(session, space_id), False)
+
+
 def keep_members_private(session: Session, space_id: str) -> None:
     """A space turned ordinary with "Keep it private": each note becomes an
     ordinary private note, its own switch again. A document stays sealed."""
