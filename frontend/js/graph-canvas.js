@@ -307,6 +307,8 @@
   //: Of those, how many of the best-connected in view may be named over another
   //: dot when nowhere else is free; see the label pass in `gcDraw`.
   const GC_LABEL_LANDMARK_HUBS = 10;
+  //: Candidates queued per landmark wanted: a hub with no free place is replaced by the next one that has.
+  const GC_LABEL_SPARE_FACTOR = 10;
   //: **Every name only on a small map** (owner, 0.3.31: "the labels on the
   //: graph are a bit much", a 35-note map named every dot at the fit). Past
   //: this many notes the fitted overview names its best-connected third (the
@@ -520,7 +522,7 @@
   //: dot. The dots go into a grid so a big map costs a few cell reads per
   //: label rather than a scan of every note. `blocked` are boxes no label may
   //: take at all (the topic plates, KG6), forced ones included where they can.
-  function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = null) {
+  function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = null, candCap = Infinity) {
     let cell = 0;
     for (const item of items) cell = Math.max(cell, item.bottom - item.top, 1);
     cell = Math.max(cell * 4, 1);
@@ -652,7 +654,13 @@
     //:   their least-crossed place, on the plate that hides the line under it
     //:   (`gcDrawLabels`), because an overview with no hub named is not
     //:   clearer.
+    //: **Spares behind the hubs** (L-graph-20 G7: 500 notes, 12 hubs asked for,
+    //: 2 drawn). A hub in the dense middle has no free place; the overview
+    //: queues more candidates than it wants and stops at `candCap` placed, so
+    //: the best-connected notes that have room are named instead.
+    let candPlaced = 0;
     for (const box of items) {
+      if (box.cand && !box.force && candPlaced >= candCap) continue;
       const spots = [box, ...(box.alts || []).map((spot) => ({ ...box, ...spot, alts: undefined }))];
       if (box.force) {
         //: Asked for by name: drawn whatever it lands on, at the clearest
@@ -667,11 +675,17 @@
       const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
       if (box.landmark) {
         const pick = best(spots, clear);
-        if (pick) placed.push(pick);
+        if (pick) {
+          placed.push(pick);
+          if (box.cand) candPlaced += 1;
+        }
         continue;
       }
       const pick = best(spots, clear);
-      if (pick && fewest === 0) placed.push(pick);
+      if (pick && fewest === 0) {
+        placed.push(pick);
+        if (box.cand) candPlaced += 1;
+      }
     }
     return placed;
   }
@@ -2241,8 +2255,11 @@
   //: shown or hidden is a box going to or from no size); a camera the person
   //: moved keeps where it is, and nothing refits before the first fit or
   //: while the warm-up plays (`gcFrameIntro`).
+  //: **Not while the map is read again** (`refitPending`, L-graph-20 G29): a return to the tab shows the
+  //: panels during the read, and the refit glided the old picture 25 px toward a frame the first tick then
+  //: replaced with an instant one, a heavy frame at each step (4x CPU, 2,000 notes).
   function gcRefitForPanels(s) {
-    if (s.userZoomed || s.intro || !s.zoom || !s.svg || !s.nodes?.length) return;
+    if (s.userZoomed || s.intro || s.refitPending || !s.zoom || !s.svg || !s.nodes?.length) return;
     if (s.tree) frameTree(s.svg, s.zoom, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
     else if (s.fittedOnce) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
   }
@@ -3666,7 +3683,10 @@
       } else {
         pool.sort((a, b) => degree(b) - degree(a));
       }
-      const landmarks = pool.slice(0, count);
+      //: Spares (GC_LABEL_SPARE_FACTOR) queue behind the hubs; `gcPlaceLabels` stops at `count` placed.
+      const landmarks = pool.slice(0, count * GC_LABEL_SPARE_FACTOR);
+      f.candIds = new Set(landmarks.map((node) => node.id));
+      f.candCap = count;
       for (const node of landmarks) labelled.push(node);
     }
   }
@@ -3937,6 +3957,7 @@
         align: beside ? "left" : "center",
         alts,
         landmark: landmarkIds.has(node.id),
+        cand: Boolean(f.candIds?.has(node.id)),
       });
     }
     return items;
@@ -4008,7 +4029,7 @@
       //: (INBOX 1744: dot names ran under the hover card).
       gcHoverCardFrame(s);
       const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t), ...gcCat.cardBoxes(s, t)];
-      const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
+      const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame, f.candCap);
       placedLabels = placed;
       book.labelBoxes = placed;
       book.labelsDrawn = placed.length;
@@ -4508,9 +4529,12 @@
     //: Below `GC_LABEL_NARROW_W` the cut is `GC_LABEL_NARROW_CUT` characters
     //: (a hub's a few more); the whole name is on hover and in the panel.
     const narrow = !s.tree && s.dims && s.dims.w < GC_LABEL_NARROW_W;
+    //: **At the overview of a big map the names are short too** (L-graph-20 G7: 500 notes, 2 of 12 hubs named
+    //: because a 26 to 36 character name is 170 to 230 px and every place was under a dot): the same cut as a phone's.
+    const overview = !s.tree && Boolean(s.transform && s.nodes) && s.nodes.length > GC_LABEL_ALL_MAX && s.transform.k <= GC_LABEL_ZOOM;
     const limit = s.tree
       ? s.tree.arc ? 12 : s.tree.radial ? 16 : 30
-      : narrow
+      : narrow || overview
         ? GC_LABEL_NARROW_CUT + (hub ? 6 : 0)
         : hub ? 36 : 26;
     const text = node.preview || "";
@@ -6762,6 +6786,7 @@
     void wantEntities, wantDocuments, wantMaps;
     if (!s.shown) gcArriving(s, true);
     const endpoint = graphEndpoint();
+    s.refitPending = reframe && Boolean(s.shown); // `gcRefitForPanels`; cleared once the read is back
     //: A failed read is not an empty graph. Reported class of bug: the map
     //: drew "Nothing to map yet" over a notebook full of linked notes because
     //: the only thing distinguishing the two was a null this returned silently.
@@ -6775,6 +6800,7 @@
     const data = await apiJson(endpoint).then(graphFill).catch(() => null);
     clearTimeout(slow);
     stats?.removeAttribute("aria-busy");
+    s.refitPending = false;
     if (!data) {
       gcArriving(s, false);
       surfaceFailed(document.getElementById("graph-empty"), "your map", renderGraph);
@@ -7091,6 +7117,9 @@
 
     graphRenderStats(data, nodes, edges, colourMode, s.layoutKind);
     graphSyncTimeSlider(data, (cutoff) => {
+      //: Not a frame for a cut-off that did not change (a tab return re-syncs the slider at its end: one of
+      //: the full frames of the second after it, L-graph-20 G29).
+      if ((s.timeCutoff ?? null) === (cutoff ?? null) && s.timeCutoff !== undefined) return;
       s.timeCutoff = cutoff;
       gcRequestDraw(s);
     });

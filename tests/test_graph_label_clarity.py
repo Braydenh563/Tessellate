@@ -99,3 +99,57 @@ def test_a_line_between_two_categories_is_quieter_in_every_force_shape() -> None
     look = _function(CANVAS, "gcEdgeLook")
     assert "_bridgeCat" in look
     assert "node._bridgeCat" in CANVAS
+
+
+def _run_cands(items: list, discs: list, cap: int) -> list:
+    call = f"gcPlaceLabels({json.dumps(items)}, {json.dumps(discs)}, null, [], null, {cap})"
+    return _run(PLACE + f"console.log(JSON.stringify({call}))")
+
+
+def test_a_hub_with_no_room_makes_way_for_the_next_best_connected() -> None:
+    # L-graph-20 G7: 500 notes, 12 hubs asked for, 2 drawn, because the hubs sit
+    # in the dense middle and a name with no clear place is left off. The overview
+    # queues spare candidates behind them, so a hub with no room is replaced by
+    # the next best-connected note that has some.
+    crowded = _box(1, 0, 0)
+    spare = _box(2, 200, 0)
+    for box in (crowded, spare):
+        box["cand"] = True
+    discs = [
+        {"id": 1, "x": 0, "y": 0, "r": 5},
+        {"id": 2, "x": 200, "y": 0, "r": 5},
+        {"id": 3, "x": 0, "y": 0, "r": 30},
+    ]
+    out = _run_cands([crowded, spare], discs, 1)
+    assert [box["id"] for box in out] == [2], out
+
+
+def test_spare_candidates_stop_at_the_cap() -> None:
+    items = [_box(i, i * 200, 0) for i in range(1, 5)]
+    for box in items:
+        box["cand"] = True
+    discs = [{"id": i, "x": i * 200, "y": 0, "r": 5} for i in range(1, 5)]
+    assert [box["id"] for box in _run_cands(items, discs, 2)] == [1, 2]
+    # Names that are not candidates (hover, search, zoomed-in labels) are not capped.
+    for box in items:
+        box["cand"] = False
+    assert len(_run_cands(items, discs, 2)) == 4
+
+
+def test_a_big_maps_overview_names_are_short_and_zooming_in_restores_them() -> None:
+    script = (
+        "const GC_LABEL_FULL = 56, GC_LABEL_ALL_MAX = 400, GC_LABEL_ZOOM = 1.4, GC_LABEL_NARROW_W = 600, GC_LABEL_NARROW_CUT = 14;\n"
+        "const gcKeyboardId = () => null;\n"
+        "const clipText = (t, n) => (t.length > n ? t.slice(0, n - 1) + '…' : t);\n"
+        "const GC_LABEL_SMALL_WORDS = new Set();\n"
+        + _function(CANVAS, "gcLabelCut")
+        + _function(CANVAS, "gcLabelText")
+        + """
+const note = { id: 1, preview: "Quarterly planning with the whole team" };
+const at = (k, n) => gcLabelText(note, { tree: null, hoveredId: null, adj: new Map(), dims: { w: 1400 }, transform: { k }, nodes: { length: n }, dupTitles: null });
+console.log(JSON.stringify([at(0.5, 500), at(2, 500), at(0.5, 100)]));
+"""
+    )
+    overview, zoomed, small = _run(script)
+    assert len(overview) <= 14 and overview.endswith("…")
+    assert zoomed == small and len(zoomed) > 20

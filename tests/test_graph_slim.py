@@ -73,3 +73,25 @@ def test_the_dashboard_shares_the_maps_payload():
     fetch = dash[dash.index("function fetchDashGraph()") :]
     fetch = fetch[: fetch.index("\n}\n")]
     assert 'apiJson("/graph?slim=1"' in fetch
+
+
+def test_slim_also_drops_what_the_map_never_reads(client):
+    """L-graph-20 G28: 2,000 notes were 1,387 KB full and 781 KB slim. A node's `age_days` is read by no
+    graph code (the notes lists get it from their own endpoints), its space is "default" on all but a
+    shared notebook's, and a one-way link says `two_way: false` on every line. Gzipped on the wire it is
+    75 KB either way; this is the parse and the memory."""
+    a = client.post("/entries", json={"content": "alpha note"}).json()
+    b = client.post("/entries", json={"content": "beta note"}).json()
+    client.post(f"/entries/{a['id']}/links", json={"target_id": b["id"]})
+    full = client.get("/graph").json()
+    slim = client.get("/graph?slim=1").json()
+    assert "age_days" in full["nodes"][0] and "space_id" in full["nodes"][0]
+    for node in slim["nodes"]:
+        assert "age_days" not in node and "space_id" not in node
+    link = next(e for e in slim["edges"] if e.get("kind") == "link")
+    assert "two_way" not in link
+    assert next(e for e in full["edges"] if e.get("kind") == "link")["two_way"] is False
+    text = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    fill = text[text.index("function graphFill(") :]
+    fill = fill[: fill.index("\n}\n")]
+    assert 'n.space_id ??= "default"' in fill and "e.two_way ??= false" in fill
