@@ -676,6 +676,9 @@ class Pool:
             return len(self._running)
 
     def in_flight(self, dedupe_key: object) -> bool:
+        # A job with no key is never matched by key: `None` names nothing.
+        if dedupe_key is None:
+            return False
         with self._lock:
             return any(job.dedupe_key == dedupe_key for job in (*self._running.values(), *self._queued.values()))
 
@@ -1046,10 +1049,10 @@ def pending() -> list[dict]:
 
 
 def in_flight(dedupe_key: object) -> bool:
-    """Whether a job with this `dedupe_key` is queued or running. A reader
-    that needs a job's last step, not only the state it settles first (a
-    filing commits `filing_state` before it keeps tag suggestions), waits on
-    this."""
+    """Whether a job with this `dedupe_key` is queued or running (never for
+    `None`, which every unkeyed job carries). A reader that needs a job's
+    last step (a filing's embed and Tidy pass), not only the state it
+    settles first, waits on this."""
     return pool().in_flight(dedupe_key)
 
 

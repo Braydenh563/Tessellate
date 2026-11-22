@@ -59,6 +59,18 @@ def keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  # 
     entry.suggested_tags = json.dumps(keep[: tagging.TAG_LIMIT])
 
 
+def keep_suggestions_safely(session: Session, entry, entry_id: int, filed_by: str | None) -> None:  # noqa: ANN001
+    """`keep_suggestions` in a savepoint: a database error in it (a failed
+    flush, a locked table) rolls back the suggestions alone, so the commit
+    after it still settles the filing (PR 242 review: the session was left
+    in a failed transaction and the whole filing was marked failed)."""
+    try:
+        with session.begin_nested():
+            keep_suggestions(session, entry, filed_by)
+    except Exception:
+        logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
+
+
 def engine_tags(session: Session, content: str, have: list[str], model: list[str], entry_id: int | None) -> list[str]:
     """One engine on every path (INBOX 781): a model's tags kept only where
     the note has a word for them (WORLD_CLASS 23, decision 5: its reply to

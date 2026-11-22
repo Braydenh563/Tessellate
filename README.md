@@ -274,8 +274,13 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <details>
-<summary><b>Seventeen more</b>: the Library and its Activity view, Timeline, Reminders, Documents and focus mode, a board, a mind map, the command palette, Tools and features, Settings, Your look, the popup agent, the corner companion, Atlas, light and dark side by side, and a phone</summary>
+<summary><b>Twenty more</b>: Chat with no model connected, the Library and its Activity view, Timeline, Reminders, Documents and focus mode, the page reader, the OCR workspace, a board, a mind map, the command palette, Tools and features, Settings, Your look, the popup agent, the corner companion, Atlas, light and dark side by side, and a phone</summary>
 <br>
+
+<p align="center">
+  <img src="docs/screenshots/chat-empty.png" alt="Chat with no model connected: an empty conversation with starter questions to try, saved chats beside it, and a line above the box saying that chat answers from your notes until a model is connected" width="850">
+  <br><sub><b>No model needed</b>: chat still answers from your notes, and says what waits for a model</sub>
+</p>
 
 <p align="center">
   <img src="docs/screenshots/library.png" alt="Library: chats, boards, mind maps, documents and notes as cards in one grid, with a filter chip per kind and its count" width="850">
@@ -308,8 +313,13 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/ocr.png" alt="The OCR workspace: a stand-up page with its text outlined as one region, read by Tesseract at 96 percent, the words beside it ready to copy, ask about or save as a note" width="850">
-  <br><sub><b>OCR workspace</b>: Tesseract reads a page on your computer; correct a region, then copy it, ask about it or save it as a note</sub>
+  <img src="docs/screenshots/reader.png" alt="The page reader open on a three-page scanned PDF: the page images in a rail, page one with the regions Tesseract found outlined, and its reading beside it with a confidence for each region" width="850">
+  <br><sub><b>Page reader</b>: a scanned PDF, page by page, with the text read from each page beside it</sub>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ocr.png" alt="The OCR workspace on a scanned invoice: each block of text outlined on the picture, and the recognised text beside it in five numbered regions with a confidence each, Read again, Copy all and Save as note below" width="850">
+  <br><sub><b>OCR workspace</b>: the text Tesseract read from a picture, region by region, ready to correct, copy or save as a note</sub>
 </p>
 
 <p align="center">
