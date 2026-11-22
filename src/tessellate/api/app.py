@@ -158,6 +158,7 @@ from tessellate.core import (
     startup_status,
     validation_copy,
 )
+from tessellate.ai import wiring  # noqa: F401  (registers the AI factories core/deps builds with)
 from tessellate.core.deps import init_app_state
 from tessellate.entry import manager_purge
 
@@ -876,7 +877,7 @@ def _warm_routes(app) -> None:
     router under one lock: about 0.9 s here for ~240 paths, so the browser's
     boot burst (`/models/status` among them) all waited on it, 3.9 s on the
     owner's machine. One in-process `/health` takes that cost while the lock
-    screen is showing. On the pool's thread Jobs, not the event loop; a
+    screen is still up. On the pool's thread Jobs, not the event loop; a
     failure only means the first real request pays as before. Skipped under
     pytest, where every test app would pay a second for nothing.
     """

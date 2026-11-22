@@ -9,6 +9,8 @@ Object.assign(LAZY_MODULES, {
   statusSettings: ["/js/status-settings.js"],
   //: The Notes view's Ask again chips and most-used list (status-quick.js, out of status.js; L698).
   statusQuick: ["/js/status-quick.js"],
+  //: The AI status dot's reading and paint (status-ai-pill.js, out of status.js; L-world-class-810).
+  statusAiPill: ["/js/status-ai-pill.js"],
   //: The once-per-problem notice for a broken search engine (status-embedding.js, out of status.js; L698).
   statusEmbedding: ["/js/status-embedding.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
@@ -121,8 +123,12 @@ Object.assign(LAZY_MODULES, {
   notesLazy: ["/js/notes-lazy.js"],
   //: The list's keyboard walk, a shift-click range, the connections rail's listeners and the wiki-rename offer (notes-wire.js; L-world-class-631).
   notesWire: ["/js/notes-wire.js"],
+  //: The category list's draw (notes-sidebar.js, out of notes-list.js; L-world-class-810). `renderSidebar` calls it once the tab is shown.
+  notesSidebar: ["/js/notes-sidebar.js"],
   //: The poll for a change made on another device (notes-sync.js, out of notes-list.js; L698). Started where notes-list.js loads.
   notesSync: ["/js/notes-sync.js"],
+  //: Swipe a row and the note as a page, phone band only (phone-gestures.js, out of phone-shell.js; L-world-class-810).
+  phoneGestures: ["/js/phone-gestures.js"],
   //: Quit, clear the caches, Reload the app (app-reset.js, out of phone-shell.js; L698).
   appReset: ["/js/app-reset.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -169,7 +175,10 @@ installStandIns({
   statusSettings: ["renderSettings"],
   statusQuick: ["loadRecentQuestions", "loadMostUsed"],
   statusEmbedding: ["nudgeEmbeddingProblem"],
+  statusAiPill: ["renderAiPill"],
+  phoneGestures: ["refreshNotePageNow"],
   appReset: ["quitApp", "clearAppCache", "forceReloadApp", "toggleAutonomousPanel"],
+  notesSidebar: ["drawSidebar"],
   notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).

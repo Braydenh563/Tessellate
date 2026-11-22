@@ -130,5 +130,5 @@ def test_a_card_drawn_open_from_a_clipped_row_fills_itself_with_the_whole_note()
     toggle = _function((JS / "notes-lazy.js").read_text(encoding="utf-8"), "function toggleRowExpanded(")
     #: The row's text is filled in place, never swapped for a new element its Show more is not bound to.
     assert "replaceWith" not in toggle and '.querySelector(".entry-content")?.fillWhole?.()' in toggle
-    page = _function((JS / "phone-shell.js").read_text(encoding="utf-8"), "function dropRepeatedTitle(")
+    page = _function((JS / "phone-gestures.js").read_text(encoding="utf-8"), "function dropRepeatedTitle(")
     assert '"note-whole"' in page

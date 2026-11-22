@@ -35,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sqlalchemy import select  # noqa: E402
 
 from tessellate.ai.embeddings import vector_to_bytes  # noqa: E402
+from tessellate.ai import wiring  # noqa: E402,F401
 from tessellate.core import deps  # noqa: E402
 from tessellate.core.database import Category, EmbeddingRecord, Entry  # noqa: E402
 

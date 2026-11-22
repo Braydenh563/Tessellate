@@ -44,6 +44,7 @@ import json
 import logging
 import math
 import re
+import sys
 import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
@@ -57,6 +58,7 @@ from tessellate.core.database import LIKE_ESCAPE, Attachment, EmbeddingRecord, E
 from tessellate.entry.highlights import has_highlight
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import chunks as search_chunks
+from tessellate.search import matrix_hooks
 from tessellate.search import index as search_index
 from tessellate.search import query as query_understanding
 from tessellate.search import search_manager
@@ -1107,7 +1109,7 @@ def _has_attachment_ids(session: Session, entry_ids: list[int]) -> set[int]:
 
 
 #: What each `has:` word is answered from (the decision the retrieval brief
-#: left undecided: "decide each one's source ... and answer them over the
+#: asked for: "decide each one's source ... and answer them over the
 #: candidates, never with a join on every save"). `file` and `image` read the
 #: attachment table, `link` a connection either way round, `reminder` a
 #: reminder pointing at the note, and `highlight` the text itself (the marks
@@ -1806,3 +1808,6 @@ def stats(session: Session) -> dict:
         #: Beside `index` so a drift is readable: rows now against rows then.
         "last_rebuild": search_index.last_rebuild(),
     }
+
+
+matrix_hooks.register(sys.modules[__name__])

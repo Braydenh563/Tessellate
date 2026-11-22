@@ -22,6 +22,7 @@ from pathlib import Path
 import requests
 
 from tessellate.ai import agent
+from tessellate.ai import wiring  # noqa: F401
 from tessellate.core import deps
 
 logging.disable(logging.WARNING)

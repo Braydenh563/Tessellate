@@ -51,6 +51,7 @@ def main() -> int:
     args = parser.parse_args()
 
     from tessellate.ai import agent, tools
+    from tessellate.ai import wiring  # noqa: F401
     from tessellate.core import deps
     from tests.eval import fixture, golden
 

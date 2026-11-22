@@ -23,8 +23,7 @@ shape now, this one:
     ## Agenda
     ## Notes
     ## Decisions
-    ## Action items
-    `- [ ] Send the deck @Sam by Friday`
+    ## Action items, then the task line `- [ ] Send the deck @Sam by Friday`
 
 **An action item is a task line** (`- [ ]`), which the editor already draws
 as a checkbox and the Dashboard's Outstanding widget already lists. Its owner

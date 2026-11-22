@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from tessellate.ai import agent
 from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.api.app import create_app
+from tessellate.ai import wiring  # noqa: F401
 from tessellate.core import deps
 from tessellate.entry import manager
 

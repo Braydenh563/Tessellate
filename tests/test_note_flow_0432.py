@@ -176,8 +176,8 @@ def test_a_to_z_sorts_by_the_name_a_card_shows():
 
 
 def test_the_sidebar_lights_one_row_lists_every_category_and_takes_the_keyboard():
-    notes = _read("notes-list.js")
-    side = _function(notes, "renderSidebar")
+    notes = _read("notes-list.js") + _read("notes-sidebar.js")
+    side = _function(notes, "drawSidebar")
     assert "!draftsOnly && !favouritesOnly" in side
     assert "categoryMeta.keys()" in side
     assert "compareCategoryNames" in side and "].sort()" not in side
@@ -310,7 +310,7 @@ def test_note_boxes_are_live_with_a_source_switch_not_a_preview():
 
 
 def test_tags_have_a_place_in_the_notes_sidebar():
-    side = _function(_read("notes-list.js"), "renderSidebar")
+    side = _function(_read("notes-sidebar.js"), "drawSidebar")
     # The Tags row is built by notes-list.js's `sheetRow` helper since the Groups row joined it (L-world-class-172).
     assert 'sheetRow("ph:hash Tags"' in side and "openTagsSheet()" in side
     panel = _read("tag-manager.js")

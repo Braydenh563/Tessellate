@@ -43,7 +43,7 @@ import sys
 from contextvars import ContextVar
 from typing import TextIO
 
-from tessellate.ai import tools
+from tessellate.ai import tools, wiring  # noqa: F401  (registers the AI factories)
 from tessellate.core import deps
 
 logger = logging.getLogger(__name__)

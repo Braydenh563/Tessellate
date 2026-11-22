@@ -18,8 +18,8 @@ def test_a_card_file_without_its_name_is_a_failure_not_a_redraw():
     notes = (JS / "notes-list.js").read_text(encoding="utf-8")
     waiting = notes[notes.index("renderEntries.waiting ||="):][:600]
     assert "if (!ok || !window.entryItem)" in waiting
-    phone = (JS / "phone-shell.js").read_text(encoding="utf-8")
-    for call in ("openNotePage(entry, returnFocus)", "refreshNotePage(ids)"):
+    phone = (JS / "phone-gestures.js").read_text(encoding="utf-8")
+    for call in ("openNotePage(entry, returnFocus)", "refreshNotePageNow(ids)"):
         assert f"ok && window.entryItem ? {call}" in phone
 
 

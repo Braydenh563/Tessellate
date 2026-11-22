@@ -155,12 +155,12 @@ def platform_reason(extra) -> str:
     offered: its Install button is greyed with this sentence beside it, and
     `extras.start` refuses it, the same two places `unavailable` is held.
     """
-    shipped = sorted({d.platform for d in extra.downloads if d.platform})
-    if not shipped or platform_key() in shipped:
+    platforms = sorted({d.platform for d in extra.downloads if d.platform})
+    if not platforms or platform_key() in platforms:
         return ""
     return (
         f"There is no prebuilt engine for this computer ({platform_key()}). "
-        f"It is built for {', '.join(shipped)}."
+        f"It is built for {', '.join(platforms)}."
     )
 
 
