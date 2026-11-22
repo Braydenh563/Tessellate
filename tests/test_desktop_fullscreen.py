@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 from tessellate.core import window_hook
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -56,7 +58,7 @@ def test_the_desktop_launcher_registers_the_window_toggle():
 
 
 def test_the_page_prefers_the_window_where_there_is_one():
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     toggle = docs[docs.index("async function docFocusToggleFullscreen"):]
     toggle = toggle[: toggle.index("\n}\n")]
     assert toggle.index("docDesktopFs().available") < toggle.index("requestFullscreen")

@@ -173,7 +173,7 @@ const show = (o) => console.log("    " + JSON.stringify(o));
     renderWhiteboardNow();
     await new Promise((r) => setTimeout(r, 500));
     const item = (wbState.sketches || []).find((s) => s.id === sketchId);
-    return { kind: typeof wbContextKindOf === "function" ? wbContextKindOf(wbSelectedItem, item) : null };
+    return { kind: typeof wbUpdateContextBar.sweep?.wbContextKindOf === "function" ? wbUpdateContextBar.sweep.wbContextKindOf(wbSelectedItem, item) : null };
   }, made.sketchId);
   const ctx = await page.evaluate(controlsIn("#wb-context"));
   const freeRing = await page.evaluate(controlsIn("#wb-map-link-radial"));

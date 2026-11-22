@@ -54,7 +54,7 @@ window.wbVisibleBoards = function wbVisibleBoards(boards, needle) {
   return fixed.length ? [...fixed, ...shown.filter((b) => b.id !== null)] : shown;
 };
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = $("library-boards-sort");
   if (!select) return;
   select.value = boardSort();
@@ -62,7 +62,7 @@ onDomReady(() => {
     prefs.set(BOARD_SORT_KEY, select.value);
     redrawLibraryBoardsGallery();
   });
-});
+}));
 
 window.renderLibraryBoardsGallery = renderLibraryBoardsGallery;
 window.redrawLibraryBoardsGallery = redrawLibraryBoardsGallery;
@@ -352,7 +352,7 @@ function drawLibraryBoardsGallery(listed) {
             const next = await promptDialog("Rename this board", board.title);
             if (next) await renameBoardWithUndo(next);
           }),
-          //: L348: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
+          //: L348, L280: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
           makeMenuItem("ph:sparkle Suggest a name", "A name from what is on this board", async () => {
             const got = await apiJson(`/whiteboard/boards/${board.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
             if (got?.title && got.title !== board.title) await renameBoardWithUndo(got.title);
@@ -427,7 +427,7 @@ function wbNewMenuMount() {
 }
 
 //: The gallery's own two controls: its search box and the Reload button beside "+ New board".
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   wbNewMenuMount();
   //: The landing's other buttons are wired by the board code (whiteboard.js), which is fetched after the
   //: cards are up. A press before it has run fetches it, then presses again.
@@ -473,4 +473,4 @@ onDomReady(() => {
   // Its title and aria-label said only "Reload", which on a header holding
   // New board, Import outline and Help does not say reload what.
   $("library-boards-refresh")?.addEventListener("click", renderLibraryBoardsGallery);
-});
+}));

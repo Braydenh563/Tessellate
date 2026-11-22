@@ -100,8 +100,10 @@
 .pop-card-body {
   padding: var(--space-3) var(--space-4);
 }
-.pop-card-body > :is(ul, p):first-child,
-.pop-card-body > :is(ul, p):last-child {
+.pop-card-body > ul:first-child,
+.pop-card-body > p:first-child,
+.pop-card-body > ul:last-child,
+.pop-card-body > p:last-child {
   margin-block: 0;
 }
 .pop-card-hint {

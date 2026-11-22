@@ -102,7 +102,7 @@ kind. Every tool has a key and every key is in the tooltip and the help.
 7. **Highlighter** = marker with `mix-blend-mode: multiply` at 40%
    opacity, width 12 to 24, Shift for straight; the quick-sketch pad uses
    the same tool code, not a copy.
-   Two halves of this were left open when Phase 3 was built and are decided
+   Two halves of this were not settled when Phase 3 was built; they were decided
    here, 2026-09-20, with the measurements that decided them:
    - **One table, two renderers. The pad stays a canvas.** The board draws
      SVG paths and the pad draws into a `<canvas>`; they are two rendering
@@ -423,8 +423,8 @@ accessibility, and learnability") are why.
     says so. Previewed in the picker dialog (the Attach picker's rows, all
     ticked), never written until Add, which makes the ticked ones under the
     topic in one transaction with "From your note ..." as each one's note,
-    one Undo step. Ghosts drawn on the canvas wait for boot CSS room (the
-    cap is full); the picker is the recipe the app already has.
+    one Undo step. Ghosts are drawn under the topic as well (built
+    2026-10-18, fixes7-1018; MINDMAP_PLAN).
 37. **Stickers come from the one icon and emoji picker** (taken 2026-10-05,
     INBOX 642, mc1): MINDMAP_PLAN decisions 43 and 44 hold for a board as
     for a map. An emoji dropped or picked is a text object with `sticker:
@@ -458,14 +458,13 @@ accessibility, and learnability") are why.
     BACKLOG "Smaller polish items"). Built: Alt while resizing keeps the
     centre where it was and grows both sides (`wbResizeBox` for cards,
     `wbSketchResizeTransform` for drawn shapes; Shift still keeps the
-    ratio; `tests/test_wb_resize_from_centre.py`). Not built, each with its
-    reason: flip is already the Format panel's Flip for drawn shapes
-    (`wbFmtFlip`), and a mirrored note, image or frame has no reading that
-    helps; whole-object opacity is already the context bar's for shapes,
-    lines, arrows, links, text and images, and a frame stays opaque because
-    it is the container the eye groups by; a status bar is not built
-    because zoom, tool and selection already read from the zoom dock, the
-    pressed tool and the context bar, and section 3 wants less chrome, not a
+    ratio; `tests/test_wb_resize_from_centre.py`). Moot by fact:
+    flip is already the Format panel's Flip for drawn shapes (`wbFmtFlip`,
+    whiteboard-format.js), and whole-object opacity is already the context bar's
+    for shapes, lines, arrows, links, text and images. Reasoned out and filed
+    for the owner (LEDGER L-whiteboard-47): a mirrored note, image or frame, an
+    opaque frame, and a status bar (zoom, tool and selection already read from
+    the zoom dock, the pressed tool and the context bar, and section 3 wants less chrome, not a
     fourth strip. The contextual quick bar is `.wb-context` (built).
 41. **A left-drag on empty canvas pans; Shift-drag selects** (the owner,
     2026-10-19, INBOX 1332; supersedes the "a plain left-drag only pans
@@ -621,74 +620,7 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (placed
 blocks found built, op5)").
 
 ## Placed from INBOX, 2026-09-21
-
-258. **Recommendation, not a change, 2026-09-19 (the session).** The
-    reverted outside commit added right-drag to pan the board, filtered so
-    a right-click still reaches a node's context menu
-    (`wbZoomFilter`: `event.button === 2` on a target that is not
-    `.node-card, .sketch-group, .wb-object`). It is a good gesture and
-    every canvas app has it, but nobody asked for it and a new gesture on
-    the surface that carries the app's only context menu is a decision, not
-    a patch. Not built here on purpose (standing order 8: a new need is an
-    entry, not an ad-hoc build).
-    Recommendation: take it, guarded as above, plus `contextmenu` suppressed
-    on the canvas only while such a drag actually moved (so a right *click*
-    on empty canvas keeps whatever it does today), and measured against
-    `scratchpad/ui-sweeps/wbpan.js`. The other two ideas from that commit,
-    a rotated group outline and alignment guides for a group drag, are built
-    (861e740, 5273bae).
-    **Tried 2026-09-19 and taken back out, with what was learned.** The pan
-    itself is four lines in `wbZoomFilter` (`event.button === 2` when
-    `event.target` is not inside `.node-card, .sketch-group, .wb-object,
-    .wb-map-edge-hit, [contenteditable]`, and the mousemove half gated on a
-    flag the mousedown set) and measured clean: a right-drag moved the board
-    150px, a right-click with no drag left the transform untouched.
-    The half that matters could not be measured. Three things were found
-    and are worth having written down:
-    - The `contextmenu` that ends a right-drag over this board is dispatched
-      at the `<section>` *around* it, not at anything inside it, so a
-      listener scoped to `#whiteboard-container` never sees it and
-      `event.target.closest("#library-view-whiteboard")` is null on it.
-    - It is dispatched **before** `pointerup`, not after, so clearing the
-      "this drag moved" flag on the release is safe and clearing it on a
-      `setTimeout(0)` from the release is not.
-    - With all of that accounted for, two runs of identical code disagreed
-      about whether the menu was dispatched at all. Non-deterministic here,
-      and the difference between "the gesture is polished" and "the gesture
-      leaves a menu open on your board" is exactly that dispatch.
-    So: not shipped. `scratchpad/ui-sweeps/wbrightpan.js` is the acceptance
-    test, written first and failing, with the three facts above in its
-    header. Whoever builds it makes that file pass on a board with a card on
-    it, which is also the case this run could not cover.
-    **Built and taken back out a second time, 2026-09-20, and this run found
-    why. Two of the three facts above are wrong.** Measured with every event
-    logged in the capture phase across a full right-drag:
-
-        pointerdown@wb-svg-layer
-        mousedown@wb-svg-layer
-        contextmenu@wb-svg-layer      <- on the press
-        pointerup@wb-svg-layer
-        mouseup@wb-svg-layer
-        auxclick@wb-svg-layer
-
-    `contextmenu` arrives **on the press, before the drag has moved a pixel**,
-    and at `#wb-svg-layer`, not at the `<section>`. So at the only moment the
-    decision can be made, nothing can know whether the gesture will become a
-    drag: "suppress the menu only when the drag moved" is not implementable,
-    which is why both attempts left a menu open. The non-determinism recorded
-    above did not reproduce: six runs across two attempts agreed every time,
-    so it should not be planned around.
-    The pan half measured clean again (0 to 150px, three runs identical), and
-    a probe bug was fixed while there: the card's position was read at setup,
-    before checks 1 and 2 pan the board, so check 3 pressed empty canvas and
-    reported a 120px pan "on a card" that never touched one.
-    **Recommendation, for the owner, because it is a decision and not a
-    patch.** One shape works: suppress the native menu on the canvas outright
-    and open the app's own pointer menu (`openMenuAtPoint`, which exists) in
-    its place. A right-click then gives board actions instead of Chrome's
-    menu, and a right-drag gives a clean pan. What goes in that menu is the
-    open question, and assertion 2 of the acceptance test ("a right-click
-    still opens whatever it opened before") changes with it.
+258. Right-drag to pan: superseded by INBOX 1452; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)".
 
 276. The sketch pad's bar at 820 on Large text with Spacious: decided and
     closed 2026-10-05 (op5); moved to HISTORY.md ("Moved from the plans,
@@ -719,8 +651,8 @@ blocks found built, op5)").
   it again. Escape now takes back the drag and nothing else, and the rest of
   the drag selects nothing (`wbmarqueeescape.js`, new, 8/8, 4/8 before).
   With a board menu open, Escape closes the menu and keeps the selection
-  (INBOX 396). **Open:** the same pass on documents, notes, chat and the
-  Library.
+  (INBOX 396). The same pass on documents, notes, chat and the Library is
+  BACKLOG, "Whiteboard, parked 2026-11-14" (other plans' surfaces).
 
 ## Placed from INBOX, 2026-09-25
 
@@ -740,8 +672,9 @@ blocks found built, op5)").
     (`placeEscapedMenu`, `wbKeepMenuBesideBar`) can only put Arrange above
     its button when the window has less room below than above, which the top
     bar never has. Both reports come from the desktop window (WebView2); the
-    next step needs the owner: the window size, whether the top bar was
-    dragged, and a screen recording of the ⋯ case. Recommendation: ask.
+    owner's window size, whether the top bar was
+    dragged, and a screen recording of the ⋯ case are in BACKLOG ("Whiteboard,
+    parked 2026-11-14").
     **Tried again 2026-09-26, with real scrollbars and a Windows laptop's
     scale** (`SCROLLBARS=1`, `deviceScaleFactor` 1.25), and still not
     reproduced. `wbmenuroom.js` now takes `DSF`: 87/87 at 1440x900,
@@ -774,20 +707,16 @@ blocks found built, op5)").
 The features audit (scratchpad/audit1005/features.md) holds the draw.io
 catalogue, the library spec and the phased briefs these become.
 
-557 and 558: built (decisions 19 to 36 below; the object library, the Layers tab, the draw.io pass). Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WHITEBOARD_PLAN)"). Open from them: named layers (BACKLOG 29c) and ghost topics.
+557 and 558: built (decisions 19 to 36 below; the object library, the Layers tab, the draw.io pass). Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WHITEBOARD_PLAN)"). Both named layers (`wbNamedLayerMenu`, HISTORY 2026-10-05) and ghost topics (`wbMapBranchPicker`, HISTORY fixes7-1018) are built.
 
 ## Placed from INBOX, 2026-10-05 (ledger triage)
+- `contrast.js` on boards and maps: built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)".
 
-- **`contrast.js` never visits a board or a map** (documents was added
-  2026-10-04). Brief: add `whiteboard` and `mindmap` to its `TABS` with a seeded
-  board (cards, stickies, a frame, shapes) and a seeded map, run at 1440 and
-  390 in both themes, fix what it finds one surface per commit. Expect
-  pre-existing findings; a session of its own. Opus, M.
 
 ## Placed from INBOX, 2026-10-05 (boardmap-1005)
 
 Held by the boardmap-1005 agent; the built halves are in HISTORY.md
-("Moved from the plans, 2026-10-05 (boardmap-1005)"). Open:
+("Moved from the plans, 2026-10-05 (boardmap-1005)"). The rest, all built:
 
 - INBOX 596, the rest: built (the side column, the phone overlap and the
   sidebar's skeletons; HISTORY.md, "Moved from the plans, 2026-10-05
@@ -882,16 +811,15 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Corner rounding of a rectangle | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `rounded=1` with `arcSize`; `toggleRounded` (Actions.js 1661) | `data.round` read by the rectangle path builder; the stencil `roundrect` op already uses it | S |
 | Opacity | yes (`wb-fmt-alpha`) | `createRelativeOption` `opacity` (Format.js 6385) | done | none |
 | Shadow | yes (`wb-fmt-shadow`) | `addEffects` (Format.js 7939) `shadow` | done | none |
-| Glass | no | `glass` effect (Format.js 7939) | drop: a skeuomorphic gloss the board's look does not use | none |
-| Sketch (hand-drawn) | yes (`wb-fmt-rough`; the View menu for the whole board) | `sketch` effect (Format.js 8004), rough.js | drop (matrix verdict, unchanged) | none |
+| Glass | yes (`wb-fmt-glass`, `paintGlass` in whiteboard-effects.js) | `glass` effect (Format.js 7939) | done (L-whiteboard-37) | none here |
+| Sketch (hand-drawn) | yes (`wb-fmt-rough`; the View menu for the whole board) | `sketch` effect (Format.js 8004), rough.js | done: `wbDrawsRough`, `data.rough`, `background.rough` | none |
 | Flow animation on a connector | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
 | Edit style (raw string) | yes, 2026-11-10 (s9c-1110; HISTORY) | `editStyle` (Actions.js 1717), Ctrl+E | see section 3: the board's equivalent is "Edit data", a JSON view of `data` | M |
 | Copy style, paste style | yes (`copy-style`, `paste-style`, `wb-fmt-copy-style`) | `copyStyle`, `pasteStyle` (Menus.js 1028, 1049) | done | none |
 | Set as default style, default for new connectors | yes, 2026-11-10 (s9c-1110; HISTORY) | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
 | Named styles | yes (`save-style`, `wb-fmt-save-style`, library kind `style`) | style presets in the sidebar and `DiagramStylePanel.addGraphStyles` (Format.js 8383) | done for items; the whole-board presets are the next row | none |
 | Board-wide style presets (twelve colour schemes applied to every shape) | yes, 2026-11-10 (s9c-1110; HISTORY) | `DiagramStylePanel` (Format.js 8252 to 8858) | a "Board style" row in the Format panel's no-selection state, writing fill, stroke and text colour across the board in one undo step | M |
-| Edit image, replace image, crop | partly, 2026-11-10 (s9c-1110; HISTORY): rectangle crop (Trim edges), Replace picture and Edit image (turn, flips, greyscale, brightness, contrast as item style) built; Crop on picture (draggable box, eight handles) built | `editImage`, `image...`, `crop...` (Actions.js 884, 1998, 2112) | canvas crop to a new media row; ANALYSIS row "Crop, rotate, flip" | M |
-| SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | drop: draw.io-specific theming of embedded SVG | none |
+| SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | moot by fact, proved per route in `tests/test_wb_no_svg_images.py` (paste, drop, data: address, draw.io, Miro/GraphML/PlantUML/EMF, library, link fetch, SVG re-import; `/media` refuses .svg and `MEDIA_URL_RE` needs a picture suffix); the Mermaid SVG has fill and line controls | none |
 
 ### 2. Format panel, Text tab, and the Arrange tab
 
@@ -905,64 +833,53 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Font size | yes (`wb-fmt-size`) | `fontSize` menu (Menus.js 227) | done | none |
 | Bold, italic | yes | `fontStyle` bits, Ctrl+B, Ctrl+I | done | none |
 | Underline, strikethrough | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `fontStyle` bits 4 and 8, Ctrl+U | `label_underline`, `label_strike`, drawn as `text-decoration` on the SVG text | S |
-| Subscript, superscript | no | `subscript`, `superscript` (Actions.js 1911, 1918) | needs rich text inside shapes; text boxes already hold markdown | M |
 | Horizontal align (left, centre, right) | yes (`wb-fmt-align`) | `STYLE_ALIGN` | done | none |
 | Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |
-| Label background and border colour | no | `labelBackgroundColor`, `labelBorderColor` (Format.js, Text tab) | `label_bg`, `label_border`: a rounded rect behind the label, which a connector label needs to stay readable over crossing lines | S |
 | Text opacity | yes, 2026-11-01 (board-1101; HISTORY), `label_alpha`, `text_alpha` | `textOpacity` | `label_alpha` | S |
-| Text shadow | no | `textShadow` | drop | none |
-| Label position (inside, outside: above, below, left, right of the shape) | no | `labelPosition`, `verticalLabelPosition` | `label_pos` enum; the icon and swimlane use it | M |
+| Text shadow | yes (`wb-fmt-tshadow`, `textShadowStyle`, `paintTextShadow`) | `textShadow` | done (L-whiteboard-38) | none here |
 | Text direction, vertical text | yes, 2026-11-01 (board-1101; HISTORY), `label_dir`, `text_dir` (rtl, vertical) | `textDirection`, `horizontal=0` (`vertical` action, Actions.js 1584) | `label_dir` (rtl, vertical-rl) applied as SVG `writing-mode` | S |
-| Word wrap, label width, padding | partly (shapes wrap inside `label_area`) | `whiteSpace=wrap`, `labelWidth`, `labelPadding` | `label_width`, `label_pad` on top of `label_area` | S |
-| Spacing: top, right, bottom, left, global | no | `spacing`, `spacingTop..Left` | `label_pad {t,r,b,l}` shares the row above | S |
 | Line height | yes (`wb-fmt-lh`) | `lineheight` in the text panel | `label_lh` | S |
 | Auto-size to text, fit text to shape | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
-| Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | shapes keep plain text; markdown stays for text boxes; the Format panel shows the markdown toolbar for them | none |
+| Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | done: text boxes are markdown; a shape's label takes markdown behind Format, Label, Rich text (`wbFmtState.richLabel.paint`, whiteboard-label-rich.js, sanitised by `inert`) | none here |
 | Clear formatting | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
 | Increase and decrease font size | yes, 2026-10-18 (whiteboard-1018; HISTORY, palette rows) | Ctrl+Shift+Plus, Ctrl+Shift+Minus (Actions.js 1956, 1960) | two `WB_COMMANDS` rows, 1pt steps | S |
 | Layer order: front, back, forward, backward | yes (four `order-*` commands) | `toFront`, `toBack`, `bringForward`, `sendBackward` (Actions.js 569 to 585) | done | none |
 | Group, ungroup, lock | yes (`group`, `ungroup`, `lock`) | `group`, `ungroup`, `lockUnlock` (Actions.js 644, 665, 521) | done | none |
 | Remove from group | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
-| Copy size, paste size, swap | copy and paste size yes, 2026-10-18 (whiteboard-1018; HISTORY); swap no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
+| Copy size, paste size, swap | yes (commands `copy-size`, `paste-size`, `swap-size`; `wbSwapSize`, whiteboard-format.js, 2026-11-14) | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | a `swap-size` command exchanging w and h of two selected items | S |
 | X, Y, width, height | yes (`wb-fmt-x/y/w/h`) | `addGeometry` (Format.js 3082) | done; resize from the centre is the one gap (matrix) | S |
 | Constrain proportions | yes (`wb-fmt-link`, the W/H lock); size presets (`wb-fmt-aspect`: 1:1, 4:3, 3:2, 16:9, 3:4, A4), 2026-11-01 (board-1101) | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
 | Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
-| Snap to grid after align | partly (`wb-snap-toggle`) | `snapToGrid` in the align block | none worth building | none |
-| Group padding | no | `addGroupPadding` (Format.js 3663) | frame padding row (`tint` and `hint` exist on frames) | S |
-| Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
-| Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Edit data, copy and paste data, edit tooltip, note, link, open link | no (links on items exist) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | section 3 | M |
+| Arrow shape geometry (width of a block arrow connector) | yes, 2026-11-14: Arrow body and Arrow head fields on a connector (`arrowBody`, `arrowHead`; `connectorProfile`, whiteboard-shape-more.js) | `addArrowGeometry` (Format.js 3972) | done | none |
+| Edit data, edit tooltip, note, link, open link | edit data yes (`edit-data`, Ctrl+M), tooltip and links yes; copy and paste data built 2026-11-12 (`wbFmtState.dataKeys`, whiteboard-format.js, Alt+Shift+B, E), carrying properties, tooltip and link 2026-11-14 | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | done (a note is a board comment, Alt+Shift+N) | none |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Edit style as text | no | `editStyle` (Actions.js 1717): a dialog with the `key=value;` string | an "Edit data" dialog showing the item's `data` JSON, parsed and validated on Apply, one undo step; the same field is how AI sees it | M |
+| Edit style as text | yes, 2026-11-10 (s9c-1110; HISTORY): `edit-style`, Ctrl+E (`wbFmtState.raw.open`, whiteboard-commands.js) | `editStyle` (Actions.js 1717): a dialog with the `key=value;` string | done | none |
 | Edit data: custom properties | yes, 2026-10-11 (canvasdepth2; HISTORY) | `EditDataDialog` (Dialogs.js 3707): key and value rows, id, placeholders toggle | `data.props {key: value}` shown as a two-column editor; search and the AI tools read it | M |
 | Placeholders `%name%` in labels | yes, 2026-10-18 (whiteboard-1018 and fixes7-1018; HISTORY), `%date%` and `%page%` included | `Graph.replacePlaceholders` (Graph.js 14099), `updatePlaceholders` (13534) | the label renderer replaces `%key%` from `data.props`, `%date%`, `%page%`; export bakes the values | M |
-| Note on a shape | no (comments exist, `comment` command) | `editNote` (Actions.js 786) | covered by board comments | none |
-| Link on a shape (URL or page) | yes (object links, WHITEBOARD_PLAN decision) | `getLinkForCell` (Graph.js 15330), `editLink`, `openLink`, `link=`; `data:page/id,` links to pages | done for objects; add sketches and a "frame" target | S |
+| Note on a shape | yes, as a comment thread on the item (`comment` command, Alt+Shift+N, whiteboard-commands.js) | `editNote` (Actions.js 786) | done (moot by fact: the board's note on an item is its comment) | none |
 | Edit geometry as numbers | yes (`wb-fmt-x/y/w/h`) | `editGeometry` (Menus.js 962) | done | none |
-| Edit shape (custom stencil XML) | no | `editShape` (Menus.js 768), `EditShapeDialog` | drop; the library's "Save as a shape" (`save-shape`) covers it | none |
+| Edit shape (custom stencil XML) | no | `editShape` (Menus.js 768), `EditShapeDialog` | moot by fact: `save-shape` (whiteboard-commands.js) turns a drawing into a library shape; no XML editor | none |
 
 ### 4. Connectors: edge styles, waypoints, jumps, arrowheads, labels
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Straight, curved, elbow routes | yes (three: `wb-fmt-route`, `line-curved/straight/elbow`) | `edgeStyle` menu (Menus.js 59): straight, orthogonal, curved, entity relation, elbow horizontal and vertical, isometric horizontal and vertical, sequence | done | none |
-| Orthogonal routing that avoids other shapes | partly: elbow detours around its own two end boxes only (`wbElbowRoute`, `wbElbowDetour`) | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
-| Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data); "Clear the connector's bends" command 2026-10-18 (whiteboard-1018; HISTORY), the numeric list not | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done; add a "Clear waypoints" command and the numeric list in the Arrange tab | S |
+| Orthogonal routing that avoids other shapes | yes, 2026-11-12 (wbconnectors3; HISTORY): `wbFmtState.router` (whiteboard-draw-more.js), `wbElbowRoute` is the fallback | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
+| Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data); "Clear the connector's bends" command 2026-10-18 (whiteboard-1018; HISTORY), the numeric list 2026-11-14 (Bend points field, `wbFmtState.shapeMore.parseWaypoints`) | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done | none |
 | Line jumps (arc, gap, sharp) with size | yes, size 2026-10-18 (whiteboard-1018; HISTORY) | `addLineJumps` (Format.js 7835), `jumpStyle`, `jumpSize` | add `jump_size` | S |
-| Arrowheads: about 40 (classic, block, open, oval, diamond, thin variants, async, box, half circle, dash, cross, circle plus, ER set, double block), filled or hollow, with size | partly: 11 stroked kinds (`WB_CAP_KINDS`: arrow, circle, square, multiline, six ER); no filled heads, no size | `Format.processMenuIcon` list (Format.js 140 to 175), `startArrow`, `endArrow`, `startFill`, `endFill`, `startSize`, `endSize` | caps become `{kind, fill, size}`; add block, diamond, oval filled and hollow, open, dash, cross, half circle; draw as closed subpaths like `wbCapPath` | M |
-| Connector shapes: line, link (double), flex arrow, simple arrow, tapered arrow, filled edge, pipe, wire | no | `edgeShape` menu (Menus.js 107); `Shapes.js` `link`, `flexArrow`, `taperedArrow`, `filledEdge`, `pipe`, `wire` | `link-*` gains `shape` (line, double, block arrow, pipe) drawn as a closed outline around the centre line | L |
-| Edge labels: text, position along the line, background | yes (`wb-fmt-label-t`, `wblinklabel.js`) | `edge value`, label offset in `mxGeometry`; background `labelBackgroundColor` | done; add `label_bg` (section 2) and a perpendicular offset | S |
+| Connector shapes: line, link (double), flex arrow, simple arrow, tapered arrow, filled edge, pipe, wire | yes, 2026-11-12 (wbconnectors3; HISTORY): `CONNECTOR_SHAPES`, whiteboard-shape-more.js | `edgeShape` menu (Menus.js 107); `Shapes.js` `link`, `flexArrow`, `taperedArrow`, `filledEdge`, `pipe`, `wire` | `link-*` gains `shape` (line, double, block arrow, pipe) drawn as a closed outline around the centre line | done | none |
+| Edge labels: text, position along the line, background | yes (`wb-fmt-label-t`, `wblinklabel.js`), background `label_bg` and a second label | `edge value`, label offset in `mxGeometry`; background `labelBackgroundColor` | add a perpendicular offset field if a number is wanted | S |
 | Perimeter spacing (gap between line end and shape) | yes, 2026-10-18 (whiteboard-1018; HISTORY), as `gapStart` and `gapEnd` | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
-| Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
+| Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge to edge done (`wbFmtState.linkEdge.pinned`, whiteboard-link-edge.js: `sourceEdge`/`targetEdge` `{id, t}`) | none here |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; a drag from a grip to empty space opens the shape picker (HISTORY, f2-1111 batch 3) | S |
-| Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 
 ### 5. Connection points and constraints
@@ -973,15 +890,13 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Fixed versus floating end | yes (omit `sourceAnchor` for floating) | `exitX`, `exitY`, `entryX`, `entryY`, `exitPerimeter` | done | none |
 | Show ports while dragging a connector end | yes (`wb-port-preview`, whiteboard.js 13437) | `mxConstraintHandler` (blue crosses) | done | none |
 | Connection arrows and points as View toggles | yes, 2026-11-11 (f2-1111; HISTORY) | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |
-| Snap to connection (orthogonal ends) | no | `snapToConnection` and `snapToPoint` (Graph.js 22012, 23241) | with the obstacle router, snap the end so the last leg is square | M |
+| Snap to connection (orthogonal ends) | yes, 2026-11-12 (wbconnectors3; HISTORY): the router leaves and enters on a stub square to the side | `snapToConnection` and `snapToPoint` (Graph.js 22012, 23241) | with the obstacle router, snap the end so the last leg is square | M |
 
 ### 6. Layers and pages
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Pages (tabs) in one file: insert, duplicate, rename, delete, move, sort | by decision (WHITEBOARD_PLAN decision 22: frames are the pages; boards are separate rows) | `Pages.js` (2,834 lines), `insertPage`, `removePage`, `renamePage`, `duplicatePage`, `sortPages` (diagramly/Menus.js 264 to 292) | done by decision; a "Pages" side tab already lists frames (`wb-side-tab-pages`) | none |
 | Page background colour and image | yes (board background, `wb1005-bg.js`) | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Units (points, inches, mm, cm, m) | no | `units` menu (diagramly/Menus.js 370) | drop: the board has no print scale | none |
 
 ### 7. Shape libraries and the stencil format
 
@@ -996,16 +911,9 @@ whiteboard-library.js 400). draw.io: `Sidebar.prototype.addStencilPalette`
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Stencil libraries at scale | no: four primitives plus the sets above | 204 libraries, 9,090 shapes in `stencils.min.js`, loaded per palette by `mxStencilRegistry.loadStencil` | the converter (`scratchpad/stencils/convert_stencils.py`) makes one `memorymap-library-set` per library; five ship in `frontend/board-library/drawio/` (basic 30, flowchart 36, arrows 34, bpmn 39, networks 57 shapes; 0.37 MB), all 204 convert (24.5 MB, so the rest stay offline and load on request) | S to ship, M for the loader |
-| JS-drawn shape classes (cylinder, cube, callout, step, hexagon, UML actor and lifeline, folder, note, tape, document, process...) | no | `Shapes.js`: 99 `mxCellRenderer.registerShape` classes (for example `cylinder3` at Shapes.js, `umlActor`, `callout`) drawn by `redrawPath` | a `wbShapePath(kind, w, h)` table of 40 of them that returns M/L/C/Z, with the shape name stored in `data.shape` so the path regenerates on resize (stencils scale; these keep corner radii) | M |
-| More-shapes dialog (tick libraries on and off) | no | `shapes` action, `moreShapes` dialog (diagramly/Menus.js 2924) | a "Shape libraries" dialog on the Library tab: one row per set, count, on or off; written to a user preference | S |
-| Library import: `mxlibrary` XML and JSON | partly: `wb-lib-import` takes `.json` (the app's own set format) | `<mxlibrary>[{"xml": "<mxGraphModel>...", "w": 80, "h": 40, "title": "x"}]</mxlibrary>`, `LibraryDialog`, `DesktopLibrary`, `RemoteLibrary` | an `mxlibrary` reader that feeds each entry through the `.drawio` cell importer (section 14) | M |
-| Library export | partly | `StorageLibrary`, "Export" in the library menu | exists in the app's JSON; add `.xml` mxlibrary out only with the cell exporter | S |
 | Scratchpad (a user shelf, drag in to save) | yes: the Library tab's "Save to the library" (`save-selection`, Ctrl+Shift+S) and the favourites | `scratchpad` action (diagramly/Menus.js 3164), `addToScratchpad` (3718) | done | none |
-| Library search by name and tag | yes (name, tags, set) | tag index `Sidebar.taglist`, `searchEntries` (Sidebar.js 1634): compound-token split, soundex and translated tag fallback, strict AND then OR | add stemming for the 9,090 names; tags come from the converter (words of the name plus the library) | S |
 | Custom shape editor (draw a stencil from XML) | partly (`save-shape` from a drawing) | `EditShapeDialog`, `createShape` (diagramly/Menus.js 2938) | done in effect | none |
 | Preview thumbnails | yes (`wbThumbSvg`) | `Sidebar.createThumb`, per-set PNGs (`images/sidebar-*.png`) | done | none |
-| Drag a library item into a connector to insert it in the line | no | `Sidebar.dropAndConnect` (Sidebar.js 4321), edge drop target | drop onto a link splits it at the item's ports | M |
 
 **The stencil XML format** (what the converter reads; `mxStencil.drawNode`,
 mxgraph `shape/mxStencil.js`). A `<shape name w h aspect strokewidth>` (w and
@@ -1054,8 +962,8 @@ solid and strokes one device pixel so only geometry is compared; PNGs in
 Not measured: that the board draws them (they are not in `index.json`, so
 no set loads them yet; `frontend/board-library/*.json` is globbed
 non-recursively by `routes_board_library.py`, which is why they sit one
-folder down), stroke width fidelity (draw.io's `strokewidth` is in shape
-units; the converter writes 2 board pixels per unit), and the Atlassian
+folder down). Stroke width fidelity is measured (L263, tests/test_wb_stencil_width.py: inherit is width 2, draw.io's default 1 on the import's x2 scale; `strokewidth` is in shape
+units; the converter writes 2 board pixels per unit). Not checked: the Atlassian
 restriction in upstream's `stencils/LICENSE` (Tessellate is not an Atlassian
 product; the NOTICE says so).
 
@@ -1063,31 +971,21 @@ product; the NOTICE says so).
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Template gallery with categories, search, preview | yes: the New board dialog (`whiteboard-templates.js`, INBOX 715): 17 board templates, 15 map templates | `templates/index.xml` plus 15 category folders, 156 `.xml` files each with a `.png`; `NewDialog` (diagramly/Dialogs.js) | done; add categories as tags | S |
-| Insert a template into the current board | no | `insertTemplate` action (diagramly/Menus.js 257) | `import` of a library template entry at the viewport centre (the library already places items) | S |
-| draw.io's templates (basic 10, business 15, charts 6, engineering 3, flowcharts 9, layout 4, maps 5, network 13, other 12, software 12, tables 4, uml 8, venn 8, wireframes 5) | no | `templates/*/*.xml` are `mxfile` with a deflate-compressed `mxGraphModel` | convert 40 through the cell importer (section 14); licence is CC BY 4.0 (`templates/LICENSE`), so each carries "Template by JGraph, CC BY 4.0" in its library note | M, after the importer |
 | Save a board as a template | yes (`save-template`) | `File > Save as template` | done | none |
 
 ### 9. Find and replace
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Find text, next and previous, highlight, count | yes for cards and objects (`wbBoardSearchRun`, whiteboard.js 2210; `wb-search-*`; Ctrl+F) | `FindWindow` (diagramly/Dialogs.js 9512), `findReplace` action (Ctrl+F) | done; extend to shape and connector labels (`label`) and `data.props` | S |
-| Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "all frames" open: find already spans every frame of the board, so the row needs a decision (a "this frame only" scope?) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
+| Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "this frame" scope yes, 2026-11-12 (`#wb-search-frame`, HISTORY) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
 | Find in custom data | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `testMeta` over the cell's attributes | with `data.props` | S |
-| Tags on shapes, filter by tag | no | `tags` action (Ctrl+K, diagramly/Menus.js 1299), `tags` style attribute | `data.tags` with a tag filter that dims the rest; the Library already has tags | M |
 
 ### 10. Outline, navigation and view
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Outline window (a minimap) | yes (`wb-navigator`, Shift+N) | `outline` action (Actions.js 2187), Ctrl+Shift+O, `mxOutline` | done | none |
-| Fit window, fit page width, fit page, two pages, custom zoom, zoom list | partly (fit everything Shift+1, 100 percent, in and out) | `viewZoom` menu (Menus.js 444): 25 to 400 percent list, `fitWindow`, `fitPage`, `fitTwoPages`, `fitPageWidth`, `customZoom` (Ctrl+0) | a zoom list in the zoom strip's menu; fit selection (F) exists per the decisions | S |
-| Home, enter and exit group, expand and collapse | partly (`group` exists; no enter or collapse) | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
-| Ruler | no (matrix says drop) | `ruler` action, `mxRuler.js` (690 lines) | drop; guides and smart guides cover it | none |
-| Grid size and colour, guides, page view, connection arrows, tooltips toggles | partly (grid style: none, lines, dots, iso; snap; connection arrows and points, 2026-11-11) | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) | S |
 | Fullscreen | yes | `fullscreen` (diagramly/Menus.js 399) | done | none |
-| Mouse wheel: zoom or scroll | not checked | `zoomWheel` | not checked | none |
 | Presentation mode | yes (`present`) | `presentationMode` (diagramly/Menus.js 3954) | done | none |
 | Light, dark and automatic appearance, adaptive colours | yes (the app's themes; the board's ink follows) | `adaptiveColors`, `light-dark()` colours (Format.js `defaultStripeColor`) | done | none |
 
@@ -1100,51 +998,37 @@ clash is listed so the choice is made once.
 
 | draw.io | Action | Tessellate | Note |
 | --- | --- | --- | --- |
-| Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y | undo, redo | Ctrl+Z, Ctrl+Y | add Ctrl+Shift+Z |
 | Ctrl+X, C, V | cut, copy, paste | same | paste here and paste size: none |
 | Delete, Backspace | delete | Del | Backspace: add on the board only |
 | Ctrl+D | duplicate | Ctrl+D | same |
 | Ctrl+A | select all | same | |
-| Ctrl+Shift+I | select vertices | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all shapes" |
-| Ctrl+Shift+E | select edges | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all connectors" |
-| Ctrl+Shift+A | select none | none | Esc deselects |
-| Ctrl+G, Ctrl+Shift+U | group, ungroup | Ctrl+G, Ctrl+Shift+G | differs on ungroup; keep ours, accept both |
+| Ctrl+G, Ctrl+Shift+U | group, ungroup | Ctrl+G, Ctrl+Shift+G, Ctrl+Shift+U | both ungroup keys built 2026-11-12 |
 | Ctrl+L | lock | Ctrl+Shift+L | differs (ours is the lint-held key) |
 | Ctrl+Shift+F, Ctrl+Shift+B | to front, to back | Ctrl+], Ctrl+[ | keep ours; accept both |
 | Ctrl+B, Ctrl+I, Ctrl+U | bold, italic, underline | bold and italic only on text | underline with section 2 |
-| Ctrl+E | edit style | none | with "Edit data" (Ctrl+M) |
-| Ctrl+M | edit data | none | section 3 |
 | Ctrl+Shift+M | edit geometry | the Format panel (Ctrl+Shift+P) | |
 | Ctrl+Shift+P | format panel | same | |
 | Ctrl+Shift+L | layers panel | lock (clash) | the layers panel opens from the side tab and keeps no key |
 | Ctrl+Shift+O | outline | Shift+N | differs |
-| Ctrl+Shift+D | set as default style | none | section 1 |
-| Ctrl+Shift+R | clear default style | none | S |
-| Ctrl+R | turn 90 degrees | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
-| Ctrl+Shift+Y | autosize | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
-| Ctrl+Shift+G | grid on and off | ungroup (clash) | grid stays on the View menu |
+| Ctrl+Shift+D | set as default style | Ctrl+Alt+D | built (`set-default-style`, whiteboard-commands.js) |
+| Ctrl+Shift+G | grid on and off | ungroup (clash) | the grid is on the View menu |
 | Ctrl+F | find and replace | find only | section 9 |
-| Ctrl+K | tags | none | |
-| Ctrl+Shift+K | toggle shape sidebar | none | |
+| Ctrl+K | tags | Alt+Shift+K | built 2026-11-13 (L-whiteboard-22): Ctrl+K stays the app's command palette; tags take Alt+Shift+K beside L, T and N |
+| Ctrl+Shift+K | toggle shape sidebar | the sidebar command, no key | moot by fact: Ctrl+Shift+K is the app's quick sketch pad (`quickSketch`, settings-wiring.js) |
 | Ctrl+Shift+H | fit window | Shift+1 | differs |
-| Ctrl+J, Ctrl+Shift+J | fit page, fit two pages | none | with page frames |
+| Ctrl+J, Ctrl+Shift+J | fit page, fit two pages | Ctrl+0, Shift+1 fit everything | moot by fact: Ctrl+J is the app's inline Atlas (`inlineAi`, settings-wiring.js); frames fit through `fit-frame` |
 | Ctrl+0 | custom zoom | 100 percent | differs |
 | Ctrl+plus, Ctrl+minus | zoom in, out | Ctrl+=, Ctrl+- | same |
-| Ctrl+Home, Ctrl+End | collapse, expand | none | with collapse |
-| Ctrl+Shift+Home, Ctrl+Shift+End | exit group, enter group | none | with enter group |
-| Ctrl+Shift+Plus, Ctrl+Shift+Minus, Ctrl+{ , Ctrl+} | font size up, down | none | section 2 |
-| Ctrl+., Ctrl+, | superscript, subscript | none | |
-| Enter, F2 | start editing the selection | Enter | add F2 |
-| Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px | add Ctrl+arrow resize |
+| Ctrl+Home, Ctrl+End | collapse, expand | Ctrl+Home, Ctrl+End on a frame | built 2026-11-14 (`collapse-frame`, `expand-frame`) |
+| Ctrl+{ , Ctrl+} | font size up, down (a second pair) | Ctrl+Shift+Plus, Ctrl+Shift+Minus | moot by fact: `font-bigger` and `font-smaller` (whiteboard-commands.js) do it |
+| Ctrl+., Ctrl+, | superscript, subscript | none | decided 2026-11-13 (L-whiteboard-22): Ctrl+. stops an answer and Ctrl+, opens Settings, so they stay the app's; Subscript and Superscript are on the Text style menu (L-whiteboard-27) |
+| Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px, Ctrl 1 px resize, Ctrl+Shift a cell or 10 | same; resize built 2026-11-12 |
 | Alt+Shift+arrow | clone and connect (`connectVertex`) | Alt+Shift+Arrow | same |
-| Alt+Shift+R, L, T, N | clear waypoints, edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 |
-| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | none; copy and paste size are commands without the key, 2026-10-18 (whiteboard-1018) | S each |
-| Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | none | with section 5 |
+| Alt+Shift+L, T, N | edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | Alt+Shift+L, T, N | built 2026-11-13 (L-whiteboard-22): Link…, the Data tab's Tooltip field, and Comment on the item (the board's note on an item) |
+| Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | Alt+Shift+A, O, Q | built 2026-11-14 (`view-grips`, `view-ports`, `edit-ports`) |
 | Ctrl+Alt+Shift+F, B | bring forward, send backward | ] and [ | differs |
-| Ctrl+Alt+X, Ctrl+Alt+Shift+X | copy as image, as SVG | none | section 14 |
-| / | focus the sidebar search (`geOmniSearch`) | Ctrl+F finds on the board | the Library search could take / |
-| Tab, Shift+Tab | next and previous cell | map topics only | S: cycle through items in z order on a board |
-| Ctrl+Shift+6 | adaptive colours | none | drop |
+| Tab, Shift+Tab | next and previous cell | Tab, Shift+Tab | built (`wbWalkItems`, whiteboard.js) |
+| Ctrl+Shift+6 | adaptive colours | none | moot by fact: the board's ink follows the app's theme (section 10) |
 | A, S, D, F, L, R, C, X (draw.io's one-letter inserts) | text, note, rectangle, ellipse, link, rhombus, connector, freehand | N sticky, T text, R rect, O circle, D diamond, C connector, L line, A arrow, P pen | clash by design: ours stay (decision 8) |
 | Ctrl+S, Ctrl+Shift+S, Ctrl+P | save, save as, print | autosave; Ctrl+Shift+S is save to the library | print: export PDF |
 | Esc | cancel, deselect | same | |
@@ -1154,11 +1038,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
-| Groups with nesting | partly: `group_id` (18 hits in whiteboard.js); nested depth not checked | `group`, `ungroup`, `removeFromGroup` (Actions.js 644 to 705); `Graph.updateGroupBounds` (Graph.js 16483) | check the depth, add remove from group | S |
-| Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | partly: frames hold items (`frames.json`); no drop highlight, no resize with children | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | frames gain "fit to children", a drop highlight, and collapse; the frame-as-container rule is an existing decision | M |
-| Swimlanes and pools (header strip, lanes in a stack) | no (matrix: partly) | `swimlane;startSize=...`, `childLayout=stackLayout`, `horizontalStack`, `resizeParent`, `resizeLast` | a "Lane" frame preset (frames.json already has "Timeline lane") with a header strip and a stack layout in `wbFrameLayout`: new lane appended in line, children keep their offsets | M |
-| Child layouts (stack, tree, flow, rack) | no | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | the stack layout on lanes only; others are the Layout menu (section 16) | M |
-| Tables: rows, columns, cell merge, stripes, header | rows, columns and a header, 2026-10-11 (canvasdepth2; HISTORY); open: merge, stripes, a line dragged to size one row or column, Markdown paste | `Graph.createTable` (Graph.js 18553), `insertTableRow` (29524), `insertTableColumn` (29349), `setTableRowHeight` (19762), `tableLine`, `tableRow` shapes, Arrange panel `addTable` (Format.js 2162) | a `table` item: a grid frame with row and column sizes, cells as text objects, resize by dragging a line; Markdown paste converts into one | L |
+| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack yes (Layout, Rack, L-whiteboard-42) | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack built 2026-11-14: `lmRack`, `test_rack_*` | none here |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
 
@@ -1167,26 +1047,20 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Insert an image (file, URL, drag, paste), embedded data URI | yes (`insert-image`, I; media rows) | `image...` (Actions.js 1998), `shape=image;image=data:...` | done | none |
-| Image as a shape fill (`image` style on any shape) | no | `STYLE_IMAGE`, `shape=image` | drop; an image is its own item | none |
-| Crop, replace, border | crop and replace yes, 2026-11-10 (HISTORY); border open | `crop` (Actions.js 2112), `editImage` | section 1 | M |
-| Math typesetting (LaTeX in labels) | no | `mathematicalTypesetting` action (diagramly/Menus.js 840), `Editor.initMath` (diagramly/Editor.js 4701) loads MathJax | KaTeX is MIT and offline-friendly; a `$...$` span in text objects and shape labels rendered to SVG `foreignObject`; Tessellate's markdown has no math today, so it would come with notes | L |
+| Image as a shape fill (`image` style on any shape) | yes (`wb-fmt-fillimg`, `paintFillImage`) | `STYLE_IMAGE`, `shape=image` | done (L-whiteboard-40) | none here |
 | Hyperlinks on shapes, to a URL, a page, or a note | yes for objects; links to a note are the app's own | `editLink`, `link=` | add to sketches; targets: note, frame, URL | S |
-| Embedded notes | no (comments) | `editNote` | comments cover it | none |
-| Edit data and placeholders | no | section 3 | section 3 | M |
+| Embedded notes | yes, as comments (`comment` command, Alt+Shift+N) | `editNote` | done | none |
+| Edit data and placeholders | yes (section 3: `data.props`, `%key%`, Ctrl+M) | section 3 | done | none |
 
 ### 14. Export and import formats
 
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| PNG with scale and transparent | yes (`wbExportPng`, `WB_EXPORT_FORMATS`) | `ExportDialog` (grapheditor/Dialogs.js 3582) zoom, width, height, dpi, transparent, grid, border width; "include a copy of my diagram" embeds the XML in the PNG | add border width, DPI; embedding the board JSON in a PNG `tEXt` chunk makes the PNG re-importable | S |
-| JPG, WebP, GIF | JPG and WebP yes, 2026-10-18 (whiteboard-1018; HISTORY); GIF open | `exportJpg`, `exportWebp`, `exportAnimatedGif` (diagramly/Menus.js 1170 to 1181) | JPG and WebP are one canvas call each | S |
+| GIF | JPG, WebP and GIF yes (`WB_EXPORT_FORMATS`) | `exportAnimatedGif` (diagramly/Menus.js 1181) | built: the ink replay's steps, written by `whiteboard-gif.js` | done |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
-| HTML, embedded viewer, iframe, link | no | `exportHtml` (669), `embed` menu (4208) | an HTML export is the SVG in a page; embedding is out of scope | S |
-| XML, JSON, URL | no | `exportXml` (536), `exportJson` (605), `exportUrl` (581) | the `.drawio` export below | M |
-| `.drawio` import and export (mxfile with `diagram`, `mxGraphModel`, `mxCell`, `mxGeometry`, `UserObject`) | no (`mxfile` appears nowhere in `frontend/`) | `Editor.getGraphXml` (grapheditor/Editor.js 1563), `setGraphXml` (1508), compressed or plain `diagram` text, `mxCodec` | a pure parse in `whiteboard-interchange.js`: cells to items (vertex style `shape`, `fillColor`, `strokeColor`, `rounded`, `ellipse`, `rhombus`, `text`, `swimlane`, `image` to sketch, text, frame, image rows; edge `source` and `target` to link rows with `sourceAnchor` from `exitX`/`entryX`), pages to frames, `UserObject` label and link to `data.props`; the reverse writes plain `mxfile`; the Style mapping is the "Decisions" table | L |
-| VSDX import and export, Gliffy, Lucidchart, draw.io CSV import | no | `vsdx/importer.js` (15,344 lines), `exportVsdx` (1431), `importFrom` (3410), `csv` action | drop VSDX and Lucid; the CSV importer is S to M and gives the AI a way to draw org charts | M |
-| Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |
+| VSDX import and export, Gliffy, Lucidchart | dropped by the owner, 2026-11-12 ("drop VSDX and Lucid"; Gliffy with them, "revisit on request"; section 18) | `vsdx/importer.js`, `exportVsdx`, `importFrom` | the owner's decision, above | none |
+| Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | Mermaid subset kept; PlantUML built 2026-11-14 (`wb_convert.py` reads class, sequence, activity and named boxes; `whiteboard-plantuml.js` writes; L-whiteboard-41) | none here |
 | Outline, Markdown, OPML, FreeMind, plain text | yes (for maps and outline) | no | Tessellate's own | none |
 | Export selection, visible area, whole board, one frame | yes | `selection only`, `crop`, page range | done | none |
 | Copy as image, copy as SVG | copy as image yes, 2026-10-18 (whiteboard-1018; HISTORY); copy as SVG yes, 2026-10-18 (fixes7-1018; HISTORY) | `copyAsImage`, `copyAsSvg` (diagramly/Menus.js 1186, 1194) | two commands that write to the clipboard | S |
@@ -1195,8 +1069,6 @@ clash is listed so the choice is made once.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Insert menu: text, note, rectangle, ellipse, rhombus, line, polygon, freehand, image, link, template, table | yes except polygon, table (Insert menu, `insert-*` commands) | diagramly/Menus.js 4516 to 4574 | add "Polygon" (click points, double-click to close) writing a closed `d`; table with section 12 | S |
-| Sidebar search: tags, soundex, translations, "mxgraph.x.y" names | name, tag and set substring | `searchEntries` (Sidebar.js 1634), `addSearchPalette` (1878), `splitCompoundToken`, `Editor.soundex` | add word-start matching and ranking; synonyms come with the converter's tags | S |
 | Text to diagram (Mermaid, PlantUML, "from text", "generate") | partly: Mermaid import; the AI's `generate_diagram` (HISTORY section 61) | `fromText`, `generate` (diagramly/Menus.js 1393) AI action | done by the assistant, which already places a diagram | none |
 | Freehand | yes (pen, highlighter) | `insertFreehand`, `mxFreehand.js` | done | none |
 
@@ -1206,80 +1078,30 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Tidy a board | yes (Tidy in the top bar, `whiteboard-map.js`) | `runLayout` (diagramly/Menus.js 1666), `runLastLayout` | done | none |
 | Mind map layouts (radial, tree, left, right) | yes (layout select, MINDMAP_PLAN) | n/a | done | none |
-| Flow (horizontal, vertical), tree (vertical, horizontal, radial), organic, circle, org chart | no on boards | `insertLayout` menu, `mxHierarchicalLayout`, `mxCompactTreeLayout`, `mxRadialTreeLayout`, `mxFastOrganicLayout`, `mxCircleLayout`, ELK (`ElkLayout.js`, `layout: 'elkLayered'`, `elkTree`, `elkOrganic`) | the layered layout (Sugiyama in 150 lines) and the existing map tree layout over a selection of shapes joined by links; circle is ten lines; organic is a force pass | L |
+| Flow (horizontal, vertical), tree (vertical, horizontal, radial), organic, circle, org chart | yes (Arrange, Layout; `whiteboard-layouts-more.js`) | `insertLayout` menu, `mxHierarchicalLayout`, `mxCompactTreeLayout`, `mxRadialTreeLayout`, `mxFastOrganicLayout`, `mxCircleLayout` | done: layered flow, radial tree, org chart, fixed-seed organic and circle over the selection, one Undo each | none |
 
 ### 17. The Format panel with nothing selected, and diagram options
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Background colour or image | yes | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Grid: size, colour, on or off | partly (style, snap) | `addGridOption` (Format.js 9103) | grid size | S |
-| Options: connection arrows, connection points, guides, tooltips, page view, shadow default, "Edit data" of the diagram | partly | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
-| Paper size, orientation | no | `addPaperSize` (Format.js 9231) | section 6 | S |
-| Diagram style presets | no | `DiagramStylePanel` | section 1 | M |
+| Options: "Edit data" of the diagram | connection arrows and points, tooltips, guides, page view, shadow default built (Format > Board) | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
 
 ### 18. Out of scope, with the reason
 
 | Feature | Where in draw.io | Reason |
 | --- | --- | --- |
-| Cloud storage: Google Drive, OneDrive, Dropbox, GitHub, GitLab, Trello | `DriveClient.js`, `OneDriveClient.js`, `DropboxClient.js`, `GitHubClient.js`, `GitLabClient.js`, `TrelloClient.js` | the product is offline and local-first (CLAUDE.md) |
-| Real-time collaboration, shared cursors, "present to everyone" | `P2PCollab.js`, `DrawioFileSync.js`, `shareCursor`, `presentToEveryone` | one user, one machine; no network service |
-| Comments with notifications, share dialog, revision history on a server | `DrawioComment.js`, `share`, `revisionHistory` | the board has comments and its own history (`whiteboard-history.js`) |
-| Plugins and `configuration` JSON | `plugins`, `ConfigEditor.js` | no third-party code in the app |
-| Confluence, Jira, Notion, Microsoft Office, Atlassian embeds | `Sidebar-Atlassian*.js`, `microsoftOffice`, `embedNotion` | the stencil licence's Atlassian clause and no use for them offline |
-| Desktop updater, language packs, telemetry | `check4Updates`, `language` | the app has its own |
-| Visio, Lucidchart, Gliffy, Miro import | `vsdx/`, `miro/`, `graphml/`, `emf/` | large readers for formats nobody here has asked for; revisit on request |
+| Cloud storage: Google Drive, OneDrive, Dropbox, GitHub, GitLab, Trello | `DriveClient.js`, `OneDriveClient.js`, `DropboxClient.js`, `GitHubClient.js`, `GitLabClient.js`, `TrelloClient.js` | ARCHITECTURE.md standing decision 1 (offline-first, no cloud service) |
+| Real-time collaboration, shared cursors, "present to everyone" | `P2PCollab.js`, `DrawioFileSync.js`, `shareCursor`, `presentToEveryone` | ARCHITECTURE.md standing decision 1 (no network service) |
+| Comments with notifications, share dialog, revision history on a server | `DrawioComment.js`, `share`, `revisionHistory` | moot by fact: the board has comments and its own history (`whiteboard-history.js`); a server share is ARCHITECTURE.md standing decision 1 |
+| Plugins and `configuration` JSON | `plugins`, `ConfigEditor.js` | built 2026-11-14 as a declarative JSON only (`wb_config.py`, `whiteboard-config.js`; no plugin code, the CSP forbids it), L-whiteboard-44 |
+| Confluence, Jira, Notion, Microsoft Office, Atlassian embeds | `Sidebar-Atlassian*.js`, `microsoftOffice`, `embedNotion` | ARCHITECTURE.md standing decision 1 (they are cloud services) |
+| Desktop updater, language packs, telemetry | `check4Updates`, `language` | moot by fact: the app has its own update check (ARCHITECTURE.md standing decision 1) |
+| Visio, Lucidchart, Gliffy, Miro import | `vsdx/`, `miro/`, `graphml/`, `emf/` | Visio, Lucidchart and Gliffy: the owner, 2026-11-12 ("drop VSDX and Lucid", Gliffy "revisit on request"); Miro (REST items JSON), graphml and emf (header measured, note placed) built 2026-11-14, L-whiteboard-45 |
 
 ### Build first
 
-Ten phases for Brief 44 part 2 (Opus), in this order. Every phase is gated
-by `bash scratchpad/ui-sweeps/wbregress.sh` (and `wbports.js`,
-`wbrotatelinks.js` where ports or links move), the matrix rows it names in
-the retired analysis doc "Parity matrix, 2026-10-10", and a measurement written in the
-commit. Help moves with each control (standing order 13).
-
-1. **Ports from the shape.** `wbPortFractions` returns `parsed.ports` when
-   present; port names as tooltips; the Library inserts the converted rows
-   with `data.ports`. Gate: `wbports.js` plus a node test that a Decision
-   shape's four ports are its tips. Matrix rows: connection points, library
-   at scale.
-2. **Stencil libraries load.** Ship the five converted sets in the
-   Library: a "Shape libraries" dialog, search over names and tags, the five
-   listed in `index.json`, the NOTICE shown in Help. Gate: the library test
-   (`test_board_library.py`) with a new count, `wb1005-lib.js`.
-3. **Format panel Text tab to draw.io's.** Vertical align, underline,
-   strike, font family, label background, spacing, auto-size (the owner's
-   open bug is vertical centring). Gate: `wb1005-format.js`, a
-   `getBoundingClientRect` offset after a resize.
-4. **Format panel Style tab to draw.io's.** Gradient, fill styles, custom
-   dash pattern, corner rounding, swatches, default style, flow animation.
-   Gate: SVG export keeps every one (`wb1005-export.js`).
-5. **Connectors: arrowheads and routes.** Filled and sized heads, the full
-   draw.io set, jump size, perimeter gap, entity and isometric routes,
-   reverse, clear waypoints. Gate: `wbrotatelinks.js`, both ends rendered
-   during drag (the owner's "edge arrows" bug).
-6. **The obstacle-avoiding elbow router.** Grid A* over item boxes, one
-   `route: "elbow"` behind the existing shape. Gate: `wb1005-elbow.js` plus a
-   timing on a 200-item board (budget 16 ms per drag frame).
-7. **Edit data, placeholders, tooltips, tags.** `data.props`, an Edit data
-   dialog and Ctrl+M, `%key%` in labels, a tooltip, tag filter; the AI tools
-   read `props`. Gate: search finds a property; the assistant's board read
-   includes it.
-8. **Find and replace.** Labels, connector text and props, regex, all
-   frames, one undo step. Gate: `wbkeywalk.js` plus a replace-all test over
-   a 100-item board.
-9. **Layers, containers, swimlanes.** Named layers with visibility and
-   lock, frames as containers (drop highlight, fit to children, collapse),
-   a Lane preset with a stack layout. Gate: `wb1005-layers.js`,
-   `wbframes.js`.
-10. **`.drawio` import and export, then the templates.** The mxfile
-    parser and writer, `mxlibrary` through the same path, 40 of draw.io's
-    templates with CC BY 4.0 attribution, JPG, WebP, copy as image, PNG
-    with the board embedded. Gate: a round trip of five draw.io templates
-    (shape count, link count, label text equal) and `wb1005-interchange.js`.
-
-After the ten: tables (L), math (L), layered and organic layouts (L), the
-JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.
+Built: the ten phases (ports from the shape, stencil libraries, the Text and Style tabs, connectors, the obstacle router, Edit data, find and replace, layers and containers, `.drawio` and templates). Moved to HISTORY.md, "Moved from the plans, 2026-11-14 (whiteboard plan re-ground)". The shortcut gaps of section 11 are built or decided in its table; the shape picker and tables are built (section 15).
 
 ### Decisions, 2026-10-10
 
@@ -1309,8 +1131,8 @@ JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.
    ports already there stay. A port stored on a link is still a fraction
    (`sourceAnchor`), so a resize carries it and nothing migrates. The
    `points` style's offsets (`dx`, `dy`, the fifth and sixth numbers) become
-   optional `dx`, `dy` pixels on the port, not built until a shape needs
-   them. `perimeter: 1` marks a port that slides to the outline; the value
+   optional `dx`, `dy` pixels on the port, taken up when a shape
+   needs them. `perimeter: 1` marks a port that slides to the outline; the value
    is kept now and used when the ports editor lands.
 3. **Styles map to the format panel's own keys, not to a style string.** The
    board never stores a `key=value;` style (Edit data shows JSON). The
@@ -1404,7 +1226,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 
-- Measured clean (WORLD_CLASS 26.5): the showcase board at rest has 0 long tasks and 0 gaps over 20 ms in 3 s; a drag of one object has 1 gap over 20 ms of 253 frames (`frames.js`, companion off). The 18 `requestAnimationFrame` sites and 15 `pointermove` handlers in `whiteboard.js` are the largest counts in the app, held per file by `tests/test_frontend_wake_sources.py`. Not measured: a board of 500 objects, or the companion on.
+- Measured clean (WORLD_CLASS 26.5): the showcase board at rest has 0 long tasks and 0 gaps over 20 ms in 3 s; a drag of one object has 1 gap over 20 ms of 253 frames (`frames.js`, companion off). The 18 `requestAnimationFrame` sites and 15 `pointermove` handlers in `whiteboard.js` are the largest counts in the app, held per file by `tests/test_frontend_wake_sources.py`. At 500 text boxes, companion off and on (`wb500perf.js` 14/14, L-whiteboard-15): 0 long tasks and 0 gaps over 20 ms in 3 s at rest, 0 gaps in about 150 frames of a one-box drag at the fit zoom; the measure found a box under about 40 by 28 px on screen covered by its grips, now absent there (`wb-tiny`).
 
 ## Placed from INBOX, 2026-10-10 (the owner on feature depth)
 
@@ -1423,7 +1245,7 @@ measure at 1440 and 390, or left here.
 5. Built 2026-10-10 (same HISTORY block): named layers with show, hide and lock. The current layer built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"). Open from section 6: layer order.
 6. Built 2026-10-10 (same HISTORY block): find reads labels and text boxes; Ctrl+H replaces. Open from section 9: regex, whole word, notes' own text.
 7. Built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"): the hand-drawn look, a board option and an item style.
-8. Built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"): tables (section 12). Open from section 12: a column's own width, merged cells.
+8. Built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"): tables (section 12). Merged cells, stripes, row heights, dragged grid lines and Markdown paste built 2026-11-12 (HISTORY "Moved from the plans, 2026-11-12 (wbtable)").
 9. Built 2026-10-10 (same HISTORY block): a laser pointer while presenting.
 10. Edit data built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"). Open from section 3: `%name%` placeholders in labels, find reading the values.
 
@@ -1525,10 +1347,10 @@ The owner, 2026-10-25: "upgrade the whiteboard and mindmap; add the features dra
 Exists (no work): connector waypoints and elbow routing (`route`, Bend a line); line jumps at crossings (`jumps`); align, distribute, same size, align to a key object; equal spacing guides; z-order (forward, back, front, back of all); lock; duplicate (Ctrl+D) and copy-and-join arrows; copy, paste and reset style; connector labels; frames and swimlane stencils; layers; shape and icon search in the Library (`wb-lib-search`); grid snap toggle; export or copy the selection; flip; select similar; keep proportions; Edit data; find and replace; Mermaid and draw.io import.
 
 Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, a shape's link and text that shrinks to fit, are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)"):
-6. Dimension lines with a live length (10-19 item 7). M.
-7. Crop a picture to a circle or rounded box (10-19 item 13). M.
-9. Pages inside one board (draw.io's page tabs); boards and frames stand in. L, not planned.
-10. Rulers and units. M, not planned for a student's board.
+6. Dimension lines with a live length: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
+7. Crop a picture to a circle or rounded box: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
+9. Pages inside one board: decided; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
+10. Rulers and units: built; HISTORY.md, "Moved from the plans, 2026-11-12 (wbformat2)".
 
 ## Placed from INBOX, 2026-10-26
 
@@ -1545,8 +1367,7 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 
 ## Placed from INBOX, 2026-10-26b
 
-1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
-     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in the retired analysis doc and WORLD_CLASS_PLAN.
+1358. Dogfood passes per surface: done; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)".
 
 ## Placed from INBOX, 2026-10-27
 
@@ -1574,7 +1395,7 @@ Read against draw.io's Style, Text and Arrange tabs; the rows in "The draw.io pr
 7. Built 2026-11-11, HISTORY "f2-1111".
 8. Built 2026-11-10, HISTORY "s9c-1110 F2".
 9. Built 2026-11-10, HISTORY "s9c-1110 F2".
-Dropped, as before: glass, text shadow, SVG image styles. Subscript and superscript wait on rich text in shapes (section 2's row).
+Glass and text shadow are built (`whiteboard-effects.js`); SVG image styles are moot (row above). Subscript and superscript are on the Text style menu (L-whiteboard-27).
 
 - INBOX 1563: built 2026-11-03, see HISTORY.md "Moved from the plans, 2026-11-03 (a31d-1103)".
 

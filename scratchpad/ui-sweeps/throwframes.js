@@ -42,7 +42,7 @@ const perFrame = (a, b, frames) => {
   if (PROFILE) await cdp.send('Profiler.enable');
   const result = {};
   for (const kind of KINDS) {
-    await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, kind);
+    await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, kind);
     await page.evaluate((tab) => revealTab(tab), TAB);
     await page.waitForTimeout(3500);
     await page.evaluate(() => {

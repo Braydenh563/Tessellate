@@ -8,7 +8,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(3000);
   await page.evaluate(() => { const top = document.getElementById('top-bar').getBoundingClientRect(); const b = document.getElementById('nm-buddy'); nameMarkBuddyMoveTo(b, { kind: 'hang', pose: 'hang', legs: '', x: 700, y: Math.round(top.bottom - NMB_GRIP) }, true); nmb.placedAt = Date.now(); nameMarkBuddyAct(''); });
   await page.waitForTimeout(1500);

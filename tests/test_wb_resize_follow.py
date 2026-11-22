@@ -5,10 +5,11 @@ with it"). The card's drag left the four arrows on the old box until release
 every step after the fix, measured by a one-off sweep).
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 
 def _block(opener: str, closer: str) -> str:

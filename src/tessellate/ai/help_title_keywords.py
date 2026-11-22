@@ -56,4 +56,11 @@ BY_TITLE: dict[str, tuple[str, ...]] = {
     "equation-numbers": ("numbering and citing equations",),
     "document-synced": ("a paragraph shown in two documents",),
     "document-board": ("a board shown in a document",),
+    "diagram-chart-kinds": ("blocks for gantt, pie, state, class and er diagrams",),
+    "document-sections": ("label, link and graph a document's sections",),
+    "document-base": ("a table, board or calendar of notes",),
+    "diagram-styling": ("names, groups and styles of a diagram's blocks",),
+    "board-suggest-name": ("suggest a name for a board",),
+    "board-structure": ("tags, collapsing a frame and finding in one frame",),
+    "board-format-options": ("board format options",),
 }

@@ -12,7 +12,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const { browser, page, ctx } = await boot({ viewport: { width: 1440, height: 900 } });
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Profiler.enable');
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'off'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'off'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.evaluate(() => {
     window.__fr = { on: false, dts: [], last: 0, long: [], t0: 0 };
     const loop = (t) => { const f = window.__fr; if (f.on) { if (f.last) f.dts.push([t - f.t0, t - f.last]); f.last = t; } else f.last = 0; requestAnimationFrame(loop); };

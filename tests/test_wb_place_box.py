@@ -8,6 +8,7 @@ per kind) and `wbSquareCorner` is what Shift does. Run in node against the
 source; the browser half is `scratchpad/ui-sweeps/wbplacedrag.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:
@@ -57,7 +58,7 @@ def test_shift_takes_the_longer_travel_both_ways() -> None:
 
 def test_the_click_after_a_drawn_box_is_spent() -> None:
     """The release of a drag also clicks the canvas; that click must not drop a second box."""
-    click = SOURCE[SOURCE.index('containerEl.addEventListener("click", (e) => {') :]
+    click = SOURCE[SOURCE.index('wbInstances.on("click", (e) => {') :]
     click = click[: click.index("\n  });\n")]
     spent = click.index("if (wbPlaceJustDrawn)")
     assert spent < click.index("wbCreateTextBox(x, y)") and spent < click.index("wbCreateSticky(x, y)")

@@ -16,10 +16,32 @@
    switch off stills nothing here because there is no transition to still.
    A Settings fold's contents are in the list too (`details.settings-fold[open]`,
    at zero weight): a `<details>` has no other way to say it arrived. */
-:is(.wb-search-bar, .wb-navigator, .wb-format, .wb-context, .wb-sidebar-panel, .doc-prose-panel,
-  .selection-bar, .graph-options, .capture-card, #capture.card, .status.error, .stepper-reset, .timeline-row-detail,
-  .search-suggest, .tag-suggest, .rich-picker-preview, .panel-snap-preview, #settings-peek, #suggested-hardware-form,
-  #profile-look-parts, .prefs-save-row, .settings-nav-group, .model-grid, #tour-block, #batch-bar, .skill-fact-panel):not(.hidden, [hidden]),
+:where(.wb-search-bar):is(.wb-search-bar, #capture.card):not(.hidden, [hidden]),
+:where(.wb-navigator):is(.wb-navigator, #capture.card):not(.hidden, [hidden]),
+:where(.wb-format):is(.wb-format, #capture.card):not(.hidden, [hidden]),
+:where(.wb-context):is(.wb-context, #capture.card):not(.hidden, [hidden]),
+:where(.wb-sidebar-panel):is(.wb-sidebar-panel, #capture.card):not(.hidden, [hidden]),
+:where(.doc-prose-panel):is(.doc-prose-panel, #capture.card):not(.hidden, [hidden]),
+:where(.selection-bar):is(.selection-bar, #capture.card):not(.hidden, [hidden]),
+:where(.graph-options):is(.graph-options, #capture.card):not(.hidden, [hidden]),
+:where(.capture-card):is(.capture-card, #capture.card):not(.hidden, [hidden]),
+#capture.card:not(.hidden, [hidden]),
+:where(.status.error):is(.status.error, #capture.card):not(.hidden, [hidden]),
+:where(.stepper-reset):is(.stepper-reset, #capture.card):not(.hidden, [hidden]),
+:where(.timeline-row-detail):is(.timeline-row-detail, #capture.card):not(.hidden, [hidden]),
+:where(.search-suggest):is(.search-suggest, #capture.card):not(.hidden, [hidden]),
+:where(.tag-suggest):is(.tag-suggest, #capture.card):not(.hidden, [hidden]),
+:where(.rich-picker-preview):is(.rich-picker-preview, #capture.card):not(.hidden, [hidden]),
+:where(.panel-snap-preview):is(.panel-snap-preview, #capture.card):not(.hidden, [hidden]),
+:where(#settings-peek):is(#settings-peek, #capture.card):not(.hidden, [hidden]),
+:where(#suggested-hardware-form):is(#suggested-hardware-form, #capture.card):not(.hidden, [hidden]),
+:where(#profile-look-parts):is(#profile-look-parts, #capture.card):not(.hidden, [hidden]),
+:where(.prefs-save-row):is(.prefs-save-row, #capture.card):not(.hidden, [hidden]),
+:where(.settings-nav-group):is(.settings-nav-group, #capture.card):not(.hidden, [hidden]),
+:where(.model-grid):is(.model-grid, #capture.card):not(.hidden, [hidden]),
+:where(#tour-block):is(#tour-block, #capture.card):not(.hidden, [hidden]),
+:where(#batch-bar):is(#batch-bar, #capture.card):not(.hidden, [hidden]),
+:where(.skill-fact-panel):is(.skill-fact-panel, #capture.card):not(.hidden, [hidden]),
 #tab-documents.doc-focus > .doc-focus-bar,
 :where(details.settings-fold[open]) > :not(summary) {
   animation: ui-fade var(--ui-base) var(--ease-out);
@@ -31,8 +53,14 @@
    take the same two keyframes out of the corner nearest their opener, and
    leave the way an action menu does (a fade and a shrink back over
    `--ui-exit`, `display` held as a discrete transition, no pointer on it). */
-:is(.wb-board-menu, .wb-map-strip-menu, .wb-shape-menu, .wb-colour-menu, .wb-ctx-menu, .graph-node-menu, .sp-menu,
-  .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]) {
+:where(.wb-board-menu):is(.wb-board-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:where(.wb-map-strip-menu):is(.wb-map-strip-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:where(.wb-shape-menu):is(.wb-shape-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:where(.wb-colour-menu):is(.wb-colour-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:where(.wb-ctx-menu):is(.wb-ctx-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:where(.graph-node-menu):is(.graph-node-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:where(.sp-menu):is(.sp-menu, .doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]),
+:is(.doc-dock-menu[open] > .doc-dock-menu-list):not(.hidden, [hidden]) {
   --menu-origin-x: 100%;
   --menu-origin-y: 0%;
   transform-origin: var(--menu-origin-x) var(--menu-origin-y);

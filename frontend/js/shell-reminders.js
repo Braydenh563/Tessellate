@@ -1030,13 +1030,13 @@ async function loadReminders() {
     ul.className = "entry-list";
     for (const reminder of items) ul.appendChild(reminderItem(reminder, label));
     groupsBox.appendChild(ul);
-    if (label === "Done") watchDoneReminders(ul);
+    if (label === "Done") remindersDone.watch(ul);
   }
 }
 
 //: The next page of done reminders when the end of the list scrolls into view
 //: (a button too, for a keyboard and for a browser with no observer).
-function watchDoneReminders(ul) {
+remindersDone.watch = function (ul) {
   const mine = remindersDone.token;
   if (!remindersDone.cursor) return;
   const more = document.createElement("button");
@@ -1069,7 +1069,7 @@ function watchDoneReminders(ul) {
   }
   more.addEventListener("click", next);
   observer?.observe(more);
-}
+};
 
 // A count of due-or-overdue reminders on the Reminders tab button, so you
 // notice them from any tab.

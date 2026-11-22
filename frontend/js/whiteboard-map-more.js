@@ -503,7 +503,7 @@
 
   function wbBrainstormStart(minutes = 5) {
     wbBrainstormStop();
-    const host = document.getElementById("whiteboard-container");
+    const host = wbInstances.container();
     if (!host) return;
     const chip = document.createElement("div");
     chip.className = "wb-map-brainstorm dock";
@@ -709,11 +709,15 @@
     if (wbGrammar.found.size > WB_GRAMMAR_KEPT) wbGrammar.found.clear();
     for (const text of texts) {
       wbGrammar.asks += 1;
-      const lints = await docGrammarAsk(text).catch(() => null);
+      //: Harper's answer is kept at once and repainted; LanguageTool's replaces it when it joins.
+      const keep = (lints) => {
+        const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
+        wbGrammar.found.set(text, hits[0] || null);
+      };
+      const lints = await docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); }).catch(() => null);
       //: No answer (the worker is off or failed): leave the text unasked so the next check asks again.
       if (lints === null) continue;
-      const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
-      wbGrammar.found.set(text, hits[0] || null);
+      keep(lints);
     }
     wbGrammarRepaint();
     if (wbGrammar.queue.size) wbGrammarSoon();
@@ -743,7 +747,7 @@
   }
 
   function wbGrammarRepaint() {
-    for (const el of document.querySelectorAll(".wb-map-node")) {
+    for (const el of wbInstances.queryAll(".wb-map-node")) {
       const datum = (wbState.objects || []).find((o) => String(o.id) === el.dataset.id);
       if (datum) wbGrammarPaint(el, datum);
     }

@@ -15,7 +15,7 @@ async function run(phone) {
   const { browser, page, ctx } = await boot(opts);
   const W = opts.viewport.width;
   const fails = [];
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); if (b) { b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); } });
+  await page.evaluate(() => { const b = $('avatar-buddy'); if (b) { b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); } });
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); revealTab('notes'); });
   await page.waitForTimeout(3000);
   const cdp = phone ? await ctx.newCDPSession(page) : null;

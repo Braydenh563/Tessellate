@@ -11,6 +11,7 @@ reads it.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,7 +71,7 @@ def test_a_board_background_is_not_an_orphan(ai_client):
 
 
 def test_the_client_reads_the_board_not_local_storage() -> None:
-    source = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    source = frontend_text("whiteboard.js")
     assert 'prefs.set("wb-bg-color"' not in source
     assert "prefs.set(wbBgImageKey()" not in source
     assert "wbState.background" in source
@@ -95,7 +96,7 @@ def test_the_sticky_fold_default_is_kept_on_the_board(ai_client):
 
 
 def test_the_sticky_fold_is_read_per_note_then_per_board():
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     assert "item?.data?.fold ?? wbBoardBackground().sticky_fold !== false" in js
     assert 'el.classed("wb-no-fold", sticky && !wbStickyFolds(d))' in js
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")

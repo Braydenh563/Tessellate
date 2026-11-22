@@ -54,7 +54,7 @@ def test_the_inlined_page_is_what_the_lints_read():
 
 
 def test_the_file_is_served_stamped_stripped_and_cacheable(client):
-    url = re.search(r'data-src="([^"]+)"', client.get("/").text).group(1)
+    url = re.search(r'data-src="(/surfaces/settings[^"]+)"', client.get("/").text).group(1)
     assert re.fullmatch(r"/surfaces/settings\.html\?v=[\w.]+-[0-9a-f]+", url), (
         "stamped by the file's own bytes"
     )

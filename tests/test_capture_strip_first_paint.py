@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from tests._app_js import frontend_text
+from tests._app_js import documents_text, frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -36,7 +36,7 @@ def test_boot_code_unfolds_it_for_a_saved_expanded_choice():
     boot = _read("frontend", "js", "notes-list.js")
     body = boot.split("function foldNoteToolbarForFirstPaint() {", 1)[1].split("\n}\n", 1)[0]
     # The same key and the same default as the bundle's own reading.
-    key = re.search(r'const DOC_TOOLBAR_COLLAPSED_KEY = "([^"]+)"', _read("frontend", "js", "documents.js")).group(1)
+    key = re.search(r'const DOC_TOOLBAR_COLLAPSED_KEY = "([^"]+)"', documents_text()).group(1)
     assert f'"{key}"' in body
     assert '?? "1") === "1"' in body
     assert 'classList.toggle("is-collapsed"' in body

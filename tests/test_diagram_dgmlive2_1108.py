@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
-DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 
 
 def test_a_library_reload_hands_focus_back_to_the_grid_when_the_row_it_held_is_redrawn():
