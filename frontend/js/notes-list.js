@@ -2393,11 +2393,13 @@ function renderEntries(appendOnly = false) {
   const noMatch = $("no-match-message");
   //: A redraw rebuilds the open edit form, and the caret in it went with the old one: filing's refresh
   //: just after a capture left the form with nothing focused and its editor never mounted (notes.spec.js:61
-  //: on CI, note-edit-rerender.js). The new form takes the caret where the old one had it.
+  //: on CI, note-edit-rerender.js). The new form's body takes the caret back. Only the body: the tag
+  //: field and the buttons are put back by `restoreNoteControl`, and a late re-focus of the tag field
+  //: reopened its list (notes.spec.js:132).
   const held = document.activeElement;
-  if (!grown && editingId !== null && held?.closest?.(`#entry-list > li[data-id="${editingId}"]`)) {
-    if (held.matches(".note-edit-tag-input")) focusTagsAfterRender = editingId;
-    else focusBodyAfterRender = editingId;
+  if (!grown && editingId !== null && held?.closest?.(`#entry-list > li[data-id="${editingId}"]`)
+      && (held.matches(".note-edit-box") || held.closest(".note-surface"))) {
+    focusBodyAfterRender = editingId;
   }
   const keep = grown ? null : resetNoteList(list);
   // Re-applied on every render, not just on a click: `replaceChildren`
