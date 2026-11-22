@@ -2010,11 +2010,11 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-activities", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch", "searxng",
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "sign-in", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -2175,7 +2175,40 @@ MORE_TOPICS.append({
     ),
     "badge": {"label": "Account & security", "section": "account"},
 })
+#: The two Settings popovers the reach crawl found with no Guide topic of their own (L-world-class-781):
+#: "About SearXNG" (Web search) and "About signing in" (Account & security).
+MORE_TOPICS.extend([
+    {
+        "id": "searxng",
+        "keywords": ("searxng", "install searxng", "run searxng", "start searxng", "self-hosted search",
+                     "let tessellate run searxng", "search engine on my computer"),
+        "body": (
+            "Settings, Web search, SearXNG: the recommended way to search. It is a self-hosted search "
+            "engine the app installs and runs for you in one click, with no Docker, account or setup of "
+            "your own. It gives better results than scraping DuckDuckGo, cannot be rate-limited the way "
+            "scraping can, and the query never leaves your own network. It has to be on this computer or "
+            "your own network: the app never sends searches to somebody else's instance, and the one it "
+            "runs for you listens on 127.0.0.1 only."
+        ),
+        "badge": {"label": "Web search", "section": "websearch"},
+    },
+    {
+        "id": "sign-in",
+        "keywords": ("signing in", "sign in", "password when the app opens", "ask for a password",
+                     "open without a password", "skip the password", "no password on open"),
+        "body": (
+            "Settings, Account & security, Signing in. Ask for a password when the app opens is on by "
+            "default. Turned off, the app opens on this computer without asking; another device on your "
+            "network still needs the password, and so do private notes, which stay encrypted and ask for "
+            "it when you open one. Turning it off asks for your current password. The app is single-user: "
+            "one notebook, one password; for a separate notebook, run it with another data folder."
+        ),
+        "badge": {"label": "Account & security", "section": "account"},
+    },
+])
 TOPIC_META.update({
+    "searxng": {"title": "SearXNG", "path": "Settings, Web search, SearXNG"},
+    "sign-in": {"title": "Signing in", "path": "Settings, Account & security, Signing in"},
     "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
     "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},

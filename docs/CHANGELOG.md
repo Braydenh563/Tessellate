@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Guide has topics for SearXNG and Signing in, the two Settings help popovers it had no topic for (L-world-class-781).
 - Menu keys: arrow keys walk past a submenu row and a select row in an open menu, so Escape leaves no list behind, and the Notes Answer length list has its options (L-world-class-875).
 - The reach sweep counts an "About X" help popover as reached when the Guide has topic X (L-world-class-781).
 - Menus line up: a switch row in a dock menu starts on the icon column at the row height, the board's submenu rows' words no longer start early, and the zoom presets are as wide as their numbers (L-world-class-107).
