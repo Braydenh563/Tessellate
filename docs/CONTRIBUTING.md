@@ -49,7 +49,7 @@ Everything runs offline, with no Ollama and no models:
 ```bash
 bash scripts/gate.sh --changed   # lint set, node --check, ruff, and the tests that name your files
 ruff check .                     # lint (what CI runs)
-pytest -n auto                   # the whole suite: 13,300+ tests, under nine minutes on four cores
+pytest -n auto                   # the whole suite: 23,000+ tests, under nine minutes on four cores
 ```
 
 The full suite takes about 25 minutes serially, so run the gate while you work
@@ -126,8 +126,9 @@ Three rules keep that from happening:
 - **Reconcile before building.** Search for the feature first. If it exists,
   extend it, do not reimplement it. (Snooze, chat export, theming, the command
   palette, the skills bar and much more are already built.)
-- **Additive only.** Extend functions rather than replacing them, and never
-  delete a feature, widget or CSS rule to make room for a new one without asking.
+- **Replace, do not layer.** When a new path does the job, remove the old one
+  in the same change, unless persisted data or a public interface needs it. Never
+  delete a working feature, widget or CSS rule to make room for an unrelated one.
 - **One feature per commit.** After each commit, `git diff --stat` should list only
   the files that feature touches. An unexpectedly wide diff is the early warning
   sign of a regression.
