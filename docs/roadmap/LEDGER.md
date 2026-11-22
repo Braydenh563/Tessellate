@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 25 | 1 | 0 | 0 | 26 |
-| general | 0 | 12 | 3 | 0 | 5 | 15 |
-| all | 372 | 405 | 77 | 2 | 111 | 854 |
+| general | 0 | 11 | 3 | 0 | 5 | 14 |
+| all | 372 | 404 | 77 | 2 | 111 | 853 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -517,7 +517,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
-- [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
@@ -753,7 +752,7 @@ Each step: tests first, scripts/gate.sh --changed, one commit, tick the LEDGER r
 ```text
 YOUR SOLE PURPOSE IS TO LEAVE NOTHING OPEN ANYWHERE IN THE REPO EXCEPT docs/roadmap/BACKLOG.md (the owner, 2026-11-12: "I want absolutely and I mean ABSOLUTELY nothing left outside of the backlog file").
 Start with the orient skill and CLAUDE.md. Branch claude/closing from main; a PR every 3 to 5 finished items, CI green before the next; the owner merges.
-1. Run `python scripts/open_scan.py` with no filter and read every hit; also read every *_PLAN.md, HANDOVER, INBOX, docs/ROADMAP.md, IDEAS.md and the scratchpad audits in full, and list open GitHub issues and pull requests. Signal words miss things: read, do not only grep.
+1. Run `python scripts/open_scan.py` with no filter and read every hit; also read every *_PLAN.md, HANDOVER, INBOX, docs/ROADMAP.md and the scratchpad audits in full, and list open GitHub issues and pull requests. Signal words miss things: read, do not only grep.
 2. Every open item found is done here (tests first, scripts/gate.sh --changed, one commit), or, only if its last step needs the owner's own device, a real model or the owner's input, moved to BACKLOG as one row naming that exact step.
 3. Lines that only read as open (history, feature names) are reworded so the scan is clean; never widen the scanner to hide a hit.
 4. A plan file with nothing open is retired: its standing decisions move to docs/ARCHITECTURE.md or docs/DESIGN.md, its record to HISTORY, and every link to it is updated.

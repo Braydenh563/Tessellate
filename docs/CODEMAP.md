@@ -32177,35 +32177,35 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 10. Flaws found by static probes (cheap to reproduce, each with its command) | docs/roadmap/WORLD_CLASS_PLAN.md:821 |
 | 10. Outline, navigation and view | docs/roadmap/WHITEBOARD_PLAN.md:1080 |
 | 10. The spelling check: decided 2026-09-12 | docs/roadmap/DOCUMENTS_PLAN.md:453 |
-| 10. Timeline tab, and time-aware notes | docs/roadmap/BACKLOG.md:637 |
-| 109.1 Fixed, and how each was actually proven; built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"), kept for its number | docs/roadmap/BACKLOG.md:3414 |
-| 109.2 Text highlighting: built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:3416 |
-| 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3418 |
-| 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3457 |
+| 10. Timeline tab, and time-aware notes | docs/roadmap/BACKLOG.md:631 |
+| 109.1 Fixed, and how each was actually proven; built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"), kept for its number | docs/roadmap/BACKLOG.md:3408 |
+| 109.2 Text highlighting: built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:3410 |
+| 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3412 |
+| 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3451 |
 | 11. Built: the previews, Phase 4 and Phase 5 | docs/roadmap/MINDMAP_PLAN.md:219 |
 | 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71) | docs/roadmap/TIMELINE_PLAN.md:348 |
 | 11. Keyboard shortcuts | docs/roadmap/WHITEBOARD_PLAN.md:1094 |
-| 11. Performance, accuracy and AI efficiency | docs/roadmap/BACKLOG.md:694 |
+| 11. Performance, accuracy and AI efficiency | docs/roadmap/BACKLOG.md:688 |
 | 11. Phase 4 decisions, made 2026-09-12 | docs/roadmap/DOCUMENTS_PLAN.md:521 |
 | 11. The week, session by session (Opus/Sonnet), and the quarter | docs/roadmap/WORLD_CLASS_PLAN.md:868 |
-| 110.1 Built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:3490 |
-| 110.2 The five bugs, and the measurement that found each | docs/roadmap/BACKLOG.md:3492 |
-| 110.3 Still open | docs/roadmap/BACKLOG.md:3529 |
-| 111.1 Inefficiencies, measured or read rather than guessed | docs/roadmap/BACKLOG.md:3547 |
-| 111.2 Features worth building, ranked by value per unit of work | docs/roadmap/BACKLOG.md:3570 |
-| 111.3 Directions, not features | docs/roadmap/BACKLOG.md:3598 |
-| 112.1 The one thing this app has that the others structurally cannot | docs/roadmap/BACKLOG.md:3628 |
-| 112.2 Missing features, ranked by "would someone pay for this" | docs/roadmap/BACKLOG.md:3660 |
-| 112.3 Scaling and optimisation, in the order it will actually bite | docs/roadmap/BACKLOG.md:3697 |
-| 112.4 What "professionalise" actually means here | docs/roadmap/BACKLOG.md:3718 |
-| 112.5 Deliberately not doing | docs/roadmap/BACKLOG.md:3743 |
-| 115. After PR 144: professional use (the owner's stated next block, 2026-09-14) | docs/roadmap/BACKLOG.md:3788 |
-| 116.1 Dropped or half-done, and therefore first | docs/roadmap/BACKLOG.md:3765 |
-| 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3772 |
-| 116.3 the retired plan doc rows not started (by track) | docs/roadmap/BACKLOG.md:3776 |
-| 116.4 Tooling | docs/roadmap/BACKLOG.md:3783 |
+| 110.1 Built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:3484 |
+| 110.2 The five bugs, and the measurement that found each | docs/roadmap/BACKLOG.md:3486 |
+| 110.3 Still open | docs/roadmap/BACKLOG.md:3523 |
+| 111.1 Inefficiencies, measured or read rather than guessed | docs/roadmap/BACKLOG.md:3541 |
+| 111.2 Features worth building, ranked by value per unit of work | docs/roadmap/BACKLOG.md:3564 |
+| 111.3 Directions, not features | docs/roadmap/BACKLOG.md:3592 |
+| 112.1 The one thing this app has that the others structurally cannot | docs/roadmap/BACKLOG.md:3622 |
+| 112.2 Missing features, ranked by "would someone pay for this" | docs/roadmap/BACKLOG.md:3654 |
+| 112.3 Scaling and optimisation, in the order it will actually bite | docs/roadmap/BACKLOG.md:3691 |
+| 112.4 What "professionalise" actually means here | docs/roadmap/BACKLOG.md:3712 |
+| 112.5 Deliberately not doing | docs/roadmap/BACKLOG.md:3737 |
+| 115. After PR 144: professional use (the owner's stated next block, 2026-09-14) | docs/roadmap/BACKLOG.md:3782 |
+| 116.1 Dropped or half-done, and therefore first | docs/roadmap/BACKLOG.md:3759 |
+| 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3766 |
+| 116.3 the retired plan doc rows not started (by track) | docs/roadmap/BACKLOG.md:3770 |
+| 116.4 Tooling | docs/roadmap/BACKLOG.md:3777 |
 | 12. Deepened 2026-10-10: the calendar (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:389 |
-| 12. Does the AI know it is an agent? | docs/roadmap/BACKLOG.md:958 |
+| 12. Does the AI know it is an agent? | docs/roadmap/BACKLOG.md:952 |
 | 12. Security review (read, not penetration-tested; each item names the file) | docs/roadmap/WORLD_CLASS_PLAN.md:877 |
 | 12. Selection, grouping, containers, swimlanes, tables | docs/roadmap/WHITEBOARD_PLAN.md:1152 |
 | 12. The map as its own tool (INBOX 93, the owner's ask, 2026-09-09) | docs/roadmap/MINDMAP_PLAN.md:223 |
@@ -32220,7 +32220,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 13. Images, math, links and tooltips | docs/roadmap/WHITEBOARD_PLAN.md:1165 |
 | 13. Open bugs and gaps from the merged agent reports (with owners) | docs/roadmap/WORLD_CLASS_PLAN.md:924 |
 | 13. The map, read against its six complaints: measured 2026-09-21, phases built | docs/roadmap/MINDMAP_PLAN.md:531 |
-| 13. Web search effectiveness | docs/roadmap/BACKLOG.md:1001 |
+| 13. Web search effectiveness | docs/roadmap/BACKLOG.md:995 |
 | 13. What a self-contained HTML export is: decided 2026-09-13 | docs/roadmap/DOCUMENTS_PLAN.md:585 |
 | 13.1 Is it slow? The one claim measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:559 |
 | 13.1 The principles, each as a rule with a measurement | docs/roadmap/UI_MODERNISATION_PLAN.md:994 |
@@ -32233,32 +32233,32 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 13.5 Clean and professional: the same measurements section 17 took | docs/roadmap/MINDMAP_PLAN.md:794 |
 | 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1567 |
 | 14. Export and import formats | docs/roadmap/WHITEBOARD_PLAN.md:1177 |
-| 14. More tools worth adding | docs/roadmap/BACKLOG.md:1084 |
+| 14. More tools worth adding | docs/roadmap/BACKLOG.md:1078 |
 | 14. The core algorithms, read line by line (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:928 |
 | 14. What a document daily note is: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:649 |
 | 14.1 Measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:1576 |
 | 14.2 What the five apps do, and what is taken | docs/roadmap/MINDMAP_PLAN.md:1580 |
 | 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1592 |
 | 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1675 |
-| 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1120 |
+| 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1114 |
 | 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1688 |
 | 15. Insert menu, shape picker and the sidebar search | docs/roadmap/WHITEBOARD_PLAN.md:1194 |
 | 15. Inventions: eight things no notebook does, specified for Opus and Sonnet | docs/roadmap/WORLD_CLASS_PLAN.md:986 |
 | 15. The code block's own bar, and where it belongs: measured 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:698 |
 | 16. Layouts | docs/roadmap/WHITEBOARD_PLAN.md:1203 |
-| 16. Sweeping UI quality-of-life | docs/roadmap/BACKLOG.md:1143 |
+| 16. Sweeping UI quality-of-life | docs/roadmap/BACKLOG.md:1137 |
 | 16. The backend, read for structure, silent failure and lag (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:1320 |
 | 16. The engine's three omissions, and the table menu: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:737 |
 | 17. The Format panel with nothing selected, and diagram options | docs/roadmap/WHITEBOARD_PLAN.md:1211 |
 | 17. The live view for professional use: measured 2026-09-21, phases open | docs/roadmap/DOCUMENTS_PLAN.md:778 |
 | 17. The original vision, audited (2026-09-09) | docs/roadmap/WORLD_CLASS_PLAN.md:1474 |
-| 17. Use cases the app can't serve yet | docs/roadmap/BACKLOG.md:1174 |
-| 18. Agent quality | docs/roadmap/BACKLOG.md:1208 |
+| 17. Use cases the app can't serve yet | docs/roadmap/BACKLOG.md:1168 |
+| 18. Agent quality | docs/roadmap/BACKLOG.md:1202 |
 | 18. Out of scope, with the reason | docs/roadmap/WHITEBOARD_PLAN.md:1221 |
 | 18. The next horizon, written 2026-09-14 at the close of PR 144 | docs/roadmap/WORLD_CLASS_PLAN.md:1483 |
 | 18. The slash menus as one system: built 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:980 |
 | 19. A board or a map as an object in a note, and a note's reminders: built 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:1205 |
-| 19. Accessibility audit | docs/roadmap/BACKLOG.md:1246 |
+| 19. Accessibility audit | docs/roadmap/BACKLOG.md:1240 |
 | 19. The architecture and framework review (2026-09-20, INBOX 266) | docs/roadmap/WORLD_CLASS_PLAN.md:1650 |
 | 19.1 The one number that matters: 776 MB resident, idle | docs/roadmap/WORLD_CLASS_PLAN.md:1663 |
 | 19.2 The frontend is 5.9 MB decoded, and that is mostly fine | docs/roadmap/WORLD_CLASS_PLAN.md:1703 |
@@ -32277,12 +32277,12 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 2. Why it disappoints (measured, 48 notes across six months, 1358px) | docs/roadmap/TIMELINE_PLAN.md:24 |
 | 2. Why it disappoints: measured and read | docs/roadmap/GRAPH_PLAN.md:27 |
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:1906 |
-| 20. Backend | docs/roadmap/BACKLOG.md:1274 |
+| 20. Backend | docs/roadmap/BACKLOG.md:1268 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:848 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:1953 |
-| 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1410 |
+| 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1404 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:274 |
-| 22. Reported in use, not yet done | docs/roadmap/BACKLOG.md:1485 |
+| 22. Reported in use, not yet done | docs/roadmap/BACKLOG.md:1479 |
 | 22. The diagram builder redesign: design note, 2026-11-04 (INBOX 1613 to 1615, 1621) | docs/roadmap/DOCUMENTS_PLAN.md:1317 |
 | 22. The professional baseline and the devibecode programme (2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:1966 |
 | 22.0 Verified present at HEAD (do not rebuild) | docs/roadmap/DOCUMENTS_PLAN.md:1321 |
@@ -32297,10 +32297,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2050 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1389 |
 | 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08) | docs/roadmap/DOCUMENTS_PLAN.md:1451 |
-| 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1579 |
+| 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1573 |
 | 23. The code editor as an IDE: run, preview, test and debug (INBOX 748) | docs/roadmap/DOCUMENTS_PLAN.md:992 |
 | 24. Codebase census, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:2191 |
-| 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1611 |
+| 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1605 |
 | 24. Deepened 2026-10-10: the documents editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1101 |
 | 24.1 Size and complexity | docs/roadmap/WORLD_CLASS_PLAN.md:2195 |
 | 24.2 Duplicated blocks | docs/roadmap/WORLD_CLASS_PLAN.md:2315 |
@@ -32309,7 +32309,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 24.5 Counts | docs/roadmap/WORLD_CLASS_PLAN.md:2495 |
 | 24.6 Console errors per surface | docs/roadmap/WORLD_CLASS_PLAN.md:2601 |
 | 24.6b Interaction timings, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:2614 |
-| 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1643 |
+| 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1637 |
 | 25. Deepened 2026-10-10: the code editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1142 |
 | 25. The whole app against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:2691 |
 | 25.1 The bar | docs/roadmap/WORLD_CLASS_PLAN.md:2710 |
@@ -32317,7 +32317,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 25.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:2762 |
 | 25.4 Phases with gates (each a brief; measure first) | docs/roadmap/WORLD_CLASS_PLAN.md:2802 |
 | 25.5 Not verified | docs/roadmap/WORLD_CLASS_PLAN.md:2818 |
-| 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1709 |
+| 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1703 |
 | 26. Synced blocks, decision 82 (row 5, F1 run 2, 2026-11-11) | docs/roadmap/DOCUMENTS_PLAN.md:1469 |
 | 26. The backend against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:2822 |
 | 26.1 Judgement, by layer | docs/roadmap/WORLD_CLASS_PLAN.md:2844 |
@@ -32326,11 +32326,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 26.4 Measured, 2026-10-10 (Brief 60, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:2902 |
 | 26.5 Complexity, cycles, hot routes and frames, 2026-10-10 (decision 63, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:2923 |
 | 27. Every feature, its utility and its popups, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:2938 |
-| 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1786 |
+| 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1780 |
 | 27.1 Feature by feature: what it offers, what a professional expects, the gap | docs/roadmap/WORLD_CLASS_PLAN.md:2952 |
 | 27.2 The popups, one by one | docs/roadmap/WORLD_CLASS_PLAN.md:2980 |
 | 27.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3003 |
-| 28. In-app help: an AI that knows the docs, built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md, kept for its number | docs/roadmap/BACKLOG.md:1816 |
+| 28. In-app help: an AI that knows the docs, built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md, kept for its number | docs/roadmap/BACKLOG.md:1810 |
 | 28. The trust contract, 2026-10-10 (INBOX 750) | docs/roadmap/WORLD_CLASS_PLAN.md:3019 |
 | 28.1 The rules, each with its measure | docs/roadmap/WORLD_CLASS_PLAN.md:3028 |
 | 28.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3049 |
@@ -32338,11 +32338,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 28.4 Deepened 2026-10-10: the OCR workspace (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:3080 |
 | 28.5 Deepened 2026-10-10: the audio set (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | 28.6 T0 numbers, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3154 |
-| 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1820 |
-| 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:2002 |
-| 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1847 |
-| 29d. Whiteboard: scoped and next, not brainstormed | docs/roadmap/BACKLOG.md:1868 |
-| 29e. Whiteboard master spec (uploaded, MS Whiteboard/OneNote/draw.io/ | docs/roadmap/BACKLOG.md:1925 |
+| 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1814 |
+| 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:1996 |
+| 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1841 |
+| 29d. Whiteboard: scoped and next, not brainstormed | docs/roadmap/BACKLOG.md:1862 |
+| 29e. Whiteboard master spec (uploaded, MS Whiteboard/OneNote/draw.io/ | docs/roadmap/BACKLOG.md:1919 |
 | 3. Chat page: Chat / Agent / Browse sub-tabs | docs/roadmap/BACKLOG.md:77 |
 | 3. Edit style, Edit data, placeholders, tooltips | docs/roadmap/WHITEBOARD_PLAN.md:939 |
 | 3. Frontend dossiers (one per surface, each a hand-off brief) | docs/roadmap/WORLD_CLASS_PLAN.md:279 |
@@ -32393,14 +32393,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 6. Layers and pages | docs/roadmap/WHITEBOARD_PLAN.md:978 |
 | 6. Measuring "professional" without telemetry | docs/roadmap/WORLD_CLASS_PLAN.md:688 |
 | 6. Not verified | docs/roadmap/CHAT_PLAN.md:1614 |
-| 6. OpenAI-compatible backends: **done**; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:368 |
-| 62. Extract notes: from the Writing Room, Documents, and Graph selections | docs/roadmap/BACKLOG.md:2040 |
-| 63. Ship a starter skills library, DONE, this claim was stale; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:2054 |
-| 64. Documents editor: built, moved to HISTORY.md; the slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`) exist, the rest lives in DOCUMENTS_PLAN.md | docs/roadmap/BACKLOG.md:2056 |
-| 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2058 |
+| 6. OpenAI-compatible backends: **done**; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:362 |
+| 62. Extract notes: from the Writing Room, Documents, and Graph selections | docs/roadmap/BACKLOG.md:2034 |
+| 63. Ship a starter skills library, DONE, this claim was stale; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:2048 |
+| 64. Documents editor: built, moved to HISTORY.md; the slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`) exist, the rest lives in DOCUMENTS_PLAN.md | docs/roadmap/BACKLOG.md:2050 |
+| 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2052 |
 | 7. Acceptance | docs/roadmap/MINDMAP_PLAN.md:175 |
 | 7. Deepened 2026-10-10: the deterministic features (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1618 |
-| 7. Desktop packaging | docs/roadmap/BACKLOG.md:370 |
+| 7. Desktop packaging | docs/roadmap/BACKLOG.md:364 |
 | 7. Files this will touch | docs/roadmap/DOCUMENTS_PLAN.md:236 |
 | 7. Not verified until built | docs/roadmap/CHAT_PLAN.md:527 |
 | 7. Not verified until built | docs/roadmap/GRAPH_PLAN.md:134 |
@@ -32408,36 +32408,36 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 7. Not verified until built | docs/roadmap/WHITEBOARD_PLAN.md:529 |
 | 7. Shape libraries and the stencil format | docs/roadmap/WHITEBOARD_PLAN.md:986 |
 | 7. The small things (a checklist that sessions keep reopening) | docs/roadmap/WORLD_CLASS_PLAN.md:715 |
-| 75. Voice memos: capture, storage, playback, and a dedicated library page | docs/roadmap/BACKLOG.md:2085 |
-| 76. Keyword-only note filing while the AI is unavailable, flagged for later AI review | docs/roadmap/BACKLOG.md:2108 |
-| 77. Notes-tab pagination and page-aware note links | docs/roadmap/BACKLOG.md:2115 |
-| 78. Whether the backend needs more concurrency than it already has | docs/roadmap/BACKLOG.md:2196 |
-| 79. Linux release packaging: done; macOS still open | docs/roadmap/BACKLOG.md:2205 |
-| 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2236 |
+| 75. Voice memos: capture, storage, playback, and a dedicated library page | docs/roadmap/BACKLOG.md:2079 |
+| 76. Keyword-only note filing while the AI is unavailable, flagged for later AI review | docs/roadmap/BACKLOG.md:2102 |
+| 77. Notes-tab pagination and page-aware note links | docs/roadmap/BACKLOG.md:2109 |
+| 78. Whether the backend needs more concurrency than it already has | docs/roadmap/BACKLOG.md:2190 |
+| 79. Linux release packaging: done; macOS still open | docs/roadmap/BACKLOG.md:2199 |
+| 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2230 |
 | 8. Acceptance for the whole plan | docs/roadmap/DOCUMENTS_PLAN.md:246 |
 | 8. Deepened 2026-10-10: chat access to information (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1650 |
 | 8. Execution order for the coming week (Opus/Sonnet sessions) | docs/roadmap/WORLD_CLASS_PLAN.md:765 |
-| 8. Open bug list | docs/roadmap/BACKLOG.md:468 |
+| 8. Open bug list | docs/roadmap/BACKLOG.md:462 |
 | 8. Research: tldraw, Excalidraw, Miro, FigJam, and what it changes here | docs/roadmap/WHITEBOARD_PLAN.md:561 |
 | 8. Research: what the reference products actually do, and what it changes here | docs/roadmap/CHAT_PLAN.md:534 |
 | 8. Research: what the reference products do, and what it changes here | docs/roadmap/TIMELINE_PLAN.md:175 |
 | 8. Risks | docs/roadmap/MINDMAP_PLAN.md:188 |
 | 8. Templates | docs/roadmap/WHITEBOARD_PLAN.md:1062 |
-| 8b. Web search: two Windows bugs found, and what is left | docs/roadmap/BACKLOG.md:502 |
+| 8b. Web search: two Windows bugs found, and what is left | docs/roadmap/BACKLOG.md:496 |
 | 9. Built: Phase 1 (backend) | docs/roadmap/MINDMAP_PLAN.md:211 |
 | 9. Deepened 2026-10-10: the Guide (Brief 72b, decisions 59 and 71) | docs/roadmap/CHAT_PLAN.md:1673 |
 | 9. Find and replace | docs/roadmap/WHITEBOARD_PLAN.md:1071 |
 | 9. On testing with a real model in the sandbox | docs/roadmap/WORLD_CLASS_PLAN.md:807 |
 | 9. Phase 5: the calendar as the third view (Fable, 2026-10-10; WORLD_CLASS_PLAN 25, decision 47; Brief 55) | docs/roadmap/TIMELINE_PLAN.md:209 |
 | 9. Risks | docs/roadmap/DOCUMENTS_PLAN.md:258 |
-| 9. The graph: make it a tool, and give it a look | docs/roadmap/BACKLOG.md:551 |
-| A. Model and backend | docs/roadmap/BACKLOG.md:2339 |
+| 9. The graph: make it a tool, and give it a look | docs/roadmap/BACKLOG.md:545 |
+| A. Model and backend | docs/roadmap/BACKLOG.md:2333 |
 | After KG1 to KG9 | docs/roadmap/GRAPH_PLAN.md:500 |
 | After the bugs: the parity programme (the owner, 2026-10-10) | docs/ROADMAP.md:132 |
-| Asked for this session, not yet built | docs/roadmap/BACKLOG.md:289 |
+| Asked for this session, not yet built | docs/roadmap/BACKLOG.md:283 |
 | Audio in the notebook: the architecture decided 2026-09-21, built through 28.5 | docs/roadmap/WORLD_CLASS_PLAN.md:1821 |
 | Audit, 2026-09-13 night (INBOX 209: "poke holes in this application") | docs/roadmap/WORLD_CLASS_PLAN.md:757 |
-| B. Retrieval and context: where the real quality ceiling is | docs/roadmap/BACKLOG.md:2364 |
+| B. Retrieval and context: where the real quality ceiling is | docs/roadmap/BACKLOG.md:2358 |
 | B1 The event log: every change is a fact, the tables are views | docs/roadmap/WORLD_CLASS_PLAN.md:468 |
 | B2 The job runtime: durable, resumable, observable | docs/roadmap/WORLD_CLASS_PLAN.md:525 |
 | B3 The retrieval engine: one index, three signals, explained | docs/roadmap/WORLD_CLASS_PLAN.md:531 |
@@ -32464,11 +32464,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Built: Phase 1 (the canvas renderer and physical drag) | docs/roadmap/GRAPH_PLAN.md:162 |
 | Built: Phase 9 | docs/roadmap/UI_MODERNISATION_PLAN.md:507 |
 | Built: items 1, 3, 4 and 5 | docs/roadmap/UI_MODERNISATION_PLAN.md:233 |
-| C. Capture: the half the app is named for | docs/roadmap/BACKLOG.md:2388 |
+| C. Capture: the half the app is named for | docs/roadmap/BACKLOG.md:2382 |
 | Composer decisions, taken with the owner, 2026-10-06 | docs/roadmap/CHAT_PLAN.md:755 |
-| Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon") | docs/roadmap/BACKLOG.md:4359 |
+| Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon") | docs/roadmap/BACKLOG.md:4353 |
 | Counts | docs/roadmap/LEDGER.md:7 |
-| D. Trust and safety | docs/roadmap/BACKLOG.md:2408 |
+| D. Trust and safety | docs/roadmap/BACKLOG.md:2402 |
 | D1 Dashboard (M, Sonnet after a Fable/Opus design pass) | docs/roadmap/WORLD_CLASS_PLAN.md:285 |
 | D10 Documents and PDFs (L, see DOCUMENTS_PLAN.md; add PDF annotation as | docs/roadmap/WORLD_CLASS_PLAN.md:402 |
 | D11 Whiteboard and mind maps (M, in progress; then MINDMAP_PLAN Phases | docs/roadmap/WORLD_CLASS_PLAN.md:407 |
@@ -32521,21 +32521,21 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Deepened 2026-10-10: statistics (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1104 |
 | Deepened 2026-10-10: the command palette and Find anything (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1161 |
 | Deepened 2026-10-10: utilities (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1135 |
-| Deliberately not on this list | docs/roadmap/BACKLOG.md:2464 |
+| Deliberately not on this list | docs/roadmap/BACKLOG.md:2458 |
 | Design requests | docs/roadmap/CHAT_PLAN.md:834 |
 | Design requests | docs/roadmap/DOCUMENTS_PLAN.md:1244 |
 | Design requests | docs/roadmap/UI_MODERNISATION_PLAN.md:922 |
-| Device and owner checks from the mindmap plan (2026-11-12) | docs/roadmap/BACKLOG.md:4463 |
-| Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2519 |
+| Device and owner checks from the mindmap plan (2026-11-12) | docs/roadmap/BACKLOG.md:4457 |
+| Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2513 |
 | Direction, 2026-10-10 (Fable orchestrating): the thesis, the policies, the tracks | docs/ROADMAP.md:26 |
-| E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2427 |
-| Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4128 |
+| E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2421 |
+| Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4122 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:594 |
-| From the general plan's frontend rows, 2026-11-21 | docs/roadmap/BACKLOG.md:4490 |
+| From the general plan's frontend rows, 2026-11-21 | docs/roadmap/BACKLOG.md:4487 |
 | Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1783 |
 | Gap audit against draw.io, 2026-10-25 (wb2) | docs/roadmap/WHITEBOARD_PLAN.md:1521 |
 | Gates | docs/roadmap/TIMELINE_PLAN.md:288 |
-| Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2481 |
+| Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2475 |
 | H1 The night shift, finished (I1 second pass; L, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1507 |
 | H2 Evidence cards and open questions (I6 then I3; L, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1523 |
 | H3 The model bench (I8; M, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1538 |
@@ -32545,7 +32545,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | H7 The speed budget (A1 continued; S each) | docs/roadmap/WORLD_CLASS_PLAN.md:1605 |
 | H8 Time travel and the margin reader (I5, I2) | docs/roadmap/WORLD_CLASS_PLAN.md:1634 |
 | H9 Polish in use (the owner's question, 2026-09-14; S to M each) | docs/roadmap/WORLD_CLASS_PLAN.md:1638 |
-| Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:696 |
+| Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:690 |
 | How to work on this repo | docs/ROADMAP.md:242 |
 | I1 The night shift: the notebook that understands itself while you sleep | docs/roadmap/WORLD_CLASS_PLAN.md:1009 |
 | I2 The margin reader: a second reader in the editor, from your own notes | docs/roadmap/WORLD_CLASS_PLAN.md:1084 |
@@ -32556,18 +32556,18 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | I7 The corrections loop: every "no" makes the notebook better | docs/roadmap/WORLD_CLASS_PLAN.md:1140 |
 | I8 The model bench: which local model is best on *your* notebook | docs/roadmap/WORLD_CLASS_PLAN.md:1192 |
 | I9 What the notebook learned: one place to see, edit, delete and switch it all off | docs/roadmap/WORLD_CLASS_PLAN.md:1196 |
-| Ideas | docs/roadmap/BACKLOG.md:4025 |
+| Ideas | docs/roadmap/BACKLOG.md:4019 |
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
-| Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4494 |
-| Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:530 |
+| Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4491 |
+| Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4364 |
+| Needs hardware | docs/roadmap/LEDGER.md:529 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:523 |
-| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
+| Owner calls | docs/roadmap/LEDGER.md:522 |
+| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4237 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
 | Phase 11: the phone, done properly (1 to 2 sessions, next session or later) | docs/roadmap/UI_MODERNISATION_PLAN.md:527 |
@@ -32602,16 +32602,16 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1234 |
 | Placed (last 20, newest first) | docs/roadmap/INBOX.md:144 |
-| Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4034 |
+| Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4028 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:2187 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1714 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1269 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/GRAPH_PLAN.md:577 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1734 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1405 |
-| Placed from IDEAS.md, 2026-11-14 | docs/roadmap/BACKLOG.md:4485 |
+| Placed from IDEAS.md, 2026-11-14 | docs/roadmap/BACKLOG.md:4479 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:205 |
-| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4258 |
+| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4252 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:592 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:170 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1371 |
@@ -32638,11 +32638,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-09-27 | docs/roadmap/WHITEBOARD_PLAN.md:757 |
 | Placed from INBOX, 2026-09-27 (399) | docs/roadmap/WORLD_CLASS_PLAN.md:2068 |
 | Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1406 |
-| Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3834 |
-| Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:3878 |
-| Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3814 |
+| Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3828 |
+| Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:3872 |
+| Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3808 |
 | Placed from INBOX, 2026-10-03 (INBOX 391, 392) | docs/roadmap/WORLD_CLASS_PLAN.md:2093 |
-| Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:3991 |
+| Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:3985 |
 | Placed from INBOX, 2026-10-03 (INBOX 403, the standing bar) | docs/roadmap/WORLD_CLASS_PLAN.md:2072 |
 | Placed from INBOX, 2026-10-03 (INBOX 409: the AI assistant bar is what stays open) | docs/roadmap/DOCUMENTS_PLAN.md:1223 |
 | Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413) | docs/roadmap/CHAT_PLAN.md:628 |
@@ -32678,7 +32678,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1718 |
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1755 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1225 |
-| Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4154 |
+| Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4148 |
 | Placed from INBOX, 2026-10-19 | docs/roadmap/DOCUMENTS_PLAN.md:1304 |
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1503 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1281 |
@@ -32696,7 +32696,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-27 | docs/roadmap/DOCUMENTS_PLAN.md:1310 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/UI_MODERNISATION_PLAN.md:1253 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/WHITEBOARD_PLAN.md:1551 |
-| Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4282 |
+| Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4276 |
 | Placed from INBOX, 2026-10-27 (speed and smoothness, 1415) | docs/roadmap/UI_MODERNISATION_PLAN.md:1255 |
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1260 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1557 |
@@ -32706,9 +32706,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101) | docs/roadmap/WHITEBOARD_PLAN.md:1565 |
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:314 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1270 |
-| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4291 |
-| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4301 |
-| Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4345 |
+| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4285 |
+| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4295 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4339 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/DOCUMENTS_PLAN.md:1447 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1793 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1581 |
@@ -32733,9 +32733,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from W34, 2026-11-11 (gap5: open perf and tooling rows, sized) | docs/roadmap/UI_MODERNISATION_PLAN.md:1293 |
 | Placed from W34, 2026-11-11 (gap5: the diagram builder's open cost) | docs/roadmap/DOCUMENTS_PLAN.md:1465 |
 | Placed from W34, 2026-11-11 (gap5: the open graph rows, sized) | docs/roadmap/GRAPH_PLAN.md:626 |
-| Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4267 |
-| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4273 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4021 |
+| Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4261 |
+| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4267 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4015 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:779 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1236 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:564 |
@@ -32747,21 +32747,21 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:651 |
+| Plan session briefs | docs/roadmap/LEDGER.md:650 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
-| Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
+| Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2621 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
 | Section 8's two cheap additions: **built 2026-10-05**, see | docs/roadmap/TIMELINE_PLAN.md:135 |
 | Settings information architecture (INBOX 444) | docs/roadmap/UI_MODERNISATION_PLAN.md:783 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:200 |
-| Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4168 |
+| Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4162 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:767 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1461 |
-| Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2746 |
-| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4211 |
+| Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2740 |
+| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4205 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:912 |
 | The asymmetry these exploit | docs/roadmap/WORLD_CLASS_PLAN.md:996 |
-| The dashboard's first paint waits for the whole notebook (L-world-class-879) | docs/roadmap/BACKLOG.md:939 |
+| The dashboard's first paint waits for the whole notebook (L-world-class-879) | docs/roadmap/BACKLOG.md:933 |
 | The deterministic foundation, 2026-10-10 (INBOX 746) | docs/roadmap/CHAT_PLAN.md:1525 |
 | The dock grammar (the rule the whole phase enforces) | docs/roadmap/UI_MODERNISATION_PLAN.md:404 |
 | The draw.io programme, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:807 |
@@ -32776,9 +32776,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The thesis | docs/ROADMAP.md:39 |
 | The tracks, in order (each a brief; the agent model in brackets) | docs/ROADMAP.md:113 |
 | The two bars that are not docks (added by direct instruction) | docs/roadmap/UI_MODERNISATION_PLAN.md:448 |
-| Timeline, parked 2026-11-12 | docs/roadmap/BACKLOG.md:4474 |
+| Timeline, parked 2026-11-12 | docs/roadmap/BACKLOG.md:4468 |
 | Traps that have each cost real time | docs/ROADMAP.md:261 |
-| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4355 |
+| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4349 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1698 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1259 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:571 |
@@ -32794,46 +32794,46 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | What is actually open, 2026-09-14 | docs/roadmap/INBOX.md:25 |
 | What is already good | docs/roadmap/WORLD_CLASS_PLAN.md:935 |
 | What is left, 2026-09-24 (INBOX 399: "what is left in the world class plan??") | docs/roadmap/WORLD_CLASS_PLAN.md:767 |
-| What was built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:2744 |
+| What was built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number | docs/roadmap/BACKLOG.md:2738 |
 | What was deliberately left out | docs/roadmap/WORLD_CLASS_PLAN.md:1312 |
 | What was wrong, and is fixed this session | docs/roadmap/WORLD_CLASS_PLAN.md:945 |
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
-| World-class plan: the checks that need a real device or a real model (2026-11-12) | docs/roadmap/BACKLOG.md:4387 |
+| World-class plan: the checks that need a real device or a real model (2026-11-12) | docs/roadmap/BACKLOG.md:4381 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:667 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:751 |
+| chat | docs/roadmap/LEDGER.md:666 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:750 |
 | documents | docs/roadmap/LEDGER.md:325 |
-| documents | docs/roadmap/LEDGER.md:691 |
+| documents | docs/roadmap/LEDGER.md:690 |
 | general | docs/roadmap/LEDGER.md:505 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:655 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:763 |
-| llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
+| graph | docs/roadmap/LEDGER.md:654 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:762 |
+| llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4373 |
 | mindmap | docs/roadmap/LEDGER.md:341 |
-| mindmap | docs/roadmap/LEDGER.md:703 |
+| mindmap | docs/roadmap/LEDGER.md:702 |
 | timeline | docs/roadmap/LEDGER.md:459 |
-| timeline | docs/roadmap/LEDGER.md:727 |
+| timeline | docs/roadmap/LEDGER.md:726 |
 | ui-modernisation | docs/roadmap/LEDGER.md:343 |
-| ui-modernisation | docs/roadmap/LEDGER.md:715 |
+| ui-modernisation | docs/roadmap/LEDGER.md:714 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:679 |
+| whiteboard | docs/roadmap/LEDGER.md:678 |
 | world-class | docs/roadmap/LEDGER.md:461 |
-| world-class | docs/roadmap/LEDGER.md:739 |
-| §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
-| §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
-| §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |
-| §105: Library "All" tab: the create button now follows the filter chip, the rest is scoped not built | docs/roadmap/BACKLOG.md:3038 |
-| §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped | docs/roadmap/BACKLOG.md:3087 |
-| §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built | docs/roadmap/BACKLOG.md:3230 |
-| §108: a fast bug-fix round: three real front-end bugs and a batch of small polish | docs/roadmap/BACKLOG.md:3325 |
-| §109: the measured bug round, the competitor gap list triaged, and what is genuinely still open | docs/roadmap/BACKLOG.md:3407 |
-| §110: the toolbar round: formatting in Notes, and five more measured bugs | docs/roadmap/BACKLOG.md:3488 |
-| §111: where this app should go next, grounded in what the code actually does | docs/roadmap/BACKLOG.md:3541 |
-| §112: the strategic pass: what would make this app hard to compete with | docs/roadmap/BACKLOG.md:3615 |
-| §116: capability gaps identified in the Fable session | docs/roadmap/BACKLOG.md:3757 |
-| §95: the forward list | docs/roadmap/BACKLOG.md:2328 |
-| §96: Guides, and diagrams the whiteboard can take | docs/roadmap/BACKLOG.md:2476 |
-| §98: reported live during the §90.2 small-screen pass, logged not built | docs/roadmap/BACKLOG.md:2638 |
-| §99: the lightbox as a showcase, and uploads split by file type | docs/roadmap/BACKLOG.md:2738 |
+| world-class | docs/roadmap/LEDGER.md:738 |
+| §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2789 |
+| §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2840 |
+| §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2947 |
+| §105: Library "All" tab: the create button now follows the filter chip, the rest is scoped not built | docs/roadmap/BACKLOG.md:3032 |
+| §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped | docs/roadmap/BACKLOG.md:3081 |
+| §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built | docs/roadmap/BACKLOG.md:3224 |
+| §108: a fast bug-fix round: three real front-end bugs and a batch of small polish | docs/roadmap/BACKLOG.md:3319 |
+| §109: the measured bug round, the competitor gap list triaged, and what is genuinely still open | docs/roadmap/BACKLOG.md:3401 |
+| §110: the toolbar round: formatting in Notes, and five more measured bugs | docs/roadmap/BACKLOG.md:3482 |
+| §111: where this app should go next, grounded in what the code actually does | docs/roadmap/BACKLOG.md:3535 |
+| §112: the strategic pass: what would make this app hard to compete with | docs/roadmap/BACKLOG.md:3609 |
+| §116: capability gaps identified in the Fable session | docs/roadmap/BACKLOG.md:3751 |
+| §95: the forward list | docs/roadmap/BACKLOG.md:2322 |
+| §96: Guides, and diagrams the whiteboard can take | docs/roadmap/BACKLOG.md:2470 |
+| §98: reported live during the §90.2 small-screen pass, logged not built | docs/roadmap/BACKLOG.md:2632 |
+| §99: the lightbox as a showcase, and uploads split by file type | docs/roadmap/BACKLOG.md:2732 |

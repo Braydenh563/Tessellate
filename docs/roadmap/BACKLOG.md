@@ -247,13 +247,7 @@ The raster-versus-structured reasoning that stood here is in this file's git his
 
 Checked against the running app, not assumed:
 
-- ~~**Outline / table of contents**, reading time~~ **done.** `renderDocOutline`/
-  `renderDocStats`, see HISTORY.md.
-- ~~**Expand a note into a document**~~ **done**, leaves the note untouched
-  and says so.
-- ~~**Word-count goal**~~ **Done.** `promptDocWordGoal`/`#doc-word-goal` set a
-  target, persisted per-document (`docWordGoal:<id>` in localStorage), with
-  progress shown against it.
+- Outline, expand a note into a document and the word-count goal: built, moved to HISTORY (2026-11-22, BACKLOG size cap).
 - **AI chat bar inside the document**, **Pointer:** [DOCUMENTS_PLAN.md](DOCUMENTS_PLAN.md) "Placed from INBOX, 2026-10-03 (INBOX 409)" closed the bar's design; the conversational shape (ask without proposing an edit) is `scratchpad/audit1005/features.md` section 11 Phase G. Partly there. `doc-ai-panel` already
 
 1480. **The owner, 2026-10-31 15:03 local (screenshots, no words, the same reference app):** a Model comparison popup (Mode: Blind, Parallel, Shuffle, Save, Reset as tile buttons; Type: Chat, Agent, Search, Research; a row per model with an x and "+ Add model"; a timeout field, Scoreboard, Start), then the run: columns "Model A" and "Model B" each with its time, expand, an inference-settings drop (Thinking, Temperature, Max tokens) and close, the same prompt in each, "Vote A" and "Vote B" under them, and Score, Tie, Reveal, Reset in a row above the composer, whose "Chat prompts" button opens grouped sample prompts (Featured, Visual, Visual explain). Recommendation taken: Tessellate's model comparison (grep "compare" in CODEMAP; the bench) takes the blind A and B with votes and reveal, the settings drop per column, and the grouped sample prompts. Placed here at triage to keep INBOX under twenty.
@@ -4486,6 +4480,9 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
 - **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
+- **A before-and-after view for every agent edit** (IDEAS.md, moved 2026-11-22). The confirm card exists for destructive and outside-text-triggered changes, and documents show a diff with a box per change; IDEAS.md found no such comparison for every other edit (not re-checked on 2026-11-22). **Why it waits:** the parked-tool card would need the old and new text of each write tool; no owner report asks for it yet.
+- **A web research mode that plans several searches** (IDEAS.md, moved 2026-11-22). `web_search` and `read_url` exist, with SearXNG; a mode that plans, runs and merges several searches does not. **Why it waits:** it needs a real model to judge (CLAUDE.md section 4).
+- **A dry run for the background librarian** (IDEAS.md "From the audits", moved 2026-11-22). It edits notes unattended; `taskhistory` records each run, but there is no "here is the diff, apply or discard" before it. **Why it waits:** the pass is off by default (`autonomous_tasks_enabled`).
 
 ## From the general plan's frontend rows, 2026-11-21
 

@@ -7,6 +7,182 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-22 (BACKLOG size cap, documents built rows)
+
+- ~~**Outline / table of contents**, reading time~~ **done.** `renderDocOutline`/
+  `renderDocStats`, see HISTORY.md.
+- ~~**Expand a note into a document**~~ **done**, leaves the note untouched
+  and says so.
+- ~~**Word-count goal**~~ **Done.** `promptDocWordGoal`/`#doc-word-goal` set a
+  target, persisted per-document (`docWordGoal:<id>` in localStorage), with
+  progress shown against it.
+
+## Moved from the plans, 2026-11-22 (IDEAS.md retired, L-general-32)
+
+`IDEAS.md` moved here whole and the file removed. Its open items are rows elsewhere: L-chat-13 (the movable monitor, the agent driving the screen), L-world-class-182 and 185, BACKLOG "Dynamically switch models by task complexity", and BACKLOG "Placed from IDEAS.md" (a before-and-after view for every agent edit, a web research mode, a dry run for the background librarian). Since checked: the sketch highlighter is at alpha 0.4 (`sketch-pad.js`), and orphaned attachments are swept by `core/media_gc.py`.
+
+Good ideas that are **out of scope right now** are written here instead of
+built (build plan section 0: never expand scope mid-phase). The list is the
+owner's own, tidied on 2026-10-05: grouped, spelling fixed, and checked against
+the app.
+
+**Check the app before building anything here.** Most of this list has been built
+since it was written, and the common mistake in this project is rebuilding
+something that exists (CLAUDE.md, section 1). The built items stay, with where
+they live, because their wording is what a future session will search for.
+
+
+### Built
+
+**Capture and the shell**
+
+- Handle image and file uploads, with drag and drop: attachments, the Library's
+  Images and Files views, captions, vision reads, Tesseract text and the OCR
+  workspace.
+- A guided setup on first install: the welcome card and the guided tour (Settings,
+  Help), which walks through the real controls.
+- A mini bar at the bottom with statuses and quick access to the command palette:
+  the status bar at the foot of the window, and the palette on `Ctrl`/`Cmd`+`K`.
+- Allow saving custom appearances and themes: thirteen themes and saved looks, in
+  Settings, Appearance.
+- Collapsible sidebars.
+- Make Tessellate cross-platform: a Windows installer and a Linux package, and
+  macOS from source.
+- Package the application, and improve the Settings models page: the installers,
+  and Settings, Models with fit badges and a model per feature.
+- Improve start.bat: no console window to keep open, and a tray icon. The launcher
+  has `--doctor`, `--logs` and `--shortcut`, and the desktop window has a tray menu
+  with Open, View logs, Restart and Quit.
+- A way to exit the app and quit the backend: Quit in the header, and Settings,
+  Background tasks.
+- An interface for managing the application (backend, console, update, packages,
+  restart, health): Settings, Background tasks, Packages, Logs and About.
+- Improve the console in settings and show all console messages: Settings, Logs.
+- A way to run the application on a phone: a layout built for the phone, the
+  Share to Tessellate action, and, for a phone on your own network, LAN mode over
+  HTTPS (Settings, Account & security).
+- The help area in settings has an ask-AI feature that knows the program's
+  documentation: the Guide, and Ask Atlas about the app (`Ctrl`+`Shift`+`H`).
+- A full security sweep: the audit of 2026-10-05 and its fixes are in the
+  changelog under Security, and [`SECURITY.md`](../../SECURITY.md) states the model.
+- Update the readme: rewritten on 2026-10-05, with every document in `docs/`.
+
+**The AI**
+
+- More tools, including managing categories (create, rename, merge, delete), and
+  better agentic workflow: 65 tools, a visible plan, a confirm card for anything
+  that changes or deletes.
+- More skills, and a way to make new ones, including a full audit and clean-up of
+  the notebook: 21 built-in skills (Notebook health check, Clean up my tags,
+  Reorganise my categories, Fix my links, Find notes worth combining, Build a
+  skill), and your own as Markdown files.
+- Quick, normal and detailed modes for chat and agent: response presets.
+- Reduce token usage in every AI interaction: the per-turn context budget, the
+  small-model mode and schema compaction.
+- Optimise outputs for what the current model can do: the small-model mode, and
+  per-model sampling defaults.
+- A nudge for the semantic search so "what did I save in the last two days" works:
+  date-aware search operators and time travel over meaning.
+- Reduce the cap on semantic search results, based on the model's context:
+  `search_notes` scales its default result count with the model's window. The
+  ceiling deliberately does not scale, because letting it do so meant a 128k model
+  could pull 768 note previews into one tool result.
+- Have the agent reachable from anywhere in the program: the popup agent
+  (`Ctrl`+`Shift`+`A`) over every tab, and the agent activity monitor.
+- Dynamically change models based on the task: background work uses the utility
+  model so it does not tie up the chat model (`smart_model_routing_enabled`).
+- Chat message metadata that survives a reload: the whole stats block is stored
+  per turn, and every message says how full the model's window got.
+- Make the notebook constellation regenerate on a light or dark change: it is
+  rebuilt on every mode, accent and palette change, keeping the same arrangement.
+- The background librarian: runs on an interval, tags, links and flags
+  duplicates, off by default, never deletes. The category work (rename, merge,
+  move) is done by the skills above.
+
+**Notes, documents and boards**
+
+- Expand and improve the sketches board, maybe a whiteboard tab: boards and mind
+  maps in the Library's Boards & maps view, with shapes, connectors, an object
+  library and mind maps.
+- Better documents UI and usability, and make notes and documents two halves of a
+  whole: the long-form editor, document links, backlinks and the Contents tree.
+- A visual timeline: the Timeline tab with feed, table and scrubber.
+- More dashboard widgets: the dashboard's widget set, including Boards & maps.
+
+### Partly built
+
+- **Agent asks for permission in chat and documents, with before-and-after
+  comparison.** The confirm card exists for destructive and outside-text-triggered
+  changes. A before-and-after comparison for every edit does not.
+- **The agent controls the app on screen, with a visible border and a cancel.** The
+  popup agent and the activity monitor exist. The monitor is fixed bottom-right
+  rather than movable or dockable, and the agent does not drive the interface.
+- **Dynamic model choice by task complexity.** Routing is by caller, not by how
+  hard the task is.
+- **Better agentic web search through chat.** `web_search` and `read_url` exist,
+  with a SearXNG option. A research mode that plans several searches does not.
+
+### Filed as LEDGER rows
+
+These sixteen ideas are LEDGER rows L-world-class-172 to L-world-class-187
+(`docs/roadmap/LEDGER.md`), where they are sized and worked in order.
+### Where the rest stands
+
+Checked against the app on 2026-11-14. Each idea is built, or has its place in
+BACKLOG with the reason it waits.
+
+- Manually group notes together, separate from the main sorting: BACKLOG §23
+  (tags may already serve; a `collections` table if not).
+- A note with more than one category: BACKLOG §23, the same entry.
+- Compress notes and data on disk: BACKLOG, "Compressing the notebook on disk".
+- Gravity and spread on the graph's other layouts: built (L-world-class-175,
+  `tests/test_graph_physics_layouts_175.py`).
+- A visual timeline drawn as a branching line with off-shoots: built
+  (L-world-class-176, `tests/test_timeline_branch_176.py`).
+- Settings pages on a narrow phone view: measured at 360 and 320 wide, 21
+  sections, none cut off (L-world-class-177,
+  `scratchpad/ui-sweeps/settings-phone-177.js`).
+- Markdown in the dashboard's widgets: built (L-world-class-178,
+  `tests/test_dash_widget_markdown_178.py`).
+- Pie charts for the dashboard: built, the Category mix widget
+  (L-world-class-179, `tests/test_dash_pie_179.py`).
+- Different ways to sort chats: built (`#chat-sidebar-sort`: recent, most turns,
+  most tokens, A to Z; pinned chats first). Grouping chats with an agent tool
+  and a skill: BACKLOG, "Grouping saved chats".
+- An agent's edit proposed as a suggestion you can accept: built in documents
+  (`documents-ai.js`, a diff with a box per change, then Replace, Insert or
+  Remove) and in chat (a tool that writes asks first and is parked until you
+  confirm).
+- An in-built browser with MCP tool abilities: BACKLOG, "On the in-built
+  browser" (an iframe fails on the sites worth opening). The stdio MCP server
+  over the app's own tools is built, `python -m tessellate.mcp_server`.
+- A VS Code extension: BACKLOG, "A VS Code extension" (no purpose stated yet).
+- The status dot's error state can be reached: checked
+  (L-world-class-184, `tests/test_ai_status_error_reachable.py`).
+- Streamline and optimise the backend and every AI interaction: standing work,
+  done through the perf ratchets and the deep-audit perf pass, not one item.
+- "I wrote 'ai is cool' as a note and it was filed under sketches": checked
+  (`tests/test_filing_ai_is_cool.py`).
+- `docs/index.html`'s text against the README: checked (L-world-class-187,
+  `tests/test_docs_site_matches_readme.py`).
+
+### From the audits
+
+- **A dry run for the background librarian.** It edits notes unattended and there
+  is no way to see what it would do first. `taskhistory` already records each run;
+  what is missing is "here is the diff, apply or discard".
+- **Sweep for orphans on a schedule, not just vectors.** `clean_orphaned_vectors`
+  is the right pattern, and `clean_orphaned_board_cards` follows it; attachments
+  want it too.
+- **The sketch highlighter is at 5% opacity**, which is roughly twenty passes
+  before anything shows. Almost certainly a mistyped value, but it is a taste call,
+  so it was left alone rather than changed during an audit.
+- **A memory-stream screen.** Built: Settings, What it remembers lists everything
+  the AI has saved, says how much of it reaches the model, and lets each one be
+  edited, switched off or forgotten.
+- **Whiteboard cards should die with their note.** Built: they are swept with the
+  orphaned vectors on the background pass.
+
 ## Moved from the plans, 2026-11-22 (ROADMAP's open-looking queues, L-general-30)
 
 Moved whole from `docs/ROADMAP.md`; their items are LEDGER rows, plan phases or built. Headings demoted one level.
@@ -56723,6 +56899,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired. Built: 2026-11-22: IDEAS.md removed; its text moved whole to HISTORY (Moved from the plans, 2026-11-22, IDEAS.md retired). Open items: three new BACKLOG entries under Placed from IDEAS.md (agent edit before-and-after, web research mode, librarian dry run); the rest already L-chat-13, L-world-class-182/185 or BACKLOG. Checked since: highlighter alpha 0.4, media_gc sweeps orphaned attachments. tests/test_docs_links.py and scripts/rebrand.py no longer name the file.
 - [x] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open Built: 2026-11-22: ROADMAP's three open-looking queues (Next PR first, How to proceed after PR 149, Next up) moved whole to HISTORY (Moved from the plans, 2026-11-22, L-general-30); the plan list says what each file holds, not a 2026-10-05 status; README calls ROADMAP the direction, the road to 1.0 and where each plan lives.
 - [x] **L-general-9** `general` open, S: Make new source-text tests carry a docstring saying why behaviour cannot be asserted, and have gate.sh print the source-text test count. From ANALYSIS.md:4355. Evidence: grep read_text scripts/gate.sh returns nothing; 54% of test files read file text per the review Built: 2026-11-22: scripts/source_text_tests.py counts tests that read file text (read_text, read_bytes, app_js_text, or a module constant read at import): 5,105, of which 3,669 have no docstring. tests/test_source_text_docstrings.py holds that 3,669 as a ceiling that only falls, so a new one must say why in a docstring; scripts/gate.sh prints both counts after its summary.
 - [x] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule Built: 2026-11-22: SECURITY.md (and docs/ mirror) has a Known gaps list under the threat model, each gap with its LEDGER row (L-general-2, L-world-class-691, L-world-class-670) or its stated limit; T19's stale 690 status corrected (built, fake-tested). CONTRIBUTING.md has a Dependencies section: a 30-day release-age floor, a security-advisory exception, licence named in THIRD_PARTY.
