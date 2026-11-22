@@ -2874,7 +2874,8 @@ header#top-bar[data-scrolled="1"],
   }
   .doc-dock .doc-actions button:has(> .toolbar-word),
   #doc-sidebar-list button:has(> .toolbar-word) {
-    width: var(--control-h);
+    /* The finger's floor under touch (iconfloor, 1024 touch: New measured 32x44). */
+    width: max(var(--control-h), var(--target-min));
     padding-inline: 0;
     justify-content: center;
   }

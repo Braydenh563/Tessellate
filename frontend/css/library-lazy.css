@@ -7410,6 +7410,11 @@ input[type="color"].wb-mixed {
   #doc-code-format > .toolbar-word {
     display: none;
   }
+  /* Back is its arrow: a square at the target floor (iconfloor, 1024 touch: 32x44). */
+  .doc-dock-identity > .doc-back {
+    min-width: var(--target-min);
+    justify-content: center;
+  }
   #tab-documents .doc-dock > .doc-dock-identity {
     flex-basis: 8rem;
     min-width: 0;

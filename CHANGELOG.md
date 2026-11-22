@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- UI: under touch the Documents New and Back buttons are 44px squares when they show their icon alone (they measured 32x44 at 1024).
 - Sweeps: the companion sweeps (life, react, smooth) pin the page clock to early afternoon, as a night yawn takes the place of the drift they check; wbtopbar820 seeds a board when the notebook has only the default one.
 - Tests: six Python 3.13 checks follow moved code (chat-list.js, the queued tool-group save, the map-drag close before a prune), and the build stamp reads the app clock.
 - UI: with a mouse the tab strip keeps its 32px row from 820 to 1200 (the 44px strip is for touch), so the header is 44px at 1093x614 and 1024x768 instead of 56 (22.4 shell pass).
