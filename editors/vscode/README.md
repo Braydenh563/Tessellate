@@ -16,6 +16,10 @@ Save a selection or a typed note to your own Tessellate notebook, search your no
 - **Search notes and insert the text**: inserts the note's text.
 - **Open a note (read only)**: opens `tessellate:/<id>.md` in a read-only editor.
 
+## Chat tool server
+
+With a tool server token stored, VS Code 1.101 or newer offers your notebook's tools to its chat as the **Tessellate notes** server, over `POST /mcp` on this computer with the same token. A password sign-in does not offer it.
+
 ## Install without a build step
 
 Copy this folder to your extensions folder, or run `npx @vscode/vsce package` and install the `.vsix`. There is no build step: `extension.js` and `lib/client.js` run as written.

@@ -153,7 +153,7 @@ The running app also answers MCP at `/mcp` on its own port (streamable HTTP, JSO
 
 ## VS Code
 
-`tools/vscode/` is a small extension over the HTTP tool server. It searches your notes, saves a selection as a note, and offers the tool server to VS Code's own chat. Make a token in Settings, Tools it can use, then run Tessellate: Set tool server token. Its README covers installing it from the checkout.
+`editors/vscode/` is a small extension over the app and the HTTP tool server. It searches your notes and inserts a link or the text, saves a selection or a typed note, opens a note read only, and offers the tool server to VS Code's own chat (VS Code 1.101 or newer). Make a token in Settings, Tools it can use, then run Tessellate: Sign in with a token. Its README covers installing it from the checkout.
 
 ## Security model
 

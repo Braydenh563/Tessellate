@@ -4,7 +4,7 @@
 // kept in VS Code's secret storage after Tessellate: Sign in, or a tool server
 // token after Tessellate: Sign in with a token.
 const vscode = require("vscode");
-const { Client, noteTitle } = require("./lib/client");
+const { Client, noteTitle, normaliseBase, TOOL_TOKEN_PREFIX } = require("./lib/client");
 
 const SCHEME = "tessellate";
 const TOKEN_KEY = "tessellate.token";
@@ -12,6 +12,7 @@ const TOKEN_KEY = "tessellate.token";
 function activate(context) {
   const notes = new Map();
   const changed = new vscode.EventEmitter();
+  const toolsChanged = new vscode.EventEmitter();
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, {
       onDidChange: changed.event,
@@ -42,6 +43,7 @@ function activate(context) {
     if (!password) return;
     const api = await client();
     await context.secrets.store(TOKEN_KEY, await api.signIn(password));
+    toolsChanged.fire();
     vscode.window.showInformationMessage("Signed in to Tessellate.");
   });
 
@@ -54,11 +56,13 @@ function activate(context) {
     if (!token) return;
     const api = await client();
     await context.secrets.store(TOKEN_KEY, await api.useToken(token));
+    toolsChanged.fire();
     vscode.window.showInformationMessage("Signed in to Tessellate with a token.");
   });
 
   command("tessellate.signOut", async () => {
     await context.secrets.delete(TOKEN_KEY);
+    toolsChanged.fire();
     vscode.window.showInformationMessage("Signed out of Tessellate.");
   });
 
@@ -118,6 +122,29 @@ function activate(context) {
     changed.fire(uri);
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri), { preview: true });
   });
+
+  // VS Code's chat gets the notebook's tools over POST /mcp. Only a tool server
+  // token is offered: a password session is not a tool credential, and a tool
+  // token reads only unless it was made able to change notes.
+  if (vscode.lm && vscode.lm.registerMcpServerDefinitionProvider && vscode.McpHttpServerDefinition) {
+    context.subscriptions.push(
+      toolsChanged,
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration("tessellate.address")) toolsChanged.fire();
+      }),
+      vscode.lm.registerMcpServerDefinitionProvider("tessellate.notes", {
+        onDidChangeMcpServerDefinitions: toolsChanged.event,
+        provideMcpServerDefinitions: async () => {
+          const token = (await context.secrets.get(TOKEN_KEY)) || "";
+          if (!token.startsWith(TOOL_TOKEN_PREFIX)) return [];
+          const base = normaliseBase(vscode.workspace.getConfiguration("tessellate").get("address"));
+          return [new vscode.McpHttpServerDefinition(
+            "Tessellate notes", vscode.Uri.parse(`${base}/mcp`), { Authorization: `Bearer ${token}` },
+          )];
+        },
+      }),
+    );
+  }
 }
 
 function deactivate() {}

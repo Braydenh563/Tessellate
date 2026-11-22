@@ -1,39 +1,47 @@
-// Drives client.js and extension.js under plain node for
+// Drives lib/client.js and extension.js under plain node for
 // tests/test_vscode_extension.py. Reads one JSON job from argv:
-//   {"mode": "request", ...}  print the request client.call would send
-//   {"mode": "reply", ...}    feed a recorded reply through client.call and noteItems
+//   {"mode": "request", ...}  print the request the client would send
+//   {"mode": "reply", ...}    feed a recorded reply through the client
 //   {"mode": "activate"}      activate extension.js against a stub vscode
 "use strict";
 
 const Module = require("module");
 const path = require("path");
 const job = JSON.parse(process.argv[2]);
-const client = require(path.join(__dirname, "..", "client.js"));
+const { Client } = require(path.join(__dirname, "..", "lib", "client.js"));
+
+function reply(status, body) {
+  return { ok: status >= 200 && status < 300, status, text: async () => JSON.stringify(body) };
+}
 
 async function main() {
   if (job.mode === "request") {
     let seen;
-    const fake = async (url, init) => {
-      seen = { url, method: init.method, headers: init.headers, body: JSON.parse(init.body) };
-      return { ok: true, status: 200, json: async () => ({ result: { content: [{ type: "text", text: "{}" }] } }) };
+    globalThis.fetch = async (url, init) => {
+      seen = { url: String(url), method: init.method, headers: init.headers, body: JSON.parse(init.body) };
+      return reply(200, { result: { content: [{ type: "text", text: "{}" }] } });
     };
-    await client.call(job.url, job.token, job.name, job.args, fake);
+    const api = new Client(job.url, job.token);
+    if (job.name === "search_notes") await api.search(job.args.query, job.args.limit);
+    else await api.capture(job.args.content, job.args.tags || []);
     return seen;
   }
   if (job.mode === "reply") {
-    const fake = async () => ({ ok: job.status === 200, status: job.status, json: async () => job.body });
+    globalThis.fetch = async () => reply(job.status, job.body);
     try {
-      const out = await client.call(job.url, job.token, "search_notes", {}, fake);
-      return { out, items: client.noteItems(out), link: client.noteLink(job.url, 7) };
+      const api = new Client(job.url, job.token);
+      if (job.op === "capture") return { out: await api.capture("x") };
+      return { out: await api.search("x") };
     } catch (error) {
-      return { error: error.message, typed: error instanceof client.ToolServerError };
+      return { error: error.message };
     }
   }
   if (job.mode === "activate") {
     const commands = [];
     let provider = null;
+    const emitter = class { constructor() { this.event = () => {}; } fire() {} dispose() {} };
     const stub = {
-      EventEmitter: class { constructor() { this.event = () => {}; } fire() {} dispose() {} },
+      EventEmitter: emitter,
       Uri: { parse: (value) => ({ value }) },
       McpHttpServerDefinition: class { constructor(label, uri, headers) { Object.assign(this, { label, uri, headers }); } },
       commands: { registerCommand: (id) => (commands.push(id), { dispose() {} }) },
@@ -41,6 +49,7 @@ async function main() {
       workspace: {
         getConfiguration: () => ({ get: () => "http://127.0.0.1:8123/" }),
         onDidChangeConfiguration: () => ({ dispose() {} }),
+        registerTextDocumentContentProvider: () => ({ dispose() {} }),
       },
       window: {}, env: {},
     };

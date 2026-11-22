@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 17 | 1 | 0 | 0 | 18 |
+| world-class | 0 | 16 | 1 | 0 | 0 | 17 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 372 | 418 | 72 | 2 | 113 | 862 |
+| all | 372 | 417 | 72 | 2 | 113 | 861 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -492,7 +492,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-843** `world-class` open, L: Architecture and size rows still open from the 1028 and 1031 audits. From L623 audit-1028-backend K24 K25 K26; audit-1031-architecture AR1 AR2 AR3 AR6; audit-1031-ai AI23; audit-1031-notes N45; audit-1031-perf PF12. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; god modules and functions over 150 lines (K24 K25), two schema systems (K26), routes holding 359 queries (AR1, see L-world-class-840), 10,000 global names (AR2), composer as second app (AR3), six job homes (AR6, 'not built' in HISTORY), files over 800 lines (AI23), complexity ratchet entries (N45 PF12); overlaps L-world-class-810 and 821.
 - [ ] **L-world-class-844** `world-class` open, M: Perf rows from the 1031 audit with no recorded fix. From L623 audit-1031-perf PF4 PF5 PF10; audit-1031-notes N4; audit-1031-shell SH7 SH12; audit-1031-ux UX3 UX8. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; boot parses 1,557 KB of scripts (PF4), first tab open blocks seconds at 4x (PF5), graph draw loop while settling (PF10), notes list not smooth at 199 notes (N4), phone renders every note (SH7), Settings panes 135 to 234 ms (SH12), 70 idle animations (UX3), theme button 858 ms (UX8); remeasure at head before fixing; PF6 is in L619.
-- [ ] **L-world-class-845** `world-class` open, M: Two VS Code extensions after the merge: keep one. From merge 50462a6a7. Evidence: editors/vscode (slice, 3f217d4ad, tests/test_vscode_extension_editors.py) and tools/vscode (world-class, 8ad081f5f, tests/test_vscode_extension.py) both build L-world-class-183; keep one, port the other's sign-in or capture if missing, update docs/MCP.md
 
 ## general
 

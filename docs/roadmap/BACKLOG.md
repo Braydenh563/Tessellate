@@ -368,7 +368,7 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
 
 ## 7. Desktop packaging
 
-**VS Code extension on the Marketplace (L-world-class-183, owner: a publisher account).** Built in `tools/vscode/` (search, save selection, tool server for chat; tests/test_vscode_extension.py); publishing needs the owner's Marketplace publisher and a `vsce package` run, then a real VS Code 1.101+ check of the chat tool server.
+**VS Code extension on the Marketplace (L-world-class-183, owner: a publisher account).** Built in `editors/vscode/` (sign-in or token, search, save, tool server for chat; tests/test_vscode_extension.py); publishing needs the owner's Marketplace publisher and a `vsce package` run, then a real VS Code 1.101+ check of the chat tool server.
 
 **Windows installer: built, not yet run for real.** Asked directly which of portable/installed/both, which platform(s) first, whether to pay for code signing, and where to distribute, answers: installed (not portable),
 Windows only for v1, unsigned for now (a certificate isn't worth it before
