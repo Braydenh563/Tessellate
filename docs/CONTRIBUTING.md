@@ -106,6 +106,10 @@ Nothing else needs it. The script downloads only when you ask, no mode of
   and the guide's topics (`ai/help_chat.py`, `ai/help_topics_more.py`).
 - Copy is sentence case, with no em-dashes, no exclamation marks and no "Oops".
   Errors say what happened and what to do.
+- A new or upgraded dependency, Python or vendored, is a release at least 30
+  days old, so a compromised upload has time to be found and pulled before it
+  reaches the app. A security fix for a published advisory is the one
+  exception; say so in the PR.
 - If you touch the architecture (a new module, table or data flow), update
   `docs/ARCHITECTURE.md` in the same PR.
 - Add a bullet to `CHANGELOG.md` under "Unreleased", and copy the file to

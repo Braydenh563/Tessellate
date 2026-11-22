@@ -137,3 +137,26 @@ is its key, not the space it sits in. The areas most worth scrutiny are:
   that lets an outside client change notes (off by default);
 - the installers for optional packages and the update path, which download and run
   code.
+
+## Known gaps
+
+What this release does not yet do, so nobody has to find it by surprise. Each
+has an open row in `docs/roadmap/LEDGER.md`.
+
+- **No operating-system code signing.** The Windows installer carries the
+  app's own update signature (`packaging/sign_release.py`, checked by the
+  updater before it runs anything), but it is not Authenticode-signed, so
+  Windows SmartScreen warns on a first download. The Docker image is built
+  from source, not published.
+- **CI actions pinned by tag, not commit.** The workflows in
+  `.github/workflows/` name their actions by version tag, so a moved tag would
+  change what runs (L-general-2).
+- **Vendored scripts without a provenance file.** `frontend/vendor/` holds
+  third-party code served to the page; its versions and licences are listed in
+  `docs/THIRD_PARTY.md`, but there is no recorded hash per file yet
+  (L-general-4).
+- **Daily snapshots are not sealed.** The automatic snapshot in the data folder
+  is a plain copy of the database. Only a backup made from Settings can be
+  sealed with a password.
+- **The database is not encrypted by the app.** Only private notes are; the rest
+  relies on your disk's encryption (see the model above).

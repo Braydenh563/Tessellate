@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs (L-general-7): SECURITY.md lists the known gaps (no operating-system code signing, CI actions pinned by tag, vendored files without recorded hashes, unsealed daily snapshots); CONTRIBUTING.md asks that a new or upgraded dependency be at least 30 days old.
 - Docker (L-general-5, L-general-3 in part): the image checks its own health (the interpreter asks /health; the slim image has no curl), ships LICENSE and THIRD_PARTY.md, and a root .dockerignore keeps the notebook folder, venvs and databases out of the build context.
 - Chat (the hub's 2026-11-22 check): a file staged on an unsent message is dropped when you start a new chat or open another one; it was carried to the next chat and imported as a document on its first send (1 chip after each, now 0, and 0 document writes).
 - Popup heads (the hub's 2026-11-22 brief): a lint keeps every popup title growing (`flex: 1 1 auto`) unless a head select takes the room, so Minimise and Close stay at the head's right edge; `scratchpad/ui-sweeps/allheads1122.js` opens every bare opener (about 40 heads: timeline add, new meeting, voice recorder, dictionary, settings, shortcuts, appearance, notifications and the rest) and measures 0px between the last control and the head's content edge at 390, 900 and 1440.
