@@ -637,11 +637,15 @@ const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#setti
 //: The switch a `toggled` record means, in a fresh listing.
 const findSw = (here, t) => here.filter((x) => x.label === t.label)[t.nth];
 
-async function clickSwitch(env, index) {
-  const handle = await env.page.evaluateHandle((i) => {
-    const c = document.querySelectorAll('#settings-modal input[type="checkbox"]')[i];
+//: Presses a switch found by `switchesHere`, by its id (by its words without one):
+//: its index from an earlier list is stale once a press redraws a list above it
+//: (Models' gated controls), and pressing it then presses another (deepflows SHARD=7).
+async function clickSwitch(env, sw) {
+  const now = sw.id ? sw : (findSw(await switchesHere(env), sw) || sw);
+  const handle = await env.page.evaluateHandle(([id, i]) => {
+    const c = (id && document.getElementById(id)) || document.querySelectorAll('#settings-modal input[type="checkbox"]')[i];
     return c.closest('label') || c;
-  }, index);
+  }, [sw.id || null, now.i]);
   await handle.asElement().click({ timeout: 4000 });
 }
 
@@ -660,7 +664,7 @@ async function putBack(env, sections, toggled) {
         if (!sw) { await clearToasts(env); await env.wait(250); }
       }
       if (!sw) throw new Error(`cannot find "${t.label.slice(0, 40)}" in ${section} to put it back; in ${section} now: ${JSON.stringify((await switchesHere(env)).map((x) => x.label.slice(0, 25)))}; pressed here: ${JSON.stringify(mine.map((x) => x.label.slice(0, 25)))}`);
-      if (sw.on !== t.was) { await clickSwitch(env, sw.i); await env.wait(120); }
+      if (sw.on !== t.was) { await clickSwitch(env, sw); await env.wait(120); }
     }
   }
 }
@@ -702,8 +706,12 @@ async function settingsBody(env, toggled) {
     for (const sw of here) {
       if (SETTINGS_SKIP.test(`${sw.id} ${sw.label}`)) { skipped.push(`${section}: ${sw.label.slice(0, 40)}`); continue; }
       //: An earlier switch can switch this one off ("Pause all learning").
-      if (!(await switchesHere(env)).some((x) => x.i === sw.i)) { skipped.push(`${section}: ${sw.label.slice(0, 40)} (turned off by another)`); continue; }
-      try { await clickSwitch(env, sw.i); } catch (e) { throw new Error(`could not press "${sw.label}" in ${section}: ${String(e.message).split('\n')[0]}`); }
+      if (!(await switchesHere(env)).some((x) => (sw.id ? x.id === sw.id : x.i === sw.i))) { skipped.push(`${section}: ${sw.label.slice(0, 40)} (turned off by another)`); continue; }
+      //: The toast an earlier press raised sits over the next switch at 390 ("Keep Atlas on this
+      //: machine" says so in two lines): the press lands on the toast (deepflows SHARD=7, measured hit
+      //: `toast` at 194,722). A person waits for it to go; the run puts it away, before and after each press.
+      if (await env.page.locator('.toast').count()) await clearToasts(env);
+      try { await clickSwitch(env, sw); } catch (e) { throw new Error(`could not press "${sw.label}" in ${section}: ${String(e.message).split('\n')[0]}`); }
       await env.wait(150);
       //: A switch that asks first (a dialog) is answered No: it is not a plain preference.
       const asked = await env.page.locator('.confirm-overlay:visible').count();
@@ -718,8 +726,11 @@ async function settingsBody(env, toggled) {
       const now = sw.id
         ? { on: await env.js((id) => document.getElementById(id)?.checked, sw.id) }
         : findSw(await switchesHere(env), sw);
-      if (!now || now.on === sw.on) throw new Error(`pressing "${sw.label}" in ${section} did not change it`);
+      if (!now || now.on === sw.on) throw new Error(`pressing "${sw.label}" in ${section} did not change it (was ${sw.on}, now ${now && now.on}; pressed so far here: ${JSON.stringify(toggled.filter((t) => t.section === section).map((t) => t.label.slice(0, 25)))})`);
       toggled.push({ section, i: sw.i, id: sw.id, label: sw.label, nth: sw.nth, was: sw.on });
+      //: A switch that saves to the server says so in a toast once the save lands, after the read-back above.
+      await env.wait(350);
+      if (await env.page.locator('.toast').count()) await clearToasts(env);
     }
   }
   await env.overflow('settings after toggling');
