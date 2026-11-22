@@ -1077,7 +1077,7 @@ MORE_TOPICS: list[dict] = [
             "auto-lock", "auto lock", "change my password", "reset password",
             "other devices", "on my phone", "another computer", "sessions",
             "lock everywhere", "re-encrypt", "new key", "rotate key",
-            "recovery key", "make a recovery key",
+            "recovery key", "make a recovery key", "accounts", "signing in", "single-user",
         ),
         "body": (
             "Settings, Account & security. Signing in: ask for a password when "
