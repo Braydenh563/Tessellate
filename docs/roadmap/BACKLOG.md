@@ -907,6 +907,9 @@ block, trimming harder below an 8k-token window; see the retired analysis doc's
 size/risk call (M, take the idea, measure it on a small model before
 trusting it).
 
+### Board library tiles: the layout left in a board's first note
+Owner lag log 2026-11-22: `#wb-add-note` still lays out 73 SVG tiles. 4x CPU, 3 runs, event/frame median (`scratchpad/lag/probe.js` SCEN=wbnote): as built 376/341 ms (forced 119 to 219); `content-visibility: auto` per tile 560/502 (forced 38 to 65, moved into the frame); thumbnails not drawn at all 480/445. Not drawing them did not shorten the frame, so lazy or raster thumbnails cannot: parked until a quiet-machine trace names the rest.
+
 ---
 
 ## 12. Does the AI know it is an agent?
