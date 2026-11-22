@@ -3,7 +3,7 @@
 A probe of something that may be hung (the model backend, `docker info`) is a
 second or several on a bad day. A route that paints a greeting, a badge or a
 status must not sit behind it. `Latest.get` runs the probe on a thread and
-waits `BUDGET` for it: a healthy backend (and every test fake) answers within
+waits `BUDGET` for it (only the call that starts it): a healthy backend (and every test fake) answers within
 that and the answer is current. One that does not is served from its last
 answer, or `default` before any, and the probe lands for the next call. One
 probe is out at a time.
@@ -32,11 +32,14 @@ class Latest:
 
     def get(self, probe: Callable[[], object], budget: float = BUDGET) -> object:
         with self._lock:
-            done = self._out
-            if done is None:
-                done = self._out = threading.Event()
-                #: Registered, so the activity list and quit see a probe in flight.
-                jobs.thread("backend probe", lambda: self._run(probe, done))
+            if self._out is not None:
+                #: A probe still out from an earlier call has already spent its
+                #: budget: waiting again made every decorating route pay 150 ms
+                #: per call against a hung backend (greeting round 1, 120 ms).
+                return self.value
+            done = self._out = threading.Event()
+            #: Registered, so the activity list and quit see a probe in flight.
+            jobs.thread("backend probe", lambda: self._run(probe, done))
         done.wait(budget)
         return self.value
 

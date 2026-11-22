@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 0 | 2 | 1 | 0 | 0 | 3 |
+| graph | 0 | 3 | 1 | 0 | 0 | 4 |
 | chat | 176 | 206 | 60 | 2 | 59 | 442 |
 | whiteboard | 30 | 41 | 4 | 0 | 11 | 75 |
 | documents | 70 | 13 | 1 | 0 | 20 | 84 |
@@ -17,11 +17,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 18 | 1 | 0 | 0 | 19 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 372 | 419 | 73 | 2 | 113 | 864 |
+| all | 372 | 420 | 73 | 2 | 113 | 865 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
 - [ ] **L-graph-20** `graph` open, S: Graph leftovers from the 1029 and 1031 audits. From L623 audit-1029-graph G7 G28 G29; audit-1031-graph GR9. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; 500 notes show zero labels at fit (G7), 1.45 MB graph payload at 2,000 notes (G28), 454 ms long task on tab return (G29), gcDraw 809 lines and 71 listeners to 1 removal (GR9, owner call size L).
+- [ ] **L-graph-21** `graph` open, S: Watch /insights/greeting on CI for a slow second pass that the probe fix does not explain. From CI 137113015699 (2a67df011). Evidence: Python 3.13 leg 2: /insights/greeting 2.70 s on the second pass against a silent backend. Not reproduced: three rounds locally were 41, 33 and 38 ms after the probe fix (189, 128 and 31 before); cProfile shows no runner call and no slow frame on the request thread. The probe fix took 120 ms per call off; the rest looks like runner load. The timed assert is gone (the thread-recording test replaced it).
 
 ## chat
 
