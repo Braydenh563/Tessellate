@@ -503,7 +503,7 @@
 
   function wbBrainstormStart(minutes = 5) {
     wbBrainstormStop();
-    const host = document.getElementById("whiteboard-container");
+    const host = wbInstances.container();
     if (!host) return;
     const chip = document.createElement("div");
     chip.className = "wb-map-brainstorm dock";
@@ -743,7 +743,7 @@
   }
 
   function wbGrammarRepaint() {
-    for (const el of document.querySelectorAll(".wb-map-node")) {
+    for (const el of wbInstances.queryAll(".wb-map-node")) {
       const datum = (wbState.objects || []).find((o) => String(o.id) === el.dataset.id);
       if (datum) wbGrammarPaint(el, datum);
     }
@@ -848,7 +848,7 @@
   function wbStampMenu() {
     const targets = wbVoteTargets();
     if (!targets.length) return toast("Select a note, text box, picture or frame to react to.");
-    const box = (document.querySelector("#wb-html-layer .wb-object.wb-selected") || document.body).getBoundingClientRect();
+    const box = (wbInstances.query("#wb-html-layer .wb-object.wb-selected") || document.body).getBoundingClientRect();
     openMenuAtPoint(WB_MAP_STAMPS.map(([name, , said]) => makeMenuItem(said, `Add or take back your ${said.toLowerCase()} stamp`,
       () => wbStampSet(targets, name, "toggle"))), "Reaction stamps", box.left, box.bottom);
   }

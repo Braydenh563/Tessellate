@@ -14,9 +14,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 FRAME = {"x": 0, "y": 0, "width": 480, "height": 320}
 #: A panel's margins: the header text's left, a margin under the subtitle.

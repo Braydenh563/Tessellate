@@ -1,0 +1,1371 @@
+"""Board state per instance (L-whiteboard-53, for L-documents-104: a board edited
+in place inside a document, one instance per embed).
+
+`whiteboard-instances.js` keeps one object per mounted board and swaps the
+board's live globals (`wbState`, `currentBoardId`, `wbSelectedItem`,
+`wbMultiSelection`, `wbUndoStack`, `wbRedoStack`, `wbZoom`) in and out on
+`wbInstances.activate`, so the nine hundred call sites that read them keep
+meaning "the active board" and the full-page board is the default instance.
+The file is run in node against stubs here, the way test_map_add_speed.py runs
+`wbMapCache.renderAdd`.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+from tests._app_js import frontend_text
+
+ROOT = Path(__file__).resolve().parents[1]
+JS = ROOT / "frontend" / "js"
+SRC = (JS / "whiteboard-instances.js").read_text(encoding="utf-8")
+
+STUBS = r"""
+const window = globalThis;
+const winListeners = [];
+window.addEventListener = (type, fn, opts) => winListeners.push([type, fn, opts]);
+const log = [];
+const node = (name) => ({ name, __zoom: { x: 0, y: 0, k: 1 }, querySelector: (sel) => ({ sel, in: name }) });
+let focused = null;
+//: A small element: children, attributes, listeners, and `[data-wb-layer]` lookup.
+function fakeEl(tag, name) {
+  const el = {
+    tag, name: name || tag, children: [], attrs: {}, listeners: [], parent: null, className: "", tabIndex: -1,
+    __zoom: { x: 0, y: 0, k: 1 },
+    setAttribute(k, v) { this.attrs[k] = String(v); },
+    append(...kids) { for (const c of kids) { c.parent = this; this.children.push(c); } },
+    remove() { if (this.parent) { this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = null; } },
+    addEventListener(type, fn) { this.listeners.push([type, fn]); },
+    removeEventListener(type, fn) { const i = this.listeners.findIndex((l) => l[0] === type && l[1] === fn); if (i >= 0) this.listeners.splice(i, 1); },
+    //: Dispatched as a browser does: the window's capture listeners first (the instance router, L-whiteboard-62).
+    fire(type, extra = {}) {
+      const event = { type, target: this, ...extra };
+      for (const [t, fn] of [...winListeners]) if (t === type) fn(event);
+      for (const [t, fn] of [...this.listeners]) if (t === type) fn(event);
+    },
+    querySelector(sel) {
+      const want = /data-wb-layer="([^"]+)"/.exec(sel)?.[1];
+      const walk = (e) => { for (const c of e.children) { if (c.attrs["data-wb-layer"] === want) return c; const r = walk(c); if (r) return r; } return null; };
+      return walk(this);
+    },
+    focus() { focused = this; },
+    contains(other) { for (let e = other; e; e = e.parent) if (e === this) return true; return false; },
+  };
+  return el;
+}
+const PAGE_EL = Object.assign(fakeEl("div", "page"), { querySelector: (sel) => ({ sel, in: "page" }) });
+const document = {
+  getElementById: (id) => (id === "whiteboard-container" ? PAGE_EL : { id, in: "page" }),
+  createElement: (tag) => fakeEl(tag),
+  createElementNS: (ns, tag) => fakeEl(tag),
+};
+//: d3-zoom's shape, enough of it: a behaviour is a function a selection calls,
+//: with getter-setters and a listener table; a transform lives on the element.
+function fakeZoom() {
+  const conf = { scaleExtent: [0, Infinity], wheelDelta: null, filter: null, clickDistance: 0, tapDistance: 10, duration: 250 };
+  const listeners = {};
+  const zoom = (sel) => { zoom.bound.push(sel.node()); };
+  zoom.bound = [];
+  zoom.listeners = listeners;
+  for (const key of Object.keys(conf)) zoom[key] = (...a) => (a.length ? ((conf[key] = a[0]), zoom) : conf[key]);
+  zoom.on = (name, ...a) => (a.length ? ((listeners[name] = a[0]), zoom) : listeners[name]);
+  zoom.transform = (sel, t) => { sel.node().__zoom = t; };
+  return zoom;
+}
+const d3 = {
+  zoom: fakeZoom,
+  zoomTransform: (n) => n.__zoom,
+  select: (n) => {
+    const sel = { node: () => n, call(fn, ...a) { fn(sel, ...a); return sel; }, on(name, v) { log.push(["on", n.name, name, v]); return sel; } };
+    return sel;
+  },
+};
+const handlerCalls = [];
+const wheel = () => 1, filt = () => true;
+let wbZoom = d3.zoom().scaleExtent([0.1, 4]).wheelDelta(wheel).filter(filt)
+  .on("zoom", (e) => handlerCalls.push(["zoom", window.currentBoardId, e.transform]))
+  .on("start.companion", () => handlerCalls.push(["start", window.currentBoardId]))
+  .on("end.shield", () => handlerCalls.push(["end", window.currentBoardId]));
+const PAGE_ZOOM = wbZoom;
+let wbState = { nodes: [{ id: 1 }], sketches: [], objects: [{ id: 10, kind: "sticky" }] };
+let wbSelectedItem = { kind: "object", id: 10 };
+const wbMultiSelection = new Set(["object:10", "node:1"]);
+let wbUndoStack = [{ action: "create", kind: "object", id: 10 }];
+let wbRedoStack = [];
+let wbHistoryBoard = null;
+const wbFmtState = { opts: null };
+window.currentBoardId = 1;
+//: whiteboard-undo.js keeps the stacks as its own lets behind `wbStacks` (L-whiteboard-52); the stand-in reads these lets the same way.
+window.wbStacks = {
+  get undo() { return wbUndoStack; }, set undo(v) { wbUndoStack = v; },
+  get redo() { return wbRedoStack; }, set redo(v) { wbRedoStack = v; },
+  get historyBoard() { return wbHistoryBoard; }, set historyBoard(v) { wbHistoryBoard = v; },
+};
+window.currentTool = "draw";
+//: whiteboard.js's tool switch; an activation repaints the toolbar through it without a stroke being dropped.
+const toolSyncs = [];
+let wbSelectToolRef = { swap: (tool) => toolSyncs.push([tool, window.currentBoardId]) };
+let wbRenderQueued = false, wbRenderFrame = 0, wbInitialized = true;
+const renders = [];
+function wbScheduleRender() { log.push(["schedule", window.currentBoardId]); }
+function renderWhiteboardNow() {
+  const c = window.wbInstances.container();
+  renders.push({ board: window.currentBoardId, into: c.name, layer: Boolean(window.wbInstances.layer("wb-html-layer")), objects: wbState.objects.length, map: window.wbMapState });
+}
+//: The server: every read is a fresh copy, as a real response is.
+const server = { 5: { nodes: [], sketches: [], objects: [{ id: 50, kind: "sticky" }] } };
+async function apiJson(url) { const id = Number(/board_id=(\d+)/.exec(url)?.[1]); return JSON.parse(JSON.stringify(server[id])); }
+async function wbRefreshMapState(forId) { return forId === undefined ? "LIVE-WRITE" : { type: "board", for: forId }; }
+window.wbMapState = { type: "page" };
+function wbCancelBoardTimers() { log.push(["cancel", window.currentBoardId]); return undefined; }
+function wbUpdateUndoRedoButtons() { log.push(["buttons", wbUndoStack.length]); }
+function wbClearMapNodeSizeCache() { log.push(["sizes"]); }
+const wbItemElCache = new Map([["x", 1]]);
+const wbItemElIndex = { count: 4 };
+const wbBoardBgCache = { sig: "s", pass: true };
+const wbNavState = { stale: false };
+const wbLinkParseCache = new Map([["y", 1]]);
+let rectDrops = 0;
+function wbClearCanvasRectCache() { rectDrops += 1; }
+//: The board's own undo, its shape: it pops the active stack, pushes redo and
+//: edits the active state, all through the globals.
+function undo() {
+  const entry = wbUndoStack.pop();
+  if (!entry) return;
+  wbRedoStack.push(entry);
+  wbState.objects = wbState.objects.filter((o) => o.id !== entry.id);
+}
+const snap = () => JSON.parse(JSON.stringify({
+  state: wbState, board: window.currentBoardId, selected: wbSelectedItem, multi: [...wbMultiSelection].sort(),
+  undo: wbUndoStack, redo: wbRedoStack,
+}));
+"""
+
+
+def _run(body: str) -> dict:
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    tail = "" if "process.exit(0)" in body else "\nprocess.stdout.write(JSON.stringify(out));\n"  # an async body writes its own
+    script = STUBS + SRC + "\nconst I = window.wbInstances;\nconst out = {};\n" + body + tail
+    got = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    return json.loads(got.stdout)
+
+
+def test_the_default_instance_is_the_page_board():
+    out = _run("""
+out.activeIsPage = I.active === I.page;
+out.pageZoomIsTheBoardZoom = I.page.zoom === PAGE_ZOOM;
+out.container = I.container().name;
+out.layer = I.layer("wb-html-layer");
+out.listed = I.list.length === 1 && I.list[0] === I.page;
+out.again = I.activate(I.page) === undefined && log.length === 0;
+out.snap = snap();
+""")
+    assert out["activeIsPage"] and out["pageZoomIsTheBoardZoom"] and out["listed"]
+    assert out["container"] == "page"
+    assert out["layer"] == {"id": "wb-html-layer", "in": "page"}
+    #: Activating the active instance does nothing: no timer is cancelled, no cache is dropped.
+    assert out["again"]
+    assert out["snap"]["board"] == 1 and out["snap"]["multi"] == ["node:1", "object:10"]
+
+
+def test_two_instances_keep_separate_state_selection_undo_and_zoom():
+    out = _run("""
+const el = node("embed");
+const B = I.mount(el, 7);
+out.bound = B.zoom.bound.map((n) => n.name);
+out.ownZoom = B.zoom !== PAGE_ZOOM;
+out.dblclickOff = log.some((r) => r[0] === "on" && r[1] === "embed" && r[2] === "dblclick.zoom" && r[3] === null);
+out.copied = [B.zoom.scaleExtent(), B.zoom.wheelDelta() === wheel, B.zoom.filter() === filt];
+I.activate(B);
+out.b0 = snap();
+out.bContainer = I.container().name;
+out.bLayer = I.layer("wb-zoom-group");
+wbState.objects.push({ id: 20, kind: "sticky" });
+wbSelectedItem = { kind: "object", id: 20 };
+wbMultiSelection.add("object:20");
+wbUndoStack.push({ action: "create", kind: "object", id: 20 });
+d3.select(I.container()).call(wbZoom.transform, { x: 5, y: 6, k: 2 });
+I.activate(I.page);
+out.a = snap();
+out.aZoom = d3.zoomTransform(I.container());
+out.aZoomIsPage = wbZoom === PAGE_ZOOM;
+out.bZoom = d3.zoomTransform(el);
+out.bSaved = { objects: B.state.objects, selected: B.selectedItem, multi: [...B.multiSelection], undo: B.undoStack.length, board: B.boardId };
+""")
+    assert out["bound"] == ["embed"] and out["ownZoom"] and out["dblclickOff"]
+    assert out["copied"] == [[0.1, 4], True, True]
+    #: A fresh instance starts empty, on its own board.
+    assert out["b0"] == {"state": {"nodes": [], "sketches": [], "objects": []}, "board": 7, "selected": None, "multi": [], "undo": [], "redo": []}
+    assert out["bContainer"] == "embed"
+    assert out["bLayer"] == {"sel": '[data-wb-layer="wb-zoom-group"]', "in": "embed"}
+    assert out["a"]["state"]["objects"] == [{"id": 10, "kind": "sticky"}]
+    assert out["a"]["selected"] == {"kind": "object", "id": 10}
+    assert out["a"]["multi"] == ["node:1", "object:10"]
+    assert out["a"]["undo"] == [{"action": "create", "kind": "object", "id": 10}]
+    assert out["a"]["board"] == 1
+    assert out["aZoom"] == {"x": 0, "y": 0, "k": 1} and out["aZoomIsPage"]
+    assert out["bZoom"] == {"x": 5, "y": 6, "k": 2}
+    assert out["bSaved"] == {"objects": [{"id": 20, "kind": "sticky"}], "selected": {"kind": "object", "id": 20}, "multi": ["object:20"], "undo": 1, "board": 7}
+
+
+def test_activating_a_then_b_then_a_restores_a_exactly():
+    out = _run("""
+const before = snap();
+const beforeState = wbState, beforeUndo = wbUndoStack, beforeSel = wbSelectedItem;
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+wbState.nodes.push({ id: 2 });
+I.activate(I.page);
+out.same = JSON.stringify(snap()) === JSON.stringify(before);
+out.identity = wbState === beforeState && wbUndoStack === beforeUndo && wbSelectedItem === beforeSel && wbZoom === PAGE_ZOOM;
+I.activate(B);
+out.bKept = wbState.nodes;
+out.log = log.filter((r) => r[0] !== "on");
+out.caches = [wbItemElCache.size, wbItemElIndex.count, wbBoardBgCache.sig, wbBoardBgCache.pass, wbNavState.stale, wbLinkParseCache.size];
+""")
+    assert out["same"] and out["identity"]
+    assert out["bKept"] == [{"id": 2}]
+    #: Each switch calls off the outgoing board's timers and frames while its globals
+    #: are still live, refreshes the Undo buttons for the incoming stack, and drops
+    #: the element and size caches that answer for the other board's DOM.
+    assert out["log"] == [
+        ["cancel", 1], ["sizes"], ["buttons", 0],
+        ["cancel", 7], ["sizes"], ["buttons", 1],
+        ["cancel", 1], ["sizes"], ["buttons", 0],
+    ]
+    assert out["caches"] == [0, -1, "", False, True, 0]
+
+
+def test_undo_in_b_never_touches_a():
+    out = _run("""
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+wbState.objects.push({ id: 30, kind: "sticky" });
+wbUndoStack.push({ action: "create", kind: "object", id: 30 });
+undo();
+undo(); // B's stack is empty now: a second undo must not reach into A's
+out.b = snap();
+I.activate(I.page);
+out.a = snap();
+""")
+    assert out["b"]["state"]["objects"] == [] and out["b"]["undo"] == [] and out["b"]["redo"] == [{"action": "create", "kind": "object", "id": 30}]
+    assert out["a"]["state"]["objects"] == [{"id": 10, "kind": "sticky"}]
+    assert out["a"]["undo"] == [{"action": "create", "kind": "object", "id": 10}] and out["a"]["redo"] == []
+
+
+def test_a_gesture_on_an_instance_activates_it_first():
+    """A zoom event from an embed's own container runs the board's one handler with
+    that embed's globals live, so a pan in a document never moves the page board."""
+    out = _run("""
+const B = I.mount(node("embed"), 7);
+B.zoom.on("start.companion")({});
+B.zoom.on("zoom")({ transform: { k: 3 } });
+out.active = I.active === B;
+out.calls = handlerCalls;
+""")
+    assert out["active"]
+    assert out["calls"] == [["start", 7], ["zoom", 7, {"k": 3}]]
+
+
+def test_unmount_returns_to_the_page_board():
+    out = _run("""
+const el = node("embed");
+const B = I.mount(el, 7);
+I.activate(B);
+I.unmount(B);
+out.active = I.active === I.page;
+out.listed = I.list.length;
+out.board = window.currentBoardId;
+out.zoomOff = log.some((r) => r[0] === "on" && r[1] === "embed" && r[2] === ".zoom" && r[3] === null);
+let threw = false;
+try { I.unmount(I.page); } catch (e) { threw = true; }
+out.pageStays = threw && I.list.length === 1;
+""")
+    assert out["active"] and out["listed"] == 1 and out["board"] == 1 and out["zoomOff"] and out["pageStays"]
+
+
+def test_the_copied_zoom_knows_every_setting_the_page_zoom_has():
+    """An embed's behaviour is built from the page's, so a setting or listener added
+    to `wbZoom` in whiteboard.js has to be one the copy carries."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    chain = wb[wb.index("let wbZoom = d3") : wb.index(";", wb.index("let wbZoom = d3"))]
+    methods = set(re.findall(r"\.(\w+)\(", chain)) - {"zoom", "on"}
+    copied = set(re.search(r"const ZOOM_SETTINGS = \[([^\]]*)\]", SRC).group(1).replace('"', "").replace(" ", "").split(","))
+    assert methods <= copied, methods - copied
+    events = set(re.findall(r'\.on\("([\w.]+)"', chain))
+    listed = set(re.search(r"const ZOOM_EVENTS = \[([^\]]*)\]", SRC).group(1).replace('"', "").replace(" ", "").split(","))
+    assert events == listed
+    assert "wbZoom.on(" not in "".join(p.read_text(encoding="utf-8") for p in JS.glob("whiteboard*.js")), "a listener added later would not be copied"
+
+
+#: Board files that may still name the page container: the instance file resolves
+#: the default from it, and initWhiteboard binds the page's own listeners to it.
+_CONTAINER_LOOKUP = re.compile(r'getElementById\("whiteboard-container"\)')
+_LAYER_LOOKUP = re.compile(r'(?:getElementById\("|\$\("|select\("#)(wb-svg-layer|wb-zoom-group|wb-html-layer|wb-overlay-layer|wb-overlay-zoom-group)"\)')
+
+
+def test_board_code_finds_its_container_and_layers_through_the_active_instance():
+    left = {}
+    for path in sorted(JS.glob("whiteboard*.js")):
+        if path.name == "whiteboard-instances.js":
+            continue
+        #: A load-time `onSurface("board", ...)` wiring runs before whiteboard-instances.js
+        #: has loaded and binds the page board's own element: marked "page wiring", it may
+        #: name it (measured: three, in whiteboard.js, -library.js and -interchange.js).
+        text = "\n".join(line for line in path.read_text(encoding="utf-8").splitlines() if "// page wiring, at load" not in line)
+        hits = len(_CONTAINER_LOOKUP.findall(text)) + len(_LAYER_LOOKUP.findall(text))
+        if hits:
+            left[path.name] = hits
+    #: whiteboard-options.js drew the page view into `$("wb-zoom-group")`, the page's
+    #: only; it draws into the active board's zoom group since L-whiteboard-56, and
+    #: its group is a class, since an id can appear once on a page.
+    assert left == {}, left
+    assert 'const PAGE_CONTAINER = "whiteboard-container";' in SRC and "document.getElementById(PAGE_CONTAINER)" in SRC
+
+
+def test_two_live_embeds_of_one_board_stay_independent():
+    """The mount API documents builds to: `wbInstance.create(host, boardId, { editable })`."""
+    out = _run("""
+(async () => {
+const hostA = fakeEl("div", "hostA"), hostB = fakeEl("div", "hostB");
+const a = await window.wbInstance.create(hostA, 5, { editable: true });
+const b = await window.wbInstance.create(hostB, 5, {});
+const A = a.instance, B = b.instance;
+out.afterCreate = { active: I.active === I.page, board: window.currentBoardId, map: window.wbMapState, objects: wbState.objects.length };
+out.renders = renders.slice();
+out.drawnInHost = [hostA.children[0].children.length, hostB.children[0].children.length];
+out.editable = [A.editable, B.editable];
+// A gesture in A makes it live; edit, select, undo and zoom there.
+A.container.fire("pointerdown");
+out.aLive = I.active === A && window.currentBoardId === 5;
+wbState.objects.push({ id: 51, kind: "sticky" });
+wbSelectedItem = { kind: "object", id: 51 };
+wbMultiSelection.add("object:51");
+wbUndoStack.push({ action: "create", kind: "object", id: 51 });
+d3.select(I.container()).call(wbZoom.transform, { x: 9, y: 9, k: 3 });
+B.container.fire("focusin");
+out.b = snap();
+out.bZoom = d3.zoomTransform(B.container);
+undo();
+out.bAfterUndo = { objects: wbState.objects.length, undo: wbUndoStack.length };
+A.container.fire("pointerdown");
+out.a = snap();
+out.aZoom = d3.zoomTransform(A.container);
+PAGE_EL.fire("pointerdown");
+out.page = snap();
+out.pageZoom = d3.zoomTransform(PAGE_EL);
+out.pageMap = window.wbMapState;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["afterCreate"] == {"active": True, "board": 1, "map": {"type": "page"}, "objects": 1}
+    #: Each embed was drawn into its own container with its own globals, and the page board is drawn again after.
+    assert [r["into"] for r in out["renders"]] == ["div", "div"]
+    assert all(r["board"] == 5 and r["layer"] and r["objects"] == 1 and r["map"] == {"type": "board", "for": 5} for r in out["renders"])
+    assert out["drawnInHost"] == [3, 3]
+    assert out["editable"] == [True, False]
+    assert out["aLive"]
+    assert out["b"]["state"]["objects"] == [{"id": 50, "kind": "sticky"}]
+    assert out["b"]["selected"] is None and out["b"]["multi"] == [] and out["b"]["undo"] == []
+    assert out["bZoom"] == {"x": 0, "y": 0, "k": 1}
+    assert out["bAfterUndo"] == {"objects": 1, "undo": 0}
+    assert out["a"]["state"]["objects"] == [{"id": 50, "kind": "sticky"}, {"id": 51, "kind": "sticky"}]
+    assert out["a"]["selected"] == {"kind": "object", "id": 51} and out["a"]["multi"] == ["object:51"] and len(out["a"]["undo"]) == 1
+    assert out["aZoom"] == {"x": 9, "y": 9, "k": 3}
+    assert out["page"]["board"] == 1 and out["page"]["state"]["objects"] == [{"id": 10, "kind": "sticky"}]
+    assert out["page"]["multi"] == ["node:1", "object:10"] and len(out["page"]["undo"]) == 1
+    assert out["pageZoom"] == {"x": 0, "y": 0, "k": 1} and out["pageMap"] == {"type": "page"}
+
+
+def test_destroy_leaves_nothing_behind_and_twice_is_safe():
+    out = _run("""
+(async () => {
+const host = fakeEl("div", "host"), other = fakeEl("div", "other");
+const a = await window.wbInstance.create(host, 5, {});
+const b = await window.wbInstance.create(other, 5, {});
+out.pageListenersWhileEmbeds = PAGE_EL.listeners.length;
+const box = a.instance.container;
+let calls = 0;
+const off = a.onChange(() => calls++);
+box.fire("pointerdown");
+I.changed();
+off();
+I.changed();
+out.calls = calls;
+a.focus();
+out.focused = focused === box;
+a.destroy();
+a.destroy();
+out.host = host.children.length;
+out.boxListeners = box.listeners.length;
+out.zoomOff = log.some((r) => r[0] === "on" && r[1] === box.name && r[2] === ".zoom" && r[3] === null);
+out.active = I.active === I.page && window.currentBoardId === 1;
+out.listed = I.list.length;
+out.pageListenersAfterOne = PAGE_EL.listeners.length;
+b.destroy();
+out.pageListenersAfterAll = PAGE_EL.listeners.length;
+out.end = { list: I.list.length, other: other.children.length };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    #: No wake listener on the page or a box: one window router does it (L-whiteboard-62).
+    assert out["pageListenersWhileEmbeds"] == 0
+    assert out["calls"] == 1 and out["focused"]
+    assert out["host"] == 0 and out["boxListeners"] == 0 and out["zoomOff"] and out["active"]
+    assert out["listed"] == 2 and out["pageListenersAfterOne"] == 0
+    assert out["pageListenersAfterAll"] == 0 and out["end"] == {"list": 1, "other": 0}
+
+
+def test_load_time_wiring_never_asks_for_the_active_instance():
+    """Found by the drive: `onSurface("board", ...)` runs its body at once when the
+    board's template is already built, which is before whiteboard-instances.js has
+    loaded, so a `wbInstances` read there threw and stopped whiteboard.js loading."""
+    found = []
+    for path in sorted(JS.glob("whiteboard*.js")):
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
+            m = re.match(r"^(\s*)onSurface\(", line)
+            if not m or line.rstrip().endswith(");"):
+                continue
+            body = len(m.group(1)) + 2
+            for j in range(i + 1, len(lines)):
+                if lines[j].startswith(m.group(1) + "}"):
+                    break
+                if "wbInstances." in lines[j] and len(lines[j]) - len(lines[j].lstrip()) == body:
+                    found.append(f"{path.name}:{j + 1}")
+    assert found == [], found
+
+
+#: A board edit the way initWhiteboard's handlers make one, through the live globals:
+#: it adds a card to the active state, records it (wbPushUndo's tail is
+#: `wbInstances.changed()`), and saves to the active board.
+_EDITING = """
+const saves = [], seen = [];
+let nextId = 100;
+function wbPushUndo(entry) { wbUndoStack.push(entry); wbRedoStack = []; I.changed(); }
+I.on("pointerdown", function () {
+  seen.push([window.currentBoardId, I.container().name]);
+  const id = nextId++;
+  wbState.objects.push({ id, kind: "sticky" });
+  wbPushUndo({ action: "create", kind: "object", id });
+  saves.push({ board: window.currentBoardId, into: I.container().name, objects: wbState.objects.map((o) => o.id) });
+});
+I.on("keydown", () => undo());
+I.on("wheel", () => seen.push(["wheel", window.currentBoardId, I.container().name]), { passive: false }, true);
+"""
+
+
+def test_two_editable_embeds_of_one_board_edit_undo_and_save_independently():
+    """L-whiteboard-54: initWhiteboard's handlers are bound per instance container,
+    and the one that hears an event makes its own instance live first."""
+    out = _run(_EDITING + """
+(async () => {
+out.pageListeners = PAGE_EL.listeners.length;
+const hostA = fakeEl("div", "hostA"), hostB = fakeEl("div", "hostB");
+const a = await window.wbInstance.create(hostA, 5, { editable: true });
+const b = await window.wbInstance.create(hostB, 5, { editable: true });
+hostA.children[0].name = "boxA"; hostB.children[0].name = "boxB";
+const A = a.instance, B = b.instance;
+const fired = { a: 0, b: 0 };
+a.onChange(() => fired.a++);
+b.onChange(() => fired.b++);
+A.container.fire("pointerdown");
+A.container.fire("pointerdown");
+B.container.fire("pointerdown");
+A.container.fire("keydown");
+out.aLive = snap();
+B.container.fire("wheel");
+out.b = snap();
+A.container.fire("focusin");
+out.a = snap();
+PAGE_EL.fire("pointerdown");
+out.page = snap();
+out.saves = saves;
+out.seen = seen;
+out.fired = fired;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    #: The page board gets its own copy of each handler, as before: one listener per `on`.
+    assert out["pageListeners"] == 3
+    assert out["seen"] == [[5, "boxA"], [5, "boxA"], [5, "boxB"], ["wheel", 5, "boxB"], [1, "page"]]
+    assert out["saves"] == [
+        {"board": 5, "into": "boxA", "objects": [50, 100]},
+        {"board": 5, "into": "boxA", "objects": [50, 100, 101]},
+        {"board": 5, "into": "boxB", "objects": [50, 102]},
+        {"board": 1, "into": "page", "objects": [10, 103]},
+    ]
+    #: Undo in A took back A's last card only; B kept its own card and stack.
+    assert [o["id"] for o in out["aLive"]["state"]["objects"]] == [50, 100] and [e["id"] for e in out["aLive"]["redo"]] == [101]
+    assert [o["id"] for o in out["b"]["state"]["objects"]] == [50, 102] and [e["id"] for e in out["b"]["undo"]] == [102] and out["b"]["redo"] == []
+    assert [o["id"] for o in out["a"]["state"]["objects"]] == [50, 100] and [e["id"] for e in out["a"]["undo"]] == [100]
+    assert [o["id"] for o in out["page"]["state"]["objects"]] == [10, 103] and out["page"]["board"] == 1
+    #: onChange fires once per recorded edit, on the instance edited only.
+    assert out["fired"] == {"a": 2, "b": 1}
+
+
+def test_a_read_only_embed_pans_and_zooms_only_and_destroy_unbinds_every_handler():
+    out = _run(_EDITING + """
+(async () => {
+const hostA = fakeEl("div", "hostA"), hostR = fakeEl("div", "hostR");
+const a = await window.wbInstance.create(hostA, 5, { editable: true });
+const r = await window.wbInstance.create(hostR, 5, {});
+const boxA = a.instance.container, boxR = r.instance.container;
+out.classes = [boxA.className, boxR.className];
+out.counts = { a: boxA.listeners.length, r: boxR.listeners.length, aBound: a.instance.listeners.length, rBound: r.instance.listeners.length };
+let changes = 0;
+r.onChange(() => changes++);
+boxR.fire("pointerdown");
+boxR.fire("keydown");
+boxR.fire("wheel");
+out.readOnly = { saves: saves.length, changes, seen, objects: wbState.objects.length, live: I.active === r.instance };
+const f = r.instance.zoom.filter();
+out.filter = [f === filt, f({ type: "mousedown", button: 0 }), f({ type: "mousedown", button: 2 }), f({ type: "wheel" }), a.instance.zoom.filter() === filt];
+//: Registered after the embeds exist (initWhiteboard runs late): bound to both at once.
+I.on("dblclick", () => seen.push("dbl"));
+out.late = [boxA.listeners.length, boxR.listeners.length, PAGE_EL.listeners.length];
+a.destroy();
+a.destroy();
+r.destroy();
+out.after = { a: boxA.listeners.length, r: boxR.listeners.length, aBound: a.instance.listeners.length, page: PAGE_EL.listeners.length };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["classes"] == ["whiteboard-container wb-embed", "whiteboard-container wb-embed wb-embed-readonly"]
+    #: Editable: its three handlers; read-only: the wheel pan. Waking is the window router's (L-whiteboard-62).
+    assert out["counts"] == {"a": 3, "r": 1, "aBound": 3, "rBound": 1}
+    assert out["readOnly"] == {"saves": 0, "changes": 0, "seen": [["wheel", 5, "div"]], "objects": 1, "live": True}
+    #: Any plain drag pans a read-only board; the wheel keeps the page's own rule.
+    assert out["filter"] == [False, True, False, True, True]
+    #: The page's three plus the late one.
+    assert out["late"] == [4, 1, 3 + 1]
+    assert out["after"] == {"a": 0, "r": 0, "aBound": 0, "page": 4}
+
+
+def test_init_whiteboard_binds_container_listeners_through_the_instances():
+    """No handler in the board files is bound to the page container directly, so
+    none is missing from an embed (L-whiteboard-54)."""
+    text = "".join(p.read_text(encoding="utf-8") for p in sorted(JS.glob("whiteboard*.js")))
+    direct = re.findall(r'(?:containerEl|container\.node\(\)\??|wbInstances\.container\(\)\??|\$\("whiteboard-container"\)\??)\.addEventListener\(', text)
+    assert direct == [], direct
+    #: initWhiteboard and the sections carved out of it, which it calls once (L634).
+    wb = "".join((JS / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "whiteboard-pointer.js", "whiteboard-pan.js", "whiteboard-menus.js", "whiteboard-toolsheet.js", "whiteboard-strokes.js"))
+    assert not re.search(r"^(?!\s*//).*\bcontainerEl\b", wb, re.M)
+    assert wb.count("wbInstances.on(") >= 26
+    #: The document-wide key handler asks whose board a key is for, and a read-only one takes none.
+    assert "const embed = wbInstances.embedFor(e.target);" in wb and "embed ? !embed.editable" in wb
+    cmds = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert "wbInstances.embedFor(document.activeElement)" in cmds
+    #: In the boards bundle's stylesheet, which loads with the embed, not the boot CSS (its budget, 2026-11-14).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert ".wb-embed-readonly > [data-wb-layer] {\n  pointer-events: none;" in css
+
+
+def test_board_selectors_search_the_active_board_only():
+    """L-whiteboard-55: `#wb-html-layer .wb-object` and the other board lookups are
+    searched in the active board's container; an embed's layer ids read as its
+    `data-wb-layer`, and the page board's selector is the one it always was."""
+    out = _run("""
+const el = node("embed");
+el.querySelectorAll = (sel) => [{ sel, in: "embed" }];
+PAGE_EL.querySelectorAll = (sel) => [{ sel, in: "page" }];
+out.page = [I.query("#wb-html-layer .wb-object"), I.queryAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg")];
+const B = I.mount(el, 7);
+I.activate(B);
+out.embed = [
+  I.query('#wb-html-layer .wb-object[data-id="3"]'),
+  I.queryAll("#wb-zoom-group > .wb-sketch-handle-group, #wb-overlay-zoom-group > .wb-sketch-handle-group"),
+  I.query('.sketch-group[data-id="4"]'),
+  I.query("#wb-html-layer-x, #wb-sidebar"),
+];
+""")
+    assert out["page"] == [
+        {"sel": "#wb-html-layer .wb-object", "in": "page"},
+        [{"sel": "#wb-zoom-group > g.sketch-group, #wb-html-layer > svg", "in": "page"}],
+    ]
+    assert out["embed"] == [
+        {"sel": '[data-wb-layer="wb-html-layer"] .wb-object[data-id="3"]', "in": "embed"},
+        [{"sel": '[data-wb-layer="wb-zoom-group"] > .wb-sketch-handle-group, [data-wb-layer="wb-overlay-zoom-group"] > .wb-sketch-handle-group', "in": "embed"}],
+        {"sel": '.sketch-group[data-id="4"]', "in": "embed"},
+        #: Only the board's own layer ids are rewritten.
+        {"sel": "#wb-html-layer-x, #wb-sidebar", "in": "embed"},
+    ]
+
+
+def test_no_board_file_looks_up_a_layer_or_an_item_document_wide():
+    layer = r"#wb-(?:svg-layer|zoom-group|shapes-group|lines-group|strokes-group|html-layer|overlay-layer|overlay-zoom-group)"
+    wide = re.compile(r"document\.querySelector(?:All)?\(\s*[`\"'](?:" + layer + r"|\.wb-object|\.sketch-group\[|\.node-card|\.wb-map-node|\.wb-map-edges|\[data-id)")
+    found = {}
+    for path in sorted(JS.glob("whiteboard*.js")):
+        hits = len(wide.findall(path.read_text(encoding="utf-8")))
+        if hits:
+            found[path.name] = hits
+    assert found == {}, found
+    wb = frontend_text("whiteboard.js")  # the board's code, the pieces moved out of it included (L634)
+    assert 'd3.select(wbInstances.query(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group"))' in wb
+    assert "d3.select(wbInstances.query(layer))" in wb
+
+
+def test_each_board_keeps_its_own_inverse_zoom():
+    """L-whiteboard-56: the grips' `--wb-inv-zoom` is written per board, an embed's
+    scoped to its own box, so a zoomed embed never resizes the page board's grips
+    (or the reverse); the far-zoom rules that read it name an embed too."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    grips = re.search(r"const WB_INV_ZOOM_GRIPS = \[.*?\];", wb, re.S).group(0)
+    rules = wb[wb.index("function wbInvZoomRules()") :]
+    rules = rules[: rules.index("\n}\n") + 3]
+    publish = wb[wb.index("function wbSyncGridToTransform(") :]
+    publish = publish[: publish.index("\n}\n") + 3]
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    script = grips + rules + """
+const page = { container: null, invZoom: "1" };
+const a = { container: {}, key: 2, invZoom: "0.5" }, b = { container: {}, key: 3, invZoom: "4" };
+const wbInstances = { list: [page, a, b] };
+process.stdout.write(JSON.stringify(wbInvZoomRules().split("\\n")));
+"""
+    got = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    assert len(out) == 3
+    assert out[0].startswith(".wb-object-frame .wb-frame-title, ") and out[0].endswith("{ --wb-inv-zoom: 1; }")
+    assert out[1].startswith('[data-wb-embed="2"] :is(.wb-object-frame .wb-frame-title, ') and out[1].endswith(") { --wb-inv-zoom: 0.5; }")
+    assert out[2].startswith('[data-wb-embed="3"] :is(') and out[2].endswith(") { --wb-inv-zoom: 4; }")
+    #: The value, the timer and the attribute are the instance's, not one global.
+    assert "const inst = wbInstances.active;" in publish and "inst.invTimer = setTimeout(() => wbPublishInvZoom(el, inv, inst), 120);" in publish
+    assert "wbInvZoomValue" not in wb and "wbInvZoomTimer" not in wb
+    assert '".wb-embed[data-wb-zoom-far] .wb-map-actions"' in grips
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert ".wb-embed[data-wb-zoom-far] .wb-map-ref {" in css and ".wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {" in css
+    assert 'box.setAttribute("data-wb-embed", String(inst.key));' in SRC
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    assert 'const zoom = wbInstances.layer("wb-zoom-group");' in opts
+
+
+def _wb_functions(*names: str) -> str:
+    """whiteboard.js's own text for each named top-level function or const, the pieces moved out of it included (L634)."""
+    wb = frontend_text("whiteboard.js")
+    parts = []
+    for name in names:
+        at = re.search(rf"^(?:async function|function|const) {name}\b", wb, re.M).start()
+        end = wb.index("\n}\n", at) + 3 if not wb.startswith("const", at) else wb.index(";\n", at) + 2
+        parts.append(wb[at:end])
+    return "\n".join(parts)
+
+
+def test_a_multi_row_save_goes_to_the_board_it_started_on():
+    """L-whiteboard-57: a nudge save of several rows awaits a topic still being
+    created, then saves the rest; another board activated in between (a gesture
+    on an embed, which flushes the nudge and swaps the globals) must not take the
+    later rows, nor reload in the outgoing board's place when the batch fails."""
+    fns = _wb_functions("wbSaveNode", "wbSaveMany", "WB_SAVE_MANY_MAX", "wbSaveManyBatch", "wbSaveRow")
+    out = _run(fns + """
+const puts = [], reloads = [];
+let release, failBatch = false;
+const gate = new Promise((r) => { release = r; });
+apiJson = async (url, opts) => {
+  if (opts?.method === "PUT") {
+    puts.push({ url, body: JSON.parse(opts.body) });
+    if (failBatch && url.endsWith("save-many")) throw new Error("409");
+    return {};
+  }
+  return { nodes: [], sketches: [], objects: [] };
+};
+async function wbSaveObject(d) { await gate; puts.push({ url: "object " + d.id, board: window.currentBoardId }); }
+async function wbSaveSketchProps() {}
+async function fetchWhiteboardState() { reloads.push(window.currentBoardId); }
+function recordBrowserLog() {}
+const WB_KIND_INFO = { node: { list: "nodes", payload: (n) => ({ x: n.x }) }, object: { list: "objects", payload: (o) => ({ x: o.x }) } };
+(async () => {
+const embed = I.mount(fakeEl("div", "box"), 5);
+const creating = { id: 20, _creating: true };
+const saving = wbSaveMany([{ kind: "object", item: creating }, { kind: "node", item: { id: 7, entry_id: 3, x: 1, y: 2 } }]);
+I.activate(embed);
+out.mid = window.currentBoardId;
+release();
+await saving;
+out.puts = puts;
+failBatch = true;
+I.activate(I.page);
+const batch = wbSaveMany([{ kind: "node", item: { id: 8, x: 1 } }, { kind: "object", item: { id: 9, x: 2 } }]);
+I.activate(embed);
+out.batchOk = await batch;
+out.reloads = reloads;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["mid"] == 5
+    node_put = next(p for p in out["puts"] if p["url"] == "/whiteboard/nodes/7")
+    assert node_put["body"]["board_id"] == 1, out["puts"]
+    #: The failed batch belonged to the page board; the embed now live is not reloaded in its place.
+    assert out["batchOk"] is False and out["reloads"] == [], out["reloads"]
+
+
+def test_an_embed_draw_leaves_the_page_board_chrome_alone():
+    """L-whiteboard-58: the board's one render also writes page-wide chrome (the
+    empty hint and cue, the board picker's count, the navigator, the outline).
+    An embed's draw writes none of it, and so no longer redraws the page board
+    after itself to put that chrome back."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    marks = (JS / "whiteboard-map-marks.js").read_text(encoding="utf-8")
+    now = wb[wb.index("function renderWhiteboardNow() {") :]
+    now = now[: now.index("\n}\n") + 3]
+    after = marks[marks.index("  function wbMapAfterRender() {") :]
+    after = after[: after.index("\n  }\n") + 5]
+    out = _run(now + after + """
+const calls = [];
+for (const name of ["renderWhiteboard", "wbUpdateSelectionBar", "wbApplySearchHighlight", "wbRenderNavigator", "wbSyncBoardCount", "wbOutlineSync", "wbMapPaintMarkerFilter"]) {
+  globalThis[name] = () => calls.push([name, window.currentBoardId]);
+}
+const wbMarkerUi = { filters: new Set(["x"]) }, wbMapDim = { on: false };
+const inst = I.mount(fakeEl("div", "box"), 5);
+renderWhiteboardNow();
+out.page = calls.splice(0);
+I.activate(inst);
+renderWhiteboardNow();
+out.embed = calls.splice(0);
+""")
+    page_names = [c[0] for c in out["page"]]
+    embed_names = [c[0] for c in out["embed"]]
+    assert {"wbRenderNavigator", "wbSyncBoardCount", "wbOutlineSync"} <= set(page_names), page_names
+    #: The embed's own board is drawn, highlighted and filtered; the page's panels are not touched.
+    assert embed_names == ["renderWhiteboard", "wbApplySearchHighlight", "wbMapPaintMarkerFilter"], embed_names
+    assert all(c[1] == 5 for c in out["embed"])
+    #: The empty hint and cue are the page board's: an embed's render leaves them be.
+    render = wb[wb.index("function renderWhiteboard() {") :]
+    hint = render[: render.index('document.getElementById("wb-empty-cue")')]
+    assert "if (!wbInstances.active.container) {" in hint[hint.rindex("const wbHintHidden") :]
+    #: And draw() puts nothing back, so it schedules no page render after itself.
+    #: draw() is drawEmbed() since the bundle lints read generic private names as globals (CI on 4cf588e0).
+    draw = SRC[SRC.index("  function drawEmbed(inst) {") :]
+    draw = draw[: draw.index("\n  }\n")]
+    assert "wbScheduleRender" not in draw
+
+
+def test_each_board_keeps_its_own_history_across_activations():
+    """Found driving L-whiteboard-54 in the app: `wbHistoryFor` keeps each board's
+    stacks by board id against one `wbHistoryBoard`, and every activation reaches
+    it (wbUpdateUndoRedoButtons), so with that global left on the outgoing board
+    the incoming embed's stacks were filed under the page's board and the page
+    got them back: Ctrl+Z in the embed popped its step and sent nothing. The key
+    is an instance's, swapped with its stacks."""
+    #: The history swap moved to whiteboard-undo.js with the carve (L-whiteboard-52).
+    wb = (JS / "whiteboard-undo.js").read_text(encoding="utf-8")
+    hist = wb[wb.index("const wbHistoryByBoard = new Map();") :]
+    hist = hist[: hist.index("function wbHistoryRestore(")].replace("let wbHistoryBoard = null;", "")
+    out = _run(hist + """
+function wbHistoryRestore(key) {}
+wbUpdateUndoRedoButtons = () => wbHistoryFor();
+wbHistoryFor();
+const inst = I.mount(fakeEl("div", "box"), 5);
+I.activate(inst);
+wbUndoStack.push({ action: "create", kind: "object", id: 51 });
+I.activate(I.page);
+wbUndoStack.push({ action: "create", kind: "object", id: 11 });
+I.activate(inst);
+wbHistoryFor();
+out.embed = wbUndoStack.map((e) => e.id);
+I.activate(I.page);
+wbHistoryFor();
+out.page = wbUndoStack.map((e) => e.id);
+""")
+    assert out["embed"] == [51], out
+    #: The page's first read started its board's history afresh (the stub's step 10 was no board's).
+    assert out["page"] == [11], out
+
+
+def test_window_events_go_to_the_board_they_happen_on():
+    """L-whiteboard-62: a window or document listener reads the board the event belongs to.
+    The router is a window capture listener registered at load, so it runs before any board
+    handler on the window, the document or the boards' own containers."""
+    out = _run(_EDITING + """
+(async () => {
+const host = fakeEl("div", "host");
+const a = await window.wbInstance.create(host, 5, { editable: true });
+const box = a.instance.container;
+const inner = fakeEl("div", "card");
+box.append(inner);
+out.routed = winListeners.filter((l) => l[2] && l[2].capture).map((l) => l[0]).sort();
+const heard = [];
+const later = (e) => heard.push([e.type, window.currentBoardId]);
+for (const type of ["pointerdown", "keydown", "contextmenu", "paste"]) window.addEventListener(type, later, true);
+inner.fire("pointerdown");
+PAGE_EL.fire("contextmenu");
+inner.fire("keydown");
+const elsewhere = fakeEl("div", "document-text");
+elsewhere.fire("paste");
+out.heard = heard;
+out.rectDrops = rectDrops;
+//: A wheel with a button held is a stroke still going on: it never swaps boards under it.
+I.activate(I.page);
+inner.fire("wheel", { buttons: 1 });
+out.wheelHeld = I.active === I.page;
+inner.fire("wheel", { buttons: 0 });
+out.wheelFree = I.active === a.instance;
+a.destroy();
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["routed"] == sorted(["contextmenu", "dblclick", "drop", "focusin", "keydown", "mousedown", "paste", "pointerdown", "touchstart", "wheel"])
+    #: A paste from outside every board leaves the board that was live (here the embed, after its keydown).
+    assert out["heard"] == [["pointerdown", 5], ["contextmenu", 1], ["keydown", 5], ["paste", 5]]
+    assert out["wheelHeld"] and out["wheelFree"]
+    #: Each swap drops the canvas box cached for the board that was live: the first draw (in and out), pointerdown, contextmenu, keydown.
+    assert out["rectDrops"] == 5
+
+
+def test_each_board_keeps_its_own_tool():
+    """L-whiteboard-61: a tool picked in an embed is the embed's; the page board keeps its own,
+    and each swap repaints the toolbar and cursor through the tool switch in its quiet form."""
+    out = _run("""
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+out.embedStarts = window.currentTool;
+window.currentTool = "rect";
+I.activate(I.page);
+out.pageKept = window.currentTool;
+I.activate(B);
+out.embedKept = window.currentTool;
+I.activate(I.page);
+out.syncs = toolSyncs;
+""")
+    assert out["embedStarts"] == "pan" and out["pageKept"] == "draw" and out["embedKept"] == "rect"
+    assert out["syncs"] == [["pan", 7], ["draw", 1], ["rect", 7], ["draw", 1]]
+
+
+def test_the_quiet_tool_switch_drops_no_stroke_and_shows_no_hint():
+    """An activation can come mid-stroke (an embed's reload draws it with its globals live):
+    the swap form repaints the toolbar and the cursor, and leaves the gesture and the hint alone."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    swap = wb[wb.index("  wbSelectToolRef = Object.assign(selectWbTool, {"):][:200]
+    assert "window.currentTool = tool;\n      showWbTool(tool);\n    }," in swap
+    shown = wb[wb.index("  function showWbTool(tool) {"):wb.index("  wbSelectToolRef = Object.assign(")]
+    assert "updateWbCursor();" in shown and 'b.classList.toggle("active", b.dataset.tool === tool)' in shown
+    for gone in ("wbAbandonStroke", "wbDropLostGesture", "toolHint", "call(wbZoom)"):
+        assert gone not in shown, gone
+
+
+def test_page_only_chrome_is_never_drawn_for_an_embed():
+    """L-whiteboard-60: the rulers and the map rings belong to the page board's view. An embed
+    (a small board in a document) has neither: the rulers keep drawing the page board's
+    transform while an embed pans, and a ring asked for in an embed opens nothing, so a
+    topic's right-click falls back to the plain menu."""
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    stubs = r"""
+const window = globalThis;
+const made = [];
+const els = {};
+function el(id) {
+  return { id, attrs: {}, kids: [], clientWidth: 800, clientHeight: 600, checked: false,
+    setAttribute(k, v) { this.attrs[k] = v; if (k === "id") els[v] = this; }, append(...k) { this.kids.push(...k); made.push(...k); },
+    replaceChildren(...k) { this.kids = k; }, addEventListener() {}, remove() { delete els[this.attrs.id]; } };
+}
+els["whiteboard-container"] = el("whiteboard-container");
+els["wb-view-rulers"] = el("wb-view-rulers");
+const document = {
+  getElementById: (id) => els[id] || null,
+  createElementNS: (ns, tag) => { const e = el(null); e.tag = tag; return e; },
+  querySelectorAll: () => [],
+};
+const pageT = { x: 0, y: 0, k: 1 };
+const d3 = { zoomTransform: () => pageT };
+const prefs = { get: () => "on", set() {} };
+const wbFmtState = {};
+let wireFn = null;
+const onSurface = (s, fn) => { wireFn = fn; };
+const wbInstances = { page: {}, active: null };
+wbInstances.active = wbInstances.page;
+"""
+    body = r"""
+wireFn();
+const top = () => els["wb-ruler-top"];
+const d0 = top().kids[0].attrs.d;
+wbInstances.active = { container: {} };
+wbFmtState.opts.drawRulers({ x: 333, y: 41, k: 3 });
+const dEmbed = top().kids[0].attrs.d;
+wbInstances.active = wbInstances.page;
+wbFmtState.opts.drawRulers({ x: 333, y: 41, k: 3 });
+const dPage = top().kids[0].attrs.d;
+process.stdout.write(JSON.stringify({ same: d0 === dEmbed, moved: dPage !== d0, rulers: made.filter((e) => /wb-ruler/.test(e.attrs.id || "")).length }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + opts + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    assert out == {"same": True, "moved": True, "rulers": 2}
+    #: The three rings: each opener asks whether the page board is live before it places anything.
+    guard = "if (!wbInstances.onPage) return"
+    for path, fn in (("whiteboard-map.js", "function wbOpenMapRadial("), ("whiteboard-map-waypoints.js", "function wbOpenMapLinkRadial("), ("whiteboard-map-waypoints.js", "function wbOpenMapCrossLinkRadial(")):
+        text = (JS / path).read_text(encoding="utf-8")
+        at = text.index(fn)
+        assert guard in text[at:at + 300], (path, fn)
+    out2 = _run("""
+const B = I.mount(node("embed"), 7);
+out.page = I.onPage;
+I.activate(B);
+out.embed = I.onPage;
+""")
+    assert out2 == {"page": True, "embed": False}
+
+
+def test_settings_wiring_finds_the_html_layer_through_the_active_board():
+    """L-whiteboard-59: boot code asked the document for `#wb-html-layer`, which
+    is the page board's even while an embed is live. `wbInstances.query` searches
+    the active board's container and reads the id as its own layer; with the lazy
+    bundle not loaded no board, so no map editor, is open."""
+    text = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+    assert 'window.wbInstances?.query("#wb-html-layer .wb-map-text' in text
+    assert 'document.querySelector("#wb-html-layer .wb-map-text' not in text
+    out = _run("""
+const emb = I.mount(fakeEl("div", "box"), 5);
+emb.container.append(Object.assign(fakeEl("div", "html"), { attrs: { "data-wb-layer": "wb-html-layer" } }));
+out.page = I.query("#wb-html-layer .wb-map-text");
+I.activate(emb);
+out.embed = I.query("#wb-html-layer .wb-map-text").name;
+""")
+    assert out["page"] == {"sel": "#wb-html-layer .wb-map-text", "in": "page"} and out["embed"] == "html"
+
+def test_an_embed_made_before_init_whiteboard_is_editable_at_once():
+    """L-whiteboard-63: create() awaits initWhiteboard, so the board's handlers are
+    already bound to the embed when the promise resolves."""
+    out = _run("""
+let inited = false;
+wbInitialized = false;
+window.initWhiteboard = async function () {
+  if (wbInitialized) return;
+  wbInitialized = true;
+  await new Promise((r) => setTimeout(r, 5));
+  I.on("pointerdown", () => log.push(["pointerdown"]));
+  I.on("wheel", () => {}, { passive: false }, true);
+  inited = true;
+};
+(async () => {
+const host = fakeEl("div", "host");
+const e = await window.wbInstance.create(host, 5, { editable: true });
+out.afterCreate = { inited, bound: e.instance.listeners.map((l) => l[1]) };
+const r = await window.wbInstance.create(fakeEl("div", "h2"), 5, {});
+out.second = { inited, bound: r.instance.listeners.map((l) => l[1]) };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["afterCreate"] == {"inited": True, "bound": ["pointerdown", "wheel"]}, out
+    assert out["second"]["bound"] == ["wheel"]
+
+
+def test_undo_and_redo_fire_the_instance_on_change_callbacks():
+    """L-whiteboard-64: a push fires onChange (wbPushUndo), and so do undo and redo."""
+    te = (JS / "whiteboard-textedit.js").read_text(encoding="utf-8")
+    body = ""
+    for name in ("wbUndo", "wbRedo"):
+        at = te.index(f"  async function {name}() {{")
+        body += te[at : te.index("\n  }\n", at) + 5]
+    out = _run(body + """
+const wbDeleting = { settled: async () => {} };
+let wbUndoParents = [];
+function wbHistoryFor() {}
+function wbCommitOpenEdit() {}
+let applies = true;
+async function wbApplyHistoryEntry() { return applies; }
+function toast() {}
+function wbIsMap() { return false; }
+function voiceLine() { return ""; }
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+const fired = { page: 0, emb: 0 };
+I.page.changeFns.add(() => fired.page++);
+emb.changeFns.add(() => fired.emb++);
+await wbUndo();
+await wbRedo();
+out.page = { ...fired };
+I.activate(emb);
+await wbUndo();
+out.emb = { ...fired };
+applies = false;
+await wbUndo();
+await wbRedo();
+out.refused = { ...fired };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["page"] == {"page": 2, "emb": 0}
+    assert out["emb"] == {"page": 2, "emb": 1}
+    #: A step that was not applied changed nothing, so nothing is announced.
+    assert out["refused"] == out["emb"]
+
+
+def _history_buttons_fn() -> str:
+    #: Moved to whiteboard-undo.js, which is wrapped, so the body ends at a two-space brace (L-whiteboard-52).
+    wb = (JS / "whiteboard-undo.js").read_text(encoding="utf-8")
+    at = wb.index("  function wbUpdateUndoRedoButtons() {")
+    return wb[at : wb.index("\n  }\n", at) + 5]
+
+
+def test_only_the_page_board_writes_the_persisted_history_key():
+    """L-whiteboard-66: two live instances of one board shared `board:<id>` in the
+    undo store, each write replacing the other's stack. The page board owns that
+    key (what a reload restores); an embed's history is in memory for its life,
+    which cannot clobber the page's; an embed given a `historyKey` has its own key
+    (L-whiteboard-70, next test), and one given none writes nothing."""
+    out = _run(_history_buttons_fn() + """
+const puts = [];
+function undoStorePut(key, value) { puts.push([key, value]); }
+function undoStoreBoardValue(u, r) { return { undo: u.length, redo: r.length }; }
+const wbHistoryRead = new Set(["5", "default"]);
+function wbHistoryFor() {}
+function scheduleUndoBar() {}
+const emb = I.mount(fakeEl("div", "box"), 5);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.page = puts.splice(0);
+I.activate(emb);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.embed = puts.splice(0);
+""")
+    assert [k for k, _ in out["page"]] == ["board:5"]
+    assert out["embed"] == []
+
+
+def _embed_history_fn() -> str:
+    wb = (JS / "whiteboard-undo.js").read_text(encoding="utf-8")
+    at = wb.index("  function wbEmbedHistoryRestore(")
+    return wb[at : wb.index("\n  }\n", at) + 5]
+
+
+def test_an_embed_keeps_its_undo_history_under_its_own_key_and_reads_it_back():
+    """L-whiteboard-70: an embed made with a `historyKey` writes `board:<id>:embed:<key>`
+    once that key has been read, never the page's `board:<id>`; a remount reads its
+    own stack back, and a step taken before the read lands wins over the stored one."""
+    out = _run(_history_buttons_fn() + _embed_history_fn() + """
+const puts = [];
+const stored = { "board:5:embed:doc9": { undo: [{ action: "create", kind: "object", id: 77 }], redo: [] } };
+let release;
+const gate = new Promise((r) => { release = r; });
+function undoStorePut(key, value) { puts.push([key, value]); }
+function undoStoreGet(key) { return gate.then(() => JSON.parse(JSON.stringify(stored[key]))); }
+function undoStoreBoardValue(u, r) { return { undo: u.length, redo: r.length }; }
+const wbHistoryRead = new Set(["5", "default"]);
+function wbHistoryFor() {}
+function scheduleUndoBar() {}
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+const pending = wbEmbedHistoryRestore(emb, "doc9");
+out.key = emb.undoKey;
+I.activate(emb);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.beforeRead = puts.splice(0);
+release();
+await pending;
+out.restored = { live: wbUndoStack.map((e) => e.id), puts: puts.splice(0) };
+wbUndoStack.push({ action: "create", kind: "object", id: 78 });
+wbUpdateUndoRedoButtons();
+out.after = puts.splice(0);
+I.activate(I.page);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.page = puts.splice(0).map(([k]) => k);
+//: A second mount, backgrounded, takes the stored stack into itself; a mount that already has a step keeps it.
+const idle = I.mount(fakeEl("div", "box2"), 5);
+await wbEmbedHistoryRestore(idle, "doc9");
+out.idle = idle.undoStack.map((e) => e.id);
+const busy = I.mount(fakeEl("div", "box3"), 5);
+busy.undoStack = [{ action: "create", kind: "object", id: 1 }];
+await wbEmbedHistoryRestore(busy, "doc9");
+out.busy = busy.undoStack.map((e) => e.id);
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["key"] == "board:5:embed:doc9"
+    assert out["beforeRead"] == []
+    assert out["restored"]["live"] == [77]
+    assert [k for k, _ in out["restored"]["puts"]] == ["board:5:embed:doc9"]
+    assert out["after"] == [["board:5:embed:doc9", {"undo": 2, "redo": 0}]]
+    assert out["page"] == ["board:5"]
+    assert out["idle"] == [77] and out["busy"] == [1]
+
+
+def test_each_instance_draws_its_alignment_guides_in_its_own_group():
+    """L-whiteboard-73: the guides group was found by the document id `wb-align-guides`, so an
+    embed's lines were drawn into (and cleared from) the page board's group. It is a class in
+    the active board's overlay layer now: two boards, two groups."""
+    fns = _wb_functions("WB_BADGE_CLEAR_PX", "wbAlignGuideGroup", "wbShowAlignmentGuides", "wbClearAlignmentGuides")
+    out = _run(fns + """
+const zoomOf = (name) => {
+  const z = fakeEl("g", name);
+  z.querySelector = (sel) => z.children.find((c) => c.attrs.class === /[.]([a-z-]+)$/.exec(sel)[1]) || null;
+  z.appendChild = z.append;
+  return z;
+};
+const pageZoom = zoomOf("pz"), embZoom = zoomOf("ez");
+I.layer = (id) => (I.active === I.page ? pageZoom : embZoom);
+I.container = () => null;
+let measuring = 0;
+function wbMeasuring() { measuring++; }
+function wbAlignGuideColor() { return null; }
+const makeNS = document.createElementNS;
+document.createElementNS = (ns, tag) => Object.assign(makeNS(ns, tag), { replaceChildren() { this.children = []; }, appendChild(c) { this.append(c); } });
+const emb = I.mount(fakeEl("div", "box"), 5);
+const line = { x1: 0, y1: 0, x2: 10, y2: 0 };
+wbShowAlignmentGuides([line]);
+I.activate(emb);
+wbShowAlignmentGuides([line, line]);
+out.both = [pageZoom.children.length, embZoom.children.length];
+out.counts = [pageZoom.children[0].children.length, embZoom.children[0].children.length];
+out.distinct = pageZoom.children[0] !== embZoom.children[0];
+out.hasId = "id" in pageZoom.children[0].attrs || "id" in embZoom.children[0].attrs;
+wbClearAlignmentGuides();
+out.afterClear = [pageZoom.children.length, embZoom.children.length];
+""")
+    assert out["both"] == [1, 1] and out["counts"] == [1, 2] and out["distinct"] and not out["hasId"]
+    #: Clearing the embed's guides left the page board's alone.
+    assert out["afterClear"] == [1, 0]
+
+
+def test_a_failed_save_many_reloads_the_board_that_is_not_live():
+    """L-whiteboard-65: the stale selection belongs to the board that began the
+    save. An embed reloads itself; the page board, which has no embed object, is
+    marked stale and reloads when it is next live."""
+    fns = _wb_functions("WB_SAVE_MANY_MAX", "wbSaveManyBatch")
+    out = _run(fns + """
+const reloads = [], embedReloads = [];
+let scheduledRenders = 0;
+apiJson = async () => { throw new Error("409"); };
+function recordBrowserLog() {}
+//: A read that succeeds replaces `wbState`, as the real one does: activateInstance
+//: counts a refetch only when it did (L-whiteboard-74).
+async function fetchWhiteboardState() { reloads.push(window.currentBoardId); wbState = { read: reloads.length }; }
+const WB_KIND_INFO = { node: { list: "nodes", payload: () => ({}) } };
+wbScheduleRender = () => { scheduledRenders++; };
+(async () => {
+const embed = I.mount(fakeEl("div", "box"), 5);
+embed.reload = async () => { embedReloads.push(5); };
+const slice = [{ kind: "node", item: { id: 1 } }];
+out.okA = await wbSaveManyBatch(slice, embed);
+out.a = { reloads: [...reloads], embedReloads: [...embedReloads], pageStale: I.page.stale === true };
+I.activate(embed);
+out.okB = await wbSaveManyBatch(slice, I.page);
+out.b = { reloads: [...reloads], pageStale: I.page.stale === true };
+I.activate(I.page);
+await new Promise((r) => setTimeout(r, 5));
+out.c = { reloads: [...reloads], pageStale: I.page.stale === true, scheduled: scheduledRenders };
+await wbSaveManyBatch(slice, I.page);
+out.d = [...reloads];
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["okA"] is False and out["okB"] is False
+    assert out["a"] == {"reloads": [], "embedReloads": [5], "pageStale": False}
+    assert out["b"] == {"reloads": [], "pageStale": True}
+    assert out["c"] == {"reloads": [1], "pageStale": False, "scheduled": 1}
+    assert out["d"] == [1, 1]
+
+
+def test_the_board_options_view_is_kept_per_instance():
+    """L-whiteboard-67: the unit the fields and rulers show and the page view's key are the
+    options file's own state; they swap with the board, so an embed's units and page frames
+    never change the page board's."""
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    stubs = r"""
+const window = globalThis;
+const document = { getElementById: () => null, querySelectorAll: () => [], createElementNS: () => ({}) };
+const wbFmtState = {};
+const onSurface = () => {};
+const wbInstances = { page: {}, active: null };
+"""
+    body = r"""
+const o = wbFmtState.opts;
+const first = o.view();
+const was = o.view({ unit: "mm", pagesKey: "k" });
+const mm = o.view();
+const shown = o.show(96);
+o.view(first);
+process.stdout.write(JSON.stringify({ first, was, mm, shown, after: o.show(96), back: o.view() }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + opts + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    base = {"unit": "px", "pagesKey": ""}
+    assert out == {"first": base, "was": base, "mm": {"unit": "mm", "pagesKey": "k"}, "shown": "25.4", "after": "96", "back": base}
+    #: The instances swap it with the other globals; a board never shown starts on pixels.
+    out2 = _run("""
+const calls = [];
+let live = { unit: "cm", pagesKey: "page" };
+wbFmtState.opts = { view: (next) => { const was = live; if (next) live = next; calls.push(next ? ["set", next.unit] : ["get"]); return was; } };
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+out.inEmbed = live;
+live = { unit: "mm", pagesKey: "emb" };
+I.activate(I.page);
+out.onPage = live;
+I.activate(B);
+out.backInEmbed = live;
+""")
+    assert out2["inEmbed"] == {"unit": "px", "pagesKey": ""}
+    assert out2["onPage"] == {"unit": "cm", "pagesKey": "page"}
+    assert out2["backInEmbed"] == {"unit": "mm", "pagesKey": "emb"}
+
+
+def test_a_map_line_in_an_embed_gets_the_plain_menu():
+    """L-whiteboard-68: a line's right-click and hold ask the ring first; where the ring opens
+    nothing (an embed) they fall back to the node's plain menu, as a topic's already does."""
+    text = (JS / "whiteboard-map-waypoints.js").read_text(encoding="utf-8")
+    fn = text[text.index("function wbWireMapEdgeGestures"):text.index("function wbOpenMapLinkRadial")]
+    stubs = r"""
+const asked = [];
+let ringTakes = true;
+const wbOpenMapLinkRadial = () => (ringTakes ? undefined : false);
+const wbOpenContextMenuFor = (...a) => asked.push(a);
+const wbMapLabelEdge = () => {};
+let hold = null;
+const wireLongPress = (el, fn) => { hold = fn; };
+const handlers = {};
+const hit = { addEventListener: (t, f) => { handlers[t] = f; } };
+const ev = { preventDefault() {}, stopPropagation() {}, clientX: 5, clientY: 6 };
+"""
+    body = r"""
+wbWireMapEdgeGestures(hit, 42);
+handlers.contextmenu(ev); hold(ev, { x: 7, y: 8 });
+const onPage = asked.length;
+ringTakes = false;
+handlers.contextmenu(ev); hold(ev, { x: 7, y: 8 });
+process.stdout.write(JSON.stringify({ onPage, asked }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + fn + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    assert json.loads(got.stdout) == {"onPage": 0, "asked": [["node", 42, 5, 6], ["node", 42, 7, 8]]}
+
+
+def test_a_stale_refetch_counts_only_for_the_board_still_live():
+    """L-whiteboard-74: a read that lands after another board went live, or that failed
+    (the fetch toasts and leaves `wbState`), leaves the board stale for its next activation."""
+    out = _run("""
+let scheduled = 0, release, fail = false;
+wbScheduleRender = () => { scheduled++; };
+async function fetchWhiteboardState() {
+  await new Promise((r) => { release = r; });
+  if (!fail) wbState = { fresh: true };
+}
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+emb.stale = true;
+I.activate(emb);
+I.activate(I.page);
+release();
+await new Promise((r) => setTimeout(r, 1));
+out.moved = { scheduled, stale: emb.stale };
+I.activate(emb);
+fail = true;
+release();
+await new Promise((r) => setTimeout(r, 1));
+out.failed = { scheduled, stale: emb.stale };
+fail = false;
+I.activate(I.page);
+I.activate(emb);
+release();
+await new Promise((r) => setTimeout(r, 1));
+out.ok = { scheduled, stale: emb.stale };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["moved"] == {"scheduled": 0, "stale": True}, out
+    assert out["failed"] == {"scheduled": 0, "stale": True}, out
+    assert out["ok"]["stale"] is False and out["ok"]["scheduled"] >= 1, out
+
+
+def test_create_keeps_only_a_real_init_promise_and_drops_a_failed_one():
+    """L-whiteboard-75: no initWhiteboard yet, then a rejecting one, then a working one:
+    each embed tries again instead of reusing the first answer."""
+    out = _run("""
+const calls = [];
+window.initWhiteboard = undefined;
+(async () => {
+await window.wbInstance.create(fakeEl("div", "h1"), 5, {});
+window.initWhiteboard = async () => { calls.push("fail"); throw new Error("boom"); };
+out.rejected = await window.wbInstance.create(fakeEl("div", "h2"), 5, {}).then(() => false, () => true);
+window.initWhiteboard = async () => { calls.push("ok"); };
+await window.wbInstance.create(fakeEl("div", "h3"), 5, {});
+await window.wbInstance.create(fakeEl("div", "h4"), 5, {});
+out.calls = calls;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out == {"rejected": True, "calls": ["fail", "ok"]}, out
+
+
+def test_the_router_returns_at_once_with_only_the_page_board():
+    """L-whiteboard-76: with no embed, routeToBoard stops at its first line."""
+    src = (JS / "whiteboard-instances.js").read_text(encoding="utf-8")
+    at = src.index("  function routeToBoard(event) {")
+    body = src[at : src.index("\n  }\n", at)]
+    first = [line.strip() for line in body.splitlines()[1:] if line.strip() and not line.strip().startswith("//")][0]
+    assert first == "if (list.length === 1) return;"
+
+
+def test_an_embed_is_named_from_its_board_and_roled_by_what_it_can_do():
+    """L-whiteboard-72: an editable embed is an application naming its board and pointing at a
+    visually hidden keyboard hint; a read-only one is a group with no hint; "Board" is the fallback."""
+    out = _run("""
+let listed = 0;
+server[6] = server[5];
+globalThis.apiPagedList = async () => { listed += 1; return [{ id: 5, title: "Launch plan" }, { id: 6, title: "  " }]; };
+(async () => {
+const attrs = (e) => ({ role: e.attrs.role, label: e.attrs["aria-label"], describedby: e.attrs["aria-describedby"] ?? null });
+const h1 = fakeEl("div", "h1");
+const edit = await window.wbInstance.create(h1, 5, { editable: true });
+const read = await window.wbInstance.create(fakeEl("div", "h2"), 5, {});
+const blank = await window.wbInstance.create(fakeEl("div", "h3"), 6, {});
+const given = await window.wbInstance.create(fakeEl("div", "h4"), 5, { title: "Roadmap" });
+await new Promise((r) => setTimeout(r, 5));
+const boxes = I.list.slice(1).map((i) => i.container);
+const hint = (h) => h.children.find((c) => c.className === "visually-hidden");
+out.edit = attrs(boxes[0]);
+out.read = attrs(boxes[1]);
+out.blank = attrs(boxes[2]);
+out.given = attrs(boxes[3]);
+out.hint = { id: hint(h1).id, text: hint(h1).textContent };
+out.readHint = !!hint(boxes[1].parent);
+edit.destroy();
+out.hintGone = !hint(h1);
+out.listed = listed;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["edit"]["role"] == "application" and out["edit"]["label"] == "Launch plan"
+    assert out["hint"]["id"] == out["edit"]["describedby"]
+    assert out["hint"]["text"].endswith("a letter picks a tool.")
+    assert out["read"] == {"role": "group", "label": "Launch plan", "describedby": None} and not out["readHint"]
+    assert out["blank"]["label"] == "Board"
+    assert out["given"]["label"] == "Roadmap" and out["hintGone"]
+    assert out["listed"] <= 3  # a missing board asks again, a found one shares the read

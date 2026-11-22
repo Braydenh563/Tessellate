@@ -11,13 +11,14 @@ was resized and snapped back on release. The drag itself needs a browser
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 MAP_JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard-map.js"
 
 
 def _drag() -> str:
-    text = MAP_JS.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard-map.js")
     body = text[text.index("function wbMapStartResizeDrag(") :]
     return body[: body.index("\n}\n")]
 

@@ -14,7 +14,7 @@ const KIND = process.env.KIND || 'atlas';
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   await page.waitForTimeout(5000);
   const out = await page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');
@@ -50,11 +50,21 @@ const KIND = process.env.KIND || 'atlas';
     const down = log.filter((f) => f.phase === 'down');
     const hold = down.filter((f) => f.t > 2400);
     let jump = 0;
-    for (let i = 1; i < log.length; i += 1) jump = Math.max(jump, Math.abs(log[i].shown - log[i - 1].shown));
+    // The change per 16.7ms frame, not per sample: a loaded machine stalls a frame to 47ms (and fires the next
+    // one 2ms later), and the per-sample step then reads the same smooth rise as 24px. Each sample is compared with
+    // the last one at least 33ms older (two frames), and its change scaled to one frame.
+    for (let i = 1; i < log.length; i += 1) {
+      let j = i - 1;
+      while (j > 0 && log[i].t - log[j].t < 33) j -= 1;
+      const dt = Math.max(33, log[i].t - log[j].t);
+      jump = Math.max(jump, Math.round((Math.abs(log[i].shown - log[j].shown) * 16.7) / dt));
+    }
     const end = log[log.length - 1];
     return { full: Math.round(full), barBottom: Math.round(bar.bottom), peekShown: Math.max(...hold.map((f) => f.shown)), minHidden: Math.min(...down.map((f) => f.shown)), endShown: end.shown, endClip: end.clip, holdClip: hold.every((f) => f.clip), maxFrameJump: jump, act: nmb.act };
   });
   console.log(JSON.stringify({ kind: KIND, vw: VW, ...out }));
   await browser.close();
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((out.peekShown > out.full / 2 || out.peekShown < 8 || out.maxFrameJump > 12) ? 'FAIL peekdown: a measure above is out of bounds' : 'PASS peekdown');
   process.exit(out.peekShown > out.full / 2 || out.peekShown < 8 || out.maxFrameJump > 12 ? 1 : 0);
 })();

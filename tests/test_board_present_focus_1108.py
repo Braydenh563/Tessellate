@@ -9,9 +9,9 @@ is on screen; otherwise the canvas takes focus.
 
 from __future__ import annotations
 
-from tests._app_js import JS_DIR
+from tests._app_js import frontend_text
 
-SRC = (JS_DIR / "whiteboard.js").read_text(encoding="utf-8")
+SRC = frontend_text("whiteboard.js")
 
 
 def test_the_saved_focus_must_be_on_screen() -> None:

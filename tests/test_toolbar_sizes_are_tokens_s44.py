@@ -30,7 +30,7 @@ ALLOWED = {
 }
 
 TARGET = re.compile(r"(^|[\s,>])\.(dock|dock-actions|dock-group|dock-find|dock-arrange|dock-menu|doc-toolbar|doc-dock-menu-btn|doc-toolbar-menu|toolbar)\b")
-SIZED = re.compile(r"(border-radius|height|min-height)\s*:\s*([^;]+);")
+SIZED = re.compile(r"(?<![\w-])(border-radius|height|min-height)\s*:\s*([^;]+);")
 EXEMPT_VALUES = {"0", "auto", "none", "100%", "inherit", "unset", "50%", "initial"}
 
 

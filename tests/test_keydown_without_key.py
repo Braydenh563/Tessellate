@@ -4,6 +4,7 @@
 Every document-level keydown handler in the whiteboard that reads `e.key` as
 a string returns first when it is not one."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -11,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_whiteboard_document_keydown_handlers_guard_a_missing_key():
-    text = (ROOT / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     heads = [m.end() for m in re.finditer(r'^\s*document\.addEventListener\("keydown", \(e\) => \{\n', text, re.M)]
     assert len(heads) >= 2
     for start in heads:

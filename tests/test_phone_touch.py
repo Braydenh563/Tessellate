@@ -5,6 +5,7 @@ sweeps named in each docstring (`scratchpad/ui-sweeps/`)."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -53,7 +54,7 @@ def test_no_model_notice_steps_aside_for_the_keyboard_and_aligns_its_action():
 
 # --- 888: a pinch on the whiteboard must not carry a note ----------------------
 
-WB = (FRONT / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 

@@ -350,6 +350,12 @@
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
 }
+/* Too small on screen to hold its grips: none, so a press drags the box
+   (L-whiteboard-15; the cull pass sets `wb-tiny`). Two ids, so it outranks
+   every reveal rule below. */
+#whiteboard-container #wb-html-layer > .wb-tiny .wb-resize-handle {
+  display: none;
+}
 /* Interactive (and visible) only in the Select tool, `:hover` alone fires
    for *any* tool the instant the cursor crosses the card, so without this
    gate a link/pan drag started near a corner still lost to the handle
@@ -790,7 +796,10 @@
    layer-tree measurement behind it, is on `wbApplyZoomTransform`. */
 #wb-html-layer,
 #wb-svg-layer,
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-html-layer"],
+[data-wb-layer="wb-svg-layer"],
+[data-wb-layer="wb-overlay-layer"] {
   will-change: transform;
 }
 /* **Off screen, not drawn** (MINDMAP_PLAN 13a-view; `wbCullNow` decides).
@@ -803,7 +812,9 @@
    A map's tree line has nothing measured on it, so it is simply not
    displayed. */
 #wb-html-layer > .wb-object,
-#wb-html-layer > .wb-card {
+#wb-html-layer > .wb-card,
+[data-wb-layer="wb-html-layer"] > .wb-object,
+[data-wb-layer="wb-html-layer"] > .wb-card {
   contain-intrinsic-size: auto 250px auto 44px;
 }
 /* **The Notes list's rows do not lock either** (L-general-34; they did, INBOX 400).
@@ -1997,7 +2008,8 @@ body.scroll-top-visible .skills-split > .tab-main {
    never blocks a card underneath; each interactive child re-enables its
    own (`.wb-link-endpoint-handle`). The app's CSP blocks inline `style=`
    attributes, hence a real rule here rather than one on the element. */
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-overlay-layer"] {
   pointer-events: none;
 }
 /* **The three layers that pan together, and the origin they pan about.**
@@ -2014,7 +2026,9 @@ body.scroll-top-visible .skills-split > .tab-main {
    would pivot on a point that drifts as you draw. */
 .wb-html-layer,
 #wb-svg-layer,
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-svg-layer"],
+[data-wb-layer="wb-overlay-layer"] {
   transform-origin: 0 0;
 }
 /* An `<svg>` root clips at its own viewport, and the pan transform is on the
@@ -2023,7 +2037,9 @@ body.scroll-top-visible .skills-split > .tab-main {
    container is `overflow: hidden` and is the right thing to clip to in any
    case: it is what gives the board its corner radius. */
 #wb-svg-layer,
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-svg-layer"],
+[data-wb-layer="wb-overlay-layer"] {
   overflow: visible;
 }
 /* Two small spacing helpers, so a one-off gap doesn't need an attribute. */
@@ -7099,10 +7115,10 @@ button.connection-row:is(:hover, :focus-visible) {
 }
 .whiteboard-floating-panel.bottom-center .wb-tool-section-label {
   position: absolute;
-  width: 1px;
   height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+  /* Hidden by clipping everything, not by a 1px box with overflow: the word keeps its own width, so it does not
+     "overflow" its box by 18 to 50px (L264) and a screen reader still reads it. */
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 .whiteboard-floating-panel.bottom-center .wb-tool-section {
@@ -7684,13 +7700,6 @@ button.connection-row:is(:hover, :focus-visible) {
   display: none;
 }
 @media (max-width: 819.98px) {
-  /* Search and Overview are also switches in the View menu; the two icons
-     and their divider are what pushed the bar onto a third row. */
-  .wb-topbar #wb-search-toggle,
-  .wb-topbar #wb-navigator-toggle,
-  .wb-topbar #wb-navigator-toggle + .wb-topbar-divider {
-    display: none;
-  }
   /* **Two more leave on a phone, and neither is lost.** Measured at 320 with
      the 44px touch floor on: the right half needs 5 menu toggles, a divider
      and the Library button at 44px each in 260px of content box, which is
@@ -11936,6 +11945,11 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   color: var(--muted);
   text-decoration: line-through;
 }
+/* Out of sight only because a folded frame holds it: quiet, not struck through. */
+.wb-layer-row.is-folded .wb-layer-name {
+  color: var(--muted);
+  font-style: italic;
+}
 .wb-layer-row:hover .wb-layer-eye,
 .wb-layer-row:hover .wb-layer-lock,
 .wb-layer-row:focus-within .wb-layer-eye,
@@ -11943,6 +11957,7 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 .wb-layer-row:focus .wb-layer-eye,
 .wb-layer-row:focus .wb-layer-lock,
 .wb-layer-row.is-hidden .wb-layer-eye,
+.wb-layer-row.is-folded .wb-layer-eye,
 .wb-layer-row.is-locked .wb-layer-lock {
   opacity: 1;
 }
@@ -12036,7 +12051,7 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   top: calc(0.5rem + var(--wb-h-topbar) + var(--space-3));
   left: 50%;
   transform: translateX(-50%);
-    display: flex;
+  display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);

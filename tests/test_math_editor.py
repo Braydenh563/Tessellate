@@ -17,6 +17,7 @@ surface a caller of `openMathEditor`, nothing at boot, and its help on the
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -155,7 +156,7 @@ def test_every_surface_is_a_thin_caller() -> None:
     editor = (JS / "editor.js").read_text(encoding="utf-8")
     assert re.search(r'id: "equation".*run: \(t\) => openMathEditor\(\{ target: t \}\)', editor)
     assert re.search(r'id: "chat-equation".*openMathEditor\(\{ target: document\.getElementById\("chat-input"\) \}\)', editor)
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert re.search(r'board: \[[^\]]*"equation"', board)
     docs = (JS / "documents.js").read_text(encoding="utf-8")
     assert 'equation: { custom: "equation" }' in docs and "openMathEditor({ target: box })" in docs

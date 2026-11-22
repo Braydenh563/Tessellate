@@ -354,6 +354,29 @@ def test_dx11_a_purged_document_takes_its_history_its_kept_edit_and_its_position
     assert out["store"]["doc-positions"] == {"9": {"top": 2}}
 
 
+@node
+def test_a_purged_board_takes_its_embeds_histories_too():
+    """L-whiteboard-77: an embed's history (`board:<id>:embed:<host>`, L-whiteboard-70) goes with its board."""
+    out = _node(
+        """(() => {
+          const deleted = [];
+          globalThis.IDBKeyRange = { bound: (lo, hi) => ({ lo, hi }) };
+          undoStoreRequest = (mode, act) => { act({ delete: (name) => { deleted.push(name); return {}; } }); return Promise.resolve(null); };
+          undoStoreTimers.set("board:12:embed:doc-3", 1);
+          undoStoreTimers.set("board:120:embed:doc-3", 2);
+          undoStoreClear.purged("note", 12);
+          return { deleted, timers: [...undoStoreTimers.keys()] };
+        })()""",
+        "var clearTimeout = () => {}; var undoStoreTimers = new Map();"
+        + _slice(UNDO, "function undoStoreRequest(", "\n}\n")
+        + _slice(UNDO, "function undoStoreClear() {", "\n}\n")
+        + _slice(UNDO, "undoStoreClear.one = ", "\n};\n")
+        + _slice(UNDO, "undoStoreClear.purged = ", "\n};\n"),
+    )
+    assert out["deleted"] == [{"lo": "board:12:embed:", "hi": "board:12:embed:\uffff"}, "board:12"]
+    assert out["timers"] == ["board:120:embed:doc-3"]
+
+
 def test_dx11_every_purge_path_forgets_what_this_device_kept():
     # One item (the Library menu), the bulk delete, the bin's reader and emptying the bin.
     assert LIBRARY.count("undoStoreClear.purged(") == 4

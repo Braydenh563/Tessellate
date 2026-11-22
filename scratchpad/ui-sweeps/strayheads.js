@@ -15,7 +15,7 @@ const { boot } = require('./lib.js');
   const { page, browser } = await boot({ viewport: { width: W, height: H } });
   let out;
   try {
-    await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); if (b) { b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); } });
+    await page.evaluate(() => { const b = $('avatar-buddy'); if (b) { b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); } });
     for (const tab of (process.env.TABS || 'dashboard,notes,chat,library,timeline,dashboard').split(',')) {
       await page.evaluate((t) => (typeof revealTab === 'function' ? revealTab(t) : switchTab(t)), tab).catch(() => null);
       await page.waitForTimeout(1200);

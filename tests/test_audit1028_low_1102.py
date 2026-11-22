@@ -6,6 +6,7 @@ docs/roadmap/agent-remaining/audit-1028-ranked.md, next to the row.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 from pathlib import Path
@@ -146,7 +147,7 @@ def test_k16_spaces_are_documented_as_organisation_not_a_boundary():
 def test_b38_a_selection_nudge_saves_through_one_request():
     # wbFlushNudge (a burst of arrow presses) and the align/distribute tail both end in
     # wbSaveMany, which sends /whiteboard/items/save-many for two or more items.
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text()
+    wb = frontend_text("whiteboard.js")
     flush = wb[wb.index("async function wbFlushNudge()") :]
     assert "await wbSaveMany(burst.items);" in flush[: flush.index("\n}\n")]
     assert "async function wbCommitMoves(rows, entries) {\n  //: A refused batch has reloaded the board, so there is nothing to undo.\n  if (await wbSaveMany(rows))" in wb
@@ -154,7 +155,7 @@ def test_b38_a_selection_nudge_saves_through_one_request():
 
 
 def test_b29_map_topics_render_bold_italic_and_code_as_dom_nodes():
-    wb = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text()
+    wb = frontend_text("whiteboard-map.js")
     # Inline links (L375) joined bold, italic and code in the same pattern.
     assert r"const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|" in wb
     fn = wb[wb.index("function wbMapInlineText") :]
