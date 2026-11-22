@@ -634,7 +634,8 @@ class Entry(Base, WorkspaceMixin):
     #:
     #: Not a ForeignKey on purpose: the note it points at can be deleted,
     #: and an advisory pointer going stale must never take a `DELETE` down
-    #: with it. `filing_status` resolves it and shrugs when it is gone.
+    #: with it. `filing_status` resolves it and shrugs when it is gone, and
+    #: `autonomous.clean_dangling_similar_ids` clears it after VACUUM.
     filing_similar_id: Mapped[int | None] = mapped_column(Integer, default=None)
     # Bumped every time this entry is opened or returned by a chat
     # question: feeds the "most used" dashboard.
