@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
 | whiteboard | 0 | 0 | 0 | 0 | 0 | 0 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
-| mindmap | 0 | 5 | 0 | 0 | 0 | 5 |
+| mindmap | 0 | 4 | 0 | 0 | 0 | 4 |
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 178 | 58 | 0 | 72 | 366 |
 | general | 0 | 3 | 0 | 0 | 5 | 3 |
-| all | 402 | 492 | 121 | 2 | 153 | 1015 |
+| all | 402 | 491 | 121 | 2 | 153 | 1014 |
 
 ## graph
 
@@ -286,7 +286,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-21** `mindmap` open, S: Map branch pick-up for a branch about half the board: still lifts every member; measure a mid-size branch in mapperf and pick the cheaper side by element count. From L-mindmap-18 (agent). Evidence: wbMapDragLayer.open stays only when the branch has 32 topics or more and is more than half the board layer; a branch of about half a 500-topic board still lifts every member (about 50us an element of style recalc, so about 12ms per 250 topics), unmeasured by mapperf, whose branches are the whole map.
 - [ ] **L-mindmap-25** `mindmap` open, M: Mind map: the drop of a linked 500-topic branch redraws every inner link (about 120ms, budget 50). From drop-frame agent 2026-11-22. Evidence: mapperf 500: linked branch drop 125.6/122.1ms after 965dc9f88 and 1859b77c0; close() recomputes all 300 inner cross links (wbUpdateLinkedSketches, wbMapCrossLinkLook.built). Plan: keep the translate on links off the cull ground and flush them on render, drag-layer open, pointerdown, keydown, export and an idle drain.
 - [ ] **L-mindmap-26** `mindmap` open, M: Mind map: the pickup frame of a 500-topic drag is 70 to 136ms; the pin render after a first drag lands in the next gesture. From drop-frame agent 2026-11-22. Evidence: mapperf 500: branch pickup 69.9/136.2ms, drag pickup 89.6/103.4ms (worst frames now). The first drag of an unpinned topic runs a full render (wbMapPinOnDrag) that lands in the next gesture, about 335ms on base too.
-- [ ] **L-mindmap-27** `mindmap` open, S: Mind map: wbGrammarRepaint repaints every node per answer and lands in the first pan frame at 500 topics. From drop-frame agent 2026-11-22. Evidence: mapperf 500 profile: wbGrammarRepaint repaints all 500 nodes per answer and lands in the first pan frame (pan worst 40 to 46ms, at panWorstAt=0).
 
 ## ui-modernisation
 
