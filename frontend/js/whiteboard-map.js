@@ -1602,18 +1602,7 @@ function wbBuildMapNode(el, d) {
         Promise.resolve(fresh._creating).then(() => wbUndo());
         return;
       }
-      if (event.key === "Escape") {
-        event.preventDefault();
-        this.blur();
-      } else if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-        event.preventDefault();
-        this.blur();
-        if (id) wbMapAddChild(id);
-      } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey || event.shiftKey)) {
-        event.preventDefault();
-        this.blur();
-        if (id) wbMapAddSibling(id, { above: event.shiftKey && !event.ctrlKey && !event.metaKey });
-      }
+      wbBuildMapNode.keys.call(this, event, id);
     });
     text.on("pointerdown", function (event) {
       if (this.isContentEditable) event.stopPropagation();
@@ -1667,6 +1656,22 @@ function wbBuildMapNode(el, d) {
     })
     .append("i").attr("class", "ph ph-link-simple").attr("aria-hidden", "true");
 }
+
+//: A topic's branch keys while typing (Escape, Tab, Enter gestures), split from `wbBuildMapNode`; run with the text as `this`.
+wbBuildMapNode.keys = function (event, id) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    this.blur();
+  } else if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+    event.preventDefault();
+    this.blur();
+    if (id) wbMapAddChild(id);
+  } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey || event.shiftKey)) {
+    event.preventDefault();
+    this.blur();
+    if (id) wbMapAddSibling(id, { above: event.shiftKey && !event.ctrlKey && !event.metaKey });
+  }
+};
 
 //: **The ink a core node's label takes on its own fill** (INBOX 201: "I want
 //: more and better ways to differentiate core idea nodes in the mindmap", and

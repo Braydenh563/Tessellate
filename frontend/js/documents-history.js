@@ -447,6 +447,8 @@
     for (const entry of shown) list.appendChild(docHistoryRow(entry));
   }
 
+  //: The dialog's body is a surface built here, as this file arrives on the first History press (index.html).
+  surfaceBuild("docHistory");
   for (const button of document.querySelectorAll("#doc-history-filter [data-history-filter]")) {
     button.addEventListener("click", () => {
       docHistoryFilter = button.dataset.historyFilter || "all";

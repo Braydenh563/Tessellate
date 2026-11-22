@@ -14,7 +14,8 @@ def test_warm_chain_uses_the_return_value():
     js = (JS / "documents-cm-load.js").read_text(encoding="utf-8")
     body = js[js.index("function warmDocumentEngine("):]
     body = body[:body.index("\n  }\n")]
-    assert "return docWarmed;" in body and "return true;" in body
+    # The world-class version (kept at the merge): true once warming has started, false when it never will.
+    assert "if (docWarmed) return true;" in body and "return false;" in body
 
 
 def test_an_open_runs_the_prose_pass_in_idle():

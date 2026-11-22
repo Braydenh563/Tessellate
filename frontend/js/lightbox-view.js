@@ -159,62 +159,13 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: the workspace's own wording. Only for a picture with a media row: a url
   //: with nothing behind it has nothing to delete.
   const readingDelete = (which) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "ghost small icon-only danger lightbox-reading-delete hidden";
-    button.title = "Delete this reading";
-    button.setAttribute("aria-label", "Delete this reading");
-    setLabel(button, "ph:trash");
-    button.addEventListener("click", async (event) => {
-      event.stopPropagation();
-      //: Held before the first `await`: `currentTarget` is gone once the
-      //: click's dispatch ends (the workspace's own Delete reading lost its
-      //: button that way, 6e072b2).
-      const self = event.currentTarget;
-      const item = lightboxInfoItem || items[index];
-      const source = which === "alt" ? item?.altSource : item?.textSource;
-      const id = lightboxMediaId(item);
-      if (!item || !source || !id) return;
-      const whose = source === "vision" ? "the vision model's" : "Tesseract's";
-      if (!(await confirmDialog(`Delete ${whose} reading of this image? You can read it again any time.`))) return;
-      self.disabled = true;
-      try {
-        //: To the reading bin, not away (the OCR workspace's own route): Undo
-        //: restores that row, Redo bins the reading again. The panel is
-        //: redrawn from the fields it held, as they were and as they become.
-        const bin = () => apiJson(`/media/${id}/readings/${source}`, { method: "DELETE" });
-        const fields = ["text", "byline", "altText", "altByline", "textSource", "altSource"];
-        const was = Object.fromEntries(fields.map((key) => [key, item[key]]));
-        const now =
-          source === item.textSource
-            ? { text: item.altText || "", byline: item.altText ? "Text read with Tesseract OCR" : "", altText: "", altByline: "", textSource: item.altSource || "", altSource: "" }
-            : { altText: "", altByline: "", altSource: "" };
-        const repaint = (values) => {
-          Object.assign(item, values);
-          if (overlay.isConnected) renderInfo(item, true);
-          if (typeof loadLibrary === "function") loadLibrary();
-        };
-        let held = (await bin())?.binned_id;
-        repaint(now);
-        toast("Reading deleted.");
-        pushUndo(
-          "Deleted a reading",
-          async () => {
-            if (held) await apiJson(`/reading-bin/${held}/restore`, { method: "POST" });
-            repaint(was);
-          },
-          async () => {
-            held = (await bin())?.binned_id;
-            repaint(now);
-          }
-        );
-      } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "delete that reading" }), true);
-      } finally {
-        self.disabled = false;
-      }
+    return openLightbox.readingDelete(which, {
+      current: () => lightboxInfoItem || items[index],
+      mediaId: lightboxMediaId,
+      redraw: (item) => {
+        if (overlay.isConnected) renderInfo(item, true);
+      },
     });
-    return button;
   };
   const infoTextDelete = readingDelete("text");
   const infoAltDelete = readingDelete("alt");
@@ -1740,7 +1691,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   // everything else per item rather than caching it.
   let lightboxLoadExtractedText = null;
 
-  async function showDocument(item, name, attachmentId) {
+  //: What a new file clears from the viewer before it is read; split from `showDocument`.
+  function resetDocumentView() {
     img.classList.add("hidden");
     broken.classList.add("hidden");
     doc.classList.remove("hidden");
@@ -1768,6 +1720,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     previewHtmlBtn.classList.add("hidden");
     clearFind();
     find.classList.remove("hidden");
+  }
+
+  async function showDocument(item, name, attachmentId) {
+    resetDocumentView();
 
     // A native Tessellate document (the Documents list) or a real Attachment
     // row each has its own text/info endpoint; a `/media/` upload has a
@@ -2469,6 +2425,65 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     infoText.focus();
   });
 }
+//: One reading's delete button, split from `openLightbox`; `here` gives it the open picture, its media id and a repaint.
+openLightbox.readingDelete = (which, here) => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small icon-only danger lightbox-reading-delete hidden";
+  button.title = "Delete this reading";
+  button.setAttribute("aria-label", "Delete this reading");
+  setLabel(button, "ph:trash");
+  button.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    //: Held before the first `await`: `currentTarget` is gone once the
+    //: click's dispatch ends (the workspace's own Delete reading lost its
+    //: button that way, 6e072b2).
+    const self = event.currentTarget;
+    const item = here.current();
+    const source = which === "alt" ? item?.altSource : item?.textSource;
+    const id = here.mediaId(item);
+    if (!item || !source || !id) return;
+    const whose = source === "vision" ? "the vision model's" : "Tesseract's";
+    if (!(await confirmDialog(`Delete ${whose} reading of this image? You can read it again any time.`))) return;
+    self.disabled = true;
+    try {
+      //: To the reading bin, not away (the OCR workspace's own route): Undo
+      //: restores that row, Redo bins the reading again. The panel is
+      //: redrawn from the fields it held, as they were and as they become.
+      const bin = () => apiJson(`/media/${id}/readings/${source}`, { method: "DELETE" });
+      const fields = ["text", "byline", "altText", "altByline", "textSource", "altSource"];
+      const was = Object.fromEntries(fields.map((key) => [key, item[key]]));
+      const now =
+        source === item.textSource
+          ? { text: item.altText || "", byline: item.altText ? "Text read with Tesseract OCR" : "", altText: "", altByline: "", textSource: item.altSource || "", altSource: "" }
+          : { altText: "", altByline: "", altSource: "" };
+      const repaint = (values) => {
+        Object.assign(item, values);
+        here.redraw(item);
+        if (typeof loadLibrary === "function") loadLibrary();
+      };
+      let held = (await bin())?.binned_id;
+      repaint(now);
+      toast("Reading deleted.");
+      pushUndo(
+        "Deleted a reading",
+        async () => {
+          if (held) await apiJson(`/reading-bin/${held}/restore`, { method: "POST" });
+          repaint(was);
+        },
+        async () => {
+          held = (await bin())?.binned_id;
+          repaint(now);
+        }
+      );
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "delete that reading" }), true);
+    } finally {
+      self.disabled = false;
+    }
+  });
+  return button;
+};
 
 // ---- from editor.js (search-boot-1005): highlightCodeInto ----
 // Moved whole. Every use is in this file, so it is not needed before this file loads.

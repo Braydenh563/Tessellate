@@ -230,6 +230,27 @@
     }
   }
 
+  // Dragging a slider fires `input` on every pixel. Saved on a trailing
+  // timer rather than per event, the same shape every other debounced
+  // control in this app uses, since there is no shared helper.
+  function scheduleSamplingSave() {
+    clearTimeout(samplingSaveTimer);
+    samplingSaveTimer = setTimeout(async () => {
+      try {
+        const now = { ...samplingState.overrides };
+        await apiJson("/models/sampling", { method: "PUT", body: JSON.stringify({ overrides: now }) });
+        //: A drag is one step back to where it began (L694).
+        if (samplingState.was && JSON.stringify(samplingState.was) !== JSON.stringify(now)) {
+          pushRequestUndo("A sampling setting", "/models/sampling", "PUT", { overrides: samplingState.was }, { overrides: now }, loadSamplingSettings);
+        }
+        samplingState.was = null;
+      } catch {
+        toast(voiceLine("failed", { what: "save that setting" }), true, { action: ["Reload them", loadSamplingSettings] });
+      }
+      await loadSamplingSettings();
+    }, 400);
+  }
+
   function renderSamplingRows() {
     const host = $("sampling-rows");
     if (!host || !samplingState) return;
@@ -345,26 +366,7 @@
         if (!reset.disabled) reset.click();
       });
 
-      // Dragging a slider fires `input` on every pixel. Saved on a trailing
-      // timer rather than per event, the same shape every other debounced
-      // control in this app uses, since there is no shared helper.
-      const save = () => {
-        clearTimeout(samplingSaveTimer);
-        samplingSaveTimer = setTimeout(async () => {
-          try {
-            const now = { ...samplingState.overrides };
-            await apiJson("/models/sampling", { method: "PUT", body: JSON.stringify({ overrides: now }) });
-            //: A drag is one step back to where it began (L694).
-            if (samplingState.was && JSON.stringify(samplingState.was) !== JSON.stringify(now)) {
-              pushRequestUndo("A sampling setting", "/models/sampling", "PUT", { overrides: samplingState.was }, { overrides: now }, loadSamplingSettings);
-            }
-            samplingState.was = null;
-          } catch {
-            toast(voiceLine("failed", { what: "save that setting" }), true, { action: ["Reload them", loadSamplingSettings] });
-          }
-          await loadSamplingSettings();
-        }, 400);
-      };
+      const save = scheduleSamplingSave;
 
       //: One place that applies a value, so the slider and the box cannot
       //: disagree about what "set" means (rounding, the integer knobs, which

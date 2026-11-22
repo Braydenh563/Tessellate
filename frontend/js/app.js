@@ -457,40 +457,7 @@ async function api(path, options = {}) {
     locked.isLockout = true;
     throw locked;
   }
-  if (!response.ok) {
-    const detail = await response.json().catch(() => ({}));
-    const rawMsg = typeof detail.detail === 'string' ? detail.detail : JSON.stringify(detail.detail);
-    let errMsg = plainHttpError(response.status, detail.detail);
-    //: **Out of space is the one failure the person can act on, so the part
-    //: that says how travels with it.** The server answers 507 with a
-    //: `hint` naming the folder, the room left and roughly how much to free
-    //: up (INBOX 266, item 6); every call site in this app toasts
-    //: `error.message` and nothing has ever read `hint`, so the actionable
-    //: half was being thrown away at this line. Appended here rather than
-    //: at fifty call sites, which is the only version that cannot be
-    //: forgotten by the next one.
-    if (response.status === 507 && typeof detail.hint === 'string' && detail.hint) {
-      errMsg = `${errMsg} ${detail.hint}`;
-    }
-    if (!silent) {
-      // Log HTTP errors so they always appear in Settings, Logs for debugging.
-      recordBrowserLog("ERROR", [
-        `[HTTP ${response.status}] ${fetchOptions.method || 'GET'} ${path}: ${rawMsg}`
-      ]);
-    }
-    //: The status and the structured detail travel on the error, so a
-    //: caller that has something to do with a particular refusal (an edit
-    //: conflict's 409 carries the text another window saved,
-    //: `editConflictPrompt`) can read it rather than parse a message.
-    //: A space deleted in another window falls back to "All spaces" (1031 BK3).
-    if (detail.code === "unknown_space") setActiveSpace(SPACE_ALL);
-    const error = new Error(errMsg);
-    error.status = response.status;
-    if (response.status < 500) toast.refused.add(errMsg);
-    error.detail = detail.detail;
-    error.body = detail;
-    throw error;
-  }
+  if (!response.ok) await api.refuse(response, path, fetchOptions, silent);
   //: A write that can leave a model running on a background thread gets the
   //: task poll looked at now, rather than up to ten seconds from now.
   //:
@@ -510,6 +477,41 @@ async function api(path, options = {}) {
 }
 api.retries = 0;
 api.epoch = 0;
+//: The refusal half of `api`: reads the server's detail, logs it, and always throws.
+api.refuse = async (response, path, fetchOptions, silent) => {
+  const detail = await response.json().catch(() => ({}));
+  const rawMsg = typeof detail.detail === 'string' ? detail.detail : JSON.stringify(detail.detail);
+  let errMsg = plainHttpError(response.status, detail.detail);
+  //: **Out of space is the one failure the person can act on, so the part
+  //: that says how travels with it.** The server answers 507 with a
+  //: `hint` naming the folder, the room left and roughly how much to free
+  //: up (INBOX 266, item 6); every call site in this app toasts
+  //: `error.message` and nothing has ever read `hint`, so the actionable
+  //: half was being thrown away at this line. Appended here rather than
+  //: at fifty call sites, which is the only version that cannot be
+  //: forgotten by the next one.
+  if (response.status === 507 && typeof detail.hint === 'string' && detail.hint) {
+    errMsg = `${errMsg} ${detail.hint}`;
+  }
+  if (!silent) {
+    // Log HTTP errors so they always appear in Settings, Logs for debugging.
+    recordBrowserLog("ERROR", [
+      `[HTTP ${response.status}] ${fetchOptions.method || 'GET'} ${path}: ${rawMsg}`
+    ]);
+  }
+  //: The status and the structured detail travel on the error, so a
+  //: caller that has something to do with a particular refusal (an edit
+  //: conflict's 409 carries the text another window saved,
+  //: `editConflictPrompt`) can read it rather than parse a message.
+  //: A space deleted in another window falls back to "All spaces" (1031 BK3).
+  if (detail.code === "unknown_space") setActiveSpace(SPACE_ALL);
+  const error = new Error(errMsg);
+  error.status = response.status;
+  if (response.status < 500) toast.refused.add(errMsg);
+  error.detail = detail.detail;
+  error.body = detail;
+  throw error;
+};
 // F5 (tests/test_no_bare_fetch.py)
 api.upload = (path, body, options) => api(path, { method: "POST", body, ...options });
 api.stream = api;

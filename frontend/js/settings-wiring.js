@@ -603,6 +603,20 @@ function saveWhatIsInFront() {
 //: Item 9: a key within 1.5 s of typing in an editor is not a command. The
 //: document editor stops its letters at its host and sets this itself.
 const typingBurst = { at: 0 };
+//: Which chords a press passes over once an editor already answered; split from the keydown handler.
+typingBurst.skips = (id, e) => {
+  //: INBOX 321: on an open board the same chord duplicates the selection.
+  //: And an editor that already answered it keeps it: the documents
+  //: editor binds Ctrl+D to "select the next match" (CodeMirror's search
+  //: keymap), handles it at the target and marks it `defaultPrevented`.
+  if (id === "todaysNote" && (boardHistoryActive() || e.defaultPrevented)) return true;
+  //: Ctrl+/ and Ctrl+K (INBOX 402, 1559): the documents editor answers them
+  //: first (comment toggle, link) and marks the press handled; a note box does not.
+  if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) return true;
+  //: Ctrl+F likewise: a note's edit box opens its own find (L-world-class-127).
+  if (id === "find" && e.defaultPrevented) return true;
+  return false;
+};
 
 document.addEventListener("keydown", (e) => {
   // **Before anything else.** A locked notebook answers no shortcut. Typing is
@@ -638,16 +652,7 @@ document.addEventListener("keydown", (e) => {
     }
     for (const [id, def] of Object.entries(shortcuts)) {
       if ((id === "undo" || id === "redo" || id === "pasteNote") && inTextField) continue;
-      //: INBOX 321: on an open board the same chord duplicates the selection.
-      //: And an editor that already answered it keeps it: the documents
-      //: editor binds Ctrl+D to "select the next match" (CodeMirror's search
-      //: keymap), handles it at the target and marks it `defaultPrevented`.
-      if (id === "todaysNote" && (boardHistoryActive() || e.defaultPrevented)) continue;
-      //: Ctrl+/ and Ctrl+K (INBOX 402, 1559): the documents editor answers them
-      //: first (comment toggle, link) and marks the press handled; a note box does not.
-      if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
-      //: Ctrl+F likewise: a note's edit box opens its own find (L-world-class-127).
-      if (id === "find" && e.defaultPrevented) continue;
+      if (typingBurst.skips(id, e)) continue;
       if (matchesShortcut(e, def.keys)) {
         if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();

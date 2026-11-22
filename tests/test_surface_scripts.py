@@ -50,7 +50,7 @@ def test_the_top_level_surfaces_are_scripts_and_no_template_is_left_at_the_top()
     names = [re.search(r'data-surface="(\w+)"', m.group(1)).group(1) for m in SCRIPTS]
     assert sorted(names) == sorted(
         "atlasChat palette quickNote notes chat timeline graph documents reminders library ocr settings shortcuts meeting docDictionary"
-        " finder agentMonitor lockForgot recoveryKey docReplace spaceDelete wbTemplate wbImport".split()
+        " finder agentMonitor lockForgot recoveryKey docReplace docHistory spaceDelete wbTemplate wbImport".split()
     )
     outside = re.sub(r'<script type="text/x-surface".*?</script>', "", RAW, flags=re.S)
     assert "<template data-surface" not in outside, "a surface is a template at the top again: it is parsed at boot"
