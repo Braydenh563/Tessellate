@@ -70,7 +70,10 @@
       const w = math.window(p, view());
       Object.assign(frame.style, { left: "0px", top: "0px", width: `${w.w * t.w}px`, height: `${w.h * t.h}px` });
       geo = { p, t, w: fig.clientWidth, h: fig.clientHeight };
-      pan();
+      //: Placed now, not through the throttle: after a zoom or a resize the frame must not sit on the old spot for 48 ms.
+      clearTimeout(tail);
+      tail = 0;
+      move();
     };
     //: A scroll moves the frame by a transform from the stored boxes: it reads the scroll position only and writes no
     //: layout property, so a pan costs the picture's move and nothing more (L-documents-89).
@@ -79,12 +82,17 @@
     let movedAt = 0;
     let tail = 0;
     const pan = () => {
+      //: The overview left the page (the diagram closed or redrew): its timer and listener go with it.
+      if (!bar.isConnected) return void (clearTimeout(tail), (tail = 0), fig.removeEventListener("scroll", pan));
       if (!geo) return;
       const wait = 48 - (performance.now() - movedAt);
       if (wait > 0) return void (tail ||= setTimeout(() => ((tail = 0), pan()), wait));
-      movedAt = performance.now();
       //: A pane that changed size is measured again (these two reads are free: nothing in a pan dirties the layout).
       if (fig.clientWidth !== geo.w || fig.clientHeight !== geo.h) return refresh();
+      move();
+    };
+    const move = () => {
+      movedAt = performance.now();
       const w = math.window(geo.p, { left: fig.scrollLeft, top: fig.scrollTop, w: geo.w, h: geo.h });
       frame.style.transform = `translate(${w.x * geo.t.w}px, ${w.y * geo.t.h}px)`;
     };

@@ -115,3 +115,50 @@ def test_the_frame_moves_at_most_every_48_ms_and_has_its_own_layer():
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     block = css[css.index(".dgm-minimap-view {") :].split("}", 1)[0]
     assert "will-change: transform" in block
+
+
+_WIRE = r"""
+const vm = require('vm');
+let now = 0; const timers = new Map(); let nextId = 1;
+const el = (tag) => ({ tag, style: {}, children: [], isConnected: true, listeners: {},
+  classList: { toggle() {} }, setAttribute() {}, append(...k) { this.children.push(...k); },
+  addEventListener(t, f) { (this.listeners[t] ||= []).push(f); },
+  removeEventListener(t, f) { this.listeners[t] = (this.listeners[t] || []).filter((g) => g !== f); },
+  querySelector() { return null; } });
+const img = { src: 'a.png', offsetLeft: 0, offsetTop: 0, offsetWidth: 2000, offsetHeight: 1000 };
+const fig = Object.assign(el('fig'), { scrollLeft: 0, scrollTop: 0, clientWidth: 500, clientHeight: 400,
+  scrollWidth: 2000, scrollHeight: 1000, querySelector: () => img });
+const stage = el('stage');
+const ctx = { diagramModel: {}, performance: { now: () => now }, Math, Object, JSON,
+  document: { createElement: el },
+  setTimeout: (f, ms) => { const id = nextId++; timers.set(id, { f, at: now + ms }); return id; },
+  clearTimeout: (id) => timers.delete(id) };
+vm.createContext(ctx);
+vm.runInContext(require('fs').readFileSync(process.argv[1], 'utf8'), ctx);
+ctx.diagramModel.minimap.wire({}, stage, fig);
+const bar = stage.children[0]; const frame = bar.children[0].children[1];
+const scroll = () => fig.listeners.scroll.forEach((f) => f());
+const out = {};
+now = 1000; fig.scrollLeft = 100; scroll();
+now = 1010; fig.clientWidth = 800; fig.scrollLeft = 300; fig.onzoom.forEach((f) => f());
+out.resizeNow = frame.style.transform;
+now = 1020; fig.scrollLeft = 600; scroll();
+out.pending = timers.size;
+bar.isConnected = false;
+for (const [id, t] of [...timers]) { timers.delete(id); now = t.at; t.f(); }
+out.afterGone = timers.size; out.listeners = (fig.listeners.scroll || []).length;
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_a_zoom_or_resize_places_the_frame_at_once_and_a_removed_overview_stops():
+    """Review 6008801452: the resize path went through the 48 ms throttle, so the frame sat on the old spot after a
+    zoom; and a trailing timer outlived the overview. A zoom now places the frame in the same call, and a pan that finds
+    the overview gone clears its timer and its scroll listener."""
+    script = _WIRE
+    run = subprocess.run(["node", "-e", script, str(JS / "diagram-minimap.js")], capture_output=True, text=True, check=True)
+    got = json.loads(run.stdout)
+    assert got["resizeNow"] == "translate(18px, 0px)", got
+    assert got["pending"] == 1, "a scroll inside 48 ms still waits for the trailing call"
+    assert got["afterGone"] == 0 and got["listeners"] == 0, got
