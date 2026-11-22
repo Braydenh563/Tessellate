@@ -9,18 +9,19 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 2 | 1 | 0 | 0 | 3 |
-| chat | 176 | 204 | 60 | 2 | 59 | 440 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| chat | 176 | 206 | 60 | 2 | 59 | 442 |
+| whiteboard | 30 | 41 | 4 | 0 | 11 | 75 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
+| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 16 | 1 | 0 | 0 | 17 |
-| general | 0 | 28 | 2 | 0 | 6 | 30 |
-| all | 372 | 410 | 73 | 2 | 113 | 855 |
+| world-class | 0 | 18 | 1 | 0 | 0 | 19 |
+| general | 0 | 29 | 2 | 0 | 6 | 31 |
+| all | 372 | 419 | 73 | 2 | 113 | 864 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
+- [ ] **L-graph-20** `graph` open, S: Graph leftovers from the 1029 and 1031 audits. From L623 audit-1029-graph G7 G28 G29; audit-1031-graph GR9. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; 500 notes show zero labels at fit (G7), 1.45 MB graph payload at 2,000 notes (G28), 454 ms long task on tab return (G29), gcDraw 809 lines and 71 listeners to 1 removal (GR9, owner call size L).
 
 ## chat
 
@@ -275,6 +276,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-chat-25** `chat` open, M: Composer answer-quality rows still open from the 1028 to 1107 audits. From L623 audit-1028-agent E14 E17 E20 E23; audit-1029-composer C50; audit-1030-composer Z40 Z57 Z58 Z59 Z61 Z67; audit-1107-composer D1 D7 D10 D13 D16 to D20 D22 to D25 D28 E9 E10 E18 E21 E24 P1 R3-8 R3-20 R3-22. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; book4-1109 re-drove the 1107 rows and left these open (probes name the wrong list, missing number, doubled footer, five confirm wordings); E14 overlaps L212, E17 and E23 overlap L106, Z61 overlaps L23; merge into those rows when one is worked.
+- [ ] **L-chat-26** `chat` open, M: Chat, harness and companion leftovers from the 1028 to 1031 audits. From L623 audit-1028-agent E34 E38 E50 E54 E57 E65; audit-1030-ai A24 A30 A36 A37 A42 A43; audit-1031-harness HR16; audit-1029-harness H14; audit-1031-notes N20. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; chat answer render rebuilds every 66 ms (E34), Models page with no Ollama (E38), phone no-model banner 190 px (E50), identity wording (E54), no signal when the top of a chat drops (E57), retrieval untested at scale (E65), companion focus and fade (A36 A37), context pop total (A43), 4x streaming long tasks (A42), Skills Run with nothing chosen (HR16), switch hit areas (H14), card menu taxonomy (N20).
 
 ## whiteboard
 
@@ -320,6 +323,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
 - [ ] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY.
+- [ ] **L-whiteboard-19** `whiteboard` open, L: Whiteboard structure and incremental render leftovers from the 1028 board audit. From L623 audit-1028-board B1 B2 B3 B15 B23 B25 B26 B27 B37 B38 B39 B40; audit-1031-board BD7. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; whiteboard.js and whiteboard-map.js size, per-render rebuild of every map node (B3 named 'Next by rank' in HISTORY, never built), listener and timer cleanup, handle and menu builders, routes_whiteboard.py single router; re-measure line counts at head first.
+- [ ] **L-whiteboard-20** `whiteboard` open, M: Whiteboard feature and polish leftovers from the 1028 board and ux audits. From L623 audit-1028-board B10 B11 B24; audit-1028-ux U15 U17 U18 U42 U46 U47. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; no native PDF export (B10), no mind-map focus mode (B11), inline decision comments (B24), Arrange menu 23 items (U15), grip contrast (U17), 225 ms board long tasks (U18), off-scale values and copy rules (U42 U46 U47); sibling U19 to U49 rows are L279.
 
 ## documents
 
@@ -336,6 +341,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
+- [ ] **L-documents-41** `documents` open, M: Documents code size and feature gaps from the 1028 docs audit. From L623 audit-1028-docs D23 D25 D42 D43 D44 D45 D46 D47. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; hot functions docLivePlugin and docCmTheme, doc CSS spread over 11 files, no CSV table view, no collaboration (owner call), no page layout, wordlist built on the main thread, comment ratio, textarea fallback duplicated paths; D22 is in L126.
 
 ## mindmap
 
@@ -455,6 +461,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
 - [ ] **L-ui-modernisation-24** `ui-modernisation` open, S: Move stale UI plan pointers and empty headings to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:778. Evidence: Open line in the plan's prose a session could miss. Stale 'Open' pointers will mislead the session into rebuilding: - 5b is built (HISTORY, TIMELINE Brief 55). - The selection ticks (line 684) were built 2026-09-23. - 1695 (line 1285) is fully built. - Decision 6's countjs 'future pass' (line 213) is done. - Empty headings sit at lines 781, 1251, 1253 and 1270.
+- [ ] **L-ui-modernisation-25** `ui-modernisation` open, M: Verify the 28 remaining 1028 shell rows against the running app. From L623 audit-1028-shell S3 S23 S24 S25 S30 S31 S33 S35 S37 S39 S41 S45 S46 S48 S51 S57 S64 S65 S70 S76 S77 S78 S79 S80 S81 S82 S89 S93. Evidence: Siblings S27 S28 S29 S32 S34 S36 S49 S59 S60 S71 S73 S74 S75 were found built in L623, so most of these likely are too, but no pointer found for these; check each against the app (palette recents, cheat sheet on ?, lock throttle hint, pin to top, bulk tag, saved searches, first-run sample, go back after jump, tag rename, manual sort, precache trim, flashEntry test) and close or fix.
 
 ## timeline
 
@@ -467,7 +474,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L565** `chat` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L587** `chat` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L619** `world-class` open, M: Verify perf at 2,000 notes, real model, phone boot, long-session PF6 growth. From audit-1031-perf.md. Evidence: Only perf2/perf3/GR1 hold 2,000-note numbers; load average 6 skews ms
-- [ ] **L623** `graph` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
 - [ ] **L627** `chat` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L634** `whiteboard` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
@@ -486,6 +492,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-843** `world-class` open, L: Architecture and size rows still open from the 1028 and 1031 audits. From L623 audit-1028-backend K24 K25 K26; audit-1031-architecture AR1 AR2 AR3 AR6; audit-1031-ai AI23; audit-1031-notes N45; audit-1031-perf PF12. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; god modules and functions over 150 lines (K24 K25), two schema systems (K26), routes holding 359 queries (AR1, see L-world-class-840), 10,000 global names (AR2), composer as second app (AR3), six job homes (AR6, 'not built' in HISTORY), files over 800 lines (AI23), complexity ratchet entries (N45 PF12); overlaps L-world-class-810 and 821.
+- [ ] **L-world-class-844** `world-class` open, M: Perf rows from the 1031 audit with no recorded fix. From L623 audit-1031-perf PF4 PF5 PF10; audit-1031-notes N4; audit-1031-shell SH7 SH12; audit-1031-ux UX3 UX8. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; boot parses 1,557 KB of scripts (PF4), first tab open blocks seconds at 4x (PF5), graph draw loop while settling (PF10), notes list not smooth at 199 notes (N4), phone renders every note (SH7), Settings panes 135 to 234 ms (SH12), 70 idle animations (UX3), theme button 858 ms (UX8); remeasure at head before fixing; PF6 is in L619.
 
 ## general
 
@@ -519,6 +527,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-64** `general` open, S: Sign in from a real remote client such as claude.ai through a tunnel and approve in Settings; only TestClient tests and scratchpad/ui-sweeps/mcp-scope-560.js (light, 1440) ran. From L-world-class-560 leftover.
 - [ ] **L-general-65** `general` open, M: A tool_call block that does not parse is shown to the person as raw markup: strip it from the answer and say the model tried a tool it could not name. From L-world-class-842 eval, 2026-11-21. Evidence: tests/test_browser_tools_evals.py on Qwen 2.5 1.5B q4 (llama-cpp-python, native template): 0 of 5 browser picks after the doubled-brace fix; case 4 wrote <tool_call>{{"name": "browser_back", "arguments": {"}}} which no parser can read, and the raw block reached the answer text because _ToolTextGate flushes held text when nothing parses
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
+- [ ] **L-general-75** `general` open, S: Close three import and fetch size and rebinding gaps from the 1028 and 1031 audits. From L623 audit-1028-backend K15 K34; audit-1031-ai AI20. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; .xmind import trusts the zip header size (wb_import.py:396 area), routes_import.py:62 _received holds up to 200 MB of uploads in memory, fetch_readable resolves the host twice (core/security.py:726 _resolve).
 
 ## Owner calls
 
