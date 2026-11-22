@@ -29,7 +29,7 @@ from tessellate.ai import realise
 from tessellate.entry import properties
 
 #: One way through a line of tabs (CodeQL 2340s): the closing "#"s come off in `_heading_text`.
-_HEADING = re.compile(r"^(#{1,6})[ \t]+(\S.*)$")
+_HEADING = re.compile(r"^(#{1,6})[ \t]++(\S.*+)$")
 _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
 _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
 #: One space after a stop: the prose is folded to single spaces before the split, so no `\s+` run is left for
@@ -57,7 +57,9 @@ _DEF = re.compile(
 )
 _COLON = re.compile(r"^(?:[-*+]\s+)?\**(?P<term>[A-Za-z0-9][^:*\n]{1,40}?)\**\s*[:–-]\s+(?P<body>\S.{7,})$")
 #: Each side starts and ends on a non-space, so trailing tabs have one reading (CodeQL).
-_QA = re.compile(r"^\**Q\**[:.]\**[ \t]*(?P<q>\S(?:[^\n]*\S)?)[ \t]*\n+\**A\**[:.]\**[ \t]*(?P<a>\S(?:[^\n]*\S)?)[ \t]*$", re.M)
+#: Possessive runs, so no two repeats can share a character (CodeQL py/polynomial-redos on
+#: "Q.!" and a long run of "**"); each side's trailing blanks are stripped where it is read.
+_QA = re.compile(r"^\**+Q\**+[:.]\**+[ \t]*+(?P<q>\S[^\n]*+)\n+\**+A\**+[:.]\**+[ \t]*+(?P<a>\S[^\n]*+)$", re.M)
 
 STOP = frozenset(
     "a an the of and or to in on at for with by from as is are was were be been being it its this that these those there their them "
@@ -397,7 +399,7 @@ def cards(content: str) -> list[Card]:
     """Every question and answer the note holds, in the note's order."""
     out: list[Card] = []
     seen: set[str] = set()
-    found = [Card(clean(m.group("q")), _answer_text(m.group("a")), "pair") for m in _QA.finditer(content or "")]
+    found = [Card(clean(m.group("q").rstrip()), _answer_text(m.group("a").rstrip()), "pair") for m in _QA.finditer(content or "")]
     title = title_of(content)
     for sec in sections(content or ""):
         found += _section_cards(sec, sec.title or title)

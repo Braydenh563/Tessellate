@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8588, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11544, test files 3032, tests 23485, plan headings 696, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8588, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11544, test files 3032, tests 23486, plan headings 696, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8588)
 
@@ -20724,49 +20724,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Card` | src/tessellate/ai/study.py:230 |
-| `Section` | src/tessellate/ai/study.py:104 |
-| `_answer_text` | src/tessellate/ai/study.py:293 |
-| `_colon_cards` | src/tessellate/ai/study.py:365 |
-| `_define_cards` | src/tessellate/ai/study.py:320 |
-| `_define_frame` | src/tessellate/ai/study.py:333 |
-| `_definition` | src/tessellate/ai/study.py:298 |
-| `_drop_code` | src/tessellate/ai/study.py:121 |
-| `_drop_statement_runs` | src/tessellate/ai/study.py:145 |
-| `_gap_card` | src/tessellate/ai/study.py:338 |
-| `_grade_list` | src/tessellate/ai/study.py:601 |
-| `_heading_text` | src/tessellate/ai/study.py:70 |
-| `_list_card` | src/tessellate/ai/study.py:352 |
-| `_marked_items` | src/tessellate/ai/study.py:572 |
-| `_names_a_kind` | src/tessellate/ai/study.py:277 |
-| `_pick` | src/tessellate/ai/study.py:238 |
-| `_picks` | src/tessellate/ai/study.py:516 |
-| `_plain_lines` | src/tessellate/ai/study.py:563 |
-| `_prose` | src/tessellate/ai/study.py:199 |
-| `_says_something` | src/tessellate/ai/study.py:540 |
-| `_section_cards` | src/tessellate/ai/study.py:378 |
-| `_share` | src/tessellate/ai/study.py:627 |
-| `_term_ok` | src/tessellate/ai/study.py:253 |
-| `_terms_of` | src/tessellate/ai/study.py:441 |
-| `_trim_term` | src/tessellate/ai/study.py:247 |
-| `_word_forms` | src/tessellate/ai/study.py:597 |
-| `_worth` | src/tessellate/ai/study.py:495 |
-| `bullets` | src/tessellate/ai/study.py:216 |
-| `cards` | src/tessellate/ai/study.py:396 |
-| `clean` | src/tessellate/ai/study.py:75 |
-| `content_stems` | src/tessellate/ai/study.py:92 |
-| `generic_head` | src/tessellate/ai/study.py:432 |
-| `grade` | src/tessellate/ai/study.py:606 |
-| `hint` | src/tessellate/ai/study.py:632 |
-| `key_terms` | src/tessellate/ai/study.py:456 |
-| `list_gist` | src/tessellate/ai/study.py:581 |
-| `open_tasks` | src/tessellate/ai/study.py:220 |
-| `ordered` | src/tessellate/ai/study.py:411 |
-| `sections` | src/tessellate/ai/study.py:161 |
-| `sentences` | src/tessellate/ai/study.py:207 |
-| `stem` | src/tessellate/ai/study.py:82 |
-| `summary` | src/tessellate/ai/study.py:549 |
-| `title_of` | src/tessellate/ai/study.py:181 |
+| `Card` | src/tessellate/ai/study.py:232 |
+| `Section` | src/tessellate/ai/study.py:106 |
+| `_answer_text` | src/tessellate/ai/study.py:295 |
+| `_colon_cards` | src/tessellate/ai/study.py:367 |
+| `_define_cards` | src/tessellate/ai/study.py:322 |
+| `_define_frame` | src/tessellate/ai/study.py:335 |
+| `_definition` | src/tessellate/ai/study.py:300 |
+| `_drop_code` | src/tessellate/ai/study.py:123 |
+| `_drop_statement_runs` | src/tessellate/ai/study.py:147 |
+| `_gap_card` | src/tessellate/ai/study.py:340 |
+| `_grade_list` | src/tessellate/ai/study.py:603 |
+| `_heading_text` | src/tessellate/ai/study.py:72 |
+| `_list_card` | src/tessellate/ai/study.py:354 |
+| `_marked_items` | src/tessellate/ai/study.py:574 |
+| `_names_a_kind` | src/tessellate/ai/study.py:279 |
+| `_pick` | src/tessellate/ai/study.py:240 |
+| `_picks` | src/tessellate/ai/study.py:518 |
+| `_plain_lines` | src/tessellate/ai/study.py:565 |
+| `_prose` | src/tessellate/ai/study.py:201 |
+| `_says_something` | src/tessellate/ai/study.py:542 |
+| `_section_cards` | src/tessellate/ai/study.py:380 |
+| `_share` | src/tessellate/ai/study.py:629 |
+| `_term_ok` | src/tessellate/ai/study.py:255 |
+| `_terms_of` | src/tessellate/ai/study.py:443 |
+| `_trim_term` | src/tessellate/ai/study.py:249 |
+| `_word_forms` | src/tessellate/ai/study.py:599 |
+| `_worth` | src/tessellate/ai/study.py:497 |
+| `bullets` | src/tessellate/ai/study.py:218 |
+| `cards` | src/tessellate/ai/study.py:398 |
+| `clean` | src/tessellate/ai/study.py:77 |
+| `content_stems` | src/tessellate/ai/study.py:94 |
+| `generic_head` | src/tessellate/ai/study.py:434 |
+| `grade` | src/tessellate/ai/study.py:608 |
+| `hint` | src/tessellate/ai/study.py:634 |
+| `key_terms` | src/tessellate/ai/study.py:458 |
+| `list_gist` | src/tessellate/ai/study.py:583 |
+| `open_tasks` | src/tessellate/ai/study.py:222 |
+| `ordered` | src/tessellate/ai/study.py:413 |
+| `sections` | src/tessellate/ai/study.py:163 |
+| `sentences` | src/tessellate/ai/study.py:209 |
+| `stem` | src/tessellate/ai/study.py:84 |
+| `summary` | src/tessellate/ai/study.py:551 |
+| `title_of` | src/tessellate/ai/study.py:183 |
 
 ### src/tessellate/ai/supersede.py (30)
 
@@ -29196,7 +29196,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23485)
+## Tests (23486)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31501,7 +31501,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_regenerate_truncates.py | 5 |
 | tests/test_regenerate_widens_e62.py | 6 |
 | tests/test_regeneration_spread_191.py | 4 |
-| tests/test_regex_linear_2338.py | 5 |
+| tests/test_regex_linear_2338.py | 6 |
 | tests/test_regex_timing_1109.py | 3 |
 | tests/test_regex_whitespace_runs.py | 3 |
 | tests/test_region_read.py | 16 |
