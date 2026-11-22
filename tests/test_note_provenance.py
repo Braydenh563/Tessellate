@@ -77,8 +77,10 @@ def test_extracted_note_says_which_document_and_survives_its_deletion(client, se
     assert stored.origin_document_id == doc.id
     assert not stored.source_path  # never the injection guard's marker
 
-    assert client.delete(f"/documents/{doc.id}").status_code == 200
-    assert client.delete(f"/documents/{doc.id}/purge").status_code == 200
+    binned = client.delete(f"/documents/{doc.id}")
+    assert binned.status_code == 200
+    purged = client.delete(f"/documents/{doc.id}/purge")
+    assert purged.status_code == 200
     session.expire_all()
     again = client.get(f"/entries/{note['id']}").json()
     assert (again["source_kind"], again["source_label"]) == ("document", "Extracted from a document")
