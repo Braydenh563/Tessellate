@@ -17,16 +17,22 @@ _SORT_WORDS = {"recent": "most recent first", "oldest": "oldest first", "name": 
 _GROUP_WORDS = {"none": "not grouped", "day": "grouped by day", "week": "grouped by week", "folder": "grouped by folder"}
 
 
+def match_chats(session: Session, text: str) -> list[Conversation]:
+    """The live chats `text` names: by id, then by an exact title, then by words of a title."""
+    text = str(text or "").strip()
+    if text.isdigit() and (row := session.get(Conversation, int(text))) is not None and row.archived_at is None:
+        return [row]
+    live = select(Conversation).where(Conversation.archived_at.is_(None)).order_by(Conversation.updated_at.desc())
+    rows = [c for c in session.scalars(live) if text.lower() in (c.title or "").lower()]
+    return [c for c in rows if (c.title or "").lower() == text.lower()] or rows
+
+
 def find_chat(session: Session, ref) -> Conversation:  # noqa: ANN001
     """A chat by id, or by the words of its title (the one it names, never a guess between two)."""
     text = str(ref or "").strip()
     if not text:
         raise ToolError("Say which chat: its id, or words from its title")
-    if text.isdigit() and (row := session.get(Conversation, int(text))) is not None and row.archived_at is None:
-        return row
-    live = select(Conversation).where(Conversation.archived_at.is_(None)).order_by(Conversation.updated_at.desc())
-    rows = [c for c in session.scalars(live) if text.lower() in (c.title or "").lower()]
-    rows = [c for c in rows if (c.title or "").lower() == text.lower()] or rows
+    rows = match_chats(session, text)
     if len(rows) != 1:
         raise ToolError(_no_single_chat(text, rows))
     return rows[0]

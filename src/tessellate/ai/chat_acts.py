@@ -77,8 +77,7 @@ def _step(**arguments) -> list[dict]:  # noqa: ANN003
 
 def plan(session: Session, parsed: dict, c: dict) -> dict:
     """The line and card for one of `INTENTS`. `c` is `commands`' lending (`commands._parity_helpers`)."""
-    from tessellate.ai.tools import ToolError
-    from tessellate.ai.tools.tool_chats import _GROUP_WORDS, _SORT_WORDS, find_chat
+    from tessellate.ai.tools.tool_chats import _GROUP_WORDS, _SORT_WORDS, _no_single_chat, match_chats
 
     intent = parsed["intent"]
     if intent == "chat_sort":
@@ -87,10 +86,15 @@ def plan(session: Session, parsed: dict, c: dict) -> dict:
     if intent == "chat_group":
         label = f"Show your chats {_GROUP_WORDS[parsed['group']]}"
         return {"line": c["confirm"](label), "card": c["card"](label, _step(action="group", group=parsed["group"]))}
-    try:
-        chat = find_chat(session, parsed["chat"])
-    except ToolError as error:
-        return {"line": f"{error}."}
+    #: The line is said from the matches, never from a caught error's text: exception text
+    #: never reaches the page (CodeQL py/stack-trace-exposure on /read/act).
+    wanted = str(parsed["chat"] or "").strip()
+    if not wanted:
+        return {"line": "Say which chat: its id, or words from its title."}
+    rows = match_chats(session, wanted)
+    if len(rows) != 1:
+        return {"line": f"{_no_single_chat(wanted, rows)}."}
+    chat = rows[0]
     title = c["clip"](chat.title, 48) if callable(c.get("clip")) else chat.title[:48]
     if intent == "chat_rename":
         label = f"Rename the chat “{title}” to “{parsed['title'][:60]}”"

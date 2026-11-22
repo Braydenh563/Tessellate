@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8588, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11543, test files 3032, tests 23485, plan headings 696, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8588, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11544, test files 3032, tests 23485, plan headings 696, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8588)
 
@@ -14343,7 +14343,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11543)
+## Backend modules (11544)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21333,19 +21333,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `held_reminder` | src/tessellate/ai/tools/reminder_rules.py:26 |
 | `reminder_time` | src/tessellate/ai/tools/reminder_rules.py:39 |
 
-### src/tessellate/ai/tools/tool_chats.py (9)
+### src/tessellate/ai/tools/tool_chats.py (10)
 
 | Name | File:line |
 |---|---|
-| `_edit_chats` | src/tessellate/ai/tools/tool_chats.py:86 |
-| `_move` | src/tessellate/ai/tools/tool_chats.py:78 |
-| `_no_single_chat` | src/tessellate/ai/tools/tool_chats.py:35 |
-| `_organise` | src/tessellate/ai/tools/tool_chats.py:41 |
-| `_pin` | src/tessellate/ai/tools/tool_chats.py:73 |
-| `_rename` | src/tessellate/ai/tools/tool_chats.py:64 |
-| `_undo` | src/tessellate/ai/tools/tool_chats.py:48 |
-| `_view_change` | src/tessellate/ai/tools/tool_chats.py:52 |
-| `find_chat` | src/tessellate/ai/tools/tool_chats.py:20 |
+| `_edit_chats` | src/tessellate/ai/tools/tool_chats.py:92 |
+| `_move` | src/tessellate/ai/tools/tool_chats.py:84 |
+| `_no_single_chat` | src/tessellate/ai/tools/tool_chats.py:41 |
+| `_organise` | src/tessellate/ai/tools/tool_chats.py:47 |
+| `_pin` | src/tessellate/ai/tools/tool_chats.py:79 |
+| `_rename` | src/tessellate/ai/tools/tool_chats.py:70 |
+| `_undo` | src/tessellate/ai/tools/tool_chats.py:54 |
+| `_view_change` | src/tessellate/ai/tools/tool_chats.py:58 |
+| `find_chat` | src/tessellate/ai/tools/tool_chats.py:30 |
+| `match_chats` | src/tessellate/ai/tools/tool_chats.py:20 |
 
 ### src/tessellate/ai/tools/tool_coerce.py (8)
 
