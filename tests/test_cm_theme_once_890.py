@@ -1,4 +1,4 @@
-"""L-world-class-890: `docCmTheme` builds one CodeMirror theme per mode.
+"""L-world-class-890: `docCmThemeKept` builds one CodeMirror theme per mode (`docCmTheme` is the build).
 
 `EditorView.theme` mounts a new style module on every call and CodeMirror
 keeps each module it mounted, so a theme built per editor kept about 90KB of
@@ -27,13 +27,13 @@ let built = 0;
 const CM = { view: { EditorView: { theme: (rules, opts) => ({ n: ++built, dark: opts.dark }) } } };
 const ctx = { document: { documentElement: { dataset: { mode: "light" } } }, docIndentGuides: { levels: 24 }, docListGuides: () => ({}), Object, Array, Map };
 // Every other helper the rules call is pure and returns rules: stubbed.
-for (const [, name] of process.argv[1].matchAll(/\b(doc[A-Z]\w*)\(/g)) if (!(name in ctx) && name !== "docCmTheme" && name !== "docCmThemeBuild") ctx[name] = () => ({});
+for (const [, name] of process.argv[1].matchAll(/\b(doc[A-Z]\w*)\(/g)) if (!(name in ctx) && name !== "docCmTheme" && name !== "docCmThemeKept") ctx[name] = () => ({});
 ctx.window = ctx;
 vm.createContext(ctx);
 vm.runInContext(process.argv[1], ctx);
-const a = ctx.docCmTheme(CM), b = ctx.docCmTheme(CM);
+const a = ctx.docCmThemeKept(CM), b = ctx.docCmThemeKept(CM);
 ctx.document.documentElement.dataset.mode = "dark";
-const c = ctx.docCmTheme(CM), d = ctx.docCmTheme(CM);
+const c = ctx.docCmThemeKept(CM), d = ctx.docCmThemeKept(CM);
 process.stdout.write(JSON.stringify({ same: a === b, again: c === d, swapped: a !== c, dark: c.dark, built }));
 """
     done = subprocess.run(["node", "-e", script, source], capture_output=True, text=True, check=False)

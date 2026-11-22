@@ -149,13 +149,13 @@
   //: note opened (a ten-minute loop grew the heap 0.5MB a minute). The
   //: rules read only the mode and the guide count, so those are the key.
   const kept = new Map();
-  function docCmTheme(CM) {
-    const dark = document.documentElement.dataset.mode === "dark";
-    const key = `${dark}:${docIndentGuides.levels}`;
-    if (kept.get(CM)?.key !== key) kept.set(CM, { key, theme: docCmThemeBuild(CM, dark) });
+  function docCmThemeKept(CM) {
+    const key = `${document.documentElement.dataset.mode === "dark"}:${docIndentGuides.levels}`;
+    if (kept.get(CM)?.key !== key) kept.set(CM, { key, theme: docCmTheme(CM) });
     return kept.get(CM).theme;
   }
-  function docCmThemeBuild(CM, dark) {
+  function docCmTheme(CM) {
+    const dark = document.documentElement.dataset.mode === "dark";
     return CM.view.EditorView.theme(
       {
         "&": {
@@ -1182,5 +1182,5 @@
     );
   }
 
-  Object.assign(window, { docCmTheme });
+  Object.assign(window, { docCmTheme, docCmThemeKept });
 })();

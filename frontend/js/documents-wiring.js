@@ -510,7 +510,7 @@
       CM.language.indentOnInput(),
       CM.language.syntaxHighlighting(CM.language.defaultHighlightStyle, { fallback: true }),
       CM.language.bracketMatching(),
-      docCmTheme(CM),
+      docCmThemeKept(CM),
       docCmHighlight(CM),
       CM.view.placeholder(host.placeholder || ""),
       //: This app's chords first, so Ctrl+B is bold in a note for the same reason it is bold in a document.
