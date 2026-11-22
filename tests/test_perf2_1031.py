@@ -20,7 +20,8 @@ def test_a_list_nobody_can_see_is_not_repainted_as_pages_arrive():
     assert "renderEntriesWhenShown();" in _body(notes, "function ensureMapChipsFor", "\n}\n")
     assert "renderEntriesWhenShown()" in frontend_text("spaces-find.js")
     reveal = _body(frontend_text("navigation.js"), "function revealTab(name)", "window.nameMarkBuddyTabChanged")
-    assert 'if (name === "notes" && $("entry-list").dataset.stale) renderEntries();' in reveal
+    # The sidebar's own render debt rides the same check (owner bug 4 on #257).
+    assert 'if (name === "notes" && ($("entry-list").dataset.stale || renderSidebar.owed)) renderEntries();' in reveal
 
 
 def test_a_real_render_clears_the_owed_paint():

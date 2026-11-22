@@ -2577,9 +2577,8 @@ function renderSidebar() {
   if ($("tab-notes").classList.contains("hidden")) {
     const list = document.getElementById("entry-list");
     if (list) list.dataset.stale = "1";
-    //: The sidebar's own debt, apart from the list's: the tab bar's press clears `data-stale` before it
-    //: draws the list (INBOX 1516), and before the notes surface is built there is no list to mark, so the
-    //: categories were never drawn and showed empty with no fold caret until Manage categories redrew them.
+    //: The sidebar's own debt: the tab press clears `data-stale` first (INBOX 1516), and with no list yet to
+    //: mark, the categories were never drawn and had no fold caret (owner bug 4 on #257).
     renderSidebar.owed = true;
     return;
   }
