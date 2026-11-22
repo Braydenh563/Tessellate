@@ -151,6 +151,10 @@ The running app also answers MCP at `/mcp` on its own port (streamable HTTP, JSO
   The sign-in shows in Settings under Waiting to sign in with a short code the waiting page also shows. Approve, on this computer only, gives the app the notes and changes chosen in the fields above; the grant is then listed and revoked like any link. Scopes are `notes:read` and `notes:write`; writing needs both the app asking for it and the box ticked. A code is single use and good for five minutes; a sign-in not approved in ten minutes ends.
 - **This computer only**, unless LAN mode is on: another device is refused with 403 even with a good token. In Docker, see [DOCKER.md](DOCKER.md#use-it-from-claude-or-another-ai-mcp). A reverse proxy or tunnel on this computer makes its requests look local: the token, PKCE and an approval behind the app's password still hold, but the "this computer" check does not.
 
+## VS Code
+
+`tools/vscode/` is a small extension over the HTTP tool server. It searches your notes, saves a selection as a note, and offers the tool server to VS Code's own chat. Make a token in Settings, Tools it can use, then run Tessellate: Set tool server token. Its README covers installing it from the checkout.
+
 ## Security model
 
 - **Local only, over stdio.** The stdio server has no network listener and no port: the client starts the process and talks over the pipe it holds. The HTTP route is described above.

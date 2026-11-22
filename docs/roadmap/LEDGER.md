@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 18 | 1 | 0 | 0 | 19 |
+| world-class | 0 | 17 | 1 | 0 | 0 | 18 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 372 | 419 | 73 | 2 | 113 | 864 |
+| all | 372 | 418 | 73 | 2 | 113 | 863 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -345,7 +345,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-
 ## ui-modernisation
 
 - [ ] **L380** `ui-modernisation` open, S: Fix capture box moving 2.4px/1.6px on first click. From OPEN.md:1452. Evidence: No fix test found (grep 2.4px hits only an unrelated test_reply_cards note)
@@ -494,6 +493,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-843** `world-class` open, L: Architecture and size rows still open from the 1028 and 1031 audits. From L623 audit-1028-backend K24 K25 K26; audit-1031-architecture AR1 AR2 AR3 AR6; audit-1031-ai AI23; audit-1031-notes N45; audit-1031-perf PF12. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; god modules and functions over 150 lines (K24 K25), two schema systems (K26), routes holding 359 queries (AR1, see L-world-class-840), 10,000 global names (AR2), composer as second app (AR3), six job homes (AR6, 'not built' in HISTORY), files over 800 lines (AI23), complexity ratchet entries (N45 PF12); overlaps L-world-class-810 and 821.
 - [ ] **L-world-class-844** `world-class` open, M: Perf rows from the 1031 audit with no recorded fix. From L623 audit-1031-perf PF4 PF5 PF10; audit-1031-notes N4; audit-1031-shell SH7 SH12; audit-1031-ux UX3 UX8. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; boot parses 1,557 KB of scripts (PF4), first tab open blocks seconds at 4x (PF5), graph draw loop while settling (PF10), notes list not smooth at 199 notes (N4), phone renders every note (SH7), Settings panes 135 to 234 ms (SH12), 70 idle animations (UX3), theme button 858 ms (UX8); remeasure at head before fixing; PF6 is in L619.
+- [ ] **L-world-class-845** `world-class` open, M: Two VS Code extensions after the merge: keep one. From merge 50462a6a7. Evidence: editors/vscode (slice, 3f217d4ad, tests/test_vscode_extension_editors.py) and tools/vscode (world-class, 8ad081f5f, tests/test_vscode_extension.py) both build L-world-class-183; keep one, port the other's sign-in or capture if missing, update docs/MCP.md
 
 ## general
 
@@ -630,8 +630,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L908** `ui-modernisation` blocked-hardware, S: Reproduce dashboard scroll jump (426 u) with owner's preferences. From OPEN.md:2310. Evidence: Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
 - [ ] **L915** `chat` open, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device Reopened 2026-11-14 (hardware audit): the printed manual (headless print to PDF) and the real-model answers (llama-dev.sh) run here; only the iOS zoom check needs a device and stays as one BACKLOG row.
-- [ ] **L916** `world-class` open, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model Reopened 2026-11-14 (hardware audit): the no-model chat state and the page reader run headless here; neither shot needs a model.
-- [ ] **L917** `world-class` open, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed) Reopened 2026-11-14 (hardware audit): tesseract installs from the apt mirror (package registries are allowed).
 - [ ] **L974** `chat` open, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model Reopened 2026-11-14 (hardware audit): scratchpad/llama-dev.sh fetch reaches the GGUF (HTTP 302 from huggingface.co) and cmake and g++ build llama-server.
 - [ ] **L975** `chat` open, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine Reopened 2026-11-14 (hardware audit): scratchpad/llama-dev.sh fetch reaches the GGUF (HTTP 302) and llama.cpp builds here with cmake and g++.
 - [ ] **L979** `world-class` open, S: Verify private notes, several spaces, browser upload of 5,000 files. From OPEN.md:2685. Evidence: Needs real browser upload run Reopened 2026-11-14 (hardware audit): Playwright setInputFiles drives a 5,000-file upload headless.
