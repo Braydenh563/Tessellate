@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 0 | 3 | 1 | 0 | 0 | 4 |
+| graph | 0 | 2 | 1 | 0 | 0 | 3 |
 | chat | 176 | 204 | 60 | 2 | 59 | 440 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 16 | 1 | 0 | 0 | 17 |
 | general | 0 | 28 | 2 | 0 | 6 | 30 |
-| all | 372 | 411 | 73 | 2 | 113 | 856 |
+| all | 372 | 410 | 73 | 2 | 113 | 855 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -482,7 +482,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-691** `world-class` open, M: Install each pip extra from a hashed lock (--require-hashes), without moving a base package. From SECURITY.md, Threat model T23 (L-world-class-320). Evidence: core/extras.py _run_install hands pip names plus EXTRA_BOUNDS constraints, no --require-hashes. A hash lock needs every transitive dependency pinned per platform and Python (uv pip compile --universal --generate-hashes against requirements.txt's constraints), and pinning base packages that requirements.txt only ranges would let an extra install move numpy or tokenizers under the running app. Check: a lock per extra whose base-package pins equal the installed versions, pip install --require-hashes --no-deps from it in a scratch venv and in the frozen --target build.
 - [ ] **L-world-class-670** `world-class` open, M: Seal a private space's files as they are written by a background thread, an import and the live-caption spool. From L-world-class-381. Evidence: tests/test_sealed_readers.py PLAIN_WRITES: recording_make.save_generated, export_folder.write and _write_attachments, routes_import.import_app, captions.begin write a private space's file plain until the next unlock seals it; deleting a private space into an ordinary one carries the sealed bytes as they are
 - [ ] **L-world-class-671** `world-class` open, M: Read a private space's library pictures (Tesseract) in the background. From L-world-class-381. Evidence: core/media_process.py:110 skips a sealed picture; ocr, captioning and vision_ocr take a path on their own threads; the AI reads a private space only from a chat inside it (SECURITY.md T10), so only Tesseract may borrow the session (sealed_files.for_background)
-- [ ] **L-world-class-821** `graph` open, M: Break the last import_module cycle group (14 modules) by making core.deps build its AI services through registered factories. From batch CB, L-world-class-791. Evidence: tests/test_import_module_cycles.py MAX_LARGEST_GROUP 14, MAX_GROUPS 1; the 14 run through core.deps (it builds ModelManager, EmbeddingService, OllamaClient, OpenAICompatClient and imports ai.model_manager and ai.voice), entry.manager, search.engine, ai.provider; invert deps to ai with a factory registry that api/app registers
 - [ ] **L-world-class-780** `world-class` open, S: Rule 2 (three clicks): four panel sub-views sit at depth 4, give the Chat activity panel and the Images Running view a palette command or a door at depth 3. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js light run: 4 destinations at depth 4 (Chat > More actions > Activity and past runs > Running, History, More activity actions; Library > Documents > Images > Running); dark adds Notes > Writing room > More ways to save > Keep it in Drafts, Notes > Manage categories > Show the notes > Running, Chat > Guide > More actions > Every help topic, Settings > What it learned > More for this fact > Correct what this says)
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load

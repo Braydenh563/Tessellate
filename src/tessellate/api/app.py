@@ -158,6 +158,7 @@ from tessellate.core import (
     startup_status,
     validation_copy,
 )
+from tessellate.ai import wiring  # noqa: F401  (registers the AI factories core/deps builds with)
 from tessellate.core.deps import init_app_state
 from tessellate.entry import manager_purge
 

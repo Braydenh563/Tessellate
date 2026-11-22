@@ -8,6 +8,7 @@ from pathlib import Path
 
 from tessellate.ai import tools
 from tessellate.ai.provider import normalise_tool_calls
+from tessellate.ai import wiring  # noqa: F401
 from tessellate.core import deps
 from tessellate.entry import manager
 

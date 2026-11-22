@@ -18,7 +18,7 @@ from datetime import date
 import pytest
 from fastapi.testclient import TestClient
 
-from tessellate.ai import model_manager, spelling
+from tessellate.ai import model_manager, spelling, wiring  # noqa: F401
 from tessellate.core import deps, extras, jobs, taskhistory, vault
 from tests._surface_assets import inline_surfaces
 

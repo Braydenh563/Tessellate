@@ -32,7 +32,7 @@ from tessellate.ai.embeddings import (
 )
 from tessellate.core import cjk
 from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
-from tessellate.search import long_question
+from tessellate.search import long_question, matrix_hooks
 from tessellate.search import query as query_understanding
 from tessellate.repo import memberships
 
@@ -613,10 +613,9 @@ def _score_from_matrix(session: Session, query_vector, query_norm: float, backen
     import numpy as np
 
     try:
-        # `importlib`, not an `import` statement: `search/engine.py` imports
-        # this module, so naming it here is the cycle
-        # `tests/test_no_import_cycles.py` counts wherever the statement sits.
-        engine = importlib.import_module("tessellate.search.engine")
+        # Through `matrix_hooks`: `search/engine.py` imports this module, so
+        # naming it here would be a cycle.
+        engine = matrix_hooks.engine()
         view = engine.vector_view(session, backend_id)
     except Exception:  # noqa: BLE001  # the scan below answers instead
         logger.warning("the retrieval matrix is unavailable; scanning the table", exc_info=True)
