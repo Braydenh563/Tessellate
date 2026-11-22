@@ -7569,11 +7569,29 @@
   //: 26 to 41 ms at 1x and 130 to 250 ms at 4x CPU, once every calm; on the
   //: figure it restyles the figure alone. The DOM is touched only when the
   //: state changes, so a pointermove that finds it awake costs a timer.
+  //: **On the loops, a quarter a task** (L-world-class-390): the class on the
+  //: figure paused all 95 in one frame, whose paint was 117 to 206 ms at 4x
+  //: CPU; four tasks of a quarter each stay under 50. Web Animations' pause()
+  //: costs nothing but takes the loops from CSS for good (atl-off and
+  //: data-atlas-hidden would stop holding them), so it is not used.
+  const NMB_CALM_LOOPS = '.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg';
+  const nmbCalmLoops = (on) => {
+    const run = (nmbClock.calmRun = (nmbClock.calmRun || 0) + 1);
+    const loops = [];
+    for (const box of document.querySelectorAll(".atl-figure-box")) loops.push(...box.querySelectorAll(NMB_CALM_LOOPS));
+    const per = Math.ceil(loops.length / 4);
+    const step = (from) => {
+      if (run !== nmbClock.calmRun) return; // woken or calmed again: the newer run has them
+      for (const loop of loops.slice(from, from + per)) loop.classList.toggle("atl-calm", on);
+      if (from + per < loops.length) setTimeout(step, 20, from + per);
+    };
+    step(0);
+  };
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
     if (on !== nmbClock.isCalm) {
       nmbClock.isCalm = on;
-      for (const box of document.querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on);
+      nmbCalmLoops(on);
     }
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };

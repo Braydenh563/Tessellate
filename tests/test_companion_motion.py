@@ -1907,13 +1907,15 @@ def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
     css = css08_text()
     # L-world-class-126 moved the class from <html> to each figure (a whole-page restyle at
-    # rest); the intent, the same loops held after the same 20 s, is unchanged.
-    rule = css[css.index(".atl-figure-box.is-calm") :]
-    rule = rule[: rule.index("{")]
-    assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
-    assert "animation-play-state: paused" in css[css.index(".atl-figure-box.is-calm") :]
+    # rest), and L-world-class-390 from the figure to each loop, a quarter a task (one frame
+    # repainted all 95); the intent, the same loops held after the same 20 s, is unchanged.
+    css = css + (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
+    assert "animation-play-state: paused" in css[css.index(".atl-figure-box .atl-calm") :].split("}")[0]
+    loops = AV[AV.index("const NMB_CALM_LOOPS") :].split("\n")[0]
+    assert ".atl-orbits *" in loops and ".atl-lw-tail" in loops and ".atl-layer-neb" in loops
     assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV
-    assert 'querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on)' in AV
+    assert 'loop.classList.toggle("atl-calm", on)' in AV and "loops.length / 4" in AV
+    assert "requestAnimationFrame" not in AV[AV.index("const nmbCalmLoops") : AV.index("nmbClock.setCalm = ")]
     assert 'document.documentElement.classList.toggle("is-calm"' not in AV
     assert '"pointermove"' in AV
 

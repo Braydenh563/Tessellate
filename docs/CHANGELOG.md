@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The companion's 20 s calm pause no longer stalls a frame: its loops pause a quarter at a time, so the calm frame at 4x CPU fell from 132 to 264 ms to under 53 (L-world-class-390).
 - Folder imports are sent in parts of 200 files to a staged batch (`POST /import/app/batches`, then `?batch=` for the preview and the import), so the files cross the wire once and no single body of thousands is built (L-world-class-891).
 - The note editor reuses one CodeMirror theme per mode: a theme built per editor kept about 90KB of style rules for every note opened (L-world-class-890).
 - Notes: rows that are not built fold into one spacer per fifty, so a Notes switch at 4,628 notes styles 100 list elements instead of 4,392 (median 142ms to 70ms at 1440x900); every lookup of a row by id goes through `noteRowFor`, which opens the run holding it (L-world-class-873).
