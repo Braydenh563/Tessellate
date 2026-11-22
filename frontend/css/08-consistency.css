@@ -1825,7 +1825,8 @@ summary > .ph-lead,
    on two x and two heights, 34.5px against the 32px of the buttons beside them). The row's height is the
    row's own recipe (a button's), and the icon leads: the switch is drawn last, at the far end, as in the
    documents' menu, whatever order the markup wrote them in. The words are the row's anonymous flex item. */
-.doc-dock-menu-list :is(.dock-menu-check, .doc-dock-menu-check) {
+.doc-dock-menu-list .dock-menu-check,
+.doc-dock-menu-list .doc-dock-menu-check {
   /* A button's own height: 32 with a mouse, the 44px target under touch and at phone widths. */
   min-height: max(var(--target-min), var(--button-min-h));
 }
@@ -6485,12 +6486,12 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 :where(.lock-overlay:not(#lock-overlay)):not(.hidden),
 :where(#palette-overlay):not(.hidden) {
   transition: opacity var(--ui-base) var(--ease-out);
-  & > :where(.card, .modal-card, .sheet-card) {
+  & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) {
     transition: translate var(--ui-slow) var(--ease-out), scale var(--ui-slow) var(--ease-out);
   }
   @starting-style {
     opacity: 0;
-    & > :where(.card, .modal-card, .sheet-card) {
+    & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) {
       translate: 0 var(--space-2);
       scale: 0.985;
     }
@@ -6504,7 +6505,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--ui-exit) var(--ease-out), display var(--ui-exit) allow-discrete;
-  & > :where(.card, .modal-card, .sheet-card) {
+  & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) {
     translate: 0 var(--space-2);
     scale: 0.985;
     transition: translate var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out);

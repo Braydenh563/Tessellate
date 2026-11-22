@@ -22,7 +22,7 @@ def _rule(text: str, selector: str) -> str:
 
 def test_a_switch_row_in_a_dock_menu_is_a_menu_row() -> None:
     css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
-    row = _rule(css, ".doc-dock-menu-list :is(.dock-menu-check, .doc-dock-menu-check)")
+    row = _rule(css, ".doc-dock-menu-list .doc-dock-menu-check")  # one selector per argument (test_css_rule_buckets)
     #: The button floor itself, so touch and phone widths get the 44px target too (390 stood at 34.5 against 44).
     assert "min-height: max(var(--target-min), var(--button-min-h))" in row
     assert "padding-block: 0" in _rule(css, "#settings-modal .settings-section .doc-dock-menu-list .dock-menu-check")
