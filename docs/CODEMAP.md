@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8849, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11011, test files 2855, tests 22883, plan headings 696, app scripts 29, boot scripts 38, script files 365.
+Counts: frontend functions 8849, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11011, test files 2856, tests 22887, plan headings 696, app scripts 29, boot scripts 38, script files 365.
 
 ## Frontend functions (8849)
 
@@ -10579,21 +10579,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:4178 |
-| `dragging` | frontend/js/whiteboard.js:3592 |
+| `addBoardToNote` | frontend/js/whiteboard.js:4181 |
+| `dragging` | frontend/js/whiteboard.js:3596 |
 | `handleWbZoom` | frontend/js/whiteboard.js:601 |
-| `highlighterBlend` | frontend/js/whiteboard.js:4198 |
-| `initWhiteboard` | frontend/js/whiteboard.js:1931 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:3855 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:4090 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:3959 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:2592 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:2566 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4015 |
+| `highlighterBlend` | frontend/js/whiteboard.js:4201 |
+| `initWhiteboard` | frontend/js/whiteboard.js:1935 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:3859 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:4093 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:3962 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:2596 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:2570 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4018 |
 | `wbAlignTol` | frontend/js/whiteboard.js:987 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:447 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:528 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3834 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3838 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:510 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:478 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:364 |
@@ -10609,7 +10609,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1024 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:946 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3819 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3823 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
 | `wbMultiKey` | frontend/js/whiteboard.js:1407 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:921 |
@@ -10624,8 +10624,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:501 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1147 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1148 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3782 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:3769 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3786 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:3773 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:658 |
 | `wbSnap` | frontend/js/whiteboard.js:970 |
 | `wbSnapOn` | frontend/js/whiteboard.js:957 |
@@ -28914,7 +28914,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22883)
+## Tests (22887)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31604,6 +31604,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_hand_drawn.py | 3 |
 | tests/test_wb_help_sheet.py | 5 |
 | tests/test_wb_hover_after_frame_1111.py | 2 |
+| tests/test_wb_init_order.py | 4 |
 | tests/test_wb_ink_more.py | 17 |
 | tests/test_wb_ink_recognise.py | 8 |
 | tests/test_wb_ink_replay.py | 4 |
