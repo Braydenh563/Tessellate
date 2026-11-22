@@ -203,4 +203,5 @@ def test_tools_section_fills_the_mcp_writes_switch_on_open():
     text = (JS_DIR / "settings.js").read_text(encoding="utf-8")
     start = text.index('if (name === "tools")')
     branch = text[start : text.index("\n  if (name ===", start + 10)]
-    assert "pref-mcp-writes" in branch and "/preferences" in branch
+    #: Through `setPreference.read`, the read of /preferences that a press inside it cannot lose (L-general-73).
+    assert "pref-mcp-writes" in branch and "setPreference.read()" in branch

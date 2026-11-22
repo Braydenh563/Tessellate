@@ -211,7 +211,7 @@ function showSettingsSection(name) {
     //: `#pref-mcp-writes` is in this section but was only filled by
     //: `renderAutonomousSettings` (Web search, Background tasks): opened
     //: straight onto Tools it read off over a saved on, as Models did above.
-    apiJson("/preferences")
+    setPreference.read()
       .then((prefs) => {
         prefsCache = prefs;
         $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
@@ -223,7 +223,7 @@ function showSettingsSection(name) {
   if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
   if (name === "tasks") {
     renderAutonomousReview().catch(() => {});
-    apiJson("/preferences")
+    setPreference.read()
       .then((prefs) => {
         prefsCache = prefs;
         renderAutonomousSettings();

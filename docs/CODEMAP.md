@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9142, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2932, tests 23345, plan headings 694, app scripts 29, boot scripts 38, script files 403.
+Counts: frontend functions 9142, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2933, tests 23347, plan headings 694, app scripts 29, boot scripts 38, script files 403.
 
 ## Frontend functions (9142)
 
@@ -852,28 +852,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:921 |
+| `catalogueRun` | frontend/js/settings-panes.js:939 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
 | `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:622 |
-| `currentZoom` | frontend/js/settings-panes.js:822 |
-| `downloadExport` | frontend/js/settings-panes.js:796 |
+| `currentZoom` | frontend/js/settings-panes.js:840 |
+| `downloadExport` | frontend/js/settings-panes.js:814 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:868 |
+| `hud` | frontend/js/settings-panes.js:886 |
 | `initAutoGrow` | frontend/js/settings-panes.js:450 |
 | `initComposerResize` | frontend/js/settings-panes.js:364 |
 | `loadPreferences` | frontend/js/settings-panes.js:597 |
-| `markPrefsDirty` | frontend/js/settings-panes.js:770 |
-| `markPrefsSaved` | frontend/js/settings-panes.js:786 |
-| `nudgeZoom` | frontend/js/settings-panes.js:889 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1003 |
-| `paletteRowParts` | frontend/js/settings-panes.js:985 |
+| `markPrefsDirty` | frontend/js/settings-panes.js:788 |
+| `markPrefsSaved` | frontend/js/settings-panes.js:804 |
+| `nudgeZoom` | frontend/js/settings-panes.js:907 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1021 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1003 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `reportTimezone` | frontend/js/settings-panes.js:541 |
-| `savePrefs` | frontend/js/settings-panes.js:663 |
+| `savePrefs` | frontend/js/settings-panes.js:681 |
 | `setPreference` | frontend/js/settings-panes.js:645 |
-| `setZoom` | frontend/js/settings-panes.js:826 |
+| `setZoom` | frontend/js/settings-panes.js:844 |
 | `watchOverlays` | frontend/js/settings-panes.js:462 |
 
 ### frontend/js/media.js (9)
@@ -29519,7 +29519,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23345)
+## Tests (23347)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31876,6 +31876,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_panes_indexed_1111.py | 1 |
 | tests/test_settings_path_wording.py | 1 |
 | tests/test_settings_prefs_split.py | 3 |
+| tests/test_settings_read_after_press.py | 2 |
 | tests/test_settings_recent_changes.py | 8 |
 | tests/test_settings_reset_gaps.py | 3 |
 | tests/test_settings_row_bar.py | 7 |
