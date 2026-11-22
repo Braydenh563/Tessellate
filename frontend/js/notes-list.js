@@ -3091,8 +3091,10 @@ async function _loadEntries() {
       // Categories the AI has filed notes into since the last load need
       // their ids fetched before rename/delete can work on them.
       // Deliberately not awaited: the list renders now and the controls
-      // light up a moment later.
-      loadCategories();
+      // light up a moment later. Once a load, at its first page: the list is
+      // the server's, not the pages', and the last page asked again, so boot
+      // fetched it twice (L-world-class-874).
+      if (first) loadCategories();
       fillCategoryOptions(document.getElementById("entry-category"), null);
     }
     first = false;

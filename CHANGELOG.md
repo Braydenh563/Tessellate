@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Boot reads the categories once, not twice (L-world-class-874): the notes list fetched `/categories` at its first page and again at its last; it now asks at the first page only (1 GET, was 2, at 500 notes).
 Duplicate scan at 5,000 near-identical notes, 29.7 s to 1.7 s CPU (L-world-class-872): words held by one note take no matrix column, pairs leave the matrix 16 rows at a time as arrays, and the groups join by array operations with one int64 key per root pair; the prefix-filter path hands pairs on in chunks.
 The speller knows the app's own words from the first question again: with route modules loaded at their first request, the app imports the help topics itself (about 5 ms), which routes_help used to do (`test_question_noise.py` cold-process test).
 Lazy router host hardened (review of L-world-class-230): a route module that fails to import is logged once at error level with its module name, is not retried, and the later rows that share its segment still load (`_LazyRouters.settled`); the redundant private `_mark_routes_changed` call is gone. Tests in `tests/test_lazy_routes.py`: every route answers unauthenticated as the eager app does (shuffled, fixed seed), the segment walk fails on a websocket or mount outside its row's segments, a broken row is loud, and no row router has a startup, shutdown or lifespan handler.

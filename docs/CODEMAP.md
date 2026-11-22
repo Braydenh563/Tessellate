@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11500, test files 2948, tests 23197, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11500, test files 2949, tests 23198, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -256,13 +256,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryMenuItems` | frontend/js/notes-list.js:2839 |
 | `clearSkeletons` | frontend/js/notes-list.js:2940 |
 | `compareCategoryNames` | frontend/js/notes-list.js:2777 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3563 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3565 |
 | `engineQueryIds` | frontend/js/notes-list.js:250 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3375 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3421 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3379 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3377 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3423 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3381 |
 | `entryListItems` | frontend/js/notes-list.js:2511 |
-| `entryListOrder` | frontend/js/notes-list.js:3123 |
+| `entryListOrder` | frontend/js/notes-list.js:3125 |
 | `entryNeedsReview` | frontend/js/notes-list.js:273 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:847 |
 | `fileCard` | frontend/js/notes-list.js:713 |
@@ -296,11 +296,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowStays` | frontend/js/notes-list.js:1985 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:436 |
 | `noteSortName` | frontend/js/notes-list.js:1803 |
-| `noteTopicChip` | frontend/js/notes-list.js:3302 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3556 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3473 |
-| `notesRailSync` | frontend/js/notes-list.js:3484 |
-| `notesRailWanted` | frontend/js/notes-list.js:3501 |
+| `noteTopicChip` | frontend/js/notes-list.js:3304 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3558 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3475 |
+| `notesRailSync` | frontend/js/notes-list.js:3486 |
+| `notesRailWanted` | frontend/js/notes-list.js:3503 |
 | `notesScroller` | frontend/js/notes-list.js:1975 |
 | `openNoteEditor` | frontend/js/notes-list.js:113 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2071 |
@@ -310,18 +310,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `parseNoteQuery` | frontend/js/notes-list.js:307 |
 | `propQuery` | frontend/js/notes-list.js:2275 |
 | `readableUrl` | frontend/js/notes-list.js:877 |
-| `referenceCountChip` | frontend/js/notes-list.js:3231 |
-| `referenceCountText` | frontend/js/notes-list.js:3219 |
-| `refreshEntries` | frontend/js/notes-list.js:3131 |
+| `referenceCountChip` | frontend/js/notes-list.js:3233 |
+| `referenceCountText` | frontend/js/notes-list.js:3221 |
+| `refreshEntries` | frontend/js/notes-list.js:3133 |
 | `rememberNoteFilter` | frontend/js/notes-list.js:2363 |
-| `reminderCountChip` | frontend/js/notes-list.js:3274 |
+| `reminderCountChip` | frontend/js/notes-list.js:3276 |
 | `remoteImageNote` | frontend/js/notes-list.js:911 |
 | `renderEntries` | frontend/js/notes-list.js:2375 |
 | `renderEntriesWhenShown` | frontend/js/notes-list.js:2989 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:927 |
 | `renderNoteInline` | frontend/js/notes-list.js:1608 |
 | `renderNoteText` | frontend/js/notes-list.js:1447 |
-| `renderNotesRail` | frontend/js/notes-list.js:3520 |
+| `renderNotesRail` | frontend/js/notes-list.js:3522 |
 | `renderSidebar` | frontend/js/notes-list.js:2583 |
 | `renderWindowed` | frontend/js/notes-list.js:1988 |
 | `resetNoteList` | frontend/js/notes-list.js:2337 |
@@ -332,8 +332,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreNoteControl` | frontend/js/notes-list.js:101 |
 | `safeHref` | frontend/js/notes-list.js:822 |
 | `scheduleEntriesProgress` | frontend/js/notes-list.js:3004 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3496 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3569 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3498 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3571 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2185 |
 | `showEntrySkeletons` | frontend/js/notes-list.js:2876 |
 | `showNotesFilter` | frontend/js/notes-list.js:284 |
@@ -341,9 +341,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarRovingRows` | frontend/js/notes-list.js:2761 |
 | `skeletonRemember` | frontend/js/notes-list.js:2919 |
 | `sortEntries` | frontend/js/notes-list.js:1807 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3509 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3511 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2174 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3296 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3298 |
 | `unlatex` | frontend/js/notes-list.js:757 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2154 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1784 |
@@ -29155,7 +29155,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23197)
+## Tests (23198)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29446,6 +29446,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_catalogue_sliced_1108.py | 5 |
 | tests/test_catchup_recap_1111.py | 5 |
 | tests/test_categories_api.py | 9 |
+| tests/test_categories_once_874.py | 1 |
 | tests/test_category_broken_bar_l803.py | 3 |
 | tests/test_category_colour.py | 16 |
 | tests/test_category_colours_1516.py | 3 |
@@ -32527,14 +32528,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4494 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:546 |
+| Needs hardware | docs/roadmap/LEDGER.md:548 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:539 |
+| Owner calls | docs/roadmap/LEDGER.md:541 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32715,7 +32716,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:669 |
+| Plan session briefs | docs/roadmap/LEDGER.md:671 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32769,25 +32770,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:685 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:769 |
+| chat | docs/roadmap/LEDGER.md:687 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:771 |
 | documents | docs/roadmap/LEDGER.md:325 |
-| documents | docs/roadmap/LEDGER.md:709 |
-| general | docs/roadmap/LEDGER.md:511 |
+| documents | docs/roadmap/LEDGER.md:711 |
+| general | docs/roadmap/LEDGER.md:513 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:673 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:781 |
+| graph | docs/roadmap/LEDGER.md:675 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:783 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:341 |
-| mindmap | docs/roadmap/LEDGER.md:721 |
+| mindmap | docs/roadmap/LEDGER.md:723 |
 | timeline | docs/roadmap/LEDGER.md:459 |
-| timeline | docs/roadmap/LEDGER.md:745 |
+| timeline | docs/roadmap/LEDGER.md:747 |
 | ui-modernisation | docs/roadmap/LEDGER.md:343 |
-| ui-modernisation | docs/roadmap/LEDGER.md:733 |
+| ui-modernisation | docs/roadmap/LEDGER.md:735 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:697 |
+| whiteboard | docs/roadmap/LEDGER.md:699 |
 | world-class | docs/roadmap/LEDGER.md:461 |
-| world-class | docs/roadmap/LEDGER.md:757 |
+| world-class | docs/roadmap/LEDGER.md:759 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |
