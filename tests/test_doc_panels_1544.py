@@ -25,13 +25,13 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
-from tests._app_js import index_html_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 PICKER = _js_scope.unwrapped((JS / "icon-picker.js").read_text(encoding="utf-8"))
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 FEATURES = (JS / "app-features.js").read_text(encoding="utf-8")
 INDEX = index_html_text()
 
@@ -166,8 +166,10 @@ def test_every_panel_is_a_document_command_with_a_chord_in_the_sheet():
         assert chords[ident] not in ("", "none"), ident
     table = DOCS[DOCS.index("// DOC-COMMANDS-BEGIN") : DOCS.index("// DOC-COMMANDS-END")]
     all_keys = re.findall(r'keys: "([^"]*)"', table)
+    # "none" is no chord, so it claims nothing (L-documents-49's insert-sections has none).
     for chord in chords.values():
-        assert all_keys.count(chord) == 1, f"{chord} is claimed twice"
+        if chord != "none":
+            assert all_keys.count(chord) == 1, f"{chord} is claimed twice"
 
 
 def test_the_chords_are_bound_in_the_document_and_in_every_note_box():

@@ -35,6 +35,7 @@ import re
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -228,7 +229,7 @@ def test_the_ring_is_built_in_one_place_and_the_label_grammar_knows_it() -> None
 
 
 def test_the_html_never_hand_builds_a_ring() -> None:
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'class="spinner"' not in html and "circle-notch" not in html
 
 
@@ -307,7 +308,7 @@ def test_in_progress_copy_uses_a_real_ellipsis_never_three_dots() -> None:
                 if opener in "\"'`" and (path.name, f'{opener}...{opener}') in THREE_DOTS_OK:
                     continue
                 offenders.append(f"{path.name}:{number}: {line.strip()[:90]}")
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     for number, line in enumerate(html.splitlines(), 1):
         if re.search(r"""(placeholder|title|aria-label|aria-description)="[^"]*\.\.\."|>[^<>]*[A-Za-z]\.\.\.<""", line):
             offenders.append(f"index.html:{number}: {line.strip()[:90]}")
@@ -322,8 +323,9 @@ def test_in_progress_copy_uses_a_real_ellipsis_never_three_dots() -> None:
 #: reply-kit.js: the answer panel's statistics grid while it loads (C06), a region, not a button.
 #: mermaid-draw.js marks a diagram's figure busy while it draws, a container like the others.
 #: graph-canvas.js: the map's count line (a status region) during a slow reload (audit 1029 G30).
+#: documents-board.js: a board window's figure host while its board loads, a container like mermaid-draw.js's.
 #: chat-turn.js, answer-kit.js: the chat transcript (`#chat-messages`) while an answer streams (audit 1028 E68), the region chat.js marked before its split.
-CONTAINER_BUSY_FILES = {"app.js", "chat.js", "chat-web.js", "chat-turn.js", "answer-kit.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js", "mermaid-draw.js", "graph-canvas.js"}
+CONTAINER_BUSY_FILES = {"app.js", "chat.js", "chat-web.js", "chat-turn.js", "answer-kit.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js", "mermaid-draw.js", "graph-canvas.js", "documents-board.js"}
 
 
 def test_a_button_is_marked_busy_only_through_setbusy() -> None:

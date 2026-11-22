@@ -13,6 +13,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.core import filetypes
+from tests._app_js import documents_text
 
 
 @pytest.mark.parametrize(
@@ -99,7 +100,7 @@ def test_patches_dockerfiles_and_visual_basic_are_types_with_a_mode():
     assert filetypes.normalise("Module1.vb") == "vb"
     assert filetypes.normalise("run.vbs") == "vbs"
     root = Path(__file__).resolve().parents[1]
-    docs = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     body = docs[docs.index("function docCmLanguageFor(") :]
     body = body[: body.index("\n}\n")]
     entry = (root / "frontend" / "vendor" / "codemirror" / "entry.js").read_text(encoding="utf-8")

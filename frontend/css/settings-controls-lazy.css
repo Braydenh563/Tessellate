@@ -352,7 +352,7 @@
   column-gap: var(--space-3);
   align-items: center;
 }
-.learned-row > :last-child {
+.learned-row > .learned-acts {
   grid-area: acts;
 }
 .learned-row-head {

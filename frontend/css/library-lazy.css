@@ -13,6 +13,1224 @@
    with belong here: new surfaces (a map's outline and markers, a picture's
    grip in Live, the print step), not overrides of boot rules. */
 
+/* --- moved from the boot sheets (L308): document rules no later boot or lazy rule competes with at equal
+   specificity, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
+
+/* From 02-chat-graph.css */
+#wb-canvas-view.wb-entering {
+  opacity: 0;
+}
+/* The whiteboard's right-click/long-press selection menu (ROADMAP §89.12).
+   Appended straight to <body> and positioned at the pointer, same reasoning
+   as `wbOpenDockedMenu`'s reparent: a fixed pixel position rather than
+   `.action-menu`'s default `absolute; right:0` anchored to a `.menu-wrap`
+   ancestor it doesn't have here. */
+.wb-ctx-menu {
+  position: fixed;
+  z-index: 200;
+}
+
+/* From 04-chat-dock-appearance.css */
+.wb-info-card {
+  width: min(30rem, calc(100vw - var(--space-8) * 2));
+  max-height: calc(100vh - var(--space-8) * 2);
+  overflow-y: auto;
+}
+
+/* From 06-timeline-dialogs.css */
+/* **One selection recipe for every kind** (WHITEBOARD_PLAN.md decision 6:
+   "eight handles, rotate stem on top, the bounding box at `--accent` 1px; a
+   note's inner card no longer draws its own outline").
+   Measured before it: a card and a text box wore a 2px accent outline, and a
+   sketch wore a dashed 35%-opacity stroke along its own path and no box at
+   all, so the same click read as two different kinds of thing. The box is a
+   real rect now (`.wb-sketch-selection-box`, drawn by `wbRenderSketchHandles`)
+   and both are 1px. */
+.node-card.wb-selected,
+.wb-object.wb-selected {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+/* The note card's own edge stands down while the selection box is on it: two
+   rectangles two pixels apart is the "the outline on note objects differs from
+   every other object kind" report (INBOX 25), and the box is the one that
+   means something. */
+.node-card.wb-selected {
+  border-color: transparent;
+}
+.wb-card-content {
+  font-size: var(--text-lg);
+  line-height: 1.4;
+  /* **A flex item will not shrink below its own content unless it is told
+     it may.** `.wb-card` is a column flex container, and a placed note
+     carries the height the person dragged it to as an inline style. A flex
+     item's `min-height` defaults to `auto`, which resolves to its content's
+     height, so the text won a fight with a box that had a definite size:
+     the paragraphs were laid out past the card's own border, and with
+     nothing clipping them they were painted over the board.
+     Reported as "when I expand the size of notes in the whiteboard and
+     mindmap, the text goes out of the panel border" (INBOX 238). Measured
+     before the fix: a 324-character note in a 320x120 card rendered a
+     215px-tall content block, 112px of it below the card's bottom edge; a
+     408-character note in a 320x160 card spilled 254px.
+     `min-height: 0` lets the item shrink to the box, `overflow: hidden`
+     clips what does not fit. Both belong here rather than on `.wb-card`
+     itself: the eight resize handles and the rotate stem are absolutely
+     positioned children that sit *outside* the card's edge on purpose, and
+     clipping at the card would take them with it. */
+  min-height: 0;
+  overflow: hidden;
+}
+/* Reported: an attached note showed "a cut-off version" with no way to see
+   the rest. The card now renders the whole note (see renderWhiteboard in
+   app.js) and only clamps past a height cap, with a Show more/less toggle
+   below to get past it, this rule used to apply unconditionally at 3 lines
+   with nothing pointing at what was missing. Line-count rather than a pixel
+   max-height for the same reason `.entry-clamped` uses it: it scales with
+   the reading-size setting instead of pinning a font-independent height. */
+/* The collapsed state. The clipping itself is `.wb-card-content`'s job
+   above, since the card's own height is what the text has to fit inside;
+   this adds the cap for the other case, a card that has never been
+   resized and so has no definite height of its own to be clipped by.
+   Eight lines, which is what the `-webkit-line-clamp: 8` this replaces
+   showed, written as a height so that it composes with the card's box
+   instead of competing with it. The old rule could not: `-webkit-line-clamp`
+   counts lines in one inline formatting context, and this element holds
+   rendered markdown, so a note of five paragraphs was eight *paragraphs*
+   tall, not eight lines, and a card sized to hold four of them showed the
+   other four over the board.
+   `.wb-card-content-capped` is added by `renderWhiteboard` only for a card
+   with no stored height, because that is the only case this cap is for. A
+   card the person dragged to 700px is already telling the text how much
+   room it has, and capping it at eight lines as well would leave five
+   hundred pixels of empty card under a "Show more" that hides nothing. */
+.wb-card-content.wb-card-content-clamped.wb-card-content-capped {
+  max-height: calc(1.4em * 8);
+}
+.wb-card-more {
+  align-self: flex-start;
+}
+
+/* From 07-whiteboard-misc.css */
+.wb-object-image > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  pointer-events: none;
+}
+#whiteboard-container[data-current-tool] .wb-object.wb-object-image.wb-selected:has(> .wb-crop-frame) .wb-resize-handle { display: none; }
+.wb-crop-rect {
+  position: absolute;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 55%, transparent);
+}
+.wb-crop-grip[data-grip^="n"] { top: 0; }
+.wb-crop-grip[data-grip^="s"] { top: 100%; }
+.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { top: 50%; }
+.wb-crop-grip[data-grip$="w"] { left: 0; }
+.wb-crop-grip[data-grip$="e"] { left: 100%; }
+.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { left: 50%; }
+.wb-object-frame .wb-frame-title,
+.wb-object-frame .wb-resize-handle {
+  pointer-events: auto;
+}
+#library-view-whiteboard.wb-presenting #wb-html-layer,
+#library-view-whiteboard.wb-presenting #wb-svg-layer {
+  pointer-events: none;
+}
+.wb-comment-marks {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+#library-view-whiteboard.wb-presenting .wb-comment-marks {
+  display: none;
+}
+.wb-object-text.wb-text-editing .wb-text-content {
+  cursor: text;
+  user-select: text;
+}
+/* `outline: none` above had no replacement, a keyboard/screen-reader user
+   tabbing into a whiteboard text box got no visible confirmation it was
+   focused (Web Interface Guidelines pass). The box itself already has a
+   defined border/background (see the comment above), so an inset ring on
+   the editable area reads as an ordinary text-field focus state rather than
+   a stray rectangle on the canvas. */
+.wb-object-text .wb-text-content:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.wb-object-text .wb-text-content:focus {
+  cursor: text;
+}
+#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+.wb-sketch-rotate-handle {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 1px;
+  cursor: grab;
+}
+.wb-link-endpoint-handle:hover,
+.wb-link-endpoint-handle:is(:focus-visible, :has(:focus-visible)) {
+  fill: var(--accent);
+}
+.wb-card.dragging {
+  transition: none;
+}
+/* The stroke takes the accent, the same answer the cards' outline gives; a
+   `drop-shadow` glow here was a filter on hover (INBOX 405). */
+#whiteboard-container[data-current-tool^="link-"] .sketch-group:hover .sketch-path,
+#whiteboard-container[data-current-tool^="link-"] .sketch-group:is(:focus-visible, :has(:focus-visible)) .sketch-path {
+  stroke: var(--accent);
+  cursor: crosshair;
+}
+/* --- line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) -------
+   The documents editor's gutter pattern, wrapped so the capture box and the
+   note edit form can carry one: the gutter takes the textarea's own metrics
+   through the CSSOM at mount, and a numbered box stops soft-wrapping so the
+   numbers stay true. */
+.gutter-wrap {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+.gutter-wrap > .doc-gutter {
+  flex: 0 0 auto;
+}
+.gutter-wrap {
+  margin-bottom: var(--space-2);
+}
+.wb-resize-handle {
+  transform: scale(var(--wb-inv-zoom));
+}
+.wb-rotate-handle {
+  transform-origin: 50% 28px;
+  transform: scale(var(--wb-inv-zoom));
+}
+.sketch-group.wb-selected .sketch-hitbox {
+  stroke: var(--accent);
+  stroke-opacity: 0.2;
+}
+.wb-link-label.wb-link-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
+}
+.wb-layer-row {
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--row-h);
+  padding: 0 var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.wb-layer-row:hover .wb-layer-eye,
+.wb-layer-row:hover .wb-layer-lock,
+.wb-layer-row:focus-within .wb-layer-eye,
+.wb-layer-row:focus-within .wb-layer-lock,
+.wb-layer-row:focus .wb-layer-eye,
+.wb-layer-row:focus .wb-layer-lock,
+.wb-layer-row.is-hidden .wb-layer-eye,
+.wb-layer-row.is-locked .wb-layer-lock {
+  opacity: 1;
+}
+.wb-layer-row.drop-above {
+  border-top-color: var(--accent);
+}
+.wb-layer-row.drop-below {
+  border-bottom-color: var(--accent);
+}
+.wb-clone-grip:hover,
+.wb-clone-grip:is(:focus-visible, :has(:focus-visible)) {
+  fill-opacity: 1;
+}
+
+/* From 04-chat-dock-appearance.css */
+/* --- documents tab ----------------------------------------------------------- */
+/* Reported with a screenshot: "I clicked some buttons in the documents
+   toolbar and it broke my screen", the whole editor, toolbars and all,
+   squeezed into a ~18rem column at the left of an empty page. That column
+   is the *sidebar's*: this grid is two tracks, and once the sidebar is
+   hidden the editor is the first grid child and auto-places into track one,
+   which is capped at 18rem. The sidebar track has to go with the sidebar. */
+.doc-layout:has(> #doc-sidebar.hidden),
+.doc-layout:has(> #doc-sidebar[hidden]),
+.doc-layout:not(:has(> #doc-sidebar)) {
+  /* `!important` on purpose, and measured: the sidebar's resize handle
+     writes the column widths *inline* (`260px 965px` was the computed value
+     with the sidebar hidden), and an inline style beats every selector
+     there is except this. Without it the editor was pinned to a column that
+     still existed at the sidebar's saved width. */
+  grid-template-columns: 1fr !important;
+}
+.doc-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--space-6);
+  /* `start` here is what shrink-wrapped the sidebar. `stretch` makes both
+     columns the height of the row, which the flex chain below makes the height
+     of the page: the same arrangement #tab-chat already uses. */
+  align-items: stretch;
+  min-height: 0;
+  padding: 0;
+}
+.doc-item {
+  position: relative;
+}
+.doc-item.active .doc-item-button {
+  background: var(--accent-soft);
+}
+.doc-item-title {
+  font-weight: 600;
+  font-size: var(--text-md);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-item-meta {
+  font-size: var(--text-sm);
+}
+.doc-item-type {
+  font-weight: 600;
+}
+/* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
+   beside every title in a tight sidebar list would compete with the titles
+   themselves. */
+.menu-wrap.doc-item-menu {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  opacity: 0;
+  transition: opacity var(--ui-fast) var(--ease-out);
+}
+.doc-item:hover .doc-item-menu,
+.doc-item-button:focus-visible ~ .doc-item-menu,
+.doc-item:focus-within .doc-item-menu {
+  opacity: 1;
+}
+
+@media (hover: none) {
+.doc-item-menu {
+    opacity: 1;
+  }
+}
+
+/* Set by app.js the moment a person drags #doc-content's native resize
+   handle. Without it #doc-panes keeps flex-growing to fill .doc-main at its
+   pre-resize height regardless of the textarea now being shorter, and the
+   freed space is trapped between the textarea and .doc-hint instead of
+   showing up at the bottom of the card. See that listener for why this can't
+   just be a CSS rule. */
+#doc-panes.doc-panes-manual {
+  flex: 0 1 auto;
+}
+/* Same default-<p>-margin fix as .doc-hint below, this is the other half of
+   the gap that stacked on top of it. */
+.doc-status {
+  margin: 0;
+}
+.doc-dock-identity {
+  --identity-h: 2.75rem;
+}
+/* Status facts as one group, so a narrow window breaks the bar between the
+   status and the actions instead of between two buttons that belong
+   together. `margin-right: auto` is what puts the group on the left of that
+   row and everything else on the right, the dock's own `space-between` only
+   ever separated the title from all of this. */
+.doc-dock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+}
+.doc-saved {
+  /* Reserved so "Saving…" → "Saved" does not shift the controls to its right
+     by a few pixels twice a minute while someone types. Left-aligned and
+     sitting directly against the stats: right-aligning it inside its own
+     reserved box is what produced the empty channel that got reported. */
+  min-width: 4rem;
+  text-align: left;
+}
+.doc-title-input {
+  flex: 1 1 12rem;
+  /* Was min-width: 0, which let the title absorb all of a narrow window's
+     shortfall before .doc-toolbar's own flex-wrap ever kicked in, .doc-
+     actions' row of buttons wraps internally instead of shrinking, so the
+     title had nowhere to stop and was crushed to a few illegible pixels
+     (reported live, screenshotted). This floor forces the toolbar to wrap
+     the actions onto their own row once the title would otherwise go below
+     a readable width, instead of shrinking the title toward zero. */
+  min-width: 8rem;
+  font-size: var(--text-h3);
+  font-weight: 600;
+  border: 1px solid transparent;
+  background: none;
+}
+/* --- the code editor: gutter + monospace ------------------------------------ */
+
+/* The textarea and its line-number gutter, as one unit. #doc-panes lays out
+   *this* beside the preview now, not the bare textarea. */
+.doc-source-wrap {
+  display: flex;
+  flex: 1 1 auto;
+  /* A positioning context of its own, so anything absolutely placed inside
+     this pane is placed against the pane. The Phase 0 backdrop needed it and
+     is gone; CodeMirror's own panels and tooltips need the same thing, and
+     without it their offsetParent is whatever ancestor happens to be
+     positioned (measured, at the time: an element 219px to the left and 72px
+     up from where it should have been). */
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  gap: 0;
+}
+.doc-source-wrap.hidden {
+  display: none;
+}
+#doc-content.doc-content-code {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-lg);
+}
+/* **The code pane must not soft-wrap, or the numbers cannot be right.**
+   Reported: "the document line numbers in the documents dont actually work or
+   go all the way". A `<textarea>` wraps by default, so one logical line can
+   occupy three visual rows; the gutter prints one number per *logical* line
+   (`white-space: pre`), so from the first wrapped line onwards every number is
+   against the wrong row, and the column ends short of the bottom of the text
+   by however many rows the wrapping added. Matching the font and line-height
+   -- which the rule above is careful about -- cannot fix that on its own.
+
+   Horizontal scrolling is the accepted trade in every editor that shows line
+   numbers, and it is what makes the two columns agree line for line. */
+#doc-content.doc-content-code {
+  white-space: pre;
+  overflow-x: auto;
+}
+.doc-hint {
+  /* <p> carries the UA default `margin: 1em 0`, nothing here ever zeroed it,
+     so it stacked with .doc-main's own `gap` and #doc-status's identical
+     unreset margin above it. Live-reproduced: the gap between the editor and
+     this hint measured ~65px and was present on a fresh, never-resized load, 
+     unrelated to the #doc-panes-manual resize mechanism right above this rule
+     despite looking like the same symptom. */
+  margin: 0;
+  font-size: var(--text-base);
+}
+.doc-ai-result-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+.doc-ai-result-block.hidden {
+  display: none;
+}
+.doc-ai-result-actions {
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+.doc-ai-card > #doc-ai-verb label > .ph {
+  color: var(--muted);
+}
+.doc-ai-card > #doc-ai-verb label:has(input:checked) {
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.doc-ai-card > #doc-ai-verb label > input:checked + .ph {
+  color: var(--accent-text);
+}
+.doc-ai-card > #doc-ai-verb label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+input.doc-title-input::placeholder {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* From 01-forms-settings.css */
+.bookmark-attach-picker {
+  width: auto;
+  max-width: 16rem;
+}
+
+/* From 05-sidebars-themes.css */
+@media (max-width: 819.98px) {
+.doc-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (pointer: coarse) {
+.cm-md-callout-kindbtn {
+    position: relative;
+  }
+.cm-md-callout-kindbtn::after {
+    content: "";
+    position: absolute;
+    inset: calc((var(--target-min) - 1.5em) / -2);
+  }
+}
+
+/* A toggle is a disclosure, not a box: no tint, no edge, only the caret and
+   an indent that says what belongs to it (Notion's toggle, spelled as a
+   callout so it stays a quote anywhere else). */
+.callout-toggle {
+  --callout-tint: transparent;
+  --callout-edge: transparent;
+  padding: var(--space-1) 0;
+  border-left-color: transparent;
+}
+.callout-toggle > .callout-head::after {
+  margin-left: 0;
+  transform: rotate(-45deg);
+}
+.callout-toggle[open] > .callout-head::after {
+  transform: rotate(45deg);
+}
+.md-rule-dots::before {
+  content: "\2022\2003\2022\2003\2022";
+  font-size: var(--text-md);
+  letter-spacing: 0.1em;
+}
+.md-toc-depth-1 { padding-left: var(--space-5); }
+.md-toc-depth-2 { padding-left: var(--space-7); }
+.md-toc-depth-3 { padding-left: var(--space-9); }
+.doc-toolbar.is-more-open {
+  flex-wrap: wrap;
+}
+.doc-toolbar-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* **An empty section does not reserve a heading and a button.** Measured with
+   no references attached: `#doc-bookmarks-wrap` was 69.4px of column for a
+   12px uppercase "REFERENCES" eyebrow and a full-width "Attach a link" over
+   nothing, sitting above roughly 290px of empty sidebar. Backlinks and "notes
+   it draws on" already hide themselves when they have nothing to list
+   (`renderDocBacklinks`, `renderDocNotes`); References cannot, because the
+   way to attach the first one is inside it.
+   So the section empties out instead: the eyebrow goes, the empty list goes,
+   the rule above it goes, the 4rem floor every section otherwise keeps goes,
+   and what is left is one quiet action at the panel's left edge, the same
+   weight and the same muted ink as the storage help below it, which is the
+   only other thing down there. Written with `:has` against the list's own
+   emptiness rather than a class from JS: the three renderers all end in
+   `replaceChildren()`, so the DOM already knows, and a class would be a
+   fourth thing to keep in step.
+   `#doc-outline-wrap` is deliberately not in this list. It is what the tab is
+   called, so it keeps its heading and answers with a sentence instead
+   (`#doc-outline-empty`), which `docoutline.js` asserts. */
+#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
+#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline-title,
+#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
+#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline,
+#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline,
+#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline {
+  display: none;
+}
+#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark {
+  margin-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-weight: 400;
+}
+#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:hover,
+#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:focus-visible {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+.outline-row.is-drop-before {
+  box-shadow: inset 0 2px 0 0 var(--accent);
+}
+.outline-row.is-drop-after {
+  box-shadow: inset 0 -2px 0 0 var(--accent);
+}
+/* A row, not a stack. `.outline-link` is `width: 100%`, so a ✕ beside one had
+   nowhere to go but the next line: "References stacks a close button above
+   its own select". The link takes the room and shrinks; the action keeps its
+   own size. */
+.doc-outline-row,
+.doc-attach-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.doc-outline-row > .doc-outline-row-action,
+.doc-attach-row > .doc-outline-row-action {
+  flex: 0 0 auto;
+}
+/* The line that says what fills an empty outline. One sentence, the muted
+   ink, and the same left edge as the entries that will replace it, so the
+   panel does not shift sideways the moment a heading is written. */
+.doc-outline-empty {
+  margin: 0 0 var(--space-2);
+  padding-left: 0.25rem;
+  font-size: var(--text-base);
+  line-height: 1.45;
+}
+.doc-statusbar-fact {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#doc-counts {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doc-statusbar-spacer {
+  flex: 1 1 auto;
+}
+/* Only when there is something to look at. A count that is always coloured is
+   a count nobody reads, and a count that is always a chip is a chip nobody
+   presses: "No suggestions" is a statement and stays flat, while a real count
+   takes an edge and a wash so it reads as the control it has always been
+   (DOCUMENTS_PLAN Phase 0 item 3). */
+.doc-statusbar-button.has-findings {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+.doc-prose-panel.doc-prose-right,
+.doc-prose-panel.doc-prose-right:has(.doc-prose-row[aria-current]) {
+  flex: 0 0 var(--doc-prose-w);
+  width: var(--doc-prose-w);
+  max-height: none;
+  margin-top: 0;
+}
+.doc-prose-resize.sidebar-resize {
+  position: static;
+  flex: 0 0 var(--space-3);
+  height: auto;
+  align-self: stretch;
+}
+.doc-prose-group-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+.doc-prose-rowhead .doc-prose-act.ghost.small {
+  width: var(--control-h-lg);
+  height: var(--control-h-lg);
+  min-height: 0;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+.doc-prose-rowhead .doc-prose-act.ghost.small:hover,
+.doc-prose-rowhead .doc-prose-act.ghost.small:focus-visible {
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
+}
+/* Suggestion mode (INBOX 404). An insertion is underlined on a green ground,
+   a deletion struck through in the error ink, the pair every editor with
+   tracked changes uses; the ink of the words themselves is left alone, so
+   contrast is the body text's own. The markers show only outside Live. */
+.cm-suggest-ins {
+  text-decoration: underline;
+  text-decoration-color: var(--ok);
+  text-decoration-thickness: 2px;
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.cm-suggest-del {
+  text-decoration: line-through;
+  text-decoration-color: var(--error);
+  text-decoration-thickness: 2px;
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.cm-read-aloud {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: var(--radius-sm);
+}
+.doc-prose-row[aria-current] .doc-finding-words {
+  font-weight: 600;
+}
+/* The word, and why it is flagged. Both, because "recieve" with no reason is a
+   scold and a reason with no word makes you go and look. The two are drawn by
+   `docFindingLine`, the same function the panel row uses, so this rule only has
+   to place the line and divide it from the answers below. */
+.doc-suggest-head {
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-1);
+}
+.doc-suggest-head .doc-finding-why {
+  overflow: visible;
+  white-space: normal;
+}
+.doc-suggest-actions {
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--border);
+}
+/* **The answers, under the row that asked** (DOCUMENTS_PLAN 12 D3): the same
+   controls the floating menu draws, laid out along the row rather than down it,
+   because the panel is the width of the editor and a column of five candidates
+   inside a 33vh box is a scroller inside a scroller. Indented to the width of
+   the dot and its gap, so the answers hang off the finding they belong to. */
+.doc-prose-answers {
+  margin: var(--space-1) 0 var(--space-3) calc(var(--space-3) + var(--space-4));
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--divider);
+}
+.doc-suggest-actions-inline {
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+}
+.doc-suggest-best {
+  font-weight: 600;
+}
+.doc-suggest-none {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+.doc-dictionary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--row-h);
+  padding: 0 var(--space-1) 0 var(--space-3);
+  border-radius: var(--radius-sm);
+}
+.doc-dictionary-row:hover .doc-dictionary-remove,
+.doc-dictionary-row:focus-within .doc-dictionary-remove {
+  opacity: 1;
+}
+
+@media (hover: none) {
+.doc-dictionary-remove {
+    opacity: 1;
+  }
+}
+
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small {
+  flex: none;
+  height: var(--dialog-head-btn-size);
+  min-height: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:hover,
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small[aria-pressed="true"],
+.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
+}
+.doc-prose-more {
+  display: inline-flex;
+}
+.doc-prose-empty {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-2);
+  align-items: baseline;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+}
+.doc-template-empty {
+  margin: 0;
+}
+.doc-mentions-help {
+  margin-top: 0;
+}
+.doc-crumbs-list {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* A trail is one line: a document nested five headings deep scrolls
+     sideways rather than growing the row and shifting the writing down. */
+  white-space: nowrap;
+}
+.doc-crumbs-list li + li::before {
+  content: "\203A";
+  color: var(--muted);
+  opacity: 0.7;
+  padding: 0 0.15rem;
+}
+
+/* From 06-timeline-dialogs.css */
+/* The notes a document draws on, beside its outline. The row is the note plus
+   a detach button, so the two can't run into each other on a long preview. */
+#doc-notes li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* From 07-whiteboard-misc.css */
+/* Reported directly, with screenshots: the Outline visibly disappeared
+   whenever the "Where are my documents kept?" disclosure below it was
+   opened. The comment above this block already said the help disclosure
+   should "give up its space first", but `flex: 0 0 auto` means
+   flex-shrink: 0, which is the opposite of giving anything up; it is
+   *exempt* from shrinking, so the whole deficit landed on the one sibling
+   that could shrink and had no floor of its own. Measured live before
+   fixing: 10 headings' worth of outline went from 258px tall to exactly
+   0px the instant the disclosure opened. */
+.doc-sidebar-tabs {
+  /* This is now the first thing in the card, which puts it exactly where
+     .sidebar-head used to sit, so it needs .sidebar-head's own two fixes
+     for the same reason (05-sidebars-themes.css): pulled up to sit level
+     with the collapse toggle (positioned against the card's border box,
+     one --space-6 above where this card's content box starts), and a
+     reserved lane past the toggle so the tab strip doesn't run under it.
+     Reported live: the strip was sitting under/clipped by the toggle. */
+  margin-top: calc(var(--sidebar-toggle-inset) - var(--space-6));
+  /* The bare lane (toggle width + one --space-2) put "Outline" close enough
+     to read as crowding the toggle at narrower sidebar widths, reported
+     directly. An extra --space-3 of clearance on top of the lane everywhere
+     else already reserves. */
+  padding-right: calc(var(--sidebar-toggle-lane) + var(--space-3));
+  min-height: var(--sidebar-toggle-size);
+  /* The sidebar's own row gap is the space under the strip: a margin on top of
+     it was a band of 18px between the strip and the first heading. */
+  margin-bottom: 0;
+  flex: 0 0 auto;
+  /* Redesigned away from .seg's filled-pill look (reported live, with a
+     photo): it is the app's one underline recipe, `.tabs-line`
+     (05-sidebars-themes.css), now shared by the Notes and Library strips,
+     which supplies the hairline, the tab metrics and the 2px line. */
+  padding-left: 0;
+  gap: var(--space-1);
+}
+
+@container doc-sidebar (width < 14rem) {
+.doc-sidebar-tabs {
+    margin-top: calc(var(--sidebar-toggle-inset) + var(--sidebar-toggle-size) + var(--space-2) - var(--space-6));
+    padding-right: 0;
+  }
+}
+
+#doc-sidebar-list .sidebar-head h2 {
+  flex: none;
+}
+/* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
+   auto` below still has a flex context stretching the height the tab strip
+   left behind: the same nested-flex-column shape .doc-sidebar itself uses
+   against the page. */
+.doc-sidebar-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.doc-sidebar-section.hidden {
+  display: none;
+}
+#tab-documents.doc-focus > .doc-layout {
+  gap: 0;
+}
+/* The floating dock. A `.card.glass` pill, the recipe for a panel floating
+   over a surface, parked at the top centre of the window. Hidden whenever the
+   mode is off. */
+.doc-focus-bar {
+  display: none;
+}
+/* Idle: gone, and out of the pointer's way, until a move brings it back.
+   Never while the pointer is on it or the focus is in it, which is what lets
+   Tab walk into a dock that had faded. Opacity only: a fade that moved or
+   resized the bar would be a layout change on every wake. */
+#tab-documents.doc-focus.doc-focus-idle > .doc-focus-bar:not(:hover):not(:focus-within) {
+  opacity: 0;
+  pointer-events: none;
+}
+:where(:root[data-motion="reduced"]) #tab-documents.doc-focus > .doc-focus-bar {
+  transition: none;
+}
+.doc-focus-facts {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.doc-focus-facts > span + span:not(:empty)::before {
+  content: "\00B7";
+  margin-inline-end: var(--space-2);
+}
+#tab-documents.doc-focus > .doc-focus-bar .ghost.small {
+  height: var(--control-h-lg);
+  border-radius: var(--radius-pill);
+}
+#tab-documents.doc-focus > .doc-focus-bar .icon-only {
+  width: var(--control-h-lg);
+}
+/* **Tools, inside the mode** (INBOX 426 a). The owner: "in the documents
+   full screen mode, I cant access the formatting toolbar or any of the other
+   key tools or controls". The dock (view, AI edit, the document's menu) and
+   the formatting strip come back in their own places above the page, at the
+   window's width, under the floating dock's band; the sidebar, the app's own
+   bars and the status bar stay away, so this is still the page with nothing
+   around it. A collapsed strip stays collapsed (its rule in
+   07-whiteboard-misc.css), which is why pressing Tools also expands it. */
+#tab-documents.doc-focus.doc-focus-tools .doc-dock {
+  display: flex;
+}
+#tab-documents.doc-focus.doc-focus-tools #doc-toolbar:not(.is-collapsed) {
+  display: flex;
+}
+#tab-documents.doc-focus > .doc-focus-bar [aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
+  display: flex;
+  position: fixed;
+  top: var(--doc-focus-panel-top);
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 2;
+  width: var(--doc-focus-sidebar-w);
+  height: auto;
+  max-height: none;
+  margin: 0;
+  background: var(--modal-bg-opaque);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: hidden;
+  /* Below 820 the sidebar is an edge sheet (translated off screen, its rows
+     `visibility: hidden`, a rail left showing); here it is the panel, so the
+     sheet's own state is put back. */
+  transform: none;
+  border-radius: var(--radius);
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-collapse-toggle,
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-rail-name {
+  display: none;
+}
+/* The phone's floating formatting bar (fixed, above the keyboard) is drawn
+   over a panel that reaches the bottom of the window, cutting its last row;
+   the panel is for finding a document, not for writing, so the bar waits. */
+#tab-documents.doc-focus.doc-focus-sidebar .doc-phone-bar {
+  display: none;
+}
+
+@media (max-width: 819.98px) {
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
+    right: var(--space-4);
+    width: auto;
+  }
+}
+
+@media (min-width: 820px) {
+#tab-documents.doc-focus.doc-focus-sidebar .doc-main {
+    padding-left: calc(var(--doc-focus-sidebar-w) + var(--space-4) * 2);
+  }
+}
+
+@media (max-width: 819.98px) {
+#tab-documents.doc-focus > .doc-focus-bar {
+    gap: var(--space-1);
+    padding-left: var(--space-3);
+  }
+#tab-documents.doc-focus > .doc-focus-bar .doc-focus-word {
+    display: none;
+  }
+#tab-documents.doc-focus > .doc-focus-bar button:has(.doc-focus-word) {
+    width: var(--control-h-lg);
+    padding-inline: 0;
+  }
+#tab-documents.doc-focus > .doc-focus-bar button > .ph-lead:has(~ .doc-focus-word) {
+    margin: 0;
+  }
+}
+
+@media (max-width: 340px) {
+#tab-documents.doc-focus > .doc-focus-bar .doc-focus-facts {
+    display: none;
+  }
+}
+
+/* The "show me this one" flash lived here as two rules: a keyframe pulse on
+   the Live view's `<mark>` and a `::selection` colour on the Source view's
+   textarea. DOCUMENTS_PLAN Phase 2 left one editor, and it answers the
+   question itself: `docProseJump` puts the selection on the flagged span and
+   the engine scrolls it into view as part of the same transaction, with the
+   underline already saying which words are meant. `.doc-selection-flash` is
+   kept below for the fallback textarea, which still cannot mark a range it
+   already holds any other way. */
+.doc-selection-flash::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.doc-statusbar {
+  background: var(--surface-2);
+  border-color: transparent;
+}
+.doc-statusbar-button {
+  min-height: var(--target-min);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+@media (max-width: 819.98px) {
+.doc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+.doc-layout > :not(.sidebar-panel) {
+    grid-column: 1;
+  }
+}
+
+/* From 08-consistency.css */
+.doc-dock-identity {
+  --identity-h: var(--control-h-lg);
+}
+.doc-view-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* "How to edit" holds four one-word modes (Live, Source, Split, Plain), 113px
+   of content in the 15rem every dock list starts at: a menu twice as wide as
+   anything in it reads as a panel with nothing in it (menus.js, the only
+   menu past 2x). The floor it gets is the width of its longest row plus air,
+   not a new size of its own. */
+.doc-view-menu > .doc-dock-menu-list {
+  min-width: 10rem;
+}
+/* Focus mode opens the documents sidebar whole as its own panel, folded on
+   the page or not; its rows are where they belong there. */
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > * {
+  transform: none;
+}
+#doc-bookmarks-wrap:has(> .doc-outline:empty) {
+  padding-block: var(--ring-room);
+  margin-top: calc(var(--space-3) - var(--ring-room));
+}
+
+/* From 09-editor.css */
+.doc-prop-row {
+  display: grid;
+  grid-template-columns: var(--form-label-col) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+.doc-prop-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.doc-props input.doc-prop-input:hover,
+.doc-props input.doc-prop-add:hover {
+  border-color: var(--border);
+}
+.doc-props input.doc-prop-input:focus-visible,
+.doc-props input.doc-prop-add:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--field-inset);
+}
+.doc-prop-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.doc-prop-row:hover > .doc-prop-btn,
+.doc-prop-row:focus-within > .doc-prop-btn {
+  opacity: 1;
+}
+.doc-prop-check {
+  margin: 0;
+}
+.doc-prop-new {
+  display: flex;
+  align-items: center;
+}
+.doc-props-read {
+  border-bottom: 1px solid var(--border);
+  padding-inline: 0;
+}
+.cm-md-figure {
+  display: inline-block;
+  max-width: 100%;
+}
+/* An embedded block (DOCUMENTS_PLAN Phase 4 item 2).
+
+   Every other embed in this editor draws an *object* through the renderer
+   that owns it: a note card, a map chip, a file tile. A block is not an
+   object, it is a paragraph of this notebook's own writing, so it is drawn as
+   what it is: quoted text with a line saying where it came from. The quote
+   bar is the same 3px accent the callout and the blockquote use, so the three
+   quoted things in this editor agree. */
+.doc-embed-block {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.doc-ai-diff-block {
+  margin-bottom: var(--space-3);
+}
+.doc-ai-diff {
+  max-height: min(14rem, 32vh);
+}
+.doc-ai-diff-head {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-sm);
+}
+/* --- the assistant's three verbs (INBOX 192) --------------------------------
+   "change the style of and redesign this edit, write, remove ai assistant
+   toggle row as it is ugly and needs a better visual and more modern look".
+
+   Not a fourth treatment, and not a new recipe (standing order 11). DESIGN.md
+   already says what this control is: "the radio-backed form
+   (`.segmented-control`: `#doc-ai-verb`) is the same object as the
+   button-backed one (`.seg`) and the recipe index has no room for a second
+   reading of it". What was still true when the owner looked at it is that it
+   was not drawn with `.seg`'s numbers. Measured beside `#doc-view-seg`, the
+   choice control on the same screen: track corner 11.2px against 15.4px,
+   segment corner 6px against 15.4px, segments 30px tall inside a 32px track
+   with the slack unevenly split, and three segments 73.4 / 82.7 / 101.2px
+   wide, so the row read as three different-sized shapes with three different
+   corners from everything around it. (INBOX 101's note that `--radius-inner`
+   "lands within 2.4px of `.seg button`'s own radius" was true when `.seg
+   button` was 8.4px; the dock's own rule has since made every `.seg` 15.4px.)
+
+   Four numbers, no new colours: the selected segment stays `--accent-surface`
+   behind `--on-accent`, which is the line DESIGN.md settles for both forms. */
+#doc-ai-verb {
+  /* The choice control's row of the radius table (DESIGN.md). */
+  border-radius: var(--radius-choice);
+  /* **A grid, so the three verbs are one width.** As a flex row they measured
+     73.4 / 82.7 / 101.2px, and `flex: 1 1 0` cannot equalise them: the track
+     is content-width by an earlier decision, so every segment sits clamped at
+     its own min-content and the free space to share is nil. One `1fr` column
+     each is the shape that reads as a segmented control, and in a
+     content-width grid `1fr` tracks all take the widest segment's size. */
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: stretch;
+}
+/* The same specificity as the height rule in 04-chat-dock-appearance.css, in a
+   sheet that loads after it: that rule gives the segment `height: 100%`, which
+   a percentage against an auto-height track resolves to its own content, and
+   the segment then sat 30px inside a 32px well. */
+.doc-ai-card > #doc-ai-verb label {
+  /* Concentric with the track: the track's radius less the padding that sits
+     between them (`--space-1` of padding and the track's own 1px edge), which
+     is the relationship `--radius-inner` was picked for and the arithmetic it
+     can no longer express here. */
+  border-radius: calc(var(--radius) * 0.5 + var(--radius-md) - var(--space-1) - 1px);
+  /* Centred in the column the grid above gives it: sized to their words the
+     three read as three different shapes, and the eye takes the widest for
+     the important one. */
+  justify-content: center;
+  /* Fill the track rather than floating 1px inside it. */
+  align-self: stretch;
+  height: auto;
+}
+#doc-ai-verb label:has(input[type="radio"]:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* **A box the page was stretching keeps its height when the engine arrives**
+   (INBOX 240). `mountNoteSurface` stamps this class when the textarea it is
+   wrapping was a growing item of a flex parent, which the wrapper then has to
+   be instead: see that function's comment for the 330.3px to 146px the two
+   Writing Room boxes lost without it.
+
+   The three rules below are the same idea at each level: the wrapper grows,
+   the editor fills the wrapper, and the scroller stops holding a height of its
+   own. `min-height: 0` on the first two because a flex item's default
+   `min-height: auto` refuses to shrink below its content, which is what turns
+   a long note into a column that pushes its own footer off the page instead of
+   scrolling. These have to sort after the two blocks above (same specificity,
+   and `.note-surface-box` is on the same element), so they stay here. */
+.note-surface-stretch {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+.note-surface-stretch .cm-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 1099.98px) {
+.doc-source-wrap.has-margin {
+    flex-wrap: wrap;
+  }
+}
+
+/* From 10-responsive.css */
+@media (max-width: 599.98px) {
+#tab-documents .doc-actions,
+  #tab-documents .doc-view-cluster {
+    gap: var(--space-1);
+  }
+#tab-documents .doc-statusbar {
+    overflow: hidden;
+  }
+  /* A phone's formatting is the bar at the thumb (below), always there in
+     Edit, so the dock's way back to the desktop strip (INBOX 574) would be a
+     second row of chrome for nothing. */
+  
+#doc-format-show {
+    display: none;
+  }
+}
+
+/* From 08-consistency.css */
+.wb-export-overlay .seg.wb-export-seg:has(> button:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, 1fr);
+}
+.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):hover,
+.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
+}
+
 /* --- moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library
    bundle's own classes, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
@@ -99,7 +1317,8 @@ button.outline-twist {
   pointer-events: auto;
 }
 
-#wb-html-layer > .wb-culled {
+#wb-html-layer > .wb-culled,
+[data-wb-layer="wb-html-layer"] > .wb-culled {
   content-visibility: hidden;
 }
 
@@ -108,7 +1327,8 @@ button.outline-twist {
    z-index set in JS between the cards' ranks. Its width and height are 1
    (attributes, set in JS), not 0: a zero-size `<svg>` draws nothing;
    overflow shows the strokes wherever they are. */
-#wb-html-layer > .wb-sketch-band {
+#wb-html-layer > .wb-sketch-band,
+[data-wb-layer="wb-html-layer"] > .wb-sketch-band {
   position: absolute;
   left: 0;
   top: 0;
@@ -225,6 +1445,12 @@ textarea.has-gutter {
    be pressed or seen; the Layers tab is the way back. */
 #whiteboard-container .wb-hidden {
   display: none;
+}
+
+/* Edit inside a group (L-whiteboard-7): the rest of the board stands back and cannot be pressed. */
+#whiteboard-container .wb-dimmed {
+  opacity: 0.25;
+  pointer-events: none;
 }
 
 .skill-card .skill-card-facts > :is(.chip, button).skill-fact > .ph-lead {
@@ -399,7 +1625,11 @@ textarea.has-gutter {
   background: var(--accent-soft);
 }
 
-.library-file-rows .library-image-tile > .library-file-facts :is(.library-file-meta, .library-read-strip, .library-read-badge, .library-image-usage, .library-image-usage > .muted) {
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-file-meta):is(.library-file-meta, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-read-strip):is(.library-read-strip, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-read-badge):is(.library-read-badge, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :where(.library-image-usage):is(.library-image-usage, .library-image-usage > .muted),
+.library-file-rows .library-image-tile > .library-file-facts :is(.library-image-usage > .muted) {
   font-size: inherit;
   line-height: inherit;
 }
@@ -407,7 +1637,8 @@ textarea.has-gutter {
 /* Each group's own gap is the space after its dot: the dot is a flex item
    of the group it opens, so the group's gap already stands between the two,
    and a symmetric margin put 15px after the dot against 8px before it. */
-.library-file-rows .library-image-tile > .library-file-facts > :is(.library-read-strip, .library-image-usage) {
+.library-file-rows .library-image-tile > .library-file-facts > .library-read-strip,
+.library-file-rows .library-image-tile > .library-file-facts > .library-image-usage {
   padding-top: 0;
   column-gap: var(--space-2);
 }
@@ -621,6 +1852,86 @@ textarea.has-gutter {
 /* The Library's board is loaded again behind the closing panel: laid out, not seen. */
 .doc-board-closing {
   visibility: hidden;
+}
+
+/* Show live (decision 83): a board card's own read-only window, drawn by documents-board.js and zoomed by the diagram view.
+   Two classes, because diagram-lazy.css arrives later and makes `.dgm` its parent's height. */
+.doc-embed-board-live {
+  margin-block-start: var(--space-2);
+  margin-inline-start: var(--space-2);
+}
+.doc-board-live.dgm {
+  display: flex;
+  height: min(28rem, 70dvh);
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+/* In Live the card is a 320 px inline box (documents-cm-theme.js); with its window open it takes the line's width. */
+.cm-editor .cm-md-embed:has(.doc-board-live) {
+  display: block;
+}
+.cm-editor .cm-md-embed .doc-embed-map:has(> .doc-board-live) {
+  width: 100%;
+}
+.doc-board-live > .dgm-stage {
+  flex: 1 1 auto;
+}
+.doc-board-live-head {
+  display: flex;
+  justify-content: flex-end;
+}
+.doc-board-svg {
+  overflow: visible;
+}
+.doc-board-shape {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.doc-board-frame .doc-board-shape {
+  fill: none;
+  stroke-dasharray: 6 4;
+}
+/* A sticky's paper in the theme's warm tint, so its words keep the theme's ink. */
+.doc-board-sticky .doc-board-shape {
+  fill: var(--warn-soft);
+  stroke: none;
+}
+.doc-board-words {
+  fill: var(--text);
+  font-family: inherit;
+}
+.doc-board-frame .doc-board-words {
+  fill: var(--muted);
+}
+.doc-board-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media print {
+  .doc-embed-board-live,
+  .doc-board-live {
+    display: none;
+  }
+}
+
+/* A video in a document (`![name](/media/x.mp4)`, image-layout.js `imageLayout.video`): the browser's own controls, no wider
+   than the column. The name line is for paper and exports (09-editor.css), not the screen. */
+.doc-video {
+  display: block;
+  margin: var(--space-2) 0;
+  max-width: 100%;
+}
+.doc-video video {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.doc-video-name {
+  display: none;
 }
 
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
@@ -1613,6 +2924,62 @@ body.printing-doc #doc-preview p,
   color: var(--muted);
   font-size: var(--text-base);
   line-height: 1.5;
+}
+
+/* A document's page (INBOX 1325, L-documents-54; DESIGN.md "A document in a list"): the heading and the opening lines on a
+   3:4 leaf, laid out 12rem wide and scaled down to 3.5rem (0.2917 is the one over the other; plain lengths, not tokens), so it
+   reads as a page of text rather than a line of grey. Decoration: the row's own words say the same in full. */
+.doc-list-page {
+  flex: 0 0 auto;
+  inline-size: 3.5rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--page);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  position: relative;
+}
+.doc-list-page-leaf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  inline-size: 12rem;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-5);
+  transform: scale(0.2917);
+  transform-origin: top left;
+  line-height: 1.4;
+  text-align: left;
+}
+.doc-list-page-cover {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.doc-list-page-head {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.doc-list-page-lines {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+  line-clamp: 9;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-base);
 }
 
 .wb-map-legend-title {
@@ -2779,17 +4146,20 @@ body.printing-doc #doc-preview p,
 }
 /* Below half zoom only the + stays: two buttons of 20px are wider than the
    topic they hang from. `wbPublishInvZoom` sets the attribute. */
-#whiteboard-container[data-wb-zoom-far] .wb-map-ref {
+#whiteboard-container[data-wb-zoom-far] .wb-map-ref,
+.wb-embed[data-wb-zoom-far] .wb-map-ref {
   display: none;
 }
 /* The one + left at far zoom is 20px and hangs flush on the topic's edge: a
    level is 76 units apart, 19px at 25%, so the 24px button 8px off the box
    covered the parent by 9px (L360, mapactions.js). */
-#whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+#whiteboard-container[data-wb-zoom-far] .wb-map-actions,
+.wb-embed[data-wb-zoom-far] .wb-map-actions {
   transform: scale(calc(20 / 28 * var(--wb-inv-zoom)));
   right: calc(100% + 2px * var(--wb-inv-zoom));
 }
-#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions {
+#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions,
+.wb-embed .wb-map-node[data-flow=down] .wb-map-actions {
   transform-origin: 50% 0;
   right: auto;
   left: 50%;
@@ -2797,7 +4167,8 @@ body.printing-doc #doc-preview p,
   translate: -50% 0;
 }
 @media (pointer: coarse) {
-  #whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+  #whiteboard-container[data-wb-zoom-far] .wb-map-actions,
+  .wb-embed[data-wb-zoom-far] .wb-map-actions {
     transform: scale(calc(20 / 44 * var(--wb-inv-zoom)));
   }
 }
@@ -2809,7 +4180,8 @@ body.printing-doc #doc-preview p,
    Below half zoom a 24px chevron is wider than the topic it sits on (30%:
    a topic 17px tall carried one on every branch), so it waits for the zoom
    or for the topic to be selected. */
-#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
+#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse,
+.wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
   display: none;
 }
 
@@ -2970,6 +4342,34 @@ body.printing-doc #doc-preview p,
   font-size: var(--text-body);
   user-select: none;
 }
+
+.wb-label-math {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+/* Rich words in a shape's label (whiteboard-label-rich.js): the text box's markdown, small and tight to fit a shape. */
+.wb-label-rich {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+.wb-label-rich[data-valign="top"] { justify-content: flex-start; }
+.wb-label-rich[data-valign="bottom"] { justify-content: flex-end; }
+.wb-label-rich > * { margin: 0; }
+.wb-label-rich ul, .wb-label-rich ol { padding-left: 1.2em; text-align: left; }
+.wb-label-rich a { color: inherit; text-decoration: underline; pointer-events: auto; }
 
 /* The one-line editor over a connector sits on the line, so it takes the
    card's ground to stay readable over it. */
@@ -3773,6 +5173,11 @@ body.printing-doc #doc-preview p,
   transition: background-color var(--ui-fast) var(--ease-out), color var(--ui-fast) var(--ease-out), border-color var(--ui-fast) var(--ease-out), scale var(--ui-fast) var(--ease-out);
 }
 
+/* A Library tile or Layers row is the browser's own drag, so the target takes the pointer for that one. */
+.whiteboard-floating-panel.wb-trash.wb-trash-dnd {
+  pointer-events: auto;
+}
+
 .whiteboard-floating-panel.wb-trash .ph {
   font-size: 1.25em;
 }
@@ -3872,7 +5277,14 @@ body.printing-doc #doc-preview p,
 
 /* The pictures (`wbMapThumbSpec`, `wbBoardThumbSpec`): one hairline at any
    size, colours from the theme. */
-.wb-lib-thumb :is(.wb-thumb-line, .wb-thumb-label, .wb-thumb-node, .wb-thumb-root, .wb-thumb-leafbox, .wb-thumb-frame, .wb-thumb-frame-plain, .wb-thumb-blank) {
+.wb-lib-thumb .wb-thumb-line,
+.wb-lib-thumb .wb-thumb-label,
+.wb-lib-thumb .wb-thumb-node,
+.wb-lib-thumb .wb-thumb-root,
+.wb-lib-thumb .wb-thumb-leafbox,
+.wb-lib-thumb .wb-thumb-frame,
+.wb-lib-thumb .wb-thumb-frame-plain,
+.wb-lib-thumb .wb-thumb-blank {
   vector-effect: non-scaling-stroke;
   stroke-width: 1px;
 }
@@ -3960,7 +5372,8 @@ body.printing-doc #doc-preview p,
   stroke: var(--thumb-b);
 }
 
-.wb-lib-thumb :is(.wb-thumb-leaf, .wb-thumb-leafbox)[class*="wb-thumb-b"] {
+.wb-lib-thumb .wb-thumb-leaf[class*="wb-thumb-b"],
+.wb-lib-thumb .wb-thumb-leafbox[class*="wb-thumb-b"] {
   fill: var(--thumb-b);
   fill-opacity: 0.7;
 }
@@ -4497,7 +5910,8 @@ button.ghost.doc-template-choice.wb-template-choice {
     white-space: nowrap;
   }
 
-  .ocr-regions-foot > :is(#ocr-copy-all, #ocr-to-chat) {
+  .ocr-regions-foot > #ocr-copy-all,
+  .ocr-regions-foot > #ocr-to-chat {
     width: var(--control-h);
     padding-inline: 0;
     justify-content: center;
@@ -5042,11 +6456,15 @@ button.ghost.doc-template-choice.wb-template-choice {
   }
 }
 
-/* The breakpoint lane under a finger (Brief 70): wider, so a tap beside a
-   line number lands on it rather than on the fold arrow or the text. */
+/* The breakpoint lane under a finger (Brief 70): the touch floor wide, so a tap
+   beside a line number lands on it rather than on the fold arrow or the text.
+   The editor theme sets the lane's 0.875rem at three classes, so this names
+   four: at one class less the 1.5rem it was never applied (docsverify-lane.js
+   measured 14px under a coarse pointer). A row is one line tall, the line
+   pitch, so the width is the target. */
 @media (pointer: coarse) {
-  .cm-debug-gutter .cm-gutterElement {
-    width: 1.5rem;
+  .cm-editor .cm-gutters .cm-debug-gutter .cm-gutterElement {
+    width: var(--target-min);
   }
 }
 
@@ -5115,6 +6533,12 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .doc-history-name {
   font-weight: 600;
+}
+
+/* The account keeps the server's line breaks: one line per version after the total. */
+.doc-history-story {
+  white-space: pre-line;
+  margin: var(--space-2) 0;
 }
 
 /* Room for the pair: the history is wider than the AI log it shares a class
@@ -5309,7 +6733,8 @@ button.ghost.doc-template-choice.wb-template-choice {
 .doc-main {
   --doc-code-cap: 78ch;
 }
-#tab-documents.doc-is-code:not(.doc-wide) :is(.doc-statusbar, .doc-hint) {
+#tab-documents.doc-is-code:not(.doc-wide) .doc-statusbar,
+#tab-documents.doc-is-code:not(.doc-wide) .doc-hint {
   width: 100%;
   max-width: var(--doc-code-cap);
   margin-inline: auto;
@@ -6601,6 +8026,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-table-grid {
   /* One cell until `wbPaintTable` sets the tracks from the table's cells. */
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
@@ -6632,6 +8058,50 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-table-grid.has-header .wb-table-cell[data-r="0"] {
   background: color-mix(in srgb, var(--accent) 12%, var(--card));
   font-weight: 600;
+}
+
+/* Every other body row (data.stripes); the header keeps its own tint. */
+.wb-table-cell[data-stripe] {
+  background: color-mix(in srgb, var(--text) 5%, var(--card));
+}
+
+/* A range picked with Shift and a click, for Merge cells. */
+.wb-table-cell.is-picked {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--card));
+}
+
+/* The grid lines, draggable while the table is selected (a row's or column's size). */
+.wb-table-grip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+}
+
+.wb-table-grip-col {
+  width: var(--space-2);
+  margin-left: calc(var(--space-2) / -2);
+  cursor: col-resize;
+}
+
+.wb-table-grip-row {
+  height: var(--space-2);
+  margin-top: calc(var(--space-2) / -2);
+  cursor: row-resize;
+}
+
+.wb-selected .wb-table-grip {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.wb-selected .wb-table-grip:hover,
+.wb-selected .wb-table-grip:focus-visible,
+.wb-table-grip.is-dragging {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 /* Edit data (canvasdepth2): a name and a value per row, the value taking
@@ -6677,6 +8147,14 @@ button.ghost.doc-template-choice.wb-template-choice {
    more shapes"): nine tools as a grid of five, so the flyout stays about as
    wide as the four boxes and the two lines above them rather than a row of
    nine. */
+/* In a phone's Tools sheet the kind menu opens below its button: above it,
+   the sheet card's overflow cut it off and a tap on Line fell through to the
+   overlay (toolpop.js at 390: menu top 267, card top 299). A board rule, so
+   it loads with the board, not at boot. */
+.sheet-card .wb-shape-menu {
+  bottom: auto;
+  top: calc(100% + 0.5rem);
+}
 .wb-shape-menu-more {
   display: grid;
   grid-template-columns: repeat(5, auto);
@@ -6818,7 +8296,10 @@ input[type="color"].wb-mixed {
    every pan frame; while the board moves they are plain translucent panels
    (the ground is still `--modal-bg`), and the blur returns 180 ms after the
    last step. The same surfaces Glass off clears for good. */
-#wb-canvas-view.wb-moving :is(.wb-topbar, .whiteboard-floating-panel, .wb-map-strip, .wb-sidebar) {
+#wb-canvas-view.wb-moving .wb-topbar,
+#wb-canvas-view.wb-moving .whiteboard-floating-panel,
+#wb-canvas-view.wb-moving .wb-map-strip,
+#wb-canvas-view.wb-moving .wb-sidebar {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -7390,7 +8871,8 @@ input[type="color"].wb-mixed {
     min-width: 5rem;
   }
   #doc-code-snippets-open,
-  #tab-documents.doc-is-code :is(#doc-code-assist-open, #doc-code-format) {
+  #tab-documents.doc-is-code #doc-code-assist-open,
+  #tab-documents.doc-is-code #doc-code-format {
     flex: 0 0 var(--target-min);
     justify-content: center;
     padding-inline: 0;
@@ -7422,7 +8904,9 @@ input[type="color"].wb-mixed {
 #tab-documents.doc-is-code .doc-dock.doc-run-why :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
   display: none;
 }
-#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-snippets-open,
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-assist-open,
+#tab-documents.doc-is-code .doc-dock.doc-run-why #doc-code-format {
   flex: 0 0 var(--target-min);
   justify-content: center;
   padding-inline: 0;
@@ -8423,10 +9907,17 @@ input[type="color"].wb-mixed {
     margin: calc(var(--space-3) * -1);
     background-clip: padding-box;
   }
+  /* A finger needs 44px, not the 10px glyph (L259): the padding grows the caret's own box to the touch minimum (the toggle
+     grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the desktop rail does not move. */
+  .wb-shape-caret {
+    box-sizing: content-box;
+    padding: calc((var(--target-min) - 10px) / 2);
+  }
 }
 
 /* --- motion: an Insert menu's chevron turns open, as a select's does ------- */
-:is([aria-expanded="true"], [open] > summary) > :is(.doc-toolbar-menu-caret, .wb-menu-caret) {
+:is([aria-expanded="true"], [open] > summary) > .doc-toolbar-menu-caret,
+:is([aria-expanded="true"], [open] > summary) > .wb-menu-caret {
   transform: rotate(180deg);
 }
 /* --- motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in
@@ -9385,6 +10876,59 @@ input[type="color"].wb-mixed {
   overflow-wrap: anywhere;
 }
 
+/* Structure rows (WHITEBOARD_PLAN section 12). A tag filter stands the untagged rest back but leaves it pressable. */
+#whiteboard-container .wb-tag-dim {
+  opacity: 0.25;
+}
+
+.wb-fmt-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+
+.wb-fmt-tag-row:empty {
+  display: none;
+}
+
+.wb-search-tag {
+  flex: 0 1 7rem;
+  min-width: 0;
+  width: 7rem;
+}
+
+/* A folded frame is its bar: a ground and the count of what it hides, in the frame's own words. */
+.wb-object-frame.wb-frame-collapsed {
+  background: var(--chip-bg);
+  border-radius: var(--radius-sm);
+}
+
+.wb-object-frame.wb-frame-collapsed::after {
+  content: attr(data-folded) " inside";
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The frame under a carried item. An outline and a tint of the accent, no blur. */
+.wb-object-frame.wb-drop-target {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  background: var(--accent-soft);
+}
+
+/* Insert, Polygon: the cursor while corners are being placed (whiteboard-shapes-js.js). */
+.whiteboard-container.wb-polygon-on,
+.whiteboard-container.wb-polygon-on * {
+  cursor: crosshair;
+}
+
 /* Links: a look per link and folder, folders, the card view (library-links.js, INBOX 827 L3 to L6).
    The colour is a palette key the script sets as `--swatch` (library-links.js `LOOKS`), never a free colour. */
 /* A chosen colour shows in every look, the flat ones too (their rule above clears the mark). */
@@ -9570,4 +11114,190 @@ input[type="color"].wb-mixed {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+/* A synced block reads as a copy: the text is the way in (documents-embeds.js), and the marker in the block's own document (documents-cm.js). */
+.doc-embed-synced .doc-embed-block-body {
+  cursor: text;
+}
+
+.cm-md-blockuse {
+  margin-inline-start: var(--space-2);
+}
+
+.doc-block-use {
+  vertical-align: baseline;
+}
+
+.doc-synced-own {
+  position: fixed;
+  z-index: 2;
+  inline-size: min(22rem, calc(100vw - var(--space-4)));
+  padding: var(--space-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") ---------------
+   A child row steps in by one `--space-7` per level from its parent; the parent's disclosure is a quiet icon button
+   before the tick whose caret turns a quarter with `aria-expanded`, as `.disclosure-row`'s does. */
+#library-docs-list > li.doc-tree-child {
+  /* One level; `decorate` writes deeper levels on the row as a multiple of the same token. */
+  margin-inline-start: var(--space-7);
+}
+.doc-list-top > .doc-tree-toggle {
+  flex: 0 0 auto;
+}
+.doc-tree-toggle .ph {
+  transition: transform var(--ui-fast) var(--ease-out);
+}
+.doc-tree-toggle[aria-expanded="true"] .ph {
+  transform: rotate(90deg);
+}
+/* The breadcrumb in the document head: the parents after the way back, each a quiet link that clips its own long
+   title, so the row stays one row and the title field keeps the room. */
+.doc-dock-identity > .doc-crumbs {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: var(--space-1);
+  margin-inline-end: var(--space-2);
+}
+.doc-crumbs > .doc-crumb {
+  min-width: 0;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.doc-crumbs > .doc-crumb:hover,
+.doc-crumbs > .doc-crumb:is(:focus-visible, :has(:focus-visible)) {
+  color: var(--ink);
+}
+/* A phone has 143px beside the back button for a title and a trail (measured at 390: the nav 49px, the title 21px), so a
+   sub-page's trail takes the row under them: a menu of every parent, then the nearest parent, cut to what is left. */
+.doc-crumb-more {
+  display: none;
+}
+@media (max-width: 599.98px) {
+  .doc-dock-identity:has(> .doc-crumbs) {
+    flex-wrap: wrap;
+  }
+  .doc-dock-identity > .doc-crumbs {
+    order: 3;
+    flex: 1 0 100%;
+    overflow: visible;
+  }
+  .doc-crumbs > .doc-crumb.doc-crumb-far,
+  .doc-crumbs > .doc-crumb-sep {
+    display: none;
+  }
+  .doc-crumbs > .doc-crumb-more {
+    display: inline-flex;
+  }
+  .doc-crumbs > .doc-crumb {
+    flex: 0 1 auto;
+    max-width: none;
+  }
+}
+/* Board only, so out of the boot sheets: library-lazy.css loads with the boards bundle. */
+/* Page view (Format > Board): the printed page frames, under the cards. */
+.wb-page-frame {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 35%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 6;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* Rulers (View > Rulers): a strip along the top and down the left, over the canvas, taking no pointer. */
+.wb-ruler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: color-mix(in srgb, var(--modal-bg-opaque) 88%, transparent);
+  stroke: color-mix(in srgb, var(--ink) 45%, transparent);
+  stroke-width: 1;
+  fill: color-mix(in srgb, var(--ink) 70%, transparent);
+  font-size: var(--text-xs);
+}
+.wb-ruler text {
+  stroke: none;
+}
+
+/* A flipped sticky note (whiteboard-effects.js, L-whiteboard-47): only the empty fold corner is mirrored, in place with
+   `scale`, and moved to the mirrored edge; the words are never mirrored, so the note still reads. */
+.wb-object-text.wb-sticky[data-flip~="x"]::after {
+  right: auto;
+  left: 0;
+  scale: -1 1;
+}
+.wb-object-text.wb-sticky[data-flip~="y"]::after {
+  bottom: auto;
+  top: 0;
+  scale: 1 -1;
+}
+.wb-object-text.wb-sticky[data-flip="xy"]::after {
+  scale: -1 -1;
+}
+
+/* The board's status bar (whiteboard-effects.js, View, Status bar): a plain corner `.dock` like the diagram builder's
+   zoom bar, off by default, no blur. It sits bottom left, clear of the zoom cluster at the right. */
+.wb-status-bar {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-start: var(--space-5);
+  z-index: 2;
+  flex-wrap: nowrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 819.98px) {
+  .wb-status-bar {
+    display: none;
+  }
+}
+
+/* A read-only embed pans and zooms only (L-whiteboard-54; with the boards bundle, as the embed is): its layers take no
+   pointer, so no card's drag starts and every press reaches the box's zoom. */
+.wb-embed-readonly > [data-wb-layer] {
+  pointer-events: none;
+}
+
+/* --- board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. */
+/* Out of sight only because a folded frame holds it: quiet, not struck through. */
+.wb-layer-row.is-folded .wb-layer-name {
+  color: var(--muted);
+  font-style: italic;
+}
+.wb-layer-row.is-folded .wb-layer-eye {
+  opacity: 1;
+}
+/* K18: a saved picture's caption, one muted line under it (Show captions). Lazy: out of the boot sheet. */
+.wb-object-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+  pointer-events: none;
 }

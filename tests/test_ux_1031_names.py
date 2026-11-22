@@ -7,15 +7,17 @@ Class 30 (SH4, DC5, UX7, BD4): a name starts with the words drawn on the control
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 
 
 def _js(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 def test_the_smallest_text_token_is_twelve_pixels():
@@ -46,7 +48,7 @@ def test_the_reminders_tab_is_named_by_its_words_and_badge():
 
 
 def test_the_file_type_button_and_the_zoom_button_start_with_their_visible_words():
-    assert 'opener.setAttribute("aria-label", `${type.label}, file type`);' in _js("documents.js")
+    assert 'opener.setAttribute("aria-label", `${type.label}, file type`);' in documents_text()
     # Intent moved (INBOX 1694 b, 06678b49): the board's zoom is a typeable value field, an input whose
     # visible words are its value ("100%") and whose name says what it is; Ctrl+1 is still 100%.
     assert 'label: "Zoom percent",' in _js("whiteboard.js")

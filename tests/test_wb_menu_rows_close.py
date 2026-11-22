@@ -11,6 +11,7 @@ pressed: Playwright reported the menu "intercepts pointer events"
 fixed the same way by taking the `wb-menu-item` class (see the listener's own
 comment); these rows are a label and a button, so they carry `data-wb-closes`.
 """
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -19,7 +20,7 @@ from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = index_html_text()
-WHITEBOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD = frontend_text("whiteboard.js")
 
 #: Rows that do something once and are done with the menu. A switch or a
 #: stepper in the same menu (grid size, the panels) must stay open, so this is
@@ -62,7 +63,7 @@ def _menu(html: str, menu_id: str) -> str:
 
 def test_the_board_menu_is_section_heads_and_plain_icon_rows_with_delete_last_and_red():
     """INBOX 793: no "label ... action" rows ("This board itself ... Delete")."""
-    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     menu = _menu(html, "wb-board-menu")
     assert "wb-menu-row" not in menu and "wb-panel-danger" not in menu
     heads = re.findall(r'wb-panel-group-label">([^<]+)<', menu)
@@ -79,7 +80,7 @@ def test_the_view_menu_is_two_columns_parted_by_hairlines():
     """The map's View menu measured 785px in one column under four printed
     heads (`mapviewmenu.js` holds it to 450): two columns, Panels and Zoom
     beside Canvas and Map, the groups parted by a hairline, not a heading."""
-    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     menu = _menu(html, "wb-view-menu")
     assert 'class="wb-board-menu wb-menu-two-col hidden"' in menu
     groups = re.findall(r'role="group" aria-label="([^"]+)"', menu)

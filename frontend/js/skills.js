@@ -161,7 +161,8 @@ function runSkill(skill) {
   //: nudge reach here too (L-chat-184), so the gate is on the run itself.
   if (aiIsOff() && !skill.composer) return toast(runSkill.why, "info");
   if ((skill.inputs || []).length) {
-    askSkillInputs(skill, (values) => startSkill(skill, values));
+    //: The inputs dialog is in the chat turn's bundle (chat-turn.js): only a press reaches it.
+    ensureModule("chatTurn").then(() => askSkillInputs(skill, (values) => startSkill(skill, values)));
     return;
   }
   startSkill(skill, {});
@@ -213,63 +214,6 @@ async function startSkill(skill, values) {
     // plan a thing that already has steps.
     skipPlanMode: true,
   });
-}
-
-// One dialog for everything a skill asks for. Two window.prompt boxes in a
-// row is how this started, and the second one gave no clue which skill it
-// belonged to or what the first answer had been.
-function askSkillInputs(skill, done) {
-  const overlay = $("skill-run-overlay");
-  const fields = $("skill-run-fields");
-  $("skill-run-title").textContent = skill.name;
-  $("skill-run-description").textContent = skill.description || skill.prompt;
-  fields.replaceChildren();
-  const inputs = [];
-  for (const item of skill.inputs || []) {
-    const label = document.createElement("label");
-    label.className = "field";
-    const text = document.createElement("span");
-    text.textContent = item.label || item.name;
-    const box = document.createElement("input");
-    box.type = "text";
-    box.value = item.default || "";
-    box.maxLength = 200;
-    box.placeholder = item.required ? "" : "optional";
-    label.append(text, box);
-    fields.appendChild(label);
-    inputs.push({ item, box });
-  }
-
-  const close = () => {
-    overlay.classList.add("hidden");
-    document.removeEventListener("keydown", onKey);
-  };
-  const submit = () => {
-    const values = {};
-    for (const { item, box } of inputs) {
-      const value = box.value.trim();
-      if (!value && item.required && !item.default) {
-        box.focus();
-        // Nothing is sent half-filled: a skill run with a blank {{topic}}
-        // searches the whole notebook for nothing and reads as being ignored.
-        toast(`“${skill.name}” needs ${item.label || item.name}.`, "info");
-        return;
-      }
-      values[item.name] = value;
-    }
-    close();
-    done(values);
-  };
-  const onKey = (event) => {
-    if (event.key === "Escape") close();
-    else if (event.key === "Enter" && event.target.tagName === "INPUT") submit();
-  };
-
-  $("skill-run-go").onclick = submit;
-  $("skill-run-cancel").onclick = close;
-  document.addEventListener("keydown", onKey);
-  overlay.classList.remove("hidden");
-  inputs[0]?.box.focus();
 }
 
 // Skills as a dropdown rather than a row of chips. Ten built-ins plus up to

@@ -373,6 +373,9 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   are (it is a hub over them, which is exactly what `document_links` records);
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
+- **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
+- **Adding a block to a large flowchart in one short task** (L-documents-112). Owner decided 2026-11-21: parked until Mermaid offers incremental layout. Measured 2026-11-21 at 390 px, load about 2: the first task of each add to a 40-block flowchart is 100 to 174 ms (102, 100, 174, 141), later ones 60 to 83 ms; the first is the single `mermaid.render` layout with no yield point (htmlLabels already off, mermaid-frame.js:101; the redundant parse removed). Check: `scratchpad/ui-sweeps/dgm40.js` at 390, every task under 50 ms, when Mermaid offers incremental layout.
+- **Diagram pan p95 under 16 ms** (L-documents-102). Owner decided 2026-11-21: parked; what is left is the browser's scroll commit of the picture layer. Measured 2026-11-21 at 1440 and 4x CPU, 5 interleaved runs: p50 median 7.0 ms (met), p95 median 19.6 to 22.9 ms; the minimap frame is throttled; a 0.4x raster during the pan gave 19.2, and 2048 px tiles gave 25.0 to 29.5 (worse). Check: `scratchpad/ui-sweeps/diagram-pan-latency.js` at 1440 and 4x CPU on a quiet box, p95 under 16 ms.
 
 ---
 
@@ -3111,40 +3114,7 @@ already visualises links coloured/filtered by category. What was genuinely
 missing: anywhere to save a link to the open web, and a fast textual outline
 distinct from the Graph's spatial one.
 
-**Built:**
-- **A `Bookmark` model and `/bookmarks` CRUD** (`core/database.py`,
-  `api/routes_bookmarks.py`), its own small table, not folded into `Entry`:
-  a bookmark has no body to search, file, or auto-categorise, so forcing it
-  through the note pipeline would solve a problem it doesn't have. URLs
-  typed without a scheme ("example.com") are normalised to `https://`.
-  Creating a URL that's already saved still creates the row and returns
-  `duplicate_of` the existing one: warn, don't block, since re-saving a
-  link by accident is normal, not a mistake worth refusing.
-- **Grouping**, asked about directly ("should they be groupable?"): a free-
-  text `group_name` column rather than a real folder table, a full nested-
-  folder model (a tree table, drag-to-move UI) is a lot of new machinery for
-  what a flat field mostly already buys. A "/" convention ("Work/Reading")
-  the frontend renders as a visual hierarchy, still just one string. Filter
-  chips above the list, a search box (client-side, matching the Image
-  Gallery's own filter), pin-to-top, and edit/move/delete actions round out
-  the Library → **Links** subtab.
-- **A note's References**: a note can now attach a saved bookmark
-  (`entry_bookmarks` join table, `POST/GET/DELETE /entries/{id}/bookmarks`),
-  shown live in the edit form right below the related-notes panel, with an
-  "Attach a link" picker. Its own small table and its own endpoint, not
-  folded into `EntryLink` (which connects two `Entry` rows) or into
-  `EntryOut`'s bulk-fetched `links` field, matching the precedent
-  `/entries/{id}/related` already set: only the editor needs this, so it
-  shouldn't grow a query on every paginated list render.
-- **Library → Contents**: a hyperlinked outline of the notebook, grouped by
-  category or by tag, click a note to jump straight to it. Built from
-  `allEntries` (already loaded for the Notes tab) grouped client-side, not a
-  new endpoint: refetched on every visit like every sibling Library subtab,
-  not cached, since a stale outline (a just-deleted note still listed) would
-  be a wrong answer, not just an old one. This is deliberately the *fast,
-  scannable* half of "visualised links between sections and tags"; the
-  *spatial* half is the Graph tab's job already, and Contents links out to
-  it rather than duplicating a second visualisation engine.
+**Built:** bookmarks, a note's References and Library Contents; the detail moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built blocks, base merge)").
 - Live-verified in Chromium: add/pin/edit/group/delete a bookmark, filter by
   group and by search text, the duplicate-URL toast, both Contents modes
   grouping correctly and jumping to a note, and attaching/detaching a
@@ -3385,24 +3355,7 @@ cosmetic, not chased given the session's remaining budget.
   07-whiteboard-misc.css) never set the property at all and inherited the
   bigger one by default. Now sets it explicitly too.
 
-**Built, asked for directly:**
-- **A "Clear" button for the AI Skills sidebar's own log list**,
-  `DELETE /audit?entity_type=...` (`entity_type` required, so this can
-  never be a way to wipe the *whole* audit trail, note edits/deletes are
-  real accountability history, not a scrollback buffer, only the one
-  filtered slice a caller names). The sidebar's sticky/full-height/
-  internal-scroll behaviour itself was **already built** in an earlier
-  stretch of this session (checked before touching anything, per this
-  file's own standing rule), only the clear action was actually missing.
-- **Suggested-link reasons, the thing "Explain your existing links" was
-  reported as not doing** (it never could: see that button's own long-
-  standing comment): a new "Suggest reasons" button next to it,
-  `POST /entries/link-suggestions/reasons`, fills each pending suggestion's
-  empty Why box with an AI guess (best-effort per pair, degrades to an
-  empty list rather than an error when the model is down). Kept the
-  original backfill button rather than replacing it, it's a real, working,
-  separate capability (reasons for links that already exist) the ask
-  didn't say to remove.
+**Built, asked for directly:** the audit Clear button and suggested-link reasons; the detail moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built blocks, base merge)").
 
 **Bookmark URL editing**: re-checked after being reported again: the fix
 from earlier this session (`library.js`'s bookmark Edit action prompting
@@ -4470,11 +4423,39 @@ Each row is the one step that needs the owner's own machine, a device, a human r
 - **L185b, Companions made from the person's own figure have no perch pictures (dangle, kick, hang with one hand, meditate).** From L185 (verify). Evidence: `capture.CAPTURED` leaves out `sprites.EXTRA_FRAMES`, so the engine falls back to `sit` and `hang` for them (`EXTRA_FALLBACK`); measured 2026-11-21 the page draws 54 frames of 'You, from your name' and none of the five. Check: add the five poses to `DESK_FRAME_SPECS` (classes `nmb-act-dangle`, `nmb-act-lounge`...), capture, and `tests/test_overlay_non_atlas_l151.py` counts them in `CAPTURED`.
 - **L145b, The first tea throw on a cold page showed no tipped cup.** From L145 (app). Evidence: measured 2026-11-21 on a fresh profile, the first throw after load showed no tip and the next ones did; a lazy-load race (the `nmb-tip-tea` rule not yet in `atlas-lazy.css`) is suspected, not proven. Check: on a fresh data dir, grab the companion mid-tea, throw it, and `nmb-tip-tea` is on `#nm-buddy` within 3 s of the release, the first time.
 - **L177b, The in-app companion has no clock or window-corner look.** From L177 (app side). Evidence: the desk's clock trip ends in `look_around` or `ponder` at the screen's bottom-right corner and its window-top peer is `peek_down`; the app has no clock and its ledges (`nameMarkBuddyLedges`) are the page's own edges and `peekdown` carries no ledge weight (not measured). Check: on a ledge the share of `peekdown` in 600 `nameMarkBuddyDecide` calls is at least three times the floor's.
+
+## Whiteboard, parked 2026-11-13
+
+- **L-whiteboard-5, pen pressure on a real pen.** Built and measured with synthetic PointerEvents (pointerType "pen", pressure 0.15 and 0.9 give outlines 2.4 times apart in `scratchpad/ui-sweeps/wbink3.js`; `tests/test_wb_ink_more.py`). No Apple Pencil or Wacom was available. On a tablet with a pen: pick the Pen, draw a line pressing lightly then hard, and see the stroke thicken with pressure and stay smooth; do the same with a finger and a mouse and see the width follow speed instead.
+- **L279, owner input: the texts of U19, U20, U23, U30, U31, U36, U37, U39, U41, U45 and U49.** They came from `bs-1111.md`, a scratch file of the 2026-11-11 run that was never committed (`git log --all -- '*bs-1111*'` is empty). The repo and HISTORY hold other audits' items under the same numbers (U23, U36, U37 and U39 in audit 1028 copy, U41 the mind-map toast), so none can be matched to these 11 ids. Needs the owner to name what each item asked for; each then becomes a row on its surface's plan.
+
+- **Whiteboard device checks (moved from LEDGER 2026-11-14; each needs the named device, everything that runs headless is built and swept):**
+  - L872: Verify link-label blur and re-raster after zoom on a GPU compositor or desktop webview. From OPEN.md:1678; OPEN.md:2676. Evidence: Needs the owner's desktop webview / GPU; not reproducible headless
+  - L873: Verify pinch: board handles starting d3-drag on a second finger, on real touch. From OPEN.md:1717. Evidence: wbCancelGesture exists (whiteboard.js:8430) but the second-finger case needs real touch hardware
+  - L874: Verify touch drag from Library on real touch hardware. From OPEN.md:3524. Evidence: HTML5 DnD does not run on touch; needs touch hardware.
+  - L875: Verify real pointer flick, splat look and phone size. From OPEN.md:3856. Evidence: Needs a human with a pointer and phone
+  - L876: Verify Windows webview and drag-select outside Chromium. From OPEN.md:3904. Evidence: Needs the owner's Windows desktop and other browsers.
+  - L877: Verify trackpad middle-pan heuristic on a real trackpad. From OPEN.md:3905. Evidence: tests/test_wb_middle_pan.py exists with synthetic sequences; real trackpad needed.
+  - L878: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
+  - L282: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
+  - L-whiteboard-11: Check the real model's wording of "What changed" in the board history bar. Built with a fake transport (tests/test_board_narrate.py); with scratchpad/llama-dev.sh serve, narrate a board with 3 cards added and one moved, and confirm the sentence names nothing that is not in the composer text.
+  - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
+
+- **L-world-class-414, two sweeps that need what this sandbox lacks (moved from LEDGER 2026-11-21, the L554 run):** `scratchpad/ui-sweeps/pywarm.js` needs the Pyodide extra installed ("the Pyodide extra is not installed here"); `scratchpad/ui-sweeps/personamarks.js` needs a model server (`scratchpad/llama-dev.sh serve`; "the model server isn't running").
+
+## Whiteboard, parked 2026-11-14
+
+- **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
+- **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
+
+- **Documents device checks (moved from LEDGER 2026-11-14; each needs the named device or person, everything that runs headless is built and swept):**
+  - A real phone: L884: Verify phone selection menus and selection bar placement with a real finger on iOS and Android. From OPEN.md:738; OPEN.md:3122; OPEN.md:3861. Evidence: iOS/Android native selection UI; cannot be emulated headless. Blocked: needs a real finger on iOS and Android native selection UI, which no headless browser reproduces. | L-documents-93: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested | L-documents-95: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
+  - A real desktop, browser or Word: L-documents-91: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here | L-documents-92: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code | L891: Device check: a real print dialog, Safari, Firefox (not installed here: /opt/pw-browsers has only Chromium), a screen reader and a phone IME over the documents editor. From L891. Evidence: Measured 2026-11-14 in Chromium: an image pasted through the real clipboard with Ctrl+V lands as an attachment 4/4 (hw891.js); Harper p2-harper.js 16/16, cold first lint 1,797 ms, warm 111 ms for 1,401 words, nothing at boot | L894: Device check: ClearType greyscale on a real Windows display. From L894. Evidence: The CodeMirror per-key cost is measured and tracked in L-documents-26; only the Windows display is left
+  - A person with a screen reader, or real inference: L887: Run a screen reader over aria-current=location in the documents outline. From OPEN.md:1483; OPEN.md:3402. Evidence: Needs a human with a screen reader; documents-comments.js:438 sets aria-current. Blocked: needs a human with a screen reader; documents-comments.js:438 sets aria-current but speech cannot be checked headless. | L893: Device check: the diagram builder with real inference, on Windows, and under a screen reader. From L893. Evidence: Measured 2026-11-14 at 390 light with CDP touch (diagram-touch.js, rewritten for the Add split and the phone's Blocks sheet): Add menu 10 rows 44 px hit-tested, a block added, pinch to 5x, zoom kept on redraw, pan 264 px, double tap fits; light contrast 8 of 8 texts at 4.5 or more; 40 blocks open 2.5 s, an added block repaints in 483 ms (long tasks 114 and 115 ms on a loaded box, see the new row); print to PDF one page with all four labels and no chrome
 ## Placed from IDEAS.md, 2026-11-14
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
 - **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
-
 
 ## From the general plan's frontend rows, 2026-11-21
 
@@ -4495,3 +4476,20 @@ Each row is the one step that needs the owner's own machine, a device, a human r
 - **L587b, The package-download progress on a real Windows install.** From L587 (2026-11-21). Evidence: Setup no longer downloads extras (`installer.iss` writes `pending-extras.txt`; the app installs them with a bar, a percentage from `extra_downloads._fetch`, Stop, and Activity), and the launcher splash has Minimise and Close (`splash.ps1:440`); both are tested here only against fakes (`tests/test_installer_progress_l587.py`), and pwsh is not available. Check on Windows 11: tick Documents in Setup, finish, and watch Settings, Packages and the Activity panel show a moving percent for the pinned downloads; press Minimise and Close on the splash during a cold start and confirm Close cancels the launch. Record: percent steps seen, Close result.
 - **L915b, L974b, L975b, Printed manual on paper, iOS zoom, and the real-model eval rates.** From L915, L974, L975 (2026-11-21). Evidence: the print block is proved by a Chromium PDF (`tests/test_manual_print_output.py`, 20 pages) and the runner script is parse-checked (`tests/test_skills_evals.py`), but paper, iOS Safari and a model are not here. Check: (1) Manual, Print on a real printer or PDF from Safari/Chrome: pages past the first and no app chrome; (2) on an iPhone, focus the name field (13.6 px before the coarse-pointer field-size block in `10-responsive.css`, guarded by `tests/test_phone_layout.py`) and confirm the page does not zoom; (3) `scratchpad/llama-dev.sh serve`, then `eval "$(scratchpad/llama-dev.sh env)"; pytest -m evals -p no:xdist`: bars 0.8 of skills with zero invalid calls and the 70-note loose-ends set; record the rates and the model file name.
 - **L691b, Silero VAD on real recordings: the WER and the listening pair need a real Whisper run and a human ear.** From L691. Evidence: `ai/vad.py` and the `vad` bundle are built and the real model (v5.1.2, sha256 2623a295...) ran once on a synthetic clip, finding bursts at 1.0 to 3.0 s and 4.5 to 6.5 s as (962, 3038) and (4674, 6526) ms. **Remainder:** (1) `TESSELLATE_SILERO_VAD=<silero_vad.onnx> pytest tests/test_vad_87.py` on the owner's machine after Install; (2) on three real recordings (a quiet room, a café, a phone call) run `ai.vad.speech_in` and record the speech share and segment count; (3) transcribe the same three with `voice_skip_silence` on and off and record the WER against a typed reference, expecting fewer invented words on the silent edges with it on; (4) the listening pair: the trimmed clip against the original, a human rating of any clipped first or last word (the pad is `PAD_MS` 30, tune it if a word edge is lost). Record the numbers in the CHANGELOG line.
+
+
+## Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21
+
+- **viewerpose.js: the large view's arms are 130 degrees from rest at 300 ms.** `openNameMarkViewer(seed, { visit: true })` while Atlas hangs from the top bar reads arms at 159 and -158 against rest 28 and -50 (3 of 3 runs, 5 frames); they reach rest by about 1.2 s, a smooth fall at the 200 degrees/s spring cap (`ATLAS_RIG_MAX_SPEED`), so `rig.fresh` does not snap. Clearing `arm.hist` on a not-live frame did not change it, so the cause is elsewhere (suspect `nmb.visit.settle` is only assigned when `nmb.visit.pose !== nmb.pose`, which is already false). Needs an owner of atlas-motion.js and companion-menu.js.
+- **atlasmoodfx.js: 81 paints/s and 23 layouts/s against limits 1.5 and 2.** Measured, not random; relates to L-world-class-390. Not touched.
+- **companionacts.js: the lie out-step measures 12.3 against 12.** Measured on the real walk; the limit was not loosened.
+- **companiongaze.js: the left-side case flakes** (passes some runs, fails others) under load; needs a seeded gaze target before a limit can be judged.
+- **Not triaged in this pass:** viewerclash, companionsleeptab, locomotion, perchwords, perchall, perchtext, variety, napgait, companionmenu, companionmenulow, companionsmooth; throwfates climb, splat, wrap, grab and slip (a memory kill on the full run).
+
+## Sweeps still failing after two measured runs, L-world-class-413, 2026-11-22
+
+Moved from LEDGER (the hub: finish, or BACKLOG with two measured attempts). Run 1 is the 2026-11-21 r3 logs; run 2 is 2026-11-22 on a current head (scratchpad r6, dark theme, 1440x900). Pass on run 2, so out of this list: atlasmo1005-viewerlife, companionreact, companioninteract, companionemotes, companiongaze, perchtext, ux1005-tabstops, chatheads, profilelook, clickarm, companiontabswitch. Fixed: toolpop, wbrail's tool row (a pill again on one line; test_wb_rail_pill_413). Retired as stale: wbframes (a frame turns, decision 42), companionpin (the drawn place is the perch under the kept spot, INBOX 1640).
+
+- **Board:** mapmorezoom (the More box 42px off the drawn wedge at zoom 100 and 115, both runs); toolgrid (448.72px, both); connlabel (button not shown, both); wbrail (history and present bars draw the card radius and 8px padding while the tool row and zoom are pills at 4px/6.4px: a design call, which shape a one-row bar on the board takes).
+- **Shell and notes:** verify1011 (206: the document AI panel not shown; 218: stepper radii 2.4 on 36px buttons); laptopfold (1093: 3 whole cards for 4); iphone1011 (notes foot 752; sheets with overscroll contain/auto; run 2 timed out at 300s); anchorsmotion (rowmenu and graph surfaces not found at 1440x900 and 1440x600); libtlscroll (table); graphcoldlayout (tree stored and checked, physics not dimmed).
+- **Companion:** companionsleeptab, locomotion, companionsmooth, perchall (16 window-bar perches while a panel is free), companionmenulow (5 of 54 menus), viewerpose (an arm 131 degrees from rest at 300 ms), atlasaura (1), atlasmoodfx (paints/s, above), and the measure exits companionacts, napgait, peekdown, viewerclash; companioneyes (masculine look, lie and hang with thinking: 2 of 16 pupil-edge samples outside the white, 17 cases, worst 0.13).

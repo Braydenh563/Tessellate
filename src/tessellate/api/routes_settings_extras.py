@@ -138,12 +138,15 @@ def embedding_model_choices() -> dict:
     choices = embedmodels.catalogue()
     #: Which Ollama rows are pulled already, for Install against Reinstall
     #: and Uninstall (the owner's second addendum). Ollama's local list only.
+    #: The bounded, single-flight list (`routes_models._installed_state`), never a live probe: a silent
+    #: runner held this read for the 1 s probe once its quiet mark lapsed (CI 137088970825).
     try:
         from tessellate.api import routes_models
 
-        pulled = routes_models._installed_names()
+        listed = routes_models._installed_or_last_known(deps.get_ollama(), patient=False) or []
     except Exception:  # noqa: BLE001  # Ollama down: nothing is pulled as far as this screen knows
-        pulled = set()
+        listed = []
+    pulled = {str(m.get("name", "")) for m in listed}
     for row in choices:
         if row["backend"] == "ollama":
             row["downloaded"] = row["model"] in pulled or f"{row['model']}:latest" in pulled
@@ -156,7 +159,7 @@ def embedding_model_choices() -> dict:
         "cache": str(embedmodels.cache_root()),
         #: Already on this computer, outside the catalogue (the owner's
         #: addendum): a read-only scan, offline.
-        "found": embedfind.found(deps.get_ollama()),
+        "found": embedfind.found(deps.get_ollama(), listed),
         "current": {"backend": backend, "model": model},
         "switch": embedswitch.status(),
     }

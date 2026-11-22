@@ -108,15 +108,7 @@
       const startX = event.clientX;
       measure();
       const start = size.pane;
-      document.body.classList.add("resizing-sidebar");
-      const move = (e) => apply(start + (e.clientX - startX));
-      const stop = () => {
-        document.body.classList.remove("resizing-sidebar");
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", stop);
-      };
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", stop);
+      trackSeparatorValue.drag((e) => apply(start + (e.clientX - startX)));
     });
     handle.addEventListener("keydown", (event) => {
       const step = event.shiftKey ? BIG : STEP;

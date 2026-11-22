@@ -7,6 +7,7 @@ hidden until asked for. What the source promises, tested here; the browser
 half is `scratchpad/ui-sweeps/wb1005-format.js`.
 """
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 from tests._app_js import index_html_text
@@ -14,7 +15,7 @@ from tests._app_js import index_html_text
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = index_html_text()
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
 
@@ -162,7 +163,8 @@ def test_reset_style_takes_the_look_off_and_keeps_what_it_says():
     if not node:
         pytest.skip("node is not installed")
     start = WB.index("const WB_SKETCH_RESET_KEYS")
-    consts = WB[start : WB.index("function wbSketchStyleReset(", start)]
+    #: The two key lists stay in whiteboard.js (label files add to them); the functions moved to whiteboard-style.js (L634).
+    consts = WB[start : WB.index("\n", WB.index("const WB_OBJECT_RESET_KEYS", start)) + 1]
     script = (
         "const WB_MAP_KINDS = new Set(['topic']); const WB_STICKY_PAPERS = [{ value: '#fff3a0' }];"
         "function wbIsSticky(o) { return Boolean(o.data.sticky); } function wbSketchTakesCaps() { return false; }"

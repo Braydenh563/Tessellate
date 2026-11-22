@@ -11,6 +11,7 @@ Plain past the menu's edge (measured at 1440: 306px in a 220px cell).
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -19,7 +20,7 @@ from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = index_html_text()
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 BOOT_CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 

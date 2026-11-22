@@ -11,8 +11,10 @@ from __future__ import annotations
 from pathlib import Path
 from tests._app_js import index_html_text
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 HTML = index_html_text()
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 

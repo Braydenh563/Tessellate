@@ -44,6 +44,8 @@ CSS_FILES = [
     #: Not linked by index.html: loaded with the Library bundle (app.js
     #: `LAZY_MODULES.library`), and so after every file above.
     CSS_DIR / "library-lazy.css",
+    #: Loaded with the boards bundle, after the Library's (`LAZY_MODULES.boards`).
+    CSS_DIR / "board-lazy.css",
     #: Loaded with the back/forward list's rows (`LAZY_MODULES.navHistory`).
     CSS_DIR / "nav-history-lazy.css",
     #: Not linked by index.html either: loaded with the icon picker (app.js

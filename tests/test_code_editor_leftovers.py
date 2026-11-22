@@ -15,11 +15,11 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
-from tests._app_js import index_html_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
-DOCS_JS = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "documents-view.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()  # documents.js and its wrapped pieces (documents-view.js among them)
 #: A plain Ctrl+P and the page setup moved to documents-print.js, one closure (DC13 remainder, doc24-1102).
 PRINT_JS = (FRONTEND / "js" / "documents-print.js").read_text(encoding="utf-8")
 CODEKIT_JS = _js_scope.unwrapped((FRONTEND / "js" / "documents-codekit.js").read_text(encoding="utf-8"))

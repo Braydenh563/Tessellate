@@ -8,6 +8,7 @@ browser by `scratchpad/ui-sweeps/mmd2-1005-maptodochead.js`.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -20,7 +21,7 @@ MAP_JS = ROOT / "frontend" / "js" / "whiteboard-map.js"
 
 
 def _region() -> str:
-    text = MAP_JS.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard-map.js")
     start = text.index("// WB-MAP-HEADINGS-BEGIN")
     end = text.index("// WB-MAP-HEADINGS-END")
     return text[start:end]

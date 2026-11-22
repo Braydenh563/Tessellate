@@ -16,10 +16,10 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import spelling, variants
-from tests._app_js import index_html_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 VIEW = (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
 SPELL = (ROOT / "frontend" / "js" / "documents-spell.js").read_text(encoding="utf-8")
 HTML = index_html_text()

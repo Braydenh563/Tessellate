@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import index_html_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 MERMAID = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
 EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
 HTML = index_html_text()

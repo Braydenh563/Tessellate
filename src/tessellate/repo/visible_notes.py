@@ -52,3 +52,12 @@ def written(session: Session, ids: Iterable[int]) -> dict[int, tuple[str, object
     """`{id: (content, created_at)}` for the visible notes among `ids`, for a quoted answer's sources."""
     rows = session.execute(select(Entry.id, Entry.content, Entry.created_at).where(Entry.id.in_(list(ids)), *_visible()))
     return {row.id: (row.content or "", row.created_at) for row in rows}
+
+
+def matching(session: Session, like: str, *, limit: int) -> list[Entry]:
+    """Visible notes whose text matches the escaped LIKE pattern `like`, newest first.
+
+    A private note is encrypted at rest, so its content would not match anyway;
+    the floor is here so that stays true by decision rather than by side effect."""
+    query = select(Entry).where(*_visible(), Entry.content.ilike(like, escape=LIKE_ESCAPE))
+    return list(session.scalars(query.order_by(Entry.id.desc()).limit(limit)))

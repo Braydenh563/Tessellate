@@ -300,3 +300,29 @@ function questionForBubble(bubble) {
   }
   return null;
 }
+
+//: Rename this conversation (wiring.js `renameCurrentConversation` fetches this file first). A pending title is kept for
+//: a chat not yet saved and wins over the AI's own retitle.
+async function renameConversationNow() {
+  if (!chatConv) return;
+  const current = $("chat-title").textContent;
+  const next = await promptTitle("Rename this conversation", current);
+  if (!next || next === current) return;
+  if (chatConv.id === null) {
+    chatPendingTitle = next;
+    $("chat-title").textContent = next;
+    toast(voiceLine("done", "Named. It is saved with your first message"));
+    return;
+  }
+  try {
+    await apiJson(`/conversations/${chatConv.id}`, {
+      method: "PUT",
+      body: JSON.stringify({ title: next }),
+    });
+    $("chat-title").textContent = next;
+    chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
+    loadConversationList();
+  } catch (error) {
+    toast(error.message || voiceLine("failed", "rename this conversation"), true);
+  }
+}

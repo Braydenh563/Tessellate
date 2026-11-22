@@ -13,12 +13,11 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from tests._app_js import app_js_text
-from tests._app_js import index_html_text
+from tests._app_js import app_js_text, documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = index_html_text()
-DOCS_JS = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()
 LIBRARY_JS = (ROOT / "frontend/js/library.js").read_text(encoding="utf-8")
 
 

@@ -165,8 +165,11 @@ def test_every_endless_atlas_loop_holds_at_rest_l742():
     forever (atl-wisp-drift) but were missing from the is-calm hold, so her wisps drifted on at rest."""
     css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
     hold = re.search(r"\.atl-figure-box\.is-calm :is\((.*?)\) \{ animation-play-state: paused !important; \}", css, re.S).group(1)
-    looped = set(re.findall(r"& :is\(([^)]*)\) \{ animation: atl-wisp-drift", css)[0].replace(" ", "").split(","))
-    looped |= {".atl-lw-wisps"}
+    #: The rules that run the drift list one class each (a list `:is()` at the right is in Blink's slow bucket,
+    #: tests/test_css_rule_buckets.py), a rule may sit over several lines of `& .x,` selectors.
+    heads = re.findall(r"((?:&\s*\.[\w-]+,\s*)*&\s*\.[\w-]+)\s*\{ animation: atl-wisp-drift", css)
+    looped = {c for head in heads for c in re.findall(r"\.[\w-]+", head)}
+    assert {".atl-lw-wisps", ".atl-lw-wisps-back", ".atl-lw-glint-a", ".atl-lw-glint-b"} <= looped
     for sel in looped:
         assert sel in hold.replace(" ", ""), f"{sel} loops endlessly and is not held at rest"
 

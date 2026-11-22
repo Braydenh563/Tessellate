@@ -573,6 +573,11 @@ const ATLAS_LOOKS = {
     //: 615): about the hips below it, a float's lean slid the cloak 0.4
     //: across the join (0.9px at 2.2x, atlas615-join.js).
     lowerPivot: [31, 55.5],
+    //: The aura's centre on the figure as drawn (L-world-class-413, atlasaura.js):
+    //: at the default 31 it sat 9px left of the standing figure's middle in the
+    //: large view (4.5 to 5.1%, past the sweep's 4%) and 6.5px left of the
+    //: hanging one; at 33.5, as the feminine look's, both are within 1.5%.
+    auraAt: [33.5, 46],
     //: **One snake of a wisp, sub-wisps branching off it** (INBOX 435 (3),
     //: wrapup-0927 item 7; the owner: "on the masculine atlas lower body
     //: looks like a tripod and very straight pencil-y, I was thinking like a

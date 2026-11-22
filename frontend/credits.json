@@ -99,6 +99,11 @@
      "source": "https://github.com/arnog/mathlive"
     },
     {
+     "name": "perfect-freehand",
+     "licence": "MIT",
+     "source": "https://github.com/steveruizok/perfect-freehand"
+    },
+    {
      "name": "Mammoth",
      "licence": "BSD-2-Clause",
      "source": "https://github.com/mwilliamson/mammoth.js"
@@ -182,6 +187,11 @@
      "name": "Pyodide (core)",
      "licence": "MPL-2.0, CPython's standard library under the PSF licence",
      "source": "https://github.com/pyodide/pyodide"
+    },
+    {
+     "name": "Ruff (wasm)",
+     "licence": "MIT",
+     "source": "https://github.com/astral-sh/ruff"
     },
     {
      "name": "needle",

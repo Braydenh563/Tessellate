@@ -14,10 +14,12 @@ import re
 from pathlib import Path
 from tests._app_js import index_html_text
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 APP = (JS / "app.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 TABS = (JS / "documents-tabs.js").read_text(encoding="utf-8")
 HTML = index_html_text()
 

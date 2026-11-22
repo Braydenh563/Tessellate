@@ -1,6 +1,7 @@
 """Crop a picture to a shape (INBOX 1313, plan row 13): `data.crop` on an image
 clips it on the board and in an export, set from the Format panel."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -11,7 +12,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 HTML = index_html_text()
 
@@ -112,5 +113,5 @@ def test_a_picture_has_a_draggable_crop_box_that_writes_the_same_trim() -> None:
     # Eight grips, the numbers' own write path, a keyboard way, and Escape to end it.
     assert '["nw", "n", "ne", "e", "se", "s", "sw", "w"]' in box
     assert 'wbFmtApply("trim"' in box and "ArrowLeft" in box and "Escape" in box
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")  # L308: the board rules moved with the Library bundle
     assert ".wb-crop-grip" in css and ".wb-crop-rect" in css

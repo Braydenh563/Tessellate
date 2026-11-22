@@ -3,6 +3,7 @@ box and a shape's words take top, middle or bottom from the Format panel's
 Text tab (`scratchpad/ui-sweeps/wbvalign.js`: the text box stayed 11px from
 its top whatever was asked before the schema named the field; 14/14 after)."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 import pytest
@@ -14,7 +15,7 @@ from tests._app_js import index_html_text
 ROOT = Path(__file__).resolve().parents[1]
 HTML = index_html_text()
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 

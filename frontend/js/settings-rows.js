@@ -34,6 +34,7 @@
     { key: "response_mode", id: "pref-answer-length" },
     { key: "personas_off", id: "pref-personas-off" },
     { key: "personal_wording", id: "pref-personal-wording" },
+    { key: "writing_style", id: "pref-writing-style" },
     { key: "week_start", id: "pref-week-start" },
     { key: "season_hemisphere", id: "pref-season-hemisphere" },
     { key: "before_includes_day", id: "pref-before-includes-day" },

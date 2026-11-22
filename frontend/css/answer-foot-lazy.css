@@ -70,11 +70,15 @@
    Sources and Why (`.msg.assistant details`), 23 to 28 under Cites and the
    patterns (their holder's margin, padding and divider added on). Three
    classes, to beat that `details` rule; the holders draw nothing. */
-.answer-foot-bar ~ * :is(.answer-foot-part:not([hidden]), .answer-evidence),
-.answer-foot-bar ~ :is(.answer-foot-part:not([hidden]), .answer-evidence) {
+.answer-foot-bar ~ * :is(.answer-foot-part:not([hidden])),
+.answer-foot-bar ~ * :where(.answer-evidence):is(.answer-evidence, .answer-foot-part:not([hidden])),
+.answer-foot-bar ~ :is(.answer-foot-part:not([hidden])),
+.answer-foot-bar ~ :where(.answer-evidence):is(.answer-evidence, .answer-foot-part:not([hidden])) {
   margin-top: var(--space-4);
 }
-.answer-foot-bar ~ :is(.answer-grounding, .why-trail, #ask-notes):has(.answer-foot-part),
+.answer-foot-bar ~ :where(.answer-grounding):is(.answer-grounding, #ask-notes):has(.answer-foot-part),
+.answer-foot-bar ~ :where(.why-trail):is(.why-trail, #ask-notes):has(.answer-foot-part),
+.answer-foot-bar ~ #ask-notes:has(.answer-foot-part),
 #ask-answer-foot > :has(.answer-foot-part) {
   margin-top: 0;
   padding-top: 0;

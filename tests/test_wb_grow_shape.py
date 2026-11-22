@@ -1,5 +1,6 @@
 """A shape grows, in proportion, until the words typed into it fit (wbdog-1026: 80 characters ran 100px past a 100x60 rectangle)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -8,7 +9,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 
 
@@ -26,6 +27,7 @@ def _grow(need_h: int, area_h: int):
         f"const label = {{ getBBox: () => ({{ width: 100, height: {need_h} }}) }};"
         f"const group = {{ querySelector: () => label }};"
         "global.document = { querySelector: () => group };"
+        "const wbInstances = { query: (sel) => document.querySelector(sel) };"
         f"const wbShapeLabelPlace = () => ({{ area: {{ w: 100, h: {area_h} * scale }} }});"
         "const wbSketchParsedData = () => ({ d: 'M 0 0' });"
         "const wbPathBBox = () => ({ minX: 0, minY: 0 });"

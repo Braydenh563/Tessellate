@@ -8,6 +8,7 @@ the page is `scratchpad/ui-sweeps/spellingdialects1018.js`.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -21,7 +22,7 @@ from tests._app_js import index_html_text
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 HTML = index_html_text()
-DOCS = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = frontend_text("documents.js")
 
 DIALECTS = ["us", "uk", "au", "ca", "in"]
 
@@ -104,7 +105,7 @@ def _lookup(tmp_path, variant: str) -> dict[str, str]:
     script = tmp_path / "pairs.js"
     script.write_text(NODE_PAIRS, encoding="utf-8")
     out = subprocess.run(
-        [node, str(script), DOCS[start:end], variant], capture_output=True, text=True, timeout=60, check=False
+        [node, str(script), "let docVariantFor = null; // stays in documents.js (its reset is there), the pair table and lookup are in documents-suggest-panel.js\n" + DOCS[start:end], variant], capture_output=True, text=True, timeout=60, check=False
     )
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)

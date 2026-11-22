@@ -8,6 +8,7 @@ the ones the bar's own hairline rule cannot beat.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 from tests._app_js import index_html_text
@@ -15,7 +16,7 @@ from tests._app_js import index_html_text
 ROOT = Path(__file__).resolve().parents[1]
 HTML = index_html_text()
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _fold_order() -> list[str]:

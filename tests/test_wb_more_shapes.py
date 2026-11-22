@@ -6,6 +6,7 @@ stored as the library's `custom` shape with its text area, so a hexagon drawn
 here and one placed from the library are the same thing. The browser half is
 `scratchpad/ui-sweeps/wbcolour-shapes.js`."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -16,7 +17,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 INDEX = index_html_text()
 WANTED = {"rounded", "ellipse", "hexagon", "parallelogram", "star", "cylinder", "cloud", "callout", "block-arrow"}
@@ -74,7 +75,7 @@ def test_the_shapes_caret_opens_the_list():
     """OPEN row 847: `.wb-shape-caret` had `pointer-events: none`, so the
     toggle's `closest(".wb-shape-caret")` never matched and the caret picked
     the tool. The caret takes the press, and so does the toggle's right 14px."""
-    caret = re.search(r"\.wb-shape-caret\s*\{([^}]*)\}", _css("06-timeline-dialogs.css"))
+    caret = re.search(r"\.wb-shape-caret\s*\{([^}]*)\}", _css("board-lazy.css"))  # moved with the board dialogs (boot CSS cap)
     assert caret and "pointer-events" not in caret.group(1)
     start = WB.index("function wbToggleCaretHit(")
     hit = WB[start : WB.index("\n  }\n", start)]

@@ -56,6 +56,7 @@ LIBRARY_KEYS = {
     "Mermaid": "mermaid",
     "MathLive": "mathlive",
     "docx": "docx",
+    "perfect-freehand": "perfectfreehand",
     "draw.io stencils": "stencils",
     #: Python packages the composer imports (L-chat-64), counted by the calls made.
     "holidays": "holidays",
@@ -779,10 +780,10 @@ def phosphor_report() -> Report:
 
 #: Public surfaces a spelling word list could serve: (label, files, pattern).
 WORDLIST_CAPABILITIES = (
-    ("spell check in the documents editor", ("frontend/js/documents.js",), r"wordlist/en\.txt"),
+    ("spell check in the documents editor", ("frontend/js/documents.js", "frontend/js/documents-instruments.js"), r"wordlist/en\.txt"),
     (
         "ranked suggestions in the documents editor",
-        ("frontend/js/documents.js",),
+        ("frontend/js/documents.js", "frontend/js/documents-instruments.js", "frontend/js/documents-suggest-panel.js"),
         r"docSpellGuesses",
     ),
     (
@@ -929,6 +930,16 @@ def mammoth_report(scripts: dict[str, str]) -> Report:
     text = scripts.get("documents-word.js", "")
     called = [name for name in MAMMOTH_API if re.search(rf"\bmammoth\.{name}\b", text)]
     return Report("mammoth", "Mammoth", list(MAMMOTH_API), called, {}, ["read in documents-word.js, a .docx brought into the Library"])
+
+
+#: perfect-freehand's exports (window.perfectFreehand); the whiteboard's ink calls getStroke (whiteboard-ink-more.js).
+PERFECT_FREEHAND_API = ["getStroke", "getStrokePoints", "getStrokeOutlinePoints"]
+
+
+def perfectfreehand_report(scripts: dict[str, str]) -> Report:
+    text = scripts.get("whiteboard-ink-more.js", "")
+    called = [name for name in PERFECT_FREEHAND_API if re.search(rf"\.{name}\b", text)]
+    return Report("perfectfreehand", "perfect-freehand", list(PERFECT_FREEHAND_API), called, {}, ["read in whiteboard-ink-more.js, the smoothed pen"])
 
 
 #: Mermaid's public API (mermaid.esm default export), read in mermaid-frame.js.
@@ -1151,6 +1162,7 @@ def collect() -> dict[str, Report]:
         mermaid_report(scripts),
         mathlive_report(),
         docx_report(scripts),
+        perfectfreehand_report(scripts),
         translate_report(scripts),
         *pypkg_reports(),
     ]

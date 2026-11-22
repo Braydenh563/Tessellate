@@ -99,6 +99,11 @@
     sequence: ["participant", "message", "reply", "note", "loop", "alt"],
     mindmap: ["branch", "leaf"],
     timeline: ["section", "period", "event"],
+    gantt: ["section", "task", "milestone"],
+    pie: ["slice"],
+    state: ["state", "group", "transition"],
+    class: ["class", "member", "relation"],
+    er: ["entity", "attribute", "relationship"],
   };
 
   const SHELF = "diagram.shelf";

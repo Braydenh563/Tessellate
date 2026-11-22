@@ -16,6 +16,7 @@ import pytest
 
 from tessellate.ai import utilities
 from tessellate.core import cjk
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -66,7 +67,7 @@ def test_no_surface_splits_a_note_on_spaces_to_count_it():
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 def test_the_segmenter_counts_cjk_words_for_per_word_logic():
     """L-chat-259: no checker pack for ja/zh; the browser's Intl.Segmenter counts words for per-word logic."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     start = source.index("  words(sentence) {")
     end = source.index("\n  },", start) + 5
     script = "const docProse = {" + source[start:end] + "};\nconsole.log(JSON.stringify(process.argv.slice(1).map((t) => docProse.words(t))));"

@@ -21,7 +21,7 @@
 //
 // THEME=dark works (lib.js reads it); the pad's paper is its own white canvas
 // in both themes, so only the board's numbers move.
-const { boot, OUT } = require("./lib.js");
+const { boot, OUT, newBoard: libNewBoard } = require("./lib.js");
 const { execSync } = require("child_process");
 
 const [VW, VH] = (process.env.VIEWPORT || "1440x900").split("x").map(Number);
@@ -62,15 +62,7 @@ async function crossStrokes(page, cx, cy) {
 }
 
 async function newBoard(page, name) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, 'board');
   await page.keyboard.press("Escape");
 }
 

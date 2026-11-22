@@ -5,6 +5,7 @@ item's data values; a label's `%name%` shows the item's own value of that
 name; `data.tip` is the shape's hover text. The browser half is run outside
 the repo (the sweep named in HISTORY)."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -15,7 +16,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 HTML = index_html_text()
 

@@ -12,10 +12,19 @@
 .nm-atlas:is(.atl-head, .atl-tiny) .atl-brow-r {
   transform: translateY(calc((var(--atl-brow-y) + var(--atl-br-y)) * 1.6)) rotate(calc((var(--atl-knit) * -1 + var(--atl-br-r)) * 1.5));
 }
-.nm-atlas.atl-head :is(.atl-e-happy, .atl-e-shut, .atl-e-squeeze) { stroke-width: 2.6; }
+.nm-atlas.atl-head .atl-e-happy,
+.nm-atlas.atl-head .atl-e-shut,
+.nm-atlas.atl-head .atl-e-squeeze { stroke-width: 2.6; }
 /* The head level's own small signs give way to the cue, which is the same
    sign drawn large. */
-.nm-atlas.atl-head :is(.atl-fx-sparkle, .atl-fx-hearts, .atl-fx-zz, .atl-fx-dots, .atl-fx-q, .atl-fx-bang, .atl-fx-sweat, .atl-fx-tear) { display: none; }
+.nm-atlas.atl-head .atl-fx-sparkle,
+.nm-atlas.atl-head .atl-fx-hearts,
+.nm-atlas.atl-head .atl-fx-zz,
+.nm-atlas.atl-head .atl-fx-dots,
+.nm-atlas.atl-head .atl-fx-q,
+.nm-atlas.atl-head .atl-fx-bang,
+.nm-atlas.atl-head .atl-fx-sweat,
+.nm-atlas.atl-head .atl-fx-tear { display: none; }
 .nm-atlas .atl-cue > g { opacity: 0; transition: opacity var(--motion-base) var(--ease-out); }
 .nm-atlas[data-atlas-mood="happy"] .atl-cue-happy,
 .nm-atlas[data-atlas-mood="delighted"] .atl-cue-delighted,
@@ -33,7 +42,8 @@
 .nm-atlas[data-atlas-mood="worried"] .atl-cue-worried,
 .nm-atlas[data-atlas-mood="miffed"] .atl-cue-miffed,
 .nm-atlas[data-atlas-mood="smirk"] .atl-cue-smirk { opacity: 1; }
-.nm-atlas .atl-cue :is(.atl-cue-ink, .atl-cue-blush) { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.nm-atlas .atl-cue .atl-cue-ink,
+.nm-atlas .atl-cue .atl-cue-blush { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .nm-atlas .atl-cue .atl-cue-bold { stroke-width: 3; }
 .nm-atlas .atl-cue .atl-cue-z { stroke: var(--atl-line); stroke-width: 2.1; }
 .nm-atlas .atl-cue .atl-cue-blush { stroke: var(--atl-heart-c); stroke-width: 2.6; }
@@ -41,7 +51,9 @@
 .nm-atlas .atl-cue .atl-cue-dot { fill: var(--atl-hi); stroke: var(--ink); stroke-width: 1.1; }
 .nm-atlas .atl-cue .atl-cue-flame { fill: var(--atl-gold); stroke: var(--ink); stroke-width: 1.1; }
 /* A comic sign's ink outline: pastel on white is otherwise half a sign. */
-.nm-atlas .atl-cue :is(.atl-sparkle, .atl-heart, .atl-drop) { stroke: var(--ink); stroke-width: 1.1; stroke-linejoin: round; }
+.nm-atlas .atl-cue .atl-sparkle,
+.nm-atlas .atl-cue .atl-heart,
+.nm-atlas .atl-cue .atl-drop { stroke: var(--ink); stroke-width: 1.1; stroke-linejoin: round; }
 /* Calm's arms (Brief 34 continues, step 4; the owner: "atlas's arm
    movements ... are basically permanently in a downward arc except for when
    hanging"). Calm, the mood Atlas is in most of the time, had no arm
@@ -309,12 +321,13 @@
    9.7 s, the wisps 5.3 s and 8.1 s, the tail 4.7 s and 7.3 s), so the pair drifts in and out of step
    and the figure takes minutes to repeat a pose. Each is a lone property on the compositor. */
 @media all {
-  :is(
-    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
-    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
-  ) {
+  :where(:root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live):is(:root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live, :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live),
+  :is(:root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live) {
     & .atl-lw-pose-lower { animation: atl-lw-sway-lower 6.4s ease-in-out -3.2s infinite alternate, atl-lw-bob-lower 9.7s ease-in-out -6.1s infinite alternate; }
-    & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation: atl-lw-sway-wisps 5.3s ease-in-out -2.4s infinite alternate, atl-lw-bob-wisps 8.1s ease-in-out -1.7s infinite alternate; }
+    & .atl-lw-pose-wisps,
+    & .atl-lw-pose-wisps-back,
+    & .atl-lw-pose-glint-a,
+    & .atl-lw-pose-glint-b { animation: atl-lw-sway-wisps 5.3s ease-in-out -2.4s infinite alternate, atl-lw-bob-wisps 8.1s ease-in-out -1.7s infinite alternate; }
     & .atl-lw-pose-tail { animation: atl-lw-sway-tail 4.7s ease-in-out -1.5s infinite alternate, atl-lw-bob-tail 7.3s ease-in-out -4.2s infinite alternate; }
   }
   /* Same gates as above: without them a sleeping figure with avatar motion
@@ -326,7 +339,10 @@
     :root[data-buddy-motion="full"]:not([data-avatar-motion="off"])
   ) #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie, [data-pose^="lie"], [data-pose^="curl"]) .nm-live {
     & .atl-lw-pose-lower { animation-name: atl-lw-sleep-lower, atl-lw-sleep-bob-lower; animation-duration: 10.5s, 14.9s; }
-    & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation-name: atl-lw-sleep-wisps, atl-lw-sleep-bob-wisps; animation-duration: 9.1s, 13.3s; }
+    & .atl-lw-pose-wisps,
+    & .atl-lw-pose-wisps-back,
+    & .atl-lw-pose-glint-a,
+    & .atl-lw-pose-glint-b { animation-name: atl-lw-sleep-wisps, atl-lw-sleep-bob-wisps; animation-duration: 9.1s, 13.3s; }
     & .atl-lw-pose-tail { animation-name: atl-lw-sleep-tail, atl-lw-sleep-bob-tail; animation-duration: 8.3s, 12.1s; }
   }
 }
@@ -354,10 +370,8 @@
 .atl-lw-pose-neb { transform-origin: 31px 52px; }
 .atl-lw-pose-neb-front { transform-origin: 31px 52px; }
 @media all {
-  :is(
-    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
-    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
-  ) {
+  :where(:root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live):is(:root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live, :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live),
+  :is(:root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live) {
     & .atl-lw-pose-wisps > .atl-lw-drift-box { animation: atl-lw-drift 4.9s ease-in-out -2.1s infinite alternate, atl-lw-curl 6.1s ease-in-out -4.2s infinite alternate, atl-lw-shimmer 3.5s ease-in-out -1.9s infinite alternate; }
     & .atl-lw-pose-wisps-back > .atl-lw-drift-box { animation: atl-lw-drift 4.5s ease-in-out -3.4s infinite alternate, atl-lw-curl 5.7s ease-in-out -0.6s infinite alternate, atl-lw-shimmer 4.1s ease-in-out -2.7s infinite alternate; }
     & .atl-lw-pose-glint-a > .atl-lw-drift-box { animation: atl-lw-drift 5.3s ease-in-out -0.7s infinite alternate, atl-lw-curl 4.7s ease-in-out -2.9s infinite alternate, atl-lw-shimmer 3.3s ease-in-out -1.1s infinite alternate; }
@@ -405,7 +419,8 @@
    right ones negative (outward from hanging); a held prop's `atl-ds-turn`
    turns back by the arm's turn so it stays upright while the arm lifts it. */
 #nm-buddy.nmb-act-pushups .atl-figure .nmp-pushmat,
-#nm-buddy.nmb-act-weights .atl-figure :is(.nmp-dumbbell-l, .nmp-dumbbell-r),
+#nm-buddy.nmb-act-weights .atl-figure .nmp-dumbbell-l,
+#nm-buddy.nmb-act-weights .atl-figure .nmp-dumbbell-r,
 #nm-buddy.nmb-act-tea .atl-figure .nmp-cup,
 #nm-buddy.nmb-act-snack .atl-figure .nmp-snack,
 #nm-buddy.nmb-act-fish .atl-figure .nmp-rod { opacity: 1; }
@@ -564,11 +579,14 @@
    moves the arm, the eyes, the tail and the body over beats under the motion gate.
    The diary, the sky, the blanket, the pot and the tray are drawn in front of the
    body (atlas.js `atlasHandProps.front`), the pencil, the can and the piece in a hand. */
-#nm-buddy.nmb-act-journal .atl-figure :is(.nmp-diary, .nmp-pen),
+#nm-buddy.nmb-act-journal .atl-figure .nmp-diary,
+#nm-buddy.nmb-act-journal .atl-figure .nmp-pen,
 #nm-buddy.nmb-act-stars .atl-figure .nmp-sky,
 #nm-buddy.nmb-act-blanket .atl-figure :is(.nmp-blanket, .nmp-pillow, .nmp-napz),
-#nm-buddy.nmb-act-plant .atl-figure :is(.nmp-plant, .nmp-can),
-#nm-buddy.nmb-act-puzzle .atl-figure :is(.nmp-puzzle, .nmp-piece) { opacity: 1; }
+#nm-buddy.nmb-act-plant .atl-figure .nmp-plant,
+#nm-buddy.nmb-act-plant .atl-figure .nmp-can,
+#nm-buddy.nmb-act-puzzle .atl-figure .nmp-puzzle,
+#nm-buddy.nmb-act-puzzle .atl-figure .nmp-piece { opacity: 1; }
 #nm-buddy:is(.nmb-act-journal, .nmb-act-stars, .nmb-act-blanket, .nmb-act-plant, .nmb-act-puzzle) .nm-atlas .atl-iris { translate: none; }
 /* A journal: head bowed to the page, the pencil hand on it, the other holding the page down. */
 #nm-buddy.nmb-act-journal .atl-figure .nmb-arm-r { transform: rotate(14deg); }
@@ -905,7 +923,8 @@
 /* **The desk's small projects, as Atlas does them** (atlascat Batch D4: a daydream, pacing, making up a game, tinkering, dusting off). The recipe of the blocks above; the thought bubble, the game's sparks, the gear and the dust motes are drawn in front of the body (atlas.js `atlasHandProps.front`), the spanner in the hand. Each cycle is the catalogue's length (a daydream loops while it lasts). */
 #nm-buddy.nmb-act-daydream .atl-figure .nmp-daydream,
 #nm-buddy.nmb-act-game .atl-figure .nmp-game,
-#nm-buddy.nmb-act-tinker .atl-figure :is(.nmp-gear, .nmp-spanner),
+#nm-buddy.nmb-act-tinker .atl-figure .nmp-gear,
+#nm-buddy.nmb-act-tinker .atl-figure .nmp-spanner,
 #nm-buddy.nmb-act-dust .atl-figure .nmp-dust { opacity: 1; }
 #nm-buddy .nm-atlas .atl-ds-pop { transform-box: fill-box; transform-origin: center; }
 .nm-atlas .atl-ds-mote { opacity: 0; }
@@ -1148,7 +1167,8 @@
    lean, the tail and a calm face that smiles now and then. A held prop's
    `atl-ds-turn` turns back by its arm's turn. Painted in the rig's theme
    variables only; the loops are in the motion gate at the end. */
-#nm-buddy.nmb-act-dinner .atl-figure :is(.nmp-bowl, .nmp-spoon),
+#nm-buddy.nmb-act-dinner .atl-figure .nmp-bowl,
+#nm-buddy.nmb-act-dinner .atl-figure .nmp-spoon,
 #nm-buddy.nmb-act-bubbles .atl-figure .nmp-wand,
 #nm-buddy.nmb-act-knit .atl-figure .nmp-needles { opacity: 1; }
 #nm-buddy:is(.nmb-act-dinner, .nmb-act-bubbles, .nmb-act-knit) .nm-atlas .atl-iris { translate: none; }
@@ -1243,12 +1263,12 @@
 #nm-buddy.nmb-act-kneel .atl-figure .nmp-speck,
 #nm-buddy.nmb-act-leanedge .atl-figure .nmp-ledge { opacity: 1; }
 .nm-atlas .atl-ds-cloud { fill: color-mix(in oklab, var(--atl-glow-c) 30%, var(--atl-hi)); stroke: var(--atl-navy); stroke-width: 0.7; }
-.nm-atlas :is(.atl-ds-plane, .atl-ds-plane-keel) { fill: var(--atl-hi); stroke: var(--atl-navy); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas :is(.atl-ds-plane), .nm-atlas :is(.atl-ds-plane-keel) { fill: var(--atl-hi); stroke: var(--atl-navy); stroke-width: 0.5; stroke-linejoin: round; }
 .nm-atlas .atl-ds-plane-keel { fill: var(--atl-lilac); }
 .nm-atlas .atl-ds-plane-trail { stroke: var(--atl-gold); stroke-dasharray: 0.8 1.2; }
 .nm-atlas .atl-ds-baton { fill: none; stroke: var(--atl-gold-line); stroke-width: 0.8; stroke-linecap: round; }
-.nm-atlas :is(.atl-ds-sketch-a, .atl-ds-sketch-b, .atl-ds-sketch-c) { stroke-dasharray: 1; }
-.nm-atlas :is(.atl-ds-flight, .atl-ds-note, .atl-ds-sprout) { transform-box: fill-box; transform-origin: 50% 100%; }
+.nm-atlas :is(.atl-ds-sketch-a), .nm-atlas :is(.atl-ds-sketch-b), .nm-atlas :is(.atl-ds-sketch-c) { stroke-dasharray: 1; }
+.nm-atlas :is(.atl-ds-flight), .nm-atlas :is(.atl-ds-note), .nm-atlas :is(.atl-ds-sprout) { transform-box: fill-box; transform-origin: 50% 100%; }
 /* A cloud for a pillow: the chin on it, the body tipped forward, both arms folded under. */
 #nm-buddy.nmb-act-cloudpillow .atl-figure .nmb-arm-r { transform: rotate(-28deg); }
 #nm-buddy.nmb-act-cloudpillow .atl-figure .nmb-arm-l { transform: rotate(28deg); }
@@ -1399,11 +1419,11 @@
    atlasprops.js read these at 1.4 to 2.5 to 1 against the pale blue body in both looks (the sheet is the
    same in both): a dark keyline under each fill, the line-art strokes in navy, and the three small glyphs at
    14px or more. Every prop is then 3 to 1 or more. */
-.nm-atlas :is(.atl-prop-bag, .atl-ds-mat, .atl-ds-pillow, .atl-ds-can, .atl-ds-piece, .atl-ds-twinkle, .atl-ds-gear-disc, .atl-ds-gear-tooth, .atl-ds-mote, .atl-ds-pot, .atl-ds-pot-rim, .atl-ds-snack, .atl-ds-chip) { stroke: var(--atl-navy); stroke-width: 0.7; stroke-linejoin: round; paint-order: stroke fill; }
-.nm-atlas :is(.atl-ds-rod, .atl-ds-spanner, .atl-ds-spanner-jaw, .atl-ds-spoon, .atl-ds-can-spout, .atl-nap-z) { stroke: var(--atl-navy); }
+.nm-atlas :is(.atl-prop-bag), .nm-atlas :is(.atl-ds-mat), .nm-atlas :is(.atl-ds-pillow), .nm-atlas :is(.atl-ds-can), .nm-atlas :is(.atl-ds-piece), .nm-atlas :is(.atl-ds-twinkle), .nm-atlas :is(.atl-ds-gear-disc), .nm-atlas :is(.atl-ds-gear-tooth), .nm-atlas :is(.atl-ds-mote), .nm-atlas :is(.atl-ds-pot), .nm-atlas :is(.atl-ds-pot-rim), .nm-atlas :is(.atl-ds-snack), .nm-atlas :is(.atl-ds-chip) { stroke: var(--atl-navy); stroke-width: 0.7; stroke-linejoin: round; paint-order: stroke fill; }
+.nm-atlas :is(.atl-ds-rod), .nm-atlas :is(.atl-ds-spanner), .nm-atlas :is(.atl-ds-spanner-jaw), .nm-atlas :is(.atl-ds-spoon), .nm-atlas :is(.atl-ds-can-spout), .nm-atlas :is(.atl-nap-z) { stroke: var(--atl-navy); }
 .nm-atlas .atl-ds-fold { opacity: 0.85; }
-.nm-atlas :is(.nmp-note, .nmp-gear, .nmp-piece) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.5; }
-.nm-atlas :is(.nmp-snack, .nmp-napz) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.3; }
+.nm-atlas :is(.nmp-note), .nm-atlas :is(.nmp-gear), .nm-atlas :is(.nmp-piece) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.5; }
+.nm-atlas :is(.nmp-snack), .nm-atlas :is(.nmp-napz) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.3; }
 
 /* L145: a thrown companion drops what it holds. For `NMB_THROW.tip` after it lands, the prop of the act it was grabbed in lies on its
    side at the feet (companionThrowTip, companion-throw.js; the desk's `props.TIP_PROPS`). The slot turns about its middle and
@@ -1411,11 +1431,11 @@
 #nm-buddy.nmb-tip-tea .atl-figure .nmp-cup,
 #nm-buddy.nmb-tip-snack .atl-figure .nmp-snack,
 #nm-buddy.nmb-tip-fish .atl-figure .nmp-rod,
-#nm-buddy.nmb-tip-journal .atl-figure :is(.nmp-diary, .nmp-pen),
+#nm-buddy.nmb-tip-journal .atl-figure :is(.nmp-diary), #nm-buddy.nmb-tip-journal .atl-figure :is(.nmp-pen),
 #nm-buddy.nmb-tip-plant .atl-figure .nmp-can,
-#nm-buddy.nmb-tip-dinner .atl-figure :is(.nmp-bowl, .nmp-spoon),
+#nm-buddy.nmb-tip-dinner .atl-figure :is(.nmp-bowl), #nm-buddy.nmb-tip-dinner .atl-figure :is(.nmp-spoon),
 #nm-buddy.nmb-tip-bubbles .atl-figure .nmp-wand,
-#nm-buddy.nmb-tip-weights .atl-figure :is(.nmp-dumbbell-l, .nmp-dumbbell-r),
+#nm-buddy.nmb-tip-weights .atl-figure :is(.nmp-dumbbell-l), #nm-buddy.nmb-tip-weights .atl-figure :is(.nmp-dumbbell-r),
 #nm-buddy.nmb-tip-tinker .atl-figure .nmp-spanner {
   opacity: 1;
   transform-box: fill-box;
@@ -1433,7 +1453,7 @@
 #nm-buddy.nmb-tip-dinner .nmp-spoon,
 #nm-buddy.nmb-tip-bubbles .nmp-wand,
 #nm-buddy.nmb-tip-tinker .nmp-spanner { translate: 0 28px; }
-#nm-buddy.nmb-tip-weights :is(.nmp-dumbbell-l, .nmp-dumbbell-r) { translate: 0 20px; }
+#nm-buddy.nmb-tip-weights :is(.nmp-dumbbell-l), #nm-buddy.nmb-tip-weights :is(.nmp-dumbbell-r) { translate: 0 20px; }
 
 /* L137 (here, not boot: the large view draws only with the characters bundle): drawn at 2.2x, nmb-hop's 14px lift travels 2.2x as far in the same
    time, so the head moved 2.2x faster than at rest. Each duration is the rest

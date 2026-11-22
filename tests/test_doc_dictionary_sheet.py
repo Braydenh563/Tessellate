@@ -18,7 +18,8 @@ from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = index_html_text()
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+#: The sheet's code is documents-dictionary.js (DOCUMENTS_PLAN L327), fetched on the first press.
+DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-dictionary.js").read_text(encoding="utf-8")
 CSS = css_glob_text()
 
 
@@ -30,7 +31,7 @@ def _dialog() -> str:
 
 def _body(name: str) -> str:
     start = DOCS.index(f"function {name}(")
-    return DOCS[start : DOCS.index("\n}\n", start)]
+    return DOCS[start : DOCS.index("\n  }\n", start)]
 
 
 def test_the_count_is_muted_text_not_a_chip() -> None:

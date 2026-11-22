@@ -15,6 +15,7 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
+from tests._app_js import documents_text, frontend_text, index_html_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -91,14 +92,14 @@ def test_every_write_tool_names_its_manual_path():
 def test_every_named_manual_path_still_exists():
     gone = []
     for tool, (name, proof, where) in MANUAL.items():
-        text = (FRONTEND / "js" / name).read_text(encoding="utf-8")
+        text = frontend_text(name)
         if proof not in text:
             gone.append(f"{tool}: {where} ({name} no longer has {proof!r})")
     assert not gone, "Manual paths that went missing:\n  " + "\n  ".join(gone)
 
 
 def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_settings():
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     #: The Settings button's listener is in settings-controls.js now.
     wiring = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("wiring.js", "settings-controls.js"))
     # The panel moved to its own lazy piece (categories-panel.js).
@@ -182,7 +183,7 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     for label in ("Start a timer", "Start a stopwatch"):
         entry = next((block for block in tools.split("\n  },") if f'name: "{label}"' in block), "")
         assert "about:" in entry, f"the palette's {label} row has no line of help"
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'data-help-for="templates-help"' in html and "insert template" in html.split('id="templates-help"', 1)[1][:1200]
 
 
@@ -232,7 +233,7 @@ def test_the_manual_is_the_guides_topics_with_a_door_from_help_and_the_guide():
     #: One source: the Guide's own table, never a copy.
     assert 'apiJson("/help/topics")' in manual
     assert "window.print()" in manual and 'search.placeholder = "Search the manual";' in manual
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'id="help-open-manual"' in html
     find = unwrapped((FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert '$("help-open-manual")?.addEventListener("click", () => lazyScript("/js/manual.js")' in find
@@ -248,7 +249,7 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     named in the Guide and in Settings or the Timeline's own help."""
 
     text = help_chat_text() + help_more_text()
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
     assert "Dates beside the strip" in text and "Dates beside the strip" in html
@@ -263,7 +264,7 @@ def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so()
     tells a reader that the sections have one."""
     from tessellate.ai.help_chat import HELP_TOPICS
 
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     for help_id in ("physics", "show", "display", "filter", "time", "groups", "minimap"):
         assert f'data-help-for="graph-{help_id}-help"' in html, f"Options has no '?' for {help_id}"
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-options-help"))
@@ -279,7 +280,7 @@ def test_the_graph_search_count_and_keys_are_in_the_guide() -> None:
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph"))
     assert "how many notes match" in body
     assert "Enter jumps to the next match" in body and "Shift and Enter" in body and "Esc clears the search" in body
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'id="graph-search-count"' in html
 
 
@@ -294,7 +295,7 @@ def test_the_board_zoom_keys_are_in_the_keys_sheet_and_the_guide() -> None:
     assert 'label: "Zoom to 100%", keys: "Ctrl+1"' in commands
     assert 'label: "Fit everything", keys: "Ctrl+0"' in commands
     assert '{ cmd: "zoom-fit", also: ["Shift+1"] }' in commands
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert "<span>Zoom to 100%</span><kbd>Ctrl+1</kbd>" in html
     assert "<span>Fit everything</span><kbd>Ctrl+0</kbd>" in html
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "whiteboard-controls"))
@@ -310,7 +311,7 @@ def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
     topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "learned")
     for words in ("Check what it learned", "retires", "Undo", "flags", "Background tasks", "joke, quote, fiction, test or draft"):
         assert words in topic["body"] or words.lower() in topic["body"].lower(), words
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     help_body = html[html.index('id="learned-help"') :][:3000]
     assert '"Check what it learned"' in help_body and "Undo" in help_body
     assert "Check what it learned</button>" in html
@@ -331,7 +332,7 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
         body = topic["body"].lower()
         assert "on the computer tessellate runs on" in body and "while the desktop app runs" in body, topic["id"]
         assert meta.get("path", "").startswith("On the computer Tessellate runs on"), topic["id"]
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     popover = html.split('id="desktop-companion-help"', 1)[1].split("</div>", 1)[0]
     assert "While the desktop app runs" in popover
     # BACKLOG 16 O4: the see-through figure that walks, and the words for it, in both places.
@@ -391,7 +392,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "Picture" in docs and "A diagram has Picture, List, Split and Source." in docs
 
 
@@ -541,7 +542,7 @@ def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
     for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers", "its tag still reaches it"):
         assert words in topics["patterns"], words
     assert "patterns you confirmed" in topics["memory"]
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     help_body = html[html.index('id="memory-help"') :][:2400]
     for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo", "its tag still"):
         assert words in help_body, words
@@ -744,7 +745,7 @@ def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the
     centre out; the Guide says both in the controls' words."""
     commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
     assert 'keys: ["Alt+=", "Alt+-"]' in commands
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert "<span>Build up branch by branch</span>" in html
     text = help_chat_text() + help_more_text()
     assert "Alt+= and Alt+- show one more or one less level" in text
@@ -752,21 +753,70 @@ def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the
     assert "End shows the whole map to take it apart" in text
 
 
+def test_the_format_panels_connection_point_rows_are_in_the_guide_in_the_controls_words() -> None:
+    """L-whiteboard-13: Format, Position and size lists a shape's connection points (pick, On outline, nudge, add, remove); the
+    Guide says so in the words the rows carry, and the rows are in the page."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Format, Position and size lists a shape's connection points" in str(t["body"]))
+    for words in ("On outline", "nudge it by pixels", "add one or remove the chosen one", "one Undo step", "draw.io file's points"):
+        assert words in body, words
+    html = index_html_text()
+    for words in ("Connection point", "On outline", "Add a connection point", "Remove the chosen connection point", "Nudge"):
+        assert words in html, words
+
+
 def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     """L328: Grid, its keys and the four row and column buttons are named where the Run help lives."""
     from tessellate.ai import help_topics_more_mid as topics
 
     text = " ".join(str(topic) for topic in vars(topics).values() if isinstance(topic, (list, dict, str)))
-    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes"):
+    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes", "Sort the file", "Filters adds a box", "Header row says", "Drag a column's edge", "Pasting tabbed text"):
         assert word in text, word
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+    #: L-documents-39: the new controls are named in the dock's help too, in the words the buttons carry.
+    for label in ("Header row", "Filters", "Sort the file A to Z", "Sort the file Z to A"):
+        assert f'"{label}"' in js, label
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    for word in ("Sort the file", "Filters adds a box", "Header row says", "Drag the edge of a column", "Pasting text with tabs"):
+        assert word in html, word
+
+
+def test_sub_pages_are_in_the_guide_and_the_popovers_in_the_controls_words() -> None:
+    """L-documents-44: New sub-page, Move under, /subpage and the breadcrumb are named in the Guide, the Library's
+    Documents help and the document bar's help, in the words the menu rows carry."""
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "frontend" / "js" / "documents-subpages.js").read_text(encoding="utf-8")
+    for label in ("ph:file-plus New sub-page", "ph:tree-view Move under", "ph:arrow-line-left Move to the top level"):
+        assert f'"{label}"' in js, label
+    from tessellate.ai.help_topics_more import MORE_TOPICS
+
+    #: The topic's body as the Guide shows it (the source splits its sentences across lines).
+    text = next(t["body"] for t in MORE_TOPICS if t["id"] == "document-subpages")
+    for word in ("New sub-page", "Move under", "Move to the top level", "type /subpage", "its parents are shown after Documents", "cannot go under itself"):
+        assert word in text, word
+    html = index_html_text()
+    for word in ("New sub-page and Move under", "its parents follow Documents", "/subpage makes a sub-page here"):
+        assert word in html, word
+
+
+def test_a_board_window_in_a_document_is_in_the_guide_in_its_buttons_words() -> None:
+    """L-documents-11 (decision 83), then L-documents-104: Edit in place, the fallback window's Refresh and its zoom are named
+    in the Guide as the buttons say them (Show live became Edit in place when the board's instances landed)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "document-board"))
+    js = (FRONTEND / "js" / "documents-embeds.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "documents-board.js").read_text(encoding="utf-8")
+    for label in ("Edit in place", "Refresh", "Edit here"):
+        assert f"{label}" in js and label in body, label
+    assert "zoom and pan" in body and "plus and minus" in body
 
 
 def test_answer_length_personas_off_supersedes_and_tools_are_in_the_guide_and_settings() -> None:
     """L161 and L163: each control is in Settings with its `data-help-for`, and the Guide names it in the controls' words."""
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     #: The Guide's bodies are split across adjacent string literals: join them.
     guide = re.sub(r'"\s*\n\s*"', "", help_more_text() + help_chat_text())
     for control, said in (

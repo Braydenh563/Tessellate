@@ -20,6 +20,7 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
+from tests._app_js import frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -234,7 +235,7 @@ def test_no_live_field_shows_an_error_while_it_is_being_typed() -> None:
     assert "calcTex.pending(box.value)" in work and "out._late" in work and "That sum is not finished" in work
     replace = (JS / "documents-replace.js").read_text(encoding="utf-8")
     assert "docReplace.late = setTimeout" in replace
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert "wbBoardSearch.late = setTimeout" in board
 
 

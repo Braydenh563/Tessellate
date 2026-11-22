@@ -9,6 +9,7 @@ Run in node against the source; the browser half is
 `scratchpad/ui-sweeps/wb1005-zorder.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -18,7 +19,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 INDEX = index_html_text()
 
 

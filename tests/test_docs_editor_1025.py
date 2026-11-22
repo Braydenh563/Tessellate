@@ -61,7 +61,7 @@ def test_a_colour_pick_on_a_highlight_switches_it(tmp_path):
     script = """
 const src = require('fs').readFileSync(process.argv[1], 'utf8');
 const a = src.indexOf('function mdColourEdit');
-eval(src.slice(a, src.indexOf('\\n}\\n', a) + 3));
+eval(src.slice(a, src.indexOf('\\n  }\\n', a) + 5));
 const t = (v, sub, k, c) => { const s = v.indexOf(sub); const r = mdColourEdit(v, s, s + sub.length, k, c); return v.slice(0, r.from) + r.insert + v.slice(r.to); };
 console.log(JSON.stringify([
   t('a ==yellow text== b', 'yellow', 'highlight', 'blue'),
@@ -70,7 +70,7 @@ console.log(JSON.stringify([
   t('a plain b', 'plain', 'highlight', 'pink'),
 ]));
 """
-    out = subprocess.run([node, "-e", script, str(ROOT / "frontend" / "js" / "documents.js")], capture_output=True, text=True, check=True)
+    out = subprocess.run([node, "-e", script, str(ROOT / "frontend" / "js" / "documents-wiring.js")], capture_output=True, text=True, check=True)
     import json
 
     assert json.loads(out.stdout) == [

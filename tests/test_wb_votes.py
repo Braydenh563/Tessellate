@@ -1,5 +1,6 @@
 """Voting dots and a workshop timer (INBOX 1313, plan row 14)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -9,7 +10,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 HTML = index_html_text()
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")

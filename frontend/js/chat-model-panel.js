@@ -59,6 +59,9 @@ const loadResponseModes = (() => {
     }
   };
   onSurface("chat", paint);
+  //: The Ask box's picker is built with the notes surface: painted only with Chat's, it opened an
+  //: empty list on a session that had not opened Chat (menus.js at 1440).
+  onSurface("notes", paint);
   return async () => {
     body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
     paint();

@@ -60,6 +60,7 @@ async function renderPrefs() {
   //: L-chat-17: the surfaces that speak about the notes (greeting, today line, remarks).
   $("pref-personal-wording").checked = prefsCache.personal_wording !== false;
   $("pref-personal-wording").onchange = (event) => setPreference("personal_wording", event.target.checked);
+  $("pref-writing-style").value = prefsCache.writing_style || "notes";
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-birthday").value = prefsCache.birthday || "";
@@ -274,3 +275,4 @@ function syncEmbeddingPickerState(offline) {
     ? "Re-read every note with this model"
     : "Switch to the built-in model and re-read every note with it";
 }
+

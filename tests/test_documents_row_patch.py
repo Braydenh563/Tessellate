@@ -10,10 +10,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
-SOURCE = JS.read_text(encoding="utf-8")
+SOURCE = documents_text()
 
 
 def _function(head: str) -> str:
@@ -76,4 +78,6 @@ def test_a_row_the_list_does_not_hold_falls_back_to_the_read():
 
 
 def test_the_mention_link_patches_the_row_too():
-    assert "} else await loadDocuments(currentDoc?.id);" in SOURCE
+    #: The links panel's rows moved to their lazy piece (L327).
+    piece = (JS.parent / "documents-backlinks.js").read_text(encoding="utf-8")
+    assert "} else await loadDocuments(currentDoc?.id);" in piece

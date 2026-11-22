@@ -1,6 +1,7 @@
 """Dimension lines (INBOX 1313, plan row 7): a connector's label `%length%`
 reads its own drawn length, live, and a command makes one."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -11,7 +12,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 HTML = index_html_text()
 

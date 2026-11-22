@@ -7,6 +7,7 @@ the first press says how to unlock it; right-click on it unlocks that one.
 The browser half is `scratchpad/ui-sweeps/wb1005-pages.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ import pytest
 from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 LIBRARY = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
 INDEX = index_html_text()
 
@@ -85,7 +86,7 @@ def test_a_locked_item_answers_the_pointer() -> None:
     # Audit 1028 B20: the lock is a persistent badge, not a hover-only pin.
     assert "wbPaintLockBadges();" in _function(BOARD, "wbPaintLocks")
     assert "wbPaintLockHover" not in BOARD and "wbOnLockHoverMove" not in BOARD
-    assert 'addEventListener("pointerdown", wbOnLockPress, true)' in BOARD
+    assert 'wbInstances.on("pointerdown", wbOnLockPress, true)' in BOARD
     assert "Locked. Right-click to unlock it" in BOARD
     assert "Unlock this item" in BOARD
     hit = _function(BOARD, "wbLockedItemAt")

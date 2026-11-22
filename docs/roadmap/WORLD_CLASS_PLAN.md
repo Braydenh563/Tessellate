@@ -2485,7 +2485,9 @@ twenty). It is the bar every pass in this plan is measured against.
     standing bar for every pass (INBOX 399's hole-poke and refinement briefs
     carry it). Named: the connection pill's x inset, orchestrator; menus
     (widths, spacing, alignment), a sweep of every menu for width, padding
-    and row alignment.
+    and row alignment (built: L-world-class-107, HISTORY; the pill's button
+    concentric with its end, submenu rows' words on the plain rows' column;
+    `scratchpad/ui-sweeps/menu-rows.js` measures every reachable menu).
 
 ## Placed from INBOX, 2026-10-03 (INBOX 391, 392)
 
@@ -4191,10 +4193,7 @@ Brief 74 measured rules 1, 2 and 7 on 12 surfaces (`undo.js`, `reach.js`, `overl
      Placed: (1) full open inventory (every plan, BACKLOG, INBOX, OPEN ledger, HANDOVER) ranked by impact, sent to the owner; (2) composer: every past owner report clustered into failure classes, a class-level eval set, the worst classes fixed as classes (CHAT_PLAN); (3) grammar and spelling: K4, K4b, K11 with the vendoring call (Harper); (4) stop at 40% weekly, report open items and a recommendation. The "fix the class, not the case" rule is standing (HANDOVER owner block).
 
 ## Placed from L746, 2026-11-14: Atlas-only and generated-only acts, for the owner's review
-Measured from `NAME_MARK_BUDDY_ACTS` (avatars.js) and `ACTIVITIES` (behaviour.py). The picker keeps `atlas: true` acts off generated faces (companion-menu.js:191); nothing keeps an act off Atlas.
-| Track | Acts | Count |
-| --- | --- | --- |
-| Atlas-only | juggle, map, meditate, pushups, weights, tea, snack, fish, journal, stars, blanket, plant, puzzle, agree, dance, proud, lookdown, tiptoe, sneeze, hiccup, hug, tap, firefly, starpile, cardnap, wavepointer, dinner, bubbles, knit, daydream, pace, game, tinker, dust | 34 |
-| Both | blink, look, turn, glance, stretch, yawn, nap, hop, wave, scratch, dangle, kick, shrug, facepalm, the 56 `any` rows | 56 |
-| Generated-only | groom, sniff, shake (built: `generated: true`); ear twitch, tail flick, crouch_watch, lie_down (the ground gait or a part Atlas lacks; behaviour.py) | 7 |
-The owner reviews the list; a row moves by flipping `generated` on its act.
+Measured from `NAME_MARK_BUDDY_ACTS` (avatars.js) and `ACTIVITIES` (behaviour.py). The picker keeps `atlas: true` acts off generated faces (companion-menu.js:191); nothing keeps an act off Atlas. The owner reviews the list; a row moves by flipping `generated` on its act.
+- Atlas-only (34): juggle, map, meditate, pushups, weights, tea, snack, fish, journal, stars, blanket, plant, puzzle, agree, dance, proud, lookdown, tiptoe, sneeze, hiccup, hug, tap, firefly, starpile, cardnap, wavepointer, dinner, bubbles, knit, daydream, pace, game, tinker, dust
+- Both (56): blink, look, turn, glance, stretch, yawn, nap, hop, wave, scratch, dangle, kick, shrug, facepalm, the 56 `any` rows
+- Generated-only (7): groom, sniff, shake (built: `generated: true`); ear twitch, tail flick, crouch_watch, lie_down (the ground gait or a part Atlas lacks; behaviour.py)

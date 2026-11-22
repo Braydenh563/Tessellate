@@ -24,8 +24,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text
-from tests._app_js import index_html_text
+from tests._app_js import app_js_text, documents_text, index_html_text
 
 HTML = index_html_text()
 CSS = "".join(
@@ -73,7 +72,7 @@ def test_the_least_used_controls_are_behind_one_kebab():
 def test_the_ids_did_not_move():
     """documents.js binds by id. A redesign that renames one is a redesign
     that silently unwires it, the "features that never ran" shape."""
-    js = Path("frontend/js/documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     # Intent unchanged: an id documents.js builds itself at load (`.id = "doc-..."`, the boot element cap,
     # test_boot_diet3) is wired by construction, so it counts as present.
     built = set(re.findall(r'\.id = "(doc-[a-z-]+)"', js))
@@ -84,7 +83,7 @@ def test_the_ids_did_not_move():
 def test_the_export_label_is_set_with_setlabel_not_textcontent():
     """The button carries an icon element now. `textContent = …` would wipe
     it, which is the kind of thing that looks fine until you open the menu."""
-    js = Path("frontend/js/documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     assert 'setLabel($("doc-export-md")' in js
     assert '$("doc-export-md").textContent' not in js
 
@@ -92,7 +91,7 @@ def test_the_export_label_is_set_with_setlabel_not_textcontent():
 def test_the_kebab_closes_on_a_pick_and_on_a_click_away():
     """`<details>` gives open/close, Enter/Space and Escape. It gives neither
     of these."""
-    js = Path("frontend/js/documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     assert "doc-dock-menu-item" in js
     assert "menu.contains(event.target)" in js
 
@@ -135,6 +134,7 @@ def test_every_kebab_uses_the_same_icon():
             Path("frontend/index.html"),
             Path("frontend/js/library.js"),
             Path("frontend/js/documents.js"),
+            Path("frontend/js/documents-surface.js"),
         )
     }
     for name, text in sources.items():
@@ -157,7 +157,7 @@ def test_enter_in_the_title_starts_the_body():
     """UX-05: "Trip plan", Enter, "Day one" typed on into the title. The
     behaviour is measured by scratchpad/ui-sweeps/ux1005-doctitle.js at 1440
     and 390; this pins the handler's shape so it is not lost."""
-    source = Path("frontend/js/documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     start = source.index('$("doc-title").addEventListener("keydown"')
     handler = source[start : source.index("\n});", start)]
     assert "event.isComposing" in handler, "Enter that ends an IME composition is not a line break"

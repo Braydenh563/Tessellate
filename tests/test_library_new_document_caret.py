@@ -8,11 +8,13 @@ import re
 from pathlib import Path
 from tests._app_js import index_html_text
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 HTML = index_html_text()
 LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
-DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 
 
 def test_library_new_document_is_a_split_button_with_a_type_slot():
