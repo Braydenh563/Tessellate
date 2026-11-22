@@ -84,10 +84,13 @@ const DEFAULT_FILE_TYPE = {
 // and a failed one is retried the next time you open the tab instead of
 // poisoning the cache for good.
 async function loadDocFileTypes() {
+  //: The prose pass only when the table has just landed (an open document was read as markdown until then): with it
+  //: in hand already, every open ran the pass itself (`renderDocTools`), so a tab visit ran it twice (L-world-class-40).
+  const had = docFileTypes.length > 0;
   await loadDocTypeTable();
   if (!docFileTypes.length) return;
   docTypeMount();
-  syncDocFileType();
+  syncDocFileType({ prose: !had });
 }
 
 //: The open document's type, never null. Falls back to markdown for a

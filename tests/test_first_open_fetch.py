@@ -46,3 +46,12 @@ def test_the_file_type_table_is_fetched_in_the_warm():
     # loadDocuments awaits the table before it asks for the list, so a cold table was a serial fetch in the click.
     tail = _tail()
     assert tail.index("ensureDocEditor()") < tail.index("loadDocTypeTable()")
+
+
+def test_a_tab_visit_runs_the_prose_pass_only_when_the_type_table_has_just_landed():
+    # With the table already in hand, openDocument's renderDocTools runs the pass, so the visit ran it twice.
+    js = frontend_text("documents.js")
+    body = js[js.index("async function loadDocFileTypes()") :][:900]
+    assert "const had = docFileTypes.length > 0;" in body
+    assert body.index("const had") < body.index("await loadDocTypeTable()")
+    assert "syncDocFileType({ prose: !had });" in body
