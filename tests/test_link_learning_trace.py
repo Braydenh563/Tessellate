@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 from tessellate.ai import learning
 from tessellate.core import database
+from tests._clock import pin_clock
 
 FIXED_NOW = datetime(2026, 11, 14, 9, 0, 0, tzinfo=timezone.utc)
 
@@ -57,7 +58,7 @@ def test_the_dismissal_outlives_six_hundred_other_corrections(client, session):
 
 
 def test_accepted_neighbourhoods_lift_the_signals_they_were_offered_for(client, session, monkeypatch):
-    monkeypatch.setattr(database, "utcnow", lambda: FIXED_NOW)
+    pin_clock(monkeypatch, FIXED_NOW)
     a, b = _neighbourhood(client)
     row = _pair_in(client, a, b)
     assert row
@@ -75,7 +76,7 @@ def test_accepted_neighbourhoods_lift_the_signals_they_were_offered_for(client, 
 
 
 def test_a_decision_counts_for_half_after_one_half_life(session, monkeypatch):
-    monkeypatch.setattr(database, "utcnow", lambda: FIXED_NOW)
+    pin_clock(monkeypatch, FIXED_NOW)
     old = learning.record(session, kind="dismiss_link", subject={"a": 1, "b": 2, "signals": ["tags"]})
     session.get(database.AuditLog, old.id).created_at = FIXED_NOW - timedelta(days=learning.HALF_LIFE_DAYS)
     session.commit()

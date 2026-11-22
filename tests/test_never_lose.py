@@ -16,7 +16,8 @@ from fastapi.testclient import TestClient
 
 from tessellate.core import backup, deps, vault
 from tessellate.core.database import Entry
-from tests._frozen_clock import FIXED_NOW, FrozenDatetime
+from tests._clock import pin_clock
+from tests._frozen_clock import FIXED_NOW
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,7 +82,7 @@ def test_words_typed_in_the_browser_keep_a_killed_server_spec():
 def test_a_deleted_note_stays_in_the_bin_for_thirty_days(client, session, monkeypatch):
     from tessellate.entry import manager_purge
 
-    monkeypatch.setattr(manager_purge, "utcnow", lambda: FIXED_NOW)
+    pin_clock(monkeypatch, FIXED_NOW)
     assert deps.get_config().get_preference("recycle_bin_days", None) == 30
     saved = client.post("/entries", json={"content": "keep me thirty days"}).json()
     client.delete(f"/entries/{saved['id']}")
@@ -104,7 +105,7 @@ def test_a_deleted_note_stays_in_the_bin_for_thirty_days(client, session, monkey
 
 def test_the_daily_backup_is_taken_once_a_day_and_restores_the_notebook(client, monkeypatch):
     config = deps.get_config()
-    monkeypatch.setattr(backup, "datetime", FrozenDatetime)
+    pin_clock(monkeypatch, FIXED_NOW)
     for stale in backup.backup_files(config.data_dir):
         stale.unlink()
     client.post("/entries", json={"content": "note before the nightly backup"})

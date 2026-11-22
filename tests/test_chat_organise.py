@@ -10,7 +10,7 @@ import pytest
 
 from tessellate.ai import agent, tools
 from tessellate.core.database import Conversation
-from tests._clock import pin_user_now
+from tests._clock import pin_clock
 from tests.test_injection_fence import _FakeModels, _FakeOllama, _Session
 
 NOW = datetime(2026, 11, 21, 12, 0, tzinfo=timezone.utc)
@@ -29,7 +29,7 @@ def _chat(session, title, turns, days_ago, pinned=False, tokens=0):
 
 @pytest.fixture()
 def chats(session, monkeypatch):
-    pin_user_now(monkeypatch, NOW)
+    pin_clock(monkeypatch, NOW)
     return {
         "trip": _chat(session, "Trip plan", 12, 40, tokens=50),
         "tax": _chat(session, "Tax questions", 2, 0, tokens=10),

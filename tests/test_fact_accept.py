@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from tessellate.core.database import DerivedFact, Entry, Reminder
+from tests._clock import pin_clock
 from tests._frozen_clock import FIXED_NOW
 
 NOTE = "Sign the lease at the studio on 12 March 2027."
@@ -26,9 +27,7 @@ def _fact(session, kind: str) -> DerivedFact:
 
 
 def _freeze(monkeypatch, now: datetime = FIXED_NOW) -> None:
-    from tessellate.api import routes_learned
-
-    monkeypatch.setattr(routes_learned, "utcnow", lambda: now)
+    pin_clock(monkeypatch, now)
 
 
 def test_accepting_a_date_makes_a_reminder_on_that_day_at_nine(ai_client, fake_ollama, session, monkeypatch):
