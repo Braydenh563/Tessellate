@@ -6,8 +6,9 @@
 //     node scratchpad/ui-sweeps/deepflows.js            # every flow, 4 runs
 //   ... ONLY=note,graph WIDTHS=1440 THEMES=light node scratchpad/ui-sweeps/deepflows.js
 //   ... SKIP=settings node scratchpad/ui-sweeps/deepflows.js   # settings is the slow one
+//   ... SHARD=3 node scratchpad/ui-sweeps/deepflows.js        # one of the 8 CI shards
 //
-// Seed the data dir first: `node scratchpad/ui-sweeps/deepflows-seed.js`
+// It seeds the notebook first with deepflows-seed.js, once per data dir
 // (about 40 notes, four private, properties, [[links]] and [[A|B]], tags, two
 // documents, a board, a mind map, reminders). The flows are in
 // deepflows-flows.js, one function each:
@@ -28,8 +29,9 @@
 //   select      Select mode: tick two notes (a tap does not open a page), batch Tags
 //   views       every Library view, the Create sheet, Timeline and Reminders modes
 //   find        Find anything (the status bar, or the top bar's More on a phone)
-// A phone has no way to open the command palette (Find is the search), so the
-// palette flow opens it by its function at 390: reported, not fixed.
+// A phone opens the command palette from the tab bar's More sheet ("Commands");
+// the palette flow opens it by its function at 390, so the flow covers the palette
+// itself and not the way in.
 //
 // What fails a flow, besides the flow's own assertions:
 //   - a `pageerror` or a `console.error` while it ran;
@@ -44,8 +46,17 @@
 // must clean up: `reset()` runs between flows and closes everything.
 // Exit code is the number of failures.
 const fs = require('fs');
-const { boot, OUT } = require('./lib.js');
+const { boot, OUT, BASE } = require('./lib.js');
 
+//: SHARD=n (1 to 8) runs one width x theme and one half of it: the settings flow
+//: (127s at 1440) or every other flow (144s). Whole, a width x theme takes 265 to
+//: 299s, against the sweep limit of 300s (scripts/ci_sweeps.sh); stable.txt lists
+//: every shard, so CI and `gate.sh --sweeps` run every flow at every size.
+if (process.env.SHARD) {
+  const n = Number(process.env.SHARD) - 1;
+  const [w, th] = [['1440', 'light'], ['1440', 'dark'], ['390', 'light'], ['390', 'dark']][Math.floor(n / 2)];
+  Object.assign(process.env, { WIDTHS: w, THEMES: th }, n % 2 ? { SKIP: 'settings' } : { ONLY: 'settings' });
+}
 const WIDTHS = (process.env.WIDTHS || '1440,390').split(',').map(Number);
 const THEMES = (process.env.THEMES || 'light,dark').split(',');
 const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
@@ -97,6 +108,8 @@ function overflowProbe() {
 
 async function main() {
   const flows = require('./deepflows-flows.js');
+  require('child_process').execFileSync('node', [require('path').join(__dirname, 'deepflows-seed.js')],
+    { stdio: 'inherit', env: { ...process.env, BASE } });
   const names = Object.keys(flows).filter((n) => (!ONLY.length || ONLY.includes(n)) && !SKIP.includes(n));
   const table = [];
   let failures = 0;
@@ -125,6 +138,9 @@ async function main() {
         if (/^Failed to load resource/.test(t)) return;
         note(`console: ${t}`);
       });
+      //: LOGPUT=preferences prints each write to a URL containing that word (what a
+      //: switch sent, and what overwrote it).
+      if (process.env.LOGPUT) page.on('request', (r) => { if (r.method() !== 'GET' && r.url().includes(process.env.LOGPUT)) console.log(`       > ${current} ${r.method()} ${r.url().replace(/^https?:\/\/[^/]+/, '')} ${(r.postData() || '').slice(0, 160)}`); });
       page.on('response', (r) => {
         const s = r.status();
         if (s < 400) return;
@@ -170,11 +186,12 @@ async function main() {
         stepAt = '';
         const where = `${name} @${width} ${theme}`;
         let problem = null;
+        const began = Date.now();
         try {
           await flows[name](env);
           await env.overflow('end');
         } catch (e) {
-          problem = `${stepAt ? `[${stepAt}] ` : ''}${String(e.message || e).split('\n')[0].slice(0, 240)}`;
+          problem = `${stepAt ? `[${stepAt}] ` : ''}${(process.env.TRACE ? String(e.message || e) : String(e.message || e).split('\n')[0].slice(0, 240))}`;
         }
         const errs = [...new Set(bag)];
         const failed = Boolean(problem) || errs.length > 0;
@@ -183,7 +200,7 @@ async function main() {
           try { await page.screenshot({ path: `${OUT}/deepflows-${name}-${width}-${theme}.png` }); } catch (e) { /* page gone */ }
         }
         table.push({ where, ok: !failed });
-        console.log(`${failed ? 'FAIL' : 'PASS'} ${where}${problem ? `  -> ${problem}` : ''}`);
+        console.log(`${failed ? 'FAIL' : 'PASS'} ${where} ${Math.round((Date.now() - began) / 1000)}s${problem ? `  -> ${problem}` : ''}`);
         for (const e of errs) {
           console.log(`       ${e}`);
           if (!findings.has(e)) findings.set(e, []);

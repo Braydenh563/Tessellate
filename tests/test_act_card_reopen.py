@@ -93,7 +93,7 @@ def test_confirm_with_an_expired_id_runs_nothing(client):
 
 
 def test_the_reopen_path_redraws_the_card():
-    kit = (ROOT / "frontend/js/sheets-selects.js").read_text(encoding="utf-8")
+    kit = (ROOT / "frontend/js/chat-list.js").read_text(encoding="utf-8")
     assert "renderToolConfirm.saved(handles, message)" in kit
     assert "renderToolConfirm(act.type" in (ROOT / "frontend/js/answer-kit.js").read_text(encoding="utf-8")
     card = (ROOT / "frontend/js/ask-compose.js").read_text(encoding="utf-8")

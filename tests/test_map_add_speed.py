@@ -62,7 +62,10 @@ def test_a_move_is_a_transform_not_a_repaint():
     update = WB_JS[WB_JS.index("const key = wbObjectPaintKey(d, paintCtx);"):][:600]
     assert "movesLater.push([this, place])" in update
     #: Written after the measure, so the measure restyles only what repainted.
-    tail = WB_JS[WB_JS.index("objectUpdate.each(function (d) {\n      if (!WB_MAP_KINDS.has(d.kind)) return;"):][:1600]
+    #: The measure is `wbMeasureMapNodes` and the moves are written by `renderWbObjects` after it (L-whiteboard-78).
+    tail = WB_JS[WB_JS.index("function wbMeasureMapNodes(") : WB_JS.index("\n}\n", WB_JS.index("function renderWbObjects("))]
+    render = WB_JS[WB_JS.index("function renderWbObjects(") :]
+    assert render.index("wbMeasureMapNodes(objectUpdate, repainted)") < render.index("el.style.transform = place")
     assert tail.index("this.offsetHeight") < tail.index("el.style.transform = place")
 
 
@@ -163,7 +166,8 @@ def test_each_fallback_runs_the_whole_render_exactly_once():
 
 
 def test_the_new_topic_is_editable_before_the_measure_read():
-    body = _body(WB_JS, "function renderWbObjects(")
+    #: The paint of one object (`wbPaintObject`) and the measure (`wbMeasureMapNodes`) are the pass's pieces, in that order.
+    body = WB_JS[WB_JS.index("function wbPaintObject(") : WB_JS.index("\n}\n", WB_JS.index("function renderWbObjects("))]
     set_at = body.index("wbBeginTextEdit(typing, undefined, true)")
     assert "wbAddGate.renderHold?.editId === d.id" in body
     assert set_at < body.index("const h = this.offsetHeight")

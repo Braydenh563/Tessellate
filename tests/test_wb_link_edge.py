@@ -171,6 +171,46 @@ def test_follow_redraws_the_ones_that_hang_on_a_moved_line():
     assert got == [[2]]
 
 
+def test_follow_reads_each_connector_once_across_a_redraw():
+    """A drop redraws every connector it moved and each one asks `follow`; with 300 links the rescan per call
+    cost 24ms of a 72ms frame (mapperf, 2026-11-22). Many calls over unchanged sketches parse each one once."""
+    got = _run(
+        """
+        add(1, { sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 100, y: 0 } });
+        for (let i = 2; i <= 40; i++) add(i, { sourcePoint: { x: 0, y: i }, targetPoint: { x: 9, y: 9 }, targetEdge: { id: 1, t: 0.5 } });
+        const parse = JSON.parse; let parses = 0;
+        JSON.parse = (...a) => { parses += 1; return parse(...a); };
+        let seen = 0;
+        for (const s of sketches) L().follow(s.id, (id, deps) => { seen += deps.length; });
+        JSON.parse = parse;
+        return { parses, seen };
+        """
+    )
+    assert got["seen"] == 39, got
+    assert got["parses"] <= 40, f"every connector parsed once, not once per follow: {got}"
+
+
+def test_follow_sees_an_end_attached_or_let_go_since_the_last_call():
+    """The index must not go stale: an edit (which replaces a sketch's `data`) or a new sketch is seen next call."""
+    got = _run(
+        """
+        add(1, { sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 100, y: 0 } });
+        add(2, { sourcePoint: { x: 0, y: 5 }, targetPoint: { x: 9, y: 9 } });
+        const out = [];
+        const ask = () => { let ids = []; L().follow(1, (id, deps) => { ids = deps.map((d) => d.sketch.id); }); out.push(ids); };
+        ask();
+        sketches[1].data = JSON.stringify({ ...JSON.parse(sketches[1].data), targetEdge: { id: 1, t: 0.5 } });
+        ask();
+        add(3, { sourcePoint: { x: 0, y: 7 }, targetPoint: { x: 9, y: 9 }, sourceEdge: { id: 1, t: 0.2 } });
+        ask();
+        const p = JSON.parse(sketches[1].data); delete p.targetEdge; sketches[1].data = JSON.stringify(p);
+        ask();
+        return out;
+        """
+    )
+    assert got == [[], [2], [2, 3], [3]], got
+
+
 def test_it_is_wired_into_the_board():
     board = frontend_text("whiteboard.js")
     assert "wbFmtState.linkEdge?.pinned(parsed) ?? parsed" in board, "every connector is read through the pin"

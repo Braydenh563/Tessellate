@@ -126,7 +126,7 @@ def test_every_item_drag_refuses_a_second_finger_and_a_second_finger_cancels_the
     for used in ("step.dx / transform.k", "d._dragRawDX += step.dx"):
         assert used in WB
     listener = WB[WB.index("let wbPinching = false;"):]
-    listener = listener[: listener.index("const midPanClass")]
+    listener = listener[: listener.index("midPanClass = (on) =>")]
     assert "wbCancelGesture()" in listener
     assert "stopImmediatePropagation" in listener, "d3-drag's per-touch listeners would starve the zoom"
 

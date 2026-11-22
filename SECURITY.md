@@ -90,6 +90,16 @@ Off by default. When you turn on "Allow other devices on this network"
   can see that this notebook exists on the network (the version on
   `/health`).
 
+## Known gaps
+
+What Tessellate does not protect, stated so you can plan around it:
+
+- **The database is a plain SQLite file.** Only private notes are encrypted by the app; use full-disk encryption for the rest.
+- **A snapshot or an unsealed backup is as sensitive as the database.** Seal a full backup with a password, and keep snapshots somewhere you trust.
+- **A signed-in phone that is lost** stays signed in until its timeout; Remove the device or Lock everywhere on this computer.
+- **A device with the password reads everything it is shown**, spaces included, because a space is not a security boundary.
+- **Every test runs against a fake transport**, so the model and tool paths are not audited against a real provider.
+
 ## Supported versions
 
 This is an actively developed `0.x` project. Security fixes land on `main` and

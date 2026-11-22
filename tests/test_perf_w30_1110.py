@@ -15,9 +15,10 @@ def _between(text: str, start: str, end: str) -> str:
 
 def test_the_render_measures_every_topic_in_one_walk_before_the_links():
     js = frontend_text("whiteboard.js")
-    body = _between(js, "function renderWhiteboard() {", "sketchSelection.exit().remove();")
+    #: The walk is in `wbSketchPaintKeys`, which `renderWhiteboard` calls before it paints the sketches (L-whiteboard-78).
+    body = _between(js, "renderWhiteboard.parts.wbSketchPaintKeys = ", "sketchSelection.exit().remove();")
     walk = body.index("wbIndexMapNodeElements(!wbIsMap())")
-    assert body.index("const strokeInk") < walk < body.index("sketchUpdate.each(function(d) {")
+    assert body.index("const strokeInk") < walk < body.index("renderWhiteboard.parts.wbSketchPaintKeys()") < body.index("sketchUpdate.each(")
     # W30 left-line 3: a board with connectors measures their ends too, so the guard is hasLinks, not the map alone.
     assert "hasLinks && wbState.sketches?.length" in body[walk - 60 : walk + 10]
 

@@ -8,19 +8,21 @@ const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.avatarFollow = 'on'; });
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3000);
-  // INBOX 1640: the companion always ends on a perch, so an open-air pin is dropped on refit; it stands on the bottom bar at x (y is unused).
-  const put = (x, _y) => page.evaluate(([px, py]) => { const b = document.getElementById('nm-buddy'); const bar = nameMarkBuddyLedges().bottom; nameMarkBuddyMoveTo(b, { kind: 'bar', pose: 'stand', x: px, y: Math.round((bar ? bar.top : innerHeight) - NMB_FEET + 1) }, true); clearTimeout(nmb.timer); nmb.placeTimer = 1; nameMarkBuddyAct(''); clearTimeout(nmb.timer); }, [x, _y]);
+  // Placed where it would land when dropped there: left floating over a page it is walked off by its own look for
+  // controls under it, and the pointer is then no longer on it.
+  const put = (x, y) => page.evaluate(([px, py]) => { const b = document.getElementById('nm-buddy'); nameMarkBuddyIndexReset(); nameMarkBuddyMoveTo(b, nameMarkBuddyDrop(px, py), true); clearTimeout(nmb.timer); nmb.placeTimer = 1; nameMarkBuddyAct(''); clearTimeout(nmb.timer); }, [x, y]);
   const faceMid = () => page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
   // Petted.
   await put(700, 420);
   await page.mouse.move(100, 100);
   let f = await faceMid();
   await page.mouse.move(f[0], f[1], { steps: 4 });
-  await page.waitForTimeout(1400);
+  // Until the pat has landed (its wiggle is short, so a fixed wait can miss it on a loaded machine).
+  await page.waitForFunction(() => nmb.act === 'wiggle', null, { timeout: 3000 }).catch(() => {});
   const pet = await page.evaluate(() => ({ act: nmb.act, expr: document.getElementById('nm-buddy').dataset.expr || '' }));
   if (pet.act !== 'wiggle' || pet.expr !== 'happy') fails.push(`petted: ${JSON.stringify(pet)}`);
   await page.mouse.move(100, 100);
@@ -38,7 +40,8 @@ const { boot } = require('./lib.js');
   for (const dx of [-120, -60, 60, 120]) {
     await page.mouse.move(f[0] + dx, f[1] - 40, { steps: 2 });
     await page.waitForTimeout(160);
-    eyes.push(await page.evaluate(() => Number(getComputedStyle(document.getElementById('nm-buddy')).getPropertyValue('--nmb-ex')) || parseFloat(getComputedStyle(document.querySelector('#nm-buddy .nm-eyes, #nm-buddy .atl-iris')).translate) || 0));
+    // The look is written on the elements that read it (nameMarkBuddyAim.readers), not on #nm-buddy.
+    eyes.push(await page.evaluate(() => Number(getComputedStyle(document.querySelector(`#nm-buddy :is(${nameMarkBuddyAim.readers})`)).getPropertyValue('--nmb-ex')) || 0));
   }
   const tracked = eyes[0] < 0 && eyes[3] > 0;
   if (!tracked) fails.push(`eyes near: ${eyes}`);
@@ -46,10 +49,16 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(3000);
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'off'; nameMarkBuddyRelease(); nmb.target = null; nmb.lastMove = null; });
   const off = [];
+  // Passing above the face, never over it: the pointer on the face is a touch (nameMarkBuddyHover's
+  // brighten), which looks with the setting off too; at f[1] - 40 the pass from -120 to +120 crossed it.
+  const passY = await page.evaluate(() => document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect().top - 24);
   // Slowly (a pointer passing, not a sudden flick, which still catches it).
   for (const dx of [-120, 120]) {
-    // A real slow pass: a Playwright move is instant, and a fast pointer inside 400px is loud (avatars.js: speed over 1800), which it follows whatever the setting says.
-    for (let i = 1; i <= 24; i += 1) { await page.mouse.move(f[0] + dx * (i / 24), f[1] - 40); await page.waitForTimeout(30); }
+    // Slowly: a pointer passing at under 400px a second, paced by the clock (24 steps in one burst on a fast
+    // machine is a flick of thousands of px a second, which still catches its eye).
+    const from = await page.evaluate(() => [window.__mx ?? 100, window.__my ?? 100]);
+    for (let i = 1; i <= 24; i += 1) { await page.mouse.move(from[0] + ((f[0] + dx) - from[0]) * i / 24, from[1] + (passY - from[1]) * i / 24); await page.waitForTimeout(30); }
+    await page.evaluate(([mx, my]) => { window.__mx = mx; window.__my = my; }, [f[0] + dx, passY]);
     await page.waitForTimeout(200);
     // Its eyes move only while it attends (the CSS keys the look on nmb-attend).
     off.push(await page.evaluate(() => document.getElementById('nm-buddy').classList.contains('nmb-attend')));
@@ -58,19 +67,31 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'on'; });
   await page.mouse.move(100, 100);
   // Tossed: a fast pull to the right and let go at speed.
+  // Each throw draws its own bounce, grip and air (Math.random): the same pull came down on the far side of the window
+  // in one run and on the sidebar's edge in the next (a hard landing carries it over the other way, by roll). The sweep's seed (companion-throw.js) makes the flight one flight: seed 1 comes down on the status bar, to the right.
+  await page.evaluate(async (seed) => { await ensureModule('companionThrow'); nameMarkBuddyThrow.sweep.companionThrowSeed.seed = seed; }, Number(process.env.SEED || 1));
   await put(300, 420);
   f = await faceMid();
   await page.mouse.move(f[0], f[1]);
   await page.mouse.down();
-  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(f[0] + i * 30, f[1] - i * 6); await page.waitForTimeout(12); }
-  await page.mouse.up();
+  // The let-go speed is read from the input's own time (event.timeStamp), so the pull is sent with its own clock: 12ms a
+  // step however loaded the machine is (a round trip of 12ms is 40 to 100 on a four-core box running other sweeps, which
+  // read the same pull as a slow one, or as stopped before the release, and came down as a drop).
+  const cdp = await page.context().newCDPSession(page);
+  const t0 = Date.now() / 1000;
+  const send = (type, x, y, i) => cdp.send('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: type === 'mouseMoved' ? 0 : 1, timestamp: t0 + i * 0.012 });
+  for (let i = 1; i <= 6; i += 1) await send('mouseMoved', f[0] + i * 30, f[1] - i * 6, i);
+  await send('mouseReleased', f[0] + 180, f[1] - 36, 7);
   await page.waitForTimeout(150);
-  // The throw (companion-throw.js) keeps `nmb.thrown` (its `to` is set when it comes down) and `nmb.flight` while it flies.
-  const flying = await page.evaluate(() => ({ thrown: !!nmb.thrown, running: !!nmb.flight }));
+  const flying = await page.evaluate(() => ({ thrown: nmb.thrown || null, running: !!nmb.flight }));
   if (process.env.SCRATCH) await page.screenshot({ path: `${process.env.SCRATCH}/toss-midflight.png`, clip: { x: 250, y: 200, width: 900, height: 450 } });
-  await page.waitForTimeout(1200);
-  const landed = await page.evaluate(() => ({ at: [Math.round(nmb.x), Math.round(nmb.y)], to: nmb.thrown?.to || null, perch: nmb.perch, pose: nmb.pose, spots: localStorage.getItem('nm-buddy-spots') }));
+  // Until it has come down (the flight ends and its landing is recorded), not a fixed time on a loaded machine.
+  await page.waitForFunction(() => !nmb.flight && nmb.thrown && nmb.thrown.to, null, { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  const landed = await page.evaluate(() => ({ at: [Math.round(nmb.x), Math.round(nmb.y)], perch: nmb.perch, pose: nmb.pose, spots: localStorage.getItem('nm-buddy-spots'), to: (nmb.thrown && nmb.thrown.to) || null }));
   const toss = { flying, landed };
+  // The throw is now a gravity flight (companion-throw.js): `nmb.thrown` holds its release speed, and it comes down
+  // where its plan lands it (`nmb.thrown.to`, set at the landing): it must be where it was told to land.
   const far = landed.to ? Math.hypot(landed.at[0] - landed.to[0], landed.at[1] - landed.to[1]) : Infinity;
   if (!flying.thrown || !flying.running || landed.at[0] <= 300 || far > 200 || !landed.spots || landed.spots === '{}') fails.push(`toss: ${JSON.stringify(toss)} far ${Math.round(far)}`);
   // A slow let-go is a drop, not a toss.
@@ -87,7 +108,11 @@ const { boot } = require('./lib.js');
   if (slow) fails.push('a slow let-go was tossed');
   // Reduce motion: no petting. The companion reads MOTION.cause (theme-boot.js), not the attribute, so the switch goes through MOTION.apply.
   await page.mouse.move(100, 100);
-  await page.evaluate(() => { MOTION.apply('off'); nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.sweep.nameMarkBuddyPet(); });
+  await page.evaluate(() => { MOTION.apply('off'); nmb.pettedAt = 0; nameMarkBuddyAct(''); });
+  // The pet itself is private to avatars.js (one closure): the pointer resting on the face is what calls it.
+  f = await faceMid();
+  await page.mouse.move(f[0], f[1], { steps: 4 });
+  await page.waitForTimeout(1400);
   const stillPet = await page.evaluate(() => nmb.act);
   await page.evaluate(() => { MOTION.apply('follow'); });
   if (stillPet === 'wiggle') fails.push('petted under Reduce motion');

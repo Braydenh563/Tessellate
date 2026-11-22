@@ -111,6 +111,8 @@ function surfaceBuild(name) {
   window.hideClosedDockMenuLists?.(host);
   window.localizeStaticChords?.(host);
   window.stampShortcutTitles?.(host);
+  //: The "Press / for blocks" hint went on the boxes present at DOM ready; this surface's are new.
+  window.editorHintAllPlaceholders?.();
   for (const run of entry.after.splice(0)) try { run(); } catch (error) { console.error(error); }
   return true;
 }

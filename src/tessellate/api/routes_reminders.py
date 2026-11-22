@@ -426,6 +426,16 @@ def export_one_ics(reminder_id: int, session: Session = Depends(get_session)) ->
     return _ics_response(session, [reminder], f"reminder-{reminder.id}.ics")
 
 
+@router.get("/{reminder_id}/brief")
+def reminder_brief(reminder_id: int, session: Session = Depends(get_session)) -> dict:
+    """The meeting-prep brief (L-general-11): the newest notes about the
+    person or topic the reminder names, for the notice it fires with."""
+    from tessellate.core import reminder_brief as brief_core
+
+    reminder = _existing(session, reminder_id)
+    return brief_core.brief(session, reminder, private=_notice(session, reminder) is not None)
+
+
 @router.get("/{reminder_id}/calendar-links")
 def calendar_links(reminder_id: int, session: Session = Depends(get_session)) -> dict:
     """Where "Add to Google Calendar" and "Add to Outlook" open: the provider's

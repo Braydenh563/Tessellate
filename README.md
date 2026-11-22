@@ -519,7 +519,7 @@ share of each against your own notebook.
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | How the pieces fit, and where to change any given thing |
 | [DESIGN](docs/DESIGN.md) | The design system every screen is written against |
 | [RELEASING](docs/RELEASING.md) | How a version is cut and published |
-| [ROADMAP](docs/ROADMAP.md) | What is open, and in what order |
+| [ROADMAP](docs/ROADMAP.md) | The entry point to the plans, and where each kind of work is written down |
 | [CHANGELOG](CHANGELOG.md) | What changed, release by release |
 | [SECURITY](SECURITY.md) | How to report a vulnerability |
 

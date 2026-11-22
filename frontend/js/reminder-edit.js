@@ -131,6 +131,105 @@
     return wrap;
   }
 
+  //: Ticking a reminder asks how it went and appends that to its note
+  //: (L-general-10), with the hash it read, so a meanwhile edit is a 409.
+  async function askReminderOutcome(reminder) {
+    if (!reminder.entry_id || (reminder.target_kind || "note") !== "note") return;
+    const said = await promptDialog("How did it go? One line, or skip", "", { confirmLabel: "Add to note" });
+    const line = String(said || "").replace(/\s+/g, " ").trim().slice(0, 300);
+    if (!line) return;
+    const write = async () => {
+      try {
+        const note = await apiJson(`/entries/${reminder.entry_id}`);
+        if (typeof note.content !== "string") throw new Error("locked");
+        const day = new Date().toLocaleDateString("en-CA");
+        const content = `${note.content.replace(/\s+$/, "")}\n\nOutcome (${day}): ${line}`;
+        const put = (text) => async () => { await apiJson(`/entries/${reminder.entry_id}`, { method: "PUT", body: JSON.stringify({ content: text }) }); };
+        await apiJson(`/entries/${reminder.entry_id}`, { method: "PUT", body: JSON.stringify({ content, base_hash: note.content_hash }) });
+        const action = pushUndo("Added an outcome to a note", put(note.content), put(content));
+        toastAction("Added the outcome to its note.", "Undo", async () => {
+          settleUndoFromToast(action);
+          await put(note.content)();
+        });
+      } catch (e) {
+        toast("Couldn't add the outcome to its note.", true, { action: ["Try again", write] });
+      }
+    };
+    await write();
+  }
+
+  //: L-general-12: the overdue ones, one decision each (Still matters leaves it
+  //: as it is, Drop moves it to the bin, Reschedule takes tomorrow 9am), or one
+  //: decision for all of them. Applied together, with one Undo.
+  function openOverdueTriage(items) {
+    const choice = new Map(items.map((r) => [r.id, "keep"]));
+    openSheet({
+      label: "Overdue reminders",
+      sub: "Decide each one, or apply one choice to all.",
+      name: "reminder-triage",
+      build: (card, close) => {
+        const list = document.createElement("ul");
+        list.className = "entry-list";
+        const options = [["keep", "Still matters"], ["drop", "Drop"], ["move", "Reschedule"]];
+        const paint = () => {
+          for (const pick of list.querySelectorAll("select")) pick.value = choice.get(Number(pick.dataset.id));
+        };
+        for (const reminder of items) {
+          const li = document.createElement("li");
+          li.dataset.id = reminder.id;
+          const text = document.createElement("span");
+          text.className = "reminder-text";
+          text.textContent = `${reminder.text} · ${relativeWhen(reminder.due_at)}`;
+          const pick = buildSelect(options, "keep");
+          pick.setAttribute("aria-label", `Decide: ${reminder.text}`);
+          pick.dataset.id = reminder.id;
+          pick.addEventListener("change", () => choice.set(reminder.id, pick.value));
+          li.append(text, pick);
+          list.appendChild(li);
+        }
+        const bulk = document.createElement("div");
+        bulk.className = "row";
+        const all = document.createElement("span");
+        all.className = "muted";
+        all.textContent = "Apply to all:";
+        bulk.appendChild(all);
+        for (const [value, label] of options) {
+          bulk.appendChild(smallButton(label, `${label} for every overdue reminder`, () => {
+            for (const r of items) choice.set(r.id, value);
+            paint();
+          }));
+        }
+        const apply = document.createElement("button");
+        apply.type = "button";
+        apply.textContent = "Apply";
+        apply.addEventListener("click", async () => {
+          const drops = items.filter((r) => choice.get(r.id) === "drop");
+          const moves = items.filter((r) => choice.get(r.id) === "move");
+          close();
+          if (!drops.length && !moves.length) return;
+          const when = presetDate("tomorrow").toISOString();
+          const put = (r, body) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+          const forward = async () => {
+            await Promise.all([...drops.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" })), ...moves.map((r) => put(r, { due_at: when }))]);
+            loadReminders();
+          };
+          const back = async () => {
+            await Promise.all([...drops.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" })), ...moves.map((r) => put(r, { due_at: r.due_at }))]);
+            loadReminders();
+          };
+          await forward().catch((e) => { toast(e.message, true); loadReminders(); });
+          const action = pushUndo("Sorted overdue reminders", back, forward);
+          toastAction(`Dropped ${drops.length}, rescheduled ${moves.length}.`, "Undo", async () => {
+            settleUndoFromToast(action);
+            await back();
+          });
+        });
+        card.append(list, bulk, apply);
+        paint();
+      },
+    });
+  }
+
   async function snoozeReminderTo(reminder, when) {
     const before = { due_at: reminder.due_at, done: Boolean(reminder.done) };
     const put = (body) =>
@@ -184,5 +283,8 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: The outcome prompt and the triage sheet ride on `snoozeReminderTo`, which is
+  //: already global: two more names would break the shared-scope cap.
+  Object.assign(snoozeReminderTo, { askOutcome: askReminderOutcome, triage: openOverdueTriage });
   Object.assign(window, { reminderEditForm, snoozeReminderTo, reminderComposeOpen });
 })();

@@ -121,7 +121,7 @@ def test_labels_paint_placeholders_and_a_tooltip():
     #: Run once per sketch with the shape's or the connector's data. Run from
     #: each painter it would strip the other kind's tip on every render.
     assert len(re.findall(r"wbSyncSketchTip\(", WB)) == 2
-    assert "wbSyncSketchTip(this, look)" in WB
+    assert "wbSyncSketchTip(node, look)" in WB
 
 
 def test_tooltip_row_and_handler():

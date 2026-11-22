@@ -90,7 +90,9 @@
     //: Why it matters, from what it is about (CHAT_PLAN section 1 row 6): a
     //: reminder made from a note or a document says so under its words.
     const about = one && one.target_title ? `\nAbout ${toastName(one.target_title)}` : "";
-    await showReminderNotification(one ? "Reminder" : "Tessellate", text + about, one && !one.early ? one.id : null);
+    //: The brief's newest note on the notice itself (L-general-11); the bell's row lists them all.
+    const last = one?.brief ? `\nLast on ${one.brief.subjects[0]}: ${toastName(one.brief.notes[0].title)}` : "";
+    await showReminderNotification(one ? "Reminder" : "Tessellate", text + about + last, one && !one.early ? one.id : null);
     toast(text, false, { exempt: true });
   }
 

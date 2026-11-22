@@ -155,11 +155,9 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
   # 30 seconds, most of it the complexity walk.
   tests/test_complexity.py tests/test_error_toasts.py tests/test_icon_conventions.py
   tests/test_prefs_module.py tests/test_module_line_caps.py
-  # Mirror drift (docs/CHANGELOG.md and friends) belongs here rather than in
-  # --changed: the file that goes stale is a `.md` at the repo root, and the
-  # changed-test heuristic matches on a test naming a changed *source* file, so
-  # it never selects this one. A full local run caught six edits' worth of
-  # drift on 2026-09-12 that every `--changed` gate that day had passed. One
+  # The site's links to root files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md)
+  # belong here rather than in --changed: a rename of a root `.md` names no
+  # source file, so the changed-test heuristic never selects this test. One
   # second.
   tests/test_docs_site.py)
 # **The code map regenerates itself here**, never by hand: `docs/CODEMAP.md`
@@ -343,6 +341,11 @@ changed_tests() {
 # with every thread's stack, instead of running into the shell's timeout and
 # naming nothing. Five minutes is far past any one test's run here.
 TIMEOUT=(); "$PY" -c "import pytest_timeout" 2>/dev/null && TIMEOUT=(--timeout=300)
+# Source-text tests (L-general-9): the counts on every run, and under
+# --changed a refusal of any test added since the base that reads file text
+# without a docstring saying why behaviour cannot be asserted instead.
+"$PY" scripts/source_text_tests.py
+if [ "$CHANGED" = 1 ]; then step source-text "$PY" scripts/source_text_tests.py --new "$(changed_base 2>/dev/null)"; fi
 if [ "$CHANGED" = 1 ]; then
   mapfile -t TARGETED < <(changed_tests)
   # A selection this large is not a targeted run any more, and pretending
@@ -374,7 +377,18 @@ if [ "$SWEEPS" = 1 ]; then
   # dochighlight, spinnershape, featuremodels, btnrows, answersupport, listenerrounds)
   # outlived their files in the sweep cleanup and failed this mode for good;
   # `tests/test_gate_lint_set.py` keeps the list and the folder in step.
-  for s in errors fontmatrix docks contrast touch leaks keyboard diskspace vibecheck vibefail graphminimap wbgroupguides phonehead phonesidebar phonecapture phoneswipe phonenotepage phoneshare phonedocs phonereminders graphphone wbphone draftreadonly wbexportimage ctrlwheelzoom libreadingfoot libreader hoveronly wbtopbar820 docdaily docfallback doctabs dockeyboard mindmapcurve wbtopbar spinners tagoffer imagecardfoot asktab mapperf maptwokinds mapmidpan tourdim toursteps slashicons uitrio animcost noteobject mapdoors maplayouts maptheme canvasconventions mapviewmenu companionscroll companionbeats companionperf companionsmooth companionmenu companionlife profilelook companionpin perchall iconfloor companionreact companioninteract libtlscroll wbshapetext maplinkcue calheadalign; do step "sweep-$s" node "scratchpad/ui-sweeps/$s.js"; done
+  # Each run as stable.txt shards it (errors by widths, fontmatrix by SHARD), so
+  # no run is past the 300s a sweep gets in CI; an empty env is one plain run.
+  run_sweep() {
+    local s="$1" env rc=0
+    while read -r env; do
+      echo "== $s${env:+ $env}"
+      # shellcheck disable=SC2086  # env is VAR=value words by design
+      env $env node "scratchpad/ui-sweeps/$s.js" < /dev/null || rc=1
+    done < <(bash scripts/ci_sweeps.sh --runs "$s")
+    return "$rc"
+  }
+  for s in errors fontmatrix deepflows docks contrast touch leaks keyboard diskspace vibecheck vibefail graphminimap wbgroupguides phonehead phonesidebar phonecapture phoneswipe phonenotepage phoneshare phonedocs phonereminders graphphone wbphone draftreadonly wbexportimage ctrlwheelzoom libreadingfoot libreader hoveronly wbtopbar820 docdaily doccodecopy docfallback doctabs dockeyboard doctoolbarstate mindmapcurve wbtopbar spinners tagoffer imagecardfoot asktab mapperf maptwokinds mapmidpan tourdim toursteps slashicons uitrio animcost noteobject mapdoors maplayouts maptheme canvasconventions mapviewmenu companionscroll companionbeats companionperf companionsmooth companionmenu companionlife profilelook companionpin perchall iconfloor companionreact companioninteract libtlscroll wbshapetext maplinkcue calheadalign; do step "sweep-$s" run_sweep "$s"; done
 else
   skipped+=("sweeps (--sweeps, needs BASE)")
 fi

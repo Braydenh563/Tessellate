@@ -54,8 +54,8 @@ def test_the_renderer_draws_them_inside_the_group():
     assert '":scope > defs.wb-fill-defs"' in body
     assert "createElementNS" in body
     assert "innerHTML" not in body
-    paint = WB[WB.index("sketchUpdate.each(function(d)"):]
-    assert "wbSyncFillDefs(this" in paint
+    paint = WB[WB.index("renderWhiteboard.parts.wbSketchLook ="):]
+    assert "wbSyncFillDefs(node" in paint
     # A patterned fill is mostly board, so the label keeps the theme's ink.
     assert 'parsed.fillStyle' in WB[WB.index("function wbShapeLabelInk"):][:500]
 

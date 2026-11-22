@@ -8,12 +8,15 @@ import subprocess
 import pytest
 
 WB = frontend_text("whiteboard.js")
+#: The render's pieces sit above `renderWhiteboard` as properties of it (L-whiteboard-78), so a test of the
+#: pass reads them and the function together.
+RENDER = WB[WB.index("renderWhiteboard.parts = {};") : WB.index("const WB_OBJECT_MIN_SIZE")]
 
 
 def test_the_board_colour_is_read_once_per_render_pass():
     helper = WB[WB.index("function wbBoardBg()") :].split("\n}\n", 1)[0]
     assert helper.split("\n", 2)[1].strip() == "if (wbBoardBgCache.pass) return wbBoardBgCache.out;"
-    render = WB[WB.index("function renderWhiteboard()") :]
+    render = RENDER
     ink = render[: render.index("const strokeInk")]
     #: A second render in one task must read afresh (a theme change between them).
     assert ink.rstrip().endswith("wbBoardBgCache.pass = false; // a second render in one task re-reads the colour")
@@ -21,7 +24,7 @@ def test_the_board_colour_is_read_once_per_render_pass():
 
 
 def test_connectors_read_their_ends_in_one_batch_and_a_board_keeps_none():
-    render = WB[WB.index("function renderWhiteboard()") :]
+    render = RENDER
     assert 'includes("link-")' in render
     #: Off a map the batch is only the objects a connector ends on (no walk of all 500; W30 left-line 3).
     assert "if (hasLinks && wbState.sketches?.length) wbIndexMapNodeElements(!wbIsMap());" in render
@@ -37,8 +40,8 @@ def test_opening_a_board_drops_what_the_last_one_left_in_the_render_state():
 
 
 def test_shapes_and_connectors_repaint_only_when_their_look_can_have_changed():
-    render = WB[WB.index("function renderWhiteboard()") :]
-    key = render[render.index("const strokePaintKey = (d) =>") : render.index("sketchUpdate.each(function(d) {")]
+    render = RENDER
+    key = render[render.index("const strokePaintKey = (d) =>") : render.index("renderWhiteboard.parts.wbSketchLook =")]
     #: A shape keys on its data, its id (the rough seed), the ink and the board's rough default.
     assert "${d.data}|${d.id}|${strokeInk}|${wbBoardBackground().rough}" in key
     #: A connector keys on the ends it resolves to now, so a moved or resized end repaints it.
@@ -46,7 +49,7 @@ def test_shapes_and_connectors_repaint_only_when_their_look_can_have_changed():
     #: Words with a placeholder (%date%, %page%, %length%), a map's cross-links and a raw path never skip.
     assert 'includes("%")' in key and "wbMapCrossLinkLook(parsed)" in key and 'startsWith("{")' in key
     #: The body reuses the ends the key resolved rather than resolving them twice.
-    body = render[render.index("sketchUpdate.each(function(d) {") :][:9000]
+    body = render[render.index("renderWhiteboard.parts.wbSketchLook =") : render.index("renderWhiteboard.parts.nodeResizeDrag =")]
     assert "linkEnds.has(d.id) ? linkEnds.get(d.id) : wbResolveLinkEndpoints(parsed)" in body
     assert "this._wbStrokeD = strokeKey ? pathData : null;" in body
 
@@ -74,7 +77,7 @@ def test_the_board_bounds_find_cards_and_sketches_in_one_walk_each():
 
 def test_a_sketch_class_is_written_only_when_it_changes():
     #: d3's `classed` re-sets the class attribute even when the token is right: 1,060 writes for 530 idle sketches.
-    render = WB[WB.index("function renderWhiteboard()") :]
+    render = RENDER
     helper = render[render.index("const classIfChanged =") :].split("\n  });\n", 1)[0]
     assert "if (this.classList.contains(name) !== on) this.classList.toggle(name, on);" in helper
     body = render[: render.index("sketchExit") if "sketchExit" in render else 60000]
@@ -169,8 +172,8 @@ def test_a_boards_connector_batch_measures_only_the_objects_its_ends_are_on():
 
 def test_an_objects_z_index_is_kept_on_its_element_not_read_back_from_style():
     #: renderWbObjects and what followed it moved to whiteboard-items.js and whiteboard-drag.js (L634).
-    items = script_file_text("whiteboard-items.js")
-    body = items[items.index("function renderWbObjects(") :] + script_file_text("whiteboard-drag.js")
+    #: Its pieces (`wbPaintObject`, the drags) sit above it in the same file (L-whiteboard-78).
+    body = script_file_text("whiteboard-items.js") + script_file_text("whiteboard-drag.js")
     assert "if (this._wbRank !== rank) {" in body and "this.style.zIndex = String(rank);" in body
     #: The only writers of an object's z-index are the enter and this pass; a new one must go through the cache.
     assert body.count(".style.zIndex") == 1

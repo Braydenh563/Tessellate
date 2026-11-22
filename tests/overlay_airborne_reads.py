@@ -10,6 +10,7 @@ between a throw's release and its landing."""
 
 from __future__ import annotations
 
+import gc
 import math
 from collections import Counter
 from typing import Any
@@ -83,6 +84,9 @@ def flight(phase: float, speed: float = 1500.0, angle: float = -0.6, look: str =
         elif air:
             break
     r.stop()
+    #: The counters wrap the runner's own methods, a cycle; its pictures are bytes, which never start a collection,
+    #: so a 20-flight sweep held 20 runners (about 2 GB on one test worker, L-general-71).
+    gc.collect()
     return seen, air * STEP, air
 
 

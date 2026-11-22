@@ -34,8 +34,10 @@ on:
         description: "Version to release, e.g. 0.1.0 (no leading v)"
         required: true
 
+# Read-only by default; the three jobs that create or upload to the Release
+# ask for `contents: write` themselves (zizmor excessive-permissions).
 permissions:
-  contents: write   # needed to create the GitHub Release
+  contents: read
 
 jobs:
   resolve-version:
@@ -46,7 +48,9 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
       version: ${{ steps.resolve.outputs.version }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Resolve from the tag push or the manual input
         id: resolve
@@ -85,12 +89,16 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Extract changelog entry for this version
         id: changelog
+        # Through env, never spliced into the script (template injection).
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
         run: |
-          VERSION="${{ needs.resolve-version.outputs.version }}"
           # The section under this version's header, up to the next one. Not
           # an awk range (`/^## x/,/^## /`): its end pattern matches the
           # start line itself, so the range was that one line and the notes
@@ -112,7 +120,7 @@ jobs:
           echo "$DELIM" >> "$GITHUB_OUTPUT"
 
       - name: Create release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           tag_name: ${{ needs.resolve-version.outputs.tag }}
           # Only meaningful on the manual-dispatch route — the tag doesn't
@@ -137,9 +145,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.13"
 
@@ -221,17 +231,19 @@ jobs:
       # (WIX7015, https://wixtoolset.org/osmf/), which stopped this release
       # cold and, worse, took the .exe upload down with it below, since a
       # failed step ends the job before "Upload installers" ever runs. The
-      # owner: comment the MSI out so the .exe still ships. `if: false` on
-      # both WiX steps rather than deleting them, since the fix is either
+      # owner: comment the MSI out so the .exe still ships. Both WiX steps
+      # run only when the repository variable TESSELLATE_MSI is `on` (unset:
+      # off; a constant `if: false` fails actionlint), rather than deleting
+      # them, since the fix is either
       # accepting the EULA (a decision, not a workaround) or pinning an
       # older WiX release that predates it, and the commands are exactly
       # what a future session needs to re-enable one of those.
       - name: Install WiX
-        if: false
+        if: vars.TESSELLATE_MSI == 'on'
         run: dotnet tool install --global wix
 
       - name: Build the .msi installer (WiX)
-        if: false
+        if: vars.TESSELLATE_MSI == 'on'
         shell: pwsh
         env:
           TESSELLATE_VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -242,7 +254,7 @@ jobs:
             -o "dist\installer\Tessellate-$env:TESSELLATE_VERSION-windows-x86_64.msi"
 
       - name: Upload installers to the release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           tag_name: ${{ needs.resolve-version.outputs.tag }}
           # The .msi line is out with the steps above: a glob with nothing to
@@ -259,11 +271,15 @@ jobs:
     needs: [resolve-version, github-release]
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.13"
 
@@ -338,7 +354,7 @@ jobs:
           zip -qr "../Tessellate-${VERSION}-linux-x86_64.zip" "Tessellate"
 
       - name: Upload package to the release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           tag_name: ${{ needs.resolve-version.outputs.tag }}
           files: |

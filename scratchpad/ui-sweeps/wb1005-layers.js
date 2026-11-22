@@ -24,7 +24,8 @@ const { check, summary } = checker();
   await page.waitForTimeout(600);
   const rows = await page.evaluate(() => [...document.querySelectorAll("#wb-layers-tree [role='treeitem']")].map((r) => [r.dataset.key, r.getAttribute("aria-label"), r.getAttribute("aria-level")]));
   check("every item is a named tree row", rows.length === 3 && rows.every((r) => r[1] && r[2] === "2"), rows);
-  check("front first: Beta (made last) above Alpha", rows[0][0] === `object:${ids.b}` && rows[1][0] === `object:${ids.a}`, rows.map((r) => r[0]));
+  // Decision 43: cards and drawings stack in one list, so the sketch made at z 5 is first, then Beta, then Alpha.
+  check("front first: sketch (z 5), then Beta (made last), then Alpha", rows[0][0] === `sketch:${ids.s}` && rows[1][0] === `object:${ids.b}` && rows[2][0] === `object:${ids.a}`, rows.map((r) => r[0]));
 
   // Hide Alpha from the keyboard.
   await page.focus(`#wb-layers-tree [data-key="object:${ids.a}"]`);
@@ -33,8 +34,12 @@ const { check, summary } = checker();
   const hidden = await page.evaluate((id) => {
     const el = document.querySelector(`.wb-object[data-id="${id}"]`);
     const { svg } = wbBuildExportSvg("whole");
+    wbOpenBoardSearch();
     wbBoardSearchRun("Alpha");
-    const found = wbBoardSearch.matches.length;
+    //: "1 of 2" when it finds something, "No matches" when it ran and found
+    //: nothing; anything else (an empty count) means the search never ran.
+    const said = document.getElementById("wb-search-count")?.textContent || "";
+    const found = /^\d/.test(said) ? 1 : said === "No matches" ? 0 : `search did not run: "${said}"`;
     wbCloseBoardSearch();
     return {
       drawn: el ? getComputedStyle(el).display !== "none" : false,
@@ -64,7 +69,8 @@ const { check, summary } = checker();
   await page.waitForTimeout(900);
   const order = await page.evaluate(([a, b]) => {
     const za = wbFindItem("object", a).z, zb = wbFindItem("object", b).z;
-    const first = document.querySelector("#wb-layers-tree [role='treeitem']")?.dataset.key;
+    // The z-5 sketch stays on top (decision 43), so "in front" is the first object row.
+    const first = document.querySelector("#wb-layers-tree [role='treeitem'][data-key^='object:']")?.dataset.key;
     return { za, zb, first, focus: document.activeElement?.dataset?.key };
   }, [ids.a, ids.b]);
   check("Alt+Up puts Alpha in front, z written", order.za > order.zb && order.first === `object:${ids.a}`, order);

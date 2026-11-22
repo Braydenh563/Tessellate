@@ -209,9 +209,9 @@ def test_every_document_command_key_is_in_the_editor_entries():
 
 def test_every_whiteboard_tool_key_is_in_the_whiteboard_entry():
     board = frontend_text("whiteboard.js")
-    tools = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "const WB_TOOL_KEYS", "\n  };"), re.MULTILINE)
-    shifted = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "const WB_TOOL_SHIFT_KEYS", "\n  };"), re.MULTILINE)
-    actions = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "const WB_ACTION_KEYS", "\n  };"), re.MULTILINE)
+    tools = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "WB_TOOL_KEYS = {", "\n  };"), re.MULTILINE)
+    shifted = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "WB_TOOL_SHIFT_KEYS = {", "\n  };"), re.MULTILINE)
+    actions = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "WB_ACTION_KEYS = {", "\n  };"), re.MULTILINE)
     assert len(tools) > 15, "WB_TOOL_KEYS has moved; this test cannot read it"
     body = _body("whiteboard-controls")
     listed = body[body.index("Tools:") : body.index("Moving around")]

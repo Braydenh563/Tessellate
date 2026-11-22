@@ -139,8 +139,11 @@ def test_a_folded_topic_is_taken_back_not_rebuilt() -> None:
     render = _body(wb, "renderWbObjects")
     assert ".append((d) => wbMapNodeTakeBack(d) || document.createElement(\"div\"))" in render
     assert "wbMapNodePool.set(d.id, this)" in render
-    assert "if (this._wbTakenBack) {" in render
-    assert "this._wbPaintKey = undefined;" in render
+    #: The taken-back branch is in the build (`wbBuildObject`), called from the enter (L-whiteboard-78).
+    build = _body(wb, "wbBuildObject")
+    assert "if (this._wbTakenBack) {" in build
+    assert "this._wbPaintKey = undefined;" in build
+    assert "wbBuildObject.call(this, d, gripDrag)" in render
     # The pool is trimmed after the enter, never before it: trimming first
     # dropped every element the expand was about to take back.
     assert render.index("wbMapNodePool.delete(id)") > render.index("wbMapNodePool.set(d.id, this)")

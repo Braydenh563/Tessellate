@@ -23,15 +23,13 @@ For when you have done this before and need the commands:
 #    frontend/index.html, capture.html and clip.html, and the README's
 #    "Version 0.x.y." line
 
-# 2. Rename the changelog header (both copies)
-#    CHANGELOG.md and docs/CHANGELOG.md:
+# 2. Rename the changelog header in CHANGELOG.md:
 #    "## [Unreleased]"  ->  "## [0.4.0] - 2026-10-20"
-cp CHANGELOG.md docs/CHANGELOG.md
 
 # 3. Commit
 git add src/tessellate/__init__.py pyproject.toml README.md \
   frontend/index.html frontend/capture.html frontend/clip.html \
-  CHANGELOG.md docs/CHANGELOG.md
+  CHANGELOG.md
 git commit -m "Release 0.4.0" && git push
 
 # 4. Tag and push the tag: this is what triggers the release
@@ -69,14 +67,14 @@ the workflow reads the installer's own version from this file too and passes it
 to `installer.iss` as `/DMyAppVersion` (which refuses a `TESSELLATE_VERSION` that
 says otherwise).
 
-The same number is written in four more places. Two have a lint that fails the
-build if they are missed, and two you must remember:
+The same number is written in four more places. Three have a lint that fails the
+build if they are missed, and one you must remember:
 
 | Place | Checked by |
 | --- | --- |
 | every `?v=` stamp in `frontend/index.html` | `tests/test_asset_cache_busting.py` |
 | the README's "Version 0.x.y." line | `tests/test_readme_freshness.py` |
-| `pyproject.toml`, the `version` line | nothing: do it by hand |
+| `pyproject.toml`, the `version` line | `tests/test_version_agreement.py` |
 | the same `?v=` stamps in `frontend/capture.html` and `frontend/clip.html` | nothing: do it by hand |
 
 The README line is also where the test count, the tool count and the skill count
@@ -100,14 +98,6 @@ Then add a fresh, empty `## [Unreleased]` above it for the next round of work:
 ## [0.4.0] - 2026-10-20
 ### Added
 ...
-```
-
-**Do this in `docs/CHANGELOG.md` too.** It is a byte-for-byte mirror of the root
-file, because GitHub Pages only serves `/docs`, and
-`tests/test_docs_site.py` fails the build if the two ever differ:
-
-```
-cp CHANGELOG.md docs/CHANGELOG.md
 ```
 
 This matters beyond bookkeeping. The `github-release` job searches
@@ -154,10 +144,11 @@ tag, with its description taken from `CHANGELOG.md`'s matching section.
 **3. `build-windows-installer`** (about 10 to 15 minutes, on `windows-latest`),
 after the release exists:
 
-- Installs a trimmed dependency set, deliberately **without**
-  `sentence-transformers` and torch. Settings, Packages treats those as an
-  optional post-install, like voice dictation, and a multi-hundred-MB download in
-  the base installer would contradict that.
+- Installs a trimmed dependency set, deliberately **without** `fastembed` (ONNX
+  Runtime, about 60 MB), which replaced torch and `sentence-transformers` as the
+  embedding engine. Settings, Packages treats it as an optional post-install,
+  like voice dictation, and that download in the base installer would
+  contradict that.
 - Runs PyInstaller against `packaging/windows/tessellate.spec`. It is a onedir
   build: a onefile build would re-extract itself on every launch, a poor fit for
   an app meant to open like a normal desktop app.
@@ -254,5 +245,7 @@ This project is `0.x` while it stabilises (see the README's status line and
   how existing features behave.
 - **Minor** (`0.3.0` to `0.4.0`): new features and meaningful behaviour changes,
   the normal case for most releases at this stage.
-- There is no written criterion for `1.0`. That is a decision to make
-  deliberately when it comes up, not a rule to follow automatically.
+- The criteria for `1.0` are the milestone table in `docs/ROADMAP.md` ("The road
+  to 1.0"): each release is a gate of measured exit criteria. Reaching the last
+  row is still a decision the owner takes deliberately, not a rule to follow
+  automatically.

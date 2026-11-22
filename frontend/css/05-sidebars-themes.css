@@ -4266,10 +4266,10 @@ textarea.autogrow {
 html[data-chrome="native"] #top-bar #brand-logo {
   display: none;
 }
-/* The bar's icon buttons are squares of the bar's one height. */
+/* The bar's icon buttons are squares of the bar's one height, or of the touch floor where that is taller: a finger at 1024 (an iPad) left them 36 wide by 44 tall (iconfloor.js). */
 #top-bar :is(.header-cluster, .notif-wrap) > button.icon-only {
-  width: var(--header-control-h);
-  min-width: var(--header-control-h);
+  width: max(var(--header-control-h), var(--target-min));
+  min-width: max(var(--header-control-h), var(--target-min));
 }
 /* --- assistant message layout ------------------------------------------------
    Asked for: bring the generated content further left, and stop long links

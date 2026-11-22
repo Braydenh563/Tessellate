@@ -248,6 +248,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'reminder-edit.js': {
+        '"Couldn\'t add the outcome to its note."': 'the read or the save of the note failed (a refused write, a locked note)',
+    },
     'whiteboard-format.js': {
         'err?.message || "The picture could not be saved to the Library."': 'the Save to Library request failed (the server gave no message)',
     },

@@ -405,7 +405,7 @@ def test_custom_template_bad_payload_rejected(client):
     ).status_code == 422
 
 
-# --- saved appearance looks (§33 / IDEAS.md) ---------------------------------
+# --- saved appearance looks (§33, the retired IDEAS.md) ---------------------------------
 
 
 def test_a_look_can_be_saved_and_read_back(ai_client):

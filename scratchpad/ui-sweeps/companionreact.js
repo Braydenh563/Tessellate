@@ -7,9 +7,9 @@
 // rate limit or Reduce motion is not respected.
 const { boot } = require('./lib.js');
 (async () => {
-  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  const { browser, page } = await boot({ timerFns: true, daytime: true, viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   // Two long notes to open.
   const ids = await page.evaluate(async () => {
     const body = (n) => `Long note ${n} for the companion. ${'A sentence that goes on for a while, with enough words to need a Show more. '.repeat(24)}`;
@@ -20,9 +20,6 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => revealTab('notes'));
   await page.evaluate(() => typeof loadEntries === 'function' && loadEntries()).catch(() => {});
   await page.waitForTimeout(3000);
-  // The habit reactions (read, yawn) need the companion's mind, which arrives with its lazy menu file.
-  await page.evaluate(() => ensureModule('companionMenu'));
-  await page.waitForFunction(() => !!nmb.mind, null, { timeout: 8000 }).catch(() => {});
   const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reactLog = []; nmb.reacted = ''; nameMarkBuddyAct(''); });
   const reacted = () => page.evaluate(() => nmb.reacted || '');
   const openNote = async (id) => {
@@ -87,6 +84,7 @@ const { boot } = require('./lib.js');
     const select = document.getElementById('graph-layout');
     const next = [...select.options].find((o) => o.value !== select.value);
     if (!next) return false;
+    window.__layoutWas = select.value;
     select.value = next.value;
     select.dispatchEvent(new Event('change', { bubbles: true }));
     return next.value;
@@ -94,6 +92,15 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(800);
   const graph = await reacted();
   if (!changed || graph !== 'graph') fails.push(`graph (${changed}): ${graph}`);
+  //: Put the layout back: it is saved to the server's ui_state, so the next sweep in a shared data dir drew the
+  //: graph as a tree (deepflows' graph flow at 390 found its nodes in one column, under the controls).
+  await page.evaluate(() => {
+    const select = document.getElementById('graph-layout');
+    if (!select || !window.__layoutWas) return;
+    select.value = window.__layoutWas;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await page.waitForTimeout(800);
   // The streak: a longer one cheers once; the same count does not.
   await reset();
   const streak = await page.evaluate(() => {
@@ -107,23 +114,24 @@ const { boot } = require('./lib.js');
   if (streak.first !== 'streak' || streak.again) fails.push(`streak: ${JSON.stringify(streak)}`);
   // Night: a tick yawns.
   await reset();
-  // The streak's cheer before it is still on: let the companion settle (its tick passes a moving or reacting one by).
-  await page.waitForTimeout(4000);
+  // It lives in a room (INBOX 1673): the graph test left its tab, so it is away until the page it lives on is shown again.
+  await page.evaluate(() => revealTab('notes'));
+  await page.waitForFunction(() => !nmb.away, null, { timeout: 15000 });
+  // The tick decides nothing while it moves or reacts (nameMarkBuddyStateOf): wait until the streak's move has ended.
+  await page.waitForFunction(() => !nmb.flight && ![nmb.anim, nmb.glideAnim].some((a) => a && a.playState === 'running') && !document.getElementById('nm-buddy').classList.contains('nmb-think'), null, { timeout: 15000 });
   const night = await page.evaluate(() => {
-    // Its own mind may have sent it out for a while by now (nmb-away): the night tick is not asked of an absent companion.
-    const buddy = document.getElementById('nm-buddy');
-    nmb.away = false; nmb.absent = false; buddy.classList.remove('nmb-away');
+    nmb.lastPoke = 0; nmb.reactAt = 0;
     const orig = Date.prototype.getHours;
     Date.prototype.getHours = function () { return 23; };
-    // A tick can be spent on the companion's own mind (a stroll, an errand) before the night check: up to six.
-    try { for (let i = 0; i < 6 && !nmb.reacted; i += 1) { nmb.lastInput = Date.now(); nmb.sweep.nameMarkBuddyTick(true); } } finally { Date.prototype.getHours = orig; }
+    // The tick is private to avatars.js (one closure): armed once, boot's timerFns kept its callback.
+    nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
+    try { nmb.lastInput = Date.now(); window.__timerFns.nameMarkBuddyTick(true); } finally { Date.prototype.getHours = orig; }
     return { kind: nmb.reacted || '', act: nmb.act };
   });
   if (night.kind !== 'yawn' || night.act !== 'yawn') fails.push(`night: ${JSON.stringify(night)}`);
   // Reduce motion: nothing.
   await reset();
   const still = await page.evaluate(() => {
-    // The companion reads MOTION.cause (theme-boot.js), not the attribute.
     MOTION.apply('off');
     const r = ['read', 'graph', 'streak', 'yawn', 'private', 'toast'].map((k) => nameMarkBuddyReact(k));
     MOTION.apply('follow');

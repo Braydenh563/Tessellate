@@ -114,7 +114,12 @@ async function main() {
     items: document.querySelectorAll("#ocr-rail .ocr-rail-item").length,
     tops: new Set([...document.querySelectorAll("#ocr-rail-switch .ocr-rail-tab")].map((t) => Math.round(t.getBoundingClientRect().top))).size,
   }));
-  if (!phone) {
+  // The page checks need the optional PDF rasteriser (pypdfium2, Settings,
+  // Packages). Without it the app says so in #ocr-message and has one page,
+  // so the checks are skipped, loudly, rather than failed or passed.
+  const noRenderer = await page.evaluate(() => /PDF rasteriser|PDF pages/.test(document.getElementById("ocr-message")?.textContent || ""));
+  if (noRenderer) console.log(`SKIP  ${TAG}: the PDF page checks: pypdfium2 is not installed here (the app shows its install notice)`);
+  if (!phone && !noRenderer) {
     check(`${TAG}: a PDF opens on its own pages in the rail`, rail.tab === "pages" && rail.items === 3, JSON.stringify(rail));
     check(`${TAG}: the rail's switch is one row`, rail.tops === 1, `${rail.tops} row(s)`);
   }
@@ -202,7 +207,7 @@ async function main() {
     document.body.click();
     return open;
   });
-  check(`${TAG}: Read's menu holds this page, all pages and a range`,
+  if (!noRenderer) check(`${TAG}: Read's menu holds this page, all pages and a range`,
     menu && menu.length === 3 && /all 3 pages/.test(menu[1]), JSON.stringify(menu));
   await page.waitForTimeout(200);
 

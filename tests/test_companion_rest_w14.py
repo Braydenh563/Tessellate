@@ -91,19 +91,22 @@ def test_a_blink_does_not_wake_the_rig() -> None:
 
 
 @needs_node
-def test_motion_at_rest_is_a_setting_alive_on_mains_by_default() -> None:
-    # Decision 55: "always" never rests, "mains" (the default) rests on battery only, "still" always rests;
-    # a machine with no battery reading is on mains.
+def test_motion_at_rest_is_a_setting_still_by_default() -> None:
+    # Decision 55: "still" (the default) always rests, "mains" (opt-in) rests on battery only, "always" never rests;
+    # a machine with no battery reading is on mains. Intent moved (L-general-47, 2026-11-21): the default was "mains",
+    # alive on mains, and Atlas then cost +340 to +563 ms/s of main thread idle against a budget of 120; resting, +24.
     code = (
         "const atlasTailCalm = () => {};\n"
         "let clock = 0, stored = null;\nconst performance = { now: () => clock };\n"
         "const prefs = { get: (k, f) => (stored === null ? f : stored) };\n"
-        "let charging = true;\nObject.defineProperty(globalThis, \"navigator\", { configurable: true, value: { getBattery: () => Promise.resolve({ get charging() { return charging; }, addEventListener() {} }) } });\n"
+        "let charging = true, api = true;\n"
+        'Object.defineProperty(globalThis, "navigator", { configurable: true, get: () => (api ? '
+        "{ getBattery: () => Promise.resolve({ get charging() { return charging; }, addEventListener() {} }) } : {}) });\n"
         + _block(LIFE, "atlasTailCalm.rest = {", "//: **Whether the rest may hold now**")
         + _block(LIFE, "//: **Whether the rest may hold now**", "//: At rest: a corner companion")
-        + r"""
-const at = async (mode, onBattery) => {
-  stored = mode; charging = !onBattery; clock += 5000; atlasTailCalm.rest.asked = false; atlasTailCalm.rest.battery = false;
+        + """
+const at = async (mode, onBattery, hasApi = true) => {
+  stored = mode; charging = !onBattery; api = hasApi; clock += 5000; atlasTailCalm.rest.asked = false; atlasTailCalm.rest.battery = false;
   atlasTailCalm.rest.holds();
   await Promise.resolve(); await Promise.resolve();
   clock += 5000; return atlasTailCalm.rest.holds();
@@ -112,14 +115,49 @@ const at = async (mode, onBattery) => {
   process.stdout.write(JSON.stringify({
     unset: await at(null, false), unsetBattery: await at(null, true),
     always: await at("always", true), still: await at("still", false),
-    mainsPlugged: await at("mains", false), mainsBattery: await at("mains", true),
+    mainsPlugged: await at("mains", false), mainsBattery: await at("mains", true), mainsNoApi: await at("mains", true, false),
   }));
 })();
 """
     )
     run = subprocess.run(["node", "-e", code], capture_output=True, text=True)
     assert run.returncode == 0, run.stderr[-1500:]
-    assert json.loads(run.stdout) == {"unset": False, "unsetBattery": True, "always": False, "still": True, "mainsPlugged": False, "mainsBattery": True}
+    assert json.loads(run.stdout) == {
+        "unset": True, "unsetBattery": True, "always": False, "still": True,
+        "mainsPlugged": False, "mainsBattery": True, "mainsNoApi": False,
+    }
+
+
+@needs_node
+def test_unplugging_stops_the_full_loops_at_once_and_plugging_in_starts_them() -> None:
+    # The full mode is the opt-in: it is not held to the idle budget, but a `chargingchange` to battery rests it in that
+    # event (the wakers run `sync`, which pauses the loops), not at the next morph tick or the next second's re-read.
+    code = (
+        "const atlasTailCalm = () => {};\n"
+        "let clock = 0;\nconst performance = { now: () => clock };\n"
+        'const prefs = { get: () => "mains" };\n'
+        'const battery = { charging: true, on: null, addEventListener(type, fn) { if (type === "chargingchange") this.on = fn; } };\n'
+        'Object.defineProperty(globalThis, "navigator", { configurable: true, value: { getBattery: () => Promise.resolve(battery) } });\n'
+        + _block(LIFE, "atlasTailCalm.rest = {", "//: **Whether the rest may hold now**")
+        + _block(LIFE, "//: **Whether the rest may hold now**", "//: At rest: a corner companion")
+        + """
+const seen = [];
+atlasTailCalm.rest.wake.add(() => seen.push(atlasTailCalm.rest.holds()));
+(async () => {
+  const before = atlasTailCalm.rest.holds();
+  await Promise.resolve(); await Promise.resolve();
+  const plugged = atlasTailCalm.rest.holds();
+  clock += 10;
+  battery.charging = false; battery.on();
+  const unplugged = atlasTailCalm.rest.holds();
+  battery.charging = true; battery.on();
+  process.stdout.write(JSON.stringify({ before, plugged, unplugged, again: atlasTailCalm.rest.holds(), seen }));
+})();
+"""
+    )
+    run = subprocess.run(["node", "-e", code], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    assert json.loads(run.stdout) == {"before": False, "plugged": False, "unplugged": True, "again": False, "seen": [True, False]}
 
 
 def test_the_setting_is_wired_and_reset_clears_it() -> None:
@@ -127,6 +165,9 @@ def test_the_setting_is_wired_and_reset_clears_it() -> None:
     controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     settings = (JS / "settings.js").read_text(encoding="utf-8")
     assert 'id="avatar-buddy-rest"' in html and html.count('<option value="mains">') == 1
+    # The default is the first option, so a fresh select shows what `holds` does with no choice stored.
+    assert re.search(r'<select id="avatar-buddy-rest"[^>]*>\s*<option value="still">', html)
+    assert 'prefs.get("avatar-buddy-rest", null) || "still"' in settings
     assert 'prefs.set("avatar-buddy-rest", e.target.value)' in controls
     reset = settings[settings.index("function resetAppearance()") : settings.index("// --- generative background")]
     for key in ("avatar-buddy-motion", "avatar-buddy-rest", "avatar-buddy-entrances"):
@@ -138,3 +179,10 @@ def test_a_key_rewrites_no_class_on_the_chat_dock_or_its_clear_button() -> None:
     clear = (JS / "field-clear.js").read_text(encoding="utf-8")
     assert 'if (dock?.classList.contains("ring-held")) dock.classList.remove("ring-held");' in panes
     assert 'if (button.classList.contains("hidden") === full) button.classList.toggle("hidden", !full);' in clear
+
+
+def test_a_new_figure_looks_at_once_whether_it_covers_a_control() -> None:
+    # L-general-47: switching the companion kept the old figure's spot, and Atlas's shape over it covered the status
+    # bar's Navigation history until the next idle look 7.7 s on; its walk off was the idle window's +340 ms/s.
+    swap = _block(AVATARS, "if (buddy.dataset.seed !== seed) {", "//: **Never drawn before it has a place**")
+    assert "if (!fresh) queueNameMarkBuddyCheck();" in swap

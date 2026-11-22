@@ -47,7 +47,7 @@ VERTICAL_KEBABS = {
     "notes-list.js": 1,  # the Notes categories rail
     "search.js": 1,  # the saved searches under the Notes categories rail (Brief 47)
     "settings-packages.js": 2,  # a package row, a bundle row
-    "sheets-selects.js": 1,  # the Chats rail
+    "chat-list.js": 1,  # the Chats rail (moved out of sheets-selects.js, the gzip budget)
     "shell-reminders.js": 1,  # a reminder row
     "tag-manager.js": 1,  # Manage tags, one row per tag
 }

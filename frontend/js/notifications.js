@@ -285,7 +285,7 @@ async function openNotifications({ keepWatermark = false } = {}) {
     }
     const foot = document.createElement("div");
     foot.className = "notif-foot";
-    body.append(foot);
+    body.append(...openNotifications.brief(item), foot);
     row.append(dot, icon, body);
 
     //: The dot is the control. A row is either new or it is not, so this is a
@@ -393,6 +393,39 @@ async function openNotifications({ keepWatermark = false } = {}) {
   renderNotificationBadge();
   if (fresh) focusFirstIn(panel, ".notif-row button, #notif-close");
 }
+
+//: **The meeting-prep brief** (L-general-11): the newest notes about what a
+//: fired reminder names, under its row as connection rows (`connectionRowEl`,
+//: connections.js, brought on first use; on `openNotifications`, as the shared
+//: scope only shrinks; outside it, as its size only shrinks, test_js_function_size). A row opens its note, not the row's
+//: own target, so it stops the click there.
+openNotifications.brief = (item) => {
+  const brief = item.brief;
+  if (!brief?.notes?.length) return [];
+  const box = document.createElement("div");
+  box.className = "notif-brief";
+  const head = document.createElement("div");
+  head.className = "connection-heading";
+  head.textContent = `Last notes on ${brief.subjects.join(" and ")}`;
+  const list = document.createElement("div");
+  list.setAttribute("role", "list");
+  list.setAttribute("aria-label", head.textContent);
+  box.append(head, list);
+  lazyScript("/js/connections.js").then((ok) => {
+    if (!ok) return;
+    for (const note of brief.notes) {
+      const row = connectionRowEl("ph:note", note.title, `Open ${note.title}`, "", (event) => {
+        event.stopPropagation();
+        closeNotifications();
+        runNotificationGo({ open: "entry", id: note.id });
+      });
+      row.setAttribute("role", "listitem");
+      list.append(row);
+    }
+  });
+  return [box];
+};
+
 
 function setNotificationUnread(id, unread) {
   const unreadIds = forcedUnreadIds();

@@ -436,6 +436,11 @@ async function toggleDictation(button, targetInput) {
 //: From sheets-selects.js (2026-11-22, the gzip budget): a phone ⋯ tap is its only caller.
 function openKebabSheet(menu, opener, label) {
   closeActionMenus();
+  //: A scroll already on its way (the list settling after a note opened) would
+  //: reach `closeActionMenusOnScroll` and empty this sheet 100ms after it opened
+  //: (traced in deepflows' Find at 390): stamped like `openActionMenu`, which
+  //: gives a menu 200ms of grace from such a scroll.
+  window._menuOpenedAt = performance.now();
   const home = menu.parentElement;
   let closeSheet = null;
   let sheetCard = null;

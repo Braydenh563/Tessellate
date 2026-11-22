@@ -901,7 +901,13 @@ function mountPhoneSidebarOpeners() {
 //: 390x844). The mount skips a dock that has its opener, so it runs again for
 //: every surface that holds one.
 mountPhoneSidebarOpeners();
-for (const surface of ["notes", "chat", "documents", "library"]) onSurface(surface, mountPhoneSidebarOpeners);
+//: Each dock lives in a lazy surface, built on first use: a mount that ran only
+//: at load found no Notes or Chat dock and never came back, leaving a phone with
+//: no rail and no opener. The function skips a dock that already has its opener.
+onSurface("notes", mountPhoneSidebarOpeners);
+onSurface("chat", mountPhoneSidebarOpeners);
+onSurface("documents", mountPhoneSidebarOpeners);
+onSurface("library", mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
@@ -1932,7 +1938,7 @@ function initPrimaryFab() {
   const query = window.matchMedia(PHONE_FAB);
   floatPrimaryActions(query.matches);
   query.addEventListener("change", (event) => floatPrimaryActions(event.matches));
-  for (const name of ["reminders", "timeline", "graph"]) onSurface(name, () => floatPrimaryActions(query.matches));
+  for (const name of ["reminders", "timeline", "graph", "notes", "library"]) onSurface(name, () => floatPrimaryActions(query.matches));
 }
 
 initPrimaryFab();

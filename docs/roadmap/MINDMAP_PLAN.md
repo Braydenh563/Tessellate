@@ -1201,7 +1201,8 @@ topic: a control that wide has nowhere to go.
    map is made once.
 36. **Studying a map is presenting with each branch hidden until recalled**
    (taken 2026-10-05, §12.3 item 5, under standing order 3; op5). The board
-   menu's Study the map (maps only; the View menu is at its 450px ceiling)
+   menu's Study the map (maps only; the View menu is at its 450px ceiling;
+   Filter by marker, Gantt chart and What this map is made of moved there too, L-mindmap-23)
    and the palette's row start the presenting shell (decision 21's bar,
    keys and Escape). The questions are the trunks' branches that have
    topics under them, in Present branches' order; everything under each is

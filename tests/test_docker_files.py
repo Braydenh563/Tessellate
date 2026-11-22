@@ -44,3 +44,41 @@ def test_the_data_and_model_folders_belong_to_the_user_the_app_runs_as():
 
 def test_the_proxy_host_variable_is_offered_in_compose():
     assert "TESSELLATE_ALLOWED_HOSTS" in COMPOSE
+
+
+def test_the_image_reports_its_health_from_the_route_that_needs_no_password():
+    """L-general-5: an orchestrator restarts a copy whose /health stops
+    answering; Python, since the slim image has no curl."""
+    check = DOCKERFILE[DOCKERFILE.index("HEALTHCHECK"):DOCKERFILE.index("\nCMD ")]
+    assert "/health" in check and "TESSELLATE_PORT" in check and "curl" not in check
+    assert DOCKERFILE.index("HEALTHCHECK") > DOCKERFILE.index("USER mm")
+
+
+def test_the_ignore_file_is_the_one_buildkit_reads_for_this_dockerfile():
+    """The context is the repo root and the Dockerfile is docker/Dockerfile,
+    so BuildKit reads docker/Dockerfile.dockerignore (or a root one); the old
+    docker/.dockerignore was never read and the notebook's data/ went in."""
+    assert not (ROOT / "docker" / ".dockerignore").exists()
+    ignored = (ROOT / "docker" / "Dockerfile.dockerignore").read_text(encoding="utf-8").split()
+    assert {".venv", ".git", "data", "tests", "scratchpad"} <= set(ignored)
+
+
+def test_the_dockerfile_is_linted_in_ci():
+    """hadolint runs in CI only; here, that the workflow runs it on the Dockerfile."""
+    lint = (ROOT / ".github" / "workflows" / "workflow-lint.yml").read_text(encoding="utf-8")
+    assert re.search(r"hadolint-bin==\d", lint) and "hadolint --failure-threshold error docker/Dockerfile" in lint
+    assert '"docker/**"' in lint
+
+
+def test_every_build_carries_the_licence_and_notices():
+    """L-general-3: AGPL and the vendored licences go with every copy. The
+    installer, the MSI and the Linux archives all take the PyInstaller bundle
+    root (installer.iss `dist\\Tessellate\\*`, installer.wxs `DistDir\\**`)."""
+    assert "COPY LICENSE ./" in DOCKERFILE and "COPY docs/THIRD_PARTY.md ./" in DOCKERFILE
+    for spec in ("linux", "windows"):
+        text = (ROOT / "packaging" / spec / "tessellate.spec").read_text(encoding="utf-8")
+        assert '(str(REPO_ROOT / "LICENSE"), "."),' in text, spec
+        assert '(str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),' in text, spec
+    iss = (ROOT / "packaging" / "windows" / "installer.iss").read_text(encoding="utf-8")
+    wxs = (ROOT / "packaging" / "windows" / "installer.wxs").read_text(encoding="utf-8")
+    assert 'Source: "..\\..\\dist\\Tessellate\\*"' in iss and '<Files Include="$(var.DistDir)\\**" />' in wxs

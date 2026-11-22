@@ -353,7 +353,9 @@
     //: moves its turn to it. An unbent line is the same string it always was.
     const w = wbMapEdgeWaypoint(a, child);
     if (a.rib && !w.bent) {
-      const slant = Math.abs(a.y2 - a.y1) * 0.5;
+      //: The slant spans no more than the gap beside its column: a tall column
+    //: would otherwise send the rib on a long diagonal over the nearer columns.
+    const slant = Math.min(Math.abs(a.y2 - a.y1) * 0.5, wbMapGapDepth());
       const foot = a.right ? Math.max(a.x1, a.x2 - slant) : Math.min(a.x1, a.x2 + slant);
       return `M${a.x1} ${a.y1} L${foot} ${a.y1} L${a.x2} ${a.y2}`;
     }
@@ -489,7 +491,7 @@
       const end = wbMapCubicAt(1, p0, c0, c1, p1);
       tip = [end.x, end.y];
     }
-    const at = ([x, y]) => `${Math.round(x * 10) / 10} ${Math.round(y * 10) / 10}`;
+    const at = (pt) => `${wbMapTenth(pt[0])} ${wbMapTenth(pt[1])}`;
     const forward = `M${at(left[0])}${wbMapSmoothThrough(left, at)}`;
     const point = tip ? `L${at(tip)}` : "";
     right.reverse();
@@ -512,16 +514,33 @@
   //: have: the parent end, the barb and the tip). The ends reflect their
   //: neighbour rather than repeat themselves, so the first and last spans keep
   //: their slope instead of flattening into the node.
+  //: **A number to a tenth, as `${Math.round(v * 10) / 10}` writes it, from
+  //: integers** (L-mindmap-25). A long ribbon is about 600 numbers, and
+  //: printing the rounded double was half of `wbMapRibbonD`: the drop of a
+  //: linked branch draws 300 cross-links and 150 lines through it. The two
+  //: agree on every value, NaN and -0 included (`tests/test_map_ribbon_tenth.py`).
+  function wbMapTenth(v) {
+    const r = Math.round(v * 10);
+    if (!(r % 10)) return String(r / 10);
+    const a = r < 0 ? -r : r;
+    return `${r < 0 ? "-" : ""}${(a - (a % 10)) / 10}.${a % 10}`;
+  }
+
+  //: The two controls are written into one pair each, not a new pair per span.
   function wbMapSmoothThrough(points, at) {
     const n = points.length;
+    const c1 = [0, 0];
+    const c2 = [0, 0];
     let d = "";
     for (let i = 0; i + 1 < n; i += 1) {
       const p1 = points[i];
       const p2 = points[i + 1];
       const p0 = i > 0 ? points[i - 1] : [2 * p1[0] - p2[0], 2 * p1[1] - p2[1]];
       const p3 = i + 2 < n ? points[i + 2] : [2 * p2[0] - p1[0], 2 * p2[1] - p1[1]];
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      c1[0] = p1[0] + (p2[0] - p0[0]) / 6;
+      c1[1] = p1[1] + (p2[1] - p0[1]) / 6;
+      c2[0] = p2[0] - (p3[0] - p1[0]) / 6;
+      c2[1] = p2[1] - (p3[1] - p1[1]) / 6;
       d += `C${at(c1)} ${at(c2)} ${at(p2)}`;
     }
     return d;
@@ -617,8 +636,15 @@
   //: every mousemove frame re-binds every card, sketch and object on the board
   //: for the sake of two curves, which is the "glitchy and slow to update"
   //: report this file already carries.
-  function wbUpdateMapEdges(edges) {
+  //: `onScreen`: a line the cull hides is held for the cull to draw (`wbMapStaleEdges`).
+  function wbUpdateMapEdges(edges, { onScreen = false } = {}) {
     for (const { parent, child, el, layout } of edges || []) {
+      if (onScreen && el.parentNode?.classList?.contains("wb-culled")) {
+        el._wbMoved = true;
+        wbMapStaleEdges.set(el, { parentId: parent.id, childId: child.id });
+        continue;
+      }
+      wbMapStaleEdges.delete(el);
       const d = wbMapEdgePathD(parent, child, layout);
       //: Drawn by hand: the render's cache no longer holds what is on screen.
       el._wbMoved = true;
@@ -638,6 +664,33 @@
         el._wbLabel.setAttribute("y", String(point.y + (Number(child.data?.edge_label_dy) || 0)));
       }
     }
+  }
+
+  //: **A line off screen is drawn when it comes on screen, not at the drop**
+  //: (mapperf 500: the drop of a 500-topic branch drew all 499 of its inside
+  //: lines, 131ms of a 182ms frame, with two topics on screen). The cull hides
+  //: a line whose ends are both off screen (`display: none`), so its `d` is
+  //: read by nothing until the cull shows it again or an export clones it,
+  //: and both draw it first. Keyed by the path; the topics are looked up again
+  //: when it is drawn, since a render between can replace them.
+  const wbMapStaleEdges = new Map();
+
+  //: Draws the given held lines (every one held, by default) that are still
+  //: on the board; a line whose topic has gone is left for the render.
+  function wbMapDrawStaleEdges(paths = [...wbMapStaleEdges.keys()]) {
+    const edges = [];
+    let index = null;
+    for (const el of paths) {
+      const held = wbMapStaleEdges.get(el);
+      if (!held) continue;
+      wbMapStaleEdges.delete(el);
+      if (!el.isConnected) continue;
+      index = index || wbMapIndex();
+      const parent = index.byId.get(held.parentId);
+      const child = index.byId.get(held.childId);
+      if (parent && child) edges.push({ parent, child, el, layout: wbMapLayout() });
+    }
+    wbUpdateMapEdges(edges);
   }
 
   //: Every tree line that is drawn, as its two topics and its key, in the
@@ -675,7 +728,15 @@
   //:
   //: The group is the first child of the zoom group so edges sit *under* every
   //: sketch and node, which is the only z-order a tree reads correctly in.
-  function wbRenderMapEdges({ only = null } = {}) {
+  //: `plusesOnly`: the mid-line `+` buttons of the `only` topics placed and
+  //: nothing else, for the pin after a first drag (`wbMapPinOnDrag`), whose
+  //: lines the drop already drew.
+  function wbRenderMapEdges({ only = null, plusesOnly = false } = {}) {
+    if (plusesOnly) {
+      const index = wbMapIndex();
+      if (wbIsMap()) wbRenderMapEdgePluses(wbMapVisibleEdges(index, wbMapConcealed(index)), wbMapLayout(), only);
+      return;
+    }
     const zoomGroup = wbInstances.layer("wb-zoom-group");
     if (!zoomGroup) return;
     let group = zoomGroup.querySelector(".wb-map-edges");
@@ -741,6 +802,7 @@
         //: writes the path per drag frame and marks it) forgets what it holds.
         if (drawn && held.path._wbMoved) {
           held.path._wbMoved = false;
+          wbMapStaleEdges.delete(held.path);
           held.key = held.paint = null;
         }
         const geomKey = wbMapEdgeKey(parent, child, layout, colors);
@@ -760,6 +822,7 @@
       const wrap = held.wrap;
       if (group.childNodes[slot] !== wrap) group.insertBefore(wrap, group.childNodes[slot] || null);
     });
+    for (const el of wbMapStaleEdges.keys()) if (!el.isConnected) wbMapStaleEdges.delete(el);
     wbRenderMapEdgePluses(edges, layout, only);
     wbSyncMapEdgeHandles();
   }
@@ -925,4 +988,6 @@
 
   //: The file's surface: what other files call (L286).
   Object.assign(window, { WB_MAP_SIDES, wbMapFacingSide, wbMapEdgeAnchors, wbMapEdgeWaypoint, wbMapEdgeFractions, wbMapEdgeCubic, wbMapElbowPoints, WB_MAP_EDGE_CONTROL_GAP, wbMapEdgeHandlePoint, wbMapEdgePathD, wbMapEdgeWeight, wbMapEdgeHasArrow, wbMapCubicAt, wbMapRibbonD, wbMapEdgeIsRibbon, wbMapEdgeContext, wbMapEdgesFor, wbUpdateMapEdges, wbMapDropStale, wbRenderMapEdges });
+  //: On the drawing function rather than a name of its own (the global-scope ratchet).
+  wbUpdateMapEdges.drawHeld = wbMapDrawStaleEdges;
 })();

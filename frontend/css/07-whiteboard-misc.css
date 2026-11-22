@@ -2437,9 +2437,9 @@ body.scroll-top-visible .skills-split > .tab-main {
   left: 0;
   z-index: 60;
   /* Wide enough that a name never sits against the edge, and wide enough that
-     the row's trailing edit/delete buttons do not crowd it. Reported: popup
+     the row's four trailing buttons (hide, rename, export, delete) leave a name room. Reported: popup
      text with no gap from the edge. */
-  min-width: 15rem;
+  min-width: 17rem;
   max-width: min(20rem, calc(100vw - var(--space-8)));
   max-height: 60vh;
   overflow-y: auto;
@@ -5744,8 +5744,11 @@ button.connection-row:is(:hover, :focus-visible) {
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
+/* Scrolls as one when the caption and the other readings above the list
+   leave it less than its floor (L806: the list was 0px at 1366x768). */
 .ocr-regions {
   min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);

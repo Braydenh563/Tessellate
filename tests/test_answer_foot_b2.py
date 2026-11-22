@@ -145,7 +145,7 @@ def test_an_answers_actions_are_in_its_head_row() -> None:
     touch on. Chat and the popup agent put the row in the name row, in its
     flow, as Ask's column head does; a question's row stays under its bubble."""
     chat = (ROOT / "frontend/js/chat-turn.js").read_text(encoding="utf-8")
-    reopened = (ROOT / "frontend/js/sheets-selects.js").read_text(encoding="utf-8")
+    reopened = (ROOT / "frontend/js/chat-list.js").read_text(encoding="utf-8")
     palette = (ROOT / "frontend/js/palette.js").read_text(encoding="utf-8")
     #: The failed turn's row, and the one list the live and reopened paths share.
     assert chat.count('(bubble.querySelector(":scope > .msg-role") || bubble).appendChild(') == 2

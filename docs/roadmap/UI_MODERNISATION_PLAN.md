@@ -1064,6 +1064,27 @@ the order a person meets them, with what the code says today.
 16. **`!important` budget 171 to 0 by 0.8,** by specificity, with a ratchet.
 17. **Circles are avatars, the companion and the colour swatches;** 59 to
     that count, the rest `--radius-pill` or the button radius.
+**Measured, 2026-11-22 (13.0 gate, L533):** the counts in decisions 9 to 17
+are the plan's stylesheet counts of 2026-10-10; this is the recount from the
+running app (`scratchpad/ui-sweeps/gate13.js`, run at 1440 and 390 over a
+38-note notebook: the browser parses all 80 served `/css` files, and computed
+styles are read over every visible element of seven tabs and Settings).
+Plan count, then measured: 9 tokens 412, 417 (ratchet 417; the decision's
+under 200 stays open); 10 colour literals outside the two colour files 200,
+153 declaration values (the test's text count is 189); 11 the four off-ramp
+rem sizes 133 uses, 0 (live sizes 12, 12.8, 13.6, 14.72, 16 and 24 px, each a
+token's value); 12 literal z-index above 2 115 ratcheted, 115 (live values 1,
+2, 3, 5, 6, 19, 20, 40, 100 and 1010 at 1440, 35, 44 and 45 more at 390: the
+1010 set is not folded in); 13 shadows 75 distinct, 89 declared values, 6
+hand-written outer drops, 10 distinct computed (9 at 390); 14 literal
+transition durations 0 (animation timings 184, of them 113 `0s` switches);
+15 hover rules with no focus twin 282, 2 of 523 (both false reads: the twin
+sits in the next `:is()` group, `08-consistency.css` 4939 and 8105); 16
+`!important` 171, 86 (ratchet 87); 17 `50%` circles 59, 33 rules, 29 on the
+allowed faces and drawn shapes and 4 (6 selectors) in `CIRCLES_LEFT`. No new
+offence: every count is at or under its ratchet. What stays open is 13a's
+list (tokens, z-index scale, colour literals, `!important`, shadows, circles).
+
 18. **`08-consistency.css` dissolves into the component files** by 0.8: each
     rule moves beside the component it corrects, or becomes the recipe; a
     ratchet caps its line count downwards and no new rule may be added to it.

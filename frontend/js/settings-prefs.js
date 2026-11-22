@@ -113,7 +113,7 @@ function renderAutonomousSettings() {
 
 async function renderWebSearch() {
   extraNoticeMount($("searxng-host-state")?.closest(".searxng-host"), "searxng", { fresh: true });
-  prefsCache = await apiJson("/preferences");
+  prefsCache = await setPreference.read();
   $("pref-web-search").checked = Boolean(prefsCache.web_search_enabled);
   $("pref-web-store").checked = prefsCache.web_store_enabled !== false;
   $("pref-searxng").value = prefsCache.searxng_url || "";

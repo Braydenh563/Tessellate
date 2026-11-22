@@ -78,11 +78,15 @@
         $("voice-model-select").value = prefsCache?.voice_model || "base";
         voiceModelsWire();
         voiceModelsPaint();
-        $("voice-skip-silence").checked = prefsCache?.voice_skip_silence ?? true;
-        $("voice-language-select").value = prefsCache?.voice_language || "";
-        $("voice-vocabulary").value = prefsCache?.voice_vocabulary || "";
       }
     }
+    //: The three option rows are on screen whether or not faster-whisper is
+    //: installed (only the size picker waits for it), so they read the saved
+    //: values either way: unfilled, the skip switch showed off over a saved on.
+    if (!prefsCache) prefsCache = await apiJson("/preferences").catch(() => null);
+    $("voice-skip-silence").checked = prefsCache?.voice_skip_silence ?? true;
+    $("voice-language-select").value = prefsCache?.voice_language || "";
+    $("voice-vocabulary").value = prefsCache?.voice_vocabulary || "";
   }
 
   // --- dictation model sizes (B61) ----------------------------------------------

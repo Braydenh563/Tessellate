@@ -33,7 +33,7 @@
 //: lying down, a stretch, a swing from the bar). Every place it ends is the
 //: drop's (`nameMarkBuddyThrowSpot`), so it never ends over a control.
 //: Pure apart from `nameMarkBuddyThrow` and the three DOM helpers under it;
-//: the rolls come from `rand`, seeded by `companionThrowSeed` in the sweep
+//: the rolls come from `rand`, seeded by `companionThrowSeed` (`nameMarkBuddyThrow.sweep` outside) in the sweep
 //: (scratchpad/ui-sweeps/throwfates.js) and in tests/test_companion_throw_fates.py.
 (() => {
   const COMPANION_THROW_ODDS = { hang: 0.55, climb: 0.45, wrap: 0.3, splat: 0.4, grab: 0.5, slip: 0.6 };

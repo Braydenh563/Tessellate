@@ -92,3 +92,17 @@ def test_the_board_shape_tool_opens_from_the_keyboard() -> None:
         "Escape in the shapes must close them itself: wireMenuKeyboard closes "
         "action menus only, and it stops the key"
     )
+
+
+def test_a_menus_wrappers_are_role_none_and_the_arrows_walk_through_them() -> None:
+    """wbtopbar.js (L-general-20): the Arrange and Board menus had five and one
+    `.menu-group` divs, the View menu two `.wb-menu-col` divs, as direct children
+    of a `role="menu"` with no role of their own (not an allowed child), and
+    ArrowDown in the View menu moved nowhere because its rows sit one column
+    wrapper deeper than the walker looked."""
+    group = _function(APP, "function buildMenuGroupButton(")
+    assert 'groupWrap.setAttribute("role", "none")' in group
+    walker = _function(APP, "function wireMenuKeyboard(")
+    assert ':scope > .wb-menu-col > [role="group"] > [role="menuitem"]' in walker
+    stamp = _function(BOARD, "function wbStampMenuRoles(")
+    assert ".wb-menu-col" in stamp and '"none"' in stamp

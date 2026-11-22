@@ -52,11 +52,14 @@ def _mcp() -> dict:
     from tessellate import mcp_server
 
     env = {"TESSELLATE_DATA_DIR": str(resolved_data_dir()), mcp_server.TOKEN_ENV: mcp_server.token()}
+    #: The same notebook from a shell (`tessellate tool`, L-general-8), as a
+    #: SKILL.md an agent that runs commands can keep.
     if getattr(sys, "frozen", False):
         return {
             "installed": True,
             "command": "Tessellate --mcp",
             "config": {"command": sys.executable, "args": ["--mcp"], "env": env},
+            "skill": mcp_server.skill_snippet([sys.executable], env),
         }
     return {
         "installed": True,
@@ -66,6 +69,7 @@ def _mcp() -> dict:
             "args": ["-m", "tessellate.mcp_server"],
             "env": env,
         },
+        "skill": mcp_server.skill_snippet([sys.executable, "-m", "tessellate"], env),
     }
 
 

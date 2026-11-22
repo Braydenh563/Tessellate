@@ -23,9 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
 
@@ -47,9 +49,11 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
         shard: [1, 2]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -60,7 +64,7 @@ jobs:
       # all, on any job, which is the shape of a test that cannot fail (audit
       # A9). No npm install: `node --check` and the helpers need the runtime
       # and nothing else, so this costs a few seconds per matrix leg.
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22"
 
@@ -107,9 +111,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
           cache: pip
@@ -154,9 +160,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
           cache: pip
@@ -167,7 +175,7 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22"
           cache: npm
@@ -193,8 +201,68 @@ jobs:
 
       - name: Upload the report on failure
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-report
           path: tests-e2e/playwright-report/
+          retention-days: 7
+
+  ui-sweeps:
+    # The stable ui sweeps against a real server (L-general-20):
+    # before this they ran only through a local `gate.sh --sweeps`. The list is
+    # scratchpad/ui-sweeps/stable.txt; scripts/ci_sweeps.sh says how a sweep
+    # gets on it and comes off it.
+    # Over an hour of runs in all, so four jobs each run a share balanced by
+    # the list's seconds (SLICE in scripts/ci_sweeps.sh).
+    name: UI sweeps (stable list, ${{ matrix.slice }} of 4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        slice: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tests-e2e/package-lock.json
+
+      # The sweeps require Playwright from the dev container's path
+      # (scratchpad/ui-sweeps/lib.js), so the lockfile's copy is linked there.
+      - name: Install Playwright + browser
+        working-directory: tests-e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          sudo mkdir -p /opt/node22/lib/node_modules
+          sudo ln -sfn "$PWD/node_modules/playwright" /opt/node22/lib/node_modules/playwright
+
+      - name: Run the sweeps
+        env:
+          SWEEP_LOGS: ${{ runner.temp }}/sweeps
+          SLICE: ${{ matrix.slice }}/4
+        run: VENV="$pythonLocation" bash scripts/ci_sweeps.sh
+
+      - name: Upload the sweep logs on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: ui-sweep-logs-${{ matrix.slice }}
+          path: ${{ runner.temp }}/sweeps/
           retention-days: 7

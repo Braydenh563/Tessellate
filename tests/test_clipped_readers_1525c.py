@@ -186,3 +186,25 @@ def test_the_picker_preview_reads_a_picture_past_the_rows_300_characters() -> No
     """fix1525b found: note-pick-preview.js read a note's first picture from the clipped row."""
     body = _block(_text("note-pick-preview.js"), "function notePickThumb(")
     assert "entry.content_truncated" in body and "fullEntry(entry.id)" in body
+
+
+@needs_node
+def test_the_companion_reads_along_a_long_note_by_the_servers_words_not_the_clipped_row():
+    #: companionreact sweep: a list row holds 300 characters, so a length check on it was never over 1200 and the
+    #: "reads along" reaction never played for any note.
+    script = f"""
+const reacted = [];
+const nameMarkBuddyReact = (kind) => reacted.push(kind);
+const allEntries = [
+  {{ id: 1, content: "x".repeat(298), content_truncated: true, word_count: 340 }},
+  {{ id: 2, content: "x".repeat(298), content_truncated: true, word_count: 60 }},
+  {{ id: 3, content: "y".repeat(1300) }},
+  {{ id: 4, content: "short" }},
+];
+const document = {{ querySelector: () => null }};
+const CSS = {{ escape: (s) => s }};
+{_block(_text("avatars.js"), "function nameMarkBuddyNoteOpened(")}
+for (const id of [1, 2, 3, 4]) nameMarkBuddyNoteOpened(id);
+process.stdout.write(JSON.stringify({{ reacted }}));
+"""
+    assert _node(script)["reacted"] == ["read", "read"]  # the 340-word clipped row and the 1300-character whole one

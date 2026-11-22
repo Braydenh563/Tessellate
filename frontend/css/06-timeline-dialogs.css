@@ -2049,6 +2049,10 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* The meeting-prep brief under a fired reminder (L-general-11). */
+.notif-brief {
+  margin-top: var(--space-1);
+}
 .notif-meta {
   font-size: var(--text-xs);
   /* A saved file's path has no break in it, and ran under the time. */
@@ -2133,6 +2137,7 @@
    (its name is on `aria-label` and `title`). */
 #top-bar .header-cluster > .privacy-chip {
   gap: var(--space-1);
+  min-height: var(--target-min);
   padding-inline: var(--space-2);
   color: var(--muted);
   font-size: var(--text-md);
@@ -2147,7 +2152,7 @@
     display: none;
   }
   #top-bar .header-cluster > .privacy-chip {
-    width: var(--header-control-h);
+    width: max(var(--header-control-h), var(--target-min));
     padding-inline: 0;
     justify-content: center;
   }
@@ -2398,6 +2403,16 @@
   overflow: clip;
   overscroll-behavior: none;
   touch-action: none;
+}
+/* The board gallery is the one part of this view that scrolls: the clip above
+   is for the canvas, and left a gallery taller than the window unreachable (a
+   board past the fold at 390 could not be scrolled to or opened, deepflows
+   2026-11-22). Its own scroller, so the canvas keeps `clip` and `none`. */
+#wb-boards-landing {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 /* Full screen. Mirrors `.graph-fullscreen` deliberately: the graph and the
    board are the app's two canvases and a user who learns one should not

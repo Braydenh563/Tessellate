@@ -135,6 +135,9 @@
     const pairs = precomputed || wbLinkedSketchesFor(nodeId);
     for (const entry of pairs) {
       const { sketch, parsed } = entry;
+      //: The one writer of a link's path a drop may have left on its translate (`wbMapDragLayer.held`),
+      //: first, so a link whose ends are gone is let go too.
+      if (entry.el && wbMapDragLayer.held.delete(entry.el)) entry.el.removeAttribute("transform");
       const look = wbMapCrossLinkLook(parsed);
       const endpoints = look ? null : wbResolveLinkEndpoints(parsed);
       if (!look && !endpoints) continue;
@@ -154,6 +157,11 @@
       //: to invisibly for ever.
       if (!entry.el || !entry.el.isConnected) {
         entry.el = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
+        entry.path = undefined;
+      }
+      //: A group found by another pass (the branch layer's one walk) comes without its two paths:
+      //: a drop wrote to neither and left its inside links where the branch was (mapperf 500, all 300).
+      if (entry.path === undefined) {
         entry.path = entry.el?.querySelector(".sketch-path") || null;
         entry.hitbox = entry.el?.querySelector(".sketch-hitbox") || null;
       }

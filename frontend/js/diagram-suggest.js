@@ -67,6 +67,21 @@
     for (const n of inc.nodes) if (n.group === id) keys.push(`n:${n.id}`);
     return keys;
   }
+
+  //: Templates most used first (W18), ties in the file's order. The counts are per
+  //: browser (`diagram.templateUses`), a habit of this window, not a fact about the notebook;
+  //: a count kept for a template that is gone is dropped on the next use.
+  function dgsByUse(rows, uses) {
+    const n = (t) => (uses && Number.isFinite(uses[t.id]) ? uses[t.id] : 0);
+    return rows.map((t, i) => [t, i]).sort((a, b) => n(b[0]) - n(a[0]) || a[1] - b[1]).map(([t]) => t);
+  }
+
+  function dgsBumpUse(uses, id, rows) {
+    const out = {};
+    for (const t of rows) if (uses && Number.isFinite(uses[t.id])) out[t.id] = uses[t.id];
+    out[id] = (out[id] || 0) + 1;
+    return out;
+  }
   // DIAGRAM-GHOST-END
 
   const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -325,7 +340,8 @@
     const fill = S.plain || !paneBlank(S);
     //: A diagram with blocks takes only blocks of its own kind, so only its kind's templates are offered.
     const mine = S.k ? S.k.name : "flowchart";
-    const rows = fill && !S.plain ? all.filter((t) => (t.kind || "flowchart") === mine) : all;
+    const uses = prefs.json("diagram.templateUses", {});
+    const rows = dgsByUse(fill && !S.plain ? all.filter((t) => (t.kind || "flowchart") === mine) : all, uses);
     const dialog = h.el("dialog", "card space-dialog doc-ai-history-dialog doc-template-dialog dgm-template-dialog");
     dialog.setAttribute("aria-label", "Start from a template");
     const returnFocus = document.activeElement;
@@ -363,6 +379,11 @@
       if (made || !chosen) return;
       made = true;
       dialog.close();
+      try {
+        prefs.set("diagram.templateUses", JSON.stringify(dgsBumpUse(uses, chosen.id, all)));
+      } catch {
+        /* a browser refusing storage still makes the diagram */
+      }
       if (replace === true) await receive(S, h, chosen.source, `Replaced the diagram with the ${chosen.name.toLowerCase()} template.`, true);
       else await receive(S, h, chosen.source, `Started from the ${chosen.name.toLowerCase()} template.`);
     };

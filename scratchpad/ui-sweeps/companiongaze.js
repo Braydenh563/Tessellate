@@ -19,7 +19,7 @@ const KIND = process.env.KIND || 'atlas';
   await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
   // The setting on, by its own switch (the owner: "it doesnt follow the
   // mouse movement if i have it turned on either").
-  await page.evaluate(() => { const f = document.getElementById('avatar-follow'); f.checked = true; f.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const f = $('avatar-follow'); f.checked = true; f.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(6000);
   const head = await page.evaluate(async () => {
     const buddy = document.getElementById('nm-buddy');

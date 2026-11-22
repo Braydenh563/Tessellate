@@ -2296,6 +2296,14 @@
     const mcp = caps?.features?.mcp;
     const note = $("mcp-config-note");
     const copy = $("mcp-config-copy");
+    const skill = $("mcp-skill-snippet");
+    const skillCopy = $("mcp-skill-copy");
+    const skillShown = !!(mcp?.installed && mcp.skill);
+    for (const node of [skill, skillCopy, $("mcp-skill-head"), $("mcp-skill-note")]) node?.classList.toggle("hidden", !skillShown);
+    if (skillShown) {
+      skill.textContent = mcp.skill;
+      skillCopy.onclick = () => copyToClipboard(mcp.skill, skillCopy);
+    }
     if (!mcp?.installed || !mcp.config) {
       pre.classList.add("hidden");
       copy.classList.add("hidden");
@@ -3783,22 +3791,37 @@
   //: the handler used to `await` with nothing to catch it, so a 422 was an
   //: unhandled rejection and the switch stayed where the server disagreed (found
   //: by the deepflows sweep, which turned all the tools off).
-  async function saveToolSwitch(check, name) {
-    const next = new Set(prefsCache.disabled_tools || []);
-    if (check.checked) next.delete(name);
-    else next.add(name);
-    try {
-      prefsCache = await apiJson("/preferences", {
-        method: "PUT",
-        body: JSON.stringify({ disabled_tools: [...next] }),
-      });
-    } catch (error) {
-      check.checked = !check.checked;
-      toast(error.message || "Couldn't save that tool setting. Try again.", true);
-      return;
-    }
-    // The "N of 51 on" count is only true until someone flips one.
-    applyToolFilter();
+  //: **One save at a time.** Each save is a read-modify-write of `disabled_tools`
+  //: from `prefsCache`, which only the previous save's answer refreshes: two
+  //: presses inside one round trip both started from the same list and the second
+  //: PUT dropped the first's change (found by the deepflows sweep at 390: a tool
+  //: pressed off came back on after a reload, about one run in six). Saves run in
+  //: order, each reading the list the one before it left.
+  let toolSaves = Promise.resolve();
+  const queueToolSave = (save) => {
+    toolSaves = toolSaves.then(save, save);
+    return toolSaves;
+  };
+
+  function saveToolSwitch(check, name) {
+    const wanted = check.checked;
+    return queueToolSave(async () => {
+      const next = new Set(prefsCache.disabled_tools || []);
+      if (wanted) next.delete(name);
+      else next.add(name);
+      try {
+        prefsCache = await apiJson("/preferences", {
+          method: "PUT",
+          body: JSON.stringify({ disabled_tools: [...next] }),
+        });
+      } catch (error) {
+        check.checked = !wanted;
+        toast(error.message || "Couldn't save that tool setting. Try again.", true);
+        return;
+      }
+      // The "N of 51 on" count is only true until someone flips one.
+      applyToolFilter();
+    });
   }
 
   //: The boxes a group's switch acts on: its rows on screen, so a filter is never
@@ -3823,27 +3846,29 @@
   }
 
   //: A group in one save; the boxes follow the answer and a failure leaves them as they were.
-  async function saveToolGroup(head) {
+  function saveToolGroup(head) {
     const boxes = toolGroupBoxes(head.dataset.group);
-    if (!boxes.length) return;
+    if (!boxes.length) return Promise.resolve();
     const turnOn = !boxes.some((check) => check.checked);
-    const next = new Set(prefsCache.disabled_tools || []);
-    for (const check of boxes) {
-      const name = check.closest("li").dataset.tool;
-      if (turnOn) next.delete(name);
-      else next.add(name);
-    }
-    try {
-      prefsCache = await apiJson("/preferences", {
-        method: "PUT",
-        body: JSON.stringify({ disabled_tools: [...next] }),
-      });
-    } catch (error) {
-      toast(error.message || "Couldn't save those tool settings. Try again.", true);
-      return;
-    }
-    for (const check of boxes) check.checked = turnOn;
-    applyToolFilter();
+    return queueToolSave(async () => {
+      const next = new Set(prefsCache.disabled_tools || []);
+      for (const check of boxes) {
+        const name = check.closest("li").dataset.tool;
+        if (turnOn) next.delete(name);
+        else next.add(name);
+      }
+      try {
+        prefsCache = await apiJson("/preferences", {
+          method: "PUT",
+          body: JSON.stringify({ disabled_tools: [...next] }),
+        });
+      } catch (error) {
+        toast(error.message || "Couldn't save those tool settings. Try again.", true);
+        return;
+      }
+      for (const check of boxes) check.checked = turnOn;
+      applyToolFilter();
+    });
   }
 
   //: The four groups, in the order a person scanning for risk reads them.

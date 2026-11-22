@@ -192,3 +192,16 @@ def test_every_section_that_holds_a_preference_fills_it_on_open():
     line = next(row for row in text.splitlines() if "renderPrefs()" in row and "includes(name)" in row)
     for name in ("preferences", "general", "searchindex", "personas"):
         assert f'"{name}"' in line, f"{name} opens without filling its preferences"
+
+
+def test_tools_section_fills_the_mcp_writes_switch_on_open():
+    """`#pref-mcp-writes` sits in Tools but was only filled as a side effect of
+    opening Web search or Background tasks (`renderAutonomousSettings`): Settings
+    opened straight onto Tools read the raw HTML default, off, over a saved on
+    (the deepflows sweep: reload, open Tools, the switch read off while
+    `/preferences` said true). Opening Tools reads the preference itself."""
+    text = (JS_DIR / "settings.js").read_text(encoding="utf-8")
+    start = text.index('if (name === "tools")')
+    branch = text[start : text.index("\n  if (name ===", start + 10)]
+    #: Through `setPreference.read`, the read of /preferences that a press inside it cannot lose (L-general-73).
+    assert "pref-mcp-writes" in branch and "setPreference.read()" in branch

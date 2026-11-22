@@ -444,6 +444,10 @@ function noteTemplateText(raw, clipboard = "[clipboard]") {
   return String(raw || "")
     .replace(/\{\{?date\}\}?/g, stampDate(now))
     .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
+    //: The weekday and the space the note lands in (WORLD_CLASS_PLAN 27.1, Notes);
+    //: under All spaces a note lands in the default one.
+    .replaceAll("{{weekday}}", now.toLocaleDateString(undefined, { weekday: "long" }))
+    .replaceAll("{{space}}", (spacesCache.find((s) => s.id === (activeSpaceId() === SPACE_ALL ? "default" : activeSpaceId())) || {}).name || "")
     .replaceAll("{{clipboard}}", clipboard);
 }
 

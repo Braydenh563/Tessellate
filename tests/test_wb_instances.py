@@ -646,7 +646,9 @@ process.stdout.write(JSON.stringify(wbInvZoomRules().split("\\n")));
     assert out[1].startswith('[data-wb-embed="2"] :is(.wb-object-frame .wb-frame-title, ') and out[1].endswith(") { --wb-inv-zoom: 0.5; }")
     assert out[2].startswith('[data-wb-embed="3"] :is(') and out[2].endswith(") { --wb-inv-zoom: 4; }")
     #: The value, the timer and the attribute are the instance's, not one global.
-    assert "const inst = wbInstances.active;" in publish and "inst.invTimer = setTimeout(() => wbPublishInvZoom(el, inv, inst), 120);" in publish
+    # The delay is the zoom's settle since L-mindmap-17 (a 120ms gap landed the publish inside a slow pinch);
+    # what this test guards is the per-board timer and value, unchanged.
+    assert "const inst = wbInstances.active;" in publish and "inst.invTimer = setTimeout(() => wbPublishInvZoom(el, inv, inst), wbZoomSettle.ms);" in publish
     assert "wbInvZoomValue" not in wb and "wbInvZoomTimer" not in wb
     assert '".wb-embed[data-wb-zoom-far] .wb-map-actions"' in grips
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
@@ -747,7 +749,7 @@ out.embed = calls.splice(0);
     assert embed_names == ["renderWhiteboard", "wbApplySearchHighlight", "wbMapPaintMarkerFilter"], embed_names
     assert all(c[1] == 5 for c in out["embed"])
     #: The empty hint and cue are the page board's: an embed's render leaves them be.
-    render = wb[wb.index("function renderWhiteboard() {") :]
+    render = wb[wb.index("renderWhiteboard.parts.wbSyncEmptyHint = function wbSyncEmptyHint() {") :]
     hint = render[: render.index('document.getElementById("wb-empty-cue")')]
     assert "if (!wbInstances.active.container) {" in hint[hint.rindex("const wbHintHidden") :]
     #: And draw() puts nothing back, so it schedules no page render after itself.

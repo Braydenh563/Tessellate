@@ -227,36 +227,67 @@ WARM = (240, 196, 120)
 INK = (*sp.LID_INK,)
 
 
-def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
-    """`frame` with the prop drawn on it (under the figure for a bean bag or a mat, over it otherwise)."""
+#: Prop layers kept (L-general-72): the supersampled draw and its resize took 21 ms at dpi 192, redone on most act
+#: ticks because a picture is also its figure frame and face; the layer depends only on the prop and the box.
+LAYER_KEEP = 32
+_LAYERS: dict[tuple, Any] = {}
+
+
+def clear_layers() -> None:
+    _LAYERS.clear()
+
+
+def layer_count() -> int:
+    return len(_LAYERS)
+
+
+def _layer(spec: Any, prop: tuple[str, int, int], flip: bool, shape: tuple, m: int) -> Any:
+    """The prop alone at the picture's size plus its room, drawn at `S` times and brought down once per key."""
     from PIL import Image, ImageDraw
 
-    name, phase, size = prop
+    key = (prop, flip, shape)
+    kept = _LAYERS.pop(key, None)
+    if kept is None:
+        name, phase, size = prop
+        width, height, (lx, t, r, b) = shape
+        h = max(1.0, float(b - t))
+        d = -1 if flip else 1
+        cw, ch = width + 2 * m, height + 2 * m
+        big = Image.new("RGBA", (cw * S, ch * S), (0, 0, 0, 0))
+        g = ImageDraw.Draw(big)
+        u = h / 100.0 * S * SIZES[size]
+        ax = ((lx + r) / 2.0 + m + d * spec.at[0] * h) * S
+        ay = (t + m + spec.at[1] * h) * S
+        {
+            "book": _book, "beanbag": _beanbag, "rod": _rod, "mat": _mat, "map": _map, "lantern": _lantern,
+            "dumbbell": _dumbbell, "cup": _cup, "journal": _journal, "stars": _stars, "blanket": _blanket, "plant": _plant,
+            "bowl": _bowl, "wand": _wand, "knit": _knit, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
+        }[name](g, ax, ay, u, d, phase)
+        kept = big.resize((cw, ch), Image.Resampling.LANCZOS)
+    _LAYERS[key] = kept
+    while len(_LAYERS) > LAYER_KEEP:
+        del _LAYERS[next(iter(_LAYERS))]
+    return kept
+
+
+def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
+    """`frame` with the prop drawn on it (under the figure for a bean bag or a mat, over it otherwise)."""
+    from PIL import Image
+
+    name = prop[0]
     spec = next((sp_ for sp_, _a, _w in PROP_ACTS.values() if sp_.prop == name), None) or next((sp_ for sp_, _a in SPELL_ACTS.values() if sp_.prop == name), None) or WIND_SPECS.get(name)
     if spec is None or frame.box[2] <= frame.box[0]:
         return frame
     lx, t, r, b = frame.box
     h = max(1.0, float(b - t))
-    d = -1 if flip else 1
-    k = SIZES[size]
     m = int(h * ROOM)  # the canvas grows so a line, a plant or a sky is never cut at the picture's edge (the window keeps its place)
     cw, ch = frame.width + 2 * m, frame.height + 2 * m
-    layer = Image.new("RGBA", (cw * S, ch * S), (0, 0, 0, 0))
-    g = ImageDraw.Draw(layer)
-    u = h / 100.0 * S * k
-    ax = ((lx + r) / 2.0 + m + d * spec.at[0] * h) * S
-    ay = (t + m + spec.at[1] * h) * S
-    {
-        "book": _book, "beanbag": _beanbag, "rod": _rod, "mat": _mat, "map": _map, "lantern": _lantern,
-        "dumbbell": _dumbbell, "cup": _cup, "journal": _journal, "stars": _stars, "blanket": _blanket, "plant": _plant,
-        "bowl": _bowl, "wand": _wand, "knit": _knit, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
-    }[name](g, ax, ay, u, d, phase)
+    layer = _layer(spec, prop, flip, (frame.width, frame.height, frame.box), m)
     whole = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     whole.paste(Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa"), (m, m))
-    layer = layer.resize((cw, ch), Image.Resampling.LANCZOS)
     if spec.under:
-        layer.alpha_composite(whole)
-        done = layer
+        done = layer.copy()
+        done.alpha_composite(whole)
     else:
         done = whole
         done.alpha_composite(layer)

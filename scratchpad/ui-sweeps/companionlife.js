@@ -6,8 +6,8 @@
 // (drawn ahead in idle time) takes over 4ms, or coming back does not wave.
 const { boot } = require('./lib.js');
 (async () => {
-  const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  const { browser, page } = await boot({ timerFns: true, daytime: true, viewport: { width: 1440, height: 900 } });
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   const fails = [];
@@ -19,20 +19,19 @@ const { boot } = require('./lib.js');
   await page.mouse.click(face[0], face[1]);
   await page.waitForTimeout(200);
   const hello = await expr();
-  // Off it: a pointer left on the face keeps it happy (`nameMarkBuddyHover`) and awake.
-  await page.mouse.move(100, 100);
-  await page.waitForTimeout(3000);
+  // Until the face has wound down (a big face comes down through a smaller one, 1.8s then 2.4s: nameMarkBuddyExpress).
+  const settled = () => page.waitForFunction(() => !nmb.exprTimer, null, { timeout: 9000 });
+  await settled();
   const back = await expr();
   if (hello !== 'happy' || (back !== base && back !== 'calm')) fails.push(`hello: ${hello} then ${back}`);
   // Cues: a saved note, an error, thinking.
   const cue = async (c, from, wait) => { await page.evaluate(([cc, ff]) => { nmb.loudAt = 0; nameMarkBuddyCue(cc, ff); }, [c, from]); await page.waitForTimeout(wait); return expr(); };
   const cheer = await cue('cheer', '', 1700);
   if (cheer !== 'excited') fails.push(`cheer: ${cheer}`);
-  await page.waitForTimeout(2600);
+  await settled();
   const err = await cue('startle', 'error', 1700);
   if (err !== 'surprised') fails.push(`error: ${err}`);
-  // A held face (think, sleepy) waits for the one in progress (`nameMarkBuddyHold`: no express while nmb.exprTimer runs).
-  await page.waitForFunction(() => !nmb.exprTimer, null, { timeout: 8000 });
+  await settled();
   const think = await cue('think', '', 200);
   const rest = await cue('rest', '', 200);
   if (think !== 'serious' || (rest !== base && rest !== 'calm')) fails.push(`think: ${think} then ${rest}`);
@@ -43,15 +42,20 @@ const { boot } = require('./lib.js');
     nmb.loudAt = 0; // the calm budget: the earlier cues spent it
     nmb.awakeUntil = 0; // a click or hover holds it awake, and then no drowsy face is held
     nmb.lastInput = Date.now() - 4 * 60 * 1000;
+    // Four idle minutes ago also means its last poke and reaction are old (a reacting buddy's tick does nothing, and a wave waits out the last loud act).
+    nmb.lastPoke = 0; nmb.reactAt = 0; nmb.loudAt = 0;
     nmb.lastAct = '';
-    // `true`: the tick otherwise waits for a clean frame (INBOX 1667) and has not run when it is read.
-    nmb.sweep.nameMarkBuddyTick(true);
+    // Private to avatars.js (one closure): arm it, and boot's timerFns kept the callback.
+    nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
+    window.__timerFns.nameMarkBuddyTick(true);
     const sleepy = document.getElementById('nm-buddy').dataset.expr || '';
     if (nmb.act) nameMarkBuddyAct('');
+    // The tick itself may have done something loud (and so set the gap a wave waits out).
+    nmb.loudAt = 0;
     nmb.lastInput = Date.now() - 4 * 60 * 1000;
     nmb.loudAt = 0;
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
-    return { sleepy, act: nmb.act, after: document.getElementById('nm-buddy').dataset.expr || '' };
+    return { cls: document.getElementById('nm-buddy').className, sleepy, act: nmb.act, after: document.getElementById('nm-buddy').dataset.expr || '' };
   });
   if (away.sleepy !== 'sleepy' || away.act !== 'wave' || away.after !== 'happy') fails.push(`away: ${JSON.stringify(away)}`);
   await page.waitForTimeout(2500);
@@ -61,7 +65,11 @@ const { boot } = require('./lib.js');
     clearTimeout(nmb.exprTimer);
     nmb.exprTimer = 0;
     nameMarkBuddyExpress('');
-    nmb.sweep.nameMarkBuddyDrift();
+    // nameMarkBuddyDrift is private to avatars.js (one closure): a tick calls it on a roll under 0.35 (and the
+    // remark's roll, under 0.05, comes first), so the roll is held at 0.1 for the one tick.
+    const roll = Math.random;
+    Math.random = () => 0.1;
+    try { window.__timerFns.nameMarkBuddyTick(true); } finally { Math.random = roll; }
     return document.getElementById('nm-buddy').dataset.expr || '';
   });
   if (!drift) fails.push('drift: no change');
@@ -70,7 +78,8 @@ const { boot } = require('./lib.js');
   // a cached picture. A face never drawn (dramatic) is reported, not judged.
   const cost = await page.evaluate(() => {
     const t = (e) => { const a = performance.now(); nameMarkBuddyExpress(e, 0); return performance.now() - a; };
-    const events = nmb.sweep.NMB_EXPR_EVENTS.map(t);
+    // The list is private to avatars.js (its NMB_EXPR_EVENTS), so it is repeated here.
+    const events = ['happy', 'laughing', 'excited', 'surprised', 'serious', 'sleepy', 'unimpressed', 'love', 'dizzy'].map(t);
     t('');
     const fresh = t('dramatic');
     t('');
@@ -84,13 +93,22 @@ const { boot } = require('./lib.js');
   const size = {};
   await page.evaluate(() => {
     const buddy = document.getElementById('nm-buddy');
-    // INBOX 1640: it always ends on a perch and an open-air pin is dropped on refit, so it stands on the bottom bar.
-    const bar = nameMarkBuddyLedges().bottom;
-    nameMarkBuddyMoveTo(buddy, { kind: 'bar', pose: 'stand', x: 700, y: Math.round((bar ? bar.top : innerHeight) - NMB_FEET + 1) }, true);
+    // Where it would land when dropped there: left floating over a page, its own look for controls under it walks it off.
+    nameMarkBuddyIndexReset();
+    nameMarkBuddyMoveTo(buddy, nameMarkBuddyDrop(700, 400), true);
     clearTimeout(nmb.timer);
   });
   await page.waitForTimeout(200);
-  const rect = () => page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return { h: +r.height.toFixed(1), bottom: +r.bottom.toFixed(1), top: +r.top.toFixed(1), right: +r.right.toFixed(1), left: +r.left.toFixed(1) }; });
+  const rect = () => page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); // Its contact line (feet, or seat when it sits): a fraction of the drawn box, so it is the same line at any size.
+    const pose = document.getElementById('nm-buddy').dataset.pose;
+    const line = (pose === 'hang' ? NMB_GRIP : pose === 'float' ? NMB_H / 2 : pose === 'sit' ? NMB_SEAT : NMB_FEET - 1) / NMB_H;
+    return { h: +r.height.toFixed(1), contact: +(r.top + r.height * line).toFixed(1), bottom: +r.bottom.toFixed(1), top: +r.top.toFixed(1), right: +r.right.toFixed(1), left: +r.left.toFixed(1) }; });
+  // A size change is eased: read once the figure has stopped changing (3 reads 80ms apart alike), not at a fixed time.
+  const settledRect = async () => {
+    let last = JSON.stringify(await rect()); let same = 0;
+    for (let i = 0; i < 40 && same < 3; i += 1) { await page.waitForTimeout(80); const now = JSON.stringify(await rect()); same = now === last ? same + 1 : 0; last = now; }
+    return JSON.parse(last);
+  };
   size.medium = await rect();
   // The handle: hidden at rest (the pointer away), shown on hover and on
   // the keyboard's focus.
@@ -109,9 +127,9 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(250);
   await page.evaluate(() => { [...nmb.menu.querySelectorAll('button')].find((b) => /Large/.test(b.textContent)).click(); });
   await page.waitForTimeout(250);
-  size.large = await rect();
+  size.large = await settledRect();
   size.largeSaved = await page.evaluate(() => localStorage.getItem('avatar-buddy-size'));
-  if (Math.abs(size.large.h / size.medium.h - 1.3) > 0.02 || Math.abs(size.large.bottom - size.medium.bottom) > 3.5) fails.push(`size large: ${JSON.stringify(size)}`);
+  if (Math.abs(size.large.h / size.medium.h - 1.3) > 0.02 || Math.abs(size.large.contact - size.medium.contact) > 3.5) fails.push(`size large: ${JSON.stringify(size)}`);
   // The handle, dragged out from its corner.
   await page.mouse.move(size.large.left + 30, size.large.top + 40);
   await page.waitForTimeout(200);
@@ -122,17 +140,17 @@ const { boot } = require('./lib.js');
   for (let i = 1; i <= 6; i += 1) { await page.mouse.move(grip.x + i * 5, grip.y - i * 5); await page.waitForTimeout(16); }
   await page.mouse.up();
   await page.waitForTimeout(200);
-  size.dragged = await rect();
+  size.dragged = await settledRect();
   size.draggedSaved = await page.evaluate(() => localStorage.getItem('avatar-buddy-size'));
   size.gripShown = grip.shown;
   if (grip.shown !== '1') fails.push(`grip on hover: ${grip.shown}`);
   await page.evaluate(() => openSettingsModal('appearance'));
   await page.waitForTimeout(500);
   size.select = await page.evaluate(() => { const s = $('avatar-buddy-size'); return s.options[s.selectedIndex]?.textContent || ''; });
-  await page.evaluate(() => { const s = $('avatar-buddy-size'); s.value = '1'; s.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(async () => { await ensureModule('settingsControls'); const s = $('avatar-buddy-size'); s.value = '1'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(250);
-  size.back = await rect();
+  size.back = await settledRect();
   if (!(Number(size.draggedSaved) > 1.3) || !/As you sized it/.test(size.select) || Math.abs(size.back.h - size.medium.h) > 1) fails.push(`size drag: ${JSON.stringify(size)}`);
   console.log('size', JSON.stringify(size));
   if (process.env.SCRATCH) {

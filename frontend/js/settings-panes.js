@@ -643,11 +643,14 @@ const MIRRORED_PREFS = {
 // stale, and the next `savePrefs` overwrote it from a checkbox nobody had
 // touched. Anything outside the Preferences form should come through here.
 async function setPreference(key, value) {
+  setPreference.started += 1;
   try {
-    prefsCache = await apiJson("/preferences", {
+    const put = apiJson("/preferences", {
       method: "PUT",
       body: JSON.stringify({ [key]: value }),
     });
+    setPreference.last = put;
+    prefsCache = await put;
     for (const id of MIRRORED_PREFS[key] || []) {
       const box = $(id);
       if (box && box.checked !== value) box.checked = value;
@@ -659,6 +662,21 @@ async function setPreference(key, value) {
     toast(error.message || "Couldn't save that setting.", true);
   }
 }
+
+//: Saves begun by `setPreference`, and the last one: a read of /preferences begun before a save
+//: answered with the switch as it was, and the section that opened drew it back (L-general-73,
+//: deepflows settings: "pressing ... did not change it" on `#pref-mcp-writes`).
+setPreference.started = 0;
+setPreference.last = Promise.resolve();
+//: /preferences, asked again (after that save) when a save began while it was being read.
+setPreference.read = async () => {
+  for (let tries = 0; ; tries++) {
+    const at = setPreference.started;
+    const prefs = await apiJson("/preferences");
+    if (at === setPreference.started || tries === 2) return prefs;
+    await setPreference.last.catch(() => {});
+  }
+};
 
 async function savePrefs(options = {}) {
   const quiet = options?.quiet === true;

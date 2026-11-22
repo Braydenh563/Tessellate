@@ -14,6 +14,10 @@ under `src/tessellate/vendor/` or `frontend/vendor/` is missing from this page.
 
 ## Browser (`frontend/vendor/`)
 
+Every file below is listed with its sha256, size, version, upstream and licence
+in `frontend/vendor/PROVENANCE.json`, written from this table by
+`scripts/vendor_provenance.py` (`tests/test_vendor_provenance.py` rechecks the hashes).
+
 | Library | Files | Version | Licence | Source | Used by |
 | --- | --- | --- | --- | --- | --- |
 | CodeMirror 6 | `codemirror/` | packages pinned in `codemirror/package.json` (view 6.x) | MIT (`codemirror/LICENSE`) | https://codemirror.net | the documents editor's source mode |
@@ -32,7 +36,7 @@ under `src/tessellate/vendor/` or `frontend/vendor/` is missing from this page.
 | perfect-freehand | `perfect-freehand/` | 1.2.3 (`perfect-freehand.min.js`, the npm CommonJS build wrapped as a classic script by `build.sh`; `perfect-freehand/VERSION.txt`) | MIT (`perfect-freehand/LICENSE`) | https://github.com/steveruizok/perfect-freehand | the whiteboard's smoothed, pressure-aware pen and marker strokes, loaded with the board scripts |
 | Mammoth | `mammoth/` | 1.13.0 (`mammoth.browser.min.js`) | BSD-2-Clause (`mammoth/LICENSE`) | https://github.com/mwilliamson/mammoth.js | reading a .docx imported into the Library, loaded on demand by `documents-word.js` |
 | docx | `docx/` | 9.10.0 (`dist/index.iife.js` minified) | MIT (`docx/LICENSE`) | https://github.com/dolanmiu/docx | writing a document as .docx (Download as Word), loaded on demand by `documents-word.js` |
-| Spelling second opinion | `spelling/` | nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh` | see `spelling/LICENSE` (section below) | https://github.com/wooorm/nspell | the second opinion on Harper's word lints (INBOX 1731) |
+| Spelling second opinion | `spelling/` | nspell, the en_AU and en_GB-ise Hunspell dictionaries, SCOWL frequency lists; see `spelling/build.sh` | nspell MIT, dictionaries and lists SCOWL (`spelling/LICENSE`, section below) | https://github.com/wooorm/nspell | the second opinion on Harper's word lints (INBOX 1731) |
 | English word list | `wordlist/` | built by `wordlist/build.sh` | the English Speller Database licence (`wordlist/LICENSE`) | https://wordlist.aspell.net | the documents editor's spelling check |
 | Python standard library table | `python-stdlib/` | built by `scripts/gen_python_completions.py` | PSF License Agreement (`python-stdlib/LICENSE`) | https://docs.python.org/3/license.html | a Python document's completions after `module.` and its hover card |
 
@@ -98,11 +102,17 @@ labels engine `sherpa-onnx` (Apache-2.0, on ONNX Runtime, MIT), read by
   under the project's licence. Its original vocabulary is kept in
   `tests/fixtures/taxonomy/original_taxonomy.json`, and its tests in
   `tests/test_taxonomy_pack.py` (WORLD_CLASS_PLAN 23, decision 1).
-- `ai/question_noise.py`'s misspelling table (the block added 2026-10-10)
-  appears to be drawn from Wikipedia's "Lists of common misspellings", which
-  is CC BY-SA 4.0. Its origin is not recorded in the commit that added it;
-  until it is confirmed or replaced, it is credited here as that list.
+- `ai/data/common_misspellings.json`: 3892 misspelling pairs from Wikipedia's
+  "Lists of common misspellings/For machines", by the Wikipedia contributors,
+  CC BY-SA 4.0. Confirmed 2026-11-21 (L-general-25): 3892 of the 3974 pairs
+  added on 2026-10-10 match that page exactly; the other 82 (slang, keyboard
+  slips) stay in `ai/question_noise.py`. Changes: lower-cased, one correction
+  per misspelling, real words and keys with a space left out. CC BY-SA 4.0 is
+  one-way compatible with GPLv3 (Creative Commons' compatibility list), which
+  AGPLv3 section 13 lets this project combine with; the file keeps its own
+  source and licence so it can be replaced alone.
   https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings
+  https://creativecommons.org/licenses/by-sa/4.0/
 
 ## Elsewhere in the repository
 

@@ -32,3 +32,14 @@ def test_the_tab_bar_and_header_floors_are_44_pixels_at_small_text() -> None:
     assert not re.search(r"--target-min: 2\.75rem;", css)
     pad = (CSS_DIR / "sketch-pad.css").read_text(encoding="utf-8")
     assert "--target-min: max(2.75rem, 44px);" in pad and "--target-min: 2.75rem;" not in pad
+
+
+def test_a_mouse_keeps_the_32px_tab_row_in_band_2() -> None:
+    """22.4 shell pass: 1093x614 with a mouse measured a 56px bar against 44 at 1280."""
+    css = (CSS_DIR / "10-responsive.css").read_text(encoding="utf-8")
+    m = re.search(
+        r"@media \(hover: hover\) and \(pointer: fine\) \{\s*"
+        r"#tab-bar \{\s*--target-min: 1\.75rem;\s*\}\s*header#top-bar \{\s*min-height: 0;",
+        css,
+    )
+    assert m, "band 2's mouse override is gone"

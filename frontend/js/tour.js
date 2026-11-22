@@ -274,6 +274,11 @@
           library: "library-view-documents",
           title: "Make something new",
           text: "Create starts a new note, document, board or mind map.",
+          // An empty library hides the dock's Create for its own (library.js
+          // `offerCreate`), so the step was dropped when reached and the count
+          // went from 4 to 3 under the reader (tour.js sweep, fresh notebook).
+          or: "#library-empty-create",
+          orText: "Create, here while the library is empty, starts a new note, document, board or mind map.",
         },
         {
           target: "#library-subtab-docs",
@@ -316,6 +321,10 @@
           tab: "library",
           library: "library-view-whiteboard",
           wb: "board",
+          // The phone's top bar hides this button (07-whiteboard-misc.css,
+          // max-width 599.98px), so the step left the run only when reached
+          // and the count went from 4 to 3 (tour.js sweep at 390).
+          media: "(min-width: 600px)",
           title: "Notes on a board",
           //: The button reads Sidebar now (shapes, icons, frames, notes, layers).
           text: "Sidebar opens your notes beside the board, so you can drag any note on as a card.",

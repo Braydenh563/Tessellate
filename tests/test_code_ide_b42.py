@@ -90,9 +90,11 @@ def test_the_ide_file_is_lazy_and_mounted_from_the_code_tools() -> None:
 
 def test_the_ide_file_waits_for_documents_js_before_it_is_fetched() -> None:
     """The idle warm-up loads the bundle a file at a time, so a fetch started as documents-view.js runs executed
-    documents-ide.js before documents.js defined `docToolPref` (found driving the attach-to path, dec-1111-d2)."""
+    documents-ide.js before documents.js defined `docToolPref` (found driving the attach-to path, dec-1111-d2).
+    It waits for the whole Library bundle, documents.js included: fetching documents.js alone from here ran it before
+    documents-surface.js had exported `setDocView` (2026-11-22)."""
     view = (JS / "documents-view.js").read_text(encoding="utf-8")
-    assert 'lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js"))' in view
+    assert 'ensureModule("library").then(() => lazyScript("/js/documents-ide.js"))' in view
     assert not re.search(r'^lazyScript\("/js/documents-ide\.js"\)', view, re.M), "a bare top-level fetch races documents.js"
 
 

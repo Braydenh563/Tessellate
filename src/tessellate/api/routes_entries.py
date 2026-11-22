@@ -137,6 +137,7 @@ def _to_out(
         getattr(entry, "source_url", None),
         getattr(entry, "source_path", None),
         bool(provenance.transcribed_ids(session, [entry.id])) if transcribed is None and entry.id else bool(transcribed),
+        provenance.origin_label(session, getattr(entry, "origin_document_id", None)),
     )
     return EntryOut(
         id=entry.id,
@@ -2996,6 +2997,8 @@ def extract_commit(body: ExtractCommitBody, session: Session = Depends(get_sessi
         if document is not None:
             for entry in created:
                 manager.link_document(session, document.id, entry.id)
+                entry.origin_document_id = document.id
+            session.commit()
 
     links_created = 0
     for link in body.links:

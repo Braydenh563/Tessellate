@@ -273,22 +273,27 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }
   option.addEventListener("click", () => setActiveSpace(id));
   row.appendChild(option);
 
+  //: Every space exports itself (WORLD_CLASS_PLAN 27.1, Spaces), the default one too.
+  const tools = [["ph-export", `Export ${name} as a notebook folder`, () => exportSpace(id, name)]];
   if (deletable) {
-    const actions = document.createElement("span");
-    actions.className = "space-option-actions";
-    actions.setAttribute("role", "none");
     //: Hide from All spaces (the glyph carries the state, the title says what
     //: pressing does), rename, delete, each naming its space (audit 1030 Y4).
-    //: They close the menu before they run.
-    for (const [glyphName, title, run] of [
+    tools.unshift(
       [
         hiddenFromAll ? "ph-eye-slash" : "ph-eye",
         hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", id)],
-      ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
-    ]) {
+      ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", id)]
+    );
+    tools.push(["ph-trash", `Delete ${name}`, () => rmSpace(id)]);
+  }
+  if (id !== SPACE_ALL) {
+    const actions = document.createElement("span");
+    actions.className = "space-option-actions";
+    actions.setAttribute("role", "none");
+    //: They close the menu before they run.
+    for (const [glyphName, title, run] of tools) {
       const action = document.createElement("button");
       action.type = "button";
       action.className = "ghost small";

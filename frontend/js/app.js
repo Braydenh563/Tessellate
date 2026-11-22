@@ -1869,7 +1869,7 @@ const LAZY_ENTRY_POINTS = {
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],
   //: Opened, asked or drawn for their effect; `openHelpChat`'s close is read by no caller.
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
-  batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace"],
+  batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace", "exportSpace"],
   notifications: ["openNotifications"],
   webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng"],
   sharedIntake: ["takeSharedIntake"],

@@ -1318,6 +1318,7 @@ button.outline-twist {
 }
 
 #wb-html-layer > .wb-culled,
+.wb-map-drag-layer > .wb-culled,
 [data-wb-layer="wb-html-layer"] > .wb-culled {
   content-visibility: hidden;
 }
@@ -2645,7 +2646,8 @@ body.printing-doc #doc-preview p,
   pointer-events: none;
 }
 
-.wb-map-edges > .wb-culled {
+.wb-map-edges > .wb-culled,
+.wb-map-drag-edges > .wb-culled {
   display: none;
 }
 
@@ -3071,6 +3073,30 @@ body.printing-doc #doc-preview p,
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+/* A group is one block: its head and its rows stay together. Where the window
+   is wide the dialog widens and the groups run in two columns, which takes the
+   look dialog from 1002px to under the 900px window's card (maptheme.js),
+   from the 820px breakpoint up. */
+.wb-map-theme-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  break-inside: avoid;
+}
+.wb-map-theme-group .setting-subhead {
+  margin: 0 0 var(--space-1);
+}
+@media (min-width: 820px) {
+  .wb-info-card:has(.wb-map-theme-group) {
+    width: min(46rem, calc(100vw - var(--space-8) * 2));
+  }
+  .wb-map-theme-rows:has(> .wb-map-theme-group) {
+    display: block;
+    column-count: 2;
+    column-gap: var(--space-6);
+  }
 }
 .wb-map-theme-row > select {
   width: min(11rem, 45vw);
@@ -5783,7 +5809,8 @@ button.ghost.doc-template-choice.wb-template-choice {
 }
 
 .split-button .split-button-caret {
-  width: calc(var(--control-h) - 4px);
+  /* The touch floor where the control is shorter than a finger (iconfloor.js: 36 wide at 1024 touch); a mouse's 28 is the floor already. */
+  width: max(calc(var(--control-h) - 4px), var(--target-min));
   padding-inline: 0;
   border-start-start-radius: 0;
   border-end-start-radius: 0;
@@ -8307,9 +8334,11 @@ input[type="color"].wb-mixed {
 /* --- moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule
    still names (a boot override would lose to a rule that loads after it). The workspace opens from the Library bundle (library.js `openOcrWorkspace`). --- */
 
-.ocr-card {
+.ocr-card:not(.sheet-card-page) {
   width: min(96vw, 1500px);
   height: min(92vh, 1000px);
+}
+.ocr-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -8352,9 +8381,11 @@ input[type="color"].wb-mixed {
 .ocr-box-heading {
   border-style: dashed;
 }
+/* A floor of the column's own height: the caption and the other readings
+   above crushed it to 0px at 1366x768 (L806); past it the column scrolls. */
 .ocr-region-list {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 40%;
   overflow-y: auto;
   list-style: none;
   margin: 0;
@@ -8862,6 +8893,11 @@ input[type="color"].wb-mixed {
   #doc-code-format > .toolbar-word {
     display: none;
   }
+  /* Back is its arrow: a square at the target floor (iconfloor, 1024 touch: 32x44). */
+  .doc-dock-identity > .doc-back {
+    min-width: var(--target-min);
+    justify-content: center;
+  }
   #tab-documents .doc-dock > .doc-dock-identity {
     flex-basis: 8rem;
     min-width: 0;
@@ -9270,6 +9306,13 @@ input[type="color"].wb-mixed {
   align-items: center;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+}
+/* The field inside it sizes to its text (`field-sizing: content`), so "85%"
+   to "100%" resized the dock, and the dock's width is published on the board's
+   section (`--wb-w-zoom`): every element under it restyled, 250 to 400ms at
+   500 topics, on the zoom step that crossed it (L-mindmap-17). */
+.whiteboard-floating-panel .wb-zoom-level .value-field-input {
+  min-width: 5ch;
 }
 
 /* Reading progress: in the Read view a hairline along the top edge of the
@@ -11114,6 +11157,38 @@ input[type="color"].wb-mixed {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+/* A dragged branch, carried as one (`wbMapDragLayer.open`, L-mindmap-17): at
+   the layer's own origin, so its topics' transforms mean what they meant. */
+.wb-map-drag-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.wb-map-drag-layer > .wb-object {
+  contain-intrinsic-size: auto 250px auto 44px;
+}
+
+/* The goal and findings labels give way before the type picker does
+   (L-general-43: mono at 390 needed 373px of 330); the titles say the rest. */
+#doc-word-goal,
+#doc-prose {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+#doc-goal-label,
+#doc-prose-count {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Rows are 36px with their own inset, so the 4px between them was 40px a row:
+   eleven rows came to 452px, two over the 450px ceiling. */
+.wb-menu-two-col .wb-menu-section {
+  gap: 0;
 }
 
 /* A synced block reads as a copy: the text is the way in (documents-embeds.js), and the marker in the block's own document (documents-cm.js). */

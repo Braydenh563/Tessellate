@@ -25,10 +25,10 @@ def _block(source: str, start_marker: str, end_marker: str) -> str:
 def _tool_keys() -> dict[str, str]:
     """tool -> the key text the board's own key table binds it to."""
     keys = {}
-    table = _block(WB, "const WB_TOOL_KEYS = {", "\n  };")
+    table = _block(WB, "WB_TOOL_KEYS = {", "\n  };")
     for letter, tool in re.findall(r'^\s{4}(\w): "([\w-]+)",', table, re.M):
         keys.setdefault(tool, letter.upper())
-    shifted = _block(WB, "const WB_TOOL_SHIFT_KEYS = {", "\n  };")
+    shifted = _block(WB, "WB_TOOL_SHIFT_KEYS = {", "\n  };")
     for letter, tool in re.findall(r'^\s{4}(\w): "([\w-]+)",', shifted, re.M):
         keys[tool] = "Shift+" + letter.upper()
     keys["image"] = "I"  # WB_ACTION_KEYS: the picture button

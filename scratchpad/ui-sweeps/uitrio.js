@@ -21,7 +21,7 @@
 //   BASE=http://127.0.0.1:8806 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     NODE_PATH=/opt/node22/lib/node_modules SCRATCH=/tmp/mm-uitrio \
 //     timeout 115 node scratchpad/ui-sweeps/uitrio.js
-const { boot } = require('./lib.js');
+const { boot, seedLibtextIfEmpty } = require('./lib.js');
 
 let failures = 0;
 const check = (label, ok, detail) => {
@@ -224,6 +224,8 @@ async function statusBar(page) {
   const out = {};
   for (const width of widths) {
     const { browser, page } = await boot({ viewport: { width, height: width === 390 ? 844 : 950 } });
+    // Seeded here, on a fresh data dir, so the Files half has a reading to measure (lib.js).
+    await seedLibtextIfEmpty(page);
 
     console.log(`\n=== ${width} ===`);
     const files = await filesBox(page, width);
@@ -288,35 +290,37 @@ async function statusBar(page) {
   const fp = out.files390;
   check(
     '289: the same box on a phone is not taller than half the screen',
-    fp.missing || fp.boxH < fp.viewportH / 2,
+    fp.missing || fp.boxH <= fp.viewportH / 2,
     `${fp.boxH}px of ${fp.viewportH}`
   );
 
-  // 296: the three levels read as one sequence, smallest hero at the level that
-  // shows least, and focused still carries the identity and one way in.
+  // 296: the levels. What the owner decided since the report (07-whiteboard-misc.css, the
+  // focused head): INBOX 425 "Two rows again ... Do not remake the one-row head", and INBOX 675
+  // "The Focused hero is a hero again" (a two-column banner with today's glance), so focused is
+  // the TALLEST banner, and its search doorway is a full-width band beneath it, not a row beside it.
+  // What stays asserted: full is taller than compact, focused keeps the identity and the one
+  // number, and the doorway is its own band under the banner, one step apart.
   const [full, compact, focused] = [out['hero-full'], out['hero-compact'], out['hero-focused']];
   check(
-    '296: the heroes shrink with the level',
-    full.hero > compact.hero && compact.hero > focused.hero,
-    `${full.hero} / ${compact.hero} / ${focused.hero}`
+    '296: compact is a shorter banner than full',
+    full.hero > compact.hero,
+    `${full.hero} / ${compact.hero}`
   );
   check(
     '296: focused keeps the greeting and the one number',
     focused.bands.greeting !== 'off' && focused.bands.submessage !== 'off',
     JSON.stringify(focused.bands)
   );
-  // The judgement this report turns on: focused is "the one thing you came here
-  // for", so the head at that level has to *carry* that one thing rather than
-  // stack a thinner banner above it.
   check(
-    '296: focused puts the banner and the search doorway on one row',
-    focused.oneRow === true,
+    '296: focused puts the search doorway on its own band under the banner',
+    focused.oneRow === false,
     `one row ${focused.oneRow}, head ${focused.head}px`
   );
+  const gap = Math.round((focused.head - focused.hero - focused.findH) * 10) / 10;
   check(
-    '296: and the two read as one row, same height and same corner',
-    Math.abs(focused.hero - focused.findH) < 1.5 && focused.heroRadius === focused.findRadius,
-    `${focused.hero} / ${focused.findH}px, ${focused.heroRadius} / ${focused.findRadius}`
+    '296: and the two bands are one step apart, not touching and not far',
+    gap > 0 && gap <= 24,
+    `${gap}px between the banner and the doorway`
   );
   check(
     '296: full and compact keep the banner and the doorway as two bands',

@@ -571,5 +571,7 @@
   const docFactsPending = () => docFactsStale;
 
   //: The file's surface: what other files call.
+  //: The sweep doctoolbarstate asks what the caret is inside for marks with no button (Heading, Quote).
+  renderDocStatusBar.marksAt = docToolbarMarksAt;
   Object.assign(window, { syncDocScroll, wireDocSurfaceScroll, wireDocScrollSync, docFactsPending, docSetStatusText, renderDocCaret, DOC_COUNTS_TITLE_PROSE, renderDocCounts, renderDocStatusBar, runDocFacts, scheduleDocFacts });
 })();

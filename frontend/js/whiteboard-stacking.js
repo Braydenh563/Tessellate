@@ -500,10 +500,14 @@
       } else {
         entry.item.x = entry.x + dx;
         entry.item.y = entry.y + dy;
+        //: A branch in its layer moves as one (`wbMapDragLayer.open`): the data
+        //: moves, the elements are carried.
+        if (origin.layer) continue;
         const el = wbBulkMoveElement(entry, WB_SELECTOR_BY_KIND[entry.kind](entry.id));
         if (el) el.style.transform = wbItemTransform(entry.item);
       }
     }
+    if (origin.layer) wbMapDragLayer.move(origin.layer, dx, dy);
     //: **Every line after every move, never between them.** The lines were
     //: redrawn inside the loop above, member by member, and a tree line is
     //: claimed by whichever of its two ends the capture reached first

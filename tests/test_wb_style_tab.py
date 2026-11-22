@@ -50,7 +50,7 @@ def test_the_panel_reads_and_writes_them():
 def test_the_renderer_draws_them():
     assert "function wbRoundedPathD" in WB
     assert "function wbDashPatternOf" in WB
-    assert "wbRoundedPathD(" in WB[WB.index("sketchUpdate.each(function(d)"):]
+    assert "wbRoundedPathD(" in WB[WB.index("renderWhiteboard.parts.wbSketchLook ="):]
     assert 'classed("wb-flow"' in WB
     assert "function wbSetFlowAnimation" in WB
     # A Web Animation on the path: paint only (dash offset), held still under both motion switches.

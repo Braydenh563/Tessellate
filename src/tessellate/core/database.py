@@ -199,7 +199,7 @@ def workspace_scoped_models() -> tuple[type, ...]:
 
 @event.listens_for(Session, "do_orm_execute")
 def _add_workspace_filter(execute_state):
-    # Organisation, not a boundary (docs/SECURITY.md, audit 1028 K16): this narrows
+    # Organisation, not a boundary (SECURITY.md, audit 1028 K16): this narrows
     # ORM selects to the space the request's X-Workspace-ID names; a `session.get`
     # identity hit or a raw `text()` statement is not narrowed, and the header is
     # the caller's own. A feature that needs a space to be private has to enforce it.
@@ -751,6 +751,12 @@ class Entry(Base, WorkspaceMixin):
     #: with no upside. A scalar `""` default so the additive auto-migrator
     #: backfills existing rows: "written here", which is what they all are.
     source_path: Mapped[str] = mapped_column(String(500), default="")
+    #: The document a note was extracted from (`/extract/commit`), for the
+    #: provenance chip (L-general-42). Not `source_path`: that marks the text as
+    #: outside for the injection guard, and the person's own document is not.
+    #: Nullable and additive, a plain integer so a deleted document leaves the
+    #: note intact (the chip then says "a document").
+    origin_document_id: Mapped[int | None] = mapped_column(default=None)
     # ROADMAP §87.1's own audit: "double-click pin exists but is never
     # persisted", a node held in place with a double-click on the Graph
     # tab (`d.fx`/`d.fy` in graph.js) only ever lived on the in-memory D3

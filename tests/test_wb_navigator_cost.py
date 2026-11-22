@@ -79,7 +79,8 @@ def test_frame_reads_the_canvas_size_before_it_writes() -> None:
     read = frame.index("clientWidth")
     for write in ("wbSyncGridToTransform(", "wbCullNow(", "wbNavigatorUpdateViewport("):
         assert read < frame.index(write), f"{write} runs before the size read"
-    assert "wbCullNow(t, size)" in frame
+    # L-mindmap-17: a zoom step also says it is scaling, so the cull can skip ground it already drew.
+    assert "wbCullNow(t, size, scaling)" in frame
     assert "wbNavigatorUpdateViewport(t, size)" in frame
 
 

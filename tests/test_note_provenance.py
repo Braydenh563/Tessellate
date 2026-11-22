@@ -60,3 +60,37 @@ def test_entries_carry_their_kind_in_a_list_and_alone(client, session) -> None:
     assert alone["source_label"] == "Transcribed from audio"
     by_hand = client.get(f"/entries/{typed}").json()
     assert by_hand["source_kind"] == ""
+
+
+def test_extracted_note_says_which_document_and_survives_its_deletion(client, session) -> None:
+    from tessellate.core.database import Document
+
+    doc = Document(title="Q3 plan", content="Body")
+    session.add(doc)
+    session.commit()
+    body = {"notes": [{"ref": "a", "content": "One idea from the plan"}], "source_document_id": doc.id}
+    made = client.post("/entries/extract/commit", json=body)
+    assert made.status_code == 201, made.text
+    note = made.json()["notes"][0]
+    assert (note["source_kind"], note["source_label"]) == ("document", "Extracted from Q3 plan")
+    stored = session.get(Entry, note["id"])
+    assert stored.origin_document_id == doc.id
+    assert not stored.source_path  # never the injection guard's marker
+
+    binned = client.delete(f"/documents/{doc.id}")
+    assert binned.status_code == 200
+    purged = client.delete(f"/documents/{doc.id}/purge")
+    assert purged.status_code == 200
+    session.expire_all()
+    again = client.get(f"/entries/{note['id']}").json()
+    assert (again["source_kind"], again["source_label"]) == ("document", "Extracted from a document")
+
+
+def test_meeting_notes_are_audio_only_when_a_recording_was_transcribed(client, session) -> None:
+    typed = client.post("/meetings", json={"title": "Weekly sync", "notes": "Talked"}).json()
+    assert typed["source_kind"] == ""
+    segments = json.dumps([{"start": 0, "end": 900, "text": "hi", "speaker": ""}])
+    session.add(Recording(entry_id=typed["id"], segments=segments, state="done"))
+    session.commit()
+    heard = client.get(f"/entries/{typed['id']}").json()
+    assert heard["source_kind"] == "audio"

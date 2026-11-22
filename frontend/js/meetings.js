@@ -2644,7 +2644,8 @@
   function micControlsInto(host) {
     host.replaceChildren();
     host.classList.add("mic-controls");
-    const id = `mic-device-${host.id || Math.random().toString(36).slice(2, 7)}`;
+    const tag = host.id || Math.random().toString(36).slice(2, 7);
+    const id = `mic-device-${tag}`;
     const select = document.createElement("select");
     select.id = id;
     select.className = "mic-device";
@@ -2667,6 +2668,8 @@
       const box = document.createElement("input");
       box.type = "checkbox";
       box.dataset.micPref = key;
+      //: An id of its own, per host: found again as itself, not as the n-th checkbox (L-general-74).
+      box.id = `mic-${tag}-${key}`;
       box.checked = prefs.bool(key, fallback);
       box.addEventListener("change", () => {
         prefs.set(key, box.checked ? "1" : "0");

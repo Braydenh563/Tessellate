@@ -35,7 +35,7 @@ def test_l299_console_line_and_assistant_share_one_height():
 def test_l306_documents_view_reads_doccmview_only_after_it_exists():
     view = _read("frontend", "js", "documents-view.js")
     assert 'typeof docCmView !== "undefined" && docCmView' in view
-    assert 'lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js"))' in view
+    assert 'ensureModule("library").then(() => lazyScript("/js/documents-ide.js"))' in view
 
 
 def test_l340_link_offer_ignores_are_kept_on_the_notebook():

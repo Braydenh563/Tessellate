@@ -116,7 +116,7 @@ def test_a_message_time_reads_by_how_far_back_it_is():
 
 
 def test_the_page_stamps_bubbles_and_the_sessions_list_reads_the_last_message():
-    boot = "".join((ROOT / "frontend/js" / f).read_text(encoding="utf-8") for f in ("chat-agent.js", "sheets-selects.js"))
+    boot = "".join((ROOT / "frontend/js" / f).read_text(encoding="utf-8") for f in ("chat-agent.js", "chat-list.js"))
     assert 'lazyScript("/js/chat-time.js")' in boot
     assert "stampChatTimes(full.messages)" in boot
     assert "relativeTime(conversation.last_at)" in boot

@@ -87,8 +87,7 @@ const WB_MAP_ICONS = {
 //: `MAP_ROW`/`MAP_COL` from routes_whiteboard.py: those are where the server
 //: drops a node when nobody said, which only has to be "not on top of its
 //: parent"; a tidy layout measures real node sizes and needs only the gap.
-const WB_MAP_GAP_BREADTH_BASE = 26;
-const WB_MAP_GAP_DEPTH_BASE = 76;
+const WB_MAP_GAP_BASE = Object.freeze({ breadth: 26, depth: 76 });
 //: **The map's spacing** (theme `spacing`; the owner, 2026-10-10: "the
 //: spacing is really close to the other things and bunched up"): Compact,
 //: normal (no value) or Roomy, the tidy's two gaps scaled. Read as two
@@ -98,10 +97,10 @@ function wbMapSpacing() {
   return (wbIsMap() && WB_MAP_SPACING[wbMapTheme().spacing]) || 1;
 }
 function wbMapGapBreadth() {
-  return Math.round(WB_MAP_GAP_BREADTH_BASE * wbMapSpacing());
+  return Math.round(WB_MAP_GAP_BASE.breadth * wbMapSpacing());
 }
 function wbMapGapDepth() {
-  return Math.round(WB_MAP_GAP_DEPTH_BASE * wbMapSpacing());
+  return Math.round(WB_MAP_GAP_BASE.depth * wbMapSpacing());
 }
 
 //: A node's size when it is not in the DOM, collapsed away, or being laid
@@ -460,8 +459,7 @@ let wbMapFocusState = null;
 
 //: How far focus reaches by default. One step shows the node, its parent and
 //: its children, which is the smallest view that still says where you are.
-const WB_MAP_FOCUS_DEFAULT_DEPTH = 1;
-const WB_MAP_FOCUS_MAX_DEPTH = 6;
+const WB_MAP_FOCUS_DEPTH = Object.freeze({ initial: 1, max: 6 });
 
 //: Everything focus is hiding: every node more than `depth` steps from the
 //: focused one, counting parents, children *and* cross-links.
@@ -528,10 +526,10 @@ function wbMapConcealed(index) {
   return concealed;
 }
 
-function wbMapSetFocus(id, depth = WB_MAP_FOCUS_DEFAULT_DEPTH) {
+function wbMapSetFocus(id, depth = WB_MAP_FOCUS_DEPTH.initial) {
   const index = wbMapIndex();
   if (!index.byId.has(id)) return;
-  wbMapFocusState = { id, depth: Math.max(1, Math.min(WB_MAP_FOCUS_MAX_DEPTH, depth)) };
+  wbMapFocusState = { id, depth: Math.max(1, Math.min(WB_MAP_FOCUS_DEPTH.max, depth)) };
   wbSyncMapFocusChrome();
   renderWhiteboardNow();
 }
@@ -834,14 +832,18 @@ function wbMapThemeDialog() {
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
   const out = [];
-  for (const group of WB_MAP_THEME_GROUPS) {
+  for (const def of WB_MAP_THEME_GROUPS) {
+    //: One block per group, so a wide dialog can run the groups in two columns without cutting one in half.
+    const group = document.createElement("div");
+    group.className = "wb-map-theme-group";
     const head = document.createElement("h4");
     head.className = "setting-subhead";
-    head.textContent = group.label;
-    out.push(head);
-    for (const field of group.fields) {
-      out.push(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
+    head.textContent = def.label;
+    group.appendChild(head);
+    for (const field of def.fields) {
+      group.appendChild(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
     }
+    out.push(group);
   }
   return out;
 }
@@ -2003,8 +2005,247 @@ function wbMapBranchDragOrigin(d, alone) {
   const keys = wbMapSubtree(index, d.id)
     .filter((o) => o.id !== d.id)
     .map((o) => wbMultiKey("object", o.id));
-  return keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+  const origin = keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+  if (origin) origin.branchOf = d.id;
+  return origin;
 }
+
+//: **A dragged branch is one layer** (L-mindmap-17). Every topic of it moved
+//: by its own transform and every line inside it was rebuilt each step
+//: (`wbMapRibbonD`, 27ms a step at 200 topics), though the whole branch moves
+//: by one delta: measured by mapperf.js, 92ms of main-thread CPU a step at 200
+//: topics against a 17ms budget. So the topics go into one element and the
+//: lines with both ends in the branch into one SVG group, each carrying the
+//: drag's translate, and a link with both ends inside is translated too. What
+//: is still drawn per step is what crosses the branch's edge: the grabbed
+//: topic's line up to its parent, and links to topics outside.
+//:
+//: The layer is undone by `wbMapDragLayer.close` at the drop and before any
+//: render, so nothing else ever sees a topic outside `#wb-html-layer`'s own
+//: children for longer than a gesture.
+//:
+//: **The smaller side is the one moved** (L-mindmap-18). Moving an element
+//: restyles it and everything in it, about 50us an element on this app's
+//: stylesheet, so lifting a 500-topic branch into the layer cost 200 to 350ms
+//: on the first step (mapperf.js, CDP ThreadTime). When the branch is most
+//: of the board it stays put: the board layer and the edge group carry the
+//: drag's translate, and the topics and lines outside the branch go into a
+//: layer that carries the opposite one. Whatever else the board layer holds
+//: (pins, an editor) is held still by its own `translate`, so it is never
+//: moved. The mid-line `+` layer rides with the branch: its buttons are
+//: invisible until hovered and the drop's render places them again, and a
+//: translate on it re-layerized its thousand buttons, 20 to 34ms a step.
+//: Below `stayAt` members either side costs a few milliseconds, and lifting
+//: keeps the branch above every topic it passes.
+//: One shared name for the three steps (the global-scope ratchet).
+const wbMapDragLayer = {
+  live: null,
+  stayAt: 32,
+
+  open(origin, d, grabbedEl) {
+    const html = wbInstances.query("#wb-html-layer");
+    const edgeGroup = wbInstances.query("#wb-zoom-group .wb-map-edges");
+    if (!origin || origin.layer || !html || !edgeGroup || !grabbedEl) return null;
+    const ids = new Set([d.id]);
+    for (const entry of origin.values()) if (entry.kind === "object") ids.add(entry.id);
+    const inside = (edge) => ids.has(edge.parent.id) && ids.has(edge.child.id);
+    const ends = (parsed) => (parsed.sourceKind === "object" && ids.has(parsed.sourceId)) && (parsed.targetKind === "object" && ids.has(parsed.targetId));
+    //: The members in the order the layer holds them, so they go back in it.
+    const itemOf = new Map([[grabbedEl, d]]);
+    for (const entry of origin.values()) if (entry.el) itemOf.set(entry.el, entry.item);
+    const all = [...html.children];
+    const els = all.filter((el) => itemOf.has(el));
+    const stay = els.length >= wbMapDragLayer.stayAt && all.length - els.length < els.length;
+    const el = document.createElement("div");
+    el.setAttribute("class", "wb-map-drag-layer");
+    const edges = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    edges.setAttribute("class", "wb-map-drag-edges");
+    const item = (child) => child.classList.contains("wb-object") || child.classList.contains("wb-card");
+    const carried = stay ? all.filter((child) => !itemOf.has(child) && item(child)) : els;
+    const home = carried.map((member) => [member, member.nextSibling, itemOf.get(member)]);
+    //: Above every topic it passes, as the one grabbed topic was by its raise:
+    //: the ranks are inline (`stackRank`), so this reads no layout. Staying,
+    //: the still layer goes first at rank 0, under every member.
+    el.style.zIndex = stay ? "0" : String(Math.max(0, ...all.map((child) => Number(child.style.zIndex) || 0)) + 1);
+    for (const member of carried) el.appendChild(member);
+    html.insertBefore(el, stay ? html.firstChild : null);
+    //: Each line and link once, however many members listed it.
+    const innerEdges = new Map();
+    const innerLinks = new Map();
+    const sort = (list, keep) => list.filter((item) => {
+      if (item.parent ? !inside(item) : !ends(item.parsed)) return true;
+      if (item.parent) innerEdges.set(item.el, item);
+      else innerLinks.set(item.sketch.id, item);
+      return keep;
+    });
+    d._mapEdges = sort(d._mapEdges || [], false);
+    d._linkedSketches = sort(d._linkedSketches || [], false);
+    for (const entry of origin.values()) {
+      if (entry.mapEdges) entry.mapEdges = sort(entry.mapEdges, false);
+      if (entry.linked) entry.linked = sort(entry.linked, false);
+    }
+    const innerWraps = new Set([...innerEdges.values()].map((edge) => edge.el.parentNode).filter(Boolean));
+    const wraps = stay ? [...edgeGroup.children].filter((wrap) => !innerWraps.has(wrap)) : [...innerWraps];
+    for (const wrap of wraps) edges.appendChild(wrap);
+    edgeGroup.appendChild(edges);
+    //: A link's group, found once (the same lookup `wbUpdateLinkedSketches`
+    //: keeps), in one pass over the groups: a query per link was a walk of
+    //: the document each, 300 of them for a branch carrying 300 links.
+    const links = [...innerLinks.values()];
+    const groups = new Map();
+    if (links.some((pair) => !pair.el?.isConnected)) {
+      for (const group of wbInstances.queryAll(".sketch-group[data-id]")) if (!groups.has(group.dataset.id)) groups.set(group.dataset.id, group);
+    }
+    for (const pair of links) if (!pair.el?.isConnected) pair.el = groups.get(String(pair.sketch.id)) || null;
+    //: The branch's sizes as the pick-up measured them: a move resizes no
+    //: topic, and the pointerup empties the cache before the drop draws the
+    //: inside lines, which then measured every topic again (a query and a
+    //: forced layout each, 30 to 57ms of a 50-topic drop).
+    const sizes = new Map();
+    for (const id of ids) {
+      const size = wbMapNodeSizeCache?.get(id);
+      if (size) sizes.set(id, size);
+    }
+    origin.layer = {
+      el, edges, home, innerEdges: [...innerEdges.values()], links, grabbed: d, sizes,
+      stay: stay ? {
+        html, edgeGroup, members: els.map((member) => [member, itemOf.get(member)]),
+        fixed: all.filter((child) => !itemOf.has(child) && !item(child) && !child.classList.contains("wb-map-plus-layer")),
+      } : null,
+    };
+    wbMapDragLayer.live = origin;
+    return origin.layer;
+  },
+
+  //: One step of the drag: a few writes, whatever the branch's size.
+  move(layer, dx, dy) {
+    const sign = layer.stay ? -1 : 1;
+    layer.dx = dx;
+    layer.dy = dy;
+    layer.el.style.transform = `translate(${sign * dx}px, ${sign * dy}px)`;
+    layer.edges.setAttribute("transform", `translate(${sign * dx} ${sign * dy})`);
+    if (layer.stay) {
+      //: The board layer's own transform is the zoom's, so the drag rides on
+      //: the separate `translate` property, which applies outside it: in
+      //: screen pixels, so scaled by the zoom.
+      const k = d3.zoomTransform(wbInstances.container()).k || 1;
+      layer.stay.html.style.translate = `${dx * k}px ${dy * k}px`;
+      layer.stay.edgeGroup.setAttribute("transform", `translate(${dx} ${dy})`);
+      for (const still of layer.stay.fixed) still.style.translate = `${-dx}px ${-dy}px`;
+    }
+    for (const pair of layer.links) pair.el?.setAttribute("transform", `translate(${dx} ${dy})`);
+  },
+
+  //: Whether a topic is outside the cull's ground both where it is and `dx, dy` back.
+  offScreenBoth(item, dx, dy) {
+    const w = item.width || WB_CARD_DEFAULT_SIZE.w;
+    const h = item.height || WB_CARD_DEFAULT_SIZE.h;
+    return wbCullNow.outside(wbCullNow.drawn, item.x, item.y, w, h) && wbCullNow.outside(wbCullNow.drawn, item.x - dx, item.y - dy, w, h);
+  },
+
+  //: Let go (or a render is about to run): every topic back where it was in
+  //: the layer, carrying its own transform at its new place, and every inside
+  //: line and link drawn once there, untranslated.
+  close(origin = wbMapDragLayer.live) {
+    const layer = origin?.layer;
+    if (wbMapDragLayer.live === origin) wbMapDragLayer.live = null;
+    if (!layer) return;
+    origin.layer = null;
+    const html = layer.el.parentNode;
+    if (layer.stay) {
+      layer.stay.html.style.translate = "";
+      layer.stay.edgeGroup.removeAttribute("transform");
+      for (const still of layer.stay.fixed) still.style.translate = "";
+      for (const [member, item] of layer.stay.members) {
+        //: **A topic off screen where it was and where it lands stays put until the cull shows it**
+        //: (mapperf 500: writing all 499 transforms restyled every topic, 75ms of the drop's
+        //: frame). It is hidden (`wb-culled`) and nowhere on screen either way; the cull places
+        //: it as it comes on (`_wbPlaceLater`), and a render places every topic anyway.
+        if (member.classList.contains("wb-culled") && wbMapDragLayer.offScreenBoth(item, layer.dx || 0, layer.dy || 0)) {
+          member._wbPlaceLater = true;
+          continue;
+        }
+        member.style.transform = wbItemTransform(item);
+      }
+    }
+    for (let i = layer.home.length - 1; i >= 0; i -= 1) {
+      const [member, next, item] = layer.home[i];
+      if (!layer.stay) member.style.transform = wbItemTransform(item);
+      if (html) html.insertBefore(member, next && next.parentNode === html ? next : null);
+    }
+    layer.el.remove();
+    const edgeGroup = layer.edges.parentNode;
+    for (const wrap of [...layer.edges.children]) edgeGroup?.appendChild(wrap);
+    layer.edges.remove();
+    if (layer.sizes.size) {
+      if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
+      for (const [id, size] of layer.sizes) if (!wbMapNodeSizeCache.has(id)) wbMapNodeSizeCache.set(id, size);
+    }
+    if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges, { onScreen: true });
+    const redraw = wbMapDragLayer.holdLinks(layer);
+    for (const pair of redraw) pair.el?.removeAttribute("transform");
+    if (redraw.length) wbUpdateLinkedSketches(layer.grabbed.id, redraw);
+  },
+
+  //: **A link the whole drop carried keeps its translate** (L-mindmap-25: redrawing the 300 links
+  //: inside a 500-topic branch was 45 to 80ms of its drop frame, mapperf). Both its ends moved by
+  //: the drop's one delta, so the line it would be drawn as is the one it shows, moved by that
+  //: delta: a map cross-link's drawing reads only its two ends' boxes, and a whole-tenth delta
+  //: moves every number its ribbon prints by exactly that much. Bent, waypointed or carrying a
+  //: connector's end, or a delta off the tenth, it is drawn now. A held link is drawn from its data
+  //: when the page is next idle, by the next writer of its path (`wbUpdateLinkedSketches`, a
+  //: render), or before anything reads it (a press, a key, the export). Returns the ones to draw.
+  held: new Map(),
+  holdLinks(layer) {
+    const dx = layer.dx || 0;
+    const dy = layer.dy || 0;
+    const tenth = (v) => Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
+    if ((!dx && !dy) || !tenth(dx) || !tenth(dy) || !layer.links.length) return layer.links;
+    const edgy = (wbState.sketches || []).some((s) => typeof s.data === "string" && (s.data.includes('"sourceEdge"') || s.data.includes('"targetEdge"')));
+    const redraw = [];
+    for (const pair of layer.links) {
+      const parsed = pair.parsed;
+      const plain = pair.el?.isConnected && !(parsed.bend && (parsed.bend.x || parsed.bend.y)) && !parsed.points?.length && wbMapCrossLinkLook.ends(parsed);
+      if (plain && !(edgy && wbFmtState.linkEdge?.dependents(pair.sketch.id).length)) wbMapDragLayer.held.set(pair.el, pair);
+      else redraw.push(pair);
+    }
+    //: Not before the drop's own frame is painted: an idle slice there landed in it (mapperf 500, 84 to 98ms).
+    //: A timer rather than a frame loop, so the page gains no wake source (`test_frontend_wake_sources`).
+    //: The press and key listeners go on now: a second grab inside the wait must draw first (review of c4fc07107).
+    if (wbMapDragLayer.held.size) {
+      wbMapDragLayer.arm();
+      setTimeout(() => wbMapDragLayer.settleLater(), 150);
+    }
+    return redraw;
+  },
+
+  //: Draws the held links now; with an idle `deadline`, as many as its time allows.
+  settle(deadline = null) {
+    for (const pair of wbMapDragLayer.held.values()) {
+      //: A wait that timed out has no time left by definition; it draws the rest rather than ask again.
+      if (deadline && !deadline.didTimeout && deadline.timeRemaining() < 2) return wbMapDragLayer.settleLater();
+      wbUpdateLinkedSketches(null, [pair]);
+    }
+  },
+
+  //: The render writes every link's path itself, so it only takes the translates off first.
+  release() {
+    for (const el of wbMapDragLayer.held.keys()) el.removeAttribute("transform");
+    wbMapDragLayer.held.clear();
+  },
+
+  arm() {
+    if (!wbMapDragLayer.armed) {
+      wbMapDragLayer.armed = true;
+      for (const type of ["pointerdown", "keydown"]) document.addEventListener(type, () => wbMapDragLayer.settle(), true);
+    }
+  },
+
+  settleLater() {
+    const later = window.requestIdleCallback || ((fn) => setTimeout(fn, 120));
+    later((deadline) => wbMapDragLayer.settle(deadline), { timeout: 1000 });
+  },
+};
 
 //: The topic under the pointer that this branch could be dropped on, or null.
 //:
@@ -2917,10 +3158,8 @@ let wbMapTypeahead = null;
 
 //: Two seconds at most: a create that failed somewhere this file did not
 //: foresee must not leave every key on the board swallowed.
-const WB_MAP_TYPEAHEAD_MS = 2000;
-
 function wbMapTypeaheadLive() {
-  if (wbMapTypeahead && performance.now() - wbMapTypeahead.at > WB_MAP_TYPEAHEAD_MS) wbMapTypeahead = null;
+  if (wbMapTypeahead && performance.now() - wbMapTypeahead.at > 2000) wbMapTypeahead = null;
   return Boolean(wbMapTypeahead);
 }
 
@@ -3955,16 +4194,19 @@ function wbMapColumnPositions(index, layout) {
   };
   //: Rows from `y` down, or up from `y` (each row's bottom at the cursor),
   //: nearest first either way, so a branch reads away from its topic.
-  const stack = (rows, x, y, up) => {
+  //: `flush` lays the rows against a right edge instead of a left one (the
+  //: fishbone's column), each indented leftward from it.
+  const stack = (rows, x, y, up, flush = null) => {
     let cursor = y;
     for (const r of rows) {
       const s = size(r.o);
+      const at = flush == null ? x + r.depth * WB_MAP_INDENT : flush - r.depth * WB_MAP_INDENT - s.w;
       if (up) {
         cursor -= s.h;
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at, y: cursor });
         cursor -= gapB;
       } else {
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at, y: cursor });
         cursor += s.h + gapB;
       }
     }
@@ -4016,15 +4258,20 @@ function wbMapColumnPositions(index, layout) {
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));
       const x = right - w;
+      //: The column is flush right, the main topic and its causes alike: the
+      //: rib meets the main at its spine-side corner, which is then the column's
+      //: right edge, so the rib passes no cause of its own, and the gap beside the
+      //: column (`gapD`, to the next pair's) is clear for it to run in.
+      const edge = x + w;
       pair.forEach((b, side) => {
         const tall = b.ks.h + (b.rows.length ? gapB + b.ext.h : 0);
         if (side === 0) {
           const y = spine - gapD - tall;
-          positions.set(b.kid.id, { x, y });
-          stack(b.rows, x, y + b.ks.h + gapB, false);
+          positions.set(b.kid.id, { x: edge - b.ks.w, y });
+          stack(b.rows, x, y + b.ks.h + gapB, false, edge);
         } else {
-          stack(b.rows, x, spine + gapD, false);
-          positions.set(b.kid.id, { x, y: spine + gapD + tall - b.ks.h });
+          stack(b.rows, x, spine + gapD, false, edge);
+          positions.set(b.kid.id, { x: edge - b.ks.w, y: spine + gapD + tall - b.ks.h });
           bottom = Math.max(bottom, spine + gapD + tall);
         }
       });
@@ -4509,10 +4756,9 @@ const WB_CONNECT_WORDS = {
 //: for every link and the index and colours are a walk of the whole map.
 let wbMapCrossLinkMemo = null;
 function wbMapCrossLinkLook(parsed) {
-  if (!wbIsMap() || !parsed?.type?.startsWith("link-")) return null;
-  const source = wbLinkItem(parsed.sourceKind || "node", parsed.sourceId);
-  const target = wbLinkItem(parsed.targetKind || "node", parsed.targetId);
-  if (!source || !target || !WB_MAP_KINDS.has(source.kind) || !WB_MAP_KINDS.has(target.kind)) return null;
+  const ends = wbMapCrossLinkLook.ends(parsed);
+  if (!ends) return null;
+  const { source, target } = ends;
   if (!wbMapCrossLinkMemo) {
     const index = wbMapIndex();
     wbMapCrossLinkMemo = { index, colors: wbMapNodeColors(index), layout: wbMapLayout(), looks: new Map() };
@@ -4536,6 +4782,14 @@ function wbMapCrossLinkLook(parsed) {
   if (stamp) wbMapCrossLinkMemo.looks.set(stamp, found);
   return found;
 }
+
+//: Whether a link is drawn by the map (both ends topics on a map), without drawing it.
+wbMapCrossLinkLook.ends = function (parsed) {
+  if (!wbIsMap() || !parsed?.type?.startsWith("link-")) return null;
+  const source = wbLinkItem(parsed.sourceKind || "node", parsed.sourceId);
+  const target = wbLinkItem(parsed.targetKind || "node", parsed.targetId);
+  return source && target && WB_MAP_KINDS.has(source.kind) && WB_MAP_KINDS.has(target.kind) ? { source, target } : null;
+};
 
 wbMapCrossLinkLook.built = function (parsed, source, target, index, colors, layout) {
   //: A leaf has no colour of its own (null in the map): it wears its
@@ -5243,11 +5497,22 @@ async function wbMapSetBranchLayout(node, value) {
 //: alone or the gesture is pointless. Called from the object drag's own end
 //: handler, and only for a real move on a map, a click that happened to
 //: register as a zero-length drag must not silently pin anything.
-async function wbMapPinOnDrag(d) {
+//:
+//: **The pin is drawn on the one topic, not by a render** (L-mindmap-26). The
+//: render it used to schedule redrew every line the drop had moved: at 500
+//: topics 93ms, landing in the next gesture's first frame (mapperf.js, the
+//: branch pick-up after a first node drag, 162.6ms). The pin is one class (a
+//: dashed border, no size change), and the only other thing that render
+//: placed was the moved topics' mid-line `+` buttons, placed here for those
+//: topics alone. `origin` is the drag's bulk origin, the branch it carried.
+async function wbMapPinOnDrag(d, origin = null) {
   if (!wbIsMap() || !WB_MAP_KINDS.has(d.kind) || d.data?.pinned) return;
   d.data = { ...d.data, pinned: true };
   await wbSaveObject(d);
-  wbScheduleRender();
+  wbItemElement("object", d.id)?.classList.add("wb-map-pinned");
+  const moved = new Set([d.id]);
+  for (const entry of origin?.values?.() || []) if (entry.kind === "object") moved.add(entry.item.id);
+  wbRenderMapEdges({ only: moved, plusesOnly: true });
 }
 
 //: --- Boundaries and summaries (MINDMAP_PLAN.md decisions 19 and 20) --------

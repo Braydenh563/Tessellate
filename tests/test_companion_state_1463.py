@@ -75,6 +75,25 @@ def test_the_state_is_written_only_on_a_change_and_steers_the_tick() -> None:
     assert "moving?.finished.then(() => nmb.anim === moving && nameMarkBuddyState(buddy), () => {});" in move
 
 
+def test_a_menus_invisible_anchor_is_not_a_focus_to_keep_clear_of() -> None:
+    """L-general-40: a menu opened at the companion leaves focus on its one-pixel anchor
+    when the face cannot take it back; the companion then landed over that anchor, went to a
+    ghost with no pointer events and a right-click on it opened no menu."""
+    attention = _fn("nameMarkBuddyAttention")
+    assert '.closest("#nm-buddy, .nm-viewer, .pointer-menu-host")' in attention
+
+
+def test_the_click_that_ends_a_long_press_does_not_press_the_menu_it_opened() -> None:
+    """L-general-40: the menu opens under the finger at 550ms, and the click that comes with
+    the lift landed on its first row, which ran and closed it (a held touch in
+    companionmenu.js, 1280x800 at 1.5)."""
+    src = AV[AV.index("let hold = 0;") : AV.index("//: The one-place and four-corner choices")]
+    # The swallow is its own function since the build's size seed (test_js_function_size).
+    assert "nmb.menu?.contains(event.target)" in _fn("nmbSwallowMenuClick")
+    assert 'document.addEventListener("click", nmbSwallowMenuClick, { capture: true, once: true })' in src
+    assert "setTimeout(() => document.removeEventListener" in src
+
+
 def test_it_never_sits_on_the_focused_control_or_the_caret() -> None:
     attention = _fn("nameMarkBuddyAttention")
     assert "document.activeElement" in attention and "box.width * box.height <= NMB_FOCUS_AREA" in attention

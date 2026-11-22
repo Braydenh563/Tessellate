@@ -500,7 +500,7 @@ those: has been reproduced in Chromium and fixed. Full detail, including
 repeat if it isn't kept), is in HISTORY.md.
 
 **From the ideas parking lot, never formally triaged.** Reported informally
-(`IDEAS.md`) rather than reproduced in a browser yet, worth the same
+(the retired `IDEAS.md`, in git history) rather than reproduced in a browser yet, worth the same
 ten-second grep-first check as everything else in this document before
 anyone spends a session on them. (The other four of the original five were
 checked 2026-10-04 and are in HISTORY.md, "Moved from the backlog".)
@@ -645,6 +645,8 @@ GRAPH_PLAN.md owns the rest of this section.
 
 **Parked from the graph plan, 2026-11-12 (graph-plan session).** Each row names the exact check left.
 
+- **Thinking off on Ollama** (W16 B72, L-general-16). `BACKGROUND_MODE` sends `think: false` on utility calls; measured only on llama.cpp (Qwen3-0.6B, 925 tokens default to 56 with thinking off). Check: on a machine with Ollama and a Qwen3-class model, time 8 utility calls with it on and off and record tokens and seconds.
+- **Tool contracts and the bench gates on Ollama** (W16 B74, WORLD_CLASS_PLAN section 8 rows 5, 6, 19, 21; L-general-16). The bench gave 0.639 twice at temperature 0 on llama.cpp; the tools task scored 0.0 on that handler. Check: Settings, Models, Test my models against an Ollama 3B, twice, and record the tools task score and every invalid call.
 - **3B model entity extraction.** Needs a real 3B model: run `pytest -m evals` with `scratchpad/llama-dev.sh serve` on a 3B (granite4.1:3b) and record `name|kind` recall of 22, junk names and the topic sentence's usability, against the 1.5B's 17 of 22, 4 junk, 4 of 4 (2026-11-11).
 - **The board's 138 compositor layers at rest** (L-graph-6). Chrome's sparsity rule will not merge far-apart cards; a transparent backdrop measured 54 but relies on an internal heuristic. Check: layer count in DevTools on a real GPU before any change.
 - **Tessellation side by side** (L-graph-12). Owner looks at `shots/tess-pair.png` (run `scratchpad/ui-sweeps/tess-pair.js` against their notebook; `LAYOUT=` picks the other view, default their saved one).
@@ -823,6 +825,9 @@ vendors d3 and p5 locally rather than take a CDN.
     gracefully on a model that doesn't support the setting instead of
     sending a parameter Ollama silently ignores or errors on, which is a
     real gap regardless of whether task-based auto-routing ever happens.
+- **Map pan with the companion on: the first frame still spikes** (from L-mindmap-24, after two measured attempts). mapperf SIZES=500 on a long-lived notebook: worst pan 466 to 523ms before; 52 to 77ms with the face held still for the gesture (946e8654c and the two-id rule); 32 to 36ms with the companion off on the same notebook, as on a fresh one, so the notebook's size is not the cause. Traced: the companion's animations no longer restyle; the remaining spike is the first pan step (99ms of 31, the rest 11 to 28ms). **Next:** trace the first step's work with the companion on (`nameMarkBuddyKeepUp`'s follow loop starting, the class write) against companion off.
+- **Map pick-up at 500 topics is still over 50ms** (from L-mindmap-26, after two measured attempts). mapperf SIZES=500, two warm runs: before, drag pick-up 82.7 and 92.2ms, branch pick-up 90.6 and 162.6ms (the pin's full render after a first drag landed in it). Attempt 1 (159665bd6, the pin is one class and a pluses-only pass): drag 77.3 and 71.9ms, branch 79.8 and 65ms. Attempt 2, the press's line-element scan shared with the branch capture (2.6 to 4.7ms a scan): drag 78.5 and 86.9ms, branch 72.7 and 92.5ms, no gain past the noise, not kept. Traced (about 80ms a pick-up task): native work is about 45ms (hit tests 8, style recalc 13, prepaint 6, layout 6, paint and layerize 8) and JS about 25ms (objDragMove 15, the press 4.7, the trash target's first-move rect 3.7 forcing a layout, the clipboard hover 2.4). **Next:** trace the 13ms recalc and the 8ms of hit tests on the first move (the drag layer's class and translate writes, the hover state) before touching JS again.
+- **Linked branch drop at 500 topics is still about 75 to 100ms** (from L-mindmap-25, after two measured attempts). mapperf SIZES=500 LINKS=300, warm runs: linked branch drop 106.7, 142.6 and 118.1ms before (noisy, 90 to 160ms across runs). Attempt 1 (697d1ced7, ribbons print from integer tenths): the plain drop's close() 28.7 and 26.7ms to 20.4 and 20.4ms; the linked close() 67.8 and 81.6ms to 72.3 and 77.1ms, inside the noise. Attempt 2 (links the whole drop carried keep their translate, `wbMapDragLayer.holdLinks`, drawn in idle slices after the drop frame or by the next writer, render, press, key or export; the same change made a drop redraw its inside links at all, which had stayed at the old place until the next render): linked drop 74.7, 71.8 and 103.4ms (plain drop 77.4, 75.8 and 80.7ms in the same runs); its close() (wrapped timer) 79, 61.8 and 66.3ms to 22.1 to 34.6ms, level with the plain drop's 26.6 to 29.4ms. A held ribbon is within one printed tenth of a fresh one (a half-tenth number can round the other way once moved) until it is drawn. What is left is the plain drop itself, 59 to 83ms across these runs: the on-screen tree lines (`wbUpdateMapEdges`, 24 to 37ms) and the native restyle and paint of the moved board. **Next:** trace the plain drop's native time (style recalc and paint after the stay layer's translate comes off) before touching JS again.
 - **Dynamically switch models by task complexity.** **Next:** the manual per-mode assignment this item says to build first exists (`openFeatureModelSheet`, `frontend/js/ai-tools.js:698`, `ai/provider.py` per-purpose model); the automatic half is a design call for the owner (a cheap difficulty estimate is wrong sometimes) and stays open on purpose. A related but separate
   ask: "optional," and worth keeping optional: a short factual question
   routed to a small fast model and an agent job routed to a larger one,
@@ -1595,6 +1600,12 @@ Small, concrete, each seen in the running app:
   cause was us: see §8b.
 
 ---
+
+**W34 rows not carried into the ledger, 2026-11-21 (L-general-15).** The 2026-11-11 verify sweep (W34) left 529 rows open across OPEN.md and the agent-remaining files retired on 2026-11-12. Traced 2026-11-21: 292 have a LEDGER, plan or BACKLOG row, 32 are built, 89 are accepted caveats, and the 116 below (95 after merging duplicates and dropping five already fixed or in BACKLOG: C1 and C2 fixed w17-1110, think off and 3B entity extraction above) had no row. Each names its check.
+
+- **Owner input, 19:** Owner to report whether the Q33 chat stutter returns (check: owner input; OPEN.md:23); Owner examples for the parked Q15 to Q17 (P1 to P3) (check: owner input; OPEN.md:27); Composer "response issues" round (INBOX 1719 c) (check: owner examples; OPEN.md:34); New art for the travel acts (B65 L9, INBOX 1683) (check: owner design call; OPEN.md:174); Phone lock screen retries by itself after Allow instead of pressing Unlock again (check: owner call, real phone on LAN; OPEN.md:756); Drag feel by hand and keyboard focus ring with a real user (check: owner hands-on check; #1574); Owner call: should the streak count private notes' days (check: owner input; composer-streak-1029.md:9); Dashboard art as the landing tab (row 21 open items) (check: Playwright dashboard sweep, owner call; diet3-1101.md:4); Owner decisions: live default for stored Source choice, table cell merge, find in selection (check: owner input; docdog-1026.md:27); Owner call: stop atlas rAF loops after 2 s idle (PF2) (check: owner input; fitaudit-1109.md:5); Show Hello (passkey) in the desktop window by opening localhost instead of 127.0.0.1 (check: owner call, Windows desktop check; hello-1110.md:10); Display-paced desk timer holds 16.7 ms plus or minus 3 (check: owner check on Windows; owner-asks-audit-1108.md:76); No 90 degree turn after landing on the desk (check: owner recheck on Windows; owner-asks-audit-1108.md:146); Multi-window, torch at launch and a margin reader in the note editor (check: owner call; s10-1110.md:6); As-typed echo after an autocorrect: where the line shows (E69) (check: owner design call; s13-1110.md:6); Rule on "the assistant" heads in the composer who pool versus the copy rule (check: owner input; social-1031.md:8); B63: companion does not show, root cause (check: owner input, the owner's log; owner-asks-audit-1108.md:68, w15-1110.md:7); Word chip for keyword-only search rows (check: owner call; mr-1110.md:11); Should a throw that ends on the floor under a window look confused too (check: owner input; deskmood-1108.md:4).
+- **A device or a real model, 12:** Graph playback is shorter on a slow CPU after the 450 ms warm-up (desktop webview) (check: measure on real Windows webview; OPEN.md:683); Find why the companion does not show (INBOX 1638b) (check: real Windows desktop check; OPEN.md:4417, owner-asks-audit-1108.md:68); Verify the chat time stamp on a real streamed answer (check: real model, Chat tab sweep; #232); Engine.update cost per act wake on the desk overlay (check: profile on a real desktop; book4-1109.md:114); Diagram picture scrolls to top after an edit; real touch pinch and double tap untested (check: real touch device; diagram-r2-1104.md:17); Verify nomic-embed-text-v1.5 as one press and Qwen3 and bge-m3 builds for real (check: real embedding models; fastembed-1027.md:27); A model claiming a find when nothing matched is not caught by the figure check (_no_notes_events) (check: pytest -m evals with a real model; model-facts-1027.md:6); "find my gym notes" in Ask mode with a model up needs find rows as facts (check: composer test plus real model; model-facts-1027.md:10); Re-measure the lock field ready time at 4x on a quiet machine (check: scratch r21/ab.sh on an idle box; row21-1109.md:46); B65: travel mix, travel L9 and L10 (check: device check on Windows; w15-1110.md:9); Check Qwen3 and bge-m3 embedding builds and nomic as one press (check: real model download, pytest -m evals; fastembed-1027.md:27); Companion climbs up the side of the screen (check: desk engine test plus Windows check; owner-asks-audit-1108.md:56).
+- **A named test or sweep (confirm still open first; some may be fixed since 2026-11-11), 64:** Chat Sources rows extend to the right (INBOX 1712) (check: Playwright sweep of Chat Sources rows at 390 and desktop widths; OPEN.md:32); Companion is carried over the top bar by Ask scroll (INBOX 1598) (check: Playwright scroll sweep with companion on; OPEN.md:33); CODEMAP misses routes declared on router names other than router and app (check: scripts/codemap.py regen plus tests/test_codemap_fresh.py; #1657, OPEN.md:2060); Pasted #/Manual or #/Statistics link is ignored at load (check: Playwright load of a pasted hash route; OPEN.md:4710); Recording-finished notice is lost when a reload happens with another view open (check: Playwright reload sweep with fake recording; #1012); CODEMAP indexes a false id from inside an HTML comment (persona-prompt) (check: scripts/codemap.py comment strip plus tests/test_codemap_fresh.py; #1207); Page read of a board drops a lone label because no sparse OCR pass runs (check: named test on core/ocr.py _read_with_fallbacks with a board image; a31p-1103.md:4); Composer web rows: search_down, web_off, web_query, A44, A26 greeting (check: pytest tests/test_composer*.py cases for each; ai-extras-1030.md:18); Template map at 390 px frames at 0.24 zoom with pills below handle size (check: Playwright at 390 on a fresh template map; blindfix-1031.md:7); latest on sourdough should lead with the newest note titled sourdough (check: composer eval on the R9 seed; book4-1109.md:95, c12-1109.md:10); Cold "the other one?" should ask which one is meant (check: test in tests/test_composer*.py on composer_follow; book4-1109.md:101, c13-1109.md:7); who is Marcus omits a bare title-less Marcus Lee note (check: composer eval on the R9 seed; book4-1109.md:102, c13-1109.md:8); tom and sara phrase pair answers nothing about tom or sara (check: composer eval with a note holding the pair; book4-1109.md:126, composer-r8-1109.md:13); Entity name (check: kind extraction and topic sentence on a real local model (KG1 to KG9); book5-1109.md:144); Frame renderer nebula pass is flaky (two frames with almost no stream) (check: rerun scripts/render_desk_frames.py and tests/test_overlay_sprites.py; companion-1663.md:8); Composer G11 amounts label lookup, G12 Patterns template, G14 composed list rows in JS (check: pytest on composer_amounts and the five pinning test files; compleft-1110.md:18, compleft-1110.md:36); Everyday schedule phrasings (what have I got on, whats on tmrw) should read as agenda or tasks (check: composer eval on the R9 seed; composer-r9-1109.md:40); Checklist-state questions (have I booked the car service, what's left on the todo) (check: composer eval with checklist notes; composer-r9-1109.md:61); A miss answer should find a note titled Meeting when asked about meetings (C8 plural) (check: composer eval with plural and singular titles; composer-research-1107.md:20); what's new with uni should read as a latest ask (check: composer eval, status_subject; composer5-1031.md:8); Closer frames say newest or latest when the cited note is the oldest (check: composer eval on closers; composer9-1026.md:21); Remove the dead "run": True plan key at five sites in task_acts.py and commands.py (check: pytest tests/test_composer_offers_1110.py; consent-1110.md:21); Drive the consent open-card JS (pendingRun, settle) in a browser (check: Playwright sweep of the open-card flow; consent-1110.md:25); Drive the consent card JS (consentId, waitingCard) in a browser, including the 30 minute old card (check: Playwright sweep of the consent card; consent2-1110.md:16); Reduce radon D-grade functions graph_path, graph_local, _tool_sources, _dispatch_call, _run_and_record (check: radon ratchet test per function; cplx-1031.md:14); Timed-question day leads should state the distance, not a bare date (check: composer test on _heading_line and _dated_lead; dates-1031.md:10); Document editor diagram offer at 79 percent zoom (check: Playwright at 79 percent zoom; dgbt-1109.md:25); Note titles and tags as known words for the document grammar filter (docGrammarKeeps) (check: named test on documents-prose.js; docs-1027.md:5); Same no-model audit for summaries, titles and tidy writers (INBOX 1618) (check: named test run over the no-model writers; extract-1103.md:5); Help badges on graph Physics, Display, Filter, Time, Groups, Minimap panels (check: Playwright plus tests/test_manual_parity.py; graph-1026.md:85); Tesseract and captioning re-run after restart for pictures that gave nothing (check: named test on core/ocr.py restart path; imgread-1031.md:5); tests/test_lazy_bundle_calls misses bare function values and destructured bindings (check: named test extension on _top_level_bindings; lzc-1101.md:4); Engine read for "update on my reminders" and "remind me what is due this week" (check: composer test in tests/test_composer*.py; model-facts-1027.md:9); "add up my expenses" has no engine sum, model answers unchecked (check: composer test on utilities sum; model-facts-1027.md:11); fact_check compares dates only to the nearest unit and guesses a missing year (check: named test on fact_check._moments; model-facts-1027.md:14); A model saying "by 5" about a reminder the engine did not list is refused (check: named test on fact_check time rule; model-facts-1027.md:15); Graph toolbar chevron does not turn open (graph-lazy.css lacks the rule) (check: Playwright check of doc-toolbar-menu-caret; motion-1101.md:10); One-line summary at the top of every Help topic, with a lint in test_manual_parity.py (check: named lint in tests/test_manual_parity.py; owner-asks-audit-1108.md:15, owner-asks-audit-1108.md:23); Boards list should load lazily, not loadMapBoardIndex at load (check: perf probe with a 500-board fixture; owner-asks-audit-1108.md:19); Library d3 mousemove forced layout (757 ms): add a board step to the perf probe (check: perf probe at 4x CPU; owner-asks-audit-1108.md:20); Add a drag-to-top-edge hang assertion (HANG_REACH, _grab_edge) (check: named test in tests/test_overlay*.py; owner-asks-audit-1108.md:70); Measure desk Quick search, Quick note and close button popups (check: rendered measurement of band, note height, close button; owner-asks-audit-1108.md:71); Add a left versus right facing frame test for body and head turn (check: named test on faces.py and sprites; owner-asks-audit-1108.md:74); Keep the Add tags popover anchored to the live opener, test from a search card (check: Playwright on a search card; owner-asks-audit-1108.md:99); Zoom frame style recalc: 600+ :has rules on a 3 MB sheet (check: trace at 4x CPU with per-selector profile; perf-1101.md:13); Diagram builder: delegate row listeners, parallel mermaid fetch, idle-slice rows past 40 blocks (check: perf probe on a 40-block diagram; perfdgm-1108.md:4); When a subject matches nothing, say could not tell which were X instead of no amounts spent (check: composer_money test; quantity-1030.md:5); composer_money scan drops oldest spending past 400 hits without a word (check: composer_money test over 400 hits; quantity-1030.md:6); flashEntry not-in-DOM test with a 100-note fixture (S93) (check: Playwright test on a 100-note seed; s12b-1110.md:9); engine._next_act_pose_change costs 30 samples per wake; two lazy import cycles (check: profile on overlay engine plus import-cycle lint; s6-1110.md:10); Composed answer mounts 500 to 860 nodes (check: DOM node count sweep of a composed answer; s7-1110.md:9); Unify the sealed refusal status (403 on /media bytes, 409 on new routes) (check: named test over sealed media routes; sec-1109.md:14); Graph open: graph-canvas.js onload forced layout 207 ms, bisect graphPaneWire and graphPaneFollow (check: trace at 4x CPU on a graph open; speed-1031.md:12); Coarse-pointer target sizes at 390: note chips, More actions, doc Edit/Read segment, task checkbox (check: 390 coarse-pointer target sweep; sweep-1028b.md:29); Graph search announces match count and no-match in the live region (check: axe plus live-region test on graph search; sweep-1028b.md:32); Whiteboard keyboard placement tooltip says click or press Enter, with a focus ring (check: keyboard sweep on whiteboard; sweep-1028b.md:33); Describe the code editor with the Esc-then-Tab hint (axe scrollable-region) (check: axe at 390 on a document; sweep-1028b.md:36); bc6 and bc task 2: where does Sara live, how am I feeling, list my people, spend on clothes (check: composer test over the four phrasings; typo-1111.md:13); Settings dialog head jumps 91 px between sections (check: Playwright head rect per section; unslop-1103.md:19); Drive the Put it back button in a browser; show a retry countdown (check: Playwright on a failed first save; w4-1110.md:4); Carry find rows as facts for Ask-mode search acts (check: composer test with a model up; model-facts-1027.md:10); Engine sum for add up my expenses (check: composer_money test; model-facts-1027.md:11); Engine reminder reader for update on my reminders and what is due this week (check: composer test over both phrasings; model-facts-1027.md:9); Inspect act for a window corner and a new window (check: desk engine test over the act table; owner-asks-audit-1108.md:57).
 
 ## 23. Organisation: manual grouping and multi-category notes
 
@@ -3115,146 +3126,10 @@ runs it and closes, Escape and backdrop-click both cancel.
 
 ## §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped
 
-Asked for directly, three things together: can notes/documents reference
-each other with a References section; a place to store/bookmark website
-links; a table-of-contents-style hyperlinked, visualised view of the
-notebook's structure. Checked first, per this file's own standing rule,
-`[[wiki links]]` already covered note-to-note linking with autocomplete,
-transclusion and backlink chips (`app.js`, extensively) and the Graph tab
-already visualises links coloured/filtered by category. What was genuinely
-missing: anywhere to save a link to the open web, and a fast textual outline
-distinct from the Graph's spatial one.
+Moved to HISTORY.md ("Moved from the plans, 2026-11-22"): the bookmarks, Contents and References build, and the §102 items 5 and 6 checks. Open from it:
 
-**Built:**
-- **A `Bookmark` model and `/bookmarks` CRUD** (`core/database.py`,
-  `api/routes_bookmarks.py`), its own small table, not folded into `Entry`:
-  a bookmark has no body to search, file, or auto-categorise, so forcing it
-  through the note pipeline would solve a problem it doesn't have. URLs
-  typed without a scheme ("example.com") are normalised to `https://`.
-  Creating a URL that's already saved still creates the row and returns
-  `duplicate_of` the existing one: warn, don't block, since re-saving a
-  link by accident is normal, not a mistake worth refusing.
-- **Grouping**, asked about directly ("should they be groupable?"): a free-
-  text `group_name` column rather than a real folder table, a full nested-
-  folder model (a tree table, drag-to-move UI) is a lot of new machinery for
-  what a flat field mostly already buys. A "/" convention ("Work/Reading")
-  the frontend renders as a visual hierarchy, still just one string. Filter
-  chips above the list, a search box (client-side, matching the Image
-  Gallery's own filter), pin-to-top, and edit/move/delete actions round out
-  the Library → **Links** subtab.
-- **A note's References**: a note can now attach a saved bookmark
-  (`entry_bookmarks` join table, `POST/GET/DELETE /entries/{id}/bookmarks`),
-  shown live in the edit form right below the related-notes panel, with an
-  "Attach a link" picker. Its own small table and its own endpoint, not
-  folded into `EntryLink` (which connects two `Entry` rows) or into
-  `EntryOut`'s bulk-fetched `links` field, matching the precedent
-  `/entries/{id}/related` already set: only the editor needs this, so it
-  shouldn't grow a query on every paginated list render.
-- **Library → Contents**: a hyperlinked outline of the notebook, grouped by
-  category or by tag, click a note to jump straight to it. Built from
-  `allEntries` (already loaded for the Notes tab) grouped client-side, not a
-  new endpoint: refetched on every visit like every sibling Library subtab,
-  not cached, since a stale outline (a just-deleted note still listed) would
-  be a wrong answer, not just an old one. This is deliberately the *fast,
-  scannable* half of "visualised links between sections and tags"; the
-  *spatial* half is the Graph tab's job already, and Contents links out to
-  it rather than duplicating a second visualisation engine.
-- Live-verified in Chromium: add/pin/edit/group/delete a bookmark, filter by
-  group and by search text, the duplicate-URL toast, both Contents modes
-  grouping correctly and jumping to a note, and attaching/detaching a
-  bookmark reference from a note's edit form: all measured, not assumed.
-  One real bug caught this way and fixed before shipping: `ph-push-pin-fill`
-  doesn't exist in this app's bundled Phosphor set (checked: only
-  `push-pin`/`-slash`/`-simple`/`-simple-slash` do), so the pin button
-  rendered blank: `-slash` for "already pinned" is the same pairing the
-  pinned-chat button already uses.
-
-**§102 item 5 (tray quick-capture), corrected rather than rebuilt:** the
-tray's own "New note" item (`__main__.py`) already does the load-bearing
-part of this ask, one click, past the lock screen, straight to a focused
-empty note, no tab-hunting. What it does *not* do is the literal ask, "a
-tiny always-on-top composer... without raising the full window", it raises
-the full window. Not built this session, and deliberately not attempted
-blind: a real floating composer needs a second `pywebview` window (a new
-`webview.create_window()` call, its own minimal page, its own focus/close
-semantics coordinated with the main window's lock state and the existing
-tray event-loop threading, which `_start_tray`'s own docstring already
-flags as delicate). This sandbox has no Windows, no `pywebview` runtime, and
-no display at all for this code path, confirmed live: importing `pystray`
-here raises `Xlib.error.DisplayNameError` on this headless box, the exact
-failure `_start_tray`'s own except-clause already anticipates. Writing a new
-window-management code path with zero ability to launch or see it is how a
-"small" feature ships broken; needs a real Windows session to build safely.
-
-**Next:** a second `webview.create_window` (always on top, no frame) from `_start_tray`'s `_new_note` (`__main__.py:2046`) opening `/#quick`, with `frontend/js/quick-note.js` as the page's one control; needs Windows to verify, so the owner's machine.
-
-**Superseded: inline chat citations are built since (section 109.3, `ai/grounding.py`).** **§102 item 6 (inline chat citations), resolved, the answer was "no", found
-by reading the code, not by needing a live model:** the retrieved notes sent
-to the model are numbered in the prompt (`librarian.build_messages`, "1.
-[category] ..."), but nothing in `GROUNDING` instructs the model to cite
-that number, and the frontend's `#chat-results` list is a plain, separate
-source list rendered alongside the answer, never parsed out of the answer
-text itself. So: confirmed, not "unclear without a live model" any more:
-there is no per-claim citation today, only a source list next to the
-answer. Building real inline citations is a prompt-reliability question a
-fake-transport test can't settle (would a small local model actually emit
-`[1]`-style markers consistently enough to parse?), left open for a
-session with a live Ollama/LM Studio to validate against, per this
-project's own standing caveat about model-behaviour work. **Not chat-
-specific**, asked about directly afterward: search summaries and the weekly
-digest ground their prose in the same retrieved-notes-numbered-in-the-
-prompt shape `librarian.build_messages` uses, with the same absence of a
-citation instruction: so this is one cross-cutting gap across every place
-the AI writes prose from notes, not three separate ones.
-
-**Bookmarks elsewhere, asked about directly:** *Documents*, **built**:
-`DocumentBookmark` (same shape as `EntryBookmark`, keyed to `document_id`
-instead of `entry_id`), `GET/POST/DELETE /documents/{id}/bookmarks`, and a
-**References** section in the document editor's own Outline sidebar tab
-(next to Backlinks/Notes it draws on), with the same "Attach a link" picker
-notes got. Live-verified in Chromium: attach, the reference chip opens the
-URL, detach, and the picker correctly lists every saved bookmark regardless
-of which note or document (if any) already references it. *Graph*:
-recommended **against** adding bookmarks as graph nodes: the Graph is built
-around note-to-note similarity and typed links, and a bookmark has no
-content to compare against anything, so it would be a node with different
-semantics bolted onto a visualisation designed around one kind of thing. A
-small "has references" indicator on a note's own graph node is a
-reasonable, much smaller alternative if this is picked up later, not built
-this session.
-
-**The Library "All" tab's create/upload buttons: confirmed still covered
-by §105, not missed.** §105 above already logs this in full: the button now
-follows the active filter chip for the four unambiguous kinds
-(Notes/Documents/Chats/Meetings), and §105 item 1 already names the
-remaining gap precisely: a real "choose what to create" picker for
-Everything and every kind with no single obvious answer (Files, Tags,
-Drafts, Activity, the bin), not yet built, with the open question being
-dropdown-off-the-button vs. a real modal. Nothing new to add here; re-
-reading §105 rather than re-logging it.
-
-**A second competitor-analysis pass (Kortex/Granola/Mem.ai) was re-pasted
-this session, from a different subagent run than §102's**: cross-checked
-against §102 rather than logged as new, since it is the same three products
-against the same feature list and overlaps almost entirely:
-- Its items 1–4, 6, 8–10 are §102's items 1, 3, 7, 6, 5, 9, 10 respectively
-  - already logged there, unchanged.
-- Its item 5 ("import from other note apps") and item 7 ("chat query
-  scoping via explicit note selection") are the two claims §102 already
-  checked against the running code and corrected, false/overstated, see
-  §102's own "Corrected before logging" block. Restated here only so a
-  future session doesn't re-file them from this second paste without
-  noticing §102 already settled them.
-- Its item 11 ("structured decisions/action-items block on meeting notes")
-  is §102 item 2, and item 2 is now **built** (this session, §25/§31 in
-  the live task list): `librarian.summarize_meeting`, `POST
-  /voice/summarize`, wired into `saveMeetingNote()`.
-- Its item 12 ("speaker labeling on local transcripts") is §102 item 8,
-  unchanged: still genuinely absent, still needs checking whether the
-  transcription library in use supports local diarization at all before
-  scoping further.
-
-No new gaps in this second pass beyond what §102 already carries.
+- **Tray quick-capture window** (§102 item 5). a second `webview.create_window` (always on top, no frame) from `_start_tray`'s `_new_note` (`__main__.py:2046`) opening `/#quick`, with `frontend/js/quick-note.js` as the page's one control; needs Windows to verify, so the owner's machine.
+- **A "has references" mark on a note's graph node**, the smaller alternative to bookmarks as graph nodes (recommended against).
 
 ## §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built
 
@@ -4439,6 +4314,32 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L913, the look of the OS notification on real Windows and macOS.** The page's calls are measured with a stubbed `Notification` and a stubbed worker registration; how Windows (Action Center, Focus Assist) and macOS (Notification Center, Do Not Disturb) draw the "Reminder" title, the body, the Done and Snooze 10 minutes buttons, and the 12 s auto-close is the check left. On each: allow notifications, make a reminder due in a minute with the app in the background, and read what appears and whether the buttons act.
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
 
+## Placed from IDEAS.md, 2026-11-21
+
+IDEAS.md is retired; its built entries are in HISTORY ("Moved from the plans,
+2026-11-21"). What it held that is still open, each checked against the app on
+that date (the agent activity monitor that is not movable is L-chat-13):
+
+- **A before-and-after comparison for every agent edit**, and the agent's edit proposed in chat and documents as a suggestion you can accept. The confirm card exists for destructive and outside-text changes only.
+- **Dynamic model choice by task complexity.** Routing is by caller, not by how hard the task is.
+- **A research mode for web search** that plans several searches (`web_search` and `read_url` exist, with a SearXNG option).
+- **Notes**: manually group notes apart from the main sorting; a note with more than one category; compress notes and data on disk.
+- **Graph**: gravity and spread have no effect on the other layouts.
+- **Dashboard**: no Markdown rendering in some widgets; pie charts (bar and line exist).
+- **Chats**: grouping chats, with an agent tool and a skill to manage them.
+- **Settings** pages cannot be reached on a narrow phone view (check the other pages for the same).
+- **An in-built browser with MCP tool abilities** beside web search (the stdio MCP server over the app's own tools exists); **a VS Code extension**.
+- **The status dot's error state**: the AI status lives in the status bar now; check that its error state can be reached.
+- **Check `docs/index.html`'s text against the README**, so the site and README agree.
+- **A dry run for the background librarian**: it edits notes unattended; `taskhistory` records each run, what is missing is "here is the diff, apply or discard".
+- **Sweep attachments for orphans on a schedule**, as `clean_orphaned_vectors` and `clean_orphaned_board_cards` do (`clean_orphaned_media` is a route today).
+- **The sketch highlighter's opacity** (`WB_HIGHLIGHTER_ALPHA`): a taste call, left alone during the audit.
+- **Streamline and optimise the backend and every AI interaction** (ongoing).
+
+## Owner input from the general rows (2026-11-21)
+
+- **L-general-31, the Fable whole-app review the owner named** (HANDOVER owner note). Parked because standing order 4 says Fable runs only when the owner names it for a task, in that session. Check: the owner names Fable for this review in a session. Until then, the deep-audit skill's Opus and Sonnet agents cover the same surfaces.
+- **L-general-25, keeping Wikipedia's misspelling pairs under CC BY-SA 4.0** (`ai/data/common_misspellings.json`). Measured: 3892 of 3974 pairs match Wikipedia's "Lists of common misspellings/For machines" exactly. The pairs are credited, kept in their own file, and combined through BY-SA 4.0's one-way compatibility with GPLv3 (docs/THIRD_PARTY.md). CLAUDE.md section 3 lets in only AGPL or MIT code. Check: the owner rules keep, or replace (delete the file; typo repair then falls back on the speller).
 ## Whiteboard, parked 2026-11-13
 
 - **L-whiteboard-5, pen pressure on a real pen.** Built and measured with synthetic PointerEvents (pointerType "pen", pressure 0.15 and 0.9 give outlines 2.4 times apart in `scratchpad/ui-sweeps/wbink3.js`; `tests/test_wb_ink_more.py`). No Apple Pencil or Wacom was available. On a tablet with a pen: pick the Pen, draw a line pressing lightly then hard, and see the stroke thicken with pressure and stay smooth; do the same with a finger and a mouse and see the width follow speed instead.
@@ -4472,10 +4373,6 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
 - **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
-
-## From the general plan's frontend rows, 2026-11-21
-
-- **Provenance for extracted notes** (L-general-37, found building L-general-13). A note saved by `/extract/commit` (routes_entries.py `extract_commit`) records nothing about where its text came from, so it gets no provenance chip. **Why it waits:** no column can say "extracted from document X" without a migration. `source_path` would mark the note as outside text for the agent's injection guard (`manager.came_from_outside`), which is wrong for the person's own document. **Next:** a nullable `origin_document_id` on entries (migration, full suite), set by `extract_commit` when `source_document_id` is given, read by `entry/provenance.py` as kind `document` with "Extracted from <title>". **Check:** `tests/test_note_provenance.py` gains a case where a note committed with `source_document_id` returns `source_kind == "document"`, and a hand-typed note still returns none.
 
 ## Lag rows measured and not removable, 2026-11-21
 

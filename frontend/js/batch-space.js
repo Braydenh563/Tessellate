@@ -2,7 +2,7 @@
 // section 5), its space picker and its Undo. Out of skills.js on 2026-10-05
 // to leave the boot (tests/test_boot_budget.py): it runs only from the
 // selection bar's More menu. Loaded by `LAZY_MODULES.batchSpace` (app.js),
-// whose stand-ins for `batchMoveToSpace` and `rmSpace` fetch it and calls the real one.
+// whose stand-ins for `batchMoveToSpace`, `rmSpace` and `exportSpace` fetch it and calls the real one.
 
 //: **Move the selection to another space** (WORLD_CLASS_PLAN 5 item 5, INBOX
 //: 1: a note filed into the wrong space could only leave it with the space).
@@ -69,6 +69,24 @@ async function moveNotesToSpace(ids, space) {
     toast(`They are all in ${space.name} already.`);
     return moved;
   }
+  //: **Its links kept** (WORLD_CLASS_PLAN 27.1, Spaces): a link to a note left
+  //: behind stays in the old space, out of view in both. Asked once, before the
+  //: Undo is made, so one Undo sends every note back.
+  if (moved.linked?.length) {
+    const n = moved.linked.length;
+    const these = ids.length === 1 ? "this one" : "these";
+    const bring = await confirmDialog(
+      `${n === 1 ? `A note linked to ${these} stays` : `${n} notes linked to ${these} stay`} where ${n === 1 ? "it is" : "they are"}, so the links show only under All spaces. Move ${n === 1 ? "it" : "them"} to ${space.name} as well?`,
+      { confirmLabel: n === 1 ? "Bring it too" : "Bring them too", cancelLabel: n === 1 ? "Leave it" : "Leave them", danger: false }
+    );
+    const more = bring ? await batchSpaceRequest(space.id, moved.linked, activeSpaceId(), keep).catch((error) => void toast(error.message, true)) : null;
+    if (more?.moved) {
+      Object.assign(moved.from, more.from);
+      moved.moved += more.moved;
+      ids = [...ids, ...moved.linked];
+      await refreshEntries(moved.linked);
+    }
+  }
   const back = async () => {
     const groups = new Map();
     for (const [id, from] of Object.entries(moved.from)) groups.set(from, [...(groups.get(from) || []), Number(id)]);
@@ -85,6 +103,21 @@ async function moveNotesToSpace(ids, space) {
     await back();
   });
   return moved;
+}
+
+//: **A space's own export** (WORLD_CLASS_PLAN 27.1, Spaces): the notebook
+//: folder Settings, Import & export writes, read through that space's filter
+//: rather than the one on screen, and named for it. A locked private space's
+//: notes leave sealed, as that export already does (test_export_spaces_private).
+async function exportSpace(id, name) {
+  toast(`Exporting ${name}…`, "info");
+  try {
+    const response = await api("/export/folder", { headers: { "X-Auth-Token": authToken(), "X-Workspace-ID": id } });
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "space";
+    await saveFile(`tessellate-${slug}.zip`, await response.blob());
+  } catch (error) {
+    toast(error.message, true);
+  }
 }
 
 // --- delete a space (audit 1029 X5; out of spaces-find.js to keep the boot small) ---

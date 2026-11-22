@@ -140,7 +140,7 @@ def test_k29_an_async_route_touches_its_database_session_only_in_a_thread():
 
 
 def test_k16_spaces_are_documented_as_organisation_not_a_boundary():
-    assert "not a security boundary" in (ROOT / "docs" / "SECURITY.md").read_text()
+    assert "not a security boundary" in (ROOT / "SECURITY.md").read_text()
     assert "Organisation, not a boundary" in (ROOT / "src" / "tessellate" / "core" / "database.py").read_text()
 
 

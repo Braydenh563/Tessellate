@@ -39,7 +39,7 @@ def test_the_turn_keeps_which_question_it_followed(client):
 
 def test_chat_sends_and_redraws_the_link():
     attach = with_pieces("chat-attach.js")
-    selects = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    selects = (JS / "chat-list.js").read_text(encoding="utf-8")
     # A chip sends its question with the one it was offered under.
     assert "sendChatMessage(pick, { followupOf:" in attach
     assert "followup_of: followupOf" in attach

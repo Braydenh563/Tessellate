@@ -29,7 +29,7 @@ def test_deleting_a_turn_recounts_the_header_a20():
 
 
 def test_a_reopened_chat_recounts_its_header_a20():
-    js = (Path(__file__).resolve().parents[1] / "frontend/js/sheets-selects.js").read_text(encoding="utf-8")
+    js = (Path(__file__).resolve().parents[1] / "frontend/js/chat-list.js").read_text(encoding="utf-8")
     assert "renderChatTurnCount();\n  lazyScript(\"/js/chat-time.js\")" in js
 
 

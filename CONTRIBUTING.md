@@ -49,7 +49,7 @@ Everything runs offline, with no Ollama and no models:
 ```bash
 bash scripts/gate.sh --changed   # lint set, node --check, ruff, and the tests that name your files
 ruff check .                     # lint (what CI runs)
-pytest -n auto                   # the whole suite: 13,300+ tests, under nine minutes on four cores
+pytest -n auto                   # the whole suite: 22,000+ tests, under nine minutes on four cores
 ```
 
 The full suite takes about 25 minutes serially, so run the gate while you work
@@ -108,10 +108,7 @@ Nothing else needs it. The script downloads only when you ask, no mode of
   Errors say what happened and what to do.
 - If you touch the architecture (a new module, table or data flow), update
   `docs/ARCHITECTURE.md` in the same PR.
-- Add a bullet to `CHANGELOG.md` under "Unreleased", and copy the file to
-  `docs/CHANGELOG.md`: the two must be identical, and
-  `tests/test_docs_site.py` checks it. The same goes for `CONTRIBUTING.md` and
-  `SECURITY.md`, which are mirrored into `docs/` for the documentation site.
+- Add a bullet to `CHANGELOG.md` under "Unreleased".
 - A tool, a skill or a version bump changes numbers the README states (the tool
   and skill counts, the version, the optional packages), and
   `tests/test_readme_freshness.py` fails until the README says the same.
@@ -126,11 +123,17 @@ Three rules keep that from happening:
 - **Reconcile before building.** Search for the feature first. If it exists,
   extend it, do not reimplement it. (Snooze, chat export, theming, the command
   palette, the skills bar and much more are already built.)
-- **Additive only.** Extend functions rather than replacing them, and never
-  delete a feature, widget or CSS rule to make room for a new one without asking.
+- **Replace, do not layer.** Extend a working function rather than rewriting it,
+  and when a change supersedes an old path, remove the old path in the same
+  change unless saved data or a public interface still needs it. Never delete a
+  feature, widget or CSS rule to make room for a new one without asking.
 - **One feature per commit.** After each commit, `git diff --stat` should list only
   the files that feature touches. An unexpectedly wide diff is the early warning
   sign of a regression.
+
+## Dependencies
+
+A new release of a dependency is not taken until it is 30 days old: a bump to `requirements.txt`, `package.json`, an Action or a base image waits out the floor, so a bad or hijacked release has time to be pulled. Dependabot enforces it with `cooldown: default-days: 30` in `.github/dependabot.yml`; a security fix may skip the wait, and the PR says so.
 
 ## Commit and PR conventions
 

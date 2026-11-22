@@ -72,3 +72,14 @@ def test_help_and_the_guide_name_the_notice() -> None:
     assert "notice with Install" in topic and "Install" in topic
     #: The long half lives in the button's title, as the no-model notice does.
     assert "install.title" in JS
+
+
+def test_a_notice_button_never_shrinks_below_its_word():
+    """L-general-43: with the mono font at 390 the voice notice's Install
+    button was 6px narrower than its word. Its `min-width: 44px` replaces
+    the min-content floor, so `flex: 0 1 auto` could squeeze it; the text
+    span wraps instead. A CSS rule, because the fit is only measurable in a
+    browser (fontmatrix.js)."""
+    css = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    body = re.search(r"(?m)^\.notice > button \{([^}]*)\}", css)
+    assert body and "flex: none" in body.group(1)

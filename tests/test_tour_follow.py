@@ -95,3 +95,21 @@ def test_a_hover_only_target_is_revealed_by_its_card_for_the_step() -> None:
     root = ROOT / "frontend" / "css"
     shell = (root / "00-tokens-shell.css").read_text(encoding="utf-8")
     assert ".library-card.tour-reveal .library-card-menu" in shell
+
+
+def test_the_library_create_step_falls_back_to_the_empty_states_create() -> None:
+    # An empty library hides the dock's Create (library.js `offerCreate`), so
+    # the step must name the empty state's own button or it is dropped mid-walk
+    # and the count goes from 4 to 3 (tour.js sweep, fresh notebook).
+    at = TOUR.index('target: "#library-new-doc"')
+    step = TOUR[at : TOUR.index("},", at)]
+    assert 'or: "#library-empty-create"' in step
+    assert "orText:" in step
+
+
+def test_the_board_notes_step_is_left_out_of_a_phone_run() -> None:
+    # The phone's top bar hides #wb-add-note (max-width 599.98px), so the step
+    # carries the matching media query instead of being dropped when reached.
+    at = TOUR.index('target: "#wb-add-note"')
+    step = TOUR[at : TOUR.index("},", at)]
+    assert 'media: "(min-width: 600px)"' in step

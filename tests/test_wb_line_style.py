@@ -79,7 +79,7 @@ def test_the_panel_reads_and_writes_it():
 
 
 def test_the_renderer_draws_it_and_a_pasted_style_carries_it():
-    assert "wbRoundedPathD.curved(pathData" in WB[WB.index("sketchUpdate.each(function(d)"):]
+    assert "wbRoundedPathD.curved(pathData" in WB[WB.index("renderWhiteboard.parts.wbSketchLook ="):]
     for name in ("WB_SKETCH_STYLE_KEYS", "WB_SKETCH_RESET_KEYS"):
         block = WB[WB.index(f"const {name}"):].split("];", 1)[0]
         assert re.search(r'"curve"', block), name

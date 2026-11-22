@@ -75,11 +75,10 @@ def test_the_script_is_idempotent():
 
 
 def test_the_former_name_is_noted_where_people_look():
-    for rel in ("README.md", "docs/index.html", "frontend/index.html", "CHANGELOG.md", "docs/CHANGELOG.md"):
+    for rel in ("README.md", "docs/index.html", "frontend/index.html", "CHANGELOG.md"):
         text = (ROOT / rel).read_text(encoding="utf-8")
         assert re.search(r"formerly MemoryMap AI", text, re.I), rel
     assert "Renamed to Tessellate; formerly MemoryMap AI." in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-    assert "Renamed to Tessellate; formerly MemoryMap AI." in (ROOT / "docs/CHANGELOG.md").read_text(encoding="utf-8")
 
 
 def test_strings_that_secure_or_find_existing_data_keep_the_old_name():

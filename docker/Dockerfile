@@ -25,9 +25,15 @@ COPY src ./src
 COPY frontend ./frontend
 COPY migrations ./migrations
 COPY alembic.ini ./
+# The licence and the third-party notices go with every copy (L-general-3).
+COPY LICENSE ./
+COPY docs/THIRD_PARTY.md ./
 RUN /venv/bin/pip install --no-deps -e .
 
 FROM python:3.13-slim
+# Image builds also stamp the commit for /health (L-general-6).
+ARG SOURCE_COMMIT=""
+ENV TESSELLATE_SOURCE_COMMIT=$SOURCE_COMMIT
 RUN useradd --create-home --uid 1000 mm \
  && mkdir -p /data /models \
  && chown mm:mm /data /models
@@ -52,4 +58,8 @@ USER mm
 # TESSELLATE_ALLOWED_HOSTS (comma-separated, names only) or the app answers 421.
 ENV TESSELLATE_BIND=0.0.0.0 \
     TESSELLATE_PORT=8000
+# /health answers without a password, on the event loop (never a worker
+# thread a busy copy has used up). Python, since the slim image has no curl.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD ["python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/health' % os.environ.get('TESSELLATE_PORT', '8000'), timeout=4)"]
 CMD ["python", "-m", "tessellate"]

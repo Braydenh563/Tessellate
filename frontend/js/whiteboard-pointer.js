@@ -1,18 +1,462 @@
 (() => {
   // whiteboard-pointer.js: drawing, erasing, marquee and lasso select, edge pan and port hover on the board; a section of initWhiteboard (L634).
   // Wrapped: initWhiteboard calls it once, passing the names it shares; nothing here runs at load.
-  function wbInitPointer({ selectWbTool, boardEl }) {
+  let selectWbTool, boardEl;
+  let svgCanvas;
+  //: Every sample the browser coalesced into this event is hit-tested, so a fast finger or pen stroke between two
+  //: events erases what it crossed (audit B21); `pointerenter` alone never fires reliably on touch or pen. One swipe,
+  //: one Undo step (L-whiteboard-35): each delete pushes its own entry as it lands, and the swipe's end folds them
+  //: into one batch.
+  let wbEraseHad = null;
+  let wbMarqueeStart = null;
+  //: One-shot, the placing twin of `wbMarqueeJustSelected`: a drawn text box
+  //: or sticky spends the canvas click its own release makes.
+  let wbPlaceJustDrawn = false;
+  let wbMarqueeEl = null;
+  let wbMarqueeJustSelected = false;
+  //: The latest pointer position (board units) and the frame that will draw
+  //: it, so a burst of moves inside one frame is one write (`wbDrawMarquee`).
+  let wbMarqueeAt = null;
+  let wbMarqueeFrame = 0;
+  let wbMarqueeInk = "";
+  let wbEdgePan;
+  let openMapCanvasMenu;
+  let openBoardCanvasMenu;
+  let wbCanvasMenuWanted;
+  let openCanvasMenu;
+  //: **Right-drag pans, a plain right-click opens the menu** (C03, the owner:
+  //: "hard to move around the whiteboard with a mouse, copy draw.io and have
+  //: right click hold down drag panning"). The browser sends `contextmenu`
+  //: on the press (Linux) or the release (Windows), so "suppress it only
+  //: when the drag moved" cannot be written (wbrightpan.js header). Instead
+  //: the native event on bare canvas is always swallowed while a right press
+  //: is in flight or just ended, and the app's own menu opens on the
+  //: release when the pointer stayed inside the slop. A `contextmenu` with
+  //: no press behind it (the menu key) still opens the menu.
+  const WB_RIGHT_SLOP = 4;
+  let wbRightPress = null;
+  let wbRightOwns;
+  let port;
+  let zoomK;
+  let portTarget;
+  let portEnd;
+  let portHints;
+  let wbLassoPoints = null;
+  let wbLassoEl = null;
+  let wbLassoShift = false;
+  let wbPictureCap;
+  let imageFileInput;
+  let mapPictureInput;
+
+  function getLogicalMouse(e) {
+    return wbClientToBoard(e.clientX, e.clientY);
+  }
+
+  function wbEraseSettle() {
+    if (!wbEraseHad) return;
+    const had = wbEraseHad;
+    wbEraseHad = null;
+    const mine = wbStacks.undo.filter((entry) => !had.has(entry) && entry.action === "delete");
+    if (mine.length < 2) return;
+    for (const entry of mine) wbStacks.undo.splice(wbStacks.undo.indexOf(entry), 1);
+    wbPushUndo({ action: "batch", entries: mine });
+  }
+
+  function wbEraseAt(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY);
+    const sketchEl = el?.closest(".sketch-group");
+    if (sketchEl) {
+      const item = wbState.sketches.find((s) => s.id === Number(sketchEl.dataset.id));
+      if (item) wbDeleteSketch(item);
+      return;
+    }
+    const cardEl = el?.closest(".node-card");
+    if (cardEl) {
+      const item = wbState.nodes.find((n) => n.id === Number(cardEl.dataset.id));
+      if (item) wbDeleteNode(item);
+      return;
+    }
+    const objEl = el?.closest(".wb-object");
+    if (objEl) {
+      const item = (wbState.objects || []).find((o) => o.id === Number(objEl.dataset.id));
+      if (item) wbDeleteObject(item);
+    }
+  }
+
+  // Rectangle marquee select: reported directly ("area select... missing").
+  // Only engages when the pointerdown target is genuinely empty canvas: a
+  // card/sketch/object's own drag already claims the gesture otherwise (the
+  // node/object drags' `.filter()`, the sketch drag's own tool check), so
+  // checking the target here is enough without a second stopPropagation
+  // dance.
+  //
+  // **The handle layer has to be in this list, and stopPropagation cannot
+  // stand in for it.** Reported: "when I adjust things like links, the area
+  // select happens too", dragging a link's endpoint drew a selection
+  // marquee across the board at the same time. The endpoint handles are not
+  // inside `.sketch-group`; they live in their own `.wb-sketch-handle-group`
+  // over in `#wb-overlay-zoom-group`, precisely so a card can sit above the
+  // base layer without burying them. So they passed this test as empty
+  // canvas.
+  //
+  // Their drag does call `stopPropagation` on d3-drag's "start", and that is
+  // why this looked correct. It fires on the wrong event: d3-drag listens for
+  // `mousedown`, this listens for `pointerdown`, and a pointerdown is
+  // dispatched *before* the compatibility mousedown it generates. By the time
+  // the handle stops propagation the marquee has already begun. Two event
+  // families cannot cancel each other, so the target check is the only place
+  // this can be fixed.
+  function wbIsEmptyCanvasTarget(target) {
+    // `.sketch-group:not(.wb-link-sketch)`: see the class's own note in the sketch render. A drawn shape claims the
+    // gesture (it can be moved by its body); a link cannot be, and its 20px hit band was swallowing the marquee
+    // wherever a connector crossed the canvas.
+    return wbIsBareCanvas(target);
+  }
+
+  function rectsIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
+    return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+  }
+
+  //: End the marquee gesture and take its rectangle off the canvas. Every exit from the drag goes through here, the
+  //: completed one, the cancelled one, and the sweep `wbClearSelectionOverlays` runs, so there is exactly one place
+  //: that can forget to remove the element.
+  function wbEndMarqueeDrag() {
+    if (wbMarqueeStart?.place) wbClearAlignmentGuides();
+    //: A selection drag cut off (cancelled, capture lost) goes back where it
+    //: was; one that ended normally cleared `wbMarqueeStart` first.
+    if (wbMarqueeStart?.move && wbMarqueeStart.origin) {
+      wbApplyBulkMove(wbMarqueeStart.origin, 0, 0);
+      for (const entry of wbMarqueeStart.origin.values()) delete entry.item._liveD;
+    }
+    wbMarqueeEl?.remove();
+    wbMarqueeEl = null;
+    wbMarqueeStart = null;
+    if (wbMarqueeFrame) cancelAnimationFrame(wbMarqueeFrame);
+    wbMarqueeFrame = 0;
+    wbMarqueeAt = null;
+  }
+
+  //: The rectangle itself, made on the first movement past the threshold the
+  //: completed gesture is judged by anyway. Split out so both the press and
+  //: the move can read it.
+  //: **Drawn on the compositor, once a frame** (INBOX 410: "drag selection on
+  //: the whiteboard and mindmap is laggy as well"). The rectangle was an SVG
+  //: `<rect>` in the overlay layer whose four attributes were rewritten on
+  //: every pointermove. Each rewrite changed a paint chunk's bounds, and a
+  //: changed chunk makes Chrome re-layerize the whole page, whose cost grows
+  //: with everything on the board: traced over one 80-move drag
+  //: (`scratchpad/ui-sweeps/marqueeperf.js`), Layerize took 1275ms on a board
+  //: of 200 text boxes and 616ms on a map of 200 topics, with frames of 50ms
+  //: at the 95th percentile and 83ms at worst.
+  //:
+  //: **Not a DOM change at all: a canvas.** The obvious fix, five 1px boxes
+  //: moved by `transform` on layers of their own, was measured first and
+  //: is not one: on a map of 200 topics, 60 frames of transform writes cost
+  //: 419ms of Layerize, the same as 60 frames of `<rect>` attribute writes
+  //: (445ms), because any style or attribute change re-layerizes a page this
+  //: size. 60 frames of drawing on a canvas cost 8.7ms. So the rectangle is
+  //: drawn on a canvas the size of the container, made when the drag starts
+  //: and removed when it ends, redrawn at most once a frame from the last
+  //: pointer position of that frame. It keeps the dashed accent edge and the
+  //: 12% accent wash the SVG rectangle had.
+  //: **A box being placed is drawn as what it will be** (the owner,
+  //: 2026-10-10: "dragging to create any object should ghost preview that
+  //: object, not be the drag selection", and "I tried dragging to create a
+  //: frame and it randomly visually cut off half way on the screen"). The
+  //: frame, sticky and text tools drew the selection marquee, a dashed
+  //: accent wash on a canvas the size of the container as it was when the
+  //: drag began, which said "select" rather than "a frame goes here" and was
+  //: cut wherever that canvas ended. The ghost is an element of the card
+  //: layer in board units, drawn in the placed kind's own look (a frame's
+  //: edge and title, a sticky's paper, a text box's dashed field), so it pans
+  //: and zooms with the board and covers the whole box the release makes.
+  //: The selection marquee keeps its canvas (INBOX 410's cost).
+  function wbBeginPlaceGhost(pointerId, place) {
+    const layer = wbInstances.layer("wb-html-layer");
+    if (!layer) return wbBeginMarqueeRect(pointerId);
+    wbMarqueeEl = document.createElement("div");
+    wbMarqueeEl.className = "wb-place-ghost";
+    wbMarqueeEl.dataset.kind = place;
+    wbMarqueeEl.dataset.label = place === "frame" ? "Frame" : place === "sticky" ? "" : "Text";
+    wbMarqueeEl.setAttribute("aria-hidden", "true");
+    layer.appendChild(wbMarqueeEl);
+    wbBoardState.capture(boardEl(), pointerId);
+  }
+
+  function wbBeginMarqueeRect(pointerId) {
+    wbMarqueeEl = document.createElement("canvas");
+    wbMarqueeEl.className = "wb-marquee";
+    wbMarqueeEl.setAttribute("aria-hidden", "true");
+    const ratio = window.devicePixelRatio || 1;
+    const w = boardEl().clientWidth, h = boardEl().clientHeight;
+    wbMarqueeEl.width = Math.max(1, Math.round(w * ratio));
+    wbMarqueeEl.height = Math.max(1, Math.round(h * ratio));
+    wbMarqueeEl.style.width = `${w}px`;
+    wbMarqueeEl.style.height = `${h}px`;
+    //: Through `wbExportColour`, because a canvas cannot read a `var()` and
+    //: the accent may be a `color-mix()` the canvas does not parse either.
+    const accent = wbExportColour(getComputedStyle(boardEl()).getPropertyValue("--accent").trim());
+    wbMarqueeInk = accent && accent !== "none" ? accent : "#3b82f6";
+    boardEl().appendChild(wbMarqueeEl);
+    // **The capture is the fix.** Without it every pointermove and pointerup
+    // outside the container went to whatever element was under the cursor,
+    // so a drag that ended over the top bar, over the left rail or off the
+    // window simply never finished, and left its rectangle behind.
+    wbBoardState.capture(boardEl(), pointerId);
+  }
+
+  //: The selection drag's frames: the same 4-unit threshold as the marquee,
+  //: then the whole selection by the pointer's travel from the press, Shift on
+  //: one axis, grid-snapped by distance like a card's own drag.
+  function wbSelectionDragMove(e) {
+    const start = wbMarqueeStart;
+    const [x, y] = getLogicalMouse(e);
+    if (start.pending) {
+      if (Math.abs(x - start.x) < 4 && Math.abs(y - start.y) < 4) return;
+      start.origin = wbSelectionDragOrigin();
+      if (!start.origin) return wbEndMarqueeDrag();
+      start.pending = false;
+      wbBoardState.capture(boardEl(), start.pointerId);
+    }
+    const lock = wbAxisLock(x - start.x, y - start.y, e.shiftKey);
+    wbApplyBulkMove(start.origin, lock === "y" ? 0 : wbSnap(x - start.x, e.altKey), lock === "x" ? 0 : wbSnap(y - start.y, e.altKey));
+    wbQueueSelectionBar();
+  }
+
+  function wbEndSelectionDrag() {
+    const { origin, pending } = wbMarqueeStart;
+    wbMarqueeStart = null;
+    wbEndMarqueeDrag();
+    //: The release's own click lands on the canvas: it is not a clear.
+    wbMarqueeJustSelected = true;
+    if (pending || !origin) return;
+    wbFinishDrag(null, origin, false);
+  }
+
+  //: The board point under the pointer, to the container's own pixels: the
+  //: inverse of `getLogicalMouse`, so the box is where the selection is.
+  function wbDrawMarquee() {
+    wbMarqueeFrame = 0;
+    if (!wbMarqueeEl || !wbMarqueeStart || !wbMarqueeAt) return;
+    const t = d3.zoomTransform(boardEl());
+    //: A box being placed is drawn at the size it will be made, minimum and
+    //: all, so what the ghost shows is what the release creates.
+    const box = wbMarqueeStart.place ? wbPlaceBox(wbMarqueeStart, wbMarqueeAt[0], wbMarqueeAt[1]) : null;
+    if (box && wbMarqueeEl.classList.contains("wb-place-ghost")) return wbMoveSizeGhost(box);
+    const x0 = t.applyX(box ? box.x : wbMarqueeStart.x), y0 = t.applyY(box ? box.y : wbMarqueeStart.y);
+    const x1 = t.applyX(box ? box.x + box.w : wbMarqueeAt[0]), y1 = t.applyY(box ? box.y + box.h : wbMarqueeAt[1]);
+    const l = Math.round(Math.min(x0, x1)), top = Math.round(Math.min(y0, y1));
+    const w = Math.round(Math.abs(x1 - x0)), h = Math.round(Math.abs(y1 - y0));
+    const ratio = window.devicePixelRatio || 1;
+    //: **The canvas follows the container, every frame** (the owner,
+    //: 2026-10-10: a drag preview "randomly visually cut off half way on the
+    //: screen"). It was sized once, when the drag began; a container that
+    //: grew during the drag (a panel closing, the window maximised, a rail
+    //: still animating when the press landed) left the rest of the rectangle
+    //: past the canvas's edge, undrawn. Two reads and a compare per frame.
+    wbFitMarqueeCanvas(ratio);
+    const g = wbMarqueeEl.getContext("2d");
+    g.setTransform(ratio, 0, 0, ratio, 0, 0);
+    g.clearRect(0, 0, wbMarqueeEl.width, wbMarqueeEl.height);
+    if (!w || !h) return;
+    g.fillStyle = wbMarqueeInk;
+    g.strokeStyle = wbMarqueeInk;
+    g.globalAlpha = 0.12;
+    g.fillRect(l, top, w, h);
+    g.globalAlpha = 1;
+    g.lineWidth = 1;
+    g.setLineDash([4, 3]);
+    g.strokeRect(l + 0.5, top + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
+  }
+
+  //: The placing ghost is a box in board space, not the marquee canvas: it
+  //: moves by transform (its layer, `will-change`) and takes the size the
+  //: release will create, so the only per-move layout is its own.
+  function wbMoveSizeGhost(box) {
+    wbMarqueeEl.style.transform = `translate(${box.x}px, ${box.y}px)`;
+    wbMarqueeEl.style.width = `${box.w}px`;
+    wbMarqueeEl.style.height = `${box.h}px`;
+  }
+
+  //: The canvas's bitmap and box follow the container's size, compared
+  //: before written: a style write on every move would re-layerize the
+  //: page (tests/test_marquee_cost.py), so this is a resize, not a draw.
+  function wbFitMarqueeCanvas(ratio) {
+    const cw = boardEl().clientWidth, ch = boardEl().clientHeight;
+    const bw = Math.max(1, Math.round(cw * ratio)), bh = Math.max(1, Math.round(ch * ratio));
+    if (wbMarqueeEl.width === bw && wbMarqueeEl.height === bh) return;
+    wbMarqueeEl.width = bw;
+    wbMarqueeEl.height = bh;
+    wbMarqueeEl.style.width = `${cw}px`;
+    wbMarqueeEl.style.height = `${ch}px`;
+  }
+
+  function wbEdgePanWanted() {
+    if (!(wbEdgePan.buttons & 1) || WB_BRUSH_TOOLS.has(window.currentTool) || window.currentTool === "pan") return false;
+    const wanted = (wbMarqueeEl && wbMarqueeStart && !wbMarqueeStart.pending) || Boolean(wbGesture && !wbGesture.cancelled && !wbGesture.overTrash && !wbEdgePan.turn);
+    return wanted && !wbCompanionHeld(null, "edge pan");
+  }
+
+  //: Screen pixels a frame along one axis: positive moves the board's
+  //: content towards the far edge (so the near side comes into view).
+  function wbEdgePanSpeed(near, far, band) {
+    const depth = near > 0 ? near : far > 0 ? -far : 0;
+    if (!depth) return 0;
+    const share = Math.min(1, Math.abs(depth) / band);
+    return Math.sign(depth) * Math.max(1, Math.round(wbEdgePan.max * share * share));
+  }
+
+  function wbEdgePanTick() {
+    wbEdgePan.frame = 0;
+    if (!wbEdgePanWanted() || !document.body.contains(boardEl())) return;
+    //: The gesture's own box (`wbCanvasOriginRect`, measured at the press):
+    //: this frame runs after the move wrote every moved item, and a fresh
+    //: measure here forced a restyle of the board each frame (L-mindmap-17,
+    //: 1.3s of a 2.7s 200-topic branch drag).
+    const r = wbCanvasOriginRect();
+    if (!r) return;
+    const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
+    const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
+    const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
+    if (!vx && !vy) return;
+    const k = d3.zoomTransform(boardEl()).k || 1;
+    d3.select(boardEl()).call(wbZoom.translateBy, vx / k, vy / k);
+    const at = { clientX: wbEdgePan.x, clientY: wbEdgePan.y, buttons: wbEdgePan.buttons, bubbles: true, cancelable: true, view: window };
+    if (wbMarqueeEl && wbMarqueeStart) {
+      wbMarqueeAt = getLogicalMouse(at);
+      wbDrawMarquee();
+    } else {
+      //: d3-drag's own move listener, called directly: a broadcast
+      //: mousemove re-entered the right-press, hover and marquee listeners
+      //: with coordinates nobody moved to (audit B16).
+      d3.select(window).on("mousemove.drag")?.call(window, new MouseEvent("mousemove", at));
+    }
+    wbEdgePan.frame = requestAnimationFrame(wbEdgePanTick);
+  }
+
+  function portHover(e) {
+    if (e.pointerType === "touch" || port.drag) return;
+    const [x, y] = getLogicalMouse(e);
+    const hit = portTarget(x, y);
+    if (!hit) {
+      if (port.item) wbClearAnchorHints();
+      port.kind = null;
+      port.item = null;
+      return;
+    }
+    [port.kind, port.item] = hit;
+    wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y, WB_PORT_HIT_PX / zoomK()));
+  }
+
+  // Freeform lasso select: asked for directly ("all the selection tools
+  // (e.g. rectangle select and lasso)"). Same shape as the marquee just
+  // above (empty-canvas-only pointerdown, shift to add, `wbMarqueeJustSelected`
+  // shared so the trailing native "click" doesn't wipe the result) but hit-
+  // tests each item's *centre point* against the traced polygon rather than
+  // rectangle-intersecting its bounding box, a lasso is a freeform loop, so
+  // "is this item's middle inside the loop" is the one test that stays
+  // cheap (one ray-cast per item, not a polygon-clip against every edge) and
+  // still matches what a user visually circled.
+  function wbPointInPolygon(px, py, points) {
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const [xi, yi] = points[i], [xj, yj] = points[j];
+      const crosses = yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi;
+      if (crosses) inside = !inside;
+    }
+    return inside;
+  }
+
+  //: The lasso's half of `wbEndMarqueeDrag`, and it exists for the same
+  //: reported bug: a loop released outside the container left its polyline
+  //: on the canvas with nothing holding a reference to it.
+  function wbEndLassoDrag() {
+    wbLassoEl?.remove();
+    wbLassoEl = null;
+    wbLassoPoints = null;
+  }
+
+  function wbPictureTooBig() {
+    toast("That picture is over 50 MB, the most the notebook keeps. Shrink it and try again.", "info");
+  }
+
+  //: A picture pasted as an address or as markup, not as a file (audit 1028 B28): `text/uri-list`
+  //: naming a picture, or the first `<img>` of `text/html` when the plain text is empty or just
+  //: that address (a paragraph with a picture in it is still a paragraph).
+  function wbPastedPictureAddress(data, html) {
+    const plain = (data?.getData("text/plain") || "").trim();
+    const listed = (data?.getData("text/uri-list") || "").split(/\r?\n/).map((line) => line.trim()).find((line) => line && !line.startsWith("#"));
+    if (listed && /^data:image\/|\.(?:png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#]|$)/i.test(listed)) return listed;
+    if (!html) return "";
+    const src = new DOMParser().parseFromString(html, "text/html").querySelector("img[src]")?.getAttribute("src") || "";
+    return src && (!plain || plain === src) ? src : "";
+  }
+
+  //: A `data:` picture is decoded to a file; one already in the notebook is placed as it is; a web
+  //: address is refused with the reason, since the page may not fetch the web (`connect-src 'self'`).
+  async function wbPlacePastedAddress(src, x, y) {
+    const inline = /^data:(image\/[\w.+-]+);base64,([\s\S]*)$/i.exec(src);
+    if (inline) {
+      if (inline[2].length * 0.75 > wbPictureCap) return wbPictureTooBig();
+      const bytes = Uint8Array.from(atob(inline[2]), (char) => char.charCodeAt(0));
+      //: The upload route reads the type from the name's extension.
+      const ext = inline[1].slice(6).toLowerCase().replace("jpeg", "jpg").replace("svg+xml", "svg");
+      return wbPlaceUploadedImage(new File([bytes], `pasted-picture.${ext}`, { type: inline[1] }), x, y);
+    }
+    const local = src.startsWith(`${location.origin}/media/`) ? src.slice(location.origin.length) : src;
+    if (local.startsWith("/media/")) return wbPlaceImageUrl(local, x, y);
+    toast("This notebook works offline, so a picture from the web is not fetched. Save the picture, then paste or drop the file.");
+  }
+
+  async function wbPlaceUploadedImage(file, x, y) {
+    if (wbFmtState.pdf?.isPdf(file)) return wbFmtState.pdf.place(file, x, y);
+    if (!file) return;
+    //: Said, not dropped silently (L-whiteboard-36): a board takes pictures and PDFs.
+    if (!file.type?.startsWith("image/")) return toast(`A board takes pictures and PDFs; ${file.name || "that file"} is neither.`, "info");
+    if (file.size > wbPictureCap) return wbPictureTooBig();
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      //: Board-only until Save to Library: not listed, not read, not captioned (K18).
+      formData.append("board", "true");
+      const uploaded = await apiJson("/media/upload", {
+        method: "POST",
+        headers: authHeaders(),
+        body: formData,
+      });
+      await wbPlaceImageUrl(uploaded.url, x, y);
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+    }
+  }
+
+  async function wbPlaceImageUrl(url, x, y) {
+    try {
+      const img = new Image();
+      const naturalSize = await new Promise((resolve) => {
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 300, h: 200 });
+        img.src = mediaSrc(url);
+      });
+      //: Its own size, shrunk only to sit inside the view (wbpaste-1026).
+      const view = wbVisibleCanvasRect();
+      const [vx0, vy0] = wbClientToBoard(view.left, view.top);
+      const [vx1, vy1] = wbClientToBoard(view.right, view.bottom);
+      const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
+      await wbCreateObject("image", { url }, x - width / 2, y - height / 2, width, height);
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+    }
+  }
+
+  function wbInitDrawPointer() {
     // Opens in Select, like every whiteboard app, panning is always
     // available on held space and the middle mouse button regardless.
     selectWbTool("select"); // the initial state
 
     // Drawing event handlers on the SVG itself or container
-    const svgCanvas = wbInstances.layer("wb-svg-layer");
+    svgCanvas = wbInstances.layer("wb-svg-layer");
 
-    function getLogicalMouse(e) {
-      return wbClientToBoard(e.clientX, e.clientY);
-    }
-    
     // The eraser doesn't draw: it deletes whatever the pointer crosses while
     // held, which is renderWhiteboard's job (it owns the sketch/node elements
     // this has to hit-test against). All this needs to track is "is the
@@ -43,50 +487,18 @@
         e.target.releasePointerCapture?.(e.pointerId);
       }
     });
+
     window.addEventListener("pointerup", () => {
       wbErasing = false;
       wbEraseSettle();
     });
-    //: Every sample the browser coalesced into this event is hit-tested, so a
-    //: fast finger or pen stroke between two events erases what it crossed
-    //: (audit B21); `pointerenter` alone never fires reliably on touch or pen.
-    //: One swipe, one Undo step (L-whiteboard-35): each delete pushes its own
-    //: entry as it lands, and the swipe's end folds them into one batch.
-    let wbEraseHad = null;
-    function wbEraseSettle() {
-      if (!wbEraseHad) return;
-      const had = wbEraseHad;
-      wbEraseHad = null;
-      const mine = wbStacks.undo.filter((entry) => !had.has(entry) && entry.action === "delete");
-      if (mine.length < 2) return;
-      for (const entry of mine) wbStacks.undo.splice(wbStacks.undo.indexOf(entry), 1);
-      wbPushUndo({ action: "batch", entries: mine });
-    }
-    function wbEraseAt(clientX, clientY) {
-      const el = document.elementFromPoint(clientX, clientY);
-      const sketchEl = el?.closest(".sketch-group");
-      if (sketchEl) {
-        const item = wbState.sketches.find((s) => s.id === Number(sketchEl.dataset.id));
-        if (item) wbDeleteSketch(item);
-        return;
-      }
-      const cardEl = el?.closest(".node-card");
-      if (cardEl) {
-        const item = wbState.nodes.find((n) => n.id === Number(cardEl.dataset.id));
-        if (item) wbDeleteNode(item);
-        return;
-      }
-      const objEl = el?.closest(".wb-object");
-      if (objEl) {
-        const item = (wbState.objects || []).find((o) => o.id === Number(objEl.dataset.id));
-        if (item) wbDeleteObject(item);
-      }
-    }
+
     wbInstances.on("pointermove", (e) => {
       if (window.currentTool !== "eraser" || !wbErasing) return;
       const samples = e.getCoalescedEvents?.() ?? [];
       for (const p of samples.length ? samples : [e]) wbEraseAt(p.clientX, p.clientY);
     });
+
     // Clicking empty canvas with Select active clears the selection, every
     // card/sketch's own click handler calls stopPropagation() under Select,
     // so a click that reaches here was never on an item. A completed marquee
@@ -142,74 +554,12 @@
         wbCreateFrame(x, y);
       }
     });
+  }
 
-    // Rectangle marquee select: reported directly ("area select... missing").
-    // Only engages when the pointerdown target is genuinely empty canvas: a
-    // card/sketch/object's own drag already claims the gesture otherwise (the
-    // node/object drags' `.filter()`, the sketch drag's own tool check), so
-    // checking the target here is enough without a second stopPropagation
-    // dance.
-    //
-    // **The handle layer has to be in this list, and stopPropagation cannot
-    // stand in for it.** Reported: "when I adjust things like links, the area
-    // select happens too", dragging a link's endpoint drew a selection
-    // marquee across the board at the same time. The endpoint handles are not
-    // inside `.sketch-group`; they live in their own `.wb-sketch-handle-group`
-    // over in `#wb-overlay-zoom-group`, precisely so a card can sit above the
-    // base layer without burying them. So they passed this test as empty
-    // canvas.
-    //
-    // Their drag does call `stopPropagation` on d3-drag's "start", and that is
-    // why this looked correct. It fires on the wrong event: d3-drag listens for
-    // `mousedown`, this listens for `pointerdown`, and a pointerdown is
-    // dispatched *before* the compatibility mousedown it generates. By the time
-    // the handle stops propagation the marquee has already begun. Two event
-    // families cannot cancel each other, so the target check is the only place
-    // this can be fixed.
-    function wbIsEmptyCanvasTarget(target) {
-      // `.sketch-group:not(.wb-link-sketch)`: see the class's own note in the
-      // sketch render. A drawn shape claims the gesture (it can be moved by its
-      // body); a link cannot be, and its 20px hit band was swallowing the
-      // marquee wherever a connector crossed the canvas.
-      return wbIsBareCanvas(target);
-    }
-    function rectsIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
-      return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
-    }
-    let wbMarqueeStart = null;
-    //: One-shot, the placing twin of `wbMarqueeJustSelected`: a drawn text box
-    //: or sticky spends the canvas click its own release makes.
-    let wbPlaceJustDrawn = false;
-    let wbMarqueeEl = null;
-    let wbMarqueeJustSelected = false;
-    //: The latest pointer position (board units) and the frame that will draw
-    //: it, so a burst of moves inside one frame is one write (`wbDrawMarquee`).
-    let wbMarqueeAt = null;
-    let wbMarqueeFrame = 0;
-    let wbMarqueeInk = "";
-    //: End the marquee gesture and take its rectangle off the canvas. Every
-    //: exit from the drag goes through here, the completed one, the cancelled
-    //: one, and the sweep `wbClearSelectionOverlays` runs, so there is exactly
-    //: one place that can forget to remove the element.
-    function wbEndMarqueeDrag() {
-      if (wbMarqueeStart?.place) wbClearAlignmentGuides();
-      //: A selection drag cut off (cancelled, capture lost) goes back where it
-      //: was; one that ended normally cleared `wbMarqueeStart` first.
-      if (wbMarqueeStart?.move && wbMarqueeStart.origin) {
-        wbApplyBulkMove(wbMarqueeStart.origin, 0, 0);
-        for (const entry of wbMarqueeStart.origin.values()) delete entry.item._liveD;
-      }
-      wbMarqueeEl?.remove();
-      wbMarqueeEl = null;
-      wbMarqueeStart = null;
-      if (wbMarqueeFrame) cancelAnimationFrame(wbMarqueeFrame);
-      wbMarqueeFrame = 0;
-      wbMarqueeAt = null;
-    }
+  function wbInitMarqueePointer() {
     wbInstances.on("pointerdown", (e) => {
-      //: A new press is a new gesture: a one-shot left by a drag released off
-      //: the board (no click ever reached the canvas to spend it) must not
-      //: swallow this press's click.
+      //: A new press is a new gesture: a one-shot left by a drag released off the board (no click ever reached the
+      //: canvas to spend it) must not swallow this press's click.
       wbMarqueeJustSelected = false;
       wbPlaceJustDrawn = false;
       //: **The text and sticky tools draw their box too** (the owner,
@@ -223,8 +573,7 @@
       //: And the frame tool (decision 14), the same two gestures.
       const place = ["text", "sticky", "frame"].includes(window.currentTool) ? window.currentTool : null;
       if ((window.currentTool !== "select" && !place) || !wbIsEmptyCanvasTarget(e.target)) return;
-      //: A finger on bare canvas with Select pans (`wbZoomFilter`), so it is
-      //: not also the start of an area select.
+      //: A finger on bare canvas with Select pans (`wbZoomFilter`), so it is not also the start of an area select.
       if (!place && e.pointerType === "touch") return;
       // Primary button only. A right-click opens the context menu and a middle
       // click pans; neither ends with the pointerup this drag is waiting for,
@@ -258,99 +607,7 @@
       //: has always gone to `#wb-overlay-zoom-group` for exactly this reason
       //: (see its own append below); the rectangle never did.
     });
-    //: The rectangle itself, made on the first movement past the threshold the
-    //: completed gesture is judged by anyway. Split out so both the press and
-    //: the move can read it.
-    //: **Drawn on the compositor, once a frame** (INBOX 410: "drag selection on
-    //: the whiteboard and mindmap is laggy as well"). The rectangle was an SVG
-    //: `<rect>` in the overlay layer whose four attributes were rewritten on
-    //: every pointermove. Each rewrite changed a paint chunk's bounds, and a
-    //: changed chunk makes Chrome re-layerize the whole page, whose cost grows
-    //: with everything on the board: traced over one 80-move drag
-    //: (`scratchpad/ui-sweeps/marqueeperf.js`), Layerize took 1275ms on a board
-    //: of 200 text boxes and 616ms on a map of 200 topics, with frames of 50ms
-    //: at the 95th percentile and 83ms at worst.
-    //:
-    //: **Not a DOM change at all: a canvas.** The obvious fix, five 1px boxes
-    //: moved by `transform` on layers of their own, was measured first and
-    //: is not one: on a map of 200 topics, 60 frames of transform writes cost
-    //: 419ms of Layerize, the same as 60 frames of `<rect>` attribute writes
-    //: (445ms), because any style or attribute change re-layerizes a page this
-    //: size. 60 frames of drawing on a canvas cost 8.7ms. So the rectangle is
-    //: drawn on a canvas the size of the container, made when the drag starts
-    //: and removed when it ends, redrawn at most once a frame from the last
-    //: pointer position of that frame. It keeps the dashed accent edge and the
-    //: 12% accent wash the SVG rectangle had.
-    //: **A box being placed is drawn as what it will be** (the owner,
-    //: 2026-10-10: "dragging to create any object should ghost preview that
-    //: object, not be the drag selection", and "I tried dragging to create a
-    //: frame and it randomly visually cut off half way on the screen"). The
-    //: frame, sticky and text tools drew the selection marquee, a dashed
-    //: accent wash on a canvas the size of the container as it was when the
-    //: drag began, which said "select" rather than "a frame goes here" and was
-    //: cut wherever that canvas ended. The ghost is an element of the card
-    //: layer in board units, drawn in the placed kind's own look (a frame's
-    //: edge and title, a sticky's paper, a text box's dashed field), so it pans
-    //: and zooms with the board and covers the whole box the release makes.
-    //: The selection marquee keeps its canvas (INBOX 410's cost).
-    function wbBeginPlaceGhost(pointerId, place) {
-      const layer = wbInstances.layer("wb-html-layer");
-      if (!layer) return wbBeginMarqueeRect(pointerId);
-      wbMarqueeEl = document.createElement("div");
-      wbMarqueeEl.className = "wb-place-ghost";
-      wbMarqueeEl.dataset.kind = place;
-      wbMarqueeEl.dataset.label = place === "frame" ? "Frame" : place === "sticky" ? "" : "Text";
-      wbMarqueeEl.setAttribute("aria-hidden", "true");
-      layer.appendChild(wbMarqueeEl);
-      wbBoardState.capture(boardEl(), pointerId);
-    }
-    function wbBeginMarqueeRect(pointerId) {
-      wbMarqueeEl = document.createElement("canvas");
-      wbMarqueeEl.className = "wb-marquee";
-      wbMarqueeEl.setAttribute("aria-hidden", "true");
-      const ratio = window.devicePixelRatio || 1;
-      const w = boardEl().clientWidth, h = boardEl().clientHeight;
-      wbMarqueeEl.width = Math.max(1, Math.round(w * ratio));
-      wbMarqueeEl.height = Math.max(1, Math.round(h * ratio));
-      wbMarqueeEl.style.width = `${w}px`;
-      wbMarqueeEl.style.height = `${h}px`;
-      //: Through `wbExportColour`, because a canvas cannot read a `var()` and
-      //: the accent may be a `color-mix()` the canvas does not parse either.
-      const accent = wbExportColour(getComputedStyle(boardEl()).getPropertyValue("--accent").trim());
-      wbMarqueeInk = accent && accent !== "none" ? accent : "#3b82f6";
-      boardEl().appendChild(wbMarqueeEl);
-      // **The capture is the fix.** Without it every pointermove and pointerup
-      // outside the container went to whatever element was under the cursor,
-      // so a drag that ended over the top bar, over the left rail or off the
-      // window simply never finished, and left its rectangle behind.
-      wbBoardState.capture(boardEl(), pointerId);
-    }
-    //: The selection drag's frames: the same 4-unit threshold as the marquee,
-    //: then the whole selection by the pointer's travel from the press, Shift on
-    //: one axis, grid-snapped by distance like a card's own drag.
-    function wbSelectionDragMove(e) {
-      const start = wbMarqueeStart;
-      const [x, y] = getLogicalMouse(e);
-      if (start.pending) {
-        if (Math.abs(x - start.x) < 4 && Math.abs(y - start.y) < 4) return;
-        start.origin = wbSelectionDragOrigin();
-        if (!start.origin) return wbEndMarqueeDrag();
-        start.pending = false;
-        wbBoardState.capture(boardEl(), start.pointerId);
-      }
-      const lock = wbAxisLock(x - start.x, y - start.y, e.shiftKey);
-      wbApplyBulkMove(start.origin, lock === "y" ? 0 : wbSnap(x - start.x, e.altKey), lock === "x" ? 0 : wbSnap(y - start.y, e.altKey));
-      wbQueueSelectionBar();
-    }
-    function wbEndSelectionDrag() {
-      const { origin, pending } = wbMarqueeStart;
-      wbMarqueeStart = null;
-      wbEndMarqueeDrag();
-      //: The release's own click lands on the canvas: it is not a clear.
-      wbMarqueeJustSelected = true;
-      if (pending || !origin) return;
-      wbFinishDrag(null, origin, false);
-    }
+
     window.addEventListener("pointermove", (e) => {
       if (!wbMarqueeStart) return;
       if (wbMarqueeStart.move) return wbSelectionDragMove(e);
@@ -375,41 +632,9 @@
       wbMarqueeAt = [x, y];
       if (!wbMarqueeFrame) wbMarqueeFrame = requestAnimationFrame(wbDrawMarquee);
     });
-    //: The board point under the pointer, to the container's own pixels: the
-    //: inverse of `getLogicalMouse`, so the box is where the selection is.
-    function wbDrawMarquee() {
-      wbMarqueeFrame = 0;
-      if (!wbMarqueeEl || !wbMarqueeStart || !wbMarqueeAt) return;
-      const t = d3.zoomTransform(boardEl());
-      //: A box being placed is drawn at the size it will be made, minimum and
-      //: all, so what the ghost shows is what the release creates.
-      const box = wbMarqueeStart.place ? wbPlaceBox(wbMarqueeStart, wbMarqueeAt[0], wbMarqueeAt[1]) : null;
-      if (box && wbMarqueeEl.classList.contains("wb-place-ghost")) return wbMoveSizeGhost(box);
-      const x0 = t.applyX(box ? box.x : wbMarqueeStart.x), y0 = t.applyY(box ? box.y : wbMarqueeStart.y);
-      const x1 = t.applyX(box ? box.x + box.w : wbMarqueeAt[0]), y1 = t.applyY(box ? box.y + box.h : wbMarqueeAt[1]);
-      const l = Math.round(Math.min(x0, x1)), top = Math.round(Math.min(y0, y1));
-      const w = Math.round(Math.abs(x1 - x0)), h = Math.round(Math.abs(y1 - y0));
-      const ratio = window.devicePixelRatio || 1;
-      //: **The canvas follows the container, every frame** (the owner,
-      //: 2026-10-10: a drag preview "randomly visually cut off half way on the
-      //: screen"). It was sized once, when the drag began; a container that
-      //: grew during the drag (a panel closing, the window maximised, a rail
-      //: still animating when the press landed) left the rest of the rectangle
-      //: past the canvas's edge, undrawn. Two reads and a compare per frame.
-      wbFitMarqueeCanvas(ratio);
-      const g = wbMarqueeEl.getContext("2d");
-      g.setTransform(ratio, 0, 0, ratio, 0, 0);
-      g.clearRect(0, 0, wbMarqueeEl.width, wbMarqueeEl.height);
-      if (!w || !h) return;
-      g.fillStyle = wbMarqueeInk;
-      g.strokeStyle = wbMarqueeInk;
-      g.globalAlpha = 0.12;
-      g.fillRect(l, top, w, h);
-      g.globalAlpha = 1;
-      g.lineWidth = 1;
-      g.setLineDash([4, 3]);
-      g.strokeRect(l + 0.5, top + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
-    }
+  }
+
+  function wbInitEdgePanPointer() {
     //: **A drag past the edge moves the board** (INBOX 608, the owner: "when I
     //: drag select off the screen on the whiteboard and mind map ... it doesnt
     //: scroll down or up or the way I am dragging"). A marquee, an item or a
@@ -430,65 +655,12 @@
     //: that moved with the pan), so the item travels exactly as far as the
     //: board did and stays under the pointer. A rotation is excluded (an
     //: angle does not need room), and so are the pen tools and the hand.
-    const wbEdgePan = { x: 0, y: 0, buttons: 0, frame: 0, turn: false, band: 56, max: 22 };
-    //: The placing ghost is a box in board space, not the marquee canvas: it
-    //: moves by transform (its layer, `will-change`) and takes the size the
-    //: release will create, so the only per-move layout is its own.
-    function wbMoveSizeGhost(box) {
-      wbMarqueeEl.style.transform = `translate(${box.x}px, ${box.y}px)`;
-      wbMarqueeEl.style.width = `${box.w}px`;
-      wbMarqueeEl.style.height = `${box.h}px`;
-    }
-    //: The canvas's bitmap and box follow the container's size, compared
-    //: before written: a style write on every move would re-layerize the
-    //: page (tests/test_marquee_cost.py), so this is a resize, not a draw.
-    function wbFitMarqueeCanvas(ratio) {
-      const cw = boardEl().clientWidth, ch = boardEl().clientHeight;
-      const bw = Math.max(1, Math.round(cw * ratio)), bh = Math.max(1, Math.round(ch * ratio));
-      if (wbMarqueeEl.width === bw && wbMarqueeEl.height === bh) return;
-      wbMarqueeEl.width = bw;
-      wbMarqueeEl.height = bh;
-      wbMarqueeEl.style.width = `${cw}px`;
-      wbMarqueeEl.style.height = `${ch}px`;
-    }
+    wbEdgePan = { x: 0, y: 0, buttons: 0, frame: 0, turn: false, band: 56, max: 22 };
+
     window.addEventListener("pointerdown", (e) => {
       wbEdgePan.turn = Boolean(e.target?.closest?.(".wb-rotate-handle, .wb-sketch-rotate-handle"));
     }, true);
-    function wbEdgePanWanted() {
-      if (!(wbEdgePan.buttons & 1) || WB_BRUSH_TOOLS.has(window.currentTool) || window.currentTool === "pan") return false;
-      const wanted = (wbMarqueeEl && wbMarqueeStart && !wbMarqueeStart.pending) || Boolean(wbGesture && !wbGesture.cancelled && !wbGesture.overTrash && !wbEdgePan.turn);
-      return wanted && !wbCompanionHeld(null, "edge pan");
-    }
-    //: Screen pixels a frame along one axis: positive moves the board's
-    //: content towards the far edge (so the near side comes into view).
-    function wbEdgePanSpeed(near, far, band) {
-      const depth = near > 0 ? near : far > 0 ? -far : 0;
-      if (!depth) return 0;
-      const share = Math.min(1, Math.abs(depth) / band);
-      return Math.sign(depth) * Math.max(1, Math.round(wbEdgePan.max * share * share));
-    }
-    function wbEdgePanTick() {
-      wbEdgePan.frame = 0;
-      if (!wbEdgePanWanted() || !document.body.contains(boardEl())) return;
-      const r = boardEl().getBoundingClientRect();
-      const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
-      const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
-      const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
-      if (!vx && !vy) return;
-      const k = d3.zoomTransform(boardEl()).k || 1;
-      d3.select(boardEl()).call(wbZoom.translateBy, vx / k, vy / k);
-      const at = { clientX: wbEdgePan.x, clientY: wbEdgePan.y, buttons: wbEdgePan.buttons, bubbles: true, cancelable: true, view: window };
-      if (wbMarqueeEl && wbMarqueeStart) {
-        wbMarqueeAt = getLogicalMouse(at);
-        wbDrawMarquee();
-      } else {
-        //: d3-drag's own move listener, called directly: a broadcast
-        //: mousemove re-entered the right-press, hover and marquee listeners
-        //: with coordinates nobody moved to (audit B16).
-        d3.select(window).on("mousemove.drag")?.call(window, new MouseEvent("mousemove", at));
-      }
-      wbEdgePan.frame = requestAnimationFrame(wbEdgePanTick);
-    }
+
     window.addEventListener("pointermove", (e) => {
       if (e.pointerType === "touch") return;
       wbEdgePan.x = e.clientX;
@@ -496,11 +668,15 @@
       wbEdgePan.buttons = e.buttons;
       if (!wbEdgePan.frame && wbEdgePanWanted()) wbEdgePan.frame = requestAnimationFrame(wbEdgePanTick);
     });
+
     window.addEventListener("pointerup", () => {
       wbEdgePan.buttons = 0;
       if (wbEdgePan.frame) cancelAnimationFrame(wbEdgePan.frame);
       wbEdgePan.frame = 0;
     }, true);
+  }
+
+  function wbInitCanvasDblclick() {
     // Anchor points weren't discoverable until a link drag was already under
     // way: asked for directly: "when I hover over objects, their anchor
     // points should display... so I can connect them." A plain hover with a
@@ -565,13 +741,15 @@
       if (wbIsMap()) wbMapAddRootAt(x, y);
       else wbCreateTextBox(x, y);
     });
+  }
 
+  function wbInitCanvasMenus() {
     //: One builder for the canvas menu, because the right-click and the hold
     //: are the same menu and a second copy is how the two come to disagree
     //: (DESIGN.md: every `contextmenu` listener is counted against a
     //: `wireLongPress` call in the same file, and `tests/test_ui_recipes.py`
     //: fails a right-click menu with no long-press twin).
-    const openMapCanvasMenu = (clientX, clientY) => {
+    openMapCanvasMenu = (clientX, clientY) => {
       const [x, y] = getLogicalMouse({ clientX, clientY });
       const index = wbMapIndex();
       const folded = index.nodes.filter((n) => n.data?.collapsed).length;
@@ -609,7 +787,7 @@
     //: open, where Figma, Miro and tldraw all give paste, select all and the
     //: zoom. Each row names its key, so the menu is also where the keys are
     //: learnt.
-    const openBoardCanvasMenu = (clientX, clientY) => {
+    openBoardCanvasMenu = (clientX, clientY) => {
       const [x, y] = getLogicalMouse({ clientX, clientY });
       const items = [];
       if (wbClipboard) {
@@ -652,30 +830,24 @@
     //: The first press on a locked item, which lets the pointer through, says how to unlock it.
     wbInstances.on("pointerdown", wbOnLockPress, true);
 
-    const wbCanvasMenuWanted = (target) =>
+    wbCanvasMenuWanted = (target) =>
       wbIsEmptyCanvasTarget(target) && !wbIsEditingTarget(target)
       && !target.closest?.(".wb-map-edge-group, .sketch-group");
-    const openCanvasMenu = (clientX, clientY) => (wbIsMap()
+
+    openCanvasMenu = (clientX, clientY) => (wbIsMap()
       ? openMapCanvasMenu(clientX, clientY)
       : openBoardCanvasMenu(clientX, clientY));
+  }
 
-    //: **Right-drag pans, a plain right-click opens the menu** (C03, the owner:
-    //: "hard to move around the whiteboard with a mouse, copy draw.io and have
-    //: right click hold down drag panning"). The browser sends `contextmenu`
-    //: on the press (Linux) or the release (Windows), so "suppress it only
-    //: when the drag moved" cannot be written (wbrightpan.js header). Instead
-    //: the native event on bare canvas is always swallowed while a right press
-    //: is in flight or just ended, and the app's own menu opens on the
-    //: release when the pointer stayed inside the slop. A `contextmenu` with
-    //: no press behind it (the menu key) still opens the menu.
-    const WB_RIGHT_SLOP = 4;
-    let wbRightPress = null;
-    const wbRightOwns = () => wbRightPress && (!wbRightPress.up || Date.now() - wbRightPress.upAt < 400);
+  function wbInitRightPress() {
+    wbRightOwns = () => wbRightPress && (!wbRightPress.up || Date.now() - wbRightPress.upAt < 400);
+
     window.addEventListener("mousedown", (e) => {
       if (e.button !== 2) return;
       wbRightPress = boardEl().contains(e.target) && wbCanvasMenuWanted(e.target)
         ? { x: e.clientX, y: e.clientY, moved: false, up: false, upAt: 0 } : null;
     }, true);
+
     window.addEventListener("mousemove", (e) => {
       if (!wbRightPress || wbRightPress.up) return;
       if ((e.buttons & 2) !== 2) { wbRightPress = null; return; }
@@ -688,6 +860,7 @@
         wbRightPress.moved = true;
       }
     }, true);
+
     window.addEventListener("mouseup", (e) => {
       if (e.button !== 2 || !wbRightPress || wbRightPress.up) return;
       wbRightPress.up = true;
@@ -697,6 +870,7 @@
         setTimeout(() => openCanvasMenu(clientX, clientY), 0);
       }
     }, true);
+
     wbInstances.on("contextmenu", (e) => {
       //: A topic and a line have rings of their own, and both stop the event
       //: before it reaches here; this is the canvas itself, which had nothing.
@@ -716,6 +890,7 @@
     wbInstances.on("pointermove", (e) => {
       wbPointerClient = { clientX: e.clientX, clientY: e.clientY };
     }, { passive: true });
+
     wbInstances.on("pointerleave", () => { wbPointerClient = null; });
 
     wbInstances.on("pointermove", wbOnFrame((e) => {
@@ -738,7 +913,9 @@
       if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
       else wbClearAnchorHints();
     }, true), { passive: true });
+  }
 
+  function wbInitPortHover() {
     // --- Connection points with Select (wb-phase2 step 5; draw.io's ports) ---
     //
     // With Select, pointing at a shape, card or text box shows its connection
@@ -748,9 +925,11 @@
     // let go on, at that item's nearest point, or to a free end on empty board.
     // Not on what is selected (its resize grips sit where its ports are), a
     // locked item, a map (whose lines are its tree), or touch (no hover).
-    const port = { kind: null, item: null, drag: null };
-    const zoomK = () => d3.zoomTransform(boardEl()).k || 1;
-    const portTarget = (x, y) => {
+    port = { kind: null, item: null, drag: null };
+
+    zoomK = () => d3.zoomTransform(boardEl()).k || 1;
+
+    portTarget = (x, y) => {
       let hit = wbLinkCandidateAt(x, y);
       if (!hit && port.item) {
         //: Keep the points while the pointer is just outside the outline,
@@ -762,26 +941,15 @@
       if (!hit || wbIsMap() || wbIsLocked(hit[0], hit[1]) || wbSelectedKeys().has(wbMultiKey(hit[0], hit[1].id))) return null;
       return hit;
     };
-    function portHover(e) {
-      if (e.pointerType === "touch" || port.drag) return;
-      const [x, y] = getLogicalMouse(e);
-      const hit = portTarget(x, y);
-      if (!hit) {
-        if (port.item) wbClearAnchorHints();
-        port.kind = null;
-        port.item = null;
-        return;
-      }
-      [port.kind, port.item] = hit;
-      wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y, WB_PORT_HIT_PX / zoomK()));
-    }
-    const portEnd = () => {
+
+    portEnd = () => {
       port.drag?.path?.remove();
       port.drag = null;
       wbLinkDragActive = false;
       wbClearAnchorHints();
       wbFmtState.linkEdge?.cue(null);
     };
+
     wbInstances.on("pointerdown", (e) => {
       if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item || e.altKey || e.shiftKey) return;
       //: A selected connector's end grip wins over a port beneath it (INBOX
@@ -815,15 +983,17 @@
       wbLinkDragActive = true;
       wbBoardState.capture(boardEl(), e.pointerId);
     }, true);
+
     //: The line and `moved` follow every event (release reads `moved`); only
     //: the anchor hit test waits for the frame.
-    const portHints = wbOnFrame(({ drag, x, y }) => {
+    portHints = wbOnFrame(({ drag, x, y }) => {
       if (port.drag !== drag) return;
       const hit = wbLinkCandidateAt(x, y, drag.kind, drag.item.id);
       if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
       else wbShowAnchorHints(drag.kind, drag.item, drag.anchor);
       wbFmtState.linkEdge?.cue(hit ? null : [x, y]);
     });
+
     wbInstances.on("pointermove", (e) => {
       const drag = port.drag;
       if (!drag) return;
@@ -832,12 +1002,16 @@
       drag.path.setAttribute("d", `M ${drag.start.x} ${drag.start.y} L ${x} ${y}`);
       portHints({ drag, x, y });
     });
+  }
+
+  function wbInitPortRelease() {
     wbInstances.on("keydown", (e) => {
       if (port.drag && e.key === "Escape") {
         e.stopPropagation();
         portEnd();
       }
     }, true);
+
     wbInstances.on("pointerup", async (e) => {
       const drag = port.drag;
       if (!drag) return;
@@ -891,13 +1065,16 @@
         toast(error.message || "The connector could not be made.", true);
       }
     });
+  }
 
+  function wbInitMarqueeRelease() {
     // On `window`, not on the container, and for three event names rather than
     // one. The container's own pointerup is not enough: a capture can be lost
     // (`lostpointercapture`), a gesture can be taken over by the browser
     // (`pointercancel`), and a synthetic pointerdown was never captured at all.
     // Every one of those used to leave the rectangle on the board.
     wbBoardState.onGestureLost(() => wbEndMarqueeDrag());
+
     window.addEventListener("pointerup", (e) => {
       if (!wbMarqueeStart) return;
       if (wbMarqueeStart.move) return wbEndSelectionDrag();
@@ -982,35 +1159,6 @@
       wbApplySelectionHighlight();
     });
 
-    // Freeform lasso select: asked for directly ("all the selection tools
-    // (e.g. rectangle select and lasso)"). Same shape as the marquee just
-    // above (empty-canvas-only pointerdown, shift to add, `wbMarqueeJustSelected`
-    // shared so the trailing native "click" doesn't wipe the result) but hit-
-    // tests each item's *centre point* against the traced polygon rather than
-    // rectangle-intersecting its bounding box, a lasso is a freeform loop, so
-    // "is this item's middle inside the loop" is the one test that stays
-    // cheap (one ray-cast per item, not a polygon-clip against every edge) and
-    // still matches what a user visually circled.
-    function wbPointInPolygon(px, py, points) {
-      let inside = false;
-      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-        const [xi, yi] = points[i], [xj, yj] = points[j];
-        const crosses = yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi;
-        if (crosses) inside = !inside;
-      }
-      return inside;
-    }
-    let wbLassoPoints = null;
-    let wbLassoEl = null;
-    let wbLassoShift = false;
-    //: The lasso's half of `wbEndMarqueeDrag`, and it exists for the same
-    //: reported bug: a loop released outside the container left its polyline
-    //: on the canvas with nothing holding a reference to it.
-    function wbEndLassoDrag() {
-      wbLassoEl?.remove();
-      wbLassoEl = null;
-      wbLassoPoints = null;
-    }
     //: Both drags, from anywhere in the file, see `wbCancelSelectionDragRef`.
     wbCancelSelectionDragRef = () => {
       //: In flight means drawn: a press that has not travelled yet is still a
@@ -1030,6 +1178,9 @@
       }
       return inFlight;
     };
+  }
+
+  function wbInitLasso() {
     wbInstances.on("pointerdown", (e) => {
       // Unlike the marquee (`wbIsEmptyCanvasTarget`, above: empty canvas
       // only, since a drag starting *on* a card there means "move it"), a
@@ -1052,13 +1203,16 @@
       wbInstances.layer("wb-overlay-zoom-group").appendChild(wbLassoEl);
       wbBoardState.capture(boardEl(), e.pointerId);
     });
+
     wbBoardState.onGestureLost(() => wbEndLassoDrag());
+
     window.addEventListener("pointermove", (e) => {
       if (!wbLassoPoints) return;
       const [x, y] = getLogicalMouse(e);
       wbLassoPoints.push([x, y]);
       wbLassoEl.setAttribute("points", wbLassoPoints.map(([px, py]) => `${px},${py}`).join(" "));
     });
+
     window.addEventListener("pointerup", () => {
       if (!wbLassoPoints) return;
       const points = wbLassoPoints, shiftKey = wbLassoShift;
@@ -1114,96 +1268,28 @@
       wbMarqueeJustSelected = true;
       wbApplySelectionHighlight();
     });
+  }
 
+  function wbInitPicturePaste() {
     // Images: paste, drag-and-drop, or the upload button, asked for
     // directly, and all three funnel through the same upload+place path
     // `handleFileUpload` already established for notes (POST /media/upload,
     // then a placed reference, a board object here instead of markdown text).
     //: The most the notebook keeps of one upload (`routes_files.MAX_FILE_BYTES`), said before the
     //: upload starts and not after a 50 MB request fails (audit 1028 B28).
-    const wbPictureCap = 50 * 1024 * 1024;
-    function wbPictureTooBig() {
-      toast("That picture is over 50 MB, the most the notebook keeps. Shrink it and try again.", "info");
-    }
-
-    //: A picture pasted as an address or as markup, not as a file (audit 1028 B28): `text/uri-list`
-    //: naming a picture, or the first `<img>` of `text/html` when the plain text is empty or just
-    //: that address (a paragraph with a picture in it is still a paragraph).
-    function wbPastedPictureAddress(data, html) {
-      const plain = (data?.getData("text/plain") || "").trim();
-      const listed = (data?.getData("text/uri-list") || "").split(/\r?\n/).map((line) => line.trim()).find((line) => line && !line.startsWith("#"));
-      if (listed && /^data:image\/|\.(?:png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#]|$)/i.test(listed)) return listed;
-      if (!html) return "";
-      const src = new DOMParser().parseFromString(html, "text/html").querySelector("img[src]")?.getAttribute("src") || "";
-      return src && (!plain || plain === src) ? src : "";
-    }
-
-    //: A `data:` picture is decoded to a file; one already in the notebook is placed as it is; a web
-    //: address is refused with the reason, since the page may not fetch the web (`connect-src 'self'`).
-    async function wbPlacePastedAddress(src, x, y) {
-      const inline = /^data:(image\/[\w.+-]+);base64,([\s\S]*)$/i.exec(src);
-      if (inline) {
-        if (inline[2].length * 0.75 > wbPictureCap) return wbPictureTooBig();
-        const bytes = Uint8Array.from(atob(inline[2]), (char) => char.charCodeAt(0));
-        //: The upload route reads the type from the name's extension.
-        const ext = inline[1].slice(6).toLowerCase().replace("jpeg", "jpg").replace("svg+xml", "svg");
-        return wbPlaceUploadedImage(new File([bytes], `pasted-picture.${ext}`, { type: inline[1] }), x, y);
-      }
-      const local = src.startsWith(`${location.origin}/media/`) ? src.slice(location.origin.length) : src;
-      if (local.startsWith("/media/")) return wbPlaceImageUrl(local, x, y);
-      toast("This notebook works offline, so a picture from the web is not fetched. Save the picture, then paste or drop the file.");
-    }
-
-    async function wbPlaceUploadedImage(file, x, y) {
-      if (wbFmtState.pdf?.isPdf(file)) return wbFmtState.pdf.place(file, x, y);
-      if (!file) return;
-      //: Said, not dropped silently (L-whiteboard-36): a board takes pictures and PDFs.
-      if (!file.type?.startsWith("image/")) return toast(`A board takes pictures and PDFs; ${file.name || "that file"} is neither.`, "info");
-      if (file.size > wbPictureCap) return wbPictureTooBig();
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        //: Board-only until Save to Library: not listed, not read, not captioned (K18).
-        formData.append("board", "true");
-        const uploaded = await apiJson("/media/upload", {
-          method: "POST",
-          headers: authHeaders(),
-          body: formData,
-        });
-        await wbPlaceImageUrl(uploaded.url, x, y);
-      } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "add that image" }), true);
-      }
-    }
-
-    async function wbPlaceImageUrl(url, x, y) {
-      try {
-        const img = new Image();
-        const naturalSize = await new Promise((resolve) => {
-          img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
-          img.onerror = () => resolve({ w: 300, h: 200 });
-          img.src = mediaSrc(url);
-        });
-        //: Its own size, shrunk only to sit inside the view (wbpaste-1026).
-        const view = wbVisibleCanvasRect();
-        const [vx0, vy0] = wbClientToBoard(view.left, view.top);
-        const [vx1, vy1] = wbClientToBoard(view.right, view.bottom);
-        const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
-        await wbCreateObject("image", { url }, x - width / 2, y - height / 2, width, height);
-      } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "add that image" }), true);
-      }
-    }
+    wbPictureCap = 50 * 1024 * 1024;
 
     wbInstances.on("dragover", (e) => {
       if (e.dataTransfer?.types?.includes("Files")) e.preventDefault();
     });
+
     wbInstances.on("drop", (e) => {
       if (!e.dataTransfer?.files?.length) return;
       e.preventDefault();
       const [x, y] = getLogicalMouse(e);
       for (const file of e.dataTransfer.files) wbPlaceUploadedImage(file, x, y);
     });
+
     // Paste has no drop coordinate to place at, the centre of whatever's
     // currently in view reads better than always the same fixed board
     // position, which would stack every pasted image on top of the last one.
@@ -1250,28 +1336,53 @@
         wbPasteClipboard();
       }
     });
+
     document.addEventListener("copy", (e) => {
       if (wbCommandsLive() && !wbIsEditingTarget(e.target) && !e.target.closest?.("input, textarea, select")) wbOnBoardCopy(e);
     });
+
     document.addEventListener("cut", (e) => {
       if (wbCommandsLive() && !wbIsEditingTarget(e.target) && !e.target.closest?.("input, textarea, select")) wbOnBoardCopy(e);
     });
-    const imageFileInput = document.getElementById("wb-image-file-input");
+  }
+
+  function wbInitPictureInputs() {
+    imageFileInput = document.getElementById("wb-image-file-input");
+
     document.getElementById("wb-add-image")?.addEventListener("click", () => imageFileInput?.click());
+
     //: The map topic's own picture input (§12.1 item 2's fourth), beside the
     //: board's: the same recipe, a different destination. `wbMapEditPicture`
     //: says which topic it was opened for.
-    const mapPictureInput = document.getElementById("wb-map-picture-input");
+    mapPictureInput = document.getElementById("wb-map-picture-input");
+
     mapPictureInput?.addEventListener("change", async () => {
       const file = mapPictureInput.files && mapPictureInput.files[0];
       mapPictureInput.value = "";
       await wbMapTakePicture(file);
     });
+
     imageFileInput?.addEventListener("change", () => {
       const [x, y] = wbViewCentre();
       for (const file of imageFileInput.files) wbPlaceUploadedImage(file, x, y);
       imageFileInput.value = "";
     });
+  }
+
+  function wbInitPointer(args) {
+    ({ selectWbTool, boardEl } = args);
+    wbInitDrawPointer();
+    wbInitMarqueePointer();
+    wbInitEdgePanPointer();
+    wbInitCanvasDblclick();
+    wbInitCanvasMenus();
+    wbInitRightPress();
+    wbInitPortHover();
+    wbInitPortRelease();
+    wbInitMarqueeRelease();
+    wbInitLasso();
+    wbInitPicturePaste();
+    wbInitPictureInputs();
     return { getLogicalMouse, zoomK };
   }
 

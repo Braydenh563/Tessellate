@@ -677,6 +677,12 @@ passes.register_housekeeping("purge-bin", _purge_step)
 passes.register_housekeeping("compact-history", _compact_step)
 
 
+#: A function, not an alias, so the start-up table's name resolves to a def here
+#: and `passes` can be stood in for in a test (as with the two steps above).
+def _clear_dangling_similar() -> None:
+    passes._clear_dangling_similar()
+
+
 def _install_pending_extras() -> None:
     """The optional packages ticked in Setup (installer.iss writes their ids
     to pending-extras.txt), installed now as one background job with its
@@ -729,6 +735,7 @@ def _startup_maintenance() -> None:
             ("_check_data_folder", "Check the data folder"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
+            ("_clear_dangling_similar", "Clear near-duplicate marks to deleted notes"),
             ("_backup_if_due", "Back up if today's is due"),
             ("_choose_chat_model_if_missing", "Choose a chat model you have"),
             ("_install_pending_extras", "Install the packages picked in Setup"),
@@ -1758,6 +1765,17 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             },
         )
 
+    def _build_stamp() -> dict[str, str | bool]:
+        from tessellate.core import build_stamp, instance_lock
+
+        data_dir = deps.get_config().data_dir
+        return {
+            "source_commit": build_stamp.source_commit(),
+            "started_at": build_stamp.STARTED_AT,
+            "data_dir_id": instance_lock.data_dir_id(data_dir)[:12],
+            "data_dir_writable": build_stamp.data_dir_writable(data_dir),
+        }
+
     @app.get("/health", tags=["system"])
     async def health(request: Request) -> dict[str, str | bool]:
         from tessellate.core import instance_lock, reminder_notifier
@@ -1786,6 +1804,10 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             #: the token): Settings, Running copies tells a copy that really
             #: holds its port from a leftover record of one that is gone.
             "instance": instance_lock.current_instance_id(),
+            #: The running build (L-general-6), for this computer only: a commit
+            #: id names the exact code to anyone who asks, and only this computer
+            #: can reopen an old checkout. Settings > About shows it.
+            **(_build_stamp() if here else {}),
         }
 
     _add_instance_routes(app)

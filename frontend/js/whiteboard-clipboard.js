@@ -604,6 +604,8 @@
   }
 
   function wbStampMenuRoles(menu) {
+    //: The View menu's two column wrappers hold the groups; a wrapper is `none`, not a generic child of a menu.
+    for (const column of menu.querySelectorAll(":scope > .wb-menu-col")) column.setAttribute("role", "none");
     for (const section of menu.querySelectorAll(".wb-menu-section")) {
       section.setAttribute("role", "group");
     }

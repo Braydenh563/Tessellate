@@ -153,7 +153,7 @@ def test_every_surface_numbers_from_the_sentences_it_marks():
         found = [m.group(0) for m in re.finditer(r"chatSourcesFrom\(\{[^}]*\}\)|chatSourcesFrom\(savedInput\)", text)]
         with_sentences = [c for c in found if "sentences" in c]
         assert len(with_sentences) >= expected, (name, found)
-    saved = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    saved = (JS / "chat-list.js").read_text(encoding="utf-8")
     assert "sentences: message.sentence_grounding" in saved
     #: The popup's sources list is numbered from the same rows as its markers.
     assert "sentences: cites });" in (JS / "palette.js").read_text(encoding="utf-8")

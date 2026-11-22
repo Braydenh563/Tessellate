@@ -58,7 +58,8 @@ def test_settings_has_a_jump_list_with_the_groups_of_a_long_pane():
 def test_a_tool_group_turns_all_off_or_all_on_in_one_save():
     js = _text("frontend", "js", "settings-controls.js")
     assert 'all.className = "linklike tool-group-all"' in js
-    save = js.split("async function saveToolGroup(", 1)[1].split("\n}\n", 1)[0]
+    # Nested in the Tools block and queued (queueToolSave, acd246626), so not async and ended by its indented brace.
+    save = js.split("function saveToolGroup(", 1)[1].split("\n  }\n", 1)[0]
     # One request for the group, the boxes follow the answer, a failure puts them back.
     assert save.count('apiJson("/preferences"') == 1
     assert "disabled_tools" in save and "check.checked" in save and "catch" in save
