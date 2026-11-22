@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9153, frontend ids 2864, CSS sections 532, backend routes 766, backend modules 11791, test files 3100, tests 24216, plan headings 693, app scripts 30, boot scripts 39, script files 425.
+Counts: frontend functions 9154, frontend ids 2864, CSS sections 532, backend routes 766, backend modules 11791, test files 3100, tests 24216, plan headings 693, app scripts 30, boot scripts 39, script files 425.
 
-## Frontend functions (9153)
+## Frontend functions (9154)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3911,12 +3911,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `loadCodeMirror` | frontend/js/documents-cm-load.js:54 |
 | `warmDocumentEngine` | frontend/js/documents-cm-load.js:34 |
 
-### frontend/js/documents-cm-theme.js (2)
+### frontend/js/documents-cm-theme.js (3)
 
 | Name | File:line |
 |---|---|
-| `docCmTheme` | frontend/js/documents-cm-theme.js:255 |
-| `docCmThemeKept` | frontend/js/documents-cm-theme.js:250 |
+| `docCmTableRules` | frontend/js/documents-cm-theme.js:148 |
+| `docCmTheme` | frontend/js/documents-cm-theme.js:257 |
+| `docCmThemeKept` | frontend/js/documents-cm-theme.js:252 |
 
 ### frontend/js/documents-cm.js (8)
 

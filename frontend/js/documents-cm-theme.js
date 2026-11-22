@@ -144,8 +144,9 @@
   };
 
   //: The table grid rules (the markdown table as a CSS grid over the line), split out so docCmTheme stays
-  //: under the function-size cap; merged into the spec just before the tail rules.
-  const DOC_CM_TABLE_RULES = {
+  //: under the function-size cap. A function, not a const: docTableGridRules is in documents-cm-load.js, which loads after this file.
+  function docCmTableRules() {
+  return {
     //: --- tables ---------------------------------------------------------
     //: **A grid over the line, not a `<table>` widget.** Replacing the block
     //: with a rendered table is what every "table editor" in a markdown app
@@ -240,6 +241,7 @@
     //: A formula's result reads as a computed value, not typed text.
     ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
   };
+  }
 
   //: **One theme per mode** (L-world-class-890): `EditorView.theme` mounts a
   //: new style module each call and CodeMirror keeps every module it has
@@ -1185,7 +1187,7 @@
         ".cm-md-image": { maxWidth: "100%", borderRadius: "var(--radius-sm)" },
         ".cm-md-image-under": { display: "block", marginTop: "var(--space-2)" },
 
-        ...DOC_CM_TABLE_RULES,
+        ...docCmTableRules(),
         ...DOC_CM_TAIL_RULES,
       },
       { dark }
