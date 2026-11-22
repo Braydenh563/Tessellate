@@ -162,13 +162,17 @@ TAIL_TOPICS.extend(
                 "laser colour",
                 "pointer while presenting",
                 "present with a pointer",
+                "presenting keys",
+                "hide the presentation bar",
             ),
             "body": (
                 "The laser pointer, while presenting a board or a map. Press L, or the pointer button in the "
                 "presentation bar, and the cursor becomes a dot that follows your mouse; nothing is drawn on the "
                 "board. The small menu beside the button sets the trail (on or off), the look (dot, trail, ring "
                 "or spotlight), the ring's pulse (on or off, shown while the look is Ring) and the colour (from the board's colours). Your choice is kept in this browser. "
-                "With Reduce motion on, the trail is off and the look holds still."
+                "With Reduce motion on, the trail is off and the look holds still. "
+                "While presenting, the arrows, Space and Page Up or Down step, Home and End jump, H folds the bar "
+                "to a small handle (kept in this browser), and the cursor hides over the slide until you move it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

@@ -27,6 +27,24 @@
 #library-view-whiteboard.wb-presenting .wb-tools-opener {
   display: none;
 }
+/* The cursor while presenting (the owner, 2026-11-22): over the slide the plain
+   arrow, never an item's hover cursor, and none once the mouse rests or the
+   laser is on (whiteboard-present.js, which lifts the tool's inline cursor for
+   the length of it). The bar sits outside the canvas, so it keeps its own. */
+#library-view-whiteboard.wb-presenting .whiteboard-container,
+#library-view-whiteboard.wb-presenting .whiteboard-container * {
+  cursor: default;
+}
+#library-view-whiteboard.wb-presenting.wb-cursor-rest .whiteboard-container,
+#library-view-whiteboard.wb-presenting.wb-cursor-rest .whiteboard-container *,
+#library-view-whiteboard.wb-presenting .whiteboard-container.wb-laser-on,
+#library-view-whiteboard.wb-presenting .whiteboard-container.wb-laser-on * {
+  cursor: none;
+}
+/* The folded bar's handle: one small caret where the bar was. */
+.wb-present-handle {
+  padding: var(--space-1);
+}
 .wb-present-bar {
   left: 50%;
   bottom: var(--space-5);

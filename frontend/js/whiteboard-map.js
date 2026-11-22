@@ -2688,7 +2688,6 @@ function wbMapEdgeApply(wrap, geom) {
     text.setAttribute("dominant-baseline", "central");
     // bounding-box creates a solid hit area matching the text's box, preventing mis-clicks
     text.style.pointerEvents = "bounding-box";
-    text.style.cursor = "move";
     text.addEventListener("dblclick", (e) => {
       e.stopPropagation();
       const childId = Number(wrap.querySelector(".wb-map-edge").dataset.child);

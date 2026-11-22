@@ -7798,14 +7798,16 @@ Link to another note with [[its first few words]]."></textarea>
       <button type="button" id="wb-history-end" class="ghost small icon-only" title="Back to now (Esc)" aria-label="Back to now"><i class="ph ph-x" aria-hidden="true"></i></button>
     </div>
     <div id="wb-present-bar" class="whiteboard-floating-panel wb-present-bar card glass hidden" role="toolbar" aria-label="Presentation">
-      <button type="button" id="wb-present-prev" class="ghost small icon-only" title="Previous frame (Left arrow)" aria-label="Previous frame"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+      <button type="button" id="wb-present-prev" class="ghost small icon-only" title="Previous frame (Left arrow or Page Up; Home for the first)" aria-label="Previous frame"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
       <span id="wb-present-count" class="wb-present-count wb-present-pick-slot" aria-live="polite"></span>
-      <button type="button" id="wb-present-next" class="ghost small icon-only" title="Next frame (Right arrow or Space)" aria-label="Next frame"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+      <button type="button" id="wb-present-next" class="ghost small icon-only" title="Next frame (Right arrow, Space or Page Down; End for the last)" aria-label="Next frame"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
       <button type="button" id="wb-study-show" class="accent small hidden" title="Draw what is under this branch (Enter)">Show</button>
       <button type="button" id="wb-study-knew" class="ghost small hidden" title="You recalled it: on to the next branch">Knew it</button>
       <button type="button" id="wb-study-missed" class="ghost small hidden" title="Marked for next time: on to the next branch">Not yet</button>
+      <button type="button" id="wb-present-fold" class="ghost small icon-only" title="Hide the bar (H)" aria-label="Hide the bar"><i class="ph ph-caret-down" aria-hidden="true"></i></button>
       <button type="button" id="wb-present-end" class="ghost small icon-only" title="End the presentation (Esc)" aria-label="End the presentation"><i class="ph ph-x" aria-hidden="true"></i></button>
     </div>
+    <button type="button" id="wb-present-handle" class="whiteboard-floating-panel wb-present-bar wb-present-handle card glass hidden" title="Show the bar (H)" aria-label="Show the presentation bar"><i class="ph ph-caret-up" aria-hidden="true"></i></button>
 
     <div id="wb-status-bar" class="dock wb-status-bar hidden" role="status" aria-label="Board status">
       <span id="wb-status-zoom" class="dock-chip" title="Zoom"></span>

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: presenting hides the cursor over the slide once the mouse rests (the plain arrow on a move, never an item's hover cursor; the bar keeps the normal one), H or the bar's caret folds the bar to a small handle and the choice is kept, and the bar's tooltips name the paging keys.
 - Tests: no test bounds a wall-clock difference any more; CPU work is timed in CPU time, waits are held fakes, op counts or the join timeouts offered, and a lint with no file list keeps it so (L-general-70).
 - Atlas: the calm-down rule paused `[class*="atl-lw-pose-"] > svg`, an attribute selector that made every class change on the companion restyle all 23 drawing svgs; it now names the `.atl-lw-pose` class. An unused class on `#nm-buddy` restyles 2 elements, not 23; walking 32 to 11, easing 60 to 39, attend 36 to 18, a mood write 158 to 11 (4x seeded e2e notebook, Chrome invalidation tracking).
 - Settings: each page's "On this page" list in the sidebar folds away from its head, remembered per page; the short list hides the other links again (an id-weighted `display: block` had shown all 8 of 8).

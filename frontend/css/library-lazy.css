@@ -6343,6 +6343,8 @@ mark.text-highlight-yellow { background: var(--warn-soft); }
   font-size: var(--text-xs);
   text-anchor: middle;
   pointer-events: none;
+  /* In the sheet, not inline, so presenting can take it away (07-whiteboard-misc.css). */
+  cursor: move;
 }
 
 /* The chip, as on a board connector's label (`.wb-link-label-chip`). */
