@@ -10,6 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.tools._common import _visible
+from tessellate.core import mcp_scope
 from tessellate.core.database import Category, Entry
 from tessellate.entry import manager, manager_categories
 
@@ -52,7 +53,8 @@ def category_exists(session: Session, name: str) -> bool:
 def unknown_category_hint(session: Session, category: str) -> str | None:
     """A name that is not a category matches nothing, on purpose; a model
     that guessed "notes" needs to be told that, and shown the real ones."""
-    if category_exists(session, category):
+    #: A scoped token (core/mcp_scope.py) is never told the names outside its scope.
+    if category_exists(session, category) or mcp_scope.current.get() is not None:
         return None
     known = ", ".join(f"“{c['name']}”" for c in manager_categories.all_categories(session)[:12])
     return (

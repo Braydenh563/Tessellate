@@ -158,10 +158,10 @@ def test_a_tool_name_is_never_a_query():
 
 
 def test_a_needle_call_is_logged_under_needles_name():
-    from tessellate.core import jobruns
+    from tessellate.core import jobruns_calls
 
-    assert jobruns._named(type("P", (), {"name": "needle"})(), "gemma-big") == "needle"
-    assert jobruns._named(type("P", (), {"name": "ollama"})(), "gemma-big") == "gemma-big"
+    assert jobruns_calls._named(type("P", (), {"name": "needle"})(), "gemma-big") == "needle"
+    assert jobruns_calls._named(type("P", (), {"name": "ollama"})(), "gemma-big") == "gemma-big"
 
 
 @pytest.mark.parametrize(

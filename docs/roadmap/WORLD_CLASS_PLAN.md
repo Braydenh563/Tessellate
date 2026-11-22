@@ -453,8 +453,10 @@ Gate: Phase 9 numbers.
 
 **Built 2026-09-20; the dossier (measured before, target, gate, the
 built table and its not-verified list) moved to HISTORY.md, "Moved from the plans, 2026-09-24".** State
-2026-09-24: nothing open but its two not-verified lines (Stop mid-pass, a
-real model's thinking stream), LEDGER L-world-class-65; section 20's model pill in the
+2026-11-21: both not-verified lines are now verified (Stop mid-pass on a slow stand-in and on
+llama-cpp-python with Qwen2.5-1.5B and Qwen3-0.6B; the thinking stream from a stand-in's
+`reasoning_content` and from Qwen3's inline think tags; `tests/test_writing_desk_stop.py`,
+L-world-class-65). What a model's output is worth stays in BACKLOG; section 20's model pill in the
 desk's dock is built (section 20, decision (1) of 2026-11-12).
 
 ---
@@ -1980,15 +1982,7 @@ mobile first, as the owner's web design class teaches. Measured with
 ### 22.1 Large gaps (what every professional app has)
 
 1. ~~**No URLs.**~~ **Built:** `router.js` gives every view a hash (`#/notes/12`, `#/chat/45`, `#/docs/7`, `#/library/images`, `#/settings/appearance`), the in-app Back and Forward run on `popstate`, a reload restores the view and the window title names it (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
-2. **The laptop screen is mostly chrome.** At 1093x614 the top bar (72px),
-   sub-tabs (55), the list toolbar (55) and the status bar (37) take about
-   36% of the height: the Notes list shows 2.3 cards and the Dashboard's
-   widgets start below the fold. Target: a height-aware density (Compact
-   applied by default under 700px of height, with the setting still in
-   Appearance), sub-tabs merged into the list toolbar where a surface has
-   both, and the status bar folding into the top bar under 680px. Gate: 4
-   note cards and the first dashboard widget above the fold at 1093x614. M,
-   Opus. LEDGER L-world-class-95.
+2. ~~**The laptop screen is mostly chrome.**~~ Built 2026-11-21 for what fits: card-view links share the details line (141 to 111px a linked card; laptopfold 2 whole, 3 in part). The four-card gate, the sub-tab merge (421px against 52px of slack) and the status bar fold wait on the owner in BACKLOG ("L-world-class-95 rest"). L-world-class-95.
 3. ~~**Tabs lose their names on a laptop.**~~ Built 2026-11-14: the captions hold from 820px up (measured at 1024, 1100 and 1280: every label 34 to 83px wide), and every tab's tooltip names its chord (`t then n`, from `TAB_JUMP_KEYS`; `tests/test_tab_tooltips_96.py`).
 4. **Leaving with unsaved work.** Built 2026-09-27 for the note edit form,
    the Capture box and a document mid-autosave, the three surfaces with a
@@ -2014,7 +2008,6 @@ Checked item by item 2026-11-12; the built ones moved to HISTORY.md, "Moved from
 - Every destructive action has an Undo toast: built (LEDGER L694 and L696 done, HISTORY.md).
 - Right-click works on every card and row with a hold on touch: 38 `contextmenu` sites, not every card. LEDGER L-world-class-103.
 - The status bar's "!" says what it means on hover and click: only the AI status glyph is seen (`status.js:2484`); not checked for the rest. LEDGER L-world-class-104.
-- 22.3 not re-measured: card padding and body size at laptop widths (`tests/test_density_height.py` covers controls only), Settings section-head weight, one Phosphor weight app-wide (no lint found), the toast corner at 1093x614. LEDGER L-world-class-105.
 
 ### 22.4 The devibecode programme: one surface at a time, every skill
 

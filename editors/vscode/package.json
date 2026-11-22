@@ -1,0 +1,43 @@
+{
+  "name": "tessellate-vscode",
+  "displayName": "Tessellate",
+  "description": "Capture to, search and read your local Tessellate notebook from VS Code. Talks to your own computer only.",
+  "version": "0.1.0",
+  "publisher": "tessellate",
+  "license": "AGPL-3.0-only",
+  "engines": { "vscode": "^1.80.0", "node": ">=18" },
+  "categories": ["Notebooks", "Other"],
+  "main": "./extension.js",
+  "activationEvents": [],
+  "capabilities": {
+    "untrustedWorkspaces": { "supported": "limited", "description": "Commands that send text to Tessellate need a trusted workspace." }
+  },
+  "contributes": {
+    "configuration": {
+      "title": "Tessellate",
+      "properties": {
+        "tessellate.address": {
+          "type": "string",
+          "default": "http://127.0.0.1:8000",
+          "markdownDescription": "Where Tessellate runs on this computer, for example `http://127.0.0.1:8000`."
+        }
+      }
+    },
+    "commands": [
+      { "command": "tessellate.signIn", "title": "Tessellate: Sign in" },
+      { "command": "tessellate.signInWithToken", "title": "Tessellate: Sign in with a token" },
+      { "command": "tessellate.signOut", "title": "Tessellate: Sign out" },
+      { "command": "tessellate.captureSelection", "title": "Tessellate: Save selection as a note" },
+      { "command": "tessellate.captureNote", "title": "Tessellate: Save a typed note" },
+      { "command": "tessellate.searchInsertLink", "title": "Tessellate: Search notes and insert a link" },
+      { "command": "tessellate.searchInsertText", "title": "Tessellate: Search notes and insert the text" },
+      { "command": "tessellate.openNote", "title": "Tessellate: Open a note (read only)" }
+    ],
+    "menus": {
+      "editor/context": [
+        { "command": "tessellate.captureSelection", "when": "editorHasSelection", "group": "tessellate" }
+      ]
+    }
+  },
+  "scripts": { "test": "node --test test/client.test.js" }
+}

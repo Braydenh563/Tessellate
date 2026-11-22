@@ -17,6 +17,7 @@ import math
 import re
 from collections import Counter, defaultdict
 from collections.abc import Iterator
+from itertools import islice
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -148,7 +149,7 @@ DENSE_BLOCK = 512
 
 
 def _prefix_work(prepared: list[tuple[str, frozenset[str]]], threshold: float) -> tuple[int, int]:
-    """(candidate checks the prefix filter would make at most, vocabulary size).
+    """(candidate checks the prefix filter would make at most, shared words).
 
     The upper bound `_similar_pairs` would read: every probe word's whole
     posting list. Cheap beside either scan (one count and one partial sort per
@@ -163,14 +164,25 @@ def _prefix_work(prepared: list[tuple[str, frozenset[str]]], threshold: float) -
         probe = max(size - math.ceil(threshold * size - 1e-9) + 1, 0)
         if probe:
             work += sum(heapq.nsmallest(probe, (document_frequency[word] for word in words)))
-    return work, len(document_frequency)
+    return work, sum(1 for held in document_frequency.values() if held > 1)
 
 
 def _vocabulary(prepared: list[tuple[str, frozenset[str]]]) -> dict[str, int]:
+    """A column for each word two or more notes hold.
+
+    A word only one note holds is in no pair's intersection, and the sizes
+    the union is taken from are the whole sets (`_similar_pairs_dense`), so
+    leaving it out changes no score. Counted in, a number or a name on every
+    note ("Note 4123") made 5,000 notes over 25 shared words too wide for the
+    dense scan: the prefix filter ran instead, 70 s and 2.1 GB on `/tidy`
+    (L-world-class-410).
+    """
+    held = Counter(word for _norm, words in prepared for word in words)
     vocabulary: dict[str, int] = {}
     for _norm, words in prepared:
         for word in words:
-            vocabulary.setdefault(word, len(vocabulary))
+            if held[word] > 1:
+                vocabulary.setdefault(word, len(vocabulary))
     return vocabulary
 
 
@@ -181,8 +193,68 @@ def _word_matrix(prepared: list[tuple[str, frozenset[str]]], vocabulary: dict[st
     matrix = np.zeros((len(prepared), len(vocabulary)), dtype=np.float32)
     for i, (_norm, words) in enumerate(prepared):
         if words:
-            matrix[i, [vocabulary[word] for word in words]] = 1.0
+            columns = [vocabulary[word] for word in words if word in vocabulary]
+            if columns:
+                matrix[i, columns] = 1.0
     return matrix
+
+
+def _dense_blocks(prepared: list[tuple[str, frozenset[str]]], threshold: float):  # noqa: ANN202
+    """`_similar_pairs_dense`'s pairs as arrays `(j, i, score)`, one block at a time.
+
+    The test and the score are made over the whole block in numpy rather than
+    pair by pair in Python: on 5,000 notes over a few hundred shared words
+    11.5 million pairs qualify, and a Python loop per pair was most of a
+    51 s `/tidy` (L-world-class-410). float64 division is the division
+    `_similar_pairs` makes, so a pair at the threshold lands on the same side.
+    """
+    import numpy as np
+
+    vocabulary = _vocabulary(prepared)
+    n = len(prepared)
+    first_with_text: dict[str, int] = {}
+    text_id = np.empty(n, dtype=np.int64)
+    copies_j: list[int] = []
+    copies_i: list[int] = []
+    for i, (norm, _words) in enumerate(prepared):
+        if norm in first_with_text:
+            copies_j.append(first_with_text[norm])
+            copies_i.append(i)
+        else:
+            first_with_text[norm] = i
+        text_id[i] = first_with_text[norm]
+    if copies_i:
+        yield (
+            np.array(copies_j, dtype=np.int64),
+            np.array(copies_i, dtype=np.int64),
+            np.ones(len(copies_i), dtype=np.float64),
+        )
+    if not vocabulary or n < 2:
+        return
+    matrix = _word_matrix(prepared, vocabulary)
+    sizes = np.array([len(words) for _norm, words in prepared], dtype=np.int64)
+    sizes32 = sizes.astype(np.float32)
+    for start in range(1, n, DENSE_BLOCK):
+        stop = min(n, start + DENSE_BLOCK)
+        shared = matrix[start:stop] @ matrix[:stop].T
+        union = sizes32[start:stop, None] + sizes32[None, :stop] - shared
+        #: A loose test in float32 over the block (counts are whole numbers,
+        #: so half a word of slack loses no pair), then the exact score.
+        near = shared >= threshold * union - 0.5
+        near[:, :start] &= union[:, :start] > 0
+        near[:, start:stop] &= np.tri(stop - start, k=-1, dtype=bool) & (union[:, start:stop] > 0)
+        rows, js = np.nonzero(near)
+        if not len(rows):
+            continue
+        i = rows + start
+        common = shared[rows, js].astype(np.int64)
+        # Same text was yielded above, from the first copy only.
+        keep = (text_id[i] != text_id[js]) & (common > 0)
+        i, js, common = i[keep], js[keep], common[keep]
+        score = common / (sizes[i] + sizes[js] - common)
+        keep = score >= threshold
+        if keep.any():
+            yield js[keep].astype(np.int64), i[keep], score[keep]
 
 
 def _similar_pairs_dense(
@@ -192,50 +264,15 @@ def _similar_pairs_dense(
 
     Each note is a row of 0s and 1s over the notebook's words; a block of rows
     times the earlier rows' transpose is every pair's shared-word count at
-    once (float32 is exact far past any note's length). The score is the
-    same division `_similar_pairs` makes, in float64, so a pair at the
-    threshold lands on the same side. Same text is a star from the first copy,
-    as there, including texts with no words at all.
+    once (float32 is exact far past any note's length). Same text is a star
+    from the first copy, as there, including texts with no words at all.
     """
-    import numpy as np
-
-    vocabulary = _vocabulary(prepared)
-    n = len(prepared)
-    first_with_text: dict[str, int] = {}
-    for i, (norm, _words) in enumerate(prepared):
-        if norm in first_with_text:
-            yield first_with_text[norm], i, 1.0
-        else:
-            first_with_text[norm] = i
-    if not vocabulary or n < 2:
-        return
-    matrix = _word_matrix(prepared, vocabulary)
-    sizes = [len(words) for _norm, words in prepared]
-    sizes32 = np.array(sizes, dtype=np.float32)
-    norms = [norm for norm, _words in prepared]
-    for start in range(1, n, DENSE_BLOCK):
-        stop = min(n, start + DENSE_BLOCK)
-        shared = matrix[start:stop] @ matrix[:stop].T
-        union = sizes32[start:stop, None] + sizes32[None, :stop] - shared
-        #: A loose test in float32 over the block (counts are whole numbers,
-        #: so half a word of slack loses no pair), then the exact score in
-        #: Python for the few that pass: the division `_similar_pairs` makes.
-        near = shared >= threshold * union - 0.5
-        near[:, :start] &= union[:, :start] > 0
-        near[:, start:stop] &= np.tri(stop - start, k=-1, dtype=bool) & (union[:, start:stop] > 0)
-        for row, j in np.argwhere(near):
-            i = start + int(row)
-            j = int(j)
-            if norms[i] == norms[j]:
-                continue  # yielded above, from the first copy only
-            common = int(shared[row, j])
-            score = common / (sizes[i] + sizes[j] - common) if common else 0.0
-            if score >= threshold:
-                yield j, i, score
+    for js, i, score in _dense_blocks(prepared, threshold):
+        yield from zip(js.tolist(), i.tolist(), score.tolist())
 
 
-def _scan(prepared: list[tuple[str, frozenset[str]]], threshold: float) -> Iterator[tuple[int, int, float]]:
-    """The prefix filter, or the dense product when every word is common.
+def _use_dense(prepared: list[tuple[str, frozenset[str]]], threshold: float) -> bool:
+    """Whether the dense product is cheaper than the prefix filter here.
 
     ARCH-11 (audit 2026-10-05): `/duplicates` took 86 s on a notebook whose
     5,000 notes shared a vocabulary of a few hundred words, the case where the
@@ -243,9 +280,73 @@ def _scan(prepared: list[tuple[str, frozenset[str]]], threshold: float) -> Itera
     """
     work, words = _prefix_work(prepared, threshold)
     dense = len(prepared) ** 2 * words / 2
-    if dense <= DENSE_MAX_WORK and dense < work * DENSE_PER_CANDIDATE:
+    return dense <= DENSE_MAX_WORK and dense < work * DENSE_PER_CANDIDATE
+
+
+def _scan(prepared: list[tuple[str, frozenset[str]]], threshold: float) -> Iterator[tuple[int, int, float]]:
+    """The prefix filter, or the dense product when every word is common."""
+    if _use_dense(prepared, threshold):
         return _similar_pairs_dense(prepared, threshold)
     return _similar_pairs(prepared, threshold)
+
+
+def _scan_blocks(prepared: list[tuple[str, frozenset[str]]], threshold: float):  # noqa: ANN202
+    """`_scan`'s pairs as arrays `(i, j, score)`, a block at a time."""
+    import numpy as np
+
+    if _use_dense(prepared, threshold):
+        yield from _dense_blocks(prepared, threshold)
+        return
+    pairs = _similar_pairs(prepared, threshold)
+    while chunk := list(islice(pairs, 65536)):
+        i, j, score = zip(*chunk)
+        yield np.array(i, dtype=np.int64), np.array(j, dtype=np.int64), np.array(score, dtype=np.float64)
+
+
+def _groups(prepared: list[tuple[str, frozenset[str]]], threshold: float) -> list[tuple[list[int], float]]:
+    """Each group of two or more notes, as (indices, strongest pair's score).
+
+    Union-find over the pairs, so three notes that each match the others are
+    one group of three rather than three overlapping pairs. It runs in numpy a
+    block at a time (union by smallest index, then full path halving), with
+    each note's best score kept rather than every pair's: the strongest pair
+    of a group is the best score of one of its members. The pair dictionary
+    held 11.5 million entries on 5,000 alike notes (L-world-class-410).
+    """
+    import numpy as np
+
+    n = len(prepared)
+    label = np.arange(n, dtype=np.int64)
+    best = np.zeros(n, dtype=np.float64)
+
+    def settle() -> None:
+        while True:
+            jumped = label[label]
+            if np.array_equal(jumped, label):
+                return
+            label[:] = jumped
+
+    for i, j, score in _scan_blocks(prepared, threshold):
+        np.maximum.at(best, i, score)
+        np.maximum.at(best, j, score)
+        while True:
+            settle()
+            left, right = label[i], label[j]
+            apart = left != right
+            if not apart.any():
+                break
+            high = np.maximum(left[apart], right[apart])
+            low = np.minimum(left[apart], right[apart])
+            np.minimum.at(label, high, low)
+    settle()
+    members: dict[int, list[int]] = {}
+    for index, root in enumerate(label.tolist()):
+        members.setdefault(root, []).append(index)
+    return [
+        (group, float(best[group].max()))
+        for group in members.values()
+        if len(group) > 1
+    ]
 
 
 #: How much of each note a duplicate group carries. The screen shows a
@@ -275,48 +376,20 @@ def find_duplicates(
         )
     )
 
-    # Union-find, so three notes that each match the others become one group of
-    # three rather than three overlapping pairs the user has to reconcile.
-    parent = {entry.id: entry.id for entry in entries}
-
-    def root(node: int) -> int:
-        while parent[node] != node:
-            parent[node] = parent[parent[node]]
-            node = parent[node]
-        return node
-
     prepared = [_prepare(entry.content) for entry in entries]
-    best: dict[tuple[int, int], float] = {}
-    for i, j, score in _scan(prepared, threshold):
-        best[(entries[i].id, entries[j].id)] = score
-        parent[root(entries[i].id)] = root(entries[j].id)
-
-    grouped: dict[int, list[Entry]] = {}
-    for entry in entries:
-        grouped.setdefault(root(entry.id), []).append(entry)
-    # The strongest pair in each group, read off the pairs once, rather than
-    # every group scanning every pair.
-    top: dict[int, float] = {}
-    for (a_id, _b_id), score in best.items():
-        group = root(a_id)
-        if score > top.get(group, 0.0):
-            top[group] = score
-
     groups = []
-    for group, members in grouped.items():
-        if len(members) < 2:
-            continue
+    for group, top in _groups(prepared, threshold):
         groups.append(
             {
-                "similarity": round(top[group], 3) if group in top else threshold,
+                "similarity": round(top, 3),
                 "entries": [
                     {
-                        "id": m.id,
-                        "content": (m.content or "")[:GROUP_TEXT_CHARS],
-                        "created_at": m.created_at.isoformat(),
-                        "tags": m.tags,
+                        "id": entries[index].id,
+                        "content": (entries[index].content or "")[:GROUP_TEXT_CHARS],
+                        "created_at": entries[index].created_at.isoformat(),
+                        "tags": entries[index].tags,
                     }
-                    for m in sorted(members, key=lambda m: m.id)
+                    for index in group  # entries are in id order, so members are too
                 ],
             }
         )

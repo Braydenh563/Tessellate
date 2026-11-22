@@ -873,15 +873,16 @@ COLOUR_HOMES = {"00-tokens-shell.css", "05-sidebars-themes.css"}
 #: The literals still outside them, per file, as Brief 57 left them: a ratchet
 #: that only goes down. A file not named here may hold none.
 COLOUR_LITERALS_LEFT = {
-    "02-chat-graph.css": 45,
+    #: 2026-11-21 (L533) recount: 156 outside the two colour files; four files lowered to what they hold.
+    "02-chat-graph.css": 33,
     #: 2026-11-21 (L-world-class-364): 51 of 08's 63 are the Atlas and companion's own colours, now in characters-lazy.css. The total did not move.
-    "08-consistency.css": 12,
+    "08-consistency.css": 7,
     "characters-lazy.css": 51,
     "library-lazy.css": 31,
-    "06-timeline-dialogs.css": 23,
+    "06-timeline-dialogs.css": 9,
     "03-dashboard-widgets.css": 6,
     "10-responsive.css": 9,
-    "09-editor.css": 6,
+    "09-editor.css": 4,
     "04-chat-dock-appearance.css": 4,
     #: Moved from 07-whiteboard-misc.css with the lightbox CSS (4668f1456): the
     #: HTML preview's white page ground, on purpose.

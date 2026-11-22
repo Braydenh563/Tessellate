@@ -113,7 +113,8 @@ def test_the_base_button_answers_focus_with_its_hover_ground():
 # first normaliser could not read; it now can, and 7 remain: `:not(:hover)` rest states and the two
 # native pseudo-elements). The count may only fall: a new component's hover rule names its
 # :focus-visible beside it.
-HOVER_WITHOUT_FOCUS_BASELINE = 7
+#: 6 at the 2026-11-21 recount (L533).
+HOVER_WITHOUT_FOCUS_BASELINE = 6
 
 
 def _strip(css: str) -> str:

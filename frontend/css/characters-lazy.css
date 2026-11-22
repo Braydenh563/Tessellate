@@ -1,3 +1,91 @@
+/* **Moved whole from 08-consistency.css, to the top so the order against every
+   later rule is the one it had** (L685 B: nothing between 08 and this sheet in
+   the cascade touches these classes; the Atlas and the companion are drawn
+   only after this sheet is in). Registered properties first, then the
+   one-off plays. */
+@keyframes nmv-arm-drift {
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(4deg); }
+}
+/* **`--nmb-tilt` and `--nmb-lean` do not inherit** (companiondepth2.js companionrecalcorder,
+   2026-10-04): avatars.js writes them inline on `#nm-buddy` when a walk
+   starts, and as inherited properties each write restyled all 528
+   descendants (28ms) though only `.nm-buddy-char` (both: the tilt's
+   `rotate`, the walk's bob and glide keyframes) and the skirt's root (the
+   lean: `atl-lower-trail`) read them. They pass down by `inherit` along
+   the one path to `.nm-buddy-char`, `.nm-buddy-face > .nm-buddy-char`; the
+   skirt's root is written to directly (`nameMarkBuddyWay`), because
+   `inherit` on the box between it and the figure (`.atl-lw-lower`, which
+   the limb loops animate) made an idle companion restyle every frame
+   (6 recalcs in 2s became 105). A new reader needs its own link. */
+@property --nmb-tilt { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-lean { syntax: "<number>"; inherits: false; initial-value: 0; }
+/* **The look does not inherit either** (the lag log: `input 384ms pointerout on div.modal-overlay.nm-viewer`):
+   `--nmb-ex`, `--nmb-ey` and `--nmb-hx` were inherited, so one write on `#nm-buddy` restyled all 647
+   descendants (113ms at 4x CPU) for the four elements that read them: the faces' `.nm-eyes` and
+   `.nm-buddy-head`, Atlas's `.atl-layer-lids` and `.atl-iris`. avatars.js `nameMarkBuddyAim.set`
+   writes them on those (0.6ms). A new reader is added to `nameMarkBuddyAim.readers` there. */
+@property --nmb-ex { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-ey { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-hx { syntax: "<number>"; inherits: false; initial-value: 0; }
+/* **The lean** (round 9, the owner: "tilt their body that way while still
+   mostly facing forward"): `data-lean="l"` or `"r"` on `#nm-buddy`, on a
+   figure box or on a drawing turns the body a few degrees about the feet,
+   the head follows a little further with the face's features sliding
+   toward that side, and the tail and the nebula lag behind and settle
+   (an overshooting ease, a beat late). Every part eases over about 360ms
+   and nothing snaps; at rest it costs nothing, being a held transform.
+   `--atl-lean-dir` is -1, 0 or 1 (`--atl-lean` is the pose's own lean in
+   degrees); declared at the root and never again on `.nm-atlas` itself,
+   so an ancestor's value reaches every layer. */
+@property --atl-lean-dir { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --nmb-lean-pose { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --nmb-lie-shift { syntax: "<length>+"; inherits: false; initial-value: 0 0; }
+/* **The arms match the mood** (round 9, the owner: "make sure that the
+   positions of the limbs like the arm ... actually match the mood as well",
+   then "state variations, not the exact same animation or mood animation
+   each time"). Each mood gives each look's arms an angle about the
+   shoulder, in up to three drawn variants: open arms or one raised when
+   happy, a hand to the mouth when laughing, the chin hand or folded arms
+   when thinking, hands up when surprised, a scratch at the head when
+   confused, an eye rubbed when sleepy, hanging arms when sad, hands on the
+   hips when proud, clasped when shy or worried, to the chest in love. The
+   masculine arms hang and swing wide; the feminine right arm is held out
+   and her gestures come in closer and higher.
+   **Never crossed, never a T** (INBOX 1589, the owner: arms "going in like
+   opposite directions but like fully extended or ... inverted in front of
+   it like it is trying to cross its arms"): an arm turned in stops with its
+   hand at the body's middle (18 degrees for his shoulders, 12 for her
+   narrower ones; 40 to 76 crossed them), a hand to the mouth is the chin
+   hand rather than an arm swung up across the face, and no variant holds
+   both arms straight out to the sides (60 to 115 degrees): out wide is down
+   and open or up and raised (`test_atlas_acts_1589.py`).
+   **The hooks**: the mood is `data-atlas-mood` (as before); the variant is
+   `data-atlas-variant="0"|"1"|"2"` on `#nm-buddy`, a figure box or a
+   drawing (it inherits, so one attribute on the host reaches every
+   layer). The arms ease between moods and variants with the limbs' own
+   transition; a pose or an act that places the arms (sit, float, hang,
+   wave, the stances) outranks the mood, being more specific. */
+@property --atl-v1 { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --atl-v2 { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --atl-chin { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --atl-lean { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --atl-sx { syntax: "<number>"; inherits: false; initial-value: 1; }
+@property --atl-sy { syntax: "<number>"; inherits: false; initial-value: 1; }
+@property --atl-tail { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@media all {
+  /* One-off plays: a poke, a nod, a hop, a spin, a wave, and a full-size
+     Atlas says hello with a wave when it appears. Off and Reduce motion
+     keep it still. */
+  :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) {
+    & .nm-atlas.nm-react .atl-mood,
+    & .atl-face.nm-react .atl-sway { animation: atl-boing 0.7s var(--ease-spring); }
+    & .nm-atlas.atl-play-nod .atl-head { animation: atl-nod 0.9s ease-in-out; }
+    & .nm-atlas.atl-play-hop .atl-mood { animation: atl-hop-once 0.8s ease-out; }
+    & .nm-atlas.atl-play-spin .atl-mood { animation: atl-spin 0.9s ease-in-out; }
+    & .nm-atlas:is(.atl-play-wave, .atl-full) .nmb-arm-r { animation: atl-wave 1.6s ease-in-out 0.4s; }
+  }
+}
 
 /* The mark wears Atlas's own face once atlas.js has drawn it (the host
    carries `data-atlas-avatar`): the disc's tint goes, the drawing fills it.
@@ -2006,10 +2094,10 @@
   & .atl-orbit-arm { animation: atl-orbit var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite; }
   & .atl-orbiter { animation: atl-orbit-back var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite, atl-orbit-depth var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite; }
 }
-/* UX3: after 20 s without input (`nmbClock.setCalm`, avatars.js, on each figure) the endless loops hold: the rings, hair, tail,
-   hem, nebula and lower wisps; by part, so an act started while calm still plays. */
-.atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits *,
-.atl-figure-box.is-calm :is(.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg) { animation-play-state: paused !important; }
+/* UX3: after 20 s without input the endless loops hold: the rings, hair, tail, hem, nebula and lower wisps, by
+   part, so an act started while calm still plays. Done by Web Animations (`nmbClock.setCalm`, avatars.js): a
+   class here restyled 77 loops in one task. This rule is the off-screen and hidden-window hold. */
+.atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits * { animation-play-state: paused !important; }
 /* And no loop is made under the entrance fade (atlas.js, `atlasWhenShown` adds atl-lit): the
    compositor refuses for good an animation created while #nm-buddy is opacity 0. One rule, one !important. */
 .atl-figure-box:not(.atl-lit), .atl-figure-box:not(.atl-lit) *,

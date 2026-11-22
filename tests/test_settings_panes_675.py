@@ -220,39 +220,41 @@ def test_watching_a_section_does_not_build_help_to_find_its_topics():
 
 
 @needs_node
-def test_leaving_help_drops_its_topics_a_slice_at_a_time():
-    # Dropping the 1,770 topic nodes in one `replaceChildren` was a 220 to 350 ms task at 4x CPU
-    # on the switch after Help (the next pane's own work came with it). `helpTopicsDrop` removes
-    # the rows in slices of at most HELP_DROP_SLICE, one timer apiece, then their groups.
+def test_leaving_help_drops_its_topics_after_the_next_frame():
+    # The drop must not land on the next pane's switch task (L675). Slicing it (one timer per 60
+    # rows) restyled the page once per timer: 30 tasks of 60 to 95 ms at 4x CPU, measured
+    # 2026-11-21. One `replaceChildren` of the hidden rows, in a timer after the next frame, is
+    # 8 to 22 ms. A visit back before that timer keeps the rows.
     find = (JS / "settings-find.js").read_text(encoding="utf-8")
-    start = find.index("const HELP_DROP_SLICE")
-    fn = find[start : find.index("\n  }\n", find.index("function helpTopicsDrop(")) + 5]
+    start = find.index("function helpTopicsDrop(")
+    fn = find[start : find.index("\n  }\n", start) + 5]
     script = (
         r"""
-        const timers = [];
-        const setTimeout = (fn) => timers.push(fn);
-        const mk = (kids = []) => ({ children: kids, removed: false, remove() { this.removed = true; } });
-        const groups = [mk([...Array(130)].map(() => mk())), mk([...Array(40)].map(() => mk()))];
-        const heads = [mk(), mk()];
+        const queue = [];
+        const setTimeout = (fn) => queue.push(["timer", fn]);
+        const afterFrames = (fn, n) => queue.push(["frame", fn, n]);
         let helpTopicsLoad = null;
-        const box = { children: [heads[0], groups[0], heads[1], groups[1]], dataset: {} };
+        const mk = () => { const box = { dataset: {}, emptied: 0 }; box.replaceChildren = () => { box.emptied += 1; }; return box; };
+        const run = () => { const kinds = []; while (queue.length) { const [k, f] = queue.shift(); kinds.push(k); f(); } return kinds; };
         """
         + fn
         + r"""
+        const box = mk();
         helpTopicsDrop(box);
-        const slices = [];
-        const count = () => groups.flatMap((g) => g.children).filter((r) => r.removed).length;
-        let last = count();
-        slices.push(last);
-        while (timers.length) { timers.shift()(); const now = count(); slices.push(now - last); last = now; }
-        console.log(JSON.stringify({ slices, tail: [...heads, ...groups].every((n) => n.removed), total: last, marked: "dropping" in box.dataset }));
+        const sync = { emptied: box.emptied, marked: "dropping" in box.dataset };
+        const kinds = run();
+        const back = mk();
+        helpTopicsDrop(back);
+        helpTopicsLoad = Promise.resolve();
+        run();
+        console.log(JSON.stringify({ sync, kinds, emptied: box.emptied, marked: "dropping" in box.dataset, kept: back.emptied }));
         """
     )
     run = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30)
     assert run.returncode == 0, run.stderr
     out = json.loads(run.stdout)
-    assert out["total"] == 170 and out["tail"], out
-    # The "dropping" mark is cleared once the slices end, so a later search draws the topics again.
-    assert not out["marked"], out
-    assert max(out["slices"]) <= int(re.search(r"HELP_DROP_SLICE = (\d+)", fn).group(1)), out
-    assert len(out["slices"]) >= 4, "the drop was not spread over timers"
+    # Nothing is removed in the switch's own task; the box is marked "not drawn" at once.
+    assert out["sync"] == {"emptied": 0, "marked": True}, out
+    # A frame first, then a timer, then one removal; the mark is cleared so a later search draws again.
+    assert out["kinds"] == ["frame", "timer"] and out["emptied"] == 1 and not out["marked"], out
+    assert out["kept"] == 0, out

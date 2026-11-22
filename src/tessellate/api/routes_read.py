@@ -118,7 +118,12 @@ def phrase_filter(
     clock = _clock(tz_offset_minutes, now)
     found = filters.read(q, clock)
     ids = filters.resolve(session, found["filters"], clock) if found["filters"] else None
-    return {**found, "ids": ids}
+    #: The leftover words on the meaning layer (L628): the notes that hold them
+    #: with request words dropped and slips folded, which the boxes add to their
+    #: own literal match. Null for an empty box or a filter with no words left.
+    said = found["rest"] if found["filters"] else q
+    word_ids = filters.by_words(session, said, among=ids) if said.strip() else None
+    return {**found, "ids": ids, "word_ids": word_ids}
 
 
 @router.get("/read/words")

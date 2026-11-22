@@ -94,13 +94,23 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-//: **The first paint is a task of its own** (L-world-class-354): it is the
-//: page's first Intl call, about 50 ms of ICU set-up at 4x CPU that no
-//: formatter choice avoids, and inside this file's eval it made one 94 ms
-//: task of the two. `startClockTicker` paints as it starts.
+//: **The first paint waits for ICU, set up in a worker** (L-world-class-354, 624): the page's first Intl call
+//: is 73 to 281 ms of ICU set-up at 4x CPU, whichever formatter comes first, and its caches are the process's,
+//: so intl-warm.js makes that call off the main thread and the clocks paint when it answers (the first
+//: `toLocaleTimeString` here is then 0 to 3 ms). The timer is the paint for a page with no worker, or one that
+//: never answers; `startClockTicker` paints once whichever comes first.
+try {
+  const warm = new Worker(`/js/intl-warm.js${lazyAssetStamp("/js/intl-warm.js")}`);
+  warm.onmessage = warm.onerror = () => {
+    warm.terminate();
+    startClockTicker();
+  };
+} catch {
+  // No worker (CSP or an old engine): the timer below paints.
+}
 setTimeout(function firstClockPaint() {
   startClockTicker();
-}, 0);
+}, 2000);
 
 window.addEventListener("resize", () => {
   //: Guarded with `typeof` (88bfe5341 removed it, 87139afcf put it back, and
@@ -660,7 +670,10 @@ document.addEventListener("scroll", onScrollEdge, { capture: true, passive: true
 let pageScrollingTimer = 0;
 document.addEventListener(
   "scroll",
-  () => {
+  (event) => {
+    //: Settings holds none of those rows, and the attribute restyles every `li` in the page (`#entry-list > li`
+    //: names the tag): a pane switch scrolls its pane to the top, a 38 to 73 ms frame at 4x CPU (2026-11-21).
+    if (event.target.closest?.("#settings-modal")) return;
     if (pageScrollingTimer) clearTimeout(pageScrollingTimer);
     else document.documentElement.setAttribute("data-scrolling", "");
     pageScrollingTimer = setTimeout(() => {

@@ -159,7 +159,9 @@ const SURFACES = Object.assign(new Map(), {
   warm() {
     //: A fetched surface is parsed ahead only once its text is in: the fetch itself waits for a sign of an open.
     const waiting = [...SURFACES].filter(([, entry]) => entry.tpl && !entry.frag && !entry.done && !entry.tpl.content && (entry.fetched != null || !entry.tpl.dataset?.src));
-    const next = waiting.find(([name]) => name === "settings") ?? waiting[0];
+    //: Notes before Settings (L603): the Notes press is the first interaction, and parsing
+    //: its surface inside the press was 41 to 105ms of a 55 to 124ms click at 5,000 notes.
+    const next = waiting.find(([name]) => name === "notes") ?? waiting.find(([name]) => name === "settings") ?? waiting[0];
     if (!next) return;
     //: A split surface is parsed a few ms at a time with the next slot soon; a whole one in this slot.
     if (SURFACES.splitMark(next[1]) && !SURFACES.parseNext(next[1], 8)) return SURFACES.warmLater(30);

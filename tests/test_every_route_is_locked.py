@@ -123,6 +123,19 @@ OPEN = {
     #: per-client token (401) and another device unless LAN mode is on (403)
     #: before it reads the body (tests/test_mcp_http.py).
     "/mcp",
+    #: OAuth 2.1 for a remote MCP client (api/routes_mcp_oauth.py,
+    #: L-world-class-560): metadata, registration, the authorize page that
+    #: waits and the token trade. None opens a note: a token comes only from
+    #: a sign-in the person approved in Settings on this computer, its code
+    #: is single use and bound by PKCE, and each refuses another device unless
+    #: LAN mode is on (tests/test_mcp_oauth.py).
+    "/.well-known/oauth-protected-resource",
+    "/.well-known/oauth-protected-resource/mcp",
+    "/.well-known/oauth-authorization-server",
+    "/oauth/register",
+    "/oauth/authorize",
+    "/oauth/authorize/wait",
+    "/oauth/token",
 }
 
 #: Prefixes, for the same reason, where the path carries a file name.

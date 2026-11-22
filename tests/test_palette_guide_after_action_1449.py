@@ -52,7 +52,7 @@ def _ranked(query: str, rows: list[dict]) -> list[str]:
         "const meaningAlts = () => null, meaningHolds = () => false, meaningCloseness = () => 0,"
         " meaningMissing = () => 0, meaningWords = (t) => String(t).split(/\\s+/).filter(Boolean);\n"
         "const palettePrefixPicks = () => ({}); const paletteFeature = (r) => r.label;\n"
-        + "".join(_function(f) for f in ("paletteText", "paletteTarget", "paletteWords", "paletteScore", "paletteVocab",
+        + "".join(_function(f) for f in ("paletteText", "paletteName", "paletteTarget", "paletteWords", "paletteScore", "paletteVocab",
                                           "paletteTier", "paletteWhy", "paletteRanked"))
         + f"\nconst rows = {json.dumps(rows)};\n"
         f"console.log(JSON.stringify(paletteRanked(rows, {json.dumps(query)}).map((r) => r.label)));\n"

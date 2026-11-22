@@ -610,7 +610,12 @@ function initNotesSubtabHeightToken() {
     //: observer's report, it restyled the page again in this frame and the
     //: next reader (`fitDock`) paid for it (47 to 99ms of a Notes press at 4x,
     //: INBOX 1534).
-    if (page.style.getPropertyValue("--notes-sticky-top") !== h) setTimeout(() => page.style.setProperty("--notes-sticky-top", h));
+    //: Into a rule on the four bars that read it, not onto the page (L603): the token is
+    //: inherited, so a write on `#tab-notes` restyled every row of a 5,000-note list on the
+    //: first Notes press (3,467 elements, 83 to 117ms at 1x on a loaded host).
+    const sheet = (initNotesSubtabHeightToken.sheet ||= new CSSStyleSheet());
+    if (!document.adoptedStyleSheets.includes(sheet)) document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    if (initNotesSubtabHeightToken.h !== h) setTimeout(() => sheet.replaceSync(`#tab-notes :is(.dock, .doc-toolbar, .question-group, .selectbar) { --notes-sticky-top: ${(initNotesSubtabHeightToken.h = h)} }`));
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).

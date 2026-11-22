@@ -32,6 +32,8 @@ function ok(label, pass, detail) {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
         openTour(sec);
         await wait(700);
+        //: The first step waits out a loading tab too (tourBusy), as Next does below.
+        for (let t = 0; t < 40 && document.getElementById("tour-card").getAttribute("aria-busy") === "true"; t += 1) await wait(200);
         const out = [];
         for (let i = 0; i < 40; i += 1) {
           const spot = document.getElementById("tour-spot");
@@ -88,6 +90,10 @@ function ok(label, pass, detail) {
           });
           const next = document.getElementById("tour-next");
           if (!next) break;
+          //: A section's last step now chains to the next section ("Next:
+          //: Notes"), so walking on from it measures every later section again
+          //: until the 40-step cap: 14 minutes on the 5k showcase.
+          if (/^Next:/.test(next.textContent.trim())) break;
           next.click();
           await wait(650);
           //: A card that is busy (a tab still loading) is not a step yet: it
@@ -96,6 +102,7 @@ function ok(label, pass, detail) {
         }
         return out;
       }, sec);
+      console.error(`  ${vp.width} ${sec}: ${res.length} steps`);
       for (const r of res) {
         steps += 1;
         const tag = `${vp.width} ${sec} "${r.title}" ${r.n}`;

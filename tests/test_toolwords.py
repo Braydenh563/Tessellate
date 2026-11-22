@@ -12,7 +12,7 @@ import pytest
 from tessellate.ai import tools, toolwords
 from tessellate.ai import agent_policy
 
-CORE = set(tools.CORE_TOOLS) | {"web_search", "read_url"}
+CORE = set(tools.CORE_TOOLS) | {"web_search", "read_url", "browser_open"}
 
 
 def extras(question: str, recent: str = "") -> list[str]:

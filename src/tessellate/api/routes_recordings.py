@@ -259,6 +259,8 @@ def trim_recording(recording_id: int, body: RecordingTrim, session: Session = De
         mime="audio/wav",
         filename=recordings.new_filename("audio/wav"),
         entry_id=row.entry_id,
+        #: In the source's space: sealing below is decided from it (ported from L685).
+        workspace_id=row.workspace_id,
         source_id=row.id,
         derived="trim",
         state="saved",
@@ -271,9 +273,16 @@ def trim_recording(recording_id: int, body: RecordingTrim, session: Session = De
         sealed_files.append(recordings.path_of(made), wav, sealed=sealed_files.wanted(session, row.workspace_id))
     except sealed_files.LooksSealed as exc:
         raise HTTPException(status_code=415, detail=sealed_files.LOOKS_SEALED_DETAIL) from exc
-    recordings_repo.add(session, made)
-    log_action(session, "created", "recording", made.id, detail="trim")
-    session.commit()
+    try:
+        recordings_repo.add(session, made)
+        log_action(session, "created", "recording", made.id, detail="trim")
+        session.commit()
+    except BaseException:
+        #: No row, no file: a failed flush or commit would leave the new wav
+        #: on disk with nothing pointing at it (ported from L685).
+        session.rollback()
+        recordings.path_of(made).unlink(missing_ok=True)
+        raise
     return recordings.as_dict(made)
 
 

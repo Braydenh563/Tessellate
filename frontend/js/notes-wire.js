@@ -4,6 +4,7 @@
 
 //: A shift-click range over every row between the two, built or not.
 function selectNoteRange(list, fromId, toId, on) {
+  noteWindow.win?.flush();
   const rows = entryListItems(list);
   const a = rows.findIndex((li) => li.dataset.id === fromId);
   const b = rows.findIndex((li) => li.dataset.id === toId);
@@ -38,6 +39,7 @@ function initEntryListKeyboardNav() {
     //: deepflows sweep: click into the editor, press End, type). Checkboxes
     //: and buttons are not fields, so the row's arrows still work from them.
     if (event.target.closest('textarea, select, [contenteditable], .cm-editor, input:not([type="checkbox"]):not([type="radio"]):not([type="button"])')) return;
+    noteWindow.win?.flush();
     const items = entryListItems(list);
     const current = event.target.closest("li");
     const index = current ? items.indexOf(current) : -1;

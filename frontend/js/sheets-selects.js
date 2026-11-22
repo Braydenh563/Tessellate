@@ -1201,6 +1201,9 @@ function watchForSelects() {
     for (const record of records) {
       for (const node of record.addedNodes) {
         if (node.nodeType !== 1) continue;
+        //: The shell `enhanceSelect` itself puts in, and the option rows it fills: nothing in them to enhance, yet each was four
+        //: more queries here (69 of the 231 ms of Appearance's first visit at 4x CPU, L-world-class-621).
+        if (node.classList.contains("select-shell") || node.closest(".select-shell")) continue;
         if (node.tagName === "SELECT") enhanceSelect(node);
         else enhanceAllSelects(node);
         //: A date or time field drawn after boot (the document properties

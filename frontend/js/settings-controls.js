@@ -2348,6 +2348,60 @@
     $("mcp-client-create").onclick = makeMcpLink;
     const { clients = [] } = await apiJson("/mcp-clients").catch(() => ({}));
     list.replaceChildren(...clients.map(mcpClientRow));
+    renderMcpSignIns();
+  }
+
+  //: The scope the two fields give (core/mcp_scope.py): comma-separated names.
+  function mcpScope() {
+    const names = (id) => $(id).value.split(",").map((name) => name.trim()).filter(Boolean);
+    return { categories: names("mcp-client-cats"), tags: names("mcp-client-tags") };
+  }
+
+  function mcpScopeWords(scope) {
+    const parts = [...(scope?.categories || []), ...(scope?.tags || []).map((tag) => `#${tag}`)];
+    return parts.length ? `only ${parts.join(", ")}` : "all notes";
+  }
+
+  //: OAuth sign-ins waiting for this computer (routes_mcp_oauth.py, L-world-class-560),
+  //: polled while the list is on screen: the person approves the one whose code matches.
+  async function renderMcpSignIns() {
+    const list = $("mcp-oauth-list");
+    if (!list?.isConnected) return;
+    const { requests = [] } = await apiJson("/mcp-oauth/requests").catch(() => ({}));
+    $("mcp-oauth-head").classList.toggle("hidden", !requests.length);
+    list.replaceChildren(...requests.map(mcpSignInRow));
+    clearTimeout(settingsControlState.signInPoll);
+    if (list.offsetParent) settingsControlState.signInPoll = setTimeout(renderMcpSignIns, 4000);
+  }
+
+  function mcpSignInRow(request) {
+    const li = document.createElement("li");
+    const row = document.createElement("div");
+    row.className = "entry-meta";
+    const name = document.createElement("strong");
+    name.textContent = `${request.client_name} (${request.code})`;
+    const facts = document.createElement("span");
+    facts.className = "muted";
+    facts.textContent = `${request.redirect_host}, ${request.asks_writes ? "asks to read and change notes" : "asks to read notes"}`;
+    const answer = (verb) => async () => {
+      try {
+        await apiJson(`/mcp-oauth/requests/${encodeURIComponent(request.id)}/${verb}`, {
+          method: "POST",
+          body: JSON.stringify(verb === "approve" ? { writes: $("mcp-client-writes").checked, scope: mcpScope() } : {}),
+        });
+        toast(verb === "approve" ? `${request.client_name} approved. Its page moves on by itself.` : `${request.client_name} was refused.`);
+      } catch (error) {
+        toast(error.message, true);
+      }
+      renderMcpClients();
+    };
+    const actions = rowActions([
+      { label: "Approve", title: "Let this app in with the notes chosen above", run: answer("approve") },
+      { label: "Deny", title: "Refuse this sign-in", danger: true, run: answer("deny") },
+    ], `${request.client_name} sign-in actions`);
+    row.append(name, facts, actions);
+    li.append(row);
+    return li;
   }
 
   async function makeMcpLink() {
@@ -2355,7 +2409,7 @@
     try {
       const made = await apiJson("/mcp-clients", {
         method: "POST",
-        body: JSON.stringify({ name: field.value.trim() || "An app", writes: $("mcp-client-writes").checked }),
+        body: JSON.stringify({ name: field.value.trim() || "An app", writes: $("mcp-client-writes").checked, scope: mcpScope() }),
       });
       const text = JSON.stringify({ mcpServers: { tessellate: { type: "http", url: `${location.origin}/mcp`, headers: { Authorization: `Bearer ${made.token}` } } } }, null, 2);
       $("mcp-client-snippet").textContent = text;
@@ -2379,7 +2433,8 @@
     const facts = document.createElement("span");
     facts.className = "muted";
     const used = client.last_used ? `last used ${relativeTime(new Date(client.last_used * 1000).toISOString())}` : "not used yet";
-    facts.textContent = `${client.writes ? "Reads and changes notes" : "Reads only"}, ${used}`;
+    const how = client.kind === "oauth" ? ", signed in with OAuth" : "";
+    facts.textContent = `${client.writes ? "Reads and changes notes" : "Reads only"}, ${mcpScopeWords(client.scope)}${how}, ${used}`;
     const actions = rowActions([{
       label: "Revoke",
       title: "Stop this app's link working",
@@ -2469,6 +2524,7 @@
   const settingsControlState = {
     lanQrShown: "",
     themePreviewTimer: 0,
+    signInPoll: 0,
   };
   async function showLanQr(holder, address, button, open, caption = "Point the phone's camera at it to open this address.") {
     holder.querySelector(".lan-qr")?.remove();
@@ -3831,6 +3887,11 @@
     renderSmallModelMode(prefs.small_model_mode || "auto");
     renderRunBudget(prefs);
     const disabled = new Set(prefs.disabled_tools || []);
+    //: A revisit with the same catalog and switches keeps its rows: the rebuild of 73 rows was a 34 to 62 ms
+    //: style pass and 41 ms of layout at 4x CPU a few hundred ms after every Tools switch (2026-11-21).
+    const drawn = JSON.stringify([catalog, [...disabled].sort()]);
+    if (list.dataset.drawn === drawn && list.querySelector(":scope > .tool-group-head")) return applyToolFilter();
+    list.dataset.drawn = drawn;
     list.replaceChildren();
     //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
     //: grouped table (read, write, destructive)"), each group under an

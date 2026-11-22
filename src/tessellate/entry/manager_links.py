@@ -554,6 +554,16 @@ def delete_link(session: Session, link: EntryLink) -> None:
     session.commit()
 
 
+def _across_spaces(session: Session, entry_id: int) -> Entry | None:
+    """The other end of a link when it sits in another space: a move keeps
+    every link (L-world-class-22), and the ambient filter would hide the end.
+    A locked private space is still out of this read."""
+    from tessellate.core.database import impersonate_workspace
+
+    with impersonate_workspace(session, ""):
+        return session.get(Entry, entry_id)
+
+
 def links_for_entry(session: Session, entry: Entry) -> list[tuple[EntryLink, Entry]]:
     """All links touching this entry, with the entry on the other end."""
     links = session.scalars(
@@ -573,6 +583,8 @@ def links_for_entry(session: Session, entry: Entry) -> list[tuple[EntryLink, Ent
             else link.source_entry_id
         )
         other = session.get(Entry, other_id)
+        if other is None:
+            other = _across_spaces(session, other_id)
         if other is not None:
             result.append((link, other))
         else:

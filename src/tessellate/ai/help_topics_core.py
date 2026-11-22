@@ -155,7 +155,7 @@ HELP_TOPICS: list[dict] = [
             "The Graph's search box reads filters as well as words: "
             '"connected to Harbor", "untouched since June", "tagged work", '
             '"pinned", "with pictures", "edited last week"; any other '
-            "words still have to match. The box says how many notes match; Enter jumps to the next "
+            "words still have to match, though a slip of one still finds it. The box says how many notes match; Enter jumps to the next "
             "match and pans to it, Shift and Enter to the one before, and Esc clears the search. "
             "Click a note for its panel: Open, Focus, "
             "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
@@ -259,7 +259,7 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking", and a slipped word still finds its notes. Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."
@@ -430,7 +430,11 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
-            "A space can be private: Private in New space or Edit space seals everything in it."
+            "A space can be private: Private in New space or Edit space seals everything in it. "
+            "In a space the dashboard line under the greeting names it and counts its notes, documents and boards "
+            "(not in All spaces). Export this space, in Edit space, downloads that space's notes, documents and boards "
+            "as a zip with nothing from another space; a locked private space asks to unlock first. "
+            "Moving notes to another space keeps every link: the link's chip names the other space, and both notes list it."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
@@ -1697,7 +1701,8 @@ HELP_TOPICS.extend(
                 "beside Draft. The local model keeps every fact, name, number and "
                 "the markdown, and leaves code and links alone. It needs a model "
                 "connected. With no model, Translate this in the command palette "
-                "turns a selected passage from English into Spanish on this "
+                "turns a selected passage between English and Spanish, French, German, "
+                "Italian or Portuguese on this "
                 "computer once Translate offline is installed in Settings, Packages."
             ),
             "badge": {"label": "Notes", "tab": "notes"},

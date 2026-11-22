@@ -1184,6 +1184,14 @@ function entryItem(entry, options = {}) {
       //: KG3: a kind of link is named on the chip from this end ("Has part"
       //: on the whole, "Part of" on the piece); "Related" says nothing.
       const kindName = link.link_label && link.link_type !== "related" ? link.link_label : "";
+      //: A move keeps every link, so the other note may live in another space;
+      //: its chip says which (L-world-class-22).
+      if (link.space_name) {
+        const where = document.createElement("span");
+        where.className = "link-kind";
+        where.textContent = link.space_name;
+        linkChip.insertBefore(where, linkPreview);
+      }
       if (kindName) {
         const kind = document.createElement("span");
         kind.className = "link-kind";
@@ -1192,7 +1200,7 @@ function entryItem(entry, options = {}) {
       }
       linkChip.title = (reasonNote
         ? `${wayRound}: ${label}\nReason: ${reasonNote}`
-        : `${wayRound}: ${label}`) + (kindName ? `\nKind: ${kindName}` : "");
+        : `${wayRound}: ${label}`) + (kindName ? `\nKind: ${kindName}` : "") + (link.space_name ? `\nIn the space ${link.space_name}` : "");
       //: **One chip and one menu per connection** (INBOX 319, the owner: "the
       //: buttons in these connections in notes need a redesign and look").
       //: Edit reason, clear reason and unlink were three round buttons of one
@@ -1266,10 +1274,14 @@ function entryItem(entry, options = {}) {
     //: every connection as a chip, measured at 109 controls on the Notes tab
     //: with 19 under 24px, and the chips outweighed the note. The first
     //: three show; the rest wait behind "+N more links", which opens them
-    //: in place (and stays open for this render).
-    const LINKS_SHOWN = 3;
+    //: in place (and stays open for this render). The Notes list's card
+    //: view asks for two (`options.linksShown`, L-world-class-95): there the
+    //: row shares the details line, which two pills and the count fit and
+    //: three mostly did not (2 of 9 showcase cards at 1093x614), and the
+    //: count always replaces the rest, never a lone hidden pill's worth.
+    const LINKS_SHOWN = options.linksShown || 3;
     const connections = [...linkRow.children];
-    if (connections.length > LINKS_SHOWN + 1) {
+    if (connections.length > LINKS_SHOWN + (options.linksShown ? 0 : 1)) {
       for (const extra of connections.slice(LINKS_SHOWN)) extra.classList.add("entry-link-extra");
       const more = document.createElement("button");
       more.type = "button";

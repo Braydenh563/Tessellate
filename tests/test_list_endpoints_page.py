@@ -35,6 +35,8 @@ BOUNDED_BY_THE_APP = {
     "list_modes": "the chat modes this app ships, a fixed list in code",
     "list_tools": "the AI tools this app defines, a fixed list in code",
     "list_commands": "the slash commands this app defines (ai/slash.py), a fixed registry in code",
+    "list_clients": "the MCP tokens: at most MAX_CLIENTS (20) live, revoked rows pruned (core/mcp_clients.py)",
+    "list_requests": "MCP sign-in requests waiting: at most MAX_PENDING (20), each expires in ten minutes",
     "list_file_types": "the file types this app knows how to read",
     "list_embedding_models": "the embedding models this app offers",
     "list_extras": "the optional installs this app knows about",

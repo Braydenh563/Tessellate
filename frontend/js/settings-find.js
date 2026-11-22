@@ -77,12 +77,23 @@
   }
 
   settingRowsScan.panes = new WeakMap();
-  settingRowsScan.pane = function (pane) {
-    const rows = [];
+  //: A pane read in slices (`settingRowsWarm`): the elements still to read and the rows so far. A pane that
+  //: changes is dropped from here by settings.js's observer, and the warm starts it again.
+  settingRowsScan.partial = new WeakMap();
+  //: `until` (a `performance.now()` time) makes the read stop there and answer null; the next call goes on.
+  settingRowsScan.pane = function (pane, until = 0) {
+    let run = until && settingRowsScan.partial.get(pane);
+    if (!run) {
+      run = { rows: [], list: [...pane.querySelectorAll(SETTING_ROW_SELECTOR)], at: 0 };
+      if (until) settingRowsScan.partial.set(pane, run);
+    }
+    const { rows, list } = run;
     const name = pane.id.slice("settings-".length);
     const nav = document.querySelector(`#settings-nav [data-section="${name}"]`);
     const sectionLabel = nav ? nav.textContent.trim() : name;
-    for (const el of pane.querySelectorAll(SETTING_ROW_SELECTOR)) {
+    while (run.at < list.length) {
+      if (until && performance.now() > until) return null;
+      const el = list[run.at++];
       if (el.closest(".help-body, .settings-pane-title, [aria-hidden='true'], .skeleton")) continue;
       //: Outermost only: a label inside a `.setting-check` is the same row.
       const outer = el.parentElement?.closest(SETTING_ROW_SELECTOR);
@@ -105,6 +116,7 @@
       const haystack = `${text} ${el.textContent || ""} ${el.getAttribute("title") || ""} ${el.querySelector("input, select, textarea")?.getAttribute("aria-label") || ""} ${el.dataset.keys || ""} ${el.dataset.find || ""} ${el.dataset.synonyms || ""}`.toLowerCase();
       rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", synonyms: (el.dataset.synonyms || "").toLowerCase().split(/\s+/).filter(Boolean), el, isHead: el.matches("h3, h4") });
     }
+    settingRowsScan.partial.delete(pane);
     return rows;
   };
 
@@ -125,15 +137,29 @@
     //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
     const topics = document.getElementById("help-topics");
     if (topics && (!topics.firstElementChild || topics.dataset.dropping)) renderHelpTopics();
+    const words = settingRowsWarm.words;
+    if (words) {
+      settingRowsWarm.words = null;
+      //: The vocabulary too (`settingVocab`): left to the first key it was 15 to 20 ms of that key at 4x.
+      settingVocab(words.rows);
+      for (const row of words.rows) meaningMissing([], row.haystack);
+      meaningMissing([], settingsSectionText(words.pane));
+      if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
+      else setTimeout(settingRowsWarm, 50);
+      return;
+    }
     //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
     const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !settingRowsScan.panes.has(p));
     if (!pane) return;
-    const rows = settingRowsScan.pane(pane);
-    settingRowsScan.panes.set(pane, rows);
-    //: The vocabulary too (`settingVocab`): left to the first key it was 15 to 20 ms of that key at 4x.
-    settingVocab(rows);
-    for (const row of rows) meaningMissing([], row.haystack);
-    meaningMissing([], settingsSectionText(pane));
+    //: A slice of a few ms, then the next slice in its own idle slot: Appearance (1,260 elements) read whole was
+    //: 118 ms at 4x CPU, landing on the arrow key that followed the pane's first visit (scratchpad/ui-sweeps/
+    //: handlerlag.js, L-world-class-621).
+    const rows = settingRowsScan.pane(pane, performance.now() + 6);
+    //: The vocabulary and meanings are the next slice (`settingRowsWarm.words`), not this one.
+    if (rows) {
+      settingRowsScan.panes.set(pane, rows);
+      settingRowsWarm.words = { pane, rows };
+    }
     if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
     else setTimeout(settingRowsWarm, 50);
   }
@@ -694,23 +720,17 @@
 
   let helpTopicsLoad = null;
 
-  //: Leaving Help empties its topics a slice of rows per timer: all 1,770 nodes in one `replaceChildren` were a
-  //: 220 to 350 ms task at 4x CPU, landing on the next pane's switch (L675). Rows, then their groups; a visit
-  //: back first draws a fresh set, and the old nodes are already off the page or on their way.
-  const HELP_DROP_SLICE = 60;
+  //: Leaving Help empties its topics in one `replaceChildren`, in a timer after the next pane's first frame, so
+  //: the drop never shares that frame's task. The pane is hidden by then: 1,722 hidden nodes are 8 to 22 ms at 4x
+  //: CPU, where the earlier slices restyled the page once per timer (30 tasks of 60 to 95 ms, 2026-11-21).
+  //: A visit back before the timer (`helpTopicsLoad` set again) keeps the rows.
   function helpTopicsDrop(box) {
     box.dataset.dropping = "1";
-    const groups = [...box.children];
-    const rows = groups.flatMap((group) => [...group.children]);
-    const step = () => {
-      for (const row of rows.splice(0, HELP_DROP_SLICE)) row.remove();
-      if (rows.length) setTimeout(step);
-      else {
-        groups.forEach((group) => group.remove());
-        if (!helpTopicsLoad) delete box.dataset.dropping;
-      }
-    };
-    setTimeout(step);
+    afterFrames(() => setTimeout(() => {
+      if (helpTopicsLoad) return;
+      box.replaceChildren();
+      delete box.dataset.dropping;
+    }), 1);
   }
 
   function helpTopicLink(link) {

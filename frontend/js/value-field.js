@@ -107,6 +107,8 @@ function valueField(host, opts = {}) {
   if (presets.length) {
     const rows = presets.map((p) => ({
       label: p.label || format(p.value),
+      //: The numbers, then what is run (Fit): a hairline between, the way a longer menu parts its kinds.
+      group: p.run ? "run" : "value",
       run: () => {
         if (p.run) return p.run();
         value = clamp(p.value);
@@ -116,6 +118,8 @@ function valueField(host, opts = {}) {
     }));
     const menu = kebabMenu(rows, `${opts.label || "Value"}: choose`);
     menu.classList.add("value-field-menu");
+    //: The list itself, not the wrapper: an action menu escapes to <body>, where a class on the wrapper no longer reaches it.
+    menu.querySelector(":scope > .action-menu")?.classList.add("value-field-list");
     const opener = menu.querySelector(":scope > button");
     opener.classList.add("value-field-chevron");
     opener.title = "Choose a value";

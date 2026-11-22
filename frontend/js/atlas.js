@@ -1109,11 +1109,30 @@ const ATLAS_GLINT_K = [1.3, 0.55, 0.9, 0.7, 1.1];
 function atlasBuild() {
   atlasBuild.tune = atlasTune();
   atlasBuild.built.clear();
+  atlasBuild.gens.clear();
   return atlasBuild.tune;
 }
 atlasBuild.built = new Set();
+//: A look half built, by spec: `drain` resumes it (one part with `slice`, else to the end).
+atlasBuild.gens = new Map();
+atlasBuild.drain = function (spec, slice) {
+  let gen = atlasBuild.gens.get(spec);
+  if (!gen) {
+    if (atlasBuild.built.has(spec)) return true;
+    atlasBuild.gens.set(spec, (gen = atlasBuildLook(spec)));
+  }
+  for (;;) {
+    if (gen.next().done) {
+      if (atlasBuild.gens.get(spec) === gen) atlasBuild.gens.delete(spec);
+      return true;
+    }
+    if (slice) return false;
+  }
+};
 
-function atlasBuildLook(spec) {
+//: A generator: it yields between its parts so the warm task can build a look
+//: in slices (`atlasBuild.drain`); a read that needs the look runs the rest.
+function* atlasBuildLook(spec) {
   atlasBuild.built.add(spec);
   const tune = atlasBuild.tune || (atlasBuild.tune = atlasTune());
   const lock = (l, round) => ({ fill: atlasStem(l.seg, atlasTaper(l.w[0], l.w[1]), { samples: 10, cap: false, round }), light: atlasStemEdge(l.seg, atlasTaper(l.w[0], l.w[1]), 10), mass: !!l.mass });
@@ -1134,9 +1153,11 @@ function atlasBuildLook(spec) {
   spec.tailStarsNow = spec.tailStars.map(([x, y, r]) => [+(root[0] + (x - root[0]) * tune.tailLength).toFixed(2), +(root[1] + (y - root[1]) * tune.tailLength).toFixed(2), r]);
   const last = tail[tail.length - 1];
   spec.tailTipNow = [last[6], last[7]];
+  yield;
   const n = tune.lockCount > 0 ? Math.round(tune.lockCount) : spec.locks.length;
   spec.lockPaths = spec.locks.slice(0, n).map((l) => lock(l, !!spec.roundLocks));
   spec.headPaths = spec.head.slice(0, n).map((l) => lock(l, !!spec.roundLocks));
+  yield;
   //: **Lustre** (INBOX 550): a look with a fringe (the feminine) wears a
   //: highlight band along each lock of the mane, inside its lit edge and
   //: thin at both ends (`sheen`, drawn on its own lock); the masculine none.
@@ -1154,8 +1175,10 @@ function atlasBuildLook(spec) {
       return { fill: atlasStem(seg, width, { samples: 12, round: true }), under: atlasStem(seg, (t) => width(t) * 1.12 + 0.2, { samples: 12, round: true }), soft: band(0.3), bright: band(0.12) };
     });
   }
+  yield;
   spec.torsoNow = atlasScalePathX(spec.torso || ATLAS_TORSO_PATH, tune.bodyWidth, 31);
   spec.torsoEdgeNow = atlasScalePathX(atlasTorsoEdge(spec.torso || ATLAS_TORSO_PATH), tune.bodyWidth, 31);
+  yield;
   if (spec.lowers) {
     //: Every wisp starts 6 units higher, straight up inside the torso,
     //: so its root is under the body's fade (the `lowerin` mask) rather
@@ -1334,6 +1357,7 @@ function atlasBuildLook(spec) {
       };
     }
   }
+  yield;
   if (spec.arm) {
     //: The left arm hangs with the body on its right normal; the right
     //: arm is held out, palm down, the thumb along its upper edge.
@@ -1352,6 +1376,7 @@ function atlasBuildLook(spec) {
     spec.armPaths = ["l", "r"].map((side) => [side, atlasArmPath(spec.armRig[side], 0, 0)]);
   }
   if (spec.legs === false) spec.legPaths = [];
+  yield;
   //: **The astral wisps, tapered and lit** (INBOX 550, the owner of flat
   //: lavender bands with dot sparkles: "improve the whisps"). Each is a
   //: ribbon that swells fast from a fine, round root to 2.95 across a
@@ -1422,12 +1447,13 @@ for (const [name, spec] of Object.entries(ATLAS_LOOKS)) {
   Object.defineProperty(ATLAS_LOOKS, name, {
     enumerable: true,
     get() {
-      if (!atlasBuild.built.has(spec)) atlasBuildLook(spec);
+      atlasBuild.drain(spec);
       return spec;
     },
   });
+  //: One part per task: the whole look in one was 55 to 66 ms at 4x CPU.
   setTimeout(function atlasWarmLook() {
-    if (!atlasBuild.built.has(spec)) atlasBuildLook(spec);
+    if (!atlasBuild.drain(spec, true)) setTimeout(atlasWarmLook, 0);
   }, 0);
 }
 atlasBuild();

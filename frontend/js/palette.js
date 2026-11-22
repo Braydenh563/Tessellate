@@ -1400,6 +1400,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
           placeStep(spot);
           drawAnswerPanels(stepsHolder, panels, spot).then(() => spot.remove());
         }
+        //: A browser tool opened or moved a page: the Web panel shows it, as in Chat (L-world-class-629).
+        if (event.ok && /^https?:\/\//.test(event.panel_url || "") && event.tool !== "browser_read") ensureModule("webClip").then(() => { toggleWebPanel(true); openWebReader(event.panel_url); });
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as
         // work rather than as nothing happening.

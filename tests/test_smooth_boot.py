@@ -145,7 +145,8 @@ def test_every_popup_has_one_way_in():
     which = ":where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {"
     assert block.count(which) == 1, "one rule for every overlay"
     flat = " ".join(block.split())
-    assert "@starting-style { opacity: 0; & > * { translate: 0 var(--space-2); scale: 0.985; }" in flat
+    # The cards are named by class, not `& > *` (2026-11-21, test_css_invalidation).
+    assert "@starting-style { opacity: 0; & > :where(.card, .modal-card, .sheet-card) { translate: 0 var(--space-2); scale: 0.985; }" in flat
     assert "var(--ui-base)" in block and "var(--ui-slow)" in block and "var(--ui-exit)" in block
 
 

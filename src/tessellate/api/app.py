@@ -43,6 +43,7 @@ from tessellate.api import (
     routes_ask_history,
     routes_capabilities,
     routes_mcp,
+    routes_mcp_oauth,
     routes_auth,
     routes_bookmarks,
     routes_categories,
@@ -1655,6 +1656,8 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     #: behind the lock; `/mcp` itself checks its own bearer token instead.
     (routes_mcp.router, LOCKED),
     (routes_mcp.open_router, OPEN),
+    (routes_mcp_oauth.router, LOCKED),
+    (routes_mcp_oauth.open_router, OPEN),
     (routes_read.router, LOCKED),
     (routes_spelling.router, LOCKED),
     (routes_statistics.router, LOCKED),

@@ -19,8 +19,10 @@ from typing import BinaryIO
 
 import json
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.formparsers import MultiPartException
 from sqlalchemy.orm import Session
 
 from tessellate.core import activity, deps, jobruns
@@ -33,6 +35,28 @@ router = APIRouter(tags=["import"])
 MAX_FILES = 5000
 #: Notes embedded and committed per call after an import (was one commit per note, L508).
 EMBED_BATCH_NOTES = 100
+
+
+class _Upload:
+    """The parts of an app import: the files and the unticked keys."""
+
+    def __init__(self, files: list[UploadFile], exclude: str) -> None:
+        self.files, self.exclude = files, exclude
+
+
+async def _upload_form(request: Request) -> _Upload:
+    """The form read here, not by FastAPI: its parser keeps Starlette's limit of 1,000
+    files, so a vault picked as a folder of more notes was refused before `MAX_FILES`
+    could answer (L-world-class-411). Over the cap, the refusal is the route's own words."""
+    try:
+        form = await request.form(max_files=MAX_FILES, max_fields=100)
+    except (MultiPartException, StarletteHTTPException) as exc:
+        if "files" not in str(getattr(exc, "detail", None) or getattr(exc, "message", exc)).lower():
+            raise
+        raise HTTPException(status_code=422, detail=f"More files at once than one import takes ({MAX_FILES}).") from exc
+    files = [part for part in form.getlist("files") if not isinstance(part, str)]
+    exclude = form.get("exclude")
+    return _Upload(files, exclude if isinstance(exclude, str) else "")
 
 
 def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
@@ -98,11 +122,10 @@ def _refuse_open_private_while_locked(source: str, notes: list) -> None:
 
 @router.post("/import/app", status_code=201)
 def import_app(
-    files: list[UploadFile],
     response: Response,
     source: str = Query(pattern="^(notion|obsidian|evernote|apple|memorymap)$"),
     dry_run: bool = Query(False),
-    exclude: str = Form(""),
+    upload: _Upload = Depends(_upload_form),
     session: Session = Depends(get_session),
 ) -> dict:
     """Read, write, and keep a report. The write is a job with progress and
@@ -111,8 +134,8 @@ def import_app(
     and the embeddings are stored and committed in batches (L508)."""
     from tessellate.api.routes_settings_transfer import _parse_frontmatter
 
-    left_out = _excluded(exclude)
-    raw = _received(files)
+    left_out = _excluded(upload.exclude)
+    raw = _received(upload.files)
     label = app_import.LABELS[source]
     t0 = time.perf_counter()
     try:
@@ -168,6 +191,10 @@ def import_report_page(report_id: str) -> dict:
 
 @router.get("/export/folder")
 def export_notebook_folder(background_tasks: BackgroundTasks, session: Session = Depends(get_session)) -> FileResponse:
+    return folder_zip(session, background_tasks, "tessellate-notebook.zip", "folder")
+
+
+def folder_zip(session: Session, background_tasks: BackgroundTasks, filename: str, detail: str) -> FileResponse:
     """The whole notebook as a markdown folder in a zip (WORLD_CLASS 25b):
     every note with its sidecar and attachments, documents, boards and an
     `index.json`. Written to a temporary file, not memory, because the
@@ -181,6 +208,6 @@ def export_notebook_folder(background_tasks: BackgroundTasks, session: Session =
         counts = done.manifest["counts"]
         run.result = f"exported {counts['notes']} notes, {counts['attachments']} attachments" + (
             f", {counts['missing']} attachment files missing" if counts["missing"] else "")
-    manager.log_action(session, "exported", "data", detail="folder")
+    manager.log_action(session, "exported", "data", detail=detail)
     session.commit()
-    return FileResponse(tmp_path, media_type="application/zip", filename="tessellate-notebook.zip", background=background_tasks)
+    return FileResponse(tmp_path, media_type="application/zip", filename=filename, background=background_tasks)

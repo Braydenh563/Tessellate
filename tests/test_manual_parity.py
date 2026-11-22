@@ -769,6 +769,22 @@ def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_ke
     assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]
 
 
+def test_the_mcp_scope_and_oauth_sign_in_are_in_the_guide_and_the_help():
+    """L-world-class-560 (order 13): the link's Categories and Tags fields and the
+    OAuth sign-in's Approve are named in the controls' own words in the Guide and
+    in the group's own help, beside the controls they name."""
+    from tessellate.ai import help_chat
+
+    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "mcp-links")
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html.split('id="mcp-config-help"', 1)[1].split("</div>", 1)[0]
+    for words in ("Categories and Tags", "OAuth", "Waiting to sign in", "Approve", "on this computer"):
+        assert words in topic["body"], words
+        assert words in help_body, words
+    assert 'for="mcp-client-cats" class="muted">Categories<' in html and 'for="mcp-client-tags" class="muted">Tags<' in html
+    assert 'aria-label="Waiting to sign in"' in html
+
+
 def test_the_manual_pictures_are_few_small_and_each_on_disk_for_a_real_topic():
     """L-world-class-785 (the owner: "add a few pictures"): three to five WebP files, each for a
     topic the Guide has, each with alt text, each small enough that the boot and the first

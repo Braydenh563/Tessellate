@@ -1053,6 +1053,8 @@ def _tool_event(name: str, arguments: dict, result: dict) -> dict:
         "error": result.get("error"),
         #: Why it failed, when a front end acts on the cause (`searxng_down`).
         **({"reason": result["reason"]} if result.get("reason") else {}),
+        #: The page a browser tool put in front of the model: the chat opens it in the web panel.
+        **({"panel_url": result["panel_url"]} if name.startswith("browser_") and result.get("panel_url") else {}),
         "arguments": arguments,
         #: Titles, addresses and one line each of what was read,
         #: see `_tool_sources`. This is what the Sources panel
@@ -1168,8 +1170,8 @@ def all_it_names(session: Session, state: _TurnState, name: str, arguments: dict
 
 
 def _cleared_page(state: _TurnState, name: str, arguments: dict) -> bool:
-    """Whether a `read_url` in a tainted turn opens without a card."""
-    if name != "read_url":
+    """Whether a `read_url` or `browser_open` in a tainted turn opens without a card."""
+    if name not in ("read_url", "browser_open"):
         return False
     page = _page_key(str(arguments.get("url") or ""))
     if page is None:

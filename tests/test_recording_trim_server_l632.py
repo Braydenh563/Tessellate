@@ -92,3 +92,46 @@ def test_the_page_no_longer_decodes_the_take_to_trim():
     block = JS[start : JS.index("\n  }\n", start)]
     assert "decodeAudioData" not in block and "recordingWav" not in block
     assert "/trim" in block
+
+
+def _names() -> set[str]:
+    return {p.name for p in recordings.directory().iterdir()}
+
+
+def test_a_truncated_wav_is_refused_and_leaves_no_file(client, monkeypatch):
+    # Ported from L685: the header promises 4 s, the file holds 1 s. The cut
+    # must not write a wav whose length was never there.
+    monkeypatch.setattr(recording_trim, "available", lambda: False)
+    whole = _tone(4)
+    rid = _saved(client, whole[: 44 + RATE * 2])
+    before = _names()
+    refused = client.post(f"/recordings/{rid}/trim", json={"start_ms": 0, "end_ms": 4000})
+    assert refused.status_code == 503 and "shorter" in refused.json()["detail"]
+    assert _names() == before
+
+
+def test_the_trim_lands_in_the_source_space(client, session):
+    # Sealing is decided from the source's space, so the new row must be in it.
+    rid = _saved(client, _tone(2))
+    source = session.get(Recording, rid)
+    made = client.post(f"/recordings/{rid}/trim", json={"start_ms": 0, "end_ms": 1000}).json()
+    session.expire_all()
+    assert session.get(Recording, made["id"]).workspace_id == source.workspace_id
+    assert "workspace_id=row.workspace_id" in __import__("inspect").getsource(
+        __import__("tessellate.api.routes_recordings", fromlist=["x"]).trim_recording
+    )
+
+
+def test_a_failed_commit_leaves_no_file(client, monkeypatch):
+    from tessellate.api import routes_recordings
+
+    rid = _saved(client, _tone(2))
+    before = _names()
+
+    def boom(*_a, **_k):
+        raise RuntimeError("log failed")
+
+    monkeypatch.setattr(routes_recordings, "log_action", boom)
+    with pytest.raises(RuntimeError):
+        client.post(f"/recordings/{rid}/trim", json={"start_ms": 0, "end_ms": 1000})
+    assert _names() == before

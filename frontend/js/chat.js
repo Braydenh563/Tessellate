@@ -594,7 +594,10 @@ const loadResponseModes = (() => {
       if (active) select.title = active.description;
     }
   };
+  //: Both surfaces: the Notes quick-ask box holds one of the two, and until the Chat pane was built Answer length
+  //: there was an empty list that opened nothing (menus.js on the 5k showcase, L-general-71).
   onSurface("chat", paint);
+  onSurface("notes", paint);
   return async () => {
     body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
     paint();
