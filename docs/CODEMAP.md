@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8847, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2854, tests 22874, plan headings 695, app scripts 29, boot scripts 38, script files 363.
+Counts: frontend functions 8847, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2854, tests 22874, plan headings 696, app scripts 29, boot scripts 38, script files 363.
 
 ## Frontend functions (8847)
 
@@ -31762,7 +31762,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (695)
+## Plan headings (696)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -32183,14 +32183,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3116 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4473 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:697 |
+| Needs hardware | docs/roadmap/LEDGER.md:695 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:690 |
+| Owner calls | docs/roadmap/LEDGER.md:688 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32371,7 +32371,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4177 |
-| Plan session briefs | docs/roadmap/LEDGER.md:875 |
+| Plan session briefs | docs/roadmap/LEDGER.md:873 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32383,6 +32383,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1530 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2258 |
 | Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2773 |
+| Sweeps still failing after two measured runs, L-world-class-413, 2026-11-22 | docs/roadmap/BACKLOG.md:4487 |
 | Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21 | docs/roadmap/BACKLOG.md:4479 |
 | The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4244 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:912 |
@@ -32428,25 +32429,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:891 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:975 |
+| chat | docs/roadmap/LEDGER.md:889 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:973 |
 | documents | docs/roadmap/LEDGER.md:281 |
-| documents | docs/roadmap/LEDGER.md:915 |
-| general | docs/roadmap/LEDGER.md:660 |
+| documents | docs/roadmap/LEDGER.md:913 |
+| general | docs/roadmap/LEDGER.md:658 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:879 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:987 |
+| graph | docs/roadmap/LEDGER.md:877 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:985 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
 | mindmap | docs/roadmap/LEDGER.md:297 |
-| mindmap | docs/roadmap/LEDGER.md:927 |
+| mindmap | docs/roadmap/LEDGER.md:925 |
 | timeline | docs/roadmap/LEDGER.md:417 |
-| timeline | docs/roadmap/LEDGER.md:951 |
+| timeline | docs/roadmap/LEDGER.md:949 |
 | ui-modernisation | docs/roadmap/LEDGER.md:300 |
-| ui-modernisation | docs/roadmap/LEDGER.md:939 |
+| ui-modernisation | docs/roadmap/LEDGER.md:937 |
 | whiteboard | docs/roadmap/LEDGER.md:279 |
-| whiteboard | docs/roadmap/LEDGER.md:903 |
+| whiteboard | docs/roadmap/LEDGER.md:901 |
 | world-class | docs/roadmap/LEDGER.md:419 |
-| world-class | docs/roadmap/LEDGER.md:963 |
+| world-class | docs/roadmap/LEDGER.md:961 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
