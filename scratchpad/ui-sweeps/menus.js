@@ -141,8 +141,11 @@ function measure(opIdx) {
   rows = rows.filter((r) => !rows.some((o) => o !== r && o.contains(r)));
   rows = rows.filter((r) => r.getBoundingClientRect().height < 120 && r.getBoundingClientRect().width > menuW * 0.4);
   const iconOf = (r) => {
-    const i = r.querySelector('i.ph, svg, img, .swatch, [class*="dot"], input[type="checkbox"], input[type="radio"]');
-    if (!i || !visible(i)) return null;
+    // The leftmost mark, not the first in the markup: a switch row whose input comes first in the
+    // DOM but is laid out last (`order`, the dock-menu-check recipe) leads with its icon.
+    const marks = [...r.querySelectorAll('i.ph, svg, img, .swatch, [class*="dot"], input[type="checkbox"], input[type="radio"]')].filter(visible);
+    if (!marks.length) return null;
+    const i = marks.reduce((a, b) => (b.getBoundingClientRect().left < a.getBoundingClientRect().left ? b : a));
     const rr = r.getBoundingClientRect();
     const ir = i.getBoundingClientRect();
     // a trailing mark (a chevron, a check at the end) is not the icon column
@@ -188,7 +191,10 @@ function measure(opIdx) {
   const heads = [...menu.querySelectorAll('.dock-menu-label, .wb-panel-group-label, .select-group-label, .menu-group-label, .wb-menu-row > span:first-child, .dock-menu-section > .select-shell > .select-opener, .dock-menu-section > .segmented-control')]
     .filter(visible).map((h) => {
       const t = h.matches('.select-opener, .segmented-control') ? { x: h.getBoundingClientRect().left, text: '[' + (h.getAttribute('aria-label') || h.className.split(' ')[0]).slice(0, 18) + ']' } : textStart(h);
-      return t ? { text: t.text, x: r1(t.x), left: Math.round(h.getBoundingClientRect().left) } : null;
+      // A label that leads with an icon (the board's `.wb-menu-row` switches) starts at the icon, as a row does.
+      const ic = h.querySelector('i.ph, svg');
+      const x = t && ic && visible(ic) ? Math.min(t.x, ic.getBoundingClientRect().left) : t && t.x;
+      return t ? { text: t.text, x: r1(x), left: Math.round(h.getBoundingClientRect().left) } : null;
     }).filter(Boolean);
   const seps = [...menu.querySelectorAll('[role="separator"], .menu-sep, hr, .doc-dock-menu-sep, [class*="-sep"], [class*="divider"]')]
     // A hairline is 1px tall, which `visible` (more than 2px) would drop.

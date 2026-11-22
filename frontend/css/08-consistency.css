@@ -244,6 +244,14 @@
 .menu-item > .menu-item-words {
   display: flex;
   align-items: center;
+  /* A submenu row's icon sits inside its words, so the row's own gap does not
+     reach it: the icon's own margin did, 0.9px short of the row gap in the
+     board's menus (menus.js, L-world-class-107; the icon's width, below, was
+     the other 3.9px). */
+  gap: var(--space-2);
+}
+.menu-item > .menu-item-words > .ph-lead {
+  margin-inline-end: 0;
 }
 .menu-item .ph-text {
   min-width: 0;
@@ -5239,11 +5247,15 @@ body .chip.item-label,
 }
 :is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
   :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
-:is(.action-menu, .doc-dock-menu-list)
-  .menu-item > span:first-child > .ph:first-child {
+:is(.action-menu, .doc-dock-menu-list, .wb-board-menu)
+  .menu-item > span:first-child > .ph:first-child,
+.dock-menu-list > .dock-menu-check > .ph-lead {
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
-     where a width means nothing until the box is a block of its own. */
+     where a width means nothing until the box is a block of its own. The
+     board's menus were missing from this list: their submenu rows drew the
+     icon at 15.6px against 19.5 and the words began 3.9px early (menus.js,
+     L-world-class-107). */
   display: inline-block;
   width: 1.25em;
   text-align: center;
