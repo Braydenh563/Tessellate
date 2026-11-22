@@ -116,9 +116,10 @@ function applySidebarWidth(aside, width, { remember = true } = {}) {
   const onRight = RIGHT_SIDE_SIDEBARS.has(aside.id);
   const rail = "48px";
   const fitted = `${sidebarFittedWidth(clamped)}px`;
-  //: The peek opens to the width the sidebar has when pinned open, the fitted one, not the stored
-  //: choice: at 1440 the notes sidebar was 245 open and peeked to 260 (owner bug 5 on #257).
-  aside.style.setProperty("--peek-width", fitted);
+  //: `--saved-width` is what the peek opens to, so beside a grid it is the fitted width the sidebar
+  //: has when pinned open, not the stored choice: the chats peek came out 358 against an open 346
+  //: at 1440 (owner bug 6 on #257). Stacked layouts keep the clamped choice set above.
+  aside.style.setProperty("--saved-width", fitted);
   if (aside.classList.contains("sidebar-collapsed")) {
     aside.parentElement.style.gridTemplateColumns = onRight
       ? `minmax(0, 1fr) ${rail}`

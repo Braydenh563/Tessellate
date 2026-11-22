@@ -5261,8 +5261,14 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   white-space: nowrap;
 }
 .graph-pane-actions {
-  gap: var(--space-1);
+  gap: var(--space-2);
   flex: none;
+}
+/* The fold caret before the title, spaced as the Categories caret is (sidebar-folds-lazy.css), so a
+   focus ring on either button clears its neighbour (owner bug 7 on #257). */
+.graph-pane-toggle {
+  flex: none;
+  margin-inline-end: var(--space-2);
 }
 .graph-pane-box {
   position: relative;

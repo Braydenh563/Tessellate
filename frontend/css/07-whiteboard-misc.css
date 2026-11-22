@@ -114,7 +114,7 @@
 /* The peeked width, above the rail's (1,1,0) by the same id list. */
 .layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:hover,
 .layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
-  width: var(--peek-width, var(--saved-width));
+  width: var(--saved-width);
 }
 /* Notes' sidebar stays sticky while peeked (owner bug 5 on #257: the peek stayed 48px). Its own
    `#tab-notes #sidebar` (2,0,0) and rail (2,1,0) rules outrank the peek above, so the hover set
@@ -123,7 +123,7 @@
    without moving it. */
 #tab-notes .layout-sidebar-collapsed > #sidebar.sidebar-collapsed:is(:hover, :focus-visible, :has(:focus-visible)) {
   position: sticky;
-  width: var(--peek-width, var(--saved-width));
+  width: var(--saved-width);
 }
 /* `right: 1rem`, the pinned-open position, not the 1.25rem it had: the head's
    reserve (--sidebar-toggle-lane) is measured from the pinned spot, and the
@@ -1512,6 +1512,33 @@ body.scroll-top-visible .skills-split > .tab-main {
      the box is 158px and the pair, at --space-2, ran 5px past it). */
   .doc-sidebar-tabs > [role="tab"] {
     padding-inline: var(--space-1);
+  }
+  /* At the 170px floor the pair still ran 22px past the strip and "Outline" was cut at the edge
+     (owner bug on #257): each tab shrinks and ends in an ellipsis instead. The head wraps its tools
+     under "Recent" below 11rem (next rule), and All in Library keeps one line by dropping its
+     trailing arrow. */
+  .doc-sidebar-tabs > [role="tab"] {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #doc-browse-all {
+    white-space: nowrap;
+  }
+  #doc-browse-all > .ph-trail {
+    display: none;
+  }
+}
+/* The head's one row (library-lazy.css, the owner 2026-11-11) needs about 172px: "Recent" 53, the tools
+   111 after the help, template and diagram buttons went into the ⋯. Below that, at the 136px floor, the
+   tools ran 36px past the edge and the list scrolled sideways (176 in 144); the owner's 2026-11-22 report
+   allows a wrap, so the tools take a second row, right-aligned, as on a phone. */
+@container doc-sidebar (width < 11rem) {
+  #doc-sidebar #doc-sidebar-list > .sidebar-head {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
   }
 }
 /* **The strip is square, the paint on it is not.** Reported as "square tab

@@ -1566,17 +1566,18 @@
              open, which is also what keeps its canvas out of a 0x0 box. -->
         <section class="graph-pane" id="graph-pane" data-collapsed="false" hidden>
           <h3 class="panel-head graph-pane-head">
+            <!-- The fold caret leads, as Categories' and Most used's do (owner bug 7 on #257). -->
+            <button type="button" class="ghost small icon-only graph-pane-toggle" id="graph-pane-toggle"
+              aria-expanded="true" aria-controls="graph-pane-body"
+              aria-label="Hide the local map"
+              title="Hide the local map"><i class="ph ph-caret-down"
+                aria-hidden="true"></i></button>
             <span class="graph-pane-title" title="The open note and the notes linked to it; Options sets how far and which way">Local map</span>
             <span class="chip" id="graph-pane-count">No note open</span>
             <span class="row graph-pane-actions">
               <button type="button" class="ghost small icon-only" id="graph-pane-focus"
                 aria-label="Open this map in the Graph tab"
                 title="Show only these notes in the Graph tab (Show all there brings every note back)"><i class="ph ph-arrows-out"
-                  aria-hidden="true"></i></button>
-              <button type="button" class="ghost small icon-only" id="graph-pane-toggle"
-                aria-expanded="true" aria-controls="graph-pane-body"
-                aria-label="Hide the local map"
-                title="Hide the local map"><i class="ph ph-caret-up"
                   aria-hidden="true"></i></button>
             </span>
           </h3>
