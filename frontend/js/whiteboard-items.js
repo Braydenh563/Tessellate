@@ -840,7 +840,7 @@
     // A map node that was actually moved is now pinned, see
     // `wbMapPinOnDrag`. Gated on the same "did it really move" check the
     // undo entry uses, so a click is never mistaken for a placement.
-    if (primary) await wbMapPinOnDrag(d);
+    if (primary) await wbMapPinOnDrag(d, bulkOrigin);
   }
 
   function wbObjectDrag() {

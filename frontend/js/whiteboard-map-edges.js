@@ -711,7 +711,15 @@
   //:
   //: The group is the first child of the zoom group so edges sit *under* every
   //: sketch and node, which is the only z-order a tree reads correctly in.
-  function wbRenderMapEdges({ only = null } = {}) {
+  //: `plusesOnly`: the mid-line `+` buttons of the `only` topics placed and
+  //: nothing else, for the pin after a first drag (`wbMapPinOnDrag`), whose
+  //: lines the drop already drew.
+  function wbRenderMapEdges({ only = null, plusesOnly = false } = {}) {
+    if (plusesOnly) {
+      const index = wbMapIndex();
+      if (wbIsMap()) wbRenderMapEdgePluses(wbMapVisibleEdges(index, wbMapConcealed(index)), wbMapLayout(), only);
+      return;
+    }
     const zoomGroup = wbInstances.layer("wb-zoom-group");
     if (!zoomGroup) return;
     let group = zoomGroup.querySelector(".wb-map-edges");

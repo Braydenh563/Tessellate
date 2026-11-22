@@ -5430,11 +5430,22 @@ async function wbMapSetBranchLayout(node, value) {
 //: alone or the gesture is pointless. Called from the object drag's own end
 //: handler, and only for a real move on a map, a click that happened to
 //: register as a zero-length drag must not silently pin anything.
-async function wbMapPinOnDrag(d) {
+//:
+//: **The pin is drawn on the one topic, not by a render** (L-mindmap-26). The
+//: render it used to schedule redrew every line the drop had moved: at 500
+//: topics 93ms, landing in the next gesture's first frame (mapperf.js, the
+//: branch pick-up after a first node drag, 162.6ms). The pin is one class (a
+//: dashed border, no size change), and the only other thing that render
+//: placed was the moved topics' mid-line `+` buttons, placed here for those
+//: topics alone. `origin` is the drag's bulk origin, the branch it carried.
+async function wbMapPinOnDrag(d, origin = null) {
   if (!wbIsMap() || !WB_MAP_KINDS.has(d.kind) || d.data?.pinned) return;
   d.data = { ...d.data, pinned: true };
   await wbSaveObject(d);
-  wbScheduleRender();
+  wbItemElement("object", d.id)?.classList.add("wb-map-pinned");
+  const moved = new Set([d.id]);
+  for (const entry of origin?.values?.() || []) if (entry.kind === "object") moved.add(entry.item.id);
+  wbRenderMapEdges({ only: moved, plusesOnly: true });
 }
 
 //: --- Boundaries and summaries (MINDMAP_PLAN.md decisions 19 and 20) --------

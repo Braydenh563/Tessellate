@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: dragging a topic the first time pins it with one class on that topic and places only the moved topics' mid-line + buttons, instead of a full render that redrew every moved line and landed in the next gesture (branch pick-up after a first drag 162.6ms to 79.8 and 65ms, mapperf 500; tests/test_map_pin_render.py).
 - Mind map: dropping a big branch draws only the inside lines on screen; a line the cull hides is drawn as it comes on screen or into an export, so the drop of a 500-topic branch no longer draws all 499 (worst drag frame 215 and 184ms to 147 and 103ms, linked branch drop 219 and 220ms to 148 and 157ms, mapperf 500; tests/test_map_drop_offscreen.py).
 - Mind map: a drop that kept the board in place leaves topics hidden off screen both where they were and where they land for the cull to place as they come on, so the drop of a 500-topic branch no longer restyles every topic (plain branch drop frame 147ms to 69.8 and 68.5ms, mapperf 500; tests/test_map_drop_offscreen.py).
 - OCR workspace: the list of what was read keeps 40% of its column (192px at 1366x768, where it had 0px under a long caption and a second reading), and the column scrolls as one past that instead of cutting off (L806, scratchpad/ui-sweeps/ocrpanelfit.js).
